@@ -1,5 +1,6 @@
 //! Evaluating rules over a chart.
 
+use serde::Serialize;
 use teistro_aspect::{conjunction, drishti};
 use teistro_core::catalogue::{Dignity, Graha, Rashi};
 use teistro_core::settings::NodeAspects;
@@ -12,10 +13,12 @@ use crate::chart::{
 };
 use crate::language::{Body, Condition, House, KarakaScheme, Rule};
 use crate::reference::{BodyRef, SignRef, Subject};
+use crate::trace::{Explanation, NoTrace, Recorder, Resolved, Tracer};
 
 /// The bodies a rule consulted, in the order they were first consulted, each
 /// once. A fixed array: evaluating a rule allocates nothing for it.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[serde(into = "Vec<Body>")]
 pub struct Participants {
     bodies: [Option<Body>; 10],
     len: usize,
@@ -87,8 +90,14 @@ impl Spot {
     }
 }
 
+impl From<Participants> for Vec<Body> {
+    fn from(participants: Participants) -> Vec<Body> {
+        participants.iter().collect()
+    }
+}
+
 /// What a rule answers for a chart.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct RuleResult {
     /// Whether it is present.
     pub present: bool,
@@ -180,17 +189,22 @@ impl<'a> Evaluator<'a> {
         }
     }
 
-    fn lord_of(&self, house: House) -> Body {
-        graha_body(step(self.chart.lagna(), house.get() - 1).attributes().lord)
+    fn lord_of<'c>(&self, house: House, rec: &mut impl Recorder<'c>) -> Body {
+        let lord = graha_body(step(self.chart.lagna(), house.get() - 1).attributes().lord);
+        rec.resolved(|| Resolved::Body {
+            reference: BodyRef::lord_of(house),
+            body: Some(lord),
+        });
+        lord
     }
 
     /// The body a reference resolves to, if the chart holds one: a karaka no
     /// graha holds resolves to none.
-    fn body(&self, reference: &BodyRef) -> Option<Body> {
-        match reference {
+    fn body<'c>(&self, reference: &BodyRef, rec: &mut impl Recorder<'c>) -> Option<Body> {
+        let body = match reference {
             BodyRef::Body(body) => Some(*body),
             BodyRef::LordOf(sign) => self
-                .spot(sign)
+                .spot(sign, rec)
                 .map(|spot| graha_body(spot.sign.attributes().lord)),
             BodyRef::Karaka { karaka, scheme } => Body::ALL.into_iter().find(|body| {
                 let placement = self.at(*body);
@@ -200,15 +214,34 @@ impl<'a> Evaluator<'a> {
                 };
                 held == Some(karaka.0)
             }),
-        }
+        };
+        rec.resolved(|| Resolved::Body {
+            reference: reference.clone(),
+            body,
+        });
+        body
     }
 
     /// Where a sign reference resolves, if it does.
-    fn spot(&self, reference: &SignRef) -> Option<Spot> {
+    fn spot<'c>(&self, reference: &SignRef, rec: &mut impl Recorder<'c>) -> Option<Spot> {
         let lagna = self.chart.lagna();
+        let spot = self.resolve(reference, lagna, rec);
+        rec.resolved(|| Resolved::Sign {
+            reference: reference.clone(),
+            place: spot.map(|spot| (spot.sign, self.house_at(spot))),
+        });
+        spot
+    }
+
+    fn resolve<'c>(
+        &self,
+        reference: &SignRef,
+        lagna: Rashi,
+        rec: &mut impl Recorder<'c>,
+    ) -> Option<Spot> {
         Some(match reference {
             SignRef::Of(body) => {
-                let body = self.body(body)?;
+                let body = self.body(body, rec)?;
                 Spot {
                     sign: self.at(body).sign,
                     through: Some(body),
@@ -216,7 +249,7 @@ impl<'a> Evaluator<'a> {
                 }
             }
             SignRef::House(house) => Spot::sign(step(lagna, house.get() - 1), None),
-            SignRef::Arudha(sign) => Spot::sign(self.pada(self.spot(sign)?.sign), None),
+            SignRef::Arudha(sign) => Spot::sign(self.pada(self.spot(sign, rec)?.sign), None),
             SignRef::Upapada => {
                 let odd = (lagna as u8) % 2 == 0;
                 let house = match self.readings.upapada {
@@ -226,11 +259,11 @@ impl<'a> Evaluator<'a> {
                 Spot::sign(self.pada(step(lagna, house)), None)
             }
             SignRef::Navamsha(body) => {
-                let body = self.body(body)?;
+                let body = self.body(body, rec)?;
                 Spot::sign(self.at(body).navamsha, Some(body))
             }
             SignRef::Counted { from, house } => {
-                let from = self.spot(from)?;
+                let from = self.spot(from, rec)?;
                 Spot::sign(step(from.sign, house.get() - 1), from.through)
             }
         })
@@ -262,16 +295,17 @@ impl<'a> Evaluator<'a> {
 
     /// Whether a subject meets a test of where it is, adding the body it
     /// reached.
-    fn subject_meets(
+    fn subject_meets<'c>(
         &self,
         subject: &Subject,
         into: &mut Participants,
+        rec: &mut impl Recorder<'c>,
         meets: impl Fn(Spot) -> bool,
     ) -> bool {
         let nature = match subject {
             Subject::Ref(reference) => {
                 return self
-                    .spot(reference)
+                    .spot(reference, rec)
                     .is_some_and(|spot| self.reached(spot, into, meets(spot)));
             }
             Subject::AnyBenefic => &self.benefic,
@@ -305,32 +339,40 @@ impl<'a> Evaluator<'a> {
 
     /// A predicate about one body reference: false when it resolves to none,
     /// and the body added when the predicate held.
-    fn body_meets(
+    fn body_meets<'c>(
         &self,
         reference: &BodyRef,
         into: &mut Participants,
+        rec: &mut impl Recorder<'c>,
         meets: impl Fn(Body) -> bool,
     ) -> bool {
-        self.body(reference)
+        self.body(reference, rec)
             .is_some_and(|body| self.single(body, into, meets(body)))
     }
 
     /// A predicate about one sign reference.
-    fn sign_meets(
+    fn sign_meets<'c>(
         &self,
         reference: &SignRef,
         into: &mut Participants,
+        rec: &mut impl Recorder<'c>,
         meets: impl Fn(Spot) -> bool,
     ) -> bool {
-        self.spot(reference)
+        self.spot(reference, rec)
             .is_some_and(|spot| self.reached(spot, into, meets(spot)))
     }
 
     /// A sub-condition of `and`, `or` or `not`: under the engine's gathering
     /// its bodies are added whatever it answers; otherwise only when `keep`.
-    fn branch(&self, condition: &Condition, into: &mut Participants, keep: bool) -> bool {
+    fn branch<'c>(
+        &self,
+        condition: &'c Condition,
+        into: &mut Participants,
+        keep: bool,
+        rec: &mut impl Recorder<'c>,
+    ) -> bool {
         let mut own = Participants::default();
-        let held = self.holds(condition, &mut own);
+        let held = self.check(condition, &mut own, rec);
         if self.readings.gathering == Gathering::EveryHeld || held == keep {
             into.extend(own);
         }
@@ -338,47 +380,77 @@ impl<'a> Evaluator<'a> {
     }
 
     /// Whether a condition holds, adding the bodies it consulted.
-    #[allow(clippy::too_many_lines, reason = "one arm a predicate of the language")]
     pub fn holds(&self, condition: &Condition, into: &mut Participants) -> bool {
+        self.check(condition, into, &mut NoTrace)
+    }
+
+    /// [`Evaluator::holds`], recording each step for `rec`.
+    fn check<'c>(
+        &self,
+        condition: &'c Condition,
+        into: &mut Participants,
+        rec: &mut impl Recorder<'c>,
+    ) -> bool {
+        rec.enter();
+        let before = into.len();
+        let held = self.predicate(condition, into, rec);
+        rec.leave(condition, held, || into.iter().skip(before).collect());
+        held
+    }
+
+    #[allow(clippy::too_many_lines, reason = "one arm a predicate of the language")]
+    fn predicate<'c>(
+        &self,
+        condition: &'c Condition,
+        into: &mut Participants,
+        rec: &mut impl Recorder<'c>,
+    ) -> bool {
         match condition {
-            Condition::And { conditions } => conditions.iter().all(|c| self.branch(c, into, true)),
-            Condition::Or { conditions } => conditions.iter().any(|c| self.branch(c, into, true)),
+            Condition::And { conditions } => {
+                conditions.iter().all(|c| self.branch(c, into, true, rec))
+            }
+            Condition::Or { conditions } => {
+                conditions.iter().any(|c| self.branch(c, into, true, rec))
+            }
             Condition::Not { condition } => {
                 let mut own = Participants::default();
-                let held = self.holds(condition, &mut own);
+                let held = self.check(condition, &mut own, rec);
                 if self.readings.gathering == Gathering::EveryHeld {
                     into.extend(own);
                 }
                 !held
             }
             Condition::PlanetInHouse { planet, houses } => {
-                self.subject_meets(planet, into, |spot| houses.contains(&self.house_at(spot)))
+                self.subject_meets(planet, into, rec, |spot| {
+                    houses.contains(&self.house_at(spot))
+                })
             }
             Condition::PlanetInHouseFrom {
                 planet,
                 reference,
                 houses,
-            } => self.spot(reference).is_some_and(|from| {
-                self.subject_meets(planet, into, |spot| {
+            } => self.spot(reference, rec).is_some_and(|from| {
+                self.subject_meets(planet, into, rec, |spot| {
                     houses.contains(&House::between(from.sign, spot.sign))
                 })
             }),
             Condition::PlanetInSign { planet, signs } => {
-                self.sign_meets(planet, into, |spot| signs.contains(&spot.sign))
+                self.sign_meets(planet, into, rec, |spot| signs.contains(&spot.sign))
             }
             Condition::PlanetDignity { planet, dignities } => {
-                self.body_meets(planet, into, |body| {
+                self.body_meets(planet, into, rec, |body| {
                     self.dignity_meets(self.at(body).dignity, dignities)
                 })
             }
-            Condition::PlanetInKendra { planet } => self.sign_meets(planet, into, |spot| {
+            Condition::PlanetInKendra { planet } => self.sign_meets(planet, into, rec, |spot| {
                 House::KENDRAS.contains(&self.house_at(spot))
             }),
-            Condition::PlanetInTrikona { planet } => self.sign_meets(planet, into, |spot| {
+            Condition::PlanetInTrikona { planet } => self.sign_meets(planet, into, rec, |spot| {
                 House::TRIKONAS.contains(&self.house_at(spot))
             }),
             Condition::PlanetInKendraFrom { planet, reference } => {
-                let (Some(spot), Some(from)) = (self.spot(planet), self.spot(reference)) else {
+                let (Some(spot), Some(from)) = (self.spot(planet, rec), self.spot(reference, rec))
+                else {
                     return false;
                 };
                 let held = House::KENDRAS.contains(&House::between(from.sign, spot.sign));
@@ -389,20 +461,20 @@ impl<'a> Evaluator<'a> {
                 held
             }
             Condition::LordOfHouseInKendra { house_ruled } => {
-                let lord = self.lord_of(*house_ruled);
+                let lord = self.lord_of(*house_ruled, rec);
                 self.single(lord, into, House::KENDRAS.contains(&self.house_of(lord)))
             }
             Condition::LordOfHouseInHouse {
                 house_ruled,
                 house_occupied,
             } => {
-                let lord = self.lord_of(*house_ruled);
+                let lord = self.lord_of(*house_ruled, rec);
                 self.single(lord, into, self.house_of(lord) == *house_occupied)
             }
             Condition::PlanetConjunct { planets, max_orb } => {
                 let mut bodies = Participants::default();
                 for reference in planets {
-                    match self.body(reference) {
+                    match self.body(reference, rec) {
                         Some(body) => bodies.push(body),
                         None => return false,
                     }
@@ -433,7 +505,7 @@ impl<'a> Evaluator<'a> {
                 reference,
                 houses,
                 except,
-            } => self.spot(reference).is_some_and(|from| {
+            } => self.spot(reference, rec).is_some_and(|from| {
                 let own = if from.standing { from.through } else { None };
                 !Body::ALL.iter().any(|body| {
                     Some(*body) != own
@@ -443,7 +515,7 @@ impl<'a> Evaluator<'a> {
                 })
             }),
             Condition::MutualExchange { house1, house2 } => {
-                let (one, other) = (self.lord_of(*house1), self.lord_of(*house2));
+                let (one, other) = (self.lord_of(*house1, rec), self.lord_of(*house2, rec));
                 let held = self.house_of(one) == *house2 && self.house_of(other) == *house1;
                 if held {
                     into.push(one);
@@ -452,7 +524,7 @@ impl<'a> Evaluator<'a> {
                 held
             }
             Condition::LordConjunctLord { house1, house2 } => {
-                let (one, other) = (self.lord_of(*house1), self.lord_of(*house2));
+                let (one, other) = (self.lord_of(*house1, rec), self.lord_of(*house2, rec));
                 let held = one == other || self.at(one).sign == self.at(other).sign;
                 if held {
                     into.push(one);
@@ -490,7 +562,7 @@ impl<'a> Evaluator<'a> {
                 let mut signs = [false; 12];
                 let mut reached = Participants::default();
                 for reference in planets {
-                    let Some(spot) = self.spot(reference) else {
+                    let Some(spot) = self.spot(reference, rec) else {
                         return false;
                     };
                     if let Some(slot) = signs.get_mut(spot.sign as usize) {
@@ -530,7 +602,7 @@ impl<'a> Evaluator<'a> {
                 held
             }
             Condition::NGrahasConjunctWith { anchor, min_count } => {
-                let Some(anchor) = self.spot(anchor) else {
+                let Some(anchor) = self.spot(anchor, rec) else {
                     return false;
                 };
                 let cluster = || {
@@ -555,12 +627,14 @@ impl<'a> Evaluator<'a> {
                     karaka: *karaka,
                     scheme: *karaka_scheme,
                 };
-                self.body_meets(&holder, into, |body| houses.contains(&self.house_of(body)))
+                self.body_meets(&holder, into, rec, |body| {
+                    houses.contains(&self.house_of(body))
+                })
             }
             Condition::PlanetCombust { planet } => {
-                self.body_meets(planet, into, |body| self.at(body).combust)
+                self.body_meets(planet, into, rec, |body| self.at(body).combust)
             }
-            Condition::PlanetRetrograde { planet } => self.body_meets(planet, into, |body| {
+            Condition::PlanetRetrograde { planet } => self.body_meets(planet, into, rec, |body| {
                 if body.is_node() {
                     self.readings.node_motion == NodeMotion::AlwaysRetrograde
                 } else {
@@ -568,7 +642,8 @@ impl<'a> Evaluator<'a> {
                 }
             }),
             Condition::PlanetAspectsPlanet { from, target } => {
-                let (Some(body), Some(target)) = (self.body(from), self.spot(target)) else {
+                let (Some(body), Some(target)) = (self.body(from, rec), self.spot(target, rec))
+                else {
                     return false;
                 };
                 let held = aspects(
@@ -585,7 +660,7 @@ impl<'a> Evaluator<'a> {
             }
             Condition::PlanetAspectsHouse { from, house_ruled } => {
                 let target = step(self.chart.lagna(), house_ruled.get() - 1);
-                self.body_meets(from, into, |body| {
+                self.body_meets(from, into, rec, |body| {
                     aspects(body, self.at(body).sign, target, self.readings.node_aspects)
                 })
             }
@@ -607,12 +682,39 @@ impl<'a> Evaluator<'a> {
     /// present; ask [`Rule::is_evaluable`] to tell the two apart.
     #[must_use]
     pub fn evaluate(&self, rule: &Rule) -> RuleResult {
+        self.run(rule, &mut NoTrace, &mut NoTrace)
+    }
+
+    /// A rule's answer with how it was reached: each condition checked, in
+    /// order, whether it held, the bodies it added and every reference it
+    /// resolved on the way, then each cancellation the same way.
+    ///
+    /// It allocates the trace; [`Evaluator::evaluate`] answers the same without
+    /// one.
+    #[must_use]
+    pub fn explain<'c>(&self, rule: &'c Rule) -> Explanation<'c> {
+        let (mut conditions, mut cancellations) = (Tracer::default(), Tracer::default());
+        let result = self.run(rule, &mut conditions, &mut cancellations);
+        Explanation {
+            rule,
+            result,
+            conditions: conditions.finish(),
+            cancellations: cancellations.finish(),
+        }
+    }
+
+    fn run<'c>(
+        &self,
+        rule: &'c Rule,
+        conditions: &mut impl Recorder<'c>,
+        cancelling: &mut impl Recorder<'c>,
+    ) -> RuleResult {
         let mut participants = Participants::default();
         let present = rule.is_evaluable()
             && rule
                 .conditions
                 .iter()
-                .all(|c| self.holds(c, &mut participants));
+                .all(|c| self.check(c, &mut participants, conditions));
         if !present {
             return RuleResult {
                 present: false,
@@ -632,7 +734,7 @@ impl<'a> Evaluator<'a> {
             .cancellations
             .iter()
             .enumerate()
-            .filter(|(_, c)| self.holds(c, &mut Participants::default()))
+            .filter(|(_, c)| self.check(c, &mut Participants::default(), cancelling))
             .map(|(i, _)| i)
             .collect();
         RuleResult {
@@ -670,7 +772,8 @@ mod tests {
     #![allow(
         clippy::unwrap_used,
         clippy::indexing_slicing,
-        reason = "tests unwrap what they built and index their own charts"
+        clippy::panic,
+        reason = "tests unwrap what they built, index their own charts and fail by panicking"
     )]
 
     use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi};
@@ -682,6 +785,7 @@ mod tests {
     };
     use crate::language::Karaka;
     use crate::reference::SignRef;
+    use crate::trace::Step;
 
     const SUN: Body = Body::Graha(Graha::Sun);
     const MOON: Body = Body::Graha(Graha::Moon);
@@ -1043,6 +1147,114 @@ mod tests {
         assert_eq!(
             holds(&c, ENGINE, &upapada("TAURUS")),
             holds(&c, parity, &upapada("TAURUS"))
+        );
+    }
+
+    fn rule(conditions: Vec<Condition>, cancellations: Vec<Condition>) -> Rule {
+        Rule {
+            key: String::from("EXAMPLE"),
+            category: String::from("example"),
+            source: crate::language::Source {
+                text: String::from("an example"),
+                chapter: None,
+                verse: None,
+                note: None,
+            },
+            conditions,
+            cancellations,
+        }
+    }
+
+    #[test]
+    fn an_explanation_holds_the_checks_made_and_only_those() {
+        let c = chart();
+        let example = rule(
+            vec![written(
+                r#"{"type": "or", "conditions": [
+                    {"type": "and", "conditions": [
+                        {"type": "planet-in-kendra", "planet": "MARS"},
+                        {"type": "planet-dignity", "planet": "JUPITER", "dignities": ["EXALTED"]},
+                        {"type": "planet-combust", "planet": "SUN"}
+                    ]},
+                    {"type": "planet-in-kendra", "planet": {"lordOf": 4}},
+                    {"type": "planet-in-kendra", "planet": "VENUS"}
+                ]}"#,
+            )],
+            vec![written(
+                r#"{"type": "planet-dignity", "planet": {"karaka": "AmK"}, "dignities": ["EXALTED"]}"#,
+            )],
+        );
+        let evaluator = Evaluator::new(&c, ENGINE);
+        let explanation = evaluator.explain(&example);
+        assert_eq!(explanation.result, evaluator.evaluate(&example));
+        let [or] = explanation.conditions.as_slice() else {
+            panic!("one condition")
+        };
+        // The `and` stopped at Jupiter's dignity, so the Sun was never asked;
+        // the `or` stopped at the Moon, the fourth's lord, so Venus was not.
+        let kinds = |steps: &[Step<'_>]| {
+            steps
+                .iter()
+                .map(|s| (s.condition.kind(), s.held))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            kinds(&or.steps),
+            [("and", false), ("planet-in-kendra", true)]
+        );
+        assert_eq!(
+            kinds(&or.steps[0].steps),
+            [("planet-in-kendra", true), ("planet-dignity", false)]
+        );
+        assert_eq!(
+            or.added,
+            [MARS, MOON],
+            "the engine gathers the failed branch's Mars"
+        );
+        assert_eq!(
+            or.steps[1]
+                .resolved
+                .iter()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>(),
+            [
+                "house 4 is CANCER",
+                "the lord of house 4 is MOON",
+                "the lord of house 4 stands in ARIES, house 1"
+            ]
+        );
+        // Present, so its cancellation was checked: no graha holds the karaka.
+        let [cancellation] = explanation.cancellations.as_slice() else {
+            panic!("one cancellation")
+        };
+        assert!(!cancellation.held);
+        assert_eq!(cancellation.resolved[0].to_string(), "the AmK is no body");
+        assert_eq!(
+            serde_json::to_value(cancellation).unwrap(),
+            serde_json::json!({
+                "type": "planet-dignity",
+                "held": false,
+                "added": [],
+                "resolved": [{"kind": "body", "reference": {"karaka": "AmK"}, "body": null}],
+                "steps": []
+            })
+        );
+        assert!(explanation.to_string().starts_with(
+            "EXAMPLE: present, MARS, MOON in house 1\n  holds or, adding MARS, MOON\n"
+        ));
+
+        // Not present: no cancellation is checked.
+        let absent = rule(
+            vec![written(
+                r#"{"type": "planet-in-house", "planet": "SUN", "houses": [7]}"#,
+            )],
+            example.cancellations.clone(),
+        );
+        let explanation = evaluator.explain(&absent);
+        assert!(!explanation.result.present && explanation.cancellations.is_empty());
+        assert_eq!(
+            explanation.to_string(),
+            "EXAMPLE: not present\n  fails planet-in-house\n    SUN stands in ARIES, house 1\n"
         );
     }
 

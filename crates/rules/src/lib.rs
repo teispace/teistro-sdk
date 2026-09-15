@@ -34,6 +34,7 @@ pub mod chart;
 pub mod eval;
 pub mod language;
 pub mod reference;
+pub mod trace;
 
 pub use chart::{
     Benefics, Conjunction, DignityMatch, Gathering, Houses, NodeMotion, NodeSides, Placement,
@@ -42,3 +43,4 @@ pub use chart::{
 pub use eval::{Evaluator, Participants, RuleResult};
 pub use language::{Body, Condition, House, Karaka, KarakaScheme, Rule, Source};
 pub use reference::{BodyRef, SignRef, Subject};
+pub use trace::{Explanation, Resolved, Step};

@@ -15,7 +15,8 @@ cancellations held.
 | [`reference`](src/reference.rs) | what a condition is about, as two types: a `BodyRef` (a graha or the lagna, the lord of a sign, the holder of a karaka) and a `SignRef` (any body's sign, a house, an arudha pada, the upapada, a navamsha, a sign counted from another), so a rule asking for the dignity of a pada is refused when read |
 | [`language`](src/language.rs) | the condition language, typed: three combinators and 22 predicates in the recording engine's own shape, so its rules read unchanged, and anything else (an unknown field or predicate, a thirteenth house, an outer planet) refused with its path |
 | [`chart`](src/chart.rs) | what a rule reads of a chart (each body's longitude, sign, house, dignity, motion, combustion, chara karakas and navamsha), and every place the language leaves a meaning open, each a `Readings` field with the recording engine's choice the default and the text's where the engine has none |
-| [`eval`](src/eval.rs) | the `Evaluator`: benefics and malefics settled once a chart, then each rule to a `RuleResult` without allocating for its participants |
+| [`eval`](src/eval.rs) | the `Evaluator`: benefics and malefics settled once a chart, then each rule to a `RuleResult` without allocating for its participants, or to an `Explanation` with its trace |
+| [`trace`](src/trace.rs) | how an answer was reached: each condition checked, whether it held, the bodies it added and each reference resolved, as a tree that serialises and reads as prose; one evaluator generic over a recorder, so the untraced answer costs nothing more and cannot differ |
 
 ## What the corpus settled
 
@@ -51,10 +52,14 @@ cancellations held.
   Karakamsha (ch. 40 v. 14), and the upapada under both readings; every
   reference form read and written back, and each wrong kind or shape refused
   with its reason (unit tests).
+- Every explanation over the corpus answers what its evaluation answers,
+  stops at the first condition that failed, and gathers the participants from
+  its steps: 55 521 of 55 521 (`tests/baseline.rs`); a unit test pins what an
+  explanation holds, what it leaves out, its JSON and its prose.
 - Each body's navamsha is the corpus's recorded D9 on all 930 bodies
   (`tests/baseline.rs`).
 - Strict refusals, the benefics by company, each reading's flip, the node
   sides, failed-branch gathering, lords, karakas and aspects (unit tests).
-- The recording engine's 597 written rules over one chart take about 12
-  microseconds, against a budget of 900 rules in 2 milliseconds
-  (`benches/rules.rs`).
+- The recording engine's 597 written rules over one chart take about 11
+  microseconds, against a budget of 900 rules in 2 milliseconds, and about 120
+  explained (`benches/rules.rs`).

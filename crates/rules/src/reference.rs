@@ -228,6 +228,37 @@ const ANY_BENEFIC: &str = "any-benefic";
 const ANY_MALEFIC: &str = "any-malefic";
 const UPAPADA: &str = "UPAPADA";
 
+// ---- Prose ----------------------------------------------------------------
+
+impl core::fmt::Display for BodyRef {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            BodyRef::Body(body) => f.write_str(body.key()),
+            BodyRef::LordOf(sign) => write!(f, "the lord of {sign}"),
+            BodyRef::Karaka { karaka, scheme } => {
+                let abbreviation = karaka.abbreviation();
+                match scheme {
+                    KarakaScheme::Seven => write!(f, "the {abbreviation}"),
+                    KarakaScheme::Eight => write!(f, "the {abbreviation} among eight"),
+                }
+            }
+        }
+    }
+}
+
+impl core::fmt::Display for SignRef {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        match self {
+            SignRef::Of(body) => write!(f, "{body}"),
+            SignRef::House(house) => write!(f, "house {}", house.get()),
+            SignRef::Arudha(sign) => write!(f, "the pada of {sign}"),
+            SignRef::Upapada => f.write_str("the upapada"),
+            SignRef::Navamsha(body) => write!(f, "the navamsha of {body}"),
+            SignRef::Counted { from, house } => write!(f, "house {} from {from}", house.get()),
+        }
+    }
+}
+
 // ---- Writing ---------------------------------------------------------------
 
 impl Serialize for BodyRef {

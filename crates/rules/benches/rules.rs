@@ -37,5 +37,23 @@ fn bench(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, bench);
+fn explain(c: &mut Criterion) {
+    let rules: Vec<Rule> = common::rules()
+        .into_iter()
+        .filter(Rule::is_evaluable)
+        .collect();
+    let (_, file) = common::files().swap_remove(0);
+    let chart = common::chart(&file["inputs"]);
+    c.bench_function("597 rules explained over one chart", |b| {
+        b.iter(|| {
+            let evaluator = Evaluator::new(black_box(&chart), Readings::RECORDING_ENGINE);
+            rules
+                .iter()
+                .filter(|rule| evaluator.explain(rule).result.present)
+                .count()
+        });
+    });
+}
+
+criterion_group!(benches, bench, explain);
 criterion_main!(benches);

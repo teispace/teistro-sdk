@@ -16,7 +16,7 @@
 mod common;
 
 use common::{chart, files, recorded_chart, rules, strings};
-use teistro_rules::{Body, Evaluator, Readings, Rule};
+use teistro_rules::{Body, Evaluator, Readings, Rule, RuleResult};
 
 #[test]
 fn the_kernel_reproduces_every_recorded_yoga() {
@@ -50,6 +50,7 @@ fn the_kernel_reproduces_every_recorded_yoga() {
         for rule in rules.iter().filter(|r| r.is_evaluable()) {
             decisions += 1;
             let result = evaluator.evaluate(rule);
+            explained(&evaluator, rule, &result);
             let at = format!("{} {}", path.display(), rule.key);
             let recorded = present.get(&rule.key);
             assert_eq!(result.present, recorded.is_some(), "{at}: presence");
@@ -92,6 +93,49 @@ fn the_kernel_reproduces_every_recorded_yoga() {
         }
     }
     assert_eq!((charts, decisions, presences), (93, 55_521, 5350));
+}
+
+/// An explanation answers what the evaluation answers, its conditions stop at
+/// the first that failed, and under the engine's gathering the bodies its
+/// steps added are the participants.
+fn explained(evaluator: &Evaluator<'_>, rule: &Rule, result: &RuleResult) {
+    let explanation = evaluator.explain(rule);
+    assert_eq!(&explanation.result, result, "{}", rule.key);
+    let held: Vec<bool> = explanation.conditions.iter().map(|s| s.held).collect();
+    let checked = held.iter().take_while(|h| **h).count();
+    assert_eq!(
+        result.present,
+        checked == rule.conditions.len(),
+        "{}",
+        rule.key
+    );
+    assert!(
+        held.len() == checked || held.len() == checked + 1,
+        "{}",
+        rule.key
+    );
+    if result.present {
+        let mut added: Vec<Body> = Vec::new();
+        for body in explanation.conditions.iter().flat_map(|s| s.added.iter()) {
+            if !added.contains(body) {
+                added.push(*body);
+            }
+        }
+        assert_eq!(
+            added,
+            result.participants.iter().collect::<Vec<_>>(),
+            "{}",
+            rule.key
+        );
+        assert_eq!(
+            explanation.cancellations.len(),
+            rule.cancellations.len(),
+            "{}",
+            rule.key
+        );
+    } else {
+        assert!(explanation.cancellations.is_empty(), "{}", rule.key);
+    }
 }
 
 #[test]

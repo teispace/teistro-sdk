@@ -169,6 +169,29 @@ values. It is opt-in per call (it allocates) and it is what makes a rule
 result checkable by an astrologer and usable as ground truth under any
 generative layer.
 
+**Built, the trace (2026-09-15).** The trace is a second call rather than an
+optional field, so the type says whether one was asked for:
+`Evaluator::explain` returns an `Explanation` holding the same `RuleResult` as
+`evaluate`, plus a tree of `Step`s. Each step is one condition in the order it
+was checked, with whether it held, the bodies it added, and every reference
+it resolved on the way, innermost first ("house 7 from the upapada is
+SAGITTARIUS, house 9; the lord of house 7 from the upapada is JUPITER").
+Conditions a combinator never reached are absent, and cancellations appear
+only when the rule was present, since only then were they checked.
+
+Both calls run one evaluator, generic over a sealed `Recorder`. The no-op
+recorder compiles away: `evaluate` still takes 11.4 µs for the 597 rules and
+allocates no trace, and an explanation cannot disagree with it. Over the
+corpus, every one of the 55 521 explanations equals its evaluation, stops at
+the first failing condition, and gathers the participants from its steps
+(`crates/rules/tests/baseline.rs`). Explaining all 597 rules takes 119 µs. An
+explanation serialises to JSON, and its `Display` is the indented prose an
+astrologer reads. The baseline engine has no trace to compare against: its
+result carries the involved planets and houses, the cancellations, and a
+0 to 100 strength from no source, which the corpus does not record. The
+`variant` and `grade` of the `RuleResult` sketched above arrive with
+classifying and grading rules.
+
 ### Cancellation is first-class, for yogas and doshas
 
 ```rust

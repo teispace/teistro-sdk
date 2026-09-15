@@ -176,11 +176,7 @@ const KARAKAS: [(&str, CharaKaraka); 8] = [
 
 impl Serialize for Karaka {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let abbreviation = KARAKAS
-            .iter()
-            .find(|(_, k)| *k == self.0)
-            .map_or("AK", |(a, _)| *a);
-        serializer.serialize_str(abbreviation)
+        serializer.serialize_str(self.abbreviation())
     }
 }
 
@@ -192,6 +188,15 @@ impl<'de> Deserialize<'de> for Karaka {
 }
 
 impl Karaka {
+    /// Its abbreviation, as a rule writes it.
+    #[must_use]
+    pub fn abbreviation(self) -> &'static str {
+        KARAKAS
+            .iter()
+            .find(|(_, k)| *k == self.0)
+            .map_or("AK", |(a, _)| *a)
+    }
+
     /// The karaka an abbreviation names.
     ///
     /// # Errors

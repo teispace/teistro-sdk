@@ -556,8 +556,10 @@ cancellations, reproduces every recorded yoga, and the pass now measures it;
 597 rules over a chart take about 10 µs against the 2 ms budget. **The first
 references are built** as two types, `BodyRef` and `SignRef`: lords, karakas,
 arudha padas, the upapada, navamshas and signs counted from them, each
-exercised by a BPHS rule (12 µs now). Next: the trace, table lookups and
-cancellation in the order below, with the references that need points the
+exercised by a BPHS rule. **The trace is built**: `explain` returns each
+condition checked with what it held and resolved, from the same evaluator as
+`evaluate`, which stays at 11 µs. Next: table lookups and cancellation in the
+order below, with the references that need points the
 chart does not yet carry added as rules need them.
 
 `rules` engine with the v2 algebra landed in order (reference subjects,

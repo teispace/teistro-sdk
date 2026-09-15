@@ -912,6 +912,14 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none; the corpus's yogas reproduce as before.
 
+- `teistro-rules` traces: `Evaluator::explain` returns the rule's answer with
+  each condition checked, whether it held, the bodies it added and each
+  reference resolved, as a tree that serialises to JSON and prints as prose.
+  One evaluator runs both calls, so `evaluate` allocates no trace, costs the
+  same, and cannot disagree with an explanation.
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
