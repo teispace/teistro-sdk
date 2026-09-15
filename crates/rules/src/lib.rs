@@ -2,7 +2,9 @@
 //!
 //! A rule is data: conditions in a small language over a chart — where a body
 //! stands, its dignity, its company, the lords of houses, the chara karakas —
-//! and cancellations. The kernel reads a rule strictly ([`language`]),
+//! and cancellations. A condition can be about a body or a sign reached from
+//! one ([`reference`]): the lord of the seventh from the upapada, the fourth
+//! from the Karakamsha. The kernel reads a rule strictly ([`language`]),
 //! evaluates it over a [`RuleChart`] under [`Readings`], one choice at each
 //! place the language leaves a meaning open, and answers a [`RuleResult`]:
 //! whether it is present, the bodies it consulted, their houses and the
@@ -31,10 +33,12 @@
 pub mod chart;
 pub mod eval;
 pub mod language;
+pub mod reference;
 
 pub use chart::{
     Benefics, Conjunction, DignityMatch, Gathering, Houses, NodeMotion, NodeSides, Placement,
-    Readings, RuleChart,
+    Readings, RuleChart, Upapada,
 };
 pub use eval::{Evaluator, Participants, RuleResult};
-pub use language::{Body, Condition, House, Karaka, KarakaScheme, Rule, Source, Subject};
+pub use language::{Body, Condition, House, Karaka, KarakaScheme, Rule, Source};
+pub use reference::{BodyRef, SignRef, Subject};

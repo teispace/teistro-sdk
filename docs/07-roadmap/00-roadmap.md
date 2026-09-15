@@ -553,8 +553,12 @@ types the language (19 predicates of the corpus's and the three unrecorded
 aspect and combustion ones, three combinators, over planet and lagna
 bodies), evaluates to a `RuleResult` with participants, houses and held
 cancellations, reproduces every recorded yoga, and the pass now measures it;
-597 rules over a chart take about 10 µs against the 2 ms budget. Next: `Ref`,
-the trace, table lookups and cancellation in the order below.
+597 rules over a chart take about 10 µs against the 2 ms budget. **The first
+references are built** as two types, `BodyRef` and `SignRef`: lords, karakas,
+arudha padas, the upapada, navamshas and signs counted from them, each
+exercised by a BPHS rule (12 µs now). Next: the trace, table lookups and
+cancellation in the order below, with the references that need points the
+chart does not yet carry added as rules need them.
 
 `rules` engine with the v2 algebra landed in order (reference subjects,
 `RuleResult` with traces, table lookups, cancellation and severity) before

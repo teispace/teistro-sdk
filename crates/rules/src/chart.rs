@@ -24,6 +24,9 @@ pub struct Placement {
     pub karaka7: Option<CharaKaraka>,
     /// Its chara karaka among eight, when it holds one.
     pub karaka8: Option<CharaKaraka>,
+    /// Its navamsha sign, under whichever scheme the chart's vargas were
+    /// computed.
+    pub navamsha: Rashi,
 }
 
 /// A chart as the rules read it: the nine grahas and the lagna, in
@@ -123,6 +126,19 @@ pub enum Conjunction {
     Orb(f64),
 }
 
+/// Which house's pada is the upapada (BPHS ch. 30 vv. 1 to 6).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub enum Upapada {
+    /// The twelfth's, the house "following" the lagna as the translation
+    /// reads it: the text's reading, and the default, since the recording
+    /// engine has no upapada.
+    #[default]
+    Twelfth,
+    /// The twelfth's for an odd lagna and the second's for an even one, as the
+    /// translation's note gives the Jaimini commentaries.
+    ByLagnaParity,
+}
+
 /// A choice at every place the condition language leaves a meaning open
 /// (`03-design/yogas-measured.md`); the default is the recording engine's.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -143,6 +159,8 @@ pub struct Readings {
     pub conjunction: Conjunction,
     /// What the nodes aspect beyond the seventh.
     pub node_aspects: NodeAspects,
+    /// Which house's pada is the upapada.
+    pub upapada: Upapada,
 }
 
 impl Default for Readings {
@@ -152,7 +170,8 @@ impl Default for Readings {
 }
 
 impl Readings {
-    /// The recording engine's reading at every place, the default.
+    /// The recording engine's reading at every place it has one, and the
+    /// text's where it has none: the default.
     pub const RECORDING_ENGINE: Readings = Readings {
         benefics: Benefics::ByCompany,
         dignity: DignityMatch::DeepMeetsPlain,
@@ -162,6 +181,7 @@ impl Readings {
         gathering: Gathering::EveryHeld,
         conjunction: Conjunction::SameSign,
         node_aspects: NodeAspects::None,
+        upapada: Upapada::Twelfth,
     };
 }
 

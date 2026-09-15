@@ -15,8 +15,8 @@
 
 mod common;
 
-use common::{chart, files, rules, strings};
-use teistro_rules::{Evaluator, Readings, Rule};
+use common::{chart, files, recorded_chart, rules, strings};
+use teistro_rules::{Body, Evaluator, Readings, Rule};
 
 #[test]
 fn the_kernel_reproduces_every_recorded_yoga() {
@@ -31,6 +31,19 @@ fn the_kernel_reproduces_every_recorded_yoga() {
     let (mut charts, mut decisions, mut presences) = (0, 0, 0);
     for (path, file) in files() {
         let chart = chart(&file["inputs"]);
+        // The navamsha the reader computes is the chart's recorded D9, body for
+        // body. Not the recorded `is_vargottama`: the engine never sets it for
+        // the lagna, though two lagnas here stand in their own navamsha.
+        let recorded = recorded_chart(&path);
+        for body in Body::ALL {
+            assert_eq!(
+                recorded["vargas"]["D9"]["sign_index"][body.key()].as_u64(),
+                Some(chart.placement(body).navamsha as u64),
+                "{} {}: the navamsha",
+                path.display(),
+                body.key()
+            );
+        }
         let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
         let present = file["present"].as_object().unwrap();
         charts += 1;

@@ -1748,6 +1748,8 @@ dependencies = [
  "serde_json",
  "teistro-aspect",
  "teistro-core",
+ "teistro-points",
+ "teistro-vargas",
 ]
 
 [[package]]
@@ -2209,6 +2211,7 @@ dependencies = [
  "teistro-serial",
  "teistro-siddhanta",
  "teistro-time",
+ "teistro-vargas",
 ]
 
 [[package]]

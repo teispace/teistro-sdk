@@ -30,6 +30,7 @@ teistro-scenario = { path = "../crates/scenario" }
 teistro-serial = { path = "../crates/serial", features = ["schema"] }
 teistro-siddhanta = { path = "../crates/siddhanta" }
 teistro-time = { path = "../crates/time" }
+teistro-vargas = { path = "../crates/vargas" }
 
 [lints]
 workspace = true

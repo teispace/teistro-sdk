@@ -111,6 +111,38 @@ Every predicate that took a planet takes a `Ref`. This multiplies the
 expressible rule space by the size of the special-point catalogue at the
 cost of one type substitution now.
 
+**Built, the first references (2026-09-15).** Reading the texts' rules
+before building corrected the sketch above in one place: a reference is not
+one type but two, because the texts ask two kinds of question. BPHS names the
+lord of a house (ch. 34 vv. 11 to 13), the dispositor of a karaka and the
+karaka itself (ch. 40 vv. 1 and 3), the arudha lagna, the dara pada and the
+houses counted from them (ch. 29 vv. 8 to 37), the upapada and "the Lord of the
+7th, counted from Upa Pad" (ch. 30 vv. 1 to 6, 42 and 43), and the Karakamsha
+(ch. 33 v. 1, ch. 40 v. 14). Some of these are bodies, with a longitude, a
+dignity and a motion; the rest are only signs, which have a house and
+occupants and nothing else. So `crates/rules` has a `BodyRef` (a graha or the
+lagna, `lordOf` a sign, the holder of a `karaka`) and a `SignRef` (any body's
+sign, a house number, an `arudha`, `UPAPADA`, a body's `navamsha`, or a sign
+counted `from` another), every body being a sign too. A predicate that needs a
+body takes a `BodyRef`: a dignity, combustion, retrogression, a conjunction by
+degrees, who aspects. One that needs only a place takes a `SignRef`. A rule
+asking for the dignity of a pada is refused when it is read, with the reason,
+rather than answering false. The recording engine's rules read unchanged,
+since a body's key is the first form of both, and they still reproduce the
+corpus.
+
+The upapada's house is a reading (`Upapada`, crux C80: the translation's
+twelfth, or the commentaries' twelfth or second by the lagna's parity), and a
+co-ruled sign's lord is the catalogue's, as the corpus's 852 padas are (crux
+C81, the text's "consider the stronger" not built). A chart now carries each
+body's navamsha, which the corpus's reader computes and holds to the recorded
+D9 on all 930 bodies. Writing that check found that the recording engine's
+`is_vargottama` is never true for the lagna, though two recorded lagnas stand
+in their own navamsha. Still to come as references: the graha padas, the
+stronger of two lords, `Badhaka`, `Yogi` and `AvaYogi`, and the special
+lagnas, upagrahas, sphutas and sahams, which need the chart to carry points
+the façade already computes.
+
 ### Table lookups over cited tables
 
 ```rust

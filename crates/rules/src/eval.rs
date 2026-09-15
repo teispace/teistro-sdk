@@ -4,11 +4,14 @@ use teistro_aspect::{conjunction, drishti};
 use teistro_core::catalogue::{Dignity, Graha, Rashi};
 use teistro_core::settings::NodeAspects;
 
+use teistro_points::arudha;
+
 use crate::chart::{
     Benefics, Conjunction, DignityMatch, Gathering, Houses, NATURAL_BENEFICS, NATURAL_MALEFICS,
-    NodeMotion, NodeSides, Placement, Readings, RuleChart,
+    NodeMotion, NodeSides, Placement, Readings, RuleChart, Upapada,
 };
-use crate::language::{Body, Condition, House, KarakaScheme, Rule, Subject};
+use crate::language::{Body, Condition, House, KarakaScheme, Rule};
+use crate::reference::{BodyRef, SignRef, Subject};
 
 /// The bodies a rule consulted, in the order they were first consulted, each
 /// once. A fixed array: evaluating a rule allocates nothing for it.
@@ -27,6 +30,18 @@ impl Participants {
             *slot = Some(body);
             self.len += 1;
         }
+    }
+
+    /// Adds the body a spot was reached through, if any.
+    fn push_through(&mut self, spot: Spot) {
+        if let Some(body) = spot.through {
+            self.push(body);
+        }
+    }
+
+    /// The body at a place in the list.
+    fn nth(&self, index: usize) -> Option<Body> {
+        self.bodies.get(index).copied().flatten()
     }
 
     fn extend(&mut self, other: Participants) {
@@ -50,6 +65,25 @@ impl Participants {
     #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.len == 0
+    }
+}
+
+/// Where a reference resolved: a sign, the body it was reached through, and
+/// whether it is that body's own place, whose house the readings decide.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct Spot {
+    sign: Rashi,
+    through: Option<Body>,
+    standing: bool,
+}
+
+impl Spot {
+    const fn sign(sign: Rashi, through: Option<Body>) -> Spot {
+        Spot {
+            sign,
+            through,
+            standing: false,
+        }
     }
 }
 
@@ -147,8 +181,73 @@ impl<'a> Evaluator<'a> {
     }
 
     fn lord_of(&self, house: House) -> Body {
-        let sign = step(self.chart.lagna(), house.get() - 1);
-        graha_body(sign.attributes().lord)
+        graha_body(step(self.chart.lagna(), house.get() - 1).attributes().lord)
+    }
+
+    /// The body a reference resolves to, if the chart holds one: a karaka no
+    /// graha holds resolves to none.
+    fn body(&self, reference: &BodyRef) -> Option<Body> {
+        match reference {
+            BodyRef::Body(body) => Some(*body),
+            BodyRef::LordOf(sign) => self
+                .spot(sign)
+                .map(|spot| graha_body(spot.sign.attributes().lord)),
+            BodyRef::Karaka { karaka, scheme } => Body::ALL.into_iter().find(|body| {
+                let placement = self.at(*body);
+                let held = match scheme {
+                    KarakaScheme::Seven => placement.karaka7,
+                    KarakaScheme::Eight => placement.karaka8,
+                };
+                held == Some(karaka.0)
+            }),
+        }
+    }
+
+    /// Where a sign reference resolves, if it does.
+    fn spot(&self, reference: &SignRef) -> Option<Spot> {
+        let lagna = self.chart.lagna();
+        Some(match reference {
+            SignRef::Of(body) => {
+                let body = self.body(body)?;
+                Spot {
+                    sign: self.at(body).sign,
+                    through: Some(body),
+                    standing: true,
+                }
+            }
+            SignRef::House(house) => Spot::sign(step(lagna, house.get() - 1), None),
+            SignRef::Arudha(sign) => Spot::sign(self.pada(self.spot(sign)?.sign), None),
+            SignRef::Upapada => {
+                let odd = (lagna as u8) % 2 == 0;
+                let house = match self.readings.upapada {
+                    Upapada::ByLagnaParity if !odd => 1,
+                    Upapada::Twelfth | Upapada::ByLagnaParity => 11,
+                };
+                Spot::sign(self.pada(step(lagna, house)), None)
+            }
+            SignRef::Navamsha(body) => {
+                let body = self.body(body)?;
+                Spot::sign(self.at(body).navamsha, Some(body))
+            }
+            SignRef::Counted { from, house } => {
+                let from = self.spot(from)?;
+                Spot::sign(step(from.sign, house.get() - 1), from.through)
+            }
+        })
+    }
+
+    /// The pada of the house standing in `sign`.
+    fn pada(&self, sign: Rashi) -> Rashi {
+        arudha::pada(sign, |graha| self.at(graha_body(graha)).sign)
+    }
+
+    /// The house a spot is in: a body's own under the readings, a sign's by
+    /// whole signs.
+    fn house_at(&self, spot: Spot) -> House {
+        match (spot.standing, spot.through) {
+            (true, Some(body)) => self.house_of(body),
+            _ => House::between(self.chart.lagna(), spot.sign),
+        }
     }
 
     fn dignity_meets(&self, dignity: Dignity, wanted: &[Dignity]) -> bool {
@@ -161,33 +260,70 @@ impl<'a> Evaluator<'a> {
                 })
     }
 
-    fn nature(&self, subject: Subject) -> Option<&[bool; 10]> {
-        match subject {
-            Subject::AnyBenefic => Some(&self.benefic),
-            Subject::AnyMalefic => Some(&self.malefic),
-            Subject::Body(_) => None,
-        }
-    }
-
-    /// Whether a subject meets a test of its placement, adding the body that
-    /// met it.
+    /// Whether a subject meets a test of where it is, adding the body it
+    /// reached.
     fn subject_meets(
         &self,
-        subject: Subject,
+        subject: &Subject,
         into: &mut Participants,
-        meets: impl Fn(Body) -> bool,
+        meets: impl Fn(Spot) -> bool,
     ) -> bool {
-        let found = match (subject, self.nature(subject)) {
-            (Subject::Body(body), _) => meets(body).then_some(body),
-            (_, Some(nature)) => Body::ALL
-                .into_iter()
-                .find(|body| nature.get(body.index()).copied().unwrap_or(false) && meets(*body)),
-            _ => None,
+        let nature = match subject {
+            Subject::Ref(reference) => {
+                return self
+                    .spot(reference)
+                    .is_some_and(|spot| self.reached(spot, into, meets(spot)));
+            }
+            Subject::AnyBenefic => &self.benefic,
+            Subject::AnyMalefic => &self.malefic,
         };
+        let found = Body::ALL.into_iter().find(|body| {
+            nature.get(body.index()).copied().unwrap_or(false) && meets(self.standing(*body))
+        });
         if let Some(body) = found {
             into.push(body);
         }
         found.is_some()
+    }
+
+    /// A body where it stands.
+    fn standing(&self, body: Body) -> Spot {
+        Spot {
+            sign: self.at(body).sign,
+            through: Some(body),
+            standing: true,
+        }
+    }
+
+    /// Adds the body a spot was reached through when `held`.
+    fn reached(&self, spot: Spot, into: &mut Participants, held: bool) -> bool {
+        match spot.through {
+            Some(body) => self.single(body, into, held),
+            None => held,
+        }
+    }
+
+    /// A predicate about one body reference: false when it resolves to none,
+    /// and the body added when the predicate held.
+    fn body_meets(
+        &self,
+        reference: &BodyRef,
+        into: &mut Participants,
+        meets: impl Fn(Body) -> bool,
+    ) -> bool {
+        self.body(reference)
+            .is_some_and(|body| self.single(body, into, meets(body)))
+    }
+
+    /// A predicate about one sign reference.
+    fn sign_meets(
+        &self,
+        reference: &SignRef,
+        into: &mut Participants,
+        meets: impl Fn(Spot) -> bool,
+    ) -> bool {
+        self.spot(reference)
+            .is_some_and(|spot| self.reached(spot, into, meets(spot)))
     }
 
     /// A sub-condition of `and`, `or` or `not`: under the engine's gathering
@@ -216,41 +352,39 @@ impl<'a> Evaluator<'a> {
                 !held
             }
             Condition::PlanetInHouse { planet, houses } => {
-                self.subject_meets(*planet, into, |body| houses.contains(&self.house_of(body)))
+                self.subject_meets(planet, into, |spot| houses.contains(&self.house_at(spot)))
             }
             Condition::PlanetInHouseFrom {
                 planet,
                 reference,
                 houses,
-            } => {
-                let from = self.at(*reference).sign;
-                self.subject_meets(*planet, into, |body| {
-                    houses.contains(&House::between(from, self.at(body).sign))
+            } => self.spot(reference).is_some_and(|from| {
+                self.subject_meets(planet, into, |spot| {
+                    houses.contains(&House::between(from.sign, spot.sign))
                 })
-            }
+            }),
             Condition::PlanetInSign { planet, signs } => {
-                self.single(*planet, into, signs.contains(&self.at(*planet).sign))
+                self.sign_meets(planet, into, |spot| signs.contains(&spot.sign))
             }
             Condition::PlanetDignity { planet, dignities } => {
-                let held = self.dignity_meets(self.at(*planet).dignity, dignities);
-                self.single(*planet, into, held)
+                self.body_meets(planet, into, |body| {
+                    self.dignity_meets(self.at(body).dignity, dignities)
+                })
             }
-            Condition::PlanetInKendra { planet } => self.single(
-                *planet,
-                into,
-                House::KENDRAS.contains(&self.house_of(*planet)),
-            ),
-            Condition::PlanetInTrikona { planet } => self.single(
-                *planet,
-                into,
-                House::TRIKONAS.contains(&self.house_of(*planet)),
-            ),
+            Condition::PlanetInKendra { planet } => self.sign_meets(planet, into, |spot| {
+                House::KENDRAS.contains(&self.house_at(spot))
+            }),
+            Condition::PlanetInTrikona { planet } => self.sign_meets(planet, into, |spot| {
+                House::TRIKONAS.contains(&self.house_at(spot))
+            }),
             Condition::PlanetInKendraFrom { planet, reference } => {
-                let house = House::between(self.at(*reference).sign, self.at(*planet).sign);
-                let held = House::KENDRAS.contains(&house);
+                let (Some(spot), Some(from)) = (self.spot(planet), self.spot(reference)) else {
+                    return false;
+                };
+                let held = House::KENDRAS.contains(&House::between(from.sign, spot.sign));
                 if held {
-                    into.push(*planet);
-                    into.push(*reference);
+                    into.push_through(spot);
+                    into.push_through(from);
                 }
                 held
             }
@@ -266,26 +400,32 @@ impl<'a> Evaluator<'a> {
                 self.single(lord, into, self.house_of(lord) == *house_occupied)
             }
             Condition::PlanetConjunct { planets, max_orb } => {
+                let mut bodies = Participants::default();
+                for reference in planets {
+                    match self.body(reference) {
+                        Some(body) => bodies.push(body),
+                        None => return false,
+                    }
+                }
                 let orb = max_orb
                     .filter(|orb| *orb > 0.0)
                     .or(match self.readings.conjunction {
                         Conjunction::Orb(degrees) => Some(degrees),
                         Conjunction::SameSign => None,
                     });
+                let at = |i: usize| bodies.nth(i).map(|body| self.at(body));
                 let held = match orb {
-                    Some(orb) => planets.iter().enumerate().all(|(i, a)| {
-                        planets.iter().skip(i + 1).all(|b| {
-                            conjunction::within(self.at(*a).longitude, self.at(*b).longitude, orb)
+                    Some(orb) => (0..bodies.len()).all(|i| {
+                        (i + 1..bodies.len()).all(|j| {
+                            matches!((at(i), at(j)), (Some(a), Some(b)) if conjunction::within(a.longitude, b.longitude, orb))
                         })
                     }),
-                    None => planets.windows(2).all(|pair| {
-                        matches!(pair, [a, b] if conjunction::together(self.at(*a).sign, self.at(*b).sign))
+                    None => (1..bodies.len()).all(|i| {
+                        matches!((at(i - 1), at(i)), (Some(a), Some(b)) if conjunction::together(a.sign, b.sign))
                     }),
                 };
                 if held {
-                    for body in planets {
-                        into.push(*body);
-                    }
+                    into.extend(bodies);
                 }
                 held
             }
@@ -293,15 +433,15 @@ impl<'a> Evaluator<'a> {
                 reference,
                 houses,
                 except,
-            } => {
-                let from = self.at(*reference).sign;
+            } => self.spot(reference).is_some_and(|from| {
+                let own = if from.standing { from.through } else { None };
                 !Body::ALL.iter().any(|body| {
-                    *body != *reference
+                    Some(*body) != own
                         && *body != Body::Lagna
                         && !except.contains(body)
-                        && houses.contains(&House::between(from, self.at(*body).sign))
+                        && houses.contains(&House::between(from.sign, self.at(*body).sign))
                 })
-            }
+            }),
             Condition::MutualExchange { house1, house2 } => {
                 let (one, other) = (self.lord_of(*house1), self.lord_of(*house2));
                 let held = self.house_of(one) == *house2 && self.house_of(other) == *house1;
@@ -348,16 +488,19 @@ impl<'a> Evaluator<'a> {
             }
             Condition::OccupiedSignCount { planets, count } => {
                 let mut signs = [false; 12];
-                for body in planets {
-                    if let Some(slot) = signs.get_mut(self.at(*body).sign as usize) {
+                let mut reached = Participants::default();
+                for reference in planets {
+                    let Some(spot) = self.spot(reference) else {
+                        return false;
+                    };
+                    if let Some(slot) = signs.get_mut(spot.sign as usize) {
                         *slot = true;
                     }
+                    reached.push_through(spot);
                 }
                 let held = signs.iter().filter(|s| **s).count() == usize::from(*count);
                 if held {
-                    for body in planets {
-                        into.push(*body);
-                    }
+                    into.extend(reached);
                 }
                 held
             }
@@ -387,11 +530,13 @@ impl<'a> Evaluator<'a> {
                 held
             }
             Condition::NGrahasConjunctWith { anchor, min_count } => {
-                let sign = self.at(*anchor).sign;
+                let Some(anchor) = self.spot(anchor) else {
+                    return false;
+                };
                 let cluster = || {
                     Body::SEVEN
                         .into_iter()
-                        .filter(move |b| self.at(*b).sign == sign)
+                        .filter(move |b| self.at(*b).sign == anchor.sign)
                 };
                 let held = cluster().count() >= usize::from(*min_count);
                 if held {
@@ -406,52 +551,43 @@ impl<'a> Evaluator<'a> {
                 houses,
                 karaka_scheme,
             } => {
-                let holder = Body::ALL.into_iter().find(|body| {
-                    let placement = self.at(*body);
-                    let held = match karaka_scheme {
-                        KarakaScheme::Seven => placement.karaka7,
-                        KarakaScheme::Eight => placement.karaka8,
-                    };
-                    held == Some(karaka.0)
-                });
-                match holder {
-                    Some(body) => self.single(body, into, houses.contains(&self.house_of(body))),
-                    None => false,
-                }
+                let holder = BodyRef::Karaka {
+                    karaka: *karaka,
+                    scheme: *karaka_scheme,
+                };
+                self.body_meets(&holder, into, |body| houses.contains(&self.house_of(body)))
             }
             Condition::PlanetCombust { planet } => {
-                self.single(*planet, into, self.at(*planet).combust)
+                self.body_meets(planet, into, |body| self.at(body).combust)
             }
-            Condition::PlanetRetrograde { planet } => {
-                let held = if planet.is_node() {
+            Condition::PlanetRetrograde { planet } => self.body_meets(planet, into, |body| {
+                if body.is_node() {
                     self.readings.node_motion == NodeMotion::AlwaysRetrograde
                 } else {
-                    self.at(*planet).retrograde
-                };
-                self.single(*planet, into, held)
-            }
+                    self.at(body).retrograde
+                }
+            }),
             Condition::PlanetAspectsPlanet { from, target } => {
+                let (Some(body), Some(target)) = (self.body(from), self.spot(target)) else {
+                    return false;
+                };
                 let held = aspects(
-                    *from,
-                    self.at(*from).sign,
-                    self.at(*target).sign,
+                    body,
+                    self.at(body).sign,
+                    target.sign,
                     self.readings.node_aspects,
                 );
                 if held {
-                    into.push(*from);
-                    into.push(*target);
+                    into.push(body);
+                    into.push_through(target);
                 }
                 held
             }
             Condition::PlanetAspectsHouse { from, house_ruled } => {
                 let target = step(self.chart.lagna(), house_ruled.get() - 1);
-                let held = aspects(
-                    *from,
-                    self.at(*from).sign,
-                    target,
-                    self.readings.node_aspects,
-                );
-                self.single(*from, into, held)
+                self.body_meets(from, into, |body| {
+                    aspects(body, self.at(body).sign, target, self.readings.node_aspects)
+                })
             }
         }
     }
@@ -540,10 +676,12 @@ mod tests {
     use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi};
 
     use super::*;
+    use crate::chart::Upapada;
     use crate::chart::{
         Benefics, Conjunction, DignityMatch, Gathering, Houses, NodeMotion, NodeSides,
     };
     use crate::language::Karaka;
+    use crate::reference::SignRef;
 
     const SUN: Body = Body::Graha(Graha::Sun);
     const MOON: Body = Body::Graha(Graha::Moon);
@@ -569,6 +707,7 @@ mod tests {
                 combust: false,
                 karaka7: None,
                 karaka8: None,
+                navamsha: Rashi::Aries,
             }; 10],
         }
     }
@@ -624,7 +763,7 @@ mod tests {
         let mut c = chart();
         c.placements[JUPITER.index()].dignity = Dignity::DeepExalted;
         let exalted = Condition::PlanetDignity {
-            planet: JUPITER,
+            planet: JUPITER.into(),
             dignities: vec![Dignity::Exalted],
         };
         assert!(holds(&c, ENGINE, &exalted).0);
@@ -643,7 +782,7 @@ mod tests {
         // Mars recorded in the fourth house while it stands in the lagna's sign.
         c.placements[MARS.index()].house = house(4);
         let kendra = Condition::PlanetInHouse {
-            planet: Subject::Body(MARS),
+            planet: MARS.into(),
             houses: vec![house(4)],
         };
         assert!(holds(&c, ENGINE, &kendra).0);
@@ -659,7 +798,9 @@ mod tests {
             .0
         );
 
-        let retro = Condition::PlanetRetrograde { planet: RAHU };
+        let retro = Condition::PlanetRetrograde {
+            planet: RAHU.into(),
+        };
         c.placements[RAHU.index()].retrograde = true;
         assert!(!holds(&c, ENGINE, &retro).0);
         assert!(
@@ -680,7 +821,7 @@ mod tests {
         place(&mut c, MOON, Rashi::Taurus);
         c.placements[MOON.index()].longitude = 31.0;
         let together = Condition::PlanetConjunct {
-            planets: vec![SUN, MOON],
+            planets: vec![SUN.into(), MOON.into()],
             max_orb: None,
         };
         assert!(!holds(&c, ENGINE, &together).0);
@@ -731,14 +872,16 @@ mod tests {
             conditions: vec![
                 Condition::And {
                     conditions: vec![
-                        Condition::PlanetInKendra { planet: MARS },
+                        Condition::PlanetInKendra {
+                            planet: MARS.into(),
+                        },
                         Condition::PlanetDignity {
-                            planet: JUPITER,
+                            planet: JUPITER.into(),
                             dignities: vec![Dignity::Exalted],
                         },
                     ],
                 },
-                Condition::PlanetInKendra { planet: SUN },
+                Condition::PlanetInKendra { planet: SUN.into() },
             ],
         };
         assert_eq!(holds(&c, ENGINE, &rule), (true, vec![MARS, SUN]));
@@ -769,8 +912,8 @@ mod tests {
         assert_eq!(holds(&c, ENGINE, &ak), (true, vec![SATURN]));
         // Saturn in Capricorn aspects Pisces, its third, and not Taurus, its fifth.
         let aspect = |target| Condition::PlanetAspectsPlanet {
-            from: SATURN,
-            target,
+            from: SATURN.into(),
+            target: SignRef::from(target),
         };
         place(&mut c, SUN, Rashi::Pisces);
         assert!(holds(&c, ENGINE, &aspect(SUN)).0);
@@ -778,10 +921,129 @@ mod tests {
         assert!(!holds(&c, ENGINE, &aspect(SUN)).0);
         // The lagna aspects nothing.
         let lagna = Condition::PlanetAspectsHouse {
-            from: Body::Lagna,
+            from: Body::Lagna.into(),
             house_ruled: house(7),
         };
         assert!(!holds(&c, ENGINE, &lagna).0);
+    }
+
+    /// A condition as a rule writes it.
+    fn written(json: &str) -> Condition {
+        serde_json::from_str(json).unwrap()
+    }
+
+    #[test]
+    fn a_house_from_the_arudha_lagna_bphs_29_30() {
+        // Aries lagna, Mars in Capricorn: nine signs on and nine again is
+        // Libra, the seventh, so the pada moves to Cancer.
+        let mut c = chart();
+        place(&mut c, MARS, Rashi::Capricorn);
+        place(&mut c, MERCURY, Rashi::Leo);
+        let budh = written(
+            r#"{"type": "planet-in-house-from", "planet": "MERCURY", "reference": {"arudha": 1}, "houses": [2]}"#,
+        );
+        assert_eq!(holds(&c, ENGINE, &budh), (true, vec![MERCURY]));
+        place(&mut c, MERCURY, Rashi::Virgo);
+        assert!(!holds(&c, ENGINE, &budh).0);
+        // The pada itself is in the fourth house, a kendra, and no body stands
+        // there to take part.
+        let pada = written(r#"{"type": "planet-in-kendra", "planet": {"arudha": 1}}"#);
+        assert_eq!(holds(&c, ENGINE, &pada), (true, vec![]));
+        let pada =
+            written(r#"{"type": "planet-in-sign", "planet": {"arudha": 1}, "signs": ["CANCER"]}"#);
+        assert!(holds(&c, ENGINE, &pada).0);
+    }
+
+    #[test]
+    fn the_amatyakaraka_with_the_atmakaraka_s_dispositor_bphs_40_3() {
+        let mut c = chart();
+        place(&mut c, SATURN, Rashi::Aquarius);
+        place(&mut c, Body::Graha(Graha::Venus), Rashi::Aquarius);
+        c.placements[Body::Graha(Graha::Venus).index()].karaka7 = Some(CharaKaraka::Atmakaraka);
+        c.placements[MARS.index()].karaka7 = Some(CharaKaraka::Amatyakaraka);
+        place(&mut c, MARS, Rashi::Capricorn);
+        let minister = written(
+            r#"{"type": "planet-conjunct", "planets": [{"karaka": "AmK"}, {"lordOf": {"karaka": "AK"}}]}"#,
+        );
+        assert!(!holds(&c, ENGINE, &minister).0);
+        place(&mut c, MARS, Rashi::Aquarius);
+        assert_eq!(holds(&c, ENGINE, &minister), (true, vec![MARS, SATURN]));
+        // No graha holds the karaka: the reference resolves to nothing.
+        c.placements[MARS.index()].karaka7 = None;
+        assert!(!holds(&c, ENGINE, &minister).0);
+    }
+
+    #[test]
+    fn the_second_from_the_lord_of_the_seventh_from_the_upapada_bphs_30_42() {
+        // Aries lagna: the twelfth, Pisces, has Jupiter in Sagittarius; nine on
+        // and nine again is Virgo, the seventh from Pisces, so the upapada
+        // moves to Gemini. Its seventh is Sagittarius, whose lord Jupiter
+        // stands there; the second from him is Capricorn.
+        let mut c = chart();
+        place(&mut c, JUPITER, Rashi::Sagittarius);
+        place(&mut c, RAHU, Rashi::Capricorn);
+        let teeth = written(
+            r#"{"type": "planet-in-house-from", "planet": "RAHU",
+                "reference": {"lordOf": {"from": "UPAPADA", "house": 7}}, "houses": [2]}"#,
+        );
+        assert_eq!(holds(&c, ENGINE, &teeth), (true, vec![RAHU]));
+        place(&mut c, RAHU, Rashi::Aquarius);
+        assert!(!holds(&c, ENGINE, &teeth).0);
+    }
+
+    #[test]
+    fn the_fourth_from_the_karakamsha_bphs_40_14() {
+        let mut c = chart();
+        let venus = Body::Graha(Graha::Venus);
+        c.placements[SATURN.index()].karaka7 = Some(CharaKaraka::Atmakaraka);
+        c.placements[SATURN.index()].navamsha = Rashi::Pisces;
+        place(&mut c, venus, Rashi::Gemini);
+        place(&mut c, MOON, Rashi::Gemini);
+        let insignia = written(
+            r#"{"type": "and", "conditions": [
+                {"type": "planet-in-house-from", "planet": "VENUS", "reference": {"navamsha": {"karaka": "AK"}}, "houses": [4]},
+                {"type": "planet-in-house-from", "planet": "MOON", "reference": {"navamsha": {"karaka": "AK"}}, "houses": [4]}
+            ]}"#,
+        );
+        assert_eq!(holds(&c, ENGINE, &insignia), (true, vec![venus, MOON]));
+        assert_eq!(
+            written(
+                r#"{"type": "planet-in-sign", "planet": {"navamsha": {"karaka": "AK"}}, "signs": ["PISCES"]}"#
+            ),
+            Condition::PlanetInSign {
+                planet: SignRef::karakamsha(),
+                signs: vec![Rashi::Pisces],
+            }
+        );
+        c.placements[SATURN.index()].navamsha = Rashi::Aries;
+        assert!(!holds(&c, ENGINE, &insignia).0);
+    }
+
+    #[test]
+    fn the_upapada_is_the_twelfth_s_pada_or_by_the_lagna_s_parity() {
+        // A Taurus lagna, every graha in Aries. The twelfth, Aries, holds its
+        // own lord, so its pada moves to Capricorn; the second, Gemini, has
+        // Mercury ten signs on, and ten again is Aquarius, which stays.
+        let mut c = chart();
+        place(&mut c, Body::Lagna, Rashi::Taurus);
+        let upapada = |sign: &str| {
+            written(&format!(
+                r#"{{"type": "planet-in-sign", "planet": "UPAPADA", "signs": ["{sign}"]}}"#
+            ))
+        };
+        let parity = Readings {
+            upapada: Upapada::ByLagnaParity,
+            ..ENGINE
+        };
+        assert!(holds(&c, ENGINE, &upapada("CAPRICORN")).0);
+        assert!(!holds(&c, parity, &upapada("CAPRICORN")).0);
+        assert!(holds(&c, parity, &upapada("AQUARIUS")).0);
+        // An odd lagna reads the twelfth either way.
+        place(&mut c, Body::Lagna, Rashi::Gemini);
+        assert_eq!(
+            holds(&c, ENGINE, &upapada("TAURUS")),
+            holds(&c, parity, &upapada("TAURUS"))
+        );
     }
 
     #[test]

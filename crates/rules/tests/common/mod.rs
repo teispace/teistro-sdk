@@ -13,8 +13,11 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize as _;
 use serde_json::Value;
-use teistro_core::catalogue::{CharaKaraka, Dignity, Rashi};
+use teistro_core::angle::Nas;
+use teistro_core::catalogue::{CharaKaraka, Dignity, Rashi, Varga};
+use teistro_core::quantity::Degrees;
 use teistro_rules::{Body, House, Karaka, Placement, Rule, RuleChart};
+use teistro_vargas::{Scheme, sign};
 
 pub(crate) fn corpus() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/baseline/yogas")
@@ -48,9 +51,27 @@ pub(crate) fn files() -> Vec<(PathBuf, Value)> {
     out
 }
 
+/// The recorded chart a yoga file repeats: the fixture of the same name, a
+/// chart or a variant.
+pub(crate) fn recorded_chart(yogas: &Path) -> Value {
+    let dir = yogas.parent().and_then(Path::file_name).unwrap();
+    read(
+        &corpus()
+            .join("..")
+            .join(dir)
+            .join(yogas.file_name().unwrap()),
+    )
+}
+
 /// The chara karaka a recorded abbreviation names, if the body holds one.
 fn karaka(value: &Value) -> Option<CharaKaraka> {
     (!value.is_null()).then(|| Karaka::deserialize(value).unwrap().0)
+}
+
+/// The navamsha sign of a sidereal longitude.
+pub(crate) fn navamsha(longitude: f64) -> Rashi {
+    let longitude = Nas::from_degrees(Degrees::try_new(longitude.rem_euclid(360.0)).unwrap());
+    sign(&Scheme::of(Varga::D9), longitude)
 }
 
 /// The chart a file repeats.
@@ -67,6 +88,7 @@ pub(crate) fn chart(inputs: &Value) -> RuleChart {
             combust: b["combust"].as_str() != Some("none"),
             karaka7: karaka(&inputs["chara_karaka_7"][body.key()]),
             karaka8: karaka(&inputs["chara_karaka_8"][body.key()]),
+            navamsha: navamsha(b["sidereal_longitude_deg"].as_f64().unwrap()),
         }
     });
     RuleChart { placements }

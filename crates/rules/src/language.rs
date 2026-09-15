@@ -10,6 +10,8 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi};
 
+use crate::reference::{BodyRef, SignRef, Subject};
+
 /// What a rule can name: one of the nine grahas, or the lagna.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Body {
@@ -79,52 +81,28 @@ impl Serialize for Body {
 
 impl<'de> Deserialize<'de> for Body {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Body, D::Error> {
-        let key = String::deserialize(deserializer)?;
+        Body::from_key(&String::deserialize(deserializer)?).map_err(serde::de::Error::custom)
+    }
+}
+
+impl Body {
+    /// The body a key names.
+    ///
+    /// # Errors
+    ///
+    /// A key that is not one of the nine grahas or `LAGNA`, named.
+    pub fn from_key(key: &str) -> Result<Body, String> {
         if key == "LAGNA" {
             return Ok(Body::Lagna);
         }
-        Graha::from_key(&key)
+        Graha::from_key(key)
             .filter(|graha| (*graha as usize) < 9)
             .map(Body::Graha)
             .ok_or_else(|| {
-                serde::de::Error::custom(format!(
+                format!(
                     "`{key}` is not a body a rule names: the nine grahas, SUN to KETU, or LAGNA"
-                ))
+                )
             })
-    }
-}
-
-/// Who a placement condition asks about: a body, or whichever benefic or
-/// malefic first meets it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub enum Subject {
-    /// That body.
-    Body(Body),
-    /// The first benefic, in [`Body::ALL`]'s order, that meets the condition.
-    AnyBenefic,
-    /// The first malefic that meets it.
-    AnyMalefic,
-}
-
-impl Serialize for Subject {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        match self {
-            Subject::Body(body) => body.serialize(serializer),
-            Subject::AnyBenefic => serializer.serialize_str("any-benefic"),
-            Subject::AnyMalefic => serializer.serialize_str("any-malefic"),
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for Subject {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Subject, D::Error> {
-        let key = String::deserialize(deserializer)?;
-        match key.as_str() {
-            "any-benefic" => Ok(Subject::AnyBenefic),
-            "any-malefic" => Ok(Subject::AnyMalefic),
-            _ => Body::deserialize(serde::de::value::StrDeserializer::<D::Error>::new(&key))
-                .map(Subject::Body),
-        }
     }
 }
 
@@ -208,15 +186,26 @@ impl Serialize for Karaka {
 
 impl<'de> Deserialize<'de> for Karaka {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Karaka, D::Error> {
-        let key = String::deserialize(deserializer)?;
+        Karaka::from_abbreviation(&String::deserialize(deserializer)?)
+            .map_err(serde::de::Error::custom)
+    }
+}
+
+impl Karaka {
+    /// The karaka an abbreviation names.
+    ///
+    /// # Errors
+    ///
+    /// An abbreviation that is not one of the eight, named.
+    pub fn from_abbreviation(abbreviation: &str) -> Result<Karaka, String> {
         KARAKAS
             .iter()
-            .find(|(a, _)| *a == key)
+            .find(|(a, _)| *a == abbreviation)
             .map(|(_, k)| Karaka(*k))
             .ok_or_else(|| {
-                serde::de::Error::custom(format!(
-                    "`{key}` is not a chara karaka: AK, AmK, BK, MK, PK, GK, DK or PiK"
-                ))
+                format!(
+                    "`{abbreviation}` is not a chara karaka: AK, AmK, BK, MK, PK, GK, DK or PiK"
+                )
             })
     }
 }
@@ -291,33 +280,33 @@ pub enum Condition {
     /// The body stands in one of the signs.
     PlanetInSign {
         /// Who.
-        planet: Body,
+        planet: SignRef,
         /// Where.
         signs: Vec<Rashi>,
     },
     /// The body has one of the dignities.
     PlanetDignity {
         /// Who.
-        planet: Body,
+        planet: BodyRef,
         /// Which.
         dignities: Vec<Dignity>,
     },
     /// The body stands in a kendra.
     PlanetInKendra {
         /// Who.
-        planet: Body,
+        planet: SignRef,
     },
     /// The body stands in a trikona.
     PlanetInTrikona {
         /// Who.
-        planet: Body,
+        planet: SignRef,
     },
     /// The body stands in a kendra, whole signs, from the reference.
     PlanetInKendraFrom {
         /// Who.
-        planet: Body,
+        planet: SignRef,
         /// From whom.
-        reference: Body,
+        reference: SignRef,
     },
     /// The lord of a house stands in a kendra.
     LordOfHouseInKendra {
@@ -335,7 +324,7 @@ pub enum Condition {
     /// gives one.
     PlanetConjunct {
         /// Who.
-        planets: Vec<Body>,
+        planets: Vec<BodyRef>,
         /// The orb, degrees, when the rule measures one.
         #[serde(default, skip_serializing_if = "Option::is_none")]
         max_orb: Option<f64>,
@@ -346,14 +335,14 @@ pub enum Condition {
         /// Who.
         planet: Subject,
         /// From whom.
-        reference: Body,
+        reference: SignRef,
         /// Where.
         houses: Vec<House>,
     },
     /// No graha but the excepted stands in the houses from the reference.
     NoPlanetInHousesFrom {
         /// From whom.
-        reference: Body,
+        reference: SignRef,
         /// Where.
         houses: Vec<House>,
         /// Who is not counted.
@@ -379,7 +368,7 @@ pub enum Condition {
     /// The bodies occupy exactly so many signs.
     OccupiedSignCount {
         /// Who.
-        planets: Vec<Body>,
+        planets: Vec<SignRef>,
         /// How many signs.
         count: u8,
     },
@@ -395,7 +384,7 @@ pub enum Condition {
     /// At least so many classical grahas share the anchor's sign.
     NGrahasConjunctWith {
         /// Whose sign.
-        anchor: Body,
+        anchor: SignRef,
         /// How many, the anchor among them.
         min_count: u8,
     },
@@ -412,24 +401,24 @@ pub enum Condition {
     /// The body is combust.
     PlanetCombust {
         /// Who.
-        planet: Body,
+        planet: BodyRef,
     },
     /// The body is retrograde.
     PlanetRetrograde {
         /// Who.
-        planet: Body,
+        planet: BodyRef,
     },
     /// One body aspects another by graha drishti, whole signs.
     PlanetAspectsPlanet {
         /// Who aspects.
-        from: Body,
+        from: BodyRef,
         /// Who is aspected.
-        target: Body,
+        target: SignRef,
     },
     /// A body aspects a house by graha drishti, whole signs.
     PlanetAspectsHouse {
         /// Who aspects.
-        from: Body,
+        from: BodyRef,
         /// Which house.
         house_ruled: House,
     },
@@ -590,7 +579,7 @@ mod tests {
             c,
             Condition::PlanetInHouseFrom {
                 planet: Subject::AnyBenefic,
-                reference: Body::Lagna,
+                reference: Body::Lagna.into(),
                 houses: vec![House::try_new(1).unwrap(), House::try_new(7).unwrap()],
             }
         );

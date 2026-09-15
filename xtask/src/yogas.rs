@@ -23,7 +23,9 @@ use std::path::Path;
 
 use serde::Deserialize as _;
 use serde_json::Value;
-use teistro_core::catalogue::{CharaKaraka, Dignity, Rashi};
+use teistro_core::angle::Nas;
+use teistro_core::catalogue::{CharaKaraka, Dignity, Rashi, Varga};
+use teistro_core::quantity::Degrees;
 use teistro_rules::{
     Benefics, Body, Condition, Conjunction, DignityMatch, Evaluator, Gathering, House, Houses,
     Karaka, NodeMotion, NodeSides, Placement, Readings, Rule, RuleChart,
@@ -140,8 +142,11 @@ fn chart(inputs: &Value) -> Result<RuleChart, String> {
             .and_then(|n| u8::try_from(n).ok())
             .and_then(|n| House::try_new(n).ok())
             .ok_or_else(|| format!("{}: house", body.key()))?;
+        let longitude = b["sidereal_longitude_deg"]
+            .as_f64()
+            .ok_or_else(|| format!("{}: longitude", body.key()))?;
         placements.push(Placement {
-            longitude: b["sidereal_longitude_deg"].as_f64().unwrap_or_default(),
+            longitude,
             sign,
             house,
             dignity: b["dignity"]
@@ -152,6 +157,12 @@ fn chart(inputs: &Value) -> Result<RuleChart, String> {
             combust: b["combust"].as_str() != Some("none"),
             karaka7: karaka(&inputs["chara_karaka_7"][body.key()]),
             karaka8: karaka(&inputs["chara_karaka_8"][body.key()]),
+            navamsha: teistro_vargas::sign(
+                &teistro_vargas::Scheme::of(Varga::D9),
+                Nas::from_degrees(
+                    Degrees::try_new(longitude.rem_euclid(360.0)).map_err(|e| e.to_string())?,
+                ),
+            ),
         });
     }
     let placements = placements

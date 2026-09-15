@@ -901,6 +901,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none; nothing in a chart document or the boundary reads the
   kernel yet.
 
+- `teistro-rules` references: a condition can be about the lord of a sign,
+  the holder of a chara karaka, an arudha pada, the upapada, a body's
+  navamsha, or a sign counted from any of these, as BPHS chs. 29, 30, 33, 34
+  and 40 write their rules. A `BodyRef` is a body and a `SignRef` a sign, so a
+  rule asking for the dignity of a pada is refused when it is read. The
+  engine's rules read unchanged. `Placement` gains `navamsha` and `Readings`
+  gains `upapada` (crux C80). `teistro_points::arudha::pada` counts the pada
+  of any sign.
+
+  **Numbers:** none; the corpus's yogas reproduce as before.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

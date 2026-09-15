@@ -43,16 +43,31 @@ fn steps(from: Rashi, to: Rashi) -> usize {
 /// whose grahas stand where `sign_of` says.
 #[must_use]
 pub fn arudha(lagna: Rashi, house: u8, sign_of: impl Fn(Graha) -> Rashi) -> Arudha {
-    let sign = on(lagna, usize::from(house.clamp(1, 12) - 1));
-    let at = sign_of(sign.attributes().lord);
-    let counted = on(at, steps(sign, at));
-    let moved = matches!(steps(sign, counted), 0 | 6);
+    let house = house.clamp(1, 12);
+    let (counted, moved, sign) = count(on(lagna, usize::from(house - 1)), sign_of);
     Arudha {
-        house: house.clamp(1, 12),
-        sign: if moved { on(counted, 9) } else { counted },
+        house,
+        sign,
         counted,
         moved,
     }
+}
+
+/// The pada of whichever house stands in `sign`, counted from that sign
+/// whatever the lagna: a pada counted from another pada, as the upapada's
+/// seventh is, as well as a house's.
+#[must_use]
+pub fn pada(sign: Rashi, sign_of: impl Fn(Graha) -> Rashi) -> Rashi {
+    count(sign, sign_of).2
+}
+
+/// The count from `sign` to its lord and as far again, whether it moved, and
+/// where the pada stands.
+fn count(sign: Rashi, sign_of: impl Fn(Graha) -> Rashi) -> (Rashi, bool, Rashi) {
+    let at = sign_of(sign.attributes().lord);
+    let counted = on(at, steps(sign, at));
+    let moved = matches!(steps(sign, counted), 0 | 6);
+    (counted, moved, if moved { on(counted, 9) } else { counted })
 }
 
 /// All twelve padas, the first house's first: the arudha lagna.
@@ -90,6 +105,9 @@ mod tests {
             (second.counted, second.moved, second.sign),
             (Rashi::Taurus, true, Rashi::Aquarius)
         );
+        // A pada counted from its sign is the house's, whatever the lagna.
+        assert_eq!(pada(Rashi::Taurus, sign_of), second.sign);
+        assert_eq!(pada(Rashi::Aries, sign_of), first.sign);
         let all = arudha_padas(Rashi::Aries, sign_of);
         assert_eq!(all[0], first);
         assert_eq!(
