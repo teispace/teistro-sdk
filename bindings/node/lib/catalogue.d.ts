@@ -5753,6 +5753,54 @@ export declare const Balance: {
 export declare const BalanceById: ReadonlyMap<number, Balance>;
 
 /**
+ * Where an Ashtakavarga's reductions and pindas were made: the settings'
+ * own `Shodhana`, which is a knob and not a catalogue member.
+ */
+export type Shodhana = 'each-graha' | 'sarva';
+
+/** Every Shodhana by name; the values are the strings the union accepts. */
+export declare const Shodhana: {
+  /**
+   * In each graha's own Ashtakavarga (BPHS chs. 67 to 69).
+   */
+  readonly EachGraha: 'each-graha';
+  /**
+   * On the sum of the seven, as the conformance corpus's engine makes them.
+   */
+  readonly Sarva: 'sarva';
+};
+
+/**
+ * Every Shodhana by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ShodhanaById: ReadonlyMap<number, Shodhana>;
+
+/**
+ * How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
+ * an occupied one: the settings' own `Ekadhipatya`.
+ */
+export type Ekadhipatya = 'bphs' | 'empty-to-zero';
+
+/** Every Ekadhipatya by name; the values are the strings the union accepts. */
+export declare const Ekadhipatya: {
+  /**
+   * BPHS ch. 68: an empty sign keeps a difference.
+   */
+  readonly Bphs: 'bphs';
+  /**
+   * The empty sign always goes to zero.
+   */
+  readonly EmptyToZero: 'empty-to-zero';
+};
+
+/**
+ * Every Ekadhipatya by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const EkadhipatyaById: ReadonlyMap<number, Ekadhipatya>;
+
+/**
  * Which arc of its day an instant falls in.
  */
 export type DayPart = 'daylight' | 'night';

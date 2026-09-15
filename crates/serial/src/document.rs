@@ -20,6 +20,7 @@ use teistro_houses::Houses;
 use teistro_panchanga::almanac::Panchanga;
 use teistro_points::Points;
 use teistro_state::GrahaState;
+use teistro_strength::AshtakavargaReading;
 use teistro_vargas::chart::VargaChart;
 
 use crate::seal::Sealed;
@@ -53,6 +54,10 @@ pub struct Document {
     /// The twelve bhavas under both readings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub houses: Option<Houses>,
+    /// Each graha's Ashtakavarga, their sum, reductions and pindas
+    /// (`03-design/ashtakavarga-measured.md`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub ashtakavarga: Option<AshtakavargaReading>,
     /// The charts drawn in the layouts asked for: which chart, placed in
     /// which layout (`03-design/chart-geometry.md`).
     ///
@@ -80,6 +85,7 @@ impl Document {
             aspects: None,
             points: None,
             houses: None,
+            ashtakavarga: None,
             drawings: Vec::new(),
             dashas: Vec::new(),
         }
@@ -134,6 +140,13 @@ impl Document {
         self
     }
 
+    /// With the Ashtakavarga.
+    #[must_use]
+    pub fn with_ashtakavarga(mut self, ashtakavarga: AshtakavargaReading) -> Document {
+        self.ashtakavarga = Some(ashtakavarga);
+        self
+    }
+
     /// With the houses under both readings.
     #[must_use]
     pub fn with_houses(mut self, houses: Houses) -> Document {
@@ -163,6 +176,9 @@ impl Document {
         }
         if self.houses.is_some() {
             found.push("houses");
+        }
+        if self.ashtakavarga.is_some() {
+            found.push("ashtakavarga");
         }
         if !self.drawings.is_empty() {
             found.push("drawings");

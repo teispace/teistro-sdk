@@ -174,6 +174,46 @@ impl From<teistro_core::settings::Balance> for TsBalance {
     }
 }
 
+/// Where an Ashtakavarga's reductions and pindas were made: the settings'
+/// own `Shodhana`, which is a knob and not a catalogue member.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsShodhana {
+    /// In each graha's own Ashtakavarga (BPHS chs. 67 to 69).
+    EachGraha = 0,
+    /// On the sum of the seven, as the conformance corpus's engine makes them.
+    Sarva = 1,
+}
+
+impl From<teistro_core::settings::Shodhana> for TsShodhana {
+    fn from(shodhana: teistro_core::settings::Shodhana) -> TsShodhana {
+        match shodhana {
+            teistro_core::settings::Shodhana::Sarva => TsShodhana::Sarva,
+            _ => TsShodhana::EachGraha,
+        }
+    }
+}
+
+/// How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
+/// an occupied one: the settings' own `Ekadhipatya`.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsEkadhipatya {
+    /// BPHS ch. 68: an empty sign keeps a difference.
+    Bphs = 0,
+    /// The empty sign always goes to zero.
+    EmptyToZero = 1,
+}
+
+impl From<teistro_core::settings::Ekadhipatya> for TsEkadhipatya {
+    fn from(rule: teistro_core::settings::Ekadhipatya) -> TsEkadhipatya {
+        match rule {
+            teistro_core::settings::Ekadhipatya::EmptyToZero => TsEkadhipatya::EmptyToZero,
+            _ => TsEkadhipatya::Bphs,
+        }
+    }
+}
+
 /// Which arc of its day an instant falls in.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -399,7 +439,7 @@ pub struct TsChartRequest {
     /// Which of the document's sections to compute beside the
     /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
     /// states, 4 the aspects, 8 the derived points, 16 the houses
-    /// service. Zero for the foundation alone, which is what every
+    /// service, 32 the Ashtakavarga. Zero for the foundation alone, which is what every
     /// caller compiled against an earlier header passes by not passing
     /// it at all.
     ///
@@ -493,13 +533,16 @@ pub const TS_CHART_ASPECTS: u32 = 4;
 pub const TS_CHART_POINTS: u32 = 8;
 /// The houses service.
 pub const TS_CHART_HOUSES: u32 = 16;
+/// The Ashtakavarga.
+pub const TS_CHART_ASHTAKAVARGA: u32 = 32;
 
-const SECTION_BITS: [SectionBit; 5] = [
+const SECTION_BITS: [SectionBit; 6] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
     (TS_CHART_POINTS, ChartRequest::with_points),
     (TS_CHART_HOUSES, ChartRequest::with_houses),
+    (TS_CHART_ASHTAKAVARGA, ChartRequest::with_ashtakavarga),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -940,6 +983,92 @@ impl BhavaColumns {
 /// day allows — Saturn's eighth needs an arc to divide — so the count is
 /// a per-chart fact. The drishti taught that lesson by refusing a batch
 /// (`03-design/chart-reading.md` §5); this one takes it as read.
+/// Every chart's Ashtakavarga, each section empty when it was not asked for.
+struct AshtakavargaColumns {
+    graha: Vec<u16>,
+    shodhana: Vec<u8>,
+    ekadhipatya: Vec<u8>,
+    rashi_pinda: Vec<u32>,
+    graha_pinda: Vec<u32>,
+    yoga_pinda: Vec<u32>,
+    bindus: Vec<u8>,
+    reduced: Vec<u8>,
+    sarva: Vec<u16>,
+    trikona: Vec<u16>,
+    sarva_reduced: Vec<u16>,
+}
+
+impl AshtakavargaColumns {
+    fn of(documents: &[Document]) -> AshtakavargaColumns {
+        let charts = documents
+            .iter()
+            .filter(|d| d.ashtakavarga.is_some())
+            .count();
+        let mut columns = AshtakavargaColumns {
+            graha: Vec::with_capacity(charts * 7),
+            shodhana: Vec::with_capacity(charts * 7),
+            ekadhipatya: Vec::with_capacity(charts * 7),
+            rashi_pinda: Vec::with_capacity(charts * 7),
+            graha_pinda: Vec::with_capacity(charts * 7),
+            yoga_pinda: Vec::with_capacity(charts * 7),
+            bindus: Vec::with_capacity(charts * 84),
+            reduced: Vec::with_capacity(charts * 84),
+            sarva: Vec::with_capacity(charts * 12),
+            trikona: Vec::with_capacity(charts * 12),
+            sarva_reduced: Vec::with_capacity(charts * 12),
+        };
+        for reading in documents.iter().filter_map(|d| d.ashtakavarga.as_ref()) {
+            for graha in &reading.grahas {
+                columns.graha.push(graha.graha.id());
+                columns
+                    .shodhana
+                    .push(TsShodhana::from(reading.rules.shodhana) as u8);
+                columns
+                    .ekadhipatya
+                    .push(TsEkadhipatya::from(reading.rules.ekadhipatya) as u8);
+                columns.rashi_pinda.push(graha.rashi_pinda);
+                columns.graha_pinda.push(graha.graha_pinda);
+                columns.yoga_pinda.push(graha.yoga_pinda);
+                columns.bindus.extend(graha.bindus);
+                columns.reduced.extend(graha.reduced.unwrap_or([0; 12]));
+            }
+            columns.sarva.extend(reading.sarva);
+            columns.trikona.extend(reading.trikona);
+            columns.sarva_reduced.extend(reading.reduced);
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "ashtakavarga",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::U8(&self.shodhana),
+                ColumnData::U8(&self.ekadhipatya),
+                ColumnData::U32(&self.rashi_pinda),
+                ColumnData::U32(&self.graha_pinda),
+                ColumnData::U32(&self.yoga_pinda),
+            ],
+        )?;
+        writer.columns(
+            "ashtakavarga_bindus",
+            self.bindus.len(),
+            &[ColumnData::U8(&self.bindus), ColumnData::U8(&self.reduced)],
+        )?;
+        writer.columns(
+            "sarvashtakavarga",
+            self.sarva.len(),
+            &[
+                ColumnData::U16(&self.sarva),
+                ColumnData::U16(&self.trikona),
+                ColumnData::U16(&self.sarva_reduced),
+            ],
+        )
+    }
+}
+
 struct PointColumns {
     counts: Vec<u32>,
     point: Vec<u16>,
@@ -1465,6 +1594,7 @@ pub fn encode(
     let bhavas = BhavaColumns::of(documents);
     let states = StateColumns::of(documents);
     let dashas = DashaColumns::of(documents)?;
+    let ashtakavarga = AshtakavargaColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -1526,6 +1656,7 @@ pub fn encode(
         writer.bytes("drawings", drawings_json(documents).as_bytes())?;
         writer.bytes("svgs", svgs.as_bytes())?;
         dashas.write(&mut writer)?;
+        ashtakavarga.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {

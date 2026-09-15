@@ -110,6 +110,8 @@ jobs:
         run: cargo xtask check-arudhas
       - name: Kalachakra page (the Kalachakra dasha decided over the corpus, beside the sources' readings)
         run: cargo xtask check-kalachakra
+      - name: Ashtakavarga page (the bindus, reductions and pindas decided over the corpus, beside BPHS)
+        run: cargo xtask check-ashtakavarga
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read and every gate run)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

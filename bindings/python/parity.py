@@ -275,6 +275,7 @@ def main() -> None:
             aspects=True,
             points=True,
             houses=True,
+            ashtakavarga=True,
             state=True,
         )
         put("chart-varga-count", charts.decoded.varga_count)
@@ -405,6 +406,18 @@ def main() -> None:
                     put(f"{where}-at", f"{number(mark.at.x)},{number(mark.at.y)}")
                     put(f"{where}-lon", mark.longitude_deg)
             put(f"chart-{i}-dasha-count", len(chart.dashas))
+            av = chart.ashtakavarga
+            assert av is not None
+            put(f"chart-{i}-ashtakavarga", f"{av.shodhana.key} {av.ekadhipatya.key}")
+            for g in av.grahas:
+                key = f"chart-{i}-ashtakavarga-{g.graha.full_key}"
+                put(key, ",".join(str(b) for b in g.bindus))
+                put(f"{key}-reduced", ",".join(str(b) for b in g.reduced) if g.reduced else None)
+                put(f"{key}-pindas", f"{g.rashi_pinda},{g.graha_pinda},{g.yoga_pinda}")
+            put(
+                f"chart-{i}-sarvashtakavarga",
+                ";".join(",".join(str(b) for b in row) for row in (av.sarva, av.trikona, av.reduced)),
+            )
             for j, dasha in enumerate(chart.dashas):
                 key = f"chart-{i}-dasha-{j}"
                 balance = dasha.balance

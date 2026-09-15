@@ -18,6 +18,7 @@ members = [
     "crates/state",
     "crates/aspect",
     "crates/points",
+    "crates/strength",
     "crates/houses",
     "crates/geometry",
     "crates/dasha",

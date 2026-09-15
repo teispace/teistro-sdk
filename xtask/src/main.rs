@@ -92,6 +92,8 @@
 //!   their exception.
 //! - `kalachakra` and `check-kalachakra`: the Kalachakra dasha, measured
 //!   beside the readings the sources give at each of its forks.
+//! - `ashtakavarga` and `check-ashtakavarga`: the Ashtakavarga, the engine's
+//!   reductions and pindas measured beside BPHS's.
 //! - `render` and `check-render`: the golden drawings, a real chart drawn in
 //!   every shipped layout in two locales and both themes, byte for byte.
 //! - `schema` and `check-schema`: the falsification pass over the chart
@@ -135,6 +137,7 @@ mod agreement;
 mod almanac;
 mod areas;
 mod arudhas;
+mod ashtakavarga;
 mod aspect;
 mod batching;
 mod bench;
@@ -259,6 +262,11 @@ const PASSES: &[Pass] = &[
         "kalachakra",
         kalachakra::generate,
         kalachakra::check_generated,
+    ),
+    (
+        "ashtakavarga",
+        ashtakavarga::generate,
+        ashtakavarga::check_generated,
     ),
 ];
 

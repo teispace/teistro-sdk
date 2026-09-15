@@ -4336,6 +4336,36 @@ typedef enum ts_balance {
 } ts_balance;
 
 /**
+ * Where an Ashtakavarga's reductions and pindas were made: the settings'
+ * own `Shodhana`, which is a knob and not a catalogue member.
+ */
+typedef enum ts_shodhana {
+    /**
+     * In each graha's own Ashtakavarga (BPHS chs. 67 to 69).
+     */
+    TS_SHODHANA_EACH_GRAHA = 0,
+    /**
+     * On the sum of the seven, as the conformance corpus's engine makes them.
+     */
+    TS_SHODHANA_SARVA = 1,
+} ts_shodhana;
+
+/**
+ * How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
+ * an occupied one: the settings' own `Ekadhipatya`.
+ */
+typedef enum ts_ekadhipatya {
+    /**
+     * BPHS ch. 68: an empty sign keeps a difference.
+     */
+    TS_EKADHIPATYA_BPHS = 0,
+    /**
+     * The empty sign always goes to zero.
+     */
+    TS_EKADHIPATYA_EMPTY_TO_ZERO = 1,
+} ts_ekadhipatya;
+
+/**
  * Which arc of its day an instant falls in.
  */
 typedef enum ts_day_part {
@@ -5644,7 +5674,7 @@ struct ts_chart_request {
      * Which of the document's sections to compute beside the
      * foundation, as a bit set: 1 the day's almanac, 2 the planetary
      * states, 4 the aspects, 8 the derived points, 16 the houses
-     * service. Zero for the foundation alone, which is what every
+     * service, 32 the Ashtakavarga. Zero for the foundation alone, which is what every
      * caller compiled against an earlier header passes by not passing
      * it at all.
      *

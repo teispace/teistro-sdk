@@ -50,6 +50,8 @@ impl Sections {
     pub(crate) const POINTS: Sections = Sections(1 << 3);
     /// The twelve bhavas under both readings.
     pub(crate) const HOUSES: Sections = Sections(1 << 4);
+    /// Each graha's Ashtakavarga, their sum, reductions and pindas.
+    pub(crate) const ASHTAKAVARGA: Sections = Sections(1 << 5);
 
     /// The union.
     const fn with(self, other: Sections) -> Sections {
@@ -200,6 +202,24 @@ impl ChartRequest {
         self
     }
 
+    /// Each graha's Ashtakavarga, the sarvashtakavarga, and their
+    /// reductions and pindas under the settings' `strength.shodhana` and
+    /// `strength.ekadhipatya` (`03-design/ashtakavarga-measured.md`).
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_ashtakavarga();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_ashtakavarga(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::ASHTAKAVARGA);
+        self
+    }
+
     /// The charts to draw, each a layout and which chart to place in it,
     /// in the order given: `D1` for the founded chart, or a divisional one.
     ///
@@ -275,6 +295,7 @@ impl ChartRequest {
             .with_aspects()
             .with_points()
             .with_houses()
+            .with_ashtakavarga()
     }
 
     /// The place the chart is cast for.

@@ -29,6 +29,7 @@ use teistro_points::arudha::arudha;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_serial::Document;
 use teistro_state::state;
+use teistro_strength::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
 use crate::area::system_of;
@@ -279,6 +280,9 @@ impl<'a> ChartArea<'a> {
         if request.sections.has(Sections::HOUSES) {
             document = document.with_houses(Houses::of(foundation)?);
         }
+        if request.sections.has(Sections::ASHTAKAVARGA) {
+            document = document.with_ashtakavarga(Self::ashtakavarga_of(foundation, settings)?);
+        }
         if request.sections.has(Sections::POINTS) {
             document = document.with_points(Self::points_of(founder, foundation)?);
         }
@@ -516,6 +520,34 @@ impl<'a> ChartArea<'a> {
             reading.moon_span,
         )
         .map(DashaCursor::Nakshatra)
+    }
+
+    /// The Ashtakavarga of a founded chart under the settings' reading.
+    fn ashtakavarga_of(
+        foundation: &ChartFoundation,
+        settings: &teistro_core::settings::Settings,
+    ) -> Result<AshtakavargaReading, Error> {
+        let sign = |index: u8| {
+            Rashi::from_id(u16::from(index)).ok_or_else(|| Error::internal("a sign past Pisces"))
+        };
+        let mut signs = [Rashi::Aries; 7];
+        for (slot, graha) in signs.iter_mut().zip(teistro_strength::ashtakavarga::GRAHAS) {
+            let position = foundation.graha(graha).ok_or_else(|| {
+                Error::internal(format!("a founded chart places {}", graha.key()))
+            })?;
+            *slot = sign(position.sign_index())?;
+        }
+        let chart = AshtakavargaChart {
+            lagna: sign(foundation.lagna_sign_index())?,
+            signs,
+        };
+        Ok(AshtakavargaReading::of(
+            &chart,
+            AshtakavargaRules {
+                shodhana: settings.strength.shodhana,
+                ekadhipatya: settings.strength.ekadhipatya,
+            },
+        ))
     }
 
     /// The derived points, which are the one section that needs more

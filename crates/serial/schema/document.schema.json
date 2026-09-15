@@ -42,6 +42,84 @@
       ],
       "type": "object"
     },
+    "AshtakavargaReading": {
+      "description": "A chart's Ashtakavarga.",
+      "properties": {
+        "grahas": {
+          "description": "Each graha's, Sun to Saturn.",
+          "items": {
+            "$ref": "#/$defs/GrahaAshtakavarga"
+          },
+          "type": "array"
+        },
+        "reduced": {
+          "description": "The sum after both reductions.",
+          "items": {
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "type": "array"
+        },
+        "rules": {
+          "$ref": "#/$defs/AshtakavargaRules",
+          "description": "The choices it was reduced under."
+        },
+        "sarva": {
+          "description": "The seven grahas' bindus by sign, the sarvashtakavarga, 337 in all.",
+          "items": {
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "type": "array"
+        },
+        "trikona": {
+          "description": "The sum after the trine reduction.",
+          "items": {
+            "format": "uint16",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "type": "array"
+        }
+      },
+      "required": [
+        "rules",
+        "grahas",
+        "sarva",
+        "trikona",
+        "reduced"
+      ],
+      "type": "object"
+    },
+    "AshtakavargaRules": {
+      "description": "The choices an Ashtakavarga is reduced under.",
+      "properties": {
+        "ekadhipatya": {
+          "$ref": "#/$defs/Ekadhipatya",
+          "description": "How a co-ruled sign beside an occupied one is reduced."
+        },
+        "shodhana": {
+          "$ref": "#/$defs/Shodhana",
+          "description": "Where the reductions and pindas are made."
+        }
+      },
+      "required": [
+        "shodhana",
+        "ekadhipatya"
+      ],
+      "type": "object"
+    },
     "AspectPlaced": {
       "description": "Where a body stands, as this module needs it.",
       "properties": {
@@ -1295,6 +1373,17 @@
     "Document": {
       "description": "One chart, with whichever of the layer's readings were asked for.",
       "properties": {
+        "ashtakavarga": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AshtakavargaReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Each graha's Ashtakavarga, their sum, reductions and pindas (`03-design/ashtakavarga-measured.md`)."
+        },
         "aspects": {
           "anyOf": [
             {
@@ -1438,6 +1527,21 @@
         "to_edge"
       ],
       "type": "object"
+    },
+    "Ekadhipatya": {
+      "description": "How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign beside an occupied one (crux C60).",
+      "oneOf": [
+        {
+          "const": "BPHS",
+          "description": "BPHS ch. 68: an empty sign beside an occupied sign with the smaller number keeps the difference, and otherwise goes to zero.",
+          "type": "string"
+        },
+        {
+          "const": "EMPTY_TO_ZERO",
+          "description": "The conformance corpus's recording engine: the empty sign always goes to zero.",
+          "type": "string"
+        }
+      ]
     },
     "Equinox": {
       "description": "The equinox and equator the coordinates refer to.",
@@ -1639,6 +1743,68 @@
       ],
       "type": "string",
       "x-teistro-kind": "graha"
+    },
+    "GrahaAshtakavarga": {
+      "description": "One graha's Ashtakavarga.",
+      "properties": {
+        "bindus": {
+          "description": "Its bindus by sign, Aries to Pisces, 0 to 8.",
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "type": "array"
+        },
+        "graha": {
+          "$ref": "#/$defs/Graha",
+          "description": "Which graha."
+        },
+        "graha_pinda": {
+          "description": "Its graha pinda.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "rashi_pinda": {
+          "description": "Its rashi pinda.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "reduced": {
+          "description": "The same after both reductions, when they are made in each graha's own Ashtakavarga.",
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "yoga_pinda": {
+          "description": "Its yoga pinda, the two together.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "graha",
+        "bindus",
+        "rashi_pinda",
+        "graha_pinda",
+        "yoga_pinda"
+      ],
+      "type": "object"
     },
     "GrahaPlacement": {
       "description": "Where one graha stands in a divisional chart.",
@@ -3654,6 +3820,21 @@
             "to"
           ],
           "type": "object"
+        }
+      ]
+    },
+    "Shodhana": {
+      "description": "Where the Ashtakavarga's reductions and pindas are made (crux C59).",
+      "oneOf": [
+        {
+          "const": "EACH_GRAHA",
+          "description": "In each graha's own Ashtakavarga, its pindas from its own reduced bindus and the grahas standing in each sign (BPHS chs. 67 to 69).",
+          "type": "string"
+        },
+        {
+          "const": "SARVA",
+          "description": "On the sum of the seven, as the conformance corpus's recording engine makes them: the rashi pinda of the reduced sum and a graha pinda of the raw bindus.",
+          "type": "string"
         }
       ]
     },

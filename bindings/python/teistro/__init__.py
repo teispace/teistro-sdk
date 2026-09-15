@@ -99,6 +99,8 @@ from .catalogue import (
     Ayana,
     Ayanamsha,
     Balance,
+    Ekadhipatya,
+    Shodhana,
     Body,
     Calendar,
     Centre,
@@ -244,6 +246,11 @@ __all__ = [
     "DashaSystem",
     "Rashi",
     "WrittenBalance",
+    # The Ashtakavarga: what a chart answers with, and the two readings.
+    "Ashtakavarga",
+    "GrahaAshtakavarga",
+    "Ekadhipatya",
+    "Shodhana",
     "AvasthaBaladi",
     "AvasthaDeeptadi",
     "AvasthaJagradadi",
@@ -955,6 +962,7 @@ class ChartArea(_Area):
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
+        ashtakavarga: bool = False,
         state: bool = False,
     ) -> Chart:
         """Founds a chart at an instant and a place.
@@ -982,6 +990,7 @@ class ChartArea(_Area):
             aspects=aspects,
             points=points,
             houses=houses,
+            ashtakavarga=ashtakavarga,
             state=state,
         ).at(0)
 
@@ -999,6 +1008,7 @@ class ChartArea(_Area):
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
+        ashtakavarga: bool = False,
         state: bool = False,
     ) -> ChartBatch:
         """Founds a chart at each of many instants, at one place, in one
@@ -1032,6 +1042,7 @@ class ChartArea(_Area):
             sections=(_SECTION_ASPECTS if aspects else 0)
             | (_SECTION_POINTS if points else 0)
             | (_SECTION_HOUSES if houses else 0)
+            | (_SECTION_ASHTAKAVARGA if ashtakavarga else 0)
             | (_SECTION_STATE if state else 0),
             vargas=list(vargas),
             dashas=list(dashas),
@@ -1326,6 +1337,7 @@ _SECTION_POINTS = 8
 
 #: `TS_CHART_HOUSES`, the houses service.
 _SECTION_HOUSES = 16
+_SECTION_ASHTAKAVARGA = 32
 
 #: `TS_CHART_STATE`, the planetary states.
 _SECTION_STATE = 2
@@ -1511,6 +1523,54 @@ class Drishti:
 
     to_edge: EdgeDistance
     """How near the body looked at stands to one."""
+
+
+@dataclass(frozen=True)
+class GrahaAshtakavarga:
+    """One graha's Ashtakavarga."""
+
+    graha: Graha
+    """Which graha, Sun to Saturn."""
+
+    bindus: Tuple[int, ...]
+    """Its bindus by sign, Aries to Pisces, 0 to 8."""
+
+    reduced: Optional[Tuple[int, ...]]
+    """The same after both reductions, when they were made in each graha's
+    own Ashtakavarga; None otherwise."""
+
+    rashi_pinda: int
+    """Its rashi pinda."""
+
+    graha_pinda: int
+    """Its graha pinda."""
+
+    yoga_pinda: int
+    """Its yoga pinda, the two together."""
+
+
+@dataclass(frozen=True)
+class Ashtakavarga:
+    """A chart's Ashtakavarga: each graha's, the sarvashtakavarga, and their
+    reductions and pindas (`03-design/ashtakavarga-measured.md`)."""
+
+    shodhana: Shodhana
+    """Where the reductions and pindas were made."""
+
+    ekadhipatya: Ekadhipatya
+    """How a co-ruled sign beside an occupied one was reduced."""
+
+    grahas: Tuple[GrahaAshtakavarga, ...]
+    """Each graha's, Sun to Saturn."""
+
+    sarva: Tuple[int, ...]
+    """The seven grahas' bindus by sign, 337 in all."""
+
+    trikona: Tuple[int, ...]
+    """The sum after the trine reduction."""
+
+    reduced: Tuple[int, ...]
+    """The sum after both reductions."""
 
 
 @dataclass(frozen=True)
@@ -2288,6 +2348,12 @@ class Chart:
         ]
 
     @property
+    def ashtakavarga(self) -> Optional[Ashtakavarga]:
+        """The Ashtakavarga, when `ashtakavarga=True` asked for it."""
+        parsed = self.batch._ashtakavargas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def dashas(self) -> list[Dasha]:
         """The dashas asked for, in the order asked; empty unless `dashas`
         named some (`03-design/dasha-kernels.md`)."""
@@ -2424,6 +2490,45 @@ class ChartBatch:
             ]
             for chart, drawings in enumerate(json.loads(text))
         ]
+
+    @cached_property
+    def _ashtakavargas(self) -> list[Ashtakavarga]:
+        """Every chart's Ashtakavarga, decoded once; empty when none was asked for."""
+        decoded = self.decoded
+        rows = decoded.ashtakavarga
+        bins = decoded.ashtakavarga_bindus
+        sums = decoded.sarvashtakavarga
+
+        def twelve(column: Any, start: int) -> Tuple[int, ...]:
+            return tuple(column[start : start + 12])
+
+        out: list[Ashtakavarga] = []
+        for chart in range(rows.length // 7):
+            grahas = []
+            for g in range(7):
+                row = chart * 7 + g
+                each = Shodhana(rows.shodhana[row]) is Shodhana.EACH_GRAHA
+                grahas.append(
+                    GrahaAshtakavarga(
+                        graha=Graha(rows.graha[row]),
+                        bindus=twelve(bins.bindus, row * 12),
+                        reduced=twelve(bins.reduced, row * 12) if each else None,
+                        rashi_pinda=rows.rashi_pinda[row],
+                        graha_pinda=rows.graha_pinda[row],
+                        yoga_pinda=rows.yoga_pinda[row],
+                    )
+                )
+            out.append(
+                Ashtakavarga(
+                    shodhana=Shodhana(rows.shodhana[chart * 7]),
+                    ekadhipatya=Ekadhipatya(rows.ekadhipatya[chart * 7]),
+                    grahas=tuple(grahas),
+                    sarva=twelve(sums.sarva, chart * 12),
+                    trikona=twelve(sums.trikona, chart * 12),
+                    reduced=twelve(sums.reduced, chart * 12),
+                )
+            )
+        return out
 
     @cached_property
     def _dashas(self) -> list[list[Dasha]]:

@@ -21,6 +21,7 @@ from teistro import (
     ChartLayout,
     DashaSystem,
     Drawing,
+    Ekadhipatya,
     LayoutRow,
     Ephemeris,
     EphemerisProvider,
@@ -29,6 +30,7 @@ from teistro import (
     Plugin,
     Rashi,
     Scale,
+    Shodhana,
     Status,
     Teistro,
     TeistroError,
@@ -603,6 +605,28 @@ class AnEngine(WithLibrary):
         with self.assertRaises(TeistroError) as unknown:
             found("sepia")  # type: ignore[arg-type]
         self.assertEqual(unknown.exception.field, "theme_json.extends")
+
+    def test_a_chart_carries_its_ashtakavarga_and_each_graha_s_reductions(self) -> None:
+        """A chart's Ashtakavarga crosses whole: each graha's bindus holding the
+        classical totals, the sum, and each graha's reductions under the default
+        reading; None unless asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, ashtakavarga=True)
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).ashtakavarga)
+        av = chart.ashtakavarga
+        assert av is not None
+        self.assertEqual((av.shodhana, av.ekadhipatya), (Shodhana.EACH_GRAHA, Ekadhipatya.BPHS))
+        self.assertEqual([sum(g.bindus) for g in av.grahas], [48, 49, 39, 54, 56, 52, 39])
+        self.assertEqual(sum(av.sarva), 337)
+        reduced = [g.reduced for g in av.grahas]
+        assert all(r is not None for r in reduced)
+        self.assertEqual(
+            av.reduced,
+            tuple(sum(r[sign] for r in reduced if r is not None) for sign in range(12)),
+        )
+        self.assertTrue(all(g.yoga_pinda == g.rashi_pinda + g.graha_pinda for g in av.grahas))
 
     def test_a_chart_carries_its_dashas_their_periods_and_the_chain_at_an_instant(self) -> None:
         """A chart's dashas cross whole: the balance, the periods to the

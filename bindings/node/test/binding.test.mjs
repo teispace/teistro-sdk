@@ -510,8 +510,9 @@ test('every catalogue enum has a complete id table', () => {
   // the boundary gains a member, which is a deliberate change: the
   // description's own page reports the same figure.
   // 967 since chart_layout joined the catalogue: six layouts and its UNKNOWN;
-  // 969 since the dasha balance crossed as `TsBalance`, spatial and temporal.
-  assert.equal(entries, 969, 'every member of every enum is in a table');
+  // 969 since the dasha balance crossed as `TsBalance`, spatial and temporal;
+  // 973 since the Ashtakavarga's `TsShodhana` and `TsEkadhipatya`, two each.
+  assert.equal(entries, 973, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -851,6 +852,32 @@ test('a layout of your own is registered, drawn by its key, and refused by its f
     'a misspelt field',
   );
   assert.throws(() => context({ layouts: kerala }), /layouts: expected an array/u);
+});
+
+/**
+ * A chart's Ashtakavarga crosses whole: each graha's bindus holding the
+ * classical totals, the sum, and each graha's reductions under the default
+ * reading; `null` unless asked.
+ */
+test('a chart carries its Ashtakavarga, each graha\'s bindus and their reductions', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, ashtakavarga: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).ashtakavarga, null);
+  const { shodhana, ekadhipatya, grahas, sarva, reduced } = chart.ashtakavarga;
+  assert.deepEqual([shodhana, ekadhipatya], ['each-graha', 'bphs']);
+  assert.deepEqual(
+    grahas.map((g) => g.bindus.reduce((a, b) => a + b, 0)),
+    [48, 49, 39, 54, 56, 52, 39],
+  );
+  assert.equal(sarva.reduce((a, b) => a + b, 0), 337);
+  assert.deepEqual(
+    reduced,
+    sarva.map((_, sign) => grahas.reduce((sum, g) => sum + g.reduced[sign], 0)),
+    'the reduced sum is the grahas\' own reductions summed',
+  );
+  assert.ok(grahas.every((g) => g.yogaPinda === g.rashiPinda + g.grahaPinda));
+  ctx.dispose();
 });
 
 /**

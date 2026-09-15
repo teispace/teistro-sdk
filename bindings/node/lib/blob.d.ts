@@ -815,6 +815,86 @@ export interface ChartsDashaPeriods {
 }
 
 /**
+ * The `ashtakavarga` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).
+ */
+export interface ChartsAshtakavarga {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Where the reductions and pindas were made; `reduced` in `ashtakavarga_bindus` is zero unless in each graha's own.
+   * The values are `Shodhana` ids.
+   */
+  readonly shodhana: Uint8Array;
+  /**
+   * How a co-ruled sign beside an occupied one was reduced.
+   * The values are `Ekadhipatya` ids.
+   */
+  readonly ekadhipatya: Uint8Array;
+  /**
+   * Its rashi pinda.
+   */
+  readonly rashiPinda: Uint32Array;
+  /**
+   * Its graha pinda.
+   */
+  readonly grahaPinda: Uint32Array;
+  /**
+   * Its yoga pinda, the two together.
+   */
+  readonly yogaPinda: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `ashtakavarga_bindus` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.
+ */
+export interface ChartsAshtakavargaBindus {
+  /**
+   * Its bindus in the sign, 0 to 8.
+   */
+  readonly bindus: Uint8Array;
+  /**
+   * The same after both reductions, when they were made in each graha's own Ashtakavarga; zero otherwise.
+   */
+  readonly reduced: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `sarvashtakavarga` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
+ */
+export interface ChartsSarvashtakavarga {
+  /**
+   * The seven grahas' bindus in the sign.
+   */
+  readonly sarva: Uint16Array;
+  /**
+   * The sum after the trine reduction.
+   */
+  readonly trikona: Uint16Array;
+  /**
+   * The sum after both reductions.
+   */
+  readonly reduced: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -1070,6 +1150,18 @@ export interface Charts {
    * Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
    */
   readonly dashaPeriods: ChartsDashaPeriods;
+  /**
+   * Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).
+   */
+  readonly ashtakavarga: ChartsAshtakavarga;
+  /**
+   * Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.
+   */
+  readonly ashtakavargaBindus: ChartsAshtakavargaBindus;
+  /**
+   * Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
+   */
+  readonly sarvashtakavarga: ChartsSarvashtakavarga;
 }
 
 /**

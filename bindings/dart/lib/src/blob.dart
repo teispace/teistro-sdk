@@ -992,6 +992,89 @@ final class ChartsDashaPeriods {
   final int length;
 }
 
+/// The `ashtakavarga` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).
+final class ChartsAshtakavarga {
+  const ChartsAshtakavarga({
+    required this.graha,
+    required this.shodhana,
+    required this.ekadhipatya,
+    required this.rashiPinda,
+    required this.grahaPinda,
+    required this.yogaPinda,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// Where the reductions and pindas were made; `reduced` in `ashtakavarga_bindus` is zero unless in each graha's own.
+  final Uint8List shodhana;
+
+  /// How a co-ruled sign beside an occupied one was reduced.
+  final Uint8List ekadhipatya;
+
+  /// Its rashi pinda.
+  final Uint32List rashiPinda;
+
+  /// Its graha pinda.
+  final Uint32List grahaPinda;
+
+  /// Its yoga pinda, the two together.
+  final Uint32List yogaPinda;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `ashtakavarga_bindus` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.
+final class ChartsAshtakavargaBindus {
+  const ChartsAshtakavargaBindus({
+    required this.bindus,
+    required this.reduced,
+    required this.length,
+  });
+
+  /// Its bindus in the sign, 0 to 8.
+  final Uint8List bindus;
+
+  /// The same after both reductions, when they were made in each graha's own Ashtakavarga; zero otherwise.
+  final Uint8List reduced;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `sarvashtakavarga` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
+final class ChartsSarvashtakavarga {
+  const ChartsSarvashtakavarga({
+    required this.sarva,
+    required this.trikona,
+    required this.reduced,
+    required this.length,
+  });
+
+  /// The seven grahas' bindus in the sign.
+  final Uint16List sarva;
+
+  /// The sum after the trine reduction.
+  final Uint16List trikona;
+
+  /// The sum after both reductions.
+  final Uint16List reduced;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -1120,6 +1203,9 @@ final class Charts {
     required this.svgs,
     required this.dashas,
     required this.dashaPeriods,
+    required this.ashtakavarga,
+    required this.ashtakavargaBindus,
+    required this.sarvashtakavarga,
   });
 
   /// What kind of chart these are.
@@ -1238,6 +1324,15 @@ final class Charts {
   /// Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
   final ChartsDashaPeriods dashaPeriods;
 
+  /// Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).
+  final ChartsAshtakavarga ashtakavarga;
+
+  /// Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.
+  final ChartsAshtakavargaBindus ashtakavargaBindus;
+
+  /// Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
+  final ChartsSarvashtakavarga sarvashtakavarga;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1269,6 +1364,9 @@ Charts decodeCharts(Uint8List bytes) {
   final atSvgs = blob.section(22, 'svgs');
   final atDashas = blob.section(23, 'dashas');
   final atDashaPeriods = blob.section(24, 'dasha_periods');
+  final atAshtakavarga = blob.section(25, 'ashtakavarga');
+  final atAshtakavargaBindus = blob.section(26, 'ashtakavarga_bindus');
+  final atSarvashtakavarga = blob.section(27, 'sarvashtakavarga');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2000,6 +2098,70 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atDashaPeriods, 5) + atDashaPeriods.count * 8,
       ),
       length: atDashaPeriods.count,
+    ),
+    ashtakavarga: ChartsAshtakavarga(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 0),
+        blob.columnOffset(atAshtakavarga, 0) + atAshtakavarga.count * 2,
+      ),
+      shodhana: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 1),
+        blob.columnOffset(atAshtakavarga, 1) + atAshtakavarga.count * 1,
+      ),
+      ekadhipatya: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 2),
+        blob.columnOffset(atAshtakavarga, 2) + atAshtakavarga.count * 1,
+      ),
+      rashiPinda: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 3),
+        blob.columnOffset(atAshtakavarga, 3) + atAshtakavarga.count * 4,
+      ),
+      grahaPinda: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 4),
+        blob.columnOffset(atAshtakavarga, 4) + atAshtakavarga.count * 4,
+      ),
+      yogaPinda: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 5),
+        blob.columnOffset(atAshtakavarga, 5) + atAshtakavarga.count * 4,
+      ),
+      length: atAshtakavarga.count,
+    ),
+    ashtakavargaBindus: ChartsAshtakavargaBindus(
+      bindus: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavargaBindus, 0),
+        blob.columnOffset(atAshtakavargaBindus, 0) + atAshtakavargaBindus.count * 1,
+      ),
+      reduced: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavargaBindus, 1),
+        blob.columnOffset(atAshtakavargaBindus, 1) + atAshtakavargaBindus.count * 1,
+      ),
+      length: atAshtakavargaBindus.count,
+    ),
+    sarvashtakavarga: ChartsSarvashtakavarga(
+      sarva: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSarvashtakavarga, 0),
+        blob.columnOffset(atSarvashtakavarga, 0) + atSarvashtakavarga.count * 2,
+      ),
+      trikona: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSarvashtakavarga, 1),
+        blob.columnOffset(atSarvashtakavarga, 1) + atSarvashtakavarga.count * 2,
+      ),
+      reduced: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSarvashtakavarga, 2),
+        blob.columnOffset(atSarvashtakavarga, 2) + atSarvashtakavarga.count * 2,
+      ),
+      length: atSarvashtakavarga.count,
     ),
   );
 }

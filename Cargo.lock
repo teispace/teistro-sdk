@@ -1471,6 +1471,7 @@ dependencies = [
  "teistro-render-svg",
  "teistro-serial",
  "teistro-state",
+ "teistro-strength",
  "teistro-time",
  "teistro-vargas",
 ]
@@ -1772,6 +1773,7 @@ dependencies = [
  "teistro-points",
  "teistro-port-ephemeris",
  "teistro-state",
+ "teistro-strength",
  "teistro-vargas",
 ]
 
@@ -1858,6 +1860,16 @@ dependencies = [
  "teistro-chart",
  "teistro-core",
  "teistro-port-ephemeris",
+]
+
+[[package]]
+name = "teistro-strength"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-core",
 ]
 
 [[package]]

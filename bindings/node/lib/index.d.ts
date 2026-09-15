@@ -36,6 +36,8 @@ import type {
   Point,
   Quadrant,
   Rashi,
+  Shodhana,
+  Ekadhipatya,
   Relationship,
   Scale,
   Status,
@@ -326,6 +328,38 @@ export interface Dasha {
    * `depth`; empty before birth and past the end of the cycle.
    */
   at(jd: number): readonly DashaPeriod[];
+}
+
+/** One graha's Ashtakavarga. */
+export interface GrahaAshtakavarga {
+  /** Which graha, Sun to Saturn. */
+  readonly graha: Graha;
+  /** Its bindus by sign, Aries to Pisces, 0 to 8. */
+  readonly bindus: readonly number[];
+  /** The same after both reductions, when they were made in each graha's own; `null` otherwise. */
+  readonly reduced: readonly number[] | null;
+  /** Its rashi pinda. */
+  readonly rashiPinda: number;
+  /** Its graha pinda. */
+  readonly grahaPinda: number;
+  /** Its yoga pinda, the two together. */
+  readonly yogaPinda: number;
+}
+
+/** A chart's Ashtakavarga: each graha's, the sarvashtakavarga, and their reductions. */
+export interface Ashtakavarga {
+  /** Where the reductions and pindas were made. */
+  readonly shodhana: Shodhana;
+  /** How a co-ruled sign beside an occupied one was reduced. */
+  readonly ekadhipatya: Ekadhipatya;
+  /** Each graha's, Sun to Saturn. */
+  readonly grahas: readonly GrahaAshtakavarga[];
+  /** The seven grahas' bindus by sign, 337 in all. */
+  readonly sarva: readonly number[];
+  /** The sum after the trine reduction. */
+  readonly trikona: readonly number[];
+  /** The sum after both reductions. */
+  readonly reduced: readonly number[];
 }
 
 /** A registered layout's full key, as the context that registered it resolves it. */
@@ -672,6 +706,8 @@ export declare class Chart {
   readonly drawings: readonly Drawing[];
   /** The dashas asked for, in the order asked; empty unless `dashas` named some. */
   readonly dashas: readonly Dasha[];
+  /** The Ashtakavarga; `null` unless `ashtakavarga` asked for it. */
+  readonly ashtakavarga: Ashtakavarga | null;
   /**
    * The drishti the chart's grahas cast; empty unless `aspects` asked. The
    * count differs from chart to chart, because relations depend on where
@@ -933,6 +969,8 @@ export interface ChartRequest {
   readonly points?: boolean;
   /** Whether to read the bhavas through the houses service; false by default. */
   readonly houses?: boolean;
+  /** Whether to compute the Ashtakavarga; false by default. */
+  readonly ashtakavarga?: boolean;
   /** Whether to compute what each graha is — its dignity, avasthas, combustion and war; false by default. */
   readonly state?: boolean;
 }

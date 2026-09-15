@@ -807,6 +807,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_bhavas(report, index, document);
         the_points(report, index, document);
         the_drishti(report, index, document);
+        the_ashtakavarga(report, index, document);
         the_dashas(report, &geo, index, document);
     }
     // **One call, as the other three make one.** The foundations are the
@@ -898,6 +899,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) ->
         .with_aspects()
         .with_points()
         .with_houses()
+        .with_ashtakavarga()
         .with_state()
 }
 
@@ -1173,6 +1175,59 @@ fn the_points(report: &mut Report, index: usize, document: &teistro::Document) {
 /// settings' depth and the chain running 5000 days after birth, the chain
 /// asked of the cursor rebuilt from the document where the other three walk
 /// the periods they decoded.
+/// The Ashtakavarga as the other three print it: the reading, each graha's
+/// bindus, reductions and pindas, and the chart's sums.
+fn the_ashtakavarga(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(av) = document.ashtakavarga.as_ref() else {
+        return;
+    };
+    let join = |values: &[u16]| {
+        values
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    put(
+        report,
+        &format!("chart-{index}-ashtakavarga"),
+        format!(
+            "{} {}",
+            kebab(&format!("{:?}", av.rules.shodhana)),
+            kebab(&format!("{:?}", av.rules.ekadhipatya))
+        ),
+    );
+    for graha in &av.grahas {
+        let key = format!("chart-{index}-ashtakavarga-{}", graha.graha.full_key());
+        put(report, &key, join(&graha.bindus.map(u16::from)));
+        put(
+            report,
+            &format!("{key}-reduced"),
+            graha
+                .reduced
+                .map_or_else(|| String::from("null"), |r| join(&r.map(u16::from))),
+        );
+        put(
+            report,
+            &format!("{key}-pindas"),
+            format!(
+                "{},{},{}",
+                graha.rashi_pinda, graha.graha_pinda, graha.yoga_pinda
+            ),
+        );
+    }
+    put(
+        report,
+        &format!("chart-{index}-sarvashtakavarga"),
+        format!(
+            "{};{};{}",
+            join(&av.sarva),
+            join(&av.trikona),
+            join(&av.reduced)
+        ),
+    );
+}
+
 fn the_dashas(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
     let null = || String::from("null");
     put(

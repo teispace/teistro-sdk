@@ -467,6 +467,35 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 25, 'ashtakavarga');
+    out.ashtakavarga = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      shodhana: column(blob, at, 1, 'u8', at.count),
+      ekadhipatya: column(blob, at, 2, 'u8', at.count),
+      rashiPinda: column(blob, at, 3, 'u32', at.count),
+      grahaPinda: column(blob, at, 4, 'u32', at.count),
+      yogaPinda: column(blob, at, 5, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 26, 'ashtakavarga_bindus');
+    out.ashtakavargaBindus = {
+      bindus: column(blob, at, 0, 'u8', at.count),
+      reduced: column(blob, at, 1, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 27, 'sarvashtakavarga');
+    out.sarvashtakavarga = {
+      sarva: column(blob, at, 0, 'u16', at.count),
+      trikona: column(blob, at, 1, 'u16', at.count),
+      reduced: column(blob, at, 2, 'u16', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

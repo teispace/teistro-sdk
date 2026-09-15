@@ -3495,6 +3495,30 @@ class Balance(Member):
     """By the elapsed part of the Moon's stay in its nakshatra."""
 
 
+class Shodhana(Member):
+    """Where an Ashtakavarga's reductions and pindas were made: the settings'
+    own `Shodhana`, which is a knob and not a catalogue member.
+    """
+
+    EACH_GRAHA = 0
+    """In each graha's own Ashtakavarga (BPHS chs. 67 to 69)."""
+
+    SARVA = 1
+    """On the sum of the seven, as the conformance corpus's engine makes them."""
+
+
+class Ekadhipatya(Member):
+    """How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
+    an occupied one: the settings' own `Ekadhipatya`.
+    """
+
+    BPHS = 0
+    """BPHS ch. 68: an empty sign keeps a difference."""
+
+    EMPTY_TO_ZERO = 1
+    """The empty sign always goes to zero."""
+
+
 class DayPart(Member):
     """Which arc of its day an instant falls in."""
 
@@ -4898,6 +4922,14 @@ _KEYS: dict[str, dict[int, str]] = {
     "Balance": {
         0: "spatial",
         1: "temporal",
+    },
+    "Shodhana": {
+        0: "each-graha",
+        1: "sarva",
+    },
+    "Ekadhipatya": {
+        0: "bphs",
+        1: "empty-to-zero",
     },
     "DayPart": {
         0: "daylight",

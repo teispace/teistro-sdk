@@ -1499,6 +1499,24 @@ The settings' own `Balance`, which is a knob and not a catalogue member, so it c
 | `TS_BALANCE_SPATIAL` | 0 | By the elapsed part of the Moon's window of nakshatras. |
 | `TS_BALANCE_TEMPORAL` | 1 | By the elapsed part of the Moon's stay in its nakshatra. |
 
+## ts_shodhana
+
+Where an Ashtakavarga's reductions and pindas were made: the settings' own `Shodhana`, which is a knob and not a catalogue member.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SHODHANA_EACH_GRAHA` | 0 | In each graha's own Ashtakavarga (BPHS chs. 67 to 69). |
+| `TS_SHODHANA_SARVA` | 1 | On the sum of the seven, as the conformance corpus's engine makes them. |
+
+## ts_ekadhipatya
+
+How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside an occupied one: the settings' own `Ekadhipatya`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_EKADHIPATYA_BPHS` | 0 | BPHS ch. 68: an empty sign keeps a difference. |
+| `TS_EKADHIPATYA_EMPTY_TO_ZERO` | 1 | The empty sign always goes to zero. |
+
 ## ts_day_part
 
 Which arc of its day an instant falls in.

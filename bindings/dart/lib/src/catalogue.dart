@@ -4687,6 +4687,76 @@ enum Balance {
   }
 }
 
+/// Where an Ashtakavarga's reductions and pindas were made: the settings'
+/// own `Shodhana`, which is a knob and not a catalogue member.
+enum Shodhana {
+  /// In each graha's own Ashtakavarga (BPHS chs. 67 to 69).
+  eachGraha(0, 'each-graha'),
+  /// On the sum of the seven, as the conformance corpus's engine makes them.
+  sarva(1, 'sarva');
+
+  const Shodhana(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Shodhana byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Shodhana'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Shodhana? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
+/// an occupied one: the settings' own `Ekadhipatya`.
+enum Ekadhipatya {
+  /// BPHS ch. 68: an empty sign keeps a difference.
+  bphs(0, 'bphs'),
+  /// The empty sign always goes to zero.
+  emptyToZero(1, 'empty-to-zero');
+
+  const Ekadhipatya(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Ekadhipatya byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Ekadhipatya'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Ekadhipatya? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Which arc of its day an instant falls in.
 enum DayPart {
   /// Between sunrise and sunset.

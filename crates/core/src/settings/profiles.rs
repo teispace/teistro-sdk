@@ -13,7 +13,7 @@ use super::knobs::{
     DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KalachakraAfterNinth,
     KalachakraBalance, KalachakraMembership, LunarMonth, MoonEvents, NakshatraScheme, Node,
     NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
+    SeedOverflow, Shodhana, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -176,7 +176,10 @@ pub fn root() -> Settings {
         },
         strength: Strength {
             bala_scheme: BalaScheme::Parashara,
-            ekadhipatya: Ekadhipatya::Classical,
+            // BPHS chs. 67 to 69, a rank-1 text, which the conformance
+            // corpus's engine reads otherwise (`03-design/ashtakavarga-measured.md`).
+            ekadhipatya: Ekadhipatya::Bphs,
+            shodhana: Shodhana::EachGraha,
         },
         vargas: Vargas {
             unattested_dn: UnattestedDn::Cyclic,
@@ -365,12 +368,16 @@ fn conformance_baseline() -> Profile {
     // local civil midnight, inside a section every other field of which
     // is bounded by sunrise (entry 18).
     patch.panchanga.moon_events = Some(MoonEvents::CivilDay);
+    // The engine's Ashtakavarga reductions and pindas (cruxes C59, C60).
+    patch.strength.ekadhipatya = Some(Ekadhipatya::EmptyToZero);
+    patch.strength.shodhana = Some(Shodhana::Sarva);
     Profile {
         id: ProfileId::new("conformance-baseline"),
         // 2: the ayanamsha basis became `TRUE`, which is what the engine
         // applies (entry 16 of the deliberate-difference registry).
         // 3: the Moon's rise and set became the civil day's (entry 18).
-        version: 3,
+        // 4: the Ashtakavarga became the engine's (cruxes C59, C60).
+        version: 4,
         base: None,
         patch,
         sources: vec![
@@ -386,6 +393,20 @@ fn conformance_baseline() -> Profile {
                 Source::new(
                     "baseline-engine",
                     "measured: the recorded ayanamsha carries the nutation, 18.46\" against 0.0086\"",
+                ),
+            ),
+            Citation::new(
+                "strength.shodhana",
+                Source::new(
+                    "baseline-engine",
+                    "measured: the recorded pindas are the reduced sum's and the raw bindus', 77 of 77",
+                ),
+            ),
+            Citation::new(
+                "strength.ekadhipatya",
+                Source::new(
+                    "baseline-engine",
+                    "measured: the recorded reductions zero an empty co-ruled sign, 77 of 77",
                 ),
             ),
             Citation::new(

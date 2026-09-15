@@ -36,7 +36,7 @@ pub use knobs::{
     DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KalachakraAfterNinth,
     KalachakraBalance, KalachakraMembership, LunarMonth, MoonEvents, NakshatraScheme, Node,
     NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
+    SeedOverflow, Shodhana, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -324,9 +324,11 @@ group!(
         /// The bala scheme.
         /// lint: knob-has-a-reader — `strength`, Phase 5 (`03-design/strength-schemes.md`).
         bala_scheme: BalaScheme,
-        /// The Ashtakavarga reduction rule.
-        /// lint: knob-has-a-reader — `strength`, Phase 5.
+        /// How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign
+        /// beside an occupied one (crux C60).
         ekadhipatya: Ekadhipatya,
+        /// Where the Ashtakavarga's reductions and pindas are made (crux C59).
+        shodhana: Shodhana,
     }
 );
 

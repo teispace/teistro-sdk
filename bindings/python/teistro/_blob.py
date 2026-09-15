@@ -802,6 +802,75 @@ class ChartsDashaPeriods:
 
 
 @dataclass(frozen=True)
+class ChartsAshtakavarga:
+    """The `ashtakavarga` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    shodhana: memoryview[int]
+    """Where the reductions and pindas were made; `reduced` in `ashtakavarga_bindus` is zero unless in each graha's own."""
+
+    ekadhipatya: memoryview[int]
+    """How a co-ruled sign beside an occupied one was reduced."""
+
+    rashi_pinda: memoryview[int]
+    """Its rashi pinda."""
+
+    graha_pinda: memoryview[int]
+    """Its graha pinda."""
+
+    yoga_pinda: memoryview[int]
+    """Its yoga pinda, the two together."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsAshtakavargaBindus:
+    """The `ashtakavarga_bindus` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.
+    """
+
+    bindus: memoryview[int]
+    """Its bindus in the sign, 0 to 8."""
+
+    reduced: memoryview[int]
+    """The same after both reductions, when they were made in each graha's own Ashtakavarga; zero otherwise."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsSarvashtakavarga:
+    """The `sarvashtakavarga` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
+    """
+
+    sarva: memoryview[int]
+    """The seven grahas' bindus in the sign."""
+
+    trikona: memoryview[int]
+    """The sum after the trine reduction."""
+
+    reduced: memoryview[int]
+    """The sum after both reductions."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -991,6 +1060,15 @@ class Charts:
     dasha_periods: ChartsDashaPeriods
     """Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up."""
 
+    ashtakavarga: ChartsAshtakavarga
+    """Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`)."""
+
+    ashtakavarga_bindus: ChartsAshtakavargaBindus
+    """Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for."""
+
+    sarvashtakavarga: ChartsSarvashtakavarga
+    """Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1024,6 +1102,9 @@ def decode_charts(raw: bytes) -> Charts:
     at_svgs = blob.section(22, "svgs")
     at_dashas = blob.section(23, "dashas")
     at_dasha_periods = blob.section(24, "dasha_periods")
+    at_ashtakavarga = blob.section(25, "ashtakavarga")
+    at_ashtakavarga_bindus = blob.section(26, "ashtakavarga_bindus")
+    at_sarvashtakavarga = blob.section(27, "sarvashtakavarga")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1343,6 +1424,48 @@ def decode_charts(raw: bytes) -> Charts:
                 at_dasha_periods, 5, 8, at_dasha_periods.count
             ).cast("d"),
             length=at_dasha_periods.count,
+        ),
+        ashtakavarga=ChartsAshtakavarga(
+            graha=blob.column(
+                at_ashtakavarga, 0, 2, at_ashtakavarga.count
+            ).cast("H"),
+            shodhana=blob.column(
+                at_ashtakavarga, 1, 1, at_ashtakavarga.count
+            ).cast("B"),
+            ekadhipatya=blob.column(
+                at_ashtakavarga, 2, 1, at_ashtakavarga.count
+            ).cast("B"),
+            rashi_pinda=blob.column(
+                at_ashtakavarga, 3, 4, at_ashtakavarga.count
+            ).cast("I"),
+            graha_pinda=blob.column(
+                at_ashtakavarga, 4, 4, at_ashtakavarga.count
+            ).cast("I"),
+            yoga_pinda=blob.column(
+                at_ashtakavarga, 5, 4, at_ashtakavarga.count
+            ).cast("I"),
+            length=at_ashtakavarga.count,
+        ),
+        ashtakavarga_bindus=ChartsAshtakavargaBindus(
+            bindus=blob.column(
+                at_ashtakavarga_bindus, 0, 1, at_ashtakavarga_bindus.count
+            ).cast("B"),
+            reduced=blob.column(
+                at_ashtakavarga_bindus, 1, 1, at_ashtakavarga_bindus.count
+            ).cast("B"),
+            length=at_ashtakavarga_bindus.count,
+        ),
+        sarvashtakavarga=ChartsSarvashtakavarga(
+            sarva=blob.column(
+                at_sarvashtakavarga, 0, 2, at_sarvashtakavarga.count
+            ).cast("H"),
+            trikona=blob.column(
+                at_sarvashtakavarga, 1, 2, at_sarvashtakavarga.count
+            ).cast("H"),
+            reduced=blob.column(
+                at_sarvashtakavarga, 2, 2, at_sarvashtakavarga.count
+            ).cast("H"),
+            length=at_sarvashtakavarga.count,
         ),
     )
 

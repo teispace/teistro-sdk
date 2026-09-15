@@ -6173,6 +6173,42 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsShodhana",
+      "doc": "Where an Ashtakavarga's reductions and pindas were made: the settings'\nown `Shodhana`, which is a knob and not a catalogue member.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "EachGraha",
+          "value": 0,
+          "doc": "In each graha's own Ashtakavarga (BPHS chs. 67 to 69)."
+        },
+        {
+          "name": "Sarva",
+          "value": 1,
+          "doc": "On the sum of the seven, as the conformance corpus's engine makes them."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsEkadhipatya",
+      "doc": "How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside\nan occupied one: the settings' own `Ekadhipatya`.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Bphs",
+          "value": 0,
+          "doc": "BPHS ch. 68: an empty sign keeps a difference."
+        },
+        {
+          "name": "EmptyToZero",
+          "value": 1,
+          "doc": "The empty sign always goes to zero."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsDayPart",
       "doc": "Which arc of its day an instant falls in.",
       "repr": "u8",
@@ -9040,7 +9076,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
+          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice, 32 the Ashtakavarga. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -13319,6 +13355,88 @@
               "name": "to_jd",
               "scalar": "f64",
               "doc": "When it ends, a Julian day (UTC)."
+            }
+          ]
+        },
+        {
+          "id": 25,
+          "name": "ashtakavarga",
+          "doc": "Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "shodhana",
+              "scalar": "u8",
+              "doc": "Where the reductions and pindas were made; `reduced` in `ashtakavarga_bindus` is zero unless in each graha's own.",
+              "enum": "TsShodhana"
+            },
+            {
+              "name": "ekadhipatya",
+              "scalar": "u8",
+              "doc": "How a co-ruled sign beside an occupied one was reduced.",
+              "enum": "TsEkadhipatya"
+            },
+            {
+              "name": "rashi_pinda",
+              "scalar": "u32",
+              "doc": "Its rashi pinda."
+            },
+            {
+              "name": "graha_pinda",
+              "scalar": "u32",
+              "doc": "Its graha pinda."
+            },
+            {
+              "name": "yoga_pinda",
+              "scalar": "u32",
+              "doc": "Its yoga pinda, the two together."
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "name": "ashtakavarga_bindus",
+          "doc": "Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "bindus",
+              "scalar": "u8",
+              "doc": "Its bindus in the sign, 0 to 8."
+            },
+            {
+              "name": "reduced",
+              "scalar": "u8",
+              "doc": "The same after both reductions, when they were made in each graha's own Ashtakavarga; zero otherwise."
+            }
+          ]
+        },
+        {
+          "id": 27,
+          "name": "sarvashtakavarga",
+          "doc": "Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "sarva",
+              "scalar": "u16",
+              "doc": "The seven grahas' bindus in the sign."
+            },
+            {
+              "name": "trikona",
+              "scalar": "u16",
+              "doc": "The sum after the trine reduction."
+            },
+            {
+              "name": "reduced",
+              "scalar": "u16",
+              "doc": "The sum after both reductions."
             }
           ]
         }

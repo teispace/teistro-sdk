@@ -53,6 +53,7 @@ from .catalogue import (
     Direction,
     DistanceUnit,
     Dst,
+    Ekadhipatya,
     Ephemeris,
     Equinox,
     Era,
@@ -96,6 +97,7 @@ from .catalogue import (
     Samvatsara,
     Scale,
     Sex,
+    Shodhana,
     SpeedModel,
     Star,
     StarClass,
@@ -2063,7 +2065,7 @@ class ChartRequest:
     """Which of the document's sections to compute beside the
     foundation, as a bit set: 1 the day's almanac, 2 the planetary
     states, 4 the aspects, 8 the derived points, 16 the houses
-    service. Zero for the foundation alone, which is what every
+    service, 32 the Ashtakavarga. Zero for the foundation alone, which is what every
     caller compiled against an earlier header passes by not passing
     it at all.
 

@@ -754,6 +754,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   under an unequal division a house can begin in one sign and be centred
   in another.
 
+- `crates/strength`, the strength measures, beginning with the Ashtakavarga:
+  each graha's bindus, the sarvashtakavarga, and their reductions and pindas
+  under BPHS's reading (the default) or the conformance corpus's engine's
+  (`strength.shodhana`, `strength.ekadhipatya`).
+
+  **Numbers:** new. Every settings hash moved with the new knob and the
+  reshaped `strength.ekadhipatya`, which nothing read before; no number the
+  SDK computed before changes.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

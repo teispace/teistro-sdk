@@ -573,6 +573,9 @@ pub fn charts() -> BlobSchema {
             ),
             chart_dashas_section(23),
             chart_dasha_periods_section(24),
+            chart_ashtakavarga_section(25),
+            chart_ashtakavarga_bindus_section(26),
+            chart_sarvashtakavarga_section(27),
         ],
     }
 }
@@ -657,6 +660,68 @@ fn chart_dashas_section(id: u32) -> SectionSchema {
                 Scalar::U32,
                 "How many rows of `dasha_periods` are this dasha's.",
             ),
+        ],
+    )
+}
+
+/// Every chart's Ashtakavarga, a row a graha.
+fn chart_ashtakavarga_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "ashtakavarga",
+        "Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+            ColumnDef::new(
+                "shodhana",
+                Scalar::U8,
+                "Where the reductions and pindas were made; `reduced` in `ashtakavarga_bindus` is zero unless in each graha's own.",
+            )
+            .of_enum("TsShodhana"),
+            ColumnDef::new(
+                "ekadhipatya",
+                Scalar::U8,
+                "How a co-ruled sign beside an occupied one was reduced.",
+            )
+            .of_enum("TsEkadhipatya"),
+            ColumnDef::new("rashi_pinda", Scalar::U32, "Its rashi pinda."),
+            ColumnDef::new("graha_pinda", Scalar::U32, "Its graha pinda."),
+            ColumnDef::new("yoga_pinda", Scalar::U32, "Its yoga pinda, the two together."),
+        ],
+    )
+}
+
+/// Every graha's bindus by sign.
+fn chart_ashtakavarga_bindus_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "ashtakavarga_bindus",
+        "Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.",
+        vec![
+            ColumnDef::new("bindus", Scalar::U8, "Its bindus in the sign, 0 to 8."),
+            ColumnDef::new(
+                "reduced",
+                Scalar::U8,
+                "The same after both reductions, when they were made in each graha's own Ashtakavarga; zero otherwise.",
+            ),
+        ],
+    )
+}
+
+/// Every chart's sarvashtakavarga by sign.
+fn chart_sarvashtakavarga_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "sarvashtakavarga",
+        "Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.",
+        vec![
+            ColumnDef::new(
+                "sarva",
+                Scalar::U16,
+                "The seven grahas' bindus in the sign.",
+            ),
+            ColumnDef::new("trikona", Scalar::U16, "The sum after the trine reduction."),
+            ColumnDef::new("reduced", Scalar::U16, "The sum after both reductions."),
         ],
     )
 }

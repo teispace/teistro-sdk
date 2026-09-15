@@ -17,7 +17,7 @@ publish = false
 # Derives `schemars::JsonSchema` on the types a chart document carries,
 # so `cargo xtask gen document-schema` can describe it
 # (`docs/03-design/document-schema.md`).
-schema = ["dep:schemars", "teistro-aspect/schema", "teistro-chart/schema", "teistro-core/schema", "teistro-dasha/schema", "teistro-geometry/schema", "teistro-houses/schema", "teistro-panchanga/schema", "teistro-points/schema", "teistro-state/schema", "teistro-vargas/schema"]
+schema = ["dep:schemars", "teistro-aspect/schema", "teistro-chart/schema", "teistro-core/schema", "teistro-dasha/schema", "teistro-geometry/schema", "teistro-houses/schema", "teistro-strength/schema", "teistro-panchanga/schema", "teistro-points/schema", "teistro-state/schema", "teistro-vargas/schema"]
 
 [dependencies]
 teistro-aspect = { path = "../aspect" }
@@ -28,6 +28,7 @@ teistro-geometry = { path = "../geometry" }
 teistro-houses = { path = "../houses" }
 teistro-panchanga = { path = "../panchanga" }
 teistro-points = { path = "../points" }
+teistro-strength = { path = "../strength" }
 teistro-state = { path = "../state" }
 teistro-vargas = { path = "../vargas" }
 serde = { version = "1", features = ["derive"] }

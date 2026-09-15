@@ -283,6 +283,7 @@ void main() {
     aspects: true,
     points: true,
     houses: true,
+    ashtakavarga: true,
     state: true,
   );
   put('chart-varga-count', charts.vargaCount);
@@ -429,6 +430,18 @@ void main() {
       }
     }
     put('chart-$i-dasha-count', chart.dashas.length);
+    final av = chart.ashtakavarga!;
+    put('chart-$i-ashtakavarga', '${av.shodhana.key} ${av.ekadhipatya.key}');
+    for (final g in av.grahas) {
+      final key = 'chart-$i-ashtakavarga-${g.graha.fullKey}';
+      put(key, g.bindus.join(','));
+      put('$key-reduced', g.reduced?.join(','));
+      put('$key-pindas', '${g.rashiPinda},${g.grahaPinda},${g.yogaPinda}');
+    }
+    put(
+      'chart-$i-sarvashtakavarga',
+      [av.sarva, av.trikona, av.reduced].map((row) => row.join(',')).join(';'),
+    );
     for (final (j, dasha) in chart.dashas.indexed) {
       final key = 'chart-$i-dasha-$j';
       final balance = dasha.balance;

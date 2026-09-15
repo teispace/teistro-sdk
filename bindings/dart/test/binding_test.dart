@@ -713,6 +713,49 @@ void _engineTests() {
     );
   });
 
+  /// A chart's Ashtakavarga crosses whole: each graha's bindus holding the
+  /// classical totals, the sum, and each graha's reductions under the default
+  /// reading; null unless asked.
+  test('a chart carries its Ashtakavarga and each graha\'s reductions', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      ashtakavarga: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .ashtakavarga,
+      isNull,
+    );
+    final av = chart.ashtakavarga!;
+    expect(
+      (av.shodhana, av.ekadhipatya),
+      (Shodhana.eachGraha, Ekadhipatya.bphs),
+    );
+    expect(
+      [for (final g in av.grahas) g.bindus.reduce((a, b) => a + b)],
+      [48, 49, 39, 54, 56, 52, 39],
+    );
+    expect(av.sarva.reduce((a, b) => a + b), 337);
+    expect(av.reduced, [
+      for (var sign = 0; sign < 12; sign += 1)
+        av.grahas.fold<int>(0, (sum, g) => sum + g.reduced![sign]),
+    ]);
+    expect(
+      av.grahas.every((g) => g.yogaPinda == g.rashiPinda + g.grahaPinda),
+      isTrue,
+    );
+    ctx.dispose();
+  });
+
   /// A chart's dashas cross whole: the balance, the periods to the
   /// settings' depth with their paths, and the chain at an instant read off
   /// them.

@@ -33,9 +33,10 @@ class TheCatalogue(unittest.TestCase):
         # 96 since chart_layout joined the catalogue, whose eight members
         # here are its six layouts, its UNKNOWN, and the kind's own member
         # of `Kind`; 97 since the boundary's `Balance` crossed with the
-        # dashas, with its two methods.
-        self.assertEqual(len(every_enum()), 97)
-        self.assertEqual(sum(len(list(found)) for found in every_enum()), 946 + 73 + 8 + 2)
+        # dashas, with its two methods; 99 since the Ashtakavarga's two readings
+        # crossed, two members each.
+        self.assertEqual(len(every_enum()), 99)
+        self.assertEqual(sum(len(list(found)) for found in every_enum()), 946 + 73 + 8 + 2 + 4)
 
     def test_every_member_is_an_int_with_a_key(self) -> None:
         for found in every_enum():

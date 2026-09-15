@@ -251,6 +251,7 @@ const charts = geo.chart.foundMany({
   aspects: true,
   points: true,
   houses: true,
+  ashtakavarga: true,
   state: true,
 });
 put('chart-varga-count', charts.vargaCount);
@@ -353,6 +354,15 @@ for (const chart of charts) {
     });
   });
   put(`chart-${i}-dasha-count`, chart.dashas.length);
+  const av = chart.ashtakavarga;
+  put(`chart-${i}-ashtakavarga`, `${av.shodhana} ${av.ekadhipatya}`);
+  av.grahas.forEach((g) => {
+    const key = `chart-${i}-ashtakavarga-${g.graha}`;
+    put(key, g.bindus.join(','));
+    put(`${key}-reduced`, g.reduced ? g.reduced.join(',') : null);
+    put(`${key}-pindas`, `${g.rashiPinda},${g.grahaPinda},${g.yogaPinda}`);
+  });
+  put(`chart-${i}-sarvashtakavarga`, `${av.sarva.join(',')};${av.trikona.join(',')};${av.reduced.join(',')}`);
   chart.dashas.forEach((dasha, j) => {
     const key = `chart-${i}-dasha-${j}`;
     const balance = dasha.balance;

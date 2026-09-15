@@ -2743,6 +2743,36 @@ export const BalanceById = new Map([
   [1, 'temporal'],
 ]);
 
+/** Every Shodhana by name. */
+export const Shodhana = Object.freeze({
+  EachGraha: 'each-graha',
+  Sarva: 'sarva',
+});
+
+/**
+ * Every Shodhana by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ShodhanaById = new Map([
+  [0, 'each-graha'],
+  [1, 'sarva'],
+]);
+
+/** Every Ekadhipatya by name. */
+export const Ekadhipatya = Object.freeze({
+  Bphs: 'bphs',
+  EmptyToZero: 'empty-to-zero',
+});
+
+/**
+ * Every Ekadhipatya by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const EkadhipatyaById = new Map([
+  [0, 'bphs'],
+  [1, 'empty-to-zero'],
+]);
+
 /** Every DayPart by name. */
 export const DayPart = Object.freeze({
   Daylight: 'daylight',

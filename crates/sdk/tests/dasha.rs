@@ -17,10 +17,13 @@
     reason = "tests fail by panicking and index what they asked for"
 )]
 
+mod common;
+
+use common::fixture;
 use serde_json::Value;
 use teistro::catalogue::{DashaSystem, Graha, Nakshatra};
-use teistro::quantity::{Altitude, Depth, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::{ChartRequest, Context, Document, Ephemeris, Timeline, UtcOffset};
+use teistro::quantity::{Depth, JulianDay};
+use teistro::{ChartRequest, Context, Document, Timeline, UtcOffset};
 
 /// `dashas.methods.spatial.remaining_fraction` at `builtin-standard`.
 const SPATIAL_FRACTION: f64 = 1e-4;
@@ -29,35 +32,9 @@ const TEMPORAL_FRACTION: f64 = 1e-3;
 /// `dashas.methods.*.periods[*][2..3]` and the span at `builtin-standard`, days.
 const BOUNDARY_DAYS: f64 = 1.0;
 
-fn fixture(name: &str) -> Value {
-    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../fixtures/baseline")
-        .join(name);
-    serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap()
-}
-
-/// The corpus's first chart read under `conformance-baseline`, with a
-/// settings patch.
+/// The corpus's first chart with its dashas.
 fn reading(patch: &str, dashas: &[DashaSystem]) -> (Context, Document) {
-    let sdk = Context::builder()
-        .profile("conformance-baseline")
-        .settings_json(patch)
-        .ephemeris([Ephemeris::Builtin])
-        .build()
-        .expect("the conformance profile and the built-in ephemeris");
-    let place = Place::new(
-        Latitude::try_new(27.7172).unwrap(),
-        Longitude::try_new(85.324).unwrap(),
-        Altitude::try_new(1400.0).unwrap(),
-    );
-    let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700).unwrap())
-        .with_dashas(dashas.iter().copied());
-    let document = sdk
-        .chart()
-        .reading(JulianDay::<Utc>::literal(2_447_995.489_583_333_5), &request)
-        .expect("a reading")
-        .value;
-    (sdk, document)
+    common::reading(patch, |request| request.with_dashas(dashas.iter().copied()))
 }
 
 /// The document's dasha against a recorded method: first lord, balance and

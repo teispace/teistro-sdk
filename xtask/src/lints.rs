@@ -805,40 +805,66 @@ fn targets_declare_their_features(root: &Path, outcome: &mut Outcome) {
             if !text.contains(GATED.1) {
                 continue;
             }
-            let Some(name) = path
-                .file_stem()
-                .map(|stem| stem.to_string_lossy().to_string())
-            else {
-                continue;
+            // A shared module (`tests/common/mod.rs`) is no target of its
+            // own: every target that declares it (`mod common;`) names what
+            // it names, so each of those must require the feature.
+            let targets: Vec<String> = if path.file_name().is_some_and(|f| f == "mod.rs") {
+                let Some(module) = path
+                    .parent()
+                    .and_then(Path::file_name)
+                    .map(|m| m.to_string_lossy().to_string())
+                else {
+                    continue;
+                };
+                sources(&root.join(directory))
+                    .into_iter()
+                    .filter(|target| target.parent() == Some(&root.join(directory)))
+                    .filter(|target| {
+                        std::fs::read_to_string(target)
+                            .is_ok_and(|body| body.contains(&format!("mod {module};")))
+                    })
+                    .filter_map(|target| {
+                        target
+                            .file_stem()
+                            .map(|stem| stem.to_string_lossy().to_string())
+                    })
+                    .collect()
+            } else {
+                path.file_stem()
+                    .map(|stem| stem.to_string_lossy().to_string())
+                    .into_iter()
+                    .collect()
             };
-            // The manifest section for this target, and whether it
-            // requires the feature. Read as text because the question is
-            // whether two lines sit together, which is what a reader
-            // checking the manifest by eye would look for.
-            let header = format!("[[{kind}]]\nname = \"{name}\"");
-            let requires = manifest_text.split_once(&header).is_some_and(|(_, after)| {
-                after
-                    .split("\n[")
-                    .next()
-                    .is_some_and(|section| section.contains(GATED.0))
-            });
-            if requires {
-                continue;
+            for name in targets {
+                // The manifest section for this target, and whether it
+                // requires the feature. Read as text because the question is
+                // whether two lines sit together, which is what a reader
+                // checking the manifest by eye would look for.
+                let header = format!("[[{kind}]]\nname = \"{name}\"");
+                let requires = manifest_text.split_once(&header).is_some_and(|(_, after)| {
+                    after
+                        .split("\n[")
+                        .next()
+                        .is_some_and(|section| section.contains(GATED.0))
+                });
+                if requires {
+                    continue;
+                }
+                let shown = path
+                    .strip_prefix(root)
+                    .unwrap_or(&path)
+                    .display()
+                    .to_string();
+                outcome.failures.push(Finding {
+                    file: shown,
+                    line: 0,
+                    text: format!(
+                        "names `{}` but no `[[{kind}]] name = \"{name}\"` requires `{}`",
+                        GATED.1, GATED.0
+                    ),
+                    rule: RULE,
+                });
             }
-            let shown = path
-                .strip_prefix(root)
-                .unwrap_or(&path)
-                .display()
-                .to_string();
-            outcome.failures.push(Finding {
-                file: shown,
-                line: 0,
-                text: format!(
-                    "names `{}` but no `[[{kind}]] name = \"{name}\"` requires `{}`",
-                    GATED.1, GATED.0
-                ),
-                rule: RULE,
-            });
         }
     }
 }

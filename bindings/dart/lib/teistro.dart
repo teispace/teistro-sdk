@@ -614,6 +614,7 @@ const int _sectionPoints = 8;
 
 /// `TS_CHART_HOUSES`, the houses service.
 const int _sectionHouses = 16;
+const int _sectionAshtakavarga = 32;
 
 /// `TS_CHART_STATE`, the planetary states.
 const int _sectionState = 2;
@@ -659,6 +660,7 @@ final class ChartArea extends _Area {
     bool aspects = false,
     bool points = false,
     bool houses = false,
+    bool ashtakavarga = false,
     bool state = false,
   }) => foundMany(
     instants: <double>[instant],
@@ -672,6 +674,7 @@ final class ChartArea extends _Area {
     aspects: aspects,
     points: points,
     houses: houses,
+    ashtakavarga: ashtakavarga,
     state: state,
   ).at(0);
 
@@ -705,6 +708,7 @@ final class ChartArea extends _Area {
     bool aspects = false,
     bool points = false,
     bool houses = false,
+    bool ashtakavarga = false,
     bool state = false,
   }) => decodeCharts(
     _context._guarded(
@@ -724,6 +728,7 @@ final class ChartArea extends _Area {
               (aspects ? _sectionAspects : 0) |
               (points ? _sectionPoints : 0) |
               (houses ? _sectionHouses : 0) |
+              (ashtakavarga ? _sectionAshtakavarga : 0) |
               (state ? _sectionState : 0),
           vargas: vargas,
           dashas: dashas,
@@ -1510,6 +1515,68 @@ final class Drishti {
 
   /// How near the body looked at stands to one.
   final EdgeDistance toEdge;
+}
+
+/// One graha's Ashtakavarga.
+final class GrahaAshtakavarga {
+  const GrahaAshtakavarga({
+    required this.graha,
+    required this.bindus,
+    required this.reduced,
+    required this.rashiPinda,
+    required this.grahaPinda,
+    required this.yogaPinda,
+  });
+
+  /// Which graha, Sun to Saturn.
+  final Graha graha;
+
+  /// Its bindus by sign, Aries to Pisces, 0 to 8.
+  final List<int> bindus;
+
+  /// The same after both reductions, when they were made in each graha's own
+  /// Ashtakavarga; null otherwise.
+  final List<int>? reduced;
+
+  /// Its rashi pinda.
+  final int rashiPinda;
+
+  /// Its graha pinda.
+  final int grahaPinda;
+
+  /// Its yoga pinda, the two together.
+  final int yogaPinda;
+}
+
+/// A chart's Ashtakavarga: each graha's, the sarvashtakavarga, and their
+/// reductions and pindas (`03-design/ashtakavarga-measured.md`).
+final class Ashtakavarga {
+  const Ashtakavarga({
+    required this.shodhana,
+    required this.ekadhipatya,
+    required this.grahas,
+    required this.sarva,
+    required this.trikona,
+    required this.reduced,
+  });
+
+  /// Where the reductions and pindas were made.
+  final Shodhana shodhana;
+
+  /// How a co-ruled sign beside an occupied one was reduced.
+  final Ekadhipatya ekadhipatya;
+
+  /// Each graha's, Sun to Saturn.
+  final List<GrahaAshtakavarga> grahas;
+
+  /// The seven grahas' bindus by sign, 337 in all.
+  final List<int> sarva;
+
+  /// The sum after the trine reduction.
+  final List<int> trikona;
+
+  /// The sum after both reductions.
+  final List<int> reduced;
 }
 
 /// One period of a dasha.
@@ -2358,6 +2425,44 @@ final class Drawing {
   }
 }
 
+/// Each batch's Ashtakavargas, decoded once however many charts read them.
+final Expando<List<Ashtakavarga>> _ashtakavargas = Expando<List<Ashtakavarga>>(
+  'ashtakavargas',
+);
+
+List<Ashtakavarga> _ashtakavargasOf(Charts batch) =>
+    _ashtakavargas[batch] ??= _decodeAshtakavargas(batch);
+
+List<Ashtakavarga> _decodeAshtakavargas(Charts batch) {
+  final rows = batch.ashtakavarga;
+  final bins = batch.ashtakavargaBindus;
+  final sums = batch.sarvashtakavarga;
+  List<int> twelve(List<int> column, int from) =>
+      List<int>.unmodifiable(column.sublist(from, from + 12));
+  return List<Ashtakavarga>.generate(rows.length ~/ 7, (chart) {
+    final grahas = List<GrahaAshtakavarga>.generate(7, (g) {
+      final row = chart * 7 + g;
+      final each = Shodhana.byId(rows.shodhana[row]) == Shodhana.eachGraha;
+      return GrahaAshtakavarga(
+        graha: Graha.byId(rows.graha[row]),
+        bindus: twelve(bins.bindus, row * 12),
+        reduced: each ? twelve(bins.reduced, row * 12) : null,
+        rashiPinda: rows.rashiPinda[row],
+        grahaPinda: rows.grahaPinda[row],
+        yogaPinda: rows.yogaPinda[row],
+      );
+    }, growable: false);
+    return Ashtakavarga(
+      shodhana: Shodhana.byId(rows.shodhana[chart * 7]),
+      ekadhipatya: Ekadhipatya.byId(rows.ekadhipatya[chart * 7]),
+      grahas: grahas,
+      sarva: twelve(sums.sarva, chart * 12),
+      trikona: twelve(sums.trikona, chart * 12),
+      reduced: twelve(sums.reduced, chart * 12),
+    );
+  }, growable: false);
+}
+
 /// Each batch's dashas, decoded once however many charts read them.
 final Expando<List<List<Dasha>>> _dashas = Expando<List<List<Dasha>>>('dashas');
 
@@ -2756,6 +2861,12 @@ final class Chart {
   }
 
   /// The dashas asked for, in the order asked; empty unless `dashas` named
+  /// The Ashtakavarga, when `ashtakavarga: true` asked for it.
+  Ashtakavarga? get ashtakavarga {
+    final all = _ashtakavargasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
   /// some (`03-design/dasha-kernels.md`).
   List<Dasha> get dashas {
     final all = _dashasOf(batch);

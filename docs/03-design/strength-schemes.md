@@ -108,6 +108,32 @@ settles it.
 7. The `parashari-baseline` scheme reproduces the baseline engine's
    output within the published tolerance on the reference corpus.
 
+## The Ashtakavarga, built (2026-09-15)
+
+The first strength measure built, before the bala schemes, because it is a
+function of eight signs and nothing else, and the dasha and transit work
+reads it. `cargo xtask ashtakavarga` (`ashtakavarga-measured.md`) measured
+the conformance corpus's engine over 77 charts beside BPHS chs. 66 to 69 in
+translation, a rank-1 text:
+
+- **The bindu tables are the text's**, every chart holds 337, and the
+  engine's reproduce on every chart.
+- **Everything after them is read two ways.** The text reduces each graha's
+  own Ashtakavarga and forms each graha's pindas from its own reduced bindus
+  and the grahas standing in each sign; the engine reduces the sum, forms a
+  rashi pinda of the reduced sum and a graha pinda of raw bindus, zeroes an
+  empty co-ruled sign where the text keeps a difference, and gives Virgo the
+  measure 8 where the text gives 6.
+- **A rank-1 text corrects a rank-2 value**, so `strength.shodhana =
+  EACH_GRAHA` and `strength.ekadhipatya = BPHS` are the defaults, and the
+  conformance profile takes `SARVA` and `EMPTY_TO_ZERO`, under which
+  `crates/strength` reproduces all 77 recorded answers (cruxes C59–C62).
+- **The lagna keeps no Ashtakavarga of its own and the nodes are not
+  occupants** (C62): neither the engine nor the text read settles either.
+
+The document's `ashtakavarga` section, the boundary's three sections and
+every binding carry it, and `check-parity` holds the four surfaces to it.
+
 ## Bhava bala, rashi bala, vimshopaka
 
 Bhava bala and rashi bala reuse the scheme kernel with their own

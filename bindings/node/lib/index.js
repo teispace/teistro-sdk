@@ -50,6 +50,8 @@ import {
   RashiById,
   StrengthById,
   BalanceById,
+  EkadhipatyaById,
+  ShodhanaById,
   DashaSystemById,
   VargaById,
   SDK_VERSION,
@@ -706,6 +708,15 @@ export class Chart {
    */
   get dashas() {
     return dashasOf(this.#batch)[this.#index] ?? [];
+  }
+
+  /**
+   * The Ashtakavarga (`ashtakavarga: true`): each graha's bindus by sign from
+   * Aries, the sarvashtakavarga, and their reductions and pindas under the
+   * settings' reading; `null` unless asked for.
+   */
+  get ashtakavarga() {
+    return ashtakavargasOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -1695,6 +1706,7 @@ class ChartArea extends Area {
           (request.aspects === true ? SECTION_ASPECTS : 0) |
           (request.points === true ? SECTION_POINTS : 0) |
           (request.houses === true ? SECTION_HOUSES : 0) |
+          (request.ashtakavarga === true ? SECTION_ASHTAKAVARGA : 0) |
           (request.state === true ? SECTION_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
         dashas: catalogueKeys(request.dashas, 'dashas', 'DashaSystem'),
@@ -1796,6 +1808,45 @@ function dashaFrom(d, row, start, count) {
       return chain;
     },
   });
+}
+
+/** Each batch's Ashtakavargas, decoded once however many charts read them. */
+const ASHTAKAVARGAS = new WeakMap();
+
+/** Every chart's Ashtakavarga in a batch; empty when none was asked for. */
+function ashtakavargasOf(batch) {
+  let decoded = ASHTAKAVARGAS.get(batch);
+  if (decoded === undefined) {
+    const d = batch.decoded;
+    const rows = d.ashtakavarga;
+    const bins = d.ashtakavargaBindus;
+    const sums = d.sarvashtakavarga;
+    const twelve = (column, from) => Object.freeze(Array.from(column.subarray(from, from + 12)));
+    decoded = Array.from({ length: rows.length / 7 }, (_, chart) => {
+      const grahas = Array.from({ length: 7 }, (_, g) => {
+        const row = chart * 7 + g;
+        const eachGraha = ShodhanaById.get(rows.shodhana[row]) === 'each-graha';
+        return Object.freeze({
+          graha: GrahaById.get(rows.graha[row]) ?? 'unknown',
+          bindus: twelve(bins.bindus, row * 12),
+          reduced: eachGraha ? twelve(bins.reduced, row * 12) : null,
+          rashiPinda: rows.rashiPinda[row],
+          grahaPinda: rows.grahaPinda[row],
+          yogaPinda: rows.yogaPinda[row],
+        });
+      });
+      return Object.freeze({
+        shodhana: ShodhanaById.get(rows.shodhana[chart * 7]) ?? 'unknown',
+        ekadhipatya: EkadhipatyaById.get(rows.ekadhipatya[chart * 7]) ?? 'unknown',
+        grahas: Object.freeze(grahas),
+        sarva: twelve(sums.sarva, chart * 12),
+        trikona: twelve(sums.trikona, chart * 12),
+        reduced: twelve(sums.reduced, chart * 12),
+      });
+    });
+    ASHTAKAVARGAS.set(batch, decoded);
+  }
+  return decoded;
 }
 
 /** Each batch's drawings, parsed once however many charts read them. */
@@ -1936,6 +1987,9 @@ const SECTION_POINTS = 8;
 
 /** `TS_CHART_HOUSES`, the houses service. */
 const SECTION_HOUSES = 16;
+
+/** `TS_CHART_ASHTAKAVARGA`, the Ashtakavarga. */
+const SECTION_ASHTAKAVARGA = 32;
 
 /** `TS_CHART_STATE`, the planetary states. */
 const SECTION_STATE = 2;

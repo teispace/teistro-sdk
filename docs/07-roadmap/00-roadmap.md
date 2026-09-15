@@ -489,7 +489,12 @@ recording engine implements, measured beside each school's rival reading
 they start from (`arudhas-measured.md`), in the document and every binding.
 **The Kalachakra has its own kernel** (`03-design/kalachakra-measured.md`,
 `check-kalachakra`), measured at every fork the sources read differently
-and built with each fork a knob (C54–C58). Next: the strength schemes.
+and built with each fork a knob (C54–C58). **Strength has begun with the
+Ashtakavarga** (`03-design/ashtakavarga-measured.md`, `check-ashtakavarga`):
+BPHS read beside the corpus's engine, the text's reductions and pindas the
+default and the engine's the conformance profile's (C59–C62), in
+`crates/strength`, the document and every binding. Next: vimshopaka and the
+shadbala scheme table.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

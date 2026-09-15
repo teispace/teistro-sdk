@@ -274,11 +274,22 @@ knob!(
         ThreeSevenEleven = "THREE_SEVEN_ELEVEN" }
 );
 knob!(
-    /// How Ashtakavarga reductions treat a planet ruling two signs.
-    Ekadhipatya { /// The classical rule.
-        Classical = "CLASSICAL", /// Zero.
-        Zero = "ZERO", /// Transfer.
-        Transfer = "TRANSFER" }
+    /// How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign
+    /// beside an occupied one (crux C60).
+    Ekadhipatya { /// BPHS ch. 68: an empty sign beside an occupied sign with the smaller
+        /// number keeps the difference, and otherwise goes to zero.
+        Bphs = "BPHS", /// The conformance corpus's recording engine: the empty sign always
+        /// goes to zero.
+        EmptyToZero = "EMPTY_TO_ZERO" }
+);
+knob!(
+    /// Where the Ashtakavarga's reductions and pindas are made (crux C59).
+    Shodhana { /// In each graha's own Ashtakavarga, its pindas from its own reduced
+        /// bindus and the grahas standing in each sign (BPHS chs. 67 to 69).
+        EachGraha = "EACH_GRAHA", /// On the sum of the seven, as the conformance corpus's recording
+        /// engine makes them: the rashi pinda of the reduced sum and a graha
+        /// pinda of the raw bindus.
+        Sarva = "SARVA" }
 );
 knob!(
     /// The convention for a divisional chart no text attests.
