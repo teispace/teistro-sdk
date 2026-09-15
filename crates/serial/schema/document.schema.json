@@ -1039,6 +1039,17 @@
           "$ref": "#/$defs/Graha",
           "description": "The lord it starts with."
         },
+        "kalachakra": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KalachakraRules"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The Kalachakra's own choices, when it is the Kalachakra."
+        },
         "moon_span": {
           "anyOf": [
             {
@@ -1999,6 +2010,89 @@
       "required": [
         "kaala",
         "at"
+      ],
+      "type": "object"
+    },
+    "KalachakraAfterNinth": {
+      "description": "What follows the ninth Kalachakra mahadasha (crux C56).",
+      "oneOf": [
+        {
+          "const": "REVERSE",
+          "description": "The same nine signs reversed, as the recording engine runs them.",
+          "type": "string"
+        },
+        {
+          "const": "REPEAT",
+          "description": "The same nine in the same order.",
+          "type": "string"
+        }
+      ]
+    },
+    "KalachakraBalance": {
+      "description": "How the Kalachakra balance at birth is taken (crux C55).",
+      "oneOf": [
+        {
+          "const": "FIRST_SIGN",
+          "description": "The unelapsed part of the pada, of the first sign's years, as the recording engine takes it.",
+          "type": "string"
+        },
+        {
+          "const": "WHOLE_PADA",
+          "description": "The elapsed part of the pada, of the pada's whole span, the signs it covers skipped.",
+          "type": "string"
+        }
+      ]
+    },
+    "KalachakraMembership": {
+      "description": "Which pada table a nakshatra takes in the Kalachakra dasha (crux C54).",
+      "oneOf": [
+        {
+          "const": "LISTED",
+          "description": "The lists the conformance corpus's recording engine carries, which differ from the triad rule at Ardra, Uttara Phalguni, Jyeshtha, Shatabhisha and Revati.",
+          "type": "string"
+        },
+        {
+          "const": "TRIAD",
+          "description": "By the nakshatra's place in its triad, as the published lists read have it: the middle of each triad takes its chakra's second table and the outer two the first.",
+          "type": "string"
+        }
+      ]
+    },
+    "KalachakraRules": {
+      "description": "The choices a Kalachakra is computed under.",
+      "properties": {
+        "after_cycle": {
+          "$ref": "#/$defs/AfterCycle",
+          "description": "What is answered past the end of the three cycles."
+        },
+        "after_ninth": {
+          "$ref": "#/$defs/KalachakraAfterNinth",
+          "description": "What follows the ninth mahadasha."
+        },
+        "balance": {
+          "$ref": "#/$defs/Balance",
+          "description": "How the balance is measured."
+        },
+        "balance_of": {
+          "$ref": "#/$defs/KalachakraBalance",
+          "description": "How the balance at birth is taken."
+        },
+        "membership": {
+          "$ref": "#/$defs/KalachakraMembership",
+          "description": "Which pada table a nakshatra takes."
+        },
+        "year_length": {
+          "$ref": "#/$defs/YearLength",
+          "description": "The length of a year."
+        }
+      },
+      "required": [
+        "balance",
+        "year_length",
+        "after_cycle",
+        "membership",
+        "balance_of",
+        "after_ninth"
       ],
       "type": "object"
     },

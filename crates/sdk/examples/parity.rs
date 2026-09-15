@@ -884,7 +884,11 @@ fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) ->
     ChartRequest::at(place, offset)
         .with_kind(ChartKind::Natal)
         .with_vargas([Varga::D9, Varga::D10])
-        .with_dashas([DashaSystem::Vimshottari, DashaSystem::Chara])
+        .with_dashas([
+            DashaSystem::Vimshottari,
+            DashaSystem::Chara,
+            DashaSystem::Kalachakra,
+        ])
         .with_drawings([
             (ChartLayout::NorthIndian.key_id(), Varga::D1),
             (ChartLayout::SouthIndian.key_id(), Varga::D9),

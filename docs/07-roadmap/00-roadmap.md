@@ -487,7 +487,9 @@ sign-based dashas are rows of the K-rashi kernel** too
 recording engine implements, measured beside each school's rival reading
 (cruxes C49–C53) and reproduced on all 616 answers, with the arudha padas
 they start from (`arudhas-measured.md`), in the document and every binding.
-Next: Kalachakra and the strength schemes.
+**The Kalachakra has its own kernel** (`03-design/kalachakra-measured.md`,
+`check-kalachakra`), measured at every fork the sources read differently
+and built with each fork a knob (C54–C58). Next: the strength schemes.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

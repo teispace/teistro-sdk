@@ -90,6 +90,8 @@
 //!   beside the readings other schools give.
 //! - `arudhas` and `check-arudhas`: the twelve arudha padas, their lords and
 //!   their exception.
+//! - `kalachakra` and `check-kalachakra`: the Kalachakra dasha, measured
+//!   beside the readings the sources give at each of its forks.
 //! - `render` and `check-render`: the golden drawings, a real chart drawn in
 //!   every shipped layout in two locales and both themes, byte for byte.
 //! - `schema` and `check-schema`: the falsification pass over the chart
@@ -156,6 +158,7 @@ mod generated;
 mod hashes;
 mod houses;
 mod intl;
+mod kalachakra;
 mod lints;
 mod lunisolar;
 mod measure;
@@ -252,6 +255,11 @@ const PASSES: &[Pass] = &[
         rashi_dashas::check_generated,
     ),
     ("arudhas", arudhas::generate, arudhas::check_generated),
+    (
+        "kalachakra",
+        kalachakra::generate,
+        kalachakra::check_generated,
+    ),
 ];
 
 /// Runs a pass, or says it is not one.

@@ -46,13 +46,27 @@
 //! ```
 
 pub mod balance;
+pub mod kalachakra;
 pub mod rashi;
 pub mod reading;
 pub mod row;
 pub mod tree;
 
 pub use balance::{BalanceAtBirth, Written};
+pub use kalachakra::{KalachakraDasha, KalachakraRules, pada_row};
 pub use rashi::{Footedness, Parity, RASHI_ROWS, RashiChart, RashiDasha, RashiRow, rashi_row};
 pub use reading::{DashaCursor, DashaReading, PeriodRow};
 pub use row::{Count, Lord, ROWS, Seat, UduRow, VIMSHOTTARI, row};
 pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules, Timeline};
+
+/// Every dasha system this build computes, in the catalogue's order within
+/// each kernel: the nakshatra-seeded rows, the sign-based rows, and the
+/// Kalachakra.
+pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
+    ROWS.iter()
+        .map(|row| row.system)
+        .chain(RASHI_ROWS.iter().map(|row| row.system))
+        .chain(core::iter::once(
+            teistro_core::catalogue::DashaSystem::Kalachakra,
+        ))
+}

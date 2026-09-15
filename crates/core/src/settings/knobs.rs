@@ -224,6 +224,30 @@ knob!(
         Repeat = "REPEAT" }
 );
 knob!(
+    /// Which pada table a nakshatra takes in the Kalachakra dasha (crux C54).
+    KalachakraMembership { /// The lists the conformance corpus's recording engine carries,
+        /// which differ from the triad rule at Ardra, Uttara Phalguni,
+        /// Jyeshtha, Shatabhisha and Revati.
+        Listed = "LISTED", /// By the nakshatra's place in its triad, as the published lists
+        /// read have it: the middle of each triad takes its chakra's second
+        /// table and the outer two the first.
+        Triad = "TRIAD" }
+);
+knob!(
+    /// How the Kalachakra balance at birth is taken (crux C55).
+    KalachakraBalance { /// The unelapsed part of the pada, of the first sign's years, as the
+        /// recording engine takes it.
+        FirstSign = "FIRST_SIGN", /// The elapsed part of the pada, of the pada's whole span, the signs
+        /// it covers skipped.
+        WholePada = "WHOLE_PADA" }
+);
+knob!(
+    /// What follows the ninth Kalachakra mahadasha (crux C56).
+    KalachakraAfterNinth { /// The same nine signs reversed, as the recording engine runs them.
+        Reverse = "REVERSE", /// The same nine in the same order.
+        Repeat = "REPEAT" }
+);
+knob!(
     /// A seed outside a conditional dasha's cycle.
     SeedOverflow { /// Wrap to the start, flagged.
         WrapToStart = "WRAP_TO_START", /// Refuse.

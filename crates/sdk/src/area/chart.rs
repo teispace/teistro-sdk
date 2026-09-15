@@ -18,7 +18,8 @@ use teistro_core::settings::AyanamshaChoice;
 use teistro_core::settings::Balance;
 use teistro_core::time::UtcOffset;
 use teistro_dasha::{
-    Birth, Dasha, DashaCursor, DashaReading, RashiChart, RashiDasha, Rules as DashaRules,
+    Birth, Dasha, DashaCursor, DashaReading, KalachakraDasha, KalachakraRules, RashiChart,
+    RashiDasha, Rules as DashaRules,
 };
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
@@ -338,6 +339,10 @@ impl<'a> ChartArea<'a> {
             Balance::Temporal => Some(self.moon_span(foundation)?),
             _ => None,
         };
+        if system == DashaSystem::Kalachakra {
+            let dasha = Self::kalachakra_of(foundation, KalachakraRules::of(settings), moon_span)?;
+            return Ok(DashaReading::of_kalachakra(&dasha, rules, depth, moon_span));
+        }
         let dasha = Self::dasha_of(foundation, system, rules, moon_span)?;
         Ok(DashaReading::of(&dasha, depth, moon_span))
     }
@@ -345,17 +350,25 @@ impl<'a> ChartArea<'a> {
     /// The system a catalogue names and no row implements, refused with the
     /// systems this build does implement.
     fn not_built(system: DashaSystem) -> Error {
-        let built: Vec<&str> = teistro_dasha::ROWS
-            .iter()
-            .map(|row| row.system)
-            .chain(teistro_dasha::RASHI_ROWS.iter().map(|row| row.system))
-            .map(DashaSystem::key)
-            .collect();
+        let built: Vec<&str> = teistro_dasha::systems().map(DashaSystem::key).collect();
         Error::unsupported(format!(
             "{} is a dasha the catalogue names and this build does not compute yet",
             system.key()
         ))
         .with_hint(format!("the dashas built are {}", built.join(", ")))
+    }
+
+    /// The birth a nakshatra-seeded dasha reads: the instant, the Moon, and
+    /// the Moon's span when the balance is temporal.
+    fn birth_of(foundation: &ChartFoundation, moon_span: Option<Interval>) -> Result<Birth, Error> {
+        let moon = foundation
+            .graha(Graha::Moon)
+            .ok_or_else(|| Error::internal("a founded chart places the Moon"))?;
+        Ok(Birth {
+            instant: foundation.instant,
+            moon: Nas::try_from_degrees(moon.longitude_deg)?,
+            moon_span,
+        })
     }
 
     /// The nakshatra-seeded dasha of a founded chart, from its Moon.
@@ -366,15 +379,16 @@ impl<'a> ChartArea<'a> {
         moon_span: Option<Interval>,
     ) -> Result<Dasha, Error> {
         let row = teistro_dasha::row(system).ok_or_else(|| Self::not_built(system))?;
-        let moon = foundation
-            .graha(Graha::Moon)
-            .ok_or_else(|| Error::internal("a founded chart places the Moon"))?;
-        let birth = Birth {
-            instant: foundation.instant,
-            moon: Nas::try_from_degrees(moon.longitude_deg)?,
-            moon_span,
-        };
-        Dasha::new(row, &birth, rules)
+        Dasha::new(row, &Self::birth_of(foundation, moon_span)?, rules)
+    }
+
+    /// The Kalachakra of a founded chart, from its Moon.
+    fn kalachakra_of(
+        foundation: &ChartFoundation,
+        rules: KalachakraRules,
+        moon_span: Option<Interval>,
+    ) -> Result<KalachakraDasha, Error> {
+        KalachakraDasha::new(&Self::birth_of(foundation, moon_span)?, rules)
     }
 
     /// The sign-based dasha of a founded chart, from the chart a rashi dasha
@@ -490,6 +504,10 @@ impl<'a> ChartArea<'a> {
             return self
                 .rashi_dasha_of(&document.foundation, system, reading.rules)
                 .map(DashaCursor::Rashi);
+        }
+        if let Some(rules) = reading.kalachakra {
+            return Self::kalachakra_of(&document.foundation, rules, reading.moon_span)
+                .map(DashaCursor::Kalachakra);
         }
         Self::dasha_of(
             &document.foundation,

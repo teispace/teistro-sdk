@@ -582,10 +582,20 @@ impl RashiDasha {
         JulianDay::literal(self.birth.get() + self.cycle_days())
     }
 
+    /// A whole cycle's days.
+    fn cycle_days(&self) -> f64 {
+        self.offsets.last().copied().unwrap_or_default()
+    }
+}
+
+impl Timeline for RashiDasha {
+    fn breadth(&self) -> usize {
+        SIGNS
+    }
+
     /// The mahadasha at `index` of `cycle`, or nothing past the end of the
     /// cycle when the rules end it.
-    #[must_use]
-    pub fn mahadasha(&self, cycle: u32, index: usize) -> Option<Period> {
+    fn mahadasha(&self, cycle: u32, index: usize) -> Option<Period> {
         if index >= SIGNS || (cycle > 0 && self.after_cycle == AfterCycle::End) {
             return None;
         }
@@ -599,21 +609,6 @@ impl RashiDasha {
                 base + self.offsets.get(index + 1)?,
             ),
         ))
-    }
-
-    /// A whole cycle's days.
-    fn cycle_days(&self) -> f64 {
-        self.offsets.last().copied().unwrap_or_default()
-    }
-}
-
-impl Timeline for RashiDasha {
-    fn breadth(&self) -> usize {
-        SIGNS
-    }
-
-    fn mahadashas(&self) -> impl Iterator<Item = Period> + '_ {
-        (0..SIGNS).filter_map(|index| self.mahadasha(0, index))
     }
 
     fn mahadasha_at(&self, instant: f64) -> Option<Period> {

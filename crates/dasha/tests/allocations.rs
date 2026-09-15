@@ -133,3 +133,30 @@ fn a_sign_based_dasha_allocates_nothing_to_make_or_to_read() {
         }
     }
 }
+
+#[test]
+fn the_kalachakra_allocates_nothing_to_make_or_to_read() {
+    use teistro_core::settings::{KalachakraAfterNinth, KalachakraBalance, KalachakraMembership};
+    use teistro_dasha::{KalachakraDasha, KalachakraRules};
+    let birth = Birth {
+        instant: JulianDay::literal(2_447_995.489_583_333_5),
+        moon: Nas::from_degrees(Degrees::try_new(221.786_980_828_370_36).unwrap()),
+        moon_span: None,
+    };
+    let rules = KalachakraRules {
+        balance: Balance::Spatial,
+        year_length: YearLength::Julian36525,
+        after_cycle: AfterCycle::Repeat,
+        membership: KalachakraMembership::Listed,
+        balance_of: KalachakraBalance::WholePada,
+        after_ninth: KalachakraAfterNinth::Reverse,
+    };
+    let (made, counts) = measure(|| KalachakraDasha::new(&birth, rules).unwrap());
+    assert_eq!(counts.allocations, 0, "its tables are arrays");
+    for years in [0.5, 60.0, 600.0] {
+        let instant = JulianDay::literal(birth.instant.get() + years * 365.25);
+        let (chain, counts) = measure(|| made.at(instant, Depth::try_new(6).unwrap()));
+        assert_eq!(chain.len(), 2, "{years} years on: to the antardashas");
+        assert_eq!(counts.allocations, 0, "the chain {years} years on");
+    }
+}

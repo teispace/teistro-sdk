@@ -33,10 +33,10 @@ use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
     AfterCycle, AyanamshaBasis, Balance, BirthPeriod, Centre, CharaKarakas, DayBoundary, DeltaT,
-    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, MoonEvents,
-    NakshatraScheme, Node, NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy,
-    PolarPolicy, Positions, SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength,
-    Zodiac,
+    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KalachakraAfterNinth,
+    KalachakraBalance, KalachakraMembership, LunarMonth, MoonEvents, NakshatraScheme, Node,
+    NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
+    SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -265,10 +265,8 @@ group!(
     /// Dasha computation.
     Dasha, DashaPatch {
         /// How the first period is balanced.
-        /// lint: knob-has-a-reader — `dasha`, Phase 5.
         balance: Balance,
         /// The year length per system.
-        /// lint: knob-has-a-reader — `dasha`, Phase 5.
         year_length: BTreeMap<DashaSystem, YearLength>,
         /// The default depth per system.
         depth: BTreeMap<DashaSystem, Depth>,
@@ -279,8 +277,13 @@ group!(
         /// lint: knob-has-a-reader — `dasha`, Phase 5.
         birth_period: BirthPeriod,
         /// What a dasha answers past the end of its cycle (crux C48).
-        /// lint: knob-has-a-reader — `dasha`, Phase 5.
         after_cycle: AfterCycle,
+        /// Which pada table a nakshatra takes in the Kalachakra dasha (crux C54).
+        kalachakra_membership: KalachakraMembership,
+        /// How the Kalachakra balance at birth is taken (crux C55).
+        kalachakra_balance: KalachakraBalance,
+        /// What follows the ninth Kalachakra mahadasha (crux C56).
+        kalachakra_after_ninth: KalachakraAfterNinth,
     }
 );
 

@@ -10,10 +10,10 @@ use crate::catalogue::{
 
 use super::knobs::{
     AfterCycle, AyanamshaBasis, Balance, BirthPeriod, Centre, CharaKarakas, DayBoundary, DeltaT,
-    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, MoonEvents,
-    NakshatraScheme, Node, NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy,
-    PolarPolicy, Positions, SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength,
-    Zodiac,
+    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KalachakraAfterNinth,
+    KalachakraBalance, KalachakraMembership, LunarMonth, MoonEvents, NakshatraScheme, Node,
+    NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
+    SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -156,6 +156,12 @@ pub fn root() -> Settings {
             // because neither reading has a rank-1 text (crux C48).
             birth_period: BirthPeriod::Compressed,
             after_cycle: AfterCycle::End,
+            // The recording engine's Kalachakra, measured on every recorded
+            // answer (`03-design/kalachakra-measured.md`); the sources read
+            // give the other values (cruxes C54 to C56).
+            kalachakra_membership: KalachakraMembership::Listed,
+            kalachakra_balance: KalachakraBalance::FirstSign,
+            kalachakra_after_ninth: KalachakraAfterNinth::Reverse,
         },
         jaimini: Jaimini {
             chara_karakas: CharaKarakas::Seven,

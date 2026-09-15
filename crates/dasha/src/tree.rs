@@ -43,6 +43,20 @@ pub struct Birth {
     pub moon_span: Option<Interval>,
 }
 
+impl Birth {
+    /// The Moon's nakshatra span a temporal balance reads.
+    ///
+    /// # Errors
+    ///
+    /// No span, named `moon_span`.
+    pub fn span(&self) -> Result<Interval, Error> {
+        self.moon_span.ok_or_else(|| {
+            Error::invalid_arg("a temporal balance reads the Moon's nakshatra span")
+                .with_field("moon_span")
+        })
+    }
+}
+
 /// The choices a dasha is computed under, which the settings' `dasha`
 /// group holds.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
@@ -252,8 +266,14 @@ pub trait Timeline {
     /// How many children a period has at most.
     fn breadth(&self) -> usize;
 
+    /// The mahadasha at `index` of `cycle`, 0 for the one birth falls in; nothing
+    /// past the cycle's mahadashas, or past its end when the rules end it.
+    fn mahadasha(&self, cycle: u32, index: usize) -> Option<Period>;
+
     /// The mahadashas of the birth cycle, in order.
-    fn mahadashas(&self) -> impl Iterator<Item = Period> + '_;
+    fn mahadashas(&self) -> impl Iterator<Item = Period> + '_ {
+        (0..).map_while(|index| self.mahadasha(0, index))
+    }
 
     /// The mahadasha running at a Julian day (UTC), with its cycle; nothing
     /// before birth, or past the cycle's end when the rules end it.
@@ -361,13 +381,7 @@ impl Dasha {
             .with_hint("the WRAP_TO_START overflow starts such a seed at the first lord"));
         }
         let remaining = match rules.balance {
-            Balance::Temporal => {
-                let span = birth.moon_span.ok_or_else(|| {
-                    Error::invalid_arg("a temporal balance reads the Moon's nakshatra span")
-                        .with_field("moon_span")
-                })?;
-                temporal(row, seat, birth.instant, span)?
-            }
+            Balance::Temporal => temporal(row, seat, birth.instant, birth.span()?)?,
             _ => spatial(row, birth.moon, seat),
         };
         let year_days = rules.year_length.days();
@@ -459,11 +473,16 @@ impl Dasha {
     fn cycle_days(&self) -> f64 {
         self.full.last().copied().unwrap_or_default()
     }
+}
+
+impl Timeline for Dasha {
+    fn breadth(&self) -> usize {
+        self.lords()
+    }
 
     /// The mahadasha at `index` of `cycle`, or nothing past the end of the
     /// cycle when the rules end it.
-    #[must_use]
-    pub fn mahadasha(&self, cycle: u32, index: usize) -> Option<Period> {
+    fn mahadasha(&self, cycle: u32, index: usize) -> Option<Period> {
         let mahadashas = self.row.mahadashas();
         if index >= mahadashas || (cycle > 0 && self.rules.after_cycle == AfterCycle::End) {
             return None;
@@ -502,22 +521,7 @@ impl Dasha {
             seat,
         })
     }
-}
 
-impl Timeline for Dasha {
-    fn breadth(&self) -> usize {
-        self.lords()
-    }
-
-    /// The mahadashas of the birth cycle, in order: each round of a scaled
-    /// row's sequence in turn.
-    fn mahadashas(&self) -> impl Iterator<Item = Period> + '_ {
-        (0..self.row.mahadashas()).filter_map(|index| self.mahadasha(0, index))
-    }
-
-    /// The child of `parent` at `index` in its sequence, or nothing when it
-    /// is past the sequence, past the deepest level, or, under the elapsed
-    /// reading, over before birth.
     fn child(&self, parent: &Period, index: usize) -> Option<Period> {
         let lords = self.lords();
         if index >= lords {

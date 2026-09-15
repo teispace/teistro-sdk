@@ -268,7 +268,11 @@ void main() {
     place: place,
     utcOffsetSeconds: 20700,
     vargas: <Varga>[Varga.d9, Varga.d10],
-    dashas: [DashaSystem.vimshottari, DashaSystem.chara],
+    dashas: [
+      DashaSystem.vimshottari,
+      DashaSystem.chara,
+      DashaSystem.kalachakra,
+    ],
     drawings: [
       (ChartLayout.northIndian, Varga.d1),
       (ChartLayout.southIndian, Varga.d9),

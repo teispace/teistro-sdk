@@ -134,6 +134,16 @@ pub fn temporal(
     birth: JulianDay<Utc>,
     moon_span: Interval,
 ) -> Result<f64, Error> {
+    Ok(window(row, seat, elapsed_in(birth, moon_span)?))
+}
+
+/// How far through its stay in its nakshatra the Moon is at birth, 0 to 1.
+///
+/// # Errors
+///
+/// A span that does not hold the birth, or that is empty, named as
+/// `moon_span`.
+pub fn elapsed_in(birth: JulianDay<Utc>, moon_span: Interval) -> Result<f64, Error> {
     if moon_span.is_empty() || !moon_span.contains_inclusive(birth) {
         return Err(Error::invalid_arg(format!(
             "the Moon's nakshatra span {} to {} does not hold the birth at {birth}",
@@ -141,11 +151,7 @@ pub fn temporal(
         ))
         .with_field("moon_span"));
     }
-    Ok(window(
-        row,
-        seat,
-        (birth.get() - moon_span.from.get()) / moon_span.days(),
-    ))
+    Ok(((birth.get() - moon_span.from.get()) / moon_span.days()).clamp(0.0, 1.0))
 }
 
 #[cfg(test)]

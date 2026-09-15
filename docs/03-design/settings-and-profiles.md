@@ -67,6 +67,9 @@ every shipped profile. The v1 inventory:
 | dasha | `seed_overflow` | enum | `WRAP_TO_START`, `REJECT` |
 | dasha | `birth_period` | enum | `COMPRESSED` (the corpus's, every recorded answer), `ELAPSED` (crux C48) |
 | dasha | `after_cycle` | enum | `END` (the corpus's), `REPEAT` (crux C48) |
+| dasha | `kalachakra_membership` | enum | `LISTED` (the corpus's), `TRIAD` (crux C54) |
+| dasha | `kalachakra_balance` | enum | `FIRST_SIGN` (the corpus's), `WHOLE_PADA` (crux C55) |
+| dasha | `kalachakra_after_ninth` | enum | `REVERSE` (the corpus's), `REPEAT` (crux C56) |
 | jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |
 | aspect | `node_aspects` | enum | `NONE`, `FIVE_SEVEN_NINE`, `THREE_SEVEN_ELEVEN` |

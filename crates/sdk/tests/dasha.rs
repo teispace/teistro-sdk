@@ -279,6 +279,71 @@ fn a_reading_carries_every_sign_based_system_and_each_agrees_with_the_corpus() {
     }
 }
 
+/// The Kalachakra on the corpus's first chart, founded here with the built-in
+/// ephemeris, under both balance methods: seeded and signed, its balance and
+/// every recorded period within the corpus's tolerances, carried to the
+/// antardashas it stops at, and rebuilt from the document
+/// (`docs/03-design/kalachakra-measured.md`).
+#[test]
+fn a_reading_carries_the_kalachakra_and_it_agrees_with_the_corpus() {
+    let recorded = fixture("kalachakra/charts/c001-kathmandu-1990-04-14.json");
+    for (patch, method, fraction) in [
+        ("{}", "spatial", SPATIAL_FRACTION),
+        (
+            r#"{"dasha": {"balance": "TEMPORAL"}}"#,
+            "temporal",
+            TEMPORAL_FRACTION,
+        ),
+    ] {
+        // The corpus's tolerance on a nakshatra's remaining fraction, in a
+        // pada a quarter of the span, of a sign of at most 21 years.
+        let bound = fraction * 4.0 * 21.0 * 365.25;
+        let (sdk, document) = reading(patch, &[DashaSystem::Kalachakra]);
+        let dasha = &document.dashas[0];
+        let answer = &recorded["methods"][method];
+        assert!(
+            dasha.kalachakra.is_some() && dasha.seed.is_some(),
+            "{method}"
+        );
+        assert_eq!(dasha.depth.get(), 2, "{method}: carried to the antardashas");
+        let balance = dasha.balance.expect("a balance");
+        assert!(
+            (balance.days - answer["balance"]["total_days"].as_f64().unwrap()).abs() < bound,
+            "{method}: balance {}",
+            balance.days
+        );
+        let rows = answer["periods"].as_array().unwrap();
+        assert_eq!(dasha.periods.len(), rows.len(), "{method}");
+        for (ours, row) in dasha.periods.iter().zip(rows) {
+            assert_eq!(ours.path, row[0].as_str().unwrap(), "{method}");
+            assert_eq!(
+                ours.sign.map(|sign| u64::from(sign.id())),
+                row[1].as_u64(),
+                "{method} {}",
+                ours.path
+            );
+            assert!(
+                (ours.interval.to.get() - row[4].as_f64().unwrap()).abs() < bound,
+                "{method} {}",
+                ours.path
+            );
+        }
+        let cursor = sdk
+            .chart()
+            .dasha(&document, DashaSystem::Kalachakra)
+            .unwrap();
+        assert!(cursor.kalachakra().is_some());
+        assert_eq!(
+            cursor.mahadashas().count(),
+            dasha
+                .periods
+                .iter()
+                .filter(|p| !p.path.contains('/'))
+                .count()
+        );
+    }
+}
+
 #[test]
 fn a_dasha_not_built_yet_is_refused_by_its_place_and_a_stored_document_reads_back() {
     let (sdk, document) = reading("{}", &[DashaSystem::Vimshottari]);
@@ -295,11 +360,11 @@ fn a_dasha_not_built_yet_is_refused_by_its_place_and_a_stored_document_reads_bac
 
     let place = document.foundation.place;
     let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700).unwrap())
-        .with_dashas([DashaSystem::Vimshottari, DashaSystem::Kalachakra]);
+        .with_dashas([DashaSystem::Vimshottari, DashaSystem::SudarshanaChakra]);
     let error = sdk
         .chart()
         .reading(document.foundation.instant, &request)
-        .expect_err("Kalachakra is not built");
+        .expect_err("Sudarshana Chakra is not built");
     assert_eq!(error.field(), Some("dashas[1]"));
     assert!(
         error

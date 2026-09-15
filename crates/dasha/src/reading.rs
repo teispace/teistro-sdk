@@ -12,6 +12,7 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::Depth;
 
 use crate::balance::BalanceAtBirth;
+use crate::kalachakra::{KalachakraDasha, KalachakraRules};
 use crate::rashi::RashiDasha;
 use crate::tree::{Dasha, Period, Rules, Timeline};
 
@@ -28,6 +29,9 @@ pub struct DashaReading {
     /// The choices it was computed under. A sign-based dasha reads only the
     /// year length and what follows the cycle.
     pub rules: Rules,
+    /// The Kalachakra's own choices, when it is the Kalachakra.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub kalachakra: Option<KalachakraRules>,
     /// The nakshatra the Moon stood in, which seeds a nakshatra-seeded
     /// dasha; nothing for a sign-based one.
     #[serde(skip_serializing_if = "Option::is_none", default)]
@@ -91,6 +95,7 @@ impl DashaReading {
         DashaReading {
             system: row.system,
             rules: dasha.rules(),
+            kalachakra: None,
             seed: Some(dasha.seed()),
             first_lord: row
                 .lords
@@ -112,12 +117,41 @@ impl DashaReading {
         DashaReading {
             system: dasha.row().system,
             rules,
+            kalachakra: None,
             seed: None,
             first_lord: periods.first().map_or(Graha::Sun, |row| row.lord),
             overflow: false,
             moon_span: None,
             balance: None,
             depth,
+            periods,
+        }
+    }
+}
+
+impl DashaReading {
+    /// The Kalachakra's reading under the dasha group's `rules`, its periods
+    /// to `depth` levels or to the antardashas it stops at, whichever is
+    /// shallower, and the depth it carries says which (crux C58).
+    #[must_use]
+    pub fn of_kalachakra(
+        dasha: &KalachakraDasha,
+        rules: Rules,
+        depth: Depth,
+        moon_span: Option<Interval>,
+    ) -> DashaReading {
+        let carried = Depth::try_new(depth.get().min(2)).unwrap_or(depth);
+        let periods = rows(dasha, carried);
+        DashaReading {
+            system: DashaSystem::Kalachakra,
+            rules,
+            kalachakra: Some(dasha.rules()),
+            seed: Some(dasha.seed()),
+            first_lord: periods.first().map_or(Graha::Sun, |row| row.lord),
+            overflow: false,
+            moon_span,
+            balance: Some(dasha.balance()),
+            depth: carried,
             periods,
         }
     }
@@ -149,6 +183,8 @@ pub enum DashaCursor {
     Nakshatra(Dasha),
     /// A sign-based dasha.
     Rashi(RashiDasha),
+    /// The Kalachakra.
+    Kalachakra(KalachakraDasha),
 }
 
 impl Timeline for DashaCursor {
@@ -156,24 +192,23 @@ impl Timeline for DashaCursor {
         match self {
             DashaCursor::Nakshatra(dasha) => dasha.breadth(),
             DashaCursor::Rashi(dasha) => dasha.breadth(),
+            DashaCursor::Kalachakra(dasha) => dasha.breadth(),
         }
     }
 
-    fn mahadashas(&self) -> impl Iterator<Item = Period> + '_ {
-        let (nakshatra, rashi) = match self {
-            DashaCursor::Nakshatra(dasha) => (Some(dasha.mahadashas()), None),
-            DashaCursor::Rashi(dasha) => (None, Some(dasha.mahadashas())),
-        };
-        nakshatra
-            .into_iter()
-            .flatten()
-            .chain(rashi.into_iter().flatten())
+    fn mahadasha(&self, cycle: u32, index: usize) -> Option<Period> {
+        match self {
+            DashaCursor::Nakshatra(dasha) => dasha.mahadasha(cycle, index),
+            DashaCursor::Rashi(dasha) => dasha.mahadasha(cycle, index),
+            DashaCursor::Kalachakra(dasha) => dasha.mahadasha(cycle, index),
+        }
     }
 
     fn mahadasha_at(&self, instant: f64) -> Option<Period> {
         match self {
             DashaCursor::Nakshatra(dasha) => dasha.mahadasha_at(instant),
             DashaCursor::Rashi(dasha) => dasha.mahadasha_at(instant),
+            DashaCursor::Kalachakra(dasha) => dasha.mahadasha_at(instant),
         }
     }
 
@@ -181,6 +216,7 @@ impl Timeline for DashaCursor {
         match self {
             DashaCursor::Nakshatra(dasha) => dasha.child(parent, index),
             DashaCursor::Rashi(dasha) => dasha.child(parent, index),
+            DashaCursor::Kalachakra(dasha) => dasha.child(parent, index),
         }
     }
 }
@@ -191,7 +227,7 @@ impl DashaCursor {
     pub const fn nakshatra(&self) -> Option<&Dasha> {
         match self {
             DashaCursor::Nakshatra(dasha) => Some(dasha),
-            DashaCursor::Rashi(_) => None,
+            _ => None,
         }
     }
 
@@ -200,7 +236,16 @@ impl DashaCursor {
     pub const fn rashi(&self) -> Option<&RashiDasha> {
         match self {
             DashaCursor::Rashi(dasha) => Some(dasha),
-            DashaCursor::Nakshatra(_) => None,
+            _ => None,
+        }
+    }
+
+    /// The Kalachakra, when it is the Kalachakra.
+    #[must_use]
+    pub const fn kalachakra(&self) -> Option<&KalachakraDasha> {
+        match self {
+            DashaCursor::Kalachakra(dasha) => Some(dasha),
+            _ => None,
         }
     }
 }

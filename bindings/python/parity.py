@@ -264,7 +264,7 @@ def main() -> None:
             place=place,
             utc_offset_seconds=20700,
             vargas=[Varga.D9, Varga.D10],
-            dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.CHARA],
+            dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.CHARA, DashaSystem.KALACHAKRA],
             drawings=[
                 (ChartLayout.NORTH_INDIAN, Varga.D1),
                 (ChartLayout.SOUTH_INDIAN, Varga.D9),

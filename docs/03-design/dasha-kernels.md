@@ -130,6 +130,31 @@ rows reproducing every one (`tests/rashi.rs`, worst boundary 4.7e-10 days):
 - **The arudha lagna is a point.** Padanadhamsa starts from it, and
   `teistro-points` computes it (`arudhas-measured.md`).
 
+## What building the Kalachakra corrected
+
+`cargo xtask kalachakra` (`kalachakra-measured.md`) measured the recording
+engine's Kalachakra over 148 answers, and `crates/dasha`'s `kalachakra`
+module reproduces every one (`tests/kalachakra.rs`, worst boundary 9.3e-10
+days), allocating nothing:
+
+- **Its own kernel, as the table above says**, but a small one: four pada
+  tables of nine signs, the signs' years, a balance, and antardashas shared
+  by years from the mahadasha's place. It shares `Period`, `Chain`, the
+  chain walk and the span check with the other kernels through `Timeline`
+  and `Birth`.
+- **Every fork is a knob.** The published tables agree with the engine's
+  sign for sign, but which table five nakshatras take, the balance and what
+  follows the ninth mahadasha are read differently by the sources, so
+  `dasha.kalachakra_membership`, `dasha.kalachakra_balance` and
+  `dasha.kalachakra_after_ninth` default to the engine's reading and offer
+  the sources' (C54–C56). The next pada's nine is not offered: the sources
+  read do not settle how it crosses into the next nakshatra.
+- **It stops at the antardashas** (C58), and a reading says so: its depth is
+  the shallower of the settings' and two.
+- **The document records the choices applied** in a reading's `kalachakra`
+  field, so a stored document rebuilds the same periods whatever the
+  settings are now.
+
 ## At the boundary and in the bindings
 
 A chart request names its systems (`TsChartRequest.dashas`, catalogue ids,

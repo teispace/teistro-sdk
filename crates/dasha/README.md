@@ -1,14 +1,15 @@
 # `teistro-dasha`
 
-Status: `building`, 2026-09-15: seventeen systems built and measured — the
+Status: `building`, 2026-09-15: eighteen systems built and measured — the
 nine nakshatra-seeded (Vimshottari, Ashtottari, Dwadashottari, Panchottari,
 Shatabdika, Chaturashiti-sama, Dwisaptati-sama, Yogini and Tribhagi) and the
 eight sign-based (Chara, Narayana, Padanadhamsa, Trikona, Drig, Shoola,
-Niryana Shoola and Mandooka). The design is
+Niryana Shoola and Mandooka) and the Kalachakra. The design is
 [`docs/03-design/dasha-kernels.md`](../../docs/03-design/dasha-kernels.md),
 measured in [`dasha-measured.md`](../../docs/03-design/dasha-measured.md),
 [`dasha-systems-measured.md`](../../docs/03-design/dasha-systems-measured.md) and
-[`rashi-dashas-measured.md`](../../docs/03-design/rashi-dashas-measured.md).
+[`rashi-dashas-measured.md`](../../docs/03-design/rashi-dashas-measured.md) and
+[`kalachakra-measured.md`](../../docs/03-design/kalachakra-measured.md).
 
 Dashas as rows over a kernel, the balance at birth, and the period tree read
 without building it.
@@ -19,6 +20,7 @@ without building it.
 | [`balance`](src/balance.rs) | what remains of the lord's window, by how far into its own nakshatra the Moon is spatially or temporally, and its written form with the minutes rounded |
 | [`tree`](src/tree.rs) | the dasha of a birth: periods by path, children computed when asked for, and the chain running at an instant without allocating, through the `Timeline` trait every kind shares |
 | [`rashi`](src/rashi.rs) | a sign-based system as a row — its start, order, length and named lord — over the chart it reads, with footedness and parity as distinct types; the eight shipped rows |
+| [`kalachakra`](src/kalachakra.rs) | the Kalachakra: its pada tables and sign years, the balance, three cycles and antardashas, each fork the sources differ on a knob |
 | [`reading`](src/reading.rs) | a dasha as a chart document carries it: its rules, and for a nakshatra-seeded one its seed, balance and Moon span, its periods as rows (with their signs, for a sign-based one) to the settings' depth; and `DashaCursor`, either kind rebuilt |
 
 ## What the corpus settled
@@ -51,6 +53,9 @@ without building it.
 - Every sign-based system is reproduced from the corpus's recorded charts:
   616 answers, 96 096 tree rows and 1232 chains, worst boundary 4.7e-10 days
   (`tests/rashi.rs`).
+- The Kalachakra is reproduced on all 148 recorded answers, 39 960 rows and
+  296 chains, worst boundary 9.3e-10 days, its tables held to the corpus's
+  (`tests/kalachakra.rs`).
 - Reading the chain at an instant allocates nothing, at the deepest level,
   in a later cycle, and for every row; a sign-based dasha allocates nothing to
   make either (`tests/allocations.rs`).
