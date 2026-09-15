@@ -516,9 +516,15 @@ stored document rebuilds it anywhere, and registered by every parity runner.
 the kernels against its 20-microsecond budget, allocation-free, and a
 materialised 120-year depth-3 tree at 15.8 microseconds against 500
 (`crates/dasha/benches`), with the scenario's `dashas` section putting the
-cursor under the instruction-count gate and the hash matrix. Next: the
-exit's last clause, PyJHora cross-checks recorded, then Rashi bala on a
-source, or the yogas the interpretation layer reads.
+cursor under the instruction-count gate and the hash matrix. **PyJHora's
+Vimshottari is recorded and held** (`pyjhora/vimshottari` in the corpus's
+0.9.0, `03-design/dasha-measured.md`): given the tool's Moon and year the
+kernel agrees on 16 232 periods to a tenth of a millisecond, and what differs
+— the birth period's reading, the written balance, the tool's broken default
+year — is recorded against crux C6. Every clause of the exit that the dasha
+layer owns is now met; the golden vectors reproduced and the per-row
+invariants stood already. Next: Rashi bala on a source, or the yogas the
+interpretation layer reads.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

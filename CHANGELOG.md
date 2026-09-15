@@ -877,6 +877,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** unchanged for every catalogued system; a registered twin of
   Vimshottari reproduces it to the bit.
 
+- PyJHora cross-checks: the corpus moves to 0.9.0, which records PyJHora
+  4.8.7's Vimshottari for 53 charts at evidence rank 3, and
+  `crates/dasha/tests/pyjhora.rs` gives the kernel the tool's Moon and each
+  of its years and holds every antardasha start to the year constant's
+  difference: a tenth of a millisecond where the constants agree. The written
+  balance differs as a convention (75 of 212 agree), counted.
+
 - The dasha cursor's budgets are measured: `crates/dasha/benches/dasha.rs`
   times `at(t, 5)` for every kernel and a registered row (119 to 354 ns
   against 20 µs) and a materialised depth-3 tree (15.8 µs against 500 µs).

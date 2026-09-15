@@ -464,6 +464,50 @@ five at 300 instants for every shipped row of every kernel, which the
 benchmarks workflow counts under callgrind against the pull request's base
 and the hash matrix digests across architectures.
 
+## PyJHora, beside the kernel (2026-09-15)
+
+Phase 5's exit asks for PyJHora cross-checks. The corpus's
+`pyjhora/vimshottari` (0.9.0) records PyJHora 4.8.7, run as a black box
+through its published functions, for 53 of the 55 charts, at evidence rank 3
+(`CLEAN_ROOM.md`: its values may verify the SDK, its code may not be read).
+`crates/dasha/tests/pyjhora.rs` gives the kernel the tool's own Moon and year
+and compares every period, so an ephemeris difference cannot hide in the
+answer.
+
+**The arithmetic agrees.** Over 16 232 antardashas, matched by mahadasha
+place and both lords:
+
+| the tool's year | its days | the kernel's | worst start difference |
+|---|---|---|---|
+| mean tropical | 365.24219 | `TROPICAL`, 365.24219 | 1.4e-9 days, a tenth of a millisecond |
+| mean sidereal | 365.256364 | `SIDEREAL`, 365.256363 | 1.2e-4 days, the constant's last digit over 120 years |
+| mean lunar | 354.36707 | `LUNAR`, 12 × 29.530589 | 2.4e-4 days, the same |
+| savana | about 360.004, computed | `SAVANA_360`, 360 | 0.69 days, the same |
+
+Each bound in the test is the two years' difference times 140 years, so a
+start that drifts for any reason but the constant fails.
+
+**What differs, and why it is not a correction** (a rank-3 source never
+corrects a rank-2 one):
+
+- **The birth mahadasha's antardashas.** The tool lists them from the
+  mahadasha's start, before birth, each its whole share, which is the SDK's
+  `dasha.birth_period = ELAPSED`; the corpus's rank-2 engine compresses them,
+  the SDK's default. The test reads the tool under `ELAPSED`.
+- **The written balance.** 75 of 212 agree. Under the sidereal and tropical
+  years the tool's day is one above the kernel's whole days, reading as the
+  day begun; under the lunar and savana years it does not write against the
+  dasha's year at all. A presentation, counted in the test so a change to
+  either shows.
+- **The tool's default year** is the true sidereal year, which measures 0.0
+  days in 4.8.7 and whose periods cannot be computed, and the Gregorian year
+  (365.2425 days) has no `YearLength`; both are recorded where they could be
+  and neither is compared.
+- **Its Moon is geocentric**, 0.40° from the corpus's topocentric Moon for
+  the first chart, which is why the comparison feeds the kernel the tool's.
+
+What this adds to crux C6 is in the register.
+
 ## Tests and golden vectors
 
 Unit tests per kernel over its parameter space; the whole-table
