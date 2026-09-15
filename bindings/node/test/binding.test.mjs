@@ -512,8 +512,9 @@ test('every catalogue enum has a complete id table', () => {
   // 967 since chart_layout joined the catalogue: six layouts and its UNKNOWN;
   // 969 since the dasha balance crossed as `TsBalance`, spatial and temporal;
   // 973 since the Ashtakavarga's `TsShodhana` and `TsEkadhipatya`, two each;
-  // 975 since the Vimshopaka's `TsVimshopakaScoring`, two.
-  assert.equal(entries, 975, 'every member of every enum is in a table');
+  // 975 since the Vimshopaka's `TsVimshopakaScoring`, two;
+  // 1006 since the vaiseshikamsa catalogue kind: thirty names and its UNKNOWN.
+  assert.equal(entries, 1006, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -878,6 +879,27 @@ test('a chart carries its Ashtakavarga, each graha\'s bindus and their reduction
     'the reduced sum is the grahas\' own reductions summed',
   );
   assert.ok(grahas.every((g) => g.yogaPinda === g.rashiPinda + g.grahaPinda));
+  ctx.dispose();
+});
+
+/**
+ * A chart's Vaiseshikamsa crosses whole: each scheme's count within its
+ * vargas, a name for every count from two; `null` unless asked.
+ */
+test('a chart carries its Vaiseshikamsa, each scheme\'s count and name', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, vaiseshikamsa: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).vaiseshikamsa, null);
+  const { grahas } = chart.vaiseshikamsa;
+  assert.equal(grahas.length, 7);
+  for (const g of grahas) {
+    for (const [scheme, vargas] of [['shadvarga', 6], ['saptavarga', 7], ['dashavarga', 10], ['shodashavarga', 16]]) {
+      const { goodVargas, name } = g[scheme];
+      assert.ok(goodVargas <= vargas, `${g.graha} ${scheme}`);
+      assert.equal(name === null, goodVargas < 2, `${g.graha} ${scheme}`);
+    }
+  }
   ctx.dispose();
 });
 

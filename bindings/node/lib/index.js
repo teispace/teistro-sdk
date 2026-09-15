@@ -52,6 +52,7 @@ import {
   BalanceById,
   EkadhipatyaById,
   ShodhanaById,
+  VaiseshikamsaById,
   VimshopakaScoringById,
   DashaSystemById,
   VargaById,
@@ -725,6 +726,15 @@ export class Chart {
    * across the divisional charts under the four schemes, each varga scored
    * under the settings' reading; `null` unless asked for.
    */
+  /**
+   * The Vaiseshikamsa (`vaiseshikamsa: true`): each graha's count of good
+   * vargas and the name it earns in each scheme, and whether it is impaired;
+   * `null` unless asked for.
+   */
+  get vaiseshikamsa() {
+    return vaiseshikamsasOf(this.#batch)[this.#index] ?? null;
+  }
+
   get vimshopaka() {
     return vimshopakasOf(this.#batch)[this.#index] ?? null;
   }
@@ -1737,6 +1747,7 @@ class ChartArea extends Area {
           (request.houses === true ? SECTION_HOUSES : 0) |
           (request.ashtakavarga === true ? SECTION_ASHTAKAVARGA : 0) |
           (request.vimshopaka === true ? SECTION_VIMSHOPAKA : 0) |
+          (request.vaiseshikamsa === true ? SECTION_VAISESHIKAMSA : 0) |
           (request.shadbala === true ? SECTION_SHADBALA : 0) |
           (request.bhavaBala === true ? SECTION_BHAVA_BALA : 0) |
           (request.state === true ? SECTION_STATE : 0),
@@ -1877,6 +1888,43 @@ function ashtakavargasOf(batch) {
       });
     });
     ASHTAKAVARGAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** Each batch's Vaiseshikamsas, decoded once however many charts read them. */
+const VAISESHIKAMSAS = new WeakMap();
+
+/** Every chart's Vaiseshikamsa in a batch; empty when none was asked for. */
+function vaiseshikamsasOf(batch) {
+  let decoded = VAISESHIKAMSAS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.vaiseshikamsa;
+    const standing = (row, scheme) => {
+      const good = c[`${scheme}Good`][row];
+      return Object.freeze({
+        goodVargas: good,
+        name: good >= 2 ? (VaiseshikamsaById.get(c[`${scheme}Name`][row]) ?? 'unknown') : null,
+      });
+    };
+    decoded = Array.from({ length: c.length / 7 }, (_, chart) =>
+      Object.freeze({
+        grahas: Object.freeze(
+          Array.from({ length: 7 }, (_, g) => {
+            const row = chart * 7 + g;
+            return Object.freeze({
+              graha: GrahaById.get(c.graha[row]) ?? 'unknown',
+              shadvarga: standing(row, 'shadvarga'),
+              saptavarga: standing(row, 'saptavarga'),
+              dashavarga: standing(row, 'dashavarga'),
+              shodashavarga: standing(row, 'shodashavarga'),
+              impaired: c.impaired[row] === 1,
+            });
+          }),
+        ),
+      }),
+    );
+    VAISESHIKAMSAS.set(batch, decoded);
   }
   return decoded;
 }
@@ -2137,6 +2185,9 @@ const SECTION_ASHTAKAVARGA = 32;
 
 /** `TS_CHART_VIMSHOPAKA`, the Vimshopaka. */
 const SECTION_VIMSHOPAKA = 64;
+
+/** `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa. */
+const SECTION_VAISESHIKAMSA = 512;
 
 /** `TS_CHART_SHADBALA`, the Shadbala. */
 const SECTION_SHADBALA = 128;

@@ -19567,6 +19567,588 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "vaiseshikamsa",
+      "number": 63,
+      "version": 1,
+      "doc": "The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.",
+      "types": {},
+      "attributes": {
+        "good_vargas": "u8"
+      },
+      "members": [
+        {
+          "key": "KIMSHUKA",
+          "id": 0,
+          "doc": "Kimshuka",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 2
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "VYANJANA",
+          "id": 1,
+          "doc": "Vyanjana",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 3
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "CHAMARA",
+          "id": 2,
+          "doc": "Chamara",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 4
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "CHATRA",
+          "id": 3,
+          "doc": "Chatra",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 5
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "KUNDALA",
+          "id": 4,
+          "doc": "Kundala",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 6
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "MUKUTA",
+          "id": 5,
+          "doc": "Mukuta",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 7
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "PARIJATA",
+          "id": 6,
+          "doc": "Parijata",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 2
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "UTTAMA",
+          "id": 7,
+          "doc": "Uttama",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 3
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "GOPURA",
+          "id": 8,
+          "doc": "Gopura",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 4
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SIMHASANA",
+          "id": 9,
+          "doc": "Simhasana",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 5
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "PARAVATA",
+          "id": 10,
+          "doc": "Paravata",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 6
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "DEVALOKA",
+          "id": 11,
+          "doc": "Devaloka",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 7
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "BRAHMALOKA",
+          "id": 12,
+          "doc": "Brahmaloka",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 8
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SHAKRAVAHANA",
+          "id": 13,
+          "doc": "Shakravahana",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 9
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SHRIDHAMA",
+          "id": 14,
+          "doc": "Shridhama",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 10
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "BHEDAKA",
+          "id": 15,
+          "doc": "Bhedaka",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 2
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "KUSUMA",
+          "id": 16,
+          "doc": "Kusuma",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 3
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "NAGAPUSHPA",
+          "id": 17,
+          "doc": "Nagapushpa",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 4
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "KANDUKA",
+          "id": 18,
+          "doc": "Kanduka",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 5
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "KERALA",
+          "id": 19,
+          "doc": "Kerala",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 6
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "KALPAVRIKSHA",
+          "id": 20,
+          "doc": "Kalpavriksha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 7
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "CHANDANAVANA",
+          "id": 21,
+          "doc": "Chandanavana",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 8
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "PURNACHANDRA",
+          "id": 22,
+          "doc": "Purnachandra",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 9
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "UCHCHAISHRAVA",
+          "id": 23,
+          "doc": "Uchchaishrava",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 10
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "DHANVANTARI",
+          "id": 24,
+          "doc": "Dhanvantari",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 11
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SURYAKANTA",
+          "id": 25,
+          "doc": "Suryakanta",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 12
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "VIDRUMA",
+          "id": 26,
+          "doc": "Vidruma",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 13
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "CHAKRASIMHASANA",
+          "id": 27,
+          "doc": "Chakrasimhasana",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 14
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "GOLOKA",
+          "id": 28,
+          "doc": "Goloka",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 15
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SHRIVALLABHA",
+          "id": 29,
+          "doc": "Shrivallabha",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "good_vargas": 16
+          },
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "6.42-53"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

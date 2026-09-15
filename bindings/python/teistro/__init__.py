@@ -101,6 +101,7 @@ from .catalogue import (
     Balance,
     Ekadhipatya,
     Shodhana,
+    Vaiseshikamsa,
     VimshopakaScoring,
     Body,
     Calendar,
@@ -260,6 +261,11 @@ __all__ = [
     "KaalaBala",
     "Shadbala",
     "SthanaBala",
+    # The Vaiseshikamsa: what a chart answers with, and its names.
+    "GrahaVaiseshikamsa",
+    "Vaiseshikamsa",
+    "VaiseshikamsaReading",
+    "VaiseshikamsaStanding",
     # The Vimshopaka: what a chart answers with, and the two scorings.
     "GrahaVimshopaka",
     "Vimshopaka",
@@ -977,6 +983,7 @@ class ChartArea(_Area):
         houses: bool = False,
         ashtakavarga: bool = False,
         vimshopaka: bool = False,
+        vaiseshikamsa: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
         state: bool = False,
@@ -1008,6 +1015,7 @@ class ChartArea(_Area):
             houses=houses,
             ashtakavarga=ashtakavarga,
             vimshopaka=vimshopaka,
+            vaiseshikamsa=vaiseshikamsa,
             shadbala=shadbala,
             bhava_bala=bhava_bala,
             state=state,
@@ -1029,6 +1037,7 @@ class ChartArea(_Area):
         houses: bool = False,
         ashtakavarga: bool = False,
         vimshopaka: bool = False,
+        vaiseshikamsa: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
         state: bool = False,
@@ -1066,6 +1075,7 @@ class ChartArea(_Area):
             | (_SECTION_HOUSES if houses else 0)
             | (_SECTION_ASHTAKAVARGA if ashtakavarga else 0)
             | (_SECTION_VIMSHOPAKA if vimshopaka else 0)
+            | (_SECTION_VAISESHIKAMSA if vaiseshikamsa else 0)
             | (_SECTION_SHADBALA if shadbala else 0)
             | (_SECTION_BHAVA_BALA if bhava_bala else 0)
             | (_SECTION_STATE if state else 0),
@@ -1368,6 +1378,9 @@ _SECTION_ASHTAKAVARGA = 32
 
 #: `TS_CHART_VIMSHOPAKA`, the Vimshopaka.
 _SECTION_VIMSHOPAKA = 64
+
+#: `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa.
+_SECTION_VAISESHIKAMSA = 512
 
 #: `TS_CHART_SHADBALA`, the Shadbala.
 _SECTION_SHADBALA = 128
@@ -1742,6 +1755,48 @@ class Shadbala:
     (`03-design/shadbala-measured.md`)."""
 
     grahas: Tuple[GrahaShadbala, ...]
+    """Each graha's, Sun to Saturn."""
+
+
+@dataclass(frozen=True)
+class VaiseshikamsaStanding:
+    """A graha's standing in one scheme of vargas."""
+
+    good_vargas: int
+    """How many of the scheme's vargas are good for it."""
+
+    name: Optional[Vaiseshikamsa]
+    """The name that count earns, from two good vargas; None below."""
+
+
+@dataclass(frozen=True)
+class GrahaVaiseshikamsa:
+    """One graha's Vaiseshikamsa (BPHS ch. 6 vv. 42 to 53)."""
+
+    graha: Graha
+    """Which graha, Sun to Saturn."""
+
+    shadvarga: VaiseshikamsaStanding
+    """Over the six vargas."""
+
+    saptavarga: VaiseshikamsaStanding
+    """Over the seven."""
+
+    dashavarga: VaiseshikamsaStanding
+    """Over the ten."""
+
+    shodashavarga: VaiseshikamsaStanding
+    """Over the sixteen."""
+
+    impaired: bool
+    """Whether it is combust or defeated in war, its names then not auspicious."""
+
+
+@dataclass(frozen=True)
+class VaiseshikamsaReading:
+    """A chart's Vaiseshikamsa."""
+
+    grahas: Tuple[GrahaVaiseshikamsa, ...]
     """Each graha's, Sun to Saturn."""
 
 
@@ -2594,6 +2649,12 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def vaiseshikamsa(self) -> Optional[VaiseshikamsaReading]:
+        """The Vaiseshikamsa, when `vaiseshikamsa=True` asked for it."""
+        parsed = self.batch._vaiseshikamsas
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def vimshopaka(self) -> Optional[Vimshopaka]:
         """The Vimshopaka, when `vimshopaka=True` asked for it."""
         parsed = self.batch._vimshopakas
@@ -2838,6 +2899,34 @@ class ChartBatch:
 
         return [
             Shadbala(grahas=tuple(graha(row) for row in range(chart * 7, chart * 7 + 7)))
+            for chart in range(c.length // 7)
+        ]
+
+    @cached_property
+    def _vaiseshikamsas(self) -> list[VaiseshikamsaReading]:
+        """Every chart's Vaiseshikamsa, decoded once; empty when none was asked for."""
+        c = self.decoded.vaiseshikamsa
+
+        def standing(good: memoryview, names: memoryview, row: int) -> VaiseshikamsaStanding:
+            count = good[row]
+            return VaiseshikamsaStanding(
+                good_vargas=count, name=Vaiseshikamsa(names[row]) if count >= 2 else None
+            )
+
+        return [
+            VaiseshikamsaReading(
+                grahas=tuple(
+                    GrahaVaiseshikamsa(
+                        graha=Graha(c.graha[row]),
+                        shadvarga=standing(c.shadvarga_good, c.shadvarga_name, row),
+                        saptavarga=standing(c.saptavarga_good, c.saptavarga_name, row),
+                        dashavarga=standing(c.dashavarga_good, c.dashavarga_name, row),
+                        shodashavarga=standing(c.shodashavarga_good, c.shodashavarga_name, row),
+                        impaired=c.impaired[row] == 1,
+                    )
+                    for row in range(chart * 7, chart * 7 + 7)
+                )
+            )
             for chart in range(c.length // 7)
         ]
 

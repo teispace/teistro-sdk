@@ -3,6 +3,8 @@
 //! - [`ashtakavarga`]: each graha's bindus by sign, the sarvashtakavarga,
 //!   and their reductions and pindas under BPHS's reading or the conformance
 //!   corpus's engine's (`docs/03-design/ashtakavarga-measured.md`).
+//! - [`vaiseshikamsa`]: the names each graha earns by its good vargas in the
+//!   four schemes (BPHS ch. 6 vv. 42 to 53).
 //! - [`vimshopaka`]: each graha's strength out of 20 across the divisional
 //!   charts under the four schemes, by BPHS's points or the corpus's
 //!   engine's virupas (`docs/03-design/vimshopaka-measured.md`).
@@ -33,6 +35,7 @@
 pub mod ashtakavarga;
 pub mod bhava_bala;
 pub mod shadbala;
+pub mod vaiseshikamsa;
 pub mod vimshopaka;
 
 pub use ashtakavarga::{
@@ -43,4 +46,5 @@ pub use shadbala::{
     GrahaShadbala, KaalaBala, ShadbalaChart, ShadbalaGraha, ShadbalaReading, ShadbalaRules,
     SthanaBala,
 };
+pub use vaiseshikamsa::{GrahaVaiseshikamsa, Standing, VaiseshikamsaChart, VaiseshikamsaReading};
 pub use vimshopaka::{GrahaVimshopaka, VimshopakaChart, VimshopakaReading};

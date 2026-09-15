@@ -253,6 +253,7 @@ const charts = geo.chart.foundMany({
   houses: true,
   ashtakavarga: true,
   vimshopaka: true,
+  vaiseshikamsa: true,
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -377,6 +378,10 @@ for (const chart of charts) {
   });
   chart.bhavaBala.bhavas.forEach((b) => {
     put(`chart-${i}-bhava-bala-${b.bhava}`, `${b.lord} ${[b.adhipati, b.dig, b.drishti, b.special, b.virupas].map(number).join(',')}`);
+  });
+  chart.vaiseshikamsa.grahas.forEach((g) => {
+    const standings = [g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga];
+    put(`chart-${i}-vaiseshikamsa-${g.graha}`, `${standings.map((s) => `${s.goodVargas}:${s.name}`).join(',')} ${g.impaired}`);
   });
   const vs = chart.vimshopaka;
   put(`chart-${i}-vimshopaka`, vs.scoring);

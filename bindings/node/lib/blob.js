@@ -551,6 +551,22 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 31, 'vaiseshikamsa');
+    out.vaiseshikamsa = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      impaired: column(blob, at, 1, 'u8', at.count),
+      shadvargaGood: column(blob, at, 2, 'u8', at.count),
+      shadvargaName: column(blob, at, 3, 'u16', at.count),
+      saptavargaGood: column(blob, at, 4, 'u8', at.count),
+      saptavargaName: column(blob, at, 5, 'u16', at.count),
+      dashavargaGood: column(blob, at, 6, 'u8', at.count),
+      dashavargaName: column(blob, at, 7, 'u16', at.count),
+      shodashavargaGood: column(blob, at, 8, 'u8', at.count),
+      shodashavargaName: column(blob, at, 9, 'u16', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

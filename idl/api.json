@@ -419,6 +419,12 @@
           "value": 62,
           "doc": "The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.",
           "key": "chart_layout"
+        },
+        {
+          "name": "Vaiseshikamsa",
+          "value": 63,
+          "doc": "The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.",
+          "key": "vaiseshikamsa"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -5692,6 +5698,195 @@
       "source": "catalogue/catalogue.json"
     },
     {
+      "name": "Vaiseshikamsa",
+      "doc": "The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`.",
+      "repr": "u16",
+      "kind": "vaiseshikamsa",
+      "values": [
+        {
+          "name": "Kimshuka",
+          "value": 0,
+          "doc": "Kimshuka",
+          "key": "KIMSHUKA"
+        },
+        {
+          "name": "Vyanjana",
+          "value": 1,
+          "doc": "Vyanjana",
+          "key": "VYANJANA"
+        },
+        {
+          "name": "Chamara",
+          "value": 2,
+          "doc": "Chamara",
+          "key": "CHAMARA"
+        },
+        {
+          "name": "Chatra",
+          "value": 3,
+          "doc": "Chatra",
+          "key": "CHATRA"
+        },
+        {
+          "name": "Kundala",
+          "value": 4,
+          "doc": "Kundala",
+          "key": "KUNDALA"
+        },
+        {
+          "name": "Mukuta",
+          "value": 5,
+          "doc": "Mukuta",
+          "key": "MUKUTA"
+        },
+        {
+          "name": "Parijata",
+          "value": 6,
+          "doc": "Parijata",
+          "key": "PARIJATA"
+        },
+        {
+          "name": "Uttama",
+          "value": 7,
+          "doc": "Uttama",
+          "key": "UTTAMA"
+        },
+        {
+          "name": "Gopura",
+          "value": 8,
+          "doc": "Gopura",
+          "key": "GOPURA"
+        },
+        {
+          "name": "Simhasana",
+          "value": 9,
+          "doc": "Simhasana",
+          "key": "SIMHASANA"
+        },
+        {
+          "name": "Paravata",
+          "value": 10,
+          "doc": "Paravata",
+          "key": "PARAVATA"
+        },
+        {
+          "name": "Devaloka",
+          "value": 11,
+          "doc": "Devaloka",
+          "key": "DEVALOKA"
+        },
+        {
+          "name": "Brahmaloka",
+          "value": 12,
+          "doc": "Brahmaloka",
+          "key": "BRAHMALOKA"
+        },
+        {
+          "name": "Shakravahana",
+          "value": 13,
+          "doc": "Shakravahana",
+          "key": "SHAKRAVAHANA"
+        },
+        {
+          "name": "Shridhama",
+          "value": 14,
+          "doc": "Shridhama",
+          "key": "SHRIDHAMA"
+        },
+        {
+          "name": "Bhedaka",
+          "value": 15,
+          "doc": "Bhedaka",
+          "key": "BHEDAKA"
+        },
+        {
+          "name": "Kusuma",
+          "value": 16,
+          "doc": "Kusuma",
+          "key": "KUSUMA"
+        },
+        {
+          "name": "Nagapushpa",
+          "value": 17,
+          "doc": "Nagapushpa",
+          "key": "NAGAPUSHPA"
+        },
+        {
+          "name": "Kanduka",
+          "value": 18,
+          "doc": "Kanduka",
+          "key": "KANDUKA"
+        },
+        {
+          "name": "Kerala",
+          "value": 19,
+          "doc": "Kerala",
+          "key": "KERALA"
+        },
+        {
+          "name": "Kalpavriksha",
+          "value": 20,
+          "doc": "Kalpavriksha",
+          "key": "KALPAVRIKSHA"
+        },
+        {
+          "name": "Chandanavana",
+          "value": 21,
+          "doc": "Chandanavana",
+          "key": "CHANDANAVANA"
+        },
+        {
+          "name": "Purnachandra",
+          "value": 22,
+          "doc": "Purnachandra",
+          "key": "PURNACHANDRA"
+        },
+        {
+          "name": "Uchchaishrava",
+          "value": 23,
+          "doc": "Uchchaishrava",
+          "key": "UCHCHAISHRAVA"
+        },
+        {
+          "name": "Dhanvantari",
+          "value": 24,
+          "doc": "Dhanvantari",
+          "key": "DHANVANTARI"
+        },
+        {
+          "name": "Suryakanta",
+          "value": 25,
+          "doc": "Suryakanta",
+          "key": "SURYAKANTA"
+        },
+        {
+          "name": "Vidruma",
+          "value": 26,
+          "doc": "Vidruma",
+          "key": "VIDRUMA"
+        },
+        {
+          "name": "Chakrasimhasana",
+          "value": 27,
+          "doc": "Chakrasimhasana",
+          "key": "CHAKRASIMHASANA"
+        },
+        {
+          "name": "Goloka",
+          "value": 28,
+          "doc": "Goloka",
+          "key": "GOLOKA"
+        },
+        {
+          "name": "Shrivallabha",
+          "value": 29,
+          "doc": "Shrivallabha",
+          "key": "SHRIVALLABHA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
       "name": "Status",
       "doc": "The status of a call, with the code it has at the C boundary.",
       "repr": "i32",
@@ -9094,7 +9289,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
+          "doc": "Which of the document's sections to compute beside the\nfoundation, as a bit set: 1 the day's almanac, 2 the planetary\nstates, 4 the aspects, 8 the derived points, 16 the houses\nservice, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa. Zero for the foundation alone, which is what every\ncaller compiled against an earlier header passes by not passing\nit at all.\n\nA bit set here and a named option in every ergonomic layer, which\nis the split `ts_frame_pack` already has: nothing but a generated\nlayer writes bits (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -13668,6 +13863,69 @@
               "name": "virupas",
               "scalar": "f64",
               "doc": "The four together."
+            }
+          ]
+        },
+        {
+          "id": 31,
+          "name": "vaiseshikamsa",
+          "doc": "Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "impaired",
+              "scalar": "u8",
+              "doc": "1 when it is combust or defeated in war, its names then not auspicious, else 0."
+            },
+            {
+              "name": "shadvarga_good",
+              "scalar": "u8",
+              "doc": "How many of the shadvarga's vargas are good for it."
+            },
+            {
+              "name": "shadvarga_name",
+              "scalar": "u16",
+              "doc": "The name the shadvarga count earns; read only when that count is 2 or more.",
+              "enum": "Vaiseshikamsa"
+            },
+            {
+              "name": "saptavarga_good",
+              "scalar": "u8",
+              "doc": "How many of the saptavarga's vargas are good for it."
+            },
+            {
+              "name": "saptavarga_name",
+              "scalar": "u16",
+              "doc": "The name the saptavarga count earns; read only when that count is 2 or more.",
+              "enum": "Vaiseshikamsa"
+            },
+            {
+              "name": "dashavarga_good",
+              "scalar": "u8",
+              "doc": "How many of the dashavarga's vargas are good for it."
+            },
+            {
+              "name": "dashavarga_name",
+              "scalar": "u16",
+              "doc": "The name the dashavarga count earns; read only when that count is 2 or more.",
+              "enum": "Vaiseshikamsa"
+            },
+            {
+              "name": "shodashavarga_good",
+              "scalar": "u8",
+              "doc": "How many of the shodashavarga's vargas are good for it."
+            },
+            {
+              "name": "shodashavarga_name",
+              "scalar": "u16",
+              "doc": "The name the shodashavarga count earns; read only when that count is 2 or more.",
+              "enum": "Vaiseshikamsa"
             }
           ]
         }

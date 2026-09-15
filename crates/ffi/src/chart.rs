@@ -463,7 +463,7 @@ pub struct TsChartRequest {
     /// Which of the document's sections to compute beside the
     /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
     /// states, 4 the aspects, 8 the derived points, 16 the houses
-    /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala. Zero for the foundation alone, which is what every
+    /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa. Zero for the foundation alone, which is what every
     /// caller compiled against an earlier header passes by not passing
     /// it at all.
     ///
@@ -565,8 +565,10 @@ pub const TS_CHART_VIMSHOPAKA: u32 = 64;
 pub const TS_CHART_SHADBALA: u32 = 128;
 /// The Bhava bala.
 pub const TS_CHART_BHAVA_BALA: u32 = 256;
+/// The Vaiseshikamsa.
+pub const TS_CHART_VAISESHIKAMSA: u32 = 512;
 
-const SECTION_BITS: [SectionBit; 9] = [
+const SECTION_BITS: [SectionBit; 10] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
@@ -576,6 +578,7 @@ const SECTION_BITS: [SectionBit; 9] = [
     (TS_CHART_VIMSHOPAKA, ChartRequest::with_vimshopaka),
     (TS_CHART_SHADBALA, ChartRequest::with_shadbala),
     (TS_CHART_BHAVA_BALA, ChartRequest::with_bhava_bala),
+    (TS_CHART_VAISESHIKAMSA, ChartRequest::with_vaiseshikamsa),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -1227,6 +1230,79 @@ impl ShadbalaColumns {
     }
 }
 
+/// Where a graha's Vaiseshikamsa keeps its standing in one scheme.
+type SchemeStanding = fn(&teistro::strength::GrahaVaiseshikamsa) -> teistro::strength::Standing;
+
+/// The four schemes a Vaiseshikamsa reads, each column pair's name and where
+/// a graha's reading keeps its standing, which the section's schema and its
+/// writer both read.
+pub(crate) const VAISESHIKAMSA_SCHEMES: [(&str, SchemeStanding); 4] = [
+    ("shadvarga", |g| g.shadvarga),
+    ("saptavarga", |g| g.saptavarga),
+    ("dashavarga", |g| g.dashavarga),
+    ("shodashavarga", |g| g.shodashavarga),
+];
+
+/// Every chart's Vaiseshikamsa, a row a graha, empty when it was not asked
+/// for.
+struct VaiseshikamsaColumns {
+    graha: Vec<u16>,
+    impaired: Vec<u8>,
+    good: Vec<Vec<u8>>,
+    name: Vec<Vec<u16>>,
+}
+
+impl VaiseshikamsaColumns {
+    fn of(documents: &[Document]) -> VaiseshikamsaColumns {
+        let grahas: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.vaiseshikamsa.as_ref())
+            .flat_map(|reading| &reading.grahas)
+            .collect();
+        let rows = grahas.len();
+        let mut columns = VaiseshikamsaColumns {
+            graha: Vec::with_capacity(rows),
+            impaired: Vec::with_capacity(rows),
+            good: VAISESHIKAMSA_SCHEMES
+                .iter()
+                .map(|_| Vec::with_capacity(rows))
+                .collect(),
+            name: VAISESHIKAMSA_SCHEMES
+                .iter()
+                .map(|_| Vec::with_capacity(rows))
+                .collect(),
+        };
+        for graha in grahas {
+            columns.graha.push(graha.graha.id());
+            columns.impaired.push(u8::from(graha.impaired));
+            for ((good, name), (_, standing)) in columns
+                .good
+                .iter_mut()
+                .zip(columns.name.iter_mut())
+                .zip(VAISESHIKAMSA_SCHEMES)
+            {
+                let standing = standing(graha);
+                good.push(standing.good_vargas);
+                name.push(
+                    standing
+                        .name
+                        .map_or(0, teistro_core::catalogue::Vaiseshikamsa::id),
+                );
+            }
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut data = vec![ColumnData::U16(&self.graha), ColumnData::U8(&self.impaired)];
+        for (good, name) in self.good.iter().zip(&self.name) {
+            data.push(ColumnData::U8(good));
+            data.push(ColumnData::U16(name));
+        }
+        writer.columns("vaiseshikamsa", self.graha.len(), &data)
+    }
+}
+
 /// A Bhava bala value column: its name, what it holds, and where a bhava's
 /// reading keeps it.
 pub(crate) type BhavaBalaColumn = (
@@ -1875,6 +1951,7 @@ pub fn encode(
     let vimshopaka = VimshopakaColumns::of(documents);
     let shadbala = ShadbalaColumns::of(documents);
     let bhava_bala = BhavaBalaColumns::of(documents);
+    let vaiseshikamsa = VaiseshikamsaColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -1940,6 +2017,7 @@ pub fn encode(
         vimshopaka.write(&mut writer)?;
         shadbala.write(&mut writer)?;
         bhava_bala.write(&mut writer)?;
+        vaiseshikamsa.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {

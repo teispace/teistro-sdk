@@ -32,8 +32,8 @@ use teistro_state::state;
 use teistro_strength::shadbala::{SAPTAVARGAJA_VARGAS, ShadbalaGraha};
 use teistro_strength::{
     AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, BhavaBalaChart, BhavaBalaReading,
-    BhavaBalaRules, BhavaGraha, ShadbalaChart, ShadbalaReading, ShadbalaRules, VimshopakaChart,
-    VimshopakaReading,
+    BhavaBalaRules, BhavaGraha, ShadbalaChart, ShadbalaReading, ShadbalaRules, VaiseshikamsaChart,
+    VaiseshikamsaReading, VimshopakaChart, VimshopakaReading,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -290,6 +290,9 @@ impl<'a> ChartArea<'a> {
         }
         if request.sections.has(Sections::VIMSHOPAKA) {
             document = document.with_vimshopaka(Self::vimshopaka_of(foundation, settings)?);
+        }
+        if request.sections.has(Sections::VAISESHIKAMSA) {
+            document = document.with_vaiseshikamsa(Self::vaiseshikamsa_of(foundation, settings)?);
         }
         if request.sections.has(Sections::SHADBALA) {
             document = document.with_shadbala(Self::shadbala_of(
@@ -601,6 +604,41 @@ impl<'a> ChartArea<'a> {
             signs: Self::varga_signs(foundation, teistro_strength::vimshopaka::VARGAS)?,
         };
         Ok(VimshopakaReading::of(&chart, settings.strength.vimshopaka))
+    }
+
+    /// The Vaiseshikamsa of a founded chart: its grahas' signs in the sixteen
+    /// vargas, the arudha lagna, and which grahas are combust or defeated.
+    fn vaiseshikamsa_of(
+        foundation: &ChartFoundation,
+        settings: &teistro_core::settings::Settings,
+    ) -> Result<VaiseshikamsaReading, Error> {
+        let states = state(foundation, settings)?;
+        let sign_of = |graha: Graha| {
+            states
+                .iter()
+                .find(|state| state.graha == graha)
+                .map_or(Rashi::Aries, |state| state.sign)
+        };
+        let lagna = Rashi::from_id(u16::from(foundation.lagna_sign_index()))
+            .ok_or_else(|| Error::internal("a lagna in no sign"))?;
+        let mut impaired = [false; 7];
+        for (slot, graha) in impaired
+            .iter_mut()
+            .zip(teistro_strength::ashtakavarga::GRAHAS)
+        {
+            *slot = states
+                .iter()
+                .find(|s| s.graha == graha)
+                .is_some_and(|s| s.is_combust() || s.war.is_some_and(|war| !war.is_winner));
+        }
+        let chart = VaiseshikamsaChart {
+            signs: VimshopakaChart {
+                signs: Self::varga_signs(foundation, teistro_strength::vimshopaka::VARGAS)?,
+            },
+            arudha_lagna: arudha(lagna, 1, sign_of).sign,
+            impaired,
+        };
+        Ok(VaiseshikamsaReading::of(&chart))
     }
 
     /// The Shadbala of a founded chart under the settings' readings.

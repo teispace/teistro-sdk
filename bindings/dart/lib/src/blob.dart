@@ -1262,6 +1262,59 @@ final class ChartsBhavaBala {
   final int length;
 }
 
+/// The `vaiseshikamsa` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
+final class ChartsVaiseshikamsa {
+  const ChartsVaiseshikamsa({
+    required this.graha,
+    required this.impaired,
+    required this.shadvargaGood,
+    required this.shadvargaName,
+    required this.saptavargaGood,
+    required this.saptavargaName,
+    required this.dashavargaGood,
+    required this.dashavargaName,
+    required this.shodashavargaGood,
+    required this.shodashavargaName,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// 1 when it is combust or defeated in war, its names then not auspicious, else 0.
+  final Uint8List impaired;
+
+  /// How many of the shadvarga's vargas are good for it.
+  final Uint8List shadvargaGood;
+
+  /// The name the shadvarga count earns; read only when that count is 2 or more.
+  final Uint16List shadvargaName;
+
+  /// How many of the saptavarga's vargas are good for it.
+  final Uint8List saptavargaGood;
+
+  /// The name the saptavarga count earns; read only when that count is 2 or more.
+  final Uint16List saptavargaName;
+
+  /// How many of the dashavarga's vargas are good for it.
+  final Uint8List dashavargaGood;
+
+  /// The name the dashavarga count earns; read only when that count is 2 or more.
+  final Uint16List dashavargaName;
+
+  /// How many of the shodashavarga's vargas are good for it.
+  final Uint8List shodashavargaGood;
+
+  /// The name the shodashavarga count earns; read only when that count is 2 or more.
+  final Uint16List shodashavargaName;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -1396,6 +1449,7 @@ final class Charts {
     required this.vimshopaka,
     required this.shadbala,
     required this.bhavaBala,
+    required this.vaiseshikamsa,
   });
 
   /// What kind of chart these are.
@@ -1532,6 +1586,9 @@ final class Charts {
   /// Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
   final ChartsBhavaBala bhavaBala;
 
+  /// Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
+  final ChartsVaiseshikamsa vaiseshikamsa;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1569,6 +1626,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atVimshopaka = blob.section(28, 'vimshopaka');
   final atShadbala = blob.section(29, 'shadbala');
   final atBhavaBala = blob.section(30, 'bhava_bala');
+  final atVaiseshikamsa = blob.section(31, 'vaiseshikamsa');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2558,6 +2616,59 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atBhavaBala, 5) + atBhavaBala.count * 8,
       ),
       length: atBhavaBala.count,
+    ),
+    vaiseshikamsa: ChartsVaiseshikamsa(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 0),
+        blob.columnOffset(atVaiseshikamsa, 0) + atVaiseshikamsa.count * 2,
+      ),
+      impaired: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 1),
+        blob.columnOffset(atVaiseshikamsa, 1) + atVaiseshikamsa.count * 1,
+      ),
+      shadvargaGood: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 2),
+        blob.columnOffset(atVaiseshikamsa, 2) + atVaiseshikamsa.count * 1,
+      ),
+      shadvargaName: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 3),
+        blob.columnOffset(atVaiseshikamsa, 3) + atVaiseshikamsa.count * 2,
+      ),
+      saptavargaGood: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 4),
+        blob.columnOffset(atVaiseshikamsa, 4) + atVaiseshikamsa.count * 1,
+      ),
+      saptavargaName: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 5),
+        blob.columnOffset(atVaiseshikamsa, 5) + atVaiseshikamsa.count * 2,
+      ),
+      dashavargaGood: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 6),
+        blob.columnOffset(atVaiseshikamsa, 6) + atVaiseshikamsa.count * 1,
+      ),
+      dashavargaName: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 7),
+        blob.columnOffset(atVaiseshikamsa, 7) + atVaiseshikamsa.count * 2,
+      ),
+      shodashavargaGood: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 8),
+        blob.columnOffset(atVaiseshikamsa, 8) + atVaiseshikamsa.count * 1,
+      ),
+      shodashavargaName: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 9),
+        blob.columnOffset(atVaiseshikamsa, 9) + atVaiseshikamsa.count * 2,
+      ),
+      length: atVaiseshikamsa.count,
     ),
   );
 }

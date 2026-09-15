@@ -71,6 +71,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_PANCHAKA` | 60 | The five panchaka, which run while the Moon is in the last five nakshatras; the kind is the nakshatra's. |
 | `TS_KIND_MUHURTA_YOGA` | 61 | The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). |
 | `TS_KIND_CHART_LAYOUT` | 62 | The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. |
+| `TS_KIND_VAISESHIKAMSA` | 63 | The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. |
 
 ## ts_graha
 
@@ -1279,6 +1280,43 @@ The layouts a chart is drawn in; each is a cited row in the geometry crate, and 
 | `TS_CHART_LAYOUT_NEPALI_LOTUS` | 3 | The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals |
 | `TS_CHART_LAYOUT_SUDARSHAN_CHAKRA` | 4 | The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun |
 | `TS_CHART_LAYOUT_WESTERN_WHEEL` | 5 | The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock |
+
+## ts_vaiseshikamsa
+
+The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_VAISESHIKAMSA_KIMSHUKA` | 0 | Kimshuka |
+| `TS_VAISESHIKAMSA_VYANJANA` | 1 | Vyanjana |
+| `TS_VAISESHIKAMSA_CHAMARA` | 2 | Chamara |
+| `TS_VAISESHIKAMSA_CHATRA` | 3 | Chatra |
+| `TS_VAISESHIKAMSA_KUNDALA` | 4 | Kundala |
+| `TS_VAISESHIKAMSA_MUKUTA` | 5 | Mukuta |
+| `TS_VAISESHIKAMSA_PARIJATA` | 6 | Parijata |
+| `TS_VAISESHIKAMSA_UTTAMA` | 7 | Uttama |
+| `TS_VAISESHIKAMSA_GOPURA` | 8 | Gopura |
+| `TS_VAISESHIKAMSA_SIMHASANA` | 9 | Simhasana |
+| `TS_VAISESHIKAMSA_PARAVATA` | 10 | Paravata |
+| `TS_VAISESHIKAMSA_DEVALOKA` | 11 | Devaloka |
+| `TS_VAISESHIKAMSA_BRAHMALOKA` | 12 | Brahmaloka |
+| `TS_VAISESHIKAMSA_SHAKRAVAHANA` | 13 | Shakravahana |
+| `TS_VAISESHIKAMSA_SHRIDHAMA` | 14 | Shridhama |
+| `TS_VAISESHIKAMSA_BHEDAKA` | 15 | Bhedaka |
+| `TS_VAISESHIKAMSA_KUSUMA` | 16 | Kusuma |
+| `TS_VAISESHIKAMSA_NAGAPUSHPA` | 17 | Nagapushpa |
+| `TS_VAISESHIKAMSA_KANDUKA` | 18 | Kanduka |
+| `TS_VAISESHIKAMSA_KERALA` | 19 | Kerala |
+| `TS_VAISESHIKAMSA_KALPAVRIKSHA` | 20 | Kalpavriksha |
+| `TS_VAISESHIKAMSA_CHANDANAVANA` | 21 | Chandanavana |
+| `TS_VAISESHIKAMSA_PURNACHANDRA` | 22 | Purnachandra |
+| `TS_VAISESHIKAMSA_UCHCHAISHRAVA` | 23 | Uchchaishrava |
+| `TS_VAISESHIKAMSA_DHANVANTARI` | 24 | Dhanvantari |
+| `TS_VAISESHIKAMSA_SURYAKANTA` | 25 | Suryakanta |
+| `TS_VAISESHIKAMSA_VIDRUMA` | 26 | Vidruma |
+| `TS_VAISESHIKAMSA_CHAKRASIMHASANA` | 27 | Chakrasimhasana |
+| `TS_VAISESHIKAMSA_GOLOKA` | 28 | Goloka |
+| `TS_VAISESHIKAMSA_SHRIVALLABHA` | 29 | Shrivallabha |
 
 ## ts_status
 

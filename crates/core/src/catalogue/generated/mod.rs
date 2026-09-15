@@ -62,6 +62,7 @@ mod kaala;
 mod panchaka;
 mod muhurta_yoga;
 mod chart_layout;
+mod vaiseshikamsa;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -124,6 +125,7 @@ pub use kaala::*;
 pub use panchaka::*;
 pub use muhurta_yoga::*;
 pub use chart_layout::*;
+pub use vaiseshikamsa::*;
 
 use crate::key::KeyId;
 
@@ -191,6 +193,7 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::Panchaka => Panchaka::from_key(key).map(Panchaka::key_id),
         Kind::MuhurtaYoga => MuhurtaYoga::from_key(key).map(MuhurtaYoga::key_id),
         Kind::ChartLayout => ChartLayout::from_key(key).map(ChartLayout::key_id),
+        Kind::Vaiseshikamsa => Vaiseshikamsa::from_key(key).map(Vaiseshikamsa::key_id),
         _ => None,
     }
 }
@@ -259,6 +262,7 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::Panchaka => Panchaka::from_id(id.id()).map(Panchaka::key),
         Kind::MuhurtaYoga => MuhurtaYoga::from_id(id.id()).map(MuhurtaYoga::key),
         Kind::ChartLayout => ChartLayout::from_id(id.id()).map(ChartLayout::key),
+        Kind::Vaiseshikamsa => Vaiseshikamsa::from_id(id.id()).map(Vaiseshikamsa::key),
         _ => None,
     }
 }

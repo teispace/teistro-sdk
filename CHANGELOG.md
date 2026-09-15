@@ -826,6 +826,15 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** new; `conformance-baseline` is version 9.
 
+  The Vaiseshikamsa followed: each graha's count of good vargas and the name
+  it earns in the shadvarga, saptavarga, dashavarga and shodashavarga, from
+  BPHS ch. 6 vv. 42 to 53 (crux C77), through `ChartRequest::with_vaiseshikamsa`,
+  the document's `vaiseshikamsa` section, the boundary's section 31 and
+  `chart.vaiseshikamsa` in every binding; the thirty names are a new
+  catalogue kind, `vaiseshikamsa`.
+
+  **Numbers:** new. No settings hash moved.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

@@ -258,6 +258,9 @@ class Kind(Member):
     chart_layout = 62
     """The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more."""
 
+    vaiseshikamsa = 63
+    """The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3163,6 +3166,105 @@ class ChartLayout(Catalogued):
     """
 
 
+class Vaiseshikamsa(Catalogued):
+    """The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`."""
+
+    KIMSHUKA = 0
+    """Kimshuka"""
+
+    VYANJANA = 1
+    """Vyanjana"""
+
+    CHAMARA = 2
+    """Chamara"""
+
+    CHATRA = 3
+    """Chatra"""
+
+    KUNDALA = 4
+    """Kundala"""
+
+    MUKUTA = 5
+    """Mukuta"""
+
+    PARIJATA = 6
+    """Parijata"""
+
+    UTTAMA = 7
+    """Uttama"""
+
+    GOPURA = 8
+    """Gopura"""
+
+    SIMHASANA = 9
+    """Simhasana"""
+
+    PARAVATA = 10
+    """Paravata"""
+
+    DEVALOKA = 11
+    """Devaloka"""
+
+    BRAHMALOKA = 12
+    """Brahmaloka"""
+
+    SHAKRAVAHANA = 13
+    """Shakravahana"""
+
+    SHRIDHAMA = 14
+    """Shridhama"""
+
+    BHEDAKA = 15
+    """Bhedaka"""
+
+    KUSUMA = 16
+    """Kusuma"""
+
+    NAGAPUSHPA = 17
+    """Nagapushpa"""
+
+    KANDUKA = 18
+    """Kanduka"""
+
+    KERALA = 19
+    """Kerala"""
+
+    KALPAVRIKSHA = 20
+    """Kalpavriksha"""
+
+    CHANDANAVANA = 21
+    """Chandanavana"""
+
+    PURNACHANDRA = 22
+    """Purnachandra"""
+
+    UCHCHAISHRAVA = 23
+    """Uchchaishrava"""
+
+    DHANVANTARI = 24
+    """Dhanvantari"""
+
+    SURYAKANTA = 25
+    """Suryakanta"""
+
+    VIDRUMA = 26
+    """Vidruma"""
+
+    CHAKRASIMHASANA = 27
+    """Chakrasimhasana"""
+
+    GOLOKA = 28
+    """Goloka"""
+
+    SHRIVALLABHA = 29
+    """Shrivallabha"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -3867,6 +3969,7 @@ _KEYS: dict[str, dict[int, str]] = {
         60: "panchaka",
         61: "muhurta_yoga",
         62: "chart_layout",
+        63: "vaiseshikamsa",
     },
     "Graha": {
         0: "SUN",
@@ -4836,6 +4939,39 @@ _KEYS: dict[str, dict[int, str]] = {
         5: "WESTERN_WHEEL",
         -1: "UNKNOWN",
     },
+    "Vaiseshikamsa": {
+        0: "KIMSHUKA",
+        1: "VYANJANA",
+        2: "CHAMARA",
+        3: "CHATRA",
+        4: "KUNDALA",
+        5: "MUKUTA",
+        6: "PARIJATA",
+        7: "UTTAMA",
+        8: "GOPURA",
+        9: "SIMHASANA",
+        10: "PARAVATA",
+        11: "DEVALOKA",
+        12: "BRAHMALOKA",
+        13: "SHAKRAVAHANA",
+        14: "SHRIDHAMA",
+        15: "BHEDAKA",
+        16: "KUSUMA",
+        17: "NAGAPUSHPA",
+        18: "KANDUKA",
+        19: "KERALA",
+        20: "KALPAVRIKSHA",
+        21: "CHANDANAVANA",
+        22: "PURNACHANDRA",
+        23: "UCHCHAISHRAVA",
+        24: "DHANVANTARI",
+        25: "SURYAKANTA",
+        26: "VIDRUMA",
+        27: "CHAKRASIMHASANA",
+        28: "GOLOKA",
+        29: "SHRIVALLABHA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "ok",
         -1: "invalid-arg",
@@ -5104,4 +5240,5 @@ _KINDS: dict[str, str] = {
     "Panchaka": "panchaka",
     "MuhurtaYoga": "muhurta_yoga",
     "ChartLayout": "chart_layout",
+    "Vaiseshikamsa": "vaiseshikamsa",
 }

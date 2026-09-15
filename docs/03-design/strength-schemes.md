@@ -260,8 +260,21 @@ it.
 ## Rashi bala
 
 Rashi bala is unbuilt: no source read gives it component by component, and
-the corpus records none, so it waits for one. Vaiseshikamsa is a count over
-the same vargas the Vimshopaka reads and a row in the same crate.
+the corpus records none, so it waits for one.
+
+## The Vaiseshikamsa, built (2026-09-15)
+
+The names a graha earns by its good vargas in each of the Vimshopaka's four
+schemes (BPHS ch. 6 vv. 42 to 53): Kimshuka to Kundala over the shadvarga,
+Mukuta for the saptavarga's seven, Parijata to Shridhama over the dashavarga
+and Bhedaka to Shrivallabha over the shodashavarga, a new catalogue kind of
+thirty names each carrying its count. A varga is good in the graha's
+exaltation, moolatrikona or own sign, or in a sign owned by a lord of the
+arudha lagna's kendras, and a combust or defeated graha keeps its names
+flagged as impaired (crux C77). The engine computes none and the corpus
+records none, so unit tests and the façade hold it to its own rules; the
+document's `vaiseshikamsa` section, the boundary's section 31 (bit 512) and
+`chart.vaiseshikamsa` in every binding carry it.
 
 ## Build order
 

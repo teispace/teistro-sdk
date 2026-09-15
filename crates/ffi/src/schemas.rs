@@ -504,23 +504,15 @@ pub fn charts() -> BlobSchema {
             chart_cast_section(2),
             chart_grahas_section(3),
             chart_readings_section(4),
-            SectionSchema::columns(
+            chart_cusps_section(
                 5,
                 "houses",
                 "The twelve bhavas for \"which house is it in\", charts outermost: row `i * 12 + j` is chart `i`, bhava `j`, first to twelfth.",
-                vec![
-                    ColumnDef::new("madhya_deg", Scalar::F64, "The bhava's centre, degrees."),
-                    ColumnDef::new("sandhi_deg", Scalar::F64, "The bhava's opening cusp, degrees."),
-                ],
             ),
-            SectionSchema::columns(
+            chart_cusps_section(
                 6,
                 "chalit",
                 "The twelve bhavas of each chart's chalit, the same shape as `houses`.",
-                vec![
-                    ColumnDef::new("madhya_deg", Scalar::F64, "The bhava's centre, degrees."),
-                    ColumnDef::new("sandhi_deg", Scalar::F64, "The bhava's opening cusp, degrees."),
-                ],
             ),
             SectionSchema::fixed(
                 7,
@@ -579,8 +571,27 @@ pub fn charts() -> BlobSchema {
             chart_vimshopaka_section(28),
             chart_shadbala_section(29),
             chart_bhava_bala_section(30),
+            chart_vaiseshikamsa_section(31),
         ],
     }
+}
+
+/// Twelve bhavas a chart, each its centre and opening cusp: the `houses` and
+/// the `chalit` share the shape.
+fn chart_cusps_section(id: u32, name: &str, doc: &str) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        name,
+        doc,
+        vec![
+            ColumnDef::new("madhya_deg", Scalar::F64, "The bhava's centre, degrees."),
+            ColumnDef::new(
+                "sandhi_deg",
+                Scalar::F64,
+                "The bhava's opening cusp, degrees.",
+            ),
+        ],
+    )
 }
 
 /// Every chart's dashas: one row a chart a system, charts outermost and the
@@ -789,6 +800,41 @@ fn chart_bhava_bala_section(id: u32) -> SectionSchema {
         id,
         "bhava_bala",
         "Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).",
+        columns,
+    )
+}
+
+/// Every chart's Vaiseshikamsa, a row a graha, a count and a name a scheme.
+fn chart_vaiseshikamsa_section(id: u32) -> SectionSchema {
+    let mut columns = vec![
+        ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+        ColumnDef::new(
+            "impaired",
+            Scalar::U8,
+            "1 when it is combust or defeated in war, its names then not auspicious, else 0.",
+        ),
+    ];
+    for (scheme, _) in crate::chart::VAISESHIKAMSA_SCHEMES {
+        columns.push(ColumnDef::new(
+            &format!("{scheme}_good"),
+            Scalar::U8,
+            &format!("How many of the {scheme}'s vargas are good for it."),
+        ));
+        columns.push(
+            ColumnDef::new(
+                &format!("{scheme}_name"),
+                Scalar::U16,
+                &format!(
+                    "The name the {scheme} count earns; read only when that count is 2 or more."
+                ),
+            )
+            .of_enum("Vaiseshikamsa"),
+        );
+    }
+    SectionSchema::columns(
+        id,
+        "vaiseshikamsa",
+        "Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.",
         columns,
     )
 }

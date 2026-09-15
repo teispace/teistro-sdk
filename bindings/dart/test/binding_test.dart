@@ -832,6 +832,43 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  /// A chart's Vaiseshikamsa crosses whole: each scheme's count within its
+  /// vargas, a name for every count from two; null unless asked.
+  test('a chart carries its Vaiseshikamsa, each scheme\'s count and name', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      vaiseshikamsa: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .vaiseshikamsa,
+      isNull,
+    );
+    final grahas = chart.vaiseshikamsa!.grahas;
+    expect(grahas, hasLength(7));
+    for (final g in grahas) {
+      for (final (standing, vargas) in [
+        (g.shadvarga, 6),
+        (g.saptavarga, 7),
+        (g.dashavarga, 10),
+        (g.shodashavarga, 16),
+      ]) {
+        expect(standing.goodVargas, lessThanOrEqualTo(vargas));
+        expect(standing.name == null, standing.goodVargas < 2);
+      }
+    }
+    ctx.dispose();
+  });
+
   /// A chart's Vimshopaka crosses whole: every graha's four scores out of 20
   /// under the default reading, the text's, whose least in any varga is 5;
   /// null unless asked.

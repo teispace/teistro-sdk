@@ -285,6 +285,7 @@ void main() {
     houses: true,
     ashtakavarga: true,
     vimshopaka: true,
+    vaiseshikamsa: true,
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -480,6 +481,18 @@ void main() {
       put(
         'chart-$i-bhava-bala-${b.bhava}',
         '${b.lord.fullKey} ${[b.adhipati, b.dig, b.drishti, b.special, b.virupas].map(number).join(',')}',
+      );
+    }
+    for (final g in chart.vaiseshikamsa!.grahas) {
+      final standings = [
+        g.shadvarga,
+        g.saptavarga,
+        g.dashavarga,
+        g.shodashavarga,
+      ];
+      put(
+        'chart-$i-vaiseshikamsa-${g.graha.fullKey}',
+        '${standings.map((s) => '${s.goodVargas}:${s.name?.fullKey}').join(',')} ${g.impaired}',
       );
     }
     final vs = chart.vimshopaka!;

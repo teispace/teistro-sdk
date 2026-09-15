@@ -277,6 +277,7 @@ def main() -> None:
             houses=True,
             ashtakavarga=True,
             vimshopaka=True,
+            vaiseshikamsa=True,
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -441,6 +442,22 @@ def main() -> None:
                 put(
                     f"chart-{i}-bhava-bala-{house.bhava}",
                     f"{house.lord.full_key} " + ",".join(number(value) for value in values),
+                )
+            vk = chart.vaiseshikamsa
+            assert vk is not None
+            for named_graha in vk.grahas:
+                standings = (
+                    named_graha.shadvarga,
+                    named_graha.saptavarga,
+                    named_graha.dashavarga,
+                    named_graha.shodashavarga,
+                )
+                named = ",".join(
+                    f"{st.good_vargas}:{st.name.full_key if st.name is not None else 'null'}" for st in standings
+                )
+                put(
+                    f"chart-{i}-vaiseshikamsa-{named_graha.graha.full_key}",
+                    f"{named} {str(named_graha.impaired).lower()}",
                 )
             vs = chart.vimshopaka
             assert vs is not None

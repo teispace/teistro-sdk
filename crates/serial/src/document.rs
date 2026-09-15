@@ -20,7 +20,9 @@ use teistro_houses::Houses;
 use teistro_panchanga::almanac::Panchanga;
 use teistro_points::Points;
 use teistro_state::GrahaState;
-use teistro_strength::{AshtakavargaReading, BhavaBalaReading, ShadbalaReading, VimshopakaReading};
+use teistro_strength::{
+    AshtakavargaReading, BhavaBalaReading, ShadbalaReading, VaiseshikamsaReading, VimshopakaReading,
+};
 use teistro_vargas::chart::VargaChart;
 
 use crate::seal::Sealed;
@@ -62,6 +64,9 @@ pub struct Document {
     /// (`03-design/vimshopaka-measured.md`).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub vimshopaka: Option<VimshopakaReading>,
+    /// The names each graha earns by its good vargas (BPHS ch. 6).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub vaiseshikamsa: Option<VaiseshikamsaReading>,
     /// Each graha's six strengths (`03-design/shadbala-measured.md`).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub shadbala: Option<ShadbalaReading>,
@@ -97,6 +102,7 @@ impl Document {
             houses: None,
             ashtakavarga: None,
             vimshopaka: None,
+            vaiseshikamsa: None,
             shadbala: None,
             bhava_bala: None,
             drawings: Vec::new(),
@@ -160,6 +166,13 @@ impl Document {
         self
     }
 
+    /// With the Vaiseshikamsa.
+    #[must_use]
+    pub fn with_vaiseshikamsa(mut self, vaiseshikamsa: VaiseshikamsaReading) -> Document {
+        self.vaiseshikamsa = Some(vaiseshikamsa);
+        self
+    }
+
     /// With the Vimshopaka.
     #[must_use]
     pub fn with_vimshopaka(mut self, vimshopaka: VimshopakaReading) -> Document {
@@ -216,6 +229,9 @@ impl Document {
         }
         if self.vimshopaka.is_some() {
             found.push("vimshopaka");
+        }
+        if self.vaiseshikamsa.is_some() {
+            found.push("vaiseshikamsa");
         }
         if self.shadbala.is_some() {
             found.push("shadbala");

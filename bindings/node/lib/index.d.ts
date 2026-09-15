@@ -38,6 +38,7 @@ import type {
   Rashi,
   Shodhana,
   Ekadhipatya,
+  Vaiseshikamsa,
   VimshopakaScoring,
   Relationship,
   Scale,
@@ -473,6 +474,36 @@ export interface BhavaBala {
   readonly bhavas: readonly BhavaStrength[];
 }
 
+/** A graha's standing in one scheme of vargas. */
+export interface VaiseshikamsaStanding {
+  /** How many of the scheme's vargas are good for it. */
+  readonly goodVargas: number;
+  /** The name that count earns, from two good vargas; `null` below. */
+  readonly name: Vaiseshikamsa | null;
+}
+
+/** One graha's Vaiseshikamsa (BPHS ch. 6 vv. 42 to 53). */
+export interface GrahaVaiseshikamsa {
+  /** Which graha, Sun to Saturn. */
+  readonly graha: Graha;
+  /** Over the six vargas. */
+  readonly shadvarga: VaiseshikamsaStanding;
+  /** Over the seven. */
+  readonly saptavarga: VaiseshikamsaStanding;
+  /** Over the ten. */
+  readonly dashavarga: VaiseshikamsaStanding;
+  /** Over the sixteen. */
+  readonly shodashavarga: VaiseshikamsaStanding;
+  /** Whether it is combust or defeated in war, its names then not auspicious. */
+  readonly impaired: boolean;
+}
+
+/** A chart's Vaiseshikamsa. */
+export interface VaiseshikamsaReading {
+  /** Each graha's, Sun to Saturn. */
+  readonly grahas: readonly GrahaVaiseshikamsa[];
+}
+
 /** A chart's Vimshopaka: each graha's strength across the divisional charts. */
 export interface Vimshopaka {
   /** How each varga was scored. */
@@ -829,6 +860,8 @@ export declare class Chart {
   readonly ashtakavarga: Ashtakavarga | null;
   /** The Vimshopaka; `null` unless `vimshopaka` asked for it. */
   readonly vimshopaka: Vimshopaka | null;
+  /** The Vaiseshikamsa; `null` unless `vaiseshikamsa` asked for it. */
+  readonly vaiseshikamsa: VaiseshikamsaReading | null;
   /** The Shadbala; `null` unless `shadbala` asked for it. */
   readonly shadbala: Shadbala | null;
   /** The Bhava bala; `null` unless `bhavaBala` asked for it. */
@@ -1098,6 +1131,8 @@ export interface ChartRequest {
   readonly ashtakavarga?: boolean;
   /** Whether to compute the Vimshopaka; false by default. */
   readonly vimshopaka?: boolean;
+  /** Whether to compute the Vaiseshikamsa; false by default. */
+  readonly vaiseshikamsa?: boolean;
   /** Whether to compute the Shadbala; false by default. */
   readonly shadbala?: boolean;
   /** Whether to compute the Bhava bala; false by default. */

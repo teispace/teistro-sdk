@@ -621,6 +621,9 @@ const int _sectionAshtakavarga = 32;
 /// `TS_CHART_VIMSHOPAKA`, the Vimshopaka.
 const int _sectionVimshopaka = 64;
 
+/// `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa.
+const int _sectionVaiseshikamsa = 512;
+
 /// `TS_CHART_SHADBALA`, the Shadbala.
 const int _sectionShadbala = 128;
 
@@ -673,6 +676,7 @@ final class ChartArea extends _Area {
     bool houses = false,
     bool ashtakavarga = false,
     bool vimshopaka = false,
+    bool vaiseshikamsa = false,
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
@@ -690,6 +694,7 @@ final class ChartArea extends _Area {
     houses: houses,
     ashtakavarga: ashtakavarga,
     vimshopaka: vimshopaka,
+    vaiseshikamsa: vaiseshikamsa,
     shadbala: shadbala,
     bhavaBala: bhavaBala,
     state: state,
@@ -727,6 +732,7 @@ final class ChartArea extends _Area {
     bool houses = false,
     bool ashtakavarga = false,
     bool vimshopaka = false,
+    bool vaiseshikamsa = false,
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
@@ -750,6 +756,7 @@ final class ChartArea extends _Area {
               (houses ? _sectionHouses : 0) |
               (ashtakavarga ? _sectionAshtakavarga : 0) |
               (vimshopaka ? _sectionVimshopaka : 0) |
+              (vaiseshikamsa ? _sectionVaiseshikamsa : 0) |
               (shadbala ? _sectionShadbala : 0) |
               (bhavaBala ? _sectionBhavaBala : 0) |
               (state ? _sectionState : 0),
@@ -1762,6 +1769,55 @@ final class Shadbala {
 
   /// Each graha's, Sun to Saturn.
   final List<GrahaShadbala> grahas;
+}
+
+/// A graha's standing in one scheme of vargas.
+final class VaiseshikamsaStanding {
+  const VaiseshikamsaStanding({required this.goodVargas, required this.name});
+
+  /// How many of the scheme's vargas are good for it.
+  final int goodVargas;
+
+  /// The name that count earns, from two good vargas; null below.
+  final Vaiseshikamsa? name;
+}
+
+/// One graha's Vaiseshikamsa (BPHS ch. 6 vv. 42 to 53).
+final class GrahaVaiseshikamsa {
+  const GrahaVaiseshikamsa({
+    required this.graha,
+    required this.shadvarga,
+    required this.saptavarga,
+    required this.dashavarga,
+    required this.shodashavarga,
+    required this.impaired,
+  });
+
+  /// Which graha, Sun to Saturn.
+  final Graha graha;
+
+  /// Over the six vargas.
+  final VaiseshikamsaStanding shadvarga;
+
+  /// Over the seven.
+  final VaiseshikamsaStanding saptavarga;
+
+  /// Over the ten.
+  final VaiseshikamsaStanding dashavarga;
+
+  /// Over the sixteen.
+  final VaiseshikamsaStanding shodashavarga;
+
+  /// Whether it is combust or defeated in war, its names then not auspicious.
+  final bool impaired;
+}
+
+/// A chart's Vaiseshikamsa.
+final class VaiseshikamsaReading {
+  const VaiseshikamsaReading({required this.grahas});
+
+  /// Each graha's, Sun to Saturn.
+  final List<GrahaVaiseshikamsa> grahas;
 }
 
 /// One graha's Vimshopaka, each score out of 20.
@@ -2799,6 +2855,43 @@ List<Shadbala> _decodeShadbalas(Charts batch) {
   );
 }
 
+/// Each batch's Vaiseshikamsas, decoded once however many charts read them.
+final Expando<List<VaiseshikamsaReading>> _vaiseshikamsas =
+    Expando<List<VaiseshikamsaReading>>('vaiseshikamsas');
+
+List<VaiseshikamsaReading> _vaiseshikamsasOf(Charts batch) =>
+    _vaiseshikamsas[batch] ??= _decodeVaiseshikamsas(batch);
+
+List<VaiseshikamsaReading> _decodeVaiseshikamsas(Charts batch) {
+  final c = batch.vaiseshikamsa;
+  VaiseshikamsaStanding standing(List<int> good, List<int> names, int row) =>
+      VaiseshikamsaStanding(
+        goodVargas: good[row],
+        name: good[row] >= 2 ? Vaiseshikamsa.byId(names[row]) : null,
+      );
+  return List<VaiseshikamsaReading>.generate(
+    c.length ~/ 7,
+    (chart) => VaiseshikamsaReading(
+      grahas: List<GrahaVaiseshikamsa>.generate(7, (g) {
+        final row = chart * 7 + g;
+        return GrahaVaiseshikamsa(
+          graha: Graha.byId(c.graha[row]),
+          shadvarga: standing(c.shadvargaGood, c.shadvargaName, row),
+          saptavarga: standing(c.saptavargaGood, c.saptavargaName, row),
+          dashavarga: standing(c.dashavargaGood, c.dashavargaName, row),
+          shodashavarga: standing(
+            c.shodashavargaGood,
+            c.shodashavargaName,
+            row,
+          ),
+          impaired: c.impaired[row] == 1,
+        );
+      }, growable: false),
+    ),
+    growable: false,
+  );
+}
+
 /// Each batch's Vimshopakas, decoded once however many charts read them.
 final Expando<List<Vimshopaka>> _vimshopakas = Expando<List<Vimshopaka>>(
   'vimshopakas',
@@ -3240,6 +3333,12 @@ final class Chart {
   /// The Shadbala, when `shadbala: true` asked for it.
   Shadbala? get shadbala {
     final all = _shadbalasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// The Vaiseshikamsa, when `vaiseshikamsa: true` asked for it.
+  VaiseshikamsaReading? get vaiseshikamsa {
+    final all = _vaiseshikamsasOf(batch);
     return index < all.length ? all[index] : null;
   }
 

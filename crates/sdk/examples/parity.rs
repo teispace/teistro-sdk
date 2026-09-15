@@ -901,6 +901,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, kerala: teistro::KeyId) ->
         .with_houses()
         .with_ashtakavarga()
         .with_vimshopaka()
+        .with_vaiseshikamsa()
         .with_shadbala()
         .with_bhava_bala()
         .with_state()
@@ -1182,6 +1183,7 @@ fn the_points(report: &mut Report, index: usize, document: &teistro::Document) {
 fn the_strength(report: &mut Report, index: usize, document: &teistro::Document) {
     the_ashtakavarga(report, index, document);
     the_vimshopaka(report, index, document);
+    the_vaiseshikamsa(report, index, document);
     the_shadbala(report, index, document);
     the_bhava_bala(report, index, document);
 }
@@ -1250,6 +1252,36 @@ fn the_shadbala(report: &mut Report, index: usize, document: &teistro::Document)
                 number(graha.ishta),
                 number(graha.kashta)
             ),
+        );
+    }
+}
+
+/// The Vaiseshikamsa as the other three print it: each scheme's count and
+/// name, and whether the graha is impaired.
+fn the_vaiseshikamsa(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(reading) = document.vaiseshikamsa.as_ref() else {
+        return;
+    };
+    for graha in &reading.grahas {
+        let standings = [
+            graha.shadvarga,
+            graha.saptavarga,
+            graha.dashavarga,
+            graha.shodashavarga,
+        ];
+        let named = standings
+            .map(|s| {
+                format!(
+                    "{}:{}",
+                    s.good_vargas,
+                    s.name.map_or("null", |n| n.full_key())
+                )
+            })
+            .join(",");
+        put(
+            report,
+            &format!("chart-{index}-vaiseshikamsa-{}", graha.graha.full_key()),
+            format!("{named} {}", graha.impaired),
         );
     }
 }

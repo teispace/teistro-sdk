@@ -282,6 +282,10 @@ typedef enum ts_kind {
      * The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
      */
     TS_KIND_CHART_LAYOUT = 62,
+    /**
+     * The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
+     */
+    TS_KIND_VAISESHIKAMSA = 63,
 } ts_kind;
 
 /**
@@ -3917,6 +3921,134 @@ typedef enum ts_chart_layout {
 } ts_chart_layout;
 
 /**
+ * The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`.
+ */
+typedef enum ts_vaiseshikamsa {
+    /**
+     * Kimshuka
+     */
+    TS_VAISESHIKAMSA_KIMSHUKA = 0,
+    /**
+     * Vyanjana
+     */
+    TS_VAISESHIKAMSA_VYANJANA = 1,
+    /**
+     * Chamara
+     */
+    TS_VAISESHIKAMSA_CHAMARA = 2,
+    /**
+     * Chatra
+     */
+    TS_VAISESHIKAMSA_CHATRA = 3,
+    /**
+     * Kundala
+     */
+    TS_VAISESHIKAMSA_KUNDALA = 4,
+    /**
+     * Mukuta
+     */
+    TS_VAISESHIKAMSA_MUKUTA = 5,
+    /**
+     * Parijata
+     */
+    TS_VAISESHIKAMSA_PARIJATA = 6,
+    /**
+     * Uttama
+     */
+    TS_VAISESHIKAMSA_UTTAMA = 7,
+    /**
+     * Gopura
+     */
+    TS_VAISESHIKAMSA_GOPURA = 8,
+    /**
+     * Simhasana
+     */
+    TS_VAISESHIKAMSA_SIMHASANA = 9,
+    /**
+     * Paravata
+     */
+    TS_VAISESHIKAMSA_PARAVATA = 10,
+    /**
+     * Devaloka
+     */
+    TS_VAISESHIKAMSA_DEVALOKA = 11,
+    /**
+     * Brahmaloka
+     */
+    TS_VAISESHIKAMSA_BRAHMALOKA = 12,
+    /**
+     * Shakravahana
+     */
+    TS_VAISESHIKAMSA_SHAKRAVAHANA = 13,
+    /**
+     * Shridhama
+     */
+    TS_VAISESHIKAMSA_SHRIDHAMA = 14,
+    /**
+     * Bhedaka
+     */
+    TS_VAISESHIKAMSA_BHEDAKA = 15,
+    /**
+     * Kusuma
+     */
+    TS_VAISESHIKAMSA_KUSUMA = 16,
+    /**
+     * Nagapushpa
+     */
+    TS_VAISESHIKAMSA_NAGAPUSHPA = 17,
+    /**
+     * Kanduka
+     */
+    TS_VAISESHIKAMSA_KANDUKA = 18,
+    /**
+     * Kerala
+     */
+    TS_VAISESHIKAMSA_KERALA = 19,
+    /**
+     * Kalpavriksha
+     */
+    TS_VAISESHIKAMSA_KALPAVRIKSHA = 20,
+    /**
+     * Chandanavana
+     */
+    TS_VAISESHIKAMSA_CHANDANAVANA = 21,
+    /**
+     * Purnachandra
+     */
+    TS_VAISESHIKAMSA_PURNACHANDRA = 22,
+    /**
+     * Uchchaishrava
+     */
+    TS_VAISESHIKAMSA_UCHCHAISHRAVA = 23,
+    /**
+     * Dhanvantari
+     */
+    TS_VAISESHIKAMSA_DHANVANTARI = 24,
+    /**
+     * Suryakanta
+     */
+    TS_VAISESHIKAMSA_SURYAKANTA = 25,
+    /**
+     * Vidruma
+     */
+    TS_VAISESHIKAMSA_VIDRUMA = 26,
+    /**
+     * Chakrasimhasana
+     */
+    TS_VAISESHIKAMSA_CHAKRASIMHASANA = 27,
+    /**
+     * Goloka
+     */
+    TS_VAISESHIKAMSA_GOLOKA = 28,
+    /**
+     * Shrivallabha
+     */
+    TS_VAISESHIKAMSA_SHRIVALLABHA = 29,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_VAISESHIKAMSA_UNKNOWN = -1,
+} ts_vaiseshikamsa;
+
+/**
  * The status of a call, with the code it has at the C boundary.
  */
 typedef enum ts_status {
@@ -5691,7 +5823,7 @@ struct ts_chart_request {
      * Which of the document's sections to compute beside the
      * foundation, as a bit set: 1 the day's almanac, 2 the planetary
      * states, 4 the aspects, 8 the derived points, 16 the houses
-     * service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala. Zero for the foundation alone, which is what every
+     * service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa. Zero for the foundation alone, which is what every
      * caller compiled against an earlier header passes by not passing
      * it at all.
      *

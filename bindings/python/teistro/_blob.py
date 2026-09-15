@@ -1018,6 +1018,48 @@ class ChartsBhavaBala:
 
 
 @dataclass(frozen=True)
+class ChartsVaiseshikamsa:
+    """The `vaiseshikamsa` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    impaired: memoryview[int]
+    """1 when it is combust or defeated in war, its names then not auspicious, else 0."""
+
+    shadvarga_good: memoryview[int]
+    """How many of the shadvarga's vargas are good for it."""
+
+    shadvarga_name: memoryview[int]
+    """The name the shadvarga count earns; read only when that count is 2 or more."""
+
+    saptavarga_good: memoryview[int]
+    """How many of the saptavarga's vargas are good for it."""
+
+    saptavarga_name: memoryview[int]
+    """The name the saptavarga count earns; read only when that count is 2 or more."""
+
+    dashavarga_good: memoryview[int]
+    """How many of the dashavarga's vargas are good for it."""
+
+    dashavarga_name: memoryview[int]
+    """The name the dashavarga count earns; read only when that count is 2 or more."""
+
+    shodashavarga_good: memoryview[int]
+    """How many of the shodashavarga's vargas are good for it."""
+
+    shodashavarga_name: memoryview[int]
+    """The name the shodashavarga count earns; read only when that count is 2 or more."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -1225,6 +1267,9 @@ class Charts:
     bhava_bala: ChartsBhavaBala
     """Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`)."""
 
+    vaiseshikamsa: ChartsVaiseshikamsa
+    """Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1264,6 +1309,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_vimshopaka = blob.section(28, "vimshopaka")
     at_shadbala = blob.section(29, "shadbala")
     at_bhava_bala = blob.section(30, "bhava_bala")
+    at_vaiseshikamsa = blob.section(31, "vaiseshikamsa")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1721,6 +1767,39 @@ def decode_charts(raw: bytes) -> Charts:
                 at_bhava_bala, 5, 8, at_bhava_bala.count
             ).cast("d"),
             length=at_bhava_bala.count,
+        ),
+        vaiseshikamsa=ChartsVaiseshikamsa(
+            graha=blob.column(
+                at_vaiseshikamsa, 0, 2, at_vaiseshikamsa.count
+            ).cast("H"),
+            impaired=blob.column(
+                at_vaiseshikamsa, 1, 1, at_vaiseshikamsa.count
+            ).cast("B"),
+            shadvarga_good=blob.column(
+                at_vaiseshikamsa, 2, 1, at_vaiseshikamsa.count
+            ).cast("B"),
+            shadvarga_name=blob.column(
+                at_vaiseshikamsa, 3, 2, at_vaiseshikamsa.count
+            ).cast("H"),
+            saptavarga_good=blob.column(
+                at_vaiseshikamsa, 4, 1, at_vaiseshikamsa.count
+            ).cast("B"),
+            saptavarga_name=blob.column(
+                at_vaiseshikamsa, 5, 2, at_vaiseshikamsa.count
+            ).cast("H"),
+            dashavarga_good=blob.column(
+                at_vaiseshikamsa, 6, 1, at_vaiseshikamsa.count
+            ).cast("B"),
+            dashavarga_name=blob.column(
+                at_vaiseshikamsa, 7, 2, at_vaiseshikamsa.count
+            ).cast("H"),
+            shodashavarga_good=blob.column(
+                at_vaiseshikamsa, 8, 1, at_vaiseshikamsa.count
+            ).cast("B"),
+            shodashavarga_name=blob.column(
+                at_vaiseshikamsa, 9, 2, at_vaiseshikamsa.count
+            ).cast("H"),
+            length=at_vaiseshikamsa.count,
         ),
     )
 

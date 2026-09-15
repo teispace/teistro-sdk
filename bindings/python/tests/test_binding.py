@@ -664,6 +664,27 @@ class AnEngine(WithLibrary):
             self.assertAlmostEqual(six, g.virupas, places=9)
             self.assertEqual(g.strong, g.rupas >= g.required_rupas)
 
+    def test_a_chart_carries_its_vaiseshikamsa_each_scheme_s_count_and_name(self) -> None:
+        """A chart's Vaiseshikamsa crosses whole: each scheme's count within its
+        vargas, a name for every count from two; None unless asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, vaiseshikamsa=True)
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).vaiseshikamsa)
+        reading = chart.vaiseshikamsa
+        assert reading is not None
+        self.assertEqual(len(reading.grahas), 7)
+        for g in reading.grahas:
+            for standing, vargas in (
+                (g.shadvarga, 6),
+                (g.saptavarga, 7),
+                (g.dashavarga, 10),
+                (g.shodashavarga, 16),
+            ):
+                self.assertLessEqual(standing.good_vargas, vargas)
+                self.assertEqual(standing.name is None, standing.good_vargas < 2)
+
     def test_a_chart_carries_its_vimshopaka_each_graha_s_four_scores(self) -> None:
         """A chart's Vimshopaka crosses whole: every graha's four scores out of
         20 under the default reading, the text's, whose least in any varga is

@@ -113,6 +113,7 @@ export const Kind = Object.freeze({
   Panchaka: 'panchaka',
   MuhurtaYoga: 'muhurta_yoga',
   ChartLayout: 'chart_layout',
+  Vaiseshikamsa: 'vaiseshikamsa',
 });
 
 /**
@@ -180,6 +181,7 @@ export const KindById = new Map([
   [60, 'panchaka'],
   [61, 'muhurta_yoga'],
   [62, 'chart_layout'],
+  [63, 'vaiseshikamsa'],
 ]);
 
 /** Every Graha by name. */
@@ -2416,6 +2418,77 @@ export const ChartLayoutById = new Map([
   [3, 'chart_layout.NEPALI_LOTUS'],
   [4, 'chart_layout.SUDARSHAN_CHAKRA'],
   [5, 'chart_layout.WESTERN_WHEEL'],
+]);
+
+/** Every Vaiseshikamsa by name. */
+export const Vaiseshikamsa = Object.freeze({
+  Kimshuka: 'vaiseshikamsa.KIMSHUKA',
+  Vyanjana: 'vaiseshikamsa.VYANJANA',
+  Chamara: 'vaiseshikamsa.CHAMARA',
+  Chatra: 'vaiseshikamsa.CHATRA',
+  Kundala: 'vaiseshikamsa.KUNDALA',
+  Mukuta: 'vaiseshikamsa.MUKUTA',
+  Parijata: 'vaiseshikamsa.PARIJATA',
+  Uttama: 'vaiseshikamsa.UTTAMA',
+  Gopura: 'vaiseshikamsa.GOPURA',
+  Simhasana: 'vaiseshikamsa.SIMHASANA',
+  Paravata: 'vaiseshikamsa.PARAVATA',
+  Devaloka: 'vaiseshikamsa.DEVALOKA',
+  Brahmaloka: 'vaiseshikamsa.BRAHMALOKA',
+  Shakravahana: 'vaiseshikamsa.SHAKRAVAHANA',
+  Shridhama: 'vaiseshikamsa.SHRIDHAMA',
+  Bhedaka: 'vaiseshikamsa.BHEDAKA',
+  Kusuma: 'vaiseshikamsa.KUSUMA',
+  Nagapushpa: 'vaiseshikamsa.NAGAPUSHPA',
+  Kanduka: 'vaiseshikamsa.KANDUKA',
+  Kerala: 'vaiseshikamsa.KERALA',
+  Kalpavriksha: 'vaiseshikamsa.KALPAVRIKSHA',
+  Chandanavana: 'vaiseshikamsa.CHANDANAVANA',
+  Purnachandra: 'vaiseshikamsa.PURNACHANDRA',
+  Uchchaishrava: 'vaiseshikamsa.UCHCHAISHRAVA',
+  Dhanvantari: 'vaiseshikamsa.DHANVANTARI',
+  Suryakanta: 'vaiseshikamsa.SURYAKANTA',
+  Vidruma: 'vaiseshikamsa.VIDRUMA',
+  Chakrasimhasana: 'vaiseshikamsa.CHAKRASIMHASANA',
+  Goloka: 'vaiseshikamsa.GOLOKA',
+  Shrivallabha: 'vaiseshikamsa.SHRIVALLABHA',
+});
+
+/**
+ * Every Vaiseshikamsa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VaiseshikamsaById = new Map([
+  [0, 'vaiseshikamsa.KIMSHUKA'],
+  [1, 'vaiseshikamsa.VYANJANA'],
+  [2, 'vaiseshikamsa.CHAMARA'],
+  [3, 'vaiseshikamsa.CHATRA'],
+  [4, 'vaiseshikamsa.KUNDALA'],
+  [5, 'vaiseshikamsa.MUKUTA'],
+  [6, 'vaiseshikamsa.PARIJATA'],
+  [7, 'vaiseshikamsa.UTTAMA'],
+  [8, 'vaiseshikamsa.GOPURA'],
+  [9, 'vaiseshikamsa.SIMHASANA'],
+  [10, 'vaiseshikamsa.PARAVATA'],
+  [11, 'vaiseshikamsa.DEVALOKA'],
+  [12, 'vaiseshikamsa.BRAHMALOKA'],
+  [13, 'vaiseshikamsa.SHAKRAVAHANA'],
+  [14, 'vaiseshikamsa.SHRIDHAMA'],
+  [15, 'vaiseshikamsa.BHEDAKA'],
+  [16, 'vaiseshikamsa.KUSUMA'],
+  [17, 'vaiseshikamsa.NAGAPUSHPA'],
+  [18, 'vaiseshikamsa.KANDUKA'],
+  [19, 'vaiseshikamsa.KERALA'],
+  [20, 'vaiseshikamsa.KALPAVRIKSHA'],
+  [21, 'vaiseshikamsa.CHANDANAVANA'],
+  [22, 'vaiseshikamsa.PURNACHANDRA'],
+  [23, 'vaiseshikamsa.UCHCHAISHRAVA'],
+  [24, 'vaiseshikamsa.DHANVANTARI'],
+  [25, 'vaiseshikamsa.SURYAKANTA'],
+  [26, 'vaiseshikamsa.VIDRUMA'],
+  [27, 'vaiseshikamsa.CHAKRASIMHASANA'],
+  [28, 'vaiseshikamsa.GOLOKA'],
+  [29, 'vaiseshikamsa.SHRIVALLABHA'],
 ]);
 
 /** Every Status by name. */

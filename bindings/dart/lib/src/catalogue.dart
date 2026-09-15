@@ -173,7 +173,9 @@ enum Kind {
   /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
   muhurtaYoga(61, 'muhurta_yoga'),
   /// The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
-  chartLayout(62, 'chart_layout');
+  chartLayout(62, 'chart_layout'),
+  /// The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
+  vaiseshikamsa(63, 'vaiseshikamsa');
 
   const Kind(this.id, this.key);
 
@@ -3990,6 +3992,103 @@ enum ChartLayout implements KeyOf<ChartLayout> {
 
   /// The member with a key, or `null` for one this build does not know.
   static ChartLayout? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`.
+enum Vaiseshikamsa implements KeyOf<Vaiseshikamsa> {
+  /// Kimshuka
+  kimshuka(0, 'KIMSHUKA'),
+  /// Vyanjana
+  vyanjana(1, 'VYANJANA'),
+  /// Chamara
+  chamara(2, 'CHAMARA'),
+  /// Chatra
+  chatra(3, 'CHATRA'),
+  /// Kundala
+  kundala(4, 'KUNDALA'),
+  /// Mukuta
+  mukuta(5, 'MUKUTA'),
+  /// Parijata
+  parijata(6, 'PARIJATA'),
+  /// Uttama
+  uttama(7, 'UTTAMA'),
+  /// Gopura
+  gopura(8, 'GOPURA'),
+  /// Simhasana
+  simhasana(9, 'SIMHASANA'),
+  /// Paravata
+  paravata(10, 'PARAVATA'),
+  /// Devaloka
+  devaloka(11, 'DEVALOKA'),
+  /// Brahmaloka
+  brahmaloka(12, 'BRAHMALOKA'),
+  /// Shakravahana
+  shakravahana(13, 'SHAKRAVAHANA'),
+  /// Shridhama
+  shridhama(14, 'SHRIDHAMA'),
+  /// Bhedaka
+  bhedaka(15, 'BHEDAKA'),
+  /// Kusuma
+  kusuma(16, 'KUSUMA'),
+  /// Nagapushpa
+  nagapushpa(17, 'NAGAPUSHPA'),
+  /// Kanduka
+  kanduka(18, 'KANDUKA'),
+  /// Kerala
+  kerala(19, 'KERALA'),
+  /// Kalpavriksha
+  kalpavriksha(20, 'KALPAVRIKSHA'),
+  /// Chandanavana
+  chandanavana(21, 'CHANDANAVANA'),
+  /// Purnachandra
+  purnachandra(22, 'PURNACHANDRA'),
+  /// Uchchaishrava
+  uchchaishrava(23, 'UCHCHAISHRAVA'),
+  /// Dhanvantari
+  dhanvantari(24, 'DHANVANTARI'),
+  /// Suryakanta
+  suryakanta(25, 'SURYAKANTA'),
+  /// Vidruma
+  vidruma(26, 'VIDRUMA'),
+  /// Chakrasimhasana
+  chakrasimhasana(27, 'CHAKRASIMHASANA'),
+  /// Goloka
+  goloka(28, 'GOLOKA'),
+  /// Shrivallabha
+  shrivallabha(29, 'SHRIVALLABHA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const Vaiseshikamsa(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'vaiseshikamsa.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Vaiseshikamsa> registered(String key) => Registered._('vaiseshikamsa.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static Vaiseshikamsa byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => Vaiseshikamsa.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Vaiseshikamsa? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

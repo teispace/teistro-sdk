@@ -1080,6 +1080,62 @@ export interface ChartsBhavaBala {
 }
 
 /**
+ * The `vaiseshikamsa` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
+ */
+export interface ChartsVaiseshikamsa {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * 1 when it is combust or defeated in war, its names then not auspicious, else 0.
+   */
+  readonly impaired: Uint8Array;
+  /**
+   * How many of the shadvarga's vargas are good for it.
+   */
+  readonly shadvargaGood: Uint8Array;
+  /**
+   * The name the shadvarga count earns; read only when that count is 2 or more.
+   * The values are `Vaiseshikamsa` ids.
+   */
+  readonly shadvargaName: Uint16Array;
+  /**
+   * How many of the saptavarga's vargas are good for it.
+   */
+  readonly saptavargaGood: Uint8Array;
+  /**
+   * The name the saptavarga count earns; read only when that count is 2 or more.
+   * The values are `Vaiseshikamsa` ids.
+   */
+  readonly saptavargaName: Uint16Array;
+  /**
+   * How many of the dashavarga's vargas are good for it.
+   */
+  readonly dashavargaGood: Uint8Array;
+  /**
+   * The name the dashavarga count earns; read only when that count is 2 or more.
+   * The values are `Vaiseshikamsa` ids.
+   */
+  readonly dashavargaName: Uint16Array;
+  /**
+   * How many of the shodashavarga's vargas are good for it.
+   */
+  readonly shodashavargaGood: Uint8Array;
+  /**
+   * The name the shodashavarga count earns; read only when that count is 2 or more.
+   * The values are `Vaiseshikamsa` ids.
+   */
+  readonly shodashavargaName: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -1359,6 +1415,10 @@ export interface Charts {
    * Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
    */
   readonly bhavaBala: ChartsBhavaBala;
+  /**
+   * Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
+   */
+  readonly vaiseshikamsa: ChartsVaiseshikamsa;
 }
 
 /**

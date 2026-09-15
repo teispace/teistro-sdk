@@ -1673,6 +1673,17 @@
             "null"
           ]
         },
+        "vaiseshikamsa": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VaiseshikamsaReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The names each graha earns by its good vargas (BPHS ch. 6)."
+        },
         "vargas": {
           "description": "The divisional charts asked for.",
           "items": {
@@ -2307,6 +2318,44 @@
         "wakefulness",
         "lajjitadi",
         "boundaries"
+      ],
+      "type": "object"
+    },
+    "GrahaVaiseshikamsa": {
+      "description": "One graha's Vaiseshikamsa.",
+      "properties": {
+        "dashavarga": {
+          "$ref": "#/$defs/Standing",
+          "description": "Over the ten."
+        },
+        "graha": {
+          "$ref": "#/$defs/Graha",
+          "description": "Which graha."
+        },
+        "impaired": {
+          "description": "Whether it is impaired, its names then not auspicious.",
+          "type": "boolean"
+        },
+        "saptavarga": {
+          "$ref": "#/$defs/Standing",
+          "description": "Over the seven."
+        },
+        "shadvarga": {
+          "$ref": "#/$defs/Standing",
+          "description": "Over the six vargas."
+        },
+        "shodashavarga": {
+          "$ref": "#/$defs/Standing",
+          "description": "Over the sixteen."
+        }
+      },
+      "required": [
+        "graha",
+        "shadvarga",
+        "saptavarga",
+        "dashavarga",
+        "shodashavarga",
+        "impaired"
       ],
       "type": "object"
     },
@@ -4598,6 +4647,33 @@
         }
       ]
     },
+    "Standing": {
+      "description": "A graha's standing in one scheme.",
+      "properties": {
+        "good_vargas": {
+          "description": "How many of the scheme's vargas are good for it.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Vaiseshikamsa"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The name that count earns, from two good vargas."
+        }
+      },
+      "required": [
+        "good_vargas"
+      ],
+      "type": "object"
+    },
     "SthanaBala": {
       "description": "A graha's Sthana bala by component, virupas.",
       "properties": {
@@ -4896,6 +4972,59 @@
       "required": [
         "x",
         "y"
+      ],
+      "type": "object"
+    },
+    "Vaiseshikamsa": {
+      "description": "A key of the `vaiseshikamsa` catalogue.",
+      "enum": [
+        "KIMSHUKA",
+        "VYANJANA",
+        "CHAMARA",
+        "CHATRA",
+        "KUNDALA",
+        "MUKUTA",
+        "PARIJATA",
+        "UTTAMA",
+        "GOPURA",
+        "SIMHASANA",
+        "PARAVATA",
+        "DEVALOKA",
+        "BRAHMALOKA",
+        "SHAKRAVAHANA",
+        "SHRIDHAMA",
+        "BHEDAKA",
+        "KUSUMA",
+        "NAGAPUSHPA",
+        "KANDUKA",
+        "KERALA",
+        "KALPAVRIKSHA",
+        "CHANDANAVANA",
+        "PURNACHANDRA",
+        "UCHCHAISHRAVA",
+        "DHANVANTARI",
+        "SURYAKANTA",
+        "VIDRUMA",
+        "CHAKRASIMHASANA",
+        "GOLOKA",
+        "SHRIVALLABHA"
+      ],
+      "type": "string",
+      "x-teistro-kind": "vaiseshikamsa"
+    },
+    "VaiseshikamsaReading": {
+      "description": "A chart's Vaiseshikamsa.",
+      "properties": {
+        "grahas": {
+          "description": "Each graha's, Sun to Saturn.",
+          "items": {
+            "$ref": "#/$defs/GrahaVaiseshikamsa"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "grahas"
       ],
       "type": "object"
     },

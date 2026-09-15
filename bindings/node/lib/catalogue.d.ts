@@ -113,7 +113,8 @@ export type Kind =
   | 'kaala'
   | 'panchaka'
   | 'muhurta_yoga'
-  | 'chart_layout';
+  | 'chart_layout'
+  | 'vaiseshikamsa';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -357,6 +358,10 @@ export declare const Kind: {
    * The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
    */
   readonly ChartLayout: 'chart_layout';
+  /**
+   * The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
+   */
+  readonly Vaiseshikamsa: 'vaiseshikamsa';
 };
 
 /**
@@ -5154,6 +5159,172 @@ export declare const ChartLayout: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const ChartLayoutById: ReadonlyMap<number, ChartLayout>;
+
+/**
+ * The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`.
+ */
+export type Vaiseshikamsa =
+  | 'vaiseshikamsa.KIMSHUKA'
+  | 'vaiseshikamsa.VYANJANA'
+  | 'vaiseshikamsa.CHAMARA'
+  | 'vaiseshikamsa.CHATRA'
+  | 'vaiseshikamsa.KUNDALA'
+  | 'vaiseshikamsa.MUKUTA'
+  | 'vaiseshikamsa.PARIJATA'
+  | 'vaiseshikamsa.UTTAMA'
+  | 'vaiseshikamsa.GOPURA'
+  | 'vaiseshikamsa.SIMHASANA'
+  | 'vaiseshikamsa.PARAVATA'
+  | 'vaiseshikamsa.DEVALOKA'
+  | 'vaiseshikamsa.BRAHMALOKA'
+  | 'vaiseshikamsa.SHAKRAVAHANA'
+  | 'vaiseshikamsa.SHRIDHAMA'
+  | 'vaiseshikamsa.BHEDAKA'
+  | 'vaiseshikamsa.KUSUMA'
+  | 'vaiseshikamsa.NAGAPUSHPA'
+  | 'vaiseshikamsa.KANDUKA'
+  | 'vaiseshikamsa.KERALA'
+  | 'vaiseshikamsa.KALPAVRIKSHA'
+  | 'vaiseshikamsa.CHANDANAVANA'
+  | 'vaiseshikamsa.PURNACHANDRA'
+  | 'vaiseshikamsa.UCHCHAISHRAVA'
+  | 'vaiseshikamsa.DHANVANTARI'
+  | 'vaiseshikamsa.SURYAKANTA'
+  | 'vaiseshikamsa.VIDRUMA'
+  | 'vaiseshikamsa.CHAKRASIMHASANA'
+  | 'vaiseshikamsa.GOLOKA'
+  | 'vaiseshikamsa.SHRIVALLABHA'
+  | 'unknown';
+
+/** Every Vaiseshikamsa by name; the values are the strings the union accepts. */
+export declare const Vaiseshikamsa: {
+  /**
+   * Kimshuka
+   */
+  readonly Kimshuka: 'vaiseshikamsa.KIMSHUKA';
+  /**
+   * Vyanjana
+   */
+  readonly Vyanjana: 'vaiseshikamsa.VYANJANA';
+  /**
+   * Chamara
+   */
+  readonly Chamara: 'vaiseshikamsa.CHAMARA';
+  /**
+   * Chatra
+   */
+  readonly Chatra: 'vaiseshikamsa.CHATRA';
+  /**
+   * Kundala
+   */
+  readonly Kundala: 'vaiseshikamsa.KUNDALA';
+  /**
+   * Mukuta
+   */
+  readonly Mukuta: 'vaiseshikamsa.MUKUTA';
+  /**
+   * Parijata
+   */
+  readonly Parijata: 'vaiseshikamsa.PARIJATA';
+  /**
+   * Uttama
+   */
+  readonly Uttama: 'vaiseshikamsa.UTTAMA';
+  /**
+   * Gopura
+   */
+  readonly Gopura: 'vaiseshikamsa.GOPURA';
+  /**
+   * Simhasana
+   */
+  readonly Simhasana: 'vaiseshikamsa.SIMHASANA';
+  /**
+   * Paravata
+   */
+  readonly Paravata: 'vaiseshikamsa.PARAVATA';
+  /**
+   * Devaloka
+   */
+  readonly Devaloka: 'vaiseshikamsa.DEVALOKA';
+  /**
+   * Brahmaloka
+   */
+  readonly Brahmaloka: 'vaiseshikamsa.BRAHMALOKA';
+  /**
+   * Shakravahana
+   */
+  readonly Shakravahana: 'vaiseshikamsa.SHAKRAVAHANA';
+  /**
+   * Shridhama
+   */
+  readonly Shridhama: 'vaiseshikamsa.SHRIDHAMA';
+  /**
+   * Bhedaka
+   */
+  readonly Bhedaka: 'vaiseshikamsa.BHEDAKA';
+  /**
+   * Kusuma
+   */
+  readonly Kusuma: 'vaiseshikamsa.KUSUMA';
+  /**
+   * Nagapushpa
+   */
+  readonly Nagapushpa: 'vaiseshikamsa.NAGAPUSHPA';
+  /**
+   * Kanduka
+   */
+  readonly Kanduka: 'vaiseshikamsa.KANDUKA';
+  /**
+   * Kerala
+   */
+  readonly Kerala: 'vaiseshikamsa.KERALA';
+  /**
+   * Kalpavriksha
+   */
+  readonly Kalpavriksha: 'vaiseshikamsa.KALPAVRIKSHA';
+  /**
+   * Chandanavana
+   */
+  readonly Chandanavana: 'vaiseshikamsa.CHANDANAVANA';
+  /**
+   * Purnachandra
+   */
+  readonly Purnachandra: 'vaiseshikamsa.PURNACHANDRA';
+  /**
+   * Uchchaishrava
+   */
+  readonly Uchchaishrava: 'vaiseshikamsa.UCHCHAISHRAVA';
+  /**
+   * Dhanvantari
+   */
+  readonly Dhanvantari: 'vaiseshikamsa.DHANVANTARI';
+  /**
+   * Suryakanta
+   */
+  readonly Suryakanta: 'vaiseshikamsa.SURYAKANTA';
+  /**
+   * Vidruma
+   */
+  readonly Vidruma: 'vaiseshikamsa.VIDRUMA';
+  /**
+   * Chakrasimhasana
+   */
+  readonly Chakrasimhasana: 'vaiseshikamsa.CHAKRASIMHASANA';
+  /**
+   * Goloka
+   */
+  readonly Goloka: 'vaiseshikamsa.GOLOKA';
+  /**
+   * Shrivallabha
+   */
+  readonly Shrivallabha: 'vaiseshikamsa.SHRIVALLABHA';
+};
+
+/**
+ * Every Vaiseshikamsa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VaiseshikamsaById: ReadonlyMap<number, Vaiseshikamsa>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

@@ -58,6 +58,8 @@ impl Sections {
     pub(crate) const SHADBALA: Sections = Sections(1 << 7);
     /// Each house's strength.
     pub(crate) const BHAVA_BALA: Sections = Sections(1 << 8);
+    /// The names each graha earns by its good vargas.
+    pub(crate) const VAISESHIKAMSA: Sections = Sections(1 << 9);
 
     /// The union.
     const fn with(self, other: Sections) -> Sections {
@@ -283,6 +285,25 @@ impl ChartRequest {
         self
     }
 
+    /// Each graha's Vaiseshikamsa: how many of each scheme's vargas are good
+    /// for it, the name that count earns, and whether it is combust or
+    /// defeated in war and so earns it without its auspiciousness (BPHS ch. 6
+    /// vv. 42 to 53).
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_vaiseshikamsa();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_vaiseshikamsa(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::VAISESHIKAMSA);
+        self
+    }
+
     /// The charts to draw, each a layout and which chart to place in it,
     /// in the order given: `D1` for the founded chart, or a divisional one.
     ///
@@ -360,6 +381,7 @@ impl ChartRequest {
             .with_houses()
             .with_ashtakavarga()
             .with_vimshopaka()
+            .with_vaiseshikamsa()
             .with_shadbala()
             .with_bhava_bala()
     }
