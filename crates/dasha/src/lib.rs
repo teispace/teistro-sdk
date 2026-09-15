@@ -55,7 +55,10 @@ pub mod tree;
 
 pub use balance::{BalanceAtBirth, Written};
 pub use kalachakra::{KalachakraDasha, KalachakraRules, pada_row};
-pub use rashi::{Footedness, Parity, RASHI_ROWS, RashiChart, RashiDasha, RashiRow, rashi_row};
+pub use rashi::{
+    Footedness, Parity, RASHI_ROWS, RashiChart, RashiDasha, RashiRow, RashiRules, rashi_row,
+    stronger_sign,
+};
 pub use reading::{DashaCursor, DashaReading, PeriodRow};
 pub use registry::DashaSystems;
 pub use row::{Count, DashaName, Lord, ROWS, Scale, Seat, UduDefinition, UduRow, VIMSHOTTARI, row};

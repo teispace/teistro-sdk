@@ -156,6 +156,34 @@ days), allocating nothing:
   field, so a stored document rebuilds the same periods whatever the
   settings are now.
 
+## What BPHS ch. 46 settled for the sign-based rows (2026-09-15)
+
+The corpus's rows reproduce the recording engine, and two of its readings
+waited on a source: the stronger lord of Scorpio and Aquarius (C51) and where
+the systems that start from a stronger sign begin (C53). BPHS ch. 46 gives
+both, so the text's reading is the default and the engine's is
+`conformance-baseline`'s, the rule every strength module already follows.
+
+- **The sign's strength** is `rashi::stronger_sign` (`strength-schemes.md`,
+  "Rashi bala"), a comparison and not a score, because the verses give no
+  score.
+- **`dasha.dual_lord = BPHS`**: a lord standing in the sign counts to the
+  other; else the lord in the stronger sign; on equal signs the lord the
+  greater count reaches. `KENDRA` is the engine's kendra rule. Every row that
+  counts to or names a stronger lord reads it.
+- **`dasha.rashi_start = STRONGER`**: Mandooka from the stronger of the lagna
+  and the seventh, Shoola of the second and the eighth, Trikona the strongest
+  trine, the earlier sign on equal strength; the row says which houses in
+  `stronger_of`. `LAGNA` is the engine's.
+- **A reading records them** in `DashaReading.rashi`, so a stored document
+  rebuilds under the readings it was computed with; a document from before
+  the field existed was the engine's, which is what an absent field means.
+
+Over the corpus's 616 answers the dual-lord rule moves 360 and the start 98
+of the three systems' 231 (`tests/rashi.rs`, both pinned). The year the verses
+add for an exalted graha and take for a debilitated one is not built: they do
+not say whose sign it is (C51).
+
 ## At the boundary and in the bindings
 
 A chart request names its systems (`TsChartRequest.dashas`, catalogue ids,

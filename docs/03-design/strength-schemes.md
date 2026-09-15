@@ -259,8 +259,17 @@ it.
 
 ## Rashi bala
 
-Rashi bala is unbuilt: no source read gives it component by component, and
-the corpus records none, so it waits for one.
+**Built as BPHS ch. 46 gives it (2026-09-15).** No source read gives a
+sign a strength in rupas, and the corpus records none; what the text gives is
+a *comparison*, in the Chara dasha's verses on Scorpio and Aquarius (vv. 158
+to 166), which the systems that start "from whichever is stronger" then read
+(vv. 174 to 184). `teistro_dasha::rashi::stronger_sign` is that comparison: a
+sign holding an exalted graha when only one does, else the sign holding more
+grahas, else a dual sign over a fixed over a movable one, and `None` where
+the verses leave two signs equal so each caller breaks the tie as its verse
+says. It lives beside the rashi dashas because they are its only readers; a
+reader elsewhere takes it from there. Its two readings are `dasha.dual_lord`
+and `dasha.rashi_start` (cruxes C51 and C53, `03-design/dasha-kernels.md`).
 
 ## The Vaiseshikamsa, built (2026-09-15)
 

@@ -578,6 +578,7 @@ fn dashas() -> Section {
             JulianDay::literal(birth_jd),
             YearLength::Julian36525,
             AfterCycle::Repeat,
+            teistro_dasha::RashiRules::RECORDING_ENGINE,
         );
         if let Ok(dasha) = made {
             chains(&|at| dasha.at(at, depth));

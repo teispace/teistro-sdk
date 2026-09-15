@@ -113,6 +113,7 @@ fn a_sign_based_dasha_allocates_nothing_to_make_or_to_read() {
                 birth,
                 YearLength::Julian36525,
                 AfterCycle::Repeat,
+                teistro_dasha::RashiRules::RECORDING_ENGINE,
             )
             .unwrap()
         });

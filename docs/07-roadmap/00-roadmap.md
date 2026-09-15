@@ -523,8 +523,11 @@ kernel agrees on 16 232 periods to a tenth of a millisecond, and what differs
 — the birth period's reading, the written balance, the tool's broken default
 year — is recorded against crux C6. Every clause of the exit that the dasha
 layer owns is now met; the golden vectors reproduced and the per-row
-invariants stood already. Next: Rashi bala on a source, or the yogas the
-interpretation layer reads.
+invariants stood already. **Rashi bala followed from BPHS ch. 46**
+(`strength-schemes.md`): the verses' sign comparison, read by the rashi
+dashas' dual lord and stronger starts, the text's reading the default and the
+engine's `conformance-baseline`'s (C51, C53). Next: the yogas the
+interpretation layer reads, which Phase 6's rules engine carries.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

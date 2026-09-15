@@ -1433,6 +1433,17 @@
           },
           "type": "array"
         },
+        "rashi": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RashiRules"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "A sign-based dasha's dual-lord and start readings. A document stored before they were recorded was computed under the recording engine's, which is what rebuilding it assumes when this is absent."
+        },
         "rules": {
           "$ref": "#/$defs/Rules",
           "description": "The choices it was computed under. A sign-based dasha reads only the year length and what follows the cycle."
@@ -1915,6 +1926,21 @@
         "to_edge"
       ],
       "type": "object"
+    },
+    "DualLord": {
+      "description": "How a rashi dasha finds the stronger lord of Scorpio and Aquarius (crux C51).",
+      "oneOf": [
+        {
+          "const": "BPHS",
+          "description": "BPHS ch. 46 vv. 158 to 166: a lord standing in the sign counts to the other; else the lord in the stronger sign, a sign with an exalted graha, then more grahas, then a dual over a fixed over a movable sign, and on a tie the lord the greater count reaches.",
+          "type": "string"
+        },
+        {
+          "const": "KENDRA",
+          "description": "The recording engine: the lord in a kendra from the sign when only one is, else Ketu or Rahu.",
+          "type": "string"
+        }
+      ]
     },
     "Ekadhipatya": {
       "description": "How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign beside an occupied one (crux C60).",
@@ -4448,6 +4474,24 @@
       "type": "string",
       "x-teistro-kind": "rashi"
     },
+    "RashiRules": {
+      "description": "The rashi dashas' two readings BPHS and the recording engine part on.",
+      "properties": {
+        "dual_lord": {
+          "$ref": "#/$defs/DualLord",
+          "description": "How the stronger lord of Scorpio and Aquarius is found (crux C51)."
+        },
+        "start": {
+          "$ref": "#/$defs/RashiStart",
+          "description": "Where the systems that start from a stronger sign begin (crux C53)."
+        }
+      },
+      "required": [
+        "dual_lord",
+        "start"
+      ],
+      "type": "object"
+    },
     "RashiSpan": {
       "description": "One member of a limb, and when it ran.",
       "properties": {
@@ -4470,6 +4514,21 @@
         "inside"
       ],
       "type": "object"
+    },
+    "RashiStart": {
+      "description": "Where the rashi dashas BPHS starts from the stronger of several signs begin: Mandooka, Shoola and Trikona (crux C53).",
+      "oneOf": [
+        {
+          "const": "STRONGER",
+          "description": "BPHS ch. 46 vv. 179 to 184: Mandooka from the stronger of the lagna and the seventh, Shoola of the second and the eighth, Trikona the strongest of the trines, by vv. 158 to 166's strength.",
+          "type": "string"
+        },
+        {
+          "const": "LAGNA",
+          "description": "The recording engine: each from the lagna.",
+          "type": "string"
+        }
+      ]
     },
     "Reading": {
       "description": "Whether a system's cusps are the boundaries of its houses or their middles.",

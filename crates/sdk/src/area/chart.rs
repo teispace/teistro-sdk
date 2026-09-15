@@ -20,7 +20,7 @@ use teistro_core::settings::Balance;
 use teistro_core::time::UtcOffset;
 use teistro_dasha::{
     Birth, Dasha, DashaCursor, DashaName, DashaReading, KalachakraDasha, KalachakraRules,
-    RashiChart, RashiDasha, Rules as DashaRules,
+    RashiChart, RashiDasha, RashiRules, Rules as DashaRules,
 };
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
@@ -378,7 +378,7 @@ impl<'a> ChartArea<'a> {
             .copied()
             .unwrap_or(Depth::MIN);
         if teistro_dasha::rashi_row(system).is_some() {
-            let dasha = self.rashi_dasha_of(foundation, system, rules)?;
+            let dasha = self.rashi_dasha_of(foundation, system, rules, RashiRules::of(settings))?;
             return Ok(DashaReading::of_rashi(&dasha, rules, depth));
         }
         let moon_span = match rules.balance {
@@ -473,6 +473,7 @@ impl<'a> ChartArea<'a> {
         foundation: &ChartFoundation,
         system: DashaSystem,
         rules: DashaRules,
+        rashi: RashiRules,
     ) -> Result<RashiDasha, Error> {
         let row = teistro_dasha::rashi_row(system).ok_or_else(|| Self::not_built(system))?;
         let states = state(foundation, self.context.settings())?;
@@ -523,6 +524,7 @@ impl<'a> ChartArea<'a> {
             foundation.instant,
             rules.year_length,
             rules.after_cycle,
+            rashi,
         )
     }
 
@@ -596,8 +598,11 @@ impl<'a> ChartArea<'a> {
             .with_field("system"));
         };
         if teistro_dasha::rashi_row(system).is_some() {
+            // A document from before the readings were recorded was computed
+            // under the recording engine's.
+            let rashi = reading.rashi.unwrap_or(RashiRules::RECORDING_ENGINE);
             return self
-                .rashi_dasha_of(&document.foundation, system, reading.rules)
+                .rashi_dasha_of(&document.foundation, system, reading.rules, rashi)
                 .map(DashaCursor::Rashi);
         }
         if let Some(rules) = reading.kalachakra {

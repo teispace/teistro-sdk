@@ -123,6 +123,26 @@ knob!(
         Proportional = "PROPORTIONAL" }
 );
 knob!(
+    /// How a rashi dasha finds the stronger lord of Scorpio and Aquarius (crux
+    /// C51).
+    DualLord { /// BPHS ch. 46 vv. 158 to 166: a lord standing in the sign counts to the
+        /// other; else the lord in the stronger sign, a sign with an exalted
+        /// graha, then more grahas, then a dual over a fixed over a movable
+        /// sign, and on a tie the lord the greater count reaches.
+        Bphs = "BPHS", /// The recording engine: the lord in a kendra from the sign when only one
+        /// is, else Ketu or Rahu.
+        Kendra = "KENDRA" }
+);
+knob!(
+    /// Where the rashi dashas BPHS starts from the stronger of several signs
+    /// begin: Mandooka, Shoola and Trikona (crux C53).
+    RashiStart { /// BPHS ch. 46 vv. 179 to 184: Mandooka from the stronger of the lagna and
+        /// the seventh, Shoola of the second and the eighth, Trikona the
+        /// strongest of the trines, by vv. 158 to 166's strength.
+        Stronger = "STRONGER", /// The recording engine: each from the lagna.
+        Lagna = "LAGNA" }
+);
+knob!(
     /// Which friendly signs make a dasha favourable, BPHS ch. 47 vv. 5 and 6
     /// naming a "Shant" sign against an "inimical" one (crux C79).
     ShantaSign { /// A friend's or a great friend's sign, the friendly signs set against

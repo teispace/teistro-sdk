@@ -13,7 +13,7 @@ use teistro_core::quantity::Depth;
 
 use crate::balance::BalanceAtBirth;
 use crate::kalachakra::{KalachakraDasha, KalachakraRules};
-use crate::rashi::RashiDasha;
+use crate::rashi::{RashiDasha, RashiRules};
 use crate::row::{DashaName, UduDefinition};
 use crate::tree::{Dasha, Period, Rules, Timeline};
 
@@ -39,6 +39,11 @@ pub struct DashaReading {
     /// The Kalachakra's own choices, when it is the Kalachakra.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub kalachakra: Option<KalachakraRules>,
+    /// A sign-based dasha's dual-lord and start readings. A document stored
+    /// before they were recorded was computed under the recording engine's,
+    /// which is what rebuilding it assumes when this is absent.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub rashi: Option<RashiRules>,
     /// The nakshatra the Moon stood in, which seeds a nakshatra-seeded
     /// dasha; nothing for a sign-based one.
     #[serde(skip_serializing_if = "Option::is_none", default)]
@@ -104,6 +109,7 @@ impl DashaReading {
             definition: None,
             rules: dasha.rules(),
             kalachakra: None,
+            rashi: None,
             seed: Some(dasha.seed()),
             first_lord: row
                 .lords
@@ -141,6 +147,7 @@ impl DashaReading {
             definition: None,
             rules,
             kalachakra: None,
+            rashi: Some(dasha.rules()),
             seed: None,
             first_lord: periods.first().map_or(Graha::Sun, |row| row.lord),
             overflow: false,
@@ -170,6 +177,7 @@ impl DashaReading {
             definition: None,
             rules,
             kalachakra: Some(dasha.rules()),
+            rashi: None,
             seed: Some(dasha.seed()),
             first_lord: periods.first().map_or(Graha::Sun, |row| row.lord),
             overflow: false,

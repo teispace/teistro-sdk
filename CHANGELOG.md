@@ -877,6 +877,21 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** unchanged for every catalogued system; a registered twin of
   Vimshottari reproduces it to the bit.
 
+- Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
+  compares two signs as vv. 158 to 166 do, and two knobs read it.
+  `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
+  the stronger lord of Scorpio and Aquarius (crux C51). `dasha.rashi_start`
+  (`STRONGER` by default, `LAGNA` the engine's) starts Mandooka, Shoola and
+  Trikona from the stronger of their signs (crux C53). A rashi reading
+  records both in `DashaReading.rashi`. `conformance-baseline` keeps the
+  engine's readings as version 10.
+
+  **Numbers:** under the default settings, the Chara family's lords and
+  years move wherever the two dual lords' rules differ, 360 of the corpus's
+  616 answers, and the three systems' starts 98 of 231. Every settings hash
+  moved. The corpus's own readings are unchanged under
+  `conformance-baseline`.
+
 - PyJHora cross-checks: the corpus moves to 0.9.0, which records PyJHora
   4.8.7's Vimshottari for 53 charts at evidence rank 3, and
   `crates/dasha/tests/pyjhora.rs` gives the kernel the tool's Moon and each

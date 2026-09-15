@@ -359,3 +359,37 @@ fn a_dasha_not_built_yet_is_refused_by_its_place_and_a_stored_document_reads_bac
         .unwrap_err();
     assert_eq!(missing.field(), Some("system"));
 }
+
+/// A sign-based dasha's readings come from the settings and travel with the
+/// document: `conformance-baseline` keeps the recording engine's, a patch
+/// selects BPHS ch. 46's, and the cursor rebuilt from each document gives that
+/// document's own mahadashas back (cruxes C51, C53).
+#[test]
+fn a_rashi_dasha_records_its_readings_and_rebuilds_under_them() {
+    use teistro::dasha::RashiRules;
+    let systems = [DashaSystem::Chara, DashaSystem::Mandooka];
+    for (patch, expected) in [
+        ("{}", RashiRules::RECORDING_ENGINE),
+        (
+            r#"{"dasha": {"dual_lord": "BPHS", "rashi_start": "STRONGER"}}"#,
+            RashiRules::BPHS,
+        ),
+    ] {
+        let (sdk, document) = reading(patch, &systems);
+        for dasha in &document.dashas {
+            assert_eq!(dasha.rashi, Some(expected), "{patch} {}", dasha.system);
+            let cursor = sdk.chart().dasha(&document, &dasha.system).unwrap();
+            let rebuilt: Vec<_> = cursor
+                .mahadashas()
+                .map(|p| (p.sign, p.lord, p.interval))
+                .collect();
+            let carried: Vec<_> = dasha
+                .periods
+                .iter()
+                .filter(|row| !row.path.contains('/'))
+                .map(|row| (row.sign, row.lord, row.interval))
+                .collect();
+            assert_eq!(rebuilt, carried, "{patch} {}", dasha.system);
+        }
+    }
+}

@@ -11,12 +11,13 @@ use crate::catalogue::{
 use super::knobs::{
     AfterCycle, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules,
     BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik,
-    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, IshtaKashta, KaalaLords,
-    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
-    NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
-    RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
-    SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning, HoraReckoning, IshtaKashta,
+    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    LuminaryCheshta, LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
+    NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
+    PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
+    Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -168,6 +169,9 @@ pub fn root() -> Settings {
             // BPHS ch. 47 vv. 5 and 6, the "Shant" sign set against the
             // inimical ones (crux C79).
             shanta_sign: ShantaSign::Friendly,
+            // BPHS ch. 46 vv. 158 to 166 and 179 to 184 (cruxes C51, C53).
+            dual_lord: DualLord::Bphs,
+            rashi_start: RashiStart::Stronger,
         },
         jaimini: Jaimini {
             chara_karakas: CharaKarakas::Seven,
@@ -432,6 +436,9 @@ fn conformance_baseline() -> Profile {
     patch.strength.bhava_dig = Some(BhavaDig::WholeSign);
     patch.strength.bhava_drishti = Some(BhavaDrishti::QuarterOfDig);
     patch.strength.bhava_special_rules = Some(BhavaSpecialRules::None);
+    // The engine's rashi dashas (cruxes C51, C53).
+    patch.dasha.dual_lord = Some(DualLord::Kendra);
+    patch.dasha.rashi_start = Some(RashiStart::Lagna);
     Profile {
         id: ProfileId::new("conformance-baseline"),
         // 2: the ayanamsha basis became `TRUE`, which is what the engine
@@ -444,7 +451,9 @@ fn conformance_baseline() -> Profile {
         // C72).
         // 8: the Bhava bala became the engine's (cruxes C73 to C75).
         // 9: the Ishta and Kashta phalas became the engine's (crux C76).
-        version: 9,
+        // 10: the rashi dashas' dual lord and start became the engine's
+        // (cruxes C51, C53).
+        version: 10,
         base: None,
         patch,
         sources: vec![

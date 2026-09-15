@@ -64,6 +64,7 @@ fn every_sign_based_system_is_reproduced() {
     let (mut answers, mut rows, mut chains, mut past_end) = (0, 0, 0, 0);
     let mut worst = 0.0_f64;
     let mut seen = std::collections::BTreeSet::new();
+
     for (name, file) in &files {
         assert_eq!(
             file["year_length_days"].as_f64(),
@@ -78,9 +79,15 @@ fn every_sign_based_system_is_reproduced() {
                 DashaSystem::from_key(&key.to_ascii_uppercase()).expect("a catalogue system");
             let row = rashi_row(system).unwrap_or_else(|| panic!("no row implements {key}"));
             seen.insert(system);
-            let dasha =
-                RashiDasha::new(row, &chart, birth, YearLength::Julian36525, AfterCycle::End)
-                    .unwrap();
+            let dasha = RashiDasha::new(
+                row,
+                &chart,
+                birth,
+                YearLength::Julian36525,
+                AfterCycle::End,
+                teistro_dasha::RashiRules::RECORDING_ENGINE,
+            )
+            .unwrap();
 
             let depth = usize::try_from(recorded["tree_depth"].as_u64().unwrap()).unwrap();
             let periods = tree(&dasha, depth);
@@ -141,4 +148,55 @@ fn every_sign_based_system_is_reproduced() {
         RASHI_ROWS.len(),
         "every row this build ships is measured"
     );
+}
+
+/// How many of the recorded answers each of BPHS ch. 46's readings moves
+/// (cruxes C51, C53): an answer moves when any mahadasha's sign, lord or end
+/// differs from the recording engine's reading of the same chart.
+#[test]
+fn bphs_readings_move_the_answers_they_reach() {
+    use teistro_dasha::RashiRules;
+    let (mut by_dual_lord, mut by_start) = (0, 0);
+    for (_, file) in ["charts", "variants"]
+        .into_iter()
+        .flat_map(|dir| common::files(&format!("rashi-dashas/{dir}")))
+    {
+        let chart = chart(&file["inputs"]);
+        let birth = JulianDay::literal(jd(&file["inputs"]["jd_ut"]));
+        for key in file["systems"].as_object().unwrap().keys() {
+            let system = DashaSystem::from_key(&key.to_ascii_uppercase()).unwrap();
+            let row = rashi_row(system).unwrap();
+            let under = |rules| {
+                let dasha = RashiDasha::new(
+                    row,
+                    &chart,
+                    birth,
+                    YearLength::Julian36525,
+                    AfterCycle::End,
+                    rules,
+                )
+                .unwrap();
+                dasha
+                    .mahadashas()
+                    .map(|p| (p.sign, p.lord, p.interval.to.get().to_bits()))
+                    .collect::<Vec<_>>()
+            };
+            let engine = RashiRules::RECORDING_ENGINE;
+            let recorded = under(engine);
+            let dual = RashiRules {
+                dual_lord: RashiRules::BPHS.dual_lord,
+                ..engine
+            };
+            let start = RashiRules {
+                start: RashiRules::BPHS.start,
+                ..engine
+            };
+            by_dual_lord += usize::from(under(dual) != recorded);
+            by_start += usize::from(under(start) != recorded);
+        }
+    }
+    // Counted, so a change to either reading shows: the dual-lord rule reaches
+    // every system that counts to or names a stronger lord, and the start the
+    // three systems BPHS starts from a stronger sign.
+    assert_eq!((by_dual_lord, by_start), (360, 98));
 }

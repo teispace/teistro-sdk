@@ -115,6 +115,7 @@ fn benches(c: &mut Criterion) {
         JulianDay::literal(BIRTH),
         YearLength::Julian36525,
         AfterCycle::Repeat,
+        teistro_dasha::RashiRules::RECORDING_ENGINE,
     )
     .expect("a dasha");
     chains(c, "chara", &rashi);
