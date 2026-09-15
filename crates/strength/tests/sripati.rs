@@ -212,6 +212,27 @@ fn raman_s_totals_and_requirements_reproduce() {
 }
 
 #[test]
+fn raman_s_ishta_and_kashta_phalas_reproduce() {
+    let reading = ShadbalaReading::of(&standard_horoscope(), ShadbalaRules::SRIPATI);
+    // Examples 62 and 63, from the Uchcha balas of Example 3 and the Cheshta
+    // balas of Examples 51, 60 and 61 (Mars's printed 22.03 is Example 51's
+    // 22.23, which his root uses); his Mars Uchcha slip carries 0.11 into both.
+    // Two of his Kashtas slip, by his own inputs: Mercury's printed 49.16 is
+    // √(5.50 × 57.70) = 17.81, and Jupiter's 13.19 is √(3.67 × 24.74) = 9.53.
+    let ishta = [8.25, 37.73, 28.70, 11.20, 44.57, 3.49, 27.00];
+    let kashta = [46.13, 21.23, 29.44, 17.81, 9.53, 56.00, 31.50];
+    for ((strength, i), k) in reading.grahas.iter().zip(ishta).zip(kashta) {
+        assert!(
+            (strength.ishta - i).abs() < 0.25 && (strength.kashta - k).abs() < 0.25,
+            "{:?}: {:.2} and {:.2} against {i} and {k}",
+            strength.graha,
+            strength.ishta,
+            strength.kashta
+        );
+    }
+}
+
+#[test]
 fn raman_s_bhava_balas_reproduce() {
     let horoscope = standard_horoscope();
     // Art. 29: the twelve bhava madhyas.

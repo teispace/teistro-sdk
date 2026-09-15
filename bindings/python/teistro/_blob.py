@@ -974,6 +974,12 @@ class ChartsShadbala:
     required_rupas: memoryview[float]
     """The rupas it must reach to be strong."""
 
+    ishta: memoryview[float]
+    """How far it tends to good, 0 to 60 (BPHS ch. 28)."""
+
+    kashta: memoryview[float]
+    """How far it tends to harm, 0 to 60."""
+
     strong: memoryview[int]
     """1 when the rupas reach the requirement, else 0."""
 
@@ -1686,8 +1692,12 @@ def decode_charts(raw: bytes) -> Charts:
             required_rupas=blob.column(
                 at_shadbala, 21, 8, at_shadbala.count
             ).cast("d"),
+            ishta=blob.column(at_shadbala, 22, 8, at_shadbala.count).cast("d"),
+            kashta=blob.column(
+                at_shadbala, 23, 8, at_shadbala.count
+            ).cast("d"),
             strong=blob.column(
-                at_shadbala, 22, 1, at_shadbala.count
+                at_shadbala, 24, 1, at_shadbala.count
             ).cast("B"),
             length=at_shadbala.count,
         ),

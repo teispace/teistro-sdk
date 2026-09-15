@@ -473,7 +473,7 @@ void main() {
       );
       put(
         '$key-total',
-        '${number(g.virupas)},${number(g.rupas)},${number(g.requiredRupas)},${g.strong}',
+        '${number(g.virupas)},${number(g.rupas)},${number(g.requiredRupas)},${g.strong},${number(g.ishta)},${number(g.kashta)}',
       );
     }
     for (final b in chart.bhavaBala!.bhavas) {

@@ -503,7 +503,9 @@ setting (C64–C71), then Sripati's reading from B.V. Raman's worked example
 (`ShadbalaRules::SRIPATI`, the sphuta drishti, C45 closed, C72). **The Bhava
 bala followed** (`03-design/bhava-bala-measured.md`, `check-bhava-bala`): the
 built module against every recorded house, three readings at three forks
-(C73–C75). Next: the Ishta and Kashta phala, which read the Shadbala's rays.
+(C73–C75), **and the Ishta and Kashta phalas** on the Shadbala reading (C76).
+Next: the Vaiseshikamsa over the Vimshopaka's vargas, then the dasha-effect
+readings the phalas feed.
 
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18

@@ -427,6 +427,20 @@ knob!(
         None = "NONE" }
 );
 knob!(
+    /// How a graha's Ishta and Kashta phalas are read from its Uchcha and
+    /// Cheshta balas (crux C76).
+    IshtaKashta { /// BPHS ch. 28 vv. 2 to 6: the Uchcha and Cheshta rays, the Ishta their
+        /// mean over the balas and the Kashta 60 less it, the Sun's Cheshta
+        /// kendra its sayana longitude and three signs, the Moon's her
+        /// elongation.
+        Rays = "RAYS", /// Sripati, as B.V. Raman works it: the Ishta the square root of the
+        /// two balas' product and the Kashta of their complements', the
+        /// luminaries' Cheshta from the same kendras.
+        SquareRoots = "SQUARE_ROOTS", /// The recording engine: Raman's square roots of the Shadbala's own
+        /// Uchcha and Cheshta balas.
+        ShadbalaCheshta = "SHADBALA_CHESHTA" }
+);
+knob!(
     /// How the Bhava bala's Dig bala reads a bhava's sign class (crux C73).
     BhavaDig { /// BPHS ch. 27 vv. 26 to 28 as translated: the arc, over 3, from the
         /// bhava madhya to the madhya of the house its class makes weakest,

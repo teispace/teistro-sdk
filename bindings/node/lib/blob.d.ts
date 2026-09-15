@@ -1028,6 +1028,14 @@ export interface ChartsShadbala {
    */
   readonly requiredRupas: Float64Array;
   /**
+   * How far it tends to good, 0 to 60 (BPHS ch. 28).
+   */
+  readonly ishta: Float64Array;
+  /**
+   * How far it tends to harm, 0 to 60.
+   */
+  readonly kashta: Float64Array;
+  /**
    * 1 when the rupas reach the requirement, else 0.
    */
   readonly strong: Uint8Array;

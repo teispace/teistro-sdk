@@ -1242,11 +1242,13 @@ fn the_shadbala(report: &mut Report, index: usize, document: &teistro::Document)
             report,
             &format!("{key}-total"),
             format!(
-                "{},{},{},{}",
+                "{},{},{},{},{},{}",
                 number(graha.virupas),
                 number(graha.rupas),
                 number(graha.required_rupas),
-                graha.strong
+                graha.strong,
+                number(graha.ishta),
+                number(graha.kashta)
             ),
         );
     }

@@ -36,6 +36,9 @@ Strength measures over a chart.
   as B.V. Raman works it, and the engine's, parting at fifteen forks, each a
   `strength.*` setting (cruxes C64–C72).
 
+- **The Ishta and Kashta phalas have three readings too**: the chapter's rays
+  (a mean), Sripati's square roots, and the engine's roots of its own
+  Cheshta (crux C76).
 - **The Bhava bala has the same three readings**, parting at the Dig's sign
   classes, the drishti and the special rules (cruxes C73–C75).
 

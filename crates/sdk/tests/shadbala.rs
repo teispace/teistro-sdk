@@ -70,7 +70,7 @@ fn a_reading_carries_the_shadbala_the_corpus_recorded() {
 #[test]
 fn the_text_s_reading_counts_the_chapter_s_strengths() {
     let (_, document) = reading(
-        r#"{"strength": {"saptavargaja": "COMPOUND", "drekkana": "MALE_FEMALE_NEUTER", "nathonnatha": "MIDNIGHT", "pre_dawn_night": "PREVIOUS_EVENING", "benefics": "CONDITIONAL", "sun_ayana": "DOUBLED", "luminary_cheshta": "AYANA_AND_PAKSHA", "kranti": "TRUE", "kaala_lords": "AHARGANA", "dig": "ANGLES", "yuddha": "SRIPATI", "cheshta": "SRIPATI", "drik": "QUARTER_WITH_JUPITER_MERCURY", "naisargika": "EXACT", "required_rupas": "BPHS"}}"#,
+        r#"{"strength": {"saptavargaja": "COMPOUND", "drekkana": "MALE_FEMALE_NEUTER", "nathonnatha": "MIDNIGHT", "pre_dawn_night": "PREVIOUS_EVENING", "benefics": "CONDITIONAL", "sun_ayana": "DOUBLED", "luminary_cheshta": "AYANA_AND_PAKSHA", "kranti": "TRUE", "kaala_lords": "AHARGANA", "dig": "ANGLES", "yuddha": "SRIPATI", "cheshta": "SRIPATI", "drik": "QUARTER_WITH_JUPITER_MERCURY", "naisargika": "EXACT", "required_rupas": "BPHS", "ishta_kashta": "RAYS"}}"#,
         teistro::ChartRequest::with_shadbala,
     );
     let shadbala = document.shadbala.expect("the section asked for");
@@ -95,6 +95,8 @@ fn the_text_s_reading_counts_the_chapter_s_strengths() {
     for graha in &shadbala.grahas {
         assert!(graha.virupas.is_finite());
         assert_eq!(graha.strong, graha.rupas >= graha.required_rupas);
+        // The chapter's rays: the Ishta and Kashta are complements.
+        assert!((graha.ishta + graha.kashta - 60.0).abs() < 1e-9);
     }
 }
 

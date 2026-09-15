@@ -1729,6 +1729,12 @@ class GrahaShadbala:
     strong: bool
     """Whether it reaches them."""
 
+    ishta: float
+    """How far it tends to good, 0 to 60 (BPHS ch. 28)."""
+
+    kashta: float
+    """How far it tends to harm, 0 to 60."""
+
 
 @dataclass(frozen=True)
 class Shadbala:
@@ -2826,6 +2832,8 @@ class ChartBatch:
                 rupas=c.rupas[row],
                 required_rupas=c.required_rupas[row],
                 strong=c.strong[row] == 1,
+                ishta=c.ishta[row],
+                kashta=c.kashta[row],
             )
 
         return [

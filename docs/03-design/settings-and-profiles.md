@@ -94,6 +94,7 @@ every shipped profile. The v1 inventory:
 | strength | `benefics` | enum | `CONDITIONAL` (the default and Sripati: the Moon by phase, Mercury by company), `FIXED` (the corpus's engine; crux C69) |
 | strength | `cheshta` | enum | `SRIPATI` (the default, Kedarnath Dutt's elements), `RECORDING_ENGINE` (crux C70) |
 | strength | `yuddha` | enum | `SRIPATI` (the default), `NONE` (the corpus's engine; crux C70) |
+| strength | `ishta_kashta` | enum | `RAYS` (the default, ch. 28 vv. 2 to 6), `SQUARE_ROOTS` (Sripati), `SHADBALA_CHESHTA` (the corpus's engine; crux C76) |
 | strength | `bhava_dig` | enum | `BPHS` (the default, vv. 26 to 28), `SRIPATI`, `WHOLE_SIGN` (the corpus's engine; crux C73) |
 | strength | `bhava_drishti` | enum | `QUARTER_OF_DIG` (the default, v. 29, the corpus's engine), `SPHUTA` (Sripati; crux C74) |
 | strength | `bhava_special_rules` | enum | `BPHS` (the default, vv. 30 and 31), `NONE` (Sripati, the corpus's engine; crux C75) |

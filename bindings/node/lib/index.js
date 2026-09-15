@@ -1980,6 +1980,8 @@ function shadbalasOf(batch) {
         virupas: c.virupas[row],
         rupas: c.rupas[row],
         requiredRupas: c.requiredRupas[row],
+        ishta: c.ishta[row],
+        kashta: c.kashta[row],
         strong: c.strong[row] === 1,
       });
     };

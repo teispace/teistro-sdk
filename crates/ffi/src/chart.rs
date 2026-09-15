@@ -1112,7 +1112,7 @@ pub(crate) type ShadbalaColumn = (
 
 /// The `shadbala` section's value columns in order, which the section's
 /// schema and its writer both read.
-pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 21] = [
+pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 23] = [
     (
         "uchcha",
         "Sthana: from the distance to the debilitation point, 0 to 60.",
@@ -1178,6 +1178,12 @@ pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 21] = [
         "The rupas it must reach to be strong.",
         |g| g.required_rupas,
     ),
+    (
+        "ishta",
+        "How far it tends to good, 0 to 60 (BPHS ch. 28).",
+        |g| g.ishta,
+    ),
+    ("kashta", "How far it tends to harm, 0 to 60.", |g| g.kashta),
 ];
 
 /// Every chart's Shadbala, a row a graha, empty when it was not asked for.

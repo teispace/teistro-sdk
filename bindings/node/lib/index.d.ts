@@ -437,6 +437,10 @@ export interface GrahaShadbala {
   readonly requiredRupas: number;
   /** Whether it reaches them. */
   readonly strong: boolean;
+  /** How far it tends to good, 0 to 60 (BPHS ch. 28). */
+  readonly ishta: number;
+  /** How far it tends to harm, 0 to 60. */
+  readonly kashta: number;
 }
 
 /** A chart's Shadbala, read under the context's `strength.*` settings. */

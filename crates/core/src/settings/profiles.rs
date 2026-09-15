@@ -11,7 +11,7 @@ use crate::catalogue::{
 use super::knobs::{
     AfterCycle, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules,
     BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik,
-    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KaalaLords,
+    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
     LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
     NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
@@ -227,6 +227,8 @@ fn strength() -> Strength {
         // The only mean elements a source gives (crux C70).
         cheshta: Cheshta::Sripati,
         yuddha: Yuddha::Sripati,
+        // BPHS ch. 28 vv. 2 to 6.
+        ishta_kashta: IshtaKashta::Rays,
         // BPHS ch. 27 vv. 26 to 31 as translated (`03-design/bhava-bala-measured.md`).
         bhava_dig: BhavaDig::Bphs,
         bhava_drishti: BhavaDrishti::QuarterOfDig,
@@ -418,6 +420,7 @@ fn conformance_baseline() -> Profile {
     patch.strength.benefics = Some(Benefics::Fixed);
     patch.strength.cheshta = Some(Cheshta::RecordingEngine);
     patch.strength.yuddha = Some(Yuddha::None);
+    patch.strength.ishta_kashta = Some(IshtaKashta::ShadbalaCheshta);
     // The engine's Bhava bala (cruxes C73 to C75).
     patch.strength.bhava_dig = Some(BhavaDig::WholeSign);
     patch.strength.bhava_drishti = Some(BhavaDrishti::QuarterOfDig);
@@ -433,7 +436,8 @@ fn conformance_baseline() -> Profile {
         // 7: the Shadbala's four further forks became the engine's (C69, C70,
         // C72).
         // 8: the Bhava bala became the engine's (cruxes C73 to C75).
-        version: 8,
+        // 9: the Ishta and Kashta phalas became the engine's (crux C76).
+        version: 9,
         base: None,
         patch,
         sources: vec![

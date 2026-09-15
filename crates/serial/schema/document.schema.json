@@ -2162,9 +2162,21 @@
           "$ref": "#/$defs/Graha",
           "description": "Which graha."
         },
+        "ishta": {
+          "default": 0.0,
+          "description": "How far it tends to good, 0 to 60 (BPHS ch. 28).",
+          "format": "double",
+          "type": "number"
+        },
         "kaala": {
           "$ref": "#/$defs/KaalaBala",
           "description": "Temporal strength."
+        },
+        "kashta": {
+          "default": 0.0,
+          "description": "How far it tends to harm, 0 to 60.",
+          "format": "double",
+          "type": "number"
         },
         "naisargika": {
           "description": "Natural strength.",
@@ -2515,6 +2527,26 @@
         "to"
       ],
       "type": "object"
+    },
+    "IshtaKashta": {
+      "description": "How a graha's Ishta and Kashta phalas are read from its Uchcha and Cheshta balas (crux C76).",
+      "oneOf": [
+        {
+          "const": "RAYS",
+          "description": "BPHS ch. 28 vv. 2 to 6: the Uchcha and Cheshta rays, the Ishta their mean over the balas and the Kashta 60 less it, the Sun's Cheshta kendra its sayana longitude and three signs, the Moon's her elongation.",
+          "type": "string"
+        },
+        {
+          "const": "SQUARE_ROOTS",
+          "description": "Sripati, as B.V. Raman works it: the Ishta the square root of the two balas' product and the Kashta of their complements', the luminaries' Cheshta from the same kendras.",
+          "type": "string"
+        },
+        {
+          "const": "SHADBALA_CHESHTA",
+          "description": "The recording engine: Raman's square roots of the Shadbala's own Uchcha and Cheshta balas.",
+          "type": "string"
+        }
+      ]
     },
     "JulianDay": {
       "description": "A Julian day on one time scale.",
@@ -4429,6 +4461,10 @@
           "$ref": "#/$defs/Drik",
           "description": "How the Drik weighs the drishtis received."
         },
+        "ishta_kashta": {
+          "$ref": "#/$defs/IshtaKashta",
+          "description": "How the Ishta and Kashta phalas are read."
+        },
         "kaala_lords": {
           "$ref": "#/$defs/KaalaLords",
           "description": "Whose weekdays the Abda and Masa lords are."
@@ -4485,7 +4521,8 @@
         "cheshta",
         "naisargika",
         "drik",
-        "required_rupas"
+        "required_rupas",
+        "ishta_kashta"
       ],
       "type": "object"
     },

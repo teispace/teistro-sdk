@@ -34,7 +34,7 @@ use crate::quantity::Depth;
 pub use knobs::{
     AfterCycle, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules,
     BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik,
-    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, KaalaLords,
+    DstGap, DstOverlap, Ekadhipatya, GhatiReckoning, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
     LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
     NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight,
@@ -363,6 +363,8 @@ group!(
         cheshta: Cheshta,
         /// Whether grahas at war gain and lose the Yuddha bala (crux C70).
         yuddha: Yuddha,
+        /// How the Ishta and Kashta phalas are read (crux C76).
+        ishta_kashta: IshtaKashta,
         /// How the Bhava bala's Dig bala reads a bhava's sign class (crux C73).
         bhava_dig: BhavaDig,
         /// How the Bhava bala weighs the drishtis a bhava receives (crux C74).

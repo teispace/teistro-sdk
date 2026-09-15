@@ -819,6 +819,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** new. Every settings hash moved with the three knobs, and
   `conformance-baseline` is version 8.
 
+  The Ishta and Kashta phalas followed, on each graha of the Shadbala reading
+  and its boundary section: BPHS ch. 28's rays (the default), Sripati's
+  square roots, or the engine's roots of its own Cheshta
+  (`strength.ishta_kashta`, crux C76).
+
+  **Numbers:** new; `conformance-baseline` is version 9.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

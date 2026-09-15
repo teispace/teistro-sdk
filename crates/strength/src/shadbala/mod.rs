@@ -20,6 +20,7 @@
 pub mod cheshta;
 pub mod dig;
 pub mod drik;
+pub mod ishta;
 pub mod kaala;
 pub mod sthana;
 pub mod yuddha;
@@ -31,8 +32,9 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{BalaScheme, Graha, Rashi, Varga};
 use teistro_core::error::Error;
 use teistro_core::settings::{
-    Benefics, Cheshta, DigKendras, Drekkana, Drik, KaalaLords, Kranti, LuminaryCheshta, Naisargika,
-    Nathonnatha, PreDawnNight, RequiredRupas, Saptavargaja, Settings, SunAyana, Yuddha,
+    Benefics, Cheshta, DigKendras, Drekkana, Drik, IshtaKashta, KaalaLords, Kranti,
+    LuminaryCheshta, Naisargika, Nathonnatha, PreDawnNight, RequiredRupas, Saptavargaja, Settings,
+    SunAyana, Yuddha,
 };
 
 use crate::ashtakavarga::GRAHAS;
@@ -155,6 +157,8 @@ pub struct ShadbalaRules {
     pub drik: Drik,
     /// The rupas a graha must reach.
     pub required_rupas: RequiredRupas,
+    /// How the Ishta and Kashta phalas are read.
+    pub ishta_kashta: IshtaKashta,
 }
 
 impl ShadbalaRules {
@@ -176,6 +180,7 @@ impl ShadbalaRules {
         naisargika: Naisargika::Exact,
         drik: Drik::QuarterWithJupiterMercury,
         required_rupas: RequiredRupas::Bphs,
+        ishta_kashta: IshtaKashta::Rays,
     };
 
     /// Sripati's reading, as B.V. Raman works it in *Graha and Bhava Balas*.
@@ -195,6 +200,7 @@ impl ShadbalaRules {
         naisargika: Naisargika::Exact,
         drik: Drik::Quarter,
         required_rupas: RequiredRupas::Sripati,
+        ishta_kashta: IshtaKashta::SquareRoots,
     };
 
     /// The conformance corpus's recording engine's reading at every fork.
@@ -214,6 +220,7 @@ impl ShadbalaRules {
         naisargika: Naisargika::Hundredths,
         drik: Drik::Full,
         required_rupas: RequiredRupas::Sripati,
+        ishta_kashta: IshtaKashta::ShadbalaCheshta,
     };
 
     /// The rules a context's settings name.
@@ -247,6 +254,7 @@ impl ShadbalaRules {
             naisargika: settings.strength.naisargika,
             drik: settings.strength.drik,
             required_rupas: settings.strength.required_rupas,
+            ishta_kashta: settings.strength.ishta_kashta,
         })
     }
 }
@@ -354,6 +362,12 @@ pub struct GrahaShadbala {
     pub required_rupas: f64,
     /// Whether it reaches them.
     pub strong: bool,
+    /// How far it tends to good, 0 to 60 (BPHS ch. 28).
+    #[serde(default)]
+    pub ishta: f64,
+    /// How far it tends to harm, 0 to 60.
+    #[serde(default)]
+    pub kashta: f64,
 }
 
 /// A chart's Shadbala.
@@ -472,6 +486,8 @@ impl ShadbalaReading {
                     rupas: 0.0,
                     required_rupas,
                     strong: false,
+                    ishta: 0.0,
+                    kashta: 0.0,
                 }
             })
             .collect();
@@ -487,6 +503,7 @@ impl ShadbalaReading {
                 + graha.drik;
             graha.rupas = graha.virupas / VIRUPAS_PER_RUPA;
             graha.strong = graha.rupas >= graha.required_rupas;
+            (graha.ishta, graha.kashta) = ishta::of(graha, chart, rules.ishta_kashta);
         }
         ShadbalaReading { rules, grahas }
     }

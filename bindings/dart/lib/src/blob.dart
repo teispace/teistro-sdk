@@ -1140,6 +1140,8 @@ final class ChartsShadbala {
     required this.virupas,
     required this.rupas,
     required this.requiredRupas,
+    required this.ishta,
+    required this.kashta,
     required this.strong,
     required this.length,
   });
@@ -1209,6 +1211,12 @@ final class ChartsShadbala {
 
   /// The rupas it must reach to be strong.
   final Float64List requiredRupas;
+
+  /// How far it tends to good, 0 to 60 (BPHS ch. 28).
+  final Float64List ishta;
+
+  /// How far it tends to harm, 0 to 60.
+  final Float64List kashta;
 
   /// 1 when the rupas reach the requirement, else 0.
   final Uint8List strong;
@@ -2501,10 +2509,20 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atShadbala, 21),
         blob.columnOffset(atShadbala, 21) + atShadbala.count * 8,
       ),
-      strong: Uint8List.sublistView(
+      ishta: Float64List.sublistView(
         blob.bytes,
         blob.columnOffset(atShadbala, 22),
-        blob.columnOffset(atShadbala, 22) + atShadbala.count * 1,
+        blob.columnOffset(atShadbala, 22) + atShadbala.count * 8,
+      ),
+      kashta: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 23),
+        blob.columnOffset(atShadbala, 23) + atShadbala.count * 8,
+      ),
+      strong: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 24),
+        blob.columnOffset(atShadbala, 24) + atShadbala.count * 1,
       ),
       length: atShadbala.count,
     ),

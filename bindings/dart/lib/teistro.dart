@@ -1711,6 +1711,8 @@ final class GrahaShadbala {
     required this.rupas,
     required this.requiredRupas,
     required this.strong,
+    required this.ishta,
+    required this.kashta,
   });
 
   /// Which graha, Sun to Saturn.
@@ -1745,6 +1747,12 @@ final class GrahaShadbala {
 
   /// Whether it reaches them.
   final bool strong;
+
+  /// How far it tends to good, 0 to 60 (BPHS ch. 28).
+  final double ishta;
+
+  /// How far it tends to harm, 0 to 60.
+  final double kashta;
 }
 
 /// A chart's Shadbala, read under the context's `strength.*` settings
@@ -2775,6 +2783,8 @@ List<Shadbala> _decodeShadbalas(Charts batch) {
     rupas: c.rupas[row],
     requiredRupas: c.requiredRupas[row],
     strong: c.strong[row] == 1,
+    ishta: c.ishta[row],
+    kashta: c.kashta[row],
   );
   return List<Shadbala>.generate(
     c.length ~/ 7,

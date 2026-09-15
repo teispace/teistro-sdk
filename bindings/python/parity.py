@@ -432,7 +432,7 @@ def main() -> None:
                 put(key, ",".join(number(value) for value in parts))
                 put(
                     f"{key}-total",
-                    f"{number(strength.virupas)},{number(strength.rupas)},{number(strength.required_rupas)},{str(strength.strong).lower()}",
+                    f"{number(strength.virupas)},{number(strength.rupas)},{number(strength.required_rupas)},{str(strength.strong).lower()},{number(strength.ishta)},{number(strength.kashta)}",
                 )
             bb = chart.bhava_bala
             assert bb is not None

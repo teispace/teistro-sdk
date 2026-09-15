@@ -335,3 +335,33 @@ fn every_graha_s_total_is_its_six_strengths_under_every_reading() {
         }
     }
 }
+
+#[test]
+fn the_phalas_are_each_reading_s_means() {
+    let mut chart = chart();
+    // Mars 90° from its debilitation point: an Uchcha of 30.
+    chart.grahas[2].longitude = 208.0;
+    let rules = |ishta_kashta| ShadbalaRules {
+        ishta_kashta,
+        ..ShadbalaRules::BPHS
+    };
+    let mars = |rule| of(&chart, rules(rule), Graha::Mars);
+    let rays = mars(teistro_core::settings::IshtaKashta::Rays);
+    assert!((rays.ishta - f64::midpoint(rays.sthana.uchcha, rays.cheshta)).abs() < 1e-12);
+    assert!((rays.ishta + rays.kashta - 60.0).abs() < 1e-12);
+    let roots = mars(teistro_core::settings::IshtaKashta::SquareRoots);
+    assert!((roots.ishta - (roots.sthana.uchcha * roots.cheshta).sqrt()).abs() < 1e-12);
+    assert!(
+        (roots.kashta - ((60.0 - roots.sthana.uchcha) * (60.0 - roots.cheshta)).sqrt()).abs()
+            < 1e-12
+    );
+    // The Sun's own kendra: sayana at 0°, three signs on, a third of 90°.
+    let sun = of(
+        &chart,
+        rules(teistro_core::settings::IshtaKashta::SquareRoots),
+        Graha::Sun,
+    );
+    assert!((sun.ishta - (sun.sthana.uchcha * 30.0).sqrt()).abs() < 1e-12);
+    let engine = of(&chart, ShadbalaRules::RECORDING_ENGINE, Graha::Sun);
+    assert!((engine.ishta - (engine.sthana.uchcha * engine.cheshta).sqrt()).abs() < 1e-12);
+}

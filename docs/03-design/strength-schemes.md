@@ -226,6 +226,19 @@ schema and the writer) and every binding's `chart.shadbala` carry it, and
 `SthanaBala` and `KaalaBala` in every binding, because the catalogue already
 has a `Kaala`.
 
+## The Ishta and Kashta phalas (2026-09-15)
+
+Each graha's tendency to good and to harm, from its Uchcha and Cheshta balas,
+carried on the Shadbala reading (`GrahaShadbala::ishta` and `kashta`) because
+every input is already there. BPHS ch. 28's rays come to the two balas' mean
+and its complement; Sripati, as Raman works it, takes square roots; the
+recording engine takes Raman's roots of the Shadbala's own Cheshta, which for
+the Sun is its Ayana rather than the chapter's kendra of its sayana longitude
+and three signs. `strength.ishta_kashta` chooses (crux C76);
+`ShadbalaRules::SRIPATI` reproduces Raman's Examples 62 and 63 but for two
+Kashtas his own inputs show slipped in print. The corpus records none, so the
+engine's reading rests on its source alone.
+
 ## The Bhava bala, built (2026-09-15)
 
 Each bhava's strength from its lord's Shadbala, its direction and the drishtis

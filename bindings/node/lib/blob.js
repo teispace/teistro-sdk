@@ -533,7 +533,9 @@ export function decodeCharts(bytes) {
       virupas: column(blob, at, 19, 'f64', at.count),
       rupas: column(blob, at, 20, 'f64', at.count),
       requiredRupas: column(blob, at, 21, 'f64', at.count),
-      strong: column(blob, at, 22, 'u8', at.count),
+      ishta: column(blob, at, 22, 'f64', at.count),
+      kashta: column(blob, at, 23, 'f64', at.count),
+      strong: column(blob, at, 24, 'u8', at.count),
       length: at.count,
     };
   }

@@ -13616,6 +13616,16 @@
               "doc": "The rupas it must reach to be strong."
             },
             {
+              "name": "ishta",
+              "scalar": "f64",
+              "doc": "How far it tends to good, 0 to 60 (BPHS ch. 28)."
+            },
+            {
+              "name": "kashta",
+              "scalar": "f64",
+              "doc": "How far it tends to harm, 0 to 60."
+            },
+            {
               "name": "strong",
               "scalar": "u8",
               "doc": "1 when the rupas reach the requirement, else 0."
