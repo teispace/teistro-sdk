@@ -800,6 +800,25 @@ so every question of strength answered false. **A pass that hands the kernel
 less than the rule asks for will report the rule as silent**, which is the same
 shape of mistake as a gate going green for the wrong reason.
 
+**A named decanate, and a catalogue three texts disagree about
+(2026-09-16).** Saravali ch. 10 v. 14 was shipped as a refusal — the ascendant
+in a Nigala, Sarpa, Pakshi or Pasa decanate, left out "for want of a decanate
+catalogue". The catalogue exists: Phaladeepika ch. 3 vv. 13 and 14 give it, in
+the verse. So the rule ships, and with it the reason the refusal was right to
+be cautious — **no two texts agree on which decanates are the serpent's**
+(crux C98). Phaladeepika, BPHS ch. 44 v. 40 and Iyer's note to Brihat Jataka
+ch. 24 concur only on the first third of Scorpio and the last of Pisces, and
+Iyer makes the first of Capricorn *Pasa* where Phaladeepika makes it *Nigala*.
+
+Saying it needed no divisional chart and no new predicate: a decanate is a sign
+and a third of it, which `planet-in-sign` and `planet-in-degrees` already say,
+and the lord of a decanate is the lord of the sign that third falls in — its
+own for the first, the fifth from it for the second, the ninth for the third —
+which is a constant per branch and so is written as a body. The catalogue
+stays inside the one rule that uses it; it becomes a table when a second rule
+needs it, and the one that would is BPHS ch. 44's fate of the corpse, which
+wants the twenty-second decanate.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-three answer none, and

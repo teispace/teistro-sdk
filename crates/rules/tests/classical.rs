@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 76);
+    assert_eq!(rules.len(), 77);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -58,7 +58,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .map(|rule| rule.key.as_str())
         .collect();
     assert_eq!(graded, GRADED);
-    assert_eq!(spans.len(), 13);
+    assert_eq!(spans.len(), 14);
     assert!(
         spans
             .iter()
@@ -183,7 +183,7 @@ fn saravali_evils_name_the_antidotes_of_their_own_text(rules: &[&Rule]) {
 /// two of them with the span they leave, and the one antidote of ch. 12 that
 /// counts a life in years rather than calling it illimitable. Saravali is the
 /// only text here that says anything beyond presence at all.
-const GRADED: [&str; 15] = [
+const GRADED: [&str; 16] = [
     "SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS",
     "SARAVALI_RETROGRADE_SATURN_IN_A_SIGN_OF_MARS",
     "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
@@ -198,6 +198,7 @@ const GRADED: [&str; 15] = [
     "SARAVALI_SUN_IN_A_TENTH_OF_MARS_OR_SATURN",
     "SARAVALI_RAHU_IN_A_KENDRA_ASPECTED_BY_MALEFICS",
     "SARAVALI_THREE_LORDS_COMBUST",
+    "SARAVALI_LAGNA_IN_A_NAMED_DECANATE",
     "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS",
 ];
 
@@ -239,7 +240,7 @@ const SILENT: [&str; 33] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 76] = [
+const ANSWERED: [(&str, usize); 77] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
     ("ARISHTA_BHANGA_BENEFIC_IN_KENDRA", 70),
@@ -303,6 +304,7 @@ const ANSWERED: [(&str, usize); 76] = [
     ("SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA", 5),
     ("SARAVALI_BIRTH_STAR_IS_KETU_S", 3),
     ("SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS", 0),
+    ("SARAVALI_LAGNA_IN_A_NAMED_DECANATE", 3),
     ("SARAVALI_MALEFIC_IN_A_VENUS_EIGHTH", 3),
     ("SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH", 0),
     ("SARAVALI_MERCURY_IN_CANCER_AS_SIXTH_OR_EIGHTH", 0),

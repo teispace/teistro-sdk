@@ -29,6 +29,21 @@ fn rules() -> Vec<Rule> {
         .collect()
 }
 
+/// Reading the twelve houses at once gives what reading them one at a time
+/// gives, and evaluates each rule once instead of twelve times.
+#[test]
+fn reading_the_whole_chart_gives_what_reading_each_house_gives() {
+    let rules = rules();
+    for (path, file) in files_in("doshas").into_iter().take(12) {
+        let chart = chart_at(&path, &file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_rules(&rules);
+        let whole = evaluator.house_readings(&rules);
+        for reading in &whole {
+            assert_eq!(*reading, evaluator.house_reading(reading.house, &rules));
+        }
+    }
+}
+
 #[test]
 fn a_house_gathers_every_rule_whose_grahas_stand_in_it() {
     let rules = rules();
@@ -96,9 +111,9 @@ fn a_house_gathers_every_rule_whose_grahas_stand_in_it() {
         .map(|(_, houses)| *houses)
         .sum();
     assert_eq!(crowded_houses, 48);
-    // What a consumer receives: 4913 rule results gathered under a house over
+    // What a consumer receives: 4916 rule results gathered under a house over
     // the 93 charts, and 455 statements of how to read them together.
-    assert_eq!((held, composed), (4913, 455));
+    assert_eq!((held, composed), (4916, 455));
 }
 
 /// How many houses of the 1116 hold each number of grahas.

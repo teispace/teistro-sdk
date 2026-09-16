@@ -1066,6 +1066,221 @@
       ]
     },
     {
+      "key": "SARAVALI_LAGNA_IN_A_NAMED_DECANATE",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "14-15",
+        "rank": 1,
+        "note": "The ascendant falling in a Nigala, Sarpa, Pakshi or Pasa decanate, occupied by malefics and unaspected by the lord of that decanate: seven years. Kalyana Varma names the decanates without cataloguing them; the catalogue is Phaladeepika ch. 3 vv. 13 and 14 \u2014 Pasa the middle third of Scorpio, Nigala the first of Capricorn, Pakshi the last of Taurus, and the serpents the first of Scorpio and the last of Cancer and of Pisces. Two other lists of the serpents disagree with it and with each other (crux C98): BPHS ch. 44 v. 40 gives the second and third of Cancer, and N. Chidambaram Iyer's note to Brihat Jataka ch. 24 the first of Cancer and the first and second of Scorpio. The decanate's lord is the lord of the sign the decanate itself falls in, the first third's being its own sign, the second's the fifth from it and the third's the ninth. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "LAGNA",
+                  "signs": [
+                    "SCORPIO"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 10.0,
+                  "to": 20.0
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-aspects-house",
+                    "from": "JUPITER",
+                    "houseRuled": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "LAGNA",
+                  "signs": [
+                    "CAPRICORN"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 0.0,
+                  "to": 10.0
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-aspects-house",
+                    "from": "SATURN",
+                    "houseRuled": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "LAGNA",
+                  "signs": [
+                    "TAURUS"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 20.0,
+                  "to": 30.0
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-aspects-house",
+                    "from": "SATURN",
+                    "houseRuled": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "LAGNA",
+                  "signs": [
+                    "SCORPIO"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 0.0,
+                  "to": 10.0
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-aspects-house",
+                    "from": "MARS",
+                    "houseRuled": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "LAGNA",
+                  "signs": [
+                    "CANCER"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 20.0,
+                  "to": 30.0
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-aspects-house",
+                    "from": "JUPITER",
+                    "houseRuled": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-sign",
+                  "planet": "LAGNA",
+                  "signs": [
+                    "PISCES"
+                  ]
+                },
+                {
+                  "type": "planet-in-degrees",
+                  "planet": "LAGNA",
+                  "from": 20.0,
+                  "to": 30.0
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-aspects-house",
+                    "from": "MARS",
+                    "houseRuled": 1
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 7.0,
+          "unit": "years"
+        }
+      ]
+    },
+    {
       "key": "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON",
       "category": "arishta-bhanga",
       "source": {

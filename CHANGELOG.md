@@ -1234,6 +1234,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   at once, giving the native four holy orders where Parashara gives him one.
   Crux C97.
 
+- `Evaluator::house_readings` evaluates each rule **once** and hands its result
+  to every house its participants stand in, where it had evaluated every rule
+  twelve times. A test holds the whole-chart path to the one-house path
+  reading for reading.
+
+- Saravali ch. 10 v. 14, the ascendant in a Nigala, Sarpa, Pakshi or Pasa
+  decanate, which had shipped as a refusal for want of a catalogue.
+  Phaladeepika ch. 3 vv. 13 and 14 give the catalogue in the verse, so the rule
+  ships — and with it the finding that **no two texts agree on which decanates
+  are the serpent's** (crux C98). It needed no divisional chart: a decanate is
+  a sign and a third of it. The SDK ships 830 rules.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

@@ -202,6 +202,50 @@ impl Evaluator<'_> {
     /// bears on no house, and is left out rather than assigned to one.
     #[must_use]
     pub fn house_reading<'r>(&self, house: House, rules: &'r [Rule]) -> HouseReading<'r> {
+        let held: Vec<Held<'r>> = rules
+            .iter()
+            .map(|rule| (rule, self.evaluate(rule)))
+            .filter(|(_, result)| result.present && result.houses.contains(&house))
+            .map(|(rule, result)| Held { rule, result })
+            .collect();
+        self.gathered(house, held)
+    }
+
+    /// Every house of the chart, the first to the twelfth.
+    ///
+    /// A rule is evaluated **once** here and its result handed to each house
+    /// its participants stand in, which is what a caller wanting the whole
+    /// chart should use: asking twelve houses one at a time would evaluate
+    /// every rule twelve times.
+    #[must_use]
+    pub fn house_readings<'r>(&self, rules: &'r [Rule]) -> Vec<HouseReading<'r>> {
+        let mut by_house: [Vec<Held<'r>>; 12] = Default::default();
+        for rule in rules {
+            let result = self.evaluate(rule);
+            if !result.present {
+                continue;
+            }
+            for house in &result.houses {
+                if let Some(bucket) = by_house.get_mut(usize::from(house.get()) - 1) {
+                    bucket.push(Held {
+                        rule,
+                        result: result.clone(),
+                    });
+                }
+            }
+        }
+        by_house
+            .into_iter()
+            .enumerate()
+            .filter_map(|(at, held)| {
+                let house = House::try_new(u8::try_from(at).ok()? + 1).ok()?;
+                Some(self.gathered(house, held))
+            })
+            .collect()
+    }
+
+    /// A house's reading, once what held there is known.
+    fn gathered<'r>(&self, house: House, held: Vec<Held<'r>>) -> HouseReading<'r> {
         let sign = self.house_sign(house);
         let occupants: Vec<Body> = Body::nine()
             .into_iter()
@@ -211,12 +255,6 @@ impl Evaluator<'_> {
             .iter()
             .filter(|body| self.strengths().is_strong(**body))
             .count();
-        let held: Vec<Held<'r>> = rules
-            .iter()
-            .map(|rule| (rule, self.evaluate(rule)))
-            .filter(|(_, result)| result.present && result.houses.contains(&house))
-            .map(|(rule, result)| Held { rule, result })
-            .collect();
         let composition = COMPOSITIONS
             .iter()
             .filter(|composition| composition.bears_on(house, occupants.len(), strong))
@@ -228,14 +266,5 @@ impl Evaluator<'_> {
             held,
             composition,
         }
-    }
-
-    /// Every house of the chart, the first to the twelfth.
-    #[must_use]
-    pub fn house_readings<'r>(&self, rules: &'r [Rule]) -> Vec<HouseReading<'r>> {
-        (1..=12)
-            .filter_map(|house| House::try_new(house).ok())
-            .map(|house| self.house_reading(house, rules))
-            .collect()
     }
 }
