@@ -209,6 +209,53 @@ fn is_mars(body: &Body) -> bool {
     *body == mars()
 }
 
+/// What a rule says happens when it holds, beyond being present. The texts
+/// grade an affliction in one way only: the span of life they give it
+/// (Phaladeepika ch. 13 v. 6's bands, and Saravali ch. 10's verse-by-verse
+/// spans), so that is what an outcome carries.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(
+    tag = "type",
+    rename_all = "kebab-case",
+    rename_all_fields = "camelCase",
+    deny_unknown_fields
+)]
+pub enum Outcome {
+    /// The life span the rule gives, in the unit its verse uses.
+    LifeSpan {
+        /// How many.
+        count: f64,
+        /// Of what.
+        unit: Unit,
+    },
+}
+
+/// The unit a span is counted in, as the verse counts it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Unit {
+    /// Days.
+    Days,
+    /// Months.
+    Months,
+    /// Years.
+    Years,
+}
+
+impl Outcome {
+    /// The span in days, a month being thirty and a year 365.25.
+    #[must_use]
+    pub fn days(self) -> f64 {
+        let Outcome::LifeSpan { count, unit } = self;
+        count
+            * match unit {
+                Unit::Days => 1.0,
+                Unit::Months => 30.0,
+                Unit::Years => 365.25,
+            }
+    }
+}
+
 /// Whether a present rule stands, after its cancellations.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -246,6 +293,8 @@ pub struct Rule {
     pub full_cancellation_threshold: Option<u8>,
     /// The remedies it names, by key.
     pub remedies: Vec<String>,
+    /// What it says happens when it holds, when its verse says.
+    pub outcome: Option<Outcome>,
     /// The name of the code its author computes it with instead, when the
     /// language cannot say it.
     pub computed: Option<String>,
@@ -267,6 +316,7 @@ impl Rule {
             severity: None,
             full_cancellation_threshold: None,
             remedies: Vec::new(),
+            outcome: None,
             computed: None,
         }
     }
@@ -349,6 +399,8 @@ struct Written {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     remedy_keys: Vec<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    outcome: Option<Outcome>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     custom_result_key: Option<String>,
 }
 
@@ -396,6 +448,7 @@ impl TryFrom<Written> for Rule {
             severity,
             full_cancellation_threshold: written.full_cancellation_threshold,
             remedies: written.remedy_keys,
+            outcome: written.outcome,
             computed: written.custom_result_key,
         };
         // `SELF` is the body a `for-any` binds, and means nothing outside one.
@@ -433,6 +486,7 @@ impl From<Rule> for Written {
             custom_severity_key: None,
             full_cancellation_threshold: rule.full_cancellation_threshold,
             remedy_keys: rule.remedies,
+            outcome: rule.outcome,
             custom_result_key: rule.computed,
         }
     }

@@ -440,9 +440,21 @@ the Moon. Those escapes are recorded in each rule's note and not built, so the
 rule states the evil the verse states and no cancellation fires on a strength
 the kernel cannot measure.
 
+**An outcome, and Saravali's spans (2026-09-16).** Kalyana Varma grades each
+evil the one way the texts ever grade one: by the span of life it leaves — three
+years, nine years, one month, sixteen days. So a rule can carry an `Outcome`,
+and its only kind is `life-span`, a count and the unit its verse uses, with
+`days()` for comparing them. A result carries the outcome of the rule that
+held. This is what replaces an invented 0 to 100 score: the SDK reports the
+span a verse gives, or nothing.
+
+Ten rules of Saravali ch. 10 ship with theirs. A test holds that every Saravali
+rule carries a span and no other rule claims one, because no other text grades
+an affliction.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
-of them, so an answer that moves fails the build. Twenty-three answer none, and
+of them, so an answer that moves fails the build. Twenty-eight answer none, and
 the test lists them — the four gandantas because the corpus records no limb's
 ghatikas, the rest because they are coincidences of three, four or five
 grahas.

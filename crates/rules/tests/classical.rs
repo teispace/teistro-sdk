@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 51);
+    assert_eq!(rules.len(), 61);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -40,7 +40,26 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         );
         assert!(rule.source.verse.is_some(), "{}: cites a verse", rule.key);
         Tables::EMPTY.check(rule).expect("these name no table");
+        // Saravali's verses each give a span of life, and no other rule claims
+        // one, since no other text grades an affliction.
+        assert_eq!(
+            rule.outcome.is_some(),
+            rule.source.text == "Saravali",
+            "{}: an outcome is a span its verse gives",
+            rule.key
+        );
     }
+    // The spans the verses give, in the units they give them in.
+    let spans: Vec<f64> = rules
+        .iter()
+        .filter_map(|rule| rule.outcome.map(teistro_rules::Outcome::days))
+        .collect();
+    assert_eq!(spans.len(), 10);
+    assert!(
+        spans
+            .iter()
+            .all(|days| *days >= 16.0 && *days <= 9.0 * 365.25)
+    );
     // The antidotes an evil names are shipped beside it, and nothing loops.
     let owned: Vec<Rule> = rules.iter().map(|rule| (*rule).clone()).collect();
     teistro_rules::check_references(&owned).expect("the pack names itself soundly");
@@ -74,7 +93,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
 }
 
 /// The rules no recorded chart answers.
-const SILENT: [&str; 23] = [
+const SILENT: [&str; 28] = [
     "ABHUKTA_MOOLA",
     "ARISHTA_FIVE_IN_THE_SECOND",
     "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
@@ -97,11 +116,16 @@ const SILENT: [&str; 23] = [
     "BJ_WANING_MOON_IN_TWELFTH",
     "LAGNA_GANDANTA",
     "NAKSHATRA_GANDANTA",
+    "SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS",
+    "SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH",
+    "SARAVALI_MERCURY_IN_CANCER_AS_SIXTH_OR_EIGHTH",
+    "SARAVALI_RETROGRADE_SATURN_IN_A_SIGN_OF_MARS",
+    "SARAVALI_VENUS_IN_A_LUMINARY_DUSTHANA",
     "TITHI_GANDANTA",
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 51] = [
+const ANSWERED: [(&str, usize); 61] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
     ("ARISHTA_BHANGA_BENEFIC_IN_KENDRA", 70),
@@ -152,5 +176,15 @@ const ANSWERED: [(&str, usize); 51] = [
     ("BJ_WANING_MOON_WITH_A_MALEFIC", 22),
     ("LAGNA_GANDANTA", 0),
     ("NAKSHATRA_GANDANTA", 0),
+    ("SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS", 0),
+    ("SARAVALI_MALEFIC_IN_A_VENUS_EIGHTH", 3),
+    ("SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH", 0),
+    ("SARAVALI_MERCURY_IN_CANCER_AS_SIXTH_OR_EIGHTH", 0),
+    ("SARAVALI_RETROGRADE_SATURN_IN_A_SIGN_OF_MARS", 0),
+    ("SARAVALI_SATURN_ALONE_IN_LAGNA", 2),
+    ("SARAVALI_SATURN_IN_LAGNA_ASPECTED_BY_MALEFICS", 1),
+    ("SARAVALI_SATURN_IN_LAGNA_WITH_MALEFICS", 1),
+    ("SARAVALI_SATURN_WITH_BOTH_LUMINARIES", 2),
+    ("SARAVALI_VENUS_IN_A_LUMINARY_DUSTHANA", 0),
     ("TITHI_GANDANTA", 0),
 ];

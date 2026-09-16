@@ -1043,6 +1043,14 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- A rule can say what happens when it holds: `Rule::outcome`, whose one kind is
+  a `life-span` — a count and the unit its verse uses — which a `RuleResult`
+  carries. It is what the texts actually grade an affliction by, and it
+  replaces an invented score. Ten rules of Saravali ch. 10 ship with the spans
+  Kalyana Varma gives them, from sixteen days to nine years.
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

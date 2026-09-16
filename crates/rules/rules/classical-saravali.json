@@ -1,0 +1,418 @@
+{
+  "rules": [
+    {
+      "key": "SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "4",
+        "rank": 1,
+        "note": "Jupiter in the eighth in a sign of Mars, aspected by the Sun, the Moon, Mars and Saturn: the child dies in three years. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "JUPITER",
+          "signs": [
+            "ARIES",
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SUN",
+          "target": "JUPITER"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "JUPITER"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MARS",
+          "target": "JUPITER"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SATURN",
+          "target": "JUPITER"
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 3.0,
+        "unit": "years"
+      }
+    },
+    {
+      "key": "SARAVALI_RETROGRADE_SATURN_IN_A_SIGN_OF_MARS",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "5",
+        "rank": 1,
+        "note": "Saturn retrograde in a sign of Mars while the Moon stands in the sixth, the eighth or a kendra and aspects Mars: two years. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-retrograde",
+          "planet": "SATURN"
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "ARIES",
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6,
+            8,
+            1,
+            4,
+            7,
+            10
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "MARS"
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 2.0,
+        "unit": "years"
+      }
+    },
+    {
+      "key": "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "6-7",
+        "rank": 1,
+        "note": "Saturn joining the Sun and the Moon at birth: nine years, which the verse gives on Brahmasaunda's authority. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-conjunct",
+          "planets": [
+            "SATURN",
+            "SUN",
+            "MOON"
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 9.0,
+        "unit": "years"
+      }
+    },
+    {
+      "key": "SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "6-7",
+        "rank": 1,
+        "note": "Mars, the Sun and Saturn in Taurus standing as the eighth: one month, though Yama himself should try to save the child. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MARS",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SUN",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "TAURUS"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 1.0,
+        "unit": "months"
+      }
+    },
+    {
+      "key": "SARAVALI_MALEFIC_IN_A_VENUS_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "8-9",
+        "rank": 1,
+        "note": "A malefic in the eighth when that house is owned by Venus, aspected by other malefics: one year, though he drink nectar. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "SATURN",
+            "RAHU",
+            "KETU"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  8
+                ]
+              },
+              {
+                "type": "planet-in-sign",
+                "planet": "SELF",
+                "signs": [
+                  "TAURUS",
+                  "LIBRA"
+                ]
+              },
+              {
+                "type": "count-aspecting",
+                "planets": "any-malefic",
+                "target": "SELF",
+                "atLeast": 1
+              }
+            ]
+          }
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 1.0,
+        "unit": "years"
+      }
+    },
+    {
+      "key": "SARAVALI_VENUS_IN_A_LUMINARY_DUSTHANA",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "8-9",
+        "rank": 1,
+        "note": "Venus in the twelfth, sixth or eighth when that house is owned by the Sun or the Moon, aspected by the benefics: six years. The verse says all the benefics, and this rule asks for three. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "VENUS",
+          "signs": [
+            "CANCER",
+            "LEO"
+          ]
+        },
+        {
+          "type": "count-aspecting",
+          "planets": "any-benefic",
+          "target": "VENUS",
+          "atLeast": 3
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 6.0,
+        "unit": "years"
+      }
+    },
+    {
+      "key": "SARAVALI_MERCURY_IN_CANCER_AS_SIXTH_OR_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "10-11",
+        "rank": 1,
+        "note": "Mercury in Cancer standing as the sixth or the eighth from the lagna and aspected by the Moon: four years, and the Yavanas' raja yogas do not save such a child. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            6,
+            8
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "MERCURY"
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 4.0,
+        "unit": "years"
+      }
+    },
+    {
+      "key": "SARAVALI_SATURN_IN_LAGNA_ASPECTED_BY_MALEFICS",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "19",
+        "rank": 1,
+        "note": "Saturn in the lagna in aspect to malefics: sixteen days. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-aspecting",
+          "planets": "any-malefic",
+          "target": "SATURN",
+          "atLeast": 1
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 16.0,
+        "unit": "days"
+      }
+    },
+    {
+      "key": "SARAVALI_SATURN_IN_LAGNA_WITH_MALEFICS",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "19",
+        "rank": 1,
+        "note": "Saturn in the lagna in the company of malefics: a month. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 2
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 1.0,
+        "unit": "months"
+      }
+    },
+    {
+      "key": "SARAVALI_SATURN_ALONE_IN_LAGNA",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "19",
+        "rank": 1,
+        "note": "Saturn alone in the lagna, with no malefic connection: one year. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 2
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-aspecting",
+            "planets": "any-malefic",
+            "target": "SATURN",
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 1.0,
+        "unit": "years"
+      }
+    }
+  ]
+}

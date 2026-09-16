@@ -43,6 +43,8 @@ const GANDANTA: &str = include_str!("../rules/classical-gandanta.json");
 const ARISHTA: &str = include_str!("../rules/classical-arishta.json");
 /// Varahamihira's Balarishta, Brihat Jataka ch. 6.
 const BALARISHTA: &str = include_str!("../rules/classical-balarishta.json");
+/// Kalyana Varma's evils at birth, Saravali ch. 10, each with its life span.
+const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -65,6 +67,7 @@ static GANDANTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(GANDANTA));
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     let mut rules = read(ARISHTA);
     rules.append(&mut read(BALARISHTA));
+    rules.append(&mut read(SARAVALI));
     rules
 });
 
@@ -85,7 +88,8 @@ pub fn gandantas() -> &'static [Rule] {
 }
 
 /// The evils at birth of BPHS ch. 9 that the language can say, Brihat
-/// Jataka ch. 6's Balarishta beside them, and the antidotes of ch. 10, which stand in their own chapter and so ship as rules
+/// Jataka ch. 6's Balarishta and Saravali ch. 10's spans beside them, and the
+/// antidotes of BPHS ch. 10, which stand in their own chapter and so ship as rules
 /// of their own rather than as each evil's cancellation. The verses that turn
 /// on a graha being "strong" are not here: the kernel has no strength measure,
 /// and a cancellation that fires too often is worse than one that is missing.
@@ -121,7 +125,7 @@ mod tests {
             .chain(gandantas())
             .chain(arishtas())
             .collect();
-        assert_eq!(rules.len(), 76);
+        assert_eq!(rules.len(), 86);
         for rule in &rules {
             let rank = rule
                 .source

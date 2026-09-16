@@ -14,7 +14,7 @@ use crate::chart::{
 };
 use crate::language::{Body, Condition, EclipseKind, Edge, House, KarakaScheme, NodeSide};
 use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
-use crate::rule::{NetStatus, Rule, Severity};
+use crate::rule::{NetStatus, Outcome, Rule, Severity};
 use crate::table::{Table, Tables};
 use crate::trace::{Explanation, NoTrace, Recorder, Resolved, Tracer};
 
@@ -103,7 +103,7 @@ impl From<Participants> for Vec<Body> {
 }
 
 /// What a rule answers for a chart.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct RuleResult {
     /// Whether it is present.
     pub present: bool,
@@ -119,6 +119,8 @@ pub struct RuleResult {
     pub cancellations: Vec<usize>,
     /// How grave it is, when present and the rule says.
     pub severity: Option<u16>,
+    /// What the rule says happens, when present and its verse says.
+    pub outcome: Option<Outcome>,
     /// Whether it stands after its cancellations, when present.
     pub status: Option<NetStatus>,
 }
@@ -1087,6 +1089,7 @@ impl<'a> Evaluator<'a> {
             found_from: Vec::new(),
             cancellations: Vec::new(),
             severity: None,
+            outcome: None,
             status: None,
         };
         if !rule.is_evaluable() {
@@ -1147,6 +1150,7 @@ impl<'a> Evaluator<'a> {
             found_from,
             cancellations,
             severity,
+            outcome: rule.outcome,
         }
     }
 

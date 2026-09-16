@@ -51,6 +51,10 @@ cancellations held.
   Dagdha Rashi and Badhaka reproduce every recorded field. It took a `side` on
   the nodal-arc predicate, a badhaka reference (crux C86) and a weight on a
   group, not a classifying outcome.
+- **A rule can carry what its verse says happens.** The texts grade an
+  affliction only by the span of life it leaves, so an `Outcome` is a
+  `life-span` in the unit its verse uses; Saravali ch. 10's ten rules ship with
+  theirs, and nothing else claims one.
 - **A body's degrees within its sign** are readable (`planet-in-degrees`),
   which Brihat Jataka ch. 6 v. 8's last navamsa needs.
 - **A rule can name another.** `{"type": "rule", "key": …}` holds when that

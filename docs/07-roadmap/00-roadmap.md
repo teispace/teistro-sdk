@@ -569,8 +569,9 @@ over a `for-any` quantifier rather than the divisional predicate the page
 expected, and `in-varga` is built anyway. **The classical corpus was then
 surveyed** (`01-research/feature-universe/04-yogas-doshas.md`): the order of
 work is now the rest of the arishta corpus (thirty-six of about 120 rules are built,
-BPHS chs. 9 and 10 and Brihat Jataka ch. 6 whole but for the verses that turn
-on strength), Saravali chs. 10 to 12, the dwigraha generator,
+BPHS chs. 9 and 10, Brihat Jataka ch. 6 and the start of Saravali ch. 10,
+whole but for the verses that turn on strength), Saravali chs. 11 and 12,
+the dwigraha generator,
 rashi drishti and argala, nakshatra references, D3 and D30, strength ranking,
 and the longevity band as an outcome. Next: with the references that need points the
 chart does not yet carry added as rules need them.
