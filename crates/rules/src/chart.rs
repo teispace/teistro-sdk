@@ -267,6 +267,192 @@ impl RuleChart {
     }
 }
 
+/// Where the eight-karaka scheme puts the Pitrikaraka (crux C101).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+pub enum EightKarakas {
+    /// BPHS ch. 32 vv. 13 to 17: the Amatyakaraka, Bhratri, Matri, Pitri,
+    /// Putra, Gnati and Dara karakas in turn, so the Darakaraka is the least.
+    #[default]
+    Parashara,
+    /// The Pitrikaraka after the Darakaraka, as the least: the recording
+    /// engine's order, which reproduces every one of the corpus's 93 charts
+    /// where Parashara's reproduces none.
+    PitrikarakaLast,
+}
+
+impl EightKarakas {
+    /// The karakas from the most advanced in its sign down.
+    const fn order(self) -> [CharaKaraka; 8] {
+        use CharaKaraka::{
+            Amatyakaraka, Atmakaraka, Bhratrikaraka, Darakaraka, Gnatikaraka, Matrikaraka,
+            Pitrikaraka, Putrakaraka,
+        };
+        match self {
+            EightKarakas::Parashara => [
+                Atmakaraka,
+                Amatyakaraka,
+                Bhratrikaraka,
+                Matrikaraka,
+                Pitrikaraka,
+                Putrakaraka,
+                Gnatikaraka,
+                Darakaraka,
+            ],
+            EightKarakas::PitrikarakaLast => [
+                Atmakaraka,
+                Amatyakaraka,
+                Bhratrikaraka,
+                Matrikaraka,
+                Putrakaraka,
+                Gnatikaraka,
+                Darakaraka,
+                Pitrikaraka,
+            ],
+        }
+    }
+}
+
+/// The seven karakas from the most advanced down, where the Matri and Putra
+/// karakas are one (BPHS ch. 32 vv. 13 to 17).
+const SEVEN_KARAKAS: [CharaKaraka; 7] = [
+    CharaKaraka::Atmakaraka,
+    CharaKaraka::Amatyakaraka,
+    CharaKaraka::Bhratrikaraka,
+    CharaKaraka::Matrikaraka,
+    CharaKaraka::Putrakaraka,
+    CharaKaraka::Gnatikaraka,
+    CharaKaraka::Darakaraka,
+];
+
+/// The grahas the seven-karaka scheme ranks, the Sun to Saturn.
+const KARAKA_GRAHAS: [Graha; 7] = [
+    Graha::Sun,
+    Graha::Moon,
+    Graha::Mars,
+    Graha::Mercury,
+    Graha::Jupiter,
+    Graha::Venus,
+    Graha::Saturn,
+];
+
+impl RuleChart {
+    /// The same chart with every graha's chara karaka computed from its
+    /// longitude, in both schemes (BPHS ch. 32 vv. 3 to 8 and 13 to 17): the
+    /// graha furthest into its sign is the Atmakaraka, the next the
+    /// Amatyakaraka, and so down; Rahu, counted only among eight, by how far
+    /// he has still to go, his motion being backwards. The grahas are
+    /// compared to the arc-second, as the verses compare degrees, then
+    /// minutes, then seconds, and two that are equal to the second hold one
+    /// karaka between them, which leaves the last unheld.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{CharaKaraka, Dignity, Graha, Rashi};
+    /// use teistro_rules::{Body, EightKarakas, House, Placement, RuleChart};
+    ///
+    /// // Every body at 10° Aries but the Moon, at 25°.
+    /// let at = |longitude| Placement {
+    ///     longitude,
+    ///     sign: Rashi::Aries,
+    ///     house: House::try_new(1).unwrap(),
+    ///     dignity: Dignity::Neutral,
+    ///     retrograde: false,
+    ///     combust: false,
+    ///     karaka7: None,
+    ///     karaka8: None,
+    ///     navamsha: Rashi::Aries,
+    /// };
+    /// let mut placements = [at(10.0); 10];
+    /// placements[Body::Graha(Graha::Moon).index()] = at(25.0);
+    /// let chart = RuleChart { placements, panchanga: None, strengths: None }
+    ///     .with_chara_karakas(EightKarakas::Parashara);
+    /// let karakas = |graha| {
+    ///     let placement = chart.placement(Body::Graha(graha));
+    ///     (placement.karaka7, placement.karaka8)
+    /// };
+    /// assert_eq!(karakas(Graha::Moon).0, Some(CharaKaraka::Atmakaraka));
+    /// // The six at 10° are equal to the second and share the Amatyakaraka;
+    /// // among eight, Rahu, with 20° still to go, takes it and they share the
+    /// // Bhratrikaraka.
+    /// assert_eq!(karakas(Graha::Sun), (Some(CharaKaraka::Amatyakaraka), Some(CharaKaraka::Bhratrikaraka)));
+    /// assert_eq!(karakas(Graha::Rahu), (None, Some(CharaKaraka::Amatyakaraka)));
+    /// ```
+    #[must_use]
+    pub fn with_chara_karakas(mut self, order: EightKarakas) -> RuleChart {
+        // Arc-seconds into the sign, or still to go for Rahu.
+        let seconds = |graha: Graha| {
+            let into = self
+                .placement(Body::Graha(graha))
+                .longitude
+                .rem_euclid(30.0);
+            let degrees = if graha == Graha::Rahu {
+                30.0 - into
+            } else {
+                into
+            };
+            #[expect(
+                clippy::cast_possible_truncation,
+                clippy::cast_sign_loss,
+                reason = "a place in a sign is under 108 000 arc-seconds"
+            )]
+            let seconds = (degrees * 3600.0).floor() as u32;
+            seconds
+        };
+        let seven = KARAKA_GRAHAS.map(|graha| (graha, seconds(graha)));
+        let mut with_rahu = [(Graha::Rahu, seconds(Graha::Rahu)); 8];
+        for (slot, graha) in with_rahu.iter_mut().zip(seven) {
+            *slot = graha;
+        }
+        for placement in &mut self.placements {
+            placement.karaka7 = None;
+            placement.karaka8 = None;
+        }
+        for (graha, karaka) in ranked(&seven, &SEVEN_KARAKAS) {
+            if let Some(at) = self.placements.get_mut(Body::Graha(graha).index()) {
+                at.karaka7 = karaka;
+            }
+        }
+        for (graha, karaka) in ranked(&with_rahu, &order.order()) {
+            if let Some(at) = self.placements.get_mut(Body::Graha(graha).index()) {
+                at.karaka8 = karaka;
+            }
+        }
+        self
+    }
+
+    /// A divisional chart of this one: each body's sign in the division, from
+    /// its longitude by `sign_of`, the division's rule. The kernel does not
+    /// choose the rule, a division having several; the SDK's bridge passes its
+    /// classical scheme.
+    #[must_use]
+    pub fn varga_signs(&self, varga: Varga, sign_of: impl Fn(f64) -> Rashi) -> VargaSigns {
+        VargaSigns {
+            varga,
+            signs: self
+                .placements
+                .map(|placement| sign_of(placement.longitude)),
+        }
+    }
+}
+
+/// Each graha with the karaka its rank gives: its rank is how many distinct
+/// places lie further into their signs, so grahas equal to the second share
+/// one, and a rank past the last karaka holds none.
+fn ranked<const N: usize>(
+    grahas: &[(Graha, u32); N],
+    karakas: &[CharaKaraka; N],
+) -> [(Graha, Option<CharaKaraka>); N] {
+    grahas.map(|(graha, seconds)| {
+        let ahead = grahas
+            .iter()
+            .enumerate()
+            .filter(|(at, (_, other))| {
+                *other > seconds && !grahas.iter().take(*at).any(|(_, earlier)| earlier == other)
+            })
+            .count();
+        (graha, karakas.get(ahead).copied())
+    })
+}
+
 impl RuleChart {
     /// A body's placement.
     #[must_use]

@@ -134,10 +134,7 @@ pub(crate) fn chart(inputs: &Value) -> RuleChart {
 pub(crate) fn vargas(chart: &RuleChart) -> Vec<VargaSigns> {
     [Varga::D2, Varga::D3, Varga::D9, Varga::D12, Varga::D30]
         .into_iter()
-        .map(|varga| VargaSigns {
-            varga,
-            signs: Body::ALL.map(|body| varga_sign(varga, chart.placement(body).longitude)),
-        })
+        .map(|varga| chart.varga_signs(varga, |longitude| varga_sign(varga, longitude)))
         .collect()
 }
 

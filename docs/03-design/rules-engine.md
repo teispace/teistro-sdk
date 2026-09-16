@@ -1022,10 +1022,35 @@ engine's shared sign.
 40's birth within an hour of midday or midnight want the birth's time and
 sunrise, which a rule chart does not carry. Verses 21's and 22's "benefics in
 angles", v. 43's Uttamamsa and ch. 40 v. 6's garbled karaka are readings the
-translation does not choose (crux C100). **What a consumer can reach** is
-narrower still: the SDK's bridge computes no chara karakas and hands the
-evaluator no divisions, so twenty of these rules answer false through
-`teistro::rule_chart` — the next slice.
+translation does not choose (crux C100).
+
+**Chara karakas and divisions, on the bridge (2026-09-16).** Twenty of those
+rules name a karaka or a division, and through `teistro::rule_chart` they had
+answered false: the SDK computed no chara karakas and handed the evaluator no
+divisions. Both are now computed where a consumer reaches them.
+
+- **`RuleChart::with_chara_karakas`** ranks the grahas by how far each has
+  travelled in its sign (BPHS ch. 32 vv. 3 to 8), Rahu by how far he has still
+  to go, compared to the arc-second as the verses compare degrees, minutes and
+  seconds; two equal to the second share a karaka and the last goes unheld, as
+  vv. 13 to 17 say. Computed from the recorded longitudes, it reproduces the
+  corpus's seven-karaka scheme on all 93 charts. The eight-karaka scheme does
+  not reproduce in the verse's order — **the recording engine puts the
+  Pitrikaraka last, after the Darakaraka**, where vv. 13 to 17 put it fifth —
+  so the order is a knob, `EightKarakas`, whose `PitrikarakaLast` reproduces
+  all 93 and whose default, `Parashara`, reproduces none (crux C101). No rule
+  the engine or the SDK ships reads the eight-karaka scheme, so the choice
+  moves no shipped answer.
+- **`RuleChart::varga_signs`** places every body in a division by a rule the
+  caller passes; the kernel does not choose among a division's schemes and
+  does not take on the vargas crate's dependencies. **`teistro::rule_vargas`**
+  passes the SDK's classical schemes and refuses a longitude that is not a
+  number, naming it. The SDK's own hora, drekkana, navamsha, dwadashamsha and
+  trimshamsha of the corpus's first chart are the ones the corpus recorded,
+  body for body.
+- **`rule_chart` fills the karakas**, in the verse's order, so a consumer's
+  chart answers a karaka rule; the SDK's own test reads the Karakamsha on a
+  chart it founded.
 
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number

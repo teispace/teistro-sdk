@@ -17,9 +17,10 @@ mod common;
 
 use common::fixture;
 use teistro::catalogue::ChartKind;
+use teistro::catalogue::Varga;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::rules::{Body, Evaluator, House, Readings, Rule, shipped};
-use teistro::{Context, Ephemeris, UtcOffset, rule_chart};
+use teistro::rules::{Body, Evaluator, House, Karaka, Readings, Rule, shipped};
+use teistro::{Context, Ephemeris, UtcOffset, rule_chart, rule_vargas};
 
 /// The corpus's first chart, founded and stated.
 fn founded() -> (teistro::ChartFoundation, Vec<teistro::GrahaState>) {
@@ -69,19 +70,49 @@ fn a_chart_the_sdk_computed_reads_as_a_rule_chart() {
             "{}",
             body.key()
         );
-        // The SDK computes no chara karakas, and the bridge leaves what it
-        // cannot fill empty rather than defaulting it.
-        assert!(placement.karaka7.is_none() && placement.karaka8.is_none());
     }
 
-    // The navamsha the bridge computes is the D9 the conformance corpus
-    // recorded for this very chart, body for body — the SDK's own varga
-    // against the recording engine's.
+    // The navamsha the bridge computes, and every division ch. 39 of BPHS
+    // reads the lagna in, are the vargas the conformance corpus recorded for
+    // this very chart, body for body — the SDK's own against the recording
+    // engine's.
     let recorded = fixture("charts/c001-kathmandu-1990-04-14.json");
+    let divisions = rule_vargas(
+        &chart,
+        [Varga::D2, Varga::D3, Varga::D9, Varga::D12, Varga::D30],
+    )
+    .expect("the divisions");
     for body in Body::ALL {
+        let recorded_sign =
+            |varga: &str| recorded["vargas"][varga]["sign_index"][body.key()].as_u64();
         assert_eq!(
-            recorded["vargas"]["D9"]["sign_index"][body.key()].as_u64(),
+            recorded_sign("D9"),
             Some(u64::from(chart.placement(body).navamsha as u8)),
+            "{}",
+            body.key()
+        );
+        for division in &divisions {
+            assert_eq!(
+                recorded_sign(division.varga.key()),
+                Some(u64::from(division.signs[body.index()] as u8)),
+                "{} in {}",
+                body.key(),
+                division.varga.key()
+            );
+        }
+    }
+
+    // The chara karakas are the ones the corpus recorded for the chart: the
+    // seven-karaka scheme, computed from the SDK's own longitudes.
+    let karakas = fixture("doshas/charts/c001-kathmandu-1990-04-14.json");
+    for body in Body::ALL {
+        let karaka = chart
+            .placement(body)
+            .karaka7
+            .map(|karaka| serde_json::to_value(Karaka(karaka)).unwrap());
+        assert_eq!(
+            karaka.as_ref(),
+            karakas["inputs"]["chara_karaka_7"].get(body.key()),
             "{}",
             body.key()
         );
@@ -117,17 +148,13 @@ fn a_consumer_can_evaluate_the_shipped_rules_and_read_a_house() {
             assert!(gathered.result.houses.contains(&reading.house));
         }
     }
-    // A rule that names a chara karaka cannot answer on this chart, the SDK
-    // computing none; that is a stated gap, not a silent false.
-    let karaka = shipped::nabhasas()
-        .iter()
-        .chain(shipped::readings())
-        .find(|rule| {
-            serde_json::to_string(&rule.conditions)
-                .unwrap()
-                .contains("karaka")
-        });
-    if let Some(rule) = karaka {
-        assert!(!evaluator.evaluate(rule).present, "{}", rule.key);
-    }
+    // A rule that names a chara karaka is read on this chart, the bridge
+    // computing them: the Atmakaraka's own navamsha is the Karakamsha.
+    let karakamsha: Rule = serde_json::from_str(
+        r#"{"key": "KARAKAMSHA", "category": "jaimini", "source": {"text": "BPHS"},
+            "conditions": [{"type": "same-sign", "of": {"navamsha": {"karaka": "AK"}},
+                            "as": {"navamsha": "MERCURY"}}]}"#,
+    )
+    .unwrap();
+    assert!(evaluator.evaluate(&karakamsha).present);
 }

@@ -114,6 +114,10 @@ cancellations held.
   these houses from the Moon" is `count-in-houses`. Papa and shubha kartari
   (Phaladeepika ch. 6 sl. 8) needed nothing new: they are two
   `planet-in-house-from` conditions over a class.
+- **Chara karakas and divisions from longitudes.** `with_chara_karakas`
+  ranks the grahas as BPHS ch. 32 does, to the arc-second, with the
+  eight-karaka order a knob (crux C101); `varga_signs` places a chart in a
+  division by the rule its caller passes.
 - **A count over a condition.** `count-of` binds each graha to `SELF` and
   holds when so many meet the condition, at least and at most: "four or more
   planets aspect the Moon", "one or two or three exalted" (BPHS ch. 39).

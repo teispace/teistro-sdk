@@ -15,7 +15,7 @@
 
 mod common;
 
-use common::{chart, chart_at, files, recorded_chart, rules, strings};
+use common::{chart, chart_at, files, files_in, recorded_chart, rules, strings};
 use teistro_rules::{Body, Evaluator, Readings, Rule, RuleResult};
 
 #[test]
@@ -517,6 +517,42 @@ const AGREEMENT: [(&str, usize, usize, usize); 62] = [
     ("SOLAR_VESI", 50, 0, 0),
     ("SOLAR_VOSI", 51, 0, 0),
 ];
+
+/// The chara karakas the kernel computes from the longitudes are the ones the
+/// corpus recorded, in both schemes, chart by chart and graha by graha — with
+/// one reading named. BPHS ch. 32 vv. 13 to 17 put the Pitrikaraka fifth among
+/// eight and the Darakaraka last; the recording engine puts the Pitrikaraka
+/// last, and its order reproduces all 93 charts where the verse's reproduces
+/// none (crux C101).
+#[test]
+fn the_chara_karakas_computed_are_the_ones_the_corpus_recorded() {
+    use teistro_rules::EightKarakas;
+
+    let (mut charts, mut parashara) = (0, 0);
+    for (_, file) in files_in("doshas") {
+        // Computing replaces whatever karakas a chart carried.
+        let recorded = chart(&file["inputs"]);
+        let engine = recorded.with_chara_karakas(EightKarakas::PitrikarakaLast);
+        let verse = recorded.with_chara_karakas(EightKarakas::Parashara);
+        for body in Body::ALL {
+            let (want, got) = (recorded.placement(body), engine.placement(body));
+            assert_eq!(
+                (got.karaka7, got.karaka8),
+                (want.karaka7, want.karaka8),
+                "{body:?}"
+            );
+            assert_eq!(verse.placement(body).karaka7, want.karaka7);
+        }
+        charts += 1;
+        if Body::ALL
+            .iter()
+            .all(|body| verse.placement(*body).karaka8 == recorded.placement(*body).karaka8)
+        {
+            parashara += 1;
+        }
+    }
+    assert_eq!((charts, parashara), (93, 0));
+}
 
 /// The nakshatra the kernel reads from a body's own longitude is the one the
 /// corpus recorded for the Moon, chart by chart and pada by pada. The two come

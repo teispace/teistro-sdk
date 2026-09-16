@@ -1306,6 +1306,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- Chara karakas and divisions reach a consumer. `RuleChart::with_chara_karakas`
+  computes both karaka schemes from the longitudes (BPHS ch. 32, to the
+  arc-second), `RuleChart::varga_signs` places a chart in a division, and
+  `teistro::rule_vargas` does so under the SDK's classical schemes;
+  `teistro::rule_chart` now fills the karakas, so the twenty raja and Jaimini
+  rules that read one or a division answer for a chart the SDK computed.
+
+  **Numbers:** the seven-karaka scheme reproduces the corpus on all 93 charts.
+  The eight-karaka scheme reproduces on all 93 only in the recording engine's
+  order, which puts the Pitrikaraka last where BPHS puts the Darakaraka last;
+  `EightKarakas` chooses, defaulting to the verse (crux C101).
+
 - BPHS ch. 39's raja yogas and ch. 40's yogas for royal association: 56
   rules in a new `raja` category, and `count-of`, a counting quantifier that
   shares `for-any`'s evaluation. The SDK ships 934 rules.

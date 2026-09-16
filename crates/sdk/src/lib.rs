@@ -113,7 +113,7 @@ pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
 pub use teistro_render_svg as render_svg;
 // Dashas: a system as a row, the balance at birth, and the period tree read
 // without building it (`03-design/dasha-kernels.md`).
-pub use crate::rules_bridge::rule_chart;
+pub use crate::rules_bridge::{rule_chart, rule_vargas};
 pub use teistro_dasha as dasha;
 pub use teistro_dasha::{DashaCursor, DashaReading, PeriodRow, Timeline};
 pub use teistro_rules as rules;

@@ -8,17 +8,21 @@
 //! them together, so 800-odd shipped rules were reachable only from inside the
 //! rules crate. [`rule_chart`] is that join.
 //!
-//! What it cannot fill it leaves empty rather than guessing: the SDK computes
-//! no chara karakas, so a rule naming one answers false until it does, and a
-//! chart's panchanga and strengths are passed in because they are separate
-//! readings with their own settings.
+//! It computes the chara karakas from the longitudes, as BPHS ch. 32 does,
+//! with the eight-karaka scheme in the verse's order; a consumer who wants the
+//! recording engine's order recomputes with
+//! [`RuleChart::with_chara_karakas`]. [`rule_vargas`] gives the divisional
+//! charts an `in-varga` condition reads. A chart's panchanga and strengths are
+//! passed in because they are separate readings with their own settings.
 
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Dignity, Graha, Rashi, Varga};
 use teistro_core::error::Error;
 use teistro_core::quantity::Degrees;
-use teistro_rules::{Body, House, Panchanga, Placement, RuleChart, Strengths};
+use teistro_rules::{
+    Body, EightKarakas, House, Panchanga, Placement, RuleChart, Strengths, VargaSigns,
+};
 use teistro_state::GrahaState;
 use teistro_vargas::{Scheme, sign};
 
@@ -55,7 +59,31 @@ pub fn rule_chart(
         placements,
         panchanga,
         strengths,
-    })
+    }
+    .with_chara_karakas(EightKarakas::Parashara))
+}
+
+/// The divisional charts of a rule chart, each body's sign in each division
+/// under the SDK's classical scheme for it, for an evaluator's
+/// [`with_vargas`](teistro_rules::Evaluator::with_vargas).
+///
+/// # Errors
+///
+/// A longitude that is not a finite number, which no division can place.
+pub fn rule_vargas(
+    chart: &RuleChart,
+    vargas: impl IntoIterator<Item = Varga>,
+) -> Result<Vec<VargaSigns>, Error> {
+    vargas
+        .into_iter()
+        .map(|varga| {
+            let mut signs = [Rashi::Aries; 10];
+            for (slot, body) in signs.iter_mut().zip(Body::ALL) {
+                *slot = varga_sign(varga, chart.placement(body).longitude)?;
+            }
+            Ok(VargaSigns { varga, signs })
+        })
+        .collect()
 }
 
 /// The lagna's own placement: a point, so it is never retrograde, the Sun
@@ -129,7 +157,17 @@ fn rashi_of(longitude: f64) -> Result<Rashi, Error> {
 
 /// The navamsha sign of a sidereal longitude, under the catalogue's scheme.
 fn navamsha_of(longitude: f64) -> Result<Rashi, Error> {
-    let degrees = Degrees::try_new(longitude.rem_euclid(360.0))
-        .map_err(|invalid| Error::internal(invalid.to_string()))?;
-    Ok(sign(&Scheme::of(Varga::D9), Nas::from_degrees(degrees)))
+    varga_sign(Varga::D9, longitude)
+}
+
+/// The sign of a sidereal longitude in a division, under the SDK's classical
+/// scheme for it.
+fn varga_sign(varga: Varga, longitude: f64) -> Result<Rashi, Error> {
+    let degrees = Degrees::try_new(longitude.rem_euclid(360.0)).map_err(|invalid| {
+        Error::invalid_arg(format!(
+            "a longitude of {longitude} cannot be placed: {invalid}"
+        ))
+        .with_field("longitude")
+    })?;
+    Ok(sign(&Scheme::of(varga), Nas::from_degrees(degrees)))
 }
