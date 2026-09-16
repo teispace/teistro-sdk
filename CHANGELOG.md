@@ -995,6 +995,13 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none; every recorded yoga and dosha reproduces as before.
 
+- A rule can name a point: `{"point": "GULIKA"}` resolves any point the
+  catalogue names — the upagrahas, the special lagnas, the sphutas — from the
+  set an evaluator is given (`with_points`), and resolves to nothing when the
+  chart does not carry it.
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

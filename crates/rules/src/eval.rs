@@ -9,8 +9,8 @@ use teistro_points::arudha;
 
 use crate::chart::{
     AspectGathering, Benefics, Conjunction, DignityMatch, Eclipse, Gathering, Houses,
-    NATURAL_BENEFICS, NATURAL_MALEFICS, NodeMotion, NodeSides, Panchanga, Placement, Readings,
-    RuleChart, Upapada, VargaSigns,
+    NATURAL_BENEFICS, NATURAL_MALEFICS, NodeMotion, NodeSides, Panchanga, Placement, PointAt,
+    Readings, RuleChart, Upapada, VargaSigns,
 };
 use crate::language::{Body, Condition, EclipseKind, House, KarakaScheme, NodeSide};
 use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
@@ -149,6 +149,8 @@ pub struct Evaluator<'a> {
     tables: &'a Tables,
     /// The divisional charts an `in-varga` condition can step into.
     vargas: &'a [VargaSigns],
+    /// The points a `{"point": …}` reference can name.
+    points: &'a [PointAt],
     /// The body a `for-any` bound, which `SELF` names.
     bound: Option<Body>,
     /// Each body's benefic nature under the readings, by index.
@@ -203,6 +205,7 @@ impl<'a> Evaluator<'a> {
             readings,
             tables: &NO_TABLES,
             vargas: &[],
+            points: &[],
             bound: None,
             benefic,
             malefic,
@@ -222,6 +225,13 @@ impl<'a> Evaluator<'a> {
     #[must_use]
     pub const fn with_vargas(self, vargas: &'a [VargaSigns]) -> Evaluator<'a> {
         Evaluator { vargas, ..self }
+    }
+
+    /// The same evaluator, able to resolve these points; a point it was not
+    /// given resolves to nothing, and the condition reading it never holds.
+    #[must_use]
+    pub const fn with_points(self, points: &'a [PointAt]) -> Evaluator<'a> {
+        Evaluator { points, ..self }
     }
 
     fn at(&self, body: Body) -> &Placement {
@@ -315,6 +325,13 @@ impl<'a> Evaluator<'a> {
                 let body = self.body(body, rec)?;
                 Spot::sign(self.at(body).navamsha, Some(body))
             }
+            SignRef::Point(point) => Spot::sign(
+                self.points
+                    .iter()
+                    .find(|at| at.point == *point)
+                    .map(|at| at.sign)?,
+                None,
+            ),
             SignRef::Exaltation(body) => Spot::sign(exaltation(self.body(body, rec)?)?, None),
             SignRef::Debilitation(body) => Spot::sign(debilitation(self.body(body, rec)?)?, None),
             SignRef::Badhaka(sign) => {
@@ -2311,6 +2328,64 @@ mod tests {
             (true, vec![JUPITER, Body::Graha(Graha::Venus)])
         );
         assert!(!holds(&c, ENGINE, &kartari("any-malefic")).0);
+    }
+
+    #[test]
+    fn a_point_the_chart_carries_is_a_place_a_rule_can_name() {
+        use teistro_core::catalogue::Point;
+
+        use crate::chart::PointAt;
+
+        // BPHS ch. 83 reads the curses with Gulika standing somewhere: here it
+        // rises with Rahu in the lagna's own sign.
+        let mut c = chart();
+        place(&mut c, RAHU, Rashi::Aries);
+        let points = [
+            PointAt {
+                point: Point::Gulika,
+                sign: Rashi::Aries,
+            },
+            PointAt {
+                point: Point::HoraLagna,
+                sign: Rashi::Cancer,
+            },
+        ];
+        let held = |condition: &Condition, points: &[PointAt]| {
+            let mut into = Participants::default();
+            let held = Evaluator::new(&c, ENGINE)
+                .with_points(points)
+                .holds(condition, &mut into);
+            (held, into.iter().collect::<Vec<_>>())
+        };
+        let with_rahu = written(
+            r#"{"type": "and", "conditions": [
+                {"type": "planet-in-house", "planet": "RAHU", "houses": [1]},
+                {"type": "same-sign", "of": {"point": "GULIKA"}, "as": 1}
+            ]}"#,
+        );
+        assert_eq!(held(&with_rahu, &points), (true, vec![RAHU]));
+        // The hora lagna stands in the fourth, and a point the chart does not
+        // carry resolves to nothing.
+        assert!(held(&written(r#"{"type": "planet-in-house", "planet": {"point": "HORA_LAGNA"}, "houses": [4]}"#), &points).0);
+        assert!(!held(&written(r#"{"type": "planet-in-house", "planet": {"point": "SREE_LAGNA"}, "houses": [4]}"#), &points).0);
+        assert!(!held(&with_rahu, &[]).0, "no points, no answer");
+
+        // It reads and writes back as the catalogue spells it, and a point the
+        // catalogue does not name is refused.
+        let reference: SignRef = serde_json::from_str(r#"{"point": "MANDI"}"#).unwrap();
+        assert_eq!(reference, SignRef::Point(Point::Mandi));
+        assert_eq!(
+            serde_json::to_string(&reference).unwrap(),
+            r#"{"point":"MANDI"}"#
+        );
+        assert_eq!(reference.to_string(), "MANDI");
+        let refused = serde_json::from_str::<SignRef>(r#"{"point": "NOT_A_POINT"}"#)
+            .unwrap_err()
+            .to_string();
+        assert!(
+            refused.contains("`NOT_A_POINT` is not a point"),
+            "{refused}"
+        );
     }
 
     #[test]

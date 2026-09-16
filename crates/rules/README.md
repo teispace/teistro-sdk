@@ -51,6 +51,9 @@ cancellations held.
   Dagdha Rashi and Badhaka reproduce every recorded field. It took a `side` on
   the nodal-arc predicate, a badhaka reference (crux C86) and a weight on a
   group, not a classifying outcome.
+- **A point is a place a rule can name.** `{"point": "GULIKA"}` reads any
+  point the catalogue names, given to the evaluator as tables and divisions
+  are; BPHS ch. 83's curses read Gulika this way.
 - **A class can aspect, and can be counted.** "In aspect to a malefic" (BPHS
   ch. 9) is an aspect predicate over `any-malefic`, and "so many malefics in
   these houses from the Moon" is `count-in-houses`. Papa and shubha kartari

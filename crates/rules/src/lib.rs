@@ -41,7 +41,7 @@ pub mod trace;
 
 pub use chart::{
     AspectGathering, Benefics, Bhaga, Conjunction, DignityMatch, Eclipse, Gathering, Houses,
-    NodeMotion, NodeSides, Panchanga, Placement, Readings, RuleChart, Upapada, VargaSigns,
+    NodeMotion, NodeSides, Panchanga, Placement, PointAt, Readings, RuleChart, Upapada, VargaSigns,
 };
 pub use eval::{Evaluator, Found, Participants, RuleResult};
 pub use language::{

@@ -1,7 +1,7 @@
 //! What a rule reads of a chart, and the choices the language leaves open.
 
 use teistro_core::catalogue::{
-    CharaKaraka, Dignity, Graha, Karana, Nakshatra, Rashi, Tithi, Vara, Varga, Yoga,
+    CharaKaraka, Dignity, Graha, Karana, Nakshatra, Point, Rashi, Tithi, Vara, Varga, Yoga,
 };
 use teistro_core::settings::NodeAspects;
 
@@ -73,6 +73,17 @@ pub enum Eclipse {
     Solar,
     /// Of the Moon.
     Lunar,
+}
+
+/// A point the chart carries — an upagraha, a special lagna, a sphuta — and
+/// the sign it stands in. An [`Evaluator`](crate::Evaluator) given these
+/// resolves `{"point": …}` references.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct PointAt {
+    /// Which point.
+    pub point: Point,
+    /// Its sign.
+    pub sign: Rashi,
 }
 
 /// One divisional chart, as the rules read it: each body's sign in it, in

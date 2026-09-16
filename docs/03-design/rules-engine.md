@@ -357,6 +357,15 @@ the three answers were already in the language:
   ways. The research note that called kartari a missing primitive was wrong,
   and reading the verse is what settled it.
 
+**Built, points as places (2026-09-16).** A sign reference can be
+`{"point": …}`: any point the catalogue names — Gulika and Mandi, the special
+lagnas (hora, ghati, sree, pranapada, indu, bhrigu bindu), the sphutas, Yogi
+and Avayogi — and the evaluator is given the ones a chart carries
+(`with_points`), as it is given tables and divisions. A point the chart does
+not carry resolves to nothing and its condition does not hold. That is what
+BPHS ch. 83's curses need, since they read Gulika standing with a graha, and
+it is the first half of the special-lagna work the yoga survey put seventh.
+
 A classifying outcome is therefore not what the Kalsarpa family needed: twelve
 named rules over one arc predicate say it, each with its own citation and
 severity. `Outcome::Classify` stays unbuilt until a rule needs one variant of

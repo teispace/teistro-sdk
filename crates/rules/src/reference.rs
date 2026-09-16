@@ -31,6 +31,7 @@
 //! | `"UPAPADA"` | the upapada, under [`Upapada`](crate::Upapada) |
 //! | `{"navamsha": {"karaka": "AK"}}` | a body's navamsha sign, here the Karakamsha |
 //! | `{"badhakaOf": 1}` | the badhaka sthana of a sign, here the lagna's |
+//! | `{"point": "GULIKA"}` | a point the chart carries: an upagraha, a special lagna, a sphuta |
 //! | `{"exaltationOf": "MOON"}`, `{"debilitationOf": "SELF"}` | where a body is exalted or debilitated |
 //! | `{"exaltedIn": {"debilitationOf": "SELF"}}` | the body exalted in a sign |
 //! | `"SELF"` | the body a `for-any` bound |
@@ -54,7 +55,7 @@
 use serde::de::{self, Deserializer, MapAccess, Visitor};
 use serde::ser::{SerializeMap, Serializer};
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::{CharaKaraka, Graha};
+use teistro_core::catalogue::{CharaKaraka, Graha, Point};
 
 use crate::language::{Body, House, Karaka, KarakaScheme, SELF};
 
@@ -94,6 +95,8 @@ pub enum SignRef {
     Upapada,
     /// A body's navamsha sign.
     Navamsha(BodyRef),
+    /// A point the chart carries: an upagraha, a special lagna, a sphuta.
+    Point(Point),
     /// The sign a body is exalted in, when it has one.
     Exaltation(BodyRef),
     /// The sign a body is debilitated in, when it has one.
@@ -324,6 +327,7 @@ impl core::fmt::Display for SignRef {
             SignRef::House(house) => write!(f, "house {}", house.get()),
             SignRef::Arudha(sign) => write!(f, "the pada of {sign}"),
             SignRef::Badhaka(sign) => write!(f, "the badhaka sthana of {sign}"),
+            SignRef::Point(point) => f.write_str(point.key()),
             SignRef::Exaltation(body) => write!(f, "the exaltation of {body}"),
             SignRef::Debilitation(body) => write!(f, "the debilitation of {body}"),
             SignRef::Upapada => f.write_str("the upapada"),
@@ -382,6 +386,11 @@ impl Serialize for SignRef {
             SignRef::Badhaka(sign) => {
                 let mut map = serializer.serialize_map(Some(1))?;
                 map.serialize_entry("badhakaOf", sign)?;
+                map.end()
+            }
+            SignRef::Point(point) => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("point", point.key())?;
                 map.end()
             }
             SignRef::Exaltation(body) => {
@@ -469,9 +478,10 @@ impl<'de> Deserialize<'de> for Written {
 const BODY_FORMS: &str =
     "a graha's key, LAGNA, SELF, {\"lordOf\": …}, {\"exaltedIn\": …} or {\"karaka\": …}";
 /// The parts only a sign reference has.
-const SIGN_PARTS: [&str; 7] = [
+const SIGN_PARTS: [&str; 8] = [
     "arudha",
     "badhakaOf",
+    "point",
     "navamsha",
     "exaltationOf",
     "debilitationOf",
@@ -479,7 +489,7 @@ const SIGN_PARTS: [&str; 7] = [
     "house",
 ];
 /// The sign forms.
-const SIGN_FORMS: &str = "a body, a house number, UPAPADA, {\"arudha\": …}, {\"badhakaOf\": …}, {\"navamsha\": …} or {\"from\": …, \"house\": …}";
+const SIGN_FORMS: &str = "a body, a house number, UPAPADA, {\"arudha\": …}, {\"badhakaOf\": …}, {\"point\": …}, {\"navamsha\": …} or {\"from\": …, \"house\": …}";
 
 impl Written {
     /// The names of an object's parts.
@@ -582,6 +592,13 @@ impl Written {
                     Ok(SignRef::arudha(Written::only(parts, "arudha")?.sign()?))
                 } else if has("badhakaOf") {
                     Ok(SignRef::badhaka(Written::only(parts, "badhakaOf")?.sign()?))
+                } else if has("point") {
+                    match Written::only(parts, "point")? {
+                        Written::Key(key) => Point::from_key(&key)
+                            .map(SignRef::Point)
+                            .ok_or_else(|| format!("`{key}` is not a point the catalogue names")),
+                        _ => Err(String::from("`point` is a point's key")),
+                    }
                 } else if has("navamsha") {
                     Ok(SignRef::Navamsha(Written::only(parts, "navamsha")?.body()?))
                 } else if has("exaltationOf") {
