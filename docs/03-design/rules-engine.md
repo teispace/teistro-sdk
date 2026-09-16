@@ -1087,6 +1087,19 @@ v. 16 is present on every chart, which is right: what it says is *whose* periods
 give wealth, and that is in its participants. Ch. 42 v. 13 answers 83 of 93 for
 the same reason.
 
+**A class of life as an outcome (2026-09-16).** BPHS ch. 43 vv. 52 to 54 give
+seven classes of life with their spans, and vv. 55 to 78 give each
+combination a class rather than a number or a sentence. So the class is an
+outcome of its own, `Outcome::LifeClass { class }`, and `LifeClass` carries
+its span (`years`, none for the illimitable) and the step up and down that
+vv. 47 to 50 have Jupiter and Saturn make (`raised`, `lowered`), which the
+three-pairs method will read. `Rule::life_class` and `RuleResult::life_class`
+reach it as `life_span` and `effect` reach theirs. Twenty-one rules ship in
+the `ayur` category (crux C102). Over the 93 charts they give 97 long, 18
+medium and 101 short; vv. 71 to 73 place the stronger of the lagna and eighth
+lords in exactly one of angle, panaphara and apoklima on each of the 71 charts
+that compare strength, which is the three lists being the twelve houses.
+
 **The special lagnas (2026-09-16).** With points reaching the evaluator,
 BPHS ch. 39's figures on the hora, ghatika and bhava lagnas are sayable as
 `{"point": …}` references: v. 15's dignified grahas in the natal, hora and

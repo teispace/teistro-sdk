@@ -65,6 +65,8 @@ const CORPSE: &str = include_str!("../rules/classical-corpse.json");
 const DHANA: &str = include_str!("../rules/classical-dhana.json");
 /// BPHS ch. 39's raja yogas and ch. 40's yogas for royal association.
 const RAJA: &str = include_str!("../rules/classical-raja.json");
+/// BPHS ch. 43's combinations for the class of life.
+const AYUR: &str = include_str!("../rules/classical-ayur.json");
 /// BPHS ch. 42's combinations for penury.
 const PENURY: &str = include_str!("../rules/classical-penury.json");
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
@@ -110,6 +112,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(DHANA));
     rules.append(&mut read(PENURY));
     rules.append(&mut read(RAJA));
+    rules.append(&mut read(AYUR));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -223,7 +226,7 @@ mod tests {
         }
         let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
         let points = rules.iter().filter(|rule| rule.reads_points()).count();
-        assert_eq!((strength, points), (28, 2));
+        assert_eq!((strength, points), (36, 2));
         // And a rule naming a point, nested where a sign stands, says so.
         let gulika: Rule = serde_json::from_str(
             r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
@@ -244,7 +247,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 938);
+        assert_eq!(rules.len(), 959);
         for rule in &rules {
             let rank = rule
                 .source

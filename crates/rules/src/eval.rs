@@ -154,6 +154,12 @@ impl RuleResult {
     pub fn effect(&self) -> Option<&str> {
         self.outcomes.iter().find_map(Outcome::text)
     }
+
+    /// The class of life the verse gives, when present and it gives one.
+    #[must_use]
+    pub fn life_class(&self) -> Option<crate::rule::LifeClass> {
+        self.outcomes.iter().find_map(Outcome::class)
+    }
 }
 
 /// A chart read under a choice at every open place, ready to evaluate rules.

@@ -118,9 +118,9 @@ fn a_house_gathers_every_rule_whose_grahas_stand_in_it() {
         .map(|(_, houses)| *houses)
         .sum();
     assert_eq!(crowded_houses, 48);
-    // What a consumer receives: 6033 rule results gathered under a house over
+    // What a consumer receives: 6348 rule results gathered under a house over
     // the 93 charts, and 455 statements of how to read them together.
-    assert_eq!((held, composed), (6033, 455));
+    assert_eq!((held, composed), (6348, 455));
 }
 
 /// How many houses of the 1116 hold each number of grahas.
@@ -274,7 +274,9 @@ const NAMED_SETS: [(&str, usize); 17] = [
 fn exactly_one_fate_of_the_corpse_answers_a_chart() {
     let rules: Vec<Rule> = shipped::nabhasas()
         .iter()
-        .filter(|rule| rule.category == "ayur")
+        // The chapter as well as the category: BPHS ch. 43's classes of life
+        // share `ayur`.
+        .filter(|rule| rule.category == "ayur" && rule.source.chapter.as_deref() == Some("44"))
         .cloned()
         .collect();
     assert_eq!(rules.len(), 4);

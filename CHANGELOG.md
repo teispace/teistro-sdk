@@ -1306,6 +1306,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- A class of life is an outcome: `Outcome::LifeClass` with `LifeClass`'s
+  seven classes and their spans (BPHS ch. 43 vv. 52 to 54), raised and lowered
+  a step as Jupiter and Saturn do (vv. 47 to 50). BPHS ch. 43's 21
+  combinations for the class of life ship in `ayur`. The SDK ships 959 rules.
+
+  **Numbers:** over the 93 charts, 97 long, 18 medium and 101 short; vv. 71 to
+  73 place the stronger lord in exactly one of the three house groups on every
+  chart that compares strength (crux C102).
+
 - BPHS ch. 39 v. 15's and v. 24's figures on the special lagnas, and the
   bhava lagna they name (BPHS ch. 4 vv. 2 to 3, one sign in five ghatis),
   now computed beside the hora and ghatika lagnas. The SDK ships 938 rules.

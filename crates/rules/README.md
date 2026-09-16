@@ -114,6 +114,9 @@ cancellations held.
   these houses from the Moon" is `count-in-houses`. Papa and shubha kartari
   (Phaladeepika ch. 6 sl. 8) needed nothing new: they are two
   `planet-in-house-from` conditions over a class.
+- **A class of life is an outcome.** `Outcome::LifeClass` carries one of BPHS
+  ch. 43's seven classes, each with its span, raised and lowered a step as
+  Jupiter and Saturn do.
 - **A result knows whose periods deliver it.** A rule's `timing` is
   `concerned` (the grahas and signs that formed it, BPHS ch. 31) or
   `throughout` (the Nabhasa yogas, ch. 35 v. 50), and `Evaluator::delivery`

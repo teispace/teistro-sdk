@@ -210,13 +210,14 @@ fn is_mars(body: &Body) -> bool {
     *body == mars()
 }
 
-/// What a rule says happens when it holds, beyond being present, in the one
-/// of the two ways its verse says it. The texts grade an affliction in one way
-/// only — the span of life they give it (Phaladeepika ch. 13 v. 6's bands, and
-/// Saravali ch. 10's verse-by-verse spans) — and everywhere else they say what
-/// follows in words: a dwigraha verse gives a trade and a temper, not a
-/// number. A consumer therefore reads a span where a text counts one and the
-/// verse's own statement where it does not, and the SDK invents neither.
+/// What a rule says happens when it holds, beyond being present, in the ways
+/// its verse says it. The texts count a life in two ways — a span (Phaladeepika
+/// ch. 13 v. 6's bands, and Saravali ch. 10's verse-by-verse spans) and a class
+/// of life (BPHS ch. 43 vv. 52 to 54: short, medium, long and the rest) — and
+/// everywhere else they say what follows in words: a dwigraha verse gives a
+/// trade and a temper, not a number. A consumer therefore reads a span or a
+/// class where a text gives one and the verse's own statement where it does
+/// not, and the SDK invents none of them.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(
     tag = "type",
@@ -231,6 +232,11 @@ pub enum Outcome {
         count: f64,
         /// Of what.
         unit: Unit,
+    },
+    /// The class of life the verse gives, which carries its own span.
+    LifeClass {
+        /// Which class.
+        class: LifeClass,
     },
     /// What the verse says follows, in words: the SDK's own short statement of
     /// the reading, not the translator's prose.
@@ -252,9 +258,92 @@ pub enum Unit {
     Years,
 }
 
+/// A class of life, BPHS ch. 43 vv. 52 to 54, from the shortest up.
+///
+/// ```
+/// use teistro_rules::LifeClass;
+///
+/// assert_eq!(LifeClass::Medium.years(), Some(64));
+/// // Jupiter raises a class and Saturn lowers one (vv. 49 to 50).
+/// assert_eq!(LifeClass::Medium.raised(), LifeClass::Long);
+/// assert_eq!(LifeClass::Balarishta.lowered(), LifeClass::Balarishta);
+/// assert_eq!(LifeClass::Unlimited.years(), None);
+/// # Ok::<(), ()>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum LifeClass {
+    /// Death in infancy: eight years.
+    Balarishta,
+    /// An evil from a yoga: twenty years.
+    Yogarishta,
+    /// Short life, alpayu: thirty-two years.
+    Short,
+    /// Medium life, madhyayu: sixty-four years.
+    Medium,
+    /// Long life, purnayu: a hundred and twenty years.
+    Long,
+    /// A super-natural life: a thousand years.
+    Divine,
+    /// Illimitable longevity, amitayu, which the verse gives no number.
+    Unlimited,
+}
+
+impl LifeClass {
+    /// Every class, from the shortest up.
+    pub const ALL: [LifeClass; 7] = [
+        LifeClass::Balarishta,
+        LifeClass::Yogarishta,
+        LifeClass::Short,
+        LifeClass::Medium,
+        LifeClass::Long,
+        LifeClass::Divine,
+        LifeClass::Unlimited,
+    ];
+
+    /// The span the class is given, in years; none for the illimitable.
+    #[must_use]
+    pub const fn years(self) -> Option<u16> {
+        match self {
+            LifeClass::Balarishta => Some(8),
+            LifeClass::Yogarishta => Some(20),
+            LifeClass::Short => Some(32),
+            LifeClass::Medium => Some(64),
+            LifeClass::Long => Some(120),
+            LifeClass::Divine => Some(1000),
+            LifeClass::Unlimited => None,
+        }
+    }
+
+    /// The class one step longer, as Jupiter raises it (BPHS ch. 43 vv. 48 to
+    /// 50); the longest stays itself.
+    #[must_use]
+    pub fn raised(self) -> LifeClass {
+        self.step(1)
+    }
+
+    /// The class one step shorter, as Saturn lowers it (vv. 47, 49 to 50); the
+    /// shortest stays itself.
+    #[must_use]
+    pub fn lowered(self) -> LifeClass {
+        self.step(-1)
+    }
+
+    fn step(self, by: isize) -> LifeClass {
+        let at = LifeClass::ALL
+            .iter()
+            .position(|class| *class == self)
+            .unwrap_or(0);
+        at.checked_add_signed(by)
+            .and_then(|next| LifeClass::ALL.get(next))
+            .copied()
+            .unwrap_or(self)
+    }
+}
+
 impl Outcome {
     /// The span in days when the outcome is a span, a month being thirty and a
-    /// year 365.25; none when the verse states its effect in words.
+    /// year 365.25; none when the verse states its effect in words or a class.
     #[must_use]
     pub fn days(&self) -> Option<f64> {
         match self {
@@ -266,7 +355,7 @@ impl Outcome {
                         Unit::Years => 365.25,
                     },
             ),
-            Outcome::Effect { .. } => None,
+            Outcome::Effect { .. } | Outcome::LifeClass { .. } => None,
         }
     }
 
@@ -275,7 +364,16 @@ impl Outcome {
     pub fn text(&self) -> Option<&str> {
         match self {
             Outcome::Effect { text } => Some(text),
-            Outcome::LifeSpan { .. } => None,
+            Outcome::LifeSpan { .. } | Outcome::LifeClass { .. } => None,
+        }
+    }
+
+    /// The class of life, when the verse gives one.
+    #[must_use]
+    pub const fn class(&self) -> Option<LifeClass> {
+        match self {
+            Outcome::LifeClass { class } => Some(*class),
+            Outcome::LifeSpan { .. } | Outcome::Effect { .. } => None,
         }
     }
 }
@@ -402,6 +500,12 @@ impl Rule {
     #[must_use]
     pub fn effect(&self) -> Option<&str> {
         effect(&self.outcomes)
+    }
+
+    /// The class of life its verse gives, when one of its outcomes is one.
+    #[must_use]
+    pub fn life_class(&self) -> Option<LifeClass> {
+        self.outcomes.iter().find_map(Outcome::class)
     }
 
     /// Whether any of its conditions asks a question of strength, so a caller
