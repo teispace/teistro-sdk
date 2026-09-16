@@ -1076,6 +1076,133 @@
           "text": "penury"
         }
       ]
+    },
+    {
+      "key": "BPHS_GRAHA_WITH_A_DUSTHANA_LORD_UNASPECTED_BY_TRINE_LORDS_HARMS_WEALTH",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "13",
+        "rank": 1,
+        "note": "A graha joined by a lord of the sixth, eighth or twelfth other than itself, aspected by none of the trinal lords — the lords of the lagna, fifth and ninth — harms the native's finances in its own periods. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 6
+                        }
+                      },
+                      {
+                        "type": "not",
+                        "condition": {
+                          "type": "same-body",
+                          "of": "SELF",
+                          "as": {
+                            "lordOf": 6
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 8
+                        }
+                      },
+                      {
+                        "type": "not",
+                        "condition": {
+                          "type": "same-body",
+                          "of": "SELF",
+                          "as": {
+                            "lordOf": 8
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 12
+                        }
+                      },
+                      {
+                        "type": "not",
+                        "condition": {
+                          "type": "same-body",
+                          "of": "SELF",
+                          "as": {
+                            "lordOf": 12
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 1
+                      },
+                      "target": "SELF"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 5
+                      },
+                      "target": "SELF"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 9
+                      },
+                      "target": "SELF"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "harm to finances in the periods of these grahas"
+        }
+      ]
     }
   ]
 }

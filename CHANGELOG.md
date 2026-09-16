@@ -1306,6 +1306,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- A rule result says which dasha periods deliver it. `Rule::timing` is
+  `concerned` (BPHS ch. 31: "the Rashi or planet concerned") or `throughout`
+  (ch. 35 v. 50, now on all 32 Nabhasa yogas); `Evaluator::delivery` answers
+  for a running chain given as `Running` lords and signs, and
+  `teistro::rule_periods` gives it the SDK's own. Two timed verses ship: BPHS
+  ch. 41 v. 16's wealth-givers and ch. 42 v. 13's harm to finances. The SDK
+  ships 936 rules.
+
+  **Numbers:** delivery is held against the verse read directly off each of
+  the 93 charts, 327 wealth-giving periods, and every Vimshottari mahadasha of
+  a chart the SDK founded agrees.
+
 - Chara karakas and divisions reach a consumer. `RuleChart::with_chara_karakas`
   computes both karaka schemes from the longitudes (BPHS ch. 32, to the
   arc-second), `RuleChart::varga_signs` places a chart in a division, and

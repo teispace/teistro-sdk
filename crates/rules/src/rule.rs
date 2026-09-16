@@ -51,6 +51,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Graha;
 
 use crate::language::{Body, Condition, House, Source};
+use crate::timing::Timing;
 
 /// Where a rule applies.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -333,6 +334,8 @@ pub struct Rule {
     /// The name of the code its author computes it with instead, when the
     /// language cannot say it.
     pub computed: Option<String>,
+    /// In whose periods of a dasha it gives what it says.
+    pub timing: Timing,
 }
 
 impl Rule {
@@ -353,6 +356,7 @@ impl Rule {
             remedies: Vec::new(),
             outcomes: Vec::new(),
             computed: None,
+            timing: Timing::Concerned,
         }
     }
 
@@ -460,6 +464,8 @@ struct Written {
     outcomes: Vec<Outcome>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     custom_result_key: Option<String>,
+    #[serde(default, skip_serializing_if = "Timing::is_concerned")]
+    timing: Timing,
 }
 
 #[allow(
@@ -508,6 +514,7 @@ impl TryFrom<Written> for Rule {
             remedies: written.remedy_keys,
             outcomes: written.outcomes,
             computed: written.custom_result_key,
+            timing: written.timing,
         };
         // `SELF` is the body a `for-any` binds, and means nothing outside one.
         if let Some(kind) = rule.top_conditions().find_map(Condition::unbound_self) {
@@ -546,6 +553,7 @@ impl From<Rule> for Written {
             remedy_keys: rule.remedies,
             outcomes: rule.outcomes,
             custom_result_key: rule.computed,
+            timing: rule.timing,
         }
     }
 }

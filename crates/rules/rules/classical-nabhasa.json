@@ -45,7 +45,8 @@
           "type": "effect",
           "text": "fond of wandering, charming, earning in foreign countries, cruel and mischievous"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_MUSALA",
@@ -92,7 +93,8 @@
           "type": "effect",
           "text": "honoured, wise and wealthy, dear to the king, famous, of many sons, and firm of disposition"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_NALA",
@@ -139,7 +141,8 @@
           "type": "effect",
           "text": "uneven of physique, bent on accumulating money, very skilful, helpful to his relatives, and charming"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_MAALA",
@@ -279,7 +282,8 @@
           "type": "effect",
           "text": "ever happy, furnished with conveyances, robes, food and pleasures, splendid, and attended by many women"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_SARPA",
@@ -419,7 +423,8 @@
           "type": "effect",
           "text": "crooked, cruel, poor, miserable, and dependent on others for his food and drink"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_GADA",
@@ -471,7 +476,8 @@
           "type": "effect",
           "text": "always striving to earn wealth, a performer of sacrificial rites, skilful in the shastras and in song, and furnished with wealth, gold and precious stones"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_SAKATA",
@@ -497,7 +503,8 @@
           "type": "effect",
           "text": "afflicted by disease, diseased or ugly of nail, foolish, living by pulling carts, poor, and without friends or relatives"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_VIHAGA",
@@ -523,7 +530,8 @@
           "type": "effect",
           "text": "fond of roaming, a messenger, living by dealings in sex, shameless, and fond of quarrels"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_SRINGATAKA",
@@ -550,7 +558,8 @@
           "type": "effect",
           "text": "fond of quarrels and battles, happy, dear to the king, well wived, rich, and a hater of women"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_HALA",
@@ -598,7 +607,8 @@
           "type": "effect",
           "text": "a great eater, very poor, a farmer, miserable, agitated, given up by his friends and relatives, and a servant"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_VAJRA",
@@ -649,7 +659,8 @@
           "type": "effect",
           "text": "happy at the beginning and the end of his life, valorous, charming, devoid of desires and of fortune, and inimical"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_YAVA",
@@ -700,7 +711,8 @@
           "type": "effect",
           "text": "observant of fasts and religious rules, a doer of auspicious acts, gaining happiness, wealth and sons in his middle life, charitable and firm"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_KAMALA",
@@ -728,7 +740,8 @@
           "type": "effect",
           "text": "rich and virtuous, long-lived, very famous, pure, a doer of hundreds of auspicious acts, and a king"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_VAPI",
@@ -770,7 +783,8 @@
           "type": "effect",
           "text": "able to accumulate wealth, of lasting wealth, happiness and sons, free of afflictions of the eye, and a king"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_YUPA",
@@ -798,7 +812,8 @@
           "type": "effect",
           "text": "possessed of spiritual knowledge, interested in sacrificial rites, well wived, strong, observant of fasts, and distinguished"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_SARA",
@@ -826,7 +841,8 @@
           "type": "effect",
           "text": "a maker of arrows, the head of a prison, earning through animals, an eater of meat, and given to torture and mean handiwork"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_SAKTHI",
@@ -854,7 +870,8 @@
           "type": "effect",
           "text": "bereft of wealth, unsuccessful, miserable, mean, lazy, long-lived, interested and skilful in war, firm and auspicious"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_DANDA",
@@ -882,7 +899,8 @@
           "type": "effect",
           "text": "losing his sons and his wife, indigent, unkind, away from his own people, miserable, and a servant of mean men"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_NAUKA",
@@ -914,7 +932,8 @@
           "type": "effect",
           "text": "living by water, wealthy, famous, wicked, wretched, dirty and miserly"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_KOOTA",
@@ -946,7 +965,8 @@
           "type": "effect",
           "text": "a liar, the head of a jail, poor, crafty, cruel, and a dweller in hills and fortresses"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_CHATRA",
@@ -978,7 +998,8 @@
           "type": "effect",
           "text": "helpful to his own people, kind, dear to many kings, very intelligent, happy at the beginning and the end of his life, and long-lived"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_CHAPA",
@@ -1010,7 +1031,8 @@
           "type": "effect",
           "text": "a liar, a keeper of secrets, a thief, fond of wandering in forests, unlucky, and happy in the middle of his life"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_ARDHA_CHANDRA",
@@ -1138,7 +1160,8 @@
           "type": "effect",
           "text": "a leader of armies, splendid of body, dear to the king, strong, and furnished with gems, gold and ornaments"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_CHAKRA",
@@ -1169,7 +1192,8 @@
           "type": "effect",
           "text": "an emperor, at whose feet kings bow their diademed heads"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_SAMUDRA",
@@ -1200,7 +1224,8 @@
           "type": "effect",
           "text": "possessed of many precious stones and abundant wealth, pleasured, dear to the people, firm in his wealth, and well disposed"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_GOLA",
@@ -1334,7 +1359,8 @@
           "type": "effect",
           "text": "strong, devoid of wealth, learning and intelligence, dirty, sorrowful and miserable"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_YUGA",
@@ -1468,7 +1494,8 @@
           "type": "effect",
           "text": "heretical, devoid of wealth, discarded by others, and without sons, mother or virtue"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_SOOLA",
@@ -1602,7 +1629,8 @@
           "type": "effect",
           "text": "sharp, indolent, bereft of wealth, torturous, prohibited, valiant, and famous through war"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_KEDARA",
@@ -1736,7 +1764,8 @@
           "type": "effect",
           "text": "useful to many, an agriculturist, truthful, happy, fickle and wealthy"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_PASA",
@@ -1870,7 +1899,8 @@
           "type": "effect",
           "text": "liable to imprisonment, skilful in work, deceiving of disposition, talkative, bereft of good qualities, and attended by many servants"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_DAMA",
@@ -2004,7 +2034,8 @@
           "type": "effect",
           "text": "helpful to others, of righteously earned wealth, very affluent, famous, of many sons and gems, courageous and red-lettered"
         }
-      ]
+      ],
+      "timing": "throughout"
     },
     {
       "key": "NABHASA_VEENA",
@@ -2138,7 +2169,8 @@
           "type": "effect",
           "text": "fond of song, dance and instruments, skilful, happy, wealthy, and a leader of men"
         }
-      ]
+      ],
+      "timing": "throughout"
     }
   ]
 }

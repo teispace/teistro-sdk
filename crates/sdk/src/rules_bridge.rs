@@ -14,14 +14,17 @@
 //! [`RuleChart::with_chara_karakas`]. [`rule_vargas`] gives the divisional
 //! charts an `in-varga` condition reads. A chart's panchanga and strengths are
 //! passed in because they are separate readings with their own settings.
+//! [`rule_periods`] hands the rules the periods of a dasha running at an
+//! instant, so a result can say whether they deliver it.
 
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Dignity, Graha, Rashi, Varga};
 use teistro_core::error::Error;
 use teistro_core::quantity::Degrees;
+use teistro_dasha::Chain;
 use teistro_rules::{
-    Body, EightKarakas, House, Panchanga, Placement, RuleChart, Strengths, VargaSigns,
+    Body, EightKarakas, House, Panchanga, Placement, RuleChart, Running, Strengths, VargaSigns,
 };
 use teistro_state::GrahaState;
 use teistro_vargas::{Scheme, sign};
@@ -61,6 +64,16 @@ pub fn rule_chart(
         strengths,
     }
     .with_chara_karakas(EightKarakas::Parashara))
+}
+
+/// The periods of a dasha chain as the rules read them, from the mahadasha
+/// down: each period's lord and, in a sign-based dasha, its sign. For
+/// [`Evaluator::delivery`](teistro_rules::Evaluator::delivery).
+pub fn rule_periods(chain: &Chain) -> impl Iterator<Item = Running> + '_ {
+    chain.iter().map(|period| Running {
+        lord: period.lord,
+        sign: period.sign,
+    })
 }
 
 /// The divisional charts of a rule chart, each body's sign in each division

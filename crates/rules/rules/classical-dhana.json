@@ -754,6 +754,91 @@
           "text": "wealthy"
         }
       ]
+    },
+    {
+      "key": "BPHS_NINTH_AND_FIFTH_LORDS_AND_THEIR_COMPANIONS_GIVE_WEALTH",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "16",
+        "rank": 1,
+        "note": "The lords of the ninth and fifth, and the grahas joining either, are the wealth-givers, and give it in their own periods. Every chart has the two lords, so the rule is present on every chart; what it says is in its participants, which are the grahas whose periods deliver it. The translator's note that the lords should be well placed is a note and not the verse. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "same-body",
+                "of": "SELF",
+                "as": {
+                  "lordOf": 9
+                }
+              },
+              {
+                "type": "same-body",
+                "of": "SELF",
+                "as": {
+                  "lordOf": 5
+                }
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 9
+                    }
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "same-body",
+                      "of": "SELF",
+                      "as": {
+                        "lordOf": 9
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 5
+                    }
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "same-body",
+                      "of": "SELF",
+                      "as": {
+                        "lordOf": 5
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealth in the periods of these grahas"
+        }
+      ]
     }
   ]
 }

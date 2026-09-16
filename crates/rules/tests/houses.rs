@@ -118,9 +118,9 @@ fn a_house_gathers_every_rule_whose_grahas_stand_in_it() {
         .map(|(_, houses)| *houses)
         .sum();
     assert_eq!(crowded_houses, 48);
-    // What a consumer receives: 5731 rule results gathered under a house over
+    // What a consumer receives: 6033 rule results gathered under a house over
     // the 93 charts, and 455 statements of how to read them together.
-    assert_eq!((held, composed), (5731, 455));
+    assert_eq!((held, composed), (6033, 455));
 }
 
 /// How many houses of the 1116 hold each number of grahas.
@@ -313,7 +313,7 @@ fn the_wealth_combinations_answer_where_they_did() {
         .filter(|rule| rule.source.text == "BPHS" && rule.source.chapter.as_deref() == Some("41"))
         .cloned()
         .collect();
-    assert_eq!(rules.len(), 14);
+    assert_eq!(rules.len(), 15);
     let mut fired: BTreeMap<&str, usize> =
         rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
     for (path, file) in files_in("doshas") {
@@ -342,7 +342,7 @@ fn the_wealth_combinations_answer_where_they_did() {
 }
 
 /// What each answers over the 93 recorded charts.
-const WEALTH: [(&str, usize); 14] = [
+const WEALTH: [(&str, usize); 15] = [
     (
         "BPHS_JUPITER_IN_A_FIFTH_OF_HIS_OWN_WITH_MERCURY_ELEVENTH",
         0,
@@ -352,6 +352,10 @@ const WEALTH: [(&str, usize); 14] = [
     ("BPHS_MARS_RISING_IN_HIS_OWN_SIGN", 0),
     ("BPHS_MERCURY_IN_A_FIFTH_OF_HIS_OWN_WITH_THREE_ELEVENTH", 0),
     ("BPHS_MERCURY_RISING_IN_HIS_OWN_SIGN", 1),
+    (
+        "BPHS_NINTH_AND_FIFTH_LORDS_AND_THEIR_COMPANIONS_GIVE_WEALTH",
+        93,
+    ),
     (
         "BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH",
         0,
@@ -379,7 +383,7 @@ fn the_penury_combinations_answer_where_they_did() {
         .filter(|rule| rule.source.text == "BPHS" && rule.source.chapter.as_deref() == Some("42"))
         .cloned()
         .collect();
-    assert_eq!(rules.len(), 16);
+    assert_eq!(rules.len(), 17);
     let mut fired: BTreeMap<&str, usize> =
         rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
     let (mut sun_in_second, mut cancelled) = (0, 0);
@@ -415,7 +419,7 @@ fn the_penury_combinations_answer_where_they_did() {
 /// three or four marakas is easy to join, and the corpus's lagna lords
 /// cluster where they cast a special aspect on the twelfth (Jupiter in the
 /// fourth twelve times, Saturn in the third eight).
-const PENURY: [(&str, usize); 16] = [
+const PENURY: [(&str, usize); 17] = [
     (
         "BPHS_DISPOSITORS_OF_DUSTHANA_LORDS_AFFLICTED_IN_DUSTHANAS",
         1,
@@ -427,6 +431,10 @@ const PENURY: [(&str, usize); 16] = [
     (
         "BPHS_FIFTH_LORD_IN_SIXTH_AND_NINTH_LORD_IN_TWELFTH_ASPECTED_BY_MARAKAS",
         0,
+    ),
+    (
+        "BPHS_GRAHA_WITH_A_DUSTHANA_LORD_UNASPECTED_BY_TRINE_LORDS_HARMS_WEALTH",
+        83,
     ),
     ("BPHS_LAGNA_AND_NAVAMSHA_LAGNA_LORDS_WITH_MARAKAS", 21),
     ("BPHS_LAGNA_AND_SIXTH_LORDS_EXCHANGED_WITH_A_MARAKA", 0),

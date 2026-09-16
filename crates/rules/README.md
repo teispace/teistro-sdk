@@ -114,6 +114,10 @@ cancellations held.
   these houses from the Moon" is `count-in-houses`. Papa and shubha kartari
   (Phaladeepika ch. 6 sl. 8) needed nothing new: they are two
   `planet-in-house-from` conditions over a class.
+- **A result knows whose periods deliver it.** A rule's `timing` is
+  `concerned` (the grahas and signs that formed it, BPHS ch. 31) or
+  `throughout` (the Nabhasa yogas, ch. 35 v. 50), and `Evaluator::delivery`
+  reads a running dasha chain given as lords and signs.
 - **Chara karakas and divisions from longitudes.** `with_chara_karakas`
   ranks the grahas as BPHS ch. 32 does, to the arc-second, with the
   eight-karaka order a knob (crux C101); `varga_signs` places a chart in a

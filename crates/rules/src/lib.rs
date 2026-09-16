@@ -39,6 +39,7 @@ pub mod reference;
 pub mod rule;
 pub mod shipped;
 pub mod table;
+pub mod timing;
 pub mod trace;
 
 pub use chart::{
@@ -57,4 +58,5 @@ pub use rule::{
     Cancellation, Group, NetStatus, Outcome, Rule, Scope, Severity, Unit, check_references,
 };
 pub use table::{SignDegree, Table, TableKey, Tables};
+pub use timing::{Levels, Running, Timing};
 pub use trace::{Explanation, Resolved, Step};

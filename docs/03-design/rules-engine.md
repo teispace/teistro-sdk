@@ -1052,6 +1052,41 @@ divisions. Both are now computed where a consumer reaches them.
   chart answers a karaka rule; the SDK's own test reads the Karakamsha on a
   chart it founded.
 
+**When a result is delivered: rules in a dasha's periods (2026-09-16).** The
+texts time a combination by the periods of what formed it, and they say so in
+verses, not only in notes: BPHS ch. 31 gives an intervention's effects "in the
+Dasha periods of the Rashi or planet concerned", ch. 33 vv. 94 to 99 say the
+same of Kemadruma, ch. 41 v. 16 gives wealth "during their Dasha periods" to
+the ninth and fifth lords and the grahas joining them, and ch. 42 v. 13 harms
+the finances in the periods of a graha joined by a dusthana lord. Ch. 35 v. 50
+is the other kind: the Nabhasa yogas are "felt throughout, in all the Dasha
+periods".
+
+- **`Timing`** is on the rule: `concerned`, the default and unwritten, or
+  `throughout`. The 32 Nabhasa yogas carry `throughout`.
+- **`Evaluator::delivery(rule, result, running)`** answers which of the
+  periods running at an instant deliver a result, as `Levels` from the
+  mahadasha down. A graha's period delivers a result it took part in; a sign's
+  period, in a sign-based dasha, delivers a result formed in that sign, matched
+  by the sign and not by the lord its dasha gives it, since the verse names the
+  rashi. It allocates nothing.
+- **The kernel computes no dasha.** It takes the running periods as `Running`
+  — a lord and an optional sign — so it depends on no dasha crate and any dasha
+  a caller holds can drive it; **`teistro::rule_periods`** maps the SDK's own
+  `Chain` onto them.
+
+This is what the research note asked for — "the underlying relation (rule
+participants versus dasha lords) as data" — and it is not the recording
+engine's `YogaTimingComposer`, which writes prose. **Measured:** over the 93
+charts the wealth rule's delivery is held graha by graha against the ninth and
+fifth lords and their companions read off each chart directly, 327 periods; a
+sign's period delivers exactly where a participant stands, for every shipped
+rule and all twelve signs; the 168 Nabhasa results deliver at every level. On a
+chart the SDK founded, every Vimshottari mahadasha agrees with the verse. Ch. 41
+v. 16 is present on every chart, which is right: what it says is *whose* periods
+give wealth, and that is in its participants. Ch. 42 v. 13 answers 83 of 93 for
+the same reason.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-three answer none, and

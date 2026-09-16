@@ -65,7 +65,10 @@ becomes a data format.
 - **Timing**: when a yoga fructifies (dasha or antardasha of participants,
   transit triggers). The baseline engine's `YogaTimingComposer` produces this text from
   the active dasha chain; the SDK exposes the underlying relation (rule
-  participants versus dasha lords) as data.
+  participants versus dasha lords) as data. **Built 2026-09-16** as
+  `Timing` and `Evaluator::delivery`, from BPHS ch. 31, ch. 33 vv. 94 to 99
+  and ch. 35 v. 50 (`03-design/rules-engine.md`); transit triggers remain
+  with `gochar` in Phase 7.
 - **Search**: Shri Jyoti Star and Kala search a chart database for yogas.
   This is the batch form of rule evaluation and is a first-class API.
 - **Custom rules**: a rule pack format (versioned, validated, cited) that

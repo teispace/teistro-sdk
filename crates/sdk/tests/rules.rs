@@ -17,10 +17,13 @@ mod common;
 
 use common::fixture;
 use teistro::catalogue::ChartKind;
+use teistro::catalogue::DashaSystem;
 use teistro::catalogue::Varga;
+use teistro::quantity::Depth;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rules::{Body, Evaluator, House, Karaka, Readings, Rule, shipped};
-use teistro::{Context, Ephemeris, UtcOffset, rule_chart, rule_vargas};
+use teistro::rules::{Levels, Timing};
+use teistro::{Context, Ephemeris, Timeline, UtcOffset, rule_chart, rule_periods, rule_vargas};
 
 /// The corpus's first chart, founded and stated.
 fn founded() -> (teistro::ChartFoundation, Vec<teistro::GrahaState>) {
@@ -157,4 +160,62 @@ fn a_consumer_can_evaluate_the_shipped_rules_and_read_a_house() {
     )
     .unwrap();
     assert!(evaluator.evaluate(&karakamsha).present);
+}
+
+#[test]
+fn a_result_says_which_of_the_sdk_s_own_dasha_periods_deliver_it() {
+    let (foundation, states) = founded();
+    let chart = rule_chart(&foundation, &states, None, None).expect("a rule chart");
+    let rules = shipped::nabhasas();
+    let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_rules(rules);
+    let (sdk, document) = common::reading("{}", |request| {
+        request.with_dashas([DashaSystem::Vimshottari])
+    });
+    let cursor = sdk
+        .chart()
+        .dasha(&document, DashaSystem::Vimshottari)
+        .expect("the Vimshottari");
+
+    // BPHS ch. 41 v. 16: wealth in the periods of the ninth and fifth lords
+    // and of the grahas joining either, read off the chart directly.
+    let wealth = rules
+        .iter()
+        .find(|rule| rule.key == "BPHS_NINTH_AND_FIFTH_LORDS_AND_THEIR_COMPANIONS_GIVE_WEALTH")
+        .unwrap();
+    let result = evaluator.evaluate(wealth);
+    let lord_of = |house: u8| {
+        evaluator
+            .house_sign(House::try_new(house).unwrap())
+            .attributes()
+            .lord
+    };
+    let sign_of = |graha| chart.placement(Body::Graha(graha)).sign;
+    let givers = [lord_of(9), lord_of(5)];
+    let throughout = rules
+        .iter()
+        .find(|rule| rule.timing == Timing::Throughout && evaluator.evaluate(rule).present)
+        .expect("a Nabhasa yoga present");
+    let nabhasa = evaluator.evaluate(throughout);
+
+    let depth = Depth::try_new(2).unwrap();
+    let mut delivering = 0;
+    for mahadasha in cursor.mahadashas() {
+        let middle = f64::midpoint(mahadasha.interval.from.get(), mahadasha.interval.to.get());
+        let chain = cursor.at(teistro::quantity::JulianDay::literal(middle), depth);
+        assert_eq!(
+            chain.iter().next().map(|period| period.lord),
+            Some(mahadasha.lord)
+        );
+        let giver = givers
+            .iter()
+            .any(|lord| *lord == mahadasha.lord || sign_of(*lord) == sign_of(mahadasha.lord));
+        let levels = evaluator.delivery(wealth, &result, rule_periods(&chain));
+        assert_eq!(levels.contains(0), giver, "{:?}", mahadasha.lord);
+        delivering += usize::from(giver);
+        assert_eq!(
+            evaluator.delivery(throughout, &nabhasa, rule_periods(&chain)),
+            Levels::all(chain.len())
+        );
+    }
+    assert!(delivering >= 2, "the two lords' own mahadashas at least");
 }
