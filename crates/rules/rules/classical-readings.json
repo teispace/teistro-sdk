@@ -1255,5 +1255,206 @@
         ]
       }
     ]
+  },
+  "risingPart": {
+    "text": "Saravali",
+    "rank": 1,
+    "note": "The part of a sign that rises, and what the chapter says of the native. Read from R. Santhanam's translation of Kalyana Varma's Saravali, the signs in order from Aries and the parts in order from the beginning of each sign. Ch. 49 v. 25 and ch. 50 v. 37 make these effects mature in full only where the sign or its lord is strong, which the kernel cannot measure; the second decanates of Gemini and of Cancer are printed with one reading between them in the translation read, and both ship as printed.",
+    "parts": [
+      {
+        "name": "HORA",
+        "chapter": "49",
+        "count": 2,
+        "signs": [
+          {
+            "verse": "1-2",
+            "effects": [
+              "rolling his eyeballs to no purpose, cruel, rich, very bright of appearance, fiercely wived, tall, irascible, and a leader of thieves",
+              "a thief, careless, afflicted in foot and finger, large of eye, tall of stature, and very intelligent"
+            ]
+          },
+          {
+            "verse": "3-4",
+            "effects": [
+              "dark of complexion, broad of eye, fore-face and chest, eminent, disposed to carnal pleasure, and strong of bone and of body",
+              "broad, long and round of limb, liberal, of attractive hair, thin of waist, and ox-eyed"
+            ]
+          },
+          {
+            "verse": "5-6",
+            "effects": [
+              "long of waist, very skilful, of a moderate physique and soft hair and feet, courageous, fond of union, wealthy and learned",
+              "beautiful and large of eye, sensuous, soft, a gifted speaker, and attached to other men's wives"
+            ]
+          },
+          {
+            "verse": "7-8",
+            "effects": [
+              "of an elevated body, a beautiful head, eminence and intelligence, weak of sight, his limbs moving off and on, crafty, dark of complexion, ungrateful, and broken of tooth",
+              "fond of gambling and of travel, broad of chest, quite truthful, irascible, and harsh of physique"
+            ]
+          },
+          {
+            "verse": "9-10",
+            "effects": [
+              "blood-red of eye, bold, large and long of body, crooked, happy, and decidedly firm in what he undertakes",
+              "fond of women, sweets, food, drink and robes, often on the move, harsh of physique, liberal, fond of travel, of few sons, pleasured, and firm in friendship"
+            ]
+          },
+          {
+            "verse": "11-12",
+            "effects": [
+              "soft and beautiful of body, sweet of speech, fond of music, of women and of union, sweet, fortunate and excellent",
+              "short of stature, knowing hatha yoga and the Vedas, big of head, agreeable, argumentative, learned in service, drawing and writing, of chequered prosperity and yet happy"
+            ]
+          },
+          {
+            "verse": "13-14",
+            "effects": [
+              "round of face, elevated of nose and back, large of eye, sportive, strong of body and bone, wealthy, and affectionate to his own people",
+              "very wealthy and firmly so, of black and curly hair, crafty, round-eyed, strong in the lower body, attractive of skin, and defective of foot"
+            ]
+          },
+          {
+            "verse": "15-16",
+            "effects": [
+              "blood-red of eye, adventurous in his acts, valorous in battle, wicked, fond of women, and rich",
+              "broad, well grown, long and fleshy of limb, a servant of the king, of many debts and many friends, and wide of eye"
+            ]
+          },
+          {
+            "verse": "17-18",
+            "effects": [
+              "wide and split of face and chest, small of eye and neck, cast off by his elders in boyhood, and pious",
+              "lotus-petal-eyed and long of arm, knowing the shastras, good of appearance, sweet of speech, fortunate and famous"
+            ]
+          },
+          {
+            "verse": "19-20",
+            "effects": [
+              "dark of complexion, deer-eyed, fortunate, a conqueror of women, beautiful, crafty, opulent, an eater of purified food, a doer of good acts, and elevated of nose",
+              "blood-red of eye, indolent, fond of long journeys, foolish, dark of complexion, hairy of body, clever and fierce"
+            ]
+          },
+          {
+            "verse": "21-22",
+            "effects": [
+              "furnished with a woman and with friends, a man of taste, soft of disposition, of few sons, virtuous, valorous, copper-coloured, radiant, and fond of travel",
+              "copper-bright of eye, emaciated, firm, very insignificant in appearance, indolent, close of speech, very dejected, miserly and very crafty"
+            ]
+          },
+          {
+            "verse": "23-24",
+            "effects": [
+              "short of stature, broad and beautiful of body, large of fore-face and of face, broad of chest, dear to women, very famous, skilful and valorous",
+              "liberal, elevated of nose, skilful, intelligent, charming of eye, dear to the king, and affable of speech"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "DECANATE",
+        "chapter": "50",
+        "count": 3,
+        "signs": [
+          {
+            "verse": "1-3",
+            "effects": [
+              "charitable, a thief, splendid, of chequered prosperity, fierce in quarrel, pleasing of appearance, and a punisher of his relatives",
+              "attached to women, a wanderer, fond of carnal pleasure and of music, intelligent, furnished with friends and wealth, good-looking, and with an eye on women's property",
+              "virtuous, a finder of fault in others, fickle, mighty, a servant of a king, attached to his own people, very righteous and honourable, but unlearned"
+            ]
+          },
+          {
+            "verse": "4-6",
+            "effects": [
+              "fond of food and drink, tormented by separation from his wife, furnished with robes and ornaments, and acting at his wife's desire",
+              "beautiful, liked by women, large of lip, endowed with beauty and wealth, firmly wealthy, intelligent, and attached to mean women",
+              "skilful, not very fortunate, valorous, dirty, and repenting after he has spent"
+            ]
+          },
+          {
+            "verse": "7-9",
+            "effects": [
+              "broad and excellent of limb, wealthy, lofty, deceiving, virtuous, sportive, honoured by the king, and a good speaker",
+              "miserly, dreaming, conquered by women, self-respecting, furnished with brothers, fickle, sportive, and tormented by many diseases",
+              "a hater of women, large of head, beset by enemies, lofty, rough of nail, and unfirm in his wealth"
+            ]
+          },
+          {
+            "verse": "10-12",
+            "effects": [
+              "honouring Brahmins and the gods, fickle, fair of complexion, helpful to others, intelligent, pleasing of appearance, fortunately wived, and fortunate himself",
+              "miserly, dreaming, conquered by women, self-respecting, furnished with brothers, fickle, sportive, and tormented by many diseases",
+              "losing his firmness to women, wealthy, bent on living abroad, fond of wine, virtuous, fond of forests, diseased in the eyes, and fond of garlands"
+            ]
+          },
+          {
+            "verse": "13-15",
+            "effects": [
+              "liberal, the keeper of many, a conqueror of his enemies, of abundant wealth, many wives and good friends, a servant of many kings, and very mighty",
+              "a doer of beneficial acts, liberal, firm, fond of quarrels, happy, following the rule of the Vedas, and intelligent",
+              "a miser, a thief of other men's wealth, free of sickness, hard of heart, very intelligent, roguish, narrow of body, pre-eminent, and of many children"
+            ]
+          },
+          {
+            "verse": "16-18",
+            "effects": [
+              "dark of complexion, affable of speech, modest, lofty, beautiful, enriched by women, ominous, long of head, and honey-coloured of eye",
+              "bold, a dweller abroad, skilful in the fine arts, in fable and in battle, garrulous, honouring the Vedic teaching, and dear to the forest tribes",
+              "enjoying music and other men's wealth, dear to the king, short of stature, and large of head and eye"
+            ]
+          },
+          {
+            "verse": "19-21",
+            "effects": [
+              "charming as Cupid, skilful, enjoying travel, dark of complexion, fond of the arts and of trade, fulfilling what he is set, and very learned",
+              "lotus-eyed, charming, affable of speech, valorous, famous, and a doer of acts that raise the name of his race and family",
+              "fickle, crafty, ungrateful, crooked, losing friends and wealth, and not very intelligent"
+            ]
+          },
+          {
+            "verse": "22-24",
+            "effects": [
+              "fair of complexion, firm of disposition, fierce of temper, fond of battle, broad of eye, fat and broad of body, and fond of promoting quarrels",
+              "fond of purified food, skilful, rolling of eye, gold-coloured, splendid, endowed with other men's wealth, virtuous, and skilful in the arts",
+              "without beard or moustache, torturous, tawny of eye, large of belly, an assailant, losing his brothers, long of hand and brave of heart"
+            ]
+          },
+          {
+            "verse": "25-27",
+            "effects": [
+              "round of face and eye, chief among his people, advanced by his own effort, of good conduct, and soft of disposition",
+              "expert in the shastras, a good speaker, a performer of a hundred sacrifices, knowing mantras, excellent of disposition, and a visitor of many shrines",
+              "chief among his relatives, skilful, always taking the virtuous path, sensuous, enjoying other women, charming, famous and successful"
+            ]
+          },
+          {
+            "verse": "28-30",
+            "effects": [
+              "long of hand, dark of complexion, charming, famous, crafty, sparing of speech, conquered by women, a doer of superior acts, and wealthy",
+              "small of face, fickle, a thief of other women's wealth, skilful, a teller of fortunes, liberal, and suffering in the feet",
+              "garrulous, dirty, emaciated, long of limb, fatherless, and reduced to evils in foreign places"
+            ]
+          },
+          {
+            "verse": "31-33",
+            "effects": [
+              "furnished with a wife, honour and fame, very efficacious, lofty, devoted to his duties, wealthy, and a servant of a king",
+              "a miser, skilful, sweet, fair of complexion, tawny and broad of eye, enriched by amusement, unhesitating of speech, intelligent, and of many friends",
+              "tall of stature, crafty, valorous, emaciated, short of arm, furnished with sons and wealth, hard of heart, a teller of many lies, crooked of nature, afflicted in the eyes, and knowing the art of love"
+            ]
+          },
+          {
+            "verse": "34-36",
+            "effects": [
+              "honey-coloured and tawny of eye, fair of complexion, very learned, a doer of virtuous deeds, happy, a traveller by sea, and modest",
+              "skilful in serving women, an eater of purified food, enjoying other men's wealth, sensuous, dear to women and to the virtuous, and an excellent person",
+              "dark of complexion, skilful in the arts, wide of foot, generous with his friends, and an eater and drinker of what is purified"
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

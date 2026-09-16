@@ -31,6 +31,7 @@ pub(crate) struct Table {
     together: Together,
     in_rasi: InRasi,
     in_bhava: InBhava,
+    rising_part: RisingPart,
 }
 
 /// What every rule of a family shares: its text, and how it was read.
@@ -110,6 +111,35 @@ struct InBhava {
     #[serde(flatten)]
     family: Family,
     grahas: Vec<BhavaRows>,
+}
+
+/// Saravali chs. 49 and 50: the part of a sign that rises.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RisingPart {
+    #[serde(flatten)]
+    family: Family,
+    parts: Vec<PartRows>,
+}
+
+/// One division of a sign — halves, thirds — and its chapter.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PartRows {
+    /// What the division is called, which names the rules.
+    name: String,
+    chapter: String,
+    /// How many parts a sign is cut into.
+    count: u8,
+    signs: Vec<PartSign>,
+}
+
+/// One sign's readings, a part at a time from its beginning.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PartSign {
+    verse: String,
+    effects: Vec<String>,
 }
 
 /// One graha's readings, a house at a time from the ascendant.
@@ -228,6 +258,7 @@ impl Table {
             .chain(self.together())
             .chain(self.in_rasi())
             .chain(self.in_bhava())
+            .chain(self.rising_part())
             .collect()
     }
 
@@ -304,6 +335,46 @@ impl Table {
                         }],
                         &reading.effect,
                     ))
+                })
+        })
+    }
+}
+
+impl Table {
+    /// Saravali chs. 49 and 50: the lagna in a part of its sign, the signs in
+    /// the catalogue's order and the parts in order from each sign's start.
+    fn rising_part(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.rising_part.family;
+        self.rising_part.parts.iter().flat_map(move |part| {
+            let width = 30.0 / f64::from(part.count);
+            Rashi::ALL
+                .into_iter()
+                .zip(&part.signs)
+                .flat_map(move |(sign, row)| {
+                    row.effects.iter().enumerate().map(move |(at, effect)| {
+                        let nth = at + 1;
+                        // A sign has at most twelve parts in any of these
+                        // chapters, so the count fits a byte and its degrees
+                        // an f64 exactly.
+                        let (at, nth) = (u8::try_from(at).unwrap_or(0), u8::try_from(nth).unwrap_or(0));
+                        stating(
+                            format!("SARAVALI_{}_{nth}_OF_{}", part.name, sign.key()),
+                            "rising-part",
+                            family.in_chapter(Some(part.chapter.clone()), &row.verse),
+                            vec![
+                                Condition::PlanetInSign {
+                                    planet: SignRef::Of(BodyRef::Body(Body::Lagna)),
+                                    signs: vec![sign],
+                                },
+                                Condition::PlanetInDegrees {
+                                    planet: BodyRef::Body(Body::Lagna),
+                                    from: width * f64::from(at),
+                                    to: width * f64::from(nth),
+                                },
+                            ],
+                            effect,
+                        )
+                    })
                 })
         })
     }

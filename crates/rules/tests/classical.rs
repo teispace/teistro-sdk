@@ -315,7 +315,7 @@ const ANSWERED: [(&str, usize); 72] = [
 #[test]
 fn the_generator_makes_one_rule_a_reading() {
     let rules = shipped::readings();
-    assert_eq!(rules.len(), 380);
+    assert_eq!(rules.len(), 440);
     every_family_is_whole(rules);
     // What the generator builds is a rule like any other: it writes out in the
     // language and reads back the same, outcome and all.
@@ -361,16 +361,29 @@ fn the_generator_makes_one_rule_a_reading() {
     // nothing aspects her; the larger assemblies, which want four grahas or
     // more in one sign; and two houses no graha of the seven reached.
     let silent = counts.iter().filter(|(_, count)| *count == 0).count();
-    assert_eq!(silent, 86);
+    assert_eq!(silent, 94);
     // A graha stands in exactly one sign in every chart, so each of Saravali's
     // chapters answers 93 times over the 93.
+    // One part of one sign rises in every chart, so each of Saravali's two
+    // divisions answers 93 times over the 93 — which says the bands tile a
+    // sign with no gap and no overlap.
+    for division in ["HORA", "DECANATE"] {
+        let total: usize = counts
+            .iter()
+            .filter(|(key, _)| key.starts_with(&format!("SARAVALI_{division}_")))
+            .map(|(_, count)| *count)
+            .sum();
+        assert_eq!(total, 93, "{division}");
+    }
     // A graha stands in exactly one sign and in exactly one house in every
     // chart, so each of Saravali's two families answers 93 times a graha over
     // the 93 — an arithmetic that holds the reader against the corpus.
     let mut by_family: BTreeMap<(&str, bool), usize> = BTreeMap::new();
     for (key, count) in &counts {
         if let Some(rest) = key.strip_prefix("SARAVALI_") {
-            let (graha, place) = rest.split_once("_IN_").unwrap();
+            let Some((graha, place)) = rest.split_once("_IN_") else {
+                continue;
+            };
             *by_family
                 .entry((graha, place.starts_with("BHAVA_")))
                 .or_default() += count;
@@ -384,7 +397,7 @@ fn the_generator_makes_one_rule_a_reading() {
 }
 
 /// What each reading answers over the 93 recorded charts.
-const READINGS: [(&str, usize); 380] = [
+const READINGS: [(&str, usize); 440] = [
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_JUPITER", 0),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MARS", 2),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MERCURY", 1),
@@ -597,6 +610,66 @@ const READINGS: [(&str, usize); 380] = [
     ("PARIJATA_TOGETHER_SUN_VENUS", 10),
     ("PARIJATA_TOGETHER_SUN_VENUS_SATURN", 2),
     ("PARIJATA_TOGETHER_VENUS_SATURN", 8),
+    ("SARAVALI_DECANATE_1_OF_AQUARIUS", 8),
+    ("SARAVALI_DECANATE_1_OF_ARIES", 1),
+    ("SARAVALI_DECANATE_1_OF_CANCER", 2),
+    ("SARAVALI_DECANATE_1_OF_CAPRICORN", 1),
+    ("SARAVALI_DECANATE_1_OF_GEMINI", 3),
+    ("SARAVALI_DECANATE_1_OF_LEO", 1),
+    ("SARAVALI_DECANATE_1_OF_LIBRA", 2),
+    ("SARAVALI_DECANATE_1_OF_PISCES", 2),
+    ("SARAVALI_DECANATE_1_OF_SAGITTARIUS", 2),
+    ("SARAVALI_DECANATE_1_OF_SCORPIO", 8),
+    ("SARAVALI_DECANATE_1_OF_TAURUS", 3),
+    ("SARAVALI_DECANATE_1_OF_VIRGO", 2),
+    ("SARAVALI_DECANATE_2_OF_AQUARIUS", 2),
+    ("SARAVALI_DECANATE_2_OF_ARIES", 0),
+    ("SARAVALI_DECANATE_2_OF_CANCER", 0),
+    ("SARAVALI_DECANATE_2_OF_CAPRICORN", 1),
+    ("SARAVALI_DECANATE_2_OF_GEMINI", 1),
+    ("SARAVALI_DECANATE_2_OF_LEO", 5),
+    ("SARAVALI_DECANATE_2_OF_LIBRA", 1),
+    ("SARAVALI_DECANATE_2_OF_PISCES", 9),
+    ("SARAVALI_DECANATE_2_OF_SAGITTARIUS", 5),
+    ("SARAVALI_DECANATE_2_OF_SCORPIO", 2),
+    ("SARAVALI_DECANATE_2_OF_TAURUS", 1),
+    ("SARAVALI_DECANATE_2_OF_VIRGO", 6),
+    ("SARAVALI_DECANATE_3_OF_AQUARIUS", 0),
+    ("SARAVALI_DECANATE_3_OF_ARIES", 2),
+    ("SARAVALI_DECANATE_3_OF_CANCER", 1),
+    ("SARAVALI_DECANATE_3_OF_CAPRICORN", 0),
+    ("SARAVALI_DECANATE_3_OF_GEMINI", 1),
+    ("SARAVALI_DECANATE_3_OF_LEO", 1),
+    ("SARAVALI_DECANATE_3_OF_LIBRA", 5),
+    ("SARAVALI_DECANATE_3_OF_PISCES", 11),
+    ("SARAVALI_DECANATE_3_OF_SAGITTARIUS", 0),
+    ("SARAVALI_DECANATE_3_OF_SCORPIO", 2),
+    ("SARAVALI_DECANATE_3_OF_TAURUS", 2),
+    ("SARAVALI_DECANATE_3_OF_VIRGO", 0),
+    ("SARAVALI_HORA_1_OF_AQUARIUS", 10),
+    ("SARAVALI_HORA_1_OF_ARIES", 1),
+    ("SARAVALI_HORA_1_OF_CANCER", 2),
+    ("SARAVALI_HORA_1_OF_CAPRICORN", 2),
+    ("SARAVALI_HORA_1_OF_GEMINI", 4),
+    ("SARAVALI_HORA_1_OF_LEO", 3),
+    ("SARAVALI_HORA_1_OF_LIBRA", 2),
+    ("SARAVALI_HORA_1_OF_PISCES", 5),
+    ("SARAVALI_HORA_1_OF_SAGITTARIUS", 4),
+    ("SARAVALI_HORA_1_OF_SCORPIO", 10),
+    ("SARAVALI_HORA_1_OF_TAURUS", 4),
+    ("SARAVALI_HORA_1_OF_VIRGO", 7),
+    ("SARAVALI_HORA_2_OF_AQUARIUS", 0),
+    ("SARAVALI_HORA_2_OF_ARIES", 2),
+    ("SARAVALI_HORA_2_OF_CANCER", 1),
+    ("SARAVALI_HORA_2_OF_CAPRICORN", 0),
+    ("SARAVALI_HORA_2_OF_GEMINI", 1),
+    ("SARAVALI_HORA_2_OF_LEO", 4),
+    ("SARAVALI_HORA_2_OF_LIBRA", 6),
+    ("SARAVALI_HORA_2_OF_PISCES", 17),
+    ("SARAVALI_HORA_2_OF_SAGITTARIUS", 3),
+    ("SARAVALI_HORA_2_OF_SCORPIO", 2),
+    ("SARAVALI_HORA_2_OF_TAURUS", 2),
+    ("SARAVALI_HORA_2_OF_VIRGO", 1),
     ("SARAVALI_JUPITER_IN_AQUARIUS", 3),
     ("SARAVALI_JUPITER_IN_ARIES", 8),
     ("SARAVALI_JUPITER_IN_BHAVA_1", 5),
@@ -778,6 +851,8 @@ fn every_family_is_whole(rules: &[Rule]) {
     // Saravali's chapters, by the graha each is about.
     let mut in_rasi: BTreeMap<&str, usize> = BTreeMap::new();
     let mut in_bhava: BTreeMap<&str, usize> = BTreeMap::new();
+    // Saravali's rising halves and thirds, by the division each cuts.
+    let mut rising: BTreeMap<&str, usize> = BTreeMap::new();
     for rule in rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -808,6 +883,10 @@ fn every_family_is_whole(rules: &[Rule]) {
                 *together.entry(planets.len()).or_default() += 1;
             }
             "graha-in-rasi" => *in_rasi.entry(named(&rule.key, "SARAVALI_").0).or_default() += 1,
+            "rising-part" => {
+                let rest = rule.key.strip_prefix("SARAVALI_").unwrap();
+                *rising.entry(rest.split('_').next().unwrap()).or_default() += 1;
+            }
             "graha-in-bhava" => {
                 let (graha, _) = rule.key.strip_prefix("SARAVALI_").unwrap().split_once("_IN_BHAVA_").unwrap();
                 *in_bhava.entry(graha).or_default() += 1;
@@ -840,6 +919,11 @@ fn every_family_is_whole(rules: &[Rule]) {
     assert!(in_rasi.values().all(|count| *count == 12));
     assert_eq!(in_bhava.len(), 7);
     assert!(in_bhava.values().all(|count| *count == 12));
+    // Two halves and three thirds of each of the twelve signs.
+    assert_eq!(
+        rising.into_iter().collect::<Vec<_>>(),
+        [("DECANATE", 36), ("HORA", 24)]
+    );
 
 }
 

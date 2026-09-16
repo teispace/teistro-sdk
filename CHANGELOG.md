@@ -1140,6 +1140,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   answer the first grade, 14 the intervention, 12 a benefic's, 1 an exalted
   benefic's.
 
+- Saravali chs. 49 and 50: the part of a sign that rises, two halves and three
+  thirds of each of the twelve, sixty more readings. They need no division
+  chart, and the number of parts is data, so a chapter that cut a sign nine
+  ways would need no code. `readings()` is now 440 rules and the SDK ships 611.
+
+  **Numbers:** one hora and one decanate rise in every chart, so each division
+  answers 93 times over the 93 — which says the degree bands tile a sign with
+  no gap and no overlap.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
