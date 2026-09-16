@@ -222,6 +222,53 @@ impl TryFrom<u8> for SignRef {
     }
 }
 
+/// Who a condition that needs a body asks about: a body reference, or
+/// whichever benefic or malefic first meets it.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum BodySubject {
+    /// That reference.
+    Ref(BodyRef),
+    /// The first benefic, in [`Body::ALL`]'s order, that meets the condition.
+    AnyBenefic,
+    /// The first malefic that meets it.
+    AnyMalefic,
+}
+
+impl From<BodyRef> for BodySubject {
+    fn from(reference: BodyRef) -> BodySubject {
+        BodySubject::Ref(reference)
+    }
+}
+
+impl From<Body> for BodySubject {
+    fn from(body: Body) -> BodySubject {
+        BodySubject::Ref(BodyRef::Body(body))
+    }
+}
+
+impl Serialize for BodySubject {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            BodySubject::Ref(reference) => reference.serialize(serializer),
+            BodySubject::AnyBenefic => serializer.serialize_str(ANY_BENEFIC),
+            BodySubject::AnyMalefic => serializer.serialize_str(ANY_MALEFIC),
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for BodySubject {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<BodySubject, D::Error> {
+        match Written::deserialize(deserializer)? {
+            Written::Key(key) if key == ANY_BENEFIC => Ok(BodySubject::AnyBenefic),
+            Written::Key(key) if key == ANY_MALEFIC => Ok(BodySubject::AnyMalefic),
+            written => written
+                .body()
+                .map(BodySubject::Ref)
+                .map_err(de::Error::custom),
+        }
+    }
+}
+
 /// Who a placement condition asks about: a sign reached from a reference, or
 /// whichever benefic or malefic first meets the condition.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]

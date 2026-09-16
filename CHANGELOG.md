@@ -986,6 +986,15 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- A class of bodies can aspect and can be counted: the aspect predicates take
+  `any-benefic` or `any-malefic` as well as a body reference, and
+  `count-in-houses` asks for at least so many of a class in houses counted from
+  any reference. Together with what the language already had, these say the
+  arishta verses of BPHS ch. 9 and the papa and shubha kartari of Phaladeepika
+  ch. 6 sl. 8.
+
+  **Numbers:** none; every recorded yoga and dosha reproduces as before.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

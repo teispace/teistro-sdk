@@ -47,7 +47,7 @@ pub use eval::{Evaluator, Found, Participants, RuleResult};
 pub use language::{
     Body, Condition, EclipseKind, EvidenceRank, House, Karaka, KarakaScheme, NodeSide, Pada, Source,
 };
-pub use reference::{BodyRef, SignRef, Subject};
+pub use reference::{BodyRef, BodySubject, SignRef, Subject};
 pub use rule::{Cancellation, Group, NetStatus, Rule, Scope, Severity};
 pub use table::{SignDegree, Table, TableKey, Tables};
 pub use trace::{Explanation, Resolved, Step};

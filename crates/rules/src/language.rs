@@ -12,7 +12,7 @@ use teistro_core::catalogue::{
     CharaKaraka, Dignity, Graha, Karana, Nakshatra, Paksha, Rashi, Tithi, Vara, Varga, Yoga,
 };
 
-use crate::reference::{BodyRef, SignRef, Subject};
+use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
 use crate::table::TableKey;
 
 /// What a rule can name: one of the nine grahas, or the lagna.
@@ -266,6 +266,15 @@ const fn yes() -> bool {
     true
 }
 
+/// The lagna's own sign, which a house is counted from unless a rule says.
+fn lagna() -> SignRef {
+    SignRef::Of(BodyRef::Body(Body::Lagna))
+}
+
+fn is_lagna(from: &SignRef) -> bool {
+    *from == lagna()
+}
+
 /// A condition: a predicate over the chart, or a combination of conditions.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(
@@ -439,15 +448,15 @@ pub enum Condition {
     },
     /// One body aspects another by graha drishti, whole signs.
     PlanetAspectsPlanet {
-        /// Who aspects.
-        from: BodyRef,
+        /// Who aspects: a body, or whichever benefic or malefic does.
+        from: BodySubject,
         /// Who is aspected.
         target: SignRef,
     },
     /// A body aspects a house by graha drishti, whole signs.
     PlanetAspectsHouse {
-        /// Who aspects.
-        from: BodyRef,
+        /// Who aspects: a body, or whichever benefic or malefic does.
+        from: BodySubject,
         /// Which house.
         house_ruled: House,
     },
@@ -583,6 +592,18 @@ pub enum Condition {
         varga: Varga,
         /// What must hold in it.
         condition: Box<Condition>,
+    },
+    /// So many bodies stand in the houses, counted from the reference.
+    CountInHouses {
+        /// Who is counted: a body, or every benefic or every malefic.
+        planets: BodySubject,
+        /// Which houses.
+        houses: Vec<House>,
+        /// What they are counted from; the lagna unless the rule says.
+        #[serde(default = "lagna", skip_serializing_if = "is_lagna")]
+        from: SignRef,
+        /// How many there must be at least.
+        at_least: u8,
     },
     /// Two references stand in one sign.
     SameSign {
@@ -750,6 +771,7 @@ impl Condition {
             Condition::BirthOnSankranti { .. } => "birth-on-sankranti",
             Condition::ForAny { .. } => "for-any",
             Condition::InVarga { .. } => "in-varga",
+            Condition::CountInHouses { .. } => "count-in-houses",
             Condition::SameSign { .. } => "same-sign",
             Condition::SameBody { .. } => "same-body",
         }

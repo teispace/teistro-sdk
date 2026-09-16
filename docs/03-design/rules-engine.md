@@ -340,6 +340,23 @@ They needed a quantifier rather than the sketch's divisional-chart predicate:
 Their citation is unsettled (crux C87): the engine cites BPHS ch. 38 v. 12, and
 the translation read carries no such list there.
 
+**Built, a class as a subject and a count (2026-09-16).** Reading BPHS ch. 9's
+arishta verses showed what the corpus's next hundred rules need, and two of
+the three answers were already in the language:
+
+- **"in aspect to a malefic"** was the real gap. The aspect predicates now take
+  a `BodySubject` — a body reference, or `any-benefic` or `any-malefic` — and
+  hold when any body of that class aspects, naming the first that does.
+- **"so many malefics in these houses"** is `count-in-houses`: who is counted,
+  which houses, what they are counted from (the lagna unless the rule says),
+  and how many there must be at least. Every body counted takes part.
+- **Papa and shubha kartari need nothing new.** Phaladeepika ch. 6 sl. 8 puts
+  them as the twelfth and the second from the lagna occupied by malefics or
+  benefics, which is an `and` of two `planet-in-house-from` conditions with an
+  `any-malefic` subject; a unit test writes the verse out and holds it both
+  ways. The research note that called kartari a missing primitive was wrong,
+  and reading the verse is what settled it.
+
 A classifying outcome is therefore not what the Kalsarpa family needed: twelve
 named rules over one arc predicate say it, each with its own citation and
 severity. `Outcome::Classify` stays unbuilt until a rule needs one variant of

@@ -13,7 +13,7 @@ use crate::chart::{
     RuleChart, Upapada, VargaSigns,
 };
 use crate::language::{Body, Condition, EclipseKind, House, KarakaScheme, NodeSide};
-use crate::reference::{BodyRef, SignRef, Subject};
+use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
 use crate::rule::{NetStatus, Rule, Severity};
 use crate::table::{Table, Tables};
 use crate::trace::{Explanation, NoTrace, Recorder, Resolved, Tracer};
@@ -386,6 +386,27 @@ impl<'a> Evaluator<'a> {
         found.is_some()
     }
 
+    /// The bodies a subject stands for, in [`Body::ALL`]'s order: the one it
+    /// names, or every benefic or every malefic.
+    fn subject_bodies<'c, R: Recorder<'c>>(
+        &self,
+        subject: &BodySubject,
+        rec: &mut R,
+    ) -> impl Iterator<Item = Body> + use<'_, 'c, R> {
+        let nature = match subject {
+            BodySubject::Ref(reference) => {
+                return Either::One(self.body(reference, rec).into_iter());
+            }
+            BodySubject::AnyBenefic => self.benefic,
+            BodySubject::AnyMalefic => self.malefic,
+        };
+        Either::Many(
+            Body::ALL
+                .into_iter()
+                .filter(move |body| nature.get(body.index()).copied().unwrap_or(false)),
+        )
+    }
+
     /// A body where it stands.
     fn standing(&self, body: Body) -> Spot {
         Spot {
@@ -711,21 +732,24 @@ impl<'a> Evaluator<'a> {
                 }
             }),
             Condition::PlanetAspectsPlanet { from, target } => {
-                let (Some(body), Some(target)) = (self.body(from, rec), self.spot(target, rec))
-                else {
+                let Some(target) = self.spot(target, rec) else {
                     return false;
                 };
-                let held = aspects(
-                    body,
-                    self.at(body).sign,
-                    target.sign,
-                    self.readings.node_aspects,
-                );
-                if held && self.readings.aspect_gathering == AspectGathering::Both {
-                    into.push(body);
-                    into.push_through(target);
+                let found = self.subject_bodies(from, rec).find(|body| {
+                    aspects(
+                        *body,
+                        self.at(*body).sign,
+                        target.sign,
+                        self.readings.node_aspects,
+                    )
+                });
+                if let Some(body) = found {
+                    if self.readings.aspect_gathering == AspectGathering::Both {
+                        into.push(body);
+                        into.push_through(target);
+                    }
                 }
-                held
+                found.is_some()
             }
             Condition::PlanetAtTableDegree { planet, table } => {
                 let Some(body) = self.body(planet, rec) else {
@@ -763,14 +787,19 @@ impl<'a> Evaluator<'a> {
             }
             Condition::PlanetAspectsHouse { from, house_ruled } => {
                 let target = step(self.chart.lagna(), house_ruled.get() - 1);
-                let Some(body) = self.body(from, rec) else {
-                    return false;
-                };
-                let held = aspects(body, self.at(body).sign, target, self.readings.node_aspects);
-                if self.readings.aspect_gathering == AspectGathering::Both {
-                    self.single(body, into, held)
-                } else {
-                    held
+                let found = self.subject_bodies(from, rec).find(|body| {
+                    aspects(
+                        *body,
+                        self.at(*body).sign,
+                        target,
+                        self.readings.node_aspects,
+                    )
+                });
+                match found {
+                    Some(body) if self.readings.aspect_gathering == AspectGathering::Both => {
+                        self.single(body, into, true)
+                    }
+                    found => found.is_some(),
                 }
             }
             Condition::LordOfHouseDebilitated { house_ruled } => {
@@ -880,6 +909,27 @@ impl<'a> Evaluator<'a> {
                     ..within
                 };
                 within.check(condition, into, rec)
+            }
+            Condition::CountInHouses {
+                planets,
+                houses,
+                from,
+                at_least,
+            } => {
+                let Some(from) = self.spot(from, rec) else {
+                    return false;
+                };
+                let mut counted = Participants::default();
+                for body in self.subject_bodies(planets, rec) {
+                    if houses.contains(&House::between(from.sign, self.at(body).sign)) {
+                        counted.push(body);
+                    }
+                }
+                let held = counted.len() >= usize::from(*at_least);
+                if held {
+                    into.extend(counted);
+                }
+                held
             }
             Condition::SameSign { of, as_sign } => {
                 let (Some(one), Some(other)) = (self.spot(of, rec), self.spot(as_sign, rec)) else {
@@ -1067,6 +1117,25 @@ impl<'a> Evaluator<'a> {
                 }
             }
             Severity::KootShortfall { full, .. } => *full,
+        }
+    }
+}
+
+/// One iterator or another, so a subject's bodies need no allocation.
+enum Either<A, B> {
+    /// The body a reference names, if it resolves.
+    One(A),
+    /// Every body of a nature.
+    Many(B),
+}
+
+impl<A: Iterator<Item = Body>, B: Iterator<Item = Body>> Iterator for Either<A, B> {
+    type Item = Body;
+
+    fn next(&mut self) -> Option<Body> {
+        match self {
+            Either::One(one) => one.next(),
+            Either::Many(many) => many.next(),
         }
     }
 }
@@ -2143,6 +2212,105 @@ mod tests {
             refused.contains("`planet-at-table-degree` reads a longitude"),
             "{refused}"
         );
+    }
+
+    #[test]
+    fn a_class_can_aspect_and_be_counted_in_houses_from_a_reference() {
+        // Aries lagna. Saturn in Capricorn aspects Pisces (its third) and Cancer
+        // (its tenth); Jupiter in Taurus aspects Scorpio, Virgo and Capricorn.
+        let mut c = chart();
+        place(&mut c, SATURN, Rashi::Capricorn);
+        place(&mut c, JUPITER, Rashi::Taurus);
+        place(&mut c, MOON, Rashi::Pisces);
+        for body in [SUN, MARS, MERCURY, RAHU, Body::Graha(Graha::Ketu)] {
+            place(&mut c, body, Rashi::Leo);
+        }
+        let aspected = |by: &str| {
+            written(&format!(
+                r#"{{"type": "planet-aspects-planet", "from": "{by}", "target": "MOON"}}"#
+            ))
+        };
+        // A malefic aspects the Moon: Mars in Leo by its eighth, the first
+        // malefic in the chart's order that does.
+        assert_eq!(
+            holds(&c, ENGINE, &aspected("any-malefic")),
+            (true, vec![MARS, MOON])
+        );
+        // No benefic does: Jupiter aspects Scorpio, Virgo and Capricorn.
+        assert!(!holds(&c, ENGINE, &aspected("any-benefic")).0);
+        let house =
+            written(r#"{"type": "planet-aspects-house", "from": "any-benefic", "houseRuled": 8}"#);
+        assert_eq!(holds(&c, ENGINE, &house), (true, vec![JUPITER]));
+
+        // Five bodies stand in Leo, the fifth house: four malefics and Mercury,
+        // which is malefic here by its company.
+        let counted = |json: &str| written(json);
+        let five = counted(
+            r#"{"type": "count-in-houses", "planets": "any-malefic", "houses": [5], "atLeast": 5}"#,
+        );
+        assert!(holds(&c, ENGINE, &five).0);
+        let six = counted(
+            r#"{"type": "count-in-houses", "planets": "any-malefic", "houses": [5], "atLeast": 6}"#,
+        );
+        assert!(!holds(&c, ENGINE, &six).0);
+        // Counted from the Moon in Pisces, Leo is the sixth.
+        let from_moon = counted(
+            r#"{"type": "count-in-houses", "planets": "any-malefic", "houses": [6], "from": "MOON", "atLeast": 5}"#,
+        );
+        assert!(holds(&c, ENGINE, &from_moon).0);
+        assert!(!holds(&c, ENGINE, &counted(r#"{"type": "count-in-houses", "planets": "any-malefic", "houses": [6], "atLeast": 1}"#)).0);
+        // A named body counts as itself.
+        let one = counted(
+            r#"{"type": "count-in-houses", "planets": "SATURN", "houses": [10], "atLeast": 1}"#,
+        );
+        assert_eq!(holds(&c, ENGINE, &one), (true, vec![SATURN]));
+        // The lagna is what a rule counts from unless it says, and writing it
+        // back leaves that out.
+        let back: Condition = serde_json::from_value(serde_json::to_value(&five).unwrap()).unwrap();
+        assert_eq!(back, five);
+        assert_eq!(
+            serde_json::to_value(&five).unwrap()["from"],
+            serde_json::Value::Null
+        );
+    }
+
+    #[test]
+    fn papa_kartari_is_the_twelfth_and_second_from_the_lagna_phaladeepika_6_8() {
+        // "When the 12th and the 2nd Bhavas from the Lagna are occupied by
+        // benefics, the Yoga is Subhakartari. It is called Papakartari, when
+        // the above two houses are occupied by malefics" (Phaladeepika ch. 6
+        // sl. 8, V. Subrahmanya Sastri's translation).
+        let kartari = |by: &str| {
+            written(&format!(
+                r#"{{"type": "and", "conditions": [
+                    {{"type": "planet-in-house-from", "planet": "{by}", "reference": "LAGNA", "houses": [12]}},
+                    {{"type": "planet-in-house-from", "planet": "{by}", "reference": "LAGNA", "houses": [2]}}
+                ]}}"#
+            ))
+        };
+        let mut c = chart();
+        // Aries lagna, malefics in Pisces and Taurus: the twelfth and the
+        // second.
+        place(&mut c, SATURN, Rashi::Pisces);
+        place(&mut c, MARS, Rashi::Taurus);
+        for body in [SUN, MOON, MERCURY, JUPITER, Body::Graha(Graha::Venus), RAHU] {
+            place(&mut c, body, Rashi::Leo);
+        }
+        assert_eq!(
+            holds(&c, ENGINE, &kartari("any-malefic")),
+            (true, vec![SATURN, MARS])
+        );
+        assert!(!holds(&c, ENGINE, &kartari("any-benefic")).0);
+        // Benefics there instead: Jupiter and Venus hem the lagna.
+        place(&mut c, SATURN, Rashi::Leo);
+        place(&mut c, MARS, Rashi::Leo);
+        place(&mut c, JUPITER, Rashi::Pisces);
+        place(&mut c, Body::Graha(Graha::Venus), Rashi::Taurus);
+        assert_eq!(
+            holds(&c, ENGINE, &kartari("any-benefic")),
+            (true, vec![JUPITER, Body::Graha(Graha::Venus)])
+        );
+        assert!(!holds(&c, ENGINE, &kartari("any-malefic")).0);
     }
 
     #[test]
