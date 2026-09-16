@@ -396,6 +396,16 @@ impl TryFrom<Written> for Rule {
                 rule.key
             ));
         }
+        // A divisional chart moves signs, not degrees.
+        if let Some(kind) = rule
+            .top_conditions()
+            .find_map(Condition::longitude_in_varga)
+        {
+            return Err(format!(
+                "rule `{}`: `{kind}` reads a longitude, which `in-varga` does not move",
+                rule.key
+            ));
+        }
         Ok(rule)
     }
 }

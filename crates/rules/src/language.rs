@@ -9,7 +9,7 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
-    CharaKaraka, Dignity, Graha, Karana, Nakshatra, Paksha, Rashi, Tithi, Vara, Yoga,
+    CharaKaraka, Dignity, Graha, Karana, Nakshatra, Paksha, Rashi, Tithi, Vara, Varga, Yoga,
 };
 
 use crate::reference::{BodyRef, SignRef, Subject};
@@ -574,6 +574,16 @@ pub enum Condition {
         /// What one of them must meet.
         then: Box<Condition>,
     },
+    /// The condition, read in a divisional chart: every body in its sign
+    /// there, its houses counted whole-sign from that chart's lagna and its
+    /// dignity from that sign. A chart the evaluator was not given makes it
+    /// false, and a condition that reads a longitude is refused inside one.
+    InVarga {
+        /// Which division.
+        varga: Varga,
+        /// What must hold in it.
+        condition: Box<Condition>,
+    },
     /// Two references stand in one sign.
     SameSign {
         /// One.
@@ -739,6 +749,7 @@ impl Condition {
             Condition::BirthDuringEclipse { .. } => "birth-during-eclipse",
             Condition::BirthOnSankranti { .. } => "birth-on-sankranti",
             Condition::ForAny { .. } => "for-any",
+            Condition::InVarga { .. } => "in-varga",
             Condition::SameSign { .. } => "same-sign",
             Condition::SameBody { .. } => "same-body",
         }
@@ -752,7 +763,8 @@ impl Condition {
             Condition::Not { condition }
             | Condition::ForAny {
                 then: condition, ..
-            } => core::slice::from_ref(condition),
+            }
+            | Condition::InVarga { condition, .. } => core::slice::from_ref(condition),
             _ => &[],
         }
     }
@@ -782,6 +794,38 @@ impl Condition {
             }
             names(&value)
         })
+    }
+
+    /// Whether it reads a body's longitude, which a divisional chart does not
+    /// move: such a condition is refused inside an `in-varga`.
+    #[must_use]
+    pub const fn reads_a_longitude(&self) -> bool {
+        matches!(
+            self,
+            Condition::PlanetAtTableDegree { .. }
+                | Condition::PlanetAtGandanta { .. }
+                | Condition::PlanetConjunct {
+                    max_orb: Some(_),
+                    ..
+                }
+        )
+    }
+
+    /// The first condition inside it, itself included, that reads a longitude
+    /// under an `in-varga`.
+    #[must_use]
+    pub fn longitude_in_varga(&self) -> Option<&'static str> {
+        fn walk(condition: &Condition, within: bool) -> Option<&'static str> {
+            if within && condition.reads_a_longitude() {
+                return Some(condition.kind());
+            }
+            let within = within || matches!(condition, Condition::InVarga { .. });
+            condition
+                .children()
+                .iter()
+                .find_map(|child| walk(child, within))
+        }
+        walk(self, false)
     }
 
     /// Whether this condition itself reads the chart's panchanga.

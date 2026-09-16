@@ -10,7 +10,7 @@ use teistro_points::arudha;
 use crate::chart::{
     AspectGathering, Benefics, Conjunction, DignityMatch, Eclipse, Gathering, Houses,
     NATURAL_BENEFICS, NATURAL_MALEFICS, NodeMotion, NodeSides, Panchanga, Placement, Readings,
-    RuleChart, Upapada,
+    RuleChart, Upapada, VargaSigns,
 };
 use crate::language::{Body, Condition, EclipseKind, House, KarakaScheme, NodeSide};
 use crate::reference::{BodyRef, SignRef, Subject};
@@ -147,6 +147,8 @@ pub struct Evaluator<'a> {
     chart: &'a RuleChart,
     readings: Readings,
     tables: &'a Tables,
+    /// The divisional charts an `in-varga` condition can step into.
+    vargas: &'a [VargaSigns],
     /// The body a `for-any` bound, which `SELF` names.
     bound: Option<Body>,
     /// Each body's benefic nature under the readings, by index.
@@ -200,6 +202,7 @@ impl<'a> Evaluator<'a> {
             chart,
             readings,
             tables: &NO_TABLES,
+            vargas: &[],
             bound: None,
             benefic,
             malefic,
@@ -212,6 +215,13 @@ impl<'a> Evaluator<'a> {
     #[must_use]
     pub const fn with_tables(self, tables: &'a Tables) -> Evaluator<'a> {
         Evaluator { tables, ..self }
+    }
+
+    /// The same evaluator, able to read `in-varga` conditions in these
+    /// divisional charts; without the one a condition names, it never holds.
+    #[must_use]
+    pub const fn with_vargas(self, vargas: &'a [VargaSigns]) -> Evaluator<'a> {
+        Evaluator { vargas, ..self }
     }
 
     fn at(&self, body: Body) -> &Placement {
@@ -856,6 +866,20 @@ impl<'a> Evaluator<'a> {
                     }
                 }
                 held
+            }
+            Condition::InVarga { varga, condition } => {
+                let Some(signs) = self.vargas.iter().find(|signs| signs.varga == *varga) else {
+                    return false;
+                };
+                let chart = self.chart.in_varga(signs);
+                let within = Evaluator::new(&chart, self.readings)
+                    .with_tables(self.tables)
+                    .with_vargas(self.vargas);
+                let within = Evaluator {
+                    bound: self.bound,
+                    ..within
+                };
+                within.check(condition, into, rec)
             }
             Condition::SameSign { of, as_sign } => {
                 let (Some(one), Some(other)) = (self.spot(of, rec), self.spot(as_sign, rec)) else {
@@ -2031,6 +2055,93 @@ mod tests {
         assert_eq!(
             holds(&c, Readings::RECORDING_ENGINE_DOSHAS, &aspect),
             (true, vec![])
+        );
+    }
+
+    #[test]
+    fn a_condition_read_in_a_division_moves_the_signs_houses_and_dignities() {
+        use teistro_core::catalogue::Varga;
+
+        use crate::chart::VargaSigns;
+
+        // Every body in Aries in the rasi; in the navamsha the lagna rises in
+        // Cancer, Mars stands in Capricorn, its exaltation, and the Sun in Leo,
+        // its own sign and the second from that lagna.
+        let c = chart();
+        let mut signs = [Rashi::Aries; 10];
+        signs[Body::Lagna.index()] = Rashi::Cancer;
+        signs[MARS.index()] = Rashi::Capricorn;
+        signs[SUN.index()] = Rashi::Leo;
+        let navamsha = [VargaSigns {
+            varga: Varga::D9,
+            signs,
+        }];
+        let held = |condition: &Condition| {
+            let mut into = Participants::default();
+            let held = Evaluator::new(&c, ENGINE)
+                .with_vargas(&navamsha)
+                .holds(condition, &mut into);
+            (held, into.iter().collect::<Vec<_>>())
+        };
+        let inside = |json: &str| {
+            written(&format!(
+                r#"{{"type": "in-varga", "varga": "D9", "condition": {json}}}"#
+            ))
+        };
+        assert_eq!(
+            held(&inside(
+                r#"{"type": "planet-dignity", "planet": "MARS", "dignities": ["EXALTED"]}"#
+            )),
+            (true, vec![MARS])
+        );
+        assert!(
+            held(&inside(
+                r#"{"type": "planet-in-sign", "planet": "SUN", "signs": ["LEO"]}"#
+            ))
+            .0
+        );
+        // The second house of the navamsha, counted from its own lagna.
+        assert!(
+            held(&inside(
+                r#"{"type": "planet-in-house", "planet": "SUN", "houses": [2]}"#
+            ))
+            .0
+        );
+        // The rasi chart still reads as it did.
+        assert!(
+            holds(
+                &c,
+                ENGINE,
+                &written(r#"{"type": "planet-in-sign", "planet": "SUN", "signs": ["ARIES"]}"#)
+            )
+            .0
+        );
+        // A division the evaluator was not given never holds.
+        let without = {
+            let mut into = Participants::default();
+            Evaluator::new(&c, ENGINE).holds(
+                &inside(r#"{"type": "planet-in-sign", "planet": "SUN", "signs": ["LEO"]}"#),
+                &mut into,
+            )
+        };
+        assert!(!without, "no division, no answer");
+        let other = inside(r#"{"type": "planet-in-sign", "planet": "SUN", "signs": ["LEO"]}"#);
+        let Condition::InVarga { varga, .. } = &other else {
+            panic!("in-varga")
+        };
+        assert_eq!(*varga, Varga::D9);
+
+        // A rule that reads a longitude inside a division is refused.
+        let refused = serde_json::from_str::<Rule>(
+            r#"{"key": "R", "category": "c", "source": {"text": "t"}, "conditions": [
+                {"type": "in-varga", "varga": "D9", "condition":
+                    {"type": "planet-at-table-degree", "planet": "MOON", "table": "MRITYU_BHAGA"}}]}"#,
+        )
+        .unwrap_err()
+        .to_string();
+        assert!(
+            refused.contains("`planet-at-table-degree` reads a longitude"),
+            "{refused}"
         );
     }
 

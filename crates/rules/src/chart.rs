@@ -1,12 +1,13 @@
 //! What a rule reads of a chart, and the choices the language leaves open.
 
 use teistro_core::catalogue::{
-    CharaKaraka, Dignity, Graha, Karana, Nakshatra, Rashi, Tithi, Vara, Yoga,
+    CharaKaraka, Dignity, Graha, Karana, Nakshatra, Rashi, Tithi, Vara, Varga, Yoga,
 };
 use teistro_core::settings::NodeAspects;
 
 use crate::language::{Body, House, Pada};
 use crate::table::SignDegree;
+use teistro_state::dignity;
 
 /// One body as a rule reads it.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -72,6 +73,55 @@ pub enum Eclipse {
     Solar,
     /// Of the Moon.
     Lunar,
+}
+
+/// One divisional chart, as the rules read it: each body's sign in it, in
+/// [`Body::ALL`]'s order. An [`Evaluator`](crate::Evaluator) given these reads
+/// `in-varga` conditions in them.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct VargaSigns {
+    /// Which division.
+    pub varga: Varga,
+    /// Each body's sign in it.
+    pub signs: [Rashi; 10],
+}
+
+impl RuleChart {
+    /// The chart a divisional one makes: each body in its varga sign, its
+    /// houses counted whole-sign from the varga lagna, and its dignity read
+    /// from the varga sign as the Saptavargaja does
+    /// (`teistro_state::dignity::varga_dignity`). A body's longitude, motion,
+    /// combustion, karakas and navamsha stay the rasi chart's, and the
+    /// language refuses a condition that reads a longitude inside a varga.
+    #[must_use]
+    pub fn in_varga(&self, signs: &VargaSigns) -> RuleChart {
+        let rasi = |graha: Graha| {
+            Body::ALL
+                .iter()
+                .position(|body| *body == Body::Graha(graha))
+                .and_then(|at| self.placements.get(at))
+                .map(|placement| placement.sign)
+        };
+        let lagna = signs.signs.get(Body::Lagna.index()).copied();
+        let mut placements = self.placements;
+        for (at, placement) in placements.iter_mut().enumerate() {
+            let Some(sign) = signs.signs.get(at).copied() else {
+                continue;
+            };
+            placement.sign = sign;
+            if let Some(lagna) = lagna {
+                placement.house = House::between(lagna, sign);
+            }
+            placement.dignity = match Body::ALL.get(at) {
+                Some(Body::Graha(graha)) => dignity::varga_dignity(*graha, sign, rasi),
+                _ => placement.dignity,
+            };
+        }
+        RuleChart {
+            placements,
+            ..*self
+        }
+    }
 }
 
 impl RuleChart {
