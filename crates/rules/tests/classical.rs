@@ -853,3 +853,64 @@ fn named<'k>(key: &'k str, prefix: &str) -> (&'k str, &'k str) {
     });
     (one, two)
 }
+
+/// The rules that read the two things the kernel learned for Jaimini: the
+/// aspect a sign lends (BPHS ch. 26) and the intervention of ch. 31. Neither
+/// the recording engine nor the corpus records an answer for any of them, so
+/// what is held is that each is evaluable, reads what the chart carries, and
+/// answers a pinned number of the 93.
+#[test]
+fn the_rules_that_read_a_sign_s_aspect_and_an_intervention_answer_where_they_did() {
+    let rules: Vec<&Rule> = shipped::nabhasas()
+        .iter()
+        .filter(|rule| matches!(rule.category.as_str(), "dhana" | "jaimini"))
+        .collect();
+    assert_eq!(rules.len(), 7);
+    for rule in &rules {
+        assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
+        assert_eq!(
+            rule.source.rank.map(teistro_rules::EvidenceRank::get),
+            Some(1),
+            "{}: read from a text",
+            rule.key
+        );
+        assert!(rule.effect().is_some(), "{}: says what follows", rule.key);
+    }
+    let mut fired: BTreeMap<&str, usize> =
+        rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
+    let mut charts = 0;
+    for (_, file) in files_in("doshas") {
+        let chart = chart(&file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
+        charts += 1;
+        for rule in &rules {
+            if evaluator.evaluate(rule).present {
+                *fired.get_mut(rule.key.as_str()).unwrap() += 1;
+            }
+        }
+    }
+    assert_eq!(charts, 93);
+    let counts: Vec<(&str, usize)> = fired.into_iter().collect();
+    assert_eq!(counts.as_slice(), JAIMINI.as_slice());
+    // The verse grades the gains, and each grade asks for more than the one
+    // before it, so each answers fewer charts: an intervention, then a
+    // benefic's, then an exalted benefic's.
+    let at = |key: &str| counts.iter().find(|(k, _)| *k == key).unwrap().1;
+    assert!(
+        at("ARUDHA_GAINS_WITH_ARGALA")
+            >= at("ARUDHA_GAINS_WITH_BENEFIC_ARGALA")
+            && at("ARUDHA_GAINS_WITH_BENEFIC_ARGALA")
+                >= at("ARUDHA_GAINS_WITH_EXALTED_BENEFIC_ARGALA")
+    );
+}
+
+/// What each answers over the 93 recorded charts.
+const JAIMINI: [(&str, usize); 7] = [
+    ("ARUDHA_GAINS", 18),
+    ("ARUDHA_GAINS_BENEFIC_ASPECT_FROM_LAGNA_OR_NINTH", 0),
+    ("ARUDHA_GAINS_WITH_ARGALA", 14),
+    ("ARUDHA_GAINS_WITH_BENEFIC_ARGALA", 12),
+    ("ARUDHA_GAINS_WITH_EXALTED_BENEFIC_ARGALA", 1),
+    ("JAIMINI_AK_PK_ASSOCIATED", 20),
+    ("JAIMINI_LAGNA_AND_FIFTH_LORDS_ASSOCIATED", 26),
+];

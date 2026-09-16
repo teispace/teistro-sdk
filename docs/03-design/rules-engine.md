@@ -599,6 +599,42 @@ Jupiter's sign where Kalanidhi's verse has Mercury and Venus aspecting him, and
 carries a Chamara that is not the verse's figure at all. Forty-one of the
 forty-nine figures the SDK and the engine both carry now answer exactly alike.
 
+**The aspect a sign lends, and an intervention (2026-09-16).** Two predicates
+the kernel had not got, both from Parashara and both wanted by everything
+Jaimini.
+
+`rashi-aspects` is BPHS ch. 26 vv. 1 to 3: a movable sign aspects the three
+fixed signs but the one next to it, a fixed sign the three movable but the one
+before it, a dual sign the other three dual signs, and "the planet in a sign
+lends the same aspect as the sign". So the condition takes a `Subject` on the
+left — a sign, a body's sign, or whichever benefic's or malefic's sign does it
+— and a `SignRef` on the right, and a body named on either side contributes
+itself as a participant. A test holds the predicate to the table the chapter
+prints, sign by sign over all 144 pairs, and to the two things that table
+implies: no sign aspects itself, and the relation runs both ways. The modality
+comes from the catalogue, not from a list typed out again.
+
+`argala` is ch. 31 vv. 2 to 9. An intervention on a reference comes from the
+second, fourth, fifth or eleventh from it, and is obstructed from the twelfth,
+tenth, ninth and third — the chapter prints the pairing as `4 2 11 5` over
+`10 12 3 9`, and `ArgalaPlace` is that pairing as a type, so a rule cannot pair
+them wrongly. It stands when the intervening grahas outnumber the obstructing
+ones, which is the half of the verse's test the kernel can make: the other half
+asks which graha is *stronger*, and is not built. `vipareeta-argala` is the
+same verses' three or more malefics in the third, which nothing obstructs.
+"As the nodes have retrograde motions, the Argala and obstructions be also
+counted accordingly in a reverse manner", so an intervention counted on Rahu or
+Ketu runs backwards, which a test pins.
+
+Seven rules use them: BPHS ch. 29 vv. 13 to 15 grade the gains of the eleventh
+from the pada of the ascendant — grahas reaching it, an intervention on it, a
+benefic's intervention, an exalted benefic's — each needing the twelfth from
+that pada free of a malefic, and ch. 39 vv. 3 to 5's two associations, the
+Atmakaraka with the Putrakaraka and the lord of the ascendant with the lord of
+the fifth, each by a shared sign or a sign's aspect. The grades nest as the
+verse says they should: 18 charts of the 93 answer the first, 14 the
+intervention, 12 a benefic's, 1 an exalted benefic's.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-one answer none, and

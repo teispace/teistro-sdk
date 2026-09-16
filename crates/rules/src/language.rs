@@ -662,6 +662,35 @@ pub enum Condition {
     /// The birth fell by day, between sunrise and sunset; a chart that does
     /// not say never holds it, and `not` of it is not "by night" there.
     BirthByDay,
+    /// One reference aspects another by rashi drishti (BPHS ch. 26 vv. 1 to
+    /// 3): a movable sign aspects the three fixed signs but the one next to
+    /// it, a fixed sign the three movable but the one before it, and a dual
+    /// sign the other three dual signs. A body lends the aspect of the sign it
+    /// stands in, so naming a body names its sign.
+    RashiAspects {
+        /// Who aspects: a sign, a body's sign, or whichever benefic's or
+        /// malefic's sign does.
+        from: Subject,
+        /// What is aspected.
+        target: SignRef,
+    },
+    /// An intervention stands on a reference (BPHS ch. 31 vv. 2 to 9): the
+    /// grahas in the intervening house outnumber those in the house that
+    /// obstructs it, and there is at least one of them. The nine are counted;
+    /// from a node the houses are counted backwards, the nodes moving so.
+    Argala {
+        /// What is intervened on: a sign, or the sign a body stands in.
+        on: SignRef,
+        /// Which intervention, each with the house that obstructs it.
+        place: ArgalaPlace,
+    },
+    /// Three or more malefics stand in the third from a reference, which the
+    /// same verses call a contrary intervention, harmless and very
+    /// favourable; nothing obstructs it.
+    VipareetaArgala {
+        /// What is intervened on.
+        on: SignRef,
+    },
     /// The birth falls on a sankranti, as the chart's panchanga says.
     BirthOnSankranti {
         /// The window, hours either side, that the chart's flag was computed
@@ -669,6 +698,34 @@ pub enum Condition {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         window_hours: Option<f64>,
     },
+}
+
+/// Where an intervention comes from, and what obstructs it (BPHS ch. 31
+/// v. 9's table: 4 2 11 5 over 10 12 3 9).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum ArgalaPlace {
+    /// The second, obstructed from the twelfth.
+    Second,
+    /// The fourth, obstructed from the tenth.
+    Fourth,
+    /// The fifth, obstructed from the ninth.
+    Fifth,
+    /// The eleventh, obstructed from the third.
+    Eleventh,
+}
+
+impl ArgalaPlace {
+    /// The house it intervenes from, and the house that obstructs it.
+    #[must_use]
+    pub const fn houses(self) -> (u8, u8) {
+        match self {
+            ArgalaPlace::Second => (2, 12),
+            ArgalaPlace::Fourth => (4, 10),
+            ArgalaPlace::Fifth => (5, 9),
+            ArgalaPlace::Eleventh => (11, 3),
+        }
+    }
 }
 
 /// How `SELF`, the body a `for-any` binds, is written.
@@ -821,6 +878,9 @@ impl Condition {
             Condition::PanchangaKarana { .. } => "panchanga-karana",
             Condition::BirthDuringEclipse { .. } => "birth-during-eclipse",
             Condition::BirthOnSankranti { .. } => "birth-on-sankranti",
+            Condition::RashiAspects { .. } => "rashi-aspects",
+            Condition::Argala { .. } => "argala",
+            Condition::VipareetaArgala { .. } => "vipareeta-argala",
             Condition::ForAny { .. } => "for-any",
             Condition::InVarga { .. } => "in-varga",
             Condition::CountInHouses { .. } => "count-in-houses",

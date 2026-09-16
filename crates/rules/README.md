@@ -62,6 +62,12 @@ cancellations held.
   49 figures the recording engine also carries answer exactly as it recorded
   over the corpus — every Pancha Mahapurusha yoga among them. The eight that
   differ are readings, pinned and explained.
+- **A sign's own aspect**, `rashi-aspects`: BPHS ch. 26's rashi drishti, held
+  to the table the chapter prints over all 144 pairs, with a body lending the
+  aspect of the sign it stands in.
+- **An intervention**, `argala` and `vipareeta-argala`: BPHS ch. 31's, with the
+  obstructing house paired to each intervening one by the `ArgalaPlace` type so
+  a rule cannot pair them wrongly, and counted backwards from a node.
 - **A verse may say more than one thing**, so `Rule::outcomes` is a list:
   a Pancha Mahapurusha verse describes the native and counts his years, and
   `life_span()` and `effect()` reach either without matching.

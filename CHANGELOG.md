@@ -1127,6 +1127,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   49 answers over the 93 charts; 41 of the 49 figures both carry now agree
   exactly, and the four new divergences are crux C95.
 
+- Two predicates for everything Jaimini reads by. `rashi-aspects` is BPHS
+  ch. 26's aspect of the signs, held to the table the chapter prints over all
+  144 pairs; `argala` and `vipareeta-argala` are ch. 31's intervention, with
+  `ArgalaPlace` pairing each intervening house to the one that obstructs it so
+  a rule cannot pair them wrongly, and counted backwards from a node as the
+  verse directs. Seven rules use them: ch. 29 vv. 13 to 15's graded gains of
+  the eleventh from the pada of the ascendant, and ch. 39's two associations.
+  The SDK ships 551 rules.
+
+  **Numbers:** the graded gains nest as the verse says — 18 charts of the 93
+  answer the first grade, 14 the intervention, 12 a benefic's, 1 an exalted
+  benefic's.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

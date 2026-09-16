@@ -47,7 +47,8 @@ pub use chart::{
 };
 pub use eval::{Evaluator, Found, Participants, RuleResult};
 pub use language::{
-    Body, Condition, EclipseKind, EvidenceRank, House, Karaka, KarakaScheme, NodeSide, Pada, Source,
+    ArgalaPlace, Body, Condition, EclipseKind, EvidenceRank, House, Karaka, KarakaScheme, NodeSide,
+    Pada, Source,
 };
 pub use reference::{BodyRef, BodySubject, SignRef, Subject};
 pub use rule::{

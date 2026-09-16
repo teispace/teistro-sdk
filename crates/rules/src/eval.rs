@@ -451,6 +451,29 @@ impl<'a> Evaluator<'a> {
         )
     }
 
+    /// The bodies of a subject's nature, the benefics or the malefics.
+    fn of_that_nature(&self, subject: &Subject) -> impl Iterator<Item = Body> + use<'_> {
+        let nature = match subject {
+            Subject::AnyBenefic => self.benefic,
+            _ => self.malefic,
+        };
+        Body::ALL
+            .into_iter()
+            .filter(move |body| nature.get(body.index()).copied().unwrap_or(false))
+    }
+
+    /// The nine grahas standing in a house counted from a spot.
+    fn grahas_in(&self, on: Spot, house: u8) -> Participants {
+        let house = counting(on, house);
+        let mut counted = Participants::default();
+        for body in Body::ALL.into_iter().take(9) {
+            if House::between(on.sign, self.at(body).sign).get() == house {
+                counted.push(body);
+            }
+        }
+        counted
+    }
+
     /// A body where it stands.
     fn standing(&self, body: Body) -> Spot {
         Spot {
@@ -794,6 +817,56 @@ impl<'a> Evaluator<'a> {
                     }
                 }
                 found.is_some()
+            }
+            Condition::RashiAspects { from, target } => {
+                let Some(target) = self.spot(target, rec) else {
+                    return false;
+                };
+                let found = match from {
+                    Subject::Ref(reference) => self.spot(reference, rec),
+                    _ => self
+                        .of_that_nature(from)
+                        .map(|body| self.standing(body))
+                        .find(|spot| rashi_aspects(spot.sign, target.sign)),
+                };
+                let Some(spot) = found.filter(|spot| rashi_aspects(spot.sign, target.sign)) else {
+                    return false;
+                };
+                into.push_through(spot);
+                into.push_through(target);
+                true
+            }
+            Condition::Argala { on, place } => {
+                let Some(on) = self.spot(on, rec) else {
+                    return false;
+                };
+                let (from, obstructed) = place.houses();
+                let (intervening, obstructing) =
+                    (self.grahas_in(on, from), self.grahas_in(on, obstructed));
+                let held = !intervening.is_empty() && intervening.len() > obstructing.len();
+                if held {
+                    into.extend(intervening);
+                }
+                held
+            }
+            Condition::VipareetaArgala { on } => {
+                let Some(on) = self.spot(on, rec) else {
+                    return false;
+                };
+                let mut counted = Participants::default();
+                for body in Body::ALL.into_iter().take(9) {
+                    if self.malefic.get(body.index()).copied().unwrap_or(false)
+                        && House::between(on.sign, self.at(body).sign).get()
+                            == counting(on, 3)
+                    {
+                        counted.push(body);
+                    }
+                }
+                let held = counted.len() >= 3;
+                if held {
+                    into.extend(counted);
+                }
+                held
             }
             Condition::PlanetAtTableDegree { planet, table } => {
                 let Some(body) = self.body(planet, rec) else {
@@ -1267,6 +1340,35 @@ fn set(nature: &mut [bool; 10], index: usize, value: bool) {
 }
 
 /// The sign `count` signs on from `sign`.
+/// Which house an intervention counts to: forward from a sign, backwards from
+/// a node, whose motion runs the other way (BPHS ch. 31 v. 6).
+fn counting(on: Spot, house: u8) -> u8 {
+    if on.through.is_some_and(Body::is_node) {
+        14 - house
+    } else {
+        house
+    }
+}
+
+/// Whether `from` aspects `target` by rashi drishti (BPHS ch. 26 vv. 1 to 3):
+/// a movable sign aspects the three fixed signs but the next, a fixed sign the
+/// three movable but the last, a dual sign the other three dual signs. The
+/// relation is mutual, and no sign aspects itself.
+fn rashi_aspects(from: Rashi, target: Rashi) -> bool {
+    use teistro_core::catalogue::Modality;
+
+    let (one, other) = (
+        from.attributes().modality,
+        target.attributes().modality,
+    );
+    match (one, other) {
+        (Modality::Dwiswabhava, Modality::Dwiswabhava) => from != target,
+        (Modality::Chara, Modality::Sthira) => target != step(from, 1),
+        (Modality::Sthira, Modality::Chara) => from != step(target, 1),
+        _ => false,
+    }
+}
+
 fn step(sign: Rashi, count: u8) -> Rashi {
     Rashi::from_id(u16::from((sign as u8 + count) % 12)).unwrap_or(Rashi::Aries)
 }
@@ -1297,8 +1399,8 @@ mod tests {
     use crate::chart::{
         Benefics, Conjunction, DignityMatch, Gathering, Houses, NodeMotion, NodeSides,
     };
-    use crate::language::Karaka;
-    use crate::reference::SignRef;
+    use crate::language::{ArgalaPlace, Karaka};
+    use crate::reference::{SignRef, Subject};
     use crate::trace::Step;
 
     const SUN: Body = Body::Graha(Graha::Sun);
@@ -2707,5 +2809,147 @@ mod tests {
         );
         assert!(!rule.is_evaluable());
         assert!(!Evaluator::new(&chart(), ENGINE).evaluate(&rule).present);
+    }
+
+
+
+    /// The table BPHS ch. 26 prints under vv. 1 to 3, sign by sign.
+    const PRINTED: [(Rashi, [Rashi; 3]); 12] = [
+        (Rashi::Aries, [Rashi::Leo, Rashi::Scorpio, Rashi::Aquarius]),
+        (Rashi::Taurus, [Rashi::Cancer, Rashi::Libra, Rashi::Capricorn]),
+        (
+            Rashi::Gemini,
+            [Rashi::Virgo, Rashi::Sagittarius, Rashi::Pisces],
+        ),
+        (Rashi::Cancer, [Rashi::Scorpio, Rashi::Aquarius, Rashi::Taurus]),
+        (Rashi::Leo, [Rashi::Libra, Rashi::Capricorn, Rashi::Aries]),
+        (
+            Rashi::Virgo,
+            [Rashi::Gemini, Rashi::Sagittarius, Rashi::Pisces],
+        ),
+        (Rashi::Libra, [Rashi::Aquarius, Rashi::Taurus, Rashi::Leo]),
+        (
+            Rashi::Scorpio,
+            [Rashi::Capricorn, Rashi::Aries, Rashi::Cancer],
+        ),
+        (
+            Rashi::Sagittarius,
+            [Rashi::Gemini, Rashi::Virgo, Rashi::Pisces],
+        ),
+        (
+            Rashi::Capricorn,
+            [Rashi::Taurus, Rashi::Leo, Rashi::Scorpio],
+        ),
+        (Rashi::Aquarius, [Rashi::Aries, Rashi::Cancer, Rashi::Libra]),
+        (
+            Rashi::Pisces,
+            [Rashi::Gemini, Rashi::Virgo, Rashi::Sagittarius],
+        ),
+    ];
+
+    #[test]
+    fn rashi_drishti_is_the_table_the_chapter_prints() {
+        for (from, aspected) in PRINTED {
+            for target in Rashi::ALL {
+                assert_eq!(
+                    rashi_aspects(from, target),
+                    aspected.contains(&target),
+                    "{from:?} to {target:?}"
+                );
+            }
+            // Three signs each, itself never among them, and the relation runs
+            // both ways.
+            assert!(!rashi_aspects(from, from));
+            for target in aspected {
+                assert!(rashi_aspects(target, from), "{target:?} back to {from:?}");
+            }
+        }
+    }
+
+    #[test]
+    fn a_body_lends_the_aspect_of_the_sign_it_stands_in() {
+        let mut c = chart();
+        place(&mut c, Body::Graha(Graha::Mars), Rashi::Aries);
+        place(&mut c, Body::Graha(Graha::Venus), Rashi::Leo);
+        place(&mut c, Body::Graha(Graha::Saturn), Rashi::Taurus);
+        let aspects = |from: Subject, target: SignRef| Condition::RashiAspects { from, target };
+        let mars = SignRef::from(Body::Graha(Graha::Mars));
+        let venus = SignRef::from(Body::Graha(Graha::Venus));
+        let saturn = SignRef::from(Body::Graha(Graha::Saturn));
+        // Aries aspects Leo, and Leo Aries; neither aspects Taurus.
+        assert!(holds(&c, ENGINE, &aspects(Subject::Ref(mars.clone()), venus.clone())).0);
+        assert!(holds(&c, ENGINE, &aspects(Subject::Ref(venus.clone()), mars.clone())).0);
+        assert!(!holds(&c, ENGINE, &aspects(Subject::Ref(mars.clone()), saturn.clone())).0);
+        // The participants are the two bodies the aspect ran through.
+        let (held, bodies) = holds(&c, ENGINE, &aspects(Subject::Ref(mars), venus));
+        assert!(held);
+        assert_eq!(
+            bodies,
+            [Body::Graha(Graha::Mars), Body::Graha(Graha::Venus)]
+        );
+    }
+
+
+    #[test]
+    fn an_intervention_stands_when_it_outnumbers_what_obstructs_it() {
+        // An Aries lagna: the second is Taurus, the twelfth Pisces.
+        let mut c = chart();
+        for body in Body::ALL {
+            place(&mut c, body, Rashi::Aries);
+        }
+        place(&mut c, Body::Graha(Graha::Venus), Rashi::Taurus);
+        let lagna = SignRef::House(house(1));
+        let argala = |place| Condition::Argala {
+            on: lagna.clone(),
+            place,
+        };
+        // One graha in the second and none in the twelfth: it stands.
+        let (held, bodies) = holds(&c, ENGINE, &argala(ArgalaPlace::Second));
+        assert!(held);
+        assert_eq!(bodies, [Body::Graha(Graha::Venus)]);
+        // Two in the twelfth against one in the second: it does not.
+        place(&mut c, Body::Graha(Graha::Saturn), Rashi::Pisces);
+        place(&mut c, Body::Graha(Graha::Mars), Rashi::Pisces);
+        assert!(!holds(&c, ENGINE, &argala(ArgalaPlace::Second)).0);
+        // Nothing in the fourth is no intervention, however empty the tenth.
+        assert!(!holds(&c, ENGINE, &argala(ArgalaPlace::Fourth)).0);
+    }
+
+    #[test]
+    fn a_node_counts_its_intervention_backwards() {
+        // Rahu in Aries: the second from him is Pisces, his motion running the
+        // other way, and the twelfth that obstructs it Taurus.
+        let mut c = chart();
+        for body in Body::ALL {
+            place(&mut c, body, Rashi::Leo);
+        }
+        place(&mut c, Body::Graha(Graha::Rahu), Rashi::Aries);
+        place(&mut c, Body::Graha(Graha::Venus), Rashi::Pisces);
+        let rahu = SignRef::from(Body::Graha(Graha::Rahu));
+        let on_rahu = Condition::Argala {
+            on: rahu,
+            place: ArgalaPlace::Second,
+        };
+        assert!(holds(&c, ENGINE, &on_rahu).0);
+        // The same graha in the sign that is second going forward does not.
+        place(&mut c, Body::Graha(Graha::Venus), Rashi::Taurus);
+        assert!(!holds(&c, ENGINE, &on_rahu).0);
+    }
+
+    #[test]
+    fn three_malefics_in_the_third_are_a_contrary_intervention() {
+        let mut c = chart();
+        for body in Body::ALL {
+            place(&mut c, body, Rashi::Aries);
+        }
+        let lagna = SignRef::House(house(1));
+        let contrary = Condition::VipareetaArgala { on: lagna };
+        assert!(!holds(&c, ENGINE, &contrary).0);
+        for body in [Graha::Sun, Graha::Mars, Graha::Saturn] {
+            place(&mut c, Body::Graha(body), Rashi::Gemini);
+        }
+        let (held, bodies) = holds(&c, ENGINE, &contrary);
+        assert!(held);
+        assert_eq!(bodies.len(), 3);
     }
 }
