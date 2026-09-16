@@ -22,7 +22,7 @@ it reads a graha. Three families ship:
   before it;
 - the **upagrahas the day divides** — Gulika and Mandi, which are the
   ascendant at the two ends of Saturn's eighth of the arc;
-- the **special lagnas** — the hora, ghati and pranapada lagnas, which
+- the **special lagnas** — the bhava, hora, ghati and pranapada lagnas, which
   the clock drives; the Sree lagna, which the Moon's nakshatra drives;
   and the Yogi and Avayogi points.
 
@@ -251,7 +251,13 @@ who knows its provider's accuracy.
   most 1.633 minutes, on 25 of 71 fixtures. Worth another look when the
   conformance harness runs over a real adapter, since that is the first
   thing that could tell a sunrise convention from an arithmetic one.
-- **The rest of the catalogue's 49 points.** Bhava and Vighati lagna,
+- **The bhava lagna followed (2026-09-16)**, when BPHS ch. 39 v. 24 named
+  it: BPHS ch. 4 vv. 2 to 3 give it as the same rule at one sign in five
+  ghatis, 15° an hour, and it starts from the Sun at birth as its siblings
+  do. The corpus records none, so what holds it is the arithmetic the
+  verses imply — on every chart the SDK reads, it stands half as far round
+  from the Sun as the hora lagna (`crates/sdk/tests/rules.rs`).
+- **The rest of the catalogue's 49 points.** Vighati lagna,
   Indu lagna, Kala, Mrityu, Ardhaprahara and Yamaghantaka, Bhrigu bindu,
   Sahayogi and the eight sphutas all have catalogue rows and no formula
   here. The corpus records none of them, so each

@@ -40,8 +40,9 @@ impl Points {
         let moon = longitude(foundation, Graha::Moon)?;
         let lagna_deg = foundation.lagna_deg;
         let hours = foundation.timing.ishtakaal.to_hours();
-        let mut found = Vec::with_capacity(9);
+        let mut found = Vec::with_capacity(10);
         found.extend(solar::chain(sun)?);
+        found.push(lagna::bhava(sun, hours)?);
         found.push(lagna::hora(sun, hours)?);
         found.push(lagna::ghati(sun, hours)?);
         found.push(lagna::pranapada(sun, hours)?);

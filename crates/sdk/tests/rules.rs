@@ -17,8 +17,8 @@ mod common;
 
 use common::fixture;
 use teistro::catalogue::ChartKind;
-use teistro::catalogue::DashaSystem;
 use teistro::catalogue::Varga;
+use teistro::catalogue::{DashaSystem, Graha, Point};
 use teistro::quantity::Depth;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rules::{Body, Evaluator, House, Karaka, Readings, Rule, shipped};
@@ -229,6 +229,12 @@ fn a_result_says_which_of_the_sdk_s_own_dasha_periods_deliver_it() {
 /// SDK's own chart that moves a rule's input fails here first.
 #[test]
 fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
+    // BPHS ch. 39's figures on the special lagnas, which only a reading's
+    // points can answer.
+    const SPECIAL: [&str; 2] = [
+        "BPHS_DIGNIFIED_GRAHAS_ON_THE_LAGNA_HORA_AND_GHATIKA_LAGNAS",
+        "BPHS_EXALTED_ASPECTS_ON_TWO_OF_THE_BHAVA_HORA_AND_GHATIKA_LAGNAS",
+    ];
     let sdk = Context::builder()
         .profile("conformance-baseline")
         .ephemeris([Ephemeris::Builtin])
@@ -236,17 +242,14 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
         .expect("the conformance profile and the built-in ephemeris");
     let rules = shipped::nabhasas();
     let (mut charts, mut points, mut differ) = (0, 0, [0_usize; 5]);
+    let mut special = [0_usize; 2];
     let mut refused = Vec::new();
     for (name, chart) in common::charts() {
         let document =
             match common::reading_of(&sdk, &chart, |request| request.with_rule_inputs(rules)) {
                 Ok(document) => document,
                 Err(error) => {
-                    // The built-in ephemeris covers 1800 to 2400, and a strength
-                    // reads the year before a birth: the corpus's two charts at
-                    // its edges are refused by the provider, by name.
-                    assert_eq!(error.status, teistro::Status::Provider, "{name}: {error}");
-                    refused.push(name);
+                    refused.push((name, error.status));
                     continue;
                 }
             };
@@ -272,10 +275,32 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
                 *count += usize::from(differs);
             }
         }
-        // Every division a shipped rule steps into, and the special lagnas.
+        // Every division a shipped rule steps into.
         let asked: Vec<Varga> = inputs.vargas.iter().map(|varga| varga.varga).collect();
         for varga in rules.iter().flat_map(Rule::vargas) {
             assert!(asked.contains(&varga), "{name}: {varga:?}");
+        }
+        // BPHS ch. 4 vv. 2 to 5: the bhava lagna moves a sign in five ghatis
+        // and the hora lagna in two and a half, both from the Sun, so the one
+        // is always half as far round as the other.
+        let sun = document.foundation.graha(Graha::Sun).unwrap().longitude_deg;
+        let from_sun = |point: Point| {
+            let at = document
+                .points
+                .as_ref()
+                .and_then(|found| found.at(point))
+                .unwrap();
+            (at.longitude_deg - sun).rem_euclid(360.0)
+        };
+        let (bhava, hora) = (from_sun(Point::BhavaLagna), from_sun(Point::HoraLagna));
+        assert!(
+            ((2.0 * bhava).rem_euclid(360.0) - hora).abs() < 1e-6,
+            "{name}: {bhava} {hora}"
+        );
+        let evaluator = inputs.evaluator(Readings::TEXTS).with_rules(rules);
+        for (count, key) in special.iter_mut().zip(SPECIAL) {
+            let rule = rules.iter().find(|rule| rule.key == key).unwrap();
+            *count += usize::from(evaluator.evaluate(rule).present);
         }
         points += inputs.points.len();
         charts += 1;
@@ -285,13 +310,27 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     // built-in ephemeris's past it. So the Sun's sign and dignity differ, and
     // the Sun, 29.99999° into Pisces for the engine and the least advanced
     // graha for the SDK, reorders all seven karakas. No field differs
-    // anywhere else, and no chart the shipped rules read asked for a point.
-    assert_eq!((charts, points, differ), (53, 0, [1, 1, 0, 0, 7]));
+    // anywhere else. Twelve points and fourteen with Gulika and Mandi, and
+    // neither special-lagna figure on any chart.
+    assert_eq!(
+        (charts, points, differ, special),
+        (51, 51 * 14, [1, 1, 0, 0, 7], [0, 0])
+    );
+    // Refused, each for what it cannot have: Tromsø's midnight sun and polar
+    // night, whose days have no sunrise for a special lagna to count from; and
+    // the two charts at the built-in ephemeris's edges, whose strength reads
+    // the year before a birth outside 1800 to 2400.
+    let refused: Vec<(&str, teistro::Status)> = refused
+        .iter()
+        .map(|(name, status)| (name.as_str(), *status))
+        .collect();
     assert_eq!(
         refused,
         [
-            "c047-london-1800-01-02.json",
-            "c048-kathmandu-2399-12-30.json"
+            ("c028-troms-1988-06-21.json", teistro::Status::OutOfRange),
+            ("c029-troms-1988-12-21.json", teistro::Status::OutOfRange),
+            ("c047-london-1800-01-02.json", teistro::Status::Provider),
+            ("c048-kathmandu-2399-12-30.json", teistro::Status::Provider),
         ]
     );
 }

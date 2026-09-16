@@ -194,7 +194,7 @@ exponent.
 
 | sample | largest number | decimals resolved there | numbers | a correct parser moves | this build's parser moves |
 |---|---|---|---|---|---|
-| `whole` | 2502450 | 10 | 4890 | 0 | 0 |
+| `whole` | 2502450 | 10 | 4894 | 0 | 0 |
 | `day` | 2460506 | 10 | 409 | 0 | 0 |
 | `bare` | 2460483 | 10 | 171 | 0 | 0 |
 
@@ -232,8 +232,8 @@ for, and that is where a fixed count of decimals ran out.
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
 | the layer's types read back, so a round trip can gate the schema | **holds** | 63 types derive `Deserialize` |
 | one casing convention covers every enum in a document | falsified | 2 conventions declared |
-| every number the form writes reads back as the same double | **holds** | 0 of 5470 move under a correct parser |
-| this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5470 |
+| every number the form writes reads back as the same double | **holds** | 0 of 5474 move under a correct parser |
+| this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5474 |
 
 The measurement falsifies 3 of the 6 proposed rules. Those three say the
 same thing about **where** a schema comes from: the description, beside

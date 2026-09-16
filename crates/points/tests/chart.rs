@@ -117,7 +117,7 @@ fn every_profile_the_provider_can_found_computes_its_points() {
             Ok((foundation, _)) => {
                 let points = Points::from_longitudes(&foundation)
                     .unwrap_or_else(|e| panic!("{profile}: {e}"));
-                assert_eq!(points.all().len(), 11, "{profile}");
+                assert_eq!(points.all().len(), 12, "{profile}");
                 computed.push(profile);
             }
             Err(error) => {
@@ -139,7 +139,7 @@ fn every_profile_the_provider_can_found_computes_its_points() {
 fn every_point_of_a_founded_chart_agrees_with_itself() {
     let foundation = founded();
     let points = Points::from_longitudes(&foundation).expect("a founded chart");
-    assert_eq!(points.all().len(), 11, "five cast, four driven, two yogi");
+    assert_eq!(points.all().len(), 12, "five cast, five driven, two yogi");
     for derived in points.all() {
         // The sign is the sign of its own longitude.
         assert_eq!(

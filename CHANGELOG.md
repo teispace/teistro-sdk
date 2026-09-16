@@ -1306,6 +1306,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- BPHS ch. 39 v. 15's and v. 24's figures on the special lagnas, and the
+  bhava lagna they name (BPHS ch. 4 vv. 2 to 3, one sign in five ghatis),
+  now computed beside the hora and ghatika lagnas. The SDK ships 938 rules.
+
+  **Numbers:** a chart's points gain the bhava lagna; nothing else in the
+  points moves. Neither figure answers any of the 51 corpus charts the SDK
+  reads with points. V. 12 is not shipped: its two readings answer 6 charts
+  and 52 (crux C100).
+
 - **Fixed: a birth or a day near the date line.** Where a civil clock keeps
   more than half a day from the place's mean time — Samoa, Tonga, Tokelau,
   Kiribati's Line Islands — the local day's sunrise was taken from the wrong

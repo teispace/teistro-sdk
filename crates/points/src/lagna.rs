@@ -1,9 +1,10 @@
 //! The special lagnas: three the clock drives, one the Moon does, and
 //! the two Yogi points.
 //!
-//! The hora, ghati and pranapada lagnas are **one rule at three
-//! speeds**: start at the Sun *at birth* and advance 30°, 75° or 60° for
-//! each hour since sunrise. The pranapada adds one thing more — nothing
+//! The bhava, hora, ghati and pranapada lagnas are **one rule at four
+//! speeds**: start at the Sun *at birth* and advance 15°, 30°, 75° or 60°
+//! for each hour since sunrise — one sign in five ghatis, in two and a half,
+//! in one (BPHS ch. 4 vv. 2 to 8), and two signs an hour. The pranapada adds one thing more — nothing
 //! if the Sun stands in a movable sign, 240° in a fixed one, 120° in a
 //! dual one.
 //!
@@ -22,12 +23,14 @@
 //! computes, and the difference is registry entry 25.
 //!
 //! ```
-//! use teistro_points::lagna::{ghati, hora, sree};
+//! use teistro_points::lagna::{bhava, ghati, hora, sree};
 //!
 //! // An hour after sunrise the hora lagna has moved one sign from the
 //! // Sun and the ghati lagna two and a half.
 //! assert!((hora(0.0, 1.0).expect("finite").longitude_deg - 30.0).abs() < 1e-9);
 //! assert!((ghati(0.0, 1.0).expect("finite").longitude_deg - 75.0).abs() < 1e-9);
+//! // The bhava lagna moves a sign in five ghatis, two hours.
+//! assert!((bhava(0.0, 2.0).expect("finite").longitude_deg - 30.0).abs() < 1e-9);
 //! // The Sree lagna is the lagna advanced by the Moon's nakshatra
 //! // fraction, of a whole circle.
 //! assert!((sree(0.0, 360.0 / 54.0).expect("finite").longitude_deg - 180.0).abs() < 1e-9);
@@ -37,6 +40,10 @@ use teistro_core::catalogue::{Nakshatra, Point, Rashi};
 use teistro_core::error::{Error, Status};
 
 use crate::derived::Derived;
+
+/// The degrees the bhava lagna advances in an hour after sunrise: one sign
+/// in five ghatis, which is two hours (BPHS ch. 4 vv. 2 to 3).
+pub const BHAVA_RATE_DEG_PER_HOUR: f64 = 15.0;
 
 /// The degrees the hora lagna advances in an hour after sunrise: one
 /// sign an hour, which is one sign in two and a half ghatis.
@@ -62,10 +69,31 @@ pub const AVAYOGI_FROM_YOGI_DEG: f64 = 186.0 + 40.0 / 60.0;
 
 /// The longest elapsed time since sunrise a chart can have, hours.
 ///
-/// A day of the tradition runs sunrise to sunrise, and the longest one
-/// the SDK's own polar policies produce is well inside this; a caller
-/// passing days rather than hours is what the bound catches.
+/// A day of the tradition runs sunrise to sunrise, a day and a night. A
+/// polar day has no sunrise, and the `NEAREST_EVENT` policy counts from the
+/// nearest one there was: a birth at noon under Tromsø's midnight sun on
+/// 21 June 1988 is 102 hours from it, and a hora lagna 102 hours on is not a
+/// time the verses count. So the bound refuses it, as it refuses a caller
+/// passing days rather than hours.
 pub const LONGEST_HOURS: f64 = 36.0;
+
+/// The bhava lagna: the Sun advanced one sign for each five ghatis since
+/// sunrise (BPHS ch. 4 vv. 2 to 3). The verse starts from the Sun at
+/// sunrise; this starts from the Sun at birth, as its three siblings do,
+/// which is the recording engine's convention for them (the module's notes).
+///
+/// # Errors
+///
+/// As [`driven`].
+pub fn bhava(sun_deg: f64, hours_after_sunrise: f64) -> Result<Derived, Error> {
+    driven(
+        Point::BhavaLagna,
+        sun_deg,
+        hours_after_sunrise,
+        BHAVA_RATE_DEG_PER_HOUR,
+        0.0,
+    )
+}
 
 /// The hora lagna: the Sun advanced one sign for each hour since
 /// sunrise.

@@ -31,7 +31,7 @@ fn chapters() -> Vec<Rule> {
 #[test]
 fn the_royal_combinations_answer_where_they_did() {
     let rules = chapters();
-    assert_eq!(rules.len(), 56);
+    assert_eq!(rules.len(), 58);
     let at = |key: &str| rules.iter().position(|rule| rule.key == key).unwrap();
     let exalted = [
         at("BPHS_ONE_TO_THREE_GRAHAS_EXALTED"),
@@ -69,7 +69,7 @@ fn the_royal_combinations_answer_where_they_did() {
 /// What each answers over the 93 recorded charts. The widest is the verse's
 /// own arithmetic: seven signs of twelve are a benefic's, so an Atmakaraka in
 /// a benefic's sign or navamsha is about five charts in six.
-const ROYAL: [(&str, usize); 56] = [
+const ROYAL: [(&str, usize); 58] = [
     ("BPHS_AMATYAKARAKA_IN_LAGNA_FIFTH_OR_NINTH", 11),
     ("BPHS_AMATYAKARAKA_STRONG_WITH_A_BENEFIC_OR_DIGNIFIED", 22),
     ("BPHS_AMATYAKARAKA_WITH_ATMAKARAKAS_DISPOSITOR", 13),
@@ -106,6 +106,10 @@ const ROYAL: [(&str, usize); 56] = [
         "BPHS_DEBILITATED_GRAHA_IN_THIRD_OR_ELEVENTH_ASPECTS_LAGNA",
         1,
     ),
+    (
+        "BPHS_DIGNIFIED_GRAHAS_ON_THE_LAGNA_HORA_AND_GHATIKA_LAGNAS",
+        0,
+    ),
     ("BPHS_DUSTHANA_LORDS_AFFLICTED_AND_LAGNA_LORD_DIGNIFIED", 0),
     (
         "BPHS_ELEVENTH_LORD_IN_ELEVENTH_UNASPECTED_AND_ATMAKARAKA_WITH_A_BENEFIC",
@@ -113,6 +117,10 @@ const ROYAL: [(&str, usize); 56] = [
     ),
     (
         "BPHS_EVERY_BENEFIC_ANGULAR_AND_EVERY_MALEFIC_IN_UPACHAYAS",
+        0,
+    ),
+    (
+        "BPHS_EXALTED_ASPECTS_ON_TWO_OF_THE_BHAVA_HORA_AND_GHATIKA_LAGNAS",
         0,
     ),
     (

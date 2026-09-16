@@ -703,6 +703,152 @@
       ]
     },
     {
+      "key": "BPHS_DIGNIFIED_GRAHAS_ON_THE_LAGNA_HORA_AND_GHATIKA_LAGNAS",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "15",
+        "rank": 1,
+        "note": "A graha exalted or in its own sign in the sign of each of the three lagnas — the natal, the hora and the ghatika (BPHS ch. 4 vv. 4 to 8) — the verse's first figure. The special lagnas are points a chart reading carries, and a chart without them, a birth with no sunrise among them, answers false. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": 1
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "exaltationOf": "SELF"
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": "SELF"
+                    },
+                    "as": "SELF"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "point": "HORA_LAGNA"
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "exaltationOf": "SELF"
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": "SELF"
+                    },
+                    "as": "SELF"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "point": "GHATI_LAGNA"
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "exaltationOf": "SELF"
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": "SELF"
+                    },
+                    "as": "SELF"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
       "key": "BPHS_EXALTED_GRAHAS_ON_THE_LAGNA_DREKKANA_AND_NAVAMSHA_LAGNAS",
       "category": "raja",
       "source": {
@@ -710,7 +856,7 @@
         "chapter": "39",
         "verse": "15",
         "rank": 1,
-        "note": "An exalted graha in the lagna of the rasi chart, of the drekkana and of the navamsha — the verse's second figure. Its first, the three lagnas with the hora and ghatika lagnas, wants the special lagnas and is not here. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+        "note": "An exalted graha in the lagna of the rasi chart, of the drekkana and of the navamsha — the verse's second figure. Its first is BPHS_DIGNIFIED_GRAHAS_ON_THE_LAGNA_HORA_AND_GHATIKA_LAGNAS. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
       },
       "conditions": [
         {
@@ -1445,6 +1591,231 @@
         {
           "type": "effect",
           "text": "doubtlessly a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_EXALTED_ASPECTS_ON_TWO_OF_THE_BHAVA_HORA_AND_GHATIKA_LAGNAS",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "24",
+        "rank": 1,
+        "note": "Two or all three of the bhava, hora and ghatika lagnas (BPHS ch. 4 vv. 2 to 8) each aspected by an exalted graha, by graha drishti on the lagna's sign. The special lagnas are points a chart reading carries, and a chart without them answers false. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "BHAVA_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "HORA_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "BHAVA_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "GHATI_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "HORA_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "GHATI_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
         }
       ]
     },

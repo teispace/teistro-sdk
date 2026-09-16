@@ -1087,6 +1087,19 @@ v. 16 is present on every chart, which is right: what it says is *whose* periods
 give wealth, and that is in its participants. Ch. 42 v. 13 answers 83 of 93 for
 the same reason.
 
+**The special lagnas (2026-09-16).** With points reaching the evaluator,
+BPHS ch. 39's figures on the hora, ghatika and bhava lagnas are sayable as
+`{"point": …}` references: v. 15's dignified grahas in the natal, hora and
+ghatika lagnas, and v. 24's exalted aspects on two of the bhava, hora and
+ghatika lagnas. The bhava lagna was catalogued and not computed; BPHS ch. 4
+vv. 2 to 3 give it as the hora lagna's rule at half the speed, so it is now.
+Over the 51 charts the SDK reads with points neither figure answers, which is
+their rarity rather than a defect. V. 12 is not shipped: one graha aspecting
+all three lagnas answers 6 charts and any one of them 52 (crux C100). A birth
+with no sunrise has no special lagnas, and a reading asking for points there
+is refused — Tromsø's midnight sun and polar night — which is why
+`with_rule_inputs` asks for points only when a rule names one.
+
 **From a chart reading to an evaluator (2026-09-16).** A consumer had to join
 five things by hand — the foundation, the graha states, the divisions, the
 points and the strengths — before a rule could be read. Now one request and one
