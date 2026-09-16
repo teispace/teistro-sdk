@@ -315,66 +315,8 @@ const ANSWERED: [(&str, usize); 72] = [
 #[test]
 fn the_generator_makes_one_rule_a_reading() {
     let rules = shipped::readings();
-    assert_eq!(rules.len(), 212);
-    let mut pairs: Vec<(&str, &str)> = Vec::new();
-    let mut moon: Vec<(&str, &str)> = Vec::new();
-    // Jataka Parijata's lists, by how many grahas share the sign.
-    let mut together: BTreeMap<usize, usize> = BTreeMap::new();
-    for rule in rules {
-        assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
-        assert_eq!(
-            rule.source.rank.map(teistro_rules::EvidenceRank::get),
-            Some(1),
-            "{}: read from a text",
-            rule.key
-        );
-        assert!(rule.source.verse.is_some(), "{}: cites a verse", rule.key);
-        assert!(rule.source.note.is_some(), "{}: says how it was read", rule.key);
-        assert!(
-            rule.severity.is_none() && rule.cancellations.is_empty(),
-            "{}: a reading grades nothing and nothing cancels it",
-            rule.key
-        );
-        let text = rule
-            .outcome
-            .as_ref()
-            .and_then(teistro_rules::Outcome::text)
-            .unwrap_or_else(|| panic!("{}: says in words what follows", rule.key));
-        assert!(!text.is_empty() && rule.outcome.as_ref().unwrap().days().is_none());
-        match rule.category.as_str() {
-            "dwigraha" => pairs.push(named(&rule.key, "DWIGRAHA_")),
-            "chandra-drishti" => moon.push(named(&rule.key, "CHANDRA_IN_")),
-            "grahas-together" => {
-                let teistro_rules::Condition::PlanetConjunct { planets, .. } = &rule.conditions[0]
-                else {
-                    panic!("{}: grahas sharing a sign", rule.key)
-                };
-                *together.entry(planets.len()).or_default() += 1;
-            }
-            other => panic!("{}: {other} is not a family here", rule.key),
-        }
-    }
-    // Every unordered pair of the seven, once each, and every sign under every
-    // one of the six aspects.
-    assert_eq!(pairs.len(), 21);
-    let mut seen = pairs.clone();
-    seen.sort_unstable();
-    seen.dedup();
-    assert_eq!(seen.len(), 21);
-    assert_eq!(moon.len(), 72);
-    let signs: BTreeMap<&str, usize> = moon.iter().fold(BTreeMap::new(), |mut counted, (sign, _)| {
-        *counted.entry(*sign).or_default() += 1;
-        counted
-    });
-    assert_eq!(signs.len(), 12);
-    assert!(signs.values().all(|count| *count == 6));
-    // Every combination of the seven from two to six, once each: 21, 35, 35,
-    // 21 and 7.
-    assert_eq!(
-        together.into_iter().collect::<Vec<_>>(),
-        [(2, 21), (3, 35), (4, 35), (5, 21), (6, 7)]
-    );
-
+    assert_eq!(rules.len(), 296);
+    every_family_is_whole(rules);
     // What the generator builds is a rule like any other: it writes out in the
     // language and reads back the same, outcome and all.
     let written = serde_json::to_value(rules).unwrap();
@@ -413,16 +355,27 @@ fn the_generator_makes_one_rule_a_reading() {
     let (varahamihira, parijata) = (answered("DWIGRAHA_"), answered("PARIJATA_TOGETHER_"));
     assert_eq!(varahamihira.len(), 21);
     assert_eq!(varahamihira, parijata);
-    // Every pair of grahas happens somewhere in 93 charts. Eighty-four
-    // readings stay silent: 35 of the Moon's 72, among them all six of Aries,
-    // where she stands in one chart only and nothing aspects her, and the
-    // larger assemblies, which want four, five or six grahas in one sign.
+    // Every pair of grahas, and every graha in every sign, happens somewhere
+    // in 93 charts. 84 readings stay silent: 35 of the Moon's 72, among them
+    // all six of Aries, where she stands in one chart only and nothing aspects
+    // her, and the larger assemblies, which want four grahas or more in one
+    // sign.
     let silent = counts.iter().filter(|(_, count)| *count == 0).count();
     assert_eq!(silent, 84);
+    // A graha stands in exactly one sign in every chart, so each of Saravali's
+    // chapters answers 93 times over the 93.
+    let mut by_graha: BTreeMap<&str, usize> = BTreeMap::new();
+    for (key, count) in &counts {
+        if let Some(rest) = key.strip_prefix("SARAVALI_") {
+            *by_graha.entry(named(rest, "").0).or_default() += count;
+        }
+    }
+    assert_eq!(by_graha.len(), 7);
+    assert!(by_graha.values().all(|total| *total == 93), "{by_graha:?}");
 }
 
 /// What each reading answers over the 93 recorded charts.
-const READINGS: [(&str, usize); 212] = [
+const READINGS: [(&str, usize); 296] = [
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_JUPITER", 0),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MARS", 2),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MERCURY", 1),
@@ -635,7 +588,162 @@ const READINGS: [(&str, usize); 212] = [
     ("PARIJATA_TOGETHER_SUN_VENUS", 10),
     ("PARIJATA_TOGETHER_SUN_VENUS_SATURN", 2),
     ("PARIJATA_TOGETHER_VENUS_SATURN", 8),
+    ("SARAVALI_JUPITER_IN_AQUARIUS", 3),
+    ("SARAVALI_JUPITER_IN_ARIES", 8),
+    ("SARAVALI_JUPITER_IN_CANCER", 4),
+    ("SARAVALI_JUPITER_IN_CAPRICORN", 12),
+    ("SARAVALI_JUPITER_IN_GEMINI", 15),
+    ("SARAVALI_JUPITER_IN_LEO", 1),
+    ("SARAVALI_JUPITER_IN_LIBRA", 3),
+    ("SARAVALI_JUPITER_IN_PISCES", 17),
+    ("SARAVALI_JUPITER_IN_SAGITTARIUS", 5),
+    ("SARAVALI_JUPITER_IN_SCORPIO", 2),
+    ("SARAVALI_JUPITER_IN_TAURUS", 12),
+    ("SARAVALI_JUPITER_IN_VIRGO", 11),
+    ("SARAVALI_MARS_IN_AQUARIUS", 16),
+    ("SARAVALI_MARS_IN_ARIES", 4),
+    ("SARAVALI_MARS_IN_CANCER", 1),
+    ("SARAVALI_MARS_IN_CAPRICORN", 7),
+    ("SARAVALI_MARS_IN_GEMINI", 6),
+    ("SARAVALI_MARS_IN_LEO", 18),
+    ("SARAVALI_MARS_IN_LIBRA", 5),
+    ("SARAVALI_MARS_IN_PISCES", 9),
+    ("SARAVALI_MARS_IN_SAGITTARIUS", 8),
+    ("SARAVALI_MARS_IN_SCORPIO", 13),
+    ("SARAVALI_MARS_IN_TAURUS", 4),
+    ("SARAVALI_MARS_IN_VIRGO", 2),
+    ("SARAVALI_MERCURY_IN_AQUARIUS", 7),
+    ("SARAVALI_MERCURY_IN_ARIES", 21),
+    ("SARAVALI_MERCURY_IN_CANCER", 14),
+    ("SARAVALI_MERCURY_IN_CAPRICORN", 6),
+    ("SARAVALI_MERCURY_IN_GEMINI", 1),
+    ("SARAVALI_MERCURY_IN_LEO", 3),
+    ("SARAVALI_MERCURY_IN_LIBRA", 2),
+    ("SARAVALI_MERCURY_IN_PISCES", 7),
+    ("SARAVALI_MERCURY_IN_SAGITTARIUS", 9),
+    ("SARAVALI_MERCURY_IN_SCORPIO", 6),
+    ("SARAVALI_MERCURY_IN_TAURUS", 7),
+    ("SARAVALI_MERCURY_IN_VIRGO", 10),
+    ("SARAVALI_MOON_IN_AQUARIUS", 4),
+    ("SARAVALI_MOON_IN_ARIES", 1),
+    ("SARAVALI_MOON_IN_CANCER", 5),
+    ("SARAVALI_MOON_IN_CAPRICORN", 8),
+    ("SARAVALI_MOON_IN_GEMINI", 6),
+    ("SARAVALI_MOON_IN_LEO", 10),
+    ("SARAVALI_MOON_IN_LIBRA", 3),
+    ("SARAVALI_MOON_IN_PISCES", 13),
+    ("SARAVALI_MOON_IN_SAGITTARIUS", 12),
+    ("SARAVALI_MOON_IN_SCORPIO", 16),
+    ("SARAVALI_MOON_IN_TAURUS", 4),
+    ("SARAVALI_MOON_IN_VIRGO", 11),
+    ("SARAVALI_SATURN_IN_AQUARIUS", 5),
+    ("SARAVALI_SATURN_IN_ARIES", 14),
+    ("SARAVALI_SATURN_IN_CANCER", 5),
+    ("SARAVALI_SATURN_IN_CAPRICORN", 20),
+    ("SARAVALI_SATURN_IN_GEMINI", 3),
+    ("SARAVALI_SATURN_IN_LEO", 2),
+    ("SARAVALI_SATURN_IN_LIBRA", 1),
+    ("SARAVALI_SATURN_IN_PISCES", 4),
+    ("SARAVALI_SATURN_IN_SAGITTARIUS", 9),
+    ("SARAVALI_SATURN_IN_SCORPIO", 10),
+    ("SARAVALI_SATURN_IN_TAURUS", 9),
+    ("SARAVALI_SATURN_IN_VIRGO", 11),
+    ("SARAVALI_SUN_IN_AQUARIUS", 7),
+    ("SARAVALI_SUN_IN_ARIES", 15),
+    ("SARAVALI_SUN_IN_CANCER", 11),
+    ("SARAVALI_SUN_IN_CAPRICORN", 6),
+    ("SARAVALI_SUN_IN_GEMINI", 11),
+    ("SARAVALI_SUN_IN_LEO", 8),
+    ("SARAVALI_SUN_IN_LIBRA", 3),
+    ("SARAVALI_SUN_IN_PISCES", 6),
+    ("SARAVALI_SUN_IN_SAGITTARIUS", 13),
+    ("SARAVALI_SUN_IN_SCORPIO", 2),
+    ("SARAVALI_SUN_IN_TAURUS", 9),
+    ("SARAVALI_SUN_IN_VIRGO", 2),
+    ("SARAVALI_VENUS_IN_AQUARIUS", 13),
+    ("SARAVALI_VENUS_IN_ARIES", 2),
+    ("SARAVALI_VENUS_IN_CANCER", 7),
+    ("SARAVALI_VENUS_IN_CAPRICORN", 12),
+    ("SARAVALI_VENUS_IN_GEMINI", 8),
+    ("SARAVALI_VENUS_IN_LEO", 5),
+    ("SARAVALI_VENUS_IN_LIBRA", 1),
+    ("SARAVALI_VENUS_IN_PISCES", 5),
+    ("SARAVALI_VENUS_IN_SAGITTARIUS", 10),
+    ("SARAVALI_VENUS_IN_SCORPIO", 4),
+    ("SARAVALI_VENUS_IN_TAURUS", 18),
+    ("SARAVALI_VENUS_IN_VIRGO", 8),
 ];
+
+/// Each family holds its own shape: twenty-one distinct pairs, twelve signs of
+/// six aspects each, every combination of the seven from two to six once, and
+/// each of the seven in each of the twelve signs.
+fn every_family_is_whole(rules: &[Rule]) {
+    let mut pairs: Vec<(&str, &str)> = Vec::new();
+    let mut moon: Vec<(&str, &str)> = Vec::new();
+    // Jataka Parijata's lists, by how many grahas share the sign.
+    let mut together: BTreeMap<usize, usize> = BTreeMap::new();
+    // Saravali's chapters, by the graha each is about.
+    let mut in_rasi: BTreeMap<&str, usize> = BTreeMap::new();
+    for rule in rules {
+        assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
+        assert_eq!(
+            rule.source.rank.map(teistro_rules::EvidenceRank::get),
+            Some(1),
+            "{}: read from a text",
+            rule.key
+        );
+        assert!(rule.source.verse.is_some(), "{}: cites a verse", rule.key);
+        assert!(rule.source.note.is_some(), "{}: says how it was read", rule.key);
+        assert!(
+            rule.severity.is_none() && rule.cancellations.is_empty(),
+            "{}: a reading grades nothing and nothing cancels it",
+            rule.key
+        );
+        let text = rule
+            .outcome
+            .as_ref()
+            .and_then(teistro_rules::Outcome::text)
+            .unwrap_or_else(|| panic!("{}: says in words what follows", rule.key));
+        assert!(!text.is_empty() && rule.outcome.as_ref().unwrap().days().is_none());
+        match rule.category.as_str() {
+            "dwigraha" => pairs.push(named(&rule.key, "DWIGRAHA_")),
+            "chandra-drishti" => moon.push(named(&rule.key, "CHANDRA_IN_")),
+            "grahas-together" => {
+                let teistro_rules::Condition::PlanetConjunct { planets, .. } = &rule.conditions[0]
+                else {
+                    panic!("{}: grahas sharing a sign", rule.key)
+                };
+                *together.entry(planets.len()).or_default() += 1;
+            }
+            "graha-in-rasi" => *in_rasi.entry(named(&rule.key, "SARAVALI_").0).or_default() += 1,
+            other => panic!("{}: {other} is not a family here", rule.key),
+        }
+    }
+    // Every unordered pair of the seven, once each, and every sign under every
+    // one of the six aspects.
+    assert_eq!(pairs.len(), 21);
+    let mut seen = pairs.clone();
+    seen.sort_unstable();
+    seen.dedup();
+    assert_eq!(seen.len(), 21);
+    assert_eq!(moon.len(), 72);
+    let signs: BTreeMap<&str, usize> = moon.iter().fold(BTreeMap::new(), |mut counted, (sign, _)| {
+        *counted.entry(*sign).or_default() += 1;
+        counted
+    });
+    assert_eq!(signs.len(), 12);
+    assert!(signs.values().all(|count| *count == 6));
+    // Every combination of the seven from two to six, once each: 21, 35, 35,
+    // 21 and 7.
+    assert_eq!(
+        together.into_iter().collect::<Vec<_>>(),
+        [(2, 21), (3, 35), (4, 35), (5, 21), (6, 7)]
+    );
+    // Each of the seven in each of the twelve signs, once.
+    assert_eq!(in_rasi.len(), 7);
+    assert!(in_rasi.values().all(|count| *count == 12));
+
+}
 
 /// The two names a generated key holds, after its family's prefix: the pair,
 /// or the sign and the graha aspecting.

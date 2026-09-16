@@ -151,7 +151,7 @@ mod tests {
             .chain(arishtas())
             .chain(readings())
             .collect();
-        assert_eq!(rules.len(), 309);
+        assert_eq!(rules.len(), 393);
         for rule in &rules {
             let rank = rule
                 .source

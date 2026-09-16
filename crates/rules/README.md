@@ -61,7 +61,8 @@ cancellations held.
   span. Brihat Jataka ch. 14's twenty-one pairs and Phaladeepika ch. 18's
   seventy-two readings of the Moon ship that way, and so do Jataka Parijata's
   hundred and nineteen lists of two to six grahas sharing a sign, whose grahas
-  are generated and whose readings alone are data: 212 rules from a table,
+  are generated and whose readings alone are data, and Saravali chs. 22 to 29's
+  eighty-four readings of a graha in a sign: 296 rules from a table,
   `shipped::readings()`.
 - **A body's degrees within its sign** are readable (`planet-in-degrees`),
   which Brihat Jataka ch. 6 v. 8's last navamsa needs.

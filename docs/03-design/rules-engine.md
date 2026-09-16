@@ -510,13 +510,22 @@ strict combinatorial order, the Sun first, so a rule's grahas are *generated*
 and only its reading is data; a list printed out of order would fail the test
 that holds each size to its own count.
 
+Saravali's chapters 22 to 29 give one more shape and eighty-four more
+readings: each of the seven grahas in each of the twelve signs, a chapter to a
+graha. Those chapters also read the same graha under each other graha's aspect,
+and ch. 23 v. 88 makes the whole of them wait on the strength of the sign, its
+lord and the graha; neither is here, for want of a strength measure.
+
 A test holds the generator to its table — twenty-one distinct pairs, twelve
-signs of six aspects each, every combination of each size once, every rule
+signs of six aspects each, every combination of each size once, each of the
+seven in each of the twelve signs, every rule
 evaluable, rank 1, citing where it was read, carrying words and no severity and
 no cancellation — and pins what each answers over the 93 charts. Eighty-four
 stay silent, among them all six readings of an Aries Moon, who stands there in
 one chart and is aspected by nobody, and the larger assemblies, which want four
-grahas or more in one sign. Varahamihira's twenty-one pairs and Jataka
+grahas or more in one sign. A graha stands in exactly one sign in every chart,
+so each of Saravali's chapters answers 93 times over the 93 — an arithmetic the
+test holds, and which caught nothing because the reader was already right. Varahamihira's twenty-one pairs and Jataka
 Parijata's are the same figure read twice, so the test holds them to the same
 answers, reading for reading; they differ only in what they say of the native.
 

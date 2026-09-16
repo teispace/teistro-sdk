@@ -26,6 +26,7 @@ pub(crate) struct Table {
     dwigraha: Dwigraha,
     moon_aspected: MoonAspected,
     together: Together,
+    in_rasi: InRasi,
 }
 
 /// What every rule of a family shares: its text, and how it was read.
@@ -33,7 +34,9 @@ pub(crate) struct Table {
 #[serde(deny_unknown_fields)]
 struct Family {
     text: String,
-    chapter: String,
+    /// The chapter, when every rule of the family shares one.
+    #[serde(default)]
+    chapter: Option<String>,
     rank: u8,
     note: String,
 }
@@ -87,6 +90,32 @@ struct Set {
     effects: Vec<String>,
 }
 
+/// Saravali's chapters of a graha in the twelve signs.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct InRasi {
+    #[serde(flatten)]
+    family: Family,
+    grahas: Vec<GrahaRows>,
+}
+
+/// One graha's chapter: a reading for each sign, from Aries.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct GrahaRows {
+    planet: Body,
+    chapter: String,
+    readings: Vec<Reading>,
+}
+
+/// One sign's reading, and the verses it stands on.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Reading {
+    verse: String,
+    effect: String,
+}
+
 /// One sign's row: a reading for each graha of `aspects`, in that order.
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -99,9 +128,14 @@ struct SignRow {
 impl Family {
     /// The citation a rule of this family carries, with its own verse.
     fn source(&self, verse: &str) -> Source {
+        self.in_chapter(self.chapter.clone(), verse)
+    }
+
+    /// The same, for a family whose chapter changes rule by rule.
+    fn in_chapter(&self, chapter: Option<String>, verse: &str) -> Source {
         Source {
             text: self.text.clone(),
-            chapter: Some(self.chapter.clone()),
+            chapter,
             verse: Some(verse.to_owned()),
             note: Some(self.note.clone()),
             rank: EvidenceRank::try_new(self.rank).ok(),
@@ -168,7 +202,11 @@ impl Table {
                     )
                 })
         });
-        pairs.chain(moon).chain(self.together()).collect()
+        pairs
+            .chain(moon)
+            .chain(self.together())
+            .chain(self.in_rasi())
+            .collect()
     }
 
     /// Jataka Parijata's lists, whose grahas are generated: the combinations of
@@ -191,6 +229,31 @@ impl Table {
                             max_orb: None,
                         }],
                         effect,
+                    )
+                })
+        })
+    }
+}
+
+impl Table {
+    /// Saravali's chapters: each graha in each of the twelve signs, the signs
+    /// in the catalogue's order, which is the chapters' order from Aries.
+    fn in_rasi(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.in_rasi.family;
+        self.in_rasi.grahas.iter().flat_map(move |graha| {
+            Rashi::ALL
+                .into_iter()
+                .zip(&graha.readings)
+                .map(move |(sign, reading)| {
+                    stating(
+                        format!("SARAVALI_{}_IN_{}", graha.planet.key(), sign.key()),
+                        "graha-in-rasi",
+                        family.in_chapter(Some(graha.chapter.clone()), &reading.verse),
+                        vec![Condition::PlanetInSign {
+                            planet: SignRef::Of(BodyRef::Body(graha.planet)),
+                            signs: vec![sign],
+                        }],
+                        &reading.effect,
                     )
                 })
         })

@@ -1076,6 +1076,14 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- Saravali chs. 22 to 29 beside them: each of the seven grahas in each of the
+  twelve signs, eighty-four readings, a chapter to a graha. `readings()` is now
+  296 rules, and the SDK ships 393. The chapters' further readings of a graha
+  under another's aspect, and ch. 23 v. 88's making the whole of them wait on
+  strength, are not here.
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
