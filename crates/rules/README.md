@@ -114,6 +114,9 @@ cancellations held.
   these houses from the Moon" is `count-in-houses`. Papa and shubha kartari
   (Phaladeepika ch. 6 sl. 8) needed nothing new: they are two
   `planet-in-house-from` conditions over a class.
+- **The marakas.** `Evaluator::marakas` gives every graha's reasons from BPHS
+  ch. 44, graded death or difficulty, and `vulnerability` reads a running
+  chain; every result is typed a vulnerability, never a date.
 - **Pindayu, Nisargayu and Amsayu.** `Evaluator::ayurdaya` sums BPHS ch. 43's
   three spans of life with every giver's basic years and reductions, and
   `Ayurdaya::chosen` picks among them by strength.

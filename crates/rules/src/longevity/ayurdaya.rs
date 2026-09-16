@@ -456,7 +456,7 @@ fn amsayu_multiple(rules: AyurdayaRules, graha: Graha, at: &Placement) -> f64 {
 
 /// The drekkana sign of a longitude, Parashara's: the sign itself, the fifth
 /// from it and the ninth, a third of the sign each.
-fn drekkana_of(longitude: f64) -> Rashi {
+pub(crate) fn drekkana_of(longitude: f64) -> Rashi {
     let longitude = longitude.rem_euclid(360.0);
     #[expect(
         clippy::cast_possible_truncation,

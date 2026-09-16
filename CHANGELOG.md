@@ -1306,6 +1306,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- The marakas: `Evaluator::marakas` gives every graha's reasons from BPHS ch. 44
+  vv. 2 to 24, graded death or difficulty; `Evaluator::vulnerability` reads a
+  running chain with v. 8's malefic major period in a malefic sub-period; and
+  `teistro::maraka_windows` gives a dasha's windows over the ages a class of
+  life runs to. Every result carries `Presentation::Vulnerability` (crux C105).
+
+  **Numbers:** the prime reasons are the kernel's maraka class on all 93
+  charts; seven grahas of nine carry a death-bringing reason. The corpus's
+  first chart, medium life by its three pairs, has 18 windows from 32 to 64
+  years, 7 of them v. 8's fatal kind.
+
 - Pindayu, Nisargayu and Amsayu: `Evaluator::ayurdaya` sums BPHS ch. 43 vv. 4
   to 32's three spans with each giver's basic years, reductions and net, and
   `Ayurdaya::chosen` picks by strength with ties averaged (crux C104).

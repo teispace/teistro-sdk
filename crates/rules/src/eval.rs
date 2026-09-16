@@ -237,7 +237,7 @@ impl<'a> Evaluator<'a> {
             malefic,
             maraka: [false; 10],
         };
-        evaluator.maraka = evaluator.marakas();
+        evaluator.maraka = evaluator.maraka_class();
         evaluator
     }
 
@@ -245,7 +245,7 @@ impl<'a> Evaluator<'a> {
     /// seventh, the malefics standing in either, and the malefics joining
     /// either lord. Malefic means malefic under the readings, and a house is
     /// counted as the readings count houses.
-    fn marakas(&self) -> [bool; 10] {
+    fn maraka_class(&self) -> [bool; 10] {
         let mut maraka = [false; 10];
         let houses = House::MARAKAS;
         let lords = houses.map(|house| graha_body(self.house_sign(house).attributes().lord));
@@ -1496,7 +1496,7 @@ fn set(nature: &mut [bool; 10], index: usize, value: bool) {
 /// The sign `count` signs on from `sign`.
 /// The nakshatra a sidereal longitude falls in, and its pada counted 1 to 4:
 /// 13°20′ to a nakshatra, a quarter of that to a pada.
-fn star(longitude: f64) -> (Nakshatra, u8) {
+pub(crate) fn star(longitude: f64) -> (Nakshatra, u8) {
     const WIDTH: f64 = 360.0 / 27.0;
     let into = longitude.rem_euclid(360.0);
     #[allow(

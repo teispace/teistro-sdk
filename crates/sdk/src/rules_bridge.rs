@@ -25,11 +25,14 @@ use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Dignity, Graha, Rashi, Varga};
 use teistro_core::error::Error;
+use teistro_core::interval::Interval;
 use teistro_core::quantity::Degrees;
-use teistro_dasha::Chain;
+use teistro_core::quantity::{Depth, JulianDay, Utc};
+use teistro_dasha::{Chain, Period, Timeline};
+use teistro_rules::longevity::{Vulnerability, age_span};
 use teistro_rules::{
-    Body, EightKarakas, Evaluator, House, Panchanga, Placement, PointAt, Readings, RuleChart,
-    Running, StrengthMeasure, Strengths, VargaSigns,
+    Body, EightKarakas, Evaluator, House, LifeClass, Panchanga, Placement, PointAt, Readings,
+    RuleChart, Running, StrengthMeasure, Strengths, VargaSigns,
 };
 use teistro_serial::Document;
 use teistro_state::GrahaState;
@@ -194,6 +197,79 @@ fn shadbala_strengths(reading: &ShadbalaReading) -> Strengths {
         of,
         required,
     }
+}
+
+/// A sub-period whose major period's lord is a maraka, inside the ages a class
+/// of life runs to, with what its periods are as marakas. It is a period of
+/// vulnerability to be read with the span of life, never a date, and its
+/// [`Vulnerability::presentation`] says so to whoever renders it.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MarakaWindow {
+    /// When it runs.
+    pub interval: Interval,
+    /// The major period's lord.
+    pub major: Graha,
+    /// The sub-period's lord.
+    pub sub: Graha,
+    /// What the two are as marakas (BPHS ch. 44).
+    pub vulnerability: Vulnerability,
+}
+
+/// The maraka windows of a dasha over the ages a class of life runs to (BPHS
+/// ch. 44 vv. 3 to 5 and 10 to 11): every sub-period whose major period's lord
+/// carries a reason, in time order, each with its vulnerability, so a caller
+/// can narrow to v. 8's malefic major period in a malefic sub-period or to the
+/// star periods v. 15 gives the class. Ages are years of 365.25 days from
+/// `birth`; the classes past a hundred years run to the end of the dasha.
+///
+/// # Errors
+///
+/// A birth whose ages fall outside the Julian day's range.
+pub fn maraka_windows(
+    evaluator: &Evaluator<'_>,
+    timeline: &impl Timeline,
+    birth: JulianDay<Utc>,
+    class: LifeClass,
+) -> Result<Vec<MarakaWindow>, Error> {
+    const YEAR_DAYS: f64 = 365.25;
+    const BEYOND_YEARS: f64 = 1000.0;
+    let marakas = evaluator.marakas();
+    let (from, to) = age_span(class);
+    let at = |years: f64| {
+        JulianDay::try_new(birth.get() + years * YEAR_DAYS)
+            .map_err(|invalid| Error::invalid_arg(invalid.to_string()).with_field("birth"))
+    };
+    let window = Interval::new(at(from)?, at(to.unwrap_or(BEYOND_YEARS))?)?;
+    let depth = Depth::try_new(2).map_err(|invalid| Error::internal(invalid.to_string()))?;
+    let running = |period: &Period| Running {
+        lord: period.lord,
+        sign: period.sign,
+    };
+    let mut major: Option<Period> = None;
+    let mut windows = Vec::new();
+    for period in timeline.periods(window, depth) {
+        if period.path.indices().len() == 1 {
+            major = Some(period);
+            continue;
+        }
+        let Some(parent) = major else {
+            continue;
+        };
+        let vulnerability = evaluator.vulnerability(&marakas, [running(&parent), running(&period)]);
+        if vulnerability
+            .levels
+            .first()
+            .is_some_and(|reasons| !reasons.is_empty())
+        {
+            windows.push(MarakaWindow {
+                interval: period.interval,
+                major: parent.lord,
+                sub: period.lord,
+                vulnerability,
+            });
+        }
+    }
+    Ok(windows)
 }
 
 /// The periods of a dasha chain as the rules read them, from the mahadasha

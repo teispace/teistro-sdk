@@ -69,8 +69,13 @@ thing:
    of the verse's flat fractions and is a reading, not the verse. **Built** as
    `Evaluator::ayurdaya` (crux C104): the translator's basic years reproduce,
    and so do his Sun's and Moon's reductions once enmity is natural enmity.
-   What is left of longevity is Maraka timing (BPHS ch. 44 and the dasha
-   intersections), which the timing layer now makes possible.
+   Maraka timing followed: `Evaluator::marakas` by the reasons of BPHS ch. 44
+   vv. 2 to 24 and `teistro::maraka_windows` over a class's ages, each result
+   a vulnerability by type, which closes the ethical-framing item of the table
+   above as a property rather than text (crux C105). What is left is BPHS ch.
+   44 vv. 25 to 37 and 41 to 45 — the manner and place of death and the
+   worlds before and after — as rules, and Saturn's transit of the sensitive
+   point, which waits on `gochar`.
 4. **Longevity for other beings** (vv. 23 to 29): a scale factor by species.
    Out of scope.
 

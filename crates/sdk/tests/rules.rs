@@ -24,7 +24,8 @@ use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rules::{Body, Evaluator, House, Karaka, Readings, Rule, shipped};
 use teistro::rules::{Levels, Timing};
 use teistro::{
-    Context, Ephemeris, RuleInputs, Timeline, UtcOffset, rule_chart, rule_periods, rule_vargas,
+    Context, Ephemeris, RuleInputs, Timeline, UtcOffset, maraka_windows, rule_chart, rule_periods,
+    rule_vargas,
 };
 
 /// The corpus's first chart, founded and stated.
@@ -450,4 +451,58 @@ fn the_translator_s_worked_example_reads_as_he_reads_it() {
     let [sun, moon, ..] = spans.pindayu.contributions;
     assert!((sun.net - 11.7095).abs() < 0.01, "{sun:?}");
     assert!((moon.net - 12.3124).abs() < 0.1, "{moon:?}");
+}
+
+/// BPHS ch. 44's maraka windows on a chart the SDK computed, over the ages its
+/// own three pairs give its life: every window a sub-period of a maraka's
+/// major period, inside those ages, in time order, and presented as a
+/// vulnerability and never a date.
+#[test]
+fn a_chart_s_maraka_windows_lie_in_the_ages_its_class_of_life_runs_to() {
+    use teistro::rules::longevity::{Presentation, ThreePairsRules, age_span};
+
+    let (sdk, document) = common::reading("{}", |request| {
+        request
+            .with_rule_inputs(shipped::nabhasas())
+            .with_points()
+            .with_dashas([DashaSystem::Vimshottari])
+    });
+    let inputs = RuleInputs::of(&document).expect("the rules' inputs");
+    let evaluator = inputs.evaluator(Readings::TEXTS);
+    let class = evaluator
+        .three_pairs(ThreePairsRules::VERSE)
+        .expect("a hora lagna")
+        .class;
+    let cursor = sdk
+        .chart()
+        .dasha(&document, DashaSystem::Vimshottari)
+        .expect("the Vimshottari");
+    let birth = document.foundation.instant;
+    let windows = maraka_windows(&evaluator, &cursor, birth, class).expect("the windows");
+    let (from, to) = age_span(class);
+    let age = |jd: f64| (jd - birth.get()) / 365.25;
+    let marakas = evaluator.marakas();
+    let mut fatal = 0;
+    for (window, next) in windows.iter().zip(windows.iter().skip(1)) {
+        assert!(window.interval.from.get() <= next.interval.from.get());
+    }
+    for window in &windows {
+        assert!(
+            age(window.interval.to.get()) > from
+                && to.is_none_or(|to| age(window.interval.from.get()) < to)
+        );
+        assert!(!marakas.of(window.major).is_empty());
+        assert_eq!(
+            window.vulnerability.presentation,
+            Presentation::Vulnerability
+        );
+        fatal += usize::from(window.vulnerability.malefic_in_malefic);
+    }
+    // Medium life, 32 to 64 years: of the sub-periods those years hold, 18 fall
+    // in a maraka's major period and 7 are a malefic major period in a
+    // malefic sub-period, which v. 8 makes the fatal kind.
+    assert_eq!(
+        (class, windows.len(), fatal),
+        (teistro::rules::LifeClass::Medium, 18, 7)
+    );
 }

@@ -1100,6 +1100,24 @@ medium and 101 short; vv. 71 to 73 place the stronger of the lagna and eighth
 lords in exactly one of angle, panaphara and apoklima on each of the 71 charts
 that compare strength, which is the three lists being the twelve houses.
 
+**The marakas and their windows (2026-09-16).** BPHS ch. 44 vv. 2 to 24 give
+the marakas by reason — the lords of the second and seventh, the malefics in or
+joining them, the eighth and sixth lords, a benefic related to the twelfth
+lord, Saturn ill-disposed, the lords of the second and twelfth from the Moon,
+the nodes placed to kill, the lords of the third, fifth and seventh stars and
+the twenty-second decanate — and grade each as bringing death or only
+difficulty. `Evaluator::marakas` returns every graha's reasons as a fixed-size
+set; `Evaluator::vulnerability` reads a running chain, with v. 8's malefic
+major period in a malefic sub-period and v. 19's dusthana sub-period; and
+`teistro::maraka_windows` walks a dasha's sub-periods over the ages a class of
+life runs to. The research note's ethical requirement is in the type, not the
+prose: every result carries `Presentation::Vulnerability`, which a renderer
+honours, because over the 93 charts seven grahas of nine carry some reason
+that brings death and a period read alone is no date. The six reasons of vv. 3
+to 5 are exactly the kernel's `maraka` class, held over every chart; the
+malefic they read is the readings' own, asked through `planet-is`. Crux C105
+holds the readings.
+
 **Pindayu, Nisargayu and Amsayu (2026-09-16).** BPHS ch. 43 vv. 4 to 32 sum a
 span of life from what the seven grahas and the lagna give, three ways, each
 with the same four reductions, and choose among them by whether the lagna, the
