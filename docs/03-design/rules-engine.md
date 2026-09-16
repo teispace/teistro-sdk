@@ -874,6 +874,37 @@ the C boundary, which means the IDL, a serialised rule and a serialised result;
 `surface-areas.md` §9 held that area back until its operations existed, and
 they now do.
 
+**What the texts settle, and what they leave (2026-09-16).** `Readings::TEXTS`
+says it is "the texts' reading wherever a text read settles one, the recording
+engine's elsewhere". It was one field: the ordinal degree a bhaga counts by
+(C82). Everything else carried the engine's reading, including two the texts do
+settle.
+
+| knob | the engine | what a text says | `TEXTS` |
+|---|---|---|---|
+| `bhaga` | within a degree | the ordinal degree (C82) | the text's |
+| `node_motion` | never retrograde | "the nodes have retrograde motions" — BPHS ch. 31 v. 6 | **now the text's** |
+| `houses` | the recorded house | the verses count whole signs from the lagna | **now whole signs** |
+| `conjunction` | one sign | "occupy together a sign" — Brihat Jataka ch. 14 | agrees already |
+| `upapada` | — | the twelfth, as the translation reads it (C80) | the text's |
+| `benefics` | by company | no text read settles the Moon's half or Mercury's company (C69) | the engine's |
+| `node_sides`, `gathering`, `aspect_gathering`, `dignity` | — | no text read settles them (C85, C89) | the engine's |
+
+The nodes' motion is the sharper of the two: BPHS ch. 31 v. 6 is the verse the
+intervention's backward count already rests on, so a default reading the nodes
+as direct contradicted a verse the SDK itself cites. The houses knob is the
+more consequential for a consumer: `Recorded` follows whatever house the
+caller's chart carries, so a chart built under a chalit would quietly answer a
+different question from the one the verse asks.
+
+**Neither change moves an answer on the corpus** — no rule the SDK writes asks
+whether a node is retrograde, and every house the corpus records is already
+whole-sign. `crates/rules/tests/readings.rs` measures both flips at zero and
+then pins the two fields, so an edit that quietly reverted them would fail
+rather than pass on a corpus that cannot see it. **The corpus could not decide
+either question, and the verses did**; what the measurement bought was the
+knowledge that the change was safe.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-three answer none, and

@@ -474,7 +474,19 @@ impl Readings {
     /// The texts' reading wherever a text read settles one, the recording
     /// engine's elsewhere: the default.
     pub const TEXTS: Readings = Readings {
+        // The ordinal degree the texts count a bhaga by (crux C82).
         bhaga: Bhaga::Running,
+        // "As the nodes have retrograde motions" — BPHS ch. 31 v. 6, which is
+        // the verse the intervention's backward count already rests on. A
+        // default that read the nodes as direct would contradict a verse the
+        // SDK itself cites.
+        node_motion: NodeMotion::AlwaysRetrograde,
+        // The verses count bhavas as whole signs from the lagna, and a rule
+        // that meant the chalit would have to say so. `Recorded` follows
+        // whatever house the caller's chart carries, so a chart built under
+        // another placement system would quietly answer a different question;
+        // this makes the kernel count for itself.
+        houses: Houses::WholeSign,
         ..Readings::RECORDING_ENGINE
     };
 }

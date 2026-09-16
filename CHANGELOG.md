@@ -1273,6 +1273,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   between every named-set-in-a-named-house rule the texts carry, which is how
   rare the shape is.
 
+- **`Readings::TEXTS` now says what the texts say.** It claimed to be the
+  texts' reading wherever a text settles one, and was a single field. Two more
+  are settled: the nodes' motion, which BPHS ch. 31 v. 6 states plainly and
+  which the intervention's backward count already rests on, and which house a
+  body is in, which the verses count as whole signs from the lagna where
+  `Recorded` follows whatever the caller's chart carries.
+
+  **Numbers:** neither moves an answer over the 93 charts — no rule the SDK
+  writes asks whether a node is retrograde, and every house the corpus records
+  is already whole-sign. `crates/rules/tests/readings.rs` measures both flips
+  at zero and pins the fields, so a silent reversion fails rather than passing
+  on a corpus that cannot see it.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
