@@ -374,8 +374,14 @@ pub enum Condition {
         /// The other.
         house2: House,
     },
-    /// The seven classical grahas all stand between the nodes.
-    AllPlanetsBetweenNodes,
+    /// The seven classical grahas all stand between the nodes, on the side the
+    /// rule names, or on whichever side [`NodeSides`](crate::NodeSides) reads
+    /// when it names none.
+    AllPlanetsBetweenNodes {
+        /// Whose side they stand on.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        side: Option<NodeSide>,
+    },
     /// The bodies occupy exactly so many signs.
     OccupiedSignCount {
         /// Who.
@@ -555,6 +561,16 @@ pub enum Condition {
     },
 }
 
+/// Which node's side the seven stand on.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NodeSide {
+    /// Between Rahu and Ketu in the zodiac's own direction: the ascending arc.
+    Rahu,
+    /// Between Ketu and Rahu: the descending arc.
+    Ketu,
+}
+
 /// A nakshatra's pada, 1 to 4.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(try_from = "u8", into = "u8")]
@@ -654,7 +670,7 @@ impl Condition {
             Condition::NoPlanetInHousesFrom { .. } => "no-planet-in-houses-from",
             Condition::MutualExchange { .. } => "mutual-exchange",
             Condition::LordConjunctLord { .. } => "lord-conjunct-lord",
-            Condition::AllPlanetsBetweenNodes => "all-planets-between-nodes",
+            Condition::AllPlanetsBetweenNodes { .. } => "all-planets-between-nodes",
             Condition::OccupiedSignCount { .. } => "occupied-sign-count",
             Condition::AllClassicalGrahasInHouses { .. } => "all-classical-grahas-in-houses",
             Condition::NGrahasConjunctWith { .. } => "n-grahas-conjunct-with",

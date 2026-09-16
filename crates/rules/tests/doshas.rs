@@ -17,7 +17,7 @@ mod common;
 
 use common::{chart, files_in, rules_in, strings};
 use teistro_rules::{
-    Body, Cancellation, Condition, Evaluator, Found, NetStatus, Readings, Rule, Tables,
+    Body, Cancellation, Condition, Evaluator, Found, NetStatus, Readings, Rule, Tables, shipped,
 };
 
 /// How the engine names a graha in a label: its key in title case.
@@ -30,7 +30,9 @@ fn display(body: Body) -> String {
 }
 
 /// The label the engine's result names a cancellation by: its own, or the one
-/// the engine makes from the condition.
+/// the engine's code writes from the condition. It mirrors the engine's prose,
+/// as `xtask/src/doshas.rs` does for the measured page; neither is the
+/// kernel's, which carries the label a rule gives and nothing else.
 fn label(cancellation: &Cancellation) -> String {
     if let Some(label) = &cancellation.label {
         return label.clone();
@@ -168,6 +170,104 @@ fn the_kernel_reproduces_every_recorded_dosha_the_language_can_say() {
     }
     assert_eq!((charts, with_panchanga), (93, 77));
     assert_eq!((decisions, presences), (93 * 35, 885));
+}
+
+/// The rules the SDK writes for the seventeen the engine computes in code
+/// (`03-design/doshas-measured.md`).
+#[test]
+fn the_sdk_s_rules_say_present_where_the_engine_s_code_did() {
+    let shipped = shipped::computed_doshas();
+    assert_eq!(shipped.len(), 17);
+    let engine: Vec<&Rule> = rules_in("doshas")
+        .iter()
+        .filter(|r| r.computed.is_some())
+        .map(|r| Box::leak(Box::new(r.clone())) as &Rule)
+        .collect();
+    let keys: Vec<&str> = engine.iter().map(|r| r.key.as_str()).collect();
+    for rule in shipped {
+        assert!(
+            keys.contains(&rule.key.as_str()),
+            "{} is not one of them",
+            rule.key
+        );
+        assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
+        Tables::classical().check(rule).expect("its tables ship");
+    }
+
+    let tables = Tables::classical();
+    let (mut decisions, mut presences, mut reproduced) = (0, 0, 0);
+    for (path, file) in files_in("doshas") {
+        let chart = chart(&file["inputs"]);
+        let evaluator =
+            Evaluator::new(&chart, Readings::RECORDING_ENGINE_DOSHAS).with_tables(tables);
+        let present = file["present"].as_object().unwrap();
+        for rule in shipped {
+            decisions += 1;
+            let result = evaluator.evaluate(rule);
+            let at = format!("{} {}", path.display(), rule.key);
+            let recorded = present.get(&rule.key);
+            assert_eq!(result.present, recorded.is_some(), "{at}: presence");
+            let Some(recorded) = recorded else {
+                continue;
+            };
+            presences += 1;
+            assert_eq!(
+                result.severity.map(u64::from),
+                recorded["severity"].as_u64(),
+                "{at}: severity"
+            );
+            assert_eq!(
+                result.status,
+                Some(status(recorded["net_status"].as_str().unwrap())),
+                "{at}: net status"
+            );
+            let fired: Vec<String> = result
+                .cancellations
+                .iter()
+                .map(|i| label(&rule.cancellations[*i]))
+                .collect();
+            assert_eq!(
+                fired,
+                strings(&recorded["cancellations"]),
+                "{at}: cancellations"
+            );
+            let planets: Vec<String> = result
+                .participants
+                .iter()
+                .map(|b| b.key().to_owned())
+                .collect();
+            if rule.key.starts_with("KALSARPA") || rule.key == "KALA_AMRITA_YOGA" {
+                // Deliberate: the engine's code names the nodes, and these rules
+                // name the seven grahas the nodes caught.
+                assert_eq!(strings(&recorded["planets"]), ["RAHU", "KETU"], "{at}");
+                assert_eq!(
+                    planets[..7],
+                    [
+                        "SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN"
+                    ],
+                    "{at}: the seven the nodes caught"
+                );
+                // A named form also names Rahu, whose house it reads.
+                assert_eq!(
+                    planets.len(),
+                    7 + usize::from(rule.groups.is_empty() && rule.conditions.len() > 1),
+                    "{at}"
+                );
+            } else {
+                assert_eq!(planets, strings(&recorded["planets"]), "{at}: planets");
+                let houses: Vec<u64> = result.houses.iter().map(|h| u64::from(h.get())).collect();
+                let recorded_houses: Vec<u64> = recorded["houses"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|h| h.as_u64().unwrap())
+                    .collect();
+                assert_eq!(houses, recorded_houses, "{at}: houses");
+                reproduced += 1;
+            }
+        }
+    }
+    assert_eq!((decisions, presences, reproduced), (93 * 17, 139, 135));
 }
 
 #[test]

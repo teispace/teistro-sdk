@@ -3,7 +3,7 @@
 Status: `building`, 2026-09-15: the kernel's first slice, the condition
 language over grahas and the lagna, built and held to every recorded yoga;
 then references, the trace, cited tables, and the doshas' groups, severities
-and cancellations. The
+and cancellations, the last seventeen of them written as rules. The
 design is [`docs/03-design/rules-engine.md`](../../docs/03-design/rules-engine.md),
 measured in [`docs/03-design/yogas-measured.md`](../../docs/03-design/yogas-measured.md).
 
@@ -19,6 +19,7 @@ cancellations held.
 | [`chart`](src/chart.rs) | what a rule reads of a chart (each body's longitude, sign, house, dignity, motion, combustion, chara karakas and navamsha), and every place the language leaves a meaning open, each a `Readings` field with the recording engine's choice the default and the text's where the engine has none |
 | [`eval`](src/eval.rs) | the `Evaluator`: benefics and malefics settled once a chart, then each rule to a `RuleResult` without allocating for its participants, or to an `Explanation` with its trace |
 | [`table`](src/table.rs) | tables a rule looks up, each cited: a degree of each sign for a body, or signs for each tithi; `Tables::check` refuses a rule naming a missing table or the wrong kind; `Tables::classical` ships Jataka Parijata's Mrityu Bhagas and Pushkara bhagas, Brihat Prajapatya's Moon, and the Dagdha rashis ([`tables/classical.json`](tables/classical.json)) |
+| [`shipped`](src/shipped.rs) | the rules the SDK ships as data: the seventeen doshas the recording engine computes in code, written in the language ([`rules/computed-doshas.json`](rules/computed-doshas.json)) |
 | [`trace`](src/trace.rs) | how an answer was reached: each condition checked, whether it held, the bodies it added and each reference resolved, as a tree that serialises and reads as prose; one evaluator generic over a recorder, so the untraced answer costs nothing more and cannot differ |
 
 ## What the corpus settled
@@ -45,6 +46,11 @@ cancellations held.
   natal doshas read unchanged; 35 of its 52 are in the language, and its
   dosha evaluator adds no participant for an aspect where its yoga evaluator
   adds both (`Readings::aspect_gathering`, crux C85).
+- **The rules the engine computes in code are sayable.** All seventeen are
+  shipped as rules and decide presence exactly as its code does; Mrityu Bhaga,
+  Dagdha Rashi and Badhaka reproduce every recorded field. It took a `side` on
+  the nodal-arc predicate, a badhaka reference (crux C86) and a weight on a
+  group, not a classifying outcome.
 - **Eight rules are outside the language**, the Neecha Bhanga family, which
   the engine computes in code; `Rule::is_evaluable` says so.
 
@@ -69,6 +75,10 @@ cancellations held.
   panchangas, and for each of 885 presences where it was found from, its
   participants, houses, severity, cancellations and net status
   (`tests/doshas.rs`); all 52 dosha rules read strictly and round-trip.
+- The seventeen rules the SDK writes for the engine's code say present exactly
+  where it did on all 1581 decisions, with every severity, cancellation and
+  status, and the Kalsarpa family's deliberate difference pinned
+  (`tests/doshas.rs`, measured in `03-design/doshas-measured.md`).
 - Every explanation over the corpus answers what its evaluation answers,
   stops at the first condition that failed, and gathers the participants from
   its steps: 55 521 of 55 521 (`tests/baseline.rs`); a unit test pins what an

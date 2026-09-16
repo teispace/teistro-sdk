@@ -2,7 +2,7 @@
 
 use serde::Serialize;
 use teistro_aspect::{conjunction, drishti};
-use teistro_core::catalogue::{Dignity, Graha, Rashi};
+use teistro_core::catalogue::{Dignity, Graha, Modality, Rashi};
 use teistro_core::settings::NodeAspects;
 
 use teistro_points::arudha;
@@ -12,7 +12,7 @@ use crate::chart::{
     NATURAL_BENEFICS, NATURAL_MALEFICS, NodeMotion, NodeSides, Panchanga, Placement, Readings,
     RuleChart, Upapada,
 };
-use crate::language::{Body, Condition, EclipseKind, House, KarakaScheme};
+use crate::language::{Body, Condition, EclipseKind, House, KarakaScheme, NodeSide};
 use crate::reference::{BodyRef, SignRef, Subject};
 use crate::rule::{NetStatus, Rule, Severity};
 use crate::table::{Table, Tables};
@@ -295,6 +295,17 @@ impl<'a> Evaluator<'a> {
                 let body = self.body(body, rec)?;
                 Spot::sign(self.at(body).navamsha, Some(body))
             }
+            SignRef::Badhaka(sign) => {
+                let sign = self.spot(sign, rec)?.sign;
+                let house = match sign.attributes().modality {
+                    Modality::Chara => 10,
+                    Modality::Sthira => 8,
+                    // Dual, and any modality a later catalogue adds, the
+                    // seventh: the dual reading.
+                    _ => 6,
+                };
+                Spot::sign(step(sign, house), None)
+            }
             SignRef::Counted { from, house } => {
                 let from = self.spot(from, rec)?;
                 Spot::sign(step(from.sign, house.get() - 1), from.through)
@@ -565,7 +576,7 @@ impl<'a> Evaluator<'a> {
                 }
                 held
             }
-            Condition::AllPlanetsBetweenNodes => {
+            Condition::AllPlanetsBetweenNodes { side } => {
                 let rahu = self.at(graha_body(Graha::Rahu)).sign as u8;
                 let ketu = self.at(graha_body(Graha::Ketu)).sign as u8;
                 let arc = (ketu + 12 - rahu) % 12;
@@ -580,9 +591,12 @@ impl<'a> Evaluator<'a> {
                     }
                 }
                 let [rahu_side, ketu_side] = sides;
-                let held = match self.readings.node_sides {
-                    NodeSides::Either => rahu_side == 0 || ketu_side == 0,
-                    NodeSides::RahuToKetu => ketu_side == 0,
+                // The rule's own side, or the side the reading takes when it
+                // names none.
+                let held = match (side, self.readings.node_sides) {
+                    (Some(NodeSide::Rahu), _) | (None, NodeSides::RahuToKetu) => ketu_side == 0,
+                    (Some(NodeSide::Ketu), _) => rahu_side == 0,
+                    (None, NodeSides::Either) => rahu_side == 0 || ketu_side == 0,
                 };
                 if held {
                     for body in Body::SEVEN {
@@ -944,8 +958,13 @@ impl<'a> Evaluator<'a> {
             Severity::CountBased {
                 per_occurrence,
                 cap,
-            } => u16::try_from(found_from.len())
-                .unwrap_or(u16::MAX)
+            } => found_from
+                .iter()
+                .map(|found| match found {
+                    Found::Conditions => 1,
+                    Found::Group(at) => rule.groups.get(*at).map_or(1, |group| group.weight),
+                })
+                .fold(0_u16, u16::saturating_add)
                 .saturating_mul(*per_occurrence)
                 .min(*cap),
             Severity::HouseWeighted {
@@ -1195,7 +1214,7 @@ mod tests {
         for body in Body::SEVEN {
             place(&mut c, body, Rashi::Sagittarius); // Ketu's side.
         }
-        let kala = Condition::AllPlanetsBetweenNodes;
+        let kala = Condition::AllPlanetsBetweenNodes { side: None };
         assert!(holds(&c, ENGINE, &kala).0);
         assert!(
             !holds(
@@ -1802,6 +1821,7 @@ mod tests {
         let group = |reference: Body, label: &str, house: u8| Group {
             reference,
             label: String::from(label),
+            weight: 1,
             conditions: vec![written(&format!(
                 r#"{{"type": "planet-in-house-from", "planet": "MARS", "reference": "{}", "houses": [{house}]}}"#,
                 reference.key()

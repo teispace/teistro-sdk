@@ -77,6 +77,10 @@ pub struct Group {
     pub reference: Body,
     /// What a result says it was found from.
     pub label: String,
+    /// How much this place counts for a count-based severity; one unless the
+    /// rule weighs it more.
+    #[serde(default = "one", skip_serializing_if = "is_one")]
+    pub weight: u16,
     /// What must all hold.
     pub conditions: Vec<Condition>,
 }
@@ -164,7 +168,7 @@ pub enum Severity {
         /// When exalted or in its own sign.
         min: u16,
     },
-    /// So much for each place it was found from, up to a cap.
+    /// So much for each place it was found from, by its weight, up to a cap.
     CountBased {
         /// For each.
         per_occurrence: u16,
@@ -179,6 +183,18 @@ pub enum Severity {
         /// Less for each point the score regains.
         per_point_missing: u16,
     },
+}
+
+const fn one() -> u16 {
+    1
+}
+
+#[allow(
+    clippy::trivially_copy_pass_by_ref,
+    reason = "serde passes a field by reference"
+)]
+fn is_one(weight: &u16) -> bool {
+    *weight == 1
 }
 
 const fn mars() -> Body {

@@ -30,6 +30,7 @@
 //! | `{"arudha": 1}` | the pada of the sign named, here the arudha lagna |
 //! | `"UPAPADA"` | the upapada, under [`Upapada`](crate::Upapada) |
 //! | `{"navamsha": {"karaka": "AK"}}` | a body's navamsha sign, here the Karakamsha |
+//! | `{"badhakaOf": 1}` | the badhaka sthana of a sign, here the lagna's |
 //! | `{"from": {"arudha": 1}, "house": 11}` | the eleventh sign from another |
 //!
 //! ```
@@ -86,6 +87,10 @@ pub enum SignRef {
     Upapada,
     /// A body's navamsha sign.
     Navamsha(BodyRef),
+    /// The badhaka sthana of a sign: the eleventh from a movable sign (BPHS
+    /// ch. 50 vv. 20 to 21), and by later tradition the ninth from a fixed one
+    /// and the seventh from a dual one (crux C86).
+    Badhaka(Box<SignRef>),
     /// The sign so many houses on from another, whole signs.
     Counted {
         /// From where.
@@ -127,6 +132,12 @@ impl SignRef {
     #[must_use]
     pub fn arudha(sign: impl Into<SignRef>) -> SignRef {
         SignRef::Arudha(Box::new(sign.into()))
+    }
+
+    /// The badhaka sthana of a sign: `SignRef::badhaka(1)` is the lagna's.
+    #[must_use]
+    pub fn badhaka(sign: impl Into<SignRef>) -> SignRef {
+        SignRef::Badhaka(Box::new(sign.into()))
     }
 
     /// The sign `house` houses on from `from`.
@@ -252,6 +263,7 @@ impl core::fmt::Display for SignRef {
             SignRef::Of(body) => write!(f, "{body}"),
             SignRef::House(house) => write!(f, "house {}", house.get()),
             SignRef::Arudha(sign) => write!(f, "the pada of {sign}"),
+            SignRef::Badhaka(sign) => write!(f, "the badhaka sthana of {sign}"),
             SignRef::Upapada => f.write_str("the upapada"),
             SignRef::Navamsha(body) => write!(f, "the navamsha of {body}"),
             SignRef::Counted { from, house } => write!(f, "house {} from {from}", house.get()),
@@ -297,6 +309,11 @@ impl Serialize for SignRef {
             SignRef::Navamsha(body) => {
                 let mut map = serializer.serialize_map(Some(1))?;
                 map.serialize_entry("navamsha", body)?;
+                map.end()
+            }
+            SignRef::Badhaka(sign) => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("badhakaOf", sign)?;
                 map.end()
             }
             SignRef::Counted { from, house } => {
@@ -373,9 +390,9 @@ impl<'de> Deserialize<'de> for Written {
 /// The body forms, for the message that refuses something else.
 const BODY_FORMS: &str = "a graha's key, LAGNA, {\"lordOf\": …} or {\"karaka\": …}";
 /// The parts only a sign reference has.
-const SIGN_PARTS: [&str; 4] = ["arudha", "navamsha", "from", "house"];
+const SIGN_PARTS: [&str; 5] = ["arudha", "badhakaOf", "navamsha", "from", "house"];
 /// The sign forms.
-const SIGN_FORMS: &str = "a body, a house number, UPAPADA, {\"arudha\": …}, {\"navamsha\": …} or {\"from\": …, \"house\": …}";
+const SIGN_FORMS: &str = "a body, a house number, UPAPADA, {\"arudha\": …}, {\"badhakaOf\": …}, {\"navamsha\": …} or {\"from\": …, \"house\": …}";
 
 impl Written {
     /// The names of an object's parts.
@@ -471,6 +488,8 @@ impl Written {
                 let has = |wanted: &str| Written::names(&parts).any(|name| name == wanted);
                 if has("arudha") {
                     Ok(SignRef::arudha(Written::only(parts, "arudha")?.sign()?))
+                } else if has("badhakaOf") {
+                    Ok(SignRef::badhaka(Written::only(parts, "badhakaOf")?.sign()?))
                 } else if has("navamsha") {
                     Ok(SignRef::Navamsha(Written::only(parts, "navamsha")?.body()?))
                 } else {

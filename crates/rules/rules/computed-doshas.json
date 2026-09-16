@@ -1,0 +1,822 @@
+{
+  "rules": [
+    {
+      "key": "KALSARPA",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "All seven classical grahas between Rahu and Ketu, none on the axis, on either side; B.V. Raman's Hindu Predictive Astrology reads it the same way. Not read at rank 1: the recording engine computes it in code and cites Mansagari, and this rule says the same thing in the language. The engine names the nodes alone as the graha involved; this rule names the seven it caught."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes"
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 100
+      },
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_ANANT",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 1, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 80
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_KULIK",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 2, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 75
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_VASUKI",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 3, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            3
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 70
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_SHANKHPAL",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 4, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            4
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 80
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_PADMA",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 5, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 85
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_MAHAPADMA",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 6, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            6
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 70
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_TAKSHAK",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 7, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 95
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_KARKOTAK",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 8, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 100
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_SHANKHACHUD",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 9, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            9
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 85
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_GHATAK",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 10, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            10
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 90
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_VISHDHAR",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 11, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 70
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALSARPA_SHESHNAG",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The named form of Kalsarpa with Rahu in house 12, on the ascending arc alone (all seven on Rahu's side). Not read at rank 1; the severity is the recording engine's for this form."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "rahu"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            12
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 90
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "KALSARPA_REMEDY_TRIMBAKESHWAR",
+        "KALSARPA_REMEDY_NAGAPANCHAMI",
+        "KALSARPA_REMEDY_RAHU_BEEJ_MANTRA"
+      ]
+    },
+    {
+      "key": "KALA_AMRITA_YOGA",
+      "category": "nodal",
+      "source": {
+        "text": "Mansagari",
+        "chapter": "4",
+        "note": "The auspicious mirror of Kalsarpa: all seven on Ketu's side, the descending arc. Not read at rank 1."
+      },
+      "conditions": [
+        {
+          "type": "all-planets-between-nodes",
+          "side": "ketu"
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 0
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": []
+    },
+    {
+      "key": "MRITYU_BHAGA_DOSHA",
+      "category": "positional",
+      "source": {
+        "text": "Jataka Parijata",
+        "chapter": "1",
+        "verse": "57",
+        "note": "A body standing in the degree of its sign that the MRITYU_BHAGA table gives it. Its stretch is `Readings::bhaga` (crux C82). The luminaries and the lagna weigh double, as the recording engine grades them."
+      },
+      "referenceConditions": [
+        {
+          "reference": "lagna",
+          "label": "Sun at its Mrityu Bhaga",
+          "weight": 2,
+          "conditions": [
+            {
+              "type": "planet-at-table-degree",
+              "planet": "SUN",
+              "table": "MRITYU_BHAGA"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Moon at its Mrityu Bhaga",
+          "weight": 2,
+          "conditions": [
+            {
+              "type": "planet-at-table-degree",
+              "planet": "MOON",
+              "table": "MRITYU_BHAGA"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Mars at its Mrityu Bhaga",
+          "weight": 1,
+          "conditions": [
+            {
+              "type": "planet-at-table-degree",
+              "planet": "MARS",
+              "table": "MRITYU_BHAGA"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Mercury at its Mrityu Bhaga",
+          "weight": 1,
+          "conditions": [
+            {
+              "type": "planet-at-table-degree",
+              "planet": "MERCURY",
+              "table": "MRITYU_BHAGA"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Jupiter at its Mrityu Bhaga",
+          "weight": 1,
+          "conditions": [
+            {
+              "type": "planet-at-table-degree",
+              "planet": "JUPITER",
+              "table": "MRITYU_BHAGA"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Venus at its Mrityu Bhaga",
+          "weight": 1,
+          "conditions": [
+            {
+              "type": "planet-at-table-degree",
+              "planet": "VENUS",
+              "table": "MRITYU_BHAGA"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Saturn at its Mrityu Bhaga",
+          "weight": 1,
+          "conditions": [
+            {
+              "type": "planet-at-table-degree",
+              "planet": "SATURN",
+              "table": "MRITYU_BHAGA"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Rahu at its Mrityu Bhaga",
+          "weight": 1,
+          "conditions": [
+            {
+              "type": "planet-at-table-degree",
+              "planet": "RAHU",
+              "table": "MRITYU_BHAGA"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Ketu at its Mrityu Bhaga",
+          "weight": 1,
+          "conditions": [
+            {
+              "type": "planet-at-table-degree",
+              "planet": "KETU",
+              "table": "MRITYU_BHAGA"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Lagna at its Mrityu Bhaga",
+          "weight": 2,
+          "conditions": [
+            {
+              "type": "planet-at-table-degree",
+              "planet": "LAGNA",
+              "table": "MRITYU_BHAGA"
+            }
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "count-based",
+        "perOccurrence": 30,
+        "cap": 100
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "MRITYU_BHAGA_REMEDY_MAHAMRITYUNJAYA",
+        "MRITYU_BHAGA_REMEDY_PLANET_PROPITIATION"
+      ]
+    },
+    {
+      "key": "DAGDHA_RASHI_DOSHA",
+      "category": "panchanga",
+      "source": {
+        "text": "Muhurta Chintamani",
+        "note": "A graha standing in a sign the birth tithi burns, by the DAGDHA_RASHI table (crux C84). Not read at rank 1."
+      },
+      "referenceConditions": [
+        {
+          "reference": "lagna",
+          "label": "Sun in a burnt sign",
+          "conditions": [
+            {
+              "type": "planet-in-table-sign",
+              "planet": "SUN",
+              "table": "DAGDHA_RASHI"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Moon in a burnt sign",
+          "conditions": [
+            {
+              "type": "planet-in-table-sign",
+              "planet": "MOON",
+              "table": "DAGDHA_RASHI"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Mars in a burnt sign",
+          "conditions": [
+            {
+              "type": "planet-in-table-sign",
+              "planet": "MARS",
+              "table": "DAGDHA_RASHI"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Mercury in a burnt sign",
+          "conditions": [
+            {
+              "type": "planet-in-table-sign",
+              "planet": "MERCURY",
+              "table": "DAGDHA_RASHI"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Jupiter in a burnt sign",
+          "conditions": [
+            {
+              "type": "planet-in-table-sign",
+              "planet": "JUPITER",
+              "table": "DAGDHA_RASHI"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Venus in a burnt sign",
+          "conditions": [
+            {
+              "type": "planet-in-table-sign",
+              "planet": "VENUS",
+              "table": "DAGDHA_RASHI"
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Saturn in a burnt sign",
+          "conditions": [
+            {
+              "type": "planet-in-table-sign",
+              "planet": "SATURN",
+              "table": "DAGDHA_RASHI"
+            }
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "count-based",
+        "perOccurrence": 25,
+        "cap": 100
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "DAGDHA_RASHI_REMEDY_SIGN_LORD_PROPITIATION",
+        "DAGDHA_RASHI_REMEDY_NAVAGRAHA_SHANTI"
+      ]
+    },
+    {
+      "key": "BADHAKA_DOSHA",
+      "category": "house-based",
+      "source": {
+        "text": "BPHS",
+        "chapter": "50",
+        "verse": "20-21",
+        "note": "The badhaka sthana is the eleventh from a movable sign; the ninth from a fixed one and the seventh from a dual one are later tradition, and the verses speak of a rashi's badhaka in the Chara dasha rather than the lagna's (crux C86). A malefic standing there, or the badhakesh in a dusthana, afflicts."
+      },
+      "referenceConditions": [
+        {
+          "reference": "lagna",
+          "label": "Saturn in the badhaka sthana",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": {
+                "badhakaOf": 1
+              },
+              "houses": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Mars in the badhaka sthana",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": {
+                "badhakaOf": 1
+              },
+              "houses": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Rahu in the badhaka sthana",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "RAHU",
+              "reference": {
+                "badhakaOf": 1
+              },
+              "houses": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Ketu in the badhaka sthana",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "KETU",
+              "reference": {
+                "badhakaOf": 1
+              },
+              "houses": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "Sun in the badhaka sthana",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "SUN",
+              "reference": {
+                "badhakaOf": 1
+              },
+              "houses": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "reference": "lagna",
+          "label": "The badhakesh in a dusthana",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "lordOf": {
+                  "badhakaOf": 1
+                }
+              },
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": {
+              "badhakaOf": 1
+            }
+          },
+          "dignities": [
+            "OWN_SIGN",
+            "EXALTED",
+            "MOOLTRIKONA"
+          ],
+          "label": "Badhakesh in own/exalted/mooltrikona sign"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": {
+              "badhakaOf": 1
+            }
+          },
+          "houses": [
+            3,
+            6,
+            11
+          ],
+          "label": "Badhakesh in upachaya (3/6/11)"
+        }
+      ],
+      "severityRule": {
+        "type": "count-based",
+        "perOccurrence": 40,
+        "cap": 100
+      },
+      "fullCancellationThreshold": 1,
+      "remedyKeys": [
+        "BADHAKA_REMEDY_BADHAKESH_PROPITIATION",
+        "BADHAKA_REMEDY_GANESHA_PUJA"
+      ]
+    }
+  ]
+}

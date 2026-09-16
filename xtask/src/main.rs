@@ -97,6 +97,9 @@
 //! - `yogas` and `check-yogas`: the yogas, every rule of the recording engine
 //!   evaluated over every recorded chart under each reading of its condition
 //!   language, before the rules kernel.
+//! - `doshas` and `check-doshas`: the doshas, the engine's own rules measured
+//!   under each reading its dosha evaluator leaves open, and the seventeen it
+//!   computes in code written as rules and held to what that code recorded.
 //! - `vimshopaka` and `check-vimshopaka`: the Vimshopaka, the engine's scale
 //!   measured beside BPHS's points.
 //! - `shadbala` and `check-shadbala`: the Shadbala, every one of the engine's
@@ -163,6 +166,7 @@ mod dart_binding;
 mod dasha_systems;
 mod dashas;
 mod document_schema;
+mod doshas;
 mod engine;
 mod ephemgen;
 mod facade;
@@ -187,6 +191,7 @@ mod python_binding;
 mod rashi_dashas;
 mod release;
 mod render;
+mod rules_corpus;
 mod rust_binding;
 mod rust_surface;
 mod schema;
@@ -293,6 +298,7 @@ const PASSES: &[Pass] = &[
         bhava_bala::check_generated,
     ),
     ("yogas", yogas::generate, yogas::check_generated),
+    ("doshas", doshas::generate, doshas::check_generated),
 ];
 
 /// Runs a pass, or says it is not one.

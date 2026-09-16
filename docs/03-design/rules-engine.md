@@ -293,10 +293,36 @@ crux C85:
   one group must hold. No recorded rule has both, so the kernel follows the
   documented meaning.
 
-Next, the engine's 17 computed rules become rules:
-- Mrityu Bhaga and Dagdha Rashi over the shipped tables;
-- Badhaka over a reference;
-- Kalsarpa's forms, which need a classifying outcome.
+**Built, the seventeen computed rules (2026-09-16).** They are rules now, in
+`crates/rules/rules/computed-doshas.json`, and `doshas-measured.md` measures
+them against what the engine's code recorded. Each decides presence exactly as
+that code did on all 93 charts, and Mrityu Bhaga, Dagdha Rashi and Badhaka
+reproduce every recorded field: planets, houses, severities, cancellations and
+statuses. The Kalsarpa family parts in one way, deliberately: the engine's code
+names the two nodes as the grahas involved, and these rules name the seven the
+nodes caught (a named form also names Rahu, whose house it reads).
+
+Writing them needed three small additions rather than the sketch's classifying
+outcome:
+- **the arc's side in the rule**: `all-planets-between-nodes` takes a `side`
+  (`rahu` for the ascending arc, `ketu` for the descending), and the reading
+  decides only when a rule names none, so Kalsarpa, its twelve forms and Kala
+  Amrita are ordinary rules;
+- **a badhaka reference**: `{"badhakaOf": <sign>}` is the badhaka sthana of a
+  sign, the eleventh from a movable one, and the ninth and seventh from fixed
+  and dual ones by later tradition (crux C86);
+- **a weight on a group**, so the luminaries and the lagna count double in
+  Mrityu Bhaga's count-based severity.
+
+A classifying outcome is therefore not what the Kalsarpa family needed: twelve
+named rules over one arc predicate say it, each with its own citation and
+severity. `Outcome::Classify` stays unbuilt until a rule needs one variant of
+many *within* a single result.
+
+The page also measures what each reading moves over these rules. The degree a
+Mrityu Bhaga table names is the one this corpus can see: the texts' ordinal
+degree moves 6 of its decisions and 12 severities against the engine's degree
+either side (crux C82).
 
 ## Composition and context
 

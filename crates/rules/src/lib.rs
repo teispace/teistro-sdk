@@ -35,6 +35,7 @@ pub mod eval;
 pub mod language;
 pub mod reference;
 pub mod rule;
+pub mod shipped;
 pub mod table;
 pub mod trace;
 
@@ -43,7 +44,9 @@ pub use chart::{
     NodeMotion, NodeSides, Panchanga, Placement, Readings, RuleChart, Upapada,
 };
 pub use eval::{Evaluator, Found, Participants, RuleResult};
-pub use language::{Body, Condition, EclipseKind, House, Karaka, KarakaScheme, Pada, Source};
+pub use language::{
+    Body, Condition, EclipseKind, House, Karaka, KarakaScheme, NodeSide, Pada, Source,
+};
 pub use reference::{BodyRef, SignRef, Subject};
 pub use rule::{Cancellation, Group, NetStatus, Rule, Scope, Severity};
 pub use table::{SignDegree, Table, TableKey, Tables};

@@ -21,18 +21,14 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 use std::path::Path;
 
-use serde::Deserialize as _;
-use serde_json::Value;
-use teistro_core::angle::Nas;
-use teistro_core::catalogue::{CharaKaraka, Dignity, Rashi, Varga};
-use teistro_core::quantity::Degrees;
 use teistro_rules::{
-    Benefics, Body, Conjunction, DignityMatch, Evaluator, Gathering, House, Houses, Karaka,
-    NodeMotion, NodeSides, Placement, Readings, Rule, RuleChart,
+    Benefics, Conjunction, DignityMatch, Evaluator, Gathering, Houses, NodeMotion, NodeSides,
+    Readings, Rule, RuleChart,
 };
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, Verdict, count, fill, plural, table};
+use crate::rules_corpus::{chart, read_json, rules, strings};
 
 const PAGE: &str = "docs/03-design/yogas-measured.md";
 const ROOT: &str = "fixtures/baseline/yogas";
@@ -97,83 +93,6 @@ const FORKS: [(&str, Readings); 7] = [
         },
     ),
 ];
-
-fn read_json(path: &Path) -> Result<Value, String> {
-    serde_json::from_str(
-        &std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?,
-    )
-    .map_err(|e| format!("{}: {e}", path.display()))
-}
-
-fn strings(value: &Value) -> Vec<String> {
-    value
-        .as_array()
-        .map(|items| {
-            items
-                .iter()
-                .filter_map(|item| item.as_str().map(str::to_owned))
-                .collect()
-        })
-        .unwrap_or_default()
-}
-
-fn rules(root: &Path) -> Result<Vec<Rule>, String> {
-    let file = read_json(&root.join(ROOT).join("rules.json"))?;
-    serde_json::from_value(file["rules"].clone()).map_err(|e| format!("rules.json: {e}"))
-}
-
-/// The chara karaka a recorded abbreviation names, if the body holds one.
-fn karaka(value: &Value) -> Option<CharaKaraka> {
-    Karaka::deserialize(value).ok().map(|Karaka(karaka)| karaka)
-}
-
-/// The chart a file repeats.
-fn chart(inputs: &Value) -> Result<RuleChart, String> {
-    let mut placements = Vec::with_capacity(Body::ALL.len());
-    for body in Body::ALL {
-        let b = &inputs["bodies"][body.key()];
-        let sign = b["sign_index"]
-            .as_u64()
-            .and_then(|n| u16::try_from(n).ok())
-            .and_then(Rashi::from_id)
-            .ok_or_else(|| format!("{}: sign", body.key()))?;
-        let house = b["house"]
-            .as_u64()
-            .and_then(|n| u8::try_from(n).ok())
-            .and_then(|n| House::try_new(n).ok())
-            .ok_or_else(|| format!("{}: house", body.key()))?;
-        let longitude = b["sidereal_longitude_deg"]
-            .as_f64()
-            .ok_or_else(|| format!("{}: longitude", body.key()))?;
-        placements.push(Placement {
-            longitude,
-            sign,
-            house,
-            dignity: b["dignity"]
-                .as_str()
-                .and_then(Dignity::from_key)
-                .ok_or_else(|| format!("{}: dignity", body.key()))?,
-            retrograde: b["is_retrograde"].as_bool().unwrap_or_default(),
-            combust: b["combust"].as_str() != Some("none"),
-            karaka7: karaka(&inputs["chara_karaka_7"][body.key()]),
-            karaka8: karaka(&inputs["chara_karaka_8"][body.key()]),
-            navamsha: teistro_vargas::sign(
-                &teistro_vargas::Scheme::of(Varga::D9),
-                Nas::from_degrees(
-                    Degrees::try_new(longitude.rem_euclid(360.0)).map_err(|e| e.to_string())?,
-                ),
-            ),
-        });
-    }
-    let placements = placements
-        .try_into()
-        .map_err(|_| String::from("ten placements"))?;
-    // The yogas' inputs carry no tithi, and no yoga reads one.
-    Ok(RuleChart {
-        placements,
-        panchanga: None,
-    })
-}
 
 fn records(root: &Path) -> Result<Vec<Record>, String> {
     let mut out = Vec::new();
@@ -354,7 +273,7 @@ fn predicate_uses(rules: &[Rule]) -> BTreeMap<&'static str, usize> {
 }
 
 fn page(root: &Path) -> Result<String, String> {
-    let rules = rules(root)?;
+    let rules = rules(root, "yogas")?;
     let records = records(root)?;
     let custom: Vec<&str> = rules
         .iter()

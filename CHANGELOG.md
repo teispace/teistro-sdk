@@ -945,6 +945,18 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- The seventeen doshas the recording engine computes in code are rules:
+  `teistro_rules::shipped::computed_doshas` ships Kalsarpa, its twelve named
+  forms, Kala Amrita, Mrityu Bhaga, Dagdha Rashi and Badhaka, each with its
+  citation and the engine's severity. Each says present exactly where the
+  engine's code did on every recorded chart, and the last three reproduce every
+  recorded field. `all-planets-between-nodes` takes a `side`, a `SignRef` can
+  be `{"badhakaOf": …}` (crux C86), and a group can carry a `weight` a
+  count-based severity reads. `cargo xtask doshas` writes
+  `03-design/doshas-measured.md`, held by `check-doshas`.
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
