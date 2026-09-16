@@ -530,6 +530,140 @@
           "text": "a king or the equal of a king, charitable, pleasured, happy, prime among his race, virtuous and red-lettered"
         }
       ]
+    },
+    {
+      "key": "SARAVALI_THREE_GRAHAS_IN_THE_LAGNA",
+      "category": "grahas-together",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "12",
+        "rank": 1,
+        "note": "Three grahas together in the ascendant. This is the one reading in the texts read that counts grahas in a *named* house rather than naming them; the same verse's harsher second half, when the three are malefics alone, ships beside it. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 2
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 2
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "devoid of miseries, and a lord over the earth"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_THREE_MALEFICS_IN_THE_LAGNA",
+      "category": "grahas-together",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "12",
+        "rank": 1,
+        "note": "The same three, when they are malefics alone. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 3
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "distressed by fear and grief, a great eater, and disregarded by one and all"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_ENEMIES_BY_THE_SIXTH",
+      "category": "grahas-together",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "43-44",
+        "rank": 1,
+        "note": "The number of enemies that trouble the native answers the number of grahas standing in the sixth; the SDK reports the grahas it found rather than a number of its own. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                6
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                6
+              ],
+              "atLeast": 1
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "troubled by as many enemies as there are grahas in the sixth"
+        }
+      ]
     }
   ]
 }

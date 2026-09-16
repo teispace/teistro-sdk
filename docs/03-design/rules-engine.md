@@ -506,9 +506,40 @@ whichever kind a caller wants without matching.
 The conditions repeat, so the ninety-three rules are built from a table of what
 changes: the pair, the sign, the aspecting graha and the reading. That is the
 whole of `crates/rules/src/dwigraha.rs`, and the table is
-`rules/classical-readings.json`. Brihat Jataka ch. 14 v. 5 closes by saying
+`rules/classical-readings.json`. Phaladeepika ch. 18 v. 5 says **in the verse**
 that three or more grahas together are read as the pairs they contain, which is
-what one rule a pair does of itself: four in a sign answer six of them.
+what one rule a pair does of itself: four in a sign answer six of them. Brihat
+Jataka ch. 14 v. 5 says only that "in the case of other planetary yogas the
+effects described shall be determined and applied" — it is N. Chidambaram
+Iyer's note (a) on that verse, not Varahamihira, that spells the pairwise split
+out. The pack said otherwise until 2026-09-16 and now says this.
+
+**What a house says when several grahas share it (crux C96).** Reading a
+placement one graha at a time cannot say what four grahas in the ascendant say
+together, and that is a real gap, not a stylistic one. The texts read answer it
+in four shapes and refuse a fifth.
+
+They key a reading to a set in *one sign, unnamed* — the pairs and assemblies
+below. They key one to a set in a *named* house: Saravali ch. 31 gives each of
+the 21 pairs in each of the four angles, 84 readings, and it is the only such
+family in the corpus. They count: ch. 34 v. 12 reads three grahas together in
+the ascendant, and vv. 43 to 44 make the number of enemies answer the number of
+grahas in the sixth. And they compose: Phaladeepika ch. 18 v. 5 says **in the
+verse** that more than two grahas in a house are read by combining the readings
+of every pair they contain — which is what one rule a pair does of itself.
+
+What they refuse is a reading for three or more grahas in a named house.
+Saravali ch. 31 v. 87 closes that chapter by saying the effects of three, four,
+five or six in an angle "should be suitably understood" — the text naming the
+gap it leaves — and ch. 34 v. 12's count is the single exception anywhere. So
+the SDK ships all four shapes and none of the fifth, and the refusal is itself
+cited.
+
+A pair in a named house needed no new predicate: a conjunction says one sign,
+and `planet-in-house` on either of the two says which sign that is. The
+recording engine, by comparison, carries fifteen rules that pair a conjunction
+with a house and every one of them is a pair; its one triple with a house uses
+a house *class*, not a named house.
 
 Jataka Parijata goes further, and the appendix to Iyer's Brihat Jataka prints
 its lists: every combination of the seven grahas sharing one sign, from two to
@@ -542,7 +573,8 @@ built.
 A test holds the generator to its table — twenty-one distinct pairs, twelve
 signs of six aspects each, every combination of each size once, each of the
 seven in each of the twelve signs and in each of the twelve bhavas, two halves,
-three thirds and nine ninths of each sign, every rule
+three thirds and nine ninths of each sign, every pair of the seven in each of
+the four angles, every rule
 evaluable, rank 1, citing where it was read, carrying words and no severity and
 no cancellation — and pins what each answers over the 93 charts. A hundred and fifty-seven
 stay silent, among them all six readings of an Aries Moon, who stands there in

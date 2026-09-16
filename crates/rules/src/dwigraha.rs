@@ -32,6 +32,7 @@ pub(crate) struct Table {
     in_rasi: InRasi,
     in_bhava: InBhava,
     rising_part: RisingPart,
+    pair_in_angle: PairInAngle,
 }
 
 /// What every rule of a family shares: its text, and how it was read.
@@ -120,6 +121,17 @@ struct RisingPart {
     #[serde(flatten)]
     family: Family,
     parts: Vec<PartRows>,
+}
+
+/// Saravali ch. 31: two grahas sharing a named house.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PairInAngle {
+    #[serde(flatten)]
+    family: Family,
+    /// The houses the chapter reads, in its order.
+    angles: Vec<House>,
+    pairs: Vec<PartSign>,
 }
 
 /// One division of a sign — halves, thirds — and its chapter.
@@ -259,6 +271,7 @@ impl Table {
             .chain(self.in_rasi())
             .chain(self.in_bhava())
             .chain(self.rising_part())
+            .chain(self.pair_in_angle())
             .collect()
     }
 
@@ -377,6 +390,45 @@ impl Table {
                     })
                 })
         })
+    }
+}
+
+impl Table {
+    /// Saravali ch. 31: each pair of the seven in each of the four angles. The
+    /// pair is generated, as Jataka Parijata's assemblies are, and the house is
+    /// pinned by a second condition — a conjunction says one sign, and
+    /// `planet-in-house` says which sign that is.
+    fn pair_in_angle(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.pair_in_angle.family;
+        let angles = &self.pair_in_angle.angles;
+        combinations(&Body::SEVEN, 2)
+            .into_iter()
+            .zip(&self.pair_in_angle.pairs)
+            .filter_map(|(pair, row)| pair.first().copied().map(|first| (pair, first, row)))
+            .flat_map(move |(pair, first, row)| {
+                angles
+                    .iter()
+                    .zip(&row.effects)
+                    .map(move |(house, effect)| {
+                        let keys: Vec<&str> = pair.iter().map(|body| body.key()).collect();
+                        stating(
+                            format!("SARAVALI_{}_IN_BHAVA_{}", keys.join("_"), house.get()),
+                            "pair-in-angle",
+                            family.source(&row.verse),
+                            vec![
+                                Condition::PlanetConjunct {
+                                    planets: pair.iter().copied().map(BodyRef::Body).collect(),
+                                    max_orb: None,
+                                },
+                                Condition::PlanetInHouse {
+                                    planet: Subject::Ref(SignRef::Of(BodyRef::Body(first))),
+                                    houses: vec![*house],
+                                },
+                            ],
+                            effect,
+                        )
+                    })
+            })
     }
 }
 

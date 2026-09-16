@@ -1181,6 +1181,29 @@ the astronomical numbers do not move. Nothing else computes yet.
   ones over all 27 nakshatras and 4 padas on each of the 77 charts that record
   one, and exactly one pair holds on each.
 
+- **What a house says when several grahas share it** (crux C96). Reading a
+  placement one graha at a time cannot say what several grahas in one house say
+  together. The texts answer in four shapes and refuse a fifth, and the SDK now
+  ships all four: Saravali ch. 31's 84 readings of each pair of the seven in
+  each of the four angles — the only family in the corpus keyed to a set in a
+  *named* house — and ch. 34's counts, three grahas in the ascendant and the
+  enemies answering the number in the sixth. A pair in a named house needed no
+  new predicate: a conjunction says one sign and `planet-in-house` says which.
+  `readings()` is now 632 rules and the SDK ships 817.
+
+  **Fixed:** the dwigraha pack attributed the pairwise-composition rule to
+  Brihat Jataka ch. 14 v. 5. That verse says only "in the case of other
+  planetary yogas the effects described shall be determined and applied"; the
+  pairwise split is N. Chidambaram Iyer's note (a) on it. Phaladeepika ch. 18
+  v. 5 is the verse that carries the rule, and the pack and the design page now
+  say so.
+
+  **Numbers:** Saravali ch. 31 v. 87 declines to give the same readings for
+  three, four, five or six grahas in an angle, so nothing of that shape ships.
+  A pair conjunct in an angle is a pair conjunct, so the four angle readings of
+  a pair can never answer more charts than Brihat Jataka's one reading of it —
+  which the test holds for all 21.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

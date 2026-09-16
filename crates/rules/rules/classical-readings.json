@@ -3,7 +3,7 @@
     "text": "Brihat Jataka",
     "chapter": "14",
     "rank": 1,
-    "note": "Two grahas occupying one sign, and what the verse says of the native. Read from N. Chidambaram Iyer's 1885 translation; Mantreswara gives the same twenty-one readings at Phaladeepika ch. 18 vv. 1 to 5. The chapter closes by saying that three or more together are read as the pairs they contain, which is what one rule a pair does of itself.",
+    "note": "Two grahas occupying one sign, and what the verse says of the native. Read from N. Chidambaram Iyer's 1885 translation; Mantreswara gives the same twenty-one readings at Phaladeepika ch. 18 vv. 1 to 5. Phaladeepika ch. 18 v. 5 says in the verse that more than two grahas in a house are read by combining the readings of every pair they contain, which is what one rule a pair does of itself; Brihat Jataka ch. 14 v. 5 says only that \u201cin the case of other planetary yogas the effects described shall be determined and applied\u201d, and it is Iyer's note (a) on that verse, not Varahamihira, that spells the pairwise split out.",
     "readings": [
       {
         "verse": "1",
@@ -1628,6 +1628,209 @@
               "short, soft of disposition, courageous, broad of chest and eye, big of nose, bright, broad of body, intelligent, virtuous and famous"
             ]
           }
+        ]
+      }
+    ]
+  },
+  "pairInAngle": {
+    "text": "Saravali",
+    "chapter": "31",
+    "rank": 1,
+    "note": "Two grahas sharing an angle, and what the chapter says of the native. Read from R. Santhanam's translation of Kalyana Varma's Saravali, the pairs in the chapter's own order \u2014 the Sun first \u2014 and within a pair the ascendant, the fourth, the seventh and the tenth. This is the only family in the texts read that keys a reading to a set of grahas in a *named* house; v. 87 closes the chapter by declining to write the same for three, four, five or six grahas in an angle, so nothing of that shape ships. Verse 46 adds that the Moon with benefics is always beneficial and the Moon with Mars or Saturn always inauspicious except in the tenth, which is what these readings of hers already say.",
+    "angles": [
+      1,
+      4,
+      7,
+      10
+    ],
+    "pairs": [
+      {
+        "verse": "2-5",
+        "effects": [
+          "grieved in his parents, devoid of honour, sons and wealth, insulted and miserable",
+          "deprived of relatives, happiness and sons, in penury, and a great dunce",
+          "without friends or sons, and insulted by women",
+          "beautiful of body, a chief of an army, of the quality of passion, unkind, crooked, and a destroyer of his enemies"
+        ]
+      },
+      {
+        "verse": "6-9",
+        "effects": [
+          "bilious, bold in war, short-tempered, injured of body, cruel, crafty and harsh",
+          "devoid of relatives and wealth, bereft of every happiness, and agitated",
+          "parted from his wife, insulted on account of women, and fond of moving abroad",
+          "failing in what he undertakes, a servant, emotional, a principal employee of the king, and always distressed"
+        ]
+      },
+      {
+        "verse": "10-13",
+        "effects": [
+          "very learned and garrulous, hard of limb, fond of adventure, wise and long-lived",
+          "the equal of a king, famous, keeping his promise, rich as Kubera, corpulent and crooked of nose",
+          "meeting death by murder or imprisonment, false to his word, a great miser, bereft of pleasure, and a thief",
+          "famous in the whole world, owning elephants and horses, and a king, provided neither of the two is in debilitation"
+        ]
+      },
+      {
+        "verse": "14-17",
+        "effects": [
+          "virtuous, a minister or a chief of an army, or sagely of disposition, and endowed with learning, wealth, pleasure and fame",
+          "interested in the Vedas, in justice and in poetry, eloquent, virtuous, fortunate, and attended by servants",
+          "subdued to women by passion, disliking his father, endowed with gold, ruby, silver and pearl, and faultless of body",
+          "endowed with fame, happiness, honour and wealth, and a king though of base lineage"
+        ]
+      },
+      {
+        "verse": "18-21",
+        "effects": [
+          "fond of quarrels, immodest, of bad conduct, sorrowful, mean, and devoid of wealth and women",
+          "a servant of others, sorrowful, filled with hatred of others, and in penury",
+          "insulted by women, devoid of wealth, corpulent, and a wanderer in hills and forests",
+          "engaged in trade, a king's minister, skilful in the shastras and the arts, and enjoying wealth and conveyances"
+        ]
+      },
+      {
+        "verse": "22-25",
+        "effects": [
+          "born of a blameworthy mother, of blameworthy conduct or calling, always dirty of disposition, and sinful",
+          "base of disposition, a synonym of penury, and humiliated among his relatives",
+          "inactive, indolent, unfortunate, devoid of a woman and of wealth, a hunter of animals, and highly dull-witted",
+          "serving lowly in foreign countries, earning through kings at times but losing it to theft, and always poor"
+        ]
+      },
+      {
+        "verse": "26-29",
+        "effects": [
+          "defective in blood, digestive fire and bile, a king in his wealth, and harsh",
+          "grieved, devoid of wealth, happiness, progeny and relatives, and defective in a limb",
+          "base, after other men's money, garrulous, untruthful and jealous",
+          "possessed of the wealth of an army of horses, elephants and men, and brave"
+        ]
+      },
+      {
+        "verse": "30-33",
+        "effects": [
+          "possessed of happiness, intelligence, strength, fortune and splendour, talkative and very skilful",
+          "endowed with relatives, friends, progeny, happiness, valour, gold and precious stones, and fortunate",
+          "valorous, dear to the king or a king himself, famous, a great poet, and soft of disposition",
+          "honourable, wealthy and very famous, a royal minister, grieving in the last part of his life, and without relatives"
+        ]
+      },
+      {
+        "verse": "34-37",
+        "effects": [
+          "a king, large and broad of chest, of many sons, friends and wives, and well favoured in body and in kin",
+          "a minister or of royal status, endowed with happiness, relatives and great riches, and a master of many shastras",
+          "very learned, kingly, expert in the arts, a good man of business, dear to the king, wealthy and prosperous",
+          "learned, charitable, wealthy, honoured and famous, soft, long of arm, and revered by all"
+        ]
+      },
+      {
+        "verse": "38-41",
+        "effects": [
+          "made happy by the company of courtesans, splendid, agreeable to his elders, and possessed of garlands, clothes and scents",
+          "made happy by women, enriched by water, dear to the people, and abundantly pleasured",
+          "joined to many women, of little wealth and few sons, an intellectual, and leaving a royal history behind him",
+          "endowed with honour, command and riches, a king or a minister, famous, and attended by many"
+        ]
+      },
+      {
+        "verse": "42-45",
+        "effects": [
+          "in servitude, base, given to anger, miserly, sleepy, lazy and sinful",
+          "earning by water, pearls and boats, engaged in excavation, excellent and agreeable to others",
+          "wifeless, supreme among his townsmen, and honoured by the king",
+          "conquering his enemies with an army of horses, famous, the son of a bad woman, and a head of men"
+        ]
+      },
+      {
+        "verse": "47-50",
+        "effects": [
+          "murderous, skilful in work with fire, a worker of metals, industrious, an ambassador, and enjoying concealed property",
+          "devoid of relatives but endowed with friends, wealth, food, pleasures and conveyances, and cast off by his own people",
+          "wandering from country to country, a servant of base people, skilful in argument, and losing his first wife",
+          "a chief of an army, valorous, crafty, very cruel, dear to the king, and courageous"
+        ]
+      },
+      {
+        "verse": "51-54",
+        "effects": [
+          "a minister, possessed of prime virtues, famous for his charity, and ever enthusiastic",
+          "endowed with relatives and friends, firm in wealth, happy, a servant of the king, and devoted to the Almighty and his elders",
+          "inclined to wander in hills, forts, watering places and forests, of good relatives, valorous, and without a spouse",
+          "a king, widely famous, of abundant wealth and attendants, and extremely skilful at work"
+        ]
+      },
+      {
+        "verse": "55-58",
+        "effects": [
+          "addicted to prostitutes, given to bad acts, losing wealth on account of women, and short-lived",
+          "bereft of relatives, friends and progeny, tortured in his mind, and very miserable",
+          "a wanderer after women, of a bad history, much grieved on account of women, and mean in conduct",
+          "a master of archery, intelligent, endowed with learning, wealth, robes and flowers, famous, and a king's minister"
+        ]
+      },
+      {
+        "verse": "59-62",
+        "effects": [
+          "successful in war, a hater of his mother, and facing a curtailed life and declining fortune",
+          "bereft of food, drink and happiness, given up by his own people, friendless and sinful",
+          "devoid of conjugal happiness and progeny, indigent, sick, housing vices, insulted by the people, and a tale-bearer",
+          "acquiring wealth through the king, but punished for a great crime, and a liar"
+        ]
+      },
+      {
+        "verse": "63-66",
+        "effects": [
+          "of pleasing appearance and excellent qualities, learned, honoured by the king, a conqueror of his five senses, and enjoying conveyances, happiness and pleasure",
+          "blessed with relatives, friends, happiness, women, fortune, wealth, royal favour and skill",
+          "winning a virtuous wife, destroying his enemies, endowed with many friends, people, wealth and prowess, and famous on his father's account",
+          "a minister or a king, honourable, commanding, famous, modest, and interested in the Vedas"
+        ]
+      },
+      {
+        "verse": "67-70",
+        "effects": [
+          "beautiful of body, learned, always fortunate, honoured by the king, very wealthy, pious towards Brahmins and the Almighty, and famous",
+          "endowed with sons, friends and relatives, fortunate, a minister or a king, and happy",
+          "surrounded by many good women, endowed with pleasure, money and sovereignty, happy, and dear to the king",
+          "knowing the science of policy, a king, virtuous, no patron of base men, wealthy, well begun in what he undertakes, and skilful"
+        ]
+      },
+      {
+        "verse": "71-74",
+        "effects": [
+          "dirty of body, sinful, bereft of learning, wealth and vehicles, short-lived, and of declining fortune",
+          "devoid of drink, food and relatives, rejected by his own people, foolish, friendless and sinful",
+          "the servant of a rich man, foolish, harmful to others, unvirtuous, very dirty and untruthful",
+          "a conqueror of the whole band of his enemies, endowed with relatives, friends, conveyances and wealth, and honouring the Almighty and Brahmins"
+        ]
+      },
+      {
+        "verse": "75-78",
+        "effects": [
+          "a king or the equal of a king by his preceptor's teaching, though a Brahmin by birth",
+          "a winner over all his enemies, endowed with relatives, friends, conveyances and wealth, and honouring the Almighty and Brahmins",
+          "acquiring a virtuous woman, endowed with precious stones and riches, gaining happiness, fame and daughters, and procuring excellent conveyances and pleasure",
+          "widely commanding, widely honoured and endowed, of wide riches, a king, attended by many servants, and virtuous"
+        ]
+      },
+      {
+        "verse": "79-82",
+        "effects": [
+          "languid with passion, hard of heart, of noble descent, learned, rich, of limited happiness, and wicked",
+          "a king's minister, free of disease, successful, endowed with relatives and friends, rich in affection, and happy",
+          "losing wealth through enmity with women, courageous, vicious, crafty, unpleasing of appearance, greedy of his father's property, and foolish",
+          "dear to the king and a king himself, of limited progeny, unsettled, and possessed of cattle and conveyances"
+        ]
+      },
+      {
+        "verse": "83-86",
+        "effects": [
+          "seeking union with every woman, splendid of body, endowed with happiness, pleasure and wealth, attended by many servants, and greatly bereaved",
+          "gaining abundantly through his friends, highly honoured by his relatives, and close to the king",
+          "bestowed with women, precious stones, wealth, fame and the pleasures of sex",
+          "devoid of both good and ill, a doer of excellent acts, and a famous minister"
         ]
       }
     ]
