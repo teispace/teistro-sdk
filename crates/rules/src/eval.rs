@@ -876,6 +876,12 @@ impl<'a> Evaluator<'a> {
                     _ => false,
                 }
             }
+            Condition::PlanetInDegrees { planet, from, to } => {
+                self.body_meets(planet, into, rec, |body| {
+                    let in_sign = self.at(body).longitude.rem_euclid(30.0);
+                    in_sign >= *from && in_sign < *to
+                })
+            }
             Condition::PanchangaTithi { tithis } => {
                 self.panchanga().is_some_and(|p| tithis.contains(&p.tithi))
             }
@@ -2640,6 +2646,39 @@ mod tests {
         let alone = Evaluator::new(&c, ENGINE).evaluate(evil);
         assert!(alone.present && alone.cancellations.is_empty());
         assert_eq!(alone.status, Some(NetStatus::Active));
+    }
+
+    #[test]
+    fn a_degree_band_reads_a_body_s_place_within_its_sign() {
+        // Brihat Jataka ch. 6 v. 8 reads the Moon in the last navamsa of a
+        // sign, her last 3°20′.
+        let mut c = chart();
+        let last_navamsha = written(
+            r#"{"type": "planet-in-degrees", "planet": "MOON", "from": 26.666666666666668, "to": 30.0}"#,
+        );
+        for (degrees, held) in [(26.0, false), (26.7, true), (29.99, true), (0.5, false)] {
+            c.placements[MOON.index()].longitude = degrees;
+            assert_eq!(holds(&c, ENGINE, &last_navamsha).0, held, "{degrees}°");
+        }
+        c.placements[MOON.index()].longitude = 27.0;
+        assert_eq!(holds(&c, ENGINE, &last_navamsha), (true, vec![MOON]));
+        // It reads the degrees of whichever sign the body stands in.
+        place(&mut c, MOON, Rashi::Leo);
+        c.placements[MOON.index()].longitude = 120.0 + 27.0;
+        assert!(holds(&c, ENGINE, &last_navamsha).0);
+        // A division moves signs and not degrees, so a rule may not read one
+        // inside an in-varga.
+        let refused = serde_json::from_str::<Rule>(
+            r#"{"key": "R", "category": "c", "source": {"text": "t"}, "conditions": [
+                {"type": "in-varga", "varga": "D9", "condition":
+                    {"type": "planet-in-degrees", "planet": "MOON", "from": 0.0, "to": 1.0}}]}"#,
+        )
+        .unwrap_err()
+        .to_string();
+        assert!(
+            refused.contains("`planet-in-degrees` reads a longitude"),
+            "{refused}"
+        );
     }
 
     #[test]

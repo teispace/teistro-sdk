@@ -1034,6 +1034,15 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- Varahamihira's Balarishta: eleven rules from Brihat Jataka ch. 6, read in
+  Chidambaram Iyer's 1885 translation, ship beside BPHS's. `planet-in-degrees`
+  reads a body's place within its sign, which v. 8's last navamsa needs, and is
+  refused inside an `in-varga` as every longitude is. The verses whose escape
+  turns on a *powerful* benefic carry that in their notes rather than in a
+  cancellation the kernel cannot measure.
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

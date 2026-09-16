@@ -51,6 +51,8 @@ cancellations held.
   Dagdha Rashi and Badhaka reproduce every recorded field. It took a `side` on
   the nodal-arc predicate, a badhaka reference (crux C86) and a weight on a
   group, not a classifying outcome.
+- **A body's degrees within its sign** are readable (`planet-in-degrees`),
+  which Brihat Jataka ch. 6 v. 8's last navamsa needs.
 - **A rule can name another.** `{"type": "rule", "key": …}` holds when that
   rule holds, so BPHS ch. 9's evils carry ch. 10's antidotes as cancellations
   while the antidotes stay rules of their own; `check_references` refuses a

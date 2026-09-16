@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 40);
+    assert_eq!(rules.len(), 51);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -74,7 +74,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
 }
 
 /// The rules no recorded chart answers.
-const SILENT: [&str; 19] = [
+const SILENT: [&str; 23] = [
     "ABHUKTA_MOOLA",
     "ARISHTA_FIVE_IN_THE_SECOND",
     "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
@@ -91,13 +91,17 @@ const SILENT: [&str; 19] = [
     "ARISHTA_SATURN_TWELFTH_SUN_NINTH_MARS_EIGHTH",
     "ARISHTA_SUN_NINTH_MARS_SEVENTH_JUPITER_VENUS_ELEVENTH",
     "ARISHTA_SUN_SEVENTH_MARS_TENTH_RAHU_TWELFTH",
+    "BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH",
+    "BJ_LUMINARY_IN_LAGNA_MALEFICS_IN_FIVE_EIGHT_NINE",
+    "BJ_SATURN_SUN_MOON_MARS_IN_ORDER",
+    "BJ_WANING_MOON_IN_TWELFTH",
     "LAGNA_GANDANTA",
     "NAKSHATRA_GANDANTA",
     "TITHI_GANDANTA",
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 40] = [
+const ANSWERED: [(&str, usize); 51] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
     ("ARISHTA_BHANGA_BENEFIC_IN_KENDRA", 70),
@@ -135,6 +139,17 @@ const ANSWERED: [(&str, usize); 40] = [
     ("ARISHTA_SUN_NINTH_MARS_SEVENTH_JUPITER_VENUS_ELEVENTH", 0),
     ("ARISHTA_SUN_SEVENTH_MARS_TENTH_RAHU_TWELFTH", 0),
     ("ARISHTA_WANING_MOON_IN_LAGNA_MALEFIC_SEVENTH", 1),
+    ("BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH", 0),
+    ("BJ_LUMINARY_IN_LAGNA_MALEFICS_IN_FIVE_EIGHT_NINE", 0),
+    ("BJ_MALEFICS_IN_FIFTH_AND_NINTH", 12),
+    ("BJ_MALEFICS_IN_SIXTH_AND_EIGHTH", 14),
+    ("BJ_MALEFICS_IN_TWELFTH_AND_SECOND", 17),
+    ("BJ_MALEFICS_ON_LAGNA_SEVENTH_AND_THE_MOON", 4),
+    ("BJ_MOON_IN_LAGNA_MALEFIC_IN_SEVENTH", 2),
+    ("BJ_MOON_IN_THE_LAST_NAVAMSHA", 3),
+    ("BJ_SATURN_SUN_MOON_MARS_IN_ORDER", 0),
+    ("BJ_WANING_MOON_IN_TWELFTH", 0),
+    ("BJ_WANING_MOON_WITH_A_MALEFIC", 22),
     ("LAGNA_GANDANTA", 0),
     ("NAKSHATRA_GANDANTA", 0),
     ("TITHI_GANDANTA", 0),

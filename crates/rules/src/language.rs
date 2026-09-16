@@ -524,6 +524,16 @@ pub enum Condition {
         /// Which signs.
         signs: Vec<Rashi>,
     },
+    /// A body stands between two degrees of its sign, the first counted in and
+    /// the last counted out: the last navamsa of a sign is 26.6667 to 30.
+    PlanetInDegrees {
+        /// Who.
+        planet: BodyRef,
+        /// From, degrees into the sign.
+        from: f64,
+        /// To, degrees into the sign.
+        to: f64,
+    },
     /// A body stands within an orb of a gandanta junction: the end of Cancer,
     /// Scorpio or Pisces, or the start of Leo, Sagittarius or Aries.
     PlanetAtGandanta {
@@ -802,6 +812,7 @@ impl Condition {
             Condition::LagnaInSign { .. } => "lagna-in-sign",
             Condition::PlanetInHouseAndSign { .. } => "planet-in-house-and-sign",
             Condition::PlanetAtGandanta { .. } => "planet-at-gandanta",
+            Condition::PlanetInDegrees { .. } => "planet-in-degrees",
             Condition::PanchangaTithi { .. } => "panchanga-tithi",
             Condition::PanchangaPaksha { .. } => "panchanga-paksha",
             Condition::PanchangaVara { .. } => "panchanga-vara",
@@ -871,6 +882,7 @@ impl Condition {
             self,
             Condition::PlanetAtTableDegree { .. }
                 | Condition::PlanetAtGandanta { .. }
+                | Condition::PlanetInDegrees { .. }
                 | Condition::PlanetConjunct {
                     max_orb: Some(_),
                     ..

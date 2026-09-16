@@ -1,0 +1,420 @@
+{
+  "rules": [
+    {
+      "key": "BJ_MALEFICS_IN_TWELFTH_AND_SECOND",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "2",
+        "rank": 1,
+        "note": "Malefics holding the twelfth and the second from the rising sign: the child dies. The same verse gives the sixth and the eighth as a second figure, and the translator records Garga's four pairs; the verse's own two ship here. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "key": "BJ_MALEFICS_IN_SIXTH_AND_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "2",
+        "rank": 1,
+        "note": "Malefics holding the sixth and the eighth from the rising sign: the child dies. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "key": "BJ_MALEFICS_ON_LAGNA_SEVENTH_AND_THE_MOON",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "3",
+        "rank": 1,
+        "note": "A malefic in the rising sign, one in the setting sign, and one in the sign the Moon holds, with no benefic aspecting her: the child dies immediately after birth. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MOON"
+          }
+        }
+      ]
+    },
+    {
+      "key": "BJ_WANING_MOON_IN_TWELFTH",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "4",
+        "rank": 1,
+        "note": "The waning Moon in the twelfth, malefics in the rising sign and the eighth, and no benefic in a kendra: the child dies immediately after birth. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "BJ_MOON_IN_THE_LAST_NAVAMSHA",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in the last navamsa of a sign — her last 3°20′ — and unaspected by benefics: the child dies soon after birth. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-degrees",
+          "planet": "MOON",
+          "from": 26.666666666666668,
+          "to": 30.0
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MOON"
+          }
+        }
+      ]
+    },
+    {
+      "key": "BJ_MALEFICS_IN_FIFTH_AND_NINTH",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "8",
+        "rank": 1,
+        "note": "Malefics holding the fifth and the ninth: the child dies soon after birth. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            9
+          ],
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "key": "BJ_MOON_IN_LAGNA_MALEFIC_IN_SEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in the rising sign with malefics in the seventh: the child dies soon after birth. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "key": "BJ_ECLIPSED_MOON_IN_LAGNA_MARS_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "9",
+        "rank": 1,
+        "note": "The eclipsed Moon in the rising sign with a malefic while Mars holds the eighth: both mother and infant die. It needs the chart to say the birth fell in a lunar eclipse. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "birth-during-eclipse",
+          "kind": "lunar"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "key": "BJ_LUMINARY_IN_LAGNA_MALEFICS_IN_FIVE_EIGHT_NINE",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "9",
+        "rank": 1,
+        "note": "The Sun or the Moon in the rising sign with malefics in the fifth, eighth and ninth: the child dies unless that luminary is joined or aspected by a powerful benefic. The escape turns on a benefic's strength, which the kernel cannot measure, so it is recorded and not built. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SUN",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                1
+              ]
+            }
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            9
+          ],
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "key": "BJ_SATURN_SUN_MOON_MARS_IN_ORDER",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "10",
+        "rank": 1,
+        "note": "Saturn in the twelfth, the Sun in the ninth, the Moon in the rising sign and Mars in the eighth: the child dies soon after birth. The verse's escape is a powerful Jupiter aspecting all four, which needs a strength measure and is recorded rather than built. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            8
+          ]
+        }
+      ]
+    },
+    {
+      "key": "BJ_WANING_MOON_WITH_A_MALEFIC",
+      "category": "arishta",
+      "source": {
+        "text": "Brihat Jataka",
+        "chapter": "6",
+        "verse": "11",
+        "rank": 1,
+        "note": "The waning Moon accompanied by a malefic in the fifth, seventh, ninth, twelfth, first or eighth: the child dies soon after birth, unless a powerful Venus, Mercury or Jupiter joins or aspects her, which needs a strength measure. Read from N. Chidambaram Iyer's 1885 translation."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1,
+            5,
+            7,
+            8,
+            9,
+            12
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        }
+      ]
+    }
+  ]
+}

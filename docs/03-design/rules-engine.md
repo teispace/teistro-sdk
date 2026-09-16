@@ -424,10 +424,26 @@ say why: the verses close by asking that the occupants' strength be estimated,
 which the kernel cannot yet do, so they state the principle rather than a
 graded reading.
 
+**Varahamihira beside Parashara (2026-09-16).** Brihat Jataka ch. 6, read in
+N. Chidambaram Iyer's 1885 translation, gives eleven more Balarishta rules:
+malefics on the twelfth and second, the sixth and eighth, the fifth and ninth;
+malefics on the rising sign, the setting sign and the Moon's with no benefic
+aspecting her; the waning Moon in the twelfth or with a malefic in six named
+houses; the Moon in the last navamsa of a sign; the eclipsed Moon in the
+rising sign with Mars in the eighth; and the four-graha figure of v. 10. What
+they needed was a degree band, `planet-in-degrees`, which reads a body's place
+within its sign and is refused inside an `in-varga` like every other longitude.
+
+Several of these verses escape through a *powerful* benefic — a powerful
+Jupiter aspecting all four grahas, a powerful Venus, Mercury or Jupiter with
+the Moon. Those escapes are recorded in each rule's note and not built, so the
+rule states the evil the verse states and no cancellation fires on a strength
+the kernel cannot measure.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
-of them, so an answer that moves fails the build. Nineteen answer none, and the
-test lists them — the four gandantas because the corpus records no limb's
+of them, so an answer that moves fails the build. Twenty-three answer none, and
+the test lists them — the four gandantas because the corpus records no limb's
 ghatikas, the rest because they are coincidences of three, four or five
 grahas.
 
