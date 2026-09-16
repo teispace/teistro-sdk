@@ -250,7 +250,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 993);
+        assert_eq!(rules.len(), 997);
         for rule in &rules {
             let rank = rule
                 .source

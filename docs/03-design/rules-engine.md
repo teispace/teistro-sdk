@@ -1100,6 +1100,18 @@ medium and 101 short; vv. 71 to 73 place the stronger of the lagna and eighth
 lords in exactly one of angle, panaphara and apoklima on each of the 71 charts
 that compare strength, which is the three lists being the twelve houses.
 
+**A natural relation between two grahas (2026-09-17).** BPHS ch. 43 vv. 67
+and 71 to 73 had been left out for want of it: the lagna lord or the eighth
+lord "friendly to the Sun". `natural-relation` asks how one body regards
+another by the catalogue's naisargika relationships — friend, neutral or enemy
+— and `Relation::between` gives it to code. The relationship is not
+symmetric, so the condition is `of`'s regard for `to`, which is the verse's
+own direction; a graha is none of the three to itself. Four rules shipped.
+Over the 93 charts the three regards partition every chart but Leo rising,
+where the lagna lord is the Sun; and the medium figure never answers, because
+no lagna lord regards the Sun as neutral — which is the catalogue's arithmetic,
+not the corpus's.
+
 **The manner of death and the worlds before and after (2026-09-17).** BPHS ch.
 44 vv. 25 to 37 read the manner, place and awareness of death from the third
 and eighth houses, and vv. 41 to 45 the world a native came from and goes to.

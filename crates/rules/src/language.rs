@@ -675,6 +675,21 @@ pub enum Condition {
         /// Of which class.
         class: Class,
     },
+    /// How one body regards another by natural relationship (BPHS ch. 3's
+    /// naisargika maitri, as the catalogue lists it): a friend, a neutral or
+    /// an enemy. The relationship is not symmetric — Mercury counts the Sun a
+    /// friend and the Sun counts Mercury neutral — so it is `of`'s regard for
+    /// `to`, as "the ascendant lord friendly to the Sun" (BPHS ch. 43 vv. 71 to
+    /// 73) is the lord's. A body is none of these to itself, and the lagna to
+    /// anything.
+    NaturalRelation {
+        /// Whose regard.
+        of: BodyRef,
+        /// For whom.
+        to: BodyRef,
+        /// Which relations meet it.
+        relations: Vec<Relation>,
+    },
     /// Two references resolve to one body.
     SameBody {
         /// One.
@@ -777,6 +792,36 @@ pub enum Condition {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         window_hours: Option<f64>,
     },
+}
+
+/// A natural relationship between two grahas.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Relation {
+    /// A friend.
+    Friend,
+    /// Neither friend nor enemy.
+    Neutral,
+    /// An enemy.
+    Enemy,
+}
+
+impl Relation {
+    /// How `of` regards `to` by the catalogue's natural relationships; none
+    /// for a graha and itself, or one the catalogue relates to nothing.
+    #[must_use]
+    pub fn between(of: Graha, to: Graha) -> Option<Relation> {
+        let attributes = of.attributes();
+        if attributes.friends.contains(&to) {
+            Some(Relation::Friend)
+        } else if attributes.neutrals.contains(&to) {
+            Some(Relation::Neutral)
+        } else if attributes.enemies.contains(&to) {
+            Some(Relation::Enemy)
+        } else {
+            None
+        }
+    }
 }
 
 /// Where an intervention comes from, and what obstructs it (BPHS ch. 31
@@ -976,6 +1021,7 @@ impl Condition {
             Condition::SameSign { .. } => "same-sign",
             Condition::SameBody { .. } => "same-body",
             Condition::PlanetIs { .. } => "planet-is",
+            Condition::NaturalRelation { .. } => "natural-relation",
         }
     }
 

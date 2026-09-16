@@ -12,7 +12,9 @@ use crate::chart::{
     NATURAL_BENEFICS, NATURAL_MALEFICS, NodeMotion, NodeSides, Panchanga, Placement, PointAt,
     Readings, RuleChart, Strengths, Upapada, VargaSigns,
 };
-use crate::language::{Body, Condition, EclipseKind, Edge, House, KarakaScheme, NodeSide};
+use crate::language::{
+    Body, Condition, EclipseKind, Edge, House, KarakaScheme, NodeSide, Relation,
+};
 use crate::reference::{BodyRef, BodySubject, Class, SignRef, Subject};
 use crate::rule::{NetStatus, Outcome, Rule, Severity};
 use crate::table::{Table, Tables};
@@ -1257,6 +1259,20 @@ impl<'a> Evaluator<'a> {
                 };
                 one.sign == other.sign
             }
+            Condition::NaturalRelation { of, to, relations } => {
+                let (Some(Body::Graha(one)), Some(Body::Graha(other))) =
+                    (self.body(of, rec), self.body(to, rec))
+                else {
+                    return false;
+                };
+                let held = Relation::between(one, other)
+                    .is_some_and(|relation| relations.contains(&relation));
+                if held {
+                    into.push(Body::Graha(one));
+                    into.push(Body::Graha(other));
+                }
+                held
+            }
             Condition::PlanetIs { planet, class } => self.body_meets(planet, into, rec, |body| {
                 self.members(*class)
                     .get(body.index())
@@ -1715,6 +1731,46 @@ mod tests {
         assert_eq!(
             serde_json::from_value::<Condition>(serde_json::to_value(&five).unwrap()).unwrap(),
             five
+        );
+    }
+
+    #[test]
+    fn a_natural_relation_is_one_graha_s_regard_for_another_bphs_43_71() {
+        use crate::language::Relation;
+
+        assert_eq!(
+            Relation::between(Graha::Mercury, Graha::Sun),
+            Some(Relation::Friend)
+        );
+        assert_eq!(
+            Relation::between(Graha::Sun, Graha::Mercury),
+            Some(Relation::Neutral)
+        );
+        assert_eq!(
+            Relation::between(Graha::Sun, Graha::Saturn),
+            Some(Relation::Enemy)
+        );
+        assert_eq!(Relation::between(Graha::Sun, Graha::Sun), None);
+        // Aries rising: Mars lords the lagna, and counts the Sun a friend.
+        let c = chart();
+        let relation = |relations: &str| {
+            written(&format!(
+                r#"{{"type": "natural-relation", "of": {{"lordOf": 1}}, "to": "SUN", "relations": {relations}}}"#
+            ))
+        };
+        assert_eq!(
+            holds(&c, ENGINE, &relation(r#"["friend"]"#)),
+            (true, vec![MARS, SUN])
+        );
+        assert!(!holds(&c, ENGINE, &relation(r#"["neutral", "enemy"]"#)).0);
+        let own = written(
+            r#"{"type": "natural-relation", "of": "SUN", "to": "SUN", "relations": ["friend", "neutral", "enemy"]}"#,
+        );
+        assert!(!holds(&c, ENGINE, &own).0);
+        let condition = relation(r#"["enemy"]"#);
+        assert_eq!(
+            serde_json::from_value::<Condition>(serde_json::to_value(&condition).unwrap()).unwrap(),
+            condition
         );
     }
 

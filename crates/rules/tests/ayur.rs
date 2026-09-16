@@ -22,7 +22,7 @@ fn the_classes_of_life_answer_where_they_did() {
         .filter(|rule| rule.source.text == "BPHS" && rule.source.chapter.as_deref() == Some("43"))
         .cloned()
         .collect();
-    assert_eq!(rules.len(), 21);
+    assert_eq!(rules.len(), 25);
     // Every one of them gives a class of life and nothing else.
     for rule in &rules {
         assert!(
@@ -36,6 +36,11 @@ fn the_classes_of_life_answer_where_they_did() {
         at("BPHS_STRONGER_OF_LAGNA_AND_EIGHTH_LORDS_IN_ANGLE"),
         at("BPHS_STRONGER_OF_LAGNA_AND_EIGHTH_LORDS_IN_PANAPHARA"),
         at("BPHS_STRONGER_OF_LAGNA_AND_EIGHTH_LORDS_IN_APOKLIMA"),
+    ];
+    let friendship = [
+        at("BPHS_LAGNA_LORD_FRIEND_OF_THE_SUN_LONG"),
+        at("BPHS_LAGNA_LORD_NEUTRAL_OF_THE_SUN_MEDIUM"),
+        at("BPHS_LAGNA_LORD_ENEMY_OF_THE_SUN_SHORT"),
     ];
     let helped = [
         at("BPHS_LAGNA_AND_EIGHTH_LORDS_WEAK_AND_UNDIGNIFIED_SHORT"),
@@ -66,6 +71,12 @@ fn the_classes_of_life_answer_where_they_did() {
         } else {
             assert!(placements <= 1, "{}", path.display());
         }
+        // Vv. 71 to 73's second figure: every graha regards the Sun as a
+        // friend, a neutral or an enemy, except the Sun himself, who lords the
+        // lagna for Leo rising.
+        let regards = friendship.iter().filter(|at| present[**at]).count();
+        let leo = chart.lagna() == teistro_core::catalogue::Rashi::Leo;
+        assert_eq!(regards, usize::from(!leo), "{}", path.display());
         // V. 78: helped and unhelped are one question answered two ways.
         assert!(!helped.iter().all(|at| present[*at]), "{}", path.display());
         charts += 1;
@@ -84,20 +95,24 @@ fn the_classes_of_life_answer_where_they_did() {
     assert_eq!(
         classes,
         [
-            (LifeClass::Short, 101),
+            (LifeClass::Short, 127),
             (LifeClass::Medium, 18),
-            (LifeClass::Long, 97)
+            (LifeClass::Long, 159)
         ]
     );
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
     assert_eq!(counts.as_slice(), CLASSES.as_slice());
 }
 
-/// What each answers over the 93 recorded charts. The widest, v. 74, is the
+/// What each answers over the 93 recorded charts. No lagna lord regards the
+/// Sun as a neutral — the Moon, Mars, Mercury and Jupiter count him a friend,
+/// Venus and Saturn an enemy — so vv. 71 to 73's medium figure never answers,
+/// and the friend and enemy figures, 60 and 26, leave the seven Leo charts.
+/// The widest, v. 74, is the
 /// verse's own arithmetic: some malefic joins or aspects a given graha about
 /// seven charts in ten, both of a pair about half, and either pair about three
 /// in four.
-const CLASSES: [(&str, usize); 21] = [
+const CLASSES: [(&str, usize); 25] = [
     (
         "BPHS_BENEFICS_ANGULAR_OR_TRINE_MALEFICS_UPACHAYA_BENEFIC_EIGHTH_DIVINE",
         0,
@@ -117,11 +132,18 @@ const CLASSES: [(&str, usize); 21] = [
     ),
     ("BPHS_DUAL_LAGNA_WITH_ITS_LORD_WELL_PLACED_LONG", 24),
     (
+        "BPHS_EIGHTH_LORD_FRIENDLY_TO_THE_SUN_WITH_MALEFICS_SIXTH_TWELFTH_LONG",
+        2,
+    ),
+    (
         "BPHS_LAGNA_AND_EIGHTH_LORDS_WEAK_AND_UNDIGNIFIED_BUT_HELPED_MEDIUM",
         1,
     ),
     ("BPHS_LAGNA_AND_EIGHTH_LORDS_WEAK_AND_UNDIGNIFIED_SHORT", 6),
     ("BPHS_LAGNA_LORD_ANGULAR_WITH_JUPITER_AND_VENUS_LONG", 0),
+    ("BPHS_LAGNA_LORD_ENEMY_OF_THE_SUN_SHORT", 26),
+    ("BPHS_LAGNA_LORD_FRIEND_OF_THE_SUN_LONG", 60),
+    ("BPHS_LAGNA_LORD_NEUTRAL_OF_THE_SUN_MEDIUM", 0),
     (
         "BPHS_LAGNA_LORD_WITH_A_MALEFIC_IN_A_DUSTHANA_UNHELPED_SHORT",
         5,

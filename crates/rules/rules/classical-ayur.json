@@ -802,7 +802,7 @@
         "chapter": "43",
         "verse": "71-73",
         "rank": 1,
-        "note": "The stronger of the lagna lord and the eighth lord stands in an angle. Where one graha lords both, as for Aries and Libra rising, it is that graha. The verses' second figure, the lagna lord's friendship with the Sun, wants a relation between two grahas the language does not carry and is not here. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+        "note": "The stronger of the lagna lord and the eighth lord stands in an angle. Where one graha lords both, as for Aries and Libra rising, it is that graha. The verses' second figure, the lagna lord's friendship with the Sun, is its own rule. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
       },
       "conditions": [
         {
@@ -904,7 +904,7 @@
         "chapter": "43",
         "verse": "71-73",
         "rank": 1,
-        "note": "The stronger of the lagna lord and the eighth lord stands in a panaphara, the second, fifth, eighth or eleventh. Where one graha lords both, as for Aries and Libra rising, it is that graha. The verses' second figure, the lagna lord's friendship with the Sun, wants a relation between two grahas the language does not carry and is not here. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+        "note": "The stronger of the lagna lord and the eighth lord stands in a panaphara, the second, fifth, eighth or eleventh. Where one graha lords both, as for Aries and Libra rising, it is that graha. The verses' second figure, the lagna lord's friendship with the Sun, is its own rule. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
       },
       "conditions": [
         {
@@ -1006,7 +1006,7 @@
         "chapter": "43",
         "verse": "71-73",
         "rank": 1,
-        "note": "The stronger of the lagna lord and the eighth lord stands in an apoklima, the third, sixth, ninth or twelfth. Where one graha lords both, as for Aries and Libra rising, it is that graha. The verses' second figure, the lagna lord's friendship with the Sun, wants a relation between two grahas the language does not carry and is not here. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+        "note": "The stronger of the lagna lord and the eighth lord stands in an apoklima, the third, sixth, ninth or twelfth. Where one graha lords both, as for Aries and Libra rising, it is that graha. The verses' second figure, the lagna lord's friendship with the Sun, is its own rule. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
       },
       "conditions": [
         {
@@ -1721,6 +1721,150 @@
         {
           "type": "life-class",
           "class": "medium"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_EIGHTH_LORD_FRIENDLY_TO_THE_SUN_WITH_MALEFICS_SIXTH_TWELFTH_LONG",
+      "category": "ayur",
+      "source": {
+        "text": "BPHS",
+        "chapter": "43",
+        "verse": "67",
+        "rank": 1,
+        "note": "The eighth lord a natural friend of the Sun, as it regards him, while a malefic stands in each of the sixth and twelfth and the lagna lord in an angle. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "natural-relation",
+          "of": {
+            "lordOf": 8
+          },
+          "to": "SUN",
+          "relations": [
+            "friend"
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_LORD_FRIEND_OF_THE_SUN_LONG",
+      "category": "ayur",
+      "source": {
+        "text": "BPHS",
+        "chapter": "43",
+        "verse": "71-73",
+        "rank": 1,
+        "note": "The lagna lord a natural friend of the Sun, as it regards him. For Leo rising the lord is the Sun himself, who is none of the three to himself. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "natural-relation",
+          "of": {
+            "lordOf": 1
+          },
+          "to": "SUN",
+          "relations": [
+            "friend"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "long"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_LORD_NEUTRAL_OF_THE_SUN_MEDIUM",
+      "category": "ayur",
+      "source": {
+        "text": "BPHS",
+        "chapter": "43",
+        "verse": "71-73",
+        "rank": 1,
+        "note": "The lagna lord a natural neutral of the Sun, as it regards him. For Leo rising the lord is the Sun himself, who is none of the three to himself. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "natural-relation",
+          "of": {
+            "lordOf": 1
+          },
+          "to": "SUN",
+          "relations": [
+            "neutral"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "medium"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_LORD_ENEMY_OF_THE_SUN_SHORT",
+      "category": "ayur",
+      "source": {
+        "text": "BPHS",
+        "chapter": "43",
+        "verse": "71-73",
+        "rank": 1,
+        "note": "The lagna lord a natural enemy of the Sun, as it regards him. For Leo rising the lord is the Sun himself, who is none of the three to himself. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "natural-relation",
+          "of": {
+            "lordOf": 1
+          },
+          "to": "SUN",
+          "relations": [
+            "enemy"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-class",
+          "class": "short"
         }
       ]
     }

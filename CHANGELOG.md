@@ -1306,6 +1306,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- `natural-relation`: how one graha regards another by natural relationship,
+  and `Relation::between` for code; BPHS ch. 43 v. 67 and vv. 71 to 73's
+  second figure ship with it. The SDK ships 997 rules.
+
+  **Numbers:** the lagna lord's regard for the Sun partitions every chart but
+  the seven with Leo rising, 60 friend and 26 enemy; no lagna lord regards the
+  Sun as neutral.
+
 - BPHS ch. 44's manner, place and awareness of death (vv. 25 to 37) and the
   worlds before birth and after death (vv. 41 to 45): 34 rules in the new
   `marana` and `loka` categories. The SDK ships 993 rules.

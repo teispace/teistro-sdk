@@ -54,7 +54,7 @@ pub use eval::{Evaluator, Found, Participants, RuleResult};
 pub use house::{COMPOSITIONS, Composition, Held, HouseReading, Kind};
 pub use language::{
     ArgalaPlace, Body, Condition, EclipseKind, EvidenceRank, House, Karaka, KarakaScheme, NodeSide,
-    Pada, Source,
+    Pada, Relation, Source,
 };
 pub use longevity::{
     Basis, Decided, Pair, PairReading, Rectification, SaturnAmongThem, Shift, ThreePairs,

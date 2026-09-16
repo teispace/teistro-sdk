@@ -114,6 +114,8 @@ cancellations held.
   these houses from the Moon" is `count-in-houses`. Papa and shubha kartari
   (Phaladeepika ch. 6 sl. 8) needed nothing new: they are two
   `planet-in-house-from` conditions over a class.
+- **A natural relation.** `natural-relation` asks how one graha regards
+  another — friend, neutral or enemy — by the catalogue's naisargika lists.
 - **The marakas.** `Evaluator::marakas` gives every graha's reasons from BPHS
   ch. 44, graded death or difficulty, and `vulnerability` reads a running
   chain; every result is typed a vulnerability, never a date.
