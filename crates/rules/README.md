@@ -114,6 +114,10 @@ cancellations held.
   these houses from the Moon" is `count-in-houses`. Papa and shubha kartari
   (Phaladeepika ch. 6 sl. 8) needed nothing new: they are two
   `planet-in-house-from` conditions over a class.
+- **The three pairs.** `Evaluator::three_pairs` reads BPHS ch. 43 vv. 33 to
+  50's class of life and its years from the lagna and eighth lords, Saturn and
+  the Moon, and the lagna and hora lagna, with the readings the translation
+  leaves open as knobs.
 - **A class of life is an outcome.** `Outcome::LifeClass` carries one of BPHS
   ch. 43's seven classes, each with its span, raised and lowered a step as
   Jupiter and Saturn do.

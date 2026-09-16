@@ -546,6 +546,12 @@ impl<'a> Evaluator<'a> {
         self.chart
     }
 
+    /// The points it was given.
+    #[must_use]
+    pub const fn points(&self) -> &[PointAt] {
+        self.points
+    }
+
     /// The sign a house falls in, whole signs from the lagna.
     #[must_use]
     pub fn house_sign(&self, house: House) -> Rashi {
@@ -1579,35 +1585,7 @@ mod tests {
     const SATURN: Body = Body::Graha(Graha::Saturn);
     const RAHU: Body = Body::Graha(Graha::Rahu);
 
-    fn house(n: u8) -> House {
-        House::try_new(n).unwrap()
-    }
-
-    /// Every body at 15° Aries in the first house, neutral, direct, clear.
-    fn chart() -> RuleChart {
-        RuleChart {
-            placements: [Placement {
-                longitude: 15.0,
-                sign: Rashi::Aries,
-                house: house(1),
-                dignity: Dignity::Neutral,
-                retrograde: false,
-                combust: false,
-                karaka7: None,
-                karaka8: None,
-                navamsha: Rashi::Aries,
-            }; 10],
-            panchanga: None,
-            strengths: None,
-        }
-    }
-
-    fn place(chart: &mut RuleChart, body: Body, sign: Rashi) {
-        let p = &mut chart.placements[body.index()];
-        p.sign = sign;
-        p.longitude = f64::from(sign as u8) * 30.0 + 15.0;
-        p.house = House::between(Rashi::Aries, sign);
-    }
+    use crate::test_chart::{chart, house, place};
 
     fn holds(chart: &RuleChart, readings: Readings, condition: &Condition) -> (bool, Vec<Body>) {
         let mut into = Participants::default();
@@ -2792,10 +2770,12 @@ mod tests {
         let points = [
             PointAt {
                 point: Point::Gulika,
+                longitude: 12.0,
                 sign: Rashi::Aries,
             },
             PointAt {
                 point: Point::HoraLagna,
+                longitude: 100.0,
                 sign: Rashi::Cancer,
             },
         ];

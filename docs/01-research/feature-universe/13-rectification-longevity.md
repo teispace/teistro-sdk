@@ -52,7 +52,10 @@ thing:
    it; Saturn lowering the class and Jupiter raising it. A computation, not a
    rule. The translator works an example (born 21 May 1944, 19:01:15 IWT,
    13°40′ N 79°20′ E): short life from two pairs, 36 years, rectified to
-   31.18. **Next.**
+   31.18. **Built** as `Evaluator::three_pairs` (crux C103): the SDK's chart
+   of the example matches the translator's longitudes and his three classes;
+   his rectified years are not reproduced, his contributors not being the
+   verse's.
 3. **Pindayu, Nisargayu and Amsayu** (vv. 4 to 22) with their reductions —
    half for combustion (not Venus or Saturn), a third in an enemy's sign (not
    retrograde), the visible-half losses from full to a sixth, the malefic
@@ -63,8 +66,7 @@ thing:
    strongest, averaged on a tie (vv. 30 to 32). The same example gives every
    graha's basic years (the Sun 17.5642, the Moon 24.6247 …) and a Pindayu of
    82.2502. The translator's graded visible-half loss is his own refinement
-   of the verse's flat fractions and is a reading, not the verse. **After the
-   three pairs.**
+   of the verse's flat fractions and is a reading, not the verse. **Next.**
 4. **Longevity for other beings** (vv. 23 to 29): a scale factor by species.
    Out of scope.
 

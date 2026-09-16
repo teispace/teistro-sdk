@@ -1306,6 +1306,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- The three pairs: `Evaluator::three_pairs` reads BPHS ch. 43 vv. 33 to 50 —
+  each pair's class, how the chart's was decided, Saturn's and Jupiter's
+  shifts, the years and their rectification under `ThreePairsRules` (crux
+  C103). `PointAt` carries a point's longitude.
+
+  **Numbers:** the translator's worked chart, cast by the SDK, matches his
+  longitudes to 0.1° and his three pair classes; the verses then lower his
+  short life to Yogarishta, which he does not apply. Over the corpus's 51
+  charts with a hora lagna, the pairs agree all three on 9 and differ on 14.
+
 - A class of life is an outcome: `Outcome::LifeClass` with `LifeClass`'s
   seven classes and their spans (BPHS ch. 43 vv. 52 to 54), raised and lowered
   a step as Jupiter and Saturn do (vv. 47 to 50). BPHS ch. 43's 21

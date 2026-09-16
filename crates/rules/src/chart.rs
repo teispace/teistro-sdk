@@ -207,13 +207,17 @@ pub enum Eclipse {
     Lunar,
 }
 
-/// A point the chart carries — an upagraha, a special lagna, a sphuta — and
-/// the sign it stands in. An [`Evaluator`](crate::Evaluator) given these
-/// resolves `{"point": …}` references.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// A point the chart carries — an upagraha, a special lagna, a sphuta — where
+/// it stands, as a [`Placement`] carries a body. An
+/// [`Evaluator`](crate::Evaluator) given these resolves `{"point": …}`
+/// references, and a reading that counts degrees, as the three pairs do of
+/// the hora lagna, reads its longitude.
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PointAt {
     /// Which point.
     pub point: Point,
+    /// Its sidereal longitude, degrees.
+    pub longitude: f64,
     /// Its sign.
     pub sign: Rashi,
 }

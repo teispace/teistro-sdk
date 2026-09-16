@@ -1100,6 +1100,29 @@ medium and 101 short; vv. 71 to 73 place the stronger of the lagna and eighth
 lords in exactly one of angle, panaphara and apoklima on each of the 71 charts
 that compare strength, which is the three lists being the twelve houses.
 
+**The three pairs (2026-09-16).** BPHS ch. 43 vv. 33 to 50 read a class of
+life from six things: the lagna and eighth lords, Saturn and the Moon, the
+lagna and the hora lagna. It is a reading and not a rule, so it is
+`Evaluator::three_pairs(rules)` in `teistro_rules::longevity`, `None` without a
+hora lagna among the evaluator's points. It lives in the kernel because it
+needs exactly what an evaluator holds — the classes of grahas under the
+readings, graha drishti, the points — and it asks "joined or aspected by
+malefics alone" through the kernel's own conditions rather than a second
+implementation. `PointAt` gained its longitude for it, as `Placement` has one.
+
+The result carries each pair's signs, degrees and class; how the class was
+decided (two or three pairs agreeing, the lagna pair, or Saturn and the Moon
+when the Moon is in the lagna or the seventh); the class before and after
+Saturn's and Jupiter's shifts; the years vv. 41 to 44 give; and the years
+rectified under `ThreePairsRules`, whose three knobs are crux C103. It
+allocates nothing. **Measured**: every one of the 144 ordered pairs of signs
+gives a class, symmetrically, in thirds of 48; over the 51 corpus charts with a
+hora lagna, three pairs agree on 9 and differ on 14, near the one in nine and
+two in nine three independent pairs would give; and the translator's own
+chart, cast by the SDK, matches his longitudes to a tenth of a degree and his
+three classes exactly — short by two pairs — which the verses then lower to
+Yogarishta because Saturn contributes.
+
 **The special lagnas (2026-09-16).** With points reaching the evaluator,
 BPHS ch. 39's figures on the hora, ghatika and bhava lagnas are sayable as
 `{"point": …}` references: v. 15's dignified grahas in the natal, hora and

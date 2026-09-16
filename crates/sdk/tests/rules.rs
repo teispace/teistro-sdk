@@ -222,6 +222,50 @@ fn a_result_says_which_of_the_sdk_s_own_dasha_periods_deliver_it() {
     assert!(delivering >= 2, "the two lords' own mahadashas at least");
 }
 
+/// How many bodies of a rule chart differ from what the corpus recorded, field
+/// by field: sign, dignity, motion, combustion and seven-karaka scheme.
+fn differences(chart: &teistro::RuleChart, recorded: &serde_json::Value) -> [usize; 5] {
+    let mut differ = [0; 5];
+    for body in Body::ALL {
+        let ours = chart.placement(body);
+        let theirs = &recorded["bodies"][body.key()];
+        let fields = [
+            theirs["sign_index"].as_u64() != Some(u64::from(ours.sign as u8)),
+            theirs["dignity"].as_str() != Some(teistro::catalogue::Catalogued::key(ours.dignity)),
+            theirs["is_retrograde"].as_bool() != Some(ours.retrograde),
+            (theirs["combust"].as_str() != Some("none")) != ours.combust,
+            recorded["chara_karaka_7"].get(body.key())
+                != ours
+                    .karaka7
+                    .map(|karaka| serde_json::to_value(Karaka(karaka)).unwrap())
+                    .as_ref(),
+        ];
+        for (count, differs) in differ.iter_mut().zip(fields) {
+            *count += usize::from(differs);
+        }
+    }
+    differ
+}
+
+/// The three pairs over the corpus's 51 charts with a hora lagna, by how the
+/// class was decided and what it came to: three independent pairs agree all
+/// three one time in nine and differ all three two times in nine, and these
+/// are 9 and 14; Saturn among the contributors takes five short lives to
+/// Yogarishta.
+const THREE_PAIRS: [(&str, usize); 11] = [
+    ("Agreement { pairs: 2 }/Long", 4),
+    ("Agreement { pairs: 2 }/Medium", 8),
+    ("Agreement { pairs: 2 }/Short", 12),
+    ("Agreement { pairs: 2 }/Yogarishta", 4),
+    ("Agreement { pairs: 3 }/Long", 2),
+    ("Agreement { pairs: 3 }/Medium", 4),
+    ("Agreement { pairs: 3 }/Short", 3),
+    ("LagnaPair/Long", 4),
+    ("LagnaPair/Medium", 3),
+    ("LagnaPair/Short", 6),
+    ("SaturnAndMoon/Yogarishta", 1),
+];
+
 /// The rules' reading of every chart in the corpus, computed by the SDK from
 /// the birth each records, against what the corpus recorded for the rules:
 /// each body's sign, dignity, motion and combustion, and each graha's karakas.
@@ -243,6 +287,7 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     let rules = shipped::nabhasas();
     let (mut charts, mut points, mut differ) = (0, 0, [0_usize; 5]);
     let mut special = [0_usize; 2];
+    let mut decided = std::collections::BTreeMap::new();
     let mut refused = Vec::new();
     for (name, chart) in common::charts() {
         let document =
@@ -256,24 +301,8 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
         let inputs = RuleInputs::of(&document).expect("the rules' inputs");
         let recorded = fixture(&format!("doshas/charts/{name}"));
         let recorded = &recorded["inputs"];
-        for body in Body::ALL {
-            let ours = inputs.chart.placement(body);
-            let theirs = &recorded["bodies"][body.key()];
-            let fields = [
-                theirs["sign_index"].as_u64() != Some(u64::from(ours.sign as u8)),
-                theirs["dignity"].as_str()
-                    != Some(teistro::catalogue::Catalogued::key(ours.dignity)),
-                theirs["is_retrograde"].as_bool() != Some(ours.retrograde),
-                (theirs["combust"].as_str() != Some("none")) != ours.combust,
-                recorded["chara_karaka_7"].get(body.key())
-                    != ours
-                        .karaka7
-                        .map(|karaka| serde_json::to_value(Karaka(karaka)).unwrap())
-                        .as_ref(),
-            ];
-            for (count, differs) in differ.iter_mut().zip(fields) {
-                *count += usize::from(differs);
-            }
+        for (count, differs) in differ.iter_mut().zip(differences(&inputs.chart, recorded)) {
+            *count += differs;
         }
         // Every division a shipped rule steps into.
         let asked: Vec<Varga> = inputs.vargas.iter().map(|varga| varga.varga).collect();
@@ -302,6 +331,13 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
             let rule = rules.iter().find(|rule| rule.key == key).unwrap();
             *count += usize::from(evaluator.evaluate(rule).present);
         }
+        // BPHS ch. 43 vv. 33 to 50 on every chart with a hora lagna.
+        let pairs = evaluator
+            .three_pairs(teistro::rules::longevity::ThreePairsRules::VERSE)
+            .expect("a hora lagna");
+        *decided
+            .entry(format!("{:?}/{:?}", pairs.decided, pairs.class))
+            .or_insert(0) += 1;
         points += inputs.points.len();
         charts += 1;
     }
@@ -316,6 +352,11 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
         (charts, points, differ, special),
         (51, 51 * 14, [1, 1, 0, 0, 7], [0, 0])
     );
+    let decided: Vec<(&str, usize)> = decided
+        .iter()
+        .map(|(key, count)| (key.as_str(), *count))
+        .collect();
+    assert_eq!(decided, THREE_PAIRS);
     // Refused, each for what it cannot have: Tromsø's midnight sun and polar
     // night, whose days have no sunrise for a special lagna to count from; and
     // the two charts at the built-in ephemeris's edges, whose strength reads
@@ -332,5 +373,58 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
             ("c047-london-1800-01-02.json", teistro::Status::Provider),
             ("c048-kathmandu-2399-12-30.json", teistro::Status::Provider),
         ]
+    );
+}
+
+/// BPHS ch. 43 vv. 33 to 50 on the translator's worked example: a man born on
+/// 21 May 1944 at 19:01:15 Indian War Time, which was UTC+6:30, at 13° 40′ N,
+/// 79° 20′ E. The SDK's chart is the translator's to a tenth of a degree. He
+/// finds the lagna and eighth lords both movable, long; Saturn dual and the
+/// Moon movable, short; the lagna and the hora lagna both fixed, short — so
+/// short life by two pairs, 36 years. He stops there; v. 47 then lowers the
+/// class, Saturn being among the contributors and neither dignified nor
+/// touched by malefics alone, so the verses give Yogarishta. His rectification
+/// is not checked: he rectifies with Mars and Mercury, the lords of a pair
+/// that did not decide, and by degrees gone where the verse counts degrees to
+/// run (crux C103).
+#[test]
+fn the_three_pairs_read_the_translator_s_example_as_he_does() {
+    use teistro::rules::LifeClass;
+    use teistro::rules::longevity::{Decided, Shift, ThreePairsRules};
+
+    let sdk = Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("the conformance profile and the built-in ephemeris");
+    let place = Place::new(
+        Latitude::try_new(13.0 + 40.0 / 60.0).unwrap(),
+        Longitude::try_new(79.0 + 20.0 / 60.0).unwrap(),
+        Altitude::try_new(0.0).unwrap(),
+    );
+    let rules = shipped::nabhasas();
+    let request = teistro::ChartRequest::at(place, UtcOffset::try_from_seconds(23_400).unwrap())
+        .with_rule_inputs(rules)
+        .with_points();
+    let document = sdk
+        .chart()
+        .reading(JulianDay::<Utc>::literal(2_431_232.021_701_388_7), &request)
+        .expect("a reading")
+        .value;
+    let inputs = RuleInputs::of(&document).expect("the rules' inputs");
+    let evaluator = inputs.evaluator(Readings::TEXTS);
+    let reading = evaluator
+        .three_pairs(ThreePairsRules::VERSE)
+        .expect("a hora lagna");
+    assert_eq!(
+        reading.pairs.map(|pair| pair.class),
+        [LifeClass::Long, LifeClass::Short, LifeClass::Short]
+    );
+    assert_eq!(reading.decided, Decided::Agreement { pairs: 2 });
+    assert_eq!(reading.decided_class, LifeClass::Short);
+    assert_eq!(reading.shifts, [Some(Shift::Saturn), None]);
+    assert_eq!(
+        (reading.class, reading.years),
+        (LifeClass::Yogarishta, Some(20.0))
     );
 }

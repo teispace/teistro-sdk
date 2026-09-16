@@ -133,6 +133,7 @@ impl RuleInputs {
                 .iter()
                 .map(|derived| PointAt {
                     point: derived.point,
+                    longitude: derived.longitude_deg,
                     sign: derived.sign,
                 })
                 .collect()

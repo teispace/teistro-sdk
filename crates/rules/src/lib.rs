@@ -35,10 +35,13 @@ mod dwigraha;
 pub mod eval;
 pub mod house;
 pub mod language;
+pub mod longevity;
 pub mod reference;
 pub mod rule;
 pub mod shipped;
 pub mod table;
+#[cfg(test)]
+mod test_chart;
 pub mod timing;
 pub mod trace;
 
@@ -52,6 +55,10 @@ pub use house::{COMPOSITIONS, Composition, Held, HouseReading, Kind};
 pub use language::{
     ArgalaPlace, Body, Condition, EclipseKind, EvidenceRank, House, Karaka, KarakaScheme, NodeSide,
     Pada, Source,
+};
+pub use longevity::{
+    Basis, Decided, Pair, PairReading, Rectification, SaturnAmongThem, Shift, ThreePairs,
+    ThreePairsRules, rectify,
 };
 pub use reference::{BodyRef, BodySubject, Class, SignRef, Subject};
 pub use rule::{
