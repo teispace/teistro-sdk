@@ -113,9 +113,11 @@ pub fn arishtas() -> &'static [Rule] {
 
 /// The readings the texts give in one shape, built from a table rather than
 /// written out: Brihat Jataka ch. 14's twenty-one pairs of grahas sharing a
-/// sign, which Phaladeepika ch. 18 repeats, and Phaladeepika's own Moon in
-/// each of the twelve signs under each of six aspects. None of them grades
-/// anything, so each carries what its verse says in words and nothing else.
+/// sign, which Phaladeepika ch. 18 repeats; Phaladeepika's own Moon in each of
+/// the twelve signs under each of six aspects; and Jataka Parijata's lists of
+/// two to six of the seven sharing one sign, every combination of each size.
+/// None of them grades anything, so each carries what its reading says in
+/// words and nothing else.
 #[must_use]
 pub fn readings() -> &'static [Rule] {
     &READINGS
@@ -149,7 +151,7 @@ mod tests {
             .chain(arishtas())
             .chain(readings())
             .collect();
-        assert_eq!(rules.len(), 190);
+        assert_eq!(rules.len(), 309);
         for rule in &rules {
             let rank = rule
                 .source

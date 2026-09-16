@@ -503,11 +503,22 @@ whole of `crates/rules/src/dwigraha.rs`, and the table is
 that three or more grahas together are read as the pairs they contain, which is
 what one rule a pair does of itself: four in a sign answer six of them.
 
+Jataka Parijata goes further, and the appendix to Iyer's Brihat Jataka prints
+its lists: every combination of the seven grahas sharing one sign, from two to
+six — 21, 35, 35, 21 and 7, one hundred and nineteen readings. They run in
+strict combinatorial order, the Sun first, so a rule's grahas are *generated*
+and only its reading is data; a list printed out of order would fail the test
+that holds each size to its own count.
+
 A test holds the generator to its table — twenty-one distinct pairs, twelve
-signs of six aspects each, every rule evaluable, rank 1, citing its verse,
-carrying words and no severity and no cancellation — and pins what each answers
-over the 93 charts. Thirty-five stay silent, among them all six readings of an
-Aries Moon, who stands there in one chart and is aspected by nobody.
+signs of six aspects each, every combination of each size once, every rule
+evaluable, rank 1, citing where it was read, carrying words and no severity and
+no cancellation — and pins what each answers over the 93 charts. Eighty-four
+stay silent, among them all six readings of an Aries Moon, who stands there in
+one chart and is aspected by nobody, and the larger assemblies, which want four
+grahas or more in one sign. Varahamihira's twenty-one pairs and Jataka
+Parijata's are the same figure read twice, so the test holds them to the same
+answers, reading for reading; they differ only in what they say of the native.
 
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number

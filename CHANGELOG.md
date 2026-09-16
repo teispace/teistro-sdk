@@ -1068,6 +1068,14 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- Jataka Parijata's lists beside them, as the appendix to Iyer's 1885 Brihat
+  Jataka prints them: every combination of the seven grahas sharing one sign,
+  from two to six — 21, 35, 35, 21 and 7. They run in combinatorial order, so
+  a rule's grahas are generated and only its reading is data. `readings()` is
+  now 212 rules, and the SDK ships 309.
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

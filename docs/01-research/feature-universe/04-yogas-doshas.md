@@ -165,7 +165,7 @@ found. The order of work below is by rules unlocked per unit of work:
 | 2 | papa and shubha kartari, and houses counted from any reference | Phaladeepika VI, BPHS ch. 80 v. 42, a third of the arishta corpus | 15 to 20 |
 | 3 | the ghatika layer: sunrise-relative time, day and night gating, sandhya | Gandanta's three kinds, Abhukta Moola, Vishaghatika, Thyajya, Dinamrityu | 25 to 35 |
 | 4 | upagrahas as bodies a rule can name, Gulika and Maandi first | BPHS ch. 83's curses, ch. 25's positional effects | ~70 |
-| 5 | ~~the dwigraha generator over conjunction and sign~~ **built 2026-09-16** | Brihat Jataka XIV, Phaladeepika 18 | 93 of one shape: 21 pairs, and the Moon in 12 signs under 6 aspects |
+| 5 | ~~the dwigraha generator over conjunction and sign~~ **built 2026-09-16** | Brihat Jataka XIV, Phaladeepika 18, Jataka Parijata | 212 of one shape: 21 pairs, the Moon in 12 signs under 6 aspects, and every combination of the seven from two to six |
 | 6 | rashi drishti and argala | Jaimini Upadesa Sutras, the Jaimini raja yogas | 40 to 80 |
 | 7 | nakshatra and its lord for any body, with pada | BPHS ch. 48, the nakshatra family | 30 to 60 |
 | 8 | D3 and D30 in the chart the kernel already steps into | Balarishta by drekkana, BPHS ch. 44's serpent decanate, ch. 80's trimsamsa | ~40 |

@@ -59,8 +59,10 @@ cancellations held.
 - **Where a verse says what follows in words**, the rule carries those words:
   an outcome is a life span or a statement, and `days()` answers only for a
   span. Brihat Jataka ch. 14's twenty-one pairs and Phaladeepika ch. 18's
-  seventy-two readings of the Moon ship that way, built from a table by
-  `shipped::readings()` rather than written out.
+  seventy-two readings of the Moon ship that way, and so do Jataka Parijata's
+  hundred and nineteen lists of two to six grahas sharing a sign, whose grahas
+  are generated and whose readings alone are data: 212 rules from a table,
+  `shipped::readings()`.
 - **A body's degrees within its sign** are readable (`planet-in-degrees`),
   which Brihat Jataka ch. 6 v. 8's last navamsa needs.
 - **A rule can name another.** `{"type": "rule", "key": …}` holds when that

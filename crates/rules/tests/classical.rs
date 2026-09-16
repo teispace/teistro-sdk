@@ -315,9 +315,11 @@ const ANSWERED: [(&str, usize); 72] = [
 #[test]
 fn the_generator_makes_one_rule_a_reading() {
     let rules = shipped::readings();
-    assert_eq!(rules.len(), 93);
+    assert_eq!(rules.len(), 212);
     let mut pairs: Vec<(&str, &str)> = Vec::new();
     let mut moon: Vec<(&str, &str)> = Vec::new();
+    // Jataka Parijata's lists, by how many grahas share the sign.
+    let mut together: BTreeMap<usize, usize> = BTreeMap::new();
     for rule in rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -342,6 +344,13 @@ fn the_generator_makes_one_rule_a_reading() {
         match rule.category.as_str() {
             "dwigraha" => pairs.push(named(&rule.key, "DWIGRAHA_")),
             "chandra-drishti" => moon.push(named(&rule.key, "CHANDRA_IN_")),
+            "grahas-together" => {
+                let teistro_rules::Condition::PlanetConjunct { planets, .. } = &rule.conditions[0]
+                else {
+                    panic!("{}: grahas sharing a sign", rule.key)
+                };
+                *together.entry(planets.len()).or_default() += 1;
+            }
             other => panic!("{}: {other} is not a family here", rule.key),
         }
     }
@@ -359,6 +368,12 @@ fn the_generator_makes_one_rule_a_reading() {
     });
     assert_eq!(signs.len(), 12);
     assert!(signs.values().all(|count| *count == 6));
+    // Every combination of the seven from two to six, once each: 21, 35, 35,
+    // 21 and 7.
+    assert_eq!(
+        together.into_iter().collect::<Vec<_>>(),
+        [(2, 21), (3, 35), (4, 35), (5, 21), (6, 7)]
+    );
 
     // What the generator builds is a rule like any other: it writes out in the
     // language and reads back the same, outcome and all.
@@ -385,20 +400,29 @@ fn the_generator_makes_one_rule_a_reading() {
     assert_eq!(charts, 93);
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
     assert_eq!(counts.as_slice(), READINGS.as_slice(), "a reading's answers moved");
-    // Every pair of grahas happens somewhere in 93 charts; 35 of the Moon's
-    // 72 readings stay silent, among them all six of Aries, where she stands
-    // in one chart only and nothing aspects her.
-    let silent = counts.iter().filter(|(_, count)| *count == 0).count();
-    assert_eq!(silent, 35);
-    assert!(
+    // Varahamihira's pair and Jataka Parijata's are the same figure read
+    // twice, so the two answer the same charts, reading for reading.
+    let answered = |prefix: &str| -> Vec<usize> {
         counts
             .iter()
-            .all(|(key, count)| *count > 0 || key.starts_with("CHANDRA_"))
-    );
+            .filter(|(key, _)| key.starts_with(prefix))
+            .filter(|(key, _)| key.matches('_').count() == prefix.matches('_').count() + 1)
+            .map(|(_, count)| *count)
+            .collect()
+    };
+    let (varahamihira, parijata) = (answered("DWIGRAHA_"), answered("PARIJATA_TOGETHER_"));
+    assert_eq!(varahamihira.len(), 21);
+    assert_eq!(varahamihira, parijata);
+    // Every pair of grahas happens somewhere in 93 charts. Eighty-four
+    // readings stay silent: 35 of the Moon's 72, among them all six of Aries,
+    // where she stands in one chart only and nothing aspects her, and the
+    // larger assemblies, which want four, five or six grahas in one sign.
+    let silent = counts.iter().filter(|(_, count)| *count == 0).count();
+    assert_eq!(silent, 84);
 }
 
 /// What each reading answers over the 93 recorded charts.
-const READINGS: [(&str, usize); 93] = [
+const READINGS: [(&str, usize); 212] = [
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_JUPITER", 0),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MARS", 2),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MERCURY", 1),
@@ -492,6 +516,125 @@ const READINGS: [(&str, usize); 93] = [
     ("DWIGRAHA_SUN_SATURN", 8),
     ("DWIGRAHA_SUN_VENUS", 10),
     ("DWIGRAHA_VENUS_SATURN", 8),
+    ("PARIJATA_TOGETHER_JUPITER_SATURN", 24),
+    ("PARIJATA_TOGETHER_JUPITER_VENUS", 6),
+    ("PARIJATA_TOGETHER_JUPITER_VENUS_SATURN", 1),
+    ("PARIJATA_TOGETHER_MARS_JUPITER", 7),
+    ("PARIJATA_TOGETHER_MARS_JUPITER_SATURN", 4),
+    ("PARIJATA_TOGETHER_MARS_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_MARS_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_MARS_MERCURY", 6),
+    ("PARIJATA_TOGETHER_MARS_MERCURY_JUPITER", 1),
+    ("PARIJATA_TOGETHER_MARS_MERCURY_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_MARS_MERCURY_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_MARS_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_MARS_MERCURY_SATURN", 1),
+    ("PARIJATA_TOGETHER_MARS_MERCURY_VENUS", 3),
+    ("PARIJATA_TOGETHER_MARS_MERCURY_VENUS_SATURN", 1),
+    ("PARIJATA_TOGETHER_MARS_SATURN", 14),
+    ("PARIJATA_TOGETHER_MARS_VENUS", 23),
+    ("PARIJATA_TOGETHER_MARS_VENUS_SATURN", 4),
+    ("PARIJATA_TOGETHER_MERCURY_JUPITER", 10),
+    ("PARIJATA_TOGETHER_MERCURY_JUPITER_SATURN", 2),
+    ("PARIJATA_TOGETHER_MERCURY_JUPITER_VENUS", 2),
+    ("PARIJATA_TOGETHER_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_MERCURY_SATURN", 7),
+    ("PARIJATA_TOGETHER_MERCURY_VENUS", 19),
+    ("PARIJATA_TOGETHER_MERCURY_VENUS_SATURN", 2),
+    ("PARIJATA_TOGETHER_MOON_JUPITER", 12),
+    ("PARIJATA_TOGETHER_MOON_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_JUPITER_VENUS", 1),
+    ("PARIJATA_TOGETHER_MOON_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_MARS", 6),
+    ("PARIJATA_TOGETHER_MOON_MARS_JUPITER", 1),
+    ("PARIJATA_TOGETHER_MOON_MARS_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_MARS_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_MOON_MARS_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_MARS_MERCURY", 2),
+    ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER", 1),
+    ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_VENUS", 1),
+    ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_MARS_SATURN", 1),
+    ("PARIJATA_TOGETHER_MOON_MARS_VENUS", 2),
+    ("PARIJATA_TOGETHER_MOON_MARS_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_MERCURY", 6),
+    ("PARIJATA_TOGETHER_MOON_MERCURY_JUPITER", 1),
+    ("PARIJATA_TOGETHER_MOON_MERCURY_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_MERCURY_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_MOON_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_MOON_MERCURY_SATURN", 1),
+    ("PARIJATA_TOGETHER_MOON_MERCURY_VENUS", 2),
+    ("PARIJATA_TOGETHER_MOON_MERCURY_VENUS_SATURN", 1),
+    ("PARIJATA_TOGETHER_MOON_SATURN", 3),
+    ("PARIJATA_TOGETHER_MOON_VENUS", 7),
+    ("PARIJATA_TOGETHER_MOON_VENUS_SATURN", 1),
+    ("PARIJATA_TOGETHER_SUN_JUPITER", 6),
+    ("PARIJATA_TOGETHER_SUN_JUPITER_SATURN", 3),
+    ("PARIJATA_TOGETHER_SUN_JUPITER_VENUS", 1),
+    ("PARIJATA_TOGETHER_SUN_JUPITER_VENUS_SATURN", 1),
+    ("PARIJATA_TOGETHER_SUN_MARS", 13),
+    ("PARIJATA_TOGETHER_SUN_MARS_JUPITER", 1),
+    ("PARIJATA_TOGETHER_SUN_MARS_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MARS_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MARS_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MARS_MERCURY", 3),
+    ("PARIJATA_TOGETHER_SUN_MARS_MERCURY_JUPITER", 1),
+    ("PARIJATA_TOGETHER_SUN_MARS_MERCURY_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MARS_MERCURY_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MARS_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MARS_MERCURY_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MARS_MERCURY_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MARS_MERCURY_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MARS_SATURN", 1),
+    ("PARIJATA_TOGETHER_SUN_MARS_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MARS_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MERCURY", 45),
+    ("PARIJATA_TOGETHER_SUN_MERCURY_JUPITER", 4),
+    ("PARIJATA_TOGETHER_SUN_MERCURY_JUPITER_SATURN", 2),
+    ("PARIJATA_TOGETHER_SUN_MERCURY_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MERCURY_SATURN", 4),
+    ("PARIJATA_TOGETHER_SUN_MERCURY_VENUS", 4),
+    ("PARIJATA_TOGETHER_SUN_MERCURY_VENUS_SATURN", 1),
+    ("PARIJATA_TOGETHER_SUN_MOON", 8),
+    ("PARIJATA_TOGETHER_SUN_MOON_JUPITER", 1),
+    ("PARIJATA_TOGETHER_SUN_MOON_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS", 2),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER", 1),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY", 1),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER", 1),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_MERCURY_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_SATURN", 1),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MARS_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MERCURY", 3),
+    ("PARIJATA_TOGETHER_SUN_MOON_MERCURY_JUPITER", 1),
+    ("PARIJATA_TOGETHER_SUN_MOON_MERCURY_JUPITER_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MERCURY_JUPITER_VENUS", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MERCURY_JUPITER_VENUS_SATURN", 0),
+    ("PARIJATA_TOGETHER_SUN_MOON_MERCURY_SATURN", 1),
+    ("PARIJATA_TOGETHER_SUN_MOON_MERCURY_VENUS", 1),
+    ("PARIJATA_TOGETHER_SUN_MOON_MERCURY_VENUS_SATURN", 1),
+    ("PARIJATA_TOGETHER_SUN_MOON_SATURN", 2),
+    ("PARIJATA_TOGETHER_SUN_MOON_VENUS", 3),
+    ("PARIJATA_TOGETHER_SUN_MOON_VENUS_SATURN", 1),
+    ("PARIJATA_TOGETHER_SUN_SATURN", 8),
+    ("PARIJATA_TOGETHER_SUN_VENUS", 10),
+    ("PARIJATA_TOGETHER_SUN_VENUS_SATURN", 2),
+    ("PARIJATA_TOGETHER_VENUS_SATURN", 8),
 ];
 
 /// The two names a generated key holds, after its family's prefix: the pair,

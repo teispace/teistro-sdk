@@ -25,6 +25,7 @@ const MOON: Body = Body::Graha(Graha::Moon);
 pub(crate) struct Table {
     dwigraha: Dwigraha,
     moon_aspected: MoonAspected,
+    together: Together,
 }
 
 /// What every rule of a family shares: its text, and how it was read.
@@ -64,6 +65,26 @@ struct MoonAspected {
     /// The grahas the verses list, in the order they list them.
     aspects: Vec<Body>,
     signs: Vec<SignRow>,
+}
+
+/// Jataka Parijata's lists: two to six of the seven sharing one sign.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Together {
+    #[serde(flatten)]
+    family: Family,
+    sets: Vec<Set>,
+}
+
+/// One list: a reading for each combination of that size, in the order the
+/// appendix prints them, which is the combinations' own order.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Set {
+    size: usize,
+    /// Which section of the appendix prints it.
+    section: String,
+    effects: Vec<String>,
 }
 
 /// One sign's row: a reading for each graha of `aspects`, in that order.
@@ -147,6 +168,50 @@ impl Table {
                     )
                 })
         });
-        pairs.chain(moon).collect()
+        pairs.chain(moon).chain(self.together()).collect()
     }
+
+    /// Jataka Parijata's lists, whose grahas are generated: the combinations of
+    /// the seven of each size, in order, one reading each.
+    fn together(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.together.family;
+        self.together.sets.iter().flat_map(move |set| {
+            combinations(&Body::SEVEN, set.size)
+                .into_iter()
+                .zip(&set.effects)
+                .enumerate()
+                .map(move |(at, (grahas, effect))| {
+                    let keys: Vec<&str> = grahas.iter().map(|body| body.key()).collect();
+                    stating(
+                        format!("PARIJATA_TOGETHER_{}", keys.join("_")),
+                        "grahas-together",
+                        family.source(&format!("{} {}", set.section, at + 1)),
+                        vec![Condition::PlanetConjunct {
+                            planets: grahas.iter().copied().map(BodyRef::Body).collect(),
+                            max_orb: None,
+                        }],
+                        effect,
+                    )
+                })
+        })
+    }
+}
+
+/// The combinations of a size, in the bodies' own order: the appendix's order,
+/// and the only one that lets a reading be data and its grahas be generated.
+fn combinations(bodies: &[Body], size: usize) -> Vec<Vec<Body>> {
+    if size == 0 {
+        return vec![Vec::new()];
+    }
+    let mut built = Vec::new();
+    let mut rest = bodies;
+    while let Some((body, after)) = rest.split_first() {
+        for mut tail in combinations(after, size - 1) {
+            let mut one = vec![*body];
+            one.append(&mut tail);
+            built.push(one);
+        }
+        rest = after;
+    }
+    built
 }
