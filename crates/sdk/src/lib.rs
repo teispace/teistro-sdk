@@ -51,6 +51,8 @@ mod scale;
 pub use area::{
     AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea,
 };
+mod rules_bridge;
+
 pub use context::{Context, ContextBuilder};
 pub use ephemeris::Ephemeris;
 pub use reading::ChartRequest;
@@ -112,6 +114,9 @@ pub use teistro_render_svg as render_svg;
 // Dashas: a system as a row, the balance at birth, and the period tree read
 // without building it (`03-design/dasha-kernels.md`).
 pub use teistro_dasha as dasha;
+pub use teistro_rules as rules;
+pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths};
+pub use crate::rules_bridge::rule_chart;
 pub use teistro_dasha::{DashaCursor, DashaReading, PeriodRow, Timeline};
 // Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
 // with the rules it was read under (`03-design/strength-schemes.md`).

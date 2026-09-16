@@ -573,6 +573,8 @@ BPHS chs. 9 and 10, Brihat Jataka ch. 6 and Saravali chs. 10 to 12, whole but
 whole, strength and all) and the readings generator over Brihat Jataka ch. 14,
 Phaladeepika ch. 18, Jataka Parijata and Saravali chs. 22 to 31 and 49 to 51,
 with a house read whole and the texts' own composition rules beside it,
+reachable from the façade as `teistro::rules` and `teistro::rule_chart` while
+the four bindings wait on a rule crossing the C boundary,
 rashi drishti and argala, nakshatra references, D3 and D30, strength ranking,
 and the longevity band as an outcome. Next: with the references that need points the
 chart does not yet carry added as rules need them.

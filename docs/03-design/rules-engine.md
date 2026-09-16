@@ -819,6 +819,43 @@ stays inside the one rule that uses it; it becomes a table when a second rule
 needs it, and the one that would is BPHS ch. 44's fate of the corpse, which
 wants the twenty-second decanate.
 
+**Reaching it (2026-09-16).** Until this change the only crate that depended
+on `teistro-rules` was `xtask`. Every test passed, every gate was green, and
+830 shipped rules were unreachable by any consumer — a kernel nothing depends
+on, which is the shape of a dead end the "no dead ends" mandate exists to
+catch. **A green suite says the code is right, not that anyone can call it.**
+
+The façade now depends on the rules crate and re-exports it as
+`teistro::rules`, and `teistro::rule_chart` is the join that was missing. A
+`RuleChart` wants each body where it stands with its dignity, its motion,
+whether the Sun burns it, and its navamsha; the SDK computed every one of
+those already — the foundation gives the longitudes and the lagna,
+`teistro-state` the dignity and the combustion, `teistro-vargas` the navamsha
+— and nothing put them together.
+
+The bridge leaves empty what it cannot fill. The SDK computes no chara
+karakas, so `karaka7` and `karaka8` are `None` and a rule naming a karaka
+answers false until it does; the panchanga and the strengths are passed in
+because each is a separate reading with its own settings. A graha the
+foundation or the states do not carry is **refused**, not defaulted, because a
+rule reading a dignity nobody computed would answer on a fiction.
+
+Houses are counted whole signs from the lagna, which is what every rule counts
+by, and not the state's own house, which follows the chart's placement system.
+A rule that meant the chalit would have to say so.
+
+`crates/sdk/tests/rules.rs` founds the corpus's first chart with the built-in
+ephemeris, joins it, and reads it — the path a consumer takes rather than the
+recorded charts the rules crate's own tests read. It holds one thing worth more
+than the join: the navamsha the bridge computes is the D9 the conformance
+corpus recorded for that chart, body for body, so the SDK's own varga answers
+the recording engine's.
+
+The four binding layers are a separate question. A `rules` area has to cross
+the C boundary, which means the IDL, a serialised rule and a serialised result;
+`surface-areas.md` §9 held that area back until its operations existed, and
+they now do.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-three answer none, and

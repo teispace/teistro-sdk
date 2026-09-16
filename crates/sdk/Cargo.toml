@@ -26,6 +26,7 @@ teistro-houses = { path = "../houses" }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
 teistro-points = { path = "../points" }
+teistro-rules = { path = "../rules" }
 teistro-strength = { path = "../strength" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-serial = { path = "../serial" }
@@ -53,6 +54,9 @@ builtin-compact = ["builtin-ephemeris", "teistro-ephemeris-builtin/compact"]
 builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]
 builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
 
+[dev-dependencies]
+teistro-state = { path = "../state" }
+
 [lints]
 workspace = true
 
@@ -71,6 +75,10 @@ workspace = true
 
 [[test]]
 name = "ashtakavarga"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "rules"
 required-features = ["builtin-ephemeris"]
 
 [[test]]

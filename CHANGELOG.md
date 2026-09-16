@@ -1246,6 +1246,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   are the serpent's** (crux C98). It needed no divisional chart: a decanate is
   a sign and a third of it. The SDK ships 830 rules.
 
+- **The rules kernel is reachable.** Until now the only crate that depended on
+  `teistro-rules` was `xtask`: every test passed, every gate was green, and 830
+  shipped rules could not be called by any consumer. The façade now depends on
+  it, re-exports it as `teistro::rules`, and adds `teistro::rule_chart` — the
+  join from a chart the SDK computed to the chart the rules read. It leaves
+  empty what it cannot fill (the SDK computes no chara karakas) and refuses a
+  graha the foundation or the states do not carry rather than defaulting it.
+
+  **Numbers:** `crates/sdk/tests/rules.rs` founds the corpus's first chart with
+  the built-in ephemeris, joins it and reads it; the navamsha the bridge
+  computes is the D9 the conformance corpus recorded for that chart, body for
+  body.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

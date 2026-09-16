@@ -1469,6 +1469,7 @@ dependencies = [
  "teistro-points",
  "teistro-port-ephemeris",
  "teistro-render-svg",
+ "teistro-rules",
  "teistro-serial",
  "teistro-state",
  "teistro-strength",
