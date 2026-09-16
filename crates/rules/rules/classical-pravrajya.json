@@ -1,0 +1,896 @@
+{
+  "rules": [
+    {
+      "key": "PRAVRAJYA_SUN",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "2-3",
+        "rank": 1,
+        "note": "Four or more grahas possessed of strength in one house, Sun the strongest of them. The verse asks three things the kernel could not say until it could compare strengths: that four share a house, that each of them is strong, and that this one is the strongest there. A chart carrying no strength answers none of it. Verse 10's relinquishing, when the graha that led to the order is beaten in planetary war, wants a victor the chart does not carry (v. 9 decides it by latitude), and is not built; nor are vv. 11 to 13, where every graha being strong gives the native every order in turn, in the sequence of their dashas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "SUN"
+        },
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "SUN",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "SUN"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "SUN"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "SUN"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "the graha that leads to the order is combust",
+          "type": "planet-combust",
+          "planet": "SUN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "initiated into a holy order, a Tapasvi"
+        }
+      ]
+    },
+    {
+      "key": "PRAVRAJYA_MOON",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "2-3",
+        "rank": 1,
+        "note": "Four or more grahas possessed of strength in one house, Moon the strongest of them. The verse asks three things the kernel could not say until it could compare strengths: that four share a house, that each of them is strong, and that this one is the strongest there. A chart carrying no strength answers none of it. Verse 10's relinquishing, when the graha that led to the order is beaten in planetary war, wants a victor the chart does not carry (v. 9 decides it by latitude), and is not built; nor are vv. 11 to 13, where every graha being strong gives the native every order in turn, in the sequence of their dashas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "MOON"
+        },
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "MOON",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "MOON"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "MOON"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "MOON"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "the graha that leads to the order is combust",
+          "type": "planet-combust",
+          "planet": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "initiated into a holy order, a Kapali"
+        }
+      ]
+    },
+    {
+      "key": "PRAVRAJYA_MARS",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "2-3",
+        "rank": 1,
+        "note": "Four or more grahas possessed of strength in one house, Mars the strongest of them. The verse asks three things the kernel could not say until it could compare strengths: that four share a house, that each of them is strong, and that this one is the strongest there. A chart carrying no strength answers none of it. Verse 10's relinquishing, when the graha that led to the order is beaten in planetary war, wants a victor the chart does not carry (v. 9 decides it by latitude), and is not built; nor are vv. 11 to 13, where every graha being strong gives the native every order in turn, in the sequence of their dashas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "MARS"
+        },
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "MARS",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "MARS"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "MARS"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "MARS"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "the graha that leads to the order is combust",
+          "type": "planet-combust",
+          "planet": "MARS"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "initiated into a holy order, a wearer of the red robe"
+        }
+      ]
+    },
+    {
+      "key": "PRAVRAJYA_MERCURY",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "2-3",
+        "rank": 1,
+        "note": "Four or more grahas possessed of strength in one house, Mercury the strongest of them. The verse asks three things the kernel could not say until it could compare strengths: that four share a house, that each of them is strong, and that this one is the strongest there. A chart carrying no strength answers none of it. Verse 10's relinquishing, when the graha that led to the order is beaten in planetary war, wants a victor the chart does not carry (v. 9 decides it by latitude), and is not built; nor are vv. 11 to 13, where every graha being strong gives the native every order in turn, in the sequence of their dashas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "MERCURY"
+        },
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "MERCURY",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "MERCURY"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "MERCURY"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "MERCURY"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "the graha that leads to the order is combust",
+          "type": "planet-combust",
+          "planet": "MERCURY"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "initiated into a holy order, a keeper of the danda staff"
+        }
+      ]
+    },
+    {
+      "key": "PRAVRAJYA_JUPITER",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "2-3",
+        "rank": 1,
+        "note": "Four or more grahas possessed of strength in one house, Jupiter the strongest of them. The verse asks three things the kernel could not say until it could compare strengths: that four share a house, that each of them is strong, and that this one is the strongest there. A chart carrying no strength answers none of it. Verse 10's relinquishing, when the graha that led to the order is beaten in planetary war, wants a victor the chart does not carry (v. 9 decides it by latitude), and is not built; nor are vv. 11 to 13, where every graha being strong gives the native every order in turn, in the sequence of their dashas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "JUPITER"
+        },
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "JUPITER",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "JUPITER"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "JUPITER"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "JUPITER"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "the graha that leads to the order is combust",
+          "type": "planet-combust",
+          "planet": "JUPITER"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "initiated into a holy order, a Yati"
+        }
+      ]
+    },
+    {
+      "key": "PRAVRAJYA_VENUS",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "2-3",
+        "rank": 1,
+        "note": "Four or more grahas possessed of strength in one house, Venus the strongest of them. The verse asks three things the kernel could not say until it could compare strengths: that four share a house, that each of them is strong, and that this one is the strongest there. A chart carrying no strength answers none of it. Verse 10's relinquishing, when the graha that led to the order is beaten in planetary war, wants a victor the chart does not carry (v. 9 decides it by latitude), and is not built; nor are vv. 11 to 13, where every graha being strong gives the native every order in turn, in the sequence of their dashas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "VENUS"
+        },
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "VENUS",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "VENUS"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "VENUS"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "VENUS"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "the graha that leads to the order is combust",
+          "type": "planet-combust",
+          "planet": "VENUS"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "initiated into a holy order, a keeper of a chakra"
+        }
+      ]
+    },
+    {
+      "key": "PRAVRAJYA_SATURN",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "2-3",
+        "rank": 1,
+        "note": "Four or more grahas possessed of strength in one house, Saturn the strongest of them. The verse asks three things the kernel could not say until it could compare strengths: that four share a house, that each of them is strong, and that this one is the strongest there. A chart carrying no strength answers none of it. Verse 10's relinquishing, when the graha that led to the order is beaten in planetary war, wants a victor the chart does not carry (v. 9 decides it by latitude), and is not built; nor are vv. 11 to 13, where every graha being strong gives the native every order in turn, in the sequence of their dashas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "SATURN"
+        },
+        {
+          "type": "n-grahas-conjunct-with",
+          "anchor": "SATURN",
+          "minCount": 4
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "SATURN"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-strong",
+                    "planet": "SELF"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": "SATURN"
+                },
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SELF",
+                  "than": "SATURN"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "the graha that leads to the order is combust",
+          "type": "planet-combust",
+          "planet": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "initiated into a holy order, a naked Sanyasin"
+        }
+      ]
+    },
+    {
+      "key": "PRAVRAJYA_MOON_LORD_ASPECTS_SATURN_AND_IS_STRONGER",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lord of the sign the Moon occupies, with no graha aspecting him, aspecting Saturn: the order of whichever of the two is stronger, and here it is the lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-aspects-planet",
+              "from": "SELF",
+              "target": {
+                "lordOf": "MOON"
+              }
+            }
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": "MOON"
+          },
+          "target": "SATURN"
+        },
+        {
+          "type": "planet-stronger-than",
+          "planet": {
+            "lordOf": "MOON"
+          },
+          "than": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "initiated into the holy order of the lord of the Moon's sign, he being the stronger of the two"
+        }
+      ]
+    },
+    {
+      "key": "PRAVRAJYA_MOON_LORD_ASPECTS_SATURN_AND_SATURN_IS_STRONGER",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "6",
+        "rank": 1,
+        "note": "The same figure, Saturn being the stronger of the two. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "planet-aspects-planet",
+              "from": "SELF",
+              "target": {
+                "lordOf": "MOON"
+              }
+            }
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": "MOON"
+          },
+          "target": "SATURN"
+        },
+        {
+          "type": "planet-stronger-than",
+          "planet": "SATURN",
+          "than": {
+            "lordOf": "MOON"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "initiated into the holy order Saturn signifies, he being the stronger of the two"
+        }
+      ]
+    },
+    {
+      "key": "PRAVRAJYA_WEAK_MOON_LORD_ASPECTED_ONLY_BY_SATURN",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "7",
+        "rank": 1,
+        "note": "The lord of the sign the Moon occupies devoid of strength and aspected by Saturn alone. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-weak",
+          "planet": {
+            "lordOf": "MOON"
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SATURN",
+          "target": {
+            "lordOf": "MOON"
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "SATURN"
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SELF",
+                  "target": {
+                    "lordOf": "MOON"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Nirgrantha, initiated into the naked ascetics' order that Saturn signifies"
+        }
+      ]
+    },
+    {
+      "key": "PRAVRAJYA_MOON_IN_A_NAVAMSHA_OF_SATURN_OR_MARS_ASPECTED_BY_SATURN",
+      "category": "pravrajya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "79",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Moon in a navamsha of Saturn or of Mars and aspected by Saturn. The verse's other branch, the Moon in a decanate of Saturn, wants a catalogue of the decanates and is not built. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "MOON"
+          },
+          "signs": [
+            "CAPRICORN",
+            "AQUARIUS",
+            "ARIES",
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SATURN",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "initiated into the holy order Saturn signifies"
+        }
+      ]
+    }
+  ]
+}

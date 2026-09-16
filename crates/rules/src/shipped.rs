@@ -55,6 +55,8 @@ const PARASHARA: &str = include_str!("../rules/classical-parashara.json");
 const JAIMINI: &str = include_str!("../rules/classical-jaimini.json");
 /// The yogas of BPHS ch. 36 that ask a graha to be strong.
 const STRENGTH: &str = include_str!("../rules/classical-strength.json");
+/// The yogas leading to asceticism of BPHS ch. 79.
+const PRAVRAJYA: &str = include_str!("../rules/classical-pravrajya.json");
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
 /// twenty-one pairs and Phaladeepika ch. 18's Moon in each sign, aspected.
 const DWIGRAHA: &str = include_str!("../rules/classical-readings.json");
@@ -92,6 +94,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PARASHARA));
     rules.append(&mut read(JAIMINI));
     rules.append(&mut read(STRENGTH));
+    rules.append(&mut read(PRAVRAJYA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -182,7 +185,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 818);
+        assert_eq!(rules.len(), 829);
         for rule in &rules {
             let rank = rule
                 .source

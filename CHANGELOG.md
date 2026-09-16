@@ -1217,8 +1217,22 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** 48 of the 1116 houses of the corpus hold three grahas or more —
   35 with three, 10 with four, 3 with five — which is exactly the case a
   reading of one graha at a time cannot answer and the case the texts decline
-  to write. Over the 93 charts a consumer receives 4894 results gathered under
+  to write. Over the 93 charts a consumer receives 4913 results gathered under
   a house and 455 statements of how to read them together.
+
+- **The ascetic yogas of BPHS ch. 79**, the first rules strength unlocked and
+  the sharpest measurement the corpus has given. The yoga forms when four or
+  more grahas *possessed of strength* share a house, and the native takes the
+  order of *the strongest of them alone*; vv. 6 to 8's three further figures
+  ship beside them, and v. 4's cancellation with them. Saying "the strongest of
+  these" needed no predicate: it is `not` of a `for-any` over `same-sign` and
+  `planet-stronger-than`. The SDK ships 829 rules.
+
+  **Numbers:** the recording engine writes the same seven as "this graha shares
+  a sign with three others" and answers 34 chart-rules over the 93 where the
+  verse answers 1 — and on the one chart that satisfies the verse it fires four
+  at once, giving the native four holy orders where Parashara gives him one.
+  Crux C97.
 
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.

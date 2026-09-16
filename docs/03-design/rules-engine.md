@@ -773,6 +773,33 @@ according to some, which is not modelled as a second span); and the lords of
 the navamsa ascendant, the Moon's sign and the natal ascendant all combust,
 which nests references three deep and needed nothing new.
 
+**The ascetic yogas, and what a per-graha reading costs (2026-09-16).** BPHS
+ch. 79 vv. 2 to 3 were the first rules in the survey that strength unlocked,
+and they are the sharpest measurement the corpus has yielded. The yoga forms
+when four or more grahas **possessed of strength** share a house, and the
+native takes the order of **the strongest of them alone**.
+
+Saying that needed no new predicate, only the ones strength brought. Three
+conditions carry the arbitration: `n-grahas-conjunct-with` counts the four;
+"no graha in this one's sign is weak" is `not` of a `for-any` over
+`same-sign` and `planet-weak`; and "none there is stronger" is `not` of a
+`for-any` over `same-sign` and `planet-stronger-than`. That last is how the
+language says "the strongest of these" without a predicate for it.
+
+The recording engine writes the same seven yogas as "this graha shares a sign
+with three others" and asks neither for strength nor for arbitration. Over the
+93 charts it answers 34 chart-rules where the verse answers **one** — and on
+the single chart that satisfies the verse it fires **four at once**, giving the
+native the orders of the Sun, the Moon, Mars and Saturn together where
+Parashara gives him Saturn's alone. That is the cost of reading a crowded house
+one graha at a time, in a number (crux C97).
+
+A note on the measuring: the first pass of this comparison answered zero, and
+the rule was not at fault — the harness was building charts without strengths,
+so every question of strength answered false. **A pass that hands the kernel
+less than the rule asks for will report the rule as silent**, which is the same
+shape of mistake as a gate going green for the wrong reason.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-three answer none, and

@@ -15,7 +15,7 @@
 
 mod common;
 
-use common::{chart, files, recorded_chart, rules, strings};
+use common::{chart, chart_at, files, recorded_chart, rules, strings};
 use teistro_rules::{Body, Evaluator, Readings, Rule, RuleResult};
 
 #[test]
@@ -210,7 +210,14 @@ fn every_rule_round_trips_through_the_language() {
 fn the_sdk_s_yogas_answer_what_the_engine_answered() {
     // The engine's key, or keys, for each figure the SDK writes; a figure it
     // does not carry is left out of the comparison.
-    const SAME: [(&str, &[&str]); 49] = [
+    const SAME: [(&str, &[&str]); 56] = [
+        ("PRAVRAJYA_SUN", &["PRAVRAJYA_SUN_TAPASVI"]),
+        ("PRAVRAJYA_MOON", &["PRAVRAJYA_MOON_VRIDHHA"]),
+        ("PRAVRAJYA_MARS", &["PRAVRAJYA_MARS_SHAKYA"]),
+        ("PRAVRAJYA_MERCURY", &["PRAVRAJYA_MERCURY_BHIKSHU"]),
+        ("PRAVRAJYA_JUPITER", &["PRAVRAJYA_JUPITER_VYRTAKA"]),
+        ("PRAVRAJYA_VENUS", &["PRAVRAJYA_VENUS_CHARAKA"]),
+        ("PRAVRAJYA_SATURN", &["PRAVRAJYA_SATURN_NIRGRANTHA"]),
         ("MAHAPURUSHA_RUCHAKA", &["RUCHAKA"]),
         ("MAHAPURUSHA_BHADRA", &["BHADRA"]),
         ("MAHAPURUSHA_HAMSA", &["HAMSA"]),
@@ -268,8 +275,10 @@ fn the_sdk_s_yogas_answer_what_the_engine_answered() {
     let owned: Vec<Rule> = ours.to_vec();
     let mut tally: std::collections::BTreeMap<&str, (usize, usize, usize)> =
         SAME.iter().map(|(key, _)| (*key, (0, 0, 0))).collect();
-    for (_, file) in files() {
-        let chart = chart(&file["inputs"]);
+    for (path, file) in files() {
+        // The SDK's rules ask questions of strength; the engine's never do, so
+        // only this pass needs a chart that can answer them.
+        let chart = chart_at(&path, &file["inputs"]);
         let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_rules(&owned);
         let present = file["present"].as_object().unwrap();
         for (key, theirs) in SAME {
@@ -298,9 +307,9 @@ fn the_sdk_s_yogas_answer_what_the_engine_answered() {
 /// Which figures the SDK and the engine disagree on, and why each is a
 /// reading rather than a defect.
 fn divergences_are_the_ones_read_up_in_the_cruxes(counted: &[(&str, usize, usize, usize)]) {
-    // Forty-one of the forty-nine figures answer exactly alike — among them
-    // all five Pancha Mahapurusha yogas, on 49 answers. The eight that do not
-    // are reading differences, recorded in cruxes C93 to C95:
+    // Forty-one of the fifty-six figures answer exactly alike — among them all
+    // five Pancha Mahapurusha yogas, on 49 answers. The fifteen that do not are
+    // reading differences, recorded in cruxes C93 to C95 and C97:
     //
     // - Ardha Chandra: the SDK takes Saravali's "seven continuous houses from
     //   a house that is not an angle", all eight starts; the engine takes the
@@ -343,9 +352,33 @@ fn divergences_are_the_ones_read_up_in_the_cruxes(counted: &[(&str, usize, usize
             "PARASHARA_AMALA",
             "PARASHARA_CHAMARA",
             "PARASHARA_GAJA_KESARI",
-            "PARASHARA_KALANIDHI"
+            "PARASHARA_KALANIDHI",
+            "PRAVRAJYA_JUPITER",
+            "PRAVRAJYA_MARS",
+            "PRAVRAJYA_MERCURY",
+            "PRAVRAJYA_MOON",
+            "PRAVRAJYA_SATURN",
+            "PRAVRAJYA_SUN",
+            "PRAVRAJYA_VENUS"
         ]
     );
+    // The ascetic yogas are the sharpest of the divergences (crux C97). The
+    // engine anchors each graha to a house of four and asks nothing else, so
+    // it answers 34 chart-rules over the 93 and on one chart says the native
+    // enters four holy orders at once. BPHS ch. 79 vv. 2 to 3 ask that all
+    // four be strong and give the order of the strongest alone: one chart of
+    // the 93, one order, Saturn's.
+    let theirs: usize = counted
+        .iter()
+        .filter(|(key, ..)| key.starts_with("PRAVRAJYA_"))
+        .map(|(_, both, _, theirs)| both + theirs)
+        .sum();
+    let ours: usize = counted
+        .iter()
+        .filter(|(key, ..)| key.starts_with("PRAVRAJYA_"))
+        .map(|(_, both, ours, _)| both + ours)
+        .sum();
+    assert_eq!((ours, theirs), (1, 34));
     // Every Pancha Mahapurusha yoga reproduces the engine exactly, on 49
     // answers over the 93 charts.
     let mahapurusha: usize = counted
@@ -373,8 +406,8 @@ fn sankhya_yogas_stand_down_where_another_nabhasa_holds(ours: &[Rule], owned: &[
         "NABHASA_VEENA",
     ];
     let (mut present, mut cancelled) = (0, 0);
-    for (_, file) in files() {
-        let chart = chart(&file["inputs"]);
+    for (path, file) in files() {
+        let chart = chart_at(&path, &file["inputs"]);
         let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_rules(owned);
         for key in sankhya {
             let rule = ours.iter().find(|rule| rule.key == key).unwrap();
@@ -393,7 +426,7 @@ fn sankhya_yogas_stand_down_where_another_nabhasa_holds(ours: &[Rule], owned: &[
 /// How the SDK's reading of each Nabhasa figure stands to the engine's, over
 /// the 93 recorded charts: answered by both, by the SDK alone, by the engine
 /// alone.
-const AGREEMENT: [(&str, usize, usize, usize); 49] = [
+const AGREEMENT: [(&str, usize, usize, usize); 56] = [
     ("LUNAR_ADHI_YOGA", 0, 0, 0),
     ("LUNAR_ANAPHA", 19, 0, 0),
     ("LUNAR_DURADHARA", 7, 0, 0),
@@ -440,6 +473,13 @@ const AGREEMENT: [(&str, usize, usize, usize); 49] = [
     ("PARASHARA_KALANIDHI", 0, 0, 3),
     ("PARASHARA_LAGNADHI", 0, 0, 0),
     ("PARASHARA_MATSYA", 0, 0, 0),
+    ("PRAVRAJYA_JUPITER", 0, 0, 4),
+    ("PRAVRAJYA_MARS", 0, 0, 4),
+    ("PRAVRAJYA_MERCURY", 0, 0, 6),
+    ("PRAVRAJYA_MOON", 0, 0, 4),
+    ("PRAVRAJYA_SATURN", 1, 0, 5),
+    ("PRAVRAJYA_SUN", 0, 0, 6),
+    ("PRAVRAJYA_VENUS", 0, 0, 4),
     ("SOLAR_UBHAYACHARI", 33, 0, 0),
     ("SOLAR_VESI", 50, 0, 0),
     ("SOLAR_VOSI", 51, 0, 0),
