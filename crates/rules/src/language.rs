@@ -662,6 +662,28 @@ pub enum Condition {
     /// The birth fell by day, between sunrise and sunset; a chart that does
     /// not say never holds it, and `not` of it is not "by night" there.
     BirthByDay,
+    /// The body stands in one of these nakshatras, in one of the padas when
+    /// the rule names any. It is read from the body's own sidereal longitude,
+    /// 13°20′ to a nakshatra and a quarter of that to a pada, where
+    /// `panchanga-nakshatra` reads the one the chart recorded for the Moon.
+    PlanetInNakshatra {
+        /// Who.
+        planet: BodyRef,
+        /// Which.
+        nakshatras: Vec<Nakshatra>,
+        /// Which padas, 1 to 4; any when none.
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        padas: Vec<Pada>,
+    },
+    /// Two bodies stand in one nakshatra: "the birth star identical with the
+    /// one in which Ketu rises" (Saravali ch. 10 v. 12).
+    SameNakshatra {
+        /// One.
+        of: BodyRef,
+        /// The other.
+        #[serde(rename = "as")]
+        as_body: BodyRef,
+    },
     /// The body reaches what its measure requires of it: "the ascendant lord
     /// is strong" (BPHS ch. 36 vv. 9 to 28). A chart that carries no strength
     /// never holds it.
@@ -900,6 +922,8 @@ impl Condition {
             Condition::PanchangaKarana { .. } => "panchanga-karana",
             Condition::BirthDuringEclipse { .. } => "birth-during-eclipse",
             Condition::BirthOnSankranti { .. } => "birth-on-sankranti",
+            Condition::PlanetInNakshatra { .. } => "planet-in-nakshatra",
+            Condition::SameNakshatra { .. } => "same-nakshatra",
             Condition::PlanetStrong { .. } => "planet-strong",
             Condition::PlanetWeak { .. } => "planet-weak",
             Condition::PlanetStrongerThan { .. } => "planet-stronger-than",

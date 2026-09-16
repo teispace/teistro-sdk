@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 72);
+    assert_eq!(rules.len(), 76);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -58,7 +58,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .map(|rule| rule.key.as_str())
         .collect();
     assert_eq!(graded, GRADED);
-    assert_eq!(spans.len(), 11);
+    assert_eq!(spans.len(), 13);
     assert!(
         spans
             .iter()
@@ -94,9 +94,9 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         }
     }
     assert_eq!(charts, 93);
-    assert_eq!((cancelled, saravali_cancelled), (319, 3));
+    assert_eq!((cancelled, saravali_cancelled), (324, 8));
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
-    assert_eq!(counts, ANSWERED, "a rule's answers moved");
+    assert_eq!(counts.as_slice(), ANSWERED.as_slice(), "a rule's answers moved");
 
     // A rule no chart answers has no positive case here, which is worth
     // saying: the corpus holds 93 births, the gandantas need ghatikas it does
@@ -179,10 +179,11 @@ fn saravali_evils_name_the_antidotes_of_their_own_text(rules: &[&Rule]) {
     }
 }
 
-/// The rules whose verse says how long the native lives: Saravali ch. 10's
-/// evils, each with the span it leaves, and the one antidote of ch. 12 that
-/// counts a life in years rather than calling it illimitable.
-const GRADED: [&str; 11] = [
+/// The rules whose verse says what follows: Saravali ch. 10's evils, all but
+/// two of them with the span they leave, and the one antidote of ch. 12 that
+/// counts a life in years rather than calling it illimitable. Saravali is the
+/// only text here that says anything beyond presence at all.
+const GRADED: [&str; 15] = [
     "SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS",
     "SARAVALI_RETROGRADE_SATURN_IN_A_SIGN_OF_MARS",
     "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
@@ -193,11 +194,15 @@ const GRADED: [&str; 11] = [
     "SARAVALI_SATURN_IN_LAGNA_ASPECTED_BY_MALEFICS",
     "SARAVALI_SATURN_IN_LAGNA_WITH_MALEFICS",
     "SARAVALI_SATURN_ALONE_IN_LAGNA",
+    "SARAVALI_BIRTH_STAR_IS_KETU_S",
+    "SARAVALI_SUN_IN_A_TENTH_OF_MARS_OR_SATURN",
+    "SARAVALI_RAHU_IN_A_KENDRA_ASPECTED_BY_MALEFICS",
+    "SARAVALI_THREE_LORDS_COMBUST",
     "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS",
 ];
 
 /// The rules no recorded chart answers.
-const SILENT: [&str; 31] = [
+const SILENT: [&str; 33] = [
     "ABHUKTA_MOOLA",
     "ARISHTA_FIVE_IN_THE_SECOND",
     "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
@@ -227,12 +232,14 @@ const SILENT: [&str; 31] = [
     "SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH",
     "SARAVALI_MERCURY_IN_CANCER_AS_SIXTH_OR_EIGHTH",
     "SARAVALI_RETROGRADE_SATURN_IN_A_SIGN_OF_MARS",
+    "SARAVALI_SUN_IN_A_TENTH_OF_MARS_OR_SATURN",
+    "SARAVALI_THREE_LORDS_COMBUST",
     "SARAVALI_VENUS_IN_A_LUMINARY_DUSTHANA",
     "TITHI_GANDANTA",
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 72] = [
+const ANSWERED: [(&str, usize); 76] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
     ("ARISHTA_BHANGA_BENEFIC_IN_KENDRA", 70),
@@ -294,15 +301,19 @@ const ANSWERED: [(&str, usize); 72] = [
     ("SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER", 2),
     ("SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH", 11),
     ("SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA", 5),
+    ("SARAVALI_BIRTH_STAR_IS_KETU_S", 3),
     ("SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS", 0),
     ("SARAVALI_MALEFIC_IN_A_VENUS_EIGHTH", 3),
     ("SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH", 0),
     ("SARAVALI_MERCURY_IN_CANCER_AS_SIXTH_OR_EIGHTH", 0),
+    ("SARAVALI_RAHU_IN_A_KENDRA_ASPECTED_BY_MALEFICS", 26),
     ("SARAVALI_RETROGRADE_SATURN_IN_A_SIGN_OF_MARS", 0),
     ("SARAVALI_SATURN_ALONE_IN_LAGNA", 2),
     ("SARAVALI_SATURN_IN_LAGNA_ASPECTED_BY_MALEFICS", 1),
     ("SARAVALI_SATURN_IN_LAGNA_WITH_MALEFICS", 1),
     ("SARAVALI_SATURN_WITH_BOTH_LUMINARIES", 2),
+    ("SARAVALI_SUN_IN_A_TENTH_OF_MARS_OR_SATURN", 0),
+    ("SARAVALI_THREE_LORDS_COMBUST", 0),
     ("SARAVALI_VENUS_IN_A_LUMINARY_DUSTHANA", 0),
     ("TITHI_GANDANTA", 0),
 ];

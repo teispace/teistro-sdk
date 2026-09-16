@@ -444,3 +444,49 @@ const AGREEMENT: [(&str, usize, usize, usize); 49] = [
     ("SOLAR_VESI", 50, 0, 0),
     ("SOLAR_VOSI", 51, 0, 0),
 ];
+
+/// The nakshatra the kernel reads from a body's own longitude is the one the
+/// corpus recorded for the Moon, chart by chart and pada by pada. The two come
+/// by different roads — `planet-in-nakshatra` divides a longitude, and
+/// `panchanga-nakshatra` reads what the chart was given — so their agreeing on
+/// every one of the 93 charts is what says the division is right.
+#[test]
+fn the_nakshatra_read_from_a_longitude_is_the_one_the_corpus_recorded() {
+    use teistro_core::catalogue::Nakshatra;
+    use teistro_rules::{BodyRef, Condition, Pada};
+
+    let moon = BodyRef::Body(Body::Graha(teistro_core::catalogue::Graha::Moon));
+    let (mut charts, mut recorded_stars, mut matched) = (0, 0, 0);
+    for (_, file) in common::files_in("doshas") {
+        let chart = chart(&file["inputs"]);
+        charts += 1;
+        // Only a chart given a panchanga records a nakshatra to compare
+        // against; the rest exercise `panchanga-nakshatra` answering false.
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
+        if chart.panchanga.is_none() {
+            continue;
+        }
+        recorded_stars += 1;
+        for nakshatra in Nakshatra::ALL {
+            for pada in 1..=4 {
+                let padas = vec![Pada::try_new(pada).unwrap()];
+                let recorded = Condition::PanchangaNakshatra {
+                    nakshatras: vec![nakshatra],
+                    padas: padas.clone(),
+                };
+                let read = Condition::PlanetInNakshatra {
+                    planet: moon.clone(),
+                    nakshatras: vec![nakshatra],
+                    padas,
+                };
+                let mut into = teistro_rules::Participants::default();
+                let one = evaluator.holds(&recorded, &mut into);
+                let other = evaluator.holds(&read, &mut into);
+                assert_eq!(one, other, "{nakshatra:?} pada {pada}");
+                matched += usize::from(one);
+            }
+        }
+    }
+    // Exactly one nakshatra and pada holds on each chart that records one.
+    assert_eq!((charts, recorded_stars, matched), (93, 77, 77));
+}

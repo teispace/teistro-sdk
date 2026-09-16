@@ -2,7 +2,7 @@
 
 use serde::Serialize;
 use teistro_aspect::{conjunction, drishti};
-use teistro_core::catalogue::{Dignity, Graha, Modality, Rashi};
+use teistro_core::catalogue::{Dignity, Graha, Modality, Nakshatra, Rashi};
 use teistro_core::settings::NodeAspects;
 
 use teistro_points::arudha;
@@ -823,6 +823,26 @@ impl<'a> Evaluator<'a> {
                 }
                 found.is_some()
             }
+            Condition::PlanetInNakshatra {
+                planet,
+                nakshatras,
+                padas,
+            } => self.body_meets(planet, into, rec, |body| {
+                let (nakshatra, pada) = star(self.at(body).longitude);
+                nakshatras.contains(&nakshatra)
+                    && (padas.is_empty() || padas.iter().any(|named| named.get() == pada))
+            }),
+            Condition::SameNakshatra { of, as_body } => {
+                let (Some(one), Some(other)) = (self.body(of, rec), self.body(as_body, rec)) else {
+                    return false;
+                };
+                let held = star(self.at(one).longitude).0 == star(self.at(other).longitude).0;
+                if held {
+                    into.push(one);
+                    into.push(other);
+                }
+                held
+            }
             Condition::PlanetStrong { planet } => {
                 self.body_meets(planet, into, rec, |body| self.strengths().is_strong(body))
             }
@@ -1371,6 +1391,29 @@ fn set(nature: &mut [bool; 10], index: usize, value: bool) {
 }
 
 /// The sign `count` signs on from `sign`.
+/// The nakshatra a sidereal longitude falls in, and its pada counted 1 to 4:
+/// 13°20′ to a nakshatra, a quarter of that to a pada.
+fn star(longitude: f64) -> (Nakshatra, u8) {
+    const WIDTH: f64 = 360.0 / 27.0;
+    let into = longitude.rem_euclid(360.0);
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "a longitude brought into 0..360 gives 0..26 and 0..3"
+    )]
+    let at = (into / WIDTH) as u16;
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "a longitude brought into 0..360 gives 0..26 and 0..3"
+    )]
+    let quarter = ((into % WIDTH) / (WIDTH / 4.0)) as u8;
+    (
+        Nakshatra::from_id(at.min(26)).unwrap_or(Nakshatra::Ashwini),
+        quarter.min(3) + 1,
+    )
+}
+
 /// Which house an intervention counts to: forward from a sign, backwards from
 /// a node, whose motion runs the other way (BPHS ch. 31 v. 6).
 fn counting(on: Spot, house: u8) -> u8 {

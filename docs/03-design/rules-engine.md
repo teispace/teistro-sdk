@@ -690,9 +690,30 @@ the 93; Kahala answers 27 and Sankha 22, each having a second figure that asks
 for no strength at all — and stripped of its strengths a chart can still answer
 those two and nothing else, which the test holds.
 
+**A nakshatra for any body (2026-09-16).** `panchanga-nakshatra` reads the one
+the chart recorded for the Moon; `planet-in-nakshatra` divides any body's own
+sidereal longitude, 13°20′ to a nakshatra and a quarter of that to a pada, and
+`same-nakshatra` asks whether two bodies stand in one — "the birth star
+identical with the one in which Ketu rises" (Saravali ch. 10 v. 12). Both read
+a longitude, so both are refused inside an `in-varga`, as every longitude
+condition is.
+
+The two roads must meet: a test holds the computed nakshatra and pada against
+the recorded one over all 27 nakshatras and 4 padas on each of the 77 charts
+that record one, and exactly one pair holds on each. That is what says the
+division is right; nothing else in the kernel could have told us.
+
+Four more of Saravali ch. 10's evils ship with it, three of them waiting on
+things the kernel had only just learned: the birth star identical with Ketu's
+(two months); the Sun in a tenth owned by Mars or Saturn under a *strong*
+malefic's aspect; Rahu in an angle aspected by malefics (ten years, or sixteen
+according to some, which is not modelled as a second span); and the lords of
+the navamsa ascendant, the Moon's sign and the natal ascendant all combust,
+which nests references three deep and needed nothing new.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
-of them, so an answer that moves fails the build. Thirty-one answer none, and
+of them, so an answer that moves fails the build. Thirty-three answer none, and
 the test lists them — the four gandantas because the corpus records no limb's
 ghatikas, the rest because they are coincidences of three, four or five
 grahas.

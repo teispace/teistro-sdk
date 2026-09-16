@@ -62,6 +62,10 @@ cancellations held.
   49 figures the recording engine also carries answer exactly as it recorded
   over the corpus — every Pancha Mahapurusha yoga among them. The eight that
   differ are readings, pinned and explained.
+- **A nakshatra for any body**, `planet-in-nakshatra` and `same-nakshatra`,
+  divided from the body's own longitude where `panchanga-nakshatra` reads the
+  Moon's as the chart recorded it; a test holds the two against each other over
+  every nakshatra and pada of the corpus.
 - **Strength, compared and not computed**: a chart may carry `Strengths` — a
   measure, each body's number and what it must reach — and `planet-strong`,
   `planet-weak` and `planet-stronger-than` read them. Strong and weak are two

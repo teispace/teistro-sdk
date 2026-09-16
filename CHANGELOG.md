@@ -1170,6 +1170,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   the new cancellations fire on 12 chart-rules where nothing fired before;
   Mridanga answers none of the 93.
 
+- A nakshatra for any body: `planet-in-nakshatra` divides a body's own sidereal
+  longitude, and `same-nakshatra` asks whether two stand in one. Four more of
+  Saravali ch. 10's evils ship with it — the birth star identical with Ketu's,
+  the Sun in a tenth of Mars or Saturn under a strong malefic's aspect, Rahu in
+  an angle aspected by malefics, and the three lords combust. The SDK ships
+  730 rules.
+
+  **Numbers:** the computed nakshatra and pada agree with the corpus's recorded
+  ones over all 27 nakshatras and 4 padas on each of the 77 charts that record
+  one, and exactly one pair holds on each.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

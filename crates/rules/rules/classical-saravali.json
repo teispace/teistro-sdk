@@ -775,6 +775,297 @@
       ]
     },
     {
+      "key": "SARAVALI_BIRTH_STAR_IS_KETU_S",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "12-13",
+        "rank": 1,
+        "note": "The birth star identical with the one in which Ketu rises: two months. The birth star is the Moon's, and Ketu's is read from his own longitude. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "same-nakshatra",
+          "of": "MOON",
+          "as": "KETU"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_A_BENEFIC_SIGN_ASPECTED_BY_THE_LAGNA_LORD"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_ASPECTED_BY_HER_DISPOSITOR"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_THE_THIRD_FOURTH_SIXTH_TENTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 2.0,
+          "unit": "months"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_SUN_IN_A_TENTH_OF_MARS_OR_SATURN",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "12-13",
+        "rank": 1,
+        "note": "The Sun in the tenth when that house is a sign of Mars or of Saturn, aspected by a strong malefic: death at once. The malefics counted are Mars and Saturn \u2014 the Sun is the subject, and the nodes carry no Shadbala. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "SUN",
+          "houses": [
+            10
+          ],
+          "signs": [
+            "ARIES",
+            "SCORPIO",
+            "CAPRICORN",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MARS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": "SUN"
+              }
+            ]
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "facing death at once"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_RAHU_IN_A_KENDRA_ASPECTED_BY_MALEFICS",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "14-15",
+        "rank": 1,
+        "note": "Rahu in an angle aspected by malefics: ten years, or sixteen according to some, which the SDK does not model as a second span. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": "RAHU"
+        },
+        {
+          "type": "count-aspecting",
+          "planets": "any-malefic",
+          "target": "RAHU",
+          "atLeast": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 10.0,
+          "unit": "years"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_THREE_LORDS_COMBUST",
+      "category": "arishta",
+      "source": {
+        "text": "Saravali",
+        "chapter": "10",
+        "verse": "16-17",
+        "rank": 1,
+        "note": "The lords of the navamsa ascendant, of the Moon's sign and of the natal ascendant all combust: the native lives just a few years, which the verse does not count. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-combust",
+          "planet": {
+            "lordOf": {
+              "navamsha": "LAGNA"
+            }
+          }
+        },
+        {
+          "type": "planet-combust",
+          "planet": {
+            "lordOf": "MOON"
+          }
+        },
+        {
+          "type": "planet-combust",
+          "planet": {
+            "lordOf": 1
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_A_BENEFIC_SIGN_ASPECTED_BY_THE_LAGNA_LORD"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_ASPECTED_BY_HER_DISPOSITOR"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_THE_THIRD_FOURTH_SIXTH_TENTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "living just a few years"
+        }
+      ]
+    },
+    {
       "key": "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON",
       "category": "arishta-bhanga",
       "source": {
