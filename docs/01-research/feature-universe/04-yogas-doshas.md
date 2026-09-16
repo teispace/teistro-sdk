@@ -81,3 +81,97 @@ becomes a data format.
   per lagna with the trikona override, Moon phase dependent for Moon and
   Mercury's association rule).
 - Confirm Rahu and Ketu treatment in Nabhasa and Kala Sarpa rules.
+
+## The classical corpus, surveyed (2026-09-16)
+
+Two research passes read the public-domain translations rather than the
+secondary web, and downloaded them for re-checking: BPHS (Santhanam and
+Sharma), Brihat Jataka (Chidambaram Iyer 1885), Saravali, Phaladeepika
+(V. Subrahmanya Sastri 1937), Jataka Parijata (Sastri 1932), Kalaprakasika
+and Uttara Kalamrita. Only some translations are free of copyright — Iyer
+1885, Suryanarain Rao 1899, Sastri's Phaladeepika 1950 and Jataka Parijata
+1932–33 — so the SDK cites locations and never reproduces passages.
+
+### How many yogas there are
+
+**"About 800 yogas" is not a classical number.** It is the yoga screen of a
+commercial program, which counts text references matched against one chart.
+Saravali ch. 21 does say its 32 Nabhasa yogas are "out of 1800 kinds
+explained by the Yavanas", but that is one family expanded across lagnas, not
+1800 rules. The defensible figure for distinct, deduplicated, *named* yogas
+across every major text is roughly **400 to 700**, and which end depends on
+three editorial choices: whether a planet-in-house reading counts as a yoga,
+whether a family expanded per sign counts once or twelve times, and whether
+the same combination named twice counts twice. **A count without its counting
+rule is a claim the SDK cannot support**, so any number it publishes carries
+one. The recording engine's 605 sit inside that band, with 255 attributed to
+Phaladeepika, which almost certainly counts placement readings.
+
+### What the corpus holds, by family
+
+The yoga families and their authorities: Nabhasa 32 (BPHS ch. 35, Brihat
+Jataka XII, Saravali 21); lunar 6 to 12 and solar 3 (BPHS chs. 37 and 38);
+Pancha Mahapurusha 5 (BPHS ch. 75); raja 60 to 150 (BPHS chs. 39 and 40,
+Phaladeepika 7, Bhavartha Ratnakara); dhana and daridra (BPHS chs. 41 and
+42); arishta and ayur (BPHS chs. 43 and 44, Brihat Jataka VI); sanyasa (BPHS
+ch. 79, Brihat Jataka XV); Jaimini (Upadesa Sutras); Tajika 16 (Tajika
+Neelakanthi); and the dwigraha readings, 15 pairs over 12 signs, which are
+180 rules of one shape (Brihat Jataka XIV, Phaladeepika 18).
+
+The dosha side is thinner than its reputation. What the texts actually carry
+is the **arishta corpus** — about 70 short-life and parental-evil rules (BPHS
+ch. 9, Saravali chs. 10 and 11, Brihat Jataka VI, Jataka Parijata IV) — and
+about **49 arishta-bhanga cancellations** (BPHS ch. 10, Saravali ch. 12,
+Phaladeepika XIII, Jataka Parijata IV), none of which the SDK has yet. The
+curses of BPHS ch. 83, the inauspicious births of ch. 85 and their eleven
+remedial chapters, the Gandanta of ch. 92 in its three kinds, and
+Phaladeepika XIII's Vishaghatika, Thyajya and Dinamrityu are all rank 1 and
+all unbuilt.
+
+### What the texts do not say
+
+Six of the recording engine's doshas have **no verse in seven full texts**:
+Kalsarpa and its twelve named forms, Kala Amrita, Shrapit, Guru Chandal,
+Angarak, Vish yoga and the three Rina doshas (which are Lal Kitab, 1939 to
+1952, not Parashari). Sade Sati is not in any of them either; its classical
+substitute is Phaladeepika XXVI's gochara with vedha. Others are
+over-generalised rather than unsourced: the popular six-house Mangal against
+BPHS ch. 80 v. 47's four, Mool dosha over all four padas where Phaladeepika
+XIII v. 8 makes the fourth prosperous, a whole dark fortnight where BPHS
+ch. 87 names Krishna Chaturdashi, and a generic tithi dosha where ch. 88
+names tithi-kshaya. These are cruxes C88 to C91.
+
+**Severity has no classical scale.** The texts give categorical outcomes and
+one ordinal: Phaladeepika XIII v. 6's age bands (8, 20, 32, 70, 100 years)
+and BPHS ch. 9 v. 2's twenty-fourth year. The numeric systems the texts do
+carry — Shadbala in rupas, Ishta and Kashta out of 60, Vimshopaka out of 20,
+Ashtakavarga rekhas with BPHS ch. 72's thresholds, and Guna Milan's 36 points
+— grade strength, not affliction. Every 0 to 100 dosha score is software's
+own, which is why `Severity` is rule data and the SDK reports what a rule
+declares rather than a number of its own.
+
+### What that means for the kernel
+
+A citation now carries its rank (`Source.rank`, 1 to 4), so a consumer can
+ask for only what a text supports; every rule and table the SDK ships sets
+one, and the Kalsarpa family ships at rank 3 saying plainly that no verse was
+found. The order of work below is by rules unlocked per unit of work:
+
+| # | addition | unlocks | rules |
+|---|---|---|---|
+| 1 | the arishta corpus and its bhangas (needs 2 and 3) | BPHS chs. 9 and 10, Saravali 10 to 12, Brihat Jataka VI, Jataka Parijata IV | ~120 |
+| 2 | papa and shubha kartari, and houses counted from any reference | Phaladeepika VI, BPHS ch. 80 v. 42, a third of the arishta corpus | 15 to 20 |
+| 3 | the ghatika layer: sunrise-relative time, day and night gating, sandhya | Gandanta's three kinds, Abhukta Moola, Vishaghatika, Thyajya, Dinamrityu | 25 to 35 |
+| 4 | upagrahas as bodies a rule can name, Gulika and Maandi first | BPHS ch. 83's curses, ch. 25's positional effects | ~70 |
+| 5 | the dwigraha generator over conjunction and sign | Brihat Jataka XIV, Phaladeepika 18, Saravali | ~180 of one shape |
+| 6 | rashi drishti and argala | Jaimini Upadesa Sutras, the Jaimini raja yogas | 40 to 80 |
+| 7 | nakshatra and its lord for any body, with pada | BPHS ch. 48, the nakshatra family | 30 to 60 |
+| 8 | D3 and D30 in the chart the kernel already steps into | Balarishta by drekkana, BPHS ch. 44's serpent decanate, ch. 80's trimsamsa | ~40 |
+| 9 | strength ranking and thresholds ("the strongest of these") | BPHS ch. 79's sanyasa, ch. 43's longevity | 25 to 50 |
+| 10 | the longevity band as an outcome, replacing invented scores | Phaladeepika XIII v. 6, BPHS ch. 43 | ~15 |
+
+Two-chart matching (the ten kootas of Kalaprakasika XIII and the eight of
+Muhurta Chintamani, which the popular Ashtakuta merges), transits for Sade
+Sati, and the nadi texts stay out of Phase 6: each needs a context the kernel
+does not have — a second chart, an ephemeris over time, or the nadiamsa.
+

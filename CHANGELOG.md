@@ -968,6 +968,24 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- `in-varga` reads a condition inside a divisional chart: every body in its
+  sign there, its houses whole-sign from that division's lagna, its dignity
+  from that sign. An evaluator is given the divisions it may step into, and a
+  rule that reads a longitude inside one is refused when it is read.
+
+  **Numbers:** none.
+
+- A citation says how good its evidence is: `Source.rank`, 1 for a text, 2 for
+  an implementation, 3 for a secondary source, 4 for nothing found. Every rule
+  and table the SDK ships sets one, so a consumer can ask for only what a text
+  supports. The survey behind it is in
+  `01-research/feature-universe/04-yogas-doshas.md`: the "800 yogas" figure is
+  a program's screen count, not a classical number; seven of the recording
+  engine's doshas have no verse in seven full translations, and four more are
+  widened from what their chapters say (cruxes C88 to C91).
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

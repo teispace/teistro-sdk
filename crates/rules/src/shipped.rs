@@ -65,3 +65,51 @@ pub fn computed_doshas() -> &'static [Rule] {
 pub fn computed_yogas() -> &'static [Rule] {
     &YOGAS
 }
+
+#[cfg(test)]
+mod tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::panic,
+        reason = "tests unwrap what they read and fail by panicking"
+    )]
+
+    use super::*;
+    use crate::language::EvidenceRank;
+    use crate::table::Tables;
+
+    #[test]
+    fn every_shipped_rule_and_table_says_how_good_its_evidence_is() {
+        let rules: Vec<&Rule> = computed_doshas().iter().chain(computed_yogas()).collect();
+        assert_eq!(rules.len(), 25);
+        for rule in &rules {
+            let rank = rule
+                .source
+                .rank
+                .unwrap_or_else(|| panic!("{}: a citation says its rank", rule.key));
+            assert!((1..=3).contains(&rank.get()), "{}: {rank:?}", rule.key);
+            assert!(
+                rule.source.note.is_some(),
+                "{}: a citation says what it rests on",
+                rule.key
+            );
+        }
+        for table in Tables::classical().iter() {
+            assert!(
+                table.source().rank.is_some(),
+                "{}: a table says its rank",
+                table.key()
+            );
+        }
+        // The rules resting on no verse found are the ones the texts do not
+        // carry: Kalsarpa's family, Kala Amrita and the Dagdha table's rule.
+        let secondary: Vec<&str> = rules
+            .iter()
+            .filter(|rule| rule.source.rank == EvidenceRank::try_new(3).ok())
+            .map(|rule| rule.key.as_str())
+            .collect();
+        assert_eq!(secondary.len(), 15, "{secondary:?}");
+        assert!(secondary.contains(&"KALSARPA") && secondary.contains(&"DAGDHA_RASHI_DOSHA"));
+        assert!(EvidenceRank::try_new(0).is_err() && EvidenceRank::try_new(5).is_err());
+    }
+}

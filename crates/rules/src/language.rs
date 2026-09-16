@@ -873,6 +873,49 @@ impl Condition {
     }
 }
 
+/// How good the evidence behind a citation is, as the project ranks it
+/// (`01-research/feature-universe/19-verification-cruxes.md`): 1 a classical
+/// text or a faithful translation, 2 an implementation, 3 a secondary source,
+/// 4 nothing found.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
+#[serde(try_from = "u8", into = "u8")]
+pub struct EvidenceRank(u8);
+
+impl EvidenceRank {
+    /// A rank.
+    ///
+    /// # Errors
+    ///
+    /// A number outside 1 to 4, named.
+    pub fn try_new(rank: u8) -> Result<EvidenceRank, String> {
+        if (1..=4).contains(&rank) {
+            Ok(EvidenceRank(rank))
+        } else {
+            Err(format!("evidence rank {rank} is not 1 to 4"))
+        }
+    }
+
+    /// Its number, 1 to 4.
+    #[must_use]
+    pub const fn get(self) -> u8 {
+        self.0
+    }
+}
+
+impl TryFrom<u8> for EvidenceRank {
+    type Error = String;
+
+    fn try_from(rank: u8) -> Result<EvidenceRank, String> {
+        EvidenceRank::try_new(rank)
+    }
+}
+
+impl From<EvidenceRank> for u8 {
+    fn from(rank: EvidenceRank) -> u8 {
+        rank.0
+    }
+}
+
 /// Where a rule or a table comes from.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -888,10 +931,13 @@ pub struct Source {
     /// A note on the reading.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub note: Option<String>,
+    /// How good the evidence is, when the author says.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rank: Option<EvidenceRank>,
 }
 
 impl Source {
-    /// A text, with no chapter, verse or note.
+    /// A text, with no chapter, verse, note or rank.
     #[must_use]
     pub fn text(text: impl Into<String>) -> Source {
         Source {
@@ -899,6 +945,7 @@ impl Source {
             chapter: None,
             verse: None,
             note: None,
+            rank: None,
         }
     }
 }

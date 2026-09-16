@@ -566,7 +566,12 @@ on one `Rule`, the engine's 35 language-expressible doshas reproduced. **Its 17 
 each says present where its code did, and Mrityu Bhaga, Dagdha Rashi and
 Badhaka reproduce every field. **The Neecha Bhanga family is rules** as well,
 over a `for-any` quantifier rather than the divisional predicate the page
-expected. Next: with the references that need points the
+expected, and `in-varga` is built anyway. **The classical corpus was then
+surveyed** (`01-research/feature-universe/04-yogas-doshas.md`): the order of
+work is now the arishta corpus and its bhangas (about 120 rules, needing
+kartari and a ghatika layer), upagrahas as bodies, the dwigraha generator,
+rashi drishti and argala, nakshatra references, D3 and D30, strength ranking,
+and the longevity band as an outcome. Next: with the references that need points the
 chart does not yet carry added as rules need them.
 
 `rules` engine with the v2 algebra landed in order (reference subjects,
