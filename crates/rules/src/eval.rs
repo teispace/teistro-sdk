@@ -480,6 +480,28 @@ impl<'a> Evaluator<'a> {
         )
     }
 
+    /// The bodies that meet a condition naming each of them `SELF` in turn.
+    /// Every body is tried; what the conditions inside consulted is the
+    /// rule's business, not its participants'.
+    fn meeting<'c>(
+        &self,
+        planets: &[Body],
+        then: &'c Condition,
+        rec: &mut impl Recorder<'c>,
+    ) -> Participants {
+        let mut met = Participants::default();
+        for body in planets {
+            let bound = Evaluator {
+                bound: Some(*body),
+                ..*self
+            };
+            if bound.check(then, &mut Participants::default(), rec) {
+                met.push(*body);
+            }
+        }
+        met
+    }
+
     /// Which bodies belong to a class of grahas on this chart.
     const fn members(&self, class: Class) -> [bool; 10] {
         match class {
@@ -492,7 +514,9 @@ impl<'a> Evaluator<'a> {
     /// The bodies of a subject's class. A subject naming a sign rather than a
     /// class has none, and every caller has already handled that case.
     fn of_that_nature(&self, subject: &Subject) -> impl Iterator<Item = Body> + use<'_> {
-        let nature = subject.class().map_or([false; 10], |class| self.members(class));
+        let nature = subject
+            .class()
+            .map_or([false; 10], |class| self.members(class));
         Body::ALL
             .into_iter()
             .filter(move |body| nature.get(body.index()).copied().unwrap_or(false))
@@ -900,7 +924,8 @@ impl<'a> Evaluator<'a> {
                 self.body_meets(planet, into, rec, |body| self.strengths().is_weak(body))
             }
             Condition::PlanetStrongerThan { planet, than } => {
-                let (Some(one), Some(other)) = (self.body(planet, rec), self.body(than, rec)) else {
+                let (Some(one), Some(other)) = (self.body(planet, rec), self.body(than, rec))
+                else {
                     return false;
                 };
                 let held = self.strengths().exceeds(one, other);
@@ -957,8 +982,7 @@ impl<'a> Evaluator<'a> {
                 let mut counted = Participants::default();
                 for body in Body::ALL.into_iter().take(9) {
                     if self.malefic.get(body.index()).copied().unwrap_or(false)
-                        && House::between(on.sign, self.at(body).sign).get()
-                            == counting(on, 3)
+                        && House::between(on.sign, self.at(body).sign).get() == counting(on, 3)
                     {
                         counted.push(body);
                     }
@@ -1119,19 +1143,21 @@ impl<'a> Evaluator<'a> {
                     stood >= 0.0 && stood <= *ghatikas
                 }),
             Condition::ForAny { planets, then } => {
-                // Every body is tried, and each that meets it takes part; what
-                // the conditions inside consulted is the rule's business, not
-                // its participants'.
-                let mut held = false;
-                for body in planets {
-                    let bound = Evaluator {
-                        bound: Some(*body),
-                        ..*self
-                    };
-                    if bound.check(then, &mut Participants::default(), rec) {
-                        into.push(*body);
-                        held = true;
-                    }
+                let met = self.meeting(planets, then, rec);
+                into.extend(met);
+                !met.is_empty()
+            }
+            Condition::CountOf {
+                planets,
+                then,
+                at_least,
+                at_most,
+            } => {
+                let met = self.meeting(planets, then, rec);
+                let held = met.len() >= usize::from(*at_least)
+                    && at_most.is_none_or(|most| met.len() <= usize::from(most));
+                if held {
+                    into.extend(met);
                 }
                 held
             }
@@ -1220,7 +1246,10 @@ impl<'a> Evaluator<'a> {
                 one.sign == other.sign
             }
             Condition::PlanetIs { planet, class } => self.body_meets(planet, into, rec, |body| {
-                self.members(*class).get(body.index()).copied().unwrap_or(false)
+                self.members(*class)
+                    .get(body.index())
+                    .copied()
+                    .unwrap_or(false)
             }),
             Condition::SameBody { of, as_body } => {
                 let (Some(one), Some(other)) = (self.body(of, rec), self.body(as_body, rec)) else {
@@ -1493,10 +1522,7 @@ fn counting(on: Spot, house: u8) -> u8 {
 fn rashi_aspects(from: Rashi, target: Rashi) -> bool {
     use teistro_core::catalogue::Modality;
 
-    let (one, other) = (
-        from.attributes().modality,
-        target.attributes().modality,
-    );
+    let (one, other) = (from.attributes().modality, target.attributes().modality);
     match (one, other) {
         (Modality::Dwiswabhava, Modality::Dwiswabhava) => from != target,
         (Modality::Chara, Modality::Sthira) => target != step(from, 1),
@@ -1665,12 +1691,47 @@ mod tests {
         assert!(!holds(&c, ENGINE, &joined("SUN", 1)).0);
 
         let is = |planet: &str, class: &str| {
-            written(&format!(r#"{{"type": "planet-is", "planet": "{planet}", "class": "{class}"}}"#))
+            written(&format!(
+                r#"{{"type": "planet-is", "planet": "{planet}", "class": "{class}"}}"#
+            ))
         };
-        assert_eq!(holds(&c, ENGINE, &is("SATURN", "maraka")), (true, vec![SATURN]));
+        assert_eq!(
+            holds(&c, ENGINE, &is("SATURN", "maraka")),
+            (true, vec![SATURN])
+        );
         assert!(!holds(&c, ENGINE, &is("JUPITER", "maraka")).0);
         assert!(holds(&c, ENGINE, &is("JUPITER", "benefic")).0);
         assert!(!holds(&c, ENGINE, &is("MOON", "malefic")).0);
+    }
+
+    #[test]
+    fn a_count_of_bodies_meeting_a_condition_holds_between_its_bounds_bphs_39_44() {
+        let mut c = chart();
+        place(&mut c, JUPITER, Rashi::Cancer); // exalted
+        place(&mut c, SATURN, Rashi::Libra); // exalted
+        place(&mut c, MARS, Rashi::Capricorn); // exalted
+        place(&mut c, MOON, Rashi::Leo);
+        let exalted = |at_least: u8, at_most: &str| {
+            written(&format!(
+                r#"{{"type": "count-of", "atLeast": {at_least}{at_most},
+                    "then": {{"type": "same-sign", "of": "SELF", "as": {{"exaltationOf": "SELF"}}}}}}"#
+            ))
+        };
+        // The Sun stays in Aries, where he is exalted too: four in all.
+        assert_eq!(
+            holds(&c, ENGINE, &exalted(1, r#", "atMost": 4"#)),
+            (true, vec![SUN, MARS, JUPITER, SATURN])
+        );
+        assert!(!holds(&c, ENGINE, &exalted(1, r#", "atMost": 3"#)).0);
+        assert!(holds(&c, ENGINE, &exalted(4, "")).0);
+        let five = exalted(5, "");
+        assert_eq!(holds(&c, ENGINE, &five), (false, vec![]));
+        // It binds SELF as for-any does, so a rule naming SELF inside is read.
+        assert_eq!(five.unbound_self(), None);
+        assert_eq!(
+            serde_json::from_value::<Condition>(serde_json::to_value(&five).unwrap()).unwrap(),
+            five
+        );
     }
 
     #[test]
@@ -3005,17 +3066,21 @@ mod tests {
         assert!(!Evaluator::new(&chart(), ENGINE).evaluate(&rule).present);
     }
 
-
-
     /// The table BPHS ch. 26 prints under vv. 1 to 3, sign by sign.
     const PRINTED: [(Rashi, [Rashi; 3]); 12] = [
         (Rashi::Aries, [Rashi::Leo, Rashi::Scorpio, Rashi::Aquarius]),
-        (Rashi::Taurus, [Rashi::Cancer, Rashi::Libra, Rashi::Capricorn]),
+        (
+            Rashi::Taurus,
+            [Rashi::Cancer, Rashi::Libra, Rashi::Capricorn],
+        ),
         (
             Rashi::Gemini,
             [Rashi::Virgo, Rashi::Sagittarius, Rashi::Pisces],
         ),
-        (Rashi::Cancer, [Rashi::Scorpio, Rashi::Aquarius, Rashi::Taurus]),
+        (
+            Rashi::Cancer,
+            [Rashi::Scorpio, Rashi::Aquarius, Rashi::Taurus],
+        ),
         (Rashi::Leo, [Rashi::Libra, Rashi::Capricorn, Rashi::Aries]),
         (
             Rashi::Virgo,
@@ -3071,9 +3136,30 @@ mod tests {
         let venus = SignRef::from(Body::Graha(Graha::Venus));
         let saturn = SignRef::from(Body::Graha(Graha::Saturn));
         // Aries aspects Leo, and Leo Aries; neither aspects Taurus.
-        assert!(holds(&c, ENGINE, &aspects(Subject::Ref(mars.clone()), venus.clone())).0);
-        assert!(holds(&c, ENGINE, &aspects(Subject::Ref(venus.clone()), mars.clone())).0);
-        assert!(!holds(&c, ENGINE, &aspects(Subject::Ref(mars.clone()), saturn.clone())).0);
+        assert!(
+            holds(
+                &c,
+                ENGINE,
+                &aspects(Subject::Ref(mars.clone()), venus.clone())
+            )
+            .0
+        );
+        assert!(
+            holds(
+                &c,
+                ENGINE,
+                &aspects(Subject::Ref(venus.clone()), mars.clone())
+            )
+            .0
+        );
+        assert!(
+            !holds(
+                &c,
+                ENGINE,
+                &aspects(Subject::Ref(mars.clone()), saturn.clone())
+            )
+            .0
+        );
         // The participants are the two bodies the aspect ran through.
         let (held, bodies) = holds(&c, ENGINE, &aspects(Subject::Ref(mars), venus));
         assert!(held);
@@ -3082,7 +3168,6 @@ mod tests {
             [Body::Graha(Graha::Mars), Body::Graha(Graha::Venus)]
         );
     }
-
 
     #[test]
     fn an_intervention_stands_when_it_outnumbers_what_obstructs_it() {

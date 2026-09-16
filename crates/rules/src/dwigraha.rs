@@ -369,7 +369,10 @@ impl Table {
                         // A sign has at most twelve parts in any of these
                         // chapters, so the count fits a byte and its degrees
                         // an f64 exactly.
-                        let (at, nth) = (u8::try_from(at).unwrap_or(0), u8::try_from(nth).unwrap_or(0));
+                        let (at, nth) = (
+                            u8::try_from(at).unwrap_or(0),
+                            u8::try_from(nth).unwrap_or(0),
+                        );
                         stating(
                             format!("SARAVALI_{}_{nth}_OF_{}", part.name, sign.key()),
                             "rising-part",
@@ -406,28 +409,25 @@ impl Table {
             .zip(&self.pair_in_angle.pairs)
             .filter_map(|(pair, row)| pair.first().copied().map(|first| (pair, first, row)))
             .flat_map(move |(pair, first, row)| {
-                angles
-                    .iter()
-                    .zip(&row.effects)
-                    .map(move |(house, effect)| {
-                        let keys: Vec<&str> = pair.iter().map(|body| body.key()).collect();
-                        stating(
-                            format!("SARAVALI_{}_IN_BHAVA_{}", keys.join("_"), house.get()),
-                            "pair-in-angle",
-                            family.source(&row.verse),
-                            vec![
-                                Condition::PlanetConjunct {
-                                    planets: pair.iter().copied().map(BodyRef::Body).collect(),
-                                    max_orb: None,
-                                },
-                                Condition::PlanetInHouse {
-                                    planet: Subject::Ref(SignRef::Of(BodyRef::Body(first))),
-                                    houses: vec![*house],
-                                },
-                            ],
-                            effect,
-                        )
-                    })
+                angles.iter().zip(&row.effects).map(move |(house, effect)| {
+                    let keys: Vec<&str> = pair.iter().map(|body| body.key()).collect();
+                    stating(
+                        format!("SARAVALI_{}_IN_BHAVA_{}", keys.join("_"), house.get()),
+                        "pair-in-angle",
+                        family.source(&row.verse),
+                        vec![
+                            Condition::PlanetConjunct {
+                                planets: pair.iter().copied().map(BodyRef::Body).collect(),
+                                max_orb: None,
+                            },
+                            Condition::PlanetInHouse {
+                                planet: Subject::Ref(SignRef::Of(BodyRef::Body(first))),
+                                houses: vec![*house],
+                            },
+                        ],
+                        effect,
+                    )
+                })
             })
     }
 }

@@ -204,73 +204,92 @@ fn every_rule_round_trips_through_the_language() {
     assert_eq!(back, rules);
 }
 
-/// The yogas the SDK reads from BPHS chs. 35, 37 and 38, against the answers
+/// The engine's key, or keys, for each figure the SDK writes; a figure it does
+/// not carry is left out of the comparison.
+const SAME: [(&str, &[&str]); 62] = [
+    ("PRAVRAJYA_SUN", &["PRAVRAJYA_SUN_TAPASVI"]),
+    ("PRAVRAJYA_MOON", &["PRAVRAJYA_MOON_VRIDHHA"]),
+    ("PRAVRAJYA_MARS", &["PRAVRAJYA_MARS_SHAKYA"]),
+    ("PRAVRAJYA_MERCURY", &["PRAVRAJYA_MERCURY_BHIKSHU"]),
+    ("PRAVRAJYA_JUPITER", &["PRAVRAJYA_JUPITER_VYRTAKA"]),
+    ("PRAVRAJYA_VENUS", &["PRAVRAJYA_VENUS_CHARAKA"]),
+    ("PRAVRAJYA_SATURN", &["PRAVRAJYA_SATURN_NIRGRANTHA"]),
+    ("MAHAPURUSHA_RUCHAKA", &["RUCHAKA"]),
+    ("MAHAPURUSHA_BHADRA", &["BHADRA"]),
+    ("MAHAPURUSHA_HAMSA", &["HAMSA"]),
+    ("MAHAPURUSHA_MALAVYA", &["MALAVYA"]),
+    ("MAHAPURUSHA_SASA", &["SHASHA"]),
+    ("PARASHARA_GAJA_KESARI", &["GAJA_KESARI"]),
+    (
+        "PARASHARA_AMALA",
+        &["AMALA", "AMALA_KIRTI_BENEFIC_10_FROM_MOON"],
+    ),
+    ("PARASHARA_CHAMARA", &["CHAMARA"]),
+    ("PARASHARA_MATSYA", &["MATSYA"]),
+    ("PARASHARA_KALANIDHI", &["KALANIDHI"]),
+    ("PARASHARA_LAGNADHI", &["LAGNADHI"]),
+    ("LUNAR_SUNAPHA", &["SUNAPHA"]),
+    ("LUNAR_ANAPHA", &["ANAPHA"]),
+    ("LUNAR_DURADHARA", &["DURUDHARA"]),
+    ("LUNAR_KEMADRUMA", &["KEMADRUMA"]),
+    ("LUNAR_ADHI_YOGA", &["ADHI_YOGA"]),
+    ("SOLAR_VESI", &["VESI_BROAD"]),
+    ("SOLAR_VOSI", &["VOSI_BROAD"]),
+    ("SOLAR_UBHAYACHARI", &["UBHAYACHARI_BROAD"]),
+    ("NABHASA_RAJJU", &["RAJJU"]),
+    ("NABHASA_MUSALA", &["MUSALA"]),
+    ("NABHASA_NALA", &["NALA"]),
+    ("NABHASA_MAALA", &["MAALA"]),
+    ("NABHASA_SARPA", &["SARPA"]),
+    ("NABHASA_GADA", &["GADA", "GADA_4_7"]),
+    ("NABHASA_SAKATA", &["SAKATA"]),
+    ("NABHASA_VIHAGA", &["VIHAGA"]),
+    ("NABHASA_SRINGATAKA", &["SHRINGATAKA"]),
+    (
+        "NABHASA_HALA",
+        &["HALA_AKRITI", "HALA_AKRITI_3_7_11", "HALA_AKRITI_4_8_12"],
+    ),
+    ("NABHASA_KAMALA", &["PADMA"]),
+    ("NABHASA_VAPI", &["VAPI"]),
+    ("NABHASA_YUPA", &["YUPA"]),
+    ("NABHASA_SARA", &["ISHU"]),
+    ("NABHASA_SAKTHI", &["SAKTI"]),
+    ("NABHASA_DANDA", &["DANDA_AKRITI"]),
+    ("NABHASA_NAUKA", &["NAUKHA"]),
+    ("NABHASA_KOOTA", &["KUTA"]),
+    ("NABHASA_CHATRA", &["CHATRA"]),
+    ("NABHASA_CHAPA", &["CHAPA"]),
+    ("NABHASA_ARDHA_CHANDRA", &["ARDHA_CHANDRA"]),
+    ("NABHASA_CHAKRA", &["CHAKRA"]),
+    ("NABHASA_SAMUDRA", &["SAMUDRA"]),
+    ("NABHASA_GOLA", &["GOLA"]),
+    ("NABHASA_YUGA", &["YUGA"]),
+    ("NABHASA_SOOLA", &["SHOOLA"]),
+    ("NABHASA_KEDARA", &["KEDARA"]),
+    ("NABHASA_PASA", &["PASHA"]),
+    (
+        "BPHS_FIFTH_AND_NINTH_LORDS_RELATED",
+        &["RAJA_LORD_CONJ_5_9"],
+    ),
+    ("BPHS_LORDS_OF_10_AND_5_JOINED", &["RAJA_LORD_CONJ_5_10"]),
+    ("BPHS_LORDS_OF_10_AND_9_JOINED", &["RAJA_LORD_CONJ_9_10"]),
+    ("BPHS_LORDS_OF_4_AND_5_JOINED", &["RAJA_LORD_CONJ_4_5"]),
+    (
+        "BPHS_MAHA_RAJA_LAGNA_AND_FIFTH_LORDS_EXCHANGED",
+        &["RAJA_1_5"],
+    ),
+    (
+        "BPHS_TENTH_AND_LAGNA_LORDS_EXCHANGED",
+        &["MAHA_PARIVARTANA_1_10"],
+    ),
+    ("NABHASA_DAMA", &["DAMA"]),
+    ("NABHASA_VEENA", &["VEENA"]),
+];
+
+/// The yogas the SDK reads from BPHS chs. 35 to 39 and 79, against the answers
 /// the recording engine recorded for the same figures over the same 93 charts.
 #[test]
 fn the_sdk_s_yogas_answer_what_the_engine_answered() {
-    // The engine's key, or keys, for each figure the SDK writes; a figure it
-    // does not carry is left out of the comparison.
-    const SAME: [(&str, &[&str]); 56] = [
-        ("PRAVRAJYA_SUN", &["PRAVRAJYA_SUN_TAPASVI"]),
-        ("PRAVRAJYA_MOON", &["PRAVRAJYA_MOON_VRIDHHA"]),
-        ("PRAVRAJYA_MARS", &["PRAVRAJYA_MARS_SHAKYA"]),
-        ("PRAVRAJYA_MERCURY", &["PRAVRAJYA_MERCURY_BHIKSHU"]),
-        ("PRAVRAJYA_JUPITER", &["PRAVRAJYA_JUPITER_VYRTAKA"]),
-        ("PRAVRAJYA_VENUS", &["PRAVRAJYA_VENUS_CHARAKA"]),
-        ("PRAVRAJYA_SATURN", &["PRAVRAJYA_SATURN_NIRGRANTHA"]),
-        ("MAHAPURUSHA_RUCHAKA", &["RUCHAKA"]),
-        ("MAHAPURUSHA_BHADRA", &["BHADRA"]),
-        ("MAHAPURUSHA_HAMSA", &["HAMSA"]),
-        ("MAHAPURUSHA_MALAVYA", &["MALAVYA"]),
-        ("MAHAPURUSHA_SASA", &["SHASHA"]),
-        ("PARASHARA_GAJA_KESARI", &["GAJA_KESARI"]),
-        ("PARASHARA_AMALA", &["AMALA", "AMALA_KIRTI_BENEFIC_10_FROM_MOON"]),
-        ("PARASHARA_CHAMARA", &["CHAMARA"]),
-        ("PARASHARA_MATSYA", &["MATSYA"]),
-        ("PARASHARA_KALANIDHI", &["KALANIDHI"]),
-        ("PARASHARA_LAGNADHI", &["LAGNADHI"]),
-        ("LUNAR_SUNAPHA", &["SUNAPHA"]),
-        ("LUNAR_ANAPHA", &["ANAPHA"]),
-        ("LUNAR_DURADHARA", &["DURUDHARA"]),
-        ("LUNAR_KEMADRUMA", &["KEMADRUMA"]),
-        ("LUNAR_ADHI_YOGA", &["ADHI_YOGA"]),
-        ("SOLAR_VESI", &["VESI_BROAD"]),
-        ("SOLAR_VOSI", &["VOSI_BROAD"]),
-        ("SOLAR_UBHAYACHARI", &["UBHAYACHARI_BROAD"]),
-        ("NABHASA_RAJJU", &["RAJJU"]),
-        ("NABHASA_MUSALA", &["MUSALA"]),
-        ("NABHASA_NALA", &["NALA"]),
-        ("NABHASA_MAALA", &["MAALA"]),
-        ("NABHASA_SARPA", &["SARPA"]),
-        ("NABHASA_GADA", &["GADA", "GADA_4_7"]),
-        ("NABHASA_SAKATA", &["SAKATA"]),
-        ("NABHASA_VIHAGA", &["VIHAGA"]),
-        ("NABHASA_SRINGATAKA", &["SHRINGATAKA"]),
-        (
-            "NABHASA_HALA",
-            &["HALA_AKRITI", "HALA_AKRITI_3_7_11", "HALA_AKRITI_4_8_12"],
-        ),
-        ("NABHASA_KAMALA", &["PADMA"]),
-        ("NABHASA_VAPI", &["VAPI"]),
-        ("NABHASA_YUPA", &["YUPA"]),
-        ("NABHASA_SARA", &["ISHU"]),
-        ("NABHASA_SAKTHI", &["SAKTI"]),
-        ("NABHASA_DANDA", &["DANDA_AKRITI"]),
-        ("NABHASA_NAUKA", &["NAUKHA"]),
-        ("NABHASA_KOOTA", &["KUTA"]),
-        ("NABHASA_CHATRA", &["CHATRA"]),
-        ("NABHASA_CHAPA", &["CHAPA"]),
-        ("NABHASA_ARDHA_CHANDRA", &["ARDHA_CHANDRA"]),
-        ("NABHASA_CHAKRA", &["CHAKRA"]),
-        ("NABHASA_SAMUDRA", &["SAMUDRA"]),
-        ("NABHASA_GOLA", &["GOLA"]),
-        ("NABHASA_YUGA", &["YUGA"]),
-        ("NABHASA_SOOLA", &["SHOOLA"]),
-        ("NABHASA_KEDARA", &["KEDARA"]),
-        ("NABHASA_PASA", &["PASHA"]),
-        ("NABHASA_DAMA", &["DAMA"]),
-        ("NABHASA_VEENA", &["VEENA"]),
-    ];
     let ours = teistro_rules::shipped::nabhasas();
     let owned: Vec<Rule> = ours.to_vec();
     let mut tally: std::collections::BTreeMap<&str, (usize, usize, usize)> =
@@ -307,10 +326,17 @@ fn the_sdk_s_yogas_answer_what_the_engine_answered() {
 /// Which figures the SDK and the engine disagree on, and why each is a
 /// reading rather than a defect.
 fn divergences_are_the_ones_read_up_in_the_cruxes(counted: &[(&str, usize, usize, usize)]) {
-    // Forty-one of the fifty-six figures answer exactly alike — among them all
-    // five Pancha Mahapurusha yogas, on 49 answers. The fifteen that do not are
-    // reading differences, recorded in cruxes C93 to C95 and C97:
+    // Forty-six of the sixty-two figures answer exactly alike — among them all
+    // five Pancha Mahapurusha yogas, on 49 answers, and BPHS ch. 39 v. 37's
+    // angular lord joining a trinal lord, on 42. The two exchanges of ch. 39
+    // v. 6 and ch. 40 v. 13 agree only in that no chart here holds either. The
+    // sixteen that do not are reading differences, recorded in cruxes C93 to
+    // C95, C97 and C100:
     //
+    // - The fifth and ninth lords: BPHS ch. 39 vv. 33 and 34 relate them by
+    //   mutual aspect or by standing in the seventh from each other as well as
+    //   by sharing a sign; the engine keeps the sign. The SDK's answers contain
+    //   the engine's, five charts wider.
     // - Ardha Chandra: the SDK takes Saravali's "seven continuous houses from
     //   a house that is not an angle", all eight starts; the engine takes the
     //   one window from the second. The SDK's answers contain the engine's.
@@ -341,10 +367,11 @@ fn divergences_are_the_ones_read_up_in_the_cruxes(counted: &[(&str, usize, usize
     let (agreeing, diverging): (Vec<&(&str, usize, usize, usize)>, Vec<_>) = counted
         .iter()
         .partition(|(_, _, ours, theirs)| *ours == 0 && *theirs == 0);
-    assert_eq!(agreeing.len(), 41);
+    assert_eq!(agreeing.len(), 46);
     assert_eq!(
         diverging.iter().map(|(key, ..)| *key).collect::<Vec<_>>(),
         [
+            "BPHS_FIFTH_AND_NINTH_LORDS_RELATED",
             "LUNAR_KEMADRUMA",
             "NABHASA_ARDHA_CHANDRA",
             "NABHASA_KOOTA",
@@ -426,7 +453,13 @@ fn sankhya_yogas_stand_down_where_another_nabhasa_holds(ours: &[Rule], owned: &[
 /// How the SDK's reading of each Nabhasa figure stands to the engine's, over
 /// the 93 recorded charts: answered by both, by the SDK alone, by the engine
 /// alone.
-const AGREEMENT: [(&str, usize, usize, usize); 56] = [
+const AGREEMENT: [(&str, usize, usize, usize); 62] = [
+    ("BPHS_FIFTH_AND_NINTH_LORDS_RELATED", 6, 5, 0),
+    ("BPHS_LORDS_OF_10_AND_5_JOINED", 8, 0, 0),
+    ("BPHS_LORDS_OF_10_AND_9_JOINED", 16, 0, 0),
+    ("BPHS_LORDS_OF_4_AND_5_JOINED", 18, 0, 0),
+    ("BPHS_MAHA_RAJA_LAGNA_AND_FIFTH_LORDS_EXCHANGED", 0, 0, 0),
+    ("BPHS_TENTH_AND_LAGNA_LORDS_EXCHANGED", 0, 0, 0),
     ("LUNAR_ADHI_YOGA", 0, 0, 0),
     ("LUNAR_ANAPHA", 19, 0, 0),
     ("LUNAR_DURADHARA", 7, 0, 0),

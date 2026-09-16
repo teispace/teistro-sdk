@@ -32,8 +32,8 @@
 
 pub mod chart;
 mod dwigraha;
-pub mod house;
 pub mod eval;
+pub mod house;
 pub mod language;
 pub mod reference;
 pub mod rule;

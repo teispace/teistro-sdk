@@ -596,6 +596,24 @@ pub enum Condition {
         /// What one of them must meet.
         then: Box<Condition>,
     },
+    /// So many of the bodies meet the condition, which names each `SELF` in
+    /// turn: at least `atLeast`, and at most `atMost` when the rule gives one.
+    /// "Four or more planets aspect the Moon" and "one or two or three planets
+    /// in exaltation" (BPHS ch. 39 vv. 42 and 44) are counts over a condition
+    /// no single predicate carries. `for-any` is this with at least one. Every
+    /// body that met it takes part when the count holds.
+    CountOf {
+        /// Which bodies, the nine grahas unless the rule says.
+        #[serde(default = "Body::nine", skip_serializing_if = "Body::is_nine")]
+        planets: Vec<Body>,
+        /// What each counted must meet.
+        then: Box<Condition>,
+        /// How many there must be at least.
+        at_least: u8,
+        /// How many there may be at most.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        at_most: Option<u8>,
+    },
     /// The condition, read in a divisional chart: every body in its sign
     /// there, its houses counted whole-sign from that chart's lagna and its
     /// dignity from that sign. A chart the evaluator was not given makes it
@@ -948,6 +966,7 @@ impl Condition {
             Condition::Argala { .. } => "argala",
             Condition::VipareetaArgala { .. } => "vipareeta-argala",
             Condition::ForAny { .. } => "for-any",
+            Condition::CountOf { .. } => "count-of",
             Condition::InVarga { .. } => "in-varga",
             Condition::CountInHouses { .. } => "count-in-houses",
             Condition::CountAspecting { .. } => "count-aspecting",
@@ -969,6 +988,9 @@ impl Condition {
             | Condition::ForAny {
                 then: condition, ..
             }
+            | Condition::CountOf {
+                then: condition, ..
+            }
             | Condition::InVarga { condition, .. } => core::slice::from_ref(condition),
             _ => &[],
         }
@@ -977,7 +999,7 @@ impl Condition {
     /// Whether it binds `SELF` for the conditions inside it.
     #[must_use]
     pub const fn binds_self(&self) -> bool {
-        matches!(self, Condition::ForAny { .. })
+        matches!(self, Condition::ForAny { .. } | Condition::CountOf { .. })
     }
 
     /// Whether any reference it names is `SELF`, itself and not inside it.
@@ -1033,7 +1055,6 @@ impl Condition {
         }
         walk(self, false)
     }
-
 
     /// Whether it asks a question of strength, so a caller knows to give the
     /// chart [`Strengths`](crate::Strengths); without them it answers false.

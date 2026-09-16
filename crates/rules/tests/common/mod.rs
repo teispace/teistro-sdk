@@ -20,7 +20,7 @@ use teistro_core::catalogue::{
 use teistro_core::quantity::Degrees;
 use teistro_rules::{
     Body, House, Karaka, Pada, Panchanga, Placement, Rule, RuleChart, Spans, StrengthMeasure,
-    Strengths,
+    Strengths, VargaSigns,
 };
 use teistro_vargas::{Scheme, sign};
 
@@ -91,10 +91,16 @@ fn karaka(value: &Value) -> Option<CharaKaraka> {
     (!value.is_null()).then(|| Karaka::deserialize(value).unwrap().0)
 }
 
+/// The sign a sidereal longitude falls in, in a division under the SDK's
+/// classical scheme for it.
+pub(crate) fn varga_sign(varga: Varga, longitude: f64) -> Rashi {
+    let longitude = Nas::from_degrees(Degrees::try_new(longitude.rem_euclid(360.0)).unwrap());
+    sign(&Scheme::of(varga), longitude)
+}
+
 /// The navamsha sign of a sidereal longitude.
 pub(crate) fn navamsha(longitude: f64) -> Rashi {
-    let longitude = Nas::from_degrees(Degrees::try_new(longitude.rem_euclid(360.0)).unwrap());
-    sign(&Scheme::of(Varga::D9), longitude)
+    varga_sign(Varga::D9, longitude)
 }
 
 /// The chart a file repeats.
@@ -119,6 +125,20 @@ pub(crate) fn chart(inputs: &Value) -> RuleChart {
         panchanga: panchanga(&inputs["panchanga"]),
         strengths: None,
     }
+}
+
+/// The divisional charts BPHS ch. 39 reads the lagna in — the hora,
+/// drekkana, navamsha, dwadashamsha and trimshamsha — each computed from the
+/// recorded sidereal longitudes under the SDK's classical scheme for that
+/// division, the lagna's included.
+pub(crate) fn vargas(chart: &RuleChart) -> Vec<VargaSigns> {
+    [Varga::D2, Varga::D3, Varga::D9, Varga::D12, Varga::D30]
+        .into_iter()
+        .map(|varga| VargaSigns {
+            varga,
+            signs: Body::ALL.map(|body| varga_sign(varga, chart.placement(body).longitude)),
+        })
+        .collect()
 }
 
 /// The same chart with the Shadbala the corpus recorded for it, when it

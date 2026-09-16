@@ -89,7 +89,13 @@ fn a_house_gathers_every_rule_whose_grahas_stand_in_it() {
                 if !composition.strong {
                     assert!(reading.occupants.len() >= usize::from(composition.at_least));
                 }
-                assert_eq!(composition.source().rank.map(teistro_rules::EvidenceRank::get), Some(1));
+                assert_eq!(
+                    composition
+                        .source()
+                        .rank
+                        .map(teistro_rules::EvidenceRank::get),
+                    Some(1)
+                );
             }
         }
         // Every graha stands in exactly one house, so the twelve readings of a
@@ -112,20 +118,13 @@ fn a_house_gathers_every_rule_whose_grahas_stand_in_it() {
         .map(|(_, houses)| *houses)
         .sum();
     assert_eq!(crowded_houses, 48);
-    // What a consumer receives: 5217 rule results gathered under a house over
+    // What a consumer receives: 5731 rule results gathered under a house over
     // the 93 charts, and 455 statements of how to read them together.
-    assert_eq!((held, composed), (5217, 455));
+    assert_eq!((held, composed), (5731, 455));
 }
 
 /// How many houses of the 1116 hold each number of grahas.
-const OCCUPANTS: [(usize, usize); 6] = [
-    (0, 547),
-    (1, 365),
-    (2, 156),
-    (3, 35),
-    (4, 10),
-    (5, 3),
-];
+const OCCUPANTS: [(usize, usize); 6] = [(0, 547), (1, 365), (2, 156), (3, 35), (4, 10), (5, 3)];
 
 /// The texts say four things about reading a crowded house together and refuse
 /// a fifth; each is a verse, and the refusal is as much a result as the rest.
@@ -150,7 +149,12 @@ fn the_compositions_are_what_the_texts_say_and_one_of_them_is_a_refusal() {
         assert_eq!(source.rank.map(teistro_rules::EvidenceRank::get), Some(1));
         assert!(source.chapter.is_some() && source.verse.is_some());
         assert!(!composition.says.is_empty());
-        assert!(composition.houses.iter().all(|house| (1..=12).contains(house)));
+        assert!(
+            composition
+                .houses
+                .iter()
+                .all(|house| (1..=12).contains(house))
+        );
     }
     // The one refusal is Saravali's, and it bears only on the four angles it
     // declined to write.
@@ -244,13 +248,19 @@ const NAMED_SETS: [(&str, usize); 17] = [
     ("SARAVALI_LAGNADHI_FROM_THE_SIXTH", 0),
     ("SARAVALI_MARS_AND_SUN_IN_THE_SECOND", 0),
     ("SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND", 0),
-    ("SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON", 0),
+    (
+        "SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON",
+        0,
+    ),
     ("SARAVALI_MERCURY_AND_JUPITER_IN_THE_SEVENTH", 0),
     ("SARAVALI_MERCURY_AND_VENUS_IN_THE_SEVENTH", 7),
     ("SARAVALI_MERCURY_IN_THE_SECOND_ASPECTED_BY_THE_MOON", 0),
     ("SARAVALI_SATURN_ALONE_IN_THE_SECOND_ASPECTED_BY_MERCURY", 0),
     ("SARAVALI_SUN_IN_THE_SECOND_ASPECTED_BY_SATURN_ALONE", 1),
-    ("SARAVALI_THE_SECOND_FROM_THE_MOON_ASPECTED_BY_A_BENEFIC", 24),
+    (
+        "SARAVALI_THE_SECOND_FROM_THE_MOON_ASPECTED_BY_A_BENEFIC",
+        24,
+    ),
     ("SARAVALI_THREE_GRAHAS_IN_THE_LAGNA", 1),
     ("SARAVALI_THREE_MALEFICS_IN_THE_LAGNA", 0),
     ("SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY", 0),
@@ -300,9 +310,7 @@ fn exactly_one_fate_of_the_corpse_answers_a_chart() {
 fn the_wealth_combinations_answer_where_they_did() {
     let rules: Vec<Rule> = shipped::nabhasas()
         .iter()
-        .filter(|rule| {
-            rule.source.text == "BPHS" && rule.source.chapter.as_deref() == Some("41")
-        })
+        .filter(|rule| rule.source.text == "BPHS" && rule.source.chapter.as_deref() == Some("41"))
         .cloned()
         .collect();
     assert_eq!(rules.len(), 14);
@@ -315,9 +323,12 @@ fn the_wealth_combinations_answer_where_they_did() {
         for rule in &rules {
             if evaluator.evaluate(rule).present {
                 *fired.get_mut(rule.key.as_str()).unwrap() += 1;
-                if rule.source.verse.as_deref().is_some_and(|verse| {
-                    matches!(verse, "2" | "3" | "4" | "5" | "6" | "7" | "8")
-                }) {
+                if rule
+                    .source
+                    .verse
+                    .as_deref()
+                    .is_some_and(|verse| matches!(verse, "2" | "3" | "4" | "5" | "6" | "7" | "8"))
+                {
                     great += 1;
                 }
             }
@@ -332,15 +343,24 @@ fn the_wealth_combinations_answer_where_they_did() {
 
 /// What each answers over the 93 recorded charts.
 const WEALTH: [(&str, usize); 14] = [
-    ("BPHS_JUPITER_IN_A_FIFTH_OF_HIS_OWN_WITH_MERCURY_ELEVENTH", 0),
+    (
+        "BPHS_JUPITER_IN_A_FIFTH_OF_HIS_OWN_WITH_MERCURY_ELEVENTH",
+        0,
+    ),
     ("BPHS_JUPITER_RISING_IN_HIS_OWN_SIGN", 0),
     ("BPHS_MARS_IN_A_FIFTH_OF_HIS_OWN_WITH_VENUS_ELEVENTH", 0),
     ("BPHS_MARS_RISING_IN_HIS_OWN_SIGN", 0),
     ("BPHS_MERCURY_IN_A_FIFTH_OF_HIS_OWN_WITH_THREE_ELEVENTH", 0),
     ("BPHS_MERCURY_RISING_IN_HIS_OWN_SIGN", 1),
-    ("BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH", 0),
+    (
+        "BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH",
+        0,
+    ),
     ("BPHS_SATURN_RISING_IN_HIS_OWN_SIGN", 0),
-    ("BPHS_THE_MOON_IN_CANCER_AS_THE_FIFTH_WITH_SATURN_ELEVENTH", 0),
+    (
+        "BPHS_THE_MOON_IN_CANCER_AS_THE_FIFTH_WITH_SATURN_ELEVENTH",
+        0,
+    ),
     ("BPHS_THE_MOON_RISING_IN_CANCER", 0),
     ("BPHS_THE_SUN_IN_LEO_AS_THE_FIFTH_WITH_THREE_ELEVENTH", 0),
     ("BPHS_THE_SUN_RISING_IN_LEO", 0),
@@ -396,20 +416,41 @@ fn the_penury_combinations_answer_where_they_did() {
 /// cluster where they cast a special aspect on the twelfth (Jupiter in the
 /// fourth twelve times, Saturn in the third eight).
 const PENURY: [(&str, usize); 16] = [
-    ("BPHS_DISPOSITORS_OF_DUSTHANA_LORDS_AFFLICTED_IN_DUSTHANAS", 1),
-    ("BPHS_EIGHTH_OR_TWELFTH_ASPECTED_BY_KARAKAMSHA_LORD_AND_LAGNA_LORD", 18),
-    ("BPHS_FIFTH_LORD_IN_SIXTH_AND_NINTH_LORD_IN_TWELFTH_ASPECTED_BY_MARAKAS", 0),
+    (
+        "BPHS_DISPOSITORS_OF_DUSTHANA_LORDS_AFFLICTED_IN_DUSTHANAS",
+        1,
+    ),
+    (
+        "BPHS_EIGHTH_OR_TWELFTH_ASPECTED_BY_KARAKAMSHA_LORD_AND_LAGNA_LORD",
+        18,
+    ),
+    (
+        "BPHS_FIFTH_LORD_IN_SIXTH_AND_NINTH_LORD_IN_TWELFTH_ASPECTED_BY_MARAKAS",
+        0,
+    ),
     ("BPHS_LAGNA_AND_NAVAMSHA_LAGNA_LORDS_WITH_MARAKAS", 21),
     ("BPHS_LAGNA_AND_SIXTH_LORDS_EXCHANGED_WITH_A_MARAKA", 0),
     ("BPHS_LAGNA_AND_TWELFTH_LORDS_EXCHANGED_WITH_A_MARAKA", 0),
-    ("BPHS_LAGNA_LORD_WITH_A_DUSTHANA_LORD_OR_SATURN_UNASPECTED_BY_BENEFICS", 25),
-    ("BPHS_LAGNA_LORD_WITH_A_MALEFIC_IN_A_DUSTHANA_AND_SECOND_LORD_INIMICAL", 0),
+    (
+        "BPHS_LAGNA_LORD_WITH_A_DUSTHANA_LORD_OR_SATURN_UNASPECTED_BY_BENEFICS",
+        25,
+    ),
+    (
+        "BPHS_LAGNA_LORD_WITH_A_MALEFIC_IN_A_DUSTHANA_AND_SECOND_LORD_INIMICAL",
+        0,
+    ),
     ("BPHS_LAGNA_OR_MOON_WITH_KETU_AND_LAGNA_LORD_IN_EIGHTH", 5),
     ("BPHS_MALEFIC_IN_LAGNA_WITH_A_MARAKA", 19),
     ("BPHS_MARS_AND_SATURN_IN_SECOND", 0),
-    ("BPHS_MOON_NAVAMSHA_LORD_WITH_A_MARAKA_OR_IN_A_MARAKA_HOUSE", 40),
+    (
+        "BPHS_MOON_NAVAMSHA_LORD_WITH_A_MARAKA_OR_IN_A_MARAKA_HOUSE",
+        40,
+    ),
     ("BPHS_SATURN_IN_SECOND_ASPECTED_BY_SUN", 0),
     ("BPHS_SUN_IN_SECOND_ASPECTED_BY_SATURN", 2),
     ("BPHS_SUN_IN_SECOND_UNASPECTED_BY_SATURN", 10),
-    ("BPHS_TWELFTH_FROM_ATMAKARAKA_OR_LAGNA_ASPECTED_BY_ITS_LORD", 37),
+    (
+        "BPHS_TWELFTH_FROM_ATMAKARAKA_OR_LAGNA_ASPECTED_BY_ITS_LORD",
+        37,
+    ),
 ];

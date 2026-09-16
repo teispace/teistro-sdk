@@ -16,9 +16,9 @@
 mod common;
 
 use common::fixture;
+use teistro::catalogue::ChartKind;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rules::{Body, Evaluator, House, Readings, Rule, shipped};
-use teistro::catalogue::ChartKind;
 use teistro::{Context, Ephemeris, UtcOffset, rule_chart};
 
 /// The corpus's first chart, founded and stated.
@@ -122,7 +122,11 @@ fn a_consumer_can_evaluate_the_shipped_rules_and_read_a_house() {
     let karaka = shipped::nabhasas()
         .iter()
         .chain(shipped::readings())
-        .find(|rule| serde_json::to_string(&rule.conditions).unwrap().contains("karaka"));
+        .find(|rule| {
+            serde_json::to_string(&rule.conditions)
+                .unwrap()
+                .contains("karaka")
+        });
     if let Some(rule) = karaka {
         assert!(!evaluator.evaluate(rule).present, "{}", rule.key);
     }

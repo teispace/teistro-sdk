@@ -1306,6 +1306,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- BPHS ch. 39's raja yogas and ch. 40's yogas for royal association: 56
+  rules in a new `raja` category, and `count-of`, a counting quantifier that
+  shares `for-any`'s evaluation. The SDK ships 934 rules.
+
+  **Numbers:** v. 37's angular lord joining a trinal lord agrees with the
+  recording engine on all 42 answers over the 93 charts; the fifth and ninth
+  lords answer five wider, the verse adding mutual aspect. "Benefics in
+  angles" is not shipped: some benefic answers 67 charts and every benefic 5
+  (crux C100).
+
 - BPHS ch. 42's combinations for penury: fifteen rules in a new `daridra`
   category, with v. 17's other half (the Sun in the second unaspected by
   Saturn) as a `dhana` rule. The marakas of BPHS ch. 44 vv. 3 to 5 are a

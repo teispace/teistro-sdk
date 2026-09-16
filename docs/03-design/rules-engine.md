@@ -997,6 +997,36 @@ the third eight — every case geometrically right. Verse 17 reads the Sun in th
 second both ways, so its two halves partition the twelve charts with the Sun
 there, which a test holds.
 
+**BPHS chs. 39 and 40, the raja yogas and royal association (2026-09-16).**
+Fifty-six rules — forty from ch. 39, sixteen from ch. 40 — and one new
+construct. "Four or more planets aspect the Moon" (v. 42) and "one or two or
+three planets in exaltation" (v. 44) are counts over a condition no single
+predicate carries, so **`count-of`** binds each graha to `SELF` in turn, as
+`for-any` does, and holds when the number that meet it lies between `atLeast`
+and an optional `atMost`. `for-any` is `count-of` with at least one; the two
+share one loop in the evaluator. Exaltation, debilitation, own sign and own
+navamsha are written with references rather than recorded dignities —
+`same-sign SELF {"exaltationOf": SELF}`, `same-body {"lordOf": SELF} SELF` —
+so they read the sign and not a reading of the dignity. Verses 13 to 15 read
+the lagna in the hora, drekkana, navamsha, dwadashamsha and trimshamsha, which
+an evaluator given those divisions answers with `in-varga`.
+
+**Measured against the engine.** The recording engine's 146 raja rules cite
+chs. 24, 34, 36 and 41 and none of ch. 39's verses, so only the figures both
+carry are compared: v. 37's angular lord joining a trinal lord agrees on all
+42 answers, and vv. 33 and 34's fifth and ninth lords answer five charts
+wider, the verse adding mutual aspect and the seventh from each other to the
+engine's shared sign.
+
+**Left out.** The special lagnas (vv. 12, 15's first figure, 24, 25) and v.
+40's birth within an hour of midday or midnight want the birth's time and
+sunrise, which a rule chart does not carry. Verses 21's and 22's "benefics in
+angles", v. 43's Uttamamsa and ch. 40 v. 6's garbled karaka are readings the
+translation does not choose (crux C100). **What a consumer can reach** is
+narrower still: the SDK's bridge computes no chara karakas and hands the
+evaluator no divisions, so twenty of these rules answer false through
+`teistro::rule_chart` — the next slice.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-three answer none, and

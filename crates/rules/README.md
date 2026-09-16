@@ -114,6 +114,9 @@ cancellations held.
   these houses from the Moon" is `count-in-houses`. Papa and shubha kartari
   (Phaladeepika ch. 6 sl. 8) needed nothing new: they are two
   `planet-in-house-from` conditions over a class.
+- **A count over a condition.** `count-of` binds each graha to `SELF` and
+  holds when so many meet the condition, at least and at most: "four or more
+  planets aspect the Moon", "one or two or three exalted" (BPHS ch. 39).
 - **The marakas are a class.** `any-maraka` stands for BPHS ch. 44 vv. 3 to
   5's lords of the second and seventh with the malefics in or joining them;
   `planet-is` asks a body's class, and `count-in-houses`'s `except` keeps "the

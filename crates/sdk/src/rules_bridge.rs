@@ -88,13 +88,16 @@ fn graha_placement(
         ))
         .with_field("grahas")
     })?;
-    let state = states.iter().find(|state| state.graha == graha).ok_or_else(|| {
-        Error::invalid_arg(format!(
-            "the states carry no `{}`, whose dignity and combustion a rule chart needs",
-            graha.key()
-        ))
-        .with_field("states")
-    })?;
+    let state = states
+        .iter()
+        .find(|state| state.graha == graha)
+        .ok_or_else(|| {
+            Error::invalid_arg(format!(
+                "the states carry no `{}`, whose dignity and combustion a rule chart needs",
+                graha.key()
+            ))
+            .with_field("states")
+        })?;
     let longitude = position.longitude_deg.rem_euclid(360.0);
     Ok(Placement {
         longitude,

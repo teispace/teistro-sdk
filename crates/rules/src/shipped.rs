@@ -63,6 +63,8 @@ const BHAVA: &str = include_str!("../rules/classical-bhava.json");
 const CORPSE: &str = include_str!("../rules/classical-corpse.json");
 /// BPHS ch. 41's combinations for wealth.
 const DHANA: &str = include_str!("../rules/classical-dhana.json");
+/// BPHS ch. 39's raja yogas and ch. 40's yogas for royal association.
+const RAJA: &str = include_str!("../rules/classical-raja.json");
 /// BPHS ch. 42's combinations for penury.
 const PENURY: &str = include_str!("../rules/classical-penury.json");
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
@@ -107,6 +109,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(CORPSE));
     rules.append(&mut read(DHANA));
     rules.append(&mut read(PENURY));
+    rules.append(&mut read(RAJA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -198,7 +201,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 878);
+        assert_eq!(rules.len(), 934);
         for rule in &rules {
             let rank = rule
                 .source
@@ -257,7 +260,11 @@ mod tests {
             assert_eq!(rule.outcomes.len(), 2, "{}", rule.key);
             assert!(rule.effect().is_some(), "{}", rule.key);
             let span = rule.life_span().unwrap_or_else(|| panic!("{}", rule.key));
-            assert!((70.0 * 365.25..=100.0 * 365.25).contains(&span), "{}", rule.key);
+            assert!(
+                (70.0 * 365.25..=100.0 * 365.25).contains(&span),
+                "{}",
+                rule.key
+            );
         }
         assert!(EvidenceRank::try_new(0).is_err() && EvidenceRank::try_new(5).is_err());
     }
@@ -290,7 +297,10 @@ mod tests {
             .filter(|(_, count)| **count > 1)
             .map(|(key, _)| *key)
             .collect();
-        assert!(twice.is_empty(), "keys naming more than one rule: {twice:?}");
+        assert!(
+            twice.is_empty(),
+            "keys naming more than one rule: {twice:?}"
+        );
         assert_eq!(seen.len(), rules.len());
 
         // Every rule writes out in the language and reads back the same, so a
@@ -315,7 +325,7 @@ mod tests {
     }
 
     /// Every category the shipped rules use.
-    const CATEGORIES: [&str; 28] = [
+    const CATEGORIES: [&str; 29] = [
         "arishta",
         "arishta-bhanga",
         "arishta-father",
@@ -342,6 +352,7 @@ mod tests {
         "panchanga",
         "positional",
         "pravrajya",
+        "raja",
         "rising-part",
         "surya",
     ];

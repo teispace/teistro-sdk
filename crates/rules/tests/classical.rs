@@ -48,10 +48,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         );
     }
     // The spans the verses give, in the units they give them in.
-    let spans: Vec<f64> = rules
-        .iter()
-        .filter_map(|rule| rule.life_span())
-        .collect();
+    let spans: Vec<f64> = rules.iter().filter_map(|rule| rule.life_span()).collect();
     let graded: Vec<&str> = rules
         .iter()
         .filter(|rule| !rule.outcomes.is_empty())
@@ -96,7 +93,11 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
     assert_eq!(charts, 93);
     assert_eq!((cancelled, saravali_cancelled), (324, 8));
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
-    assert_eq!(counts.as_slice(), ANSWERED.as_slice(), "a rule's answers moved");
+    assert_eq!(
+        counts.as_slice(),
+        ANSWERED.as_slice(),
+        "a rule's answers moved"
+    );
 
     // A rule no chart answers has no positive case here, which is worth
     // saying: the corpus holds 93 births, the gandantas need ghatikas it does
@@ -154,9 +155,10 @@ fn saravali_evils_name_the_antidotes_of_their_own_text(rules: &[&Rule]) {
     };
     let (eleven, twelve) = (of_chapter("11"), of_chapter("12"));
     assert_eq!((eleven.len(), twelve.len()), (5, 6));
-    for rule in rules.iter().filter(|rule| {
-        rule.source.text == "Saravali" && rule.category == "arishta"
-    }) {
+    for rule in rules
+        .iter()
+        .filter(|rule| rule.source.text == "Saravali" && rule.category == "arishta")
+    {
         // Whichever way a condition reaches her — as a subject, as an
         // aspecting body, as the sign counted from — she is written `MOON`.
         let written = serde_json::to_string(&rule.conditions).unwrap();
@@ -292,13 +294,25 @@ const ANSWERED: [(&str, usize); 77] = [
     ("LAGNA_GANDANTA", 0),
     ("NAKSHATRA_GANDANTA", 0),
     ("SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS", 0),
-    ("SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON", 48),
-    ("SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA", 0),
+    (
+        "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON",
+        48,
+    ),
+    (
+        "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA",
+        0,
+    ),
     ("SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS", 6),
     ("SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON", 0),
     ("SARAVALI_BHANGA_MOON_ASPECTED_BY_HER_DISPOSITOR", 5),
-    ("SARAVALI_BHANGA_MOON_IN_A_BENEFIC_SIGN_ASPECTED_BY_THE_LAGNA_LORD", 4),
-    ("SARAVALI_BHANGA_MOON_IN_THE_THIRD_FOURTH_SIXTH_TENTH_OR_ELEVENTH", 5),
+    (
+        "SARAVALI_BHANGA_MOON_IN_A_BENEFIC_SIGN_ASPECTED_BY_THE_LAGNA_LORD",
+        4,
+    ),
+    (
+        "SARAVALI_BHANGA_MOON_IN_THE_THIRD_FOURTH_SIXTH_TENTH_OR_ELEVENTH",
+        5,
+    ),
     ("SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER", 2),
     ("SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH", 11),
     ("SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA", 5),
@@ -354,7 +368,11 @@ fn the_generator_makes_one_rule_a_reading() {
     }
     assert_eq!(charts, 93);
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
-    assert_eq!(counts.as_slice(), READINGS.as_slice(), "a reading's answers moved");
+    assert_eq!(
+        counts.as_slice(),
+        READINGS.as_slice(),
+        "a reading's answers moved"
+    );
     // Varahamihira's pair and Jataka Parijata's are the same figure read
     // twice, so the two answer the same charts, reading for reading.
     let answered = |prefix: &str| -> Vec<usize> {
@@ -419,7 +437,10 @@ fn the_generator_makes_one_rule_a_reading() {
             .find(|(one, _)| *one == key)
             .map_or(0, |(_, count)| *count)
     };
-    for (key, conjunct) in counts.iter().filter(|(key, _)| key.starts_with("DWIGRAHA_")) {
+    for (key, conjunct) in counts
+        .iter()
+        .filter(|(key, _)| key.starts_with("DWIGRAHA_"))
+    {
         let pair = key.strip_prefix("DWIGRAHA_").unwrap();
         let in_angles: usize = [1, 4, 7, 10]
             .into_iter()
@@ -566,7 +587,10 @@ const READINGS: [(&str, usize); 632] = [
     ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER", 1),
     ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_SATURN", 0),
     ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS", 0),
-    ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS_SATURN", 0),
+    (
+        "PARIJATA_TOGETHER_MOON_MARS_MERCURY_JUPITER_VENUS_SATURN",
+        0,
+    ),
     ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_SATURN", 0),
     ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_VENUS", 1),
     ("PARIJATA_TOGETHER_MOON_MARS_MERCURY_VENUS_SATURN", 0),
@@ -1093,7 +1117,11 @@ fn every_family_is_whole(rules: &[Rule]) {
             rule.key
         );
         assert!(rule.source.verse.is_some(), "{}: cites a verse", rule.key);
-        assert!(rule.source.note.is_some(), "{}: says how it was read", rule.key);
+        assert!(
+            rule.source.note.is_some(),
+            "{}: says how it was read",
+            rule.key
+        );
         assert!(
             rule.severity.is_none() && rule.cancellations.is_empty(),
             "{}: a reading grades nothing and nothing cancels it",
@@ -1123,7 +1151,12 @@ fn every_family_is_whole(rules: &[Rule]) {
                 *rising.entry(rest.split('_').next().unwrap()).or_default() += 1;
             }
             "graha-in-bhava" => {
-                let (graha, _) = rule.key.strip_prefix("SARAVALI_").unwrap().split_once("_IN_BHAVA_").unwrap();
+                let (graha, _) = rule
+                    .key
+                    .strip_prefix("SARAVALI_")
+                    .unwrap()
+                    .split_once("_IN_BHAVA_")
+                    .unwrap();
                 *in_bhava.entry(graha).or_default() += 1;
             }
             other => panic!("{}: {other} is not a family here", rule.key),
@@ -1137,10 +1170,11 @@ fn every_family_is_whole(rules: &[Rule]) {
     seen.dedup();
     assert_eq!(seen.len(), 21);
     assert_eq!(moon.len(), 72);
-    let signs: BTreeMap<&str, usize> = moon.iter().fold(BTreeMap::new(), |mut counted, (sign, _)| {
-        *counted.entry(*sign).or_default() += 1;
-        counted
-    });
+    let signs: BTreeMap<&str, usize> =
+        moon.iter().fold(BTreeMap::new(), |mut counted, (sign, _)| {
+            *counted.entry(*sign).or_default() += 1;
+            counted
+        });
     assert_eq!(signs.len(), 12);
     assert!(signs.values().all(|count| *count == 6));
     // Every combination of the seven from two to six, once each: 21, 35, 35,
@@ -1164,7 +1198,6 @@ fn every_family_is_whole(rules: &[Rule]) {
         rising.into_iter().collect::<Vec<_>>(),
         [("DECANATE", 36), ("HORA", 24), ("NAVAMSA", 108)]
     );
-
 }
 
 /// The two names a generated key holds, after its family's prefix: the pair,
@@ -1188,10 +1221,12 @@ fn the_rules_that_read_a_sign_s_aspect_and_an_intervention_answer_where_they_did
     let rules: Vec<&Rule> = shipped::nabhasas()
         .iter()
         // The two chapters that read them: ch. 29's gains of the pada and
-        // ch. 39's associations. Category alone is too wide — Saravali's
-        // wealth readings and BPHS ch. 41's share it and read neither.
+        // ch. 39's associations. Chapters, because Saravali's wealth readings
+        // and BPHS ch. 41's share ch. 29's category; and not the raja yogas,
+        // which share ch. 39 and read neither.
         .filter(|rule| {
-            rule.source.text == "BPHS"
+            rule.category != "raja"
+                && rule.source.text == "BPHS"
                 && matches!(rule.source.chapter.as_deref(), Some("29" | "39"))
         })
         .collect();
@@ -1199,10 +1234,7 @@ fn the_rules_that_read_a_sign_s_aspect_and_an_intervention_answer_where_they_did
     // The three that name an intervention read a strength, an intervention
     // being settled by the numbers of grahas or by which is stronger; the two
     // associations and the two gains that only count grahas do not.
-    assert_eq!(
-        rules.iter().filter(|rule| rule.reads_strength()).count(),
-        3
-    );
+    assert_eq!(rules.iter().filter(|rule| rule.reads_strength()).count(), 3);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -1234,8 +1266,7 @@ fn the_rules_that_read_a_sign_s_aspect_and_an_intervention_answer_where_they_did
     // benefic's, then an exalted benefic's.
     let at = |key: &str| counts.iter().find(|(k, _)| *k == key).unwrap().1;
     assert!(
-        at("ARUDHA_GAINS_WITH_ARGALA")
-            >= at("ARUDHA_GAINS_WITH_BENEFIC_ARGALA")
+        at("ARUDHA_GAINS_WITH_ARGALA") >= at("ARUDHA_GAINS_WITH_BENEFIC_ARGALA")
             && at("ARUDHA_GAINS_WITH_BENEFIC_ARGALA")
                 >= at("ARUDHA_GAINS_WITH_EXALTED_BENEFIC_ARGALA")
     );
