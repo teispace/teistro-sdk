@@ -47,7 +47,7 @@ const BALARISHTA: &str = include_str!("../rules/classical-balarishta.json");
 const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
 /// twenty-one pairs and Phaladeepika ch. 18's Moon in each sign, aspected.
-const DWIGRAHA: &str = include_str!("../rules/classical-dwigraha.json");
+const DWIGRAHA: &str = include_str!("../rules/classical-readings.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -151,7 +151,7 @@ mod tests {
             .chain(arishtas())
             .chain(readings())
             .collect();
-        assert_eq!(rules.len(), 393);
+        assert_eq!(rules.len(), 477);
         for rule in &rules {
             let rank = rule
                 .source

@@ -483,7 +483,7 @@ exaltation, the divisions of benefics, a planetary war's victor, a halo, the
 weather at birth, the Saptarishis rising, and every planet in its own
 decanate.
 
-**One shape, ninety-three rules (2026-09-16).** Brihat Jataka ch. 14 reads
+**One shape, many rules (2026-09-16).** Brihat Jataka ch. 14 reads
 every pair of the seven grahas sharing a sign — twenty-one readings, which
 Phaladeepika ch. 18 vv. 1 to 5 repeats almost word for word — and Phaladeepika
 ch. 18 vv. 6 to 11 reads the Moon in each of the twelve signs under each of six
@@ -499,7 +499,7 @@ SDK still invents no number.
 The conditions repeat, so the ninety-three rules are built from a table of what
 changes: the pair, the sign, the aspecting graha and the reading. That is the
 whole of `crates/rules/src/dwigraha.rs`, and the table is
-`rules/classical-dwigraha.json`. Brihat Jataka ch. 14 v. 5 closes by saying
+`rules/classical-readings.json`. Brihat Jataka ch. 14 v. 5 closes by saying
 that three or more grahas together are read as the pairs they contain, which is
 what one rule a pair does of itself: four in a sign answer six of them.
 
@@ -516,16 +516,23 @@ graha. Those chapters also read the same graha under each other graha's aspect,
 and ch. 23 v. 88 makes the whole of them wait on the strength of the sign, its
 lord and the graha; neither is here, for want of a strength measure.
 
+Saravali ch. 30 adds the last of the shapes: each graha in each of the twelve
+bhavas, eighty-four more. Its closing verses say that malefics harm the bhava
+they occupy except in the sixth, eighth and twelfth, and that all of these
+readings vary with strength, dignity and aspect; neither is here.
+
 A test holds the generator to its table — twenty-one distinct pairs, twelve
 signs of six aspects each, every combination of each size once, each of the
-seven in each of the twelve signs, every rule
+seven in each of the twelve signs and in each of the twelve bhavas, every rule
 evaluable, rank 1, citing where it was read, carrying words and no severity and
-no cancellation — and pins what each answers over the 93 charts. Eighty-four
+no cancellation — and pins what each answers over the 93 charts. Eighty-six
 stay silent, among them all six readings of an Aries Moon, who stands there in
 one chart and is aspected by nobody, and the larger assemblies, which want four
-grahas or more in one sign. A graha stands in exactly one sign in every chart,
-so each of Saravali's chapters answers 93 times over the 93 — an arithmetic the
-test holds, and which caught nothing because the reader was already right. Varahamihira's twenty-one pairs and Jataka
+grahas or more in one sign, and two houses no graha of the seven reached in
+these births. A graha stands in exactly one sign and in exactly one
+house in every chart, so each of Saravali's two families answers 93 times a
+graha over the 93 — an arithmetic the test holds, and which ties the reader to
+the corpus rather than to itself. Varahamihira's twenty-one pairs and Jataka
 Parijata's are the same figure read twice, so the test holds them to the same
 answers, reading for reading; they differ only in what they say of the native.
 

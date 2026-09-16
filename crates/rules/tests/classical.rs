@@ -315,7 +315,7 @@ const ANSWERED: [(&str, usize); 72] = [
 #[test]
 fn the_generator_makes_one_rule_a_reading() {
     let rules = shipped::readings();
-    assert_eq!(rules.len(), 296);
+    assert_eq!(rules.len(), 380);
     every_family_is_whole(rules);
     // What the generator builds is a rule like any other: it writes out in the
     // language and reads back the same, outcome and all.
@@ -356,26 +356,35 @@ fn the_generator_makes_one_rule_a_reading() {
     assert_eq!(varahamihira.len(), 21);
     assert_eq!(varahamihira, parijata);
     // Every pair of grahas, and every graha in every sign, happens somewhere
-    // in 93 charts. 84 readings stay silent: 35 of the Moon's 72, among them
-    // all six of Aries, where she stands in one chart only and nothing aspects
-    // her, and the larger assemblies, which want four grahas or more in one
-    // sign.
+    // in 93 charts. Eighty-six readings stay silent: 35 of the Moon's 72,
+    // among them all six of Aries, where she stands in one chart only and
+    // nothing aspects her; the larger assemblies, which want four grahas or
+    // more in one sign; and two houses no graha of the seven reached.
     let silent = counts.iter().filter(|(_, count)| *count == 0).count();
-    assert_eq!(silent, 84);
+    assert_eq!(silent, 86);
     // A graha stands in exactly one sign in every chart, so each of Saravali's
     // chapters answers 93 times over the 93.
-    let mut by_graha: BTreeMap<&str, usize> = BTreeMap::new();
+    // A graha stands in exactly one sign and in exactly one house in every
+    // chart, so each of Saravali's two families answers 93 times a graha over
+    // the 93 — an arithmetic that holds the reader against the corpus.
+    let mut by_family: BTreeMap<(&str, bool), usize> = BTreeMap::new();
     for (key, count) in &counts {
         if let Some(rest) = key.strip_prefix("SARAVALI_") {
-            *by_graha.entry(named(rest, "").0).or_default() += count;
+            let (graha, place) = rest.split_once("_IN_").unwrap();
+            *by_family
+                .entry((graha, place.starts_with("BHAVA_")))
+                .or_default() += count;
         }
     }
-    assert_eq!(by_graha.len(), 7);
-    assert!(by_graha.values().all(|total| *total == 93), "{by_graha:?}");
+    assert_eq!(by_family.len(), 14);
+    assert!(
+        by_family.values().all(|total| *total == 93),
+        "{by_family:?}"
+    );
 }
 
 /// What each reading answers over the 93 recorded charts.
-const READINGS: [(&str, usize); 296] = [
+const READINGS: [(&str, usize); 380] = [
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_JUPITER", 0),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MARS", 2),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MERCURY", 1),
@@ -590,6 +599,18 @@ const READINGS: [(&str, usize); 296] = [
     ("PARIJATA_TOGETHER_VENUS_SATURN", 8),
     ("SARAVALI_JUPITER_IN_AQUARIUS", 3),
     ("SARAVALI_JUPITER_IN_ARIES", 8),
+    ("SARAVALI_JUPITER_IN_BHAVA_1", 5),
+    ("SARAVALI_JUPITER_IN_BHAVA_10", 3),
+    ("SARAVALI_JUPITER_IN_BHAVA_11", 0),
+    ("SARAVALI_JUPITER_IN_BHAVA_12", 3),
+    ("SARAVALI_JUPITER_IN_BHAVA_2", 1),
+    ("SARAVALI_JUPITER_IN_BHAVA_3", 12),
+    ("SARAVALI_JUPITER_IN_BHAVA_4", 23),
+    ("SARAVALI_JUPITER_IN_BHAVA_5", 16),
+    ("SARAVALI_JUPITER_IN_BHAVA_6", 5),
+    ("SARAVALI_JUPITER_IN_BHAVA_7", 4),
+    ("SARAVALI_JUPITER_IN_BHAVA_8", 14),
+    ("SARAVALI_JUPITER_IN_BHAVA_9", 7),
     ("SARAVALI_JUPITER_IN_CANCER", 4),
     ("SARAVALI_JUPITER_IN_CAPRICORN", 12),
     ("SARAVALI_JUPITER_IN_GEMINI", 15),
@@ -602,6 +623,18 @@ const READINGS: [(&str, usize); 296] = [
     ("SARAVALI_JUPITER_IN_VIRGO", 11),
     ("SARAVALI_MARS_IN_AQUARIUS", 16),
     ("SARAVALI_MARS_IN_ARIES", 4),
+    ("SARAVALI_MARS_IN_BHAVA_1", 3),
+    ("SARAVALI_MARS_IN_BHAVA_10", 18),
+    ("SARAVALI_MARS_IN_BHAVA_11", 5),
+    ("SARAVALI_MARS_IN_BHAVA_12", 14),
+    ("SARAVALI_MARS_IN_BHAVA_2", 10),
+    ("SARAVALI_MARS_IN_BHAVA_3", 8),
+    ("SARAVALI_MARS_IN_BHAVA_4", 9),
+    ("SARAVALI_MARS_IN_BHAVA_5", 3),
+    ("SARAVALI_MARS_IN_BHAVA_6", 12),
+    ("SARAVALI_MARS_IN_BHAVA_7", 5),
+    ("SARAVALI_MARS_IN_BHAVA_8", 2),
+    ("SARAVALI_MARS_IN_BHAVA_9", 4),
     ("SARAVALI_MARS_IN_CANCER", 1),
     ("SARAVALI_MARS_IN_CAPRICORN", 7),
     ("SARAVALI_MARS_IN_GEMINI", 6),
@@ -614,6 +647,18 @@ const READINGS: [(&str, usize); 296] = [
     ("SARAVALI_MARS_IN_VIRGO", 2),
     ("SARAVALI_MERCURY_IN_AQUARIUS", 7),
     ("SARAVALI_MERCURY_IN_ARIES", 21),
+    ("SARAVALI_MERCURY_IN_BHAVA_1", 5),
+    ("SARAVALI_MERCURY_IN_BHAVA_10", 7),
+    ("SARAVALI_MERCURY_IN_BHAVA_11", 3),
+    ("SARAVALI_MERCURY_IN_BHAVA_12", 6),
+    ("SARAVALI_MERCURY_IN_BHAVA_2", 10),
+    ("SARAVALI_MERCURY_IN_BHAVA_3", 10),
+    ("SARAVALI_MERCURY_IN_BHAVA_4", 5),
+    ("SARAVALI_MERCURY_IN_BHAVA_5", 6),
+    ("SARAVALI_MERCURY_IN_BHAVA_6", 22),
+    ("SARAVALI_MERCURY_IN_BHAVA_7", 8),
+    ("SARAVALI_MERCURY_IN_BHAVA_8", 3),
+    ("SARAVALI_MERCURY_IN_BHAVA_9", 8),
     ("SARAVALI_MERCURY_IN_CANCER", 14),
     ("SARAVALI_MERCURY_IN_CAPRICORN", 6),
     ("SARAVALI_MERCURY_IN_GEMINI", 1),
@@ -626,6 +671,18 @@ const READINGS: [(&str, usize); 296] = [
     ("SARAVALI_MERCURY_IN_VIRGO", 10),
     ("SARAVALI_MOON_IN_AQUARIUS", 4),
     ("SARAVALI_MOON_IN_ARIES", 1),
+    ("SARAVALI_MOON_IN_BHAVA_1", 9),
+    ("SARAVALI_MOON_IN_BHAVA_10", 0),
+    ("SARAVALI_MOON_IN_BHAVA_11", 6),
+    ("SARAVALI_MOON_IN_BHAVA_12", 5),
+    ("SARAVALI_MOON_IN_BHAVA_2", 5),
+    ("SARAVALI_MOON_IN_BHAVA_3", 23),
+    ("SARAVALI_MOON_IN_BHAVA_4", 9),
+    ("SARAVALI_MOON_IN_BHAVA_5", 4),
+    ("SARAVALI_MOON_IN_BHAVA_6", 3),
+    ("SARAVALI_MOON_IN_BHAVA_7", 5),
+    ("SARAVALI_MOON_IN_BHAVA_8", 12),
+    ("SARAVALI_MOON_IN_BHAVA_9", 12),
     ("SARAVALI_MOON_IN_CANCER", 5),
     ("SARAVALI_MOON_IN_CAPRICORN", 8),
     ("SARAVALI_MOON_IN_GEMINI", 6),
@@ -638,6 +695,18 @@ const READINGS: [(&str, usize); 296] = [
     ("SARAVALI_MOON_IN_VIRGO", 11),
     ("SARAVALI_SATURN_IN_AQUARIUS", 5),
     ("SARAVALI_SATURN_IN_ARIES", 14),
+    ("SARAVALI_SATURN_IN_BHAVA_1", 3),
+    ("SARAVALI_SATURN_IN_BHAVA_10", 1),
+    ("SARAVALI_SATURN_IN_BHAVA_11", 21),
+    ("SARAVALI_SATURN_IN_BHAVA_12", 4),
+    ("SARAVALI_SATURN_IN_BHAVA_2", 7),
+    ("SARAVALI_SATURN_IN_BHAVA_3", 22),
+    ("SARAVALI_SATURN_IN_BHAVA_4", 9),
+    ("SARAVALI_SATURN_IN_BHAVA_5", 4),
+    ("SARAVALI_SATURN_IN_BHAVA_6", 6),
+    ("SARAVALI_SATURN_IN_BHAVA_7", 6),
+    ("SARAVALI_SATURN_IN_BHAVA_8", 5),
+    ("SARAVALI_SATURN_IN_BHAVA_9", 5),
     ("SARAVALI_SATURN_IN_CANCER", 5),
     ("SARAVALI_SATURN_IN_CAPRICORN", 20),
     ("SARAVALI_SATURN_IN_GEMINI", 3),
@@ -650,6 +719,18 @@ const READINGS: [(&str, usize); 296] = [
     ("SARAVALI_SATURN_IN_VIRGO", 11),
     ("SARAVALI_SUN_IN_AQUARIUS", 7),
     ("SARAVALI_SUN_IN_ARIES", 15),
+    ("SARAVALI_SUN_IN_BHAVA_1", 4),
+    ("SARAVALI_SUN_IN_BHAVA_10", 7),
+    ("SARAVALI_SUN_IN_BHAVA_11", 6),
+    ("SARAVALI_SUN_IN_BHAVA_12", 4),
+    ("SARAVALI_SUN_IN_BHAVA_2", 12),
+    ("SARAVALI_SUN_IN_BHAVA_3", 5),
+    ("SARAVALI_SUN_IN_BHAVA_4", 13),
+    ("SARAVALI_SUN_IN_BHAVA_5", 1),
+    ("SARAVALI_SUN_IN_BHAVA_6", 17),
+    ("SARAVALI_SUN_IN_BHAVA_7", 14),
+    ("SARAVALI_SUN_IN_BHAVA_8", 6),
+    ("SARAVALI_SUN_IN_BHAVA_9", 4),
     ("SARAVALI_SUN_IN_CANCER", 11),
     ("SARAVALI_SUN_IN_CAPRICORN", 6),
     ("SARAVALI_SUN_IN_GEMINI", 11),
@@ -662,6 +743,18 @@ const READINGS: [(&str, usize); 296] = [
     ("SARAVALI_SUN_IN_VIRGO", 2),
     ("SARAVALI_VENUS_IN_AQUARIUS", 13),
     ("SARAVALI_VENUS_IN_ARIES", 2),
+    ("SARAVALI_VENUS_IN_BHAVA_1", 3),
+    ("SARAVALI_VENUS_IN_BHAVA_10", 2),
+    ("SARAVALI_VENUS_IN_BHAVA_11", 4),
+    ("SARAVALI_VENUS_IN_BHAVA_12", 16),
+    ("SARAVALI_VENUS_IN_BHAVA_2", 3),
+    ("SARAVALI_VENUS_IN_BHAVA_3", 6),
+    ("SARAVALI_VENUS_IN_BHAVA_4", 14),
+    ("SARAVALI_VENUS_IN_BHAVA_5", 7),
+    ("SARAVALI_VENUS_IN_BHAVA_6", 2),
+    ("SARAVALI_VENUS_IN_BHAVA_7", 11),
+    ("SARAVALI_VENUS_IN_BHAVA_8", 18),
+    ("SARAVALI_VENUS_IN_BHAVA_9", 7),
     ("SARAVALI_VENUS_IN_CANCER", 7),
     ("SARAVALI_VENUS_IN_CAPRICORN", 12),
     ("SARAVALI_VENUS_IN_GEMINI", 8),
@@ -684,6 +777,7 @@ fn every_family_is_whole(rules: &[Rule]) {
     let mut together: BTreeMap<usize, usize> = BTreeMap::new();
     // Saravali's chapters, by the graha each is about.
     let mut in_rasi: BTreeMap<&str, usize> = BTreeMap::new();
+    let mut in_bhava: BTreeMap<&str, usize> = BTreeMap::new();
     for rule in rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -716,6 +810,10 @@ fn every_family_is_whole(rules: &[Rule]) {
                 *together.entry(planets.len()).or_default() += 1;
             }
             "graha-in-rasi" => *in_rasi.entry(named(&rule.key, "SARAVALI_").0).or_default() += 1,
+            "graha-in-bhava" => {
+                let (graha, _) = rule.key.strip_prefix("SARAVALI_").unwrap().split_once("_IN_BHAVA_").unwrap();
+                *in_bhava.entry(graha).or_default() += 1;
+            }
             other => panic!("{}: {other} is not a family here", rule.key),
         }
     }
@@ -742,6 +840,8 @@ fn every_family_is_whole(rules: &[Rule]) {
     // Each of the seven in each of the twelve signs, once.
     assert_eq!(in_rasi.len(), 7);
     assert!(in_rasi.values().all(|count| *count == 12));
+    assert_eq!(in_bhava.len(), 7);
+    assert!(in_bhava.values().all(|count| *count == 12));
 
 }
 

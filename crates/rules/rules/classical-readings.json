@@ -876,5 +876,384 @@
         ]
       }
     ]
+  },
+  "inBhava": {
+    "text": "Saravali",
+    "chapter": "30",
+    "rank": 1,
+    "note": "A graha in a bhava, and what the verse says of the native. Read from R. Santhanam's translation of Kalyana Varma's Saravali, the houses in order from the ascendant. The chapter closes (vv. 86 to 87) by saying that malefics harm the bhava they occupy except the sixth, eighth and twelfth, and that the whole of these readings vary with strength, dignity and aspect; neither is here, the kernel having no strength measure.",
+    "grahas": [
+      {
+        "planet": "SUN",
+        "readings": [
+          {
+            "verse": "2",
+            "effect": "of little hair, lazy in his work, given to anger, of prominent personality, honourable, weak of sight, coarse of body, courageous, impatient and unkind; swollen of eye in a Cancer lagna, weak of sight in an Aries, night-blind in a Leo, and poor and bereft of children in a Libra"
+          },
+          {
+            "verse": "3",
+            "effect": "furnished with servants and cattle, suffering in the face, deprived of happiness and wealth, and losing money by the king's displeasure or by thieves"
+          },
+          {
+            "verse": "4",
+            "effect": "valorous, strong, losing his brothers, dear to the people, good-looking, very learned, and a conqueror of his enemies"
+          },
+          {
+            "verse": "5",
+            "effect": "without conveyances or relatives, suffering in the heart, a destroyer of his father's house and wealth, and the servant of a bad king"
+          },
+          {
+            "verse": "6",
+            "effect": "bereft of happiness, sons and wealth, living by husbandry, moving in hills and fortresses, fickle, scholarly, weak and short-lived"
+          },
+          {
+            "verse": "7",
+            "effect": "very libidinous, of a powerful digestion, strong, affluent, famous for his virtues, and either a king or a chief of an army"
+          },
+          {
+            "verse": "8",
+            "effect": "poor, insulted, diseased in body, suffering the king's displeasure and imprisonment, taking to bad ways, and ill disposed to his wife"
+          },
+          {
+            "verse": "9",
+            "effect": "deformed of eye, devoid of wealth and happiness, short-lived, and parted from his relatives"
+          },
+          {
+            "verse": "10",
+            "effect": "furnished with wealth, children and friends, much given to the worship of the gods and of Brahmins, ill disposed to his father and his wife, and not calm"
+          },
+          {
+            "verse": "11",
+            "effect": "extremely intelligent, rich, strong, furnished with conveyances, relatives and sons, successful in what he undertakes, valorous, unconquerable and great"
+          },
+          {
+            "verse": "12",
+            "effect": "bent on gathering money, strong, a hater of others, without servants and a servant himself, unaffectionate, modest, and successful in what he undertakes"
+          },
+          {
+            "verse": "13",
+            "effect": "deformed of body, one-eyed, morally fallen, married to a barren woman, at enmity with his father, weak and mean"
+          }
+        ]
+      },
+      {
+        "planet": "MOON",
+        "readings": [
+          {
+            "verse": "14",
+            "effect": "liberal, beautiful, rich and greatly pleasured when the lagna is Cancer, Taurus or Aries, and in any other sign intensely passionate, base, deaf, distressed, dumb and declining"
+          },
+          {
+            "verse": "15",
+            "effect": "enjoying incomparable happiness and friends, and wealthy; very affluent and sparing of speech when she is full"
+          },
+          {
+            "verse": "16",
+            "effect": "a protector of his brothers, always delighted, valorous, and furnished with learning, robes and food"
+          },
+          {
+            "verse": "17",
+            "effect": "furnished with relatives, paraphernalia and conveyances, charitable, fond of travel by water, and neither very happy nor miserable"
+          },
+          {
+            "verse": "18",
+            "effect": "timid of disposition, earning learning, clothes and food, of many sons and friends, a scholar, and passionate"
+          },
+          {
+            "verse": "19",
+            "effect": "suffering in the stomach; short-lived when she is weak"
+          },
+          {
+            "verse": "20",
+            "effect": "amiable, happy, of a good physique and sensuous; pitiable and weak when she is weak"
+          },
+          {
+            "verse": "21",
+            "effect": "very intelligent, very splendid and diseased; short-lived when she is weak"
+          },
+          {
+            "verse": "22",
+            "effect": "devoted to divine and paternal duties, furnished with happiness, wealth, intelligence and sons, and attractive to women"
+          },
+          {
+            "verse": "23",
+            "effect": "free of grief, dutiful, successful in what he undertakes, affluent, pure, very strong, valorous and charitable"
+          },
+          {
+            "verse": "24",
+            "effect": "wealthy, of many sons, long-lived, attended by servants, intelligent, sharp, valorous and splendid"
+          },
+          {
+            "verse": "25",
+            "effect": "odious, morally fallen, mean, suffering in the eyes, indolent, distressed, born of another's loins, and insulted at all times"
+          }
+        ]
+      },
+      {
+        "planet": "MARS",
+        "readings": [
+          {
+            "verse": "26",
+            "effect": "cruel, adventurous, dull-witted, short-lived, honourable, courageous, injured in body, attractive of appearance, and fickle"
+          },
+          {
+            "verse": "27",
+            "effect": "poor, eating bad food, ugly of face, a joiner of bad men, and unlearned"
+          },
+          {
+            "verse": "28",
+            "effect": "courageous, unconquerable, bereft of brothers, delighted, possessed of all the virtues, and famous"
+          },
+          {
+            "verse": "29",
+            "effect": "without relatives, paraphernalia or conveyances, very miserable, living in other men's houses, and distressed"
+          },
+          {
+            "verse": "30",
+            "effect": "devoid of happiness, wealth and sons, fickle, a tale-bearer, beset by evils, wicked, distressed and mean"
+          },
+          {
+            "verse": "31",
+            "effect": "highly libidinous, of a powerful digestion, beautiful, tall, strong, and great among his relatives"
+          },
+          {
+            "verse": "32",
+            "effect": "losing his wife, diseased, taking to bad ways, miserable, sinful, devoid of wealth, distressed and emaciated"
+          },
+          {
+            "verse": "33",
+            "effect": "diseased, short-lived, ugly or deformed of body, a doer of base acts, and grieved"
+          },
+          {
+            "verse": "34",
+            "effect": "unskilful in his acts, odious, a killer of living beings, unvirtuous, very sinful, and honoured by the king"
+          },
+          {
+            "verse": "35",
+            "effect": "proficient in his acts, valorous, unconquerable, a servant of important people, furnished with sons and happiness, and very courageous"
+          },
+          {
+            "verse": "36",
+            "effect": "virtuous, happy, courageous, furnished with wealth, grain and sons, and free of sorrow"
+          },
+          {
+            "verse": "37",
+            "effect": "diseased in the eyes, morally fallen, a killer of his wife, a tale-bearer, fierce, and meeting humiliation and imprisonment"
+          }
+        ]
+      },
+      {
+        "planet": "MERCURY",
+        "readings": [
+          {
+            "verse": "38",
+            "effect": "flawless of body, intelligent, knowing the right place and time, well versed in poetry and mathematics, a skilful and sweet speaker, and long-lived"
+          },
+          {
+            "verse": "39",
+            "effect": "earning wealth by his own wisdom, enjoying food and drink, auspicious of speech, and of good conduct"
+          },
+          {
+            "verse": "40",
+            "effect": "always toiling hard, without near or dear, skilful, furnished with brothers, very cunning and fickle"
+          },
+          {
+            "verse": "41",
+            "effect": "furnished with money and relatives, fortunate, possessed of conveyances and all paraphernalia, and very learned"
+          },
+          {
+            "verse": "42",
+            "effect": "expert in mantras and in malevolent spells, of many sons, furnished with learning, happiness and efficacy, and delighted"
+          },
+          {
+            "verse": "43",
+            "effect": "always successful in litigation and dispute, diseased, indolent, slow to anger, harsh of speech, and much insulted"
+          },
+          {
+            "verse": "44",
+            "effect": "himself very great, and wived by a woman very learned and beautiful though not well descended, quarrelsome and very affluent"
+          },
+          {
+            "verse": "45",
+            "effect": "winning famous titles, strong, long-lived, the support of his family, and the equal of a king or a justice"
+          },
+          {
+            "verse": "46",
+            "effect": "very affluent, scholarly, of good conduct, eloquent, greatly skilful and virtuous"
+          },
+          {
+            "verse": "47",
+            "effect": "of distinguished intelligence, a doer of distinguished acts, coming to fruition in what he undertakes, very learned, courageous, strong, and furnished with ornaments of many kinds"
+          },
+          {
+            "verse": "48",
+            "effect": "rich, an amicable worker, learned, happy, widely enjoying, long-lived and famous"
+          },
+          {
+            "verse": "49",
+            "effect": "keeping his promise, indolent, humiliated, a good speaker, learned, pitiable and cruel"
+          }
+        ]
+      },
+      {
+        "planet": "JUPITER",
+        "readings": [
+          {
+            "verse": "50",
+            "effect": "attractive of appearance, energetic, long-lived, acting after weighing the consequence, learned, courageous and great"
+          },
+          {
+            "verse": "51",
+            "effect": "rich, enjoying good food, eloquent, fortunate, charitable, and beautiful of body and face"
+          },
+          {
+            "verse": "52",
+            "effect": "greatly humiliated, vile, ever successful, deficient in digestion, defeated by women, and sinful in his acts"
+          },
+          {
+            "verse": "53",
+            "effect": "furnished with relatives, paraphernalia, conveyances, happiness, intelligence, pleasures and wealth, great, and a misery to his enemies"
+          },
+          {
+            "verse": "54",
+            "effect": "of abundant happiness, many sons and friends, learned, courageous, wealthy, and always happy"
+          },
+          {
+            "verse": "55",
+            "effect": "lacking digestive fire and virility, humiliated, weak, indolent, made famous by women, a destroyer of his enemies, and widely famous"
+          },
+          {
+            "verse": "56",
+            "effect": "charming, winning a beautiful wife, greater than his father, eloquent, a poet, a superior person, learned and famous"
+          },
+          {
+            "verse": "57",
+            "effect": "insulted, long-lived, a servant, serving his own people, pitiable, and joined to dirty women"
+          },
+          {
+            "verse": "58",
+            "effect": "attached to divine and paternal duties, learned, fortunate, a king's minister or a leader, and chief"
+          },
+          {
+            "verse": "59",
+            "effect": "beginning his undertakings successfully, honourable, effortful, and furnished with abundant welfare, happiness, wealth, relatives, conveyances and fame"
+          },
+          {
+            "verse": "60",
+            "effect": "enjoying many gains, many conveyances and many servants, virtuous, but of limited education and few sons"
+          },
+          {
+            "verse": "61",
+            "effect": "indolent, odious, devoid of speech and of luck, and in all likelihood in servitude"
+          }
+        ]
+      },
+      {
+        "planet": "VENUS",
+        "readings": [
+          {
+            "verse": "62",
+            "effect": "beautiful of eye, face and body, happy, long-lived, timid, and attractive to women"
+          },
+          {
+            "verse": "63",
+            "effect": "enjoying abundant food, drink and wealth, drawing excellent pleasures, of good speech, and amassing great wealth"
+          },
+          {
+            "verse": "64",
+            "effect": "happy, rich, conquered by women, vile, little enthusiastic, and bereft of luck and paraphernalia"
+          },
+          {
+            "verse": "65",
+            "effect": "furnished with relatives, friends and happiness, splendid, possessed of conveyances and paraphernalia, beautiful, rich and fortunate"
+          },
+          {
+            "verse": "66",
+            "effect": "furnished with happiness, sons and friends, fond of union, very affluent, full of everything, and a minister or a justice"
+          },
+          {
+            "verse": "67",
+            "effect": "greatly disliking his wife, of many foes, devoid of wealth, much startled, and mean"
+          },
+          {
+            "verse": "68",
+            "effect": "very beautiful, happy with his wife, enjoying great riches, free of quarrels, and fortunate"
+          },
+          {
+            "verse": "69",
+            "effect": "long-lived, enjoying incomparable happiness, very rich, the equal of a king, and delighted moment by moment"
+          },
+          {
+            "verse": "70",
+            "effect": "spotless and broad of body, furnished with wealth, charity, a wife, pleasures and friendship, and honouring the gods, his guests and his elders"
+          },
+          {
+            "verse": "71",
+            "effect": "successful in litigation, and furnished with happiness, union, honour, wealth, fame and great wisdom"
+          },
+          {
+            "verse": "72",
+            "effect": "attended by obedient servants, free of every kind of misery, and gaining abundantly"
+          },
+          {
+            "verse": "73",
+            "effect": "indolent, happy, corpulent, morally fallen, eating cleansed food, skilful at providing the comforts of sleep and attendants, and won over by women"
+          }
+        ]
+      },
+      {
+        "planet": "SATURN",
+        "readings": [
+          {
+            "verse": "74",
+            "effect": "the equal of a king in status, or the head of a country or a city, when he stands in his exaltation or his own sign, and in any other sign miserable in boyhood, dirty of disposition and indolent"
+          },
+          {
+            "verse": "75",
+            "effect": "ugly of face, prosperous in the world, without his own people, a renderer of justice, going later to other countries, and earning money and conveyances"
+          },
+          {
+            "verse": "76",
+            "effect": "dark of complexion, clean of body, base, attended by indolent servants, courageous, charitable, and of great intelligence"
+          },
+          {
+            "verse": "77",
+            "effect": "suffering in the heart or broken-hearted, devoid of relatives, conveyances, wealth, intelligence and happiness, sick in boyhood, and prominent of nail and hair"
+          },
+          {
+            "verse": "78",
+            "effect": "bereft of happiness, sons, friends, intelligence and kindness, agitated and poor"
+          },
+          {
+            "verse": "79",
+            "effect": "very licentious, beautiful, courageous, eating abundantly, crooked, and a conqueror of many of his enemies"
+          },
+          {
+            "verse": "80",
+            "effect": "always ill, losing his wife, bereft of wealth, ugly to look on, sinful, and a doer of very mean acts"
+          },
+          {
+            "verse": "81",
+            "effect": "suffering leprosy and fistula, short-lived, and failing in what he undertakes"
+          },
+          {
+            "verse": "82",
+            "effect": "devoid of religious merit, of little wealth, bereft of brothers, sons and happiness, and a cause of sorrow to others"
+          },
+          {
+            "verse": "83",
+            "effect": "wealthy, learned, valorous, and a minister, a justice, or the leader of a group, a city or a village"
+          },
+          {
+            "verse": "84",
+            "effect": "long-lived, of lasting riches, courageous, knowing the arts, free of sickness, and furnished with money, people and wealth"
+          },
+          {
+            "verse": "85",
+            "effect": "distressed, morally fallen, talkative, defective of eyesight, unkind, shameless, a great spender, and insulted"
+          }
+        ]
+      }
+    ]
   }
 }

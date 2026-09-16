@@ -1,19 +1,22 @@
-//! The dwigraha generator: two texts' readings of one shape, built from a
-//! table of what changes (`03-design/rules-engine.md`, "One shape, ninety-three
+//! The readings generator: the texts' families of one shape, built from a
+//! table of what changes (`03-design/rules-engine.md`, "One shape, many
 //! rules").
 //!
-//! Brihat Jataka ch. 14 reads every pair of the seven grahas sharing a sign,
-//! and Phaladeepika ch. 18 the Moon in every sign under one graha's aspect.
-//! Neither grades anything: each verse says in words what follows, so every
-//! rule here carries an [`Outcome::Effect`] and no severity and no span. The
-//! conditions repeat, so only the pair, the sign, the aspecting graha and the
-//! reading are data, and the ninety-three rules are built from them.
+//! Brihat Jataka ch. 14 reads every pair of the seven grahas sharing a sign;
+//! Phaladeepika ch. 18 the Moon in every sign under one graha's aspect; Jataka
+//! Parijata every combination of the seven from two to six sharing a sign; and
+//! Saravali a graha in each of the twelve signs (chs. 22 to 29) and in each of
+//! the twelve bhavas (ch. 30). None of them grades anything: each verse says
+//! in words what follows, so every rule here carries an [`Outcome::Effect`]
+//! and no severity and no span. The conditions repeat, so only what changes is
+//! data — the pair, the sign, the aspecting graha, the house and the reading —
+//! and the rules are built from it.
 
 use serde::Deserialize;
 use teistro_core::catalogue::{Graha, Rashi};
 
-use crate::language::{Body, Condition, EvidenceRank, Source};
-use crate::reference::{BodyRef, BodySubject, SignRef};
+use crate::language::{Body, Condition, EvidenceRank, House, Source};
+use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
 use crate::rule::{Outcome, Rule};
 
 /// The Moon, whom every rule of the second family is about.
@@ -27,6 +30,7 @@ pub(crate) struct Table {
     moon_aspected: MoonAspected,
     together: Together,
     in_rasi: InRasi,
+    in_bhava: InBhava,
 }
 
 /// What every rule of a family shares: its text, and how it was read.
@@ -97,6 +101,23 @@ struct InRasi {
     #[serde(flatten)]
     family: Family,
     grahas: Vec<GrahaRows>,
+}
+
+/// Saravali ch. 30, a graha in the twelve bhavas.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct InBhava {
+    #[serde(flatten)]
+    family: Family,
+    grahas: Vec<BhavaRows>,
+}
+
+/// One graha's readings, a house at a time from the ascendant.
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct BhavaRows {
+    planet: Body,
+    readings: Vec<Reading>,
 }
 
 /// One graha's chapter: a reading for each sign, from Aries.
@@ -206,6 +227,7 @@ impl Table {
             .chain(moon)
             .chain(self.together())
             .chain(self.in_rasi())
+            .chain(self.in_bhava())
             .collect()
     }
 
@@ -255,6 +277,33 @@ impl Table {
                         }],
                         &reading.effect,
                     )
+                })
+        })
+    }
+}
+
+impl Table {
+    /// Saravali ch. 30: each graha in each of the twelve bhavas, the houses in
+    /// order from the ascendant, as the verses run.
+    fn in_bhava(&self) -> impl Iterator<Item = Rule> {
+        let family = &self.in_bhava.family;
+        self.in_bhava.grahas.iter().flat_map(move |graha| {
+            graha
+                .readings
+                .iter()
+                .enumerate()
+                .filter_map(move |(at, reading)| {
+                    let house = House::try_new(u8::try_from(at).ok()? + 1).ok()?;
+                    Some(stating(
+                        format!("SARAVALI_{}_IN_BHAVA_{}", graha.planet.key(), house.get()),
+                        "graha-in-bhava",
+                        family.source(&reading.verse),
+                        vec![Condition::PlanetInHouse {
+                            planet: Subject::Ref(SignRef::Of(BodyRef::Body(graha.planet))),
+                            houses: vec![house],
+                        }],
+                        &reading.effect,
+                    ))
                 })
         })
     }
