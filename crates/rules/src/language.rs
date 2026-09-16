@@ -12,6 +12,7 @@ use teistro_core::catalogue::{
     CharaKaraka, Dignity, Graha, Karana, Nakshatra, Paksha, Rashi, Tithi, Vara, Varga, Yoga,
 };
 
+use crate::chart::Limb;
 use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
 use crate::table::TableKey;
 
@@ -621,6 +622,17 @@ pub enum Condition {
         #[serde(rename = "as")]
         as_body: BodyRef,
     },
+    /// The birth stands within so many ghatikas of a limb's edge: the first
+    /// ghatikas of it, or the last. BPHS ch. 92 measures every gandanta this
+    /// way, and a limb the chart does not measure never holds.
+    AtLimbEdge {
+        /// Which limb.
+        limb: Limb,
+        /// Which end of it.
+        edge: Edge,
+        /// How many ghatikas of 24 minutes.
+        ghatikas: f64,
+    },
     /// The birth falls on a sankranti, as the chart's panchanga says.
     BirthOnSankranti {
         /// The window, hours either side, that the chart's flag was computed
@@ -681,6 +693,16 @@ impl From<Pada> for u8 {
     fn from(pada: Pada) -> u8 {
         pada.0
     }
+}
+
+/// Which end of a limb a condition measures.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Edge {
+    /// Its beginning: so many ghatikas after it started.
+    First,
+    /// Its end: so many ghatikas before it ends.
+    Last,
 }
 
 /// Which eclipse.
@@ -772,6 +794,7 @@ impl Condition {
             Condition::ForAny { .. } => "for-any",
             Condition::InVarga { .. } => "in-varga",
             Condition::CountInHouses { .. } => "count-in-houses",
+            Condition::AtLimbEdge { .. } => "at-limb-edge",
             Condition::SameSign { .. } => "same-sign",
             Condition::SameBody { .. } => "same-body",
         }
@@ -864,6 +887,7 @@ impl Condition {
                 | Condition::PanchangaKarana { .. }
                 | Condition::BirthDuringEclipse { .. }
                 | Condition::BirthOnSankranti { .. }
+                | Condition::AtLimbEdge { .. }
         )
     }
 

@@ -12,7 +12,7 @@ use crate::chart::{
     NATURAL_BENEFICS, NATURAL_MALEFICS, NodeMotion, NodeSides, Panchanga, Placement, PointAt,
     Readings, RuleChart, Upapada, VargaSigns,
 };
-use crate::language::{Body, Condition, EclipseKind, House, KarakaScheme, NodeSide};
+use crate::language::{Body, Condition, EclipseKind, Edge, House, KarakaScheme, NodeSide};
 use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
 use crate::rule::{NetStatus, Rule, Severity};
 use crate::table::{Table, Tables};
@@ -896,6 +896,20 @@ impl<'a> Evaluator<'a> {
                     | (Some(EclipseKind::Lunar), Eclipse::Solar) => false,
                 }),
             Condition::BirthOnSankranti { .. } => self.panchanga().is_some_and(|p| p.on_sankranti),
+            Condition::AtLimbEdge {
+                limb,
+                edge,
+                ghatikas,
+            } => self
+                .panchanga()
+                .and_then(|p| p.spans.of(*limb))
+                .is_some_and(|span| {
+                    let stood = match edge {
+                        Edge::First => span.elapsed,
+                        Edge::Last => span.remaining,
+                    };
+                    stood >= 0.0 && stood <= *ghatikas
+                }),
             Condition::ForAny { planets, then } => {
                 // Every body is tried, and each that meets it takes part; what
                 // the conditions inside consulted is the rule's business, not
@@ -1603,6 +1617,7 @@ mod tests {
             pada: crate::language::Pada::try_new(1).unwrap(),
             yoga: Yoga::Vishkambha,
             karana: Karana::Bava,
+            spans: crate::chart::Spans::default(),
             on_sankranti: false,
             eclipse: None,
         }
@@ -2386,6 +2401,150 @@ mod tests {
             refused.contains("`NOT_A_POINT` is not a point"),
             "{refused}"
         );
+    }
+
+    #[test]
+    fn the_gandantas_of_bphs_92_hold_within_their_ghatikas_and_not_outside() {
+        use teistro_core::catalogue::{Nakshatra, Tithi};
+
+        use crate::chart::{Span, Spans};
+        use crate::shipped;
+
+        let at = |c: &RuleChart, key: &str| {
+            shipped::gandantas()
+                .iter()
+                .find(|rule| rule.key == key)
+                .is_some_and(|rule| Evaluator::new(c, ENGINE).evaluate(rule).present)
+        };
+        let mut c = chart();
+        let set = |c: &mut RuleChart, tithi, nakshatra, spans| {
+            let mut p = panchanga(tithi);
+            p.nakshatra = nakshatra;
+            p.spans = spans;
+            c.panchanga = Some(p);
+        };
+
+        // The last two ghatikas of a Purna tithi (BPHS ch. 92 v. 2).
+        let ending = |remaining| Spans {
+            tithi: Some(Span {
+                elapsed: 58.0,
+                remaining,
+            }),
+            ..Spans::default()
+        };
+        set(&mut c, Tithi::Purnima, Nakshatra::Ashwini, ending(1.5));
+        assert!(at(&c, "TITHI_GANDANTA"));
+        set(&mut c, Tithi::Purnima, Nakshatra::Ashwini, ending(2.5));
+        assert!(!at(&c, "TITHI_GANDANTA"), "past the last two ghatikas");
+        // A Nanda tithi counts from its first two instead.
+        let starting = |elapsed| Spans {
+            tithi: Some(Span {
+                elapsed,
+                remaining: 40.0,
+            }),
+            ..Spans::default()
+        };
+        set(
+            &mut c,
+            Tithi::ShuklaShashthi,
+            Nakshatra::Ashwini,
+            starting(1.0),
+        );
+        assert!(at(&c, "TITHI_GANDANTA"));
+        set(
+            &mut c,
+            Tithi::ShuklaDwadashi,
+            Nakshatra::Ashwini,
+            starting(1.0),
+        );
+        assert!(!at(&c, "TITHI_GANDANTA"), "neither Purna nor Nanda");
+
+        // The nakshatra junctions, and Abhukta Moola's wider window (vv. 3, 5).
+        let nakshatra = |elapsed, remaining| Spans {
+            nakshatra: Some(Span { elapsed, remaining }),
+            ..Spans::default()
+        };
+        set(
+            &mut c,
+            Tithi::ShuklaDwadashi,
+            Nakshatra::Jyeshtha,
+            nakshatra(50.0, 1.0),
+        );
+        assert!(at(&c, "NAKSHATRA_GANDANTA") && at(&c, "ABHUKTA_MOOLA"));
+        set(
+            &mut c,
+            Tithi::ShuklaDwadashi,
+            Nakshatra::Jyeshtha,
+            nakshatra(50.0, 5.0),
+        );
+        assert!(
+            !at(&c, "NAKSHATRA_GANDANTA") && at(&c, "ABHUKTA_MOOLA"),
+            "the last six ghatikas of Jyeshtha are Abhukta Moola, the last two gandanta"
+        );
+        set(
+            &mut c,
+            Tithi::ShuklaDwadashi,
+            Nakshatra::Mula,
+            nakshatra(7.0, 40.0),
+        );
+        assert!(at(&c, "ABHUKTA_MOOLA") && !at(&c, "NAKSHATRA_GANDANTA"));
+        set(
+            &mut c,
+            Tithi::ShuklaDwadashi,
+            Nakshatra::Mula,
+            nakshatra(1.0, 50.0),
+        );
+        assert!(at(&c, "NAKSHATRA_GANDANTA"), "Moola's first two ghatikas");
+        set(
+            &mut c,
+            Tithi::ShuklaDwadashi,
+            Nakshatra::Rohini,
+            nakshatra(1.0, 1.0),
+        );
+        assert!(!at(&c, "NAKSHATRA_GANDANTA"), "not a junction nakshatra");
+    }
+
+    #[test]
+    fn the_lagna_gandanta_is_half_a_ghatika_either_side_of_the_junction() {
+        use teistro_core::catalogue::{Rashi as R, Tithi};
+
+        use crate::chart::{Span, Spans};
+        use crate::shipped;
+
+        fn with_lagna(c: &mut RuleChart, elapsed: f64, remaining: f64) {
+            if let Some(p) = c.panchanga.as_mut() {
+                p.spans = Spans {
+                    lagna: Some(Span { elapsed, remaining }),
+                    ..Spans::default()
+                };
+            }
+        }
+
+        let at = |c: &RuleChart, key: &str| {
+            shipped::gandantas()
+                .iter()
+                .find(|rule| rule.key == key)
+                .is_some_and(|rule| Evaluator::new(c, ENGINE).evaluate(rule).present)
+        };
+        let mut c = chart();
+        c.panchanga = Some(panchanga(Tithi::ShuklaDwadashi));
+        // Half a ghatika either side of the rising sign's junction (v. 4).
+        place(&mut c, Body::Lagna, R::Pisces);
+        with_lagna(&mut c, 4.0, 0.25);
+        assert!(at(&c, "LAGNA_GANDANTA"));
+        with_lagna(&mut c, 4.0, 0.75);
+        assert!(!at(&c, "LAGNA_GANDANTA"));
+        place(&mut c, Body::Lagna, R::Aries);
+        with_lagna(&mut c, 0.25, 4.0);
+        assert!(at(&c, "LAGNA_GANDANTA"));
+        place(&mut c, Body::Lagna, R::Taurus);
+        assert!(!at(&c, "LAGNA_GANDANTA"), "not a junction sign");
+
+        // A chart that measures no ghatikas answers no gandanta.
+        c.panchanga = Some(panchanga(Tithi::Purnima));
+        assert!(!at(&c, "TITHI_GANDANTA") && !at(&c, "NAKSHATRA_GANDANTA"));
+        c.panchanga = None;
+        assert!(!at(&c, "LAGNA_GANDANTA"));
     }
 
     #[test]

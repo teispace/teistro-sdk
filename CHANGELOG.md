@@ -1002,6 +1002,17 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- A chart's panchanga can carry a limb's ghatikas — how far the birth stood
+  into the tithi, the Moon's nakshatra and the rising sign, and how much was
+  left — and `at-limb-edge` reads them. On that,
+  `teistro_rules::shipped::gandantas` ships BPHS ch. 92's tithi, nakshatra and
+  lagna gandantas and its Abhukta Moola, at rank 1 with chapter and verse: the
+  SDK's first rules written from a text rather than mirrored from an
+  implementation. They measure a different quantity from the engine's
+  `planet-at-gandanta`, which reads degrees from a sign junction (crux C92).
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

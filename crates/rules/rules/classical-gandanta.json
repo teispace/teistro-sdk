@@ -1,0 +1,258 @@
+{
+  "rules": [
+    {
+      "key": "TITHI_GANDANTA",
+      "category": "gandanta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "92",
+        "verse": "2",
+        "rank": 1,
+        "note": "The last two ghatikas of a Purna tithi (the 5th, 10th and 15th) and the first two of a Nanda tithi (the 1st, 6th and 11th), in either paksha. Read from R. Santhanam's translation; the ghatika is 24 minutes, and a chart that does not measure the tithi's ghatikas cannot answer this."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-tithi",
+                  "tithis": [
+                    "SHUKLA_PANCHAMI",
+                    "SHUKLA_DASHAMI",
+                    "PURNIMA",
+                    "KRISHNA_PANCHAMI",
+                    "KRISHNA_DASHAMI",
+                    "AMAVASYA"
+                  ]
+                },
+                {
+                  "type": "at-limb-edge",
+                  "limb": "tithi",
+                  "edge": "last",
+                  "ghatikas": 2.0
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-tithi",
+                  "tithis": [
+                    "SHUKLA_PRATIPADA",
+                    "SHUKLA_SHASHTHI",
+                    "SHUKLA_EKADASHI",
+                    "KRISHNA_PRATIPADA",
+                    "KRISHNA_SHASHTHI",
+                    "KRISHNA_EKADASHI"
+                  ]
+                },
+                {
+                  "type": "at-limb-edge",
+                  "limb": "tithi",
+                  "edge": "first",
+                  "ghatikas": 2.0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 100
+      },
+      "remedyKeys": [
+        "GANDANTA_REMEDY_BULLOCK_IN_CHARITY"
+      ]
+    },
+    {
+      "key": "NAKSHATRA_GANDANTA",
+      "category": "gandanta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "92",
+        "verse": "3",
+        "rank": 1,
+        "note": "The last two ghatikas of Revati, Ashlesha or Jyeshtha and the first two of Ashwini, Magha or Moola: the three water-to-fire junctions, measured in time rather than in degrees."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "REVATI",
+                    "ASHLESHA",
+                    "JYESHTHA"
+                  ]
+                },
+                {
+                  "type": "at-limb-edge",
+                  "limb": "nakshatra",
+                  "edge": "last",
+                  "ghatikas": 2.0
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "ASHWINI",
+                    "MAGHA",
+                    "MULA"
+                  ]
+                },
+                {
+                  "type": "at-limb-edge",
+                  "limb": "nakshatra",
+                  "edge": "first",
+                  "ghatikas": 2.0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 100
+      },
+      "remedyKeys": [
+        "GANDANTA_REMEDY_COW_WITH_CALF_IN_CHARITY"
+      ]
+    },
+    {
+      "key": "LAGNA_GANDANTA",
+      "category": "gandanta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "92",
+        "verse": "4",
+        "rank": 1,
+        "note": "The last half ghatika of Pisces, Cancer or Scorpio rising and the first half ghatika of Aries, Leo or Sagittarius: twelve minutes either side of the rising sign's own junction."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "PISCES",
+                    "CANCER",
+                    "SCORPIO"
+                  ]
+                },
+                {
+                  "type": "at-limb-edge",
+                  "limb": "lagna",
+                  "edge": "last",
+                  "ghatikas": 0.5
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "lagna-in-sign",
+                  "signs": [
+                    "ARIES",
+                    "LEO",
+                    "SAGITTARIUS"
+                  ]
+                },
+                {
+                  "type": "at-limb-edge",
+                  "limb": "lagna",
+                  "edge": "first",
+                  "ghatikas": 0.5
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 100
+      },
+      "remedyKeys": [
+        "GANDANTA_REMEDY_GOLD_IN_CHARITY"
+      ]
+    },
+    {
+      "key": "ABHUKTA_MOOLA",
+      "category": "gandanta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "92",
+        "verse": "5",
+        "rank": 1,
+        "note": "The last six ghatikas of Jyeshtha and the first eight of Moola, which the verse calls extremely inauspicious; ch. 93 gives its remedies and ch. 94 treats the Jyeshtha side on its own."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "JYESHTHA"
+                  ]
+                },
+                {
+                  "type": "at-limb-edge",
+                  "limb": "nakshatra",
+                  "edge": "last",
+                  "ghatikas": 6.0
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-nakshatra",
+                  "nakshatras": [
+                    "MULA"
+                  ]
+                },
+                {
+                  "type": "at-limb-edge",
+                  "limb": "nakshatra",
+                  "edge": "first",
+                  "ghatikas": 8.0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "severityRule": {
+        "type": "fixed",
+        "value": 100
+      },
+      "remedyKeys": [
+        "ABHUKTA_MOOLA_REMEDY_SHANTI"
+      ]
+    }
+  ]
+}

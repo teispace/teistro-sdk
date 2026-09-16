@@ -366,6 +366,23 @@ not carry resolves to nothing and its condition does not hold. That is what
 BPHS ch. 83's curses need, since they read Gulika standing with a graha, and
 it is the first half of the special-lagna work the yoga survey put seventh.
 
+**Built, a limb's ghatikas and the SDK's first rules from a text
+(2026-09-16).** BPHS ch. 92 measures every gandanta in ghatikas of time, so a
+chart's panchanga can now carry how far the birth stood into each limb and how
+much was left (`Spans`, for the tithi, the Moon's nakshatra and the rising
+sign), and `at-limb-edge` asks whether the birth fell within so many ghatikas
+of a limb's beginning or end. A limb the chart does not measure never holds.
+
+On that, `shipped::gandantas` ships four rules read from the verses rather
+than from any implementation: the tithi, nakshatra and lagna gandantas of
+vv. 2 to 4 and the Abhukta Moola of v. 5, each at rank 1 with its chapter and
+verse, each with the charity the chapter prescribes as its remedy key. They
+are the first rules the SDK writes from a text alone, and they disagree with
+the recording engine's `planet-at-gandanta`, which measures a graha's distance
+from a sign junction in space rather than the birth's distance from a limb's
+edge in time: both ship, and crux C92 records that they are different
+quantities rather than different values.
+
 A classifying outcome is therefore not what the Kalsarpa family needed: twelve
 named rules over one arc predicate say it, each with its own citation and
 severity. `Outcome::Classify` stays unbuilt until a rule needs one variant of

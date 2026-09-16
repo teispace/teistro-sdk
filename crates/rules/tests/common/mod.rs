@@ -18,7 +18,7 @@ use teistro_core::catalogue::{
     CharaKaraka, Dignity, Karana, Nakshatra, Rashi, Tithi, Vara, Varga, Yoga,
 };
 use teistro_core::quantity::Degrees;
-use teistro_rules::{Body, House, Karaka, Pada, Panchanga, Placement, Rule, RuleChart};
+use teistro_rules::{Body, House, Karaka, Pada, Panchanga, Placement, Rule, RuleChart, Spans};
 use teistro_vargas::{Scheme, sign};
 
 pub(crate) fn corpus() -> PathBuf {
@@ -130,6 +130,8 @@ fn panchanga(recorded: &Value) -> Option<Panchanga> {
         pada: Pada::try_new(u8::try_from(id("moon_pada")?).ok()?).ok()?,
         yoga: Yoga::from_id(id("yoga_index")?)?,
         karana: Karana::from_id(id("karana_index")?)?,
+        // The yogas' and doshas' inputs record no ghatikas of any limb.
+        spans: Spans::default(),
         on_sankranti: false,
         eclipse: None,
     })

@@ -19,7 +19,7 @@ cancellations held.
 | [`chart`](src/chart.rs) | what a rule reads of a chart (each body's longitude, sign, house, dignity, motion, combustion, chara karakas and navamsha), and every place the language leaves a meaning open, each a `Readings` field with the recording engine's choice the default and the text's where the engine has none |
 | [`eval`](src/eval.rs) | the `Evaluator`: benefics and malefics settled once a chart, then each rule to a `RuleResult` without allocating for its participants, or to an `Explanation` with its trace |
 | [`table`](src/table.rs) | tables a rule looks up, each cited: a degree of each sign for a body, or signs for each tithi; `Tables::check` refuses a rule naming a missing table or the wrong kind; `Tables::classical` ships Jataka Parijata's Mrityu Bhagas and Pushkara bhagas, Brihat Prajapatya's Moon, and the Dagdha rashis ([`tables/classical.json`](tables/classical.json)) |
-| [`shipped`](src/shipped.rs) | the rules the SDK ships as data: the seventeen doshas and the eight Neecha Bhanga yogas the recording engine computes in code, written in the language ([`rules/computed-doshas.json`](rules/computed-doshas.json), [`rules/computed-yogas.json`](rules/computed-yogas.json)) |
+| [`shipped`](src/shipped.rs) | the rules the SDK ships as data: the seventeen doshas and the eight Neecha Bhanga yogas the recording engine computes in code, and BPHS ch. 92's four gandantas read from the text itself ([`rules/`](rules)) |
 | [`trace`](src/trace.rs) | how an answer was reached: each condition checked, whether it held, the bodies it added and each reference resolved, as a tree that serialises and reads as prose; one evaluator generic over a recorder, so the untraced answer costs nothing more and cannot differ |
 
 ## What the corpus settled
@@ -51,6 +51,11 @@ cancellations held.
   Dagdha Rashi and Badhaka reproduce every recorded field. It took a `side` on
   the nodal-arc predicate, a badhaka reference (crux C86) and a weight on a
   group, not a classifying outcome.
+- **A limb's edge is measured in ghatikas.** BPHS ch. 92 puts every gandanta
+  in time, not in degrees, so a chart carries how far the birth stood into the
+  tithi, the nakshatra and the rising sign, and `at-limb-edge` reads it. The
+  engine measures gandanta in space instead; both ship, and crux C92 says they
+  are different quantities.
 - **A point is a place a rule can name.** `{"point": "GULIKA"}` reads any
   point the catalogue names, given to the evaluator as tables and divisions
   are; BPHS ch. 83's curses read Gulika this way.
@@ -85,6 +90,9 @@ cancellations held.
   panchangas, and for each of 885 presences where it was found from, its
   participants, houses, severity, cancellations and net status
   (`tests/doshas.rs`); all 52 dosha rules read strictly and round-trip.
+- BPHS ch. 92's four gandantas hold inside their ghatikas and not outside them,
+  at every boundary the verses give, and answer nothing when the chart measures
+  no ghatikas (unit tests).
 - The eight rules the SDK writes for the Neecha Bhanga family say present
   exactly where the engine's code did on all 744 decisions, with the same
   grahas and houses on all 202 presences (`tests/baseline.rs`).

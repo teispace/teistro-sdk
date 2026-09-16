@@ -40,8 +40,9 @@ pub mod table;
 pub mod trace;
 
 pub use chart::{
-    AspectGathering, Benefics, Bhaga, Conjunction, DignityMatch, Eclipse, Gathering, Houses,
-    NodeMotion, NodeSides, Panchanga, Placement, PointAt, Readings, RuleChart, Upapada, VargaSigns,
+    AspectGathering, Benefics, Bhaga, Conjunction, DignityMatch, Eclipse, Gathering, Houses, Limb,
+    NodeMotion, NodeSides, Panchanga, Placement, PointAt, Readings, RuleChart, Span, Spans,
+    Upapada, VargaSigns,
 };
 pub use eval::{Evaluator, Found, Participants, RuleResult};
 pub use language::{

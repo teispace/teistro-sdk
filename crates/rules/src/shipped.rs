@@ -1,6 +1,8 @@
 //! The rules the SDK ships as data (`03-design/rules-engine.md`).
 //!
-//! [`computed_yogas`] holds the eight yogas it computes in code, the Neecha
+//! [`gandantas`] holds the three gandantas of BPHS ch. 92 and its Abhukta
+//! Moola, the SDK's first rules read from a text rather than mirrored from an
+//! implementation. [`computed_yogas`] holds the eight yogas it computes in code, the Neecha
 //! Bhanga family, each written over any debilitated graha with a `for-any`.
 //! [`computed_doshas`] holds the seventeen doshas the recording engine
 //! computes in code rather than from its own condition language, written here
@@ -34,6 +36,8 @@ use crate::rule::Rule;
 const COMPUTED_DOSHAS: &str = include_str!("../rules/computed-doshas.json");
 /// The yogas it computes in code: the Neecha Bhanga family.
 const COMPUTED_YOGAS: &str = include_str!("../rules/computed-yogas.json");
+/// The gandantas, read from BPHS ch. 92 rather than from any engine.
+const GANDANTA: &str = include_str!("../rules/classical-gandanta.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -52,11 +56,22 @@ fn read(json: &str) -> Vec<Rule> {
 
 static DOSHAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_DOSHAS));
 static YOGAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_YOGAS));
+static GANDANTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(GANDANTA));
 
 /// The seventeen doshas the recording engine computes in code, as rules.
 #[must_use]
 pub fn computed_doshas() -> &'static [Rule] {
     &DOSHAS
+}
+
+/// The three gandantas of BPHS ch. 92 and the Abhukta Moola of its fifth
+/// verse, each measured in ghatikas as the verses measure them, so a chart
+/// must carry the ghatikas of the limb a rule reads
+/// ([`Panchanga::spans`](crate::Panchanga)). These are the SDK's own rules,
+/// read from the text rather than from any implementation.
+#[must_use]
+pub fn gandantas() -> &'static [Rule] {
+    &GANDANTAS
 }
 
 /// The eight yogas it computes in code, the Neecha Bhanga family, as rules:
@@ -80,8 +95,12 @@ mod tests {
 
     #[test]
     fn every_shipped_rule_and_table_says_how_good_its_evidence_is() {
-        let rules: Vec<&Rule> = computed_doshas().iter().chain(computed_yogas()).collect();
-        assert_eq!(rules.len(), 25);
+        let rules: Vec<&Rule> = computed_doshas()
+            .iter()
+            .chain(computed_yogas())
+            .chain(gandantas())
+            .collect();
+        assert_eq!(rules.len(), 29);
         for rule in &rules {
             let rank = rule
                 .source

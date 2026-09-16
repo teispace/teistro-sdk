@@ -1,5 +1,6 @@
 //! What a rule reads of a chart, and the choices the language leaves open.
 
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
     CharaKaraka, Dignity, Graha, Karana, Nakshatra, Point, Rashi, Tithi, Vara, Varga, Yoga,
 };
@@ -45,7 +46,7 @@ pub struct RuleChart {
 }
 
 /// The panchanga at birth, as the rules read it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Panchanga {
     /// The tithi, whose paksha it carries.
     pub tithi: Tithi,
@@ -59,11 +60,61 @@ pub struct Panchanga {
     pub yoga: Yoga,
     /// The karana.
     pub karana: Karana,
+    /// How much of each limb the birth had used and had left, in ghatikas,
+    /// which the gandantas of BPHS ch. 92 are measured in.
+    pub spans: Spans,
     /// Whether the birth falls on a sankranti, under whatever window the
     /// chart's maker reads.
     pub on_sankranti: bool,
     /// The eclipse the birth falls in, if any.
     pub eclipse: Option<Eclipse>,
+}
+
+/// How far the birth stood into each limb, and how much of it was left, in
+/// ghatikas of 24 minutes. A limb the chart does not measure is none, and a
+/// condition reading its edge does not hold.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct Spans {
+    /// The tithi's.
+    pub tithi: Option<Span>,
+    /// The Moon's nakshatra's.
+    pub nakshatra: Option<Span>,
+    /// The rising sign's.
+    pub lagna: Option<Span>,
+}
+
+impl Spans {
+    /// The span of one limb.
+    #[must_use]
+    pub const fn of(&self, limb: Limb) -> Option<Span> {
+        match limb {
+            Limb::Tithi => self.tithi,
+            Limb::Nakshatra => self.nakshatra,
+            Limb::Lagna => self.lagna,
+        }
+    }
+}
+
+/// How much of a limb had passed at the birth and how much was left, in
+/// ghatikas.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Span {
+    /// Ghatikas since it began.
+    pub elapsed: f64,
+    /// Ghatikas until it ends.
+    pub remaining: f64,
+}
+
+/// Which limb a condition measures.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Limb {
+    /// The tithi.
+    Tithi,
+    /// The Moon's nakshatra.
+    Nakshatra,
+    /// The rising sign.
+    Lagna,
 }
 
 /// An eclipse a birth falls in.

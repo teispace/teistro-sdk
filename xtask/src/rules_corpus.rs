@@ -10,7 +10,7 @@ use teistro_core::catalogue::{
     CharaKaraka, Dignity, Karana, Nakshatra, Rashi, Tithi, Vara, Varga, Yoga,
 };
 use teistro_core::quantity::Degrees;
-use teistro_rules::{Body, House, Karaka, Pada, Panchanga, Placement, Rule, RuleChart};
+use teistro_rules::{Body, House, Karaka, Pada, Panchanga, Placement, Rule, RuleChart, Spans};
 
 pub(crate) fn read_json(path: &Path) -> Result<Value, String> {
     serde_json::from_str(
@@ -124,6 +124,8 @@ fn panchanga(recorded: &Value) -> Result<Option<Panchanga>, String> {
         pada,
         yoga,
         karana,
+        // The rule corpora record no ghatikas of any limb.
+        spans: Spans::default(),
         on_sankranti: false,
         eclipse: None,
     }))
