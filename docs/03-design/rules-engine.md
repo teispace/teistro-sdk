@@ -544,15 +544,25 @@ no sankhya yoga holds where another Nabhasa yoga is derivable, which is written
 as twenty-five cancellations on each of the seven: every chart answers exactly
 one sankhya yoga, and 46 of the 93 are cancelled.
 
+BPHS ch. 37's lunar yogas and ch. 38's solar ones follow the same way: the Moon
+counted from the Sun in an angle, a panaphara or an apoklima; Adhi yoga;
+Parashara's three grades of benefics in the upachayas from the Moon; Sunapha,
+Anapha, Duradhara and Kemadruma; Vesi, Vosi and Ubhayachari. Fourteen rules,
+each with its verse's effect.
+
 These are the first rules the SDK writes from a text for figures the recording
-engine also carries, so the corpus can say who is right. Twenty-seven of the
-thirty answer exactly alike on the 93 charts. Three do not, and each is a
+engine also carries, so the corpus can say who is right. Thirty-four of the
+thirty-eight answer exactly alike on the 93 charts. Three do not, and each is a
 reading rather than a defect (crux C93): the SDK takes Saravali's eight windows
 for Ardha Chandra where the engine takes one, reads the whole seven-house
 family as confinement where the engine asks that Koota's seven houses all be
 occupied, and reads "three angles occupied by malefics" as three angles each
 holding one where the engine asks for Mars, Saturn and the Sun in the fourth,
-seventh or tenth. The comparison is pinned rule by rule, so a divergence that
+seventh or tenth. The fourth is Kemadruma (crux C94): the SDK reads the whole
+of vv. 11 to 13, which also wants no graha with the Moon and none in an angle
+from the ascendant, where the engine reads the second and twelfth alone and
+excepts the nodes besides — one chart of the 93 answers the verse, fifty-seven
+answer the engine. The comparison is pinned rule by rule, so a divergence that
 moves fails the build — and so does one that disappears.
 
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93

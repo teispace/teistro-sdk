@@ -1103,6 +1103,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** 27 of 30 Nabhasa figures reproduce the engine's answers exactly;
   every chart answers one sankhya yoga and 46 of the 93 are cancelled.
 
+- BPHS ch. 37's lunar yogas and ch. 38's solar ones beside them: the Moon
+  counted from the Sun, Adhi yoga, the three grades of benefics in the
+  upachayas from her, Sunapha, Anapha, Duradhara, Kemadruma, Vesi, Vosi and
+  Ubhayachari — fourteen rules, each with its verse's effect. The SDK ships
+  523 rules.
+
+  **Numbers:** 34 of the 38 figures the engine also carries reproduce its
+  answers exactly. Kemadruma is the fourth divergence (crux C94): read whole,
+  the verse answers 1 of the 93 charts where the engine answers 57.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

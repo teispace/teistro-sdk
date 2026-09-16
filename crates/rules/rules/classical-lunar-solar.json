@@ -1,0 +1,751 @@
+{
+  "rules": [
+    {
+      "key": "LUNAR_MOON_IN_KENDRA_FROM_THE_SUN",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "1",
+        "rank": 1,
+        "note": "The Moon counted from the Sun: an angle, a panaphara or an apoklima, which the verse grades little, middling and excellent in that order. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SUN",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "of little wealth, intelligence and skill"
+      }
+    },
+    {
+      "key": "LUNAR_MOON_IN_PANAPHARA_FROM_THE_SUN",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "1",
+        "rank": 1,
+        "note": "The Moon counted from the Sun: an angle, a panaphara or an apoklima, which the verse grades little, middling and excellent in that order. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SUN",
+          "houses": [
+            2,
+            5,
+            8,
+            11
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "of middling wealth, intelligence and skill"
+      }
+    },
+    {
+      "key": "LUNAR_MOON_IN_APOKLIMA_FROM_THE_SUN",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "1",
+        "rank": 1,
+        "note": "The Moon counted from the Sun: an angle, a panaphara or an apoklima, which the verse grades little, middling and excellent in that order. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MOON",
+          "reference": "SUN",
+          "houses": [
+            3,
+            6,
+            9,
+            12
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "of excellent wealth, intelligence and skill"
+      }
+    },
+    {
+      "key": "LUNAR_ADHI_YOGA",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "5",
+        "rank": 1,
+        "note": "Benefics in the sixth, seventh and eighth from the Moon. The verse grades the native king, minister or chief of an army by the strength of the benefics, which the kernel cannot measure. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": "MOON",
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": "MOON",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": "MOON",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "a king, a minister or the chief of an army, by the strength of the benefics that make the yoga"
+      }
+    },
+    {
+      "key": "LUNAR_DHANA_THREE_BENEFICS_IN_UPACHAYA",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "6",
+        "rank": 1,
+        "note": "Three benefics in the upachayas from the Moon, the third, sixth, tenth and eleventh; the verse grades the three counts very affluent, middling and negligible. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ],
+          "from": "MOON",
+          "atLeast": 3
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "very affluent"
+      }
+    },
+    {
+      "key": "LUNAR_DHANA_TWO_BENEFICS_IN_UPACHAYA",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "6",
+        "rank": 1,
+        "note": "Two benefics in the upachayas from the Moon, the third, sixth, tenth and eleventh; the verse grades the three counts very affluent, middling and negligible. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ],
+          "from": "MOON",
+          "atLeast": 2
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              3,
+              6,
+              10,
+              11
+            ],
+            "from": "MOON",
+            "atLeast": 3
+          }
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "of middling wealth"
+      }
+    },
+    {
+      "key": "LUNAR_DHANA_ONE_BENEFIC_IN_UPACHAYA",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "6",
+        "rank": 1,
+        "note": "One benefic in the upachayas from the Moon, the third, sixth, tenth and eleventh; the verse grades the three counts very affluent, middling and negligible. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3,
+            6,
+            10,
+            11
+          ],
+          "from": "MOON",
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              3,
+              6,
+              10,
+              11
+            ],
+            "from": "MOON",
+            "atLeast": 2
+          }
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "of negligible wealth"
+      }
+    },
+    {
+      "key": "LUNAR_SUNAPHA",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "7-10",
+        "rank": 1,
+        "note": "A graha other than the Sun in the second from the Moon. The nodes are not counted: the verse excepts the Sun alone, and no verse read says whether Rahu and Ketu make the yoga. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "MERCURY",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "a king or the equal of a king, intelligent, wealthy, famous, and enriched by his own earning"
+      }
+    },
+    {
+      "key": "LUNAR_ANAPHA",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "7-10",
+        "rank": 1,
+        "note": "A graha other than the Sun in the twelfth from the Moon; the nodes are not counted. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "MERCURY",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "a king, free of disease, virtuous, famous, charming and happy"
+      }
+    },
+    {
+      "key": "LUNAR_DURADHARA",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "7-10",
+        "rank": 1,
+        "note": "A graha other than the Sun in both the second and the twelfth from the Moon; the nodes are not counted. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "MERCURY",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "MOON",
+              "houses": [
+                2
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "MERCURY",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "MOON",
+              "houses": [
+                12
+              ]
+            }
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "pleasured, charitable, and furnished with wealth, conveyances and an excellent serving force"
+      }
+    },
+    {
+      "key": "LUNAR_KEMADRUMA",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "37",
+        "verse": "11-13",
+        "rank": 1,
+        "note": "No graha but the Sun with the Moon, in the second or the twelfth from her, or in an angle from the ascendant. The verse excepts the Sun alone, so the nodes are counted here; the recording engine reads the yoga as the second and the twelfth only, excepting the nodes besides (crux C94). Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "no-planet-in-houses-from",
+          "reference": "MOON",
+          "houses": [
+            1,
+            2,
+            12
+          ],
+          "except": [
+            "SUN"
+          ]
+        },
+        {
+          "type": "no-planet-in-houses-from",
+          "reference": 1,
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "except": [
+            "SUN",
+            "MOON"
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "much reproached, bereft of intelligence and learning, and reduced to penury and peril"
+      }
+    },
+    {
+      "key": "SOLAR_VESI",
+      "category": "surya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "38",
+        "verse": "1-3",
+        "rank": 1,
+        "note": "A graha among Mars and the rest, the Moon barred, in the second from the Sun. Verse 4 adds that a benefic making the yoga gives these effects and a malefic the contrary, which is a grading the SDK does not model. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "MERCURY",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            }
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "even-sighted, truthful, long of body, indolent, happy, and of negligible wealth"
+      }
+    },
+    {
+      "key": "SOLAR_VOSI",
+      "category": "surya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "38",
+        "verse": "1-3",
+        "rank": 1,
+        "note": "A graha among Mars and the rest, the Moon barred, in the twelfth from the Sun. Verse 4 adds that a benefic making the yoga gives these effects and a malefic the contrary, which is a grading the SDK does not model. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "MERCURY",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            }
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "skilful, charitable, and furnished with fame, learning and strength"
+      }
+    },
+    {
+      "key": "SOLAR_UBHAYACHARI",
+      "category": "surya",
+      "source": {
+        "text": "BPHS",
+        "chapter": "38",
+        "verse": "1-3",
+        "rank": 1,
+        "note": "A graha among Mars and the rest, the Moon barred, in both the second and the twelfth from the Sun. Verse 4's benefic and malefic grading is not modelled. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "MERCURY",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "SUN",
+              "houses": [
+                2
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "MARS",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "MERCURY",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "JUPITER",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": "SATURN",
+              "reference": "SUN",
+              "houses": [
+                12
+              ]
+            }
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "effect",
+        "text": "a king or the equal of a king, and happy"
+      }
+    }
+  ]
+}

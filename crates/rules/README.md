@@ -56,10 +56,11 @@ cancellations held.
   `life-span` in the unit its verse uses; Saravali ch. 10's ten evils ship with
   theirs and ch. 12's hundred-year antidote with its own, and nothing else
   claims one.
-- **The thirty-two Nabhasa yogas** of BPHS ch. 35 ship as `shipped::nabhasas()`
-  with the effect each verse gives, and 27 of the 30 the recording engine also
-  carries answer exactly as it recorded over the corpus; the three that differ
-  are readings, pinned and explained.
+- **The yogas BPHS gives**: ch. 35's thirty-two Nabhasa yogas and chs. 37 and
+  38's lunar and solar ones ship as `shipped::nabhasas()` with the effect each
+  verse gives, and 34 of the 38 figures the recording engine also carries
+  answer exactly as it recorded over the corpus; the four that differ are
+  readings, pinned and explained.
 - **Where a verse says what follows in words**, the rule carries those words:
   an outcome is a life span or a statement, and `days()` answers only for a
   span. Brihat Jataka ch. 14's twenty-one pairs and Phaladeepika ch. 18's

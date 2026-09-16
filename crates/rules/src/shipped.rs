@@ -47,6 +47,8 @@ const BALARISHTA: &str = include_str!("../rules/classical-balarishta.json");
 const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
 /// The Nabhasa yogas of BPHS ch. 35.
 const NABHASA: &str = include_str!("../rules/classical-nabhasa.json");
+/// The lunar yogas of BPHS ch. 37 and the solar yogas of ch. 38.
+const LUNAR_SOLAR: &str = include_str!("../rules/classical-lunar-solar.json");
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
 /// twenty-one pairs and Phaladeepika ch. 18's Moon in each sign, aspected.
 const DWIGRAHA: &str = include_str!("../rules/classical-readings.json");
@@ -78,7 +80,11 @@ static READINGS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
 static DOSHAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_DOSHAS));
 static YOGAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_YOGAS));
 static GANDANTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(GANDANTA));
-static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(NABHASA));
+static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
+    let mut rules = read(NABHASA);
+    rules.append(&mut read(LUNAR_SOLAR));
+    rules
+});
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     let mut rules = read(ARISHTA);
     rules.append(&mut read(BALARISHTA));
@@ -126,11 +132,11 @@ pub fn readings() -> &'static [Rule] {
     &READINGS
 }
 
-/// The thirty-two Nabhasa yogas of BPHS ch. 35, read from the text: three
-/// ashraya, two dala, twenty akriti and seven sankhya, each with the effect its
-/// verse gives. The seven sankhya yogas name the other twenty-five as
-/// cancellations, v. 17 saying that none of them holds where another Nabhasa
-/// yoga is derivable.
+/// The yogas the SDK reads from BPHS: ch. 35's thirty-two Nabhasa yogas —
+/// three ashraya, two dala, twenty akriti and seven sankhya, the sankhya seven
+/// naming the other twenty-five as cancellations, as v. 17 requires — and
+/// ch. 37's lunar and ch. 38's solar yogas beside them. Each carries the
+/// effect its verse gives and nothing the SDK invented.
 #[must_use]
 pub fn nabhasas() -> &'static [Rule] {
     &NABHASAS
@@ -165,7 +171,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 509);
+        assert_eq!(rules.len(), 523);
         for rule in &rules {
             let rank = rule
                 .source
