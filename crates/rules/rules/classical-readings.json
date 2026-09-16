@@ -1259,7 +1259,7 @@
   "risingPart": {
     "text": "Saravali",
     "rank": 1,
-    "note": "The part of a sign that rises, and what the chapter says of the native. Read from R. Santhanam's translation of Kalyana Varma's Saravali, the signs in order from Aries and the parts in order from the beginning of each sign. Ch. 49 v. 25 and ch. 50 v. 37 make these effects mature in full only where the sign or its lord is strong, which the kernel cannot measure; the second decanates of Gemini and of Cancer are printed with one reading between them in the translation read, and both ship as printed.",
+    "note": "The part of a sign that rises, and what the chapter says of the native. Read from R. Santhanam's translation of Kalyana Varma's Saravali, the signs in order from Aries and the parts in order from the beginning of each sign. Ch. 49 v. 25, ch. 50 v. 37 and ch. 51 v. 1 make these effects mature in full only where the sign, its lord, or the stronger of the navamsa lagna's lord and the Moon's navamsa dispositor is strong, which the kernel cannot measure; ch. 51 v. 110 carries the sign readings over to the dwadasamsas and the rest to the saptamsas, which is not built; the second decanates of Gemini and of Cancer are printed with one reading between them in the translation read, and both ship as printed.",
     "parts": [
       {
         "name": "HORA",
@@ -1451,6 +1451,181 @@
               "honey-coloured and tawny of eye, fair of complexion, very learned, a doer of virtuous deeds, happy, a traveller by sea, and modest",
               "skilful in serving women, an eater of purified food, enjoying other men's wealth, sensuous, dear to women and to the virtuous, and an excellent person",
               "dark of complexion, skilful in the arts, wide of foot, generous with his friends, and an eater and drinker of what is purified"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "NAVAMSA",
+        "chapter": "51",
+        "count": 9,
+        "signs": [
+          {
+            "verse": "2-10",
+            "effects": [
+              "goat-faced, with nose and shoulders not prominent, fierce of voice, ugly of appearance, narrow of eye, and thin of body though free of defect",
+              "dark of complexion, broad of shoulder and long of arm, small of forehead, strong of collar-bone, sharp of sight, prominent of face and nose, an affable speaker, and weak of leg",
+              "losing his hair, fair of complexion, irregular of arm, charming of eye and nose, a scholar of ready poetic power, and weak of thigh",
+              "erratic of sight, irascible, short of nose, a wanderer, rough of leg and coarse of hair, brotherless and emaciated",
+              "fierce, with the eyes of a great elephant, fat of nose, thick of brow, wide of fore-face, fat of body and coarse of hair",
+              "dark of complexion, soft of disposition, deer-eyed, tall of stature, irregular of stomach and hand, a eunuch, timid and garrulous",
+              "of the colour of a green shoot, fickle, white of eye, married to an unchaste woman, malicious, and broad of body",
+              "monkey-faced, a good speaker, afflicted and tawny of body, suffering secret diseases, torturous, a liar, fond of his friends, and fierce",
+              "tall, emaciated, a wanderer, defective of fore-face and ear, horse-faced, of many names, and crooked"
+            ]
+          },
+          {
+            "verse": "11-19",
+            "effects": [
+              "even and dark of body, hard of heart, performing obsequies at the beginning and the end of his life, base, given to unnatural acts, and crooked of sight",
+              "of majestic looks, indolent, bent of body, not very intelligent, given to hostile acts, and a great liar",
+              "erratic of sight, fierce, short of nose, a wanderer, coarse of leg and hair, soft of limb, beautiful, broad of eye and big of limb, interested in sacrifices, and stiff of leg and hand",
+              "short of stature, a wanderer, easily irritated, goat-eyed, tawny of complexion, poor, and a thief of other men's wealth",
+              "vicious, well elevated of nose, like a giant ox to look on, crooked of hair, sportive, and large of shoulder and hip",
+              "beautiful of eye and hair, firm, fair of complexion, sweet of speech, pre-eminent, fond of amusement, emaciated and skilful",
+              "interested in women who have lost their sons, somewhat elevated of nose and prominent of eye, strong of body, a hater of his own people, and stout of foot with exquisite hair",
+              "tiger-eyed and charming of tooth, unconquerable, full-blown of nose, sparing in his work, curly and bluish of hair, sharp of nail, and garrulous",
+              "honourable, not very strong, timid, given to anger, even and charming of body, a rogue, a gatherer of money, famous, thin in the lower body, and a prattler"
+            ]
+          },
+          {
+            "verse": "20-28",
+            "effects": [
+              "hairy of shoulder, charming and dark of eye, elevated of nose, of the colour of green grass, and thin of leg and hand",
+              "pot-headed, a doer of dirty acts, fond of torturous deeds, depressed of nose, much speaking, much working, and a leader in strife and quarrel",
+              "fair of complexion, blood-red of eye, charming of nose, even of body, very intelligent, long of face, dark of brow, and a skilful speaker",
+              "charming of brow and forehead, lustful, splendid as a blue lotus, broad of chest and white of tooth, soft of speech, and attractive of hair",
+              "broad of face, strong of chest and big of head, wicked, cunning, and charming and friendly of look",
+              "honey-hued of eye, garrulous, broad of fore-face, even of body and charming of lip, a rogue, fickle and strong",
+              "copper-coloured of body, copper-red and prominent of eye, broad of chest, skilful in teaching and in the arts, and jocular of disposition",
+              "dark of complexion, great, intelligent, soft of disposition, sweet of speech, broad and tall of body, large and black of eye, and an expert in the arts",
+              "round and dark of eye, charming of body, successful, very intelligent, and fond of union, of poetry and of worldly knowledge"
+            ]
+          },
+          {
+            "verse": "29-37",
+            "effects": [
+              "clean, charming and fair of body, beautiful of hair, broad of belly, impressive of face, prominent of eye, and thin of body and shoulder",
+              "blood-red of complexion, fierce in quarrel, fond of the fine arts, cat-faced and cat-eyed, well disposed to sacrifice for others, and weak of knee and shank",
+              "fair of complexion, beautiful of eye, an eloquent speaker, soft of body as a woman, intelligent, a sparing and light worker, and indolent",
+              "black of complexion, pressed of brow, graceful of appearance, charming of eye and nose, courageous, liberal, a doer of the acts prescribed for the higher castes, and crafty",
+              "bell-voiced, stooping of face, with joined brows and very long arms, given to worship, undutiful, injurious to others, and not very intelligent",
+              "long and broad of body, charming of eye, greatly courageous, fair of complexion, a good speaker, beautiful of nose and big of tooth",
+              "scattered of hair, big of body, sinewy of knee, disposed to protect other men's families, and crow-like in appearance",
+              "bell-shaped of head, charming of face, shoulder and limb, a degraded artisan, tortoise-gaited, crooked of nose, and dark of complexion",
+              "fair of complexion, fish-eyed, great, soft of belly, broad of chest, prominent of chin and lip, and large but weak of knee and ankle"
+            ]
+          },
+          {
+            "verse": "38-46",
+            "effects": [
+              "even of belly as a lion, fierce, sharp and blood-red of nose, big of head, valorous, and prominent and fleshy of chest",
+              "prominent and broad of fore-face, square of body, broad of eye and chest, long of arm and big of nose",
+              "hairy and broad of arm, partridge-eyed, fickle, charitable, elevated of nose, pure white of body, and round of neck",
+              "ash-coloured of body, large and black of eye, soft of hair, peculiar of voice, big of hand and foot, and frog-bellied",
+              "bell-shaped of head with little hair, charming of nose and eye, hairy of body, long of belly, fierce, unsightly of tooth, and strong and broad of cheek",
+              "of little but soft hair, white and large of eye, tall of stature, dark of complexion, proven in skill only among women, swaggering, and learned",
+              "long of face, sinewy, prominent of body, unfortunate in his wife, dark of complexion, fierce, hairy of body, cunning, and harsh of speech",
+              "of excellent speech, firm of limb, charming and majestic of look, undutiful, poor and crafty",
+              "donkey-faced, dark of eye, long of arm, charming of leg, and troubled in his breathing"
+            ]
+          },
+          {
+            "verse": "47-55",
+            "effects": [
+              "antelope-eyed, a good speaker, charitable, enjoying the pleasures of sex, very rich, dark of complexion, and large of heart",
+              "charming of face and eye, fair of complexion, soft, argumentative, fickle and long of belly",
+              "blown of nose, prominent of foot, long of arm, pure of speech, fair of complexion, and friendly",
+              "learned, sportive with women, beautiful, sweet, blood-red of complexion, sharp, intelligent, emaciated, and charming of eye and face",
+              "large of lip and hand, big of body, broad of chest, strong of ankle, and dependent on others",
+              "charming of appearance, impressive of speech, splendid of body, an exponent of the shastras, very intelligent, skilful in writing and the fine arts, good of heart, and taking pleasure in walking",
+              "small of face, elevated of nose, compact of arm, very fair of complexion, prominent of belly, hand and leg, and afraid of water",
+              "very beautiful, fair of complexion, tall of stature, charming of eye, fierce, honourable, long and stout of arm, and brown of hair",
+              "famous, charming of body, broad of eye, of incomparable vigour, skilful, stooping of shoulder, and a learned writer"
+            ]
+          },
+          {
+            "verse": "56-64",
+            "effects": [
+              "fair of complexion, broad of eye, praiseworthy, long of face, skilful in business, happy and famous",
+              "squint and round of eye, ill formed of tooth, depressed of waist, charming of neck, large of heart, ugly of body, and compact of brow",
+              "fair of complexion, horse-faced, thin of body, famous, long of hair and nose, and beautiful of leg",
+              "weak of hand, timid, ill formed of tooth, weak of body, rolling of eye, small of nail, dark of complexion, devoid of virtue, and miserable",
+              "of majestic look, firm of disposition, not proud, rough of hair, even of eye, and beautiful of nose",
+              "fleshy of limb, fair of complexion, broad of eye, beautiful of nose, white of nail, diplomatic, and learned in the shastras",
+              "blood-red of complexion, intelligent, long of body and arm, big of head, miserly and fierce",
+              "elevated of shoulder, prominent of neck, pleasured, coarse of body, long and dark of brow, a polite speaker, beautiful of chest, and bruised of head",
+              "charming of eye, pleased of mind, fair of complexion, even and beautiful of body, skilful, fond of the arts, charitable and jocular"
+            ]
+          },
+          {
+            "verse": "65-73",
+            "effects": [
+              "short of stature, prominent of lip and nose, charming of forehead, strong and fair of body, frog-bellied, and a broker of marriages",
+              "fair of complexion, strong and broad of chest and shoulder, reddish of eye, a conqueror of his enemies, valorous, and of abundant hair",
+              "learned, strong of shoulder and arm, beautiful of hair, clear of speech, fair of complexion, charming of lip, and born of a virgin",
+              "bent on joining other men's wives, a rouser of others to action, valorous, tall, and dark of complexion, hair and eye",
+              "majestic, copper-red of eye, depressed of nose, courageous, proud, a doer of fearful acts, famous, and strong of body",
+              "impudent, intelligent of a high order, elevated of nose, greatly strong, knowing justice, skilful, of little hair, and compact of brow",
+              "split of face, strong of body, uneven of tooth, depressed of belly, squint of sight, and very splendid",
+              "blown of nose, dark of complexion, devoid of virtue, dirty of appearance, stiff of hair, and foolhardy",
+              "fair of body, beautiful as a deer, calm and tawny of eye and hair, strong of body, and amiable to his elders"
+            ]
+          },
+          {
+            "verse": "74-82",
+            "effects": [
+              "charming and big of nose, goat-sighted, a gifted speaker, charming of tooth and hair, fair of complexion, inset of testicle, and fierce",
+              "prominent of head, firm of disposition, large of eye, strong of waist and knee, ugly of nose, tall of stature, and firm of cheek",
+              "skilled in teaching and in the fine arts, majestic, just, fond of women, intelligent and jocular",
+              "skilful, tawny of complexion, round of eye, fair of body, tortoise-bellied, intelligent, a wanderer, and charming of hair and of appearance",
+              "large of ear, eye and face, lion-bodied, wide of brow, strong of shoulder and arm, hairless of body, and firm of disposition",
+              "beautiful and large of eye, broad of forehead and face, a poet, mean, and fond of scholarly dispute",
+              "dark of complexion, soft of disposition, keeping his promise, prominent of head, bent on saving, tall of stature, broad of eye, and liberal",
+              "flat of nose, broad of head, inimical, erratic of sight, garrulous, and dear to his elders",
+              "fair of complexion, horse-faced, broad and dark of eye, sparing of speech, truthful, miserable, and crooked of walking limb"
+            ]
+          },
+          {
+            "verse": "83-91",
+            "effects": [
+              "gapped and outward of tooth, dark of complexion, broken of speech, coarse of hair, famous, fond of music and amusement, emaciated, and of fluctuating wealth",
+              "indolent, crafty, crooked of nose, fond of music, broad of body, interested in many women, much prattling, and skilful",
+              "lusting after music, famous, fair of complexion, of superior look and charming nose, fond of many friends and relatives, and getting what he desires",
+              "round of eye with a mix of blood-red and black, large of forehead, emaciated of body, thin of arm, scattered of hair, gapped of tooth, and broken of speech",
+              "prominent of neck, nose and belly, pleasured, attached to women, dark of complexion, round of knee and arm, and successful in the beginnings of what he undertakes",
+              "splendid of body, charmingly attired, libidinous, small and even of tooth, a good speaker, big of cheek and large of forehead",
+              "dark of complexion, indolent, an eloquent speaker, short of hair, big of body, harsh of disposition, soft of hand and foot, intelligent and very virtuous",
+              "of majestic sight and charming nose, reddish of face, uneven of nail and hair, grotesque of body, and pot-browed",
+              "broad of chest, large of eye, highly intelligent, fully developed of face, interested in the study of music, sweet and strong, gentle and diplomatic"
+            ]
+          },
+          {
+            "verse": "92-100",
+            "effects": [
+              "dark of complexion, soft of disposition, emaciated of body, prominent of cheek, learned in poetry and the shastras, libidinous, given to carnal pleasure, and splendid",
+              "coarse of skin, nail, sight and hair, kind to the helpless, gentle, tall of stature, foolish, and distinct of head",
+              "compact of body, fond of women, splendid as lapis lazuli, learned in the meaning of the shastras, and acting by it",
+              "fond of women, fair of complexion, split of face, a destroyer of his enemies, majestic, courageous, and fond of pleasure and of union",
+              "learned in the clear meaning of the shastras and in the fine arts, coarse of leg-hair, concealed of neck and ear, and dark of complexion",
+              "tiger-faced, bold, short of hair, unchanging in his aims, a killer of tiger, deer and snake, and dear to the king",
+              "goat-eyed and goat-faced, fierce of disposition, delighted in village life, insulted by women, suffering bilious disease, and endowed with strength and courage",
+              "of undiminishing strength, firm of disposition and affection, a warrior with the king or a king himself, beautiful, strong of tooth and broad of eye",
+              "dark of complexion, unclean and elevated of tooth, parted from wife, children and wealth, an affable speaker, famous and skilful"
+            ]
+          },
+          {
+            "verse": "101-109",
+            "effects": [
+              "white of complexion yet blood-red in the splendour of his body, soft of disposition, womanly in his make-up, fickle, short of neck and emaciated of waist",
+              "big of nose, skilful in what he is set, an eater of meat, charming of body, a wanderer in forests and hills, and big of head",
+              "white of complexion, crafty, beautiful of eye, beautiful, righteous, learned, courteous, modest and charming of appearance",
+              "of praiseworthy attributes, falling into adversity, a servant of the aged, skilful in what he is set, learned, very strong, versed in justice, and elevated of nose",
+              "tall of stature, dark of complexion, valorous, unpeaceful, snail-nosed and charming of eye, fond of torturing others, impatient, beautiful of tooth, and a prattler",
+              "self-respecting, righteous, excellent, strong, miserable, crafty, unsteady, and a minister",
+              "self-respecting, interested in other religions, excellent, a minister, strong, miserable, cruel and unsteady",
+              "tall of stature, big of head, emaciated, indolent, uneven of eye and hair, of foolish children, bent on earning money, and skilful in quarrel",
+              "short, soft of disposition, courageous, broad of chest and eye, big of nose, bright, broad of body, intelligent, virtuous and famous"
             ]
           }
         ]

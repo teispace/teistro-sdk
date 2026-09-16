@@ -528,25 +528,30 @@ bhavas, eighty-four more. Its closing verses say that malefics harm the bhava
 they occupy except in the sixth, eighth and twelfth, and that all of these
 readings vary with strength, dignity and aspect; neither is here.
 
-Saravali chs. 49 and 50 add a fifth shape and sixty more readings: the part of
-a sign that rises, two halves and three thirds of each of the twelve. They need
-no division chart — `planet-in-degrees` on the lagna says it — and the count
-of parts is data, so a chapter that cut a sign nine ways would need no code.
-Ch. 49 v. 25 and ch. 50 v. 37 make these effects mature in full only where the
-sign or its lord is strong, which is not built.
+Saravali chs. 49, 50 and 51 add a fifth shape and a hundred and sixty-eight
+more readings: the part of a sign that rises — two halves, three thirds and
+nine ninths of each of the twelve. They need no division chart,
+`planet-in-degrees` on the lagna saying it, and the count of parts is data, so
+the chapter that does cut a sign nine ways needed no code at all. Chapter 49
+v. 25, ch. 50 v. 37 and ch. 51 v. 1 make these effects mature in full only
+where the sign, its lord, or the stronger of the navamsa lagna's lord and the
+Moon's navamsa dispositor is strong, and ch. 51 v. 110 carries the sign
+readings over to the dwadasamsas and the rest to the saptamsas; none of that is
+built.
 
 A test holds the generator to its table — twenty-one distinct pairs, twelve
 signs of six aspects each, every combination of each size once, each of the
-seven in each of the twelve signs and in each of the twelve bhavas, two halves
-and three thirds of each sign, every rule
+seven in each of the twelve signs and in each of the twelve bhavas, two halves,
+three thirds and nine ninths of each sign, every rule
 evaluable, rank 1, citing where it was read, carrying words and no severity and
-no cancellation — and pins what each answers over the 93 charts. Ninety-four
+no cancellation — and pins what each answers over the 93 charts. A hundred and fifty-seven
 stay silent, among them all six readings of an Aries Moon, who stands there in
 one chart and is aspected by nobody, and the larger assemblies, which want four
 grahas or more in one sign, two houses no graha of the seven reached in these
-births, and the halves and thirds of the signs that never rose in them. A graha stands in exactly one sign and in exactly one
-house in every chart, and one hora and one decanate rise in every chart, so
-each of Saravali's families answers 93 times over the 93 — an arithmetic the
+births, and the parts of the signs that never rose in them, most of those
+navamsas, a ninth of a sign being a narrow thing to rise in. A graha stands in exactly one sign and in exactly one
+house in every chart, and one hora, one decanate and one navamsa rise in every
+chart, so each of Saravali's families answers 93 times over the 93 — an arithmetic the
 test holds, which ties the reader to the corpus rather than to itself and says
 that the degree bands tile a sign with no gap and no overlap. Varahamihira's twenty-one pairs and Jataka
 Parijata's are the same figure read twice, so the test holds them to the same

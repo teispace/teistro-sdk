@@ -78,8 +78,8 @@ cancellations held.
   hundred and nineteen lists of two to six grahas sharing a sign, whose grahas
   are generated and whose readings alone are data, and Saravali chs. 22 to 29's
   eighty-four readings of a graha in a sign, ch. 30's eighty-four of a graha in a
-  bhava and chs. 49 and 50's sixty of the part of a sign that rises: 440 rules
-  from a table, `shipped::readings()`.
+  bhava and chs. 49 to 51's hundred and sixty-eight of the part of a sign that
+  rises: 548 rules from a table, `shipped::readings()`.
 - **A body's degrees within its sign** are readable (`planet-in-degrees`),
   which Brihat Jataka ch. 6 v. 8's last navamsa needs.
 - **A rule can name another.** `{"type": "rule", "key": …}` holds when that

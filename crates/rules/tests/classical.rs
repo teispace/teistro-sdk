@@ -315,7 +315,7 @@ const ANSWERED: [(&str, usize); 72] = [
 #[test]
 fn the_generator_makes_one_rule_a_reading() {
     let rules = shipped::readings();
-    assert_eq!(rules.len(), 440);
+    assert_eq!(rules.len(), 548);
     every_family_is_whole(rules);
     // What the generator builds is a rule like any other: it writes out in the
     // language and reads back the same, outcome and all.
@@ -356,18 +356,20 @@ fn the_generator_makes_one_rule_a_reading() {
     assert_eq!(varahamihira.len(), 21);
     assert_eq!(varahamihira, parijata);
     // Every pair of grahas, and every graha in every sign, happens somewhere
-    // in 93 charts. Eighty-six readings stay silent: 35 of the Moon's 72,
+    // in 93 charts. A hundred and fifty-seven readings stay silent: most of
+    // them navamsas, a ninth of a sign being a narrow thing to rise in; 35 of
+    // the Moon's 72,
     // among them all six of Aries, where she stands in one chart only and
     // nothing aspects her; the larger assemblies, which want four grahas or
     // more in one sign; and two houses no graha of the seven reached.
     let silent = counts.iter().filter(|(_, count)| *count == 0).count();
-    assert_eq!(silent, 94);
+    assert_eq!(silent, 157);
     // A graha stands in exactly one sign in every chart, so each of Saravali's
     // chapters answers 93 times over the 93.
     // One part of one sign rises in every chart, so each of Saravali's two
     // divisions answers 93 times over the 93 — which says the bands tile a
     // sign with no gap and no overlap.
-    for division in ["HORA", "DECANATE"] {
+    for division in ["HORA", "DECANATE", "NAVAMSA"] {
         let total: usize = counts
             .iter()
             .filter(|(key, _)| key.starts_with(&format!("SARAVALI_{division}_")))
@@ -397,7 +399,7 @@ fn the_generator_makes_one_rule_a_reading() {
 }
 
 /// What each reading answers over the 93 recorded charts.
-const READINGS: [(&str, usize); 440] = [
+const READINGS: [(&str, usize); 548] = [
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_JUPITER", 0),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MARS", 2),
     ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MERCURY", 1),
@@ -766,6 +768,114 @@ const READINGS: [(&str, usize); 440] = [
     ("SARAVALI_MOON_IN_SCORPIO", 16),
     ("SARAVALI_MOON_IN_TAURUS", 4),
     ("SARAVALI_MOON_IN_VIRGO", 11),
+    ("SARAVALI_NAVAMSA_1_OF_AQUARIUS", 0),
+    ("SARAVALI_NAVAMSA_1_OF_ARIES", 0),
+    ("SARAVALI_NAVAMSA_1_OF_CANCER", 0),
+    ("SARAVALI_NAVAMSA_1_OF_CAPRICORN", 0),
+    ("SARAVALI_NAVAMSA_1_OF_GEMINI", 3),
+    ("SARAVALI_NAVAMSA_1_OF_LEO", 0),
+    ("SARAVALI_NAVAMSA_1_OF_LIBRA", 0),
+    ("SARAVALI_NAVAMSA_1_OF_PISCES", 0),
+    ("SARAVALI_NAVAMSA_1_OF_SAGITTARIUS", 1),
+    ("SARAVALI_NAVAMSA_1_OF_SCORPIO", 0),
+    ("SARAVALI_NAVAMSA_1_OF_TAURUS", 1),
+    ("SARAVALI_NAVAMSA_1_OF_VIRGO", 1),
+    ("SARAVALI_NAVAMSA_2_OF_AQUARIUS", 0),
+    ("SARAVALI_NAVAMSA_2_OF_ARIES", 1),
+    ("SARAVALI_NAVAMSA_2_OF_CANCER", 1),
+    ("SARAVALI_NAVAMSA_2_OF_CAPRICORN", 1),
+    ("SARAVALI_NAVAMSA_2_OF_GEMINI", 0),
+    ("SARAVALI_NAVAMSA_2_OF_LEO", 0),
+    ("SARAVALI_NAVAMSA_2_OF_LIBRA", 1),
+    ("SARAVALI_NAVAMSA_2_OF_PISCES", 2),
+    ("SARAVALI_NAVAMSA_2_OF_SAGITTARIUS", 0),
+    ("SARAVALI_NAVAMSA_2_OF_SCORPIO", 2),
+    ("SARAVALI_NAVAMSA_2_OF_TAURUS", 1),
+    ("SARAVALI_NAVAMSA_2_OF_VIRGO", 0),
+    ("SARAVALI_NAVAMSA_3_OF_AQUARIUS", 8),
+    ("SARAVALI_NAVAMSA_3_OF_ARIES", 0),
+    ("SARAVALI_NAVAMSA_3_OF_CANCER", 1),
+    ("SARAVALI_NAVAMSA_3_OF_CAPRICORN", 0),
+    ("SARAVALI_NAVAMSA_3_OF_GEMINI", 0),
+    ("SARAVALI_NAVAMSA_3_OF_LEO", 1),
+    ("SARAVALI_NAVAMSA_3_OF_LIBRA", 1),
+    ("SARAVALI_NAVAMSA_3_OF_PISCES", 0),
+    ("SARAVALI_NAVAMSA_3_OF_SAGITTARIUS", 1),
+    ("SARAVALI_NAVAMSA_3_OF_SCORPIO", 6),
+    ("SARAVALI_NAVAMSA_3_OF_TAURUS", 1),
+    ("SARAVALI_NAVAMSA_3_OF_VIRGO", 1),
+    ("SARAVALI_NAVAMSA_4_OF_AQUARIUS", 2),
+    ("SARAVALI_NAVAMSA_4_OF_ARIES", 0),
+    ("SARAVALI_NAVAMSA_4_OF_CANCER", 0),
+    ("SARAVALI_NAVAMSA_4_OF_CAPRICORN", 1),
+    ("SARAVALI_NAVAMSA_4_OF_GEMINI", 1),
+    ("SARAVALI_NAVAMSA_4_OF_LEO", 2),
+    ("SARAVALI_NAVAMSA_4_OF_LIBRA", 0),
+    ("SARAVALI_NAVAMSA_4_OF_PISCES", 1),
+    ("SARAVALI_NAVAMSA_4_OF_SAGITTARIUS", 0),
+    ("SARAVALI_NAVAMSA_4_OF_SCORPIO", 2),
+    ("SARAVALI_NAVAMSA_4_OF_TAURUS", 0),
+    ("SARAVALI_NAVAMSA_4_OF_VIRGO", 1),
+    ("SARAVALI_NAVAMSA_5_OF_AQUARIUS", 0),
+    ("SARAVALI_NAVAMSA_5_OF_ARIES", 0),
+    ("SARAVALI_NAVAMSA_5_OF_CANCER", 0),
+    ("SARAVALI_NAVAMSA_5_OF_CAPRICORN", 0),
+    ("SARAVALI_NAVAMSA_5_OF_GEMINI", 0),
+    ("SARAVALI_NAVAMSA_5_OF_LEO", 1),
+    ("SARAVALI_NAVAMSA_5_OF_LIBRA", 0),
+    ("SARAVALI_NAVAMSA_5_OF_PISCES", 7),
+    ("SARAVALI_NAVAMSA_5_OF_SAGITTARIUS", 2),
+    ("SARAVALI_NAVAMSA_5_OF_SCORPIO", 0),
+    ("SARAVALI_NAVAMSA_5_OF_TAURUS", 1),
+    ("SARAVALI_NAVAMSA_5_OF_VIRGO", 4),
+    ("SARAVALI_NAVAMSA_6_OF_AQUARIUS", 0),
+    ("SARAVALI_NAVAMSA_6_OF_ARIES", 0),
+    ("SARAVALI_NAVAMSA_6_OF_CANCER", 0),
+    ("SARAVALI_NAVAMSA_6_OF_CAPRICORN", 0),
+    ("SARAVALI_NAVAMSA_6_OF_GEMINI", 0),
+    ("SARAVALI_NAVAMSA_6_OF_LEO", 2),
+    ("SARAVALI_NAVAMSA_6_OF_LIBRA", 1),
+    ("SARAVALI_NAVAMSA_6_OF_PISCES", 1),
+    ("SARAVALI_NAVAMSA_6_OF_SAGITTARIUS", 3),
+    ("SARAVALI_NAVAMSA_6_OF_SCORPIO", 0),
+    ("SARAVALI_NAVAMSA_6_OF_TAURUS", 0),
+    ("SARAVALI_NAVAMSA_6_OF_VIRGO", 1),
+    ("SARAVALI_NAVAMSA_7_OF_AQUARIUS", 0),
+    ("SARAVALI_NAVAMSA_7_OF_ARIES", 0),
+    ("SARAVALI_NAVAMSA_7_OF_CANCER", 1),
+    ("SARAVALI_NAVAMSA_7_OF_CAPRICORN", 0),
+    ("SARAVALI_NAVAMSA_7_OF_GEMINI", 1),
+    ("SARAVALI_NAVAMSA_7_OF_LEO", 1),
+    ("SARAVALI_NAVAMSA_7_OF_LIBRA", 0),
+    ("SARAVALI_NAVAMSA_7_OF_PISCES", 0),
+    ("SARAVALI_NAVAMSA_7_OF_SAGITTARIUS", 0),
+    ("SARAVALI_NAVAMSA_7_OF_SCORPIO", 1),
+    ("SARAVALI_NAVAMSA_7_OF_TAURUS", 0),
+    ("SARAVALI_NAVAMSA_7_OF_VIRGO", 0),
+    ("SARAVALI_NAVAMSA_8_OF_AQUARIUS", 0),
+    ("SARAVALI_NAVAMSA_8_OF_ARIES", 0),
+    ("SARAVALI_NAVAMSA_8_OF_CANCER", 0),
+    ("SARAVALI_NAVAMSA_8_OF_CAPRICORN", 0),
+    ("SARAVALI_NAVAMSA_8_OF_GEMINI", 0),
+    ("SARAVALI_NAVAMSA_8_OF_LEO", 0),
+    ("SARAVALI_NAVAMSA_8_OF_LIBRA", 0),
+    ("SARAVALI_NAVAMSA_8_OF_PISCES", 11),
+    ("SARAVALI_NAVAMSA_8_OF_SAGITTARIUS", 0),
+    ("SARAVALI_NAVAMSA_8_OF_SCORPIO", 0),
+    ("SARAVALI_NAVAMSA_8_OF_TAURUS", 0),
+    ("SARAVALI_NAVAMSA_8_OF_VIRGO", 0),
+    ("SARAVALI_NAVAMSA_9_OF_AQUARIUS", 0),
+    ("SARAVALI_NAVAMSA_9_OF_ARIES", 2),
+    ("SARAVALI_NAVAMSA_9_OF_CANCER", 0),
+    ("SARAVALI_NAVAMSA_9_OF_CAPRICORN", 0),
+    ("SARAVALI_NAVAMSA_9_OF_GEMINI", 0),
+    ("SARAVALI_NAVAMSA_9_OF_LEO", 0),
+    ("SARAVALI_NAVAMSA_9_OF_LIBRA", 5),
+    ("SARAVALI_NAVAMSA_9_OF_PISCES", 0),
+    ("SARAVALI_NAVAMSA_9_OF_SAGITTARIUS", 0),
+    ("SARAVALI_NAVAMSA_9_OF_SCORPIO", 1),
+    ("SARAVALI_NAVAMSA_9_OF_TAURUS", 2),
+    ("SARAVALI_NAVAMSA_9_OF_VIRGO", 0),
     ("SARAVALI_SATURN_IN_AQUARIUS", 5),
     ("SARAVALI_SATURN_IN_ARIES", 14),
     ("SARAVALI_SATURN_IN_BHAVA_1", 3),
@@ -922,7 +1032,7 @@ fn every_family_is_whole(rules: &[Rule]) {
     // Two halves and three thirds of each of the twelve signs.
     assert_eq!(
         rising.into_iter().collect::<Vec<_>>(),
-        [("DECANATE", 36), ("HORA", 24)]
+        [("DECANATE", 36), ("HORA", 24), ("NAVAMSA", 108)]
     );
 
 }
