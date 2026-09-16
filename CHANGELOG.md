@@ -1306,6 +1306,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- BPHS ch. 44's manner, place and awareness of death (vv. 25 to 37) and the
+  worlds before birth and after death (vv. 41 to 45): 34 rules in the new
+  `marana` and `loka` categories. The SDK ships 993 rules.
+
+  **Numbers:** over the 93 charts the verses' partitions hold on every chart —
+  one place of death on each of the 59 with the third occupied, one by the
+  third's modality on all 93, one prenatal world on each of the 71 that compare
+  the luminaries' strength.
+
 - The marakas: `Evaluator::marakas` gives every graha's reasons from BPHS ch. 44
   vv. 2 to 24, graded death or difficulty; `Evaluator::vulnerability` reads a
   running chain with v. 8's malefic major period in a malefic sub-period; and

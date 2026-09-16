@@ -1100,6 +1100,23 @@ medium and 101 short; vv. 71 to 73 place the stronger of the lagna and eighth
 lords in exactly one of angle, panaphara and apoklima on each of the 71 charts
 that compare strength, which is the three lists being the twelve houses.
 
+**The manner of death and the worlds before and after (2026-09-17).** BPHS ch.
+44 vv. 25 to 37 read the manner, place and awareness of death from the third
+and eighth houses, and vv. 41 to 45 the world a native came from and goes to.
+They are rules and need nothing new: the prenatal world reads the stronger
+luminary's drekkana lord inside `in-varga` D3, and the Moon-with-Gulika figure
+names a point. Thirty-four rules ship in two new categories, `marana` and
+`loka`. Over the 93 charts the verses' partitions hold on every chart: an
+occupied third is exactly one of a holy, an unholy and a mixed place of death,
+and either conscious or not, on all 59 charts with it occupied; the third's
+modality gives exactly one place on all 93; and exactly one prenatal world
+answers on each of the 71 charts whose strengths say which luminary is the
+stronger. The ascent after death is not a partition — several of its grahas can
+stand in the four houses at once — and the verses' second figure, the stronger
+drekkana lord of the sixth and eighth when they are empty, is not read. A
+consumer rendering a `marana` result reads it as the marakas are read, a
+statement of the texts about a vulnerability and not a prediction.
+
 **The marakas and their windows (2026-09-16).** BPHS ch. 44 vv. 2 to 24 give
 the marakas by reason — the lords of the second and seventh, the malefics in or
 joining them, the eighth and sixth lords, a benefic related to the twelfth

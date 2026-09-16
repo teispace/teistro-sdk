@@ -1,0 +1,1436 @@
+{
+  "rules": [
+    {
+      "key": "BPHS_STRONG_SUN_IN_THIRD_DEATH_BY_THE_STATE",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "25-31",
+        "rank": 1,
+        "note": "The Sun in the third, and strong. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            3
+          ]
+        },
+        {
+          "type": "planet-strong",
+          "planet": "SUN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through the state or its punishment"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOON_IN_THIRD_DEATH_BY_CONSUMPTION",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "25-31",
+        "rank": 1,
+        "note": "The Moon in the third. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            3
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by consumption"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MARS_IN_THIRD_DEATH_BY_WOUNDS",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "25-31",
+        "rank": 1,
+        "note": "Mars in the third. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            3
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by wounds, weapons, fire or thirst"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SATURN_AND_RAHU_ON_THIRD_DEATH_BY_POISON",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "25-31",
+        "rank": 1,
+        "note": "Saturn and Rahu each in or aspecting the third. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                3
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "SATURN",
+              "houseRuled": 3
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "RAHU",
+              "houses": [
+                3
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "RAHU",
+              "houseRuled": 3
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by poison, water, fire, a fall or confinement"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOON_AND_GULIKA_ON_THIRD_DEATH_BY_INSECTS",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "25-31",
+        "rank": 1,
+        "note": "The Moon in or aspecting the third, with Gulika in it; a point casts no aspect, so Gulika is read as occupying. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                3
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "MOON",
+              "houseRuled": 3
+            }
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "point": "GULIKA"
+          },
+          "as": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by insects or leprosy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MERCURY_ON_THIRD_DEATH_BY_FEVER",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "25-31",
+        "rank": 1,
+        "note": "Mercury in or aspecting the third. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MERCURY",
+              "houses": [
+                3
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "MERCURY",
+              "houseRuled": 3
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death after fever"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_JUPITER_ON_THIRD_DEATH_BY_SWELLING",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "25-31",
+        "rank": 1,
+        "note": "Jupiter in or aspecting the third. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                3
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "JUPITER",
+              "houseRuled": 3
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by swelling or tumours"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_VENUS_ON_THIRD_DEATH_BY_URINARY_DISEASE",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "25-31",
+        "rank": 1,
+        "note": "Venus in or aspecting the third. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                3
+              ]
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "VENUS",
+              "houseRuled": 3
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by urinary disease"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MANY_ON_THIRD_DEATH_BY_MANY_DISEASES",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "25-31",
+        "rank": 1,
+        "note": "Many grahas in or aspecting the third, read as three of the nine or more. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "then": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  3
+                ]
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "SELF",
+                "houseRuled": 3
+              }
+            ]
+          },
+          "atLeast": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death through many diseases"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BENEFICS_ALONE_IN_THIRD_DEATH_IN_A_HOLY_PLACE",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "32",
+        "rank": 1,
+        "note": "A benefic in the third and no malefic. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              3
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death in a holy place"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MALEFICS_ALONE_IN_THIRD_DEATH_IN_AN_UNHOLY_PLACE",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "32",
+        "rank": 1,
+        "note": "A malefic in the third and no benefic. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            3
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              3
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death in an unholy place"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BENEFICS_AND_MALEFICS_IN_THIRD_DEATH_IN_A_MIXED_PLACE",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "32",
+        "rank": 1,
+        "note": "A benefic and a malefic both in the third. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            3
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            3
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death in a place of mixed kind"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_JUPITER_OR_VENUS_IN_THIRD_CONSCIOUS_AT_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "33",
+        "rank": 1,
+        "note": "Jupiter or Venus in the third. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                3
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                3
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "conscious at death"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_OTHERS_IN_THIRD_UNCONSCIOUS_BEFORE_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "33",
+        "rank": 1,
+        "note": "Some graha in the third, and neither Jupiter nor Venus there. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  3
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": "JUPITER"
+                }
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": "VENUS"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-in-house",
+            "planet": "JUPITER",
+            "houses": [
+              3
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-in-house",
+            "planet": "VENUS",
+            "houses": [
+              3
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "unconscious before death"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOVABLE_THIRD_PLACE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "34",
+        "rank": 1,
+        "note": "The third a movable sign. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 3,
+          "signs": [
+            "ARIES",
+            "CANCER",
+            "LIBRA",
+            "CAPRICORN"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death away from home"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FIXED_THIRD_PLACE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "34",
+        "rank": 1,
+        "note": "The third a fixed sign. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 3,
+          "signs": [
+            "TAURUS",
+            "LEO",
+            "SCORPIO",
+            "AQUARIUS"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death in one's own house"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DUAL_THIRD_PLACE_OF_DEATH",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "34",
+        "rank": 1,
+        "note": "The third a dual sign. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": 3,
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death on the way"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SUN_IN_EIGHTH_DEATH_BY_FIRE",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "The Sun in the eighth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by fire"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOON_IN_EIGHTH_DEATH_BY_WATER",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "The Moon in the eighth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by water"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MARS_IN_EIGHTH_DEATH_BY_WEAPONS",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "Mars in the eighth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by weapons"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MERCURY_IN_EIGHTH_DEATH_BY_FEVER",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "Mercury in the eighth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by fever"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_JUPITER_IN_EIGHTH_DEATH_BY_DISEASE",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "Jupiter in the eighth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by disease"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_VENUS_IN_EIGHTH_DEATH_BY_HUNGER",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "Venus in the eighth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by hunger"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SATURN_IN_EIGHTH_DEATH_BY_THIRST",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "Saturn in the eighth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death by thirst"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BENEFIC_ON_EIGHTH_AND_NINTH_LORD_WITH_A_BENEFIC_DEATH_IN_A_SHRINE",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "37",
+        "rank": 1,
+        "note": "A benefic in or aspecting the eighth while the ninth lord is joined by a benefic other than itself. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                8
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-benefic",
+              "houseRuled": 8
+            }
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "lordOf": 9
+          },
+          "except": [
+            {
+              "lordOf": 9
+            }
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death in a shrine"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MALEFIC_ON_EIGHTH_AND_NINTH_LORD_WITH_A_MALEFIC_DEATH_ELSEWHERE",
+      "category": "marana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "37",
+        "rank": 1,
+        "note": "A malefic in or aspecting the eighth while the ninth lord is joined by a malefic other than itself. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                8
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": "any-malefic",
+              "houseRuled": 8
+            }
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "lordOf": 9
+          },
+          "except": [
+            {
+              "lordOf": 9
+            }
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "death away from a shrine"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DESCENT_FROM_THE_GODS",
+      "category": "loka",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "41-42",
+        "rank": 1,
+        "note": "The stronger of the Sun and the Moon in a drekkana ruled by Jupiter, the drekkana read in D3. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SUN",
+                  "than": "MOON"
+                },
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "SUN"
+                        },
+                        "as": "JUPITER"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "MOON",
+                  "than": "SUN"
+                },
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "MOON"
+                        },
+                        "as": "JUPITER"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "descended from the world of the gods"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DESCENT_FROM_THE_MANES",
+      "category": "loka",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "41-42",
+        "rank": 1,
+        "note": "The stronger of the Sun and the Moon in a drekkana ruled by Venus or Moon, the drekkana read in D3. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SUN",
+                  "than": "MOON"
+                },
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "SUN"
+                        },
+                        "as": "VENUS"
+                      },
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "SUN"
+                        },
+                        "as": "MOON"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "MOON",
+                  "than": "SUN"
+                },
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "MOON"
+                        },
+                        "as": "VENUS"
+                      },
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "MOON"
+                        },
+                        "as": "MOON"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "descended from the world of the manes"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DESCENT_FROM_YAMA",
+      "category": "loka",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "41-42",
+        "rank": 1,
+        "note": "The stronger of the Sun and the Moon in a drekkana ruled by Sun or Mars, the drekkana read in D3. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SUN",
+                  "than": "MOON"
+                },
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "SUN"
+                        },
+                        "as": "SUN"
+                      },
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "SUN"
+                        },
+                        "as": "MARS"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "MOON",
+                  "than": "SUN"
+                },
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "MOON"
+                        },
+                        "as": "SUN"
+                      },
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "MOON"
+                        },
+                        "as": "MARS"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "descended from the world of yama"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DESCENT_FROM_HELL",
+      "category": "loka",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "41-42",
+        "rank": 1,
+        "note": "The stronger of the Sun and the Moon in a drekkana ruled by Mercury or Saturn, the drekkana read in D3. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "SUN",
+                  "than": "MOON"
+                },
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "SUN"
+                        },
+                        "as": "MERCURY"
+                      },
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "SUN"
+                        },
+                        "as": "SATURN"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-stronger-than",
+                  "planet": "MOON",
+                  "than": "SUN"
+                },
+                {
+                  "type": "in-varga",
+                  "varga": "D3",
+                  "condition": {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "MOON"
+                        },
+                        "as": "MERCURY"
+                      },
+                      {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": "MOON"
+                        },
+                        "as": "SATURN"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "descended from the world of hell"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ASCENT_TO_HEAVEN",
+      "category": "loka",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "43-45",
+        "rank": 1,
+        "note": "Jupiter in the twelfth, seventh, sixth or eighth. The verses' second figure, the stronger drekkana lord of the sixth and eighth where those houses are empty, is not read. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                12,
+                7,
+                6,
+                8
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "goes to heaven after death"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ASCENT_TO_THE_MANES",
+      "category": "loka",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "43-45",
+        "rank": 1,
+        "note": "Moon or Venus in the twelfth, seventh, sixth or eighth. The verses' second figure, the stronger drekkana lord of the sixth and eighth where those houses are empty, is not read. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                12,
+                7,
+                6,
+                8
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                12,
+                7,
+                6,
+                8
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "goes to the manes after death"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ASCENT_TO_EARTH",
+      "category": "loka",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "43-45",
+        "rank": 1,
+        "note": "Mars or Sun in the twelfth, seventh, sixth or eighth. The verses' second figure, the stronger drekkana lord of the sixth and eighth where those houses are empty, is not read. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MARS",
+              "houses": [
+                12,
+                7,
+                6,
+                8
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "SUN",
+              "houses": [
+                12,
+                7,
+                6,
+                8
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "is reborn on earth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ASCENT_TO_HELL",
+      "category": "loka",
+      "source": {
+        "text": "BPHS",
+        "chapter": "44",
+        "verse": "43-45",
+        "rank": 1,
+        "note": "Mercury or Saturn in the twelfth, seventh, sixth or eighth. The verses' second figure, the stronger drekkana lord of the sixth and eighth where those houses are empty, is not read. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MERCURY",
+              "houses": [
+                12,
+                7,
+                6,
+                8
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "SATURN",
+              "houses": [
+                12,
+                7,
+                6,
+                8
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "goes to hell after death"
+        }
+      ]
+    }
+  ]
+}

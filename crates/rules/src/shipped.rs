@@ -65,6 +65,8 @@ const CORPSE: &str = include_str!("../rules/classical-corpse.json");
 const DHANA: &str = include_str!("../rules/classical-dhana.json");
 /// BPHS ch. 39's raja yogas and ch. 40's yogas for royal association.
 const RAJA: &str = include_str!("../rules/classical-raja.json");
+/// BPHS ch. 44's manner and place of death and the worlds before and after.
+const MARANA: &str = include_str!("../rules/classical-marana.json");
 /// BPHS ch. 43's combinations for the class of life.
 const AYUR: &str = include_str!("../rules/classical-ayur.json");
 /// BPHS ch. 42's combinations for penury.
@@ -113,6 +115,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PENURY));
     rules.append(&mut read(RAJA));
     rules.append(&mut read(AYUR));
+    rules.append(&mut read(MARANA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -226,7 +229,7 @@ mod tests {
         }
         let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
         let points = rules.iter().filter(|rule| rule.reads_points()).count();
-        assert_eq!((strength, points), (36, 2));
+        assert_eq!((strength, points), (41, 3));
         // And a rule naming a point, nested where a sign stands, says so.
         let gulika: Rule = serde_json::from_str(
             r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
@@ -247,7 +250,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 959);
+        assert_eq!(rules.len(), 993);
         for rule in &rules {
             let rank = rule
                 .source
@@ -371,7 +374,7 @@ mod tests {
     }
 
     /// Every category the shipped rules use.
-    const CATEGORIES: [&str; 29] = [
+    const CATEGORIES: [&str; 31] = [
         "arishta",
         "arishta-bhanga",
         "arishta-father",
@@ -389,7 +392,9 @@ mod tests {
         "house-based",
         "jaimini",
         "kalatra",
+        "loka",
         "mahapurusha",
+        "marana",
         "miscellaneous",
         "nabhasa",
         "neecha-bhanga",
