@@ -895,6 +895,7 @@ impl<'a> Evaluator<'a> {
                     (Some(EclipseKind::Solar), Eclipse::Lunar)
                     | (Some(EclipseKind::Lunar), Eclipse::Solar) => false,
                 }),
+            Condition::BirthByDay => self.panchanga().is_some_and(|p| p.by_day == Some(true)),
             Condition::BirthOnSankranti { .. } => self.panchanga().is_some_and(|p| p.on_sankranti),
             Condition::AtLimbEdge {
                 limb,
@@ -1618,6 +1619,7 @@ mod tests {
             yoga: Yoga::Vishkambha,
             karana: Karana::Bava,
             spans: crate::chart::Spans::default(),
+            by_day: None,
             on_sankranti: false,
             eclipse: None,
         }

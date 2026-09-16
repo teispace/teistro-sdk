@@ -1,0 +1,641 @@
+{
+  "rules": [
+    {
+      "key": "ARISHTA_MOON_IN_DUSTHANA_MALEFIC_ASPECT",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "3-6",
+        "rank": 1,
+        "note": "The Moon in the sixth, eighth or twelfth from the lagna and aspected by a malefic: the child dies soon. The verse adds that a benefic's aspect in the same figure leaves it living to about eight, which is a grading the SDK does not model."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": "MOON"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_RETROGRADE_BENEFIC_IN_DUSTHANA",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "3-6",
+        "rank": 1,
+        "note": "A benefic retrograde in the sixth, eighth or twelfth and aspected by a malefic, the lagna unoccupied by a benefic: death within a month of birth."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "MOON"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-retrograde",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  6,
+                  8,
+                  12
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-malefic",
+                "target": "SELF"
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_SATURN_MARS_SUN_IN_FIFTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "3-6",
+        "rank": 1,
+        "note": "Saturn, Mars and the Sun together in the fifth: the early death of the mother and of a brother."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_MARS_IN_LAGNA_OR_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "3-6",
+        "rank": 1,
+        "note": "Mars in the lagna or the eighth, conjunct Saturn or the Sun or aspected by a malefic, and with no benefic's aspect: a source of immediate death."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1,
+            8
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MARS",
+                "SATURN"
+              ]
+            },
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MARS",
+                "SUN"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": "MARS"
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MARS"
+          }
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_NODES_WITH_LUMINARIES_LAGNA_AFFLICTED",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "7-11",
+        "rank": 1,
+        "note": "Saturn and Mars both aspecting the lagna while the Sun and the Moon join Rahu elsewhere: the child lives only a fortnight."
+      },
+      "conditions": [
+        {
+          "type": "planet-aspects-house",
+          "from": "SATURN",
+          "houseRuled": 1
+        },
+        {
+          "type": "planet-aspects-house",
+          "from": "MARS",
+          "houseRuled": 1
+        },
+        {
+          "type": "planet-conjunct",
+          "planets": [
+            "SUN",
+            "MOON",
+            "RAHU"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_SATURN_TENTH_MOON_SIXTH_MARS_SEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "7-11",
+        "rank": 1,
+        "note": "Saturn in the tenth, the Moon in the sixth and Mars in the seventh: immediate death of the child along with its mother."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_SATURN_LAGNA_MOON_EIGHTH_JUPITER_THIRD",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "7-11",
+        "rank": 1,
+        "note": "Saturn in the lagna, the Moon in the eighth and Jupiter in the third: immediate death."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_SUN_NINTH_MARS_SEVENTH_JUPITER_VENUS_ELEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "7-11",
+        "rank": 1,
+        "note": "The Sun in the ninth, Mars in the seventh, and Jupiter and Venus in the eleventh: a month of life."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            11
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "7-11",
+        "rank": 1,
+        "note": "Any graha in the twelfth is a source of short life, and the Sun, the Moon, Venus and Rahu especially; the aspect of one of those four on the twelfth counteracts it, which this rule requires to be absent."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SUN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "RAHU",
+              "houses": [
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "planet-aspects-house",
+                "from": "SUN",
+                "houseRuled": 12
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "MOON",
+                "houseRuled": 12
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "VENUS",
+                "houseRuled": 12
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "RAHU",
+                "houseRuled": 12
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_SATURN_TWELFTH_SUN_NINTH_MARS_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "21",
+        "rank": 1,
+        "note": "Saturn in the twelfth, the Sun in the ninth and Mars in the eighth, with no benefic's aspect on them: instant death."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": "SATURN"
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": "SUN"
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": "MARS"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_WANING_MOON_IN_LAGNA_MALEFIC_SEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "22",
+        "rank": 1,
+        "note": "A malefic in the seventh while the waning Moon stands in the lagna: early death. The verse also reads the malefic in the rising decanate, which needs the drekkana of the lagna and is not built here."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "2",
+        "rank": 1,
+        "note": "Mercury, Jupiter or Venus in a kendra from the lagna destroys all the evils, as the Sun eliminates darkness. The antidotes stand in their own chapter, so they ship as rules of their own rather than as each evil's cancellation; a rule that carries them awaits a way to name a condition once and reference it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MERCURY",
+              "houses": [
+                1,
+                4,
+                7,
+                10
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                1,
+                4,
+                7,
+                10
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                1,
+                4,
+                7,
+                10
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "5",
+        "rank": 1,
+        "note": "A benefic aspecting the lagna of a night birth in the bright half, or a malefic aspecting the lagna of a day birth in the dark half, destroys all the evils. It needs the chart to say whether the birth was by day."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-paksha",
+                  "paksha": "shukla"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "birth-by-day"
+                  }
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "any-benefic",
+                  "houseRuled": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-paksha",
+                  "paksha": "krishna"
+                },
+                {
+                  "type": "birth-by-day"
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "any-malefic",
+                  "houseRuled": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "9",
+        "rank": 1,
+        "note": "Malefics surrounded by benefics while the kendras and trikonas are themselves benefic-occupied: the evils disappear soon, and do not follow from those bhavas. This rule reads the second half, benefics in the kendras and trikonas."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ],
+          "atLeast": 2
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "7",
+        "rank": 1,
+        "note": "Mars joined by Jupiter or aspected by him is auspicious for the mother as well as for the native."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MARS",
+                "JUPITER"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "MARS"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 //! The rules the SDK ships as data (`03-design/rules-engine.md`).
 //!
+//! [`arishtas`] holds BPHS ch. 9's evils at birth and ch. 10's antidotes.
 //! [`gandantas`] holds the three gandantas of BPHS ch. 92 and its Abhukta
 //! Moola, the SDK's first rules read from a text rather than mirrored from an
 //! implementation. [`computed_yogas`] holds the eight yogas it computes in code, the Neecha
@@ -38,6 +39,8 @@ const COMPUTED_DOSHAS: &str = include_str!("../rules/computed-doshas.json");
 const COMPUTED_YOGAS: &str = include_str!("../rules/computed-yogas.json");
 /// The gandantas, read from BPHS ch. 92 rather than from any engine.
 const GANDANTA: &str = include_str!("../rules/classical-gandanta.json");
+/// The evils at birth of BPHS ch. 9 and the antidotes of ch. 10.
+const ARISHTA: &str = include_str!("../rules/classical-arishta.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -57,6 +60,7 @@ fn read(json: &str) -> Vec<Rule> {
 static DOSHAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_DOSHAS));
 static YOGAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_YOGAS));
 static GANDANTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(GANDANTA));
+static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(ARISHTA));
 
 /// The seventeen doshas the recording engine computes in code, as rules.
 #[must_use]
@@ -72,6 +76,16 @@ pub fn computed_doshas() -> &'static [Rule] {
 #[must_use]
 pub fn gandantas() -> &'static [Rule] {
     &GANDANTAS
+}
+
+/// The evils at birth of BPHS ch. 9 that the language can say, and the
+/// antidotes of ch. 10, which stand in their own chapter and so ship as rules
+/// of their own rather than as each evil's cancellation. The verses that turn
+/// on a graha being "strong" are not here: the kernel has no strength measure,
+/// and a cancellation that fires too often is worse than one that is missing.
+#[must_use]
+pub fn arishtas() -> &'static [Rule] {
+    &ARISHTAS
 }
 
 /// The eight yogas it computes in code, the Neecha Bhanga family, as rules:
@@ -99,8 +113,9 @@ mod tests {
             .iter()
             .chain(computed_yogas())
             .chain(gandantas())
+            .chain(arishtas())
             .collect();
-        assert_eq!(rules.len(), 29);
+        assert_eq!(rules.len(), 44);
         for rule in &rules {
             let rank = rule
                 .source

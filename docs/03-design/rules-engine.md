@@ -383,6 +383,33 @@ from a sign junction in space rather than the birth's distance from a limb's
 edge in time: both ship, and crux C92 records that they are different
 quantities rather than different values.
 
+**Built, the first of the arishta corpus (2026-09-16).**
+`shipped::arishtas` holds eleven of BPHS ch. 9's evils at birth and four of
+ch. 10's antidotes, each read from the verse with its chapter, verse and rank.
+The antidotes ship as rules of their own because they stand in their own
+chapter; a rule that carries them as its cancellations waits on a way to name
+a condition once and reference it, which is the composition the design's
+`ref { rule }` sketches.
+
+What the chapter asks that the kernel now says: a malefic's aspect on a body
+(a class as the aspecting side), a benefic retrograde in a dusthana under a
+`for-any`, the lagna unoccupied by a benefic (`not` of a count), a waning Moon
+(the paksha), and the birth by day (`birth-by-day`, which the chart says).
+
+What it asks that the kernel still cannot say is recorded rather than guessed:
+the verses that turn on a graha being **strong** (ch. 9 v. 23's planets
+"devoid of strength", ch. 10 vv. 3 and 4's strong Jupiter and strong lagna
+lord, ch. 9 v. 26's strong malefic) are not in the pack, because a cancellation
+that fires too often is worse than one that is missing. They arrive with a
+strength measure. So does ch. 9 v. 22's rising decanate, which wants the
+drekkana of the lagna rather than of a body.
+
+`crates/rules/tests/classical.rs` holds every one of these rules to the 93
+recorded charts: each is evaluable, cites a verse, and answers a pinned number
+of them, so an answer that moves fails the build. Ten answer none, and the
+test says why — the four gandantas because the corpus records no limb's
+ghatikas, the rest because they are coincidences of three or four grahas.
+
 A classifying outcome is therefore not what the Kalsarpa family needed: twelve
 named rules over one arc predicate say it, each with its own citation and
 severity. `Outcome::Classify` stays unbuilt until a rule needs one variant of

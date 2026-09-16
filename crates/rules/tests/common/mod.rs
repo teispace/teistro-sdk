@@ -132,6 +132,7 @@ fn panchanga(recorded: &Value) -> Option<Panchanga> {
         karana: Karana::from_id(id("karana_index")?)?,
         // The yogas' and doshas' inputs record no ghatikas of any limb.
         spans: Spans::default(),
+        by_day: None,
         on_sankranti: false,
         eclipse: None,
     })

@@ -126,6 +126,7 @@ fn panchanga(recorded: &Value) -> Result<Option<Panchanga>, String> {
         karana,
         // The rule corpora record no ghatikas of any limb.
         spans: Spans::default(),
+        by_day: None,
         on_sankranti: false,
         eclipse: None,
     }))

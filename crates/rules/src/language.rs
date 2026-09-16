@@ -633,6 +633,9 @@ pub enum Condition {
         /// How many ghatikas of 24 minutes.
         ghatikas: f64,
     },
+    /// The birth fell by day, between sunrise and sunset; a chart that does
+    /// not say never holds it, and `not` of it is not "by night" there.
+    BirthByDay,
     /// The birth falls on a sankranti, as the chart's panchanga says.
     BirthOnSankranti {
         /// The window, hours either side, that the chart's flag was computed
@@ -795,6 +798,7 @@ impl Condition {
             Condition::InVarga { .. } => "in-varga",
             Condition::CountInHouses { .. } => "count-in-houses",
             Condition::AtLimbEdge { .. } => "at-limb-edge",
+            Condition::BirthByDay => "birth-by-day",
             Condition::SameSign { .. } => "same-sign",
             Condition::SameBody { .. } => "same-body",
         }
@@ -888,6 +892,7 @@ impl Condition {
                 | Condition::BirthDuringEclipse { .. }
                 | Condition::BirthOnSankranti { .. }
                 | Condition::AtLimbEdge { .. }
+                | Condition::BirthByDay
         )
     }
 

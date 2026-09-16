@@ -19,7 +19,7 @@ cancellations held.
 | [`chart`](src/chart.rs) | what a rule reads of a chart (each body's longitude, sign, house, dignity, motion, combustion, chara karakas and navamsha), and every place the language leaves a meaning open, each a `Readings` field with the recording engine's choice the default and the text's where the engine has none |
 | [`eval`](src/eval.rs) | the `Evaluator`: benefics and malefics settled once a chart, then each rule to a `RuleResult` without allocating for its participants, or to an `Explanation` with its trace |
 | [`table`](src/table.rs) | tables a rule looks up, each cited: a degree of each sign for a body, or signs for each tithi; `Tables::check` refuses a rule naming a missing table or the wrong kind; `Tables::classical` ships Jataka Parijata's Mrityu Bhagas and Pushkara bhagas, Brihat Prajapatya's Moon, and the Dagdha rashis ([`tables/classical.json`](tables/classical.json)) |
-| [`shipped`](src/shipped.rs) | the rules the SDK ships as data: the seventeen doshas and the eight Neecha Bhanga yogas the recording engine computes in code, and BPHS ch. 92's four gandantas read from the text itself ([`rules/`](rules)) |
+| [`shipped`](src/shipped.rs) | the rules the SDK ships as data: the seventeen doshas and the eight Neecha Bhanga yogas the recording engine computes in code, and, read from the texts themselves, BPHS ch. 92's four gandantas and fifteen of chs. 9 and 10's evils and antidotes ([`rules/`](rules)) |
 | [`trace`](src/trace.rs) | how an answer was reached: each condition checked, whether it held, the bodies it added and each reference resolved, as a tree that serialises and reads as prose; one evaluator generic over a recorder, so the untraced answer costs nothing more and cannot differ |
 
 ## What the corpus settled
@@ -90,6 +90,9 @@ cancellations held.
   panchangas, and for each of 885 presences where it was found from, its
   participants, houses, severity, cancellations and net status
   (`tests/doshas.rs`); all 52 dosha rules read strictly and round-trip.
+- Every rule the SDK writes from a text is evaluable, cites a verse, and
+  answers a pinned number of the corpus's 93 charts, with the ten that answer
+  none listed and explained (`tests/classical.rs`).
 - BPHS ch. 92's four gandantas hold inside their ghatikas and not outside them,
   at every boundary the verses give, and answer nothing when the chart measures
   no ghatikas (unit tests).

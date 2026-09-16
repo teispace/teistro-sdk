@@ -63,6 +63,9 @@ pub struct Panchanga {
     /// How much of each limb the birth had used and had left, in ghatikas,
     /// which the gandantas of BPHS ch. 92 are measured in.
     pub spans: Spans,
+    /// Whether the birth fell between sunrise and sunset, which BPHS ch. 10
+    /// v. 5 reads beside the paksha; none when the chart does not say.
+    pub by_day: Option<bool>,
     /// Whether the birth falls on a sankranti, under whatever window the
     /// chart's maker reads.
     pub on_sankranti: bool,

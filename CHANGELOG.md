@@ -1013,6 +1013,16 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- `teistro_rules::shipped::arishtas` ships eleven of BPHS ch. 9's evils at
+  birth and four of ch. 10's antidotes, each read from the verse at rank 1.
+  `birth-by-day` reads whether the birth fell between sunrise and sunset, which
+  ch. 10 v. 5 asks beside the paksha. The verses that turn on a graha being
+  "strong" are deliberately not in the pack: the kernel has no strength
+  measure, and a cancellation that fires too often is worse than one that is
+  missing.
+
+  **Numbers:** none; these are new rules, and no recorded answer moves.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

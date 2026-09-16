@@ -568,8 +568,9 @@ Badhaka reproduce every field. **The Neecha Bhanga family is rules** as well,
 over a `for-any` quantifier rather than the divisional predicate the page
 expected, and `in-varga` is built anyway. **The classical corpus was then
 surveyed** (`01-research/feature-universe/04-yogas-doshas.md`): the order of
-work is now the arishta corpus and its bhangas (about 120 rules; kartari needed nothing
-new and the ghatika layer is built), the dwigraha generator,
+work is now the rest of the arishta corpus (fifteen of about 120 rules are built, the
+evils to the mother and to the father and the strength-bound verses to come),
+the dwigraha generator,
 rashi drishti and argala, nakshatra references, D3 and D30, strength ranking,
 and the longevity band as an outcome. Next: with the references that need points the
 chart does not yet carry added as rules need them.
