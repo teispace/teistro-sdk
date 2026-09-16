@@ -20,7 +20,7 @@ mod common;
 
 use std::collections::BTreeMap;
 
-use common::{chart, files_in};
+use common::{chart_at, files_in};
 use teistro_rules::{Evaluator, Readings, Rule, Tables, shipped};
 
 #[test]
@@ -76,8 +76,8 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
     // How many firings an antidote of the same text put out, in all and for
     // Saravali's graded evils alone.
     let (mut cancelled, mut saravali_cancelled) = (0, 0);
-    for (_, file) in files_in("doshas") {
-        let chart = chart(&file["inputs"]);
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
         let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_rules(&owned);
         charts += 1;
         for rule in &rules {
@@ -94,7 +94,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         }
     }
     assert_eq!(charts, 93);
-    assert_eq!((cancelled, saravali_cancelled), (307, 3));
+    assert_eq!((cancelled, saravali_cancelled), (319, 3));
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
     assert_eq!(counts, ANSWERED, "a rule's answers moved");
 
@@ -326,8 +326,8 @@ fn the_generator_makes_one_rule_a_reading() {
     let mut fired: BTreeMap<&str, usize> =
         rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
     let mut charts = 0;
-    for (_, file) in files_in("doshas") {
-        let chart = chart(&file["inputs"]);
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
         let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
         charts += 1;
         for rule in rules {
@@ -1060,6 +1060,13 @@ fn the_rules_that_read_a_sign_s_aspect_and_an_intervention_answer_where_they_did
         .filter(|rule| matches!(rule.category.as_str(), "dhana" | "jaimini"))
         .collect();
     assert_eq!(rules.len(), 7);
+    // The three that name an intervention read a strength, an intervention
+    // being settled by the numbers of grahas or by which is stronger; the two
+    // associations and the two gains that only count grahas do not.
+    assert_eq!(
+        rules.iter().filter(|rule| rule.reads_strength()).count(),
+        3
+    );
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -1073,8 +1080,8 @@ fn the_rules_that_read_a_sign_s_aspect_and_an_intervention_answer_where_they_did
     let mut fired: BTreeMap<&str, usize> =
         rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
     let mut charts = 0;
-    for (_, file) in files_in("doshas") {
-        let chart = chart(&file["inputs"]);
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
         let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
         charts += 1;
         for rule in &rules {
@@ -1102,9 +1109,74 @@ fn the_rules_that_read_a_sign_s_aspect_and_an_intervention_answer_where_they_did
 const JAIMINI: [(&str, usize); 7] = [
     ("ARUDHA_GAINS", 18),
     ("ARUDHA_GAINS_BENEFIC_ASPECT_FROM_LAGNA_OR_NINTH", 0),
-    ("ARUDHA_GAINS_WITH_ARGALA", 14),
-    ("ARUDHA_GAINS_WITH_BENEFIC_ARGALA", 12),
+    ("ARUDHA_GAINS_WITH_ARGALA", 16),
+    ("ARUDHA_GAINS_WITH_BENEFIC_ARGALA", 14),
     ("ARUDHA_GAINS_WITH_EXALTED_BENEFIC_ARGALA", 1),
     ("JAIMINI_AK_PK_ASSOCIATED", 20),
     ("JAIMINI_LAGNA_AND_FIFTH_LORDS_ASSOCIATED", 26),
+];
+
+/// The yogas BPHS ch. 36 grants only to a strong graha, which the kernel could
+/// not read until a chart could carry `Strengths`. The corpus records the
+/// recording engine's Shadbala for 71 of the 93 charts, so the pass reads both
+/// a chart that can answer a question of strength and one that cannot.
+#[test]
+fn the_yogas_that_ask_for_a_strong_graha_answer_where_they_did() {
+    let rules: Vec<&Rule> = shipped::nabhasas()
+        .iter()
+        .filter(|rule| rule.source.chapter.as_deref() == Some("36") && rule.reads_strength())
+        .collect();
+    assert_eq!(rules.len(), 6);
+    let mut fired: BTreeMap<&str, usize> =
+        rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
+    let (mut charts, mut measured, mut silent) = (0, 0, 0);
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
+        charts += 1;
+        if chart.strengths.is_some() {
+            measured += 1;
+        }
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
+        for rule in &rules {
+            if evaluator.evaluate(rule).present {
+                *fired.get_mut(rule.key.as_str()).unwrap() += 1;
+            }
+        }
+        // Stripped of its strengths the same chart can still answer two of
+        // these yogas, because Kahala and Sarada each give a second figure
+        // that asks for none; nothing else can.
+        let mute = teistro_rules::RuleChart {
+            strengths: None,
+            ..chart
+        };
+        let mute = Evaluator::new(&mute, Readings::RECORDING_ENGINE);
+        let answered: Vec<&str> = rules
+            .iter()
+            .filter(|rule| mute.evaluate(rule).present)
+            .map(|rule| rule.key.as_str())
+            .collect();
+        assert!(
+            answered
+                .iter()
+                .all(|key| ["PARASHARA_KAHALA", "PARASHARA_SARADA"].contains(key)),
+            "{answered:?}"
+        );
+        silent += usize::from(answered.is_empty());
+    }
+    assert_eq!((charts, measured, silent), (93, 71, 91));
+    let counts: Vec<(&str, usize)> = fired.into_iter().collect();
+    assert_eq!(counts.as_slice(), STRENGTH_BOUND.as_slice());
+    // Mridanga asks all seven grahas to stand well at once and answers none of
+    // the 93, which is what a yoga of that shape should do.
+    assert_eq!(counts.iter().filter(|(_, count)| *count == 0).count(), 1);
+}
+
+/// What each answers over the 93 recorded charts.
+const STRENGTH_BOUND: [(&str, usize); 6] = [
+    ("PARASHARA_BHERI", 5),
+    ("PARASHARA_KAHALA", 27),
+    ("PARASHARA_LAKSHMI", 2),
+    ("PARASHARA_MRIDANGA", 0),
+    ("PARASHARA_SANKHA", 22),
+    ("PARASHARA_SARADA", 2),
 ];

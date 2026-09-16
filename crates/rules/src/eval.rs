@@ -10,7 +10,7 @@ use teistro_points::arudha;
 use crate::chart::{
     AspectGathering, Benefics, Conjunction, DignityMatch, Eclipse, Gathering, Houses,
     NATURAL_BENEFICS, NATURAL_MALEFICS, NodeMotion, NodeSides, Panchanga, Placement, PointAt,
-    Readings, RuleChart, Upapada, VargaSigns,
+    Readings, RuleChart, Strengths, Upapada, VargaSigns,
 };
 use crate::language::{Body, Condition, EclipseKind, Edge, House, KarakaScheme, NodeSide};
 use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
@@ -474,6 +474,11 @@ impl<'a> Evaluator<'a> {
         counted
     }
 
+    /// What the chart says of strength, or nothing at all.
+    fn strengths(&self) -> Strengths {
+        self.chart.strengths.unwrap_or(Strengths::NONE)
+    }
+
     /// A body where it stands.
     fn standing(&self, body: Body) -> Spot {
         Spot {
@@ -818,6 +823,22 @@ impl<'a> Evaluator<'a> {
                 }
                 found.is_some()
             }
+            Condition::PlanetStrong { planet } => {
+                self.body_meets(planet, into, rec, |body| self.strengths().is_strong(body))
+            }
+            Condition::PlanetWeak { planet } => {
+                self.body_meets(planet, into, rec, |body| self.strengths().is_weak(body))
+            }
+            Condition::PlanetStrongerThan { planet, than } => {
+                let (Some(one), Some(other)) = (self.body(planet, rec), self.body(than, rec)) else {
+                    return false;
+                };
+                let held = self.strengths().exceeds(one, other);
+                if held {
+                    into.push(one);
+                }
+                held
+            }
             Condition::RashiAspects { from, target } => {
                 let Some(target) = self.spot(target, rec) else {
                     return false;
@@ -843,7 +864,17 @@ impl<'a> Evaluator<'a> {
                 let (from, obstructed) = place.houses();
                 let (intervening, obstructing) =
                     (self.grahas_in(on, from), self.grahas_in(on, obstructed));
-                let held = !intervening.is_empty() && intervening.len() > obstructing.len();
+                // Verse 4 gives two tests and either serves: the intervening
+                // grahas outnumber the obstructing ones, or one of them is
+                // stronger than every one of them.
+                let outnumber = intervening.len() > obstructing.len();
+                let strengths = self.strengths();
+                let stronger = intervening.iter().any(|one| {
+                    obstructing
+                        .iter()
+                        .all(|other| strengths.exceeds(one, other))
+                });
+                let held = !intervening.is_empty() && (outnumber || stronger);
                 if held {
                     into.extend(intervening);
                 }
@@ -1430,6 +1461,7 @@ mod tests {
                 navamsha: Rashi::Aries,
             }; 10],
             panchanga: None,
+            strengths: None,
         }
     }
 
@@ -2951,5 +2983,83 @@ mod tests {
         let (held, bodies) = holds(&c, ENGINE, &contrary);
         assert!(held);
         assert_eq!(bodies.len(), 3);
+    }
+
+    /// A chart that carries a strength for the Sun and the Moon and nothing
+    /// for the rest.
+    fn measured() -> RuleChart {
+        let mut of = [None; 10];
+        let mut required = [None; 10];
+        of[SUN.index()] = Some(8.8);
+        required[SUN.index()] = Some(5.0);
+        of[MOON.index()] = Some(4.0);
+        required[MOON.index()] = Some(6.0);
+        RuleChart {
+            strengths: Some(Strengths {
+                measure: crate::chart::StrengthMeasure::Shadbala,
+                of,
+                required,
+            }),
+            ..chart()
+        }
+    }
+
+    #[test]
+    fn strong_and_weak_are_two_questions_and_a_silent_chart_answers_neither() {
+        let strong = |body| Condition::PlanetStrong {
+            planet: BodyRef::Body(body),
+        };
+        let weak = |body| Condition::PlanetWeak {
+            planet: BodyRef::Body(body),
+        };
+        let c = measured();
+        assert!(holds(&c, ENGINE, &strong(SUN)).0);
+        assert!(!holds(&c, ENGINE, &weak(SUN)).0);
+        assert!(holds(&c, ENGINE, &weak(MOON)).0);
+        assert!(!holds(&c, ENGINE, &strong(MOON)).0);
+        // Mars has no number, so neither question is answered of him — and
+        // that is not the same as answering "weak".
+        assert!(!holds(&c, ENGINE, &strong(MARS)).0);
+        assert!(!holds(&c, ENGINE, &weak(MARS)).0);
+        // Nor on a chart that says nothing at all.
+        let silent = chart();
+        for body in [SUN, MOON, MARS] {
+            assert!(!holds(&silent, ENGINE, &strong(body)).0);
+            assert!(!holds(&silent, ENGINE, &weak(body)).0);
+        }
+        // The body a comparison found is its participant.
+        let (held, bodies) = holds(
+            &c,
+            ENGINE,
+            &Condition::PlanetStrongerThan {
+                planet: BodyRef::Body(SUN),
+                than: BodyRef::Body(MOON),
+            },
+        );
+        assert!(held);
+        assert_eq!(bodies, [SUN]);
+        assert!(
+            !holds(
+                &c,
+                ENGINE,
+                &Condition::PlanetStrongerThan {
+                    planet: BodyRef::Body(MOON),
+                    than: BodyRef::Body(SUN),
+                },
+            )
+            .0
+        );
+        // A comparison against a body with no number is no answer either.
+        assert!(
+            !holds(
+                &c,
+                ENGINE,
+                &Condition::PlanetStrongerThan {
+                    planet: BodyRef::Body(SUN),
+                    than: BodyRef::Body(MARS),
+                },
+            )
+            .0
+        );
     }
 }

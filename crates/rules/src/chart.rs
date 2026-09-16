@@ -34,6 +34,81 @@ pub struct Placement {
     pub navamsha: Rashi,
 }
 
+/// What a chart says of each body's strength.
+///
+/// The texts ask for strength constantly — "while the ascendant lord is
+/// strong" (BPHS ch. 36), "if the Argala causing planet is stronger than the
+/// obstructing one" (ch. 31 v. 4) — and give one measure for it, the six-fold
+/// strength of ch. 27, with a requirement for each graha in vv. 32 and 33.
+/// The kernel compares the numbers it is given and does not compute them: what
+/// measure they are in, and what reading of the requirement they were taken
+/// under (crux C71), belong to whoever builds the chart, and `measure` records
+/// which it was so a reader knows what was compared.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Strengths {
+    /// Which measure the numbers are in.
+    pub measure: StrengthMeasure,
+    /// Each body's strength, in [`Body::ALL`](crate::Body::ALL)'s order; none
+    /// where the measure does not reach it, as Shadbala does not reach the
+    /// nodes or the lagna.
+    pub of: [Option<f64>; 10],
+    /// What each body must reach to be called strong, in the same unit and the
+    /// same order.
+    pub required: [Option<f64>; 10],
+}
+
+impl Strengths {
+    /// A chart that carries no strength at all, which every rule that asks for
+    /// one answers false on.
+    pub const NONE: Strengths = Strengths {
+        measure: StrengthMeasure::Shadbala,
+        of: [None; 10],
+        required: [None; 10],
+    };
+
+    /// Whether a body reaches what is required of it; false where either
+    /// number is missing.
+    #[must_use]
+    pub fn is_strong(&self, body: Body) -> bool {
+        match (self.of.get(body.index()), self.required.get(body.index())) {
+            (Some(Some(strength)), Some(Some(required))) => strength >= required,
+            _ => false,
+        }
+    }
+
+    /// Whether a body falls short of what is required of it; false where
+    /// either number is missing, so "not strong" and "weak" are different
+    /// questions on a chart that says nothing.
+    #[must_use]
+    pub fn is_weak(&self, body: Body) -> bool {
+        match (self.of.get(body.index()), self.required.get(body.index())) {
+            (Some(Some(strength)), Some(Some(required))) => strength < required,
+            _ => false,
+        }
+    }
+
+    /// Whether one body's strength exceeds another's; false where either is
+    /// missing.
+    #[must_use]
+    pub fn exceeds(&self, one: Body, other: Body) -> bool {
+        match (self.of.get(one.index()), self.of.get(other.index())) {
+            (Some(Some(one)), Some(Some(other))) => one > other,
+            _ => false,
+        }
+    }
+}
+
+/// Which measure a chart's strengths are in.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum StrengthMeasure {
+    /// The six-fold strength of BPHS ch. 27, in rupas, against the requirement
+    /// its vv. 32 and 33 give each graha.
+    Shadbala,
+    /// A measure the caller names in its own documentation. The kernel
+    /// compares the numbers and says no more about them.
+    Caller,
+}
+
 /// A chart as the rules read it: the nine grahas and the lagna, in
 /// [`Body::ALL`]'s order, and the tithi of the birth when it is known.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -43,6 +118,9 @@ pub struct RuleChart {
     /// The panchanga at birth, which a rule reading one needs
     /// ([`Rule::reads_panchanga`](crate::Rule::reads_panchanga)).
     pub panchanga: Option<Panchanga>,
+    /// What the chart says of each body's strength, when it says anything; a
+    /// rule that asks whether a body is strong answers false without it.
+    pub strengths: Option<Strengths>,
 }
 
 /// The panchanga at birth, as the rules read it.

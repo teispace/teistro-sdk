@@ -662,6 +662,28 @@ pub enum Condition {
     /// The birth fell by day, between sunrise and sunset; a chart that does
     /// not say never holds it, and `not` of it is not "by night" there.
     BirthByDay,
+    /// The body reaches what its measure requires of it: "the ascendant lord
+    /// is strong" (BPHS ch. 36 vv. 9 to 28). A chart that carries no strength
+    /// never holds it.
+    PlanetStrong {
+        /// Who.
+        planet: BodyRef,
+    },
+    /// The body falls short of what is required of it. A chart that carries no
+    /// strength never holds this either, so it is not the `not` of
+    /// `planet-strong`: on a silent chart both are false, which is the honest
+    /// answer to both questions.
+    PlanetWeak {
+        /// Who.
+        planet: BodyRef,
+    },
+    /// One body's strength exceeds another's.
+    PlanetStrongerThan {
+        /// Who.
+        planet: BodyRef,
+        /// Than whom.
+        than: BodyRef,
+    },
     /// One reference aspects another by rashi drishti (BPHS ch. 26 vv. 1 to
     /// 3): a movable sign aspects the three fixed signs but the one next to
     /// it, a fixed sign the three movable but the one before it, and a dual
@@ -878,6 +900,9 @@ impl Condition {
             Condition::PanchangaKarana { .. } => "panchanga-karana",
             Condition::BirthDuringEclipse { .. } => "birth-during-eclipse",
             Condition::BirthOnSankranti { .. } => "birth-on-sankranti",
+            Condition::PlanetStrong { .. } => "planet-strong",
+            Condition::PlanetWeak { .. } => "planet-weak",
+            Condition::PlanetStrongerThan { .. } => "planet-stronger-than",
             Condition::RashiAspects { .. } => "rashi-aspects",
             Condition::Argala { .. } => "argala",
             Condition::VipareetaArgala { .. } => "vipareeta-argala",
@@ -965,6 +990,20 @@ impl Condition {
                 .find_map(|child| walk(child, within))
         }
         walk(self, false)
+    }
+
+
+    /// Whether it asks a question of strength, so a caller knows to give the
+    /// chart [`Strengths`](crate::Strengths); without them it answers false.
+    #[must_use]
+    pub const fn reads_strength(&self) -> bool {
+        matches!(
+            self,
+            Condition::PlanetStrong { .. }
+                | Condition::PlanetWeak { .. }
+                | Condition::PlanetStrongerThan { .. }
+                | Condition::Argala { .. }
+        )
     }
 
     /// Whether this condition itself reads the chart's panchanga.

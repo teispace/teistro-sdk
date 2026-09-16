@@ -169,7 +169,7 @@ found. The order of work below is by rules unlocked per unit of work:
 | 6 | ~~rashi drishti and argala~~ **built 2026-09-16** | BPHS chs. 26 and 31 give both, so no Jaimini text was needed; 7 rules so far from chs. 29 and 39 | 40 to 80 |
 | 7 | nakshatra and its lord for any body, with pada | BPHS ch. 48, the nakshatra family | 30 to 60 |
 | 8 | D3 and D30 in the chart the kernel already steps into | Balarishta by drekkana, BPHS ch. 44's serpent decanate, ch. 80's trimsamsa | ~40 |
-| 9 | strength ranking and thresholds ("the strongest of these") | BPHS ch. 79's sanyasa, ch. 43's longevity | 25 to 50 |
+| 9 | ~~strength ranking and thresholds~~ **built 2026-09-16** | the chart carries the numbers and the kernel compares them; "the strongest of these" is `and` of the comparisons | 25 to 50 |
 | 10 | the longevity band as an outcome, replacing invented scores | Phaladeepika XIII v. 6, BPHS ch. 43 | ~15 |
 
 Two-chart matching (the ten kootas of Kalaprakasika XIII and the eight of

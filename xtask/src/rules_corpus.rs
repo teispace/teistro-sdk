@@ -90,6 +90,7 @@ pub(crate) fn chart(inputs: &Value) -> Result<RuleChart, String> {
     Ok(RuleChart {
         placements,
         panchanga: panchanga(&inputs["panchanga"])?,
+        strengths: None,
     })
 }
 

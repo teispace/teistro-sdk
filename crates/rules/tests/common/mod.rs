@@ -18,7 +18,10 @@ use teistro_core::catalogue::{
     CharaKaraka, Dignity, Karana, Nakshatra, Rashi, Tithi, Vara, Varga, Yoga,
 };
 use teistro_core::quantity::Degrees;
-use teistro_rules::{Body, House, Karaka, Pada, Panchanga, Placement, Rule, RuleChart, Spans};
+use teistro_rules::{
+    Body, House, Karaka, Pada, Panchanga, Placement, Rule, RuleChart, Spans, StrengthMeasure,
+    Strengths,
+};
 use teistro_vargas::{Scheme, sign};
 
 pub(crate) fn corpus() -> PathBuf {
@@ -114,7 +117,43 @@ pub(crate) fn chart(inputs: &Value) -> RuleChart {
     RuleChart {
         placements,
         panchanga: panchanga(&inputs["panchanga"]),
+        strengths: None,
     }
+}
+
+/// The same chart with the Shadbala the corpus recorded for it, when it
+/// recorded any: `baseline/shadbala` holds 71 of the 93, so the tests read both
+/// a chart that can answer a question of strength and one that cannot.
+pub(crate) fn chart_at(path: &Path, inputs: &Value) -> RuleChart {
+    RuleChart {
+        strengths: strengths(path),
+        ..chart(inputs)
+    }
+}
+
+/// The recorded Shadbala of a chart: each classical graha's total in rupas and
+/// the minimum it must reach, both as the recording engine computed them
+/// (crux C71 on which reading of the minimum that is). The nodes and the lagna
+/// have none, which the measure does not reach.
+pub(crate) fn strengths(path: &Path) -> Option<Strengths> {
+    let file = baseline("shadbala")
+        .join(path.parent().and_then(Path::file_name).unwrap())
+        .join(path.file_name().unwrap());
+    let recorded = std::fs::read_to_string(file).ok()?;
+    let recorded: Value = serde_json::from_str(&recorded).unwrap();
+    let shadbala = &recorded["shadbala"];
+    let mut of = [None; 10];
+    let mut required = [None; 10];
+    for body in Body::ALL {
+        let at = &shadbala[body.key()];
+        of[body.index()] = at["total_rupas"].as_f64();
+        required[body.index()] = at["minimum_rupas"].as_f64();
+    }
+    Some(Strengths {
+        measure: StrengthMeasure::Shadbala,
+        of,
+        required,
+    })
 }
 
 /// The panchanga a file repeats, if it records one: the engine's karana and

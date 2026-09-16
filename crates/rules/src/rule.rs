@@ -400,6 +400,15 @@ impl Rule {
         effect(&self.outcomes)
     }
 
+    /// Whether any of its conditions asks a question of strength, so a caller
+    /// knows to give the chart [`Strengths`](crate::Strengths). An
+    /// intervention counts: it reads a strength when the numbers of grahas do
+    /// not settle it (BPHS ch. 31 v. 4).
+    #[must_use]
+    pub fn reads_strength(&self) -> bool {
+        self.every_condition().any(Condition::reads_strength)
+    }
+
     /// Whether any of its conditions reads the chart's panchanga, so a caller
     /// knows to give the chart one.
     #[must_use]

@@ -1150,6 +1150,26 @@ the astronomical numbers do not move. Nothing else computes yet.
   each division answers 93 times over the 93 — which says the degree bands tile
   a sign with no gap and no overlap.
 
+- **Strength, which is what every omitted verse wanted.** A chart may carry
+  `Strengths` — a measure, each body's number and what it must reach — and
+  `planet-strong`, `planet-weak` and `planet-stronger-than` read them. The
+  kernel compares; it does not compute, so the measure and the reading of the
+  requirement (crux C71) stay with whoever builds the chart. Strong and weak
+  are two questions, not one and its negation: a chart that says nothing
+  answers false to both. `Rule::reads_strength` says which rules want a chart
+  that can answer.
+
+  BPHS ch. 31's intervention is now whole — v. 4 gives two tests and either
+  serves — and seven more yogas of ch. 36 ship (Kahala, Sankha, Bheri,
+  Mridanga, Lakshmi, Sarada, Kusuma), together with the three Brihat Jataka
+  arishtas whose escape is a *powerful* benefic, now carried as cancellations.
+  The SDK ships 726 rules.
+
+  **Numbers:** the corpus records the engine's Shadbala for 71 of the 93
+  charts. Completing the intervention moved two charts into the graded gains;
+  the new cancellations fire on 12 chart-rules where nothing fired before;
+  Mridanga answers none of the 93.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

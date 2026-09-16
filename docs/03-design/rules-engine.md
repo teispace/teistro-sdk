@@ -649,6 +649,47 @@ the fifth, each by a shared sign or a sign's aspect. The grades nest as the
 verse says they should: 18 charts of the 93 answer the first, 14 the
 intervention, 12 a benefic's, 1 an exalted benefic's.
 
+**Strength, which is what every omitted verse wanted (2026-09-16).** "While
+the ascendant lord is strong" (BPHS ch. 36 vv. 9 to 28), "if the Argala causing
+planet is stronger than the obstructing one" (ch. 31 v. 4), "unless a powerful
+Venus, Mercury or Jupiter joins or aspects her" (Brihat Jataka ch. 6 v. 11) —
+every rule the SDK had left out with a note left it out for this.
+
+The kernel does not compute strength; it compares what it is given. A chart may
+carry `Strengths`: a measure, each body's number, and what each must reach. The
+numbers' measure and the reading of the requirement — BPHS ch. 27 vv. 32 and 33
+against Sripati's, crux C71 — belong to whoever builds the chart, and
+`StrengthMeasure` records which was used so a reader knows what was compared.
+Shadbala reaches the seven classical grahas, so the nodes' and the lagna's
+numbers are `None` rather than zero.
+
+Three predicates read them. `planet-strong` and `planet-weak` are **two
+questions, not one and its negation**: a chart that carries no number answers
+false to both, as `birth-by-day` answers false to both day and night, and a
+test holds that. `planet-stronger-than` compares two. "The strongest of these"
+needs no fourth predicate — it is `and` of the comparisons, and the language
+already says it.
+
+The intervention of ch. 31 is now whole. Verse 4 gives two tests and either
+serves: the intervening grahas outnumber the obstructing ones, *or* one of them
+is stronger than every one of them. Completing it moved two charts of the 93
+into the graded gains, which is the measurement that says the second half was
+doing work.
+
+Seven more yogas of ch. 36 ship — Kahala, Sankha, Bheri, Mridanga, Lakshmi,
+Sarada and Kusuma beside them — and the three Brihat Jataka arishtas whose
+escape is a *powerful* benefic now carry it as a cancellation, which fires on
+12 chart-rules of the corpus where nothing fired before. `Rule::reads_strength`
+tells a caller which rules want a chart that can answer, the way
+`reads_panchanga` does.
+
+The corpus records the engine's Shadbala for 71 of the 93 charts, so the pass
+reads both a chart that can answer a question of strength and one that cannot.
+Mridanga, which asks all seven grahas to stand well at once, answers none of
+the 93; Kahala answers 27 and Sankha 22, each having a second figure that asks
+for no strength at all — and stripped of its strengths a chart can still answer
+those two and nothing else, which the test holds.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-one answer none, and

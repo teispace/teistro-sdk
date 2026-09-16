@@ -30,7 +30,7 @@
 //!     karaka8: None,
 //!     navamsha: Rashi::Aries,
 //! };
-//! let chart = RuleChart { placements: [placement; 10], panchanga: None };
+//! let chart = RuleChart { placements: [placement; 10], panchanga: None, strengths: None };
 //! let rule: Rule = serde_json::from_str(r#"{
 //!     "key": "LORD_OF_TEN_IN_A_KENDRA",
 //!     "category": "example",

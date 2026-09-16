@@ -166,7 +166,7 @@
         "chapter": "6",
         "verse": "8",
         "rank": 1,
-        "note": "The Moon in the last navamsa of a sign — her last 3°20′ — and unaspected by benefics: the child dies soon after birth. Read from N. Chidambaram Iyer's 1885 translation."
+        "note": "The Moon in the last navamsa of a sign \u2014 her last 3\u00b020\u2032 \u2014 and unaspected by benefics: the child dies soon after birth. Read from N. Chidambaram Iyer's 1885 translation."
       },
       "conditions": [
         {
@@ -289,7 +289,7 @@
         "chapter": "6",
         "verse": "9",
         "rank": 1,
-        "note": "The Sun or the Moon in the rising sign with malefics in the fifth, eighth and ninth: the child dies unless that luminary is joined or aspected by a powerful benefic. The escape turns on a benefic's strength, which the kernel cannot measure, so it is recorded and not built. Read from N. Chidambaram Iyer's 1885 translation."
+        "note": "The Sun or the Moon in the rising sign with malefics in the fifth, eighth and ninth: the child dies unless that luminary is joined or aspected by a powerful benefic. The escape turns on a benefic's strength, and ships as the rule's cancellation; a chart that carries no strength never fires it. Read from N. Chidambaram Iyer's 1885 translation."
       },
       "conditions": [
         {
@@ -335,6 +335,43 @@
           ],
           "atLeast": 1
         }
+      ],
+      "cancellations": [
+        {
+          "label": "a powerful benefic joins or aspects the luminary in the rising sign",
+          "type": "for-any",
+          "planets": [
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  },
+                  {
+                    "type": "planet-aspects-house",
+                    "from": "SELF",
+                    "houseRuled": 1
+                  }
+                ]
+              }
+            ]
+          }
+        }
       ]
     },
     {
@@ -345,7 +382,7 @@
         "chapter": "6",
         "verse": "10",
         "rank": 1,
-        "note": "Saturn in the twelfth, the Sun in the ninth, the Moon in the rising sign and Mars in the eighth: the child dies soon after birth. The verse's escape is a powerful Jupiter aspecting all four, which needs a strength measure and is recorded rather than built. Read from N. Chidambaram Iyer's 1885 translation."
+        "note": "Saturn in the twelfth, the Sun in the ninth, the Moon in the rising sign and Mars in the eighth: the child dies soon after birth. The verse's escape is a powerful Jupiter aspecting all four, and ships as the rule's cancellation; a chart that carries no strength never fires it. Read from N. Chidambaram Iyer's 1885 translation."
       },
       "conditions": [
         {
@@ -376,6 +413,38 @@
             8
           ]
         }
+      ],
+      "cancellations": [
+        {
+          "label": "a powerful Jupiter aspects all four",
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-strong",
+              "planet": "JUPITER"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "SATURN"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "SUN"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "MOON"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "MARS"
+            }
+          ]
+        }
       ]
     },
     {
@@ -386,7 +455,7 @@
         "chapter": "6",
         "verse": "11",
         "rank": 1,
-        "note": "The waning Moon accompanied by a malefic in the fifth, seventh, ninth, twelfth, first or eighth: the child dies soon after birth, unless a powerful Venus, Mercury or Jupiter joins or aspects her, which needs a strength measure. Read from N. Chidambaram Iyer's 1885 translation."
+        "note": "The waning Moon accompanied by a malefic in the fifth, seventh, ninth, twelfth, first or eighth: the child dies soon after birth, unless a powerful Venus, Mercury or Jupiter joins or aspects her, which ships as the rule's cancellation; a chart that carries no strength never fires it. Read from N. Chidambaram Iyer's 1885 translation."
       },
       "conditions": [
         {
@@ -413,6 +482,44 @@
           ],
           "atLeast": 1,
           "from": "MOON"
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "a powerful Venus, Mercury or Jupiter joins or aspects the Moon",
+          "type": "for-any",
+          "planets": [
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-strong",
+                "planet": "SELF"
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-in-house-from",
+                    "planet": "SELF",
+                    "reference": "MOON",
+                    "houses": [
+                      1
+                    ]
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "SELF",
+                    "target": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
         }
       ]
     }
