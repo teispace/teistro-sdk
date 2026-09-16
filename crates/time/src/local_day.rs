@@ -4,7 +4,7 @@
 
 use core::fmt;
 
-use teistro_calendar::solar::{DayLight, SolarModel};
+use teistro_calendar::solar::{DayLight, SolarModel, civil_day_light};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_core::catalogue::Vara;
 use teistro_core::error::Error;
@@ -116,12 +116,13 @@ pub fn local_midnight(clock: &dyn LocalClock, day: FixedDay) -> Result<JulianDay
 /// The first day after `day` with a sunrise.
 fn first_arc_after(
     model: &dyn SolarModel,
+    clock: &dyn LocalClock,
     place: &Place,
     day: FixedDay,
 ) -> Result<Option<(FixedDay, teistro_calendar::solar::DayArc)>, Error> {
     for distance in 1..=NEAREST_SEARCH_DAYS {
         let candidate = day.plus_days(distance);
-        if let DayLight::Arc(arc) = model.day_light(candidate, place)? {
+        if let DayLight::Arc(arc) = civil_day_light(model, clock, place, candidate)? {
             return Ok(Some((candidate, arc)));
         }
     }
@@ -140,7 +141,7 @@ fn next_sunrise_after(
     kind: PolarKind,
 ) -> Result<JulianDay<Utc>, Error> {
     match policy {
-        PolarDayPolicy::NearestEvent => first_arc_after(model, place, day)?
+        PolarDayPolicy::NearestEvent => first_arc_after(model, clock, place, day)?
             .map(|(_, arc)| arc.sunrise)
             .ok_or_else(|| no_sunrise_within(day, place)),
         _ => synthesised(model, clock, place, day.plus_days(1), kind, policy)
@@ -165,12 +166,13 @@ struct Bounds {
 /// The nearest day to `day` with a sunrise, searching both ways.
 fn nearest_arc(
     model: &dyn SolarModel,
+    clock: &dyn LocalClock,
     place: &Place,
     day: FixedDay,
 ) -> Result<Option<(FixedDay, teistro_calendar::solar::DayArc)>, Error> {
     for distance in 1..=NEAREST_SEARCH_DAYS {
         for candidate in [day.plus_days(distance), day.plus_days(-distance)] {
-            if let DayLight::Arc(arc) = model.day_light(candidate, place)? {
+            if let DayLight::Arc(arc) = civil_day_light(model, clock, place, candidate)? {
                 return Ok(Some((candidate, arc)));
             }
         }
@@ -194,8 +196,8 @@ pub fn local_day(
     policy: PolarDayPolicy,
 ) -> Result<LocalDay, Error> {
     let day = calendar.fixed_of(date)?;
-    let today = model.day_light(day, place)?;
-    let tomorrow = model.day_light(day.plus_days(1), place)?;
+    let today = civil_day_light(model, clock, place, day)?;
+    let tomorrow = civil_day_light(model, clock, place, day.plus_days(1))?;
     let (sunrise, sunset, next_sunrise, state) = match (today, tomorrow) {
         (DayLight::Arc(arc), DayLight::Arc(next)) => {
             (arc.sunrise, arc.sunset, next.sunrise, DayState::Normal)
@@ -273,9 +275,9 @@ fn synthesised(
             })
         }
         PolarDayPolicy::NearestEvent => {
-            let (found_day, arc) =
-                nearest_arc(model, place, day)?.ok_or_else(|| no_sunrise_within(day, place))?;
-            let next_sunrise = first_arc_after(model, place, found_day)?
+            let (found_day, arc) = nearest_arc(model, clock, place, day)?
+                .ok_or_else(|| no_sunrise_within(day, place))?;
+            let next_sunrise = first_arc_after(model, clock, place, found_day)?
                 .map_or(arc.sunset, |(_, next)| next.sunrise);
             Ok(Bounds {
                 sunrise: arc.sunrise,
@@ -309,6 +311,42 @@ mod tests {
         Longitude::literal(85.324),
         Altitude::literal(1400.0),
     );
+
+    /// Samoa moved to UTC+14 by skipping 30 December 2011, so its clock keeps
+    /// 25½ hours from the mean time of its longitude. A civil day's sunrise
+    /// must still fall inside that civil day, and the next one inside the next.
+    #[test]
+    fn a_civil_day_far_from_its_mean_time_rises_inside_itself() {
+        const APIA: Place = Place::new(
+            Latitude::literal(-13.8506),
+            Longitude::literal(-171.7513),
+            Altitude::literal(2.0),
+        );
+        let text = SuryaSiddhanta::text();
+        let clock = UtcOffset::literal(14, 0, 0);
+        for day in [30, 31] {
+            let date = CalendarDate::defined(Calendar::Gregorian, 2011, 12, day);
+            let local = local_day(
+                &text,
+                &Gregorian,
+                &clock,
+                &APIA,
+                &date,
+                PolarDayPolicy::Undefined,
+            )
+            .unwrap();
+            let civil = Gregorian.fixed_of(&date).unwrap();
+            let start = local_midnight(&clock, civil).unwrap().get();
+            let end = local_midnight(&clock, civil.plus_days(1)).unwrap().get();
+            for (name, at) in [("sunrise", local.sunrise), ("sunset", local.sunset)] {
+                assert!(
+                    start <= at.get() && at.get() < end,
+                    "{name} of {date} at {at}"
+                );
+            }
+            assert!(end <= local.next_sunrise.get(), "{date}");
+        }
+    }
 
     #[test]
     fn a_normal_day_at_kathmandu() {
