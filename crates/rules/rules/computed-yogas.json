@@ -1,0 +1,475 @@
+{
+  "rules": [
+    {
+      "key": "NEECHA_BHANGA_RAJA",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "38",
+        "note": "Any one of the seven cancellations below lifting any debilitated graha. The recording engine cites BPHS ch. 38 v. 12 for the six conditions; the translation read (`scratchpad/bphs.txt`) carries no such list there, so the rank-1 source is unsettled (crux C87). The condition itself is the one that engine computes in code, said here in the language."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "planet-in-kendra",
+                        "planet": {
+                          "lordOf": {
+                            "debilitationOf": "SELF"
+                          }
+                        }
+                      },
+                      {
+                        "type": "planet-in-kendra-from",
+                        "planet": {
+                          "lordOf": {
+                            "debilitationOf": "SELF"
+                          }
+                        },
+                        "reference": "MOON"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "planet-in-kendra",
+                        "planet": {
+                          "exaltedIn": {
+                            "debilitationOf": "SELF"
+                          }
+                        }
+                      },
+                      {
+                        "type": "planet-in-kendra-from",
+                        "planet": {
+                          "exaltedIn": {
+                            "debilitationOf": "SELF"
+                          }
+                        },
+                        "reference": "MOON"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "same-sign",
+                    "of": {
+                      "navamsha": "SELF"
+                    },
+                    "as": {
+                      "exaltationOf": "SELF"
+                    }
+                  },
+                  {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "JUPITER",
+                        "target": "SELF"
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "VENUS",
+                        "target": "SELF"
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "MOON",
+                        "target": "SELF"
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "MERCURY",
+                        "target": "SELF"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": {
+                        "navamsha": "SELF"
+                      }
+                    },
+                    "as": "SELF"
+                  },
+                  {
+                    "type": "or",
+                    "conditions": [
+                      {
+                        "type": "planet-in-kendra",
+                        "planet": {
+                          "lordOf": {
+                            "exaltationOf": "SELF"
+                          }
+                        }
+                      },
+                      {
+                        "type": "planet-in-kendra-from",
+                        "planet": {
+                          "lordOf": {
+                            "exaltationOf": "SELF"
+                          }
+                        },
+                        "reference": "MOON"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-retrograde",
+                        "planet": "SELF"
+                      },
+                      {
+                        "type": "not",
+                        "condition": {
+                          "type": "or",
+                          "conditions": [
+                            {
+                              "type": "same-body",
+                              "of": "SELF",
+                              "as": "RAHU"
+                            },
+                            {
+                              "type": "same-body",
+                              "of": "SELF",
+                              "as": "KETU"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "NEECHA_BHANGA_DEBIL_LORD_KENDRA",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "38",
+        "note": "The lord of the sign the graha is debilitated in stands in a kendra from the lagna or from the Moon. The recording engine cites BPHS ch. 38 v. 12 for the six conditions; the translation read (`scratchpad/bphs.txt`) carries no such list there, so the rank-1 source is unsettled (crux C87). The condition itself is the one that engine computes in code, said here in the language."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-in-kendra",
+                    "planet": {
+                      "lordOf": {
+                        "debilitationOf": "SELF"
+                      }
+                    }
+                  },
+                  {
+                    "type": "planet-in-kendra-from",
+                    "planet": {
+                      "lordOf": {
+                        "debilitationOf": "SELF"
+                      }
+                    },
+                    "reference": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "NEECHA_BHANGA_EXALT_PLANET_KENDRA",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "38",
+        "note": "The graha exalted in that sign stands in a kendra from the lagna or from the Moon. The recording engine cites BPHS ch. 38 v. 12 for the six conditions; the translation read (`scratchpad/bphs.txt`) carries no such list there, so the rank-1 source is unsettled (crux C87). The condition itself is the one that engine computes in code, said here in the language."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-in-kendra",
+                    "planet": {
+                      "exaltedIn": {
+                        "debilitationOf": "SELF"
+                      }
+                    }
+                  },
+                  {
+                    "type": "planet-in-kendra-from",
+                    "planet": {
+                      "exaltedIn": {
+                        "debilitationOf": "SELF"
+                      }
+                    },
+                    "reference": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "NEECHA_BHANGA_D9_EXALT",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "38",
+        "note": "The debilitated graha stands in its exaltation sign in the navamsha. The recording engine cites BPHS ch. 38 v. 12 for the six conditions; the translation read (`scratchpad/bphs.txt`) carries no such list there, so the rank-1 source is unsettled (crux C87). The condition itself is the one that engine computes in code, said here in the language."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "same-sign",
+                "of": {
+                  "navamsha": "SELF"
+                },
+                "as": {
+                  "exaltationOf": "SELF"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "NEECHA_BHANGA_BENEFIC_ASPECT",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "38",
+        "note": "A natural benefic — Jupiter, Venus, the Moon or Mercury — aspects the debilitated graha. The recording engine cites BPHS ch. 38 v. 12 for the six conditions; the translation read (`scratchpad/bphs.txt`) carries no such list there, so the rank-1 source is unsettled (crux C87). The condition itself is the one that engine computes in code, said here in the language."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "JUPITER",
+                    "target": "SELF"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "VENUS",
+                    "target": "SELF"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "MOON",
+                    "target": "SELF"
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "MERCURY",
+                    "target": "SELF"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "NEECHA_BHANGA_OWN_NAVAMSA",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "note": "The debilitated graha stands in a navamsha it owns. The recording engine cites BPHS ch. 38 v. 12 for the six conditions; the translation read (`scratchpad/bphs.txt`) carries no such list there, so the rank-1 source is unsettled (crux C87). The condition itself is the one that engine computes in code, said here in the language."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "same-body",
+                "of": {
+                  "lordOf": {
+                    "navamsha": "SELF"
+                  }
+                },
+                "as": "SELF"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "NEECHA_BHANGA_EXALT_LORD_KENDRA",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "38",
+        "note": "The lord of the graha's exaltation sign stands in a kendra from the lagna or from the Moon. The recording engine cites BPHS ch. 38 v. 12 for the six conditions; the translation read (`scratchpad/bphs.txt`) carries no such list there, so the rank-1 source is unsettled (crux C87). The condition itself is the one that engine computes in code, said here in the language."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-in-kendra",
+                    "planet": {
+                      "lordOf": {
+                        "exaltationOf": "SELF"
+                      }
+                    }
+                  },
+                  {
+                    "type": "planet-in-kendra-from",
+                    "planet": {
+                      "lordOf": {
+                        "exaltationOf": "SELF"
+                      }
+                    },
+                    "reference": "MOON"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "key": "NEECHA_BHANGA_RETROGRADE",
+      "category": "neecha-bhanga",
+      "source": {
+        "text": "Phaladeepika",
+        "chapter": "6",
+        "note": "A retrograde debilitated graha, by its vakri bala; the nodes, always retrograde, are left out. The recording engine cites BPHS ch. 38 v. 12 for the six conditions; the translation read (`scratchpad/bphs.txt`) carries no such list there, so the rank-1 source is unsettled (crux C87). The condition itself is the one that engine computes in code, said here in the language."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "DEBILITATED"
+                ]
+              },
+              {
+                "type": "planet-retrograde",
+                "planet": "SELF"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

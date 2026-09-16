@@ -278,14 +278,18 @@ impl Rule {
         self.computed.is_none() && !(self.conditions.is_empty() && self.groups.is_empty())
     }
 
-    /// Every condition it holds: its conditions, its groups' and its
-    /// cancellations', and every one inside them.
-    pub fn every_condition(&self) -> impl Iterator<Item = &Condition> {
+    /// The conditions it holds outright: its own, its groups' and its
+    /// cancellations', each the root of its tree.
+    pub fn top_conditions(&self) -> impl Iterator<Item = &Condition> {
         self.conditions
             .iter()
             .chain(self.groups.iter().flat_map(|g| &g.conditions))
             .chain(self.cancellations.iter().map(|c| &c.condition))
-            .flat_map(Condition::walk)
+    }
+
+    /// Every condition it holds, and every one inside them.
+    pub fn every_condition(&self) -> impl Iterator<Item = &Condition> {
+        self.top_conditions().flat_map(Condition::walk)
     }
 
     /// Whether any of its conditions reads the chart's panchanga, so a caller
@@ -372,7 +376,7 @@ impl TryFrom<Written> for Rule {
                 ));
             }
         };
-        Ok(Rule {
+        let rule = Rule {
             key: written.key,
             category: written.category,
             scope: written.applicable_to,
@@ -384,7 +388,15 @@ impl TryFrom<Written> for Rule {
             full_cancellation_threshold: written.full_cancellation_threshold,
             remedies: written.remedy_keys,
             computed: written.custom_result_key,
-        })
+        };
+        // `SELF` is the body a `for-any` binds, and means nothing outside one.
+        if let Some(kind) = rule.top_conditions().find_map(Condition::unbound_self) {
+            return Err(format!(
+                "rule `{}`: `{kind}` names SELF with no `for-any` above it to bind one",
+                rule.key
+            ));
+        }
+        Ok(rule)
     }
 }
 

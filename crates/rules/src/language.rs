@@ -40,6 +40,18 @@ impl Body {
         Body::Lagna,
     ];
 
+    /// The nine grahas, as a list a rule may leave out.
+    #[must_use]
+    pub fn nine() -> Vec<Body> {
+        Body::ALL[..9].to_vec()
+    }
+
+    /// Whether a list is the nine grahas.
+    #[must_use]
+    pub fn is_nine(planets: &[Body]) -> bool {
+        planets == &Body::ALL[..9]
+    }
+
     /// The seven classical grahas, the Sun to Saturn.
     pub const SEVEN: [Body; 7] = [
         Body::Graha(Graha::Sun),
@@ -552,6 +564,32 @@ pub enum Condition {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         kind: Option<EclipseKind>,
     },
+    /// Some one of the bodies meets the condition, which names it `SELF`. Every
+    /// body is tried, and a rule's participants take each that met it, not the
+    /// bodies the inner conditions consulted.
+    ForAny {
+        /// Which bodies, the nine grahas unless the rule says.
+        #[serde(default = "Body::nine", skip_serializing_if = "Body::is_nine")]
+        planets: Vec<Body>,
+        /// What one of them must meet.
+        then: Box<Condition>,
+    },
+    /// Two references stand in one sign.
+    SameSign {
+        /// One.
+        of: SignRef,
+        /// The other.
+        #[serde(rename = "as")]
+        as_sign: SignRef,
+    },
+    /// Two references resolve to one body.
+    SameBody {
+        /// One.
+        of: BodyRef,
+        /// The other.
+        #[serde(rename = "as")]
+        as_body: BodyRef,
+    },
     /// The birth falls on a sankranti, as the chart's panchanga says.
     BirthOnSankranti {
         /// The window, hours either side, that the chart's flag was computed
@@ -560,6 +598,9 @@ pub enum Condition {
         window_hours: Option<f64>,
     },
 }
+
+/// How `SELF`, the body a `for-any` binds, is written.
+pub const SELF: &str = "SELF";
 
 /// Which node's side the seven stand on.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -697,6 +738,9 @@ impl Condition {
             Condition::PanchangaKarana { .. } => "panchanga-karana",
             Condition::BirthDuringEclipse { .. } => "birth-during-eclipse",
             Condition::BirthOnSankranti { .. } => "birth-on-sankranti",
+            Condition::ForAny { .. } => "for-any",
+            Condition::SameSign { .. } => "same-sign",
+            Condition::SameBody { .. } => "same-body",
         }
     }
 
@@ -705,9 +749,39 @@ impl Condition {
     pub fn children(&self) -> &[Condition] {
         match self {
             Condition::And { conditions } | Condition::Or { conditions } => conditions,
-            Condition::Not { condition } => core::slice::from_ref(condition),
+            Condition::Not { condition }
+            | Condition::ForAny {
+                then: condition, ..
+            } => core::slice::from_ref(condition),
             _ => &[],
         }
+    }
+
+    /// Whether it binds `SELF` for the conditions inside it.
+    #[must_use]
+    pub const fn binds_self(&self) -> bool {
+        matches!(self, Condition::ForAny { .. })
+    }
+
+    /// Whether any reference it names is `SELF`, itself and not inside it.
+    #[must_use]
+    pub fn names_self(&self) -> bool {
+        // A condition's references are what its own serialisation holds, and
+        // `SELF` is written as that word.
+        serde_json::to_value(self).is_ok_and(|value| {
+            fn names(value: &serde_json::Value) -> bool {
+                match value {
+                    serde_json::Value::String(text) => text == SELF,
+                    serde_json::Value::Array(items) => items.iter().any(names),
+                    serde_json::Value::Object(fields) => fields
+                        .iter()
+                        .filter(|(key, _)| key.as_str() != "then")
+                        .any(|(_, value)| names(value)),
+                    _ => false,
+                }
+            }
+            names(&value)
+        })
     }
 
     /// Whether this condition itself reads the chart's panchanga.
@@ -725,6 +799,23 @@ impl Condition {
                 | Condition::BirthDuringEclipse { .. }
                 | Condition::BirthOnSankranti { .. }
         )
+    }
+
+    /// The first condition inside it, itself included, that names `SELF` with
+    /// no `for-any` above it to bind one.
+    #[must_use]
+    pub fn unbound_self(&self) -> Option<&'static str> {
+        fn walk(condition: &Condition, bound: bool) -> Option<&'static str> {
+            if !bound && condition.names_self() {
+                return Some(condition.kind());
+            }
+            let bound = bound || condition.binds_self();
+            condition
+                .children()
+                .iter()
+                .find_map(|child| walk(child, bound))
+        }
+        walk(self, false)
     }
 
     /// This condition and every one inside it, depth first.

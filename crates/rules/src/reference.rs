@@ -31,6 +31,9 @@
 //! | `"UPAPADA"` | the upapada, under [`Upapada`](crate::Upapada) |
 //! | `{"navamsha": {"karaka": "AK"}}` | a body's navamsha sign, here the Karakamsha |
 //! | `{"badhakaOf": 1}` | the badhaka sthana of a sign, here the lagna's |
+//! | `{"exaltationOf": "MOON"}`, `{"debilitationOf": "SELF"}` | where a body is exalted or debilitated |
+//! | `{"exaltedIn": {"debilitationOf": "SELF"}}` | the body exalted in a sign |
+//! | `"SELF"` | the body a `for-any` bound |
 //! | `{"from": {"arudha": 1}, "house": 11}` | the eleventh sign from another |
 //!
 //! ```
@@ -53,7 +56,7 @@ use serde::ser::{SerializeMap, Serializer};
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{CharaKaraka, Graha};
 
-use crate::language::{Body, House, Karaka, KarakaScheme};
+use crate::language::{Body, House, Karaka, KarakaScheme, SELF};
 
 /// A reference that resolves to a body.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
@@ -63,6 +66,10 @@ pub enum BodyRef {
     /// The lord of a sign, the catalogue's (Mars for Scorpio, Saturn for
     /// Aquarius).
     LordOf(Box<SignRef>),
+    /// The body a `for-any` bound, written `SELF`; none outside one.
+    Bound,
+    /// The body exalted in a sign, when one is.
+    ExaltedIn(Box<SignRef>),
     /// The graha holding a chara karaka, when one holds it.
     Karaka {
         /// Which karaka.
@@ -87,6 +94,10 @@ pub enum SignRef {
     Upapada,
     /// A body's navamsha sign.
     Navamsha(BodyRef),
+    /// The sign a body is exalted in, when it has one.
+    Exaltation(BodyRef),
+    /// The sign a body is debilitated in, when it has one.
+    Debilitation(BodyRef),
     /// The badhaka sthana of a sign: the eleventh from a movable sign (BPHS
     /// ch. 50 vv. 20 to 21), and by later tradition the ninth from a fixed one
     /// and the seventh from a dual one (crux C86).
@@ -245,6 +256,8 @@ impl core::fmt::Display for BodyRef {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         match self {
             BodyRef::Body(body) => f.write_str(body.key()),
+            BodyRef::Bound => f.write_str("the body found"),
+            BodyRef::ExaltedIn(sign) => write!(f, "the body exalted in {sign}"),
             BodyRef::LordOf(sign) => write!(f, "the lord of {sign}"),
             BodyRef::Karaka { karaka, scheme } => {
                 let abbreviation = karaka.abbreviation();
@@ -264,6 +277,8 @@ impl core::fmt::Display for SignRef {
             SignRef::House(house) => write!(f, "house {}", house.get()),
             SignRef::Arudha(sign) => write!(f, "the pada of {sign}"),
             SignRef::Badhaka(sign) => write!(f, "the badhaka sthana of {sign}"),
+            SignRef::Exaltation(body) => write!(f, "the exaltation of {body}"),
+            SignRef::Debilitation(body) => write!(f, "the debilitation of {body}"),
             SignRef::Upapada => f.write_str("the upapada"),
             SignRef::Navamsha(body) => write!(f, "the navamsha of {body}"),
             SignRef::Counted { from, house } => write!(f, "house {} from {from}", house.get()),
@@ -280,6 +295,12 @@ impl Serialize for BodyRef {
             BodyRef::LordOf(sign) => {
                 let mut map = serializer.serialize_map(Some(1))?;
                 map.serialize_entry("lordOf", sign)?;
+                map.end()
+            }
+            BodyRef::Bound => serializer.serialize_str(SELF),
+            BodyRef::ExaltedIn(sign) => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("exaltedIn", sign)?;
                 map.end()
             }
             BodyRef::Karaka { karaka, scheme } => {
@@ -314,6 +335,16 @@ impl Serialize for SignRef {
             SignRef::Badhaka(sign) => {
                 let mut map = serializer.serialize_map(Some(1))?;
                 map.serialize_entry("badhakaOf", sign)?;
+                map.end()
+            }
+            SignRef::Exaltation(body) => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("exaltationOf", body)?;
+                map.end()
+            }
+            SignRef::Debilitation(body) => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("debilitationOf", body)?;
                 map.end()
             }
             SignRef::Counted { from, house } => {
@@ -388,9 +419,18 @@ impl<'de> Deserialize<'de> for Written {
 }
 
 /// The body forms, for the message that refuses something else.
-const BODY_FORMS: &str = "a graha's key, LAGNA, {\"lordOf\": …} or {\"karaka\": …}";
+const BODY_FORMS: &str =
+    "a graha's key, LAGNA, SELF, {\"lordOf\": …}, {\"exaltedIn\": …} or {\"karaka\": …}";
 /// The parts only a sign reference has.
-const SIGN_PARTS: [&str; 5] = ["arudha", "badhakaOf", "navamsha", "from", "house"];
+const SIGN_PARTS: [&str; 7] = [
+    "arudha",
+    "badhakaOf",
+    "navamsha",
+    "exaltationOf",
+    "debilitationOf",
+    "from",
+    "house",
+];
 /// The sign forms.
 const SIGN_FORMS: &str = "a body, a house number, UPAPADA, {\"arudha\": …}, {\"badhakaOf\": …}, {\"navamsha\": …} or {\"from\": …, \"house\": …}";
 
@@ -439,6 +479,7 @@ impl Written {
 
     fn body(self) -> Result<BodyRef, String> {
         match self {
+            Written::Key(key) if key == SELF => Ok(BodyRef::Bound),
             Written::Key(key) => Body::from_key(&key).map(BodyRef::Body),
             Written::Number(n) => Err(format!(
                 "house {n} names a sign, and this names a body: {BODY_FORMS}"
@@ -447,6 +488,10 @@ impl Written {
                 let has = |wanted: &str| Written::names(&parts).any(|name| name == wanted);
                 if has("lordOf") {
                     Ok(BodyRef::lord_of(Written::only(parts, "lordOf")?.sign()?))
+                } else if has("exaltedIn") {
+                    Ok(BodyRef::ExaltedIn(Box::new(
+                        Written::only(parts, "exaltedIn")?.sign()?,
+                    )))
                 } else if has("karaka") {
                     let [karaka, scheme] = Written::parts(parts, ["karaka", "scheme"])?;
                     let karaka = match karaka {
@@ -492,6 +537,14 @@ impl Written {
                     Ok(SignRef::badhaka(Written::only(parts, "badhakaOf")?.sign()?))
                 } else if has("navamsha") {
                     Ok(SignRef::Navamsha(Written::only(parts, "navamsha")?.body()?))
+                } else if has("exaltationOf") {
+                    Ok(SignRef::Exaltation(
+                        Written::only(parts, "exaltationOf")?.body()?,
+                    ))
+                } else if has("debilitationOf") {
+                    Ok(SignRef::Debilitation(
+                        Written::only(parts, "debilitationOf")?.body()?,
+                    ))
                 } else {
                     match Written::parts(parts, ["from", "house"])? {
                         [Some(from), Some(house)] => {

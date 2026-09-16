@@ -147,6 +147,8 @@ pub struct Evaluator<'a> {
     chart: &'a RuleChart,
     readings: Readings,
     tables: &'a Tables,
+    /// The body a `for-any` bound, which `SELF` names.
+    bound: Option<Body>,
     /// Each body's benefic nature under the readings, by index.
     benefic: [bool; 10],
     /// Each body's malefic nature.
@@ -198,6 +200,7 @@ impl<'a> Evaluator<'a> {
             chart,
             readings,
             tables: &NO_TABLES,
+            bound: None,
             benefic,
             malefic,
         }
@@ -239,6 +242,13 @@ impl<'a> Evaluator<'a> {
             BodyRef::LordOf(sign) => self
                 .spot(sign, rec)
                 .map(|spot| graha_body(spot.sign.attributes().lord)),
+            BodyRef::Bound => self.bound,
+            BodyRef::ExaltedIn(sign) => {
+                let sign = self.spot(sign, rec)?.sign;
+                Body::ALL
+                    .into_iter()
+                    .find(|body| exaltation(*body) == Some(sign))
+            }
             BodyRef::Karaka { karaka, scheme } => Body::ALL.into_iter().find(|body| {
                 let placement = self.at(*body);
                 let held = match scheme {
@@ -295,6 +305,8 @@ impl<'a> Evaluator<'a> {
                 let body = self.body(body, rec)?;
                 Spot::sign(self.at(body).navamsha, Some(body))
             }
+            SignRef::Exaltation(body) => Spot::sign(exaltation(self.body(body, rec)?)?, None),
+            SignRef::Debilitation(body) => Spot::sign(debilitation(self.body(body, rec)?)?, None),
             SignRef::Badhaka(sign) => {
                 let sign = self.spot(sign, rec)?.sign;
                 let house = match sign.attributes().modality {
@@ -828,6 +840,35 @@ impl<'a> Evaluator<'a> {
                     | (Some(EclipseKind::Lunar), Eclipse::Solar) => false,
                 }),
             Condition::BirthOnSankranti { .. } => self.panchanga().is_some_and(|p| p.on_sankranti),
+            Condition::ForAny { planets, then } => {
+                // Every body is tried, and each that meets it takes part; what
+                // the conditions inside consulted is the rule's business, not
+                // its participants'.
+                let mut held = false;
+                for body in planets {
+                    let bound = Evaluator {
+                        bound: Some(*body),
+                        ..*self
+                    };
+                    if bound.check(then, &mut Participants::default(), rec) {
+                        into.push(*body);
+                        held = true;
+                    }
+                }
+                held
+            }
+            Condition::SameSign { of, as_sign } => {
+                let (Some(one), Some(other)) = (self.spot(of, rec), self.spot(as_sign, rec)) else {
+                    return false;
+                };
+                one.sign == other.sign
+            }
+            Condition::SameBody { of, as_body } => {
+                let (Some(one), Some(other)) = (self.body(of, rec), self.body(as_body, rec)) else {
+                    return false;
+                };
+                one == other
+            }
         }
     }
 
@@ -1003,6 +1044,22 @@ impl<'a> Evaluator<'a> {
             }
             Severity::KootShortfall { full, .. } => *full,
         }
+    }
+}
+
+/// The sign a body is exalted in, when the catalogue gives it one.
+fn exaltation(body: Body) -> Option<Rashi> {
+    match body {
+        Body::Lagna => None,
+        Body::Graha(graha) => graha.attributes().exaltation.map(|at| at.sign),
+    }
+}
+
+/// The sign a body is debilitated in.
+fn debilitation(body: Body) -> Option<Rashi> {
+    match body {
+        Body::Lagna => None,
+        Body::Graha(graha) => graha.attributes().debilitation.map(|at| at.sign),
     }
 }
 

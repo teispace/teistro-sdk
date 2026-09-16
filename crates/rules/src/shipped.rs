@@ -1,5 +1,7 @@
 //! The rules the SDK ships as data (`03-design/rules-engine.md`).
 //!
+//! [`computed_yogas`] holds the eight yogas it computes in code, the Neecha
+//! Bhanga family, each written over any debilitated graha with a `for-any`.
 //! [`computed_doshas`] holds the seventeen doshas the recording engine
 //! computes in code rather than from its own condition language, written here
 //! in the language instead: Kalsarpa and its twelve named forms, Kala Amrita,
@@ -30,8 +32,11 @@ use crate::rule::Rule;
 
 /// The doshas the recording engine computes in code, as rules.
 const COMPUTED_DOSHAS: &str = include_str!("../rules/computed-doshas.json");
+/// The yogas it computes in code: the Neecha Bhanga family.
+const COMPUTED_YOGAS: &str = include_str!("../rules/computed-yogas.json");
 
-static COMPUTED: LazyLock<Vec<Rule>> = LazyLock::new(|| {
+/// The rules of one shipped file.
+fn read(json: &str) -> Vec<Rule> {
     #[derive(Deserialize)]
     #[serde(deny_unknown_fields)]
     struct File {
@@ -41,12 +46,22 @@ static COMPUTED: LazyLock<Vec<Rule>> = LazyLock::new(|| {
         clippy::expect_used,
         reason = "embedded data, read by a test on every build"
     )]
-    let file: File = serde_json::from_str(COMPUTED_DOSHAS).expect("the shipped rules read");
+    let file: File = serde_json::from_str(json).expect("the shipped rules read");
     file.rules
-});
+}
+
+static DOSHAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_DOSHAS));
+static YOGAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_YOGAS));
 
 /// The seventeen doshas the recording engine computes in code, as rules.
 #[must_use]
 pub fn computed_doshas() -> &'static [Rule] {
-    &COMPUTED
+    &DOSHAS
+}
+
+/// The eight yogas it computes in code, the Neecha Bhanga family, as rules:
+/// the aggregate and its seven cancellations, each over any debilitated graha.
+#[must_use]
+pub fn computed_yogas() -> &'static [Rule] {
+    &YOGAS
 }

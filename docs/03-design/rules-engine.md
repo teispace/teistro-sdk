@@ -29,8 +29,10 @@ the language and settles, before any kernel, what the kernel must do:
 - **22 condition types are in use**, 19 predicates and `and`, `or` and `not`;
   the aspect predicates appear only in the dosha rules, not yet recorded.
 - **Eight rules are not in the language at all**: the Neecha Bhanga family,
-  which the engine computes in code and which needs the divisional-chart
-  predicate (`in_varga`) and table lookups below before it can be rules.
+  which the engine computes in code. They are rules now (2026-09-16): what
+  they needed was not `in_varga` but a `for-any` quantifier binding `SELF`, a
+  body's exaltation and debilitation signs as references, and same-sign and
+  same-body predicates.
 - **116 of the 597 written rules are never present** on a recorded chart, so
   the corpus holds no positive case for them, and five rule keys (the Jaimini
   `AmK` rules) contain lowercase letters the SDK's key grammar refuses, which
@@ -313,6 +315,30 @@ outcome:
   and dual ones by later tradition (crux C86);
 - **a weight on a group**, so the luminaries and the lagna count double in
   Mrityu Bhaga's count-based severity.
+
+**Built, the Neecha Bhanga family (2026-09-16).** The eight the engine computes
+in its yoga service are rules too, in `crates/rules/rules/computed-yogas.json`,
+measured in `yogas-measured.md`. Each is one condition over any debilitated
+graha, and all eight say present exactly where the engine's code did on all 93
+charts; seven reproduce its planets and houses exactly, and the aggregate lists
+the same grahas in the chart's order where the engine lists them in the order
+its conditions hit (3 of 54 presences).
+
+They needed a quantifier rather than the sketch's divisional-chart predicate:
+- **`for-any`** tries each of the bodies it names and holds when one meets the
+  condition inside, which names it `SELF`. Every body that meets it takes part,
+  and what the inner conditions consulted does not, so a rule's participants
+  are the grahas the rule is about. `SELF` outside a `for-any` is refused when
+  the rule is read.
+- **`{"exaltationOf": …}` and `{"debilitationOf": …}`**, a body's dignity signs
+  as sign references, and **`{"exaltedIn": …}`**, the body exalted in a sign.
+- **`same-sign` and `same-body`**, which compare two references: a graha
+  exalted in its navamsha is `same-sign` of `{"navamsha": "SELF"}` and
+  `{"exaltationOf": "SELF"}`, and an own navamsha is `same-body` of the lord of
+  that navamsha and `SELF`.
+
+Their citation is unsettled (crux C87): the engine cites BPHS ch. 38 v. 12, and
+the translation read carries no such list there.
 
 A classifying outcome is therefore not what the Kalsarpa family needed: twelve
 named rules over one arc predicate say it, each with its own citation and

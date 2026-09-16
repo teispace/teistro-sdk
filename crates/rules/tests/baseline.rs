@@ -138,6 +138,65 @@ fn explained(evaluator: &Evaluator<'_>, rule: &Rule, result: &RuleResult) {
     }
 }
 
+/// The rules the SDK writes for the eight the engine computes in code
+/// (`03-design/yogas-measured.md`, "The eight, written as rules").
+#[test]
+fn the_sdk_s_rules_for_the_neecha_bhanga_family_say_present_where_the_engine_s_code_did() {
+    let shipped = teistro_rules::shipped::computed_yogas();
+    assert_eq!(shipped.len(), 8);
+    let computed: Vec<String> = rules()
+        .iter()
+        .filter(|r| !r.is_evaluable())
+        .map(|r| r.key.clone())
+        .collect();
+    assert_eq!(computed.len(), 8);
+    for rule in shipped {
+        assert!(computed.contains(&rule.key), "{} is one of them", rule.key);
+        assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
+    }
+
+    let (mut decisions, mut presences, mut exact) = (0, 0, 0);
+    for (path, file) in files() {
+        let chart = chart(&file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
+        let present = file["present"].as_object().unwrap();
+        for rule in shipped {
+            decisions += 1;
+            let result = evaluator.evaluate(rule);
+            let at = format!("{} {}", path.display(), rule.key);
+            let recorded = present.get(&rule.key);
+            assert_eq!(result.present, recorded.is_some(), "{at}: presence");
+            let Some(recorded) = recorded else {
+                continue;
+            };
+            presences += 1;
+            let mut ours: Vec<String> = result
+                .participants
+                .iter()
+                .map(|b| b.key().to_owned())
+                .collect();
+            let mut theirs = strings(&recorded["planets"]);
+            // The same debilitated grahas; the aggregate lists them as the
+            // chart does and the engine in the order its conditions hit.
+            if ours == theirs {
+                exact += 1;
+            }
+            ours.sort();
+            theirs.sort();
+            assert_eq!(ours, theirs, "{at}: the grahas");
+            let houses: Vec<u64> = result.houses.iter().map(|h| u64::from(h.get())).collect();
+            let recorded_houses: Vec<u64> = recorded["houses"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|h| h.as_u64().unwrap())
+                .collect();
+            assert_eq!(houses, recorded_houses, "{at}: houses");
+        }
+    }
+    assert_eq!((decisions, presences, exact), (93 * 8, 202, 199));
+}
+
 #[test]
 fn every_rule_round_trips_through_the_language() {
     let rules = rules();

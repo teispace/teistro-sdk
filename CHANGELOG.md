@@ -957,6 +957,17 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- The Neecha Bhanga family is sayable: `teistro_rules::shipped::computed_yogas`
+  ships the eight the recording engine computes in its yoga service, each one
+  condition over any debilitated graha, and all eight say present where that
+  code did. The language gains `for-any`, which binds `SELF` for the condition
+  inside it and takes every body that meets it as a participant;
+  `{"exaltationOf": …}`, `{"debilitationOf": …}` and `{"exaltedIn": …}`; and
+  `same-sign` and `same-body`. `SELF` outside a `for-any` is refused when a
+  rule is read. Their citation is unsettled (crux C87).
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

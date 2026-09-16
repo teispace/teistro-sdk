@@ -33,11 +33,19 @@ use crate::rules_corpus::{chart, read_json, rules, strings};
 const PAGE: &str = "docs/03-design/yogas-measured.md";
 const ROOT: &str = "fixtures/baseline/yogas";
 
+/// What the engine recorded for one present rule: the planets it involved,
+/// the cancellations that fired and the houses.
+struct Presence {
+    planets: Vec<String>,
+    cancellations: Vec<String>,
+    houses: Vec<u8>,
+}
+
 /// One recorded chart and what the engine answered for it.
 struct Record {
     chart: RuleChart,
-    /// Each present rule's involved planets, and its fired cancellations.
-    present: BTreeMap<String, (Vec<String>, Vec<String>)>,
+    /// Each present rule, by key.
+    present: BTreeMap<String, Presence>,
 }
 
 /// Every place the condition language leaves a meaning open, as the reading
@@ -112,7 +120,21 @@ fn records(root: &Path) -> Result<Vec<Record>, String> {
                 .map(|(key, found)| {
                     (
                         key.clone(),
-                        (strings(&found["planets"]), strings(&found["cancellations"])),
+                        Presence {
+                            planets: strings(&found["planets"]),
+                            cancellations: strings(&found["cancellations"]),
+                            houses: found["houses"]
+                                .as_array()
+                                .map(|houses| {
+                                    houses
+                                        .iter()
+                                        .filter_map(|h| {
+                                            h.as_u64().and_then(|h| u8::try_from(h).ok())
+                                        })
+                                        .collect()
+                                })
+                                .unwrap_or_default(),
+                        },
                     )
                 })
                 .collect();
@@ -149,7 +171,7 @@ fn tally(rules: &[Rule], records: &[Record], readings: Readings) -> Tally {
                 t.moved.insert(rule.key.clone());
                 continue;
             }
-            let Some((planets, cancellations)) = recorded else {
+            let Some(recorded) = recorded else {
                 continue;
             };
             t.presences += 1;
@@ -158,7 +180,7 @@ fn tally(rules: &[Rule], records: &[Record], readings: Readings) -> Tally {
                 .iter()
                 .map(|b| b.key().to_owned())
                 .collect();
-            if &participants != planets {
+            if participants != recorded.planets {
                 t.planets_wrong += 1;
                 t.moved.insert(rule.key.clone());
             }
@@ -168,7 +190,7 @@ fn tally(rules: &[Rule], records: &[Record], readings: Readings) -> Tally {
                 .filter_map(|i| rule.cancellations.get(*i))
                 .map(|c| c.condition.kind().to_owned())
                 .collect();
-            if &fired != cancellations {
+            if fired != recorded.cancellations {
                 t.cancellations_wrong += 1;
                 t.moved.insert(rule.key.clone());
             }
@@ -272,6 +294,75 @@ fn predicate_uses(rules: &[Rule]) -> BTreeMap<&'static str, usize> {
     uses
 }
 
+/// A row per rule the SDK wrote for one the engine computes in code: whether
+/// it is present exactly where that code was, with the same planets and
+/// houses. The engine's own "cancellations" for these are its prose traces,
+/// which no rule carries, so they are left out.
+fn written(shipped: &[Rule], records: &[Record]) -> String {
+    let mut out =
+        String::from("| rule | decisions | presences | what parts |\n|---|---|---|---|\n");
+    for rule in shipped {
+        let (mut decisions, mut presences, mut wrong, mut houses_wrong) = (0, 0, 0, 0);
+        let (mut planets_wrong, mut order_wrong) = (0, 0);
+        for record in records {
+            let evaluator = Evaluator::new(&record.chart, Readings::RECORDING_ENGINE);
+            decisions += 1;
+            let result = evaluator.evaluate(rule);
+            let Some(recorded) = record.present.get(&rule.key) else {
+                wrong += usize::from(result.present);
+                continue;
+            };
+            if !result.present {
+                wrong += 1;
+                continue;
+            }
+            presences += 1;
+            let found: Vec<String> = result
+                .participants
+                .iter()
+                .map(|b| b.key().to_owned())
+                .collect();
+            if found != recorded.planets {
+                let (mut ours, mut theirs) = (found, recorded.planets.clone());
+                ours.sort();
+                theirs.sort();
+                if ours == theirs {
+                    order_wrong += 1;
+                } else {
+                    planets_wrong += 1;
+                }
+            }
+            let houses: Vec<u8> = result.houses.iter().map(|h| h.get()).collect();
+            if houses != recorded.houses {
+                houses_wrong += 1;
+            }
+        }
+        let parts: Vec<String> = [
+            ("the planets", planets_wrong),
+            ("the planets' order", order_wrong),
+            ("the houses", houses_wrong),
+        ]
+        .into_iter()
+        .filter(|(_, n)| *n > 0)
+        .map(|(what, n)| format!("{what} on {}", plural(n, "presence")))
+        .collect();
+        let _ = writeln!(
+            out,
+            "| `{}` | {} of {} | {} | {} |",
+            rule.key,
+            count(wrong),
+            count(decisions),
+            count(presences),
+            if parts.is_empty() {
+                String::from("nothing")
+            } else {
+                parts.join(", ")
+            }
+        );
+    }
+    out
+}
+
 fn page(root: &Path) -> Result<String, String> {
     let rules = rules(root, "yogas")?;
     let records = records(root)?;
@@ -344,7 +435,15 @@ fn page(root: &Path) -> Result<String, String> {
     );
     let _ = write!(
         out,
-        "## What it means for the kernel\n\n\
+        "## The eight, written as rules\n\n\
+         `crates/rules/rules/computed-yogas.json` says in the language what the engine computes in \
+         code: the Neecha Bhanga aggregate and its seven cancellations, each over any debilitated \
+         graha. Measured against what its code recorded:\n\n{written}\n\
+         The engine's own \"cancellations\" for these eight are the prose traces its code writes, which \
+         no rule carries, and are left out. Where the aggregate's planets part, the same grahas are \
+         listed in another order: these rules list them as the chart does, the Sun to Ketu, and the \
+         engine lists them in the order its seven conditions hit.\n\n\
+         ## What it means for the kernel\n\n\
          **The engine's semantics are settled over the corpus**, each a choice the rows above measure: \
          conjunction in one sign unless a rule gives an orb, the Moon malefic when waning and Mercury when \
          only malefics share its sign, a deep dignity meeting its plain form, all seven between the nodes \
@@ -360,6 +459,7 @@ fn page(root: &Path) -> Result<String, String> {
          and the rules-engine page requires a positive and a negative fixture before a rule is marked \
          stable; the Neecha Bhanga family needs the kernel's table lookups or its divisional-chart \
          predicate before it can be written as rules at all.\n",
+        written = written(teistro_rules::shipped::computed_yogas(), &records),
     );
     Ok(fill(&out))
 }

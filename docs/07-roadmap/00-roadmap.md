@@ -564,7 +564,9 @@ Bhagas and the Dagdha rashis shipped. **Cancellation and severity are built**
 with the doshas (corpus 0.11.0): reference groups, severities and net status
 on one `Rule`, the engine's 35 language-expressible doshas reproduced. **Its 17 computed doshas are rules** too, measured in `doshas-measured.md`:
 each says present where its code did, and Mrityu Bhaga, Dagdha Rashi and
-Badhaka reproduce every field. Next: with the references that need points the
+Badhaka reproduce every field. **The Neecha Bhanga family is rules** as well,
+over a `for-any` quantifier rather than the divisional predicate the page
+expected. Next: with the references that need points the
 chart does not yet carry added as rules need them.
 
 `rules` engine with the v2 algebra landed in order (reference subjects,

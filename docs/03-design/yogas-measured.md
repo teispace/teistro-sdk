@@ -60,6 +60,30 @@ VIDYA_4_5_LORDS_PARIVARTANA, VAGISH_MERCURY_2_5_9_OWN_EXALT,
 SANTANA_LORDS_PARIVARTANA_5_9, JAIMINI_AK_AmK_PARIVARTANA_PROXY,
 TAJIK_YAMAYYA_DUAL_BENEFIC_LAGNA, TAJIK_RUD_DHAR_LORDS_PARIVARTANA_1_10.
 
+## The eight, written as rules
+
+`crates/rules/rules/computed-yogas.json` says in the language what the
+engine computes in code: the Neecha Bhanga aggregate and its seven
+cancellations, each over any debilitated graha. Measured against what
+its code recorded:
+
+| rule | decisions | presences | what parts |
+|---|---|---|---|
+| `NEECHA_BHANGA_RAJA` | 0 of 93 | 54 | the planets' order on 3 presences |
+| `NEECHA_BHANGA_DEBIL_LORD_KENDRA` | 0 of 93 | 43 | nothing |
+| `NEECHA_BHANGA_EXALT_PLANET_KENDRA` | 0 of 93 | 30 | nothing |
+| `NEECHA_BHANGA_D9_EXALT` | 0 of 93 | 9 | nothing |
+| `NEECHA_BHANGA_BENEFIC_ASPECT` | 0 of 93 | 14 | nothing |
+| `NEECHA_BHANGA_OWN_NAVAMSA` | 0 of 93 | 8 | nothing |
+| `NEECHA_BHANGA_EXALT_LORD_KENDRA` | 0 of 93 | 40 | nothing |
+| `NEECHA_BHANGA_RETROGRADE` | 0 of 93 | 4 | nothing |
+
+The engine's own "cancellations" for these eight are the prose traces
+its code writes, which no rule carries, and are left out. Where the
+aggregate's planets part, the same grahas are listed in another order:
+these rules list them as the chart does, the Sun to Ketu, and the engine
+lists them in the order its seven conditions hit.
+
 ## What it means for the kernel
 
 **The engine's semantics are settled over the corpus**, each a choice
