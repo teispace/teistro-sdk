@@ -115,7 +115,7 @@ mod tests {
             .chain(gandantas())
             .chain(arishtas())
             .collect();
-        assert_eq!(rules.len(), 44);
+        assert_eq!(rules.len(), 65);
         for rule in &rules {
             let rank = rule
                 .source
@@ -143,6 +143,14 @@ mod tests {
             .map(|rule| rule.key.as_str())
             .collect();
         assert_eq!(secondary.len(), 15, "{secondary:?}");
+        // Every rule a shipped rule names is shipped beside it, and none
+        // reaches itself.
+        let owned: Vec<Rule> = rules.iter().map(|rule| (*rule).clone()).collect();
+        assert_eq!(
+            crate::rule::check_references(&owned),
+            Ok(()),
+            "the shipped rules name each other soundly"
+        );
         assert!(secondary.contains(&"KALSARPA") && secondary.contains(&"DAGDHA_RASHI_DOSHA"));
         assert!(EvidenceRank::try_new(0).is_err() && EvidenceRank::try_new(5).is_err());
     }

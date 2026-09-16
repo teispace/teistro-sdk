@@ -44,7 +44,7 @@
 //! # Ok::<(), serde_json::Error>(())
 //! ```
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize};
@@ -292,6 +292,15 @@ impl Rule {
         self.top_conditions().flat_map(Condition::walk)
     }
 
+    /// Every rule it names by key, in the order it names them.
+    pub fn references(&self) -> impl Iterator<Item = &str> {
+        self.every_condition()
+            .filter_map(|condition| match condition {
+                Condition::RuleHolds { key } => Some(key.as_str()),
+                _ => None,
+            })
+    }
+
     /// Whether any of its conditions reads the chart's panchanga, so a caller
     /// knows to give the chart one.
     #[must_use]
@@ -495,6 +504,55 @@ mod reference_point {
     }
 }
 
+/// Depth-first, keeping the path so a cycle can name itself.
+fn walk_references<'r>(
+    rule: &'r Rule,
+    by_key: &BTreeMap<&'r str, &'r Rule>,
+    path: &mut Vec<&'r str>,
+    done: &mut BTreeSet<&'r str>,
+) -> Result<(), String> {
+    if done.contains(rule.key.as_str()) {
+        return Ok(());
+    }
+    if path.contains(&rule.key.as_str()) {
+        path.push(&rule.key);
+        return Err(format!(
+            "rules name each other in a circle: {}",
+            path.join(" → ")
+        ));
+    }
+    path.push(&rule.key);
+    for key in rule.references() {
+        let named = by_key.get(key).ok_or_else(|| {
+            format!(
+                "rule `{}` names `{key}`, which the set does not hold",
+                rule.key
+            )
+        })?;
+        walk_references(named, by_key, path, done)?;
+    }
+    path.pop();
+    done.insert(&rule.key);
+    Ok(())
+}
+
+/// Whether every rule a set names is in it and no rule reaches itself, so an
+/// evaluator given the set cannot loop.
+///
+/// # Errors
+///
+/// The first rule naming a key the set lacks, or the first cycle, naming the
+/// rules on it.
+pub fn check_references(rules: &[Rule]) -> Result<(), String> {
+    let by_key: BTreeMap<&str, &Rule> =
+        rules.iter().map(|rule| (rule.key.as_str(), rule)).collect();
+    let mut done = BTreeSet::new();
+    for rule in rules {
+        walk_references(rule, &by_key, &mut Vec::new(), &mut done)?;
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(
@@ -604,6 +662,39 @@ mod tests {
             let error = rule(&json).unwrap_err().to_string();
             assert!(error.to_lowercase().contains(reason), "{json}: {error}");
         }
+    }
+
+    #[test]
+    fn a_set_of_rules_that_names_itself_in_a_circle_or_names_nothing_is_refused() {
+        let naming = |key: &str, names: &str| {
+            rule(&format!(
+                r#"{{"key": "{key}", "category": "c", "source": {{"text": "t"}},
+                    "conditions": [{{"type": "rule", "key": "{names}"}}]}}"#
+            ))
+            .unwrap()
+        };
+        let plain = rule(&format!(
+            r#"{{{HEAD}, "conditions": [{{"type": "planet-in-kendra", "planet": "SUN"}}]}}"#
+        ))
+        .unwrap();
+        // A rule may name another that is there.
+        let good = vec![naming("A", "R"), plain.clone()];
+        assert_eq!(check_references(&good), Ok(()));
+        assert_eq!(good[0].references().collect::<Vec<_>>(), ["R"]);
+
+        // Naming a rule the set does not hold is refused, and says which.
+        let dangling = check_references(&[naming("A", "MISSING")]).unwrap_err();
+        assert!(
+            dangling.contains("rule `A` names `MISSING`, which the set does not hold"),
+            "{dangling}"
+        );
+
+        // So is a circle, however long, and the message walks it.
+        let circle =
+            check_references(&[naming("A", "B"), naming("B", "C"), naming("C", "A")]).unwrap_err();
+        assert!(circle.contains("A → B → C → A"), "{circle}");
+        let itself = check_references(&[naming("A", "A")]).unwrap_err();
+        assert!(itself.contains("A → A"), "{itself}");
     }
 
     #[test]

@@ -49,6 +49,6 @@ pub use language::{
     Body, Condition, EclipseKind, EvidenceRank, House, Karaka, KarakaScheme, NodeSide, Pada, Source,
 };
 pub use reference::{BodyRef, BodySubject, SignRef, Subject};
-pub use rule::{Cancellation, Group, NetStatus, Rule, Scope, Severity};
+pub use rule::{Cancellation, Group, NetStatus, Rule, Scope, Severity, check_references};
 pub use table::{SignDegree, Table, TableKey, Tables};
 pub use trace::{Explanation, Resolved, Step};

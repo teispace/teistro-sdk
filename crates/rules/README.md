@@ -51,6 +51,10 @@ cancellations held.
   Dagdha Rashi and Badhaka reproduce every recorded field. It took a `side` on
   the nodal-arc predicate, a badhaka reference (crux C86) and a weight on a
   group, not a classifying outcome.
+- **A rule can name another.** `{"type": "rule", "key": …}` holds when that
+  rule holds, so BPHS ch. 9's evils carry ch. 10's antidotes as cancellations
+  while the antidotes stay rules of their own; `check_references` refuses a
+  dangling key or a circle.
 - **A limb's edge is measured in ghatikas.** BPHS ch. 92 puts every gandanta
   in time, not in degrees, so a chart carries how far the birth stood into the
   tithi, the nakshatra and the rising sign, and `at-limb-edge` reads it. The

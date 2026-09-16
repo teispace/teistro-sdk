@@ -594,6 +594,22 @@ pub enum Condition {
         /// What must hold in it.
         condition: Box<Condition>,
     },
+    /// So many bodies aspect the reference by graha drishti.
+    CountAspecting {
+        /// Who is counted: a body, or every benefic or every malefic.
+        planets: BodySubject,
+        /// Whom they aspect.
+        target: SignRef,
+        /// How many there must be at least.
+        at_least: u8,
+    },
+    /// Another rule holds. The rule is named by key, and an evaluator reads it
+    /// from the set it was given; a key the set does not hold never holds.
+    #[serde(rename = "rule")]
+    RuleHolds {
+        /// Which rule.
+        key: String,
+    },
     /// So many bodies stand in the houses, counted from the reference.
     CountInHouses {
         /// Who is counted: a body, or every benefic or every malefic.
@@ -797,6 +813,8 @@ impl Condition {
             Condition::ForAny { .. } => "for-any",
             Condition::InVarga { .. } => "in-varga",
             Condition::CountInHouses { .. } => "count-in-houses",
+            Condition::CountAspecting { .. } => "count-aspecting",
+            Condition::RuleHolds { .. } => "rule",
             Condition::AtLimbEdge { .. } => "at-limb-edge",
             Condition::BirthByDay => "birth-by-day",
             Condition::SameSign { .. } => "same-sign",

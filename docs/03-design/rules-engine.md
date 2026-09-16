@@ -404,11 +404,32 @@ that fires too often is worse than one that is missing. They arrive with a
 strength measure. So does ch. 9 v. 22's rising decanate, which wants the
 drekkana of the lagna rather than of a body.
 
+**A rule can name another (2026-09-16).** `{"type": "rule", "key": …}` holds
+when the rule it names holds, read from the set an evaluator is given
+(`with_rules`). That is the design's `ref { rule }`, and it is what lets ch. 9's
+evils carry ch. 10's antidotes as their cancellations while the antidotes stay
+the rules the chapter makes them. `check_references` refuses a set whose rule
+names a key the set lacks, or that reaches itself, and the message walks the
+circle; the shipped pack is checked by a test.
+
+With it, the pack grew to ch. 9's evils to the mother (vv. 24 to 33) and to the
+father (vv. 34 to 45): 32 evils and 4 antidotes, each evil naming all four.
+`count-aspecting` counts how many bodies of a class aspect a reference, which
+v. 24's three malefics on the Moon needed.
+
+The four general rules of vv. 43 to 45 — the Sun for the father, the Moon for
+the mother, malefics aspecting, hemming, or standing in the fourth, sixth or
+eighth from them — answer 40 to 73 of the 93 recorded charts, and their notes
+say why: the verses close by asking that the occupants' strength be estimated,
+which the kernel cannot yet do, so they state the principle rather than a
+graded reading.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
-of them, so an answer that moves fails the build. Ten answer none, and the
-test says why — the four gandantas because the corpus records no limb's
-ghatikas, the rest because they are coincidences of three or four grahas.
+of them, so an answer that moves fails the build. Nineteen answer none, and the
+test lists them — the four gandantas because the corpus records no limb's
+ghatikas, the rest because they are coincidences of three, four or five
+grahas.
 
 A classifying outcome is therefore not what the Kalsarpa family needed: twelve
 named rules over one arc predicate say it, each with its own citation and

@@ -151,6 +151,8 @@ pub struct Evaluator<'a> {
     vargas: &'a [VargaSigns],
     /// The points a `{"point": …}` reference can name.
     points: &'a [PointAt],
+    /// The rules a `{"type": "rule"}` condition can name.
+    rules: &'a [Rule],
     /// The body a `for-any` bound, which `SELF` names.
     bound: Option<Body>,
     /// Each body's benefic nature under the readings, by index.
@@ -206,6 +208,7 @@ impl<'a> Evaluator<'a> {
             tables: &NO_TABLES,
             vargas: &[],
             points: &[],
+            rules: &[],
             bound: None,
             benefic,
             malefic,
@@ -232,6 +235,15 @@ impl<'a> Evaluator<'a> {
     #[must_use]
     pub const fn with_points(self, points: &'a [PointAt]) -> Evaluator<'a> {
         Evaluator { points, ..self }
+    }
+
+    /// The same evaluator, able to read a rule that names another by key. A
+    /// key the set does not hold never holds; a rule that reaches itself is
+    /// refused when the set is checked
+    /// ([`Rule::references`](crate::Rule::references)).
+    #[must_use]
+    pub const fn with_rules(self, rules: &'a [Rule]) -> Evaluator<'a> {
+        Evaluator { rules, ..self }
     }
 
     fn at(&self, body: Body) -> &Placement {
@@ -962,6 +974,40 @@ impl<'a> Evaluator<'a> {
                     into.extend(counted);
                 }
                 held
+            }
+            Condition::CountAspecting {
+                planets,
+                target,
+                at_least,
+            } => {
+                let Some(target) = self.spot(target, rec) else {
+                    return false;
+                };
+                let mut counted = Participants::default();
+                for body in self.subject_bodies(planets, rec) {
+                    if aspects(
+                        body,
+                        self.at(body).sign,
+                        target.sign,
+                        self.readings.node_aspects,
+                    ) {
+                        counted.push(body);
+                    }
+                }
+                let held = counted.len() >= usize::from(*at_least);
+                if held && self.readings.aspect_gathering == AspectGathering::Both {
+                    into.extend(counted);
+                    into.push_through(target);
+                }
+                held
+            }
+            Condition::RuleHolds { key } => {
+                let Some(rule) = self.rules.iter().find(|rule| rule.key == *key) else {
+                    return false;
+                };
+                // A referenced rule answers as it would on its own, and what it
+                // consulted is its own business.
+                self.evaluate(rule).present
             }
             Condition::SameSign { of, as_sign } => {
                 let (Some(one), Some(other)) = (self.spot(of, rec), self.spot(as_sign, rec)) else {
@@ -2547,6 +2593,53 @@ mod tests {
         assert!(!at(&c, "TITHI_GANDANTA") && !at(&c, "NAKSHATRA_GANDANTA"));
         c.panchanga = None;
         assert!(!at(&c, "LAGNA_GANDANTA"));
+    }
+
+    #[test]
+    fn a_rule_can_name_another_as_its_cancellation() {
+        use crate::rule::NetStatus;
+        use crate::shipped;
+
+        // BPHS ch. 9's evils name ch. 10's antidotes by key, so an evil that
+        // holds on a chart where an antidote holds is cancelled.
+        let pack: Vec<Rule> = shipped::arishtas().to_vec();
+        let Some(evil) = pack
+            .iter()
+            .find(|rule| rule.key == "ARISHTA_MALEFICS_IN_SIXTH_AND_TWELFTH")
+        else {
+            panic!("shipped")
+        };
+        assert_eq!(evil.references().count(), 4);
+
+        let mut c = chart();
+        // Malefics in the sixth and the twelfth: Saturn in Virgo, Mars in
+        // Pisces, from an Aries lagna.
+        place(&mut c, SATURN, Rashi::Virgo);
+        place(&mut c, MARS, Rashi::Pisces);
+        // No benefic in a kendra or trikona yet: Jupiter, Venus and Mercury in
+        // the eleventh, with the Moon there too.
+        for body in [JUPITER, Body::Graha(Graha::Venus), MERCURY, MOON] {
+            place(&mut c, body, Rashi::Aquarius);
+        }
+        let answer = |c: &RuleChart| Evaluator::new(c, ENGINE).with_rules(&pack).evaluate(evil);
+        let result = answer(&c);
+        assert!(result.present);
+        assert_eq!(result.status, Some(NetStatus::Active), "no antidote holds");
+
+        // Jupiter into the fourth: ch. 10 v. 2's antidote holds and cancels it.
+        place(&mut c, JUPITER, Rashi::Cancer);
+        let result = answer(&c);
+        assert!(result.present);
+        // Two antidotes hold at once: the benefic in a kendra (v. 2), and
+        // Jupiter in Cancer aspecting Mars in Pisces by his ninth (v. 7).
+        assert_eq!(result.cancellations, [0, 3]);
+        assert_eq!(result.status, Some(NetStatus::FullyCancelled));
+
+        // An evaluator given no rules cannot read the reference, so nothing
+        // cancels and the evil stands.
+        let alone = Evaluator::new(&c, ENGINE).evaluate(evil);
+        assert!(alone.present && alone.cancellations.is_empty());
+        assert_eq!(alone.status, Some(NetStatus::Active));
     }
 
     #[test]

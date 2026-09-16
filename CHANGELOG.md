@@ -1023,6 +1023,17 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none; these are new rules, and no recorded answer moves.
 
+- A rule can name another: `{"type": "rule", "key": …}` holds when that rule
+  holds, read from the set an evaluator is given, and `check_references`
+  refuses a set with a dangling key or a circle, naming it. With it, BPHS
+  ch. 9's evils carry ch. 10's antidotes as their cancellations while the
+  antidotes stay rules of their own, and the pack grew to the evils to the
+  mother and to the father: 32 evils and 4 antidotes. `count-aspecting` counts
+  how many bodies of a class aspect a reference, which ch. 9 v. 24's three
+  malefics on the Moon needed.
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
