@@ -474,8 +474,22 @@ impl<'a> Evaluator<'a> {
         counted
     }
 
-    /// What the chart says of strength, or nothing at all.
-    fn strengths(&self) -> Strengths {
+    /// The chart it reads.
+    #[must_use]
+    pub const fn chart(&self) -> &RuleChart {
+        self.chart
+    }
+
+    /// The sign a house falls in, whole signs from the lagna.
+    #[must_use]
+    pub fn house_sign(&self, house: House) -> Rashi {
+        step(self.chart.lagna(), house.get() - 1)
+    }
+
+    /// What the chart says of strength, or nothing at all: a chart that
+    /// carries none answers false to every question of strength.
+    #[must_use]
+    pub fn strengths(&self) -> Strengths {
         self.chart.strengths.unwrap_or(Strengths::NONE)
     }
 

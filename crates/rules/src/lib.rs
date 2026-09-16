@@ -32,6 +32,7 @@
 
 pub mod chart;
 mod dwigraha;
+pub mod house;
 pub mod eval;
 pub mod language;
 pub mod reference;
@@ -46,6 +47,7 @@ pub use chart::{
     StrengthMeasure, Strengths, Upapada, VargaSigns,
 };
 pub use eval::{Evaluator, Found, Participants, RuleResult};
+pub use house::{COMPOSITIONS, Composition, Held, HouseReading, Kind};
 pub use language::{
     ArgalaPlace, Body, Condition, EclipseKind, EvidenceRank, House, Karaka, KarakaScheme, NodeSide,
     Pada, Source,

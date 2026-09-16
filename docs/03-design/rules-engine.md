@@ -541,6 +541,36 @@ recording engine, by comparison, carries fifteen rules that pair a conjunction
 with a house and every one of them is a pair; its one triple with a house uses
 a house *class*, not a named house.
 
+**Gathering, rather than deciding.** A rule answers one figure; a consumer
+asking what the fourth house says wants every figure that touches it at once.
+`Evaluator::house_reading` gives that: the sign, the grahas standing there,
+every rule of a set that held and whose participants stand there, and the
+`Composition`s that bear on it. A rule bears on a house when the houses its
+participants stand in include it, which is what a result already reported, so
+nothing new is computed and a rule with no participants — the lagna rising in a
+sign, a rule of the panchanga — is left out rather than assigned to a house it
+does not touch.
+
+A `Composition` is not a reading. It says nothing of the native, only how the
+readings that held are to be taken, and it carries its verse so that a consumer
+can show the authority for combining as readily as for what is combined. Four
+kinds, and six of them ship, each read from a verse and none from a note:
+`Compose` (Phaladeepika ch. 18 v. 5 — read the pairs), `Arbitrate`
+(ch. 22 v. 19 — where several share a bhava only the strongest shortens the
+life; BPHS ch. 79 vv. 2 to 3 — four or more *strong* grahas make an ascetic of
+the strongest's order; Saravali ch. 34 v. 66 — the strongest has the highest
+influence on the eleventh), `Modulate` (ch. 34 v. 65 — increased by a benefic's
+aspect, decreased by a malefic's, mixed by both), and `Refuse` (ch. 31 v. 87).
+
+**The refusal is a result.** Over the 93 recorded charts, 48 of the 1116 houses
+hold three grahas or more — 35 with three, 10 with four, 3 with five. That is
+exactly the case a reading of one graha at a time cannot answer, and exactly
+the case Saravali declines to write. A house of four grahas in an angle
+therefore comes back with its six pair readings, the composition that says to
+read them as pairs, and the refusal that says no text gives the four of them a
+reading of their own. **The SDK says "the texts stop here" where it would
+otherwise have to invent.**
+
 Jataka Parijata goes further, and the appendix to Iyer's Brihat Jataka prints
 its lists: every combination of the seven grahas sharing one sign, from two to
 six — 21, 35, 35, 21 and 7, one hundred and nineteen readings. They run in

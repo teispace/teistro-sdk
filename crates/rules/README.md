@@ -56,6 +56,11 @@ cancellations held.
   `life-span` in the unit its verse uses; Saravali ch. 10's ten evils ship with
   theirs and ch. 12's hundred-year antidote with its own, and nothing else
   claims one.
+- **A house read whole**, `Evaluator::house_reading`: the sign, the grahas
+  standing there, every rule that held and bears on it, and the `Composition`s
+  the texts give for reading them together — including the one that says the
+  texts give no reading for three or more grahas in an angle. A composition
+  carries its verse; it says nothing of the native.
 - **The yogas BPHS gives**: ch. 35's thirty-two Nabhasa yogas, chs. 37 and 38's
   lunar and solar ones, the five Pancha Mahapurusha yogas and ch. 36's named
   yogas ship as `shipped::nabhasas()` with what each verse says, and 41 of the

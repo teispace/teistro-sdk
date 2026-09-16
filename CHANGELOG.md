@@ -1204,6 +1204,22 @@ the astronomical numbers do not move. Nothing else computes yet.
   a pair can never answer more charts than Brihat Jataka's one reading of it —
   which the test holds for all 21.
 
+- **A house read whole.** `Evaluator::house_reading` gathers everything bearing
+  on a house — its sign, the grahas standing there, every rule that held whose
+  participants stand there — and the `Composition`s the texts give for reading
+  them together. A composition is not a reading: it says nothing of the native,
+  only how what held is to be taken, and it carries its verse. Six ship, in
+  four kinds: `Compose` (Phaladeepika ch. 18 v. 5), `Arbitrate` (ch. 22 v. 19,
+  BPHS ch. 79 vv. 2 to 3, Saravali ch. 34 v. 66), `Modulate` (ch. 34 v. 65) and
+  `Refuse` (Saravali ch. 31 v. 87). Saravali ch. 19 v. 8's five-or-six-together
+  reading ships beside them. The SDK ships 818 rules.
+
+  **Numbers:** 48 of the 1116 houses of the corpus hold three grahas or more —
+  35 with three, 10 with four, 3 with five — which is exactly the case a
+  reading of one graha at a time cannot answer and the case the texts decline
+  to write. Over the 93 charts a consumer receives 4894 results gathered under
+  a house and 455 statements of how to read them together.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

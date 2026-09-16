@@ -664,6 +664,42 @@
           "text": "troubled by as many enemies as there are grahas in the sixth"
         }
       ]
+    },
+    {
+      "key": "SARAVALI_FIVE_OR_SIX_GRAHAS_TOGETHER",
+      "category": "grahas-together",
+      "source": {
+        "text": "Saravali",
+        "chapter": "19",
+        "verse": "8",
+        "rank": 1,
+        "note": "Five or six grahas joined at birth. The chapter's own closing verse, which overrides the readings it has just given set by set. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "n-grahas-conjunct-with",
+            "anchor": "SELF",
+            "minCount": 5
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless, subjected to grief, and dull-witted"
+        }
+      ]
     }
   ]
 }
