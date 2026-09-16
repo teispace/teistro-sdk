@@ -111,9 +111,9 @@ fn a_house_gathers_every_rule_whose_grahas_stand_in_it() {
         .map(|(_, houses)| *houses)
         .sum();
     assert_eq!(crowded_houses, 48);
-    // What a consumer receives: 4916 rule results gathered under a house over
+    // What a consumer receives: 4978 rule results gathered under a house over
     // the 93 charts, and 455 statements of how to read them together.
-    assert_eq!((held, composed), (4916, 455));
+    assert_eq!((held, composed), (4978, 455));
 }
 
 /// How many houses of the 1116 hold each number of grahas.
@@ -171,3 +171,86 @@ fn the_compositions_are_what_the_texts_say_and_one_of_them_is_a_refusal() {
     assert!(!ascetic.bears_on(House::try_new(1).unwrap(), 4, 3));
     assert!(ascetic.bears_on(House::try_new(1).unwrap(), 4, 4));
 }
+
+/// Saravali ch. 34 reads named sets of grahas in named houses — three of them
+/// in the second, two in the seventh — which is the shape a reading of one
+/// graha at a time cannot say (crux C96). Where such a rule holds, it is
+/// gathered under exactly the house it names.
+#[test]
+fn a_named_set_in_a_named_house_is_gathered_under_that_house() {
+    let rules: Vec<Rule> = shipped::nabhasas()
+        .iter()
+        .filter(|rule| {
+            rule.source.text == "Saravali" && rule.source.chapter.as_deref() == Some("34")
+        })
+        .cloned()
+        .collect();
+    // Fourteen here and the three counts shipped earlier — the whole of what
+    // ch. 34 gives that a one-graha-at-a-time reading cannot.
+    assert_eq!(rules.len(), 17);
+    let mut fired: BTreeMap<&str, usize> =
+        rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
+    let mut gathered = 0;
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_rules(&rules);
+        for rule in &rules {
+            if evaluator.evaluate(rule).present {
+                *fired.get_mut(rule.key.as_str()).unwrap() += 1;
+            }
+        }
+        // A rule reaches a house through the grahas that stand there, so one
+        // gathered under a house has at least one participant standing in it.
+        // Not *every* participant: a rule whose grahas stand in two houses is
+        // gathered under both, which is why the second from the Moon —
+        // aspected by a benefic standing elsewhere — appears under the
+        // benefic's house and not the Moon's second.
+        for reading in evaluator.house_readings(&rules) {
+            for held in &reading.held {
+                gathered += 1;
+                assert!(
+                    held.result
+                        .participants
+                        .iter()
+                        .any(|body| reading.occupants.contains(&body) || body == Body::Lagna),
+                    "{} under house {}",
+                    held.rule.key,
+                    reading.house.get()
+                );
+            }
+        }
+    }
+    let counts: Vec<(&str, usize)> = fired.into_iter().collect();
+    assert_eq!(counts.as_slice(), NAMED_SETS.as_slice());
+    assert_eq!(gathered, 117);
+    // The named triple in the second never happens in these 93 births, and
+    // the named pair in the seventh happens seven times: that is how rare the
+    // shape is, which is why the corpus carries so little of it.
+    let named_in_a_house: usize = counts
+        .iter()
+        .filter(|(key, _)| key.contains("_IN_THE_SECOND") || key.contains("_IN_THE_SEVENTH"))
+        .map(|(_, count)| *count)
+        .sum();
+    assert_eq!(named_in_a_house, 13);
+}
+
+/// What each answers over the 93 recorded charts.
+const NAMED_SETS: [(&str, usize); 17] = [
+    ("SARAVALI_A_LEO_ARIES_OR_SCORPIO_NAVAMSA_RISING", 20),
+    ("SARAVALI_BENEFICS_IN_THE_SECOND", 5),
+    ("SARAVALI_ENEMIES_BY_THE_SIXTH", 54),
+    ("SARAVALI_JUPITER_IN_THE_SECOND_ASPECTED_BY_MERCURY", 0),
+    ("SARAVALI_LAGNADHI_FROM_THE_SIXTH", 0),
+    ("SARAVALI_MARS_AND_SUN_IN_THE_SECOND", 0),
+    ("SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND", 0),
+    ("SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON", 0),
+    ("SARAVALI_MERCURY_AND_JUPITER_IN_THE_SEVENTH", 0),
+    ("SARAVALI_MERCURY_AND_VENUS_IN_THE_SEVENTH", 7),
+    ("SARAVALI_MERCURY_IN_THE_SECOND_ASPECTED_BY_THE_MOON", 0),
+    ("SARAVALI_SATURN_ALONE_IN_THE_SECOND_ASPECTED_BY_MERCURY", 0),
+    ("SARAVALI_SUN_IN_THE_SECOND_ASPECTED_BY_SATURN_ALONE", 1),
+    ("SARAVALI_THE_SECOND_FROM_THE_MOON_ASPECTED_BY_A_BENEFIC", 24),
+    ("SARAVALI_THREE_GRAHAS_IN_THE_LAGNA", 1),
+    ("SARAVALI_THREE_MALEFICS_IN_THE_LAGNA", 0),
+    ("SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY", 0),
+];

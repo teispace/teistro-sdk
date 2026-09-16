@@ -1,0 +1,555 @@
+{
+  "rules": [
+    {
+      "key": "SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND",
+      "category": "dhana",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "15-20",
+        "rank": 1,
+        "note": "Mars, Saturn and the Sun occupying the second. The chapter's second-house cluster is the rarest shape the texts read: a named set of grahas in a named house, which a reading of one graha at a time cannot say (crux C96). Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "his wealth destroyed"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_MARS_SATURN_AND_SUN_IN_THE_SECOND_UNDER_A_WEAK_MOON",
+      "category": "dhana",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "15-20",
+        "rank": 1,
+        "note": "The same three, with a weak Moon aspecting the second, which the verse says makes the effect more pronounced. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-weak",
+          "planet": "MOON"
+        },
+        {
+          "type": "planet-aspects-house",
+          "from": "MOON",
+          "houseRuled": 2
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "his wealth destroyed, and the more pronouncedly for a weak Moon's aspect on the second"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_MARS_AND_SUN_IN_THE_SECOND",
+      "category": "dhana",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "15-20",
+        "rank": 1,
+        "note": "Mars and the Sun in the second. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "afflicted in the skin, and poor"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_SATURN_ALONE_IN_THE_SECOND_ASPECTED_BY_MERCURY",
+      "category": "dhana",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "15-20",
+        "rank": 1,
+        "note": "Saturn standing alone in the second under Mercury's aspect. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "no-planet-in-houses-from",
+          "reference": 2,
+          "houses": [
+            1
+          ],
+          "except": [
+            "SATURN"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MERCURY",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "greatly rich"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_SUN_IN_THE_SECOND_ASPECTED_BY_SATURN_ALONE",
+      "category": "dhana",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "15-20",
+        "rank": 1,
+        "note": "The Sun in the second aspected by Saturn and by nobody else. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SATURN",
+          "target": "SUN"
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "SATURN"
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "SELF",
+                  "target": "SUN"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_BENEFICS_IN_THE_SECOND",
+      "category": "dhana",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "15-20",
+        "rank": 1,
+        "note": "Benefics in the second. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "money coming in many ways"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_JUPITER_IN_THE_SECOND_ASPECTED_BY_MERCURY",
+      "category": "dhana",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "15-20",
+        "rank": 1,
+        "note": "Jupiter in the second under Mercury's aspect. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MERCURY",
+          "target": "JUPITER"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "deprived of all the wealth he earned"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_MERCURY_IN_THE_SECOND_ASPECTED_BY_THE_MOON",
+      "category": "dhana",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "15-20",
+        "rank": 1,
+        "note": "Mercury in the second under the Moon's aspect. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MOON",
+          "target": "MERCURY"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "deprived of all the wealth he earned"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY",
+      "category": "dhana",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "15-20",
+        "rank": 1,
+        "note": "A weak Moon in the second under Mercury's aspect. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-weak",
+          "planet": "MOON"
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MERCURY",
+          "target": "MOON"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "losing even his ancestral property, and hindered in his other income besides"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_THE_SECOND_FROM_THE_MOON_ASPECTED_BY_A_BENEFIC",
+      "category": "dhana",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "15-20",
+        "rank": 1,
+        "note": "The second counted from the Moon, aspected by Venus or by Jupiter. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": "VENUS",
+              "target": {
+                "from": "MOON",
+                "house": 2
+              }
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": {
+                "from": "MOON",
+                "house": 2
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "earning plenty of wealth"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_MERCURY_AND_JUPITER_IN_THE_SEVENTH",
+      "category": "kalatra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "47",
+        "rank": 1,
+        "note": "Mercury and Jupiter joined in the seventh. The verse's other reading of one wife, a Leo, Aries or Scorpio navamsa rising, ships beside it. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of a single wife"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_A_LEO_ARIES_OR_SCORPIO_NAVAMSA_RISING",
+      "category": "kalatra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "47",
+        "rank": 1,
+        "note": "The navamsa of the ascendant falling in Leo, Aries or Scorpio, which the same verse reads as one wife. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "LAGNA"
+          },
+          "signs": [
+            "LEO",
+            "ARIES",
+            "SCORPIO"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of a single wife"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_MERCURY_AND_VENUS_IN_THE_SEVENTH",
+      "category": "kalatra",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "56",
+        "rank": 1,
+        "note": "Mercury and Venus occupying the seventh, which the verse itself lifts where a benefic aspects them. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "a benefic aspects the seventh, and a wife comes at an advanced age",
+          "type": "planet-aspects-house",
+          "from": "any-benefic",
+          "houseRuled": 7
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "bereft of both wife and progeny"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_LAGNADHI_FROM_THE_SIXTH",
+      "category": "miscellaneous",
+      "source": {
+        "text": "Saravali",
+        "chapter": "34",
+        "verse": "13",
+        "rank": 1,
+        "note": "Benefics alone in the sixth, seventh and eighth, with no malefic among them. Parashara gives the same yoga at BPHS ch. 36 v. 37 with the seventh and the eighth only, and the SDK ships both; the translator's note there remarks that Parashara includes the sixth for the Moon's Adhi yoga and not for this one. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              6,
+              7,
+              8
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a minister, a leader of armies or a king, lord over many women, long-lived, free of disease and misery, virtuous and happy"
+        }
+      ]
+    }
+  ]
+}

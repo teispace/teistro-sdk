@@ -1259,6 +1259,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   computes is the D9 the conformance corpus recorded for that chart, body for
   body.
 
+- Saravali ch. 34's readings of a **named set of grahas in a named house** —
+  the rarest shape the texts carry and the one a reading of one graha at a time
+  cannot say. Fourteen ship: the named triple in the second (Mars, Saturn and
+  the Sun), the same under a weak Moon's aspect, named pairs in the second and
+  the seventh, Saturn standing *alone* in the second, and Saravali's Lagnadhi
+  from the sixth against Parashara's from the seventh. `HouseReading`, `Held`,
+  `Composition` and `Kind` now serialise, as a rule result already did. The SDK
+  ships 844 rules.
+
+  **Numbers:** over the 93 charts the named triple in the second never happens
+  and the named pair in the seventh happens seven times — thirteen answers
+  between every named-set-in-a-named-house rule the texts carry, which is how
+  rare the shape is.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

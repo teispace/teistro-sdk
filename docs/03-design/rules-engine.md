@@ -528,6 +528,21 @@ grahas in the sixth. And they compose: Phaladeepika ch. 18 v. 5 says **in the
 verse** that more than two grahas in a house are read by combining the readings
 of every pair they contain — which is what one rule a pair does of itself.
 
+Saravali ch. 34 is where most of that second shape lives, and it is worth
+naming what it carries: a **named triple in a named house** (vv. 15 to 20 —
+Mars, Saturn and the Sun in the second destroy the native's wealth, and a weak
+Moon aspecting the second makes it worse), named pairs in named houses (Mars
+and the Sun in the second; Mercury and Jupiter in the seventh; Mercury and
+Venus there, which the same verse lifts where a benefic aspects them), and
+readings that turn on a graha standing *alone* in a house. Fourteen of them
+ship, beside the three counts already shipped from the same chapter.
+
+Over the 93 charts the named triple in the second never happens at all and the
+named pair in the seventh happens seven times: thirteen answers between every
+named-set-in-a-named-house rule the corpus of texts carries. **That is how rare
+the shape is, which is the other half of why software reads one graha at a
+time.**
+
 What they refuse is a reading for three or more grahas in a named house.
 Saravali ch. 31 v. 87 closes that chapter by saying the effects of three, four,
 five or six in an angle "should be suitably understood" — the text naming the
@@ -550,6 +565,9 @@ participants stand in include it, which is what a result already reported, so
 nothing new is computed and a rule with no participants — the lagna rising in a
 sign, a rule of the panchanga — is left out rather than assigned to a house it
 does not touch.
+
+A house reading serialises, as a rule result already did, so a consumer can
+hand one to a renderer or across a wire without mapping it by hand.
 
 A `Composition` is not a reading. It says nothing of the native, only how the
 readings that held are to be taken, and it carries its verse so that a consumer

@@ -11,6 +11,7 @@
 //! [`HouseReading`] carries what held and the [`Composition`]s that bear on
 //! it, each with its verse, and invents no summary of its own.
 
+use serde::Serialize;
 use teistro_core::catalogue::Rashi;
 
 use crate::eval::{Evaluator, RuleResult};
@@ -18,7 +19,7 @@ use crate::language::{Body, EvidenceRank, House, Source};
 use crate::rule::Rule;
 
 /// Everything of a chart that bears on one house.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct HouseReading<'r> {
     /// Which house.
     pub house: House,
@@ -34,7 +35,7 @@ pub struct HouseReading<'r> {
 }
 
 /// A rule that held, and what it answered.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Held<'r> {
     /// Which rule.
     pub rule: &'r Rule,
@@ -48,7 +49,7 @@ pub struct Held<'r> {
 /// readings that held are to be taken — or, where a text declines to give a
 /// reading at all, that it declines. Each carries its verse, so a consumer can
 /// show the authority for combining as readily as for the readings combined.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct Composition {
     /// Its key.
     pub key: &'static str,
@@ -95,7 +96,8 @@ impl Composition {
 }
 
 /// What kind of instruction a composition is.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum Kind {
     /// Read the several as the pairs they contain.
     Compose,

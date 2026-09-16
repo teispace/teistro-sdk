@@ -1187,7 +1187,12 @@ fn named<'k>(key: &'k str, prefix: &str) -> (&'k str, &'k str) {
 fn the_rules_that_read_a_sign_s_aspect_and_an_intervention_answer_where_they_did() {
     let rules: Vec<&Rule> = shipped::nabhasas()
         .iter()
-        .filter(|rule| matches!(rule.category.as_str(), "dhana" | "jaimini"))
+        // BPHS's own, not Saravali's wealth readings, which share the
+        // category and read neither a sign's aspect nor an intervention.
+        .filter(|rule| {
+            rule.source.text == "BPHS"
+                && matches!(rule.category.as_str(), "dhana" | "jaimini")
+        })
         .collect();
     assert_eq!(rules.len(), 7);
     // The three that name an intervention read a strength, an intervention
