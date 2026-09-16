@@ -936,6 +936,32 @@ pack cannot quietly invent one that a consumer grouping by category would miss.
 All four held on the first run, which is the answer one wants and not the one
 that teaches anything.
 
+**How fast a chart answers, measured (2026-09-16).** A rule names another by
+key for its cancellations, and the evaluator resolves that name by walking the
+set it was given — an O(n) scan per reference, with the sankhya yogas naming
+twenty-five others each. That looked like a scaling defect worth fixing, so it
+was measured first: **823 rules over the 93 recorded charts answer in 15 ms**
+in release, which is 0.16 ms a chart and 0.2 µs a rule. At that cost the scan
+is not worth an index, and the index would have cost the evaluator its `Copy`.
+**The measurement stopped the work rather than starting it**, which is the
+other thing measuring first is for.
+
+**BPHS ch. 41's combinations for wealth (2026-09-16).** Fourteen rules, and
+they are the most particular figures the SDK ships. Verses 2 to 8 each want the
+lord of the fifth standing in the fifth *and* the lord of the eleventh standing
+in the eleventh, which can only happen for one or two ascendants apiece — so a
+chart can answer at most one of the seven, and a test holds that. Verses 9 to
+15 want a graha rising in his own sign, joined or aspected by two or three the
+verse names.
+
+Over the 93 charts one of the fourteen answers once. That is not a defect: a
+figure that pins a graha to a sign, a house and two companions is rare by
+construction, and the SDK reports what the verse says rather than loosening it
+until it fires. Verse 16's general statement — that the lords of the ninth and
+the fifth give wealth in their dashas — wants a dasha layer, and vv. 18 and 19's
+angular lords' divisional dignities want the Vaiseshikamsa ladder (crux C77);
+neither is here.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-three answer none, and

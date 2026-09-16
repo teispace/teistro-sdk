@@ -111,9 +111,9 @@ fn a_house_gathers_every_rule_whose_grahas_stand_in_it() {
         .map(|(_, houses)| *houses)
         .sum();
     assert_eq!(crowded_houses, 48);
-    // What a consumer receives: 4978 rule results gathered under a house over
+    // What a consumer receives: 4981 rule results gathered under a house over
     // the 93 charts, and 455 statements of how to read them together.
-    assert_eq!((held, composed), (4978, 455));
+    assert_eq!((held, composed), (4981, 455));
 }
 
 /// How many houses of the 1116 hold each number of grahas.
@@ -289,3 +289,60 @@ fn exactly_one_fate_of_the_corpse_answers_a_chart() {
     // it beside the lord's and not instead of it.
     assert_eq!((by_lord, serpents), (93, 7));
 }
+
+/// BPHS ch. 41's combinations for wealth, whose figures are so particular that
+/// each holds for only one or two ascendants. The pass holds what each answers
+/// and the arithmetic the chapter's own formula implies: a great-affluence
+/// yoga wants the lord of the fifth in the fifth, so no chart can answer two
+/// of the seven at once.
+#[test]
+fn the_wealth_combinations_answer_where_they_did() {
+    let rules: Vec<Rule> = shipped::nabhasas()
+        .iter()
+        .filter(|rule| {
+            rule.source.text == "BPHS" && rule.source.chapter.as_deref() == Some("41")
+        })
+        .cloned()
+        .collect();
+    assert_eq!(rules.len(), 14);
+    let mut fired: BTreeMap<&str, usize> =
+        rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_rules(&rules);
+        let mut great = 0;
+        for rule in &rules {
+            if evaluator.evaluate(rule).present {
+                *fired.get_mut(rule.key.as_str()).unwrap() += 1;
+                if rule.source.verse.as_deref().is_some_and(|verse| {
+                    matches!(verse, "2" | "3" | "4" | "5" | "6" | "7" | "8")
+                }) {
+                    great += 1;
+                }
+            }
+        }
+        // Each of vv. 2 to 8 puts a different graha in the fifth in its own
+        // sign, and one sign is the fifth, so at most one can hold.
+        assert!(great <= 1, "{}: {great}", path.display());
+    }
+    let counts: Vec<(&str, usize)> = fired.into_iter().collect();
+    assert_eq!(counts.as_slice(), WEALTH.as_slice());
+}
+
+/// What each answers over the 93 recorded charts.
+const WEALTH: [(&str, usize); 14] = [
+    ("BPHS_JUPITER_IN_A_FIFTH_OF_HIS_OWN_WITH_MERCURY_ELEVENTH", 0),
+    ("BPHS_JUPITER_RISING_IN_HIS_OWN_SIGN", 0),
+    ("BPHS_MARS_IN_A_FIFTH_OF_HIS_OWN_WITH_VENUS_ELEVENTH", 0),
+    ("BPHS_MARS_RISING_IN_HIS_OWN_SIGN", 0),
+    ("BPHS_MERCURY_IN_A_FIFTH_OF_HIS_OWN_WITH_THREE_ELEVENTH", 0),
+    ("BPHS_MERCURY_RISING_IN_HIS_OWN_SIGN", 1),
+    ("BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH", 0),
+    ("BPHS_SATURN_RISING_IN_HIS_OWN_SIGN", 0),
+    ("BPHS_THE_MOON_IN_CANCER_AS_THE_FIFTH_WITH_SATURN_ELEVENTH", 0),
+    ("BPHS_THE_MOON_RISING_IN_CANCER", 0),
+    ("BPHS_THE_SUN_IN_LEO_AS_THE_FIFTH_WITH_THREE_ELEVENTH", 0),
+    ("BPHS_THE_SUN_RISING_IN_LEO", 0),
+    ("BPHS_VENUS_IN_A_FIFTH_OF_HIS_OWN_WITH_MARS_ELEVENTH", 0),
+    ("BPHS_VENUS_RISING_IN_HIS_OWN_SIGN", 0),
+];

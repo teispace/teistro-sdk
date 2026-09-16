@@ -1187,11 +1187,12 @@ fn named<'k>(key: &'k str, prefix: &str) -> (&'k str, &'k str) {
 fn the_rules_that_read_a_sign_s_aspect_and_an_intervention_answer_where_they_did() {
     let rules: Vec<&Rule> = shipped::nabhasas()
         .iter()
-        // BPHS's own, not Saravali's wealth readings, which share the
-        // category and read neither a sign's aspect nor an intervention.
+        // The two chapters that read them: ch. 29's gains of the pada and
+        // ch. 39's associations. Category alone is too wide — Saravali's
+        // wealth readings and BPHS ch. 41's share it and read neither.
         .filter(|rule| {
             rule.source.text == "BPHS"
-                && matches!(rule.category.as_str(), "dhana" | "jaimini")
+                && matches!(rule.source.chapter.as_deref(), Some("29" | "39"))
         })
         .collect();
     assert_eq!(rules.len(), 7);

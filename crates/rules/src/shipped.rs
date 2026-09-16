@@ -61,6 +61,8 @@ const PRAVRAJYA: &str = include_str!("../rules/classical-pravrajya.json");
 const BHAVA: &str = include_str!("../rules/classical-bhava.json");
 /// BPHS ch. 44's fate of the corpse, read from the twenty-second decanate.
 const CORPSE: &str = include_str!("../rules/classical-corpse.json");
+/// BPHS ch. 41's combinations for wealth.
+const DHANA: &str = include_str!("../rules/classical-dhana.json");
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
 /// twenty-one pairs and Phaladeepika ch. 18's Moon in each sign, aspected.
 const DWIGRAHA: &str = include_str!("../rules/classical-readings.json");
@@ -101,6 +103,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(PRAVRAJYA));
     rules.append(&mut read(BHAVA));
     rules.append(&mut read(CORPSE));
+    rules.append(&mut read(DHANA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -192,7 +195,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 848);
+        assert_eq!(rules.len(), 862);
         for rule in &rules {
             let rank = rule
                 .source

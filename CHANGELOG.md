@@ -1306,6 +1306,23 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- BPHS ch. 41's combinations for wealth: fourteen rules, the most particular
+  figures the SDK ships. Verses 2 to 8 each want the lord of the fifth in the
+  fifth and the lord of the eleventh in the eleventh, which holds for one or
+  two ascendants apiece, so a chart can answer at most one of the seven — a
+  test holds that. The SDK ships 862 rules.
+
+  **Numbers:** one of the fourteen answers once over the 93 charts. A figure
+  that pins a graha to a sign, a house and two companions is rare by
+  construction, and the SDK reports what the verse says rather than loosening
+  it until it fires.
+
+  **Also measured:** 823 rules over the 93 charts answer in 15 ms in release —
+  0.16 ms a chart, 0.2 µs a rule. The evaluator resolves a rule reference by
+  walking the set, which looked like a scaling defect; at that cost it is not
+  worth an index, and an index would have cost the evaluator its `Copy`. The
+  measurement stopped the work rather than starting it.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
