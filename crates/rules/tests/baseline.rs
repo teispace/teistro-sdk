@@ -203,3 +203,158 @@ fn every_rule_round_trips_through_the_language() {
     let back: Vec<Rule> = serde_json::from_value(serde_json::to_value(&rules).unwrap()).unwrap();
     assert_eq!(back, rules);
 }
+
+/// The SDK's own Nabhasa yogas, read from BPHS ch. 35, against the answers the
+/// recording engine recorded for the same figures over the same 93 charts.
+#[test]
+fn the_sdk_s_nabhasa_yogas_answer_what_the_engine_answered() {
+    // The engine's key, or keys, for each figure the SDK writes; a figure it
+    // does not carry is left out of the comparison.
+    const SAME: [(&str, &[&str]); 30] = [
+        ("NABHASA_RAJJU", &["RAJJU"]),
+        ("NABHASA_MUSALA", &["MUSALA"]),
+        ("NABHASA_NALA", &["NALA"]),
+        ("NABHASA_MAALA", &["MAALA"]),
+        ("NABHASA_SARPA", &["SARPA"]),
+        ("NABHASA_GADA", &["GADA", "GADA_4_7"]),
+        ("NABHASA_SAKATA", &["SAKATA"]),
+        ("NABHASA_VIHAGA", &["VIHAGA"]),
+        ("NABHASA_SRINGATAKA", &["SHRINGATAKA"]),
+        (
+            "NABHASA_HALA",
+            &["HALA_AKRITI", "HALA_AKRITI_3_7_11", "HALA_AKRITI_4_8_12"],
+        ),
+        ("NABHASA_KAMALA", &["PADMA"]),
+        ("NABHASA_VAPI", &["VAPI"]),
+        ("NABHASA_YUPA", &["YUPA"]),
+        ("NABHASA_SARA", &["ISHU"]),
+        ("NABHASA_SAKTHI", &["SAKTI"]),
+        ("NABHASA_DANDA", &["DANDA_AKRITI"]),
+        ("NABHASA_NAUKA", &["NAUKHA"]),
+        ("NABHASA_KOOTA", &["KUTA"]),
+        ("NABHASA_CHATRA", &["CHATRA"]),
+        ("NABHASA_CHAPA", &["CHAPA"]),
+        ("NABHASA_ARDHA_CHANDRA", &["ARDHA_CHANDRA"]),
+        ("NABHASA_CHAKRA", &["CHAKRA"]),
+        ("NABHASA_SAMUDRA", &["SAMUDRA"]),
+        ("NABHASA_GOLA", &["GOLA"]),
+        ("NABHASA_YUGA", &["YUGA"]),
+        ("NABHASA_SOOLA", &["SHOOLA"]),
+        ("NABHASA_KEDARA", &["KEDARA"]),
+        ("NABHASA_PASA", &["PASHA"]),
+        ("NABHASA_DAMA", &["DAMA"]),
+        ("NABHASA_VEENA", &["VEENA"]),
+    ];
+    let ours = teistro_rules::shipped::nabhasas();
+    let owned: Vec<Rule> = ours.to_vec();
+    let mut tally: std::collections::BTreeMap<&str, (usize, usize, usize)> =
+        SAME.iter().map(|(key, _)| (*key, (0, 0, 0))).collect();
+    for (_, file) in files() {
+        let chart = chart(&file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_rules(&owned);
+        let present = file["present"].as_object().unwrap();
+        for (key, theirs) in SAME {
+            let rule = ours.iter().find(|rule| rule.key == key).unwrap();
+            let we = evaluator.evaluate(rule);
+            let they = theirs.iter().any(|key| present.contains_key(*key));
+            let counted = tally.get_mut(key).unwrap();
+            match (we.present, they) {
+                (true, true) => counted.0 += 1,
+                (true, false) => counted.1 += 1,
+                (false, true) => counted.2 += 1,
+                (false, false) => {}
+            }
+        }
+    }
+    let counted: Vec<(&str, usize, usize, usize)> = tally
+        .into_iter()
+        .map(|(key, (both, ours, theirs))| (key, both, ours, theirs))
+        .collect();
+    assert_eq!(counted.as_slice(), AGREEMENT.as_slice());
+    // Twenty-seven of the thirty figures answer exactly alike. The three that
+    // do not are reading differences, each recorded in crux C93:
+    //
+    // - Ardha Chandra: the SDK takes Saravali's "seven continuous houses from
+    //   a house that is not an angle", all eight starts; the engine takes the
+    //   one window from the second. The SDK's answers contain the engine's.
+    // - Koota: the engine asks that all seven houses be occupied, where its
+    //   own Nauka, Chatra and Chapa ask only that the seven be confined to
+    //   them. The SDK reads the whole family as confinement.
+    // - Sarpa: the SDK reads "three angles occupied by malefics" as three
+    //   angles, the lagna among them, each holding some malefic; the engine
+    //   asks that Mars, Saturn and the Sun each stand in the fourth, seventh
+    //   or tenth. The two never agree on these 93 charts.
+    let (agreeing, diverging): (Vec<&(&str, usize, usize, usize)>, Vec<_>) = counted
+        .iter()
+        .partition(|(_, _, ours, theirs)| *ours == 0 && *theirs == 0);
+    assert_eq!(agreeing.len(), 27);
+    assert_eq!(
+        diverging.iter().map(|(key, ..)| *key).collect::<Vec<_>>(),
+        ["NABHASA_ARDHA_CHANDRA", "NABHASA_KOOTA", "NABHASA_SARPA"]
+    );
+
+    // Verse 17 holds that no sankhya yoga stands where another Nabhasa yoga is
+    // derivable, which the pack writes as cancellations; the kernel reports
+    // that as a cancelled result, not as an absent one.
+    let sankhya = [
+        "NABHASA_GOLA",
+        "NABHASA_YUGA",
+        "NABHASA_SOOLA",
+        "NABHASA_KEDARA",
+        "NABHASA_PASA",
+        "NABHASA_DAMA",
+        "NABHASA_VEENA",
+    ];
+    let (mut present, mut cancelled) = (0, 0);
+    for (_, file) in files() {
+        let chart = chart(&file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_rules(&owned);
+        for key in sankhya {
+            let rule = ours.iter().find(|rule| rule.key == key).unwrap();
+            let result = evaluator.evaluate(rule);
+            if result.present {
+                present += 1;
+                if result.is_cancelled() {
+                    cancelled += 1;
+                }
+            }
+        }
+    }
+    assert_eq!((present, cancelled), (93, 46));
+}
+
+/// How the SDK's reading of each Nabhasa figure stands to the engine's, over
+/// the 93 recorded charts: answered by both, by the SDK alone, by the engine
+/// alone.
+const AGREEMENT: [(&str, usize, usize, usize); 30] = [
+        ("NABHASA_ARDHA_CHANDRA", 17, 13, 0),
+        ("NABHASA_CHAKRA", 1, 0, 0),
+        ("NABHASA_CHAPA", 2, 0, 0),
+        ("NABHASA_CHATRA", 3, 0, 0),
+        ("NABHASA_DAMA", 8, 0, 0),
+        ("NABHASA_DANDA", 0, 0, 0),
+        ("NABHASA_GADA", 0, 0, 0),
+        ("NABHASA_GOLA", 0, 0, 0),
+        ("NABHASA_HALA", 0, 0, 0),
+        ("NABHASA_KAMALA", 0, 0, 0),
+        ("NABHASA_KEDARA", 24, 0, 0),
+        ("NABHASA_KOOTA", 0, 3, 0),
+        ("NABHASA_MAALA", 0, 0, 0),
+        ("NABHASA_MUSALA", 0, 0, 0),
+        ("NABHASA_NALA", 0, 0, 0),
+        ("NABHASA_NAUKA", 18, 0, 0),
+        ("NABHASA_PASA", 46, 0, 0),
+        ("NABHASA_RAJJU", 0, 0, 0),
+        ("NABHASA_SAKATA", 0, 0, 0),
+        ("NABHASA_SAKTHI", 0, 0, 0),
+        ("NABHASA_SAMUDRA", 1, 0, 0),
+        ("NABHASA_SARA", 1, 0, 0),
+        ("NABHASA_SARPA", 0, 15, 7),
+        ("NABHASA_SOOLA", 6, 0, 0),
+        ("NABHASA_SRINGATAKA", 0, 0, 0),
+        ("NABHASA_VAPI", 0, 0, 0),
+        ("NABHASA_VEENA", 9, 0, 0),
+        ("NABHASA_VIHAGA", 0, 0, 0),
+        ("NABHASA_YUGA", 0, 0, 0),
+        ("NABHASA_YUPA", 0, 0, 0),
+];

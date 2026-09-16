@@ -1092,6 +1092,17 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- The thirty-two Nabhasa yogas of BPHS ch. 35, read from the text, each with
+  the effect its verse gives: `shipped::nabhasas()`. The seven sankhya yogas
+  name the other twenty-five as cancellations, as v. 17 requires. Twenty-seven
+  of the thirty figures the recording engine also carries answer exactly as it
+  recorded over the 93 charts; the three that differ are readings, recorded as
+  crux C93 and pinned so that a divergence which moves — or disappears — fails
+  the build. The SDK ships 509 rules.
+
+  **Numbers:** 27 of 30 Nabhasa figures reproduce the engine's answers exactly;
+  every chart answers one sankhya yoga and 46 of the 93 are cancelled.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

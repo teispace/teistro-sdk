@@ -45,6 +45,8 @@ const ARISHTA: &str = include_str!("../rules/classical-arishta.json");
 const BALARISHTA: &str = include_str!("../rules/classical-balarishta.json");
 /// Kalyana Varma's evils at birth, Saravali ch. 10, each with its life span.
 const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
+/// The Nabhasa yogas of BPHS ch. 35.
+const NABHASA: &str = include_str!("../rules/classical-nabhasa.json");
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
 /// twenty-one pairs and Phaladeepika ch. 18's Moon in each sign, aspected.
 const DWIGRAHA: &str = include_str!("../rules/classical-readings.json");
@@ -76,6 +78,7 @@ static READINGS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
 static DOSHAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_DOSHAS));
 static YOGAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_YOGAS));
 static GANDANTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(GANDANTA));
+static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(NABHASA));
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     let mut rules = read(ARISHTA);
     rules.append(&mut read(BALARISHTA));
@@ -123,6 +126,16 @@ pub fn readings() -> &'static [Rule] {
     &READINGS
 }
 
+/// The thirty-two Nabhasa yogas of BPHS ch. 35, read from the text: three
+/// ashraya, two dala, twenty akriti and seven sankhya, each with the effect its
+/// verse gives. The seven sankhya yogas name the other twenty-five as
+/// cancellations, v. 17 saying that none of them holds where another Nabhasa
+/// yoga is derivable.
+#[must_use]
+pub fn nabhasas() -> &'static [Rule] {
+    &NABHASAS
+}
+
 /// The eight yogas it computes in code, the Neecha Bhanga family, as rules:
 /// the aggregate and its seven cancellations, each over any debilitated graha.
 #[must_use]
@@ -150,8 +163,9 @@ mod tests {
             .chain(gandantas())
             .chain(arishtas())
             .chain(readings())
+            .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 477);
+        assert_eq!(rules.len(), 509);
         for rule in &rules {
             let rank = rule
                 .source

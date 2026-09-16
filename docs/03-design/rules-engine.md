@@ -536,6 +536,25 @@ the corpus rather than to itself. Varahamihira's twenty-one pairs and Jataka
 Parijata's are the same figure read twice, so the test holds them to the same
 answers, reading for reading; they differ only in what they say of the native.
 
+**The Nabhasa yogas, and what the corpus adjudicates (2026-09-16).** BPHS
+ch. 35 gives the thirty-two Nabhasa yogas — three ashraya, two dala, twenty
+akriti, seven sankhya — in vv. 7 to 17 and their effects in vv. 18 to 50, so
+each ships with an `Outcome::Effect` beside its conditions. Verse 17 says that
+no sankhya yoga holds where another Nabhasa yoga is derivable, which is written
+as twenty-five cancellations on each of the seven: every chart answers exactly
+one sankhya yoga, and 46 of the 93 are cancelled.
+
+These are the first rules the SDK writes from a text for figures the recording
+engine also carries, so the corpus can say who is right. Twenty-seven of the
+thirty answer exactly alike on the 93 charts. Three do not, and each is a
+reading rather than a defect (crux C93): the SDK takes Saravali's eight windows
+for Ardha Chandra where the engine takes one, reads the whole seven-house
+family as confinement where the engine asks that Koota's seven houses all be
+occupied, and reads "three angles occupied by malefics" as three angles each
+holding one where the engine asks for Mars, Saturn and the Sun in the fourth,
+seventh or tenth. The comparison is pinned rule by rule, so a divergence that
+moves fails the build — and so does one that disappears.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-one answer none, and
