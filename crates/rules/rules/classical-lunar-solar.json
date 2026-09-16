@@ -23,10 +23,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "of little wealth, intelligence and skill"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of little wealth, intelligence and skill"
+        }
+      ]
     },
     {
       "key": "LUNAR_MOON_IN_PANAPHARA_FROM_THE_SUN",
@@ -51,10 +53,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "of middling wealth, intelligence and skill"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of middling wealth, intelligence and skill"
+        }
+      ]
     },
     {
       "key": "LUNAR_MOON_IN_APOKLIMA_FROM_THE_SUN",
@@ -79,10 +83,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "of excellent wealth, intelligence and skill"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of excellent wealth, intelligence and skill"
+        }
+      ]
     },
     {
       "key": "LUNAR_ADHI_YOGA",
@@ -120,10 +126,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "a king, a minister or the chief of an army, by the strength of the benefics that make the yoga"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, a minister or the chief of an army, by the strength of the benefics that make the yoga"
+        }
+      ]
     },
     {
       "key": "LUNAR_DHANA_THREE_BENEFICS_IN_UPACHAYA",
@@ -149,10 +157,12 @@
           "atLeast": 3
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "very affluent"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very affluent"
+        }
+      ]
     },
     {
       "key": "LUNAR_DHANA_TWO_BENEFICS_IN_UPACHAYA",
@@ -193,10 +203,12 @@
           }
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "of middling wealth"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of middling wealth"
+        }
+      ]
     },
     {
       "key": "LUNAR_DHANA_ONE_BENEFIC_IN_UPACHAYA",
@@ -237,10 +249,12 @@
           }
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "of negligible wealth"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "of negligible wealth"
+        }
+      ]
     },
     {
       "key": "LUNAR_SUNAPHA",
@@ -299,10 +313,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "a king or the equal of a king, intelligent, wealthy, famous, and enriched by his own earning"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king or the equal of a king, intelligent, wealthy, famous, and enriched by his own earning"
+        }
+      ]
     },
     {
       "key": "LUNAR_ANAPHA",
@@ -361,10 +377,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "a king, free of disease, virtuous, famous, charming and happy"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, free of disease, virtuous, famous, charming and happy"
+        }
+      ]
     },
     {
       "key": "LUNAR_DURADHARA",
@@ -468,10 +486,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "pleasured, charitable, and furnished with wealth, conveyances and an excellent serving force"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "pleasured, charitable, and furnished with wealth, conveyances and an excellent serving force"
+        }
+      ]
     },
     {
       "key": "LUNAR_KEMADRUMA",
@@ -511,10 +531,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "much reproached, bereft of intelligence and learning, and reduced to penury and peril"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "much reproached, bereft of intelligence and learning, and reduced to penury and peril"
+        }
+      ]
     },
     {
       "key": "SOLAR_VESI",
@@ -573,10 +595,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "even-sighted, truthful, long of body, indolent, happy, and of negligible wealth"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "even-sighted, truthful, long of body, indolent, happy, and of negligible wealth"
+        }
+      ]
     },
     {
       "key": "SOLAR_VOSI",
@@ -635,10 +659,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "skilful, charitable, and furnished with fame, learning and strength"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "skilful, charitable, and furnished with fame, learning and strength"
+        }
+      ]
     },
     {
       "key": "SOLAR_UBHAYACHARI",
@@ -742,10 +768,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "a king or the equal of a king, and happy"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king or the equal of a king, and happy"
+        }
+      ]
     }
   ]
 }

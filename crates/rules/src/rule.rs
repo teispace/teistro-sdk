@@ -279,6 +279,16 @@ impl Outcome {
     }
 }
 
+/// The first span among outcomes, in days.
+fn life_span(outcomes: &[Outcome]) -> Option<f64> {
+    outcomes.iter().find_map(Outcome::days)
+}
+
+/// The first statement in words among outcomes.
+fn effect(outcomes: &[Outcome]) -> Option<&str> {
+    outcomes.iter().find_map(Outcome::text)
+}
+
 /// Whether a present rule stands, after its cancellations.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
@@ -316,8 +326,10 @@ pub struct Rule {
     pub full_cancellation_threshold: Option<u8>,
     /// The remedies it names, by key.
     pub remedies: Vec<String>,
-    /// What it says happens when it holds, when its verse says.
-    pub outcome: Option<Outcome>,
+    /// What it says happens when it holds, in as many ways as its verse says
+    /// it: a Pancha Mahapurusha verse both describes the native and counts his
+    /// years, and a rule carries both.
+    pub outcomes: Vec<Outcome>,
     /// The name of the code its author computes it with instead, when the
     /// language cannot say it.
     pub computed: Option<String>,
@@ -339,7 +351,7 @@ impl Rule {
             severity: None,
             full_cancellation_threshold: None,
             remedies: Vec::new(),
-            outcome: None,
+            outcomes: Vec::new(),
             computed: None,
         }
     }
@@ -372,6 +384,20 @@ impl Rule {
                 Condition::RuleHolds { key } => Some(key.as_str()),
                 _ => None,
             })
+    }
+
+    /// The span of life its verse gives, in days, when one of its outcomes is
+    /// a span.
+    #[must_use]
+    pub fn life_span(&self) -> Option<f64> {
+        life_span(&self.outcomes)
+    }
+
+    /// What its verse says follows, in words, when one of its outcomes says it
+    /// in words.
+    #[must_use]
+    pub fn effect(&self) -> Option<&str> {
+        effect(&self.outcomes)
     }
 
     /// Whether any of its conditions reads the chart's panchanga, so a caller
@@ -421,8 +447,8 @@ struct Written {
     full_cancellation_threshold: Option<u8>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     remedy_keys: Vec<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    outcome: Option<Outcome>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    outcomes: Vec<Outcome>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     custom_result_key: Option<String>,
 }
@@ -471,7 +497,7 @@ impl TryFrom<Written> for Rule {
             severity,
             full_cancellation_threshold: written.full_cancellation_threshold,
             remedies: written.remedy_keys,
-            outcome: written.outcome,
+            outcomes: written.outcomes,
             computed: written.custom_result_key,
         };
         // `SELF` is the body a `for-any` binds, and means nothing outside one.
@@ -509,7 +535,7 @@ impl From<Rule> for Written {
             custom_severity_key: None,
             full_cancellation_threshold: rule.full_cancellation_threshold,
             remedy_keys: rule.remedies,
-            outcome: rule.outcome,
+            outcomes: rule.outcomes,
             custom_result_key: rule.computed,
         }
     }

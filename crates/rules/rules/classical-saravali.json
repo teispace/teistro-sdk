@@ -93,11 +93,13 @@
           "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 3.0,
-        "unit": "years"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 3.0,
+          "unit": "years"
+        }
+      ]
     },
     {
       "key": "SARAVALI_RETROGRADE_SATURN_IN_A_SIGN_OF_MARS",
@@ -186,11 +188,13 @@
           "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 2.0,
-        "unit": "years"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 2.0,
+          "unit": "years"
+        }
+      ]
     },
     {
       "key": "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
@@ -258,11 +262,13 @@
           "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 9.0,
-        "unit": "years"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 9.0,
+          "unit": "years"
+        }
+      ]
     },
     {
       "key": "SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH",
@@ -330,11 +336,13 @@
           "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 1.0,
-        "unit": "months"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 1.0,
+          "unit": "months"
+        }
+      ]
     },
     {
       "key": "SARAVALI_MALEFIC_IN_A_VENUS_EIGHTH",
@@ -410,11 +418,13 @@
           "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 1.0,
-        "unit": "years"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 1.0,
+          "unit": "years"
+        }
+      ]
     },
     {
       "key": "SARAVALI_VENUS_IN_A_LUMINARY_DUSTHANA",
@@ -477,11 +487,13 @@
           "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 6.0,
-        "unit": "years"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 6.0,
+          "unit": "years"
+        }
+      ]
     },
     {
       "key": "SARAVALI_MERCURY_IN_CANCER_AS_SIXTH_OR_EIGHTH",
@@ -561,11 +573,13 @@
           "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 4.0,
-        "unit": "years"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 4.0,
+          "unit": "years"
+        }
+      ]
     },
     {
       "key": "SARAVALI_SATURN_IN_LAGNA_ASPECTED_BY_MALEFICS",
@@ -618,11 +632,13 @@
           "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 16.0,
-        "unit": "days"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 16.0,
+          "unit": "days"
+        }
+      ]
     },
     {
       "key": "SARAVALI_SATURN_IN_LAGNA_WITH_MALEFICS",
@@ -677,11 +693,13 @@
           "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 1.0,
-        "unit": "months"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 1.0,
+          "unit": "months"
+        }
+      ]
     },
     {
       "key": "SARAVALI_SATURN_ALONE_IN_LAGNA",
@@ -748,11 +766,13 @@
           "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 1.0,
-        "unit": "years"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 1.0,
+          "unit": "years"
+        }
+      ]
     },
     {
       "key": "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON",
@@ -1085,11 +1105,13 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "life-span",
-        "count": 100.0,
-        "unit": "years"
-      }
+      "outcomes": [
+        {
+          "type": "life-span",
+          "count": 100.0,
+          "unit": "years"
+        }
+      ]
     },
     {
       "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA",

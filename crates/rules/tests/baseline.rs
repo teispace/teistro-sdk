@@ -210,7 +210,18 @@ fn every_rule_round_trips_through_the_language() {
 fn the_sdk_s_yogas_answer_what_the_engine_answered() {
     // The engine's key, or keys, for each figure the SDK writes; a figure it
     // does not carry is left out of the comparison.
-    const SAME: [(&str, &[&str]); 38] = [
+    const SAME: [(&str, &[&str]); 49] = [
+        ("MAHAPURUSHA_RUCHAKA", &["RUCHAKA"]),
+        ("MAHAPURUSHA_BHADRA", &["BHADRA"]),
+        ("MAHAPURUSHA_HAMSA", &["HAMSA"]),
+        ("MAHAPURUSHA_MALAVYA", &["MALAVYA"]),
+        ("MAHAPURUSHA_SASA", &["SHASHA"]),
+        ("PARASHARA_GAJA_KESARI", &["GAJA_KESARI"]),
+        ("PARASHARA_AMALA", &["AMALA", "AMALA_KIRTI_BENEFIC_10_FROM_MOON"]),
+        ("PARASHARA_CHAMARA", &["CHAMARA"]),
+        ("PARASHARA_MATSYA", &["MATSYA"]),
+        ("PARASHARA_KALANIDHI", &["KALANIDHI"]),
+        ("PARASHARA_LAGNADHI", &["LAGNADHI"]),
         ("LUNAR_SUNAPHA", &["SUNAPHA"]),
         ("LUNAR_ANAPHA", &["ANAPHA"]),
         ("LUNAR_DURADHARA", &["DURUDHARA"]),
@@ -279,8 +290,17 @@ fn the_sdk_s_yogas_answer_what_the_engine_answered() {
         .map(|(key, (both, ours, theirs))| (key, both, ours, theirs))
         .collect();
     assert_eq!(counted.as_slice(), AGREEMENT.as_slice());
-    // Thirty-four of the thirty-eight figures answer exactly alike. The four
-    // that do not are reading differences, recorded in cruxes C93 and C94:
+    divergences_are_the_ones_read_up_in_the_cruxes(&counted);
+
+    sankhya_yogas_stand_down_where_another_nabhasa_holds(ours, &owned);
+}
+
+/// Which figures the SDK and the engine disagree on, and why each is a
+/// reading rather than a defect.
+fn divergences_are_the_ones_read_up_in_the_cruxes(counted: &[(&str, usize, usize, usize)]) {
+    // Forty-one of the forty-nine figures answer exactly alike — among them
+    // all five Pancha Mahapurusha yogas, on 49 answers. The eight that do not
+    // are reading differences, recorded in cruxes C93 to C95:
     //
     // - Ardha Chandra: the SDK takes Saravali's "seven continuous houses from
     //   a house that is not an angle", all eight starts; the engine takes the
@@ -297,21 +317,46 @@ fn the_sdk_s_yogas_answer_what_the_engine_answered() {
     //   from the ascendant — where the engine reads the second and twelfth
     //   alone and excepts the nodes besides. One chart of the 93 answers the
     //   verse; fifty-seven answer the engine.
+    // - Amala: the verse asks for *exclusively* a benefic in the tenth, and
+    //   the engine drops the "no malefic there" half of it.
+    // - Gaja Kesari: the verse wants Jupiter in an angle from the ascendant or
+    //   the Moon, joined or aspected by another benefic, and neither
+    //   debilitated, combust nor in an enemy's sign; the engine keeps only the
+    //   angle from the Moon.
+    // - Kalanidhi: the verse has Mercury and Venus *aspecting* Jupiter in the
+    //   second or fifth; the engine has Mercury sharing his sign.
+    // - Chamara: the engine's figure is not the verse's at all — it asks the
+    //   lagna lord in an angle with Jupiter in the first, fifth, seventh or
+    //   ninth, where the verse asks the lagna lord exalted in an angle under
+    //   Jupiter's aspect, or two benefics in one of four houses.
     let (agreeing, diverging): (Vec<&(&str, usize, usize, usize)>, Vec<_>) = counted
         .iter()
         .partition(|(_, _, ours, theirs)| *ours == 0 && *theirs == 0);
-    assert_eq!(agreeing.len(), 34);
+    assert_eq!(agreeing.len(), 41);
     assert_eq!(
         diverging.iter().map(|(key, ..)| *key).collect::<Vec<_>>(),
         [
             "LUNAR_KEMADRUMA",
             "NABHASA_ARDHA_CHANDRA",
             "NABHASA_KOOTA",
-            "NABHASA_SARPA"
+            "NABHASA_SARPA",
+            "PARASHARA_AMALA",
+            "PARASHARA_CHAMARA",
+            "PARASHARA_GAJA_KESARI",
+            "PARASHARA_KALANIDHI"
         ]
     );
-
-    sankhya_yogas_stand_down_where_another_nabhasa_holds(ours, &owned);
+    // Every Pancha Mahapurusha yoga reproduces the engine exactly, on 49
+    // answers over the 93 charts.
+    let mahapurusha: usize = counted
+        .iter()
+        .filter(|(key, ..)| key.starts_with("MAHAPURUSHA_"))
+        .map(|(_, both, ours, theirs)| {
+            assert_eq!((*ours, *theirs), (0, 0));
+            *both
+        })
+        .sum();
+    assert_eq!(mahapurusha, 49);
 }
 
 /// Verse 17 holds that no sankhya yoga stands where another Nabhasa yoga is
@@ -348,12 +393,17 @@ fn sankhya_yogas_stand_down_where_another_nabhasa_holds(ours: &[Rule], owned: &[
 /// How the SDK's reading of each Nabhasa figure stands to the engine's, over
 /// the 93 recorded charts: answered by both, by the SDK alone, by the engine
 /// alone.
-const AGREEMENT: [(&str, usize, usize, usize); 38] = [
+const AGREEMENT: [(&str, usize, usize, usize); 49] = [
     ("LUNAR_ADHI_YOGA", 0, 0, 0),
     ("LUNAR_ANAPHA", 19, 0, 0),
     ("LUNAR_DURADHARA", 7, 0, 0),
     ("LUNAR_KEMADRUMA", 1, 0, 56),
     ("LUNAR_SUNAPHA", 24, 0, 0),
+    ("MAHAPURUSHA_BHADRA", 10, 0, 0),
+    ("MAHAPURUSHA_HAMSA", 9, 0, 0),
+    ("MAHAPURUSHA_MALAVYA", 11, 0, 0),
+    ("MAHAPURUSHA_RUCHAKA", 14, 0, 0),
+    ("MAHAPURUSHA_SASA", 5, 0, 0),
     ("NABHASA_ARDHA_CHANDRA", 17, 13, 0),
     ("NABHASA_CHAKRA", 1, 0, 0),
     ("NABHASA_CHAPA", 2, 0, 0),
@@ -384,6 +434,12 @@ const AGREEMENT: [(&str, usize, usize, usize); 38] = [
     ("NABHASA_VIHAGA", 0, 0, 0),
     ("NABHASA_YUGA", 0, 0, 0),
     ("NABHASA_YUPA", 0, 0, 0),
+    ("PARASHARA_AMALA", 10, 0, 4),
+    ("PARASHARA_CHAMARA", 2, 15, 12),
+    ("PARASHARA_GAJA_KESARI", 12, 2, 13),
+    ("PARASHARA_KALANIDHI", 0, 0, 3),
+    ("PARASHARA_LAGNADHI", 0, 0, 0),
+    ("PARASHARA_MATSYA", 0, 0, 0),
     ("SOLAR_UBHAYACHARI", 33, 0, 0),
     ("SOLAR_VESI", 50, 0, 0),
     ("SOLAR_VOSI", 51, 0, 0),

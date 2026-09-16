@@ -40,10 +40,12 @@
           }
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "fond of wandering, charming, earning in foreign countries, cruel and mischievous"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fond of wandering, charming, earning in foreign countries, cruel and mischievous"
+        }
+      ]
     },
     {
       "key": "NABHASA_MUSALA",
@@ -85,10 +87,12 @@
           }
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "honoured, wise and wealthy, dear to the king, famous, of many sons, and firm of disposition"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "honoured, wise and wealthy, dear to the king, famous, of many sons, and firm of disposition"
+        }
+      ]
     },
     {
       "key": "NABHASA_NALA",
@@ -130,10 +134,12 @@
           }
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "uneven of physique, bent on accumulating money, very skilful, helpful to his relatives, and charming"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "uneven of physique, bent on accumulating money, very skilful, helpful to his relatives, and charming"
+        }
+      ]
     },
     {
       "key": "NABHASA_MAALA",
@@ -268,10 +274,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "ever happy, furnished with conveyances, robes, food and pleasures, splendid, and attended by many women"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "ever happy, furnished with conveyances, robes, food and pleasures, splendid, and attended by many women"
+        }
+      ]
     },
     {
       "key": "NABHASA_SARPA",
@@ -406,10 +414,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "crooked, cruel, poor, miserable, and dependent on others for his food and drink"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "crooked, cruel, poor, miserable, and dependent on others for his food and drink"
+        }
+      ]
     },
     {
       "key": "NABHASA_GADA",
@@ -456,10 +466,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "always striving to earn wealth, a performer of sacrificial rites, skilful in the shastras and in song, and furnished with wealth, gold and precious stones"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "always striving to earn wealth, a performer of sacrificial rites, skilful in the shastras and in song, and furnished with wealth, gold and precious stones"
+        }
+      ]
     },
     {
       "key": "NABHASA_SAKATA",
@@ -480,10 +492,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "afflicted by disease, diseased or ugly of nail, foolish, living by pulling carts, poor, and without friends or relatives"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "afflicted by disease, diseased or ugly of nail, foolish, living by pulling carts, poor, and without friends or relatives"
+        }
+      ]
     },
     {
       "key": "NABHASA_VIHAGA",
@@ -504,10 +518,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "fond of roaming, a messenger, living by dealings in sex, shameless, and fond of quarrels"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fond of roaming, a messenger, living by dealings in sex, shameless, and fond of quarrels"
+        }
+      ]
     },
     {
       "key": "NABHASA_SRINGATAKA",
@@ -529,10 +545,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "fond of quarrels and battles, happy, dear to the king, well wived, rich, and a hater of women"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fond of quarrels and battles, happy, dear to the king, well wived, rich, and a hater of women"
+        }
+      ]
     },
     {
       "key": "NABHASA_HALA",
@@ -575,10 +593,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "a great eater, very poor, a farmer, miserable, agitated, given up by his friends and relatives, and a servant"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a great eater, very poor, a farmer, miserable, agitated, given up by his friends and relatives, and a servant"
+        }
+      ]
     },
     {
       "key": "NABHASA_VAJRA",
@@ -624,10 +644,12 @@
           "atLeast": 1
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "happy at the beginning and the end of his life, valorous, charming, devoid of desires and of fortune, and inimical"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "happy at the beginning and the end of his life, valorous, charming, devoid of desires and of fortune, and inimical"
+        }
+      ]
     },
     {
       "key": "NABHASA_YAVA",
@@ -673,10 +695,12 @@
           "atLeast": 1
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "observant of fasts and religious rules, a doer of auspicious acts, gaining happiness, wealth and sons in his middle life, charitable and firm"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "observant of fasts and religious rules, a doer of auspicious acts, gaining happiness, wealth and sons in his middle life, charitable and firm"
+        }
+      ]
     },
     {
       "key": "NABHASA_KAMALA",
@@ -699,10 +723,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "rich and virtuous, long-lived, very famous, pure, a doer of hundreds of auspicious acts, and a king"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "rich and virtuous, long-lived, very famous, pure, a doer of hundreds of auspicious acts, and a king"
+        }
+      ]
     },
     {
       "key": "NABHASA_VAPI",
@@ -739,10 +765,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "able to accumulate wealth, of lasting wealth, happiness and sons, free of afflictions of the eye, and a king"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "able to accumulate wealth, of lasting wealth, happiness and sons, free of afflictions of the eye, and a king"
+        }
+      ]
     },
     {
       "key": "NABHASA_YUPA",
@@ -765,10 +793,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "possessed of spiritual knowledge, interested in sacrificial rites, well wived, strong, observant of fasts, and distinguished"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "possessed of spiritual knowledge, interested in sacrificial rites, well wived, strong, observant of fasts, and distinguished"
+        }
+      ]
     },
     {
       "key": "NABHASA_SARA",
@@ -791,10 +821,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "a maker of arrows, the head of a prison, earning through animals, an eater of meat, and given to torture and mean handiwork"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a maker of arrows, the head of a prison, earning through animals, an eater of meat, and given to torture and mean handiwork"
+        }
+      ]
     },
     {
       "key": "NABHASA_SAKTHI",
@@ -817,10 +849,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "bereft of wealth, unsuccessful, miserable, mean, lazy, long-lived, interested and skilful in war, firm and auspicious"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "bereft of wealth, unsuccessful, miserable, mean, lazy, long-lived, interested and skilful in war, firm and auspicious"
+        }
+      ]
     },
     {
       "key": "NABHASA_DANDA",
@@ -843,10 +877,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "losing his sons and his wife, indigent, unkind, away from his own people, miserable, and a servant of mean men"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "losing his sons and his wife, indigent, unkind, away from his own people, miserable, and a servant of mean men"
+        }
+      ]
     },
     {
       "key": "NABHASA_NAUKA",
@@ -873,10 +909,12 @@
           "requireAllHousesFilled": false
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "living by water, wealthy, famous, wicked, wretched, dirty and miserly"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "living by water, wealthy, famous, wicked, wretched, dirty and miserly"
+        }
+      ]
     },
     {
       "key": "NABHASA_KOOTA",
@@ -903,10 +941,12 @@
           "requireAllHousesFilled": false
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "a liar, the head of a jail, poor, crafty, cruel, and a dweller in hills and fortresses"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a liar, the head of a jail, poor, crafty, cruel, and a dweller in hills and fortresses"
+        }
+      ]
     },
     {
       "key": "NABHASA_CHATRA",
@@ -933,10 +973,12 @@
           "requireAllHousesFilled": false
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "helpful to his own people, kind, dear to many kings, very intelligent, happy at the beginning and the end of his life, and long-lived"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "helpful to his own people, kind, dear to many kings, very intelligent, happy at the beginning and the end of his life, and long-lived"
+        }
+      ]
     },
     {
       "key": "NABHASA_CHAPA",
@@ -963,10 +1005,12 @@
           "requireAllHousesFilled": false
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "a liar, a keeper of secrets, a thief, fond of wandering in forests, unlucky, and happy in the middle of his life"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a liar, a keeper of secrets, a thief, fond of wandering in forests, unlucky, and happy in the middle of his life"
+        }
+      ]
     },
     {
       "key": "NABHASA_ARDHA_CHANDRA",
@@ -1089,10 +1133,12 @@
           ]
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "a leader of armies, splendid of body, dear to the king, strong, and furnished with gems, gold and ornaments"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a leader of armies, splendid of body, dear to the king, strong, and furnished with gems, gold and ornaments"
+        }
+      ]
     },
     {
       "key": "NABHASA_CHAKRA",
@@ -1118,10 +1164,12 @@
           "requireAllHousesFilled": false
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "an emperor, at whose feet kings bow their diademed heads"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor, at whose feet kings bow their diademed heads"
+        }
+      ]
     },
     {
       "key": "NABHASA_SAMUDRA",
@@ -1147,10 +1195,12 @@
           "requireAllHousesFilled": false
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "possessed of many precious stones and abundant wealth, pleasured, dear to the people, firm in his wealth, and well disposed"
-      }
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "possessed of many precious stones and abundant wealth, pleasured, dear to the people, firm in his wealth, and well disposed"
+        }
+      ]
     },
     {
       "key": "NABHASA_GOLA",
@@ -1177,10 +1227,6 @@
           "count": 1
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "strong, devoid of wealth, learning and intelligence, dirty, sorrowful and miserable"
-      },
       "cancellations": [
         {
           "type": "rule",
@@ -1281,6 +1327,12 @@
         {
           "type": "rule",
           "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "strong, devoid of wealth, learning and intelligence, dirty, sorrowful and miserable"
         }
       ]
     },
@@ -1309,10 +1361,6 @@
           "count": 2
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "heretical, devoid of wealth, discarded by others, and without sons, mother or virtue"
-      },
       "cancellations": [
         {
           "type": "rule",
@@ -1413,6 +1461,12 @@
         {
           "type": "rule",
           "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "heretical, devoid of wealth, discarded by others, and without sons, mother or virtue"
         }
       ]
     },
@@ -1441,10 +1495,6 @@
           "count": 3
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "sharp, indolent, bereft of wealth, torturous, prohibited, valiant, and famous through war"
-      },
       "cancellations": [
         {
           "type": "rule",
@@ -1545,6 +1595,12 @@
         {
           "type": "rule",
           "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "sharp, indolent, bereft of wealth, torturous, prohibited, valiant, and famous through war"
         }
       ]
     },
@@ -1573,10 +1629,6 @@
           "count": 4
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "useful to many, an agriculturist, truthful, happy, fickle and wealthy"
-      },
       "cancellations": [
         {
           "type": "rule",
@@ -1677,6 +1729,12 @@
         {
           "type": "rule",
           "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "useful to many, an agriculturist, truthful, happy, fickle and wealthy"
         }
       ]
     },
@@ -1705,10 +1763,6 @@
           "count": 5
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "liable to imprisonment, skilful in work, deceiving of disposition, talkative, bereft of good qualities, and attended by many servants"
-      },
       "cancellations": [
         {
           "type": "rule",
@@ -1809,6 +1863,12 @@
         {
           "type": "rule",
           "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "liable to imprisonment, skilful in work, deceiving of disposition, talkative, bereft of good qualities, and attended by many servants"
         }
       ]
     },
@@ -1837,10 +1897,6 @@
           "count": 6
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "helpful to others, of righteously earned wealth, very affluent, famous, of many sons and gems, courageous and red-lettered"
-      },
       "cancellations": [
         {
           "type": "rule",
@@ -1941,6 +1997,12 @@
         {
           "type": "rule",
           "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "helpful to others, of righteously earned wealth, very affluent, famous, of many sons and gems, courageous and red-lettered"
         }
       ]
     },
@@ -1969,10 +2031,6 @@
           "count": 7
         }
       ],
-      "outcome": {
-        "type": "effect",
-        "text": "fond of song, dance and instruments, skilful, happy, wealthy, and a leader of men"
-      },
       "cancellations": [
         {
           "type": "rule",
@@ -2073,6 +2131,12 @@
         {
           "type": "rule",
           "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fond of song, dance and instruments, skilful, happy, wealthy, and a leader of men"
         }
       ]
     }

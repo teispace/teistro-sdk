@@ -42,7 +42,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         Tables::EMPTY.check(rule).expect("these name no table");
         // Only Saravali grades: no other text says how long the child lives.
         assert!(
-            rule.outcome.is_none() || rule.source.text == "Saravali",
+            rule.outcomes.is_empty() || rule.source.text == "Saravali",
             "{}: an outcome is a span its verse gives",
             rule.key
         );
@@ -50,11 +50,11 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
     // The spans the verses give, in the units they give them in.
     let spans: Vec<f64> = rules
         .iter()
-        .filter_map(|rule| rule.outcome.as_ref().and_then(teistro_rules::Outcome::days))
+        .filter_map(|rule| rule.life_span())
         .collect();
     let graded: Vec<&str> = rules
         .iter()
-        .filter(|rule| rule.outcome.is_some())
+        .filter(|rule| !rule.outcomes.is_empty())
         .map(|rule| rule.key.as_str())
         .collect();
     assert_eq!(graded, GRADED);
@@ -335,7 +335,7 @@ fn the_generator_makes_one_rule_a_reading() {
             if result.present {
                 *fired.get_mut(rule.key.as_str()).unwrap() += 1;
                 // A present reading hands on what the rule says, unchanged.
-                assert_eq!(result.outcome.as_ref(), rule.outcome.as_ref());
+                assert_eq!(result.outcomes, rule.outcomes);
             }
         }
     }
@@ -794,11 +794,9 @@ fn every_family_is_whole(rules: &[Rule]) {
             rule.key
         );
         let text = rule
-            .outcome
-            .as_ref()
-            .and_then(teistro_rules::Outcome::text)
+            .effect()
             .unwrap_or_else(|| panic!("{}: says in words what follows", rule.key));
-        assert!(!text.is_empty() && rule.outcome.as_ref().unwrap().days().is_none());
+        assert!(!text.is_empty() && rule.life_span().is_none());
         match rule.category.as_str() {
             "dwigraha" => pairs.push(named(&rule.key, "DWIGRAHA_")),
             "chandra-drishti" => moon.push(named(&rule.key, "CHANDRA_IN_")),

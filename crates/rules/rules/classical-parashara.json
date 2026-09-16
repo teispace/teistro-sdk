@@ -1,0 +1,1322 @@
+{
+  "rules": [
+    {
+      "key": "MAHAPURUSHA_RUCHAKA",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Saravali",
+        "chapter": "37",
+        "verse": "5-7",
+        "rank": 1,
+        "note": "Mars in his own sign or his exaltation, standing in an angle from the ascendant. Read from R. Santhanam's translation of Kalyana Varma's Saravali; the Parashara chapter gives the same figure at ch. 75 vv. 1 to 2."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": "MARS"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MARS",
+          "dignities": [
+            "EXALTED",
+            "OWN_SIGN",
+            "MOOLTRIKONA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "long of face, of pure splendour, greatly strong, valorous, of attractive brows and very black hair, warlike, knowing mantras, a leader of thieves, blood-red of complexion, a conqueror of his enemies, conch-necked, a chief, cruel, honouring the gods and Brahmins, thin of shank, a hundred inches tall, and a ruler of the Vindhya and the Sahya"
+        },
+        {
+          "type": "life-span",
+          "count": 70.0,
+          "unit": "years"
+        }
+      ]
+    },
+    {
+      "key": "MAHAPURUSHA_BHADRA",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Saravali",
+        "chapter": "37",
+        "verse": "14-18",
+        "rank": 1,
+        "note": "Mercury in his own sign or his exaltation, standing in an angle from the ascendant. Read from R. Santhanam's translation of Kalyana Varma's Saravali; the Parashara chapter gives the same figure at ch. 75 vv. 1 to 2."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": "MERCURY"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MERCURY",
+          "dignities": [
+            "EXALTED",
+            "OWN_SIGN",
+            "MOOLTRIKONA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "tiger-faced and elephant-gaited, broad of chest, long and strong of hand, square of body, sensuous, soft-haired of cheek, learned, lotus-handed and lotus-footed, valorous and versed in yoga, knowing the meaning of the shastras, firm in prowess, black and short of hair, independent in all he undertakes, unforgiving even to his own people, letting his friends enjoy his wealth, a ruler of the middle country, and always happy"
+        },
+        {
+          "type": "life-span",
+          "count": 80.0,
+          "unit": "years"
+        }
+      ]
+    },
+    {
+      "key": "MAHAPURUSHA_HAMSA",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Saravali",
+        "chapter": "37",
+        "verse": "11-13",
+        "rank": 1,
+        "note": "Jupiter in his own sign or his exaltation, standing in an angle from the ascendant. Read from R. Santhanam's translation of Kalyana Varma's Saravali; the Parashara chapter gives the same figure at ch. 75 vv. 1 to 2."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": "JUPITER"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "JUPITER",
+          "dignities": [
+            "EXALTED",
+            "OWN_SIGN",
+            "MOOLTRIKONA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "reddish of face, elevated of nose, beautiful of foot, of great virile power, whitish of complexion, broad of cheek, red of nail, swan-voiced, phlegmatic, honey-coloured and round of eye, fond of sport in water, delighted in the company of women, ninety-six inches tall, and a lord of Surasena, of the Gandharvas and of the country between the Ganges and the Yamuna"
+        },
+        {
+          "type": "life-span",
+          "count": 100.0,
+          "unit": "years"
+        }
+      ]
+    },
+    {
+      "key": "MAHAPURUSHA_MALAVYA",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Saravali",
+        "chapter": "37",
+        "verse": "3-4",
+        "rank": 1,
+        "note": "Venus in his own sign or his exaltation, standing in an angle from the ascendant. Read from R. Santhanam's translation of Kalyana Varma's Saravali; the Parashara chapter gives the same figure at ch. 75 vv. 1 to 2."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": "VENUS"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "VENUS",
+          "dignities": [
+            "EXALTED",
+            "OWN_SIGN",
+            "MOOLTRIKONA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "thin of lip, even of physique, grey of complexion, thin of waist, splendid as the moon, majestic of voice as a tusker, pleasant of body, piercing of sight, even and white of tooth, his hands reaching to his knees, and a ruler of Lata, Malwa and Sindhu"
+        },
+        {
+          "type": "life-span",
+          "count": 70.0,
+          "unit": "years"
+        }
+      ]
+    },
+    {
+      "key": "MAHAPURUSHA_SASA",
+      "category": "mahapurusha",
+      "source": {
+        "text": "Saravali",
+        "chapter": "37",
+        "verse": "8-10",
+        "rank": 1,
+        "note": "Saturn in his own sign or his exaltation, standing in an angle from the ascendant. Read from R. Santhanam's translation of Kalyana Varma's Saravali; the Parashara chapter gives the same figure at ch. 75 vv. 1 to 2."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-kendra",
+          "planet": "SATURN"
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "SATURN",
+          "dignities": [
+            "EXALTED",
+            "OWN_SIGN",
+            "MOOLTRIKONA"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "small of tooth and of face though not small of body, swift of pace, crafty, very valorous, fond of forests, hills and forts, weak of loin and long of body, famous, a chief of an army, skilful in every assignment, a metallurgist, fickle, lotus-eyed, fond of women, enjoying other men's wealth, devoted to his mother, very intelligent, and a finder of fault in others"
+        },
+        {
+          "type": "life-span",
+          "count": 70.0,
+          "unit": "years"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_SHUBHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "1-2",
+        "rank": 1,
+        "note": "A benefic in the ascendant, or benefics in both the twelfth and the second. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    12
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    2
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "eloquent, charming and virtuous"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_ASHUBHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "1-2",
+        "rank": 1,
+        "note": "A malefic in the ascendant, or malefics in both the twelfth and the second. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    12
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    2
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "sensuous, a doer of sinful acts, and a swallower of other men's wealth"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_GAJA_KESARI",
+      "category": "chandra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "3-4",
+        "rank": 1,
+        "note": "Jupiter in an angle from the ascendant or from the Moon, joined or aspected by another benefic, and neither debilitated, combust nor in an enemy's sign. Another benefic is written as a second benefic in Jupiter's own sign, Jupiter being one himself, and as a benefic aspecting him, which he cannot do to himself. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-kendra",
+              "planet": "JUPITER"
+            },
+            {
+              "type": "planet-in-kendra-from",
+              "planet": "JUPITER",
+              "reference": "MOON"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 2,
+              "from": "JUPITER"
+            },
+            {
+              "type": "count-aspecting",
+              "planets": "any-benefic",
+              "target": "JUPITER",
+              "atLeast": 1
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-dignity",
+            "planet": "JUPITER",
+            "dignities": [
+              "DEBILITATED",
+              "ENEMY",
+              "GREAT_ENEMY"
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": "JUPITER"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "splendid, wealthy, intelligent, endowed with many laudable virtues, and pleasing to the king"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_AMALA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "5-6",
+        "rank": 1,
+        "note": "A benefic and no malefic in the tenth from the ascendant, or the same from the Moon. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    10
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "count-in-houses",
+                    "planets": "any-malefic",
+                    "houses": [
+                      10
+                    ],
+                    "atLeast": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    10
+                  ],
+                  "atLeast": 1,
+                  "from": "MOON"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "count-in-houses",
+                    "planets": "any-malefic",
+                    "houses": [
+                      10
+                    ],
+                    "atLeast": 1,
+                    "from": "MOON"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "famous while the moon and the stars last, honoured by the king, abundantly pleasured, charitable, fond of his relatives, helpful, pious and virtuous"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_PARVATA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "7-8",
+        "rank": 1,
+        "note": "Benefics in the angles while the seventh and the eighth are vacant or hold benefics alone; the verse's plural is read as at least one benefic in an angle. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              7,
+              8
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy, eloquent, charitable, learned in the shastras, fond of mirth, famous, splendid, and the leader of a city"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_CHAMARA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "11-12",
+        "rank": 1,
+        "note": "The lord of the ascendant exalted in an angle and aspected by Jupiter, or two benefics in the ascendant, the seventh, the ninth or the tenth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-dignity",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "dignities": [
+                    "EXALTED"
+                  ]
+                },
+                {
+                  "type": "lord-of-house-in-kendra",
+                  "houseRuled": 1
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "JUPITER",
+                  "target": {
+                    "lordOf": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                1
+              ],
+              "atLeast": 2
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                7
+              ],
+              "atLeast": 2
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                9
+              ],
+              "atLeast": 2
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                10
+              ],
+              "atLeast": 2
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king or honoured by the king, long-lived, scholarly, eloquent, and versed in all the arts"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_SRINATHA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "18",
+        "rank": 1,
+        "note": "The lord of the seventh in the tenth while the lord of the tenth is exalted and shares a sign with the lord of the ninth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-of-house-in-house",
+          "houseRuled": 7,
+          "houseOccupied": 10
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 10
+          },
+          "dignities": [
+            "EXALTED"
+          ]
+        },
+        {
+          "type": "lord-conjunct-lord",
+          "house1": 10,
+          "house2": 9
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "the equal of Devendra, the god of gods"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_MATSYA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "21-22",
+        "rank": 1,
+        "note": "Benefics in the ninth and the ascendant, benefics and malefics together in the fifth, and malefics in the fourth and the eighth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            9
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            5
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an astrologer, a synonym of kindness, virtuous, strong, beautiful, famous, learned and pious"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_KOORMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "23-24",
+        "rank": 1,
+        "note": "A benefic in its own, exaltation or friendly sign in each of the fifth, sixth and seventh, and a malefic in its own or exaltation sign in each of the third, eleventh and the ascendant. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  5
+                ]
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "OWN_SIGN",
+                  "MOOLTRIKONA",
+                  "FRIEND",
+                  "GREAT_FRIEND"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  6
+                ]
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "OWN_SIGN",
+                  "MOOLTRIKONA",
+                  "FRIEND",
+                  "GREAT_FRIEND"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  7
+                ]
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "OWN_SIGN",
+                  "MOOLTRIKONA",
+                  "FRIEND",
+                  "GREAT_FRIEND"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  3
+                ]
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "OWN_SIGN",
+                  "MOOLTRIKONA"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  11
+                ]
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "OWN_SIGN",
+                  "MOOLTRIKONA"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1
+                ]
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "EXALTED",
+                  "OWN_SIGN",
+                  "MOOLTRIKONA"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king, courageous, virtuous, famous, helpful, happy, and a leader of men"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_KHADGA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "25-26",
+        "rank": 1,
+        "note": "The lords of the second and the ninth exchanging signs while the lord of the ascendant stands in an angle or a trine. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "mutual-exchange",
+          "house1": 2,
+          "house2": 9
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lord-of-house-in-kendra",
+              "houseRuled": 1
+            },
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 1,
+              "houseOccupied": 1
+            },
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 1,
+              "houseOccupied": 5
+            },
+            {
+              "type": "lord-of-house-in-house",
+              "houseRuled": 1,
+              "houseOccupied": 9
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "furnished with wealth, fortune and happiness, learned in the shastras, intelligent, mighty, grateful and skilful"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_KALANIDHI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "31-32",
+        "rank": 1,
+        "note": "Jupiter in the second or the fifth, aspected by Mercury and by Venus. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            2,
+            5
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "MERCURY",
+          "target": "JUPITER"
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": "JUPITER"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "virtuous, honoured by kings, free of disease, happy, wealthy and learned"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_KALPADRUMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "33-34",
+        "rank": 1,
+        "note": "The lord of the ascendant, its dispositor, that one's dispositor and the navamsha dispositor of the third, each standing in an angle or a trine from the ascendant, or exalted. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "lordOf": 1
+              },
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 1
+              },
+              "dignities": [
+                "EXALTED"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "lordOf": {
+                  "lordOf": 1
+                }
+              },
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": {
+                  "lordOf": 1
+                }
+              },
+              "dignities": [
+                "EXALTED"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "lordOf": {
+                  "lordOf": {
+                    "lordOf": 1
+                  }
+                }
+              },
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": {
+                  "lordOf": {
+                    "lordOf": 1
+                  }
+                }
+              },
+              "dignities": [
+                "EXALTED"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "lordOf": {
+                  "navamsha": {
+                    "lordOf": {
+                      "lordOf": {
+                        "lordOf": 1
+                      }
+                    }
+                  }
+                }
+              },
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": {
+                  "navamsha": {
+                    "lordOf": {
+                      "lordOf": {
+                        "lordOf": 1
+                      }
+                    }
+                  }
+                }
+              },
+              "dignities": [
+                "EXALTED"
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "furnished with wealth of every kind, a king, pious, strong, fond of war and merciful"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_LAGNADHI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "37",
+        "rank": 1,
+        "note": "Benefics in the seventh and the eighth from the ascendant, with no malefic joining or aspecting them. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            8
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              7,
+              8
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-malefic",
+            "houseRuled": 7
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-malefic",
+            "houseRuled": 8
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a great person, learned in the shastras, and happy"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_TRIMURTHI_HARI",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "Benefics in the 2, 12, 8 counted from the second lord; one of the three Trimurthi yogas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": {
+            "lordOf": 2
+          },
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": {
+            "lordOf": 2
+          },
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": {
+            "lordOf": 2
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "happy, learned, and endowed with wealth and sons"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_TRIMURTHI_HARA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "Benefics in the 4, 9, 8 counted from the sign the seventh lord occupies; one of the three Trimurthi yogas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": {
+            "lordOf": 7
+          },
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": {
+            "lordOf": 7
+          },
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": {
+            "lordOf": 7
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "happy, learned, and endowed with wealth and sons"
+        }
+      ]
+    },
+    {
+      "key": "PARASHARA_TRIMURTHI_BRAHMA",
+      "category": "miscellaneous",
+      "source": {
+        "text": "BPHS",
+        "chapter": "36",
+        "verse": "35-36",
+        "rank": 1,
+        "note": "Benefics in the 4, 10, 11 counted from the lord of the ascendant; one of the three Trimurthi yogas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": {
+            "lordOf": 1
+          },
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": {
+            "lordOf": 1
+          },
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "any-benefic",
+          "reference": {
+            "lordOf": 1
+          },
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "happy, learned, and endowed with wealth and sons"
+        }
+      ]
+    }
+  ]
+}

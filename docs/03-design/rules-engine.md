@@ -443,8 +443,8 @@ the kernel cannot measure.
 **An outcome, and Saravali's spans (2026-09-16).** Kalyana Varma grades each
 evil the one way the texts ever grade one: by the span of life it leaves — three
 years, nine years, one month, sixteen days. So a rule can carry an `Outcome`,
-and its only kind is `life-span`, a count and the unit its verse uses, with
-`days()` for comparing them. A result carries the outcome of the rule that
+and its first kind is `life-span`, a count and the unit its verse uses, with
+`days()` for comparing them. A result carries the outcomes of the rule that
 held. This is what replaces an invented 0 to 100 score: the SDK reports the
 span a verse gives, or nothing.
 
@@ -495,6 +495,13 @@ in the SDK's own short statement of it, and `Outcome::days()` answers only
 where a text counts a span. A rule therefore reports a span where a text gives
 one, words where it gives those, and nothing where it gives neither — and the
 SDK still invents no number.
+
+A verse may also say both, and `Rule::outcomes` is a list for that reason:
+Saravali ch. 37's Pancha Mahapurusha verses describe the native at length and
+then count his years — seventy for Ruchaka, Malavya and Sasa, eighty for
+Bhadra, a hundred for Hamsa. Those five are the only rules that say two things,
+which a test pins; `life_span()` and `effect()` on a rule and on a result reach
+whichever kind a caller wants without matching.
 
 The conditions repeat, so the ninety-three rules are built from a table of what
 changes: the pair, the sign, the aspecting graha and the reading. That is the
@@ -564,6 +571,33 @@ from the ascendant, where the engine reads the second and twelfth alone and
 excepts the nodes besides — one chart of the 93 answers the verse, fifty-seven
 answer the engine. The comparison is pinned rule by rule, so a divergence that
 moves fails the build — and so does one that disappears.
+
+**The Pancha Mahapurusha yogas, and BPHS ch. 36 (2026-09-16).** Saravali
+ch. 37 v. 2 and BPHS ch. 75 vv. 1 to 2 agree on the figure — Mars, Mercury,
+Jupiter, Venus or Saturn in his own sign or his exaltation, standing in an
+angle from the ascendant — and Saravali gives the five descriptions whole where
+this copy of the Parashara chapter loses two of them to the scanner. All five
+ship, and all five reproduce the recording engine **exactly**, on 49 answers
+over the 93 charts.
+
+BPHS ch. 36's named yogas follow: Shubha and Ashubha, Gaja Kesari, Amala,
+Parvata, Chamara, Srinatha, Matsya, Koorma, Khadga, Kalanidhi, Kalpadruma,
+Lagnadhi, and the three Trimurthi yogas Hari, Hara and Brahma. Kahala, Sankha,
+Bheri, Mridanga, Lakshmi and Sarada are not here: each turns on a graha being
+*strong*, which the kernel cannot measure, and a yoga that fires too often is
+worse than one that is missing.
+
+Kalpadruma needed nothing new but reaches further than any rule before it: the
+lord of the ascendant, its dispositor, that one's dispositor and the navamsha
+dispositor of the third are `{"lordOf": 1}`, `{"lordOf": {"lordOf": 1}}` and so
+on, nested references the language already had.
+
+Four of these figures differ from the engine's, each a reading and each written
+up in crux C95: the engine drops the "no malefic" half of Amala's *exclusively
+a benefic*, keeps only the lunar angle of Gaja Kesari, has Mercury sharing
+Jupiter's sign where Kalanidhi's verse has Mercury and Venus aspecting him, and
+carries a Chamara that is not the verse's figure at all. Forty-one of the
+forty-nine figures the SDK and the engine both carry now answer exactly alike.
 
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number

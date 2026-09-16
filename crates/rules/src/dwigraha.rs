@@ -174,9 +174,9 @@ fn stating(
 ) -> Rule {
     Rule {
         conditions,
-        outcome: Some(Outcome::Effect {
+        outcomes: vec![Outcome::Effect {
             text: effect.to_owned(),
-        }),
+        }],
         ..Rule::new(key, category, source)
     }
 }

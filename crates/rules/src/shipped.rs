@@ -49,6 +49,8 @@ const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
 const NABHASA: &str = include_str!("../rules/classical-nabhasa.json");
 /// The lunar yogas of BPHS ch. 37 and the solar yogas of ch. 38.
 const LUNAR_SOLAR: &str = include_str!("../rules/classical-lunar-solar.json");
+/// The Pancha Mahapurusha yogas and the named yogas of BPHS ch. 36.
+const PARASHARA: &str = include_str!("../rules/classical-parashara.json");
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
 /// twenty-one pairs and Phaladeepika ch. 18's Moon in each sign, aspected.
 const DWIGRAHA: &str = include_str!("../rules/classical-readings.json");
@@ -83,6 +85,7 @@ static GANDANTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(GANDANTA));
 static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     let mut rules = read(NABHASA);
     rules.append(&mut read(LUNAR_SOLAR));
+    rules.append(&mut read(PARASHARA));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -135,8 +138,10 @@ pub fn readings() -> &'static [Rule] {
 /// The yogas the SDK reads from BPHS: ch. 35's thirty-two Nabhasa yogas —
 /// three ashraya, two dala, twenty akriti and seven sankhya, the sankhya seven
 /// naming the other twenty-five as cancellations, as v. 17 requires — and
-/// ch. 37's lunar and ch. 38's solar yogas beside them. Each carries the
-/// effect its verse gives and nothing the SDK invented.
+/// ch. 37's lunar and ch. 38's solar yogas beside them, the five Pancha
+/// Mahapurusha yogas as Saravali ch. 37 gives them, and the named yogas of
+/// ch. 36 the language can say. Each carries what its verse says and nothing
+/// the SDK invented: a description, a span of life, or both.
 #[must_use]
 pub fn nabhasas() -> &'static [Rule] {
     &NABHASAS
@@ -171,7 +176,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 523);
+        assert_eq!(rules.len(), 544);
         for rule in &rules {
             let rank = rule
                 .source
@@ -208,6 +213,30 @@ mod tests {
             "the shipped rules name each other soundly"
         );
         assert!(secondary.contains(&"KALSARPA") && secondary.contains(&"DAGDHA_RASHI_DOSHA"));
+        // A verse may say more than one thing, and a rule carries each: the
+        // Pancha Mahapurusha verses both describe the native and count his
+        // years, and they are the only rules that say two things.
+        let two: Vec<&str> = rules
+            .iter()
+            .filter(|rule| rule.outcomes.len() > 1)
+            .map(|rule| rule.key.as_str())
+            .collect();
+        assert_eq!(
+            two,
+            [
+                "MAHAPURUSHA_RUCHAKA",
+                "MAHAPURUSHA_BHADRA",
+                "MAHAPURUSHA_HAMSA",
+                "MAHAPURUSHA_MALAVYA",
+                "MAHAPURUSHA_SASA"
+            ]
+        );
+        for rule in rules.iter().filter(|rule| rule.outcomes.len() > 1) {
+            assert_eq!(rule.outcomes.len(), 2, "{}", rule.key);
+            assert!(rule.effect().is_some(), "{}", rule.key);
+            let span = rule.life_span().unwrap_or_else(|| panic!("{}", rule.key));
+            assert!((70.0 * 365.25..=100.0 * 365.25).contains(&span), "{}", rule.key);
+        }
         assert!(EvidenceRank::try_new(0).is_err() && EvidenceRank::try_new(5).is_err());
     }
 }

@@ -119,8 +119,9 @@ pub struct RuleResult {
     pub cancellations: Vec<usize>,
     /// How grave it is, when present and the rule says.
     pub severity: Option<u16>,
-    /// What the rule says happens, when present and its verse says.
-    pub outcome: Option<Outcome>,
+    /// What the rule says happens, when present and its verse says: as many
+    /// statements as the verse makes.
+    pub outcomes: Vec<Outcome>,
     /// Whether it stands after its cancellations, when present.
     pub status: Option<NetStatus>,
 }
@@ -140,6 +141,18 @@ impl RuleResult {
     #[must_use]
     pub fn is_cancelled(&self) -> bool {
         !self.cancellations.is_empty()
+    }
+
+    /// The span of life the rule's verse gives, in days, when it gives one.
+    #[must_use]
+    pub fn life_span(&self) -> Option<f64> {
+        self.outcomes.iter().find_map(Outcome::days)
+    }
+
+    /// What the rule's verse says follows, in words, when it says it in words.
+    #[must_use]
+    pub fn effect(&self) -> Option<&str> {
+        self.outcomes.iter().find_map(Outcome::text)
     }
 }
 
@@ -1089,7 +1102,7 @@ impl<'a> Evaluator<'a> {
             found_from: Vec::new(),
             cancellations: Vec::new(),
             severity: None,
-            outcome: None,
+            outcomes: Vec::new(),
             status: None,
         };
         if !rule.is_evaluable() {
@@ -1150,7 +1163,7 @@ impl<'a> Evaluator<'a> {
             found_from,
             cancellations,
             severity,
-            outcome: rule.outcome.clone(),
+            outcomes: rule.outcomes.clone(),
         }
     }
 

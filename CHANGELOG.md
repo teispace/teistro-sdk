@@ -1113,6 +1113,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   answers exactly. Kemadruma is the fourth divergence (crux C94): read whole,
   the verse answers 1 of the 93 charts where the engine answers 57.
 
+- **Breaking:** `Rule::outcome` and `RuleResult::outcome` become `outcomes`, a
+  list, because a verse may say more than one thing — Saravali ch. 37's Pancha
+  Mahapurusha verses describe the native *and* count his years. `life_span()`
+  and `effect()` on a rule and on a result reach either kind without matching.
+
+- The five Pancha Mahapurusha yogas as Saravali ch. 37 gives them, and the
+  named yogas of BPHS ch. 36 the language can say: Shubha, Ashubha, Gaja
+  Kesari, Amala, Parvata, Chamara, Srinatha, Matsya, Koorma, Khadga, Kalanidhi,
+  Kalpadruma, Lagnadhi and the three Trimurthi yogas. The SDK ships 544 rules.
+
+  **Numbers:** every Pancha Mahapurusha yoga reproduces the engine exactly, on
+  49 answers over the 93 charts; 41 of the 49 figures both carry now agree
+  exactly, and the four new divergences are crux C95.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
