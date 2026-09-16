@@ -66,7 +66,11 @@ thing:
    strongest, averaged on a tie (vv. 30 to 32). The same example gives every
    graha's basic years (the Sun 17.5642, the Moon 24.6247 …) and a Pindayu of
    82.2502. The translator's graded visible-half loss is his own refinement
-   of the verse's flat fractions and is a reading, not the verse. **Next.**
+   of the verse's flat fractions and is a reading, not the verse. **Built** as
+   `Evaluator::ayurdaya` (crux C104): the translator's basic years reproduce,
+   and so do his Sun's and Moon's reductions once enmity is natural enmity.
+   What is left of longevity is Maraka timing (BPHS ch. 44 and the dasha
+   intersections), which the timing layer now makes possible.
 4. **Longevity for other beings** (vv. 23 to 29): a scale factor by species.
    Out of scope.
 

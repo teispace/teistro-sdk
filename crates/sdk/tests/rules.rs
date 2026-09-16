@@ -376,7 +376,7 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     );
 }
 
-/// BPHS ch. 43 vv. 33 to 50 on the translator's worked example: a man born on
+/// BPHS ch. 43 on the translator's worked example: a man born on
 /// 21 May 1944 at 19:01:15 Indian War Time, which was UTC+6:30, at 13° 40′ N,
 /// 79° 20′ E. The SDK's chart is the translator's to a tenth of a degree. He
 /// finds the lagna and eighth lords both movable, long; Saturn dual and the
@@ -388,9 +388,9 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
 /// that did not decide, and by degrees gone where the verse counts degrees to
 /// run (crux C103).
 #[test]
-fn the_three_pairs_read_the_translator_s_example_as_he_does() {
+fn the_translator_s_worked_example_reads_as_he_reads_it() {
     use teistro::rules::LifeClass;
-    use teistro::rules::longevity::{Decided, Shift, ThreePairsRules};
+    use teistro::rules::longevity::{Decided, Giver, Shift, ThreePairsRules};
 
     let sdk = Context::builder()
         .profile("conformance-baseline")
@@ -427,4 +427,27 @@ fn the_three_pairs_read_the_translator_s_example_as_he_does() {
         (reading.class, reading.years),
         (LifeClass::Yogarishta, Some(20.0))
     );
+
+    // BPHS ch. 43 vv. 4 to 8 on the same chart: each graha's basic Pindayu
+    // years are the translator's, to the precision of his longitudes against
+    // the SDK's — a hundredth of a year, and a tenth for the fast Moon.
+    let spans = evaluator.ayurdaya(teistro::rules::longevity::AyurdayaRules::default());
+    let translator = [17.5642, 24.6247, 8.4036, 6.9968, 14.1200, 19.2327, 12.3979];
+    for (given, years) in spans.pindayu.contributions.iter().zip(translator) {
+        let tolerance = if matches!(given.giver, Giver::Graha(Graha::Moon)) {
+            0.1
+        } else {
+            0.01
+        };
+        assert!(
+            (given.basic - years).abs() < tolerance,
+            "{given:?} against {years}"
+        );
+    }
+    // His two reductions: the Sun in Venus's sign, a natural enemy's, keeps two
+    // thirds, which is more than the seventh house takes; the combust Moon
+    // keeps half.
+    let [sun, moon, ..] = spans.pindayu.contributions;
+    assert!((sun.net - 11.7095).abs() < 0.01, "{sun:?}");
+    assert!((moon.net - 12.3124).abs() < 0.1, "{moon:?}");
 }

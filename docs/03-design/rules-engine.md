@@ -1100,6 +1100,26 @@ medium and 101 short; vv. 71 to 73 place the stronger of the lagna and eighth
 lords in exactly one of angle, panaphara and apoklima on each of the 71 charts
 that compare strength, which is the three lists being the twelve houses.
 
+**Pindayu, Nisargayu and Amsayu (2026-09-16).** BPHS ch. 43 vv. 4 to 32 sum a
+span of life from what the seven grahas and the lagna give, three ways, each
+with the same four reductions, and choose among them by whether the lagna, the
+Sun or the Moon is strongest. `Evaluator::ayurdaya(rules)` returns all three
+spans, each giver's basic years, what every reduction would take and the net,
+so a consumer sees why a number is what it is; `Ayurdaya::chosen` takes the
+three strengths from the caller, the kernel carrying none for the lagna. The
+pure arithmetic — `by_exaltation`, `by_navamsha`, `visible_half_share`,
+`full_years` — is public so a reader can check a single step. The readings the
+translation leaves open are `AyurdayaRules` (crux C104). **Measured**: the
+translator's seven basic years reproduce from his own longitudes to a
+thousandth, and from the SDK's cast of his chart to a hundredth; his Sun's
+enemy-sign third reproduces only when enmity is read as the catalogue's natural
+enmity, which the first run showed by reading the chart's compound dignity and
+missing it. Over the 93 charts every span is the sum of its givers, every
+Pindayu basic lies between half and all of the graha's full years, and listed
+Nisargayu is 120 on every chart; Pindayu averages 85 years, Nisargayu 79 and
+Amsayu 39. The translator's note to v. 32 averages two spans wrongly, 46.35 for
+46.6, which the test of the tie rule found.
+
 **The three pairs (2026-09-16).** BPHS ch. 43 vv. 33 to 50 read a class of
 life from six things: the lagna and eighth lords, Saturn and the Moon, the
 lagna and the hora lagna. It is a reading and not a rule, so it is

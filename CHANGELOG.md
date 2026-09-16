@@ -1306,6 +1306,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- Pindayu, Nisargayu and Amsayu: `Evaluator::ayurdaya` sums BPHS ch. 43 vv. 4
+  to 32's three spans with each giver's basic years, reductions and net, and
+  `Ayurdaya::chosen` picks by strength with ties averaged (crux C104).
+
+  **Numbers:** the translator's seven basic years reproduce from his
+  longitudes and, to a hundredth, from the SDK's own cast of his chart, with
+  his Sun's and Moon's reductions. Over the 93 charts Pindayu averages 85
+  years, Nisargayu 79 and Amsayu 39.
+
 - The three pairs: `Evaluator::three_pairs` reads BPHS ch. 43 vv. 33 to 50 —
   each pair's class, how the chart's was decided, Saturn's and Jupiter's
   shifts, the years and their rectification under `ThreePairsRules` (crux
