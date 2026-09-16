@@ -45,6 +45,9 @@ const ARISHTA: &str = include_str!("../rules/classical-arishta.json");
 const BALARISHTA: &str = include_str!("../rules/classical-balarishta.json");
 /// Kalyana Varma's evils at birth, Saravali ch. 10, each with its life span.
 const SARAVALI: &str = include_str!("../rules/classical-saravali.json");
+/// The table the dwigraha generator expands: Brihat Jataka ch. 14's
+/// twenty-one pairs and Phaladeepika ch. 18's Moon in each sign, aspected.
+const DWIGRAHA: &str = include_str!("../rules/classical-dwigraha.json");
 
 /// The rules of one shipped file.
 fn read(json: &str) -> Vec<Rule> {
@@ -61,6 +64,15 @@ fn read(json: &str) -> Vec<Rule> {
     file.rules
 }
 
+static READINGS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
+    #[allow(
+        clippy::expect_used,
+        reason = "embedded data, read by a test on every build"
+    )]
+    let table: crate::dwigraha::Table =
+        serde_json::from_str(DWIGRAHA).expect("the dwigraha table reads");
+    table.rules()
+});
 static DOSHAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_DOSHAS));
 static YOGAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(COMPUTED_YOGAS));
 static GANDANTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| read(GANDANTA));
@@ -99,6 +111,16 @@ pub fn arishtas() -> &'static [Rule] {
     &ARISHTAS
 }
 
+/// The readings the texts give in one shape, built from a table rather than
+/// written out: Brihat Jataka ch. 14's twenty-one pairs of grahas sharing a
+/// sign, which Phaladeepika ch. 18 repeats, and Phaladeepika's own Moon in
+/// each of the twelve signs under each of six aspects. None of them grades
+/// anything, so each carries what its verse says in words and nothing else.
+#[must_use]
+pub fn readings() -> &'static [Rule] {
+    &READINGS
+}
+
 /// The eight yogas it computes in code, the Neecha Bhanga family, as rules:
 /// the aggregate and its seven cancellations, each over any debilitated graha.
 #[must_use]
@@ -125,8 +147,9 @@ mod tests {
             .chain(computed_yogas())
             .chain(gandantas())
             .chain(arishtas())
+            .chain(readings())
             .collect();
-        assert_eq!(rules.len(), 97);
+        assert_eq!(rules.len(), 190);
         for rule in &rules {
             let rank = rule
                 .source

@@ -483,6 +483,32 @@ exaltation, the divisions of benefics, a planetary war's victor, a halo, the
 weather at birth, the Saptarishis rising, and every planet in its own
 decanate.
 
+**One shape, ninety-three rules (2026-09-16).** Brihat Jataka ch. 14 reads
+every pair of the seven grahas sharing a sign — twenty-one readings, which
+Phaladeepika ch. 18 vv. 1 to 5 repeats almost word for word — and Phaladeepika
+ch. 18 vv. 6 to 11 reads the Moon in each of the twelve signs under each of six
+aspects, seventy-two more. Neither grades anything. Each verse says in words
+what follows: a trade, a temper, a station.
+
+So an outcome has a second kind. `Outcome::Effect` carries what the verse says,
+in the SDK's own short statement of it, and `Outcome::days()` answers only
+where a text counts a span. A rule therefore reports a span where a text gives
+one, words where it gives those, and nothing where it gives neither — and the
+SDK still invents no number.
+
+The conditions repeat, so the ninety-three rules are built from a table of what
+changes: the pair, the sign, the aspecting graha and the reading. That is the
+whole of `crates/rules/src/dwigraha.rs`, and the table is
+`rules/classical-dwigraha.json`. Brihat Jataka ch. 14 v. 5 closes by saying
+that three or more grahas together are read as the pairs they contain, which is
+what one rule a pair does of itself: four in a sign answer six of them.
+
+A test holds the generator to its table — twenty-one distinct pairs, twelve
+signs of six aspects each, every rule evaluable, rank 1, citing its verse,
+carrying words and no severity and no cancellation — and pins what each answers
+over the 93 charts. Thirty-five stay silent, among them all six readings of an
+Aries Moon, who stands there in one chart and is aspected by nobody.
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-one answer none, and

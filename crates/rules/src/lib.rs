@@ -31,6 +31,7 @@
 //! ```
 
 pub mod chart;
+mod dwigraha;
 pub mod eval;
 pub mod language;
 pub mod reference;

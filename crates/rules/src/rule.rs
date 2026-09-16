@@ -209,11 +209,14 @@ fn is_mars(body: &Body) -> bool {
     *body == mars()
 }
 
-/// What a rule says happens when it holds, beyond being present. The texts
-/// grade an affliction in one way only: the span of life they give it
-/// (Phaladeepika ch. 13 v. 6's bands, and Saravali ch. 10's verse-by-verse
-/// spans), so that is what an outcome carries.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+/// What a rule says happens when it holds, beyond being present, in the one
+/// of the two ways its verse says it. The texts grade an affliction in one way
+/// only — the span of life they give it (Phaladeepika ch. 13 v. 6's bands, and
+/// Saravali ch. 10's verse-by-verse spans) — and everywhere else they say what
+/// follows in words: a dwigraha verse gives a trade and a temper, not a
+/// number. A consumer therefore reads a span where a text counts one and the
+/// verse's own statement where it does not, and the SDK invents neither.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(
     tag = "type",
     rename_all = "kebab-case",
@@ -227,6 +230,12 @@ pub enum Outcome {
         count: f64,
         /// Of what.
         unit: Unit,
+    },
+    /// What the verse says follows, in words: the SDK's own short statement of
+    /// the reading, not the translator's prose.
+    Effect {
+        /// The statement.
+        text: String,
     },
 }
 
@@ -243,16 +252,30 @@ pub enum Unit {
 }
 
 impl Outcome {
-    /// The span in days, a month being thirty and a year 365.25.
+    /// The span in days when the outcome is a span, a month being thirty and a
+    /// year 365.25; none when the verse states its effect in words.
     #[must_use]
-    pub fn days(self) -> f64 {
-        let Outcome::LifeSpan { count, unit } = self;
-        count
-            * match unit {
-                Unit::Days => 1.0,
-                Unit::Months => 30.0,
-                Unit::Years => 365.25,
-            }
+    pub fn days(&self) -> Option<f64> {
+        match self {
+            Outcome::LifeSpan { count, unit } => Some(
+                count
+                    * match unit {
+                        Unit::Days => 1.0,
+                        Unit::Months => 30.0,
+                        Unit::Years => 365.25,
+                    },
+            ),
+            Outcome::Effect { .. } => None,
+        }
+    }
+
+    /// What the verse says follows, when it says it in words.
+    #[must_use]
+    pub fn text(&self) -> Option<&str> {
+        match self {
+            Outcome::Effect { text } => Some(text),
+            Outcome::LifeSpan { .. } => None,
+        }
     }
 }
 

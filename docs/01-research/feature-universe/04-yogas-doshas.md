@@ -115,8 +115,10 @@ Pancha Mahapurusha 5 (BPHS ch. 75); raja 60 to 150 (BPHS chs. 39 and 40,
 Phaladeepika 7, Bhavartha Ratnakara); dhana and daridra (BPHS chs. 41 and
 42); arishta and ayur (BPHS chs. 43 and 44, Brihat Jataka VI); sanyasa (BPHS
 ch. 79, Brihat Jataka XV); Jaimini (Upadesa Sutras); Tajika 16 (Tajika
-Neelakanthi); and the dwigraha readings, 15 pairs over 12 signs, which are
-180 rules of one shape (Brihat Jataka XIV, Phaladeepika 18).
+Neelakanthi); and the dwigraha readings, which are 93 rules of one shape and
+turned out to be two shapes rather than one (Brihat Jataka XIV's 21 pairs of
+grahas in a sign, which Phaladeepika 18 vv. 1 to 5 repeats, and Phaladeepika
+18 vv. 6 to 11's Moon in each of 12 signs under each of 6 aspects).
 
 The dosha side is thinner than its reputation. What the texts actually carry
 is the **arishta corpus** — about 70 short-life and parental-evil rules (BPHS
@@ -163,7 +165,7 @@ found. The order of work below is by rules unlocked per unit of work:
 | 2 | papa and shubha kartari, and houses counted from any reference | Phaladeepika VI, BPHS ch. 80 v. 42, a third of the arishta corpus | 15 to 20 |
 | 3 | the ghatika layer: sunrise-relative time, day and night gating, sandhya | Gandanta's three kinds, Abhukta Moola, Vishaghatika, Thyajya, Dinamrityu | 25 to 35 |
 | 4 | upagrahas as bodies a rule can name, Gulika and Maandi first | BPHS ch. 83's curses, ch. 25's positional effects | ~70 |
-| 5 | the dwigraha generator over conjunction and sign | Brihat Jataka XIV, Phaladeepika 18, Saravali | ~180 of one shape |
+| 5 | ~~the dwigraha generator over conjunction and sign~~ **built 2026-09-16** | Brihat Jataka XIV, Phaladeepika 18 | 93 of one shape: 21 pairs, and the Moon in 12 signs under 6 aspects |
 | 6 | rashi drishti and argala | Jaimini Upadesa Sutras, the Jaimini raja yogas | 40 to 80 |
 | 7 | nakshatra and its lord for any body, with pada | BPHS ch. 48, the nakshatra family | 30 to 60 |
 | 8 | D3 and D30 in the chart the kernel already steps into | Balarishta by drekkana, BPHS ch. 44's serpent decanate, ch. 80's trimsamsa | ~40 |

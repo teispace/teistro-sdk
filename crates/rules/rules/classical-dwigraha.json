@@ -1,0 +1,338 @@
+{
+  "dwigraha": {
+    "text": "Brihat Jataka",
+    "chapter": "14",
+    "rank": 1,
+    "note": "Two grahas occupying one sign, and what the verse says of the native. Read from N. Chidambaram Iyer's 1885 translation; Mantreswara gives the same twenty-one readings at Phaladeepika ch. 18 vv. 1 to 5. The chapter closes by saying that three or more together are read as the pairs they contain, which is what one rule a pair does of itself.",
+    "readings": [
+      {
+        "verse": "1",
+        "planets": [
+          "SUN",
+          "MOON"
+        ],
+        "effect": "skilled in machinery and in work with stone"
+      },
+      {
+        "verse": "1",
+        "planets": [
+          "SUN",
+          "MARS"
+        ],
+        "effect": "bent on sinful deeds"
+      },
+      {
+        "verse": "1",
+        "planets": [
+          "SUN",
+          "MERCURY"
+        ],
+        "effect": "clever, intelligent, famous and comfortable"
+      },
+      {
+        "verse": "1",
+        "planets": [
+          "SUN",
+          "JUPITER"
+        ],
+        "effect": "cruel, and working for other men"
+      },
+      {
+        "verse": "1",
+        "planets": [
+          "SUN",
+          "VENUS"
+        ],
+        "effect": "earning by public performance and by the use of weapons"
+      },
+      {
+        "verse": "1",
+        "planets": [
+          "SUN",
+          "SATURN"
+        ],
+        "effect": "skilled in metal work and in pottery"
+      },
+      {
+        "verse": "2",
+        "planets": [
+          "MOON",
+          "MARS"
+        ],
+        "effect": "dealing in tools, in women, in drink and in earthen pots, and a trouble to his mother"
+      },
+      {
+        "verse": "2",
+        "planets": [
+          "MOON",
+          "MERCURY"
+        ],
+        "effect": "sweet of speech, clever at interpreting, lucky and famous"
+      },
+      {
+        "verse": "2",
+        "planets": [
+          "MOON",
+          "JUPITER"
+        ],
+        "effect": "overpowering his enemies, foremost in his family, rich, and unsettled in his views"
+      },
+      {
+        "verse": "2",
+        "planets": [
+          "MOON",
+          "VENUS"
+        ],
+        "effect": "an adept in weaving, tailoring and the dyeing of cloth"
+      },
+      {
+        "verse": "2",
+        "planets": [
+          "MOON",
+          "SATURN"
+        ],
+        "effect": "the son of a woman remarried"
+      },
+      {
+        "verse": "3",
+        "planets": [
+          "MARS",
+          "MERCURY"
+        ],
+        "effect": "dealing in roots, barks, oils and drugs, and skilled at fighting"
+      },
+      {
+        "verse": "3",
+        "planets": [
+          "MARS",
+          "JUPITER"
+        ],
+        "effect": "the chief of a town, a king, or a wealthy Brahmin"
+      },
+      {
+        "verse": "3",
+        "planets": [
+          "MARS",
+          "VENUS"
+        ],
+        "effect": "a keeper of cattle, a wrestler, skilful, a gambler, and given to other men's wives"
+      },
+      {
+        "verse": "3",
+        "planets": [
+          "MARS",
+          "SATURN"
+        ],
+        "effect": "wretched, untruthful and despised"
+      },
+      {
+        "verse": "4",
+        "planets": [
+          "MERCURY",
+          "JUPITER"
+        ],
+        "effect": "a performer, fond of music and versed in dancing"
+      },
+      {
+        "verse": "4",
+        "planets": [
+          "MERCURY",
+          "VENUS"
+        ],
+        "effect": "eloquent, landed, and the head of an assembly"
+      },
+      {
+        "verse": "4",
+        "planets": [
+          "MERCURY",
+          "SATURN"
+        ],
+        "effect": "clever at deceiving, and deaf to his preceptor's advice"
+      },
+      {
+        "verse": "4",
+        "planets": [
+          "JUPITER",
+          "VENUS"
+        ],
+        "effect": "learned in a respectable branch of knowledge, and possessed of wealth, a wife and many virtues"
+      },
+      {
+        "verse": "4",
+        "planets": [
+          "JUPITER",
+          "SATURN"
+        ],
+        "effect": "a barber, a potter or a cook"
+      },
+      {
+        "verse": "5",
+        "planets": [
+          "VENUS",
+          "SATURN"
+        ],
+        "effect": "short-sighted, skilled in writing and painting, and enriched through the friendship of a young woman"
+      }
+    ]
+  },
+  "moonAspected": {
+    "text": "Phaladeepika",
+    "chapter": "18",
+    "rank": 1,
+    "note": "The Moon in a sign under one graha's aspect, and what the verse says of the native. Read from V. Subrahmanya Sastri's 1937 translation of Mantreswara's Phaladeepika, which gives the six in the order Mars, Mercury, Jupiter, Venus, Saturn and the Sun.",
+    "aspects": [
+      "MARS",
+      "MERCURY",
+      "JUPITER",
+      "VENUS",
+      "SATURN",
+      "SUN"
+    ],
+    "signs": [
+      {
+        "verse": "6",
+        "sign": "ARIES",
+        "effects": [
+          "a king",
+          "learned",
+          "a king",
+          "the equal of a king",
+          "a thief",
+          "poor"
+        ]
+      },
+      {
+        "verse": "6",
+        "sign": "TAURUS",
+        "effects": [
+          "poor",
+          "thievish",
+          "respected by other men",
+          "a king",
+          "wealthy",
+          "a servant"
+        ]
+      },
+      {
+        "verse": "7",
+        "sign": "GEMINI",
+        "effects": [
+          "a dealer in iron tools",
+          "a king",
+          "learned",
+          "fearless",
+          "a weaver",
+          "poor"
+        ]
+      },
+      {
+        "verse": "7",
+        "sign": "CANCER",
+        "effects": [
+          "a warrior",
+          "learned",
+          "a wise man",
+          "a king",
+          "a dealer in iron and copper",
+          "a sufferer in the eyes"
+        ]
+      },
+      {
+        "verse": "8",
+        "sign": "LEO",
+        "effects": [
+          "a king",
+          "an astrologer",
+          "wealthy",
+          "a king",
+          "a barber",
+          "a king"
+        ]
+      },
+      {
+        "verse": "8",
+        "sign": "VIRGO",
+        "effects": [
+          "clever",
+          "a king",
+          "the head of an army",
+          "skilful in all matters",
+          "a king",
+          "a king"
+        ]
+      },
+      {
+        "verse": "9",
+        "sign": "LIBRA",
+        "effects": [
+          "a rogue",
+          "a king",
+          "a goldsmith",
+          "a trader",
+          "a tale-bearer",
+          "wicked"
+        ]
+      },
+      {
+        "verse": "9",
+        "sign": "SCORPIO",
+        "effects": [
+          "a king",
+          "the father of twins",
+          "a king",
+          "a washerman",
+          "defective in a limb",
+          "moneyless"
+        ]
+      },
+      {
+        "verse": "10",
+        "sign": "SAGITTARIUS",
+        "effects": [
+          "a cheat",
+          "a protector of his kinsmen",
+          "a ruler of the earth",
+          "a support to many",
+          "a rogue",
+          "arrogant"
+        ]
+      },
+      {
+        "verse": "10",
+        "sign": "CAPRICORN",
+        "effects": [
+          "a king",
+          "a king",
+          "a king",
+          "a learned man",
+          "wealthy",
+          "poor"
+        ]
+      },
+      {
+        "verse": "11",
+        "sign": "AQUARIUS",
+        "effects": [
+          "given to other men's wives",
+          "a king",
+          "a lord of men",
+          "fond of women not his own",
+          "the best of kings",
+          "respected by men"
+        ]
+      },
+      {
+        "verse": "11",
+        "sign": "PISCES",
+        "effects": [
+          "a sinner",
+          "witty",
+          "a king",
+          "a learned man",
+          "bent on sinful deeds",
+          "a sinner"
+        ]
+      }
+    ]
+  }
+}

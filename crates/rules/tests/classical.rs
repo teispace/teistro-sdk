@@ -50,7 +50,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
     // The spans the verses give, in the units they give them in.
     let spans: Vec<f64> = rules
         .iter()
-        .filter_map(|rule| rule.outcome.map(teistro_rules::Outcome::days))
+        .filter_map(|rule| rule.outcome.as_ref().and_then(teistro_rules::Outcome::days))
         .collect();
     let graded: Vec<&str> = rules
         .iter()
@@ -68,6 +68,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
     let owned: Vec<Rule> = rules.iter().map(|rule| (*rule).clone()).collect();
     teistro_rules::check_references(&owned).expect("the pack names itself soundly");
     saravali_evils_name_the_antidotes_of_their_own_text(&rules);
+    the_sirshodaya_rule_names_the_catalogue_s_sirshodaya_signs(&rules);
 
     let mut fired: BTreeMap<&str, usize> =
         rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
@@ -106,6 +107,33 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .map(|(key, _)| *key)
         .collect();
     assert_eq!(silent, SILENT);
+}
+
+/// Saravali ch. 3 v. 24 names the six signs that rise with their head, and the
+/// catalogue carries the same property, so the rule that reads ch. 12's "all
+/// the planets in Sirshodaya signs" is held to it rather than to a list typed
+/// out twice.
+fn the_sirshodaya_rule_names_the_catalogue_s_sirshodaya_signs(rules: &[&Rule]) {
+    use teistro_core::catalogue::{Rashi, Rising};
+
+    let rule = rules
+        .iter()
+        .find(|rule| rule.key == "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS")
+        .expect("the pack ships it");
+    let named: Vec<Rashi> = rule
+        .every_condition()
+        .filter_map(|condition| match condition {
+            teistro_rules::Condition::PlanetInSign { signs, .. } => Some(signs.clone()),
+            _ => None,
+        })
+        .flatten()
+        .collect();
+    let catalogued: Vec<Rashi> = Rashi::ALL
+        .into_iter()
+        .filter(|sign| sign.attributes().rising == Rising::Sirshodaya)
+        .collect();
+    assert_eq!(named, catalogued);
+    assert_eq!(named.len(), 6);
 }
 
 /// Saravali ch. 12 counters every evil at birth and ch. 11 those "emanating
@@ -278,3 +306,201 @@ const ANSWERED: [(&str, usize); 72] = [
     ("SARAVALI_VENUS_IN_A_LUMINARY_DUSTHANA", 0),
     ("TITHI_GANDANTA", 0),
 ];
+
+/// The readings of one shape, built by the generator from its table: every
+/// pair of the seven grahas in one sign (Brihat Jataka ch. 14) and the Moon in
+/// each sign under each of six aspects (Phaladeepika ch. 18). None of them
+/// grades anything, so each says in words what its verse says and carries no
+/// severity, no cancellation and no span.
+#[test]
+fn the_generator_makes_one_rule_a_reading() {
+    let rules = shipped::readings();
+    assert_eq!(rules.len(), 93);
+    let mut pairs: Vec<(&str, &str)> = Vec::new();
+    let mut moon: Vec<(&str, &str)> = Vec::new();
+    for rule in rules {
+        assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
+        assert_eq!(
+            rule.source.rank.map(teistro_rules::EvidenceRank::get),
+            Some(1),
+            "{}: read from a text",
+            rule.key
+        );
+        assert!(rule.source.verse.is_some(), "{}: cites a verse", rule.key);
+        assert!(rule.source.note.is_some(), "{}: says how it was read", rule.key);
+        assert!(
+            rule.severity.is_none() && rule.cancellations.is_empty(),
+            "{}: a reading grades nothing and nothing cancels it",
+            rule.key
+        );
+        let text = rule
+            .outcome
+            .as_ref()
+            .and_then(teistro_rules::Outcome::text)
+            .unwrap_or_else(|| panic!("{}: says in words what follows", rule.key));
+        assert!(!text.is_empty() && rule.outcome.as_ref().unwrap().days().is_none());
+        match rule.category.as_str() {
+            "dwigraha" => pairs.push(named(&rule.key, "DWIGRAHA_")),
+            "chandra-drishti" => moon.push(named(&rule.key, "CHANDRA_IN_")),
+            other => panic!("{}: {other} is not a family here", rule.key),
+        }
+    }
+    // Every unordered pair of the seven, once each, and every sign under every
+    // one of the six aspects.
+    assert_eq!(pairs.len(), 21);
+    let mut seen = pairs.clone();
+    seen.sort_unstable();
+    seen.dedup();
+    assert_eq!(seen.len(), 21);
+    assert_eq!(moon.len(), 72);
+    let signs: BTreeMap<&str, usize> = moon.iter().fold(BTreeMap::new(), |mut counted, (sign, _)| {
+        *counted.entry(*sign).or_default() += 1;
+        counted
+    });
+    assert_eq!(signs.len(), 12);
+    assert!(signs.values().all(|count| *count == 6));
+
+    // What the generator builds is a rule like any other: it writes out in the
+    // language and reads back the same, outcome and all.
+    let written = serde_json::to_value(rules).unwrap();
+    let back: Vec<Rule> = serde_json::from_value(written).unwrap();
+    assert_eq!(back, rules);
+
+    let mut fired: BTreeMap<&str, usize> =
+        rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
+    let mut charts = 0;
+    for (_, file) in files_in("doshas") {
+        let chart = chart(&file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE);
+        charts += 1;
+        for rule in rules {
+            let result = evaluator.evaluate(rule);
+            if result.present {
+                *fired.get_mut(rule.key.as_str()).unwrap() += 1;
+                // A present reading hands on what the rule says, unchanged.
+                assert_eq!(result.outcome.as_ref(), rule.outcome.as_ref());
+            }
+        }
+    }
+    assert_eq!(charts, 93);
+    let counts: Vec<(&str, usize)> = fired.into_iter().collect();
+    assert_eq!(counts.as_slice(), READINGS.as_slice(), "a reading's answers moved");
+    // Every pair of grahas happens somewhere in 93 charts; 35 of the Moon's
+    // 72 readings stay silent, among them all six of Aries, where she stands
+    // in one chart only and nothing aspects her.
+    let silent = counts.iter().filter(|(_, count)| *count == 0).count();
+    assert_eq!(silent, 35);
+    assert!(
+        counts
+            .iter()
+            .all(|(key, count)| *count > 0 || key.starts_with("CHANDRA_"))
+    );
+}
+
+/// What each reading answers over the 93 recorded charts.
+const READINGS: [(&str, usize); 93] = [
+    ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_JUPITER", 0),
+    ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MARS", 2),
+    ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_MERCURY", 1),
+    ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_SATURN", 2),
+    ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_SUN", 0),
+    ("CHANDRA_IN_AQUARIUS_ASPECTED_BY_VENUS", 0),
+    ("CHANDRA_IN_ARIES_ASPECTED_BY_JUPITER", 0),
+    ("CHANDRA_IN_ARIES_ASPECTED_BY_MARS", 0),
+    ("CHANDRA_IN_ARIES_ASPECTED_BY_MERCURY", 0),
+    ("CHANDRA_IN_ARIES_ASPECTED_BY_SATURN", 0),
+    ("CHANDRA_IN_ARIES_ASPECTED_BY_SUN", 0),
+    ("CHANDRA_IN_ARIES_ASPECTED_BY_VENUS", 0),
+    ("CHANDRA_IN_CANCER_ASPECTED_BY_JUPITER", 0),
+    ("CHANDRA_IN_CANCER_ASPECTED_BY_MARS", 1),
+    ("CHANDRA_IN_CANCER_ASPECTED_BY_MERCURY", 0),
+    ("CHANDRA_IN_CANCER_ASPECTED_BY_SATURN", 1),
+    ("CHANDRA_IN_CANCER_ASPECTED_BY_SUN", 1),
+    ("CHANDRA_IN_CANCER_ASPECTED_BY_VENUS", 2),
+    ("CHANDRA_IN_CAPRICORN_ASPECTED_BY_JUPITER", 0),
+    ("CHANDRA_IN_CAPRICORN_ASPECTED_BY_MARS", 0),
+    ("CHANDRA_IN_CAPRICORN_ASPECTED_BY_MERCURY", 0),
+    ("CHANDRA_IN_CAPRICORN_ASPECTED_BY_SATURN", 1),
+    ("CHANDRA_IN_CAPRICORN_ASPECTED_BY_SUN", 0),
+    ("CHANDRA_IN_CAPRICORN_ASPECTED_BY_VENUS", 0),
+    ("CHANDRA_IN_GEMINI_ASPECTED_BY_JUPITER", 0),
+    ("CHANDRA_IN_GEMINI_ASPECTED_BY_MARS", 2),
+    ("CHANDRA_IN_GEMINI_ASPECTED_BY_MERCURY", 0),
+    ("CHANDRA_IN_GEMINI_ASPECTED_BY_SATURN", 4),
+    ("CHANDRA_IN_GEMINI_ASPECTED_BY_SUN", 0),
+    ("CHANDRA_IN_GEMINI_ASPECTED_BY_VENUS", 1),
+    ("CHANDRA_IN_LEO_ASPECTED_BY_JUPITER", 2),
+    ("CHANDRA_IN_LEO_ASPECTED_BY_MARS", 3),
+    ("CHANDRA_IN_LEO_ASPECTED_BY_MERCURY", 1),
+    ("CHANDRA_IN_LEO_ASPECTED_BY_SATURN", 2),
+    ("CHANDRA_IN_LEO_ASPECTED_BY_SUN", 0),
+    ("CHANDRA_IN_LEO_ASPECTED_BY_VENUS", 0),
+    ("CHANDRA_IN_LIBRA_ASPECTED_BY_JUPITER", 1),
+    ("CHANDRA_IN_LIBRA_ASPECTED_BY_MARS", 0),
+    ("CHANDRA_IN_LIBRA_ASPECTED_BY_MERCURY", 0),
+    ("CHANDRA_IN_LIBRA_ASPECTED_BY_SATURN", 2),
+    ("CHANDRA_IN_LIBRA_ASPECTED_BY_SUN", 0),
+    ("CHANDRA_IN_LIBRA_ASPECTED_BY_VENUS", 0),
+    ("CHANDRA_IN_PISCES_ASPECTED_BY_JUPITER", 0),
+    ("CHANDRA_IN_PISCES_ASPECTED_BY_MARS", 7),
+    ("CHANDRA_IN_PISCES_ASPECTED_BY_MERCURY", 7),
+    ("CHANDRA_IN_PISCES_ASPECTED_BY_SATURN", 2),
+    ("CHANDRA_IN_PISCES_ASPECTED_BY_SUN", 1),
+    ("CHANDRA_IN_PISCES_ASPECTED_BY_VENUS", 7),
+    ("CHANDRA_IN_SAGITTARIUS_ASPECTED_BY_JUPITER", 3),
+    ("CHANDRA_IN_SAGITTARIUS_ASPECTED_BY_MARS", 2),
+    ("CHANDRA_IN_SAGITTARIUS_ASPECTED_BY_MERCURY", 0),
+    ("CHANDRA_IN_SAGITTARIUS_ASPECTED_BY_SATURN", 1),
+    ("CHANDRA_IN_SAGITTARIUS_ASPECTED_BY_SUN", 2),
+    ("CHANDRA_IN_SAGITTARIUS_ASPECTED_BY_VENUS", 0),
+    ("CHANDRA_IN_SCORPIO_ASPECTED_BY_JUPITER", 2),
+    ("CHANDRA_IN_SCORPIO_ASPECTED_BY_MARS", 2),
+    ("CHANDRA_IN_SCORPIO_ASPECTED_BY_MERCURY", 2),
+    ("CHANDRA_IN_SCORPIO_ASPECTED_BY_SATURN", 0),
+    ("CHANDRA_IN_SCORPIO_ASPECTED_BY_SUN", 0),
+    ("CHANDRA_IN_SCORPIO_ASPECTED_BY_VENUS", 0),
+    ("CHANDRA_IN_TAURUS_ASPECTED_BY_JUPITER", 1),
+    ("CHANDRA_IN_TAURUS_ASPECTED_BY_MARS", 2),
+    ("CHANDRA_IN_TAURUS_ASPECTED_BY_MERCURY", 1),
+    ("CHANDRA_IN_TAURUS_ASPECTED_BY_SATURN", 1),
+    ("CHANDRA_IN_TAURUS_ASPECTED_BY_SUN", 0),
+    ("CHANDRA_IN_TAURUS_ASPECTED_BY_VENUS", 1),
+    ("CHANDRA_IN_VIRGO_ASPECTED_BY_JUPITER", 3),
+    ("CHANDRA_IN_VIRGO_ASPECTED_BY_MARS", 2),
+    ("CHANDRA_IN_VIRGO_ASPECTED_BY_MERCURY", 0),
+    ("CHANDRA_IN_VIRGO_ASPECTED_BY_SATURN", 1),
+    ("CHANDRA_IN_VIRGO_ASPECTED_BY_SUN", 0),
+    ("CHANDRA_IN_VIRGO_ASPECTED_BY_VENUS", 0),
+    ("DWIGRAHA_JUPITER_SATURN", 24),
+    ("DWIGRAHA_JUPITER_VENUS", 6),
+    ("DWIGRAHA_MARS_JUPITER", 7),
+    ("DWIGRAHA_MARS_MERCURY", 6),
+    ("DWIGRAHA_MARS_SATURN", 14),
+    ("DWIGRAHA_MARS_VENUS", 23),
+    ("DWIGRAHA_MERCURY_JUPITER", 10),
+    ("DWIGRAHA_MERCURY_SATURN", 7),
+    ("DWIGRAHA_MERCURY_VENUS", 19),
+    ("DWIGRAHA_MOON_JUPITER", 12),
+    ("DWIGRAHA_MOON_MARS", 6),
+    ("DWIGRAHA_MOON_MERCURY", 6),
+    ("DWIGRAHA_MOON_SATURN", 3),
+    ("DWIGRAHA_MOON_VENUS", 7),
+    ("DWIGRAHA_SUN_JUPITER", 6),
+    ("DWIGRAHA_SUN_MARS", 13),
+    ("DWIGRAHA_SUN_MERCURY", 45),
+    ("DWIGRAHA_SUN_MOON", 8),
+    ("DWIGRAHA_SUN_SATURN", 8),
+    ("DWIGRAHA_SUN_VENUS", 10),
+    ("DWIGRAHA_VENUS_SATURN", 8),
+];
+
+/// The two names a generated key holds, after its family's prefix: the pair,
+/// or the sign and the graha aspecting.
+fn named<'k>(key: &'k str, prefix: &str) -> (&'k str, &'k str) {
+    let rest = key.strip_prefix(prefix).unwrap();
+    let (one, two) = rest.split_once("_ASPECTED_BY_").unwrap_or_else(|| {
+        let at = rest.rfind('_').unwrap();
+        (&rest[..at], &rest[at + 1..])
+    });
+    (one, two)
+}

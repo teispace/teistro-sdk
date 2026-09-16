@@ -56,6 +56,11 @@ cancellations held.
   `life-span` in the unit its verse uses; Saravali ch. 10's ten evils ship with
   theirs and ch. 12's hundred-year antidote with its own, and nothing else
   claims one.
+- **Where a verse says what follows in words**, the rule carries those words:
+  an outcome is a life span or a statement, and `days()` answers only for a
+  span. Brihat Jataka ch. 14's twenty-one pairs and Phaladeepika ch. 18's
+  seventy-two readings of the Moon ship that way, built from a table by
+  `shipped::readings()` rather than written out.
 - **A body's degrees within its sign** are readable (`planet-in-degrees`),
   which Brihat Jataka ch. 6 v. 8's last navamsa needs.
 - **A rule can name another.** `{"type": "rule", "key": …}` holds when that

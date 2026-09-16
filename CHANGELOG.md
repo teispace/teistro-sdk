@@ -1059,6 +1059,15 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- The dwigraha generator: Brihat Jataka ch. 14's twenty-one pairs of grahas
+  sharing a sign and Phaladeepika ch. 18's seventy-two readings of the Moon in
+  each sign under each of six aspects, built from a table of what changes
+  rather than written out. Neither text grades anything, so `Outcome` gained a
+  second kind, `effect`, carrying what the verse says in words; `days()` now
+  answers only where a text counts a span. `shipped::readings()` is the set.
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

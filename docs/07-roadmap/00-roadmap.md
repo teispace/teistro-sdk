@@ -570,7 +570,8 @@ expected, and `in-varga` is built anyway. **The classical corpus was then
 surveyed** (`01-research/feature-universe/04-yogas-doshas.md`): the order of
 work is now the rest of the arishta corpus (thirty-six of about 120 rules are built,
 BPHS chs. 9 and 10, Brihat Jataka ch. 6 and Saravali chs. 10 to 12, whole but
-for the verses that turn on strength), the dwigraha generator,
+for the verses that turn on strength) and the dwigraha generator over Brihat
+Jataka ch. 14 and Phaladeepika ch. 18,
 rashi drishti and argala, nakshatra references, D3 and D30, strength ranking,
 and the longevity band as an outcome. Next: with the references that need points the
 chart does not yet carry added as rules need them.

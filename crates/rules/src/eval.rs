@@ -1150,7 +1150,7 @@ impl<'a> Evaluator<'a> {
             found_from,
             cancellations,
             severity,
-            outcome: rule.outcome,
+            outcome: rule.outcome.clone(),
         }
     }
 
