@@ -89,10 +89,11 @@ pub fn gandantas() -> &'static [Rule] {
 
 /// The evils at birth of BPHS ch. 9 that the language can say, Brihat
 /// Jataka ch. 6's Balarishta and Saravali ch. 10's spans beside them, and the
-/// antidotes of BPHS ch. 10, which stand in their own chapter and so ship as rules
-/// of their own rather than as each evil's cancellation. The verses that turn
-/// on a graha being "strong" are not here: the kernel has no strength measure,
-/// and a cancellation that fires too often is worse than one that is missing.
+/// antidotes of BPHS ch. 10 and Saravali chs. 11 and 12, which stand in their
+/// own chapters and so ship as rules of their own as well as being named by
+/// the evils they cancel. The verses that turn on a graha being "strong" are
+/// not here: the kernel has no strength measure, and a cancellation that fires
+/// too often is worse than one that is missing.
 #[must_use]
 pub fn arishtas() -> &'static [Rule] {
     &ARISHTAS
@@ -125,7 +126,7 @@ mod tests {
             .chain(gandantas())
             .chain(arishtas())
             .collect();
-        assert_eq!(rules.len(), 86);
+        assert_eq!(rules.len(), 97);
         for rule in &rules {
             let rank = rule
                 .source

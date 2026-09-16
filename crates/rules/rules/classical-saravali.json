@@ -47,6 +47,52 @@
           "target": "JUPITER"
         }
       ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_A_BENEFIC_SIGN_ASPECTED_BY_THE_LAGNA_LORD"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_ASPECTED_BY_HER_DISPOSITOR"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_THE_THIRD_FOURTH_SIXTH_TENTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
       "outcome": {
         "type": "life-span",
         "count": 3.0,
@@ -94,6 +140,52 @@
           "target": "MARS"
         }
       ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_A_BENEFIC_SIGN_ASPECTED_BY_THE_LAGNA_LORD"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_ASPECTED_BY_HER_DISPOSITOR"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_THE_THIRD_FOURTH_SIXTH_TENTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
       "outcome": {
         "type": "life-span",
         "count": 2.0,
@@ -118,6 +210,52 @@
             "SUN",
             "MOON"
           ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_A_BENEFIC_SIGN_ASPECTED_BY_THE_LAGNA_LORD"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_ASPECTED_BY_HER_DISPOSITOR"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_THE_THIRD_FOURTH_SIXTH_TENTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
       "outcome": {
@@ -164,6 +302,32 @@
           "houses": [
             8
           ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
       "outcome": {
@@ -220,6 +384,32 @@
           }
         }
       ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
       "outcome": {
         "type": "life-span",
         "count": 1.0,
@@ -261,6 +451,32 @@
           "atLeast": 3
         }
       ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
       "outcome": {
         "type": "life-span",
         "count": 6.0,
@@ -299,6 +515,52 @@
           "target": "MERCURY"
         }
       ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_A_BENEFIC_SIGN_ASPECTED_BY_THE_LAGNA_LORD"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_ASPECTED_BY_HER_DISPOSITOR"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_MOON_IN_THE_THIRD_FOURTH_SIXTH_TENTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
       "outcome": {
         "type": "life-span",
         "count": 4.0,
@@ -328,6 +590,32 @@
           "planets": "any-malefic",
           "target": "SATURN",
           "atLeast": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
       "outcome": {
@@ -361,6 +649,32 @@
             1
           ],
           "atLeast": 2
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
         }
       ],
       "outcome": {
@@ -408,11 +722,452 @@
           }
         }
       ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS"
+        },
+        {
+          "type": "rule",
+          "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA"
+        }
+      ],
       "outcome": {
         "type": "life-span",
         "count": 1.0,
         "unit": "years"
       }
+    },
+    {
+      "key": "SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "11",
+        "verse": "7-8",
+        "rank": 1,
+        "note": "Benefics in the seventh, the eighth and the sixth from the Moon remove all adversities. The verse names three houses and the plural benefics; this rule asks for one benefic in one of them. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            6,
+            7,
+            8
+          ],
+          "from": "MOON",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_BHANGA_MOON_IN_A_BENEFIC_SIGN_ASPECTED_BY_THE_LAGNA_LORD",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "11",
+        "verse": "9-10",
+        "rank": 1,
+        "note": "The Moon in a benefic's rasi under the lagna lord's aspect counters the adversities of a short life. The benefics' rasis are Mercury's, Venus's and Jupiter's; Cancer is left out, the Moon being the subject. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "GEMINI",
+            "VIRGO",
+            "TAURUS",
+            "LIBRA",
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 1
+          },
+          "target": "MOON"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_BHANGA_MOON_ASPECTED_BY_HER_DISPOSITOR",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "11",
+        "verse": "11-12",
+        "rank": 1,
+        "note": "Though the Moon stand in a house owned by a malefic she does not prove evil, if aspected by her dispositor. The malefics' houses are the Sun's, Mars's and Saturn's; the verse's \"or in such vargas\" wants a varga the kernel is not given. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-sign",
+          "planet": "MOON",
+          "signs": [
+            "ARIES",
+            "SCORPIO",
+            "LEO",
+            "CAPRICORN",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": "MOON"
+          },
+          "target": "MOON"
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "11",
+        "verse": "15",
+        "rank": 1,
+        "note": "Mercury and Venus in the twelfth from the Moon, malefics in the eleventh and Jupiter in the tenth check all evils. The verse counts the twelfth from the Moon and leaves the eleventh and the tenth without a reference; this rule counts all three from her, the nearest antecedent. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MERCURY",
+          "reference": "MOON",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "VENUS",
+          "reference": "MOON",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            11
+          ],
+          "from": "MOON",
+          "atLeast": 1
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "JUPITER",
+          "reference": "MOON",
+          "houses": [
+            10
+          ]
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_BHANGA_MOON_IN_THE_THIRD_FOURTH_SIXTH_TENTH_OR_ELEVENTH",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "11",
+        "verse": "16-17",
+        "rank": 1,
+        "note": "The Moon in the sixth, third, tenth, eleventh or fourth from the natal ascendant and aspected by benefics removes the evils. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            3,
+            4,
+            6,
+            10,
+            11
+          ]
+        },
+        {
+          "type": "count-aspecting",
+          "planets": "any-benefic",
+          "target": "MOON",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "12",
+        "verse": "1",
+        "rank": 1,
+        "note": "A very brilliant Jupiter in the ascendant counteracts all evils. \"Not devoid of rays\" is read as not combust, which the chart records. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-combust",
+            "planet": "JUPITER"
+          }
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "12",
+        "verse": "3-5",
+        "rank": 1,
+        "note": "Rahu in the third, sixth or eleventh from the ascendant and aspected by benefics destroys all evils. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            3,
+            6,
+            11
+          ]
+        },
+        {
+          "type": "count-aspecting",
+          "planets": "any-benefic",
+          "target": "RAHU",
+          "atLeast": 1
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "12",
+        "verse": "3-5",
+        "rank": 1,
+        "note": "All the planets in direct motion and in Sirshodaya signs remove every blemish. Saravali ch. 3 v. 24 names those signs: Leo, Libra, Scorpio, Virgo, Aquarius and Gemini. The seven are counted, the nodes being always retrograde; \"every one of them\" is written as no one of them failing, there being no way to ask a condition of all at once. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-retrograde",
+                  "planet": "SELF"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "planet-in-sign",
+                    "planet": "SELF",
+                    "signs": [
+                      "GEMINI",
+                      "LEO",
+                      "VIRGO",
+                      "LIBRA",
+                      "SCORPIO",
+                      "AQUARIUS"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "12",
+        "verse": "10-11",
+        "rank": 1,
+        "note": "Rahu in the ascendant identical with Aries, Taurus or Cancer protects the native from the clutches of all evils. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "RAHU",
+          "signs": [
+            "ARIES",
+            "TAURUS",
+            "CANCER"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "12",
+        "verse": "13",
+        "rank": 1,
+        "note": "Jupiter and Venus in angles counter the evils of the bhavas and of the Moon, and the native lives a hundred years. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        }
+      ],
+      "outcome": {
+        "type": "life-span",
+        "count": 100.0,
+        "unit": "years"
+      }
+    },
+    {
+      "key": "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "Saravali",
+        "chapter": "12",
+        "verse": "14",
+        "rank": 1,
+        "note": "Jupiter and the Moon in Cancer identical with the fourth, the tenth or the ascendant, Mercury and Saturn in Libra, and the others in the eleventh, third and sixth: illimitable longevity, which the verse does not count in years. \"The others\" are read as the rest of the seven, the verse naming no node. Read from R. Santhanam's translation of Kalyana Varma's Saravali."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "JUPITER",
+          "houses": [
+            1,
+            4,
+            10
+          ],
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "MOON",
+          "houses": [
+            1,
+            4,
+            10
+          ],
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "MERCURY",
+          "signs": [
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": "SATURN",
+          "signs": [
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            3,
+            6,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            3,
+            6,
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            3,
+            6,
+            11
+          ]
+        }
+      ]
     }
   ]
 }

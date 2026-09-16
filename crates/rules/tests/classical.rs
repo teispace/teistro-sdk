@@ -29,7 +29,7 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .chain(shipped::gandantas())
         .collect();
-    assert_eq!(rules.len(), 61);
+    assert_eq!(rules.len(), 72);
     for rule in &rules {
         assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
         assert_eq!(
@@ -40,11 +40,9 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         );
         assert!(rule.source.verse.is_some(), "{}: cites a verse", rule.key);
         Tables::EMPTY.check(rule).expect("these name no table");
-        // Saravali's verses each give a span of life, and no other rule claims
-        // one, since no other text grades an affliction.
-        assert_eq!(
-            rule.outcome.is_some(),
-            rule.source.text == "Saravali",
+        // Only Saravali grades: no other text says how long the child lives.
+        assert!(
+            rule.outcome.is_none() || rule.source.text == "Saravali",
             "{}: an outcome is a span its verse gives",
             rule.key
         );
@@ -54,30 +52,48 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
         .iter()
         .filter_map(|rule| rule.outcome.map(teistro_rules::Outcome::days))
         .collect();
-    assert_eq!(spans.len(), 10);
+    let graded: Vec<&str> = rules
+        .iter()
+        .filter(|rule| rule.outcome.is_some())
+        .map(|rule| rule.key.as_str())
+        .collect();
+    assert_eq!(graded, GRADED);
+    assert_eq!(spans.len(), 11);
     assert!(
         spans
             .iter()
-            .all(|days| *days >= 16.0 && *days <= 9.0 * 365.25)
+            .all(|days| *days >= 16.0 && *days <= 100.0 * 365.25)
     );
     // The antidotes an evil names are shipped beside it, and nothing loops.
     let owned: Vec<Rule> = rules.iter().map(|rule| (*rule).clone()).collect();
     teistro_rules::check_references(&owned).expect("the pack names itself soundly");
+    saravali_evils_name_the_antidotes_of_their_own_text(&rules);
 
     let mut fired: BTreeMap<&str, usize> =
         rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
     let mut charts = 0;
+    // How many firings an antidote of the same text put out, in all and for
+    // Saravali's graded evils alone.
+    let (mut cancelled, mut saravali_cancelled) = (0, 0);
     for (_, file) in files_in("doshas") {
         let chart = chart(&file["inputs"]);
         let evaluator = Evaluator::new(&chart, Readings::RECORDING_ENGINE).with_rules(&owned);
         charts += 1;
         for rule in &rules {
-            if evaluator.evaluate(rule).present {
+            let result = evaluator.evaluate(rule);
+            if result.present {
                 *fired.get_mut(rule.key.as_str()).unwrap() += 1;
+                if result.is_cancelled() {
+                    cancelled += 1;
+                    if rule.source.text == "Saravali" {
+                        saravali_cancelled += 1;
+                    }
+                }
             }
         }
     }
     assert_eq!(charts, 93);
+    assert_eq!((cancelled, saravali_cancelled), (307, 3));
     let counts: Vec<(&str, usize)> = fired.into_iter().collect();
     assert_eq!(counts, ANSWERED, "a rule's answers moved");
 
@@ -92,8 +108,68 @@ fn every_rule_the_sdk_writes_fires_where_it_did() {
     assert_eq!(silent, SILENT);
 }
 
+/// Saravali ch. 12 counters every evil at birth and ch. 11 those "emanating
+/// from, or afflicting the Moon" (v. 1), so each evil of ch. 10 names ch. 12's
+/// antidotes, and those whose conditions name the Moon as a body name ch. 11's
+/// beside them. The criterion is the rule's own references, not a reading of
+/// the verse: Venus in a dusthana owned by the Moon (v. 8) asks for a sign and
+/// never for her, so it carries ch. 12's alone.
+fn saravali_evils_name_the_antidotes_of_their_own_text(rules: &[&Rule]) {
+    let of_chapter = |chapter: &str| -> Vec<&str> {
+        rules
+            .iter()
+            .filter(|rule| {
+                rule.category == "arishta-bhanga" && rule.source.chapter.as_deref() == Some(chapter)
+            })
+            .map(|rule| rule.key.as_str())
+            .collect()
+    };
+    let (eleven, twelve) = (of_chapter("11"), of_chapter("12"));
+    assert_eq!((eleven.len(), twelve.len()), (5, 6));
+    for rule in rules.iter().filter(|rule| {
+        rule.source.text == "Saravali" && rule.category == "arishta"
+    }) {
+        // Whichever way a condition reaches her — as a subject, as an
+        // aspecting body, as the sign counted from — she is written `MOON`.
+        let written = serde_json::to_string(&rule.conditions).unwrap();
+        let names_the_moon = written.contains("\"MOON\"");
+        let mut expected = if names_the_moon {
+            eleven.clone()
+        } else {
+            Vec::new()
+        };
+        expected.extend(twelve.iter().copied());
+        let named: Vec<&str> = rule
+            .cancellations
+            .iter()
+            .map(|cancellation| match &cancellation.condition {
+                teistro_rules::Condition::RuleHolds { key } => key.as_str(),
+                other => panic!("{}: {other:?} is not an antidote by key", rule.key),
+            })
+            .collect();
+        assert_eq!(named, expected, "{}", rule.key);
+    }
+}
+
+/// The rules whose verse says how long the native lives: Saravali ch. 10's
+/// evils, each with the span it leaves, and the one antidote of ch. 12 that
+/// counts a life in years rather than calling it illimitable.
+const GRADED: [&str; 11] = [
+    "SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS",
+    "SARAVALI_RETROGRADE_SATURN_IN_A_SIGN_OF_MARS",
+    "SARAVALI_SATURN_WITH_BOTH_LUMINARIES",
+    "SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH",
+    "SARAVALI_MALEFIC_IN_A_VENUS_EIGHTH",
+    "SARAVALI_VENUS_IN_A_LUMINARY_DUSTHANA",
+    "SARAVALI_MERCURY_IN_CANCER_AS_SIXTH_OR_EIGHTH",
+    "SARAVALI_SATURN_IN_LAGNA_ASPECTED_BY_MALEFICS",
+    "SARAVALI_SATURN_IN_LAGNA_WITH_MALEFICS",
+    "SARAVALI_SATURN_ALONE_IN_LAGNA",
+    "SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS",
+];
+
 /// The rules no recorded chart answers.
-const SILENT: [&str; 28] = [
+const SILENT: [&str; 31] = [
     "ABHUKTA_MOOLA",
     "ARISHTA_FIVE_IN_THE_SECOND",
     "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
@@ -116,6 +192,9 @@ const SILENT: [&str; 28] = [
     "BJ_WANING_MOON_IN_TWELFTH",
     "LAGNA_GANDANTA",
     "NAKSHATRA_GANDANTA",
+    "SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS",
+    "SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA",
+    "SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON",
     "SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS",
     "SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH",
     "SARAVALI_MERCURY_IN_CANCER_AS_SIXTH_OR_EIGHTH",
@@ -125,7 +204,7 @@ const SILENT: [&str; 28] = [
 ];
 
 /// How many of the 93 recorded charts each rule answers.
-const ANSWERED: [(&str, usize); 61] = [
+const ANSWERED: [(&str, usize); 72] = [
     ("ABHUKTA_MOOLA", 0),
     ("ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS", 37),
     ("ARISHTA_BHANGA_BENEFIC_IN_KENDRA", 70),
@@ -176,6 +255,17 @@ const ANSWERED: [(&str, usize); 61] = [
     ("BJ_WANING_MOON_WITH_A_MALEFIC", 22),
     ("LAGNA_GANDANTA", 0),
     ("NAKSHATRA_GANDANTA", 0),
+    ("SARAVALI_BHANGA_ALL_PLANETS_DIRECT_IN_SIRSHODAYA_SIGNS", 0),
+    ("SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON", 48),
+    ("SARAVALI_BHANGA_JUPITER_AND_MOON_IN_CANCER_MERCURY_AND_SATURN_IN_LIBRA", 0),
+    ("SARAVALI_BHANGA_JUPITER_AND_VENUS_IN_KENDRAS", 6),
+    ("SARAVALI_BHANGA_MERCURY_AND_VENUS_TWELFTH_FROM_THE_MOON", 0),
+    ("SARAVALI_BHANGA_MOON_ASPECTED_BY_HER_DISPOSITOR", 5),
+    ("SARAVALI_BHANGA_MOON_IN_A_BENEFIC_SIGN_ASPECTED_BY_THE_LAGNA_LORD", 4),
+    ("SARAVALI_BHANGA_MOON_IN_THE_THIRD_FOURTH_SIXTH_TENTH_OR_ELEVENTH", 5),
+    ("SARAVALI_BHANGA_RAHU_IN_LAGNA_IN_ARIES_TAURUS_OR_CANCER", 2),
+    ("SARAVALI_BHANGA_RAHU_IN_THE_THIRD_SIXTH_OR_ELEVENTH", 11),
+    ("SARAVALI_BHANGA_UNCOMBUST_JUPITER_IN_LAGNA", 5),
     ("SARAVALI_JUPITER_IN_EIGHTH_IN_A_SIGN_OF_MARS", 0),
     ("SARAVALI_MALEFIC_IN_A_VENUS_EIGHTH", 3),
     ("SARAVALI_MARS_SUN_SATURN_IN_TAURUS_AS_EIGHTH", 0),

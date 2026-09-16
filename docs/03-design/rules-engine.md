@@ -448,13 +448,44 @@ and its only kind is `life-span`, a count and the unit its verse uses, with
 held. This is what replaces an invented 0 to 100 score: the SDK reports the
 span a verse gives, or nothing.
 
-Ten rules of Saravali ch. 10 ship with theirs. A test holds that every Saravali
-rule carries a span and no other rule claims one, because no other text grades
-an affliction.
+Ten rules of Saravali ch. 10 ship with theirs. A test holds that a rule with an
+outcome is Saravali's, because no other text grades an affliction, and pins the
+eleven that carry one.
+
+**The antidotes of chs. 11 and 12 (2026-09-16).** Kalyana Varma answers his own
+chapter of evils with two of cancellations: ch. 11 counters "the evils
+emanating from, or afflicting the Moon" (v. 1) and ch. 12 the evils at birth
+generally. Eleven of those verses ship — a benefic in the sixth, seventh or
+eighth from her; the Moon in a benefic's rasi under the lagna lord's aspect, or
+in a malefic's under her dispositor's; Mercury and Venus in the twelfth from
+her with malefics in the eleventh and Jupiter in the tenth; the Moon in the
+third, fourth, sixth, tenth or eleventh aspected by benefics; an uncombust
+Jupiter in the lagna; Rahu in the third, sixth or eleventh aspected by
+benefics, or in a lagna of Aries, Taurus or Cancer; the seven direct and all in
+Sirshodaya signs; Jupiter and Venus in kendras, which the verse grades at a
+hundred years; and the figure of ch. 12 v. 14, whose longevity it calls
+illimitable and does not count.
+
+Which evil names which antidote is decided by the rules themselves, not by a
+reading: every evil of ch. 10 names ch. 12's six, and those whose conditions
+name the Moon as a body name ch. 11's five as well. A test asserts exactly
+that, so Venus in a dusthana owned by the Moon (v. 8), which asks for her sign
+and never for her, carries ch. 12's alone. Of the nine firings Saravali's evils
+have over the corpus, three are cancelled.
+
+Two of the kernel's predicates carried these without being extended. "Not
+devoid of rays" is `planet-combust` under a `not`, the chart recording
+combustion. "All the planets" is `not` of a `for-any` — no one of the seven
+being retrograde or outside the six Sirshodaya signs that ch. 3 v. 24 names —
+which is how a language with a quantifier over some says something of all.
+Left out are the verses that want the Moon *full*, a graha *strong*, a *deep*
+exaltation, the divisions of benefics, a planetary war's victor, a halo, the
+weather at birth, the Saptarishis rising, and every planet in its own
+decanate.
 
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
-of them, so an answer that moves fails the build. Twenty-eight answer none, and
+of them, so an answer that moves fails the build. Thirty-one answer none, and
 the test lists them — the four gandantas because the corpus records no limb's
 ghatikas, the rest because they are coincidences of three, four or five
 grahas.

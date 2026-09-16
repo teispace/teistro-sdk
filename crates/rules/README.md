@@ -53,8 +53,9 @@ cancellations held.
   group, not a classifying outcome.
 - **A rule can carry what its verse says happens.** The texts grade an
   affliction only by the span of life it leaves, so an `Outcome` is a
-  `life-span` in the unit its verse uses; Saravali ch. 10's ten rules ship with
-  theirs, and nothing else claims one.
+  `life-span` in the unit its verse uses; Saravali ch. 10's ten evils ship with
+  theirs and ch. 12's hundred-year antidote with its own, and nothing else
+  claims one.
 - **A body's degrees within its sign** are readable (`planet-in-degrees`),
   which Brihat Jataka ch. 6 v. 8's last navamsa needs.
 - **A rule can name another.** `{"type": "rule", "key": …}` holds when that

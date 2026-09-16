@@ -1051,6 +1051,14 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none.
 
+- Saravali chs. 11 and 12, the antidotes to those evils: eleven more rules,
+  one of them graded at a hundred years. Each evil of ch. 10 names ch. 12's
+  six, which counter the evils at birth generally, and those that name the
+  Moon name ch. 11's five beside them, ch. 11 being her chapter. The arishta
+  pack is now 53 evils and 15 antidotes over three texts.
+
+  **Numbers:** none.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
