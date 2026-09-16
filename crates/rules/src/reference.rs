@@ -226,7 +226,7 @@ impl TryFrom<u8> for SignRef {
 }
 
 /// Who a condition that needs a body asks about: a body reference, or
-/// whichever benefic or malefic first meets it.
+/// whichever benefic, malefic or maraka first meets it.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum BodySubject {
     /// That reference.
@@ -235,6 +235,44 @@ pub enum BodySubject {
     AnyBenefic,
     /// The first malefic that meets it.
     AnyMalefic,
+    /// The first maraka that meets it: a lord of the second or the seventh, a
+    /// malefic standing in either, or a malefic joining either lord (BPHS
+    /// ch. 44 vv. 3 to 5).
+    AnyMaraka,
+}
+
+/// A class of grahas, which the evaluator resolves once a chart: what an
+/// `any-…` subject stands for, and what a `planet-is` condition asks a body
+/// belongs to. One place names each class, so a new one is one arm here and
+/// one list in the evaluator, not an arm at every site that reads a subject.
+///
+/// ```
+/// use teistro_rules::Class;
+///
+/// assert_eq!(serde_json::from_str::<Class>(r#""maraka""#)?, Class::Maraka);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Class {
+    /// The benefics, under the readings.
+    Benefic,
+    /// The malefics, under the readings.
+    Malefic,
+    /// The marakas.
+    Maraka,
+}
+
+impl BodySubject {
+    /// The class it stands for, when it stands for one rather than a body.
+    pub(crate) const fn class(&self) -> Option<Class> {
+        match self {
+            BodySubject::Ref(_) => None,
+            BodySubject::AnyBenefic => Some(Class::Benefic),
+            BodySubject::AnyMalefic => Some(Class::Malefic),
+            BodySubject::AnyMaraka => Some(Class::Maraka),
+        }
+    }
 }
 
 impl From<BodyRef> for BodySubject {
@@ -255,6 +293,7 @@ impl Serialize for BodySubject {
             BodySubject::Ref(reference) => reference.serialize(serializer),
             BodySubject::AnyBenefic => serializer.serialize_str(ANY_BENEFIC),
             BodySubject::AnyMalefic => serializer.serialize_str(ANY_MALEFIC),
+            BodySubject::AnyMaraka => serializer.serialize_str(ANY_MARAKA),
         }
     }
 }
@@ -264,6 +303,7 @@ impl<'de> Deserialize<'de> for BodySubject {
         match Written::deserialize(deserializer)? {
             Written::Key(key) if key == ANY_BENEFIC => Ok(BodySubject::AnyBenefic),
             Written::Key(key) if key == ANY_MALEFIC => Ok(BodySubject::AnyMalefic),
+            Written::Key(key) if key == ANY_MARAKA => Ok(BodySubject::AnyMaraka),
             written => written
                 .body()
                 .map(BodySubject::Ref)
@@ -273,7 +313,7 @@ impl<'de> Deserialize<'de> for BodySubject {
 }
 
 /// Who a placement condition asks about: a sign reached from a reference, or
-/// whichever benefic or malefic first meets the condition.
+/// whichever benefic, malefic or maraka first meets the condition.
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Subject {
     /// That reference.
@@ -282,6 +322,20 @@ pub enum Subject {
     AnyBenefic,
     /// The first malefic that meets it.
     AnyMalefic,
+    /// The first maraka that meets it (BPHS ch. 44 vv. 3 to 5).
+    AnyMaraka,
+}
+
+impl Subject {
+    /// The class it stands for, when it stands for one rather than a sign.
+    pub(crate) const fn class(&self) -> Option<Class> {
+        match self {
+            Subject::Ref(_) => None,
+            Subject::AnyBenefic => Some(Class::Benefic),
+            Subject::AnyMalefic => Some(Class::Malefic),
+            Subject::AnyMaraka => Some(Class::Maraka),
+        }
+    }
 }
 
 impl From<SignRef> for Subject {
@@ -298,6 +352,7 @@ impl From<Body> for Subject {
 
 const ANY_BENEFIC: &str = "any-benefic";
 const ANY_MALEFIC: &str = "any-malefic";
+const ANY_MARAKA: &str = "any-maraka";
 const UPAPADA: &str = "UPAPADA";
 
 // ---- Prose ----------------------------------------------------------------
@@ -419,6 +474,7 @@ impl Serialize for Subject {
             Subject::Ref(reference) => reference.serialize(serializer),
             Subject::AnyBenefic => serializer.serialize_str(ANY_BENEFIC),
             Subject::AnyMalefic => serializer.serialize_str(ANY_MALEFIC),
+            Subject::AnyMaraka => serializer.serialize_str(ANY_MARAKA),
         }
     }
 }
@@ -650,6 +706,7 @@ impl<'de> Deserialize<'de> for Subject {
         match Written::deserialize(deserializer)? {
             Written::Key(key) if key == ANY_BENEFIC => Ok(Subject::AnyBenefic),
             Written::Key(key) if key == ANY_MALEFIC => Ok(Subject::AnyMalefic),
+            Written::Key(key) if key == ANY_MARAKA => Ok(Subject::AnyMaraka),
             written => written.sign().map(Subject::Ref).map_err(de::Error::custom),
         }
     }

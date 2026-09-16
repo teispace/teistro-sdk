@@ -15,6 +15,7 @@ mod common;
 use std::collections::BTreeMap;
 
 use common::{chart_at, files_in};
+use teistro_core::catalogue::Graha;
 use teistro_rules::{Body, Evaluator, House, Kind, Readings, Rule, shipped};
 
 /// Everything the SDK writes from a text, which is what a consumer would ask a
@@ -111,9 +112,9 @@ fn a_house_gathers_every_rule_whose_grahas_stand_in_it() {
         .map(|(_, houses)| *houses)
         .sum();
     assert_eq!(crowded_houses, 48);
-    // What a consumer receives: 4981 rule results gathered under a house over
+    // What a consumer receives: 5217 rule results gathered under a house over
     // the 93 charts, and 455 statements of how to read them together.
-    assert_eq!((held, composed), (4981, 455));
+    assert_eq!((held, composed), (5217, 455));
 }
 
 /// How many houses of the 1116 hold each number of grahas.
@@ -345,4 +346,70 @@ const WEALTH: [(&str, usize); 14] = [
     ("BPHS_THE_SUN_RISING_IN_LEO", 0),
     ("BPHS_VENUS_IN_A_FIFTH_OF_HIS_OWN_WITH_MARS_ELEVENTH", 0),
     ("BPHS_VENUS_RISING_IN_HIS_OWN_SIGN", 0),
+];
+
+/// BPHS ch. 42's combinations for penury, which read the marakas as a class.
+/// The pass holds what each answers, and the one partition the chapter writes:
+/// v. 17 reads the Sun in the second both ways, so its two halves together
+/// answer exactly where the Sun stands in the second.
+#[test]
+fn the_penury_combinations_answer_where_they_did() {
+    let rules: Vec<Rule> = shipped::nabhasas()
+        .iter()
+        .filter(|rule| rule.source.text == "BPHS" && rule.source.chapter.as_deref() == Some("42"))
+        .cloned()
+        .collect();
+    assert_eq!(rules.len(), 16);
+    let mut fired: BTreeMap<&str, usize> =
+        rules.iter().map(|rule| (rule.key.as_str(), 0)).collect();
+    let (mut sun_in_second, mut cancelled) = (0, 0);
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_rules(&rules);
+        for rule in &rules {
+            let result = evaluator.evaluate(rule);
+            if result.present {
+                *fired.get_mut(rule.key.as_str()).unwrap() += 1;
+                if !result.cancellations.is_empty() {
+                    cancelled += 1;
+                }
+            }
+        }
+        let sun = evaluator.chart().placement(Body::Graha(Graha::Sun));
+        if evaluator.house_sign(House::try_new(2).unwrap()) == sun.sign {
+            sun_in_second += 1;
+        }
+    }
+    let halves = fired["BPHS_SUN_IN_SECOND_ASPECTED_BY_SATURN"]
+        + fired["BPHS_SUN_IN_SECOND_UNASPECTED_BY_SATURN"];
+    assert_eq!(halves, sun_in_second);
+    // Mercury never aspects Mars and Saturn together in the second here, so
+    // v. 16's cancellation is held by the evaluator's own tests, not this one.
+    assert_eq!((sun_in_second, cancelled), (12, 0));
+    let counts: Vec<(&str, usize)> = fired.into_iter().collect();
+    assert_eq!(counts.as_slice(), PENURY.as_slice());
+}
+
+/// What each answers over the 93 recorded charts. The two that answer on
+/// two charts in five are the verses' own arithmetic, measured: a class of
+/// three or four marakas is easy to join, and the corpus's lagna lords
+/// cluster where they cast a special aspect on the twelfth (Jupiter in the
+/// fourth twelve times, Saturn in the third eight).
+const PENURY: [(&str, usize); 16] = [
+    ("BPHS_DISPOSITORS_OF_DUSTHANA_LORDS_AFFLICTED_IN_DUSTHANAS", 1),
+    ("BPHS_EIGHTH_OR_TWELFTH_ASPECTED_BY_KARAKAMSHA_LORD_AND_LAGNA_LORD", 18),
+    ("BPHS_FIFTH_LORD_IN_SIXTH_AND_NINTH_LORD_IN_TWELFTH_ASPECTED_BY_MARAKAS", 0),
+    ("BPHS_LAGNA_AND_NAVAMSHA_LAGNA_LORDS_WITH_MARAKAS", 21),
+    ("BPHS_LAGNA_AND_SIXTH_LORDS_EXCHANGED_WITH_A_MARAKA", 0),
+    ("BPHS_LAGNA_AND_TWELFTH_LORDS_EXCHANGED_WITH_A_MARAKA", 0),
+    ("BPHS_LAGNA_LORD_WITH_A_DUSTHANA_LORD_OR_SATURN_UNASPECTED_BY_BENEFICS", 25),
+    ("BPHS_LAGNA_LORD_WITH_A_MALEFIC_IN_A_DUSTHANA_AND_SECOND_LORD_INIMICAL", 0),
+    ("BPHS_LAGNA_OR_MOON_WITH_KETU_AND_LAGNA_LORD_IN_EIGHTH", 5),
+    ("BPHS_MALEFIC_IN_LAGNA_WITH_A_MARAKA", 19),
+    ("BPHS_MARS_AND_SATURN_IN_SECOND", 0),
+    ("BPHS_MOON_NAVAMSHA_LORD_WITH_A_MARAKA_OR_IN_A_MARAKA_HOUSE", 40),
+    ("BPHS_SATURN_IN_SECOND_ASPECTED_BY_SUN", 0),
+    ("BPHS_SUN_IN_SECOND_ASPECTED_BY_SATURN", 2),
+    ("BPHS_SUN_IN_SECOND_UNASPECTED_BY_SATURN", 10),
+    ("BPHS_TWELFTH_FROM_ATMAKARAKA_OR_LAGNA_ASPECTED_BY_ITS_LORD", 37),
 ];

@@ -13,7 +13,7 @@ use teistro_core::catalogue::{
 };
 
 use crate::chart::Limb;
-use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
+use crate::reference::{BodyRef, BodySubject, Class, SignRef, Subject};
 use crate::table::TableKey;
 
 /// What a rule can name: one of the nine grahas, or the lagna.
@@ -157,6 +157,8 @@ impl House {
     pub const KENDRAS: [House; 4] = [House(1), House(4), House(7), House(10)];
     /// The three trikonas.
     pub const TRIKONAS: [House; 3] = [House(1), House(5), House(9)];
+    /// The two maraka houses, the second and the seventh (BPHS ch. 44 v. 2).
+    pub const MARAKAS: [House; 2] = [House(2), House(7)];
 }
 
 impl TryFrom<u8> for House {
@@ -631,6 +633,11 @@ pub enum Condition {
         from: SignRef,
         /// How many there must be at least.
         at_least: u8,
+        /// Who is not counted even when of that kind and standing there: the
+        /// graha a verse says the others join, so "the lagna lord joined by a
+        /// maraka" does not count the lord when it is a maraka itself.
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        except: Vec<BodyRef>,
     },
     /// Two references stand in one sign.
     SameSign {
@@ -639,6 +646,16 @@ pub enum Condition {
         /// The other.
         #[serde(rename = "as")]
         as_sign: SignRef,
+    },
+    /// The body belongs to a class of grahas under the readings: a benefic, a
+    /// malefic or a maraka. What a verse names by nature and then narrows,
+    /// "a malefic, excepting the lords of the 10th and 9th" (BPHS ch. 42
+    /// v. 8), binds a graha with `for-any` and asks this of it.
+    PlanetIs {
+        /// Who.
+        planet: BodyRef,
+        /// Of which class.
+        class: Class,
     },
     /// Two references resolve to one body.
     SameBody {
@@ -939,6 +956,7 @@ impl Condition {
             Condition::BirthByDay => "birth-by-day",
             Condition::SameSign { .. } => "same-sign",
             Condition::SameBody { .. } => "same-body",
+            Condition::PlanetIs { .. } => "planet-is",
         }
     }
 

@@ -1306,6 +1306,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- BPHS ch. 42's combinations for penury: fifteen rules in a new `daridra`
+  category, with v. 17's other half (the Sun in the second unaspected by
+  Saturn) as a `dhana` rule. The marakas of BPHS ch. 44 vv. 3 to 5 are a
+  class: `any-maraka` beside `any-benefic` and `any-malefic`, a public
+  `Class`, a `planet-is` condition, and `except` on `count-in-houses` so a
+  body is not counted as joining itself. The SDK ships 878 rules.
+
+  **Numbers:** the sixteen answer between 0 and 40 of the 93 charts; the two
+  frequent ones were traced case by case and are the verse's arithmetic. The
+  Sun-in-the-second pair partitions the twelve charts with the Sun there.
+  Verse 12 is not shipped: its readings answer 57 charts or none (crux C99).
+
 - BPHS ch. 41's combinations for wealth: fourteen rules, the most particular
   figures the SDK ships. Verses 2 to 8 each want the lord of the fifth in the
   fifth and the lord of the eleventh in the eleventh, which holds for one or

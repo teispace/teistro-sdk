@@ -114,6 +114,11 @@ cancellations held.
   these houses from the Moon" is `count-in-houses`. Papa and shubha kartari
   (Phaladeepika ch. 6 sl. 8) needed nothing new: they are two
   `planet-in-house-from` conditions over a class.
+- **The marakas are a class.** `any-maraka` stands for BPHS ch. 44 vv. 3 to
+  5's lords of the second and seventh with the malefics in or joining them;
+  `planet-is` asks a body's class, and `count-in-houses`'s `except` keeps "the
+  lagna lord joined by a maraka" from counting the lord. BPHS ch. 42's
+  combinations for penury read all three.
 - **The Neecha Bhanga family is sayable too.** What the eight needed was a
   `for-any` quantifier binding `SELF`, a body's exaltation and debilitation
   signs as references, and `same-sign` and `same-body`. All eight say present

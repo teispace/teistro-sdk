@@ -52,7 +52,7 @@ pub use language::{
     ArgalaPlace, Body, Condition, EclipseKind, EvidenceRank, House, Karaka, KarakaScheme, NodeSide,
     Pada, Source,
 };
-pub use reference::{BodyRef, BodySubject, SignRef, Subject};
+pub use reference::{BodyRef, BodySubject, Class, SignRef, Subject};
 pub use rule::{
     Cancellation, Group, NetStatus, Outcome, Rule, Scope, Severity, Unit, check_references,
 };

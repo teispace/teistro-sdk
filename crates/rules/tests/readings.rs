@@ -50,7 +50,7 @@ fn moved(one: Readings, other: Readings, rules: &[Rule]) -> usize {
 #[test]
 fn what_each_reading_moves_over_the_sdk_s_own_rules() {
     let rules = rules();
-    assert_eq!(rules.len(), 837);
+    assert_eq!(rules.len(), 853);
 
     // The one knob `TEXTS` already sets against the engine: how a table's
     // degree is counted (crux C82). None of the rules the SDK writes from a

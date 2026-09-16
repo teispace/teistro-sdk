@@ -345,7 +345,8 @@ arishta verses showed what the corpus's next hundred rules need, and two of
 the three answers were already in the language:
 
 - **"in aspect to a malefic"** was the real gap. The aspect predicates now take
-  a `BodySubject` — a body reference, or `any-benefic` or `any-malefic` — and
+  a `BodySubject` — a body reference, or `any-benefic`, `any-malefic` or
+  (since BPHS ch. 42) `any-maraka` — and
   hold when any body of that class aspects, naming the first that does.
 - **"so many malefics in these houses"** is `count-in-houses`: who is counted,
   which houses, what they are counted from (the lagna unless the rule says),
@@ -961,6 +962,40 @@ until it fires. Verse 16's general statement — that the lords of the ninth and
 the fifth give wealth in their dashas — wants a dasha layer, and vv. 18 and 19's
 angular lords' divisional dignities want the Vaiseshikamsa ladder (crux C77);
 neither is here.
+
+**BPHS ch. 42's combinations for penury, and the marakas as a class
+(2026-09-16).** The chapter reads "joined or aspected by a Maraka" in seven of
+its verses, and BPHS ch. 44 vv. 3 to 5 define the marakas as a **class** — the
+lords of the second and the seventh, the malefics standing in either, and the
+malefics joining either lord. That is the shape benefics and malefics already
+have, so it is built as one rather than written out in every rule:
+
+- **`any-maraka`** is a subject beside `any-benefic` and `any-malefic`. The
+  evaluator computes the class once a chart, from the malefics under the
+  readings and the houses as the readings count them. The three classes are
+  one type, `Class`, which every site reading a subject goes through, so a
+  fourth is one arm and one list; the argala helper had matched
+  `AnyBenefic => …, _ => malefic`, which would have silently read a maraka as
+  a malefic, and it now matches the class exhaustively.
+- **`planet-is`** asks whether a body belongs to a class. v. 8 says "a malefic,
+  excepting the lords of the 10th and 9th": a `for-any` binds the graha, and
+  `planet-is` with two `same-body` negations narrows it.
+- **`count-in-houses` takes `except`.** "The lagna lord joined by a maraka" is
+  a count of marakas in the first house from the lord — which counts the lord
+  itself whenever the lord is a maraka, as the lord of the second and the
+  seventh often is. `except` names who is not counted, so the joining is by
+  someone else.
+
+Fifteen rules and one refusal ship. Four verses turn on a word the translation
+does not settle (crux C99); each ships as the English reads, with the reading
+in its note, except v. 12, whose readings answer 57 charts or none. Verse 13
+is a dasha statement and waits on a dasha layer. Two figures answer two charts
+in five, and that was checked before it was pinned: a class of three or four
+marakas is easy to join, and the corpus's lagna lords cluster where they cast
+a special aspect on the twelfth — Jupiter in the fourth twelve times, Saturn in
+the third eight — every case geometrically right. Verse 17 reads the Sun in the
+second both ways, so its two halves partition the twelve charts with the Sun
+there, which a test holds.
 
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number

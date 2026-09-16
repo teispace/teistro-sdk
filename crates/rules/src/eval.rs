@@ -13,7 +13,7 @@ use crate::chart::{
     Readings, RuleChart, Strengths, Upapada, VargaSigns,
 };
 use crate::language::{Body, Condition, EclipseKind, Edge, House, KarakaScheme, NodeSide};
-use crate::reference::{BodyRef, BodySubject, SignRef, Subject};
+use crate::reference::{BodyRef, BodySubject, Class, SignRef, Subject};
 use crate::rule::{NetStatus, Outcome, Rule, Severity};
 use crate::table::{Table, Tables};
 use crate::trace::{Explanation, NoTrace, Recorder, Resolved, Tracer};
@@ -174,6 +174,8 @@ pub struct Evaluator<'a> {
     benefic: [bool; 10],
     /// Each body's malefic nature.
     malefic: [bool; 10],
+    /// Whether each body is a maraka (BPHS ch. 44 vv. 3 to 5).
+    maraka: [bool; 10],
 }
 
 const fn graha_body(graha: Graha) -> Body {
@@ -217,7 +219,7 @@ impl<'a> Evaluator<'a> {
                 set(&mut malefic, mercury, true);
             }
         }
-        Evaluator {
+        let mut evaluator = Evaluator {
             chart,
             readings,
             tables: &NO_TABLES,
@@ -227,7 +229,34 @@ impl<'a> Evaluator<'a> {
             bound: None,
             benefic,
             malefic,
+            maraka: [false; 10],
+        };
+        evaluator.maraka = evaluator.marakas();
+        evaluator
+    }
+
+    /// The marakas, BPHS ch. 44 vv. 3 to 5: the lords of the second and the
+    /// seventh, the malefics standing in either, and the malefics joining
+    /// either lord. Malefic means malefic under the readings, and a house is
+    /// counted as the readings count houses.
+    fn marakas(&self) -> [bool; 10] {
+        let mut maraka = [false; 10];
+        let houses = House::MARAKAS;
+        let lords = houses.map(|house| graha_body(self.house_sign(house).attributes().lord));
+        for lord in lords {
+            set(&mut maraka, lord.index(), true);
         }
+        for body in Body::ALL {
+            let malefic = self.malefic.get(body.index()).copied().unwrap_or(false);
+            let placed = houses.contains(&self.house_of(body));
+            let joining = lords
+                .iter()
+                .any(|lord| *lord != body && self.at(*lord).sign == self.at(body).sign);
+            if malefic && (placed || joining) {
+                set(&mut maraka, body.index(), true);
+            }
+        }
+        maraka
     }
 
     /// The same evaluator, looking tables up in `tables`; without, a table
@@ -412,15 +441,15 @@ impl<'a> Evaluator<'a> {
         rec: &mut impl Recorder<'c>,
         meets: impl Fn(Spot) -> bool,
     ) -> bool {
-        let nature = match subject {
-            Subject::Ref(reference) => {
-                return self
-                    .spot(reference, rec)
-                    .is_some_and(|spot| self.reached(spot, into, meets(spot)));
-            }
-            Subject::AnyBenefic => &self.benefic,
-            Subject::AnyMalefic => &self.malefic,
+        let Some(class) = subject.class() else {
+            let Subject::Ref(reference) = subject else {
+                return false;
+            };
+            return self
+                .spot(reference, rec)
+                .is_some_and(|spot| self.reached(spot, into, meets(spot)));
         };
+        let nature = self.members(class);
         let found = Body::ALL.into_iter().find(|body| {
             nature.get(body.index()).copied().unwrap_or(false) && meets(self.standing(*body))
         });
@@ -437,12 +466,12 @@ impl<'a> Evaluator<'a> {
         subject: &BodySubject,
         rec: &mut R,
     ) -> impl Iterator<Item = Body> + use<'_, 'c, R> {
-        let nature = match subject {
-            BodySubject::Ref(reference) => {
+        let nature = match (subject, subject.class()) {
+            (BodySubject::Ref(reference), _) => {
                 return Either::One(self.body(reference, rec).into_iter());
             }
-            BodySubject::AnyBenefic => self.benefic,
-            BodySubject::AnyMalefic => self.malefic,
+            (_, Some(class)) => self.members(class),
+            (_, None) => [false; 10],
         };
         Either::Many(
             Body::ALL
@@ -451,12 +480,19 @@ impl<'a> Evaluator<'a> {
         )
     }
 
-    /// The bodies of a subject's nature, the benefics or the malefics.
+    /// Which bodies belong to a class of grahas on this chart.
+    const fn members(&self, class: Class) -> [bool; 10] {
+        match class {
+            Class::Benefic => self.benefic,
+            Class::Malefic => self.malefic,
+            Class::Maraka => self.maraka,
+        }
+    }
+
+    /// The bodies of a subject's class. A subject naming a sign rather than a
+    /// class has none, and every caller has already handled that case.
     fn of_that_nature(&self, subject: &Subject) -> impl Iterator<Item = Body> + use<'_> {
-        let nature = match subject {
-            Subject::AnyBenefic => self.benefic,
-            _ => self.malefic,
-        };
+        let nature = subject.class().map_or([false; 10], |class| self.members(class));
         Body::ALL
             .into_iter()
             .filter(move |body| nature.get(body.index()).copied().unwrap_or(false))
@@ -1118,13 +1154,22 @@ impl<'a> Evaluator<'a> {
                 houses,
                 from,
                 at_least,
+                except,
             } => {
                 let Some(from) = self.spot(from, rec) else {
                     return false;
                 };
+                let mut excepted = Participants::default();
+                for reference in except {
+                    if let Some(body) = self.body(reference, rec) {
+                        excepted.push(body);
+                    }
+                }
                 let mut counted = Participants::default();
                 for body in self.subject_bodies(planets, rec) {
-                    if houses.contains(&House::between(from.sign, self.at(body).sign)) {
+                    if !excepted.iter().any(|other| other == body)
+                        && houses.contains(&House::between(from.sign, self.at(body).sign))
+                    {
                         counted.push(body);
                     }
                 }
@@ -1174,6 +1219,9 @@ impl<'a> Evaluator<'a> {
                 };
                 one.sign == other.sign
             }
+            Condition::PlanetIs { planet, class } => self.body_meets(planet, into, rec, |body| {
+                self.members(*class).get(body.index()).copied().unwrap_or(false)
+            }),
             Condition::SameBody { of, as_body } => {
                 let (Some(one), Some(other)) = (self.body(of, rec), self.body(as_body, rec)) else {
                     return false;
@@ -1566,6 +1614,63 @@ mod tests {
         };
         assert_eq!(holds(&c, natural, &benefic_in(8)), (true, vec![MOON]));
         assert_eq!(holds(&c, natural, &benefic_in(5)), (true, vec![MERCURY]));
+    }
+
+    #[test]
+    fn the_marakas_are_the_second_and_seventh_lords_and_the_malefics_there_or_with_them_bphs_44_3_5()
+     {
+        // Aries rising: Venus lords both the second (Taurus) and the seventh (Libra).
+        let mut c = chart();
+        let venus = Body::Graha(Graha::Venus);
+        let ketu = Body::Graha(Graha::Ketu);
+        place(&mut c, venus, Rashi::Cancer);
+        place(&mut c, SATURN, Rashi::Cancer); // a malefic joining the lord
+        place(&mut c, MARS, Rashi::Taurus); // a malefic in the second
+        place(&mut c, JUPITER, Rashi::Taurus); // a benefic in the second: no maraka
+        place(&mut c, RAHU, Rashi::Libra); // a malefic in the seventh
+        place(&mut c, ketu, Rashi::Aries);
+        place(&mut c, SUN, Rashi::Leo);
+        place(&mut c, MOON, Rashi::Sagittarius); // waxing, so a benefic
+        place(&mut c, MERCURY, Rashi::Gemini);
+        let marakas: Vec<Body> = {
+            let evaluator = Evaluator::new(&c, ENGINE);
+            Body::ALL
+                .into_iter()
+                .filter(|body| evaluator.maraka[body.index()])
+                .collect()
+        };
+        assert_eq!(marakas, vec![MARS, venus, SATURN, RAHU]);
+
+        let maraka_in = |n: u8| Condition::PlanetInHouse {
+            planet: Subject::AnyMaraka,
+            houses: vec![house(n)],
+        };
+        assert_eq!(holds(&c, ENGINE, &maraka_in(4)), (true, vec![venus]));
+        assert!(!holds(&c, ENGINE, &maraka_in(5)).0);
+        assert_eq!(
+            written(r#"{"type": "planet-in-house", "planet": "any-maraka", "houses": [4]}"#),
+            maraka_in(4)
+        );
+        // Venus is a maraka itself, joined in Cancer by Saturn; Jupiter in
+        // Taurus is joined by Mars.
+        let joined = |of: &str, at_least: u8| {
+            written(&format!(
+                r#"{{"type": "count-in-houses", "planets": "any-maraka", "houses": [1],
+                    "from": "{of}", "except": ["{of}"], "atLeast": {at_least}}}"#
+            ))
+        };
+        assert_eq!(holds(&c, ENGINE, &joined("VENUS", 1)), (true, vec![SATURN]));
+        assert!(!holds(&c, ENGINE, &joined("VENUS", 2)).0);
+        assert_eq!(holds(&c, ENGINE, &joined("JUPITER", 1)), (true, vec![MARS]));
+        assert!(!holds(&c, ENGINE, &joined("SUN", 1)).0);
+
+        let is = |planet: &str, class: &str| {
+            written(&format!(r#"{{"type": "planet-is", "planet": "{planet}", "class": "{class}"}}"#))
+        };
+        assert_eq!(holds(&c, ENGINE, &is("SATURN", "maraka")), (true, vec![SATURN]));
+        assert!(!holds(&c, ENGINE, &is("JUPITER", "maraka")).0);
+        assert!(holds(&c, ENGINE, &is("JUPITER", "benefic")).0);
+        assert!(!holds(&c, ENGINE, &is("MOON", "malefic")).0);
     }
 
     #[test]
