@@ -1306,6 +1306,27 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- **Fixed: a birth or a day near the date line.** Where a civil clock keeps
+  more than half a day from the place's mean time — Samoa, Tonga, Tokelau,
+  Kiribati's Line Islands — the local day's sunrise was taken from the wrong
+  date, and a birth before dawn was refused outright ("not in the local day").
+  A civil date now reaches a solar model as the mean-time date at its own noon
+  (`calendar::solar::civil_day_light`), in the chart's day, the daily
+  panchanga and the solar month-start rules.
+
+  **Numbers:** sunrise, sunset and everything counted from them move by a day
+  at those places, and only there; no chart elsewhere moves.
+
+- From a chart reading to rules in one step: `ChartRequest::with_rule_inputs`
+  asks for exactly what a rule set reads (derived by `Rule::vargas`,
+  `Rule::reads_strength` and `Rule::reads_points`), and
+  `teistro::RuleInputs::of(&document).evaluator(readings)` gives an evaluator
+  with the chart, its points and its divisions.
+
+  **Numbers:** the SDK's own reading of each of the corpus's charts matches the
+  corpus body by body except at one chart cast on a sign boundary, where the
+  Sun stands 0.2″ apart.
+
 - A rule result says which dasha periods deliver it. `Rule::timing` is
   `concerned` (BPHS ch. 31: "the Rashi or planet concerned") or `throughout`
   (ch. 35 v. 50, now on all 32 Nabhasa yogas); `Evaluator::delivery` answers

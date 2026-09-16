@@ -1087,6 +1087,36 @@ v. 16 is present on every chart, which is right: what it says is *whose* periods
 give wealth, and that is in its participants. Ch. 42 v. 13 answers 83 of 93 for
 the same reason.
 
+**From a chart reading to an evaluator (2026-09-16).** A consumer had to join
+five things by hand — the foundation, the graha states, the divisions, the
+points and the strengths — before a rule could be read. Now one request and one
+call do it:
+
+- **`ChartRequest::with_rule_inputs(rules)`** asks for what those rules read and
+  nothing else: the states always, the divisions they step into
+  (`Rule::vargas`), the Shadbala when one reads strength
+  (`Rule::reads_strength`, 28 shipped rules) and the points when one names a
+  point (`Rule::reads_points`, none shipped yet). Derived, so a consumer's own
+  rules ask for their own sections — and so a birth with no sunrise, which has
+  no special lagnas, is not refused on a rule set that never names one.
+- **`teistro::RuleInputs::of(&document)`** gives the rule chart, the points and
+  the divisions, refusing a document without its states by naming the request
+  that adds them, and `.evaluator(readings)` gives an evaluator holding the
+  points and divisions. The document's panchanga is the day's almanac and not
+  the limbs at the birth, so the chart carries none.
+
+**Measured over the corpus through the SDK.** Every one of the corpus's 55
+charts is read again by the SDK from the birth it records and compared with
+what the corpus recorded for the rules, body by body: sign, dignity, motion,
+combustion and karaka. 53 read; the two at the built-in ephemeris's edges
+(1800-01-02 and 2399-12-30) are refused by the provider, a strength reading the
+year before a birth. The only differences are one chart's: c051 is cast at the
+Sun's entry into Aries, where the engine's Sun stands 0.2″ short of it and the
+built-in's past it, so its sign, its dignity and all seven karakas follow.
+**Caught on the way:** the first pass could not read the Apia chart at all —
+a defect in the local day for places whose clock crosses the date line, now
+fixed where civil dates meet the solar model (`time-and-timezone.md` §3.3).
+
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number
 of them, so an answer that moves fails the build. Thirty-three answer none, and

@@ -191,6 +191,41 @@ impl ChartRequest {
         self
     }
 
+    /// What `rules` read of a chart, and nothing they do not: the graha
+    /// states always, the points when a rule names one, the Shadbala when a
+    /// rule reads strength, and every divisional chart a rule steps into —
+    /// derived from the rules rather than listed, so a consumer's own rules
+    /// ask for their own. Read the document back with
+    /// [`RuleInputs::of`](crate::RuleInputs::of).
+    ///
+    /// A birth on a day without a sunrise has no special lagnas, which count
+    /// from sunrise, so a reading asking for points there is refused.
+    #[must_use]
+    pub fn with_rule_inputs<'r>(
+        self,
+        rules: impl IntoIterator<Item = &'r teistro_rules::Rule>,
+    ) -> ChartRequest {
+        let (mut points, mut strength) = (false, false);
+        let mut asked = self.vargas.clone();
+        for rule in rules {
+            points |= rule.reads_points();
+            strength |= rule.reads_strength();
+            for varga in rule.vargas() {
+                if !asked.contains(&varga) {
+                    asked.push(varga);
+                }
+            }
+        }
+        let mut request = self.with_state().with_vargas(asked);
+        if points {
+            request = request.with_points();
+        }
+        if strength {
+            request = request.with_shadbala();
+        }
+        request
+    }
+
     /// The upagrahas and the special lagnas.
     ///
     /// The one section whose producer takes more than the foundation and

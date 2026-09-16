@@ -48,7 +48,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::Graha;
+use teistro_core::catalogue::{Graha, Varga};
 
 use crate::language::{Body, Condition, House, Source};
 use crate::timing::Timing;
@@ -411,6 +411,43 @@ impl Rule {
     #[must_use]
     pub fn reads_strength(&self) -> bool {
         self.every_condition().any(Condition::reads_strength)
+    }
+
+    /// Whether any of its conditions names a point — an upagraha, a special
+    /// lagna, a sphuta — so a caller knows to give the evaluator the chart's
+    /// points.
+    #[must_use]
+    pub fn reads_points(&self) -> bool {
+        // A reference is what its serialisation holds, and a point is written
+        // `{"point": …}` wherever a sign can stand.
+        fn names(value: &serde_json::Value) -> bool {
+            match value {
+                serde_json::Value::Array(items) => items.iter().any(names),
+                serde_json::Value::Object(fields) => {
+                    fields.contains_key("point") || fields.values().any(names)
+                }
+                _ => false,
+            }
+        }
+        self.top_conditions()
+            .any(|condition| serde_json::to_value(condition).is_ok_and(|value| names(&value)))
+    }
+
+    /// The divisional charts its conditions read, each once, in the order they
+    /// are first named, so a caller knows which to compute.
+    pub fn vargas(&self) -> impl Iterator<Item = Varga> + '_ {
+        // A catalogue id is a varga's bit; the catalogue holds 21.
+        let mut seen = 0_u64;
+        self.every_condition()
+            .filter_map(move |condition| match condition {
+                Condition::InVarga { varga, .. } => {
+                    let bit = 1_u64.checked_shl(u32::from(*varga as u16)).unwrap_or(0);
+                    let first = seen & bit == 0 || bit == 0;
+                    seen |= bit;
+                    first.then_some(*varga)
+                }
+                _ => None,
+            })
     }
 
     /// Whether any of its conditions reads the chart's panchanga, so a caller

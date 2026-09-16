@@ -16,6 +16,10 @@
 //! passed in because they are separate readings with their own settings.
 //! [`rule_periods`] hands the rules the periods of a dasha running at an
 //! instant, so a result can say whether they deliver it.
+//!
+//! [`RuleInputs`] does all of that from one chart reading: ask for the
+//! sections with [`ChartRequest::with_rule_inputs`](crate::ChartRequest::with_rule_inputs),
+//! read the chart, and take an evaluator from what came back.
 
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::angle::Nas;
@@ -24,9 +28,12 @@ use teistro_core::error::Error;
 use teistro_core::quantity::Degrees;
 use teistro_dasha::Chain;
 use teistro_rules::{
-    Body, EightKarakas, House, Panchanga, Placement, RuleChart, Running, Strengths, VargaSigns,
+    Body, EightKarakas, Evaluator, House, Panchanga, Placement, PointAt, Readings, RuleChart,
+    Running, StrengthMeasure, Strengths, VargaSigns,
 };
+use teistro_serial::Document;
 use teistro_state::GrahaState;
+use teistro_strength::ShadbalaReading;
 use teistro_vargas::{Scheme, sign};
 
 /// The chart the rules read, assembled from what the SDK computed.
@@ -64,6 +71,128 @@ pub fn rule_chart(
         strengths,
     }
     .with_chara_karakas(EightKarakas::Parashara))
+}
+
+/// Everything the rules read of one chart reading: the chart, the points it
+/// carried and its divisional charts.
+///
+/// ```no_run
+/// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// use teistro::rules::{Readings, shipped};
+/// use teistro::{ChartRequest, Context, Ephemeris, RuleInputs, UtcOffset};
+///
+/// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+/// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+/// let rules = shipped::nabhasas();
+/// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_rule_inputs(rules);
+/// let document = sdk.chart().reading(JulianDay::literal(2_447_995.489_583_333_5), &request)?.value;
+/// let inputs = RuleInputs::of(&document)?;
+/// let evaluator = inputs.evaluator(Readings::TEXTS).with_rules(rules);
+/// let present = rules.iter().filter(|rule| evaluator.evaluate(rule).present).count();
+/// # let _ = present;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[derive(Clone, Debug, PartialEq)]
+pub struct RuleInputs {
+    /// The chart, its karakas computed and its strengths the reading's
+    /// Shadbala when it carried one.
+    pub chart: RuleChart,
+    /// The upagrahas and special lagnas the reading carried, each in its sign.
+    pub points: Vec<PointAt>,
+    /// The divisional charts the reading carried whose grahas and lagna are
+    /// cast in one division; a mixed chart is not one a rule can step into.
+    pub vargas: Vec<VargaSigns>,
+}
+
+impl RuleInputs {
+    /// The rules' reading of a chart document.
+    ///
+    /// The document's panchanga is the day's almanac, not the limbs at the
+    /// birth a rule asks about, so the chart carries none; a caller with the
+    /// birth's limbs sets `chart.panchanga`.
+    ///
+    /// # Errors
+    ///
+    /// A document without its graha states, which every dignity and
+    /// combustion a rule reads comes from, naming the section to ask for; and
+    /// whatever [`rule_chart`] refuses.
+    pub fn of(document: &Document) -> Result<RuleInputs, Error> {
+        let states = document.state.as_deref().ok_or_else(|| {
+            Error::invalid_arg(
+                "the document carries no graha states, which a rule reads every dignity and \
+                 combustion from; ask for them with `ChartRequest::with_state` or \
+                 `with_rule_inputs`",
+            )
+            .with_field("state")
+        })?;
+        let strengths = document.shadbala.as_ref().map(shadbala_strengths);
+        let chart = rule_chart(&document.foundation, states, None, strengths)?;
+        let points = document.points.as_ref().map_or_else(Vec::new, |points| {
+            points
+                .all()
+                .iter()
+                .map(|derived| PointAt {
+                    point: derived.point,
+                    sign: derived.sign,
+                })
+                .collect()
+        });
+        let vargas = document
+            .vargas
+            .iter()
+            .filter_map(|varga| {
+                let division = varga.axis.grahas.varga?;
+                if varga.axis.lagna.varga != Some(division) {
+                    return None;
+                }
+                let mut signs = [varga.lagna.sign; 10];
+                for body in Body::ALL {
+                    if let Body::Graha(graha) = body {
+                        let slot = signs.get_mut(body.index())?;
+                        *slot = varga.graha(graha)?.sign;
+                    }
+                }
+                Some(VargaSigns {
+                    varga: division,
+                    signs,
+                })
+            })
+            .collect();
+        Ok(RuleInputs {
+            chart,
+            points,
+            vargas,
+        })
+    }
+
+    /// An evaluator over the chart under `readings`, given the points and the
+    /// divisions; give it the rules it reads by key with
+    /// [`Evaluator::with_rules`].
+    #[must_use]
+    pub fn evaluator(&self, readings: Readings) -> Evaluator<'_> {
+        Evaluator::new(&self.chart, readings)
+            .with_points(&self.points)
+            .with_vargas(&self.vargas)
+    }
+}
+
+/// A Shadbala reading as the rules compare strengths: each graha's rupas and
+/// the rupas it must reach. The nodes and the lagna have none.
+fn shadbala_strengths(reading: &ShadbalaReading) -> Strengths {
+    let mut of = [None; 10];
+    let mut required = [None; 10];
+    for graha in &reading.grahas {
+        let at = Body::Graha(graha.graha).index();
+        if let (Some(value), Some(needed)) = (of.get_mut(at), required.get_mut(at)) {
+            *value = Some(graha.rupas);
+            *needed = Some(graha.required_rupas);
+        }
+    }
+    Strengths {
+        measure: StrengthMeasure::Shadbala,
+        of,
+        required,
+    }
 }
 
 /// The periods of a dasha chain as the rules read them, from the mahadasha

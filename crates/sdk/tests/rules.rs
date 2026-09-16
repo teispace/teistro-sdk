@@ -23,7 +23,9 @@ use teistro::quantity::Depth;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rules::{Body, Evaluator, House, Karaka, Readings, Rule, shipped};
 use teistro::rules::{Levels, Timing};
-use teistro::{Context, Ephemeris, Timeline, UtcOffset, rule_chart, rule_periods, rule_vargas};
+use teistro::{
+    Context, Ephemeris, RuleInputs, Timeline, UtcOffset, rule_chart, rule_periods, rule_vargas,
+};
 
 /// The corpus's first chart, founded and stated.
 fn founded() -> (teistro::ChartFoundation, Vec<teistro::GrahaState>) {
@@ -218,4 +220,78 @@ fn a_result_says_which_of_the_sdk_s_own_dasha_periods_deliver_it() {
         );
     }
     assert!(delivering >= 2, "the two lords' own mahadashas at least");
+}
+
+/// The rules' reading of every chart in the corpus, computed by the SDK from
+/// the birth each records, against what the corpus recorded for the rules:
+/// each body's sign, dignity, motion and combustion, and each graha's karakas.
+/// What differs is counted and pinned, so a change in the bridge or in the
+/// SDK's own chart that moves a rule's input fails here first.
+#[test]
+fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
+    let sdk = Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("the conformance profile and the built-in ephemeris");
+    let rules = shipped::nabhasas();
+    let (mut charts, mut points, mut differ) = (0, 0, [0_usize; 5]);
+    let mut refused = Vec::new();
+    for (name, chart) in common::charts() {
+        let document =
+            match common::reading_of(&sdk, &chart, |request| request.with_rule_inputs(rules)) {
+                Ok(document) => document,
+                Err(error) => {
+                    // The built-in ephemeris covers 1800 to 2400, and a strength
+                    // reads the year before a birth: the corpus's two charts at
+                    // its edges are refused by the provider, by name.
+                    assert_eq!(error.status, teistro::Status::Provider, "{name}: {error}");
+                    refused.push(name);
+                    continue;
+                }
+            };
+        let inputs = RuleInputs::of(&document).expect("the rules' inputs");
+        let recorded = fixture(&format!("doshas/charts/{name}"));
+        let recorded = &recorded["inputs"];
+        for body in Body::ALL {
+            let ours = inputs.chart.placement(body);
+            let theirs = &recorded["bodies"][body.key()];
+            let fields = [
+                theirs["sign_index"].as_u64() != Some(u64::from(ours.sign as u8)),
+                theirs["dignity"].as_str()
+                    != Some(teistro::catalogue::Catalogued::key(ours.dignity)),
+                theirs["is_retrograde"].as_bool() != Some(ours.retrograde),
+                (theirs["combust"].as_str() != Some("none")) != ours.combust,
+                recorded["chara_karaka_7"].get(body.key())
+                    != ours
+                        .karaka7
+                        .map(|karaka| serde_json::to_value(Karaka(karaka)).unwrap())
+                        .as_ref(),
+            ];
+            for (count, differs) in differ.iter_mut().zip(fields) {
+                *count += usize::from(differs);
+            }
+        }
+        // Every division a shipped rule steps into, and the special lagnas.
+        let asked: Vec<Varga> = inputs.vargas.iter().map(|varga| varga.varga).collect();
+        for varga in rules.iter().flat_map(Rule::vargas) {
+            assert!(asked.contains(&varga), "{name}: {varga:?}");
+        }
+        points += inputs.points.len();
+        charts += 1;
+    }
+    // Every difference is one chart's: c051 is cast at the Sun's entry into
+    // Aries, where the recording engine's Sun stands 0.2″ short of it and the
+    // built-in ephemeris's past it. So the Sun's sign and dignity differ, and
+    // the Sun, 29.99999° into Pisces for the engine and the least advanced
+    // graha for the SDK, reorders all seven karakas. No field differs
+    // anywhere else, and no chart the shipped rules read asked for a point.
+    assert_eq!((charts, points, differ), (53, 0, [1, 1, 0, 0, 7]));
+    assert_eq!(
+        refused,
+        [
+            "c047-london-1800-01-02.json",
+            "c048-kathmandu-2399-12-30.json"
+        ]
+    );
 }

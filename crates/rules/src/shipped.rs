@@ -191,6 +191,49 @@ mod tests {
     use crate::language::EvidenceRank;
     use crate::table::Tables;
 
+    /// What a caller asks a chart reading for is derived from the rules: the
+    /// divisions they step into, whether they read strength, and whether they
+    /// name a point. Held over the whole shipped set so a pack that starts
+    /// reading a new division or a point is noticed.
+    #[test]
+    fn the_shipped_rules_say_which_divisions_strengths_and_points_they_read() {
+        use teistro_core::catalogue::Varga;
+
+        let rules: Vec<&Rule> = computed_doshas()
+            .iter()
+            .chain(computed_yogas())
+            .chain(gandantas())
+            .chain(arishtas())
+            .chain(readings())
+            .chain(nabhasas())
+            .collect();
+        let mut vargas: Vec<Varga> = rules.iter().flat_map(|rule| rule.vargas()).collect();
+        vargas.sort();
+        vargas.dedup();
+        assert_eq!(
+            vargas,
+            [Varga::D2, Varga::D3, Varga::D9, Varga::D12, Varga::D30]
+        );
+        // One rule names a division once however many times it steps in.
+        for rule in &rules {
+            let named: Vec<Varga> = rule.vargas().collect();
+            let mut distinct = named.clone();
+            distinct.dedup();
+            assert_eq!(named.len(), distinct.len(), "{}", rule.key);
+        }
+        let strength = rules.iter().filter(|rule| rule.reads_strength()).count();
+        let points = rules.iter().filter(|rule| rule.reads_points()).count();
+        assert_eq!((strength, points), (28, 0));
+        // And a rule naming a point, nested where a sign stands, says so.
+        let gulika: Rule = serde_json::from_str(
+            r#"{"key": "GULIKA_IN_LAGNA", "category": "arishta", "source": {"text": "BPHS"},
+                "conditions": [{"type": "not", "condition": {"type": "same-sign",
+                    "of": {"from": {"point": "GULIKA"}, "house": 1}, "as": 1}}]}"#,
+        )
+        .expect("a rule naming a point");
+        assert!(gulika.reads_points() && !gulika.reads_strength());
+    }
+
     #[test]
     fn every_shipped_rule_and_table_says_how_good_its_evidence_is() {
         let rules: Vec<&Rule> = computed_doshas()
