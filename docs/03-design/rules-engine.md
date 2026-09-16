@@ -833,9 +833,27 @@ and a third of it, which `planet-in-sign` and `planet-in-degrees` already say,
 and the lord of a decanate is the lord of the sign that third falls in — its
 own for the first, the fifth from it for the second, the ninth for the third —
 which is a constant per branch and so is written as a body. The catalogue
-stays inside the one rule that uses it; it becomes a table when a second rule
-needs it, and the one that would is BPHS ch. 44's fate of the corpse, which
-wants the twenty-second decanate.
+stays inside the one rule that uses it.
+
+The second user arrived, and settled the question the other way. BPHS ch. 44
+vv. 38 and 39 read the fate of the corpse from the twenty-second decanate — a
+benefic's decanate burns the body, a malefic's throws it in water, a mixed
+planet's lets it dry, a serpent's gives it to the animals — and the serpent
+list it wants is **v. 40 of its own chapter**, not Phaladeepika's. So there was
+nothing to extract: the two rules carry different catalogues because they cite
+different texts, and a shared table would have coupled them into one answer the
+sources do not give. **The second copy is only a duplicate when it is the same
+claim.**
+
+The twenty-second decanate needed no new reference either. Twenty-one decanates
+are seven signs exactly, so it lies in the eighth house's sign at the third of
+it the lagna stands in; its own sign is that eighth counted on by one, five or
+nine as the third is first, second or third, and its lord is that sign's lord —
+`{"lordOf": {"from": 8, "house": 5}}` and its two neighbours, which the
+language already said. Exactly one of the three lord-kinds answers on each of
+the 93 charts, which says the benefic, malefic and mixed split is both
+exhaustive and disjoint over the seven lords; seven charts take the serpent
+reading beside it, the verse giving that one as well and not instead.
 
 **Reaching it (2026-09-16).** Until this change the only crate that depended
 on `teistro-rules` was `xtask`. Every test passed, every gate was green, and
@@ -904,6 +922,19 @@ then pins the two fields, so an edit that quietly reverted them would fail
 rather than pass on a corpus that cannot see it. **The corpus could not decide
 either question, and the verses did**; what the measurement bought was the
 knowledge that the change was safe.
+
+**What the whole set must hold (2026-09-16).** Each pack checks itself, and
+some things no pack can check. `shipped.rs` now holds the 848 rules together
+to four invariants: **a key names one rule** — the load-bearing one, since a
+rule names another by key for its cancellations and an evaluator resolves that
+name from the set it was given, so two rules sharing a key would let a
+cancellation resolve to whichever came first; every rule **reads back as
+itself** through the language, so a pack the SDK ships is one a consumer can
+round-trip; every rule is **evaluable**, the SDK shipping none it cannot
+answer; and the **categories are a closed vocabulary** of twenty-seven, so a
+pack cannot quietly invent one that a consumer grouping by category would miss.
+All four held on the first run, which is the answer one wants and not the one
+that teaches anything.
 
 `crates/rules/tests/classical.rs` holds every one of these rules to the 93
 recorded charts: each is evaluable, cites a verse, and answers a pinned number

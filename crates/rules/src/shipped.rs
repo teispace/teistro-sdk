@@ -59,6 +59,8 @@ const STRENGTH: &str = include_str!("../rules/classical-strength.json");
 const PRAVRAJYA: &str = include_str!("../rules/classical-pravrajya.json");
 /// Saravali ch. 34's readings of a named set of grahas in a named house.
 const BHAVA: &str = include_str!("../rules/classical-bhava.json");
+/// BPHS ch. 44's fate of the corpse, read from the twenty-second decanate.
+const CORPSE: &str = include_str!("../rules/classical-corpse.json");
 /// The table the dwigraha generator expands: Brihat Jataka ch. 14's
 /// twenty-one pairs and Phaladeepika ch. 18's Moon in each sign, aspected.
 const DWIGRAHA: &str = include_str!("../rules/classical-readings.json");
@@ -98,6 +100,7 @@ static NABHASAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
     rules.append(&mut read(STRENGTH));
     rules.append(&mut read(PRAVRAJYA));
     rules.append(&mut read(BHAVA));
+    rules.append(&mut read(CORPSE));
     rules
 });
 static ARISHTAS: LazyLock<Vec<Rule>> = LazyLock::new(|| {
@@ -170,6 +173,7 @@ pub fn computed_yogas() -> &'static [Rule] {
 mod tests {
     #![allow(
         clippy::unwrap_used,
+        clippy::expect_used,
         clippy::panic,
         reason = "tests unwrap what they read and fail by panicking"
     )]
@@ -188,7 +192,7 @@ mod tests {
             .chain(readings())
             .chain(nabhasas())
             .collect();
-        assert_eq!(rules.len(), 844);
+        assert_eq!(rules.len(), 848);
         for rule in &rules {
             let rank = rule
                 .source
@@ -251,4 +255,87 @@ mod tests {
         }
         assert!(EvidenceRank::try_new(0).is_err() && EvidenceRank::try_new(5).is_err());
     }
+
+    /// The invariants the whole shipped set must hold, which no pack can check
+    /// for itself: that a key names one rule, that every rule reads back as
+    /// itself, and that the categories are a closed vocabulary.
+    ///
+    /// Key uniqueness is the load-bearing one. A rule names another by key for
+    /// its cancellations, and an evaluator resolves that name from the set it
+    /// was given, so two rules sharing a key would let a cancellation resolve
+    /// to whichever the set happened to hold first.
+    #[test]
+    fn a_key_names_one_rule_and_every_rule_reads_back_as_itself() {
+        let rules: Vec<&Rule> = computed_doshas()
+            .iter()
+            .chain(computed_yogas())
+            .chain(gandantas())
+            .chain(arishtas())
+            .chain(readings())
+            .chain(nabhasas())
+            .collect();
+
+        let mut seen: std::collections::BTreeMap<&str, usize> = std::collections::BTreeMap::new();
+        for rule in &rules {
+            *seen.entry(rule.key.as_str()).or_default() += 1;
+        }
+        let twice: Vec<&str> = seen
+            .iter()
+            .filter(|(_, count)| **count > 1)
+            .map(|(key, _)| *key)
+            .collect();
+        assert!(twice.is_empty(), "keys naming more than one rule: {twice:?}");
+        assert_eq!(seen.len(), rules.len());
+
+        // Every rule writes out in the language and reads back the same, so a
+        // pack the SDK ships is a pack a consumer can round-trip.
+        let owned: Vec<Rule> = rules.iter().map(|rule| (*rule).clone()).collect();
+        let written = serde_json::to_value(&owned).expect("the shipped rules write");
+        let back: Vec<Rule> = serde_json::from_value(written).expect("and read back");
+        assert_eq!(back, owned);
+
+        // Every one of them is evaluable: the SDK ships no rule it cannot
+        // answer, the engine's computed eight having been written out in the
+        // language rather than carried as code.
+        for rule in &rules {
+            assert!(rule.is_evaluable(), "{} is evaluable", rule.key);
+        }
+
+        // The categories are a closed vocabulary, so a pack cannot quietly
+        // invent one that a consumer grouping by category would miss.
+        let categories: std::collections::BTreeSet<&str> =
+            rules.iter().map(|rule| rule.category.as_str()).collect();
+        assert_eq!(categories.into_iter().collect::<Vec<_>>(), CATEGORIES);
+    }
+
+    /// Every category the shipped rules use.
+    const CATEGORIES: [&str; 27] = [
+        "arishta",
+        "arishta-bhanga",
+        "arishta-father",
+        "arishta-mother",
+        "ayur",
+        "chandra",
+        "chandra-drishti",
+        "dhana",
+        "dwigraha",
+        "gandanta",
+        "graha-in-bhava",
+        "graha-in-rasi",
+        "grahas-together",
+        "house-based",
+        "jaimini",
+        "kalatra",
+        "mahapurusha",
+        "miscellaneous",
+        "nabhasa",
+        "neecha-bhanga",
+        "nodal",
+        "pair-in-angle",
+        "panchanga",
+        "positional",
+        "pravrajya",
+        "rising-part",
+        "surya",
+    ];
 }

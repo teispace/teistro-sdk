@@ -1286,6 +1286,26 @@ the astronomical numbers do not move. Nothing else computes yet.
   at zero and pins the fields, so a silent reversion fails rather than passing
   on a corpus that cannot see it.
 
+- Four invariants over the whole shipped set, which no pack can check for
+  itself: a key names one rule, every rule reads back as itself through the
+  language, every rule is evaluable, and the categories are a closed vocabulary
+  of twenty-seven. Key uniqueness is the load-bearing one — a cancellation
+  names another rule by key.
+
+- BPHS ch. 44 vv. 38 and 39, the fate of the corpse, read from the
+  twenty-second decanate: a benefic's decanate burns the body, a malefic's
+  throws it in water, a mixed planet's lets it dry, a serpent's gives it to the
+  animals. It needed no new reference — twenty-one decanates are seven signs,
+  so the twenty-second is the eighth house's sign at the lagna's own third. The
+  SDK ships 848 rules.
+
+  **Numbers:** exactly one of the three lord-kinds answers each of the 93
+  charts, so the benefic, malefic and mixed split is exhaustive and disjoint;
+  seven charts take the serpent reading beside it. The serpent list is BPHS's
+  own (v. 40), not Phaladeepika's, so crux C98's anticipated table is *not*
+  extracted: the two rules cite different texts, and a shared table would have
+  coupled them into one answer the sources do not give.
+
 - Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
   compares two signs as vv. 158 to 166 do, and two knobs read it.
   `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds

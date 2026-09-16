@@ -254,3 +254,38 @@ const NAMED_SETS: [(&str, usize); 17] = [
     ("SARAVALI_THREE_MALEFICS_IN_THE_LAGNA", 0),
     ("SARAVALI_WEAK_MOON_IN_THE_SECOND_ASPECTED_BY_MERCURY", 0),
 ];
+
+/// The fate of the corpse is read from the twenty-second decanate, which is
+/// the eighth house's sign at the third of it the lagna stands in. Exactly one
+/// of the three lord-kinds answers on any chart, because a sign has one lord
+/// and every graha is a benefic, a malefic or one of the mixed pair.
+#[test]
+fn exactly_one_fate_of_the_corpse_answers_a_chart() {
+    let rules: Vec<Rule> = shipped::nabhasas()
+        .iter()
+        .filter(|rule| rule.category == "ayur")
+        .cloned()
+        .collect();
+    assert_eq!(rules.len(), 4);
+    let mut by_lord = 0;
+    let mut serpents = 0;
+    for (path, file) in files_in("doshas") {
+        let chart = chart_at(&path, &file["inputs"]);
+        let evaluator = Evaluator::new(&chart, Readings::TEXTS).with_rules(&rules);
+        let held: Vec<&str> = rules
+            .iter()
+            .filter(|rule| evaluator.evaluate(rule).present)
+            .map(|rule| rule.key.as_str())
+            .collect();
+        let kinds = held
+            .iter()
+            .filter(|key| !key.ends_with("IS_A_SERPENT"))
+            .count();
+        assert_eq!(kinds, 1, "{}: {held:?}", path.display());
+        by_lord += kinds;
+        serpents += held.len() - kinds;
+    }
+    // The serpent reading is a second answer where it holds, the verse giving
+    // it beside the lord's and not instead of it.
+    assert_eq!((by_lord, serpents), (93, 7));
+}
