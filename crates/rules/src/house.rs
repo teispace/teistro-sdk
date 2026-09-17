@@ -37,7 +37,8 @@ pub struct HouseReading<'r> {
 /// A rule that held, and what it answered.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Held<'r> {
-    /// Which rule.
+    /// Which rule; written as its key, the rule being the set's.
+    #[serde(serialize_with = "crate::rule::key_of")]
     pub rule: &'r Rule,
     /// What it answered.
     pub result: RuleResult,

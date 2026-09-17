@@ -1843,6 +1843,15 @@ pub struct ChartRequest {
     /// (`03-design/render-svg.md`).
     /// Example: {"extends":"dark"}. May be null.
     pub theme_json: Option<String>,
+    /// Rules to answer over every chart, as JSON: `shipped` names the
+    /// kernel's sets, `rules` a consumer's own in the rule format, with
+    /// `readings`, `houses` and `longevity` choosing what else comes back
+    /// (`03-design/rules-at-the-boundary.md`). The answers come back in the
+    /// blob's `rules` section, and the sections the rules read are computed
+    /// whether or not `sections` asked for them. Null for none, which costs
+    /// nothing.
+    /// Example: {"shipped":["nabhasas"]}. May be null.
+    pub rules_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1859,6 +1868,7 @@ pub struct HeldChartRequest {
     drawings: Vec<u32>,
     dashas: Vec<u16>,
     theme_json: Option<std::ffi::CString>,
+    rules_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -1884,6 +1894,7 @@ impl HeldChartRequest {
             dashas: self.dashas.as_ptr(),
             dasha_count: self.dashas.len(),
             theme_json: self.theme_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
+            rules_json: self.rules_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -1908,6 +1919,11 @@ impl ChartRequest {
             dashas: self.dashas.iter().map(|v| *v as u16).collect(),
             theme_json: self
                 .theme_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
+            rules_json: self
+                .rules_json
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
@@ -1945,6 +1961,7 @@ impl ChartRequest {
                 .map(|v| *v as _)
                 .collect(),
             theme_json: unsafe { lent_text(raw.theme_json) },
+            rules_json: unsafe { lent_text(raw.rules_json) },
         }
     }
 }

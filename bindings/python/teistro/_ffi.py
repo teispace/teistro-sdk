@@ -157,7 +157,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 120,
+    "ts_chart_request": 128,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -582,6 +582,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("dashas", ctypes.POINTER(ctypes.c_uint16)),
         ("dasha_count", ctypes.c_size_t),
         ("theme_json", ctypes.c_char_p),
+        ("rules_json", ctypes.c_char_p),
     ]
 
 
@@ -2143,6 +2144,17 @@ class ChartRequest:
     Example: {"extends":"dark"}. May be null.
     """
 
+    rules_json: Optional[str] = None
+    """Rules to answer over every chart, as JSON: `shipped` names the
+    kernel's sets, `rules` a consumer's own in the rule format, with
+    `readings`, `houses` and `longevity` choosing what else comes back
+    (`03-design/rules-at-the-boundary.md`). The answers come back in the
+    blob's `rules` section, and the sections the rules read are computed
+    whether or not `sections` asked for them. Null for none, which costs
+    nothing.
+    Example: {"shipped":["nabhasas"]}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2184,6 +2196,9 @@ class ChartRequest:
         _theme_json = None if self.theme_json is None else self.theme_json.encode("utf-8")
         owned.append(_theme_json)
         raw.theme_json = _theme_json
+        _rules_json = None if self.rules_json is None else self.rules_json.encode("utf-8")
+        owned.append(_rules_json)
+        raw.rules_json = _rules_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2221,6 +2236,7 @@ class ChartRequest:
             if raw.dashas
             else [],
             theme_json=_text(raw.theme_json),
+            rules_json=_text(raw.rules_json),
         )
 
 

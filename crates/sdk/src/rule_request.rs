@@ -259,18 +259,10 @@ impl RuleSet {
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Present<'r> {
     /// Which rule.
-    #[serde(serialize_with = "key_of")]
+    #[serde(serialize_with = "teistro_rules::key_of")]
     pub rule: &'r Rule,
     /// What it answered.
     pub result: RuleResult,
-}
-
-#[allow(
-    clippy::trivially_copy_pass_by_ref,
-    reason = "serde passes a field by reference"
-)]
-fn key_of<S: serde::Serializer>(rule: &&Rule, serializer: S) -> Result<S::Ok, S::Error> {
-    serializer.serialize_str(&rule.key)
 }
 
 /// The longevity readings of a chart (BPHS chs. 43 and 44).

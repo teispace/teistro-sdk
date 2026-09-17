@@ -1306,6 +1306,13 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- Rules at the C boundary: `TsChartRequest` gains a nullable `rules_json`, and
+  section 33 `rules` of the charts blob carries each chart's answers as
+  canonical JSON, rules by key. A held rule in a house reading is written by
+  key too (`teistro_rules::key_of`). Refusals are named from the request's
+  root, `rules_json.rules[0]` (`03-design/rules-at-the-boundary.md`, step 2 of
+  4). No existing section moves.
+
 - A chart reading that answers rules: `RuleRequest` names shipped sets and a
   consumer's own rules, validates into a `RuleSet` (each key once, every
   reference resolved), and `sdk.chart().readings_with_rules` returns each

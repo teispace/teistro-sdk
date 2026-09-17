@@ -921,6 +921,16 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"extends":"dark"}. May be null.
   external ffi.Pointer<ffi.Char> themeJson;
 
+  /// Rules to answer over every chart, as JSON: `shipped` names the
+  /// kernel's sets, `rules` a consumer's own in the rule format, with
+  /// `readings`, `houses` and `longevity` choosing what else comes back
+  /// (`03-design/rules-at-the-boundary.md`). The answers come back in the
+  /// blob's `rules` section, and the sections the rules read are computed
+  /// whether or not `sections` asked for them. Null for none, which costs
+  /// nothing.
+  /// Example: {"shipped":["nabhasas"]}. May be null.
+  external ffi.Pointer<ffi.Char> rulesJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2736,7 +2746,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -2824,6 +2834,16 @@ final class ChartRequest {
   /// Example: {"extends":"dark"}. May be null.
   final String? themeJson;
 
+  /// Rules to answer over every chart, as JSON: `shipped` names the
+  /// kernel's sets, `rules` a consumer's own in the rule format, with
+  /// `readings`, `houses` and `longevity` choosing what else comes back
+  /// (`03-design/rules-at-the-boundary.md`). The answers come back in the
+  /// blob's `rules` section, and the sections the rules read are computed
+  /// whether or not `sections` asked for them. Null for none, which costs
+  /// nothing.
+  /// Example: {"shipped":["nabhasas"]}. May be null.
+  final String? rulesJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -2866,6 +2886,9 @@ final class ChartRequest {
     raw.themeJson = themeJson == null
         ? ffi.nullptr
         : themeJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.rulesJson = rulesJson == null
+        ? ffi.nullptr
+        : rulesJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -2894,6 +2917,9 @@ final class ChartRequest {
         themeJson: raw.themeJson == ffi.nullptr
             ? null
             : raw.themeJson.cast<pkg_ffi.Utf8>().toDartString(),
+        rulesJson: raw.rulesJson == ffi.nullptr
+            ? null
+            : raw.rulesJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

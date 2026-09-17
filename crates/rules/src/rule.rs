@@ -797,6 +797,20 @@ fn walk_references<'r>(
     Ok(())
 }
 
+/// A rule written as its key, where the rule itself is the set's and a result
+/// need only name it.
+///
+/// # Errors
+///
+/// The serialiser's.
+#[allow(
+    clippy::trivially_copy_pass_by_ref,
+    reason = "serde passes a field by reference"
+)]
+pub fn key_of<S: serde::Serializer>(rule: &&Rule, serializer: S) -> Result<S::Ok, S::Error> {
+    serializer.serialize_str(&rule.key)
+}
+
 /// Whether every rule a set names is in it and no rule reaches itself, so an
 /// evaluator given the set cannot loop.
 ///

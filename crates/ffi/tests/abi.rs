@@ -1426,6 +1426,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             dashas: dashas.as_ptr(),
             dasha_count: dashas.len(),
             theme_json: ptr::null(),
+            rules_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1557,6 +1558,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             dashas: dashas.as_ptr(),
             dasha_count: dashas.len(),
             theme_json: ptr::null(),
+            rules_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1636,5 +1638,111 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
     assert!(
         typo.1.contains("reference") || typo.1.contains("refrence"),
         "{typo:?}"
+    );
+}
+
+/// A chart request's `rules_json` answers rules over every chart in the same
+/// crossing: section `rules` carries each chart's present rules by key, and
+/// the longevity readings when asked; a rule that does not read is refused by
+/// its place from the request's root (`03-design/rules-at-the-boundary.md`).
+#[test]
+fn a_chart_request_answers_rules_in_the_same_crossing() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_447_995.489_583_333_5, 2_451_545.0];
+    let rules = CString::new(r#"{"shipped": ["nabhasas"], "longevity": true}"#).unwrap();
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: rules.as_ptr(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let rules_json: serde_json::Value =
+        serde_json::from_slice(reader.bytes("rules").unwrap()).unwrap();
+    let per_chart = rules_json.as_array().unwrap();
+    assert_eq!(per_chart.len(), 2, "one entry a chart");
+    for chart in per_chart {
+        let present = chart["present"].as_array().unwrap();
+        assert!(!present.is_empty());
+        for held in present {
+            // A rule by its key, never the whole rule again.
+            assert!(held["rule"].is_string(), "{held}");
+            assert_eq!(held["result"]["present"], serde_json::Value::Bool(true));
+        }
+        assert!(chart["longevity"]["ayurdaya"]["pindayu"]["years"].is_number());
+        assert!(chart.get("houses").is_none(), "houses were not asked for");
+    }
+    // The same request without rules carries an empty section.
+    let plain = TsChartRequest {
+        rules_json: ptr::null(),
+        ..request
+    };
+    let mut none = TsBlob::empty();
+    // SAFETY: as above.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const plain, &raw mut none) },
+        Status::Ok
+    );
+    // SAFETY: as above.
+    let plain_bytes = unsafe { core::slice::from_raw_parts(none.data, none.len) }.to_vec();
+    // SAFETY: as above.
+    unsafe { ts_blob_free(&raw mut none) };
+    let plain_reader = Reader::parse(&plain_bytes, &schema).unwrap();
+    assert!(plain_reader.bytes("rules").unwrap().is_empty());
+
+    // A rule that does not read is refused from the request's root.
+    let broken = CString::new(r#"{"rules": [{"key": "X", "category": "raja"}]}"#).unwrap();
+    let refused = TsChartRequest {
+        rules_json: broken.as_ptr(),
+        ..request
+    };
+    let mut nothing = TsBlob::empty();
+    // SAFETY: as above.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const refused, &raw mut nothing) };
+    assert_eq!(status, Status::InvalidArg);
+    let record = ctx.last_error();
+    assert_eq!(
+        record.2.as_deref(),
+        Some("rules_json.rules[0]"),
+        "{record:?}"
     );
 }

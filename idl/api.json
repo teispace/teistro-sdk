@@ -9460,6 +9460,21 @@
             "example": "{\"extends\":\"dark\"}",
             "nullable": true
           }
+        },
+        {
+          "name": "rules_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Rules to answer over every chart, as JSON: `shipped` names the\nkernel's sets, `rules` a consumer's own in the rule format, with\n`readings`, `houses` and `longevity` choosing what else comes back\n(`03-design/rules-at-the-boundary.md`). The answers come back in the\nblob's `rules` section, and the sections the rules read are computed\nwhether or not `sections` asked for them. Null for none, which costs\nnothing.",
+          "meta": {
+            "example": "{\"shipped\":[\"nabhasas\"]}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -14129,6 +14144,13 @@
               "doc": "1 when it is in the sixth, eighth or twelfth, debilitation or an inimical sign (v. 6); both flags can stand."
             }
           ]
+        },
+        {
+          "id": 33,
+          "name": "rules",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each the rules the request's `rules_json` named that held on it — `present`, each `{rule, result}` with the rule by key — with `houses` and `longevity` when asked, and `unreadable` naming an input a rule named that the chart could not have (`03-design/rules-at-the-boundary.md`). Empty when no rules were asked for.",
+          "kind": "bytes",
+          "fields": []
         }
       ]
     },

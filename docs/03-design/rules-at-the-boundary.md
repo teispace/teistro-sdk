@@ -1,6 +1,6 @@
 # Rules at the boundary: a chart reading that answers rules in every binding
 
-Status: `design`, 2026-09-17; step 1 built the same day. It settles the question
+Status: `design`, 2026-09-17; steps 1 and 2 built the same day. It settles the question
 [`surface-areas.md`](surface-areas.md) §9 left open — how a rule and a rule
 result cross the C ABI — so that Node, Dart and Python reach the kernel
 [`rules-engine.md`](rules-engine.md) describes, which Rust reaches today
@@ -141,7 +141,12 @@ The JSON is written once per chart.
    `rules` field of the document, tested in Rust against `RuleInputs`
    directly — the same answers by two roads.
 2. `rules_json` on `TsChartRequest` and section `rules` in the blob, with the
-   IDL, the header and `check-ffi`.
+   IDL, the header and `check-ffi`. **Built**: section 33; a held rule and a
+   present rule are written by key through one helper, `teistro_rules::key_of`,
+   so a house reading does not repeat whole rules; an ABI test founds two charts
+   with `{"shipped": ["nabhasas"], "longevity": true}`, reads each chart's
+   present rules and Pindayu from the bytes, finds the section empty without
+   rules, and a rule that does not read refused as `rules_json.rules[0]`.
 3. Node, Dart and Python: the option and the parsed section, each binding's
    own test, and the parity runners printing each chart's present keys, so
    `check-parity` holds the four to one answer.

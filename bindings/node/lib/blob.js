@@ -596,6 +596,10 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 33, 'rules');
+    out.rules = text(blob, at);
+  }
   return out;
 }
 

@@ -573,6 +573,11 @@ pub fn charts() -> BlobSchema {
             chart_bhava_bala_section(30),
             chart_vaiseshikamsa_section(31),
             chart_dasha_phala_section(32),
+            SectionSchema::bytes(
+                33,
+                "rules",
+                "UTF-8 JSON, canonical: an array with one entry per chart, each the rules the request's `rules_json` named that held on it — `present`, each `{rule, result}` with the rule by key — with `houses` and `longevity` when asked, and `unreadable` naming an input a rule named that the chart could not have (`03-design/rules-at-the-boundary.md`). Empty when no rules were asked for.",
+            ),
         ],
     }
 }

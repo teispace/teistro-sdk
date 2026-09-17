@@ -758,6 +758,18 @@ export interface ChartRequest {
    * @nullable
    */
   readonly themeJson?: string;
+  /**
+   * Rules to answer over every chart, as JSON: `shipped` names the
+   * kernel's sets, `rules` a consumer's own in the rule format, with
+   * `readings`, `houses` and `longevity` choosing what else comes back
+   * (`03-design/rules-at-the-boundary.md`). The answers come back in the
+   * blob's `rules` section, and the sections the rules read are computed
+   * whether or not `sections` asked for them. Null for none, which costs
+   * nothing.
+   * @example {"shipped":["nabhasas"]}
+   * @nullable
+   */
+  readonly rulesJson?: string;
 }
 
 /**

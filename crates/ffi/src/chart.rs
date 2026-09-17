@@ -28,15 +28,15 @@
 
 use core::ffi::c_char;
 
-use teistro::ChartRequest;
 use teistro::dasha::DashaName;
 use teistro::render_svg::Theme;
+use teistro::{ChartRequest, RuleRequest, RuleSet};
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::{ChartKind, Kind, Varga};
-use teistro_core::envelope::Provenance;
+use teistro_core::envelope::{Envelope, Provenance};
 use teistro_core::error::{Error, Status};
 use teistro_core::key::KeyId;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
@@ -543,6 +543,15 @@ pub struct TsChartRequest {
     /// (`03-design/render-svg.md`).
     /// `api: nullable example={"extends":"dark"}`
     pub theme_json: *const c_char,
+    /// Rules to answer over every chart, as JSON: `shipped` names the
+    /// kernel's sets, `rules` a consumer's own in the rule format, with
+    /// `readings`, `houses` and `longevity` choosing what else comes back
+    /// (`03-design/rules-at-the-boundary.md`). The answers come back in the
+    /// blob's `rules` section, and the sections the rules read are computed
+    /// whether or not `sections` asked for them. Null for none, which costs
+    /// nothing.
+    /// `api: nullable example={"shipped":["nabhasas"]}`
+    pub rules_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -2051,6 +2060,7 @@ pub fn encode(
     kind: ChartKind,
     provenance: &Provenance,
     svgs: &str,
+    rules: &str,
     registered: &teistro::dasha::DashaSystems,
 ) -> Result<Vec<u8>, Error> {
     let charts: Vec<&ChartFoundation> = documents.iter().map(|d| &d.foundation).collect();
@@ -2136,6 +2146,7 @@ pub fn encode(
         states.write(&mut writer)?;
         writer.bytes("drawings", drawings_json(documents).as_bytes())?;
         writer.bytes("svgs", svgs.as_bytes())?;
+        writer.bytes("rules", rules.as_bytes())?;
         dashas.write(&mut writer)?;
         ashtakavarga.write(&mut writer)?;
         vimshopaka.write(&mut writer)?;
@@ -2229,6 +2240,45 @@ pub unsafe extern "C" fn ts_chart_layout_row(
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_json, "out_json", json) }
     })
+}
+
+/// The rule set a request's `rules_json` names, or none for null; a refusal is
+/// named from the request's root, `rules_json.rules[0]`.
+///
+/// # Safety
+///
+/// `rules_json` null or a NUL-terminated string.
+unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(rules_json, "rules_json") }?
+        .map(|text| RuleRequest::from_json(text).and_then(|request| request.rule_set()))
+        .transpose()
+        .map_err(|error| {
+            // The request names its fields from its own root; the chart
+            // request calls that root `rules_json`.
+            let field = error.field().map_or_else(
+                || String::from("rules_json"),
+                |inner| format!("rules_json.{inner}"),
+            );
+            error.with_field(field)
+        })
+}
+
+/// The charts a request asks for, and the canonical JSON of what they answer
+/// by rule — empty when the request named no rules.
+fn read_charts(
+    sdk: &teistro::Context,
+    instants: &[JulianDay<Utc>],
+    request: &ChartRequest,
+    rules: Option<&RuleSet>,
+) -> Result<(Envelope<Vec<Document>>, String), Error> {
+    let Some(set) = rules else {
+        return Ok((sdk.chart().readings(instants, request)?, String::new()));
+    };
+    let read = sdk.chart().readings_with_rules(instants, request, set)?;
+    let (documents, readings): (Vec<Document>, Vec<_>) = read.value.into_iter().unzip();
+    let json = teistro_core::envelope::canonical_json(&readings);
+    Ok((Envelope::new(documents, read.provenance), json))
 }
 
 /// Founds a chart at an instant and a place and answers with its blob:
@@ -2352,7 +2402,9 @@ pub unsafe extern "C" fn ts_chart_found(
                 );
                 error.with_field(field)
             })?;
-        let founded = ctx.sdk().chart().readings(&instants, &request)?;
+        // SAFETY: the entry point's contract.
+        let rules = unsafe { rule_set_of(asked.rules_json) }?;
+        let (founded, rules_json) = read_charts(ctx.sdk(), &instants, &request, rules.as_ref())?;
         let svgs = match &theme {
             Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
             None => String::new(),
@@ -2363,6 +2415,7 @@ pub unsafe extern "C" fn ts_chart_found(
             kind,
             &founded.provenance,
             &svgs,
+            &rules_json,
             ctx.sdk().dashas(),
         )?;
         // SAFETY: the entry point's contract.
@@ -2413,6 +2466,7 @@ mod tests {
             place,
             ChartKind::Natal,
             provenance,
+            "",
             "",
             &teistro::dasha::DashaSystems::new(),
         )

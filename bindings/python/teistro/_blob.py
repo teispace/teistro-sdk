@@ -1354,6 +1354,9 @@ class Charts:
     dasha_phala: ChartsDashaPhala
     """Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for."""
 
+    rules: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each the rules the request's `rules_json` named that held on it — `present`, each `{rule, result}` with the rule by key — with `houses` and `longevity` when asked, and `unreadable` naming an input a rule named that the chart could not have (`03-design/rules-at-the-boundary.md`). Empty when no rules were asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1395,6 +1398,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_bhava_bala = blob.section(30, "bhava_bala")
     at_vaiseshikamsa = blob.section(31, "vaiseshikamsa")
     at_dasha_phala = blob.section(32, "dasha_phala")
+    at_rules = blob.section(33, "rules")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1946,6 +1950,7 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("B"),
             length=at_dasha_phala.count,
         ),
+        rules=blob.text(at_rules),
     )
 
 

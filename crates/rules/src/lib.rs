@@ -63,7 +63,7 @@ pub use longevity::{
 pub use reference::{BodyRef, BodySubject, Class, SignRef, Subject};
 pub use rule::{
     Cancellation, Group, LifeClass, NetStatus, Outcome, Rule, Scope, Severity, Unit,
-    check_references,
+    check_references, key_of,
 };
 pub use table::{SignDegree, Table, TableKey, Tables};
 pub use timing::{Levels, Running, Timing};
