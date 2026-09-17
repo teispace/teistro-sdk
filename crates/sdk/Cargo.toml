@@ -15,18 +15,24 @@ categories = ["science", "date-and-time"]
 publish = false
 
 [dependencies]
+serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 teistro-aspect = { path = "../aspect" }
 teistro-astro = { path = "../astro" }
 teistro-calendar = { path = "../calendar" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
+teistro-dasha = { path = "../dasha" }
 teistro-houses = { path = "../houses" }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
 teistro-points = { path = "../points" }
+teistro-rules = { path = "../rules" }
+teistro-strength = { path = "../strength" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-serial = { path = "../serial" }
+teistro-geometry = { path = "../geometry" }
+teistro-render-svg = { path = "../render-svg" }
 teistro-state = { path = "../state" }
 teistro-time = { path = "../time" }
 teistro-vargas = { path = "../vargas" }
@@ -49,6 +55,9 @@ builtin-compact = ["builtin-ephemeris", "teistro-ephemeris-builtin/compact"]
 builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]
 builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
 
+[dev-dependencies]
+teistro-state = { path = "../state" }
+
 [lints]
 workspace = true
 
@@ -66,7 +75,47 @@ workspace = true
 # and the second `Ephemeris::Test`. Neither is gated.
 
 [[test]]
+name = "ashtakavarga"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "rules"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "bhava_bala"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "dasha"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "render"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "shadbala"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "surface"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "vaiseshikamsa"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "dasha_phala"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "consumer_dasha"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "vimshopaka"
 required-features = ["builtin-ephemeris"]
 
 [[example]]
@@ -75,6 +124,10 @@ required-features = ["builtin-ephemeris"]
 
 [[example]]
 name = "birth_chart"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
+name = "chart_reading"
 required-features = ["builtin-ephemeris"]
 
 [[example]]

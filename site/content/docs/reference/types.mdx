@@ -206,16 +206,21 @@ How a context is built. Every field may be left at its zero value: a null `profi
 | `profile` | `const char *` | The shipped profile's id (`parashari-classical`, `nepali-default`, `kp-default`, `western-tropical-default`, `conformance-baseline`). Example `parashari-classical`. |
 | `settings_json` | `const char *` | A JSON settings patch over the profile: an object whose groups and knobs are the settings document's, every one optional; an unknown knob or a value outside its type is `INVALID_ARG` naming it. |
 | `locale` | `const char *` | The locale every render resolves from (`ne-Deva-NP`). Example `en-Latn`. |
+| `layouts_json` | `const char *` | Chart layouts of the consumer's own, to draw in beside the shipped ones, as a JSON array of layout rows: each the row `ts_chart_layout_row` answers, with a key of its own. Every row is checked by the rules a shipped one passes and refused by its place in the array and its own field, as `options.layouts_json`, the row's index, then the field's path; a key the SDK ships is refused, so a row adds a layout and never replaces one. Null for none (`03-design/chart-geometry.md` §7f). |
+| `dashas_json` | `const char *` | Nakshatra-seeded dasha systems of the consumer's own, as a JSON array of definitions: each a key the catalogue does not have, its lords and their years in order, the reference nakshatra, and optionally `count`, `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and `sources` (the document schema's `UduDefinition`). Every one is checked by the rules a shipped row passes and refused by its place in the array and its own field, as `options.dashas_json`, the index, then the field. A request asks for one by the id `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in registration order. Null for none (`03-design/dasha-kernels.md`). |
 | `ephemeris` | `uint8_t` | Which of the SDK's own ephemerides to use when no provider vtable is given; ignored when one is (ADR-0028). One of `ts_ephemeris`. Example `0`. |
 
 ## ts_error
 
-The last error of a call on a context: the status, the detail, and the message, field, hint and message key as strings the context lends until its next call; an `OK` record has empty strings.
+A failure as the library describes it: the status, the provider's code, and the detail, message, field, hint and message key.
+
+Read from `ts_context_last_error`, the strings are **lent** by the context until its next call and `flags` is zero; an `OK` record has null strings. Written by a call that makes a handle and failed, the strings are **owned** by the record, `flags` carries `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free` on a lent record does nothing, so freeing every record is never wrong.
 
 | field | type | what it carries |
 |---|---|---|
 | `status` | `int32_t` | The status code. One of `ts_status`. |
 | `provider_code` | `int32_t` | The provider's own code when the status is `PROVIDER`, else zero. |
+| `flags` | `uint32_t` | `TS_ERROR_OWNED` when the record owns its strings, else zero. |
 | `detail` | `const char *` | The detail's name (`UNKNOWN_KEY`), or null. |
 | `message` | `const char *` | The English message naming the field and the range. |
 | `field` | `const char *` | The field involved, or null. |
@@ -269,9 +274,15 @@ Everything else is the context's settings, which is what makes two calls under o
 | `longitude_deg` | `double` | The place's longitude, degrees east. Unit `deg`. Range `[-180,180]`. Example `85.324`. |
 | `altitude_m` | `double` | The place's altitude, metres above the ellipsoid. Unit `m`. Range `[-500,9000]`. Example `1400`. |
 | `utc_offset_seconds` | `int32_t` | The local clock's offset from UTC in seconds, east positive: the clock the day's date is read in. Unit `s`. Range `[-64800,64800]`. Example `20700`. |
-| `sections` | `uint32_t` | Which of the document's sections to compute beside the foundation, as a bit set: 1 the day's almanac, 2 the planetary states, 4 the aspects, 8 the derived points, 16 the houses service. Zero for the foundation alone, which is what every caller compiled against an earlier header passes by not passing it at all.  A bit set here and a named option in every ergonomic layer, which is the split `ts_frame_pack` already has: nothing but a generated layer writes bits (`03-design/chart-reading.md` §5). Example `0`. |
+| `sections` | `uint32_t` | Which of the document's sections to compute beside the foundation, as a bit set: 1 the day's almanac, 2 the planetary states, 4 the aspects, 8 the derived points, 16 the houses service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every caller compiled against an earlier header passes by not passing it at all.  A bit set here and a named option in every ergonomic layer, which is the split `ts_frame_pack` already has: nothing but a generated layer writes bits (`03-design/chart-reading.md` §5). Example `0`. |
 | `vargas` | `const uint16_t *` | Which divisional charts to compute, as catalogue ids, in the order they should be answered in; null with a count of zero for none, as `instants` takes a grid of none.  **Not `nullable`**, and that is the description's word rather than a promise about the pointer: `nullable` makes the generated field an `Option` of the whole parameter, and an optional *array of enum members* is a shape no emitter has been shown — it mapped the option's contents where it meant to map the array's. An empty array says "none" without needing one, which is what `instants` already does. One of `ts_varga`. |
 | `varga_count` | `size_t` | How many divisional charts `vargas` points at. |
+| `drawings` | `const uint32_t *` | Which charts to draw, and in which layouts, in the order they should be answered in: each `layout_id << 16 \| varga_id`, a `chart_layout` catalogue id and a `Varga` id, `D1` for the founded chart. Null with a count of zero for none.  Packed, as `sections` is a bit set, so the request carries one array and one count rather than two arrays that must agree; every ergonomic layer takes named pairs and writes the bits (`03-design/chart-geometry.md`). |
+| `drawing_count` | `size_t` | How many drawings `drawings` points at. |
+| `dashas` | `const uint16_t *` | Which dashas to compute, in the order they should be answered in: each a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system the context registered (`0x8000` and up). Each one's balance and its periods to its depth. Null with a count of zero for none.  Ids and not an enum, as `drawings` carries layout ids: every ergonomic layer takes a catalogue member or a registered key and writes the id. |
+| `dasha_count` | `size_t` | How many dashas `dashas` points at. |
+| `theme_json` | `const char *` | A theme to write every drawing as SVG in, as JSON: an object of `style` and `content` naming only what it changes, over the light theme or the shipped one its `extends` names (`{"extends": "dark"}`). The SVGs come back in the blob's `svgs` section, in the context's locale. Null for none, which costs nothing (`03-design/render-svg.md`). Example `{"extends":"dark"}`. |
+| `rules_json` | `const char *` | Rules to answer over every chart, as JSON: `shipped` names the kernel's sets, `rules` a consumer's own in the rule format, with `readings`, `houses` and `longevity` choosing what else comes back (`03-design/rules-at-the-boundary.md`). The answers come back in the blob's `rules` section, and the sections the rules read are computed whether or not `sections` asked for them. Null for none, which costs nothing. Example `{"shipped":["nabhasas"]}`. |
 
 ## ts_civil_time
 

@@ -9,6 +9,7 @@ use crate::mean::{Cycle, Motion};
 /// The bodies the text gives a motion of their own, in the text's order
 /// (I.29 to 34). Rahu and Ketu are the Moon's node and its opposite.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Planet {
     /// The Sun.
@@ -99,6 +100,7 @@ impl fmt::Display for Planet {
 /// The text's numbers. Each field names its verse; the derived fields
 /// name the verses they combine.
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Parameters {
     /// Civil days in an age (yuga): I.37.
     pub yuga_civil_days: u64,
@@ -344,6 +346,7 @@ impl Parameters {
 /// cited (`docs/calendars/bikram-sambat.md`), and a consumer with its
 /// tradition's set applies it through [`Parameters::with_bija`].
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
 pub struct Bija {
     /// The Moon's revolutions.

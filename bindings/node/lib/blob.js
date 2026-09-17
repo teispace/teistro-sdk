@@ -202,9 +202,10 @@ export function decodeCharts(bytes) {
     out.chartCount = READERS.u32(blob.dv, at.offset + 8);
     out.grahaCount = READERS.u32(blob.dv, at.offset + 16);
     out.vargaCount = READERS.u32(blob.dv, at.offset + 24);
-    out.latitudeDeg = READERS.f64(blob.dv, at.offset + 32);
-    out.longitudeDeg = READERS.f64(blob.dv, at.offset + 40);
-    out.altitudeM = READERS.f64(blob.dv, at.offset + 48);
+    out.dashaCount = READERS.u32(blob.dv, at.offset + 32);
+    out.latitudeDeg = READERS.f64(blob.dv, at.offset + 40);
+    out.longitudeDeg = READERS.f64(blob.dv, at.offset + 48);
+    out.altitudeM = READERS.f64(blob.dv, at.offset + 56);
   }
   {
     const at = section(blob, 2, 'cast');
@@ -415,12 +416,189 @@ export function decodeCharts(bytes) {
       signDeg: column(blob, at, 27, 'f64', at.count),
       nakshatraDeg: column(blob, at, 28, 'f64', at.count),
       padaDeg: column(blob, at, 29, 'f64', at.count),
+      hasSayanadi: column(blob, at, 30, 'u8', at.count),
+      sayanadi: column(blob, at, 31, 'u16', at.count),
+      cheshta1: column(blob, at, 32, 'u16', at.count),
+      cheshta2: column(blob, at, 33, 'u16', at.count),
+      cheshta3: column(blob, at, 34, 'u16', at.count),
+      cheshta4: column(blob, at, 35, 'u16', at.count),
+      cheshta5: column(blob, at, 36, 'u16', at.count),
       length: at.count,
     };
   }
   {
     const at = section(blob, 20, 'combustion_orbs');
     out.combustionOrbs = text(blob, at);
+  }
+  {
+    const at = section(blob, 21, 'drawings');
+    out.drawings = text(blob, at);
+  }
+  {
+    const at = section(blob, 22, 'svgs');
+    out.svgs = text(blob, at);
+  }
+  {
+    const at = section(blob, 23, 'dashas');
+    out.dashas = {
+      system: column(blob, at, 0, 'u16', at.count),
+      seeded: column(blob, at, 1, 'u8', at.count),
+      signed: column(blob, at, 2, 'u8', at.count),
+      seed: column(blob, at, 3, 'u16', at.count),
+      firstLord: column(blob, at, 4, 'u16', at.count),
+      overflow: column(blob, at, 5, 'u8', at.count),
+      balance: column(blob, at, 6, 'u8', at.count),
+      remaining: column(blob, at, 7, 'f64', at.count),
+      balanceDays: column(blob, at, 8, 'f64', at.count),
+      balanceYears: column(blob, at, 9, 'u32', at.count),
+      balanceMonths: column(blob, at, 10, 'u8', at.count),
+      balanceDayCount: column(blob, at, 11, 'u8', at.count),
+      balanceHours: column(blob, at, 12, 'u8', at.count),
+      balanceMinutes: column(blob, at, 13, 'u8', at.count),
+      moonSpanFrom: column(blob, at, 14, 'f64', at.count),
+      moonSpanTo: column(blob, at, 15, 'f64', at.count),
+      depth: column(blob, at, 16, 'u8', at.count),
+      periodCount: column(blob, at, 17, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 24, 'dasha_periods');
+    out.dashaPeriods = {
+      level: column(blob, at, 0, 'u8', at.count),
+      index: column(blob, at, 1, 'u8', at.count),
+      sign: column(blob, at, 2, 'u16', at.count),
+      lord: column(blob, at, 3, 'u16', at.count),
+      fromJd: column(blob, at, 4, 'f64', at.count),
+      toJd: column(blob, at, 5, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 25, 'ashtakavarga');
+    out.ashtakavarga = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      shodhana: column(blob, at, 1, 'u8', at.count),
+      ekadhipatya: column(blob, at, 2, 'u8', at.count),
+      rashiPinda: column(blob, at, 3, 'u32', at.count),
+      grahaPinda: column(blob, at, 4, 'u32', at.count),
+      yogaPinda: column(blob, at, 5, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 26, 'ashtakavarga_bindus');
+    out.ashtakavargaBindus = {
+      bindus: column(blob, at, 0, 'u8', at.count),
+      reduced: column(blob, at, 1, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 27, 'sarvashtakavarga');
+    out.sarvashtakavarga = {
+      sarva: column(blob, at, 0, 'u16', at.count),
+      trikona: column(blob, at, 1, 'u16', at.count),
+      reduced: column(blob, at, 2, 'u16', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 28, 'vimshopaka');
+    out.vimshopaka = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      scoring: column(blob, at, 1, 'u8', at.count),
+      shadvarga: column(blob, at, 2, 'f64', at.count),
+      saptavarga: column(blob, at, 3, 'f64', at.count),
+      dashavarga: column(blob, at, 4, 'f64', at.count),
+      shodashavarga: column(blob, at, 5, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 29, 'shadbala');
+    out.shadbala = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      uchcha: column(blob, at, 1, 'f64', at.count),
+      saptavargaja: column(blob, at, 2, 'f64', at.count),
+      ojayugma: column(blob, at, 3, 'f64', at.count),
+      kendradi: column(blob, at, 4, 'f64', at.count),
+      drekkana: column(blob, at, 5, 'f64', at.count),
+      dig: column(blob, at, 6, 'f64', at.count),
+      nathonnatha: column(blob, at, 7, 'f64', at.count),
+      paksha: column(blob, at, 8, 'f64', at.count),
+      tribhaga: column(blob, at, 9, 'f64', at.count),
+      abda: column(blob, at, 10, 'f64', at.count),
+      masa: column(blob, at, 11, 'f64', at.count),
+      vara: column(blob, at, 12, 'f64', at.count),
+      hora: column(blob, at, 13, 'f64', at.count),
+      ayana: column(blob, at, 14, 'f64', at.count),
+      yuddha: column(blob, at, 15, 'f64', at.count),
+      cheshta: column(blob, at, 16, 'f64', at.count),
+      naisargika: column(blob, at, 17, 'f64', at.count),
+      drik: column(blob, at, 18, 'f64', at.count),
+      virupas: column(blob, at, 19, 'f64', at.count),
+      rupas: column(blob, at, 20, 'f64', at.count),
+      requiredRupas: column(blob, at, 21, 'f64', at.count),
+      ishta: column(blob, at, 22, 'f64', at.count),
+      kashta: column(blob, at, 23, 'f64', at.count),
+      subhaRashmi: column(blob, at, 24, 'f64', at.count),
+      ashubhaRashmi: column(blob, at, 25, 'f64', at.count),
+      strong: column(blob, at, 26, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 30, 'bhava_bala');
+    out.bhavaBala = {
+      lord: column(blob, at, 0, 'u16', at.count),
+      adhipati: column(blob, at, 1, 'f64', at.count),
+      dig: column(blob, at, 2, 'f64', at.count),
+      drishti: column(blob, at, 3, 'f64', at.count),
+      special: column(blob, at, 4, 'f64', at.count),
+      virupas: column(blob, at, 5, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 31, 'vaiseshikamsa');
+    out.vaiseshikamsa = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      impaired: column(blob, at, 1, 'u8', at.count),
+      shadvargaGood: column(blob, at, 2, 'u8', at.count),
+      shadvargaName: column(blob, at, 3, 'u16', at.count),
+      saptavargaGood: column(blob, at, 4, 'u8', at.count),
+      saptavargaName: column(blob, at, 5, 'u16', at.count),
+      dashavargaGood: column(blob, at, 6, 'u8', at.count),
+      dashavargaName: column(blob, at, 7, 'u16', at.count),
+      shodashavargaGood: column(blob, at, 8, 'u8', at.count),
+      shodashavargaName: column(blob, at, 9, 'u16', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 32, 'dasha_phala');
+    out.dashaPhala = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      subhankaD1: column(blob, at, 1, 'f64', at.count),
+      subhankaD2: column(blob, at, 2, 'f64', at.count),
+      subhankaD3: column(blob, at, 3, 'f64', at.count),
+      subhankaD7: column(blob, at, 4, 'f64', at.count),
+      subhankaD9: column(blob, at, 5, 'f64', at.count),
+      subhankaD12: column(blob, at, 6, 'f64', at.count),
+      subhankaD30: column(blob, at, 7, 'f64', at.count),
+      subhanka: column(blob, at, 8, 'f64', at.count),
+      asubhanka: column(blob, at, 9, 'f64', at.count),
+      nature: column(blob, at, 10, 'u16', at.count),
+      phase: column(blob, at, 11, 'u8', at.count),
+      favourable: column(blob, at, 12, 'u8', at.count),
+      unfavourable: column(blob, at, 13, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 33, 'rules');
+    out.rules = text(blob, at);
   }
   return out;
 }

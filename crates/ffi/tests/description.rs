@@ -126,6 +126,7 @@ fn the_versions_the_status_and_the_entry_points_are_described() {
         "ts_context_new",
         "ts_context_free",
         "ts_context_last_error",
+        "ts_error_free",
         "ts_positions",
         "ts_intl_render",
         "ts_time_resolve",
@@ -147,7 +148,8 @@ fn the_versions_the_status_and_the_entry_points_are_described() {
         [
             "VTABLE_ABI_VERSION",
             "TS_ABI_VERSION",
-            "TS_CONTEXT_TEST_PROVIDER"
+            "TS_CONTEXT_TEST_PROVIDER",
+            "TS_ERROR_OWNED"
         ]
     );
 }

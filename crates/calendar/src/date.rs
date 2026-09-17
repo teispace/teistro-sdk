@@ -11,6 +11,7 @@ use crate::fixed::{FixedDay, Weekday};
 
 /// A year in an era, for presentation.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct EraNumber {
     /// The era.
     pub era: Era,
@@ -21,6 +22,7 @@ pub struct EraNumber {
 /// A date in a calendar. Years are astronomical (1 BCE is 0); an era is
 /// attached for presentation only.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CalendarDate {
     /// The calendar.
     pub calendar: Calendar,

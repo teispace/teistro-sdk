@@ -526,9 +526,10 @@ fn numbers(
     } else {
         let _ = write!(
             out,
-            "The ambiguity is not theoretical. {} written both ways within\n\
+            "The ambiguity is not theoretical. {} {} written both ways within\n\
              the same sample set:\n\n",
-            crate::measure::plural(both.len(), "path is")
+            crate::measure::plural(both.len(), "path"),
+            if both.len() == 1 { "is" } else { "are" }
         );
         for path in &both {
             let _ = writeln!(out, "- `{path}`");
@@ -793,7 +794,12 @@ fn decides(
          document's hash — so the schema's natural gate, *every sample\n\
          validates and reads back equal*, is written and passing\n\
          (`crates/serial/tests/document.rs`).\n\n\
-         What is left is the emitter.\n\n",
+         The emitter is built, and building it corrected this page's own\n\
+         conclusion: the description it names, `idl/api.json`, does not\n\
+         describe the document at all. The schema comes instead from serde's\n\
+         own reading of the types, with the catalogue's member lists\n\
+         generated from the same keys its readers use\n\
+         ([`document-schema.md`](document-schema.md)).\n\n",
         table(&claims),
         falsified,
         claims.len(),

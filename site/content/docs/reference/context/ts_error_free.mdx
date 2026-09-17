@@ -1,0 +1,46 @@
+---
+title: ts_error_free
+description: "Releases the strings of a record a failed constructor wrote, and zeroes it but for its size; null, a lent record from `ts_context_last_error`, and a record already freed are all ignored."
+---
+
+Releases the strings of a record a failed constructor wrote, and zeroes it but for its size; null, a lent record from `ts_context_last_error`, and a record already freed are all ignored.
+
+<Tabs items={['C', 'Node', 'Dart']}>
+<Tab value="C">
+
+```c
+void ts_error_free(ts_error * error);
+```
+
+</Tab>
+<Tab value="Node">
+
+```js
+error_free(…)
+```
+
+The addon's generated layer; `@teistro/sdk` wraps it.
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+library.errorFree(…)
+```
+
+The generated `TeistroLibrary`; `package:teistro` wraps it.
+
+</Tab>
+</Tabs>
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `error` | `ts_error *` | the error record being freed | — |
+
+## Safety
+
+`error` must be null or a `TsError` valid for reads and writes, whose strings, when `flags` carries `TS_ERROR_OWNED`, are the ones this library wrote there and are not used again.
+
+Declared in `crates/ffi/src/context.rs`.

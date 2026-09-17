@@ -22,6 +22,7 @@ import {
   CONTEXT_TEST_PROVIDER,
   CalendarById,
   ChartKind,
+  ChartLayoutById,
   DayPartById,
   ChartKindById,
   ChoghadiyaById,
@@ -41,6 +42,8 @@ import {
   AvasthaDeeptadiById,
   AvasthaJagradadiById,
   AvasthaLajjitadiById,
+  AvasthaSayanadiById,
+  AvasthaCheshtaById,
   BurningById,
   DignityById,
   RelationshipById,
@@ -48,6 +51,14 @@ import {
   QuadrantById,
   RashiById,
   StrengthById,
+  BalanceById,
+  EkadhipatyaById,
+  ShodhanaById,
+  VaiseshikamsaById,
+  DashaPhaseById,
+  NatureById,
+  VimshopakaScoringById,
+  DashaSystemById,
   VargaById,
   SDK_VERSION,
   TithiById,
@@ -204,7 +215,8 @@ export class TeistroError extends Error {
  * threw, kept on this side for the length of one call and put back here.
  * The Dart and Python bindings do exactly this.
  *
- * @param {object|null} context the addon handle, for `lastError`
+ * @param {object|null} context the addon handle, for `lastError`; null
+ *   for a call that makes a handle, whose refusal carries its own record
  * @param {Function} call the call to make
  * @param {{error: unknown}} [thrown] where this context's provider leaves
  *   what it threw
@@ -214,8 +226,16 @@ function guarded(context, call, thrown) {
   try {
     return call();
   } catch (cause) {
-    const record = context?.lastError?.();
+    // A context keeps its last refusal; a call that makes a handle has no
+    // context to keep it on, so the addon throws it with the whole record
+    // attached instead (`ffi-abi-and-api-description.md` §6.1).
+    // The record comes on the error the addon threw for the call that
+    // failed, and from nowhere else: reading the context's last error for
+    // any exception would report an argument this layer refused as
+    // whatever the library refused last. A provider's own throw is the one
+    // case with no such error, and there the call did reach the library.
     const own = thrown?.error;
+    const record = cause?.lastError ?? (own !== undefined ? context?.lastError?.() : undefined);
     if (own !== undefined) {
       thrown.error = undefined;
       // The boundary's refusal kept as the cause: the caller catches the
@@ -440,8 +460,23 @@ function row(columns, index) {
  * charts in it are views over those bytes rather than copies.
  */
 export class Charts extends Decoded {
-  constructor(bytes) {
+  /** The full key of each dasha system a context registered, by its id. */
+  #dashaNames;
+
+  /**
+   * @param {Uint8Array} bytes the blob the library returned
+   * @param {Map<number, string>} [dashaNames] the full key of each dasha
+   *   system the founding context registered, by its id; a system missing
+   *   from it reads as `'unknown'`
+   */
+  constructor(bytes, dashaNames = new Map()) {
     super(bytes, decodeCharts);
+    this.#dashaNames = dashaNames;
+  }
+
+  /** The full key of a registered dasha system's id, when this batch knows it. */
+  dashaName(id) {
+    return this.#dashaNames.get(id);
   }
 
   /** How many charts the batch holds. */
@@ -488,7 +523,7 @@ export class Charts extends Decoded {
     return this.decoded.drishtiTable;
   }
 
-  /** The steps the SDK applied, each `{ name, implementation }`. */
+  /** The steps the SDK applied, in order, each `name:Implementation`. */
   get steps() {
     return JSON.parse(this.decoded.steps);
   }
@@ -592,23 +627,18 @@ export class Chart {
   }
 
   /**
-   * The grahas, in the catalogue's order, one object each.
-   *
-   * The columns underneath are views over the blob's bytes, charts
-   * outermost; this reads this chart's stride out of them into the shape
-   * an application wants, which is a row.
-   */
-  /**
    * The divisional charts asked for, in the order they were asked.
    *
    * Empty unless `vargas` named some: a caller who wants a birth chart
    * does not pay for twenty-one of them
    * (`03-design/chart-reading.md` §4).
    *
-   * Each is `{ varga, lagna, grahas }`, where a placement is
-   * `{ rashi, part, sign }` — the sign the body stands in, which part of
-   * it, and the sign the divisional chart puts it in. `sign === rashi` is
-   * the body keeping its sign, which in the navamsha is **vargottama**.
+   * Each is `{ varga, lagna, grahas }`, where the lagna is a placement
+   * `{ rashi, part, sign }` — the sign it stands in, which part of it, and
+   * the sign the divisional chart puts it in — and each graha is
+   * `{ graha, at }` with `at` the same placement: the shape the Rust, Dart
+   * and Python surfaces give it. `at.sign === at.rashi` is the body keeping
+   * its sign, which in the navamsha is **vargottama**.
    */
   get vargas() {
     const d = this.#batch.decoded;
@@ -627,12 +657,29 @@ export class Chart {
         },
         grahas: Array.from({ length: grahaCount }, (_, j) => ({
           graha: GrahaById.get(d.grahas.graha[this.#index * grahaCount + j]) ?? 'unknown',
-          rashi: RashiById.get(d.vargaGrahas.rashi[from + j]) ?? 'unknown',
-          part: d.vargaGrahas.part[from + j],
-          sign: RashiById.get(d.vargaGrahas.sign[from + j]) ?? 'unknown',
+          at: {
+            rashi: RashiById.get(d.vargaGrahas.rashi[from + j]) ?? 'unknown',
+            part: d.vargaGrahas.part[from + j],
+            sign: RashiById.get(d.vargaGrahas.sign[from + j]) ?? 'unknown',
+          },
         })),
       };
     });
+  }
+
+  /**
+   * The charts drawn in the layouts asked for, in the order asked; empty
+   * unless `drawings` named some (`03-design/chart-geometry.md`).
+   *
+   * Each is `{ layout, varga, cells, frame, marks }`. A cell is
+   * `{ outline, sign, house, lagna, ring, label, anchor, bodies }`: an
+   * outline in the unit square (y downwards), the sign **and** the house it
+   * shows, and the bodies standing in it as catalogue keys. `marks` places
+   * each body at its own degree on a wheel and is empty for a grid. The
+   * shape is the Rust, Dart and Python surfaces' own.
+   */
+  get drawings() {
+    return drawingsOf(this.#batch)[this.#index] ?? [];
   }
 
   /**
@@ -673,6 +720,71 @@ export class Chart {
         },
       };
     });
+  }
+
+  /**
+   * The dashas asked for (`dashas: [DashaSystem.Vimshottari]`), each with its
+   * balance at birth and its periods to the settings' depth, in the order
+   * asked; empty unless some were.
+   */
+  get dashas() {
+    return dashasOf(this.#batch)[this.#index] ?? [];
+  }
+
+  /**
+   * The Ashtakavarga (`ashtakavarga: true`): each graha's bindus by sign from
+   * Aries, the sarvashtakavarga, and their reductions and pindas under the
+   * settings' reading; `null` unless asked for.
+   */
+  get ashtakavarga() {
+    return ashtakavargasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The Vaiseshikamsa (`vaiseshikamsa: true`): each graha's count of good
+   * vargas and the name it earns in each scheme, and whether it is impaired;
+   * `null` unless asked for.
+   */
+  get vaiseshikamsa() {
+    return vaiseshikamsasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The dasha phala (`dashaPhala: true`): each graha's Subhanka in the seven
+   * vargas, whether its rasi place is auspicious, where in its dasha its
+   * effects come and whether its placement makes the dasha favourable or
+   * unfavourable; `null` unless asked for.
+   */
+  get dashaPhala() {
+    return dashaPhalasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The Vimshopaka (`vimshopaka: true`): each graha's strength out of 20
+   * across the divisional charts under the four schemes, each varga scored
+   * under the settings' reading; `null` unless asked for.
+   */
+  get vimshopaka() {
+    return vimshopakasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The Shadbala (`shadbala: true`): each graha's six strengths in virupas,
+   * the Sthana and Kaala by component, their sum in rupas and whether it
+   * reaches the requirement, under the context's `strength.*` settings;
+   * `null` unless asked for.
+   */
+  get shadbala() {
+    return shadbalasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The Bhava bala (`bhavaBala: true`): each bhava's lord's Shadbala, its Dig
+   * and drishti balas, its special rules and their sum in virupas, under the
+   * context's `strength.bhava_*` settings; `null` unless asked for.
+   */
+  get bhavaBala() {
+    return bhavaBalasOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -784,6 +896,14 @@ export class Chart {
               apartDeg: s.warApartDeg[i],
             }
           : null,
+        sayanadi: s.hasSayanadi[i]
+          ? {
+              avastha: AvasthaSayanadiById.get(s.sayanadi[i]) ?? 'unknown',
+              cheshtas: [s.cheshta1, s.cheshta2, s.cheshta3, s.cheshta4, s.cheshta5].map(
+                (column) => AvasthaCheshtaById.get(column[i]) ?? 'unknown',
+              ),
+            }
+          : null,
         boundaries: {
           signDeg: s.signDeg[i],
           nakshatraDeg: s.nakshatraDeg[i],
@@ -793,6 +913,13 @@ export class Chart {
     });
   }
 
+  /**
+   * The grahas, in the catalogue's order, one object each.
+   *
+   * The columns underneath are views over the blob's bytes, charts
+   * outermost; this reads this chart's stride out of them into the shape
+   * an application wants, which is a row.
+   */
   get grahas() {
     const g = this.#batch.decoded.grahas;
     const count = this.#batch.decoded.grahaCount;
@@ -1172,7 +1299,6 @@ export class Positions extends Decoded {
     return Array.from(this.decoded.bodies.body, (id) => BodyById.get(id) ?? 'unknown');
   }
 
-  /** The bodies as the ids the blob carries, without a copy. */
   /**
    * How many instants the grid covers, which is the stride a caller
    * needs to read a column: cell `i * bodyCount + j` is instant `i`,
@@ -1187,6 +1313,7 @@ export class Positions extends Decoded {
     return this.decoded.bodyCount;
   }
 
+  /** The bodies as the ids the blob carries, without a copy. */
   get bodyIds() {
     return this.decoded.bodies.body;
   }
@@ -1555,6 +1682,33 @@ class FrameArea extends Area {
 
 /** `sdk.chart` — a chart founded at an instant and a place. */
 class ChartArea extends Area {
+  /** The member id of each layout the context registered, by its full key. */
+  #registered;
+  /** The member id of each dasha system the context registered, by its full key. */
+  #dashas;
+  /** The same turned round, for a batch to name them by. */
+  #dashaNames;
+
+  constructor(reach, registered, dashas) {
+    super(reach);
+    this.#registered = registered;
+    this.#dashas = dashas;
+    this.#dashaNames = new Map(Array.from(dashas, ([key, id]) => [id, key]));
+  }
+
+  /**
+   * A layout this context can draw in, shipped or registered, as its row:
+   * the record a context's `layouts` option takes. Copy a shipped row, give
+   * it a key of its own, change what differs and register it
+   * (`03-design/chart-geometry.md` §7f).
+   *
+   * @param {string} key the layout's key, bare (`NORTH_INDIAN`) or full
+   * @returns {object} the row, a fresh object to change
+   */
+  layout(key) {
+    return JSON.parse(this._run((inner) => inner.chartLayoutRow(key)));
+  }
+
   /**
    * Founds a chart at an instant and a place.
    *
@@ -1608,6 +1762,9 @@ class ChartArea extends Area {
    * @param {boolean} [request.houses] whether to compute the houses
    *   service — each bhava's sign, its lord and its quadrant; false by
    *   default
+   * @param {ReadonlyArray<{layout: string, varga: string}>} [request.drawings]
+   *   the charts to draw, each a `ChartLayout` and a `Varga` (`Varga.D1` for
+   *   the founded chart), in the order to answer them; none by default
    * @param {boolean} [request.state] whether to compute what each graha
    *   *is* — its dignity, its friendships, what the Sun does to it, its
    *   avasthas and any war it is in; false by default
@@ -1631,12 +1788,487 @@ class ChartArea extends Area {
           (request.aspects === true ? SECTION_ASPECTS : 0) |
           (request.points === true ? SECTION_POINTS : 0) |
           (request.houses === true ? SECTION_HOUSES : 0) |
+          (request.ashtakavarga === true ? SECTION_ASHTAKAVARGA : 0) |
+          (request.vimshopaka === true ? SECTION_VIMSHOPAKA : 0) |
+          (request.vaiseshikamsa === true ? SECTION_VAISESHIKAMSA : 0) |
+          (request.shadbala === true ? SECTION_SHADBALA : 0) |
+          (request.bhavaBala === true ? SECTION_BHAVA_BALA : 0) |
+          (request.dashaPhala === true ? SECTION_DASHA_PHALA : 0) |
           (request.state === true ? SECTION_STATE : 0),
-        vargas: vargaKeys(request.vargas),
+        vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
+        dashas: dashaIds(request.dashas, this.#dashas),
+        drawings: drawingBits(request.drawings, this.#registered),
+        themeJson: themeJson(request.theme),
       }),
     );
-    return new Charts(bytes);
+    return new Charts(bytes, this.#dashaNames);
   }
+}
+
+/** Each batch's dashas, decoded once however many charts read them. */
+const DASHAS = new WeakMap();
+
+/**
+ * Every chart's dashas in a batch: `dashas` holds a row a chart a system and
+ * `dasha_periods` each row's periods, ragged by `period_count`
+ * (`03-design/dasha-kernels.md`).
+ *
+ * @param {Charts} batch
+ * @returns {object[][]}
+ */
+function dashasOf(batch) {
+  let decoded = DASHAS.get(batch);
+  if (decoded === undefined) {
+    const d = batch.decoded;
+    const per = d.dashaCount;
+    const charts = per === 0 ? 0 : d.dashas.length / per;
+    let start = 0;
+    decoded = Array.from({ length: charts }, (_, chart) =>
+      Array.from({ length: per }, (_, j) => {
+        const row = chart * per + j;
+        const count = d.dashas.periodCount[row];
+        const dasha = dashaFrom(batch, row, start, count);
+        start += count;
+        return dasha;
+      }),
+    );
+    DASHAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** One dasha row and its periods, in this layer's shape. */
+function dashaFrom(batch, row, start, count) {
+  const d = batch.decoded;
+  const rows = d.dashas;
+  const seeded = rows.seeded[row] !== 0;
+  const signed = rows.signed[row] !== 0;
+  const periods = [];
+  const path = [];
+  for (let k = 0; k < count; k += 1) {
+    const i = start + k;
+    const level = d.dashaPeriods.level[i];
+    path.length = level - 1;
+    path.push(d.dashaPeriods.index[i]);
+    periods.push(
+      Object.freeze({
+        path: path.join('/'),
+        level,
+        sign: signed ? (RashiById.get(d.dashaPeriods.sign[i]) ?? 'unknown') : null,
+        lord: GrahaById.get(d.dashaPeriods.lord[i]) ?? 'unknown',
+        from: d.dashaPeriods.fromJd[i],
+        to: d.dashaPeriods.toJd[i],
+      }),
+    );
+  }
+  const spanFrom = rows.moonSpanFrom[row];
+  return Object.freeze({
+    system: DashaSystemById.get(rows.system[row]) ?? batch.dashaName(rows.system[row]) ?? 'unknown',
+    seed: seeded ? (NakshatraById.get(rows.seed[row]) ?? 'unknown') : null,
+    firstLord: GrahaById.get(rows.firstLord[row]) ?? 'unknown',
+    overflow: rows.overflow[row] !== 0,
+    balance: seeded
+      ? Object.freeze({
+          method: BalanceById.get(rows.balance[row]) ?? 'unknown',
+          remaining: rows.remaining[row],
+          days: rows.balanceDays[row],
+          written: Object.freeze({
+            years: rows.balanceYears[row],
+            months: rows.balanceMonths[row],
+            days: rows.balanceDayCount[row],
+            hours: rows.balanceHours[row],
+            minutes: rows.balanceMinutes[row],
+          }),
+        })
+      : null,
+    moonSpan: Number.isNaN(spanFrom) ? null : Object.freeze({ from: spanFrom, to: rows.moonSpanTo[row] }),
+    depth: rows.depth[row],
+    periods: Object.freeze(periods),
+    /**
+     * The periods running at a Julian day (UTC), from the mahadasha down to
+     * the depth the periods go; empty before birth and past the cycle.
+     */
+    at(jd) {
+      const chain = [];
+      for (const period of periods) {
+        if (period.level === chain.length + 1 && period.from <= jd && jd < period.to) chain.push(period);
+      }
+      return chain;
+    },
+  });
+}
+
+/** Each batch's Ashtakavargas, decoded once however many charts read them. */
+const ASHTAKAVARGAS = new WeakMap();
+
+/** Every chart's Ashtakavarga in a batch; empty when none was asked for. */
+function ashtakavargasOf(batch) {
+  let decoded = ASHTAKAVARGAS.get(batch);
+  if (decoded === undefined) {
+    const d = batch.decoded;
+    const rows = d.ashtakavarga;
+    const bins = d.ashtakavargaBindus;
+    const sums = d.sarvashtakavarga;
+    const twelve = (column, from) => Object.freeze(Array.from(column.subarray(from, from + 12)));
+    decoded = Array.from({ length: rows.length / 7 }, (_, chart) => {
+      const grahas = Array.from({ length: 7 }, (_, g) => {
+        const row = chart * 7 + g;
+        const eachGraha = ShodhanaById.get(rows.shodhana[row]) === 'each-graha';
+        return Object.freeze({
+          graha: GrahaById.get(rows.graha[row]) ?? 'unknown',
+          bindus: twelve(bins.bindus, row * 12),
+          reduced: eachGraha ? twelve(bins.reduced, row * 12) : null,
+          rashiPinda: rows.rashiPinda[row],
+          grahaPinda: rows.grahaPinda[row],
+          yogaPinda: rows.yogaPinda[row],
+        });
+      });
+      return Object.freeze({
+        shodhana: ShodhanaById.get(rows.shodhana[chart * 7]) ?? 'unknown',
+        ekadhipatya: EkadhipatyaById.get(rows.ekadhipatya[chart * 7]) ?? 'unknown',
+        grahas: Object.freeze(grahas),
+        sarva: twelve(sums.sarva, chart * 12),
+        trikona: twelve(sums.trikona, chart * 12),
+        reduced: twelve(sums.reduced, chart * 12),
+      });
+    });
+    ASHTAKAVARGAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** Each batch's Vaiseshikamsas, decoded once however many charts read them. */
+const VAISESHIKAMSAS = new WeakMap();
+
+/** Every chart's Vaiseshikamsa in a batch; empty when none was asked for. */
+function vaiseshikamsasOf(batch) {
+  let decoded = VAISESHIKAMSAS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.vaiseshikamsa;
+    const standing = (row, scheme) => {
+      const good = c[`${scheme}Good`][row];
+      return Object.freeze({
+        goodVargas: good,
+        name: good >= 2 ? (VaiseshikamsaById.get(c[`${scheme}Name`][row]) ?? 'unknown') : null,
+      });
+    };
+    decoded = Array.from({ length: c.length / 7 }, (_, chart) =>
+      Object.freeze({
+        grahas: Object.freeze(
+          Array.from({ length: 7 }, (_, g) => {
+            const row = chart * 7 + g;
+            return Object.freeze({
+              graha: GrahaById.get(c.graha[row]) ?? 'unknown',
+              shadvarga: standing(row, 'shadvarga'),
+              saptavarga: standing(row, 'saptavarga'),
+              dashavarga: standing(row, 'dashavarga'),
+              shodashavarga: standing(row, 'shodashavarga'),
+              impaired: c.impaired[row] === 1,
+            });
+          }),
+        ),
+      }),
+    );
+    VAISESHIKAMSAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** The seven vargas whose Subhanka columns the dasha phala carries, in order. */
+const SUBHANKA_VARGAS = ['D1', 'D2', 'D3', 'D7', 'D9', 'D12', 'D30'];
+
+/** Each batch's dasha phalas, decoded once however many charts read them. */
+const DASHA_PHALAS = new WeakMap();
+
+/** Every chart's dasha phala in a batch; empty when none was asked for. */
+function dashaPhalasOf(batch) {
+  let decoded = DASHA_PHALAS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.dashaPhala;
+    decoded = Array.from({ length: c.graha.length / 9 }, (_, chart) =>
+      Object.freeze({
+        grahas: Object.freeze(
+          Array.from({ length: 9 }, (_, g) => {
+            const row = chart * 9 + g;
+            return Object.freeze({
+              graha: GrahaById.get(c.graha[row]) ?? 'unknown',
+              subhankas: Object.freeze(SUBHANKA_VARGAS.map((varga) => c[`subhanka${varga}`][row])),
+              subhanka: c.subhanka[row],
+              asubhanka: c.asubhanka[row],
+              nature: NatureById.get(c.nature[row]) ?? 'unknown',
+              phase: DashaPhaseById.get(c.phase[row]) ?? 'unknown',
+              favourable: c.favourable[row] !== 0,
+              unfavourable: c.unfavourable[row] !== 0,
+            });
+          }),
+        ),
+      }),
+    );
+    DASHA_PHALAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** Each batch's Vimshopakas, decoded once however many charts read them. */
+const VIMSHOPAKAS = new WeakMap();
+
+/** Every chart's Vimshopaka in a batch; empty when none was asked for. */
+function vimshopakasOf(batch) {
+  let decoded = VIMSHOPAKAS.get(batch);
+  if (decoded === undefined) {
+    const rows = batch.decoded.vimshopaka;
+    decoded = Array.from({ length: rows.length / 7 }, (_, chart) =>
+      Object.freeze({
+        scoring: VimshopakaScoringById.get(rows.scoring[chart * 7]) ?? 'unknown',
+        grahas: Object.freeze(
+          Array.from({ length: 7 }, (_, g) => {
+            const row = chart * 7 + g;
+            return Object.freeze({
+              graha: GrahaById.get(rows.graha[row]) ?? 'unknown',
+              shadvarga: rows.shadvarga[row],
+              saptavarga: rows.saptavarga[row],
+              dashavarga: rows.dashavarga[row],
+              shodashavarga: rows.shodashavarga[row],
+            });
+          }),
+        ),
+      }),
+    );
+    VIMSHOPAKAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** Each batch's Bhava balas, decoded once however many charts read them. */
+const BHAVA_BALAS = new WeakMap();
+
+/** Every chart's Bhava bala in a batch; empty when none was asked for. */
+function bhavaBalasOf(batch) {
+  let decoded = BHAVA_BALAS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.bhavaBala;
+    decoded = Array.from({ length: c.length / 12 }, (_, chart) =>
+      Object.freeze({
+        bhavas: Object.freeze(
+          Array.from({ length: 12 }, (_, h) => {
+            const row = chart * 12 + h;
+            return Object.freeze({
+              bhava: h + 1,
+              lord: GrahaById.get(c.lord[row]) ?? 'unknown',
+              adhipati: c.adhipati[row],
+              dig: c.dig[row],
+              drishti: c.drishti[row],
+              special: c.special[row],
+              virupas: c.virupas[row],
+            });
+          }),
+        ),
+      }),
+    );
+    BHAVA_BALAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** Each batch's Shadbalas, decoded once however many charts read them. */
+const SHADBALAS = new WeakMap();
+
+/** Every chart's Shadbala in a batch; empty when none was asked for. */
+function shadbalasOf(batch) {
+  let decoded = SHADBALAS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.shadbala;
+    const graha = (row) => {
+      const sthana = {
+        uchcha: c.uchcha[row],
+        saptavargaja: c.saptavargaja[row],
+        ojayugma: c.ojayugma[row],
+        kendradi: c.kendradi[row],
+        drekkana: c.drekkana[row],
+      };
+      const kaala = {
+        nathonnatha: c.nathonnatha[row],
+        paksha: c.paksha[row],
+        tribhaga: c.tribhaga[row],
+        abda: c.abda[row],
+        masa: c.masa[row],
+        vara: c.vara[row],
+        hora: c.hora[row],
+        ayana: c.ayana[row],
+        yuddha: c.yuddha[row],
+      };
+      return Object.freeze({
+        graha: GrahaById.get(c.graha[row]) ?? 'unknown',
+        sthana: Object.freeze(sthana),
+        dig: c.dig[row],
+        kaala: Object.freeze(kaala),
+        cheshta: c.cheshta[row],
+        naisargika: c.naisargika[row],
+        drik: c.drik[row],
+        virupas: c.virupas[row],
+        rupas: c.rupas[row],
+        requiredRupas: c.requiredRupas[row],
+        ishta: c.ishta[row],
+        kashta: c.kashta[row],
+        subhaRashmi: c.subhaRashmi[row],
+        ashubhaRashmi: c.ashubhaRashmi[row],
+        strong: c.strong[row] === 1,
+      });
+    };
+    decoded = Array.from({ length: c.length / 7 }, (_, chart) =>
+      Object.freeze({ grahas: Object.freeze(Array.from({ length: 7 }, (_, g) => graha(chart * 7 + g))) }),
+    );
+    SHADBALAS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** Each batch's drawings, parsed once however many charts read them. */
+const DRAWINGS = new WeakMap();
+
+/**
+ * Every chart's drawings in a batch, in this layer's shape: catalogue keys in
+ * full (`rashi.LEO`, `varga.D9`) and camel-cased fields, as every other
+ * accessor gives them.
+ *
+ * @param {Charts} batch
+ * @returns {object[][]}
+ */
+function drawingsOf(batch) {
+  let parsed = DRAWINGS.get(batch);
+  if (parsed === undefined) {
+    const { drawings, svgs } = batch.decoded;
+    const written = svgs ? JSON.parse(svgs) : [];
+    parsed = drawings
+      ? JSON.parse(drawings).map((charted, chart) =>
+          charted.map((drawing, index) => drawingFrom(drawing, written[chart]?.[index])),
+        )
+      : [];
+    DRAWINGS.set(batch, parsed);
+  }
+  return parsed;
+}
+
+/**
+ * A drawing as the boundary's JSON writes it, in this layer's shape, with
+ * its SVG when the request gave a theme.
+ */
+function drawingFrom({ varga, placed }, svg) {
+  return Object.freeze({
+    svg,
+    layout: `chart_layout.${placed.layout}`,
+    varga: `varga.${varga}`,
+    cells: placed.cells.map((cell) =>
+      Object.freeze({
+        outline: cell.outline,
+        sign: `rashi.${cell.sign}`,
+        house: cell.house,
+        lagna: cell.lagna,
+        ring: cell.ring,
+        label: cell.label,
+        anchor: cell.anchor,
+        bodies: cell.bodies,
+      }),
+    ),
+    frame: placed.frame,
+    marks: placed.marks.map((mark) =>
+      Object.freeze({ body: mark.body, ring: mark.ring, at: mark.at, longitudeDeg: mark.longitude_deg }),
+    ),
+  });
+}
+
+/**
+ * The theme a request draws its SVGs in, as the JSON the boundary reads: a
+ * shipped theme's name, or a record naming only what it changes over the
+ * light theme or the one its `extends` names (`03-design/render-svg.md`).
+ *
+ * @param {string|object|undefined} theme
+ * @returns {string|undefined}
+ */
+function themeJson(theme) {
+  if (theme === undefined || theme === null) return undefined;
+  if (typeof theme === 'string') return JSON.stringify({ extends: theme });
+  if (typeof theme === 'object' && !Array.isArray(theme)) return JSON.stringify(theme);
+  throw new TypeError("theme: expected 'light', 'dark' or a theme record");
+}
+
+/**
+ * The member id of each layout a context registered, by its full key: asked
+ * of the context once, when it is made, so a request resolves a consumer's
+ * own layout without crossing the boundary again (§7f).
+ *
+ * @param {object} inner the addon's context
+ * @param {string} kind the kind the rows are of (`chart_layout`, `dasha_system`)
+ * @param {ReadonlyArray<{key: string}>|undefined} rows the rows it registered
+ * @returns {Map<string, number>}
+ */
+function registeredIds(inner, kind, rows) {
+  return new Map(
+    (rows ?? []).map(({ key }) => {
+      const full = `${kind}.${key}`;
+      return [full, guarded(inner, () => inner.keyParse(full)) & 0xffff];
+    }),
+  );
+}
+
+/** Every catalogue key by its id, turned round, for a request to write ids. */
+const idOf = (byId) => new Map(Array.from(byId, ([id, key]) => [key, id]));
+const LAYOUT_IDS = idOf(ChartLayoutById);
+const DASHA_IDS = idOf(DashaSystemById);
+
+/**
+ * The dashas a request asked for, as the ids the boundary takes: a
+ * `DashaSystem`, or the `dasha_system.*` key of a system this context
+ * registered (`03-design/dasha-kernels.md`).
+ *
+ * @param {ReadonlyArray<string>|undefined} asked
+ * @param {Map<string, number>} registered the context's own systems' ids
+ * @returns {number[]}
+ */
+function dashaIds(asked, registered) {
+  return catalogueKeys(asked, 'dashas', 'DashaSystem').map((key, at) => {
+    const id = DASHA_IDS.get(key) ?? registered.get(key);
+    if (id === undefined) {
+      throw new TypeError(
+        `dashas[${at}]: expected a DashaSystem, or the dasha_system.* key of a system this context registered`,
+      );
+    }
+    return id;
+  });
+}
+const VARGA_IDS = idOf(VargaById);
+
+/**
+ * The drawings a request asked for, as the packed ids the boundary takes:
+ * `layout_id << 16 | varga_id` each, so a caller names pairs and nothing
+ * here writes bits by hand (`03-design/chart-geometry.md`).
+ *
+ * @param {ReadonlyArray<{layout: string, varga: string}>|undefined} asked
+ * @param {Map<string, number>} registered the context's own layouts' ids
+ * @returns {number[]}
+ */
+function drawingBits(asked, registered) {
+  if (asked === undefined || asked === null) return [];
+  if (!Array.isArray(asked)) {
+    throw new TypeError('drawings: expected an array of { layout, varga }');
+  }
+  return asked.map((drawing, at) => {
+    const named = drawing?.layout;
+    // A shipped layout is in the catalogue's table; a consumer's own is in
+    // the ids its context resolved once, when it was made
+    // (`03-design/chart-geometry.md` §7f).
+    const layout = LAYOUT_IDS.get(named) ?? registered.get(named);
+    const varga = VARGA_IDS.get(drawing?.varga);
+    if (layout === undefined) {
+      throw new TypeError(
+        `drawings[${at}].layout: expected a ChartLayout, or the chart_layout.* key of a layout this context registered`,
+      );
+    }
+    if (varga === undefined) {
+      throw new TypeError(`drawings[${at}].varga: expected a Varga key`);
+    }
+    return ((layout << 16) | varga) >>> 0;
+  });
 }
 
 /**
@@ -1653,6 +2285,23 @@ const SECTION_POINTS = 8;
 /** `TS_CHART_HOUSES`, the houses service. */
 const SECTION_HOUSES = 16;
 
+/** `TS_CHART_ASHTAKAVARGA`, the Ashtakavarga. */
+const SECTION_ASHTAKAVARGA = 32;
+
+/** `TS_CHART_VIMSHOPAKA`, the Vimshopaka. */
+const SECTION_VIMSHOPAKA = 64;
+
+/** `TS_CHART_VAISESHIKAMSA`, the Vaiseshikamsa. */
+const SECTION_VAISESHIKAMSA = 512;
+/** `TS_CHART_DASHA_PHALA`, the dasha phala. */
+const SECTION_DASHA_PHALA = 1024;
+
+/** `TS_CHART_SHADBALA`, the Shadbala. */
+const SECTION_SHADBALA = 128;
+
+/** `TS_CHART_BHAVA_BALA`, the Bhava bala. */
+const SECTION_BHAVA_BALA = 256;
+
 /** `TS_CHART_STATE`, the planetary states. */
 const SECTION_STATE = 2;
 
@@ -1665,15 +2314,15 @@ const SECTION_STATE = 2;
  * @param {ReadonlyArray<string>|undefined} asked
  * @returns {string[]}
  */
-function vargaKeys(asked) {
+function catalogueKeys(asked, field, kind) {
   if (asked === undefined || asked === null) return [];
   const list = ArrayBuffer.isView(asked) ? Array.from(asked) : asked;
   if (!Array.isArray(list)) {
-    throw new TypeError('vargas: expected an array of Varga keys');
+    throw new TypeError(`${field}: expected an array of ${kind} keys`);
   }
   return list.map((key, at) => {
     if (typeof key !== 'string') {
-      throw new TypeError(`vargas[${at}]: expected a Varga key`);
+      throw new TypeError(`${field}[${at}]: expected a ${kind} key`);
     }
     return key;
   });
@@ -1795,7 +2444,13 @@ export class Context {
    *   answers with the columns; everything else has a default
    */
   constructor(options = {}) {
-    const { profile, settings, locale, ephemeris, testProvider = false, provider } = options;
+    const { profile, settings, locale, layouts, dashaSystems, ephemeris, testProvider = false, provider } = options;
+    if (layouts !== undefined && !Array.isArray(layouts)) {
+      throw new TypeError('layouts: expected an array of layout rows');
+    }
+    if (dashaSystems !== undefined && !Array.isArray(dashaSystems)) {
+      throw new TypeError('dashaSystems: expected an array of dasha system definitions');
+    }
     // Two ways to answer one question, so both together is a refusal
     // rather than one silently winning — the rule the settings patch
     // has.
@@ -1812,6 +2467,8 @@ export class Context {
       profile,
       settingsJson: settings === undefined ? undefined : JSON.stringify(settings),
       locale,
+      layoutsJson: layouts === undefined ? undefined : JSON.stringify(layouts),
+      dashasJson: dashaSystems === undefined ? undefined : JSON.stringify(dashaSystems),
     });
     this.#inner = guarded(null, () => open(chain, settled, info, positions));
 
@@ -1830,7 +2487,12 @@ export class Context {
     /** The coordinate conventions a request is expressed in. */
     this.frame = new FrameArea(reach);
     /** A chart founded at an instant and a place. */
-    this.chart = new ChartArea(reach);
+    /** Charts, and the layouts they are drawn in. */
+    this.chart = new ChartArea(
+      reach,
+      registeredIds(this.#inner, 'chart_layout', layouts),
+      registeredIds(this.#inner, 'dasha_system', dashaSystems),
+    );
     /** A day, or a run of days, with its limbs. */
     this.almanac = new AlmanacArea(reach);
     this.#engine = new Engine(reach);

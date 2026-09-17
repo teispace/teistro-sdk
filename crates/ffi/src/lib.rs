@@ -77,6 +77,13 @@ pub const SDK_VERSION: &str = env!("CARGO_PKG_VERSION");
 /// `api: constant`
 pub const TS_CONTEXT_TEST_PROVIDER: u32 = 1 << 0;
 
+/// A `TsError` flag: the record owns its strings, because the call that
+/// wrote it had no context to lend them from, and `ts_error_free`
+/// releases them.
+///
+/// `api: constant`
+pub const TS_ERROR_OWNED: u32 = 1 << 0;
+
 /// The ABI version this library implements.
 #[unsafe(no_mangle)]
 #[allow(

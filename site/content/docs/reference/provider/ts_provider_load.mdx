@@ -13,7 +13,7 @@ Opens an adapter and the provider inside it.
 <Tab value="C">
 
 ```c
-ts_status ts_provider_load(const char * path, const char * config_json, ts_provider * * out_provider, ts_string * out_error);
+ts_status ts_provider_load(const char * path, const char * config_json, ts_provider * * out_provider, ts_error * out_error);
 ```
 
 </Tab>
@@ -44,7 +44,7 @@ The generated `TeistroLibrary`; `package:teistro` wraps it.
 | `path` | `const char *` | a string read | — |
 | `config_json` | `const char *` | a string read | — |
 | `out_provider` | `ts_provider * *` | receives a handle | — |
-| `out_error` | `ts_string *` | receives a string | — |
+| `out_error` | `ts_error *` | a struct written | — |
 
 ## What it hands back
 

@@ -278,10 +278,13 @@ fn enums_used_by_structs(api: &Api) -> Vec<String> {
 /// caller-allocated columns, with at least one field of its own; not a
 /// vtable, and not a carrier of the library's own memory.
 fn shown(s: &StructDef) -> bool {
-    matches!(s.role, StructRole::Object | StructRole::Columns)
-        && s.fields
-            .iter()
-            .any(|f| f.name != "struct_size" && !f.name.starts_with("reserved"))
+    matches!(
+        s.role,
+        StructRole::Object | StructRole::Columns | StructRole::Error
+    ) && s
+        .fields
+        .iter()
+        .any(|f| f.name != "struct_size" && !f.name.starts_with("reserved"))
 }
 
 fn render_enum_type(out: &mut String, e: &EnumDef) {

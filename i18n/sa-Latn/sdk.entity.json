@@ -383,6 +383,41 @@
       "prose": "Lagna",
       "iast": "Lagna",
       "glyph": "Asc"
+    },
+    "DHUMA": {
+      "name": "Dhūma",
+      "prose": "Dhūma",
+      "iast": "Dhūma"
+    },
+    "VYATIPATA": {
+      "name": "Vyatīpāta",
+      "prose": "Vyatīpāta",
+      "iast": "Vyatīpāta"
+    },
+    "PARIVESHA": {
+      "name": "Pariveśa",
+      "prose": "Pariveśa",
+      "iast": "Pariveśa"
+    },
+    "INDRACHAPA": {
+      "name": "Indracāpa",
+      "prose": "Indracāpa",
+      "iast": "Indracāpa"
+    },
+    "UPAKETU": {
+      "name": "Upaketu",
+      "prose": "Upaketu",
+      "iast": "Upaketu"
+    },
+    "GULIKA": {
+      "name": "Gulika",
+      "prose": "Gulika",
+      "iast": "Gulika"
+    },
+    "MANDI": {
+      "name": "Māndi",
+      "prose": "Māndi",
+      "iast": "Māndi"
     }
   },
   "karana": {
@@ -1695,6 +1730,584 @@
       "name": "Tripuṣkara",
       "prose": "Tripuṣkara",
       "iast": "Tripuṣkara"
+    }
+  },
+  "avastha_deeptadi": {
+    "DEEPTA": {
+      "name": "Dīpta",
+      "prose": "Dīpta",
+      "iast": "Dīpta"
+    },
+    "SWASTHA": {
+      "name": "Svastha",
+      "prose": "Svastha",
+      "iast": "Svastha"
+    },
+    "MUDITA": {
+      "name": "Mudita",
+      "prose": "Mudita",
+      "iast": "Mudita"
+    },
+    "SHANTA": {
+      "name": "Śānta",
+      "prose": "Śānta",
+      "iast": "Śānta"
+    },
+    "DINA": {
+      "name": "Dīna",
+      "prose": "Dīna",
+      "iast": "Dīna"
+    },
+    "DUKHI": {
+      "name": "Duḥkhī",
+      "prose": "Duḥkhī",
+      "iast": "Duḥkhī"
+    },
+    "VIKALA": {
+      "name": "Vikala",
+      "prose": "Vikala",
+      "iast": "Vikala"
+    },
+    "KHALA": {
+      "name": "Khala",
+      "prose": "Khala",
+      "iast": "Khala"
+    },
+    "KOPA": {
+      "name": "Kopa",
+      "prose": "Kopa",
+      "iast": "Kopa"
+    }
+  },
+  "avastha_jagradadi": {
+    "JAGRAT": {
+      "name": "Jāgrat",
+      "prose": "Jāgrat",
+      "iast": "Jāgrat"
+    },
+    "SWAPNA": {
+      "name": "Svapna",
+      "prose": "Svapna",
+      "iast": "Svapna"
+    },
+    "SUSHUPTI": {
+      "name": "Suṣupti",
+      "prose": "Suṣupti",
+      "iast": "Suṣupti"
+    }
+  },
+  "avastha_lajjitadi": {
+    "LAJJITA": {
+      "name": "Lajjita",
+      "prose": "Lajjita",
+      "iast": "Lajjita"
+    },
+    "GARVITA": {
+      "name": "Garvita",
+      "prose": "Garvita",
+      "iast": "Garvita"
+    },
+    "KSHUDHA": {
+      "name": "Kṣudhita",
+      "prose": "Kṣudhita",
+      "iast": "Kṣudhita"
+    },
+    "TRISHITA": {
+      "name": "Tṛṣita",
+      "prose": "Tṛṣita",
+      "iast": "Tṛṣita"
+    },
+    "MUDITA": {
+      "name": "Mudita",
+      "prose": "Mudita",
+      "iast": "Mudita"
+    },
+    "KSHOBHITA": {
+      "name": "Kṣobhita",
+      "prose": "Kṣobhita",
+      "iast": "Kṣobhita"
+    }
+  },
+  "ayanamsha": {
+    "FAGAN_BRADLEY": {
+      "name": "Fagan-Bradley",
+      "prose": "Fagan-Bradley"
+    },
+    "LAHIRI": {
+      "name": "Lāhirī (citrapakṣa)",
+      "prose": "Lāhirī (citrapakṣa)",
+      "iast": "Lāhirī"
+    },
+    "DELUCE": {
+      "name": "De Luce",
+      "prose": "De Luce"
+    },
+    "RAMAN": {
+      "name": "B. V. Raman",
+      "prose": "B. V. Raman"
+    },
+    "USHASHASHI": {
+      "name": "Uṣāśaśī",
+      "prose": "Uṣāśaśī",
+      "iast": "Uṣāśaśī"
+    },
+    "KRISHNAMURTI": {
+      "name": "Kṛṣṇamūrti (KP)",
+      "prose": "Kṛṣṇamūrti (KP)",
+      "iast": "Kṛṣṇamūrti"
+    },
+    "DJWHAL_KHUL": {
+      "name": "Djwhal Khul",
+      "prose": "Djwhal Khul"
+    },
+    "YUKTESHWAR": {
+      "name": "Yukteśvara",
+      "prose": "Yukteśvara",
+      "iast": "Yukteśvara"
+    },
+    "JN_BHASIN": {
+      "name": "J. N. Bhasin",
+      "prose": "J. N. Bhasin"
+    },
+    "BABYL_KUGLER1": {
+      "name": "Babylonian (Kugler 1)",
+      "prose": "Babylonian (Kugler 1)"
+    },
+    "BABYL_KUGLER2": {
+      "name": "Babylonian (Kugler 2)",
+      "prose": "Babylonian (Kugler 2)"
+    },
+    "BABYL_KUGLER3": {
+      "name": "Babylonian (Kugler 3)",
+      "prose": "Babylonian (Kugler 3)"
+    },
+    "BABYL_HUBER": {
+      "name": "Babylonian (Huber)",
+      "prose": "Babylonian (Huber)"
+    },
+    "BABYL_ETPSC": {
+      "name": "Babylonian (Eta Piscium)",
+      "prose": "Babylonian (Eta Piscium)"
+    },
+    "ALDEBARAN_15TAU": {
+      "name": "Rohiṇī 15° Vṛṣabha",
+      "prose": "Rohiṇī 15° Vṛṣabha"
+    },
+    "HIPPARCHOS": {
+      "name": "Hipparchos",
+      "prose": "Hipparchos"
+    },
+    "SASSANIAN": {
+      "name": "Sassanian",
+      "prose": "Sassanian"
+    },
+    "GALCENT_0SAG": {
+      "name": "Ākāśagaṅgā Kendra 0° Dhanu",
+      "prose": "Ākāśagaṅgā Kendra 0° Dhanu"
+    },
+    "J2000": {
+      "name": "J2000 Yugādi",
+      "prose": "J2000 Yugādi"
+    },
+    "J1900": {
+      "name": "J1900 Yugādi",
+      "prose": "J1900 Yugādi"
+    },
+    "B1950": {
+      "name": "B1950 Yugādi",
+      "prose": "B1950 Yugādi"
+    },
+    "SURYASIDDHANTA": {
+      "name": "Sūryasiddhānta",
+      "prose": "Sūryasiddhānta",
+      "iast": "Sūryasiddhānta"
+    },
+    "SURYASIDDHANTA_MSUN": {
+      "name": "Sūryasiddhānta (madhyama Sūrya)",
+      "prose": "Sūryasiddhānta (madhyama Sūrya)"
+    },
+    "ARYABHATA": {
+      "name": "Āryabhaṭa",
+      "prose": "Āryabhaṭa",
+      "iast": "Āryabhaṭa"
+    },
+    "ARYABHATA_MSUN": {
+      "name": "Āryabhaṭa (madhyama Sūrya)",
+      "prose": "Āryabhaṭa (madhyama Sūrya)"
+    },
+    "SS_REVATI": {
+      "name": "Sūryasiddhānta (revatī)",
+      "prose": "Sūryasiddhānta (revatī)"
+    },
+    "SS_CITRA": {
+      "name": "Sūryasiddhānta (citrā)",
+      "prose": "Sūryasiddhānta (citrā)"
+    },
+    "TRUE_CHITRA": {
+      "name": "True Chitra (Spica)",
+      "prose": "True Chitra (Spica)"
+    },
+    "TRUE_REVATI": {
+      "name": "Śuddha Revatī",
+      "prose": "Śuddha Revatī"
+    },
+    "TRUE_PUSHYA": {
+      "name": "Śuddha Puṣya",
+      "prose": "Śuddha Puṣya"
+    },
+    "GALCENT_RGILBRAND": {
+      "name": "Galactic Centre (Gil Brand)",
+      "prose": "Galactic Centre (Gil Brand)"
+    },
+    "GALEQU_IAU1958": {
+      "name": "Ākāśagaṅgā Viṣuvat (IAU 1958)",
+      "prose": "Ākāśagaṅgā Viṣuvat (IAU 1958)"
+    },
+    "GALEQU_TRUE": {
+      "name": "Ākāśagaṅgā Viṣuvat (śuddha)",
+      "prose": "Ākāśagaṅgā Viṣuvat (śuddha)"
+    },
+    "GALEQU_MULA": {
+      "name": "Ākāśagaṅgā Viṣuvat 0° Mūla",
+      "prose": "Ākāśagaṅgā Viṣuvat 0° Mūla"
+    },
+    "GALALIGN_MARDYKS": {
+      "name": "Galactic Alignment (Mardyks)",
+      "prose": "Galactic Alignment (Mardyks)"
+    },
+    "TRUE_MULA": {
+      "name": "Śuddha Mūla",
+      "prose": "Śuddha Mūla"
+    },
+    "GALCENT_MULA_WILHELM": {
+      "name": "Galactic Centre in Mula (Wilhelm)",
+      "prose": "Galactic Centre in Mula (Wilhelm)"
+    },
+    "ARYABHATA_522": {
+      "name": "Āryabhaṭa (522 Ī.)",
+      "prose": "Āryabhaṭa (522 Ī.)"
+    },
+    "BABYL_BRITTON": {
+      "name": "Babylonian (Britton)",
+      "prose": "Babylonian (Britton)"
+    },
+    "TRUE_SHEORAN": {
+      "name": "True Sheoran",
+      "prose": "True Sheoran"
+    },
+    "GALCENT_COCHRANE": {
+      "name": "Galactic Centre (Cochrane)",
+      "prose": "Galactic Centre (Cochrane)"
+    },
+    "GALEQU_FIORENZA": {
+      "name": "Galactic Equator (Fiorenza)",
+      "prose": "Galactic Equator (Fiorenza)"
+    },
+    "VALENS_MOON": {
+      "name": "Vettius Valens (Moon)",
+      "prose": "Vettius Valens (Moon)"
+    },
+    "LAHIRI_1940": {
+      "name": "Lāhirī 1940",
+      "prose": "Lāhirī 1940"
+    },
+    "LAHIRI_VP285": {
+      "name": "Lāhirī VP285",
+      "prose": "Lāhirī VP285"
+    },
+    "KRISHNAMURTI_VP291": {
+      "name": "Kṛṣṇamūrti VP291",
+      "prose": "Kṛṣṇamūrti VP291"
+    },
+    "LAHIRI_ICRC": {
+      "name": "Lāhirī ICRC",
+      "prose": "Lāhirī ICRC"
+    }
+  },
+  "direction": {
+    "EAST": {
+      "name": "Pūrva",
+      "prose": "Pūrva",
+      "iast": "Pūrva"
+    },
+    "WEST": {
+      "name": "Paścima",
+      "prose": "Paścima",
+      "iast": "Paścima"
+    },
+    "NORTH": {
+      "name": "Uttara",
+      "prose": "Uttara",
+      "iast": "Uttara"
+    },
+    "SOUTH": {
+      "name": "Dakṣiṇa",
+      "prose": "Dakṣiṇa",
+      "iast": "Dakṣiṇa"
+    },
+    "NORTHEAST": {
+      "name": "Īśāna",
+      "prose": "Īśāna",
+      "iast": "Īśāna"
+    },
+    "NORTHWEST": {
+      "name": "Vāyavya",
+      "prose": "Vāyavya",
+      "iast": "Vāyavya"
+    },
+    "SOUTHEAST": {
+      "name": "Āgneya",
+      "prose": "Āgneya",
+      "iast": "Āgneya"
+    },
+    "SOUTHWEST": {
+      "name": "Naiṛtya",
+      "prose": "Naiṛtya",
+      "iast": "Nairṛtya"
+    }
+  },
+  "house_system": {
+    "WHOLE_SIGN": {
+      "name": "Sampūrṇa Rāśi (rāśi-bhāva)",
+      "prose": "Sampūrṇa Rāśi (rāśi-bhāva)"
+    },
+    "PLACIDUS": {
+      "name": "Placidus",
+      "prose": "Placidus"
+    },
+    "KOCH": {
+      "name": "Koch (Birthplace)",
+      "prose": "Koch (Birthplace)"
+    },
+    "REGIOMONTANUS": {
+      "name": "Regiomontanus",
+      "prose": "Regiomontanus"
+    },
+    "CAMPANUS": {
+      "name": "Campanus",
+      "prose": "Campanus"
+    },
+    "EQUAL": {
+      "name": "Sama Bhāva (lagnāt)",
+      "prose": "Sama Bhāva (lagnāt)"
+    },
+    "MERIDIAN": {
+      "name": "Yāmyottara (akṣīya Parikramaṇa)",
+      "prose": "Yāmyottara (akṣīya Parikramaṇa)"
+    },
+    "ALCABITIUS": {
+      "name": "Alcabitius",
+      "prose": "Alcabitius"
+    },
+    "PORPHYRY": {
+      "name": "Porphyry",
+      "prose": "Porphyry"
+    },
+    "TOPOCENTRIC": {
+      "name": "Topocentric (Polich-Page)",
+      "prose": "Topocentric (Polich-Page)"
+    },
+    "MORINUS": {
+      "name": "Morinus",
+      "prose": "Morinus"
+    },
+    "SRIPATI": {
+      "name": "Śrīpati",
+      "prose": "Śrīpati"
+    },
+    "EQUAL_MC": {
+      "name": "Sama Bhāva (MC Taḥ)",
+      "prose": "Sama Bhāva (MC Taḥ)"
+    },
+    "EQUAL_ARIES": {
+      "name": "Sama Bhāva (1 = Meṣa)",
+      "prose": "Sama Bhāva (1 = Meṣa)"
+    },
+    "VEHLOW": {
+      "name": "Vehlow Equal",
+      "prose": "Vehlow Equal"
+    },
+    "CARTER": {
+      "name": "Carter Poli-Equatorial",
+      "prose": "Carter Poli-Equatorial"
+    },
+    "HORIZON": {
+      "name": "Kṣitija (digaṃśa)",
+      "prose": "Kṣitija (digaṃśa)"
+    },
+    "SUNSHINE": {
+      "name": "Sunshine (Makransky)",
+      "prose": "Sunshine (Makransky)"
+    },
+    "PULLEN_SD": {
+      "name": "Pullen SD (Sinusoidal Delta)",
+      "prose": "Pullen SD (Sinusoidal Delta)"
+    },
+    "PULLEN_SR": {
+      "name": "Pullen SR (Sinusoidal Ratio)",
+      "prose": "Pullen SR (Sinusoidal Ratio)"
+    },
+    "KRUSINSKI": {
+      "name": "Krusinski-Pisa-Goelzer",
+      "prose": "Krusinski-Pisa-Goelzer"
+    },
+    "APC": {
+      "name": "APC (dhruvādhīna Udaya)",
+      "prose": "APC (dhruvādhīna Udaya)"
+    }
+  },
+  "masa": {
+    "CHAITRA": {
+      "name": "Caitra",
+      "prose": "Caitra",
+      "iast": "Caitra"
+    },
+    "VAISHAKHA": {
+      "name": "Vaiśākha",
+      "prose": "Vaiśākha",
+      "iast": "Vaiśākha"
+    },
+    "JYESHTHA": {
+      "name": "Jyeṣṭha",
+      "prose": "Jyeṣṭha",
+      "iast": "Jyeṣṭha"
+    },
+    "ASHADHA": {
+      "name": "Āṣāḍha",
+      "prose": "Āṣāḍha",
+      "iast": "Āṣāḍha"
+    },
+    "SHRAVANA": {
+      "name": "Śrāvaṇa",
+      "prose": "Śrāvaṇa",
+      "iast": "Śrāvaṇa"
+    },
+    "BHADRAPADA": {
+      "name": "Bhādrapada",
+      "prose": "Bhādrapada",
+      "iast": "Bhādrapada"
+    },
+    "ASHWINA": {
+      "name": "Āśvina",
+      "prose": "Āśvina",
+      "iast": "Āśvina"
+    },
+    "KARTIKA": {
+      "name": "Kārtika",
+      "prose": "Kārtika",
+      "iast": "Kārtika"
+    },
+    "MARGASHIRSHA": {
+      "name": "Mārgaśīrṣa",
+      "prose": "Mārgaśīrṣa",
+      "iast": "Mārgaśīrṣa"
+    },
+    "PAUSHA": {
+      "name": "Pauṣa",
+      "prose": "Pauṣa",
+      "iast": "Pauṣa"
+    },
+    "MAGHA": {
+      "name": "Māgha",
+      "prose": "Māgha",
+      "iast": "Māgha"
+    },
+    "PHALGUNA": {
+      "name": "Phālguna",
+      "prose": "Phālguna",
+      "iast": "Phālguna"
+    }
+  },
+  "dasha_system": {
+    "VIMSHOTTARI": {
+      "name": "Viṃśottarī Daśā",
+      "prose": "Viṃśottarī Daśā",
+      "iast": "Viṁśottarī Daśā"
+    },
+    "ASHTOTTARI": {
+      "name": "Aṣṭottarī Daśā",
+      "prose": "Aṣṭottarī Daśā",
+      "iast": "Aṣṭottarī Daśā"
+    },
+    "DWADASHOTTARI": {
+      "name": "Dvādaśottarī Daśā",
+      "prose": "Dvādaśottarī Daśā",
+      "iast": "Dvādaśottarī Daśā"
+    },
+    "PANCHOTTARI": {
+      "name": "Pañcottarī Daśā",
+      "prose": "Pañcottarī Daśā",
+      "iast": "Pañcottarī Daśā"
+    },
+    "SHATABDIKA": {
+      "name": "Śatābdika Daśā",
+      "prose": "Śatābdika Daśā",
+      "iast": "Śatābdika Daśā"
+    },
+    "CHATURASHITI_SAMA": {
+      "name": "Caturaśītisama Daśā",
+      "prose": "Caturaśītisama Daśā",
+      "iast": "Caturaśītisama Daśā"
+    },
+    "DWISAPTATI_SAMA": {
+      "name": "Dvisaptatisama Daśā",
+      "prose": "Dvisaptatisama Daśā",
+      "iast": "Dvisaptatisama Daśā"
+    },
+    "YOGINI": {
+      "name": "Yoginī Daśā",
+      "prose": "Yoginī Daśā",
+      "iast": "Yoginī Daśā"
+    },
+    "TRIBHAGI": {
+      "name": "Tribhāgī Daśā",
+      "prose": "Tribhāgī Daśā",
+      "iast": "Tribhāgī Daśā"
+    },
+    "CHARA": {
+      "name": "Cara Daśā",
+      "prose": "Cara Daśā",
+      "iast": "Cara Daśā"
+    },
+    "NARAYANA": {
+      "name": "Nārāyaṇa Daśā",
+      "prose": "Nārāyaṇa Daśā",
+      "iast": "Nārāyaṇa Daśā"
+    },
+    "PADANADHAMSA": {
+      "name": "Padanādhāṃśa Daśā",
+      "prose": "Padanādhāṃśa Daśā",
+      "iast": "Padanādhāṃśa Daśā"
+    },
+    "TRIKONA": {
+      "name": "Trikoṇa Daśā",
+      "prose": "Trikoṇa Daśā",
+      "iast": "Trikoṇa Daśā"
+    },
+    "DRIG": {
+      "name": "Dṛg Daśā",
+      "prose": "Dṛg Daśā",
+      "iast": "Dṛg Daśā"
+    },
+    "SHOOLA": {
+      "name": "Śūla Daśā",
+      "prose": "Śūla Daśā",
+      "iast": "Śūla Daśā"
+    },
+    "NIRYANA_SHOOLA": {
+      "name": "Niryāṇa Śūla Daśā",
+      "prose": "Niryāṇa Śūla Daśā",
+      "iast": "Niryāṇa Śūla Daśā"
+    },
+    "MANDOOKA": {
+      "name": "Maṇḍūka Daśā",
+      "prose": "Maṇḍūka Daśā",
+      "iast": "Maṇḍūka Daśā"
+    },
+    "KALACHAKRA": {
+      "name": "Kālacakra Daśā",
+      "prose": "Kālacakra Daśā",
+      "iast": "Kālacakra Daśā"
     }
   }
 }

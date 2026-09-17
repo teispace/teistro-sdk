@@ -62,6 +62,7 @@ macro_rules! bounded_float {
     ($(#[$doc:meta])* $name:ident, $quantity:literal, $min:expr, $max:expr, $accepted:literal, $unit:literal) => {
         $(#[$doc])*
         #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd, serde::Serialize)]
+        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         #[serde(transparent)]
         pub struct $name(f64);
 
@@ -133,6 +134,7 @@ macro_rules! bounded_int {
     ($(#[$doc:meta])* $name:ident, $inner:ty, $quantity:literal, $min:expr, $max:expr, $accepted:literal) => {
         $(#[$doc])*
         #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize)]
+        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         #[serde(transparent)]
         pub struct $name($inner);
 
@@ -249,6 +251,7 @@ impl HouseNumber {
 
 /// A place on Earth.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Place {
     /// North positive.
     pub latitude: Latitude,
@@ -336,6 +339,7 @@ impl Scale for Utc {
 
 /// A Julian day on one time scale.
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
 pub struct JulianDay<S: Scale> {
     jd: f64,

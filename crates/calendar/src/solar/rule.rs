@@ -13,6 +13,7 @@ use crate::solar::{DayArc, SolarModel};
 
 /// Which civil day a sankranti begins the month on.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MonthStartRule {
     /// The civil day, midnight to midnight, in which the sankranti falls
@@ -129,7 +130,7 @@ impl MonthStartRule {
                 return row.month_start(sign, sankranti, clock, model, place);
             }
             MonthStartRule::SunriseToSunrise => {
-                let arc = arc_of(model, day, place)?;
+                let arc = arc_of(model, clock, day, place)?;
                 if sankranti.get() < arc.sunrise.get() {
                     day.plus_days(-1)
                 } else {
@@ -137,7 +138,7 @@ impl MonthStartRule {
                 }
             }
             MonthStartRule::BeforeSunset => {
-                let arc = arc_of(model, day, place)?;
+                let arc = arc_of(model, clock, day, place)?;
                 if sankranti.get() < arc.sunset.get() {
                     day
                 } else {
@@ -145,7 +146,7 @@ impl MonthStartRule {
                 }
             }
             MonthStartRule::BeforeAparahna => {
-                let arc = arc_of(model, day, place)?;
+                let arc = arc_of(model, clock, day, place)?;
                 if sankranti.get() < arc.at_fraction(0.6) {
                     day
                 } else {
@@ -169,13 +170,20 @@ pub fn local_day(clock: &dyn LocalClock, instant: JulianDay<Utc>) -> (FixedDay, 
     FixedDay::from_local_jd(clock.local_jd(instant))
 }
 
-fn arc_of(model: &dyn SolarModel, day: FixedDay, place: &Place) -> Result<DayArc, Error> {
-    model.day_arc(day, place)?.ok_or_else(|| {
-        Error::unsupported(format!(
+fn arc_of(
+    model: &dyn SolarModel,
+    clock: &dyn LocalClock,
+    day: FixedDay,
+    place: &Place,
+) -> Result<DayArc, Error> {
+    super::civil_day_light(model, clock, place, day)?
+        .arc()
+        .ok_or_else(|| {
+            Error::unsupported(format!(
             "the month-start rule needs a sunrise on {day} at {place}, where the Sun does not rise"
         ))
         .with_hint("use a rule that does not depend on the day's arc")
-    })
+        })
 }
 
 #[cfg(test)]

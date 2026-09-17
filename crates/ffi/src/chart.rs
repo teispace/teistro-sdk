@@ -26,14 +26,19 @@
 //! over the knob's own `ALL`: adding a member fails it by name rather
 //! than shipping a wrong id.
 
-use teistro::ChartRequest;
+use core::ffi::c_char;
+
+use teistro::dasha::DashaName;
+use teistro::render_svg::Theme;
+use teistro::{ChartRequest, RuleRequest, RuleSet};
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::ChartFoundation;
-use teistro_core::catalogue::{ChartKind, Varga};
-use teistro_core::envelope::Provenance;
+use teistro_core::catalogue::{ChartKind, Kind, Varga};
+use teistro_core::envelope::{Envelope, Provenance};
 use teistro_core::error::{Error, Status};
+use teistro_core::key::KeyId;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_houses::classify::Quadrant;
@@ -43,7 +48,8 @@ use teistro_state::burn::Burning;
 
 use crate::blob::TsBlob;
 use crate::context::TsContext;
-use crate::support::{c_struct, read_in, with_context, write_plain};
+use crate::string::TsString;
+use crate::support::{c_struct, optional_text, read_in, slice, with_context, write_plain};
 use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
 use teistro_time::local_day::{DayState, PolarKind};
 
@@ -143,6 +149,114 @@ impl From<Strength> for TsStrength {
             Strength::Half => TsStrength::Half,
             Strength::ThreeQuarters => TsStrength::ThreeQuarters,
             Strength::Full => TsStrength::Full,
+        }
+    }
+}
+
+/// How a dasha's balance at birth was measured.
+///
+/// The settings' own `Balance`, which is a knob and not a catalogue member,
+/// so it crosses as this boundary's own enum, as `TsStrength` does.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsBalance {
+    /// By the elapsed part of the Moon's window of nakshatras.
+    Spatial = 0,
+    /// By the elapsed part of the Moon's stay in its nakshatra.
+    Temporal = 1,
+}
+
+impl From<teistro_core::settings::Balance> for TsBalance {
+    fn from(balance: teistro_core::settings::Balance) -> TsBalance {
+        match balance {
+            teistro_core::settings::Balance::Temporal => TsBalance::Temporal,
+            _ => TsBalance::Spatial,
+        }
+    }
+}
+
+/// Where an Ashtakavarga's reductions and pindas were made: the settings'
+/// own `Shodhana`, which is a knob and not a catalogue member.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsShodhana {
+    /// In each graha's own Ashtakavarga (BPHS chs. 67 to 69).
+    EachGraha = 0,
+    /// On the sum of the seven, as the conformance corpus's engine makes them.
+    Sarva = 1,
+}
+
+impl From<teistro_core::settings::Shodhana> for TsShodhana {
+    fn from(shodhana: teistro_core::settings::Shodhana) -> TsShodhana {
+        match shodhana {
+            teistro_core::settings::Shodhana::Sarva => TsShodhana::Sarva,
+            _ => TsShodhana::EachGraha,
+        }
+    }
+}
+
+/// How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
+/// an occupied one: the settings' own `Ekadhipatya`.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsEkadhipatya {
+    /// BPHS ch. 68: an empty sign keeps a difference.
+    Bphs = 0,
+    /// The empty sign always goes to zero.
+    EmptyToZero = 1,
+}
+
+impl From<teistro_core::settings::Ekadhipatya> for TsEkadhipatya {
+    fn from(rule: teistro_core::settings::Ekadhipatya) -> TsEkadhipatya {
+        match rule {
+            teistro_core::settings::Ekadhipatya::EmptyToZero => TsEkadhipatya::EmptyToZero,
+            _ => TsEkadhipatya::Bphs,
+        }
+    }
+}
+
+/// How a Vimshopaka scored a graha in a varga: the settings' own
+/// `Vimshopaka`.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsVimshopakaScoring {
+    /// BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
+    /// relationship with the sign's lord.
+    Bphs = 0,
+    /// The conformance corpus's engine: the Saptavargaja virupas over 45 by
+    /// natural friendship, rounded to hundredths.
+    SaptavargajaVirupas = 1,
+}
+
+impl From<teistro_core::settings::Vimshopaka> for TsVimshopakaScoring {
+    fn from(scoring: teistro_core::settings::Vimshopaka) -> TsVimshopakaScoring {
+        match scoring {
+            teistro_core::settings::Vimshopaka::SaptavargajaVirupas => {
+                TsVimshopakaScoring::SaptavargajaVirupas
+            }
+            _ => TsVimshopakaScoring::Bphs,
+        }
+    }
+}
+
+/// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsDashaPhase {
+    /// At its commencement.
+    Commencement = 0,
+    /// In its middle.
+    Middle = 1,
+    /// At its end.
+    End = 2,
+}
+
+impl From<teistro::strength::DashaPhase> for TsDashaPhase {
+    fn from(phase: teistro::strength::DashaPhase) -> TsDashaPhase {
+        match phase {
+            teistro::strength::DashaPhase::Commencement => TsDashaPhase::Commencement,
+            teistro::strength::DashaPhase::Middle => TsDashaPhase::Middle,
+            teistro::strength::DashaPhase::End => TsDashaPhase::End,
         }
     }
 }
@@ -372,7 +486,7 @@ pub struct TsChartRequest {
     /// Which of the document's sections to compute beside the
     /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
     /// states, 4 the aspects, 8 the derived points, 16 the houses
-    /// service. Zero for the foundation alone, which is what every
+    /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every
     /// caller compiled against an earlier header passes by not passing
     /// it at all.
     ///
@@ -398,6 +512,46 @@ pub struct TsChartRequest {
     pub vargas: *const u16,
     /// How many divisional charts `vargas` points at.
     pub varga_count: usize,
+    /// Which charts to draw, and in which layouts, in the order they should
+    /// be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+    /// catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+    /// count of zero for none.
+    ///
+    /// Packed, as `sections` is a bit set, so the request carries one array
+    /// and one count rather than two arrays that must agree; every ergonomic
+    /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+    /// `api: len=drawing_count`
+    pub drawings: *const u32,
+    /// How many drawings `drawings` points at.
+    pub drawing_count: usize,
+    /// Which dashas to compute, in the order they should be answered in: each
+    /// a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+    /// the context registered (`0x8000` and up). Each one's balance and its
+    /// periods to its depth. Null with a count of zero for none.
+    ///
+    /// Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+    /// layer takes a catalogue member or a registered key and writes the id.
+    /// `api: len=dasha_count`
+    pub dashas: *const u16,
+    /// How many dashas `dashas` points at.
+    pub dasha_count: usize,
+    /// A theme to write every drawing as SVG in, as JSON: an object of
+    /// `style` and `content` naming only what it changes, over the light
+    /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+    /// The SVGs come back in the blob's `svgs` section, in the context's
+    /// locale. Null for none, which costs nothing
+    /// (`03-design/render-svg.md`).
+    /// `api: nullable example={"extends":"dark"}`
+    pub theme_json: *const c_char,
+    /// Rules to answer over every chart, as JSON: `shipped` names the
+    /// kernel's sets, `rules` a consumer's own in the rule format, with
+    /// `readings`, `houses` and `longevity` choosing what else comes back
+    /// (`03-design/rules-at-the-boundary.md`). The answers come back in the
+    /// blob's `rules` section, and the sections the rules read are computed
+    /// whether or not `sections` asked for them. Null for none, which costs
+    /// nothing.
+    /// `api: nullable example={"shipped":["nabhasas"]}`
+    pub rules_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -439,13 +593,31 @@ pub const TS_CHART_ASPECTS: u32 = 4;
 pub const TS_CHART_POINTS: u32 = 8;
 /// The houses service.
 pub const TS_CHART_HOUSES: u32 = 16;
+/// The Ashtakavarga.
+pub const TS_CHART_ASHTAKAVARGA: u32 = 32;
+/// The Vimshopaka.
+pub const TS_CHART_VIMSHOPAKA: u32 = 64;
+/// The Shadbala.
+pub const TS_CHART_SHADBALA: u32 = 128;
+/// The Bhava bala.
+pub const TS_CHART_BHAVA_BALA: u32 = 256;
+/// The Vaiseshikamsa.
+pub const TS_CHART_VAISESHIKAMSA: u32 = 512;
+/// The dasha phala.
+pub const TS_CHART_DASHA_PHALA: u32 = 1024;
 
-const SECTION_BITS: [SectionBit; 5] = [
+const SECTION_BITS: [SectionBit; 11] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
     (TS_CHART_POINTS, ChartRequest::with_points),
     (TS_CHART_HOUSES, ChartRequest::with_houses),
+    (TS_CHART_ASHTAKAVARGA, ChartRequest::with_ashtakavarga),
+    (TS_CHART_VIMSHOPAKA, ChartRequest::with_vimshopaka),
+    (TS_CHART_SHADBALA, ChartRequest::with_shadbala),
+    (TS_CHART_BHAVA_BALA, ChartRequest::with_bhava_bala),
+    (TS_CHART_VAISESHIKAMSA, ChartRequest::with_vaiseshikamsa),
+    (TS_CHART_DASHA_PHALA, ChartRequest::with_dasha_phala),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -583,12 +755,14 @@ fn summary_values(
     chart_count: u32,
     graha_count: u32,
     varga_count: u32,
+    dasha_count: u32,
 ) -> Vec<FixedValue> {
     vec![
         u64::from(kind.id()).into(),
         u64::from(chart_count).into(),
         u64::from(graha_count).into(),
         u64::from(varga_count).into(),
+        u64::from(dasha_count).into(),
         place.latitude.get().into(),
         place.longitude.get().into(),
         place.altitude.get().into(),
@@ -824,7 +998,15 @@ fn state_values(state: &teistro_state::GrahaState) -> Vec<FixedValue> {
         state.boundaries.sign_deg.into(),
         state.boundaries.nakshatra_deg.into(),
         state.boundaries.pada_deg.into(),
+        flag(state.sayanadi.is_some()),
+        u64::from(state.sayanadi.map_or(0, |s| s.avastha.id())).into(),
     ]
+    .into_iter()
+    .chain(
+        teistro_state::Anka::ALL
+            .map(|anka| u64::from(state.sayanadi.map_or(0, |s| s.cheshta(anka).id())).into()),
+    )
+    .collect()
 }
 
 /// The twelve bhavas of each chart, as the houses service reads them.
@@ -884,6 +1066,480 @@ impl BhavaColumns {
 /// day allows — Saturn's eighth needs an arc to divide — so the count is
 /// a per-chart fact. The drishti taught that lesson by refusing a batch
 /// (`03-design/chart-reading.md` §5); this one takes it as read.
+/// Every chart's Ashtakavarga, each section empty when it was not asked for.
+struct AshtakavargaColumns {
+    graha: Vec<u16>,
+    shodhana: Vec<u8>,
+    ekadhipatya: Vec<u8>,
+    rashi_pinda: Vec<u32>,
+    graha_pinda: Vec<u32>,
+    yoga_pinda: Vec<u32>,
+    bindus: Vec<u8>,
+    reduced: Vec<u8>,
+    sarva: Vec<u16>,
+    trikona: Vec<u16>,
+    sarva_reduced: Vec<u16>,
+}
+
+impl AshtakavargaColumns {
+    fn of(documents: &[Document]) -> AshtakavargaColumns {
+        let charts = documents
+            .iter()
+            .filter(|d| d.ashtakavarga.is_some())
+            .count();
+        let mut columns = AshtakavargaColumns {
+            graha: Vec::with_capacity(charts * 7),
+            shodhana: Vec::with_capacity(charts * 7),
+            ekadhipatya: Vec::with_capacity(charts * 7),
+            rashi_pinda: Vec::with_capacity(charts * 7),
+            graha_pinda: Vec::with_capacity(charts * 7),
+            yoga_pinda: Vec::with_capacity(charts * 7),
+            bindus: Vec::with_capacity(charts * 84),
+            reduced: Vec::with_capacity(charts * 84),
+            sarva: Vec::with_capacity(charts * 12),
+            trikona: Vec::with_capacity(charts * 12),
+            sarva_reduced: Vec::with_capacity(charts * 12),
+        };
+        for reading in documents.iter().filter_map(|d| d.ashtakavarga.as_ref()) {
+            for graha in &reading.grahas {
+                columns.graha.push(graha.graha.id());
+                columns
+                    .shodhana
+                    .push(TsShodhana::from(reading.rules.shodhana) as u8);
+                columns
+                    .ekadhipatya
+                    .push(TsEkadhipatya::from(reading.rules.ekadhipatya) as u8);
+                columns.rashi_pinda.push(graha.rashi_pinda);
+                columns.graha_pinda.push(graha.graha_pinda);
+                columns.yoga_pinda.push(graha.yoga_pinda);
+                columns.bindus.extend(graha.bindus);
+                columns.reduced.extend(graha.reduced.unwrap_or([0; 12]));
+            }
+            columns.sarva.extend(reading.sarva);
+            columns.trikona.extend(reading.trikona);
+            columns.sarva_reduced.extend(reading.reduced);
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "ashtakavarga",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::U8(&self.shodhana),
+                ColumnData::U8(&self.ekadhipatya),
+                ColumnData::U32(&self.rashi_pinda),
+                ColumnData::U32(&self.graha_pinda),
+                ColumnData::U32(&self.yoga_pinda),
+            ],
+        )?;
+        writer.columns(
+            "ashtakavarga_bindus",
+            self.bindus.len(),
+            &[ColumnData::U8(&self.bindus), ColumnData::U8(&self.reduced)],
+        )?;
+        writer.columns(
+            "sarvashtakavarga",
+            self.sarva.len(),
+            &[
+                ColumnData::U16(&self.sarva),
+                ColumnData::U16(&self.trikona),
+                ColumnData::U16(&self.sarva_reduced),
+            ],
+        )
+    }
+}
+
+/// A Shadbala value column: its name in the `shadbala` section, what it
+/// holds, and where a graha's reading keeps it.
+pub(crate) type ShadbalaColumn = (
+    &'static str,
+    &'static str,
+    fn(&teistro::strength::GrahaShadbala) -> f64,
+);
+
+/// The `shadbala` section's value columns in order, which the section's
+/// schema and its writer both read.
+pub(crate) const SHADBALA_COLUMNS: [ShadbalaColumn; 25] = [
+    (
+        "uchcha",
+        "Sthana: from the distance to the debilitation point, 0 to 60.",
+        |g| g.sthana.uchcha,
+    ),
+    (
+        "saptavargaja",
+        "Sthana: from the dignity in the seven vargas.",
+        |g| g.sthana.saptavargaja,
+    ),
+    (
+        "ojayugma",
+        "Sthana: from the rasi's and navamsha's parity, 0, 15 or 30.",
+        |g| g.sthana.ojayugma,
+    ),
+    ("kendradi", "Sthana: from the house, 60, 30 or 15.", |g| {
+        g.sthana.kendradi
+    }),
+    ("drekkana", "Sthana: from the decanate, 0 or 15.", |g| {
+        g.sthana.drekkana
+    }),
+    (
+        "dig",
+        "Dig: from the distance to the powerless kendra, 0 to 60.",
+        |g| g.dig,
+    ),
+    ("nathonnatha", "Kaala: from the hour, 0 to 60.", |g| {
+        g.kaala.nathonnatha
+    }),
+    (
+        "paksha",
+        "Kaala: from the Moon's elongation, the Moon's doubled.",
+        |g| g.kaala.paksha,
+    ),
+    (
+        "tribhaga",
+        "Kaala: 60 to the lord of the third of the day or night, and to Jupiter.",
+        |g| g.kaala.tribhaga,
+    ),
+    ("abda", "Kaala: 15 to the year's lord.", |g| g.kaala.abda),
+    ("masa", "Kaala: 30 to the month's lord.", |g| g.kaala.masa),
+    ("vara", "Kaala: 45 to the weekday's lord.", |g| g.kaala.vara),
+    ("hora", "Kaala: 60 to the hour's lord.", |g| g.kaala.hora),
+    ("ayana", "Kaala: from the declination.", |g| g.kaala.ayana),
+    (
+        "yuddha",
+        "Kaala: gained by the victor and lost by the vanquished of a planetary war.",
+        |g| g.kaala.yuddha,
+    ),
+    ("cheshta", "Cheshta: motional strength.", |g| g.cheshta),
+    ("naisargika", "Naisargika: natural strength.", |g| {
+        g.naisargika
+    }),
+    (
+        "drik",
+        "Drik: aspectual strength, which may be negative.",
+        |g| g.drik,
+    ),
+    ("virupas", "The six together, virupas.", |g| g.virupas),
+    ("rupas", "The six together, rupas.", |g| g.rupas),
+    (
+        "required_rupas",
+        "The rupas it must reach to be strong.",
+        |g| g.required_rupas,
+    ),
+    (
+        "ishta",
+        "How far it tends to good, 0 to 60 (BPHS ch. 28).",
+        |g| g.ishta,
+    ),
+    ("kashta", "How far it tends to harm, 0 to 60.", |g| g.kashta),
+    (
+        "subha_rashmi",
+        "Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5).",
+        |g| g.subha_rashmi,
+    ),
+    (
+        "ashubha_rashmi",
+        "Its inauspicious rays, 8 less the auspicious.",
+        |g| g.ashubha_rashmi,
+    ),
+];
+
+/// Every chart's Shadbala, a row a graha, empty when it was not asked for.
+struct ShadbalaColumns {
+    graha: Vec<u16>,
+    values: Vec<Vec<f64>>,
+    strong: Vec<u8>,
+}
+
+impl ShadbalaColumns {
+    fn of(documents: &[Document]) -> ShadbalaColumns {
+        let readings: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.shadbala.as_ref())
+            .collect();
+        let rows = readings.iter().map(|r| r.grahas.len()).sum();
+        let mut columns = ShadbalaColumns {
+            graha: Vec::with_capacity(rows),
+            values: SHADBALA_COLUMNS
+                .iter()
+                .map(|_| Vec::with_capacity(rows))
+                .collect(),
+            strong: Vec::with_capacity(rows),
+        };
+        for graha in readings.iter().flat_map(|r| &r.grahas) {
+            columns.graha.push(graha.graha.id());
+            for (column, (_, _, read)) in columns.values.iter_mut().zip(SHADBALA_COLUMNS) {
+                column.push(read(graha));
+            }
+            columns.strong.push(u8::from(graha.strong));
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut data = Vec::with_capacity(self.values.len() + 2);
+        data.push(ColumnData::U16(&self.graha));
+        data.extend(self.values.iter().map(|column| ColumnData::F64(column)));
+        data.push(ColumnData::U8(&self.strong));
+        writer.columns("shadbala", self.graha.len(), &data)
+    }
+}
+
+/// Where a graha's Vaiseshikamsa keeps its standing in one scheme.
+type SchemeStanding = fn(&teistro::strength::GrahaVaiseshikamsa) -> teistro::strength::Standing;
+
+/// The four schemes a Vaiseshikamsa reads, each column pair's name and where
+/// a graha's reading keeps its standing, which the section's schema and its
+/// writer both read.
+pub(crate) const VAISESHIKAMSA_SCHEMES: [(&str, SchemeStanding); 4] = [
+    ("shadvarga", |g| g.shadvarga),
+    ("saptavarga", |g| g.saptavarga),
+    ("dashavarga", |g| g.dashavarga),
+    ("shodashavarga", |g| g.shodashavarga),
+];
+
+/// Every chart's dasha phala, a row a graha, Sun to Ketu, empty when it was
+/// not asked for.
+struct DashaPhalaColumns {
+    graha: Vec<u16>,
+    subhankas: [Vec<f64>; 7],
+    subhanka: Vec<f64>,
+    asubhanka: Vec<f64>,
+    nature: Vec<u16>,
+    phase: Vec<u8>,
+    favourable: Vec<u8>,
+    unfavourable: Vec<u8>,
+}
+
+impl DashaPhalaColumns {
+    fn of(documents: &[Document]) -> DashaPhalaColumns {
+        let grahas: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.dasha_phala.as_ref())
+            .flat_map(|reading| &reading.grahas)
+            .collect();
+        let rows = grahas.len();
+        let mut columns = DashaPhalaColumns {
+            graha: Vec::with_capacity(rows),
+            subhankas: std::array::from_fn(|_| Vec::with_capacity(rows)),
+            subhanka: Vec::with_capacity(rows),
+            asubhanka: Vec::with_capacity(rows),
+            nature: Vec::with_capacity(rows),
+            phase: Vec::with_capacity(rows),
+            favourable: Vec::with_capacity(rows),
+            unfavourable: Vec::with_capacity(rows),
+        };
+        for graha in grahas {
+            columns.graha.push(graha.graha.id());
+            for (column, value) in columns.subhankas.iter_mut().zip(graha.subhankas) {
+                column.push(value);
+            }
+            columns.subhanka.push(graha.subhanka);
+            columns.asubhanka.push(graha.asubhanka);
+            columns.nature.push(graha.nature.id());
+            columns.phase.push(TsDashaPhase::from(graha.phase) as u8);
+            columns.favourable.push(u8::from(graha.favourable));
+            columns.unfavourable.push(u8::from(graha.unfavourable));
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut data = vec![ColumnData::U16(&self.graha)];
+        data.extend(self.subhankas.iter().map(|column| ColumnData::F64(column)));
+        data.extend([
+            ColumnData::F64(&self.subhanka),
+            ColumnData::F64(&self.asubhanka),
+            ColumnData::U16(&self.nature),
+            ColumnData::U8(&self.phase),
+            ColumnData::U8(&self.favourable),
+            ColumnData::U8(&self.unfavourable),
+        ]);
+        writer.columns("dasha_phala", self.graha.len(), &data)
+    }
+}
+
+/// Every chart's Vaiseshikamsa, a row a graha, empty when it was not asked
+/// for.
+struct VaiseshikamsaColumns {
+    graha: Vec<u16>,
+    impaired: Vec<u8>,
+    good: Vec<Vec<u8>>,
+    name: Vec<Vec<u16>>,
+}
+
+impl VaiseshikamsaColumns {
+    fn of(documents: &[Document]) -> VaiseshikamsaColumns {
+        let grahas: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.vaiseshikamsa.as_ref())
+            .flat_map(|reading| &reading.grahas)
+            .collect();
+        let rows = grahas.len();
+        let mut columns = VaiseshikamsaColumns {
+            graha: Vec::with_capacity(rows),
+            impaired: Vec::with_capacity(rows),
+            good: VAISESHIKAMSA_SCHEMES
+                .iter()
+                .map(|_| Vec::with_capacity(rows))
+                .collect(),
+            name: VAISESHIKAMSA_SCHEMES
+                .iter()
+                .map(|_| Vec::with_capacity(rows))
+                .collect(),
+        };
+        for graha in grahas {
+            columns.graha.push(graha.graha.id());
+            columns.impaired.push(u8::from(graha.impaired));
+            for ((good, name), (_, standing)) in columns
+                .good
+                .iter_mut()
+                .zip(columns.name.iter_mut())
+                .zip(VAISESHIKAMSA_SCHEMES)
+            {
+                let standing = standing(graha);
+                good.push(standing.good_vargas);
+                name.push(
+                    standing
+                        .name
+                        .map_or(0, teistro_core::catalogue::Vaiseshikamsa::id),
+                );
+            }
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut data = vec![ColumnData::U16(&self.graha), ColumnData::U8(&self.impaired)];
+        for (good, name) in self.good.iter().zip(&self.name) {
+            data.push(ColumnData::U8(good));
+            data.push(ColumnData::U16(name));
+        }
+        writer.columns("vaiseshikamsa", self.graha.len(), &data)
+    }
+}
+
+/// A Bhava bala value column: its name, what it holds, and where a bhava's
+/// reading keeps it.
+pub(crate) type BhavaBalaColumn = (
+    &'static str,
+    &'static str,
+    fn(&teistro::strength::BhavaStrength) -> f64,
+);
+
+/// The `bhava_bala` section's value columns in order, which the section's
+/// schema and its writer both read.
+pub(crate) const BHAVA_BALA_COLUMNS: [BhavaBalaColumn; 5] = [
+    ("adhipati", "The lord's Shadbala.", |b| b.adhipati),
+    ("dig", "From its direction, 0 to 60.", |b| b.dig),
+    (
+        "drishti",
+        "From the drishtis it receives, which may be negative.",
+        |b| b.drishti,
+    ),
+    (
+        "special",
+        "From its occupants and its sign's rising, under BPHS's special rules.",
+        |b| b.special,
+    ),
+    ("virupas", "The four together.", |b| b.virupas),
+];
+
+/// Every chart's Bhava bala, a row a bhava, empty when it was not asked for.
+struct BhavaBalaColumns {
+    lord: Vec<u16>,
+    values: Vec<Vec<f64>>,
+}
+
+impl BhavaBalaColumns {
+    fn of(documents: &[Document]) -> BhavaBalaColumns {
+        let bhavas: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.bhava_bala.as_ref())
+            .flat_map(|reading| &reading.bhavas)
+            .collect();
+        let mut columns = BhavaBalaColumns {
+            lord: Vec::with_capacity(bhavas.len()),
+            values: BHAVA_BALA_COLUMNS
+                .iter()
+                .map(|_| Vec::with_capacity(bhavas.len()))
+                .collect(),
+        };
+        for bhava in bhavas {
+            columns.lord.push(bhava.lord.id());
+            for (column, (_, _, read)) in columns.values.iter_mut().zip(BHAVA_BALA_COLUMNS) {
+                column.push(read(bhava));
+            }
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut data = Vec::with_capacity(self.values.len() + 1);
+        data.push(ColumnData::U16(&self.lord));
+        data.extend(self.values.iter().map(|column| ColumnData::F64(column)));
+        writer.columns("bhava_bala", self.lord.len(), &data)
+    }
+}
+
+/// Every chart's Vimshopaka, a row a graha, empty when it was not asked for.
+struct VimshopakaColumns {
+    graha: Vec<u16>,
+    scoring: Vec<u8>,
+    shadvarga: Vec<f64>,
+    saptavarga: Vec<f64>,
+    dashavarga: Vec<f64>,
+    shodashavarga: Vec<f64>,
+}
+
+impl VimshopakaColumns {
+    fn of(documents: &[Document]) -> VimshopakaColumns {
+        let rows = documents
+            .iter()
+            .filter_map(|d| d.vimshopaka.as_ref())
+            .map(|reading| reading.grahas.len())
+            .sum();
+        let mut columns = VimshopakaColumns {
+            graha: Vec::with_capacity(rows),
+            scoring: Vec::with_capacity(rows),
+            shadvarga: Vec::with_capacity(rows),
+            saptavarga: Vec::with_capacity(rows),
+            dashavarga: Vec::with_capacity(rows),
+            shodashavarga: Vec::with_capacity(rows),
+        };
+        for reading in documents.iter().filter_map(|d| d.vimshopaka.as_ref()) {
+            for graha in &reading.grahas {
+                columns.graha.push(graha.graha.id());
+                columns
+                    .scoring
+                    .push(TsVimshopakaScoring::from(reading.scoring) as u8);
+                columns.shadvarga.push(graha.shadvarga);
+                columns.saptavarga.push(graha.saptavarga);
+                columns.dashavarga.push(graha.dashavarga);
+                columns.shodashavarga.push(graha.shodashavarga);
+            }
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "vimshopaka",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::U8(&self.scoring),
+                ColumnData::F64(&self.shadvarga),
+                ColumnData::F64(&self.saptavarga),
+                ColumnData::F64(&self.dashavarga),
+                ColumnData::F64(&self.shodashavarga),
+            ],
+        )
+    }
+}
+
 struct PointColumns {
     counts: Vec<u32>,
     point: Vec<u16>,
@@ -1122,6 +1778,212 @@ fn timing_values(timing: &teistro_chart::foundation::BirthTiming) -> Vec<FixedVa
 /// and `summary.chart_count` is what says they mean nothing; the
 /// provenance envelope still carries the settings hash that would have
 /// produced them.
+/// The dashas of a batch, as the two sections carry them: one row a chart
+/// a system, and every period of each, concatenated in the same order and
+/// **ragged** by `period_count`, since a dasha's depth is the settings' and
+/// an elapsed birth period has fewer children than a compressed one.
+struct DashaColumns {
+    /// How many systems each chart holds: one for the batch, since every
+    /// chart answers the same request.
+    count: u32,
+    system: Vec<u16>,
+    seeded: Vec<u8>,
+    signed: Vec<u8>,
+    seed: Vec<u16>,
+    first_lord: Vec<u16>,
+    overflow: Vec<u8>,
+    balance: Vec<u8>,
+    remaining: Vec<f64>,
+    days: Vec<f64>,
+    years: Vec<u32>,
+    months: Vec<u8>,
+    whole_days: Vec<u8>,
+    hours: Vec<u8>,
+    minutes: Vec<u8>,
+    span_from: Vec<f64>,
+    span_to: Vec<f64>,
+    depth: Vec<u8>,
+    period_count: Vec<u32>,
+    level: Vec<u8>,
+    index: Vec<u8>,
+    sign: Vec<u16>,
+    lord: Vec<u16>,
+    from: Vec<f64>,
+    to: Vec<f64>,
+}
+
+impl DashaColumns {
+    fn of(
+        documents: &[Document],
+        registered: &teistro::dasha::DashaSystems,
+    ) -> Result<DashaColumns, Error> {
+        let count = documents.first().map_or(0, |d| d.dashas.len());
+        if documents.iter().any(|d| d.dashas.len() != count) {
+            return Err(Error::internal(
+                "the batch's charts hold different numbers of dashas, though one request asked for them",
+            ));
+        }
+        let rows = documents.len() * count;
+        let periods: usize = documents
+            .iter()
+            .flat_map(|d| &d.dashas)
+            .map(|reading| reading.periods.len())
+            .sum();
+        let mut columns = DashaColumns {
+            count: u32::try_from(count).unwrap_or(u32::MAX),
+            system: Vec::with_capacity(rows),
+            seeded: Vec::with_capacity(rows),
+            signed: Vec::with_capacity(rows),
+            seed: Vec::with_capacity(rows),
+            first_lord: Vec::with_capacity(rows),
+            overflow: Vec::with_capacity(rows),
+            balance: Vec::with_capacity(rows),
+            remaining: Vec::with_capacity(rows),
+            days: Vec::with_capacity(rows),
+            years: Vec::with_capacity(rows),
+            months: Vec::with_capacity(rows),
+            whole_days: Vec::with_capacity(rows),
+            hours: Vec::with_capacity(rows),
+            minutes: Vec::with_capacity(rows),
+            span_from: Vec::with_capacity(rows),
+            span_to: Vec::with_capacity(rows),
+            depth: Vec::with_capacity(rows),
+            period_count: Vec::with_capacity(rows),
+            level: Vec::with_capacity(periods),
+            index: Vec::with_capacity(periods),
+            sign: Vec::with_capacity(periods),
+            lord: Vec::with_capacity(periods),
+            from: Vec::with_capacity(periods),
+            to: Vec::with_capacity(periods),
+        };
+        for reading in documents.iter().flat_map(|d| &d.dashas) {
+            // A registered system crosses as the id its context gave it,
+            // which is how a binding names it from the definitions it passed.
+            let system = match &reading.system {
+                DashaName::Catalogued(system) => system.id(),
+                DashaName::Registered(key) => {
+                    registered.id(key).map(KeyId::id).ok_or_else(|| {
+                        Error::internal(format!("`{key}` is not registered with the context"))
+                    })?
+                }
+            };
+            columns.push(system, reading);
+        }
+        Ok(columns)
+    }
+
+    /// One dasha's row and its periods.
+    fn push(&mut self, system: u16, reading: &teistro::DashaReading) {
+        let columns = self;
+        columns.system.push(system);
+        columns.seeded.push(u8::from(reading.seed.is_some()));
+        let signed = reading
+            .periods
+            .first()
+            .is_some_and(|period| period.sign.is_some());
+        columns.signed.push(u8::from(signed));
+        columns.seed.push(
+            reading
+                .seed
+                .map_or(0, teistro_core::catalogue::Nakshatra::id),
+        );
+        columns.first_lord.push(reading.first_lord.id());
+        columns.overflow.push(u8::from(reading.overflow));
+        let balance = reading.balance;
+        columns
+            .balance
+            .push(balance.map_or(0, |balance| TsBalance::from(balance.method) as u8));
+        columns
+            .remaining
+            .push(balance.map_or(0.0, |balance| balance.remaining));
+        columns
+            .days
+            .push(balance.map_or(0.0, |balance| balance.days));
+        let written = balance.map(|balance| balance.written);
+        columns
+            .years
+            .push(written.map_or(0, |written| written.years));
+        columns
+            .months
+            .push(written.map_or(0, |written| written.months));
+        columns
+            .whole_days
+            .push(written.map_or(0, |written| written.days));
+        columns
+            .hours
+            .push(written.map_or(0, |written| written.hours));
+        columns
+            .minutes
+            .push(written.map_or(0, |written| written.minutes));
+        columns
+            .span_from
+            .push(reading.moon_span.map_or(f64::NAN, |span| span.from.get()));
+        columns
+            .span_to
+            .push(reading.moon_span.map_or(f64::NAN, |span| span.to.get()));
+        columns.depth.push(reading.depth.get());
+        columns
+            .period_count
+            .push(u32::try_from(reading.periods.len()).unwrap_or(u32::MAX));
+        for period in &reading.periods {
+            let places: Vec<u8> = period
+                .path
+                .split('/')
+                .map(|step| step.parse().unwrap_or(u8::MAX))
+                .collect();
+            columns
+                .level
+                .push(u8::try_from(places.len()).unwrap_or(u8::MAX));
+            columns.index.push(places.last().copied().unwrap_or(0));
+            columns
+                .sign
+                .push(period.sign.map_or(0, teistro_core::catalogue::Rashi::id));
+            columns.lord.push(period.lord.id());
+            columns.from.push(period.interval.from.get());
+            columns.to.push(period.interval.to.get());
+        }
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "dashas",
+            self.system.len(),
+            &[
+                ColumnData::U16(&self.system),
+                ColumnData::U8(&self.seeded),
+                ColumnData::U8(&self.signed),
+                ColumnData::U16(&self.seed),
+                ColumnData::U16(&self.first_lord),
+                ColumnData::U8(&self.overflow),
+                ColumnData::U8(&self.balance),
+                ColumnData::F64(&self.remaining),
+                ColumnData::F64(&self.days),
+                ColumnData::U32(&self.years),
+                ColumnData::U8(&self.months),
+                ColumnData::U8(&self.whole_days),
+                ColumnData::U8(&self.hours),
+                ColumnData::U8(&self.minutes),
+                ColumnData::F64(&self.span_from),
+                ColumnData::F64(&self.span_to),
+                ColumnData::U8(&self.depth),
+                ColumnData::U32(&self.period_count),
+            ],
+        )?;
+        writer.columns(
+            "dasha_periods",
+            self.lord.len(),
+            &[
+                ColumnData::U8(&self.level),
+                ColumnData::U8(&self.index),
+                ColumnData::U16(&self.sign),
+                ColumnData::U16(&self.lord),
+                ColumnData::F64(&self.from),
+                ColumnData::F64(&self.to),
+            ],
+        )
+    }
+}
+
 struct BatchOnce {
     readings: Vec<FixedValue>,
     frame_bits: u32,
@@ -1197,6 +2059,9 @@ pub fn encode(
     place: &Place,
     kind: ChartKind,
     provenance: &Provenance,
+    svgs: &str,
+    rules: &str,
+    registered: &teistro::dasha::DashaSystems,
 ) -> Result<Vec<u8>, Error> {
     let charts: Vec<&ChartFoundation> = documents.iter().map(|d| &d.foundation).collect();
     let charts = charts.as_slice();
@@ -1205,8 +2070,6 @@ pub fn encode(
     let chart_count = u32::try_from(charts.len()).unwrap_or(u32::MAX);
     let graha_count = one_size(charts)?;
     let columns = GrahaColumns::of(charts);
-    let (house_madhya, house_sandhi) = bhava_columns(charts, |c| &c.houses);
-    let (chalit_madhya, chalit_sandhi) = bhava_columns(charts, |c| &c.chalit);
     let day_rows: Vec<Vec<FixedValue>> = charts.iter().map(|c| day_values(&c.day.day)).collect();
     let timing_rows: Vec<Vec<FixedValue>> =
         charts.iter().map(|c| timing_values(&c.timing)).collect();
@@ -1216,6 +2079,13 @@ pub fn encode(
     let points = PointColumns::of(documents);
     let bhavas = BhavaColumns::of(documents);
     let states = StateColumns::of(documents);
+    let dashas = DashaColumns::of(documents, registered)?;
+    let ashtakavarga = AshtakavargaColumns::of(documents);
+    let vimshopaka = VimshopakaColumns::of(documents);
+    let shadbala = ShadbalaColumns::of(documents);
+    let bhava_bala = BhavaBalaColumns::of(documents);
+    let vaiseshikamsa = VaiseshikamsaColumns::of(documents);
+    let dasha_phala = DashaPhalaColumns::of(documents);
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -1226,6 +2096,7 @@ pub fn encode(
                 chart_count,
                 u32::try_from(graha_count).unwrap_or(u32::MAX),
                 vargas.count,
+                dashas.count,
             ),
         )?;
         writer.rows("cast", &chart_rows(charts, &points.counts, &aspects.counts))?;
@@ -1250,22 +2121,8 @@ pub fn encode(
             ],
         )?;
         writer.fixed("readings", &once.readings)?;
-        writer.columns(
-            "houses",
-            charts.len() * 12,
-            &[
-                ColumnData::F64(&house_madhya),
-                ColumnData::F64(&house_sandhi),
-            ],
-        )?;
-        writer.columns(
-            "chalit",
-            charts.len() * 12,
-            &[
-                ColumnData::F64(&chalit_madhya),
-                ColumnData::F64(&chalit_sandhi),
-            ],
-        )?;
+        write_bhavas(&mut writer, "houses", charts, |c| &c.houses)?;
+        write_bhavas(&mut writer, "chalit", charts, |c| &c.chalit)?;
         writer.fixed(
             "zodiac",
             &[
@@ -1287,6 +2144,16 @@ pub fn encode(
         points.write(&mut writer)?;
         bhavas.write(&mut writer)?;
         states.write(&mut writer)?;
+        writer.bytes("drawings", drawings_json(documents).as_bytes())?;
+        writer.bytes("svgs", svgs.as_bytes())?;
+        writer.bytes("rules", rules.as_bytes())?;
+        dashas.write(&mut writer)?;
+        ashtakavarga.write(&mut writer)?;
+        vimshopaka.write(&mut writer)?;
+        shadbala.write(&mut writer)?;
+        bhava_bala.write(&mut writer)?;
+        vaiseshikamsa.write(&mut writer)?;
+        dasha_phala.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -1295,6 +2162,123 @@ pub fn encode(
             format!("the chart blob could not be written: {error}"),
         )
     })
+}
+
+/// One of the two twelve-bhava sections, charts outermost.
+fn write_bhavas(
+    writer: &mut Writer<'_>,
+    name: &str,
+    charts: &[&ChartFoundation],
+    pick: fn(&ChartFoundation) -> &teistro_chart::bhava::Bhavas,
+) -> Result<(), teistro_idl::blob::BlobError> {
+    let (madhya, sandhi) = bhava_columns(charts, pick);
+    writer.columns(
+        name,
+        charts.len() * 12,
+        &[ColumnData::F64(&madhya), ColumnData::F64(&sandhi)],
+    )
+}
+
+/// Every chart's drawings as the canonical JSON the `drawings` section
+/// carries: one array per chart, or nothing at all when none were asked for,
+/// so a caller that drew nothing pays for no text.
+fn drawings_json(documents: &[Document]) -> String {
+    if documents
+        .iter()
+        .all(|document| document.drawings.is_empty())
+    {
+        return String::new();
+    }
+    let per_chart: Vec<&Vec<teistro_geometry::Drawing>> = documents
+        .iter()
+        .map(|document| &document.drawings)
+        .collect();
+    teistro_core::envelope::canonical_json(&per_chart)
+}
+
+/// Every chart's drawings written as SVG in one theme, as the canonical JSON
+/// the `svgs` section carries: one array of strings per chart, in the order
+/// the drawings were asked for.
+fn svgs_json(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    theme: &Theme,
+) -> Result<String, Error> {
+    let mut per_chart = Vec::with_capacity(documents.len());
+    for document in documents {
+        let mut svgs = Vec::with_capacity(document.drawings.len());
+        for index in 0..document.drawings.len() {
+            svgs.push(sdk.chart().svg(document, index, theme)?);
+        }
+        per_chart.push(svgs);
+    }
+    Ok(teistro_core::envelope::canonical_json(&per_chart))
+}
+
+/// A chart layout this context can draw in, shipped or registered, as its
+/// JSON row: the record `options.layouts_json` takes. Read a shipped row,
+/// give it a key of its own, change what differs and register it
+/// (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+/// (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+/// `INVALID_ARG` with the keys the context knows as the hint.
+///
+/// # Safety
+///
+/// `context` must be a live handle; `key` a NUL-terminated string;
+/// `out_json` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_chart_layout_row(
+    context: *const TsContext,
+    key: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = unsafe { crate::support::text(key, "key") }?;
+        let row = ctx.sdk().chart().layout(asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&row));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
+/// The rule set a request's `rules_json` names, or none for null; a refusal is
+/// named from the request's root, `rules_json.rules[0]`.
+///
+/// # Safety
+///
+/// `rules_json` null or a NUL-terminated string.
+unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(rules_json, "rules_json") }?
+        .map(|text| RuleRequest::from_json(text).and_then(|request| request.rule_set()))
+        .transpose()
+        .map_err(|error| {
+            // The request names its fields from its own root; the chart
+            // request calls that root `rules_json`.
+            let field = error.field().map_or_else(
+                || String::from("rules_json"),
+                |inner| format!("rules_json.{inner}"),
+            );
+            error.with_field(field)
+        })
+}
+
+/// The charts a request asks for, and the canonical JSON of what they answer
+/// by rule — empty when the request named no rules.
+fn read_charts(
+    sdk: &teistro::Context,
+    instants: &[JulianDay<Utc>],
+    request: &ChartRequest,
+    rules: Option<&RuleSet>,
+) -> Result<(Envelope<Vec<Document>>, String), Error> {
+    let Some(set) = rules else {
+        return Ok((sdk.chart().readings(instants, request)?, String::new()));
+    };
+    let read = sdk.chart().readings_with_rules(instants, request, set)?;
+    let (documents, readings): (Vec<Document>, Vec<_>) = read.value.into_iter().unzip();
+    let json = teistro_core::envelope::canonical_json(&readings);
+    Ok((Envelope::new(documents, read.provenance), json))
 }
 
 /// Founds a chart at an instant and a place and answers with its blob:
@@ -1342,21 +2326,15 @@ pub unsafe extern "C" fn ts_chart_found(
         })?;
         let clock = UtcOffset::try_from_seconds(asked.utc_offset_seconds)
             .map_err(|e| Error::from(e).with_field("utc_offset_seconds"))?;
-        if asked.instants.is_null() && asked.instant_count != 0 {
-            return Err(crate::support::null("instants"));
-        }
         // SAFETY: the entry point's contract — the caller promises
-        // `instant_count` readable doubles at `instants`.
+        // `instant_count` readable doubles at `instants`, or null and zero.
         let instants: Vec<JulianDay<Utc>> =
-            unsafe { core::slice::from_raw_parts(asked.instants, asked.instant_count) }
+            unsafe { slice(asked.instants, asked.instant_count, "instants") }?
                 .iter()
                 .map(|jd| JulianDay::<Utc>::literal(*jd))
                 .collect();
-        if asked.vargas.is_null() && asked.varga_count != 0 {
-            return Err(crate::support::null("vargas"));
-        }
         // SAFETY: as above, for `varga_count` readable `u16`s.
-        let asked_vargas = unsafe { core::slice::from_raw_parts(asked.vargas, asked.varga_count) };
+        let asked_vargas = unsafe { slice(asked.vargas, asked.varga_count, "vargas") }?;
         let mut vargas = Vec::with_capacity(asked_vargas.len());
         for id in asked_vargas {
             vargas.push(Varga::from_id(*id).ok_or_else(|| {
@@ -1367,11 +2345,38 @@ pub unsafe extern "C" fn ts_chart_found(
                 .with_field("vargas")
             })?);
         }
+        // SAFETY: as above, for `dasha_count` readable `u16`s.
+        let asked_dashas = unsafe { slice(asked.dashas, asked.dasha_count, "dashas") }?;
+        let mut dashas = Vec::with_capacity(asked_dashas.len());
+        // A catalogued id or one the context registered; the façade refuses
+        // any other by its place, with the systems it can compute.
+        for id in asked_dashas {
+            dashas.push(KeyId::new(Kind::DashaSystem, *id));
+        }
+        // SAFETY: as above, for `drawing_count` readable `u32`s.
+        let asked_drawings = unsafe { slice(asked.drawings, asked.drawing_count, "drawings") }?;
+        let mut drawings = Vec::with_capacity(asked_drawings.len());
+        for (index, packed) in asked_drawings.iter().enumerate() {
+            let (layout, varga) = (packed >> 16, packed & 0xFFFF);
+            let varga = u16::try_from(varga)
+                .ok()
+                .and_then(Varga::from_id)
+                .ok_or_else(|| {
+                    Error::invalid_arg(format!(
+                        "drawing {index} names divisional chart id {varga}, which is none"
+                    ))
+                    .with_field(format!("drawings[{index}]"))
+                })?;
+            let layout = KeyId::new(Kind::ChartLayout, u16::try_from(layout).unwrap_or(u16::MAX));
+            drawings.push((layout, varga));
+        }
         let request = sections_of(
             asked.sections,
             ChartRequest::at(place, clock).with_kind(kind),
         )
-        .with_vargas(vargas);
+        .with_vargas(vargas)
+        .with_drawings(drawings)
+        .with_dashas(dashas);
         // **The façade reads it**, which is what the dependency inversion
         // was for: `rust-consumer-surface.md` moved the SDK's
         // composition into `teistro` and had this crate depend on it, and
@@ -1383,8 +2388,36 @@ pub unsafe extern "C" fn ts_chart_found(
         //
         // It also seals, so there is nothing left for the boundary to do
         // but encode what it was given.
-        let founded = ctx.sdk().chart().readings(&instants, &request)?;
-        let encoded = encode(&founded.value, &place, kind, &founded.provenance)?;
+        // SAFETY: the entry point's contract — null, or a NUL-terminated
+        // string.
+        let theme = unsafe { optional_text(asked.theme_json, "theme_json") }?
+            .map(Theme::from_json)
+            .transpose()
+            .map_err(|error| {
+                // The theme names its fields from its own root; the request
+                // calls that root `theme_json`.
+                let field = error.field().map_or_else(
+                    || String::from("theme_json"),
+                    |inner| format!("theme_json{}", inner.strip_prefix("theme").unwrap_or(inner)),
+                );
+                error.with_field(field)
+            })?;
+        // SAFETY: the entry point's contract.
+        let rules = unsafe { rule_set_of(asked.rules_json) }?;
+        let (founded, rules_json) = read_charts(ctx.sdk(), &instants, &request, rules.as_ref())?;
+        let svgs = match &theme {
+            Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
+            None => String::new(),
+        };
+        let encoded = encode(
+            &founded.value,
+            &place,
+            kind,
+            &founded.provenance,
+            &svgs,
+            &rules_json,
+            ctx.sdk().dashas(),
+        )?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
@@ -1420,6 +2453,24 @@ mod tests {
     use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
     use teistro_serial::Document;
     use teistro_time::local_day::{DayState, PolarKind};
+
+    /// A batch encoded as a natal chart with no drawings and no registered
+    /// dasha systems, which is every encoding these tests make.
+    fn encoded(
+        documents: &[Document],
+        place: &Place,
+        provenance: &Provenance,
+    ) -> Result<Vec<u8>, teistro_core::error::Error> {
+        super::encode(
+            documents,
+            place,
+            ChartKind::Natal,
+            provenance,
+            "",
+            "",
+            &teistro::dasha::DashaSystems::new(),
+        )
+    }
 
     /// Every member of every knob crosses, and crosses to an id of its
     /// own.
@@ -1558,8 +2609,7 @@ mod tests {
                     )
             })
             .collect();
-        let bytes =
-            super::encode(&documents, &place, ChartKind::Natal, &provenance).expect("it encodes");
+        let bytes = encoded(&documents, &place, &provenance).expect("it encodes");
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
         let graha_count = charts[0].grahas.len();
@@ -1677,8 +2727,7 @@ mod tests {
                 )
             })
             .collect();
-        let bytes =
-            super::encode(&documents, &place, ChartKind::Natal, &provenance).expect("it encodes");
+        let bytes = encoded(&documents, &place, &provenance).expect("it encodes");
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
 
@@ -1728,7 +2777,7 @@ mod tests {
         use teistro_idl::blob::Reader;
 
         let (_, place, provenance) = founded();
-        let bytes = super::encode(&[], &place, ChartKind::Natal, &provenance).expect("it encodes");
+        let bytes = encoded(&[], &place, &provenance).expect("it encodes");
         let schema = crate::schemas::charts();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
 

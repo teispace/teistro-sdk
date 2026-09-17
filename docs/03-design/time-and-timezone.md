@@ -145,6 +145,22 @@ pub enum hora::Reckoning { Proportional, Equal }   // from the `hora_reckoning` 
 The local day carries its `vara` (the weekday of the sunrise-anchored
 day), which the planetary hours start from.
 
+**A civil date is not the Sun's date everywhere.** A solar model counts days
+in the local mean time of the place's longitude, and `local_day` is asked for
+a *civil* date under a clock. The two agree wherever the clock keeps within
+half a day of mean time, and nowhere the clock was moved across the date line:
+Samoa's UTC+14 at 171.8° W is 25½ hours from its mean time, as are Tonga,
+Tokelau and Kiribati's Line Islands. Found on 2026-09-16 when a birth in Apia
+at 06:00 on 31 December 2011 — the morning after Samoa skipped 30 December —
+was refused outright: the model placed the civil 31st's sunrise a day late, so
+"the day before" still lay after the birth. `calendar::solar::mean_time_day`
+now translates a civil date to the mean-time date in force at the civil day's
+own noon, which is the civil date everywhere else, and `civil_day_light` is
+what `local_day`, its polar searches and the solar month-start rules ask
+through; no caller hands a model a civil date directly. The recording engine
+dates the day by the civil clock, and a unit test at Apia holds each civil
+day's sunrise and sunset inside that civil day.
+
 Civil reckoning: a ghati is 24 minutes, a pala 24 seconds, a vipala 0.4
 seconds, counted from sunrise. Proportional: thirty ghatis span the
 actual day from sunrise to sunset and thirty the night to the next

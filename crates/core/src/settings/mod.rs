@@ -32,10 +32,15 @@ use crate::envelope::Hash;
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
-    AyanamshaBasis, Balance, Centre, CharaKarakas, DayBoundary, DeltaT, DstGap, DstOverlap,
-    Ekadhipatya, GhatiReckoning, HoraReckoning, LunarMonth, MoonEvents, NakshatraScheme, Node,
+    AfterCycle, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules,
+    BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik,
+    DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning, HoraReckoning, IshtaKashta,
+    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    LuminaryCheshta, LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
     NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    SeedOverflow, Sunrise, Tier, UnattestedDn, UnknownTime, YearLength, Zodiac,
+    PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
+    Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -45,6 +50,7 @@ pub const SCHEMA: u16 = 1;
 
 /// Which ayanamsha: a catalogued one, or a custom definition.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AyanamshaChoice {
     /// A catalogued ayanamsha.
@@ -71,6 +77,7 @@ impl From<Ayanamsha> for AyanamshaChoice {
 
 /// The sunrise convention, with a custom altitude when asked.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SunriseConvention {
     /// One of the named conventions.
@@ -93,6 +100,7 @@ impl From<Sunrise> for SunriseConvention {
 
 /// Which Surya Siddhanta model, when the siddhanta knob is classical.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Siddhanta {
     /// Modern astronomy.
@@ -106,6 +114,7 @@ pub enum Siddhanta {
 
 /// The rounding contract of serialised output.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Precision {
     /// Decimals of a degree value beside its exact integer.
@@ -130,6 +139,7 @@ macro_rules! group {
     ($(#[$m:meta])* $name:ident, $patch:ident { $( $(#[$fm:meta])* $field:ident : $ty:ty ),+ $(,)? }) => {
         $(#[$m])*
         #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         #[serde(deny_unknown_fields)]
         pub struct $name {
             $( $(#[$fm])* pub $field: $ty ),+
@@ -137,6 +147,7 @@ macro_rules! group {
 
         #[doc = concat!("The patch of `", stringify!($name), "`: every knob optional.")]
         #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         #[serde(default, deny_unknown_fields)]
         pub struct $patch {
             $( $(#[$fm])* pub $field: Option<$ty> ),+
@@ -258,17 +269,33 @@ group!(
     /// Dasha computation.
     Dasha, DashaPatch {
         /// How the first period is balanced.
-        /// lint: knob-has-a-reader — `dasha`, Phase 5.
         balance: Balance,
         /// The year length per system.
-        /// lint: knob-has-a-reader — `dasha`, Phase 5.
         year_length: BTreeMap<DashaSystem, YearLength>,
         /// The default depth per system.
-        /// lint: knob-has-a-reader — `dasha`, Phase 5.
         depth: BTreeMap<DashaSystem, Depth>,
         /// A seed outside a conditional cycle.
         /// lint: knob-has-a-reader — `dasha`, Phase 5 (ADR-0017).
         seed_overflow: SeedOverflow,
+        /// How the birth period is divided among its sub-periods (crux C48).
+        /// lint: knob-has-a-reader — `dasha`, Phase 5.
+        birth_period: BirthPeriod,
+        /// What a dasha answers past the end of its cycle (crux C48).
+        after_cycle: AfterCycle,
+        /// Which pada table a nakshatra takes in the Kalachakra dasha (crux C54).
+        kalachakra_membership: KalachakraMembership,
+        /// How the Kalachakra balance at birth is taken (crux C55).
+        kalachakra_balance: KalachakraBalance,
+        /// What follows the ninth Kalachakra mahadasha (crux C56).
+        kalachakra_after_ninth: KalachakraAfterNinth,
+        /// Which friendly signs make a dasha favourable (crux C79).
+        shanta_sign: ShantaSign,
+        /// How a rashi dasha finds the stronger lord of a dual-lorded sign
+        /// (crux C51).
+        dual_lord: DualLord,
+        /// Where the rashi dashas that start from a stronger sign begin (crux
+        /// C53).
+        rashi_start: RashiStart,
     }
 );
 
@@ -300,18 +327,63 @@ group!(
     State, StatePatch {
         /// The combustion orb table's key.
         combustion_orbs: String,
+        /// Which count of the ghatis of birth the Sayanadi avasthas add (crux C78).
+        sayanadi_ghatis: SayanadiGhatis,
+        /// The numbers Rahu and Ketu multiply by in the Sayanadi avasthas (crux C78).
+        sayanadi_nodes: SayanadiNodes,
     }
 );
 
 group!(
     /// Strength.
     Strength, StrengthPatch {
-        /// The bala scheme.
-        /// lint: knob-has-a-reader — `strength`, Phase 5 (`03-design/strength-schemes.md`).
+        /// Which components the Shadbala counts: the six of BPHS ch. 27.
         bala_scheme: BalaScheme,
-        /// The Ashtakavarga reduction rule.
-        /// lint: knob-has-a-reader — `strength`, Phase 5.
+        /// How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign
+        /// beside an occupied one (crux C60).
         ekadhipatya: Ekadhipatya,
+        /// Where the Ashtakavarga's reductions and pindas are made (crux C59).
+        shodhana: Shodhana,
+        /// How the Vimshopaka scores a graha in a varga (crux C63).
+        vimshopaka: Vimshopaka,
+        /// How the Shadbala's Saptavargaja scores a varga (crux C64).
+        saptavargaja: Saptavargaja,
+        /// How the Shadbala's Nathonnatha measures the hour (crux C65).
+        nathonnatha: Nathonnatha,
+        /// Which night a birth before sunrise is measured in (crux C65).
+        pre_dawn_night: PreDawnNight,
+        /// Where the Sun's Ayana bala is counted (crux C66).
+        sun_ayana: SunAyana,
+        /// The Sun's and the Moon's Cheshta balas (crux C66).
+        luminary_cheshta: LuminaryCheshta,
+        /// The declination the Ayana bala reads (crux C66).
+        kranti: Kranti,
+        /// Whose weekdays the Abda and Masa lords are (crux C67).
+        kaala_lords: KaalaLords,
+        /// The kendras the Dig bala measures from (crux C68).
+        dig: DigKendras,
+        /// How the Drik bala weighs the drishtis received (crux C69).
+        drik: Drik,
+        /// The natural strengths (crux C71).
+        naisargika: Naisargika,
+        /// The rupas a graha's Shadbala must reach (crux C71).
+        required_rupas: RequiredRupas,
+        /// Which decanate gives each gender its Drekkana bala (crux C72).
+        drekkana: Drekkana,
+        /// Which grahas are benefics for Paksha and Drik (crux C69).
+        benefics: Benefics,
+        /// The mean elements the Cheshta bala reads (crux C70).
+        cheshta: Cheshta,
+        /// Whether grahas at war gain and lose the Yuddha bala (crux C70).
+        yuddha: Yuddha,
+        /// How the Ishta and Kashta phalas are read (crux C76).
+        ishta_kashta: IshtaKashta,
+        /// How the Bhava bala's Dig bala reads a bhava's sign class (crux C73).
+        bhava_dig: BhavaDig,
+        /// How the Bhava bala weighs the drishtis a bhava receives (crux C74).
+        bhava_drishti: BhavaDrishti,
+        /// Whether the Bhava bala adds the special rules (crux C75).
+        bhava_special_rules: BhavaSpecialRules,
     }
 );
 
@@ -379,6 +451,7 @@ group!(
 
 /// Every knob, complete; built only by resolving a profile.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(deny_unknown_fields)]
 pub struct Settings {
     /// The document's schema version.
@@ -451,6 +524,7 @@ impl Settings {
 
 /// A patch: every group's knobs optional.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
 pub struct SettingsPatch {
     /// The frame.
@@ -579,6 +653,7 @@ impl Settings {
 
 /// How bad a finding is.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum Severity {
     /// The settings cannot be used.
@@ -589,6 +664,7 @@ pub enum Severity {
 
 /// One coherence finding.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Diagnostic {
     /// Error or warning.
     pub severity: Severity,
@@ -630,6 +706,7 @@ impl Diagnostic {
 
 /// Every finding of a validation.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Diagnostics {
     /// The findings, in rule order.
     pub items: Vec<Diagnostic>,

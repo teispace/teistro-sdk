@@ -11,6 +11,7 @@ use crate::error::ProviderError;
 
 /// Where a position is seen from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[repr(u8)]
 pub enum Centre {
@@ -39,6 +40,7 @@ impl Centre {
 
 /// The equinox and equator the coordinates refer to.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[repr(u8)]
 pub enum Equinox {
@@ -61,6 +63,7 @@ impl Equinox {
 
 /// The coordinate system of a position.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[repr(u8)]
 pub enum Coordinates {
@@ -83,6 +86,7 @@ impl Coordinates {
 
 /// Which zodiac longitudes are measured in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Zodiac {
     /// From the equinox.
@@ -123,6 +127,7 @@ impl fmt::Display for Zodiac {
 
 /// Which corrections a position includes.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[allow(
     clippy::struct_excessive_bools,
     reason = "four independent switches of a frame"
@@ -196,6 +201,7 @@ impl Corrections {
 /// assert_eq!(frame.key(), "GEOCENTRIC/OF_DATE/EQUATORIAL/SIDEREAL(LAHIRI)/APPARENT");
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Frame {
     /// Where the position is seen from.
     pub centre: Centre,

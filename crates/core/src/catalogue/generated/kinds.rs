@@ -112,7 +112,7 @@ pub enum Kind {
     AvasthaDeeptadi = 52,
     /// The six Lajjitadi states.
     AvasthaLajjitadi = 53,
-    /// The twelve Sayanadi states.
+    /// The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.
     AvasthaSayanadi = 54,
     /// What kind of derived point.
     PointFamily = 55,
@@ -128,11 +128,18 @@ pub enum Kind {
     Panchaka = 60,
     /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
     MuhurtaYoga = 61,
+    /// The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
+    ChartLayout = 62,
+    /// The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
+    Vaiseshikamsa = 63,
+    /// The three sub-states of a Sayanadi state, a remainder of three.
+    AvasthaCheshta = 64,
 }
 
-const BY_NAME: [(&str, Kind); 60] = [
+const BY_NAME: [(&str, Kind); 63] = [
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
+    ("avastha_cheshta", Kind::AvasthaCheshta),
     ("avastha_deeptadi", Kind::AvasthaDeeptadi),
     ("avastha_jagradadi", Kind::AvasthaJagradadi),
     ("avastha_lajjitadi", Kind::AvasthaLajjitadi),
@@ -145,6 +152,7 @@ const BY_NAME: [(&str, Kind); 60] = [
     ("calendar", Kind::Calendar),
     ("chara_karaka", Kind::CharaKaraka),
     ("chart_kind", Kind::ChartKind),
+    ("chart_layout", Kind::ChartLayout),
     ("choghadiya", Kind::Choghadiya),
     ("dasha_family", Kind::DashaFamily),
     ("dasha_system", Kind::DashaSystem),
@@ -186,6 +194,7 @@ const BY_NAME: [(&str, Kind); 60] = [
     ("tatwa", Kind::Tatwa),
     ("tithi", Kind::Tithi),
     ("tithi_class", Kind::TithiClass),
+    ("vaiseshikamsa", Kind::Vaiseshikamsa),
     ("vara", Kind::Vara),
     ("varga", Kind::Varga),
     ("varna", Kind::Varna),
@@ -195,7 +204,7 @@ const BY_NAME: [(&str, Kind); 60] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 60] = [
+    pub const ALL: [Kind; 63] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -256,6 +265,9 @@ impl Kind {
         Kind::Kaala,
         Kind::Panchaka,
         Kind::MuhurtaYoga,
+        Kind::ChartLayout,
+        Kind::Vaiseshikamsa,
+        Kind::AvasthaCheshta,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -322,6 +334,9 @@ impl Kind {
             Kind::Kaala => "kaala",
             Kind::Panchaka => "panchaka",
             Kind::MuhurtaYoga => "muhurta_yoga",
+            Kind::ChartLayout => "chart_layout",
+            Kind::Vaiseshikamsa => "vaiseshikamsa",
+            Kind::AvasthaCheshta => "avastha_cheshta",
         }
     }
 
@@ -395,6 +410,9 @@ impl Kind {
             Kind::Kaala => 3,
             Kind::Panchaka => 5,
             Kind::MuhurtaYoga => 5,
+            Kind::ChartLayout => 6,
+            Kind::Vaiseshikamsa => 30,
+            Kind::AvasthaCheshta => 3,
         }
     }
 
@@ -468,6 +486,9 @@ impl Kind {
             59 => Some(Kind::Kaala),
             60 => Some(Kind::Panchaka),
             61 => Some(Kind::MuhurtaYoga),
+            62 => Some(Kind::ChartLayout),
+            63 => Some(Kind::Vaiseshikamsa),
+            64 => Some(Kind::AvasthaCheshta),
             _ => None,
         }
     }
@@ -495,5 +516,20 @@ impl<'de> serde::Deserialize<'de> for Kind {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let name = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
         Kind::from_name(&name).ok_or_else(|| serde::de::Error::custom(crate::catalogue::UnknownKey::kind_name(&name)))
+    }
+}
+
+/// The kind names the reader above accepts, and no others.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Kind {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Kind")
+    }
+
+    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        crate::catalogue::names_schema(
+            "A catalogue kind, by name.",
+            Kind::ALL.iter().map(|kind| kind.name()),
+        )
     }
 }

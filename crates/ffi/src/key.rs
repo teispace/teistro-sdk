@@ -10,16 +10,16 @@
 use core::ffi::c_char;
 
 use teistro_core::Status;
-use teistro_core::error::{Detail, Error};
-use teistro_core::key::{KeyId, resolve};
+use teistro_core::key::KeyId;
 
 use crate::context::TsContext;
 use crate::string::TsStr;
 use crate::support::{text, with_context, write_plain};
 
-/// Resolves a full key (`graha.SUN`, an alias, or a former key) to its
-/// packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
-/// the hint in the context's last error.
+/// Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+/// context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+/// unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+/// the context's last error.
 ///
 /// # Safety
 ///
@@ -31,10 +31,11 @@ pub unsafe extern "C" fn ts_key_parse(
     key: *const c_char,
     out_id: *mut u32,
 ) -> Status {
-    with_context(context, |_| {
+    with_context(context, |ctx| {
         // SAFETY: the entry point's contract.
         let key = unsafe { text(key, "key") }?;
-        let id = resolve(key)?;
+        // The façade's lookup, which knows what this context registered.
+        let id = ctx.sdk().keys().id(key)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_id, "out_id", id.bits()) }
     })
@@ -53,15 +54,7 @@ pub unsafe extern "C" fn ts_key_name(
     out_key: *mut TsStr,
 ) -> Status {
     with_context(context, |ctx| {
-        let key_id = KeyId::from_bits(id);
-        let (Some(kind), Some(key)) = (key_id.kind(), key_id.key()) else {
-            return Err(
-                Error::unsupported(format!("no catalogued member has id {id:#010x}"))
-                    .with_detail(Detail::UnknownKey)
-                    .with_field("id"),
-            );
-        };
-        let full = format!("{}.{key}", kind.name());
+        let full = ctx.sdk().keys().name(KeyId::from_bits(id))?;
         let lent = ctx.lend(&full);
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_key, "out_key", lent) }

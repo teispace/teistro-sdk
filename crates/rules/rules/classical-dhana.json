@@ -1,0 +1,844 @@
+{
+  "rules": [
+    {
+      "key": "BPHS_VENUS_IN_A_FIFTH_OF_HIS_OWN_WITH_MARS_ELEVENTH",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "2",
+        "rank": 1,
+        "note": "A sign of Venus as the fifth with Venus in it, and Mars in the eleventh, which falls for a Capricorn or a Gemini ascendant. The chapter's formula from vv. 2 to 8 is the lord of the fifth standing in the fifth while the lord of the eleventh stands in the eleventh. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "VENUS",
+          "houses": [
+            5
+          ],
+          "signs": [
+            "TAURUS",
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very affluent"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MERCURY_IN_A_FIFTH_OF_HIS_OWN_WITH_THREE_ELEVENTH",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "3",
+        "rank": 1,
+        "note": "A sign of Mercury as the fifth with Mercury in it, and the Moon, Mars and Jupiter in the eleventh, which falls for an Aquarius or a Taurus ascendant. The chapter's formula from vv. 2 to 8 is the lord of the fifth standing in the fifth while the lord of the eleventh stands in the eleventh. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "MERCURY",
+          "houses": [
+            5
+          ],
+          "signs": [
+            "GEMINI",
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very affluent"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_THE_SUN_IN_LEO_AS_THE_FIFTH_WITH_THREE_ELEVENTH",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "4",
+        "rank": 1,
+        "note": "Leo as the fifth with the Sun in it, and Saturn, the Moon and Jupiter in the eleventh, which falls for an Aries ascendant. The chapter's formula from vv. 2 to 8 is the lord of the fifth standing in the fifth while the lord of the eleventh stands in the eleventh. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "SUN",
+          "houses": [
+            5
+          ],
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very affluent"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_JUPITER_IN_A_FIFTH_OF_HIS_OWN_WITH_MERCURY_ELEVENTH",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "6",
+        "rank": 1,
+        "note": "Jupiter in the fifth in his own sign and Mercury in the eleventh, which falls for a Leo or a Scorpio ascendant. The chapter's formula from vv. 2 to 8 is the lord of the fifth standing in the fifth while the lord of the eleventh stands in the eleventh. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "JUPITER",
+          "houses": [
+            5
+          ],
+          "signs": [
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very affluent"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MARS_IN_A_FIFTH_OF_HIS_OWN_WITH_VENUS_ELEVENTH",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "7",
+        "rank": 1,
+        "note": "A sign of Mars as the fifth with Mars in it, and Venus in the eleventh, which falls for a Cancer or a Sagittarius ascendant. The chapter's formula from vv. 2 to 8 is the lord of the fifth standing in the fifth while the lord of the eleventh stands in the eleventh. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "MARS",
+          "houses": [
+            5
+          ],
+          "signs": [
+            "ARIES",
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very affluent"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_THE_MOON_IN_CANCER_AS_THE_FIFTH_WITH_SATURN_ELEVENTH",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "8",
+        "rank": 1,
+        "note": "Cancer as the fifth with the Moon in it, and Saturn in the eleventh, which falls for a Pisces ascendant. The chapter's formula from vv. 2 to 8 is the lord of the fifth standing in the fifth while the lord of the eleventh stands in the eleventh. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "MOON",
+          "houses": [
+            5
+          ],
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very affluent"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SATURN_IN_A_FIFTH_OF_HIS_OWN_WITH_THE_LUMINARIES_ELEVENTH",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "5",
+        "rank": 1,
+        "note": "Saturn in the fifth in his own sign with the Sun and the Moon in the eleventh, which falls for a Virgo or a Libra ascendant. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ],
+          "signs": [
+            "CAPRICORN",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "very affluent"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_THE_SUN_RISING_IN_LEO",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "9",
+        "rank": 1,
+        "note": "Sun in the ascendant in his own sign, joined or aspected by Mars, Jupiter. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "SUN",
+          "houses": [
+            1
+          ],
+          "signs": [
+            "LEO"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SUN",
+                "MARS"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MARS",
+              "target": "SUN"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SUN",
+                "JUPITER"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "SUN"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_THE_MOON_RISING_IN_CANCER",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "10",
+        "rank": 1,
+        "note": "Moon in the ascendant in his own sign, joined or aspected by Mercury, Jupiter. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "MOON",
+          "houses": [
+            1
+          ],
+          "signs": [
+            "CANCER"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MOON",
+                "MERCURY"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MERCURY",
+              "target": "MOON"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MOON",
+                "JUPITER"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "MOON"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MARS_RISING_IN_HIS_OWN_SIGN",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "11",
+        "rank": 1,
+        "note": "Mars in the ascendant in his own sign, joined or aspected by Mercury, Venus, Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "MARS",
+          "houses": [
+            1
+          ],
+          "signs": [
+            "ARIES",
+            "SCORPIO"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MARS",
+                "MERCURY"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MERCURY",
+              "target": "MARS"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MARS",
+                "VENUS"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "VENUS",
+              "target": "MARS"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MARS",
+                "SATURN"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "SATURN",
+              "target": "MARS"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MERCURY_RISING_IN_HIS_OWN_SIGN",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "12",
+        "rank": 1,
+        "note": "Mercury in the ascendant in his own sign, joined or aspected by Saturn, Jupiter. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "MERCURY",
+          "houses": [
+            1
+          ],
+          "signs": [
+            "GEMINI",
+            "VIRGO"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MERCURY",
+                "SATURN"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "SATURN",
+              "target": "MERCURY"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MERCURY",
+                "JUPITER"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "MERCURY"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_JUPITER_RISING_IN_HIS_OWN_SIGN",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "13",
+        "rank": 1,
+        "note": "Jupiter in the ascendant in his own sign, joined or aspected by Mercury, Mars. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ],
+          "signs": [
+            "SAGITTARIUS",
+            "PISCES"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "JUPITER",
+                "MERCURY"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MERCURY",
+              "target": "JUPITER"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "JUPITER",
+                "MARS"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MARS",
+              "target": "JUPITER"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_VENUS_RISING_IN_HIS_OWN_SIGN",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "14",
+        "rank": 1,
+        "note": "Venus in the ascendant in his own sign, joined or aspected by Saturn, Mercury. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "VENUS",
+          "houses": [
+            1
+          ],
+          "signs": [
+            "TAURUS",
+            "LIBRA"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "VENUS",
+                "SATURN"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "SATURN",
+              "target": "VENUS"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "VENUS",
+                "MERCURY"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MERCURY",
+              "target": "VENUS"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SATURN_RISING_IN_HIS_OWN_SIGN",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "15",
+        "rank": 1,
+        "note": "Saturn in the ascendant in his own sign, joined or aspected by Mars, Jupiter. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-and-sign",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ],
+          "signs": [
+            "CAPRICORN",
+            "AQUARIUS"
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SATURN",
+                "MARS"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MARS",
+              "target": "SATURN"
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SATURN",
+                "JUPITER"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "SATURN"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_NINTH_AND_FIFTH_LORDS_AND_THEIR_COMPANIONS_GIVE_WEALTH",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "41",
+        "verse": "16",
+        "rank": 1,
+        "note": "The lords of the ninth and fifth, and the grahas joining either, are the wealth-givers, and give it in their own periods. Every chart has the two lords, so the rule is present on every chart; what it says is in its participants, which are the grahas whose periods deliver it. The translator's note that the lords should be well placed is a note and not the verse. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "same-body",
+                "of": "SELF",
+                "as": {
+                  "lordOf": 9
+                }
+              },
+              {
+                "type": "same-body",
+                "of": "SELF",
+                "as": {
+                  "lordOf": 5
+                }
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 9
+                    }
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "same-body",
+                      "of": "SELF",
+                      "as": {
+                        "lordOf": 9
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 5
+                    }
+                  },
+                  {
+                    "type": "not",
+                    "condition": {
+                      "type": "same-body",
+                      "of": "SELF",
+                      "as": {
+                        "lordOf": 5
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealth in the periods of these grahas"
+        }
+      ]
+    }
+  ]
+}

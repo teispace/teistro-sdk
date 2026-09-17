@@ -20,6 +20,7 @@ use crate::trig::{Bhuja, RADIUS, Trig};
 /// A graha's place: the sidereal longitude in the text's own frame, the
 /// latitude, and the daily motion.
 #[derive(Clone, Copy, Debug, PartialEq, serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Position {
     /// The sidereal longitude, degrees in `[0, 360)`.
     pub longitude: Degrees,

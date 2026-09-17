@@ -589,7 +589,7 @@ fn render_exception(out: &mut String, api: &Api) {
 fn error_fields(api: &Api) -> Vec<String> {
     api.structs
         .iter()
-        .find(|s| s.name.ends_with("Error"))
+        .find(|s| s.role == StructRole::Error)
         .map(|s| {
             s.fields
                 .iter()
@@ -674,10 +674,13 @@ fn render_brands(out: &mut String, api: &Api) {
 /// emitter uses: a plain object or a set of caller-allocated columns,
 /// with at least one field of its own, and no array of structs.
 fn shown(api: &Api, s: &StructDef) -> bool {
-    matches!(s.role, StructRole::Object | StructRole::Columns)
-        && s.fields
-            .iter()
-            .any(|f| f.name != "struct_size" && !f.name.starts_with("reserved"))
+    matches!(
+        s.role,
+        StructRole::Object | StructRole::Columns | StructRole::Error
+    ) && s
+        .fields
+        .iter()
+        .any(|f| f.name != "struct_size" && !f.name.starts_with("reserved"))
         && !s.fields.iter().zip(field_roles(api, s)).any(|(f, role)| {
             matches!(role, FieldRole::Array { .. })
                 && matches!(f.ty.pointee(), Some(TypeRef::Struct { .. }))
@@ -1142,7 +1145,9 @@ fn parameter(
                     .map_or_else(String::new, |before| identifier(&before.name));
                 args.push(format!("len({of})"));
             }
-            Role::StringFree | Role::BlobFree => args.push(format!("ctypes.byref({name})")),
+            Role::StringFree | Role::BlobFree | Role::ErrorFree => {
+                args.push(format!("ctypes.byref({name})"));
+            }
             // Not a rule left out: the falsification pass counted the
             // roles the description uses and this one has **no
             // instance**, so a rule written for it would be a rule
@@ -1371,14 +1376,17 @@ fn render_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &st
         out,
         "        status = Status({})\n        if status != Status.OK:\n            _refuse(lib, status, {})\n        return cls(lib, handle)\n",
         call_text("lib", ctor, &m.args, "        "),
-        ctor.params
-            .iter()
-            .find(|p| p.role == Role::StringOut)
-            .map_or_else(
-                || String::from("None"),
-                |p| format!("_{}", identifier(&p.name))
-            ),
+        refusal_argument(api, ctor),
     );
+}
+
+/// What a way in hands `_refuse`: the failure record it wrote, or `None`
+/// for one that takes no record.
+fn refusal_argument(api: &Api, f: &FunctionDef) -> String {
+    crate::rules::refusal_out(api, f).map_or_else(
+        || String::from("None"),
+        |p| format!("_{}", identifier(&p.name)),
+    )
 }
 
 /// A second way in, beside the constructor: a class method named for
@@ -1415,13 +1423,7 @@ fn render_factory(
         out,
         "        status = Status({})\n        if status != Status.OK:\n            _refuse(lib, status, {})\n        return cls(lib, handle)\n",
         call_text("lib", f, &m.args, "        "),
-        f.params
-            .iter()
-            .find(|p| p.role == Role::StringOut)
-            .map_or_else(
-                || String::from("None"),
-                |p| format!("_{}", identifier(&p.name))
-            ),
+        refusal_argument(api, f),
     );
 }
 
@@ -1444,13 +1446,9 @@ fn render_error_reader(out: &mut String, api: &Api) {
     else {
         return;
     };
-    let mut reads = String::new();
-    for field in error_fields(api) {
-        let _ = writeln!(reads, "                    {field}=found.{field} or \"\",");
-    }
     let _ = writeln!(
         out,
-        "\n    def _raise(self, status: Status) -> None:\n        \"\"\"Raises what the library said about its last refusal.\"\"\"\n        raw = {0}()\n        raw.struct_size = ctypes.sizeof({0})\n        if self._handle is not None:\n            if self._lib.{1}(self._handle, ctypes.byref(raw)) == 0:\n                found = {2}._of(raw)\n                raise TeistroError(\n                    status,\n                    found.message or status.key,\n{reads}                )\n        raise TeistroError(status, status.key)",
+        "\n    def _raise(self, status: Status) -> None:\n        \"\"\"Raises what the library said about its last refusal.\"\"\"\n        raw = {0}()\n        raw.struct_size = ctypes.sizeof({0})\n        if self._handle is not None:\n            if self._lib.{1}(self._handle, ctypes.byref(raw)) == 0:\n                raise _refusal(status, {2}._of(raw))\n        raise TeistroError(status, status.key)",
         struct_name(&error.name),
         reader.name,
         binding_type_name(&error.name),
@@ -1488,7 +1486,7 @@ fn render_free_functions(out: &mut String, api: &Api) {
         let frees = f
             .params
             .iter()
-            .any(|p| matches!(p.role, Role::StringFree | Role::BlobFree));
+            .any(|p| matches!(p.role, Role::StringFree | Role::BlobFree | Role::ErrorFree));
         if !is_free_function(f) || frees {
             continue;
         }
@@ -1526,17 +1524,40 @@ fn free_helpers(api: &Api) -> String {
         .iter()
         .find(|f| f.name.ends_with("_status_message"))
         .map_or_else(|| String::from("ts_status_message"), |f| f.name.clone());
+    let error_type = api
+        .structs
+        .iter()
+        .find(|s| s.role == StructRole::Error)
+        .map_or_else(|| String::from("Error"), |s| binding_type_name(&s.name));
+    let error_free = crate::rules::error_free(api)
+        .map_or_else(|| String::from("ts_error_free"), |f| f.name.clone());
+    let mut reads = String::new();
+    for field in error_fields(api) {
+        let _ = writeln!(reads, "        {field}=found.{field} or \"\",");
+    }
     format!(
-        r#"def _refuse(lib: TeistroLibrary, status: Status, detail: Any) -> None:
-    """Raises a refusal from a call with no context to ask.
+        r#"def _refusal(status: Status, found: {error_type}) -> TeistroError:
+    """The exception for a refusal the library described, from either kind
+    of record: one a context lent or one a failed way in wrote."""
+    return TeistroError(
+        status,
+        found.message or status.key,
+{reads}    )
 
-    `detail` is the owned string such a call fills when it has more to
-    say than a code, which is freed here whether or not it is used.
+
+def _refuse(lib: TeistroLibrary, status: Status, record: Any) -> None:
+    """Raises a refusal from a call with no context to keep it.
+
+    `record` is the failure record such a call writes whole — its field,
+    its hint and its detail as well as its sentence — and its strings are
+    the library's, released here whether or not they are used.
     """
-    said = "" if detail is None else _take_string(lib, detail)
-    raise TeistroError(
-        status, said or _text(lib.{message}(int(status)))
-    )
+    if record is not None:
+        found = {error_type}._of(record)
+        lib.{error_free}(ctypes.byref(record))
+        if found.message:
+            raise _refusal(status, found)
+    raise TeistroError(status, _text(lib.{message}(int(status))))
 
 
 def _take_string(lib: TeistroLibrary, raw: Any) -> str:

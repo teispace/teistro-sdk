@@ -1,0 +1,31 @@
+[package]
+name = "teistro-geometry"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's chart geometry: layouts as cited data rows, and a chart placed in one"
+readme = "README.md"
+# Publishes at the first release, never on a phase boundary
+# (docs/06-cicd/03-release-process.md).
+publish = false
+
+[features]
+# Derives `schemars::JsonSchema` on the types a chart document carries,
+# so `cargo xtask gen document-schema` can describe it
+# (`docs/03-design/document-schema.md`).
+schema = ["dep:schemars", "teistro-chart/schema", "teistro-core/schema", "teistro-vargas/schema"]
+
+[dependencies]
+teistro-chart = { path = "../chart" }
+teistro-core = { path = "../core" }
+teistro-vargas = { path = "../vargas" }
+serde = { version = "1", features = ["derive"] }
+schemars = { version = "1.2", optional = true }
+
+[dev-dependencies]
+serde_json = "1"
+
+[lints]
+workspace = true

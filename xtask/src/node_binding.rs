@@ -22,6 +22,8 @@ const EXAMPLES: &str = "bindings/node/example";
 /// Where the pinned TypeScript compiler and the strict consumer live.
 const TYPECHECK: &str = "bindings/node/typecheck";
 const TSCONFIG: &str = "bindings/node/typecheck/tsconfig.json";
+/// The layer's members against its declarations, from `bindings/node`.
+const SURFACE: &str = "typecheck/surface.mjs";
 /// The Teimeris adapter's own package, which the SDK does not depend on
 /// and which depends on the SDK.
 ///
@@ -184,6 +186,19 @@ pub(crate) fn check(root: &Path) -> i32 {
         &format!("{TSCONFIG} does not type-check"),
     );
     if checked.is_err() {
+        return 1;
+    }
+    // The declarations are hand-written, and `tsc` proves only what a file
+    // uses; this proves every member of every exported class, measured on
+    // real instances, is declared and none is declared that is not there.
+    let surface = step(
+        Command::new("node")
+            .arg(SURFACE)
+            .current_dir(root.join("bindings/node")),
+        "bindings/node/lib/index.d.ts declares the layer member for member",
+        "bindings/node/lib/index.d.ts and the layer disagree",
+    );
+    if surface.is_err() {
         return 1;
     }
     let adapter = step(

@@ -267,6 +267,14 @@ The engine's typed façade is **after** all of it, because it attaches to
   the application modules each want an area, and this page deliberately
   does not name them: an area invented before its operations exist is a
   slot that shapes the work to fit it.
+
+  The rules operations now exist (`03-design/rules-engine.md`): 830 rules,
+  an evaluator, and a house read whole. Rust reaches them today through
+  `teistro::rules` and `teistro::rule_chart`, which is what §9's last
+  point allows for. An area is what the other three bindings need, and it
+  waits on the boundary rather than on the operations: a rule and a rule
+  result have to cross the C ABI before Node, Dart or Python can be given
+  one, and that is an IDL question this page does not settle either.
 - **Whether an operation should be promoted out of `engine`.** ADR-0030's
   fifth point says what proves universal becomes an SDK operation with a
   portable contract. Nothing here decides which ones have.

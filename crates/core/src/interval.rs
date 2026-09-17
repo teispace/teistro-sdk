@@ -49,6 +49,7 @@ pub const MOST_PARTS: u16 = 64;
 /// the arc's own end, and [`Interval::contains`] is false there, so use
 /// [`Interval::contains_inclusive`] when the closing instant counts.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Interval {
     /// When it begins.
     pub from: JulianDay<Utc>,

@@ -68,6 +68,7 @@ use crate::sky::{ApparentPositions, local_mean_midnight};
 /// Whether the body advances or retrogrades, which the Surya Siddhanta's
 /// thresholds for Mercury and Venus turn on (IX.7 to 8).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Motion {
     /// Longitude increasing.
@@ -100,6 +101,7 @@ impl Motion {
 /// Which sky the body is in: the morning sky, rising before the Sun, or
 /// the evening sky, setting after it (IX.2 to 3).
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Side {
     /// The morning sky: the body's longitude is less than the Sun's, so it
@@ -143,6 +145,7 @@ impl Side {
 
 /// A threshold for each motion of one body, degrees.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Pair {
     /// The threshold while the body advances.
     pub direct: f64,
@@ -173,6 +176,7 @@ impl Pair {
 /// A caller's own thresholds, degrees, per body; `None` for a body the
 /// table does not place.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Table {
     /// The Moon's.
     pub moon: Option<Pair>,
@@ -278,6 +282,7 @@ impl Table {
 
 /// The threshold table a criterion compares its measure against.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 #[allow(
     clippy::large_enum_variant,
@@ -402,6 +407,7 @@ fn surya_siddhanta_star_deg(star: Star) -> Option<f64> {
 
 /// How visibility is decided.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Criterion {
     /// The interval in oblique ascension between the body's rising and the
@@ -481,6 +487,7 @@ impl fmt::Display for Criterion {
 
 /// The state of a body's visibility on one local mean day.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Visibility {
     /// The body.
     pub body: Body,
@@ -507,6 +514,7 @@ pub struct Visibility {
 
 /// Which heliacal event.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum HeliacalKind {
     /// The first morning the body is seen: its heliacal rising.
@@ -563,6 +571,7 @@ impl HeliacalKind {
 
 /// A heliacal event: the day a body is first seen, or the last day it is.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct HeliacalEvent {
     /// Which event.
     pub kind: HeliacalKind,

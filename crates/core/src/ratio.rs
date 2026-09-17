@@ -234,6 +234,12 @@ impl<'de> serde::Deserialize<'de> for Ratio {
     }
 }
 
+hand_schema!(Ratio, "Ratio", {
+    "type": "string",
+    "description": "An exact rational, `numerator/denominator` or a whole number.",
+    "pattern": "^\\s*[+-]?[0-9]+\\s*(/\\s*[+-]?[0-9]+\\s*)?$",
+});
+
 #[cfg(test)]
 mod tests {
     #![allow(

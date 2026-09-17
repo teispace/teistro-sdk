@@ -751,10 +751,14 @@ the emitted code is verified in its own language.
     (*done*, 95 → 112, one step and not two, sized by the output extents
     the engine's IDL gained for them), strings and pointers inside structs
     (*done*, 112 → 135, one step), and with them refusals in the engine's
-    own words and batches that answer the elements that succeeded; then an
-    output sized by another call with its parallel twin (139). The last ten
-    are a different kind of work and are not queued. Beside it, an engine
-    task: D3, the error record 123 null-check prologues leave stale.
+    own words and batches that answer the elements that succeeded; outputs
+    sized by another call or a field, with their parallel twins (*done*,
+    135 → 138, the engine's IDL gaining a `call` extent), and a call spread
+    over an array (*done*, 139). The last ten say in the design page
+    what each would take, and why none is next. The last ten
+    are a different kind of work and are not queued. Beside it, the engine's
+    D3 — a failure that wrote no error record — is fixed in the engine
+    (`7de669e`).
 11. **B3** `libffi` dispatch behind a feature.
 12. **C1** one spelling per name — *done*.
 

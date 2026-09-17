@@ -21,6 +21,7 @@ enough to notice.
 | [`ephemeris.rs`](ephemeris.rs) | a year of the sky in one call | the grid is one crossing, not 366; a column is the astronomy crate's own `Vec<f64>` with no blob in between; and there is no `buildInfo` to ask for, because Cargo fixed the versions — what is worth logging is the provider's `capabilities` |
 | [`rectification.rs`](rectification.rs) | a birth time known only to the hour, narrowed by lagna | `found_many` founds eighteen candidate charts in **one crossing**, sharing the settings, the solar model and the day's sunrise; and `found(one)` is the same crossing unwrapped, agreeing bit for bit |
 | [`almanac.rs`](almanac.rs) | a week's panchangam: the five limbs of each day, and its periods | a limb is a **span**, not a name — most days have two tithis, and the SDK gives both with the instant each gives way; a span carries its own bounds as well as the clipped ones; and a value a day may not have is `Option`, which the compiler will not let you ignore |
+| [`chart_reading.rs`](chart_reading.rs) | the same birth record read in full: divisional charts, houses, states, drishti and derived points | every section is **asked for** and off by default, and all of them come from one founded chart in one call; vargottama is a comparison of two signs, not a flag; a dignity and a house are different sections answering different questions; and the drishti are ragged, because relations depend on where the grahas stand. Its output is the other three bindings' `chart_reading`, line for line |
 | [`your_own_ephemeris.rs`](your_own_ephemeris.rs) | putting your own engine behind the SDK | the port in full — one call per grid, refusing a frame so the SDK completes it, coverage marked **per cell** rather than refused, a `ProviderError` whose sentence reaches the caller, an `Arc` newtype for a provider you keep a handle on, and a chain whose first entry is a recipe so a later one can be its fallback |
 
 There is a ninth file, [`parity.rs`](parity.rs), and it is not one of
@@ -46,10 +47,11 @@ under its own licence (ADR-0029). Do that, or hand in an ephemeris of
 your own as [`your_own_ephemeris.rs`](your_own_ephemeris.rs) shows, and
 every one of these programs is unchanged, which is what the port is for.
 
-They also stop where the façade does. Houses, divisional charts,
-planetary states, aspects and dashas are computed by the SDK's Rust
-crates and are not on the areas yet, so this surface cannot ask for
-them — a Rust consumer *can* depend on those crates directly, which the
-other three bindings cannot, and
+They also stop where the façade does, and it is further out than it was:
+houses, divisional charts, planetary states, aspects and derived points
+all cross, and [`chart_reading.rs`](chart_reading.rs) asks for every one
+of them. Dashas do not, because nothing computes one yet (Phase 5), so
+this surface cannot ask for them. A Rust consumer *can* also depend on
+the crates directly, which the other three bindings cannot, and
 [`03-design/rust-consumer-surface.md`](../../../docs/03-design/rust-consumer-surface.md)
-§6 says what that surface deliberately leaves out.
+§6 says what the surface deliberately leaves out.

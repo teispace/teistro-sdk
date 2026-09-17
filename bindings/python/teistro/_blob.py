@@ -701,6 +701,441 @@ class ChartsStates:
     pada_deg: memoryview[float]
     """How near it stands to a pada edge, degrees."""
 
+    has_sayanadi: memoryview[int]
+    """1 for the nine grahas, which BPHS ch. 45 numbers; 0 for the outer planets, and for every body of a chart with no Moon."""
+
+    sayanadi: memoryview[int]
+    """The Sayanadi state; read only when `has_sayanadi`."""
+
+    cheshta_1: memoryview[int]
+    """The Sayanadi sub-state under a name whose first syllable's anka is 1; read only when `has_sayanadi`."""
+
+    cheshta_2: memoryview[int]
+    """The Sayanadi sub-state under a name whose first syllable's anka is 2; read only when `has_sayanadi`."""
+
+    cheshta_3: memoryview[int]
+    """The Sayanadi sub-state under a name whose first syllable's anka is 3; read only when `has_sayanadi`."""
+
+    cheshta_4: memoryview[int]
+    """The Sayanadi sub-state under a name whose first syllable's anka is 4; read only when `has_sayanadi`."""
+
+    cheshta_5: memoryview[int]
+    """The Sayanadi sub-state under a name whose first syllable's anka is 5; read only when `has_sayanadi`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDashas:
+    """The `dashas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.
+    """
+
+    system: memoryview[int]
+    """Which system: a catalogue id, or at `0x8000` and up the id of a system the context registered, which `ts_key_name` names."""
+
+    seeded: memoryview[int]
+    """1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero."""
+
+    signed: memoryview[int]
+    """1 when every period is a sign's, and `dasha_periods.sign` names it; 0 when the periods are their lords' and that column is zero."""
+
+    seed: memoryview[int]
+    """The nakshatra the Moon stood in, which seeds it; zero unless `seeded`."""
+
+    first_lord: memoryview[int]
+    """The lord it starts with."""
+
+    overflow: memoryview[int]
+    """1 when the seed lay outside a conditional system's nakshatras and started at the first lord because the settings let it."""
+
+    balance: memoryview[int]
+    """How the balance was measured."""
+
+    remaining: memoryview[float]
+    """The fraction of the first lord's period still to run at birth, 0 to 1."""
+
+    balance_days: memoryview[float]
+    """That fraction of the first lord's years, in days."""
+
+    balance_years: memoryview[int]
+    """The balance's whole years of the year length."""
+
+    balance_months: memoryview[int]
+    """Its whole months of a twelfth of the year length."""
+
+    balance_day_count: memoryview[int]
+    """Its whole days."""
+
+    balance_hours: memoryview[int]
+    """Its hours, the rest rounded to the minute."""
+
+    balance_minutes: memoryview[int]
+    """Its minutes, rounded."""
+
+    moon_span_from: memoryview[float]
+    """When the Moon entered its nakshatra, a Julian day (UTC); NaN when the balance was spatial and read no span."""
+
+    moon_span_to: memoryview[float]
+    """When it left, a Julian day (UTC); NaN when no span was read."""
+
+    depth: memoryview[int]
+    """How many levels the periods go down, 1 to 6."""
+
+    period_count: memoryview[int]
+    """How many rows of `dasha_periods` are this dasha's."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDashaPeriods:
+    """The `dasha_periods` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
+    """
+
+    level: memoryview[int]
+    """How deep: 1 for a mahadasha."""
+
+    index: memoryview[int]
+    """Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0."""
+
+    sign: memoryview[int]
+    """The sign it is the period of, when its dasha is `signed`; zero otherwise."""
+
+    lord: memoryview[int]
+    """Its lord."""
+
+    from_jd: memoryview[float]
+    """When it begins, a Julian day (UTC)."""
+
+    to_jd: memoryview[float]
+    """When it ends, a Julian day (UTC)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsAshtakavarga:
+    """The `ashtakavarga` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    shodhana: memoryview[int]
+    """Where the reductions and pindas were made; `reduced` in `ashtakavarga_bindus` is zero unless in each graha's own."""
+
+    ekadhipatya: memoryview[int]
+    """How a co-ruled sign beside an occupied one was reduced."""
+
+    rashi_pinda: memoryview[int]
+    """Its rashi pinda."""
+
+    graha_pinda: memoryview[int]
+    """Its graha pinda."""
+
+    yoga_pinda: memoryview[int]
+    """Its yoga pinda, the two together."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsAshtakavargaBindus:
+    """The `ashtakavarga_bindus` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.
+    """
+
+    bindus: memoryview[int]
+    """Its bindus in the sign, 0 to 8."""
+
+    reduced: memoryview[int]
+    """The same after both reductions, when they were made in each graha's own Ashtakavarga; zero otherwise."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsSarvashtakavarga:
+    """The `sarvashtakavarga` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
+    """
+
+    sarva: memoryview[int]
+    """The seven grahas' bindus in the sign."""
+
+    trikona: memoryview[int]
+    """The sum after the trine reduction."""
+
+    reduced: memoryview[int]
+    """The sum after both reductions."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsVimshopaka:
+    """The `vimshopaka` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    scoring: memoryview[int]
+    """How each varga was scored."""
+
+    shadvarga: memoryview[float]
+    """Over the six vargas."""
+
+    saptavarga: memoryview[float]
+    """Over the seven."""
+
+    dashavarga: memoryview[float]
+    """Over the ten."""
+
+    shodashavarga: memoryview[float]
+    """Over the sixteen."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsShadbala:
+    """The `shadbala` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    uchcha: memoryview[float]
+    """Sthana: from the distance to the debilitation point, 0 to 60."""
+
+    saptavargaja: memoryview[float]
+    """Sthana: from the dignity in the seven vargas."""
+
+    ojayugma: memoryview[float]
+    """Sthana: from the rasi's and navamsha's parity, 0, 15 or 30."""
+
+    kendradi: memoryview[float]
+    """Sthana: from the house, 60, 30 or 15."""
+
+    drekkana: memoryview[float]
+    """Sthana: from the decanate, 0 or 15."""
+
+    dig: memoryview[float]
+    """Dig: from the distance to the powerless kendra, 0 to 60."""
+
+    nathonnatha: memoryview[float]
+    """Kaala: from the hour, 0 to 60."""
+
+    paksha: memoryview[float]
+    """Kaala: from the Moon's elongation, the Moon's doubled."""
+
+    tribhaga: memoryview[float]
+    """Kaala: 60 to the lord of the third of the day or night, and to Jupiter."""
+
+    abda: memoryview[float]
+    """Kaala: 15 to the year's lord."""
+
+    masa: memoryview[float]
+    """Kaala: 30 to the month's lord."""
+
+    vara: memoryview[float]
+    """Kaala: 45 to the weekday's lord."""
+
+    hora: memoryview[float]
+    """Kaala: 60 to the hour's lord."""
+
+    ayana: memoryview[float]
+    """Kaala: from the declination."""
+
+    yuddha: memoryview[float]
+    """Kaala: gained by the victor and lost by the vanquished of a planetary war."""
+
+    cheshta: memoryview[float]
+    """Cheshta: motional strength."""
+
+    naisargika: memoryview[float]
+    """Naisargika: natural strength."""
+
+    drik: memoryview[float]
+    """Drik: aspectual strength, which may be negative."""
+
+    virupas: memoryview[float]
+    """The six together, virupas."""
+
+    rupas: memoryview[float]
+    """The six together, rupas."""
+
+    required_rupas: memoryview[float]
+    """The rupas it must reach to be strong."""
+
+    ishta: memoryview[float]
+    """How far it tends to good, 0 to 60 (BPHS ch. 28)."""
+
+    kashta: memoryview[float]
+    """How far it tends to harm, 0 to 60."""
+
+    subha_rashmi: memoryview[float]
+    """Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5)."""
+
+    ashubha_rashmi: memoryview[float]
+    """Its inauspicious rays, 8 less the auspicious."""
+
+    strong: memoryview[int]
+    """1 when the rupas reach the requirement, else 0."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsBhavaBala:
+    """The `bhava_bala` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
+    """
+
+    lord: memoryview[int]
+    """The lord of the sign its madhya falls in."""
+
+    adhipati: memoryview[float]
+    """The lord's Shadbala."""
+
+    dig: memoryview[float]
+    """From its direction, 0 to 60."""
+
+    drishti: memoryview[float]
+    """From the drishtis it receives, which may be negative."""
+
+    special: memoryview[float]
+    """From its occupants and its sign's rising, under BPHS's special rules."""
+
+    virupas: memoryview[float]
+    """The four together."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsVaiseshikamsa:
+    """The `vaiseshikamsa` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    impaired: memoryview[int]
+    """1 when it is combust, defeated in war or in Shayana, its names then not auspicious, else 0."""
+
+    shadvarga_good: memoryview[int]
+    """How many of the shadvarga's vargas are good for it."""
+
+    shadvarga_name: memoryview[int]
+    """The name the shadvarga count earns; read only when that count is 2 or more."""
+
+    saptavarga_good: memoryview[int]
+    """How many of the saptavarga's vargas are good for it."""
+
+    saptavarga_name: memoryview[int]
+    """The name the saptavarga count earns; read only when that count is 2 or more."""
+
+    dashavarga_good: memoryview[int]
+    """How many of the dashavarga's vargas are good for it."""
+
+    dashavarga_name: memoryview[int]
+    """The name the dashavarga count earns; read only when that count is 2 or more."""
+
+    shodashavarga_good: memoryview[int]
+    """How many of the shodashavarga's vargas are good for it."""
+
+    shodashavarga_name: memoryview[int]
+    """The name the shodashavarga count earns; read only when that count is 2 or more."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsDashaPhala:
+    """The `dasha_phala` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    subhanka_d1: memoryview[float]
+    """Its Subhanka in the D1, out of 60: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d2: memoryview[float]
+    """Its Subhanka in the D2, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d3: memoryview[float]
+    """Its Subhanka in the D3, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d7: memoryview[float]
+    """Its Subhanka in the D7, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d9: memoryview[float]
+    """Its Subhanka in the D9, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d12: memoryview[float]
+    """Its Subhanka in the D12, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka_d30: memoryview[float]
+    """Its Subhanka in the D30, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9)."""
+
+    subhanka: memoryview[float]
+    """The seven Subhankas together, out of 240."""
+
+    asubhanka: memoryview[float]
+    """Their complements together, out of 240."""
+
+    nature: memoryview[int]
+    """Whether its rasi place is auspicious, neutral or inauspicious (v. 10)."""
+
+    phase: memoryview[int]
+    """Where in its dasha its effects come, by its decanate and reversed when retrograde and for the nodes (ch. 47 vv. 3 and 4)."""
+
+    favourable: memoryview[int]
+    """1 when it is in the lagna, exaltation, its own sign or a Shant sign (ch. 47 v. 5)."""
+
+    unfavourable: memoryview[int]
+    """1 when it is in the sixth, eighth or twelfth, debilitation or an inimical sign (v. 6); both flags can stand."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -789,6 +1224,9 @@ class Charts:
 
     varga_count: int
     """How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`."""
+
+    dasha_count: int
+    """How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows."""
 
     latitude_deg: float
     """The place's latitude, degrees north."""
@@ -880,6 +1318,45 @@ class Charts:
     combustion_orbs: str
     """UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for."""
 
+    drawings: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for."""
+
+    svgs: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given."""
+
+    dashas: ChartsDashas
+    """Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for."""
+
+    dasha_periods: ChartsDashaPeriods
+    """Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up."""
+
+    ashtakavarga: ChartsAshtakavarga
+    """Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`)."""
+
+    ashtakavarga_bindus: ChartsAshtakavargaBindus
+    """Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for."""
+
+    sarvashtakavarga: ChartsSarvashtakavarga
+    """Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for."""
+
+    vimshopaka: ChartsVimshopaka
+    """Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`)."""
+
+    shadbala: ChartsShadbala
+    """Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`)."""
+
+    bhava_bala: ChartsBhavaBala
+    """Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`)."""
+
+    vaiseshikamsa: ChartsVaiseshikamsa
+    """Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for."""
+
+    dasha_phala: ChartsDashaPhala
+    """Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for."""
+
+    rules: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each the rules the request's `rules_json` named that held on it — `present`, each `{rule, result}` with the rule by key — with `houses` and `longevity` when asked, and `unreadable` naming an input a rule named that the chart could not have (`03-design/rules-at-the-boundary.md`). Empty when no rules were asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -909,14 +1386,28 @@ def decode_charts(raw: bytes) -> Charts:
     at_bhavas = blob.section(18, "bhavas")
     at_states = blob.section(19, "states")
     at_combustion_orbs = blob.section(20, "combustion_orbs")
+    at_drawings = blob.section(21, "drawings")
+    at_svgs = blob.section(22, "svgs")
+    at_dashas = blob.section(23, "dashas")
+    at_dasha_periods = blob.section(24, "dasha_periods")
+    at_ashtakavarga = blob.section(25, "ashtakavarga")
+    at_ashtakavarga_bindus = blob.section(26, "ashtakavarga_bindus")
+    at_sarvashtakavarga = blob.section(27, "sarvashtakavarga")
+    at_vimshopaka = blob.section(28, "vimshopaka")
+    at_shadbala = blob.section(29, "shadbala")
+    at_bhava_bala = blob.section(30, "bhava_bala")
+    at_vaiseshikamsa = blob.section(31, "vaiseshikamsa")
+    at_dasha_phala = blob.section(32, "dasha_phala")
+    at_rules = blob.section(33, "rules")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
         graha_count=int(blob.fixed(at_summary, 2, "I")),
         varga_count=int(blob.fixed(at_summary, 3, "I")),
-        latitude_deg=blob.fixed(at_summary, 4, "d"),
-        longitude_deg=blob.fixed(at_summary, 5, "d"),
-        altitude_m=blob.fixed(at_summary, 6, "d"),
+        dasha_count=int(blob.fixed(at_summary, 4, "I")),
+        latitude_deg=blob.fixed(at_summary, 5, "d"),
+        longitude_deg=blob.fixed(at_summary, 6, "d"),
+        altitude_m=blob.fixed(at_summary, 7, "d"),
         cast=ChartsCast(
             instant=blob.column(at_cast, 0, 8, at_cast.count).cast("d"),
             lagna_deg=blob.column(at_cast, 1, 8, at_cast.count).cast("d"),
@@ -1163,9 +1654,303 @@ def decode_charts(raw: bytes) -> Charts:
                 at_states, 28, 8, at_states.count
             ).cast("d"),
             pada_deg=blob.column(at_states, 29, 8, at_states.count).cast("d"),
+            has_sayanadi=blob.column(
+                at_states, 30, 1, at_states.count
+            ).cast("B"),
+            sayanadi=blob.column(at_states, 31, 2, at_states.count).cast("H"),
+            cheshta_1=blob.column(at_states, 32, 2, at_states.count).cast("H"),
+            cheshta_2=blob.column(at_states, 33, 2, at_states.count).cast("H"),
+            cheshta_3=blob.column(at_states, 34, 2, at_states.count).cast("H"),
+            cheshta_4=blob.column(at_states, 35, 2, at_states.count).cast("H"),
+            cheshta_5=blob.column(at_states, 36, 2, at_states.count).cast("H"),
             length=at_states.count,
         ),
         combustion_orbs=blob.text(at_combustion_orbs),
+        drawings=blob.text(at_drawings),
+        svgs=blob.text(at_svgs),
+        dashas=ChartsDashas(
+            system=blob.column(at_dashas, 0, 2, at_dashas.count).cast("H"),
+            seeded=blob.column(at_dashas, 1, 1, at_dashas.count).cast("B"),
+            signed=blob.column(at_dashas, 2, 1, at_dashas.count).cast("B"),
+            seed=blob.column(at_dashas, 3, 2, at_dashas.count).cast("H"),
+            first_lord=blob.column(at_dashas, 4, 2, at_dashas.count).cast("H"),
+            overflow=blob.column(at_dashas, 5, 1, at_dashas.count).cast("B"),
+            balance=blob.column(at_dashas, 6, 1, at_dashas.count).cast("B"),
+            remaining=blob.column(at_dashas, 7, 8, at_dashas.count).cast("d"),
+            balance_days=blob.column(
+                at_dashas, 8, 8, at_dashas.count
+            ).cast("d"),
+            balance_years=blob.column(
+                at_dashas, 9, 4, at_dashas.count
+            ).cast("I"),
+            balance_months=blob.column(
+                at_dashas, 10, 1, at_dashas.count
+            ).cast("B"),
+            balance_day_count=blob.column(
+                at_dashas, 11, 1, at_dashas.count
+            ).cast("B"),
+            balance_hours=blob.column(
+                at_dashas, 12, 1, at_dashas.count
+            ).cast("B"),
+            balance_minutes=blob.column(
+                at_dashas, 13, 1, at_dashas.count
+            ).cast("B"),
+            moon_span_from=blob.column(
+                at_dashas, 14, 8, at_dashas.count
+            ).cast("d"),
+            moon_span_to=blob.column(
+                at_dashas, 15, 8, at_dashas.count
+            ).cast("d"),
+            depth=blob.column(at_dashas, 16, 1, at_dashas.count).cast("B"),
+            period_count=blob.column(
+                at_dashas, 17, 4, at_dashas.count
+            ).cast("I"),
+            length=at_dashas.count,
+        ),
+        dasha_periods=ChartsDashaPeriods(
+            level=blob.column(
+                at_dasha_periods, 0, 1, at_dasha_periods.count
+            ).cast("B"),
+            index=blob.column(
+                at_dasha_periods, 1, 1, at_dasha_periods.count
+            ).cast("B"),
+            sign=blob.column(
+                at_dasha_periods, 2, 2, at_dasha_periods.count
+            ).cast("H"),
+            lord=blob.column(
+                at_dasha_periods, 3, 2, at_dasha_periods.count
+            ).cast("H"),
+            from_jd=blob.column(
+                at_dasha_periods, 4, 8, at_dasha_periods.count
+            ).cast("d"),
+            to_jd=blob.column(
+                at_dasha_periods, 5, 8, at_dasha_periods.count
+            ).cast("d"),
+            length=at_dasha_periods.count,
+        ),
+        ashtakavarga=ChartsAshtakavarga(
+            graha=blob.column(
+                at_ashtakavarga, 0, 2, at_ashtakavarga.count
+            ).cast("H"),
+            shodhana=blob.column(
+                at_ashtakavarga, 1, 1, at_ashtakavarga.count
+            ).cast("B"),
+            ekadhipatya=blob.column(
+                at_ashtakavarga, 2, 1, at_ashtakavarga.count
+            ).cast("B"),
+            rashi_pinda=blob.column(
+                at_ashtakavarga, 3, 4, at_ashtakavarga.count
+            ).cast("I"),
+            graha_pinda=blob.column(
+                at_ashtakavarga, 4, 4, at_ashtakavarga.count
+            ).cast("I"),
+            yoga_pinda=blob.column(
+                at_ashtakavarga, 5, 4, at_ashtakavarga.count
+            ).cast("I"),
+            length=at_ashtakavarga.count,
+        ),
+        ashtakavarga_bindus=ChartsAshtakavargaBindus(
+            bindus=blob.column(
+                at_ashtakavarga_bindus, 0, 1, at_ashtakavarga_bindus.count
+            ).cast("B"),
+            reduced=blob.column(
+                at_ashtakavarga_bindus, 1, 1, at_ashtakavarga_bindus.count
+            ).cast("B"),
+            length=at_ashtakavarga_bindus.count,
+        ),
+        sarvashtakavarga=ChartsSarvashtakavarga(
+            sarva=blob.column(
+                at_sarvashtakavarga, 0, 2, at_sarvashtakavarga.count
+            ).cast("H"),
+            trikona=blob.column(
+                at_sarvashtakavarga, 1, 2, at_sarvashtakavarga.count
+            ).cast("H"),
+            reduced=blob.column(
+                at_sarvashtakavarga, 2, 2, at_sarvashtakavarga.count
+            ).cast("H"),
+            length=at_sarvashtakavarga.count,
+        ),
+        vimshopaka=ChartsVimshopaka(
+            graha=blob.column(
+                at_vimshopaka, 0, 2, at_vimshopaka.count
+            ).cast("H"),
+            scoring=blob.column(
+                at_vimshopaka, 1, 1, at_vimshopaka.count
+            ).cast("B"),
+            shadvarga=blob.column(
+                at_vimshopaka, 2, 8, at_vimshopaka.count
+            ).cast("d"),
+            saptavarga=blob.column(
+                at_vimshopaka, 3, 8, at_vimshopaka.count
+            ).cast("d"),
+            dashavarga=blob.column(
+                at_vimshopaka, 4, 8, at_vimshopaka.count
+            ).cast("d"),
+            shodashavarga=blob.column(
+                at_vimshopaka, 5, 8, at_vimshopaka.count
+            ).cast("d"),
+            length=at_vimshopaka.count,
+        ),
+        shadbala=ChartsShadbala(
+            graha=blob.column(at_shadbala, 0, 2, at_shadbala.count).cast("H"),
+            uchcha=blob.column(at_shadbala, 1, 8, at_shadbala.count).cast("d"),
+            saptavargaja=blob.column(
+                at_shadbala, 2, 8, at_shadbala.count
+            ).cast("d"),
+            ojayugma=blob.column(
+                at_shadbala, 3, 8, at_shadbala.count
+            ).cast("d"),
+            kendradi=blob.column(
+                at_shadbala, 4, 8, at_shadbala.count
+            ).cast("d"),
+            drekkana=blob.column(
+                at_shadbala, 5, 8, at_shadbala.count
+            ).cast("d"),
+            dig=blob.column(at_shadbala, 6, 8, at_shadbala.count).cast("d"),
+            nathonnatha=blob.column(
+                at_shadbala, 7, 8, at_shadbala.count
+            ).cast("d"),
+            paksha=blob.column(at_shadbala, 8, 8, at_shadbala.count).cast("d"),
+            tribhaga=blob.column(
+                at_shadbala, 9, 8, at_shadbala.count
+            ).cast("d"),
+            abda=blob.column(at_shadbala, 10, 8, at_shadbala.count).cast("d"),
+            masa=blob.column(at_shadbala, 11, 8, at_shadbala.count).cast("d"),
+            vara=blob.column(at_shadbala, 12, 8, at_shadbala.count).cast("d"),
+            hora=blob.column(at_shadbala, 13, 8, at_shadbala.count).cast("d"),
+            ayana=blob.column(at_shadbala, 14, 8, at_shadbala.count).cast("d"),
+            yuddha=blob.column(
+                at_shadbala, 15, 8, at_shadbala.count
+            ).cast("d"),
+            cheshta=blob.column(
+                at_shadbala, 16, 8, at_shadbala.count
+            ).cast("d"),
+            naisargika=blob.column(
+                at_shadbala, 17, 8, at_shadbala.count
+            ).cast("d"),
+            drik=blob.column(at_shadbala, 18, 8, at_shadbala.count).cast("d"),
+            virupas=blob.column(
+                at_shadbala, 19, 8, at_shadbala.count
+            ).cast("d"),
+            rupas=blob.column(at_shadbala, 20, 8, at_shadbala.count).cast("d"),
+            required_rupas=blob.column(
+                at_shadbala, 21, 8, at_shadbala.count
+            ).cast("d"),
+            ishta=blob.column(at_shadbala, 22, 8, at_shadbala.count).cast("d"),
+            kashta=blob.column(
+                at_shadbala, 23, 8, at_shadbala.count
+            ).cast("d"),
+            subha_rashmi=blob.column(
+                at_shadbala, 24, 8, at_shadbala.count
+            ).cast("d"),
+            ashubha_rashmi=blob.column(
+                at_shadbala, 25, 8, at_shadbala.count
+            ).cast("d"),
+            strong=blob.column(
+                at_shadbala, 26, 1, at_shadbala.count
+            ).cast("B"),
+            length=at_shadbala.count,
+        ),
+        bhava_bala=ChartsBhavaBala(
+            lord=blob.column(
+                at_bhava_bala, 0, 2, at_bhava_bala.count
+            ).cast("H"),
+            adhipati=blob.column(
+                at_bhava_bala, 1, 8, at_bhava_bala.count
+            ).cast("d"),
+            dig=blob.column(
+                at_bhava_bala, 2, 8, at_bhava_bala.count
+            ).cast("d"),
+            drishti=blob.column(
+                at_bhava_bala, 3, 8, at_bhava_bala.count
+            ).cast("d"),
+            special=blob.column(
+                at_bhava_bala, 4, 8, at_bhava_bala.count
+            ).cast("d"),
+            virupas=blob.column(
+                at_bhava_bala, 5, 8, at_bhava_bala.count
+            ).cast("d"),
+            length=at_bhava_bala.count,
+        ),
+        vaiseshikamsa=ChartsVaiseshikamsa(
+            graha=blob.column(
+                at_vaiseshikamsa, 0, 2, at_vaiseshikamsa.count
+            ).cast("H"),
+            impaired=blob.column(
+                at_vaiseshikamsa, 1, 1, at_vaiseshikamsa.count
+            ).cast("B"),
+            shadvarga_good=blob.column(
+                at_vaiseshikamsa, 2, 1, at_vaiseshikamsa.count
+            ).cast("B"),
+            shadvarga_name=blob.column(
+                at_vaiseshikamsa, 3, 2, at_vaiseshikamsa.count
+            ).cast("H"),
+            saptavarga_good=blob.column(
+                at_vaiseshikamsa, 4, 1, at_vaiseshikamsa.count
+            ).cast("B"),
+            saptavarga_name=blob.column(
+                at_vaiseshikamsa, 5, 2, at_vaiseshikamsa.count
+            ).cast("H"),
+            dashavarga_good=blob.column(
+                at_vaiseshikamsa, 6, 1, at_vaiseshikamsa.count
+            ).cast("B"),
+            dashavarga_name=blob.column(
+                at_vaiseshikamsa, 7, 2, at_vaiseshikamsa.count
+            ).cast("H"),
+            shodashavarga_good=blob.column(
+                at_vaiseshikamsa, 8, 1, at_vaiseshikamsa.count
+            ).cast("B"),
+            shodashavarga_name=blob.column(
+                at_vaiseshikamsa, 9, 2, at_vaiseshikamsa.count
+            ).cast("H"),
+            length=at_vaiseshikamsa.count,
+        ),
+        dasha_phala=ChartsDashaPhala(
+            graha=blob.column(
+                at_dasha_phala, 0, 2, at_dasha_phala.count
+            ).cast("H"),
+            subhanka_d1=blob.column(
+                at_dasha_phala, 1, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d2=blob.column(
+                at_dasha_phala, 2, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d3=blob.column(
+                at_dasha_phala, 3, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d7=blob.column(
+                at_dasha_phala, 4, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d9=blob.column(
+                at_dasha_phala, 5, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d12=blob.column(
+                at_dasha_phala, 6, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka_d30=blob.column(
+                at_dasha_phala, 7, 8, at_dasha_phala.count
+            ).cast("d"),
+            subhanka=blob.column(
+                at_dasha_phala, 8, 8, at_dasha_phala.count
+            ).cast("d"),
+            asubhanka=blob.column(
+                at_dasha_phala, 9, 8, at_dasha_phala.count
+            ).cast("d"),
+            nature=blob.column(
+                at_dasha_phala, 10, 2, at_dasha_phala.count
+            ).cast("H"),
+            phase=blob.column(
+                at_dasha_phala, 11, 1, at_dasha_phala.count
+            ).cast("B"),
+            favourable=blob.column(
+                at_dasha_phala, 12, 1, at_dasha_phala.count
+            ).cast("B"),
+            unfavourable=blob.column(
+                at_dasha_phala, 13, 1, at_dasha_phala.count
+            ).cast("B"),
+            length=at_dasha_phala.count,
+        ),
+        rules=blob.text(at_rules),
     )
 
 

@@ -11,7 +11,9 @@
     clippy::unwrap_used,
     clippy::expect_used,
     clippy::panic,
-    reason = "a test fails by panicking"
+    clippy::indexing_slicing,
+    reason = "a test fails by panicking: an index into an answer's array that is out of \
+              bounds is a wrong answer, and one into a `serde_json::Value` answers `Null`"
 )]
 
 use serde_json::Value;
@@ -49,7 +51,9 @@ fn the_manifest_describes_what_the_adapter_will_answer() {
     );
     for function in functions {
         assert!(
-            function["name"].as_str().is_some_and(|n| n.starts_with("tm_")),
+            function["name"]
+                .as_str()
+                .is_some_and(|n| n.starts_with("tm_")),
             "every entry names an engine function: {function}"
         );
         for param in function["params"].as_array().expect("params") {
@@ -287,7 +291,10 @@ fn the_route_shares_the_context_that_computes() {
     };
     let before = read(0);
     provider
-        .native_call("tm_set_model", &format!(r#"{{"kind": 0, "model": {before}}}"#))
+        .native_call(
+            "tm_set_model",
+            &format!(r#"{{"kind": 0, "model": {before}}}"#),
+        )
         .expect("setting it to what it already is");
     assert_eq!(read(0), before, "the same context answered both times");
 }
@@ -310,8 +317,20 @@ fn a_struct_crosses_as_an_object_both_ways() {
     let answer: Value = serde_json::from_str(&answer).expect("it parses");
     let utc = &answer["out_utc"];
     assert_eq!(
-        (&utc["year"], &utc["month"], &utc["day"], &utc["hour"], &utc["minute"]),
-        (&Value::from(2026), &Value::from(9), &Value::from(13), &Value::from(0), &Value::from(45)),
+        (
+            &utc["year"],
+            &utc["month"],
+            &utc["day"],
+            &utc["hour"],
+            &utc["minute"]
+        ),
+        (
+            &Value::from(2026),
+            &Value::from(9),
+            &Value::from(13),
+            &Value::from(0),
+            &Value::from(45)
+        ),
         "{answer}"
     );
     assert!(
@@ -343,7 +362,10 @@ fn a_struct_field_is_refused_by_its_whole_path() {
                 "second": 0}, "utc_offset_hours": 5.75, "cal": 1}"#,
         )
         .expect_err("a fractional year is refused rather than truncated");
-    assert!(fractional.to_string().contains("`local.year`"), "{fractional}");
+    assert!(
+        fractional.to_string().contains("`local.year`"),
+        "{fractional}"
+    );
 }
 
 /// A struct input left out crosses as null, and the engine — not the
@@ -353,10 +375,7 @@ fn a_struct_field_is_refused_by_its_whole_path() {
 fn a_struct_left_out_is_null_and_the_engine_decides() {
     let provider = provider();
     let refused = provider
-        .native_call(
-            "tm_local_to_utc",
-            r#"{"utc_offset_hours": 5.75, "cal": 1}"#,
-        )
+        .native_call("tm_local_to_utc", r#"{"utc_offset_hours": 5.75, "cal": 1}"#)
         .expect_err("the engine takes no null datetime");
     assert!(
         refused.to_string().contains("tm_local_to_utc refused")
@@ -423,7 +442,11 @@ fn an_array_answers_one_value_per_input() {
     let batch = answer["out_seconds"].as_array().expect("an array");
     assert_eq!(batch.len(), jds.len(), "{answer}");
     for (at, jd) in jds.iter().enumerate() {
-        let one = called(&provider, "tm_delta_t", &serde_json::json!({ "jd_ut1": jd }));
+        let one = called(
+            &provider,
+            "tm_delta_t",
+            &serde_json::json!({ "jd_ut1": jd }),
+        );
         assert_eq!(batch.get(at), one.get("out_seconds"), "instant {at}");
     }
     let none = called(
@@ -458,7 +481,10 @@ fn an_array_of_structs_crosses_both_ways() {
         "tm_julian_day_many",
         &serde_json::json!({ "dts": dates, "cal": 1 }),
     );
-    assert_eq!(back["out_jd"], serde_json::json!([2_451_545.0, 2_461_296.5]));
+    assert_eq!(
+        back["out_jd"],
+        serde_json::json!([2_451_545.0, 2_461_296.5])
+    );
 
     let refused = provider
         .native_call(
@@ -536,10 +562,12 @@ fn a_search_answers_as_many_as_asked() {
     let found = answer["out"].as_array().expect("an array");
     assert_eq!(found.len(), 2, "{answer}");
     let jd = |at: usize| found[at]["jd"].as_f64().expect("an instant");
-    assert!((jd(1) - jd(0) - 365.24).abs() < 1.0, "a year apart: {answer}");
+    assert!(
+        (jd(1) - jd(0) - 365.24).abs() < 1.0,
+        "a year apart: {answer}"
+    );
     assert!(answer.get("out_count").is_none(), "{answer}");
 }
-
 
 /// A refusal carries the engine's own words for it, which is the
 /// difference between "status -1" and knowing what to change.
@@ -557,10 +585,11 @@ fn a_refusal_carries_the_engine_s_own_message() {
     assert!(said.contains("no such ayanamsha"), "{said}");
 }
 
-/// A failure the engine does not record is not given an earlier
-/// failure's message: the engine's record still holds that one, and
-/// repeating it as this call's would send a caller after the wrong
-/// mistake (findings register D3).
+/// A failure is never given an earlier failure's message (findings
+/// register D3). An engine from before its fix leaves the previous record
+/// in place, and the passthrough says it recorded nothing; one after the
+/// fix writes its own, naming the null argument. Either is true; the star's
+/// message never is.
 #[test]
 fn an_earlier_failure_s_message_is_not_repeated_as_this_one_s() {
     let provider = provider();
@@ -575,7 +604,10 @@ fn an_earlier_failure_s_message_is_not_repeated_as_this_one_s() {
         .expect_err("the engine takes no null datetime");
     let said = second.to_string();
     assert!(!said.contains("no star named"), "a stale message: {said}");
-    assert!(said.contains("recorded no message"), "{said}");
+    assert!(
+        said.contains("is null") || said.contains("recorded no message"),
+        "this failure's own words, or none: {said}"
+    );
 }
 
 /// A string the engine writes into a struct it fills comes back as a
@@ -618,7 +650,10 @@ fn a_pointer_inside_a_request_is_an_object_or_null() {
     );
     let lon = |answer: &Value| answer["out"]["lon"].as_f64().expect("a longitude");
     let apart = (lon(&geocentric) - lon(&topocentric)).abs();
-    assert!(apart > 0.01 && apart < 2.0, "{apart}: {geocentric} {topocentric}");
+    assert!(
+        apart > 0.01 && apart < 2.0,
+        "{apart}: {geocentric} {topocentric}"
+    );
 
     let mut forgotten = request(0, Value::Null);
     forgotten["req"]
@@ -629,7 +664,9 @@ fn a_pointer_inside_a_request_is_an_object_or_null() {
         .native_call("tm_position_calc", &forgotten.to_string())
         .expect_err("a pointer field left out is refused");
     assert!(
-        refused.to_string().contains("`req.observer` is required; pass null"),
+        refused
+            .to_string()
+            .contains("`req.observer` is required; pass null"),
         "{refused}"
     );
 }
@@ -639,10 +676,22 @@ fn a_pointer_inside_a_request_is_an_object_or_null() {
 #[test]
 fn a_default_request_round_trips_with_a_string_in_it() {
     let provider = provider();
-    let mut query = called(&provider, "tm_star_query_init_sized", &serde_json::json!({}))["q"].clone();
-    assert!(query["name_contains"].is_null(), "no name by default: {query}");
+    let mut query = called(
+        &provider,
+        "tm_star_query_init_sized",
+        &serde_json::json!({}),
+    )["q"]
+        .clone();
+    assert!(
+        query["name_contains"].is_null(),
+        "no name by default: {query}"
+    );
     query["name_contains"] = "Aldeb".into();
-    let found = called(&provider, "tm_star_search", &serde_json::json!({ "query": query }));
+    let found = called(
+        &provider,
+        "tm_star_search",
+        &serde_json::json!({ "query": query }),
+    );
     let stars = found["out"].as_array().expect("an array");
     assert!(!stars.is_empty(), "Aldebaran contains Aldeb: {found}");
 }
@@ -661,7 +710,11 @@ fn an_array_of_requests_keeps_every_pointer_alive() {
             })
         })
         .collect();
-    let answer = called(&provider, "tm_position_calc_many", &serde_json::json!({ "reqs": reqs }));
+    let answer = called(
+        &provider,
+        "tm_position_calc_many",
+        &serde_json::json!({ "reqs": reqs }),
+    );
     let out = answer["out"].as_array().expect("an array");
     assert_eq!(out.len(), 40);
     for (at, position) in out.iter().enumerate() {
@@ -669,7 +722,8 @@ fn an_array_of_requests_keeps_every_pointer_alive() {
     }
     let first = out[0]["lon"].as_f64().expect("a longitude");
     assert!(
-        out.iter().any(|position| (position["lon"].as_f64().unwrap_or(first) - first).abs() > 0.1),
+        out.iter()
+            .any(|position| (position["lon"].as_f64().unwrap_or(first) - first).abs() > 0.1),
         "forty observers round the equator see the Moon in different places"
     );
 }
@@ -695,7 +749,10 @@ fn a_batch_with_one_bad_element_answers_the_rest() {
     assert_eq!(out[0]["status"], 0, "{answer}");
     assert_ne!(out[1]["status"], 0, "no body is numbered 9999: {answer}");
     assert_eq!(out[2]["status"], 0, "{answer}");
-    assert!(out[2]["lon"].as_f64().is_some_and(|lon| lon > 0.0), "{answer}");
+    assert!(
+        out[2]["lon"].as_f64().is_some_and(|lon| lon > 0.0),
+        "{answer}"
+    );
 }
 
 /// A batch that succeeds never hands a caller the mark the marshaller
@@ -714,4 +771,127 @@ fn a_successful_batch_carries_no_mark() {
     );
     let status = &answer["out"][0]["status"];
     assert_eq!(status, 0, "{answer}");
+}
+
+/// House cusps are as long as the requested system has cusps — asked of
+/// `tm_house_cusp_count` before the call — and their speeds as long as
+/// the cusps: twelve for Placidus, thirty-six for Gauquelin's sectors.
+#[test]
+fn a_house_system_decides_how_many_cusps_come_back() {
+    let provider = provider();
+    let houses = |system: i32| {
+        called(
+            &provider,
+            "tm_houses_calc",
+            &serde_json::json!({ "req": {
+                "jd_ut1": 2_451_545.0, "geo_lat_deg": 27.7172, "geo_lon_deg": 85.324,
+                "system": system, "flags": 0,
+            }}),
+        )
+    };
+    for (system, cusps) in [(0, 12), (12, 36)] {
+        let answer = houses(system);
+        let length = |key: &str| answer[key].as_array().map_or(0, Vec::len);
+        assert_eq!(length("cusps"), cusps, "system {system}: {answer}");
+        assert_eq!(length("cusp_speeds"), cusps, "system {system}: {answer}");
+        let used = answer["out_angles"]["system_used"].as_i64();
+        assert_eq!(used, Some(i64::from(system)), "no substitution: {answer}");
+    }
+}
+
+/// A chart's positions are as long as its bodies and its cusps as long as
+/// its house system says, in one call.
+#[test]
+fn a_chart_is_sized_by_its_bodies_and_its_system() {
+    let provider = provider();
+    let answer = called(
+        &provider,
+        "tm_chart_calc",
+        &serde_json::json!({
+            "req": {
+                "jd": 2_451_545.0, "scale": 1, "parts": 0, "flags": 0, "system": 0,
+                "house_flags": 0,
+                "place": { "longitude_deg": 85.324, "latitude_deg": 27.7172, "altitude_m": 1400.0 },
+            },
+            "bodies": [0, 1],
+        }),
+    );
+    let length = |key: &str| answer[key].as_array().map_or(0, Vec::len);
+    assert_eq!(length("out_positions"), 2, "{answer}");
+    assert_eq!(length("out_cusps"), 12, "{answer}");
+    assert_eq!(length("out_cusp_speeds"), 12, "{answer}");
+}
+
+/// A calendar grid is as long as a field of its request says: a day per
+/// `day_count`, and a position per day per body.
+#[test]
+fn a_calendar_is_sized_by_a_field_of_its_request() {
+    let provider = provider();
+    let mut req = called(
+        &provider,
+        "tm_calendar_request_init_sized",
+        &serde_json::json!({}),
+    )["req"]
+        .clone();
+    req["jd_start"] = 2_461_296.5.into();
+    req["day_count"] = 3.into();
+    req["observer"] = serde_json::json!({ "longitude_deg": 85.324, "latitude_deg": 27.7172, "altitude_m": 1400.0 });
+    let answer = called(
+        &provider,
+        "tm_calendar_grid",
+        &serde_json::json!({ "req": req, "bodies": [0, 1] }),
+    );
+    let length = |key: &str| answer[key].as_array().map_or(0, Vec::len);
+    assert_eq!(length("out_days"), 3, "{answer}");
+    assert_eq!(
+        length("out_positions"),
+        6,
+        "three days by two bodies: {answer}"
+    );
+    let found = answer["out_days"][0]["found"].as_i64().unwrap_or_default();
+    assert_eq!(found, 1, "the Sun rises in Kathmandu: {answer}");
+}
+
+/// A batch of house requests is laid out at its widest system's stride:
+/// two Placidus charts hold twenty-four cusps, and one Placidus beside one
+/// Gauquelin holds seventy-two, the Placidus chart's twelve at the start
+/// of its thirty-six-wide slot.
+#[test]
+fn a_house_batch_is_laid_out_at_its_widest_stride() {
+    let provider = provider();
+    let request = |system: i32| {
+        serde_json::json!({
+            "jd_ut1": 2_451_545.0, "geo_lat_deg": 27.7172, "geo_lon_deg": 85.324,
+            "system": system, "flags": 0,
+        })
+    };
+    let batch = |systems: &[i32]| {
+        let reqs: Vec<Value> = systems.iter().copied().map(request).collect();
+        called(
+            &provider,
+            "tm_houses_calc_many",
+            &serde_json::json!({ "reqs": reqs }),
+        )
+    };
+    let length = |answer: &Value, key: &str| answer[key].as_array().map_or(0, Vec::len);
+
+    let placidus = batch(&[0, 0]);
+    assert_eq!(length(&placidus, "cusps"), 24, "{placidus}");
+    assert_eq!(length(&placidus, "out_angles"), 2, "{placidus}");
+
+    let mixed = batch(&[0, 12]);
+    assert_eq!(length(&mixed, "cusps"), 72, "{mixed}");
+    let single = called(
+        &provider,
+        "tm_houses_calc",
+        &serde_json::json!({ "req": request(0) }),
+    );
+    assert_eq!(
+        mixed["cusps"]
+            .as_array()
+            .and_then(|cusps| cusps.get(..12))
+            .map(<[Value]>::to_vec),
+        single["cusps"].as_array().cloned(),
+        "the Placidus chart's cusps open its slot"
+    );
 }

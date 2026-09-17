@@ -10,6 +10,9 @@ import { test } from 'node:test';
 import {
   Body,
   Calendar,
+  ChartLayout,
+  DashaSystem,
+  Varga,
   altitude,
   at,
   date,
@@ -92,11 +95,23 @@ test('a refusal carries its status, its field and its hint', () => {
       return true;
     },
   );
+  // No context exists to keep these refusals, so the record crosses whole
+  // from the call that failed (`ffi-abi-and-api-description.md` §6.1).
   assert.throws(
     () => new Context({ profile: 'vedic-classic' }),
-    /no shipped profile `vedic-classic`/u,
+    (error) => {
+      assert.ok(error instanceof TeistroError, 'a TeistroError, not a bare Error');
+      assert.equal(error.status, 'unsupported');
+      assert.match(error.message, /no shipped profile `vedic-classic`/u);
+      assert.equal(error.field, 'profile');
+      assert.match(error.hint, /parashari-classical/u);
+      return true;
+    },
   );
-  assert.throws(() => context({ locale: 'xx-Latn' }), /ne-Deva-NP/u);
+  assert.throws(
+    () => context({ locale: 'xx-Latn' }),
+    (error) => error.field === 'locale' && /ne-Deva-NP/u.test(error.hint),
+  );
   assert.throws(
     () => ctx.calendar.fixedOf(gregorian(2023, 2, 29)),
     (error) => error.detail === 'NONEXISTENT_DATE' && error.status === 'invalid-arg',
@@ -494,7 +509,14 @@ test('every catalogue enum has a complete id table', () => {
   // per-enum check above cannot see. It moves whenever the catalogue or
   // the boundary gains a member, which is a deliberate change: the
   // description's own page reports the same figure.
-  assert.equal(entries, 960, 'every member of every enum is in a table');
+  // 967 since chart_layout joined the catalogue: six layouts and its UNKNOWN;
+  // 969 since the dasha balance crossed as `TsBalance`, spatial and temporal;
+  // 973 since the Ashtakavarga's `TsShodhana` and `TsEkadhipatya`, two each;
+  // 975 since the Vimshopaka's `TsVimshopakaScoring`, two;
+  // 1006 since the vaiseshikamsa catalogue kind: thirty names and its UNKNOWN;
+  // 1010 since the avastha_cheshta catalogue kind: three and its UNKNOWN;
+  // 1013 since the dasha phala's `TsDashaPhase`, three.
+  assert.equal(entries, 1013, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -690,4 +712,409 @@ test('a provider and a named ephemeris together are refused', () => {
 test('a context without an ephemeris says so', () => {
   const bare = new Context({ profile: 'nepali-default' });
   assert.throws(() => bare.engine);
+});
+
+/**
+ * A drawing is a `{ layout, varga }` pair of catalogue keys; anything else
+ * is refused naming its place in the list, before the boundary is crossed
+ * (`03-design/chart-geometry.md`).
+ */
+test('a drawing names a layout and a varga or is refused', () => {
+  const ctx = context();
+  const asked = (wrong) => () =>
+    ctx.chart.found({
+      instant: 2451545,
+      place: { latitude: 27.7172, longitude: 85.324, altitude: 0 },
+      utcOffsetSeconds: 0,
+      drawings: [{ layout: ChartLayout.SouthIndian, varga: Varga.D9 }, wrong],
+    });
+  assert.throws(asked({ layout: Varga.D1, varga: Varga.D1 }), /drawings\[1\]\.layout/u);
+  assert.throws(asked({ layout: ChartLayout.NorthIndian, varga: 'varga.D99' }), /drawings\[1\]\.varga/u);
+  assert.throws(asked(null), /drawings\[1\]\.layout/u);
+  assert.throws(
+    () => ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, drawings: {} }),
+    /expected an array/u,
+  );
+  ctx.dispose();
+});
+
+/**
+ * A theme writes every drawing as SVG in the context's locale; every field a
+ * theme record can name is one the SDK reads, and a wrong one is refused by
+ * its path.
+ */
+test('a theme writes each drawing as SVG, and a wrong one is refused by its field', () => {
+  const ctx = context();
+  const request = {
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    drawings: [
+      { layout: ChartLayout.NorthIndian, varga: Varga.D1 },
+      { layout: ChartLayout.WesternWheel, varga: Varga.D1 },
+    ],
+  };
+  assert.equal(ctx.chart.found(request).drawings[0].svg, undefined, 'no theme, no SVG');
+
+  const [north, wheel] = ctx.chart.found({ ...request, theme: 'dark' }).drawings;
+  assert.match(north.svg, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/u);
+  assert.match(north.svg, /data-body="graha\.SUN">सू/u, 'written in the locale');
+  assert.match(north.svg, /fill="#121212"/u, 'in the dark theme');
+  assert.match(wheel.svg, /<line /u, 'a wheel ticks its marks');
+
+  // Every field a record can name, so a key the SDK does not read fails here.
+  const every = {
+    extends: 'light',
+    style: {
+      size: 600,
+      background: '#fafafa',
+      ink: '#202020',
+      cell: '#ffffff',
+      lagna_cell: '#fff0d0',
+      accent: '#aa0000',
+      stroke: 0.003,
+      font_family: 'Noto Sans Devanagari, sans-serif',
+      body_size: 0.04,
+      label_size: 0.03,
+      mark_size: 0.03,
+      advance: 0.6,
+      line_height: 1.25,
+      baseline_shift: 0.35,
+    },
+    content: { body_form: 'glyph', cell_label: 'house', lagna_mark: false, retrograde_mark: null, degrees: true },
+  };
+  const custom = ctx.chart.found({ ...request, theme: every }).drawings[0].svg;
+  assert.match(custom, /viewBox="0 0 600 600"/u);
+  assert.match(custom, /data-body="graha\.SUN">☉/u);
+
+  assert.throws(
+    () => ctx.chart.found({ ...request, theme: { style: { ink: 'black' } } }),
+    (error) => error instanceof TeistroError && error.field === 'theme_json.style.ink',
+  );
+  assert.throws(
+    () => ctx.chart.found({ ...request, theme: 'sepia' }),
+    (error) => error instanceof TeistroError && error.field === 'theme_json.extends',
+  );
+  assert.throws(() => ctx.chart.found({ ...request, theme: 7 }), /theme: expected/u);
+  ctx.dispose();
+});
+
+/**
+ * A consumer's own layout: a shipped row copied, renamed and registered,
+ * drawn by its key, and a wrong row refused by its place and field
+ * (`03-design/chart-geometry.md` §7f).
+ */
+test('a layout of your own is registered, drawn by its key, and refused by its field', () => {
+  const base = context();
+  const row = base.chart.layout('SOUTH_INDIAN');
+  assert.deepEqual(base.chart.layout(ChartLayout.SouthIndian), row, 'bare or full');
+  assert.equal(row.shape.kind, 'grid');
+  assert.throws(
+    () => base.chart.layout('ACME_KERALA'),
+    (error) => error instanceof TeistroError && error.field === 'key' && /NORTH_INDIAN/u.test(error.hint),
+  );
+  base.dispose();
+
+  const kerala = { ...row, key: 'ACME_KERALA' };
+  const ctx = context({ layouts: [kerala] });
+  assert.deepEqual(ctx.chart.layout('chart_layout.ACME_KERALA'), kerala);
+  assert.equal(ctx.keys.name(ctx.keys.id('chart_layout.ACME_KERALA')), 'chart_layout.ACME_KERALA');
+
+  const [south, own] = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    drawings: [
+      { layout: ChartLayout.SouthIndian, varga: Varga.D1 },
+      { layout: 'chart_layout.ACME_KERALA', varga: Varga.D1 },
+    ],
+    theme: 'light',
+  }).drawings;
+  assert.equal(own.layout, 'chart_layout.ACME_KERALA');
+  assert.deepEqual(own.cells, south.cells, 'the same row draws the same chart');
+  assert.equal(own.svg, south.svg);
+  // A key this context did not register is refused here, before the boundary.
+  assert.throws(
+    () =>
+      ctx.chart.found({
+        instant: 2451545,
+        place: { latitude: 0, longitude: 0 },
+        utcOffsetSeconds: 0,
+        drawings: [{ layout: 'chart_layout.ACME_ODIA', varga: Varga.D1 }],
+      }),
+    /drawings\[0\]\.layout: expected .* registered/u,
+  );
+  ctx.dispose();
+
+  const refused = (layouts) => () => context({ layouts });
+  const field = (name) => (error) => error instanceof TeistroError && error.field === name;
+  assert.throws(refused([kerala, row]), field('options.layouts_json[1].key'), 'a shipped key');
+  assert.throws(refused([kerala, kerala]), field('options.layouts_json[1].key'), 'a key taken twice');
+  assert.throws(
+    refused([{ ...kerala, shape: { ...kerala.shape, heading: 'clockwise' } }]),
+    field('options.layouts_json[0].shape.heading'),
+    'a misspelt field',
+  );
+  assert.throws(() => context({ layouts: kerala }), /layouts: expected an array/u);
+});
+
+/**
+ * A chart's Ashtakavarga crosses whole: each graha's bindus holding the
+ * classical totals, the sum, and each graha's reductions under the default
+ * reading; `null` unless asked.
+ */
+test('a chart carries its Ashtakavarga, each graha\'s bindus and their reductions', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, ashtakavarga: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).ashtakavarga, null);
+  const { shodhana, ekadhipatya, grahas, sarva, reduced } = chart.ashtakavarga;
+  assert.deepEqual([shodhana, ekadhipatya], ['each-graha', 'bphs']);
+  assert.deepEqual(
+    grahas.map((g) => g.bindus.reduce((a, b) => a + b, 0)),
+    [48, 49, 39, 54, 56, 52, 39],
+  );
+  assert.equal(sarva.reduce((a, b) => a + b, 0), 337);
+  assert.deepEqual(
+    reduced,
+    sarva.map((_, sign) => grahas.reduce((sum, g) => sum + g.reduced[sign], 0)),
+    'the reduced sum is the grahas\' own reductions summed',
+  );
+  assert.ok(grahas.every((g) => g.yogaPinda === g.rashiPinda + g.grahaPinda));
+  ctx.dispose();
+});
+
+/** Vimshottari's table, under a consumer's key. */
+const VIMSHOTTARI_TWIN = {
+  key: 'ACME_VIMSHOTTARI',
+  lords: [['KETU', 7], ['VENUS', 20], ['SUN', 6], ['MOON', 10], ['MARS', 7], ['RAHU', 18], ['JUPITER', 16], ['SATURN', 19], ['MERCURY', 17]]
+    .map(([graha, years]) => ({ graha, years })),
+  reference: 'ASHWINI',
+};
+
+/**
+ * A consumer's own dasha system crosses: registered on the context, asked for
+ * by its key, named by it in the answer, and every period its catalogued
+ * twin's; a definition the checks refuse is named by its place and field.
+ */
+test('a consumer dasha system registers, is asked for by its key and reads as its twin', () => {
+  const ctx = context({ dashaSystems: [VIMSHOTTARI_TWIN] });
+  const chart = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    dashas: ['dasha_system.ACME_VIMSHOTTARI', DashaSystem.Vimshottari],
+  });
+  const [consumer, shipped] = chart.dashas;
+  assert.equal(consumer.system, 'dasha_system.ACME_VIMSHOTTARI');
+  assert.equal(shipped.system, DashaSystem.Vimshottari);
+  assert.deepEqual(consumer.periods, shipped.periods);
+  assert.deepEqual(consumer.balance, shipped.balance);
+  assert.equal(ctx.keys.name(ctx.keys.id('dasha_system.ACME_VIMSHOTTARI')), 'dasha_system.ACME_VIMSHOTTARI');
+  assert.throws(
+    () => ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, dashas: ['dasha_system.ACME_OTHER'] }),
+    (error) => error instanceof TypeError && error.message.startsWith('dashas[0]'),
+  );
+  ctx.dispose();
+  assert.throws(
+    () => context({ dashaSystems: [{ ...VIMSHOTTARI_TWIN, span: 0 }] }),
+    (error) => error instanceof TeistroError && error.field === 'options.dashas_json[0].span',
+  );
+});
+
+/**
+ * A chart's dasha phala crosses whole: the nine grahas' Subhankas within
+ * each varga's share and complementary in total, a nature and a phase each;
+ * `null` unless asked, and the Shadbala's rays beside the phalas.
+ */
+test('a chart carries its dasha phala, and the Shadbala its rays', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, dashaPhala: true, shadbala: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).dashaPhala, null);
+  const { grahas } = chart.dashaPhala;
+  assert.equal(grahas.length, 9);
+  assert.equal(grahas[8].graha, 'graha.KETU');
+  for (const g of grahas) {
+    assert.equal(g.subhankas.length, 7);
+    g.subhankas.forEach((points, k) => assert.ok(points >= 0 && points <= (k === 0 ? 60 : 30), `${g.graha} ${k}`));
+    assert.ok(Math.abs(g.subhanka + g.asubhanka - 240) < 1e-9, g.graha);
+    assert.match(g.nature, /^nature\./);
+    assert.ok(['commencement', 'middle', 'end'].includes(g.phase), g.graha);
+    assert.equal(typeof g.favourable, 'boolean');
+  }
+  for (const g of chart.shadbala.grahas) {
+    assert.ok(g.subhaRashmi >= 1 && g.subhaRashmi <= 7, g.graha);
+    assert.ok(Math.abs(g.subhaRashmi + g.ashubhaRashmi - 8) < 1e-9, g.graha);
+  }
+  ctx.dispose();
+});
+
+/**
+ * Every graha's state carries its Sayanadi: the nine grahas a state and a
+ * sub-state under each of the five ankas, the outer planets none.
+ */
+test('a graha\'s state carries its Sayanadi and a sub-state for every anka', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const { states } = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, state: true });
+  const nine = ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN', 'RAHU', 'KETU'].map((g) => `graha.${g}`);
+  for (const state of states) {
+    if (!nine.includes(state.graha)) {
+      assert.equal(state.sayanadi, null, state.graha);
+      continue;
+    }
+    assert.match(state.sayanadi.avastha, /^avastha_sayanadi\./, state.graha);
+    assert.equal(state.sayanadi.cheshtas.length, 5, state.graha);
+    for (const cheshta of state.sayanadi.cheshtas) {
+      assert.match(cheshta, /^avastha_cheshta\./, state.graha);
+    }
+  }
+  assert.ok(states.some((s) => s.sayanadi !== null));
+  ctx.dispose();
+});
+
+/**
+ * A chart's Vaiseshikamsa crosses whole: each scheme's count within its
+ * vargas, a name for every count from two; `null` unless asked.
+ */
+test('a chart carries its Vaiseshikamsa, each scheme\'s count and name', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, vaiseshikamsa: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).vaiseshikamsa, null);
+  const { grahas } = chart.vaiseshikamsa;
+  assert.equal(grahas.length, 7);
+  for (const g of grahas) {
+    for (const [scheme, vargas] of [['shadvarga', 6], ['saptavarga', 7], ['dashavarga', 10], ['shodashavarga', 16]]) {
+      const { goodVargas, name } = g[scheme];
+      assert.ok(goodVargas <= vargas, `${g.graha} ${scheme}`);
+      assert.equal(name === null, goodVargas < 2, `${g.graha} ${scheme}`);
+    }
+  }
+  ctx.dispose();
+});
+
+/**
+ * A chart's Vimshopaka crosses whole: every graha's four scores out of 20
+ * under the default reading, the text's, whose least in any varga is 5;
+ * `null` unless asked.
+ */
+test('a chart carries its Vimshopaka, each graha\'s four scores', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, vimshopaka: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).vimshopaka, null);
+  const { scoring, grahas } = chart.vimshopaka;
+  assert.equal(scoring, 'bphs');
+  assert.deepEqual(
+    grahas.map((g) => g.graha),
+    ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN'].map((key) => `graha.${key}`),
+  );
+  for (const g of grahas) {
+    for (const score of [g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga]) {
+      assert.ok(score >= 5 && score <= 20, `${g.graha}: ${score}`);
+    }
+  }
+  ctx.dispose();
+});
+
+/**
+ * A chart's Shadbala crosses whole: every graha's six strengths under the
+ * default reading, the chapter's, whose natural strengths are 28 sevenths of
+ * a rupa and whose totals are their components'; `null` unless asked.
+ */
+test('a chart carries its Shadbala, each graha\'s six strengths', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, shadbala: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).shadbala, null);
+  const { grahas } = chart.shadbala;
+  assert.equal(grahas.length, 7);
+  const sum = (values) => values.reduce((a, b) => a + b, 0);
+  assert.ok(Math.abs(sum(grahas.map((g) => g.naisargika)) - 240) < 1e-9);
+  for (const g of grahas) {
+    const six = sum(Object.values(g.sthana)) + g.dig + sum(Object.values(g.kaala)) + g.cheshta + g.naisargika + g.drik;
+    assert.ok(Math.abs(six - g.virupas) < 1e-9, g.graha);
+    assert.equal(g.strong, g.rupas >= g.requiredRupas);
+  }
+  ctx.dispose();
+});
+
+/**
+ * A chart's Bhava bala crosses whole: every bhava's components under the
+ * default reading, the verses', whose totals are their parts'; `null` unless
+ * asked.
+ */
+test('a chart carries its Bhava bala, each bhava\'s strength', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, bhavaBala: true });
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).bhavaBala, null);
+  const { bhavas } = chart.bhavaBala;
+  assert.deepEqual(bhavas.map((b) => b.bhava), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  for (const b of bhavas) {
+    assert.ok(Math.abs(b.adhipati + b.dig + b.drishti + b.special - b.virupas) < 1e-9, `${b.bhava}`);
+    assert.ok(b.dig >= 0 && b.dig <= 60);
+  }
+  ctx.dispose();
+});
+
+/**
+ * A chart's dashas cross whole: the balance, the periods to the settings'
+ * depth with their paths, and the chain at an instant read off them.
+ */
+test('a chart carries its dashas, their periods, and the chain at an instant', () => {
+  const ctx = context();
+  const chart = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    dashas: [DashaSystem.Vimshottari, DashaSystem.Chara],
+  });
+  assert.equal(ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0 }).dashas.length, 0);
+  const [dasha, chara] = chart.dashas;
+  assert.equal(dasha.system, DashaSystem.Vimshottari);
+  assert.equal(dasha.balance.method, 'spatial');
+  assert.ok(dasha.balance.remaining > 0 && dasha.balance.remaining <= 1);
+  assert.equal(dasha.moonSpan, null);
+  assert.equal(dasha.depth, 3);
+  assert.equal(dasha.periods.length, 9 + 81 + 729);
+  const [first, second] = dasha.periods;
+  assert.deepEqual([first.path, first.level, first.from], ['0', 1, 2451545]);
+  assert.equal(first.lord, dasha.firstLord);
+  assert.deepEqual([second.path, second.level, second.lord], ['0/0', 2, dasha.firstLord]);
+  assert.equal(dasha.periods.at(-1).path, '8/8/8');
+  assert.equal(first.sign, null, 'a nakshatra-seeded period is its lord\'s');
+
+  // A sign-based dasha: no seed, no balance, twelve signs each divided in
+  // twelve from its own sign.
+  assert.equal(chara.system, DashaSystem.Chara);
+  assert.deepEqual([chara.seed, chara.balance], [null, null]);
+  assert.equal(chara.periods.length, 12 + 144 + 1728);
+  const [maha, own] = chara.periods;
+  assert.deepEqual([maha.path, own.path, own.sign, maha.from], ['0', '0/0', maha.sign, 2451545]);
+  assert.ok(typeof maha.sign === 'string' && maha.sign.startsWith('rashi.'));
+  assert.equal(chara.firstLord, maha.lord);
+  const mahadashas = chara.periods.filter((period) => period.level === 1);
+  assert.equal(new Set(mahadashas.map((period) => period.sign)).size, 12, 'every sign once');
+  assert.equal(chara.at(2451545 + 5000).length, 3);
+
+  const chain = dasha.at(2451545 + 5000);
+  assert.equal(chain.length, 3);
+  assert.ok(chain.every((period) => period.from <= 2451545 + 5000 && 2451545 + 5000 < period.to));
+  assert.equal(chain[2].path.split('/').length, 3);
+  assert.deepEqual(dasha.at(2451544), [], 'before birth');
+
+  assert.throws(
+    () =>
+      ctx.chart.found({
+        instant: 2451545,
+        place: { latitude: 0, longitude: 0 },
+        utcOffsetSeconds: 0,
+        dashas: [DashaSystem.Vimshottari, DashaSystem.SudarshanaChakra],
+      }),
+    (error) => error instanceof TeistroError && error.field === 'dashas[1]',
+  );
+  ctx.dispose();
 });

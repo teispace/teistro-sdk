@@ -7,12 +7,22 @@
 // decode on first use, and the error.
 
 import type {
+  AvasthaBaladi,
+  AvasthaDeeptadi,
+  AvasthaSayanadi,
+  AvasthaCheshta,
+  AvasthaJagradadi,
+  AvasthaLajjitadi,
   Ayana,
   Body,
+  Burning,
   Calendar,
   ChartKind,
+  ChartLayout,
   Choghadiya,
+  DashaSystem,
   DayPart,
+  Dignity,
   Direction,
   Graha,
   HouseSystem,
@@ -25,12 +35,23 @@ import type {
   Nakshatra,
   Paksha,
   Panchaka,
+  Point,
+  Quadrant,
   Rashi,
+  Shodhana,
+  Ekadhipatya,
+  Vaiseshikamsa,
+  VimshopakaScoring,
+  DashaPhase,
+  Nature,
+  Relationship,
   Scale,
   Status,
+  Strength,
   Tithi,
   TimeScale,
   Vara,
+  Varga,
   Yoga,
 } from './catalogue.js';
 import type {
@@ -123,6 +144,14 @@ export declare class Positions extends Decoded<DecodedPositions> {
   readonly bodies: readonly Body[];
   /** The bodies as the ids the blob carries, without a copy. */
   readonly bodyIds: Uint16Array;
+  /**
+   * How many instants the grid covers: with `bodyCount`, the stride a
+   * caller needs to read a column — cell `i * bodyCount + j` is instant
+   * `i`, body `j`.
+   */
+  readonly jdCount: number;
+  /** How many bodies the grid covers. */
+  readonly bodyCount: number;
   /** The time scale the instants are on. */
   readonly scale: TimeScale | 'unknown';
   /** The cells, instants outermost, as typed arrays over the blob. */
@@ -177,6 +206,674 @@ export interface Bhava {
   readonly sandhiDeg: number;
 }
 
+/**
+ * How near a longitude stands to the boundaries that would change how it
+ * reads, degrees: the edge of its sign, its nakshatra and its pada. What an
+ * ayanamsha that moved would change first.
+ */
+export interface Boundaries {
+  /** Degrees to the nearer edge of its sign. */
+  readonly signDeg: number;
+  /** Degrees to the nearer edge of its nakshatra. */
+  readonly nakshatraDeg: number;
+  /** Degrees to the nearer edge of its pada. */
+  readonly padaDeg: number;
+}
+
+/** Where a divisional chart puts one longitude. */
+export interface DivisionalPlacement {
+  /** The sign the longitude stands in. */
+  readonly rashi: Rashi | 'unknown';
+  /** Which part of that sign, counted from zero. */
+  readonly part: number;
+  /** The sign the divisional chart puts it in; the same as `rashi` is vargottama in the navamsha. */
+  readonly sign: Rashi | 'unknown';
+}
+
+/** A point in a drawing's unit square, y downwards. */
+export interface UnitPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+/** One step of an outline, from wherever the previous step ended. */
+export type Segment =
+  | { readonly kind: 'line'; readonly to: UnitPoint }
+  | { readonly kind: 'quad'; readonly control: UnitPoint; readonly to: UnitPoint }
+  | {
+      readonly kind: 'arc';
+      /** The circle's centre. */
+      readonly centre: UnitPoint;
+      /** Which way the arc runs, as a reader sees it. */
+      readonly clockwise: boolean;
+      readonly to: UnitPoint;
+    };
+
+/** A closed outline: a start and the steps back to it. */
+export interface Outline {
+  readonly start: UnitPoint;
+  readonly segments: readonly Segment[];
+}
+
+/** One region of a drawn chart. */
+export interface DrawnCell {
+  /** The region's outline in the unit square. */
+  readonly outline: Outline;
+  /** The sign the cell shows; for a house between cusps, its cusp's sign. */
+  readonly sign: Rashi;
+  /** The house the cell shows, 1 to 12. */
+  readonly house: number;
+  /** Whether the lagna stands in this cell. */
+  readonly lagna: boolean;
+  /** The ring, innermost 0; a grid's cells are all 0. */
+  readonly ring: number;
+  /** Where the sign or house number is drawn. */
+  readonly label: UnitPoint;
+  /** Where the cell's bodies are stacked about. */
+  readonly anchor: UnitPoint;
+  /** The bodies in the cell, as catalogue keys (`graha.SUN`). */
+  readonly bodies: readonly string[];
+}
+
+/** A chart drawn in a layout (`03-design/chart-geometry.md`). */
+/** One period of a dasha. */
+export interface DashaPeriod {
+  /** Its place at each level from the mahadasha down, joined by `/`: `2/5/3`. */
+  readonly path: string;
+  /** How deep: 1 for a mahadasha. */
+  readonly level: number;
+  /** The sign it is the period of, in a sign-based dasha; `null` otherwise. */
+  readonly sign: Rashi | null;
+  /** Its lord. */
+  readonly lord: Graha;
+  /** When it begins, a Julian day (UTC). */
+  readonly from: number;
+  /** When it ends, a Julian day (UTC). */
+  readonly to: number;
+}
+
+/**
+ * A dasha of a founded chart: its periods, and for a nakshatra-seeded one its
+ * seed and balance at birth. A sign-based dasha has neither, and its periods
+ * name their signs.
+ */
+export interface Dasha {
+  /** Which system: a catalogued one, or a registered one by its full key. */
+  readonly system: DashaSystem | DashaKey;
+  /** The nakshatra the Moon stood in, which seeds it; `null` for a sign-based dasha. */
+  readonly seed: Nakshatra | null;
+  /** The lord it starts with. */
+  readonly firstLord: Graha;
+  /** Whether the seed lay outside a conditional system's nakshatras. */
+  readonly overflow: boolean;
+  /** What remained of the first period at birth; `null` for a sign-based dasha, whose first period runs whole from birth. */
+  readonly balance: {
+    /** How it was measured. */
+    readonly method: 'spatial' | 'temporal';
+    /** The fraction still to run, 0 to 1. */
+    readonly remaining: number;
+    /** That fraction of the first lord's years, in days. */
+    readonly days: number;
+    /** The same written as years, months, days, hours and minutes. */
+    readonly written: {
+      readonly years: number;
+      readonly months: number;
+      readonly days: number;
+      readonly hours: number;
+      readonly minutes: number;
+    };
+  } | null;
+  /** The Moon's stay in its nakshatra, when the balance read one. */
+  readonly moonSpan: { readonly from: number; readonly to: number } | null;
+  /** How many levels the periods go down. */
+  readonly depth: number;
+  /** Every period of the birth cycle to `depth`, depth first in time order. */
+  readonly periods: readonly DashaPeriod[];
+  /**
+   * The periods running at a Julian day (UTC), from the mahadasha down to
+   * `depth`; empty before birth and past the end of the cycle.
+   */
+  at(jd: number): readonly DashaPeriod[];
+}
+
+/** One graha's Ashtakavarga. */
+export interface GrahaAshtakavarga {
+  /** Which graha, Sun to Saturn. */
+  readonly graha: Graha;
+  /** Its bindus by sign, Aries to Pisces, 0 to 8. */
+  readonly bindus: readonly number[];
+  /** The same after both reductions, when they were made in each graha's own; `null` otherwise. */
+  readonly reduced: readonly number[] | null;
+  /** Its rashi pinda. */
+  readonly rashiPinda: number;
+  /** Its graha pinda. */
+  readonly grahaPinda: number;
+  /** Its yoga pinda, the two together. */
+  readonly yogaPinda: number;
+}
+
+/** A chart's Ashtakavarga: each graha's, the sarvashtakavarga, and their reductions. */
+export interface Ashtakavarga {
+  /** Where the reductions and pindas were made. */
+  readonly shodhana: Shodhana;
+  /** How a co-ruled sign beside an occupied one was reduced. */
+  readonly ekadhipatya: Ekadhipatya;
+  /** Each graha's, Sun to Saturn. */
+  readonly grahas: readonly GrahaAshtakavarga[];
+  /** The seven grahas' bindus by sign, 337 in all. */
+  readonly sarva: readonly number[];
+  /** The sum after the trine reduction. */
+  readonly trikona: readonly number[];
+  /** The sum after both reductions. */
+  readonly reduced: readonly number[];
+}
+
+/** One graha's Vimshopaka, each score out of 20. */
+export interface GrahaVimshopaka {
+  /** Which graha, Sun to Saturn. */
+  readonly graha: Graha;
+  /** Over the six vargas. */
+  readonly shadvarga: number;
+  /** Over the seven. */
+  readonly saptavarga: number;
+  /** Over the ten. */
+  readonly dashavarga: number;
+  /** Over the sixteen. */
+  readonly shodashavarga: number;
+}
+
+/** A graha's Sthana bala by component, virupas. */
+export interface SthanaBala {
+  /** From its distance to its debilitation point, 0 to 60. */
+  readonly uchcha: number;
+  /** From its dignity in the seven vargas. */
+  readonly saptavargaja: number;
+  /** From its rasi's and navamsha's parity, 0, 15 or 30. */
+  readonly ojayugma: number;
+  /** From its house: 60, 30 or 15. */
+  readonly kendradi: number;
+  /** From its decanate: 0 or 15. */
+  readonly drekkana: number;
+}
+
+/** A graha's Kaala bala by component, virupas. */
+export interface KaalaBala {
+  /** From the hour, 0 to 60. */
+  readonly nathonnatha: number;
+  /** From the Moon's elongation, the Moon's doubled. */
+  readonly paksha: number;
+  /** 60 to the lord of the third of the day or night, and to Jupiter. */
+  readonly tribhaga: number;
+  /** 15 to the year's lord. */
+  readonly abda: number;
+  /** 30 to the month's lord. */
+  readonly masa: number;
+  /** 45 to the weekday's lord. */
+  readonly vara: number;
+  /** 60 to the hour's lord. */
+  readonly hora: number;
+  /** From its declination. */
+  readonly ayana: number;
+  /** Gained by the victor and lost by the vanquished of a planetary war. */
+  readonly yuddha: number;
+}
+
+/** One graha's Shadbala, in virupas. */
+export interface GrahaShadbala {
+  /** Which graha, Sun to Saturn. */
+  readonly graha: Graha;
+  /** Positional strength by component. */
+  readonly sthana: SthanaBala;
+  /** Directional strength, 0 to 60. */
+  readonly dig: number;
+  /** Temporal strength by component. */
+  readonly kaala: KaalaBala;
+  /** Motional strength. */
+  readonly cheshta: number;
+  /** Natural strength. */
+  readonly naisargika: number;
+  /** Aspectual strength, which may be negative. */
+  readonly drik: number;
+  /** The six together. */
+  readonly virupas: number;
+  /** The six together, in rupas. */
+  readonly rupas: number;
+  /** The rupas it must reach to be strong. */
+  readonly requiredRupas: number;
+  /** Whether it reaches them. */
+  readonly strong: boolean;
+  /** How far it tends to good, 0 to 60 (BPHS ch. 28). */
+  readonly ishta: number;
+  /** How far it tends to harm, 0 to 60. */
+  readonly kashta: number;
+  /** Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5). */
+  readonly subhaRashmi: number;
+  /** Its inauspicious rays, 8 less the auspicious. */
+  readonly ashubhaRashmi: number;
+}
+
+/** A chart's Shadbala, read under the context's `strength.*` settings. */
+export interface Shadbala {
+  /** Each graha's, Sun to Saturn. */
+  readonly grahas: readonly GrahaShadbala[];
+}
+
+/** One bhava's Bhava bala, in virupas. */
+export interface BhavaStrength {
+  /** Which bhava, 1 to 12. */
+  readonly bhava: number;
+  /** The lord of the sign its madhya falls in. */
+  readonly lord: Graha;
+  /** The lord's Shadbala. */
+  readonly adhipati: number;
+  /** From its direction, 0 to 60. */
+  readonly dig: number;
+  /** From the drishtis it receives, which may be negative. */
+  readonly drishti: number;
+  /** From its occupants and its sign's rising, under BPHS's special rules. */
+  readonly special: number;
+  /** The four together. */
+  readonly virupas: number;
+}
+
+/** A chart's Bhava bala, read under the context's `strength.bhava_*` settings. */
+export interface BhavaBala {
+  /** Each bhava's, the first to the twelfth. */
+  readonly bhavas: readonly BhavaStrength[];
+}
+
+/** A graha's standing in one scheme of vargas. */
+export interface VaiseshikamsaStanding {
+  /** How many of the scheme's vargas are good for it. */
+  readonly goodVargas: number;
+  /** The name that count earns, from two good vargas; `null` below. */
+  readonly name: Vaiseshikamsa | null;
+}
+
+/** One graha's Vaiseshikamsa (BPHS ch. 6 vv. 42 to 53). */
+export interface GrahaVaiseshikamsa {
+  /** Which graha, Sun to Saturn. */
+  readonly graha: Graha;
+  /** Over the six vargas. */
+  readonly shadvarga: VaiseshikamsaStanding;
+  /** Over the seven. */
+  readonly saptavarga: VaiseshikamsaStanding;
+  /** Over the ten. */
+  readonly dashavarga: VaiseshikamsaStanding;
+  /** Over the sixteen. */
+  readonly shodashavarga: VaiseshikamsaStanding;
+  /** Whether it is combust, defeated in war or in Shayana, its names then not auspicious. */
+  readonly impaired: boolean;
+}
+
+/** One graha's dasha phala (BPHS ch. 28 vv. 7 to 10, ch. 47 vv. 3 to 6). */
+export interface GrahaDashaPhala {
+  /** Which graha, Sun to Ketu. */
+  readonly graha: Graha | 'unknown';
+  /** Its Subhanka in the D1, D2, D3, D7, D9, D12 and D30: out of 60 in the first and 30 in the rest. */
+  readonly subhankas: readonly number[];
+  /** The seven together, out of 240. */
+  readonly subhanka: number;
+  /** Their complements together, out of 240. */
+  readonly asubhanka: number;
+  /** Whether its rasi place is auspicious (benefic), neutral or inauspicious (malefic). */
+  readonly nature: Nature;
+  /** Where in its dasha its effects come. */
+  readonly phase: DashaPhase | 'unknown';
+  /** Whether its placement makes its dasha favourable. */
+  readonly favourable: boolean;
+  /** Whether its placement makes its dasha unfavourable; both can hold. */
+  readonly unfavourable: boolean;
+}
+
+/**
+ * A chart's dasha phala, read under `dasha.shanta_sign`.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, dashaPhala: true });
+ * const saturn = chart.dashaPhala?.grahas.find((g) => g.graha === 'graha.SATURN');
+ */
+export interface DashaPhalaReading {
+  /** Each graha's, Sun to Ketu. */
+  readonly grahas: readonly GrahaDashaPhala[];
+}
+
+/** A chart's Vaiseshikamsa. */
+export interface VaiseshikamsaReading {
+  /** Each graha's, Sun to Saturn. */
+  readonly grahas: readonly GrahaVaiseshikamsa[];
+}
+
+/** A chart's Vimshopaka: each graha's strength across the divisional charts. */
+export interface Vimshopaka {
+  /** How each varga was scored. */
+  readonly scoring: VimshopakaScoring;
+  /** Each graha's, Sun to Saturn. */
+  readonly grahas: readonly GrahaVimshopaka[];
+}
+
+/** A registered layout's full key, as the context that registered it resolves it. */
+export type LayoutKey = `chart_layout.${string}`;
+
+/** A registered dasha system's full key, as the context that registered it resolves it. */
+export type DashaKey = `dasha_system.${string}`;
+
+/**
+ * A nakshatra-seeded dasha system of your own, as `dashaSystems` takes it
+ * (`03-design/dasha-kernels.md`, "A consumer's own system"). Keys are bare
+ * (`SUN`, `KRITTIKA`), as the document spells them; every optional field
+ * defaults to Vimshottari's shape.
+ *
+ * @example
+ * const ctx = new Context({
+ *   dashaSystems: [{
+ *     key: 'ACME_SAPTAKA',
+ *     lords: ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN']
+ *       .map((graha) => ({ graha, years: 10 })),
+ *     reference: 'KRITTIKA',
+ *   }],
+ * });
+ * ctx.chart.found({ instant, place, utcOffsetSeconds, dashas: ['dasha_system.ACME_SAPTAKA'] });
+ */
+export interface DashaDefinition {
+  /** Its key: `[A-Z][A-Z0-9_]`, at most 48 characters, and not one the catalogue has. */
+  readonly key: string;
+  /** Where the table comes from. */
+  readonly sources?: readonly string[];
+  /** The lords, in the order they run, each with its whole years. */
+  readonly lords: readonly { readonly graha: string; readonly years: number }[];
+  /** The nakshatra that maps to the first lord, bare (`ASHWINI`). */
+  readonly reference: string;
+  /** Which way the seed is counted; forwards by default. */
+  readonly count?: 'FROM_REFERENCE' | 'TO_REFERENCE';
+  /** How many nakshatras each lord covers; one by default. */
+  readonly span?: number;
+  /** What is added after the division, before the modulo; none by default. */
+  readonly offset?: number;
+  /** Whether the lords run round the nakshatras again; true by default. */
+  readonly repeats?: boolean;
+  /** The factor on the mahadashas' years and the rounds in a cycle. */
+  readonly scale?: { readonly numerator: number; readonly denominator: number; readonly rounds: number };
+  /** The length of its year; `JULIAN_365_25` by default. */
+  readonly year_length?: 'JULIAN_365_25' | 'SAVANA_360' | 'SIDEREAL' | 'TROPICAL' | 'LUNAR' | 'NAKSHATRA_324';
+  /** How many levels of periods a reading carries, 1 to 6; three by default. */
+  readonly depth?: number;
+}
+
+/** What a grid cell always carries: a sign, or a house 1 to 12. */
+export type LayoutHolds =
+  | { readonly kind: 'sign'; readonly value: RashiName }
+  | { readonly kind: 'house'; readonly value: number };
+
+/** A sign as a layout row spells it: the bare key, `ARIES`. */
+export type RashiName =
+  | 'ARIES'
+  | 'TAURUS'
+  | 'GEMINI'
+  | 'CANCER'
+  | 'LEO'
+  | 'VIRGO'
+  | 'LIBRA'
+  | 'SCORPIO'
+  | 'SAGITTARIUS'
+  | 'CAPRICORN'
+  | 'AQUARIUS'
+  | 'PISCES';
+
+/** One region of a grid layout. */
+export interface LayoutCell {
+  /** The region's outline, in the unit square. */
+  readonly outline: Outline;
+  /** The sign or house the cell always carries. */
+  readonly holds: LayoutHolds;
+  /** Where the sign or house number is drawn. */
+  readonly label: UnitPoint;
+  /** Where the cell's bodies are stacked about. */
+  readonly bodies: UnitPoint;
+}
+
+/** One ring of a radial layout. */
+export interface LayoutRing {
+  /** The inner radius, a fraction of the square's side; 0 makes wedges. */
+  readonly inner: number;
+  /** The outer radius, at most a half. */
+  readonly outer: number;
+  /** What the ring counts its first house from. */
+  readonly counts_from: 'lagna' | 'moon' | 'sun' | 'cusps' | 'zodiac';
+}
+
+/** Twelve cells fixed in the row, or rings computed per chart. */
+export type LayoutShape =
+  | {
+      readonly kind: 'grid';
+      readonly cells: readonly LayoutCell[];
+      readonly frame: readonly Outline[];
+      readonly direction: 'clockwise' | 'anticlockwise';
+    }
+  | {
+      readonly kind: 'radial';
+      readonly rings: readonly LayoutRing[];
+      /** The clock hour house 1 starts at, 1 to 12. */
+      readonly starts_at: number;
+      readonly direction: 'clockwise' | 'anticlockwise';
+    };
+
+/**
+ * A chart layout as a row: its key, what cites it, and its shape. Crosses
+ * as JSON with the SDK's own field names, as a theme does.
+ */
+export interface LayoutRow {
+  /** The key, in the key grammar: `[A-Z][A-Z0-9_]`, at most 48 characters. */
+  readonly key: string;
+  /** The sources the row comes from; at least one. */
+  readonly sources: readonly string[];
+  /** Its cells or its rings. */
+  readonly shape: LayoutShape;
+}
+
+/** How a drawing looks: every field optional, over the theme it extends. */
+export interface ThemeStyle {
+  /** The drawing's width and height, in SVG user units. */
+  readonly size?: number;
+  /** The page behind the chart, as `#rrggbb`. */
+  readonly background?: string;
+  /** Lines and text, as `#rrggbb`. */
+  readonly ink?: string;
+  /** A cell's fill, as `#rrggbb`. */
+  readonly cell?: string;
+  /** The fill of the cell the lagna stands in, as `#rrggbb`. */
+  readonly lagna_cell?: string;
+  /** The lagna's own label and mark, as `#rrggbb`. */
+  readonly accent?: string;
+  /** Line width, as a fraction of the size. */
+  readonly stroke?: number;
+  /** The font family every text asks for. */
+  readonly font_family?: string;
+  /** The largest a body's label is drawn, as a fraction of the size. */
+  readonly body_size?: number;
+  /** A cell's label, as a fraction of the size. */
+  readonly label_size?: number;
+  /** A body at its degree on a wheel, as a fraction of the size. */
+  readonly mark_size?: number;
+  /** The width one character is estimated at, in ems. */
+  readonly advance?: number;
+  /** The distance between two lines of a stack, in ems. */
+  readonly line_height?: number;
+  /** How far below a line's centre its baseline sits, in ems. */
+  readonly baseline_shift?: number;
+}
+
+/** What a drawing says: every field optional, over the theme it extends. */
+export interface ThemeContent {
+  /** The locale form a body is written in. */
+  readonly body_form?: 'short' | 'glyph';
+  /** What a cell's label shows; `auto` is the sign's number, or on a wheel the house and the sign's glyph. */
+  readonly cell_label?: 'auto' | 'sign_number' | 'sign_short' | 'sign_glyph' | 'house' | 'nothing';
+  /** Whether the lagna is written first in the cell it stands in. */
+  readonly lagna_mark?: boolean;
+  /** What is written after a retrograde graha's name, or null for nothing. */
+  readonly retrograde_mark?: string | null;
+  /** Whether a graha's degree follows its name, on the founded chart. */
+  readonly degrees?: boolean;
+}
+
+/**
+ * The theme a request writes its drawings as SVG in: a shipped theme's name,
+ * or a record naming only what it changes (`03-design/render-svg.md`).
+ */
+export type Theme =
+  | 'light'
+  | 'dark'
+  | {
+      readonly extends?: 'light' | 'dark';
+      readonly style?: ThemeStyle;
+      readonly content?: ThemeContent;
+    };
+
+export interface Drawing {
+  /**
+   * The drawing as SVG, in the request's theme and the context's locale;
+   * absent when the request gave no theme.
+   */
+  readonly svg?: string;
+  /** The layout it is drawn in. */
+  readonly layout: ChartLayout | LayoutKey;
+  /** Which chart: `varga.D1` for the founded chart, or a divisional one. */
+  readonly varga: Varga;
+  /** The cells, in the layout's order. */
+  readonly cells: readonly DrawnCell[];
+  /** The lines drawn that hold nothing. */
+  readonly frame: readonly Outline[];
+  /** Each body at its own degree, on a wheel; empty for a grid. */
+  readonly marks: readonly {
+    readonly body: string;
+    readonly ring: number;
+    readonly at: UnitPoint;
+    readonly longitudeDeg: number;
+  }[];
+}
+
+/** One divisional chart of a founded chart. */
+export interface DivisionalChart {
+  /** Which divisional chart. */
+  readonly varga: Varga | 'unknown';
+  /** Where it puts the lagna. */
+  readonly lagna: DivisionalPlacement;
+  /** Where it puts each graha, in the chart's graha order. */
+  readonly grahas: readonly {
+    /** Which graha. */
+    readonly graha: Graha | 'unknown';
+    /** Where the divisional chart puts it. */
+    readonly at: DivisionalPlacement;
+  }[];
+}
+
+/** One drishti a graha casts. */
+export interface Drishti {
+  /** The graha casting it. */
+  readonly from: Graha | 'unknown';
+  /** The graha it reaches. */
+  readonly to: Graha | 'unknown';
+  /** Which house from the casting graha's sign the other stands in, counting inclusively from one. */
+  readonly houses: number;
+  /** How strongly, under the chart's drishti table. */
+  readonly strength: Strength | 'unknown';
+  /** How near the casting graha stands to a boundary. */
+  readonly fromEdge: Boundaries;
+  /** How near the graha reached stands to a boundary. */
+  readonly toEdge: Boundaries;
+}
+
+/** One derived point: an upagraha or a special lagna. */
+export interface DerivedPoint {
+  /** Which point. */
+  readonly point: Point | 'unknown';
+  /** Its longitude in the chart's zodiac, degrees. */
+  readonly longitudeDeg: number;
+  /** The sign it stands in. */
+  readonly sign: Rashi | 'unknown';
+  /** How near it stands to a boundary. */
+  readonly boundaries: Boundaries;
+}
+
+/** One of the twelve bhavas as the houses service reads it. */
+export interface HouseReading {
+  /** The bhava, 1 to 12. */
+  readonly number: number;
+  /** The sign its middle falls in, which under an unequal division is not always the sign it opens in. */
+  readonly sign: Rashi | 'unknown';
+  /** The graha that rules that sign. */
+  readonly lord: Graha | 'unknown';
+  /** Which kind of house it is. */
+  readonly quadrant: Quadrant | 'unknown';
+}
+
+/** What one graha **is**, as opposed to where it is. */
+export interface GrahaState {
+  /** Which graha. */
+  readonly graha: Graha | 'unknown';
+  /** The sign it stands in. */
+  readonly sign: Rashi | 'unknown';
+  /** The whole-sign house it stands in, 1 to 12. */
+  readonly house: number;
+  /** Its dignity in that sign. */
+  readonly dignity: Dignity | 'unknown';
+  /** Its relationships to the lord of the sign it stands in. */
+  readonly friendship: {
+    readonly natural: Relationship | 'unknown';
+    readonly temporary: Relationship | 'unknown';
+    readonly compound: Relationship | 'unknown';
+    /** The lord of its sign, or `null` for a graha that has none. */
+    readonly dispositor: Graha | 'unknown' | null;
+  };
+  /** Whether the Sun burns it, and by how much; a value it may not have is `null`. */
+  readonly combustion: {
+    readonly burning: Burning | 'unknown';
+    readonly fromSunDeg: number | null;
+    readonly orbDeg: number | null;
+    readonly deepOrbDeg: number | null;
+  };
+  /** Its age: the baladi avastha. */
+  readonly age: AvasthaBaladi | 'unknown';
+  /** Its wakefulness: the jagradadi avastha. */
+  readonly wakefulness: AvasthaJagradadi | 'unknown';
+  /** Its deeptadi avastha, or `null` where the scheme gives none. */
+  readonly deeptadi: AvasthaDeeptadi | 'unknown' | null;
+  /** The lajjitadi avasthas: those it holds, those ruled out, and those undecided. */
+  readonly lajjitadi: {
+    readonly holding: readonly AvasthaLajjitadi[];
+    readonly ruledOut: readonly AvasthaLajjitadi[];
+    readonly undecided: readonly AvasthaLajjitadi[];
+  };
+  /** The planetary war it is in, or `null`. */
+  readonly war: {
+    readonly opponent: Graha | 'unknown';
+    readonly isWinner: boolean;
+    readonly apartDeg: number;
+  } | null;
+  /**
+   * The Sayanadi state and its sub-states (BPHS ch. 45 vv. 30 to 37), or
+   * `null` for a body the verses give no number.
+   */
+  readonly sayanadi: Sayanadi | null;
+  /** How near it stands to a boundary. */
+  readonly boundaries: Boundaries;
+}
+
+/**
+ * A graha's Sayanadi state, with its sub-state under a name of each anka.
+ *
+ * @example
+ * // The sub-state under a name whose first syllable's anka is 3.
+ * const cheshta = state.sayanadi?.cheshtas[3 - 1];
+ */
+export interface Sayanadi {
+  /** The state, Shayana to Nidra. */
+  readonly avastha: AvasthaSayanadi | 'unknown';
+  /** The sub-state under a name whose first syllable's anka is 1 to 5, in that order. */
+  readonly cheshtas: readonly (AvasthaCheshta | 'unknown')[];
+}
+
 /** The place a chart was founded at. */
 export interface ChartPlace {
   /** Degrees north. */
@@ -192,12 +889,23 @@ export interface ChartPlace {
  * once. The charts in it are views over those bytes rather than copies.
  */
 export declare class Charts extends Decoded<DecodedCharts> {
+  /**
+   * A batch over the bytes the library returned, naming the dasha systems a
+   * context registered by the ids it gave them.
+   */
+  constructor(bytes: Uint8Array, dashaNames?: ReadonlyMap<number, string>);
+  /** The full key of a registered dasha system's id, when this batch knows it. */
+  dashaName(id: number): string | undefined;
   /** How many charts the batch holds. */
   readonly length: number;
   /** What kind of chart these are. */
   readonly kind: ChartKind | 'unknown';
   /** The place they were all founded at. */
   readonly place: ChartPlace;
+  /** How many divisional charts each chart of the batch holds. */
+  readonly vargaCount: number;
+  /** The drishti table every aspect was read under; empty when none were asked for. */
+  readonly drishtiTable: string;
   /**
    * The completion steps the SDK applied, in order, each
    * `name:Implementation`. A positions result spells the same steps as
@@ -253,6 +961,36 @@ export declare class Chart {
   > & { readonly horaLord: Graha | 'unknown' };
   /** The grahas, in the catalogue's order, one object each. */
   readonly grahas: readonly PlacedGraha[];
+  /** The divisional charts asked for, in the order asked; empty unless `vargas` named some. */
+  readonly vargas: readonly DivisionalChart[];
+  /** The charts drawn in the layouts asked for, in the order asked; empty unless `drawings` named some. */
+  readonly drawings: readonly Drawing[];
+  /** The dashas asked for, in the order asked; empty unless `dashas` named some. */
+  readonly dashas: readonly Dasha[];
+  /** The Ashtakavarga; `null` unless `ashtakavarga` asked for it. */
+  readonly ashtakavarga: Ashtakavarga | null;
+  /** The Vimshopaka; `null` unless `vimshopaka` asked for it. */
+  readonly vimshopaka: Vimshopaka | null;
+  /** The Vaiseshikamsa; `null` unless `vaiseshikamsa` asked for it. */
+  readonly vaiseshikamsa: VaiseshikamsaReading | null;
+  /** The dasha phala; `null` unless `dashaPhala` asked for it. */
+  readonly dashaPhala: DashaPhalaReading | null;
+  /** The Shadbala; `null` unless `shadbala` asked for it. */
+  readonly shadbala: Shadbala | null;
+  /** The Bhava bala; `null` unless `bhavaBala` asked for it. */
+  readonly bhavaBala: BhavaBala | null;
+  /**
+   * The drishti the chart's grahas cast; empty unless `aspects` asked. The
+   * count differs from chart to chart, because relations depend on where
+   * the grahas stand.
+   */
+  readonly aspects: readonly Drishti[];
+  /** The upagrahas and special lagnas; empty unless `points` asked. */
+  readonly points: readonly DerivedPoint[];
+  /** The twelve bhavas as the houses service reads them; empty unless `houses` asked. */
+  readonly bhavas: readonly HouseReading[];
+  /** What each graha is, in `grahas` order; empty unless `state` asked. */
+  readonly states: readonly GrahaState[];
   /** The twelve bhavas for "which house is it in", first to twelfth. */
   readonly houses: readonly Bhava[];
   /** The twelve bhavas of the chart's chalit. */
@@ -475,6 +1213,47 @@ export interface ChartRequest {
   readonly utcOffsetSeconds: number;
   /** A chart kind; `ChartKind.Natal` by default. */
   readonly kind?: ChartKind;
+  /**
+   * The divisional charts to compute, in the order wanted; none by default,
+   * so a caller who wants a birth chart does not pay for twenty-one.
+   */
+  readonly vargas?: readonly Varga[];
+  /**
+   * The dashas to compute, a system each, in the order wanted; none by
+   * default. A system the catalogue names and this build does not compute
+   * is refused by its place in the request.
+   */
+  readonly dashas?: readonly (DashaSystem | DashaKey)[];
+  /**
+   * The charts to draw, each a layout and which chart to place in it
+   * (`Varga.D1` for the founded chart), in the order wanted; none by default.
+   */
+  readonly drawings?: readonly { readonly layout: ChartLayout | LayoutKey; readonly varga: Varga }[];
+  /**
+   * The theme to write every drawing as SVG in, read back as each drawing's
+   * `svg`; no SVG by default.
+   */
+  readonly theme?: Theme;
+  /** Whether to compute the drishti; false by default. */
+  readonly aspects?: boolean;
+  /** Whether to compute the upagrahas and special lagnas; false by default. */
+  readonly points?: boolean;
+  /** Whether to read the bhavas through the houses service; false by default. */
+  readonly houses?: boolean;
+  /** Whether to compute the Ashtakavarga; false by default. */
+  readonly ashtakavarga?: boolean;
+  /** Whether to compute the Vimshopaka; false by default. */
+  readonly vimshopaka?: boolean;
+  /** Whether to compute the Vaiseshikamsa; false by default. */
+  readonly vaiseshikamsa?: boolean;
+  /** Whether to compute the dasha phala; false by default. */
+  readonly dashaPhala?: boolean;
+  /** Whether to compute the Shadbala; false by default. */
+  readonly shadbala?: boolean;
+  /** Whether to compute the Bhava bala; false by default. */
+  readonly bhavaBala?: boolean;
+  /** Whether to compute what each graha is — its dignity, avasthas, combustion and war; false by default. */
+  readonly state?: boolean;
 }
 
 /** What `Context.foundMany` needs to found a batch at one place. */
@@ -598,6 +1377,19 @@ export interface ContextInit {
   readonly settings?: Record<string, unknown>;
   /** The locale every render resolves from. */
   readonly locale?: string;
+  /**
+   * Chart layouts of your own, to draw in beside the shipped ones: each a
+   * row as `sdk.chart.layout(key)` answers it, with a key of its own. A row
+   * is checked by the rules a shipped one passes, and a key the SDK ships is
+   * refused (`03-design/chart-geometry.md` §7f).
+   */
+  readonly layouts?: readonly LayoutRow[];
+  /**
+   * Nakshatra-seeded dasha systems of your own, asked for by
+   * `dasha_system.<KEY>` in a request's `dashas`. Each is checked by the rules
+   * a shipped row passes, and a key the catalogue has is refused.
+   */
+  readonly dashaSystems?: readonly DashaDefinition[];
   /** Use the SDK's analytic test provider; for examples and tests only. */
   readonly testProvider?: boolean;
   /** An ephemeris of your own, answered in this language. */
@@ -797,6 +1589,11 @@ export declare class FrameArea {
 
 /** `sdk.chart` — a chart founded at an instant and a place. */
 export declare class ChartArea {
+  /**
+   * A layout this context can draw in, shipped or registered, as its row: a
+   * fresh object to copy, rename and register.
+   */
+  layout(key: ChartLayout | LayoutKey | string): LayoutRow;
   /** Founds a chart at an instant and a place. */
   found(request: ChartRequest): Chart;
   /**

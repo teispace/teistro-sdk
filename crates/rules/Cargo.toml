@@ -1,0 +1,32 @@
+[package]
+name = "teistro-rules"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's rules kernel: a condition language over a chart, evaluated to presences with their participants"
+readme = "README.md"
+# Claimed on crates.io at the release, as every module is
+# (docs/06-cicd/03-release-process.md).
+publish = false
+
+[dependencies]
+teistro-aspect = { path = "../aspect" }
+teistro-core = { path = "../core" }
+teistro-points = { path = "../points" }
+teistro-state = { path = "../state" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+criterion = { version = "0.5", default-features = false }
+serde_json = "1"
+teistro-vargas = { path = "../vargas" }
+
+[lints]
+workspace = true
+
+[[bench]]
+name = "rules"
+harness = false

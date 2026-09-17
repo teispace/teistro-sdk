@@ -27,6 +27,7 @@ use crate::angle::Nas;
 /// How far a body stands from the nearest boundary of each division,
 /// degrees.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Boundaries {
     /// To the nearer edge of its sign.
     pub sign_deg: f64,

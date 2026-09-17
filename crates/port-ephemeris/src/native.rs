@@ -66,6 +66,7 @@ use crate::provider::EphemerisProvider;
 /// unknown word would break every function in it, including the ones the
 /// SDK does understand.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Role {
     /// Passed by value.
@@ -132,6 +133,7 @@ impl Role {
 
 /// One parameter of an engine's function.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct NativeParam {
     /// The name the engine gives it, which is the key a caller uses.
     pub name: String,
@@ -148,6 +150,7 @@ pub struct NativeParam {
 
 /// One operation an engine offers beyond the port's eight.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct NativeFunction {
     /// The name to call it by.
     pub name: String,
@@ -175,6 +178,7 @@ impl NativeFunction {
 /// engine's document, and an engine that adds to it must not stop
 /// working with an SDK that has not been told.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct NativeManifest {
     /// The engine's name.
     #[serde(default)]

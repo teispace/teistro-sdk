@@ -23,6 +23,76 @@ Rahu and Ketu have no Shadbala in the classical scheme; some software gives a
 proxy. The SDK reports "not applicable" rather than a proxy unless a profile
 selects one.
 
+## Sripati's reading, as B.V. Raman works it (read 2026-09-15)
+
+B.V. Raman's *Graha and Bhava Balas* (thirteenth edition, 1992; rank 2)
+follows Sripati's *Paddhati* throughout and works every strength on one
+Standard Horoscope — a female birth at 13° N, 77° 35′ E, 2h 6m 16s p.m. LMT
+on 16 October 1918, with its nirayana longitudes, bhava madhyas, sunrise and
+diurnal length given — so it is the one source whose reading of every
+component can be checked number by number. Where it departs from the BPHS
+translation read for the Shadbala (`03-design/shadbala-measured.md`):
+
+- **Sphuta drishti** (Art. 114, quoting Sripati, "Parasara also gives the same
+  rules"): with the aspect angle *k* = aspected − aspecting, the drishti is
+  (*k* − 30)/2 from 30° to 60°, (*k* − 60) + 15 to 90°, (120 − *k*)/2 + 30 to
+  120°, 150 − *k* to 150°, (*k* − 150) × 2 to 180°, (300 − *k*)/2 to 300°,
+  and nothing otherwise; the special aspects add 15 for Mars (90°–120°,
+  210°–240°), 30 for Jupiter (120°–150°, 240°–270°) and 45 for Saturn
+  (60°–90°, 270°–300°). The worked Drishti Pindas (Example 54) reproduce it.
+  This closes crux C45 at rank 2.
+- **Drik bala** is a quarter of the net pinda, benefics less malefics, with no
+  full term for Mercury and Jupiter (Art. 120).
+- **Benefics** are Jupiter, Venus, the waxing Moon (from the eighth day of the
+  bright half to the eighth of the dark) and a well-associated Mercury;
+  Mercury conjunct or combust the Sun counts as malefic (Arts. 53, 117–118).
+- **Saptavargaja**: 45 only for the moolatrikona *rasi* in the rasi chart; a
+  moolatrikona sign in any other varga is the own sign's 30; then 22.5, 15,
+  7.5, 3.75 and 1.875 by the compound relationship (Art. 30).
+- **Drekkana**: male grahas in the first decanate, the hermaphrodites
+  (Mercury, Saturn) in the middle one and the female grahas in the last
+  (Art. 36) — the translation read puts female second and neuter third.
+- **Dig** from the bhava madhyas of the kendras (Art. 44–45), which in the
+  worked example are the angles.
+- **Nathonnatha** from apparent midnight, the equation of time applied
+  (Art. 48–51).
+- **Abda, Masa and Vara lords** from the ahargana counted to and including
+  the day of birth, 714,404,130,045 for the Standard Horoscope (Arts. 58–62)
+  — one more than the SDK's elapsed count, which is the same weekdays.
+- **Kranti** from the Hindu table of 362′, 341′, 299′, 236′, 150′ and 52′ a
+  15° step of the sayana bhuja, a maximum of 24°, and the Ayana bala
+  60 × (24° ± kranti)/48°, the Sun's doubled (Arts. 73–75).
+- **Yuddha**: two of Mars to Saturn within a degree; the one of lesser
+  longitude wins; the difference of their Sthana, Dig and Kaala (to the
+  Hora) over the difference of their discs' diameters (Mars 9.4″, Mercury
+  6.6″, Jupiter 190.4″, Venus 16.6″, Saturn 158.0″) is added to the winner's
+  Kaala and taken from the loser's (Arts. 76–77).
+- **Cheshta** from Kedarnath Dutt's mean elements at 0h, 1 January 1900,
+  76° E (Tables IV–IX): the mean Sun 257.4568° at 0.98560265° a day; Mars
+  270.22° at 0.524019°; Jupiter 220.04° at 0.0830967° less 3.33° + 0.0067 t;
+  Saturn 236.74° at 0.033439° plus 5° + 0.001 t; Mercury's seeghrochcha 164°
+  at 4.09232° plus 6.67° − 0.00133 t; Venus's 328.51° at 1.602147° less
+  5° + 0.001 t (t the years since 1900). The mean longitude of Mercury and
+  Venus is the mean Sun's, and the mean Sun is the seeghrochcha of Mars,
+  Jupiter and Saturn; the kendra is the seeghrochcha less the mean of the
+  mean and true longitudes, folded past 180° and divided by 3 (Arts. 87–107).
+  The recording engine's inferior planets take their own seeghrochcha as
+  their mean as well, which this refuses.
+- **Required rupas**: the Sun 5, the Moon 6, Mars 5, Mercury 7, Jupiter 6.5,
+  Venus 5.5, Saturn 5 (Art. 122) — the engine's, where BPHS asks the Sun 6.5.
+- **Bhava bala** (Arts. 124–133) is three components only: the lord's
+  Shadbala; the Bhava Digbala in ten-virupa house steps from the house the
+  madhya's sign class makes weakest — Nara (Gemini, Virgo, Libra, Aquarius,
+  the first half of Sagittarius) the seventh, Jalachara (Cancer, Pisces, the
+  second half of Capricorn) the tenth, Chatushpada (Aries, Taurus, Leo, the
+  second half of Sagittarius, the first half of Capricorn) the fourth, and
+  Keeta (Scorpio alone) the first; and the Bhava Drishti bala, the sphuta
+  drishti on each bhava madhya, Jupiter's and Mercury's in full and a
+  quarter of every other graha's, Mercury always a benefic there. The
+  translation read puts Cancer with Scorpio, scales the Dig by a quarter
+  for a benefic or malefic drishti, and adds the occupants' rupa and the
+  rising classes' fifteen virupas (vv. 30–31), none of which Raman does.
+
 ## Ashtakavarga
 
 | feature | inputs | variants | baseline | tier |

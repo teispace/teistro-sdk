@@ -22,6 +22,7 @@ use crate::rashi;
 
 /// One body's gaze at another.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Drishti {
     /// The body looking.
     pub from: Graha,
@@ -64,6 +65,7 @@ impl Drishti {
 
 /// Two bodies that look at each other.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Mutual {
     /// One of them.
     pub first: Graha,
@@ -87,6 +89,8 @@ impl Mutual {
 
 /// Where a body stands, as this module needs it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AspectPlaced"))]
 struct Placed {
     graha: Graha,
     sign: Rashi,
@@ -95,6 +99,7 @@ struct Placed {
 
 /// Every relation of one founded chart.
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Aspects {
     /// Every drishti of any strength, ordered by the looking body and
     /// then by the body looked at, in the foundation's own order.

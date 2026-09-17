@@ -95,24 +95,29 @@ void main() {
             .having((e) => e.toString(), 'toString', contains('unsupported')),
       ),
     );
+    // No context exists to keep these refusals, so the record crosses
+    // whole from the call that failed (ffi-abi-and-api-description.md
+    // §6.1).
     expect(
       () => context(profile: 'vedic-classic'),
       throwsA(
-        isA<TeistroException>().having(
-          (e) => e.message,
-          'message',
-          contains('no shipped profile `vedic-classic`'),
-        ),
+        isA<TeistroException>()
+            .having((e) => e.status, 'status', Status.unsupported)
+            .having(
+              (e) => e.message,
+              'message',
+              contains('no shipped profile `vedic-classic`'),
+            )
+            .having((e) => e.field, 'field', 'profile')
+            .having((e) => e.hint, 'hint', contains('parashari-classical')),
       ),
     );
     expect(
       () => context(locale: 'xx-Latn'),
       throwsA(
-        isA<TeistroException>().having(
-          (e) => e.message,
-          'message',
-          contains('ne-Deva-NP'),
-        ),
+        isA<TeistroException>()
+            .having((e) => e.field, 'field', 'locale')
+            .having((e) => e.hint, 'hint', contains('ne-Deva-NP')),
       ),
     );
     expect(
@@ -573,5 +578,589 @@ void _engineTests() {
     expect(calendar.isLeap(Calendar.gregorian, 2024), isTrue);
     expect(ctx.time.deltaT(2451545.0).seconds, greaterThan(60));
     expect(ctx.keys.name(ctx.keys.id('graha.SUN')), 'graha.SUN');
+  });
+
+  test('a theme writes each drawing as SVG, and a wrong one is refused by its '
+      'field', () {
+    final ctx = context();
+    List<Drawing> found(ChartTheme? theme) =>
+        ctx.chart
+            .found(
+              instant: 2451545.0,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              drawings: const [
+                (ChartLayout.northIndian, Varga.d1),
+                (ChartLayout.westernWheel, Varga.d1),
+              ],
+              theme: theme,
+            )
+            .drawings;
+
+    expect(found(null).first.svg, isNull, reason: 'no theme, no SVG');
+    final [north, wheel] = found(ChartTheme.dark);
+    expect(north.svg, startsWith('<svg xmlns="http://www.w3.org/2000/svg"'));
+    expect(north.svg, contains('data-body="graha.SUN">सू'));
+    expect(north.svg, contains('fill="#121212"'));
+    expect(wheel.svg, contains('<line '));
+
+    final glyphs =
+        found(
+          ChartTheme.light.copyWith(
+            style: const ThemeStyle(size: 600),
+            content: const ThemeContent(
+              bodyForm: BodyForm.glyph,
+              cellLabel: CellLabel.house,
+              retrogradeMark: '',
+            ),
+          ),
+        ).first.svg;
+    expect(glyphs, contains('viewBox="0 0 600 600"'));
+    expect(glyphs, contains('data-body="graha.SUN">☉'));
+
+    expect(
+      () => found(
+        ChartTheme.light.copyWith(style: const ThemeStyle(ink: 'black')),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'theme_json.style.ink',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
+  test('a layout of your own is registered, drawn by its key, and refused by '
+      'its field', () {
+    final base = context();
+    final row = base.chart.layout(ChartLayout.southIndian);
+    expect(row.key, 'SOUTH_INDIAN');
+    expect(row.shape, isA<GridShape>());
+    expect(
+      row.toJson(),
+      LayoutRow.fromJson(row.toJson()).toJson(),
+      reason: 'a row reads back as it was written',
+    );
+    expect(
+      () => base.chart.layout(ChartLayout.registered('ACME_KERALA')),
+      throwsA(isA<TeistroException>().having((e) => e.field, 'field', 'key')),
+    );
+    base.dispose();
+
+    final kerala = row.copyWith(key: 'ACME_KERALA');
+    final own = ChartLayout.registered('ACME_KERALA');
+    final ctx = teistro.context(
+      profile: 'nepali-default',
+      testProvider: true,
+      layouts: [kerala],
+    );
+    expect(ctx.chart.layout(own).toJson(), kerala.toJson());
+    expect(ctx.keys.name(ctx.keys.id(own.fullKey)), own.fullKey);
+
+    final [south, drawn] =
+        ctx.chart
+            .found(
+              instant: 2451545.0,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              drawings: [(ChartLayout.southIndian, Varga.d1), (own, Varga.d1)],
+            )
+            .drawings;
+    expect(drawn.layout, own);
+    expect(south.layout, ChartLayout.southIndian);
+    expect(
+      [for (final cell in drawn.cells) cell.sign],
+      [for (final cell in south.cells) cell.sign],
+    );
+    expect(
+      () => ctx.chart.found(
+        instant: 2451545.0,
+        place: Observer(
+          latitudeDeg: Latitude(0),
+          longitudeDeg: Longitude(0),
+          altitudeM: Altitude(0),
+        ),
+        utcOffsetSeconds: 0,
+        drawings: [(ChartLayout.registered('ACME_ODIA'), Varga.d1)],
+      ),
+      throwsArgumentError,
+    );
+    ctx.dispose();
+
+    Matcher field(String name) =>
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', name));
+    expect(
+      () => teistro.context(testProvider: true, layouts: [kerala, row]),
+      field('options.layouts_json[1].key'),
+    );
+    expect(
+      () => teistro.context(
+        testProvider: true,
+        layouts: [kerala.copyWith(sources: const [])],
+      ),
+      field('options.layouts_json[0].sources'),
+    );
+  });
+
+  /// A chart's Ashtakavarga crosses whole: each graha's bindus holding the
+  /// classical totals, the sum, and each graha's reductions under the default
+  /// reading; null unless asked.
+  test('a chart carries its Ashtakavarga and each graha\'s reductions', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      ashtakavarga: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .ashtakavarga,
+      isNull,
+    );
+    final av = chart.ashtakavarga!;
+    expect(
+      (av.shodhana, av.ekadhipatya),
+      (Shodhana.eachGraha, Ekadhipatya.bphs),
+    );
+    expect(
+      [for (final g in av.grahas) g.bindus.reduce((a, b) => a + b)],
+      [48, 49, 39, 54, 56, 52, 39],
+    );
+    expect(av.sarva.reduce((a, b) => a + b), 337);
+    expect(av.reduced, [
+      for (var sign = 0; sign < 12; sign += 1)
+        av.grahas.fold<int>(0, (sum, g) => sum + g.reduced![sign]),
+    ]);
+    expect(
+      av.grahas.every((g) => g.yogaPinda == g.rashiPinda + g.grahaPinda),
+      isTrue,
+    );
+    ctx.dispose();
+  });
+
+  /// A chart's Bhava bala crosses whole: every bhava's components under the
+  /// default reading, the verses', whose totals are their parts'; null unless
+  /// asked.
+  test('a chart carries its Bhava bala, each bhava\'s strength', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      bhavaBala: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .bhavaBala,
+      isNull,
+    );
+    final bhavas = chart.bhavaBala!.bhavas;
+    expect([for (final b in bhavas) b.bhava], List.generate(12, (i) => i + 1));
+    for (final b in bhavas) {
+      expect(
+        b.adhipati + b.dig + b.drishti + b.special,
+        closeTo(b.virupas, 1e-9),
+      );
+      expect(b.dig, inInclusiveRange(0.0, 60.0));
+    }
+    ctx.dispose();
+  });
+
+  /// A chart's Shadbala crosses whole: every graha's six strengths under the
+  /// default reading, the chapter's, whose natural strengths are 28 sevenths
+  /// of a rupa and whose totals are their components'; null unless asked.
+  test('a chart carries its Shadbala, each graha\'s six strengths', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      shadbala: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .shadbala,
+      isNull,
+    );
+    final grahas = chart.shadbala!.grahas;
+    expect(grahas, hasLength(7));
+    expect(
+      grahas.fold<double>(0, (sum, g) => sum + g.naisargika),
+      closeTo(240, 1e-9),
+    );
+    for (final g in grahas) {
+      final six =
+          g.sthana.total +
+          g.dig +
+          g.kaala.total +
+          g.cheshta +
+          g.naisargika +
+          g.drik;
+      expect(six, closeTo(g.virupas, 1e-9), reason: '${g.graha}');
+      expect(g.strong, g.rupas >= g.requiredRupas);
+    }
+    ctx.dispose();
+  });
+
+  /// A chart's dasha phala crosses whole: the nine grahas' Subhankas within
+  /// each varga's share and complementary in total; null unless asked, and
+  /// the Shadbala's rays beside the phalas.
+  test('a chart carries its dasha phala, and the Shadbala its rays', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      dashaPhala: true,
+      shadbala: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .dashaPhala,
+      isNull,
+    );
+    final grahas = chart.dashaPhala!.grahas;
+    expect(grahas, hasLength(9));
+    expect(grahas.last.graha, Graha.ketu);
+    for (final g in grahas) {
+      expect(g.subhankas, hasLength(7));
+      for (var k = 0; k < 7; k++) {
+        expect(g.subhankas[k], inInclusiveRange(0, k == 0 ? 60 : 30));
+      }
+      expect(g.subhanka + g.asubhanka, closeTo(240, 1e-9));
+    }
+    for (final s in chart.shadbala!.grahas) {
+      expect(s.subhaRashmi, inInclusiveRange(1, 7));
+      expect(s.subhaRashmi + s.ashubhaRashmi, closeTo(8, 1e-9));
+    }
+    ctx.dispose();
+  });
+
+  /// Every graha's state carries its Sayanadi: the nine grahas a state and a
+  /// sub-state under each of the five ankas, the outer planets none.
+  test(
+    'a graha\'s state carries its Sayanadi and a sub-state for every anka',
+    () {
+      final ctx = context();
+      final place = Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      );
+      final states =
+          ctx.chart
+              .found(
+                instant: 2451545.0,
+                place: place,
+                utcOffsetSeconds: 20700,
+                state: true,
+              )
+              .states;
+      const nine = {
+        Graha.sun,
+        Graha.moon,
+        Graha.mars,
+        Graha.mercury,
+        Graha.jupiter,
+        Graha.venus,
+        Graha.saturn,
+        Graha.rahu,
+        Graha.ketu,
+      };
+      for (final state in states) {
+        final sayanadi = state.sayanadi;
+        if (!nine.contains(state.graha)) {
+          expect(sayanadi, isNull, reason: state.graha.fullKey);
+          continue;
+        }
+        expect(sayanadi, isNotNull, reason: state.graha.fullKey);
+        expect(sayanadi!.cheshtas, hasLength(5));
+        expect(sayanadi.cheshta(3), sayanadi.cheshtas[2]);
+        expect(() => sayanadi.cheshta(6), throwsRangeError);
+      }
+      ctx.dispose();
+    },
+  );
+
+  /// A chart's Vaiseshikamsa crosses whole: each scheme's count within its
+  /// vargas, a name for every count from two; null unless asked.
+  test('a chart carries its Vaiseshikamsa, each scheme\'s count and name', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      vaiseshikamsa: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .vaiseshikamsa,
+      isNull,
+    );
+    final grahas = chart.vaiseshikamsa!.grahas;
+    expect(grahas, hasLength(7));
+    for (final g in grahas) {
+      for (final (standing, vargas) in [
+        (g.shadvarga, 6),
+        (g.saptavarga, 7),
+        (g.dashavarga, 10),
+        (g.shodashavarga, 16),
+      ]) {
+        expect(standing.goodVargas, lessThanOrEqualTo(vargas));
+        expect(standing.name == null, standing.goodVargas < 2);
+      }
+    }
+    ctx.dispose();
+  });
+
+  /// A chart's Vimshopaka crosses whole: every graha's four scores out of 20
+  /// under the default reading, the text's, whose least in any varga is 5;
+  /// null unless asked.
+  test('a chart carries its Vimshopaka, each graha\'s four scores', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      vimshopaka: true,
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .vimshopaka,
+      isNull,
+    );
+    final vs = chart.vimshopaka!;
+    expect(vs.scoring, VimshopakaScoring.bphs);
+    expect(
+      [for (final g in vs.grahas) g.graha],
+      [
+        Graha.sun,
+        Graha.moon,
+        Graha.mars,
+        Graha.mercury,
+        Graha.jupiter,
+        Graha.venus,
+        Graha.saturn,
+      ],
+    );
+    for (final g in vs.grahas) {
+      for (final score in [
+        g.shadvarga,
+        g.saptavarga,
+        g.dashavarga,
+        g.shodashavarga,
+      ]) {
+        expect(score, inInclusiveRange(5.0, 20.0), reason: '${g.graha}');
+      }
+    }
+    ctx.dispose();
+  });
+
+  /// A chart's dashas cross whole: the balance, the periods to the
+  /// settings' depth with their paths, and the chain at an instant read off
+  /// them.
+  /// A consumer's own dasha system crosses: registered on the context, asked
+  /// for by its key, named by it in the answer, and every period its
+  /// catalogued twin's; a definition the checks refuse is named by its place
+  /// and field.
+  test('a consumer dasha system registers and reads as its twin', () {
+    final twin = DashaDefinition(
+      key: 'ACME_VIMSHOTTARI',
+      lords: [
+        const DashaLord(Graha.ketu, 7),
+        const DashaLord(Graha.venus, 20),
+        const DashaLord(Graha.sun, 6),
+        const DashaLord(Graha.moon, 10),
+        const DashaLord(Graha.mars, 7),
+        const DashaLord(Graha.rahu, 18),
+        const DashaLord(Graha.jupiter, 16),
+        const DashaLord(Graha.saturn, 19),
+        const DashaLord(Graha.mercury, 17),
+      ],
+      reference: Nakshatra.ashwini,
+    );
+    final ctx = teistro.context(testProvider: true, dashaSystems: [twin]);
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      dashas: [
+        DashaSystem.registered('ACME_VIMSHOTTARI'),
+        DashaSystem.vimshottari,
+      ],
+    );
+    final [consumer, shipped] = chart.dashas;
+    expect(consumer.system, DashaSystem.registered('ACME_VIMSHOTTARI'));
+    expect(shipped.system, DashaSystem.vimshottari);
+    expect(consumer.periods.length, shipped.periods.length);
+    for (var i = 0; i < shipped.periods.length; i++) {
+      final (a, b) = (consumer.periods[i], shipped.periods[i]);
+      expect((a.path, a.lord, a.from, a.to), (b.path, b.lord, b.from, b.to));
+    }
+    expect(
+      () => ctx.chart.found(
+        instant: 2451545.0,
+        place: place,
+        utcOffsetSeconds: 20700,
+        dashas: [DashaSystem.registered('ACME_OTHER')],
+      ),
+      throwsArgumentError,
+    );
+    ctx.dispose();
+    expect(
+      () => teistro.context(
+        testProvider: true,
+        dashaSystems: [
+          DashaDefinition(
+            key: twin.key,
+            lords: twin.lords,
+            reference: twin.reference,
+            span: 0,
+          ),
+        ],
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'options.dashas_json[0].span',
+        ),
+      ),
+    );
+  });
+
+  test('a chart carries its dashas, their periods and the chain', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      dashas: [DashaSystem.vimshottari, DashaSystem.chara],
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .dashas,
+      isEmpty,
+    );
+    final [dasha, chara] = chart.dashas;
+    expect(dasha.system, DashaSystem.vimshottari);
+    expect(dasha.balance!.method, Balance.spatial);
+    expect(
+      dasha.balance!.remaining,
+      allOf(greaterThan(0), lessThanOrEqualTo(1)),
+    );
+    expect(dasha.moonSpan, isNull);
+    expect(dasha.depth, 3);
+    expect(dasha.periods, hasLength(9 + 81 + 729));
+    final [first, second, ...] = dasha.periods;
+    expect((first.path, first.level, first.from), ('0', 1, 2451545.0));
+    expect(first.lord, dasha.firstLord);
+    expect(
+      (second.path, second.level, second.lord),
+      ('0/0', 2, dasha.firstLord),
+    );
+    expect(dasha.periods.last.path, '8/8/8');
+    expect(
+      first.sign,
+      isNull,
+      reason: "a nakshatra-seeded period is its lord's",
+    );
+
+    // A sign-based dasha: no seed, no balance, twelve signs each divided in
+    // twelve from its own sign.
+    expect(chara.system, DashaSystem.chara);
+    expect((chara.seed, chara.balance), (null, null));
+    expect(chara.periods, hasLength(12 + 144 + 1728));
+    final [maha, own, ...] = chara.periods;
+    expect(
+      (maha.path, own.path, own.sign, maha.from),
+      ('0', '0/0', maha.sign, 2451545.0),
+    );
+    expect(maha.sign, isNotNull);
+    expect(chara.firstLord, maha.lord);
+    expect(
+      {for (final p in chara.periods.where((p) => p.level == 1)) p.sign},
+      hasLength(12),
+      reason: 'every sign once',
+    );
+    expect(chara.at(2451545.0 + 5000), hasLength(3));
+
+    const instant = 2451545.0 + 5000;
+    final chain = dasha.at(instant);
+    expect([for (final p in chain) p.level], [1, 2, 3]);
+    expect(chain.every((p) => p.from <= instant && instant < p.to), isTrue);
+    expect(dasha.at(2451544), isEmpty, reason: 'before birth');
+
+    expect(
+      () => ctx.chart.found(
+        instant: 2451545.0,
+        place: place,
+        utcOffsetSeconds: 0,
+        dashas: [DashaSystem.vimshottari, DashaSystem.sudarshanaChakra],
+      ),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'dashas[1]'),
+      ),
+    );
+    ctx.dispose();
   });
 }

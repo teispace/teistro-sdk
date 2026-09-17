@@ -415,6 +415,10 @@ pub enum StructRole {
     /// Caller-allocated arrays the library or a provider writes into,
     /// with a capacity beside them.
     Columns,
+    /// A failure record: lent by a context, or written by a call that
+    /// makes a handle with strings the record owns until the library's
+    /// error free takes them back.
+    Error,
 }
 
 /// A `#[repr(C)]` struct.
@@ -543,6 +547,8 @@ pub enum Role {
     StringFree,
     /// A borrowed string view written by the library.
     StrOut,
+    /// A failure record whose owned strings the library releases.
+    ErrorFree,
     /// Bytes read by the library, with the following `Length` parameter.
     BytesIn,
     /// An array of scalars read by the library, with the following

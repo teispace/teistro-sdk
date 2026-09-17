@@ -1,0 +1,2176 @@
+{
+  "rules": [
+    {
+      "key": "NABHASA_RAJJU",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "7",
+        "rank": 1,
+        "note": "All the seven in movable signs. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "planet-in-sign",
+                "planet": "SELF",
+                "signs": [
+                  "ARIES",
+                  "CANCER",
+                  "LIBRA",
+                  "CAPRICORN"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fond of wandering, charming, earning in foreign countries, cruel and mischievous"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_MUSALA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "7",
+        "rank": 1,
+        "note": "All the seven in fixed signs. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "planet-in-sign",
+                "planet": "SELF",
+                "signs": [
+                  "TAURUS",
+                  "LEO",
+                  "SCORPIO",
+                  "AQUARIUS"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "honoured, wise and wealthy, dear to the king, famous, of many sons, and firm of disposition"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_NALA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "7",
+        "rank": 1,
+        "note": "All the seven in dual signs. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "for-any",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "not",
+              "condition": {
+                "type": "planet-in-sign",
+                "planet": "SELF",
+                "signs": [
+                  "GEMINI",
+                  "VIRGO",
+                  "SAGITTARIUS",
+                  "PISCES"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "uneven of physique, bent on accumulating money, very skilful, helpful to his relatives, and charming"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_MAALA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "8",
+        "rank": 1,
+        "note": "Three of the four angles each occupied by a benefic. Saravali ch. 21 v. 18 asks instead that every angle be held by benefics alone. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    1
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    4
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    7
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    1
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    4
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    10
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    1
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    7
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    10
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    4
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    7
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    10
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "ever happy, furnished with conveyances, robes, food and pleasures, splendid, and attended by many women"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_SARPA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "8",
+        "rank": 1,
+        "note": "Three of the four angles each occupied by a malefic. Saravali ch. 21 v. 18 asks instead that every angle be held by malefics. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    1
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    4
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    7
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    1
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    4
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    10
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    1
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    7
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    10
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    4
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    7
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-malefic",
+                  "houses": [
+                    10
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "crooked, cruel, poor, miserable, and dependent on others for his food and drink"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_GADA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "9-11",
+        "rank": 1,
+        "note": "All the seven in two successive angles. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                1,
+                4
+              ]
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                4,
+                7
+              ]
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                7,
+                10
+              ]
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                10,
+                1
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "always striving to earn wealth, a performer of sacrificial rites, skilful in the shastras and in song, and furnished with wealth, gold and precious stones"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_SAKATA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "9-11",
+        "rank": 1,
+        "note": "All the seven in the ascendant and the seventh. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "afflicted by disease, diseased or ugly of nail, foolish, living by pulling carts, poor, and without friends or relatives"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_VIHAGA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "9-11",
+        "rank": 1,
+        "note": "All the seven in the fourth and the tenth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            4,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fond of roaming, a messenger, living by dealings in sex, shameless, and fond of quarrels"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_SRINGATAKA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "9-11",
+        "rank": 1,
+        "note": "All the seven in the ascendant, the fifth and the ninth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            5,
+            9
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fond of quarrels and battles, happy, dear to the king, well wived, rich, and a hater of women"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_HALA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "9-11",
+        "rank": 1,
+        "note": "All the seven in one trine of houses that avoids the ascendant: the second, sixth and tenth, the third, seventh and eleventh, or the fourth, eighth and twelfth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                2,
+                6,
+                10
+              ]
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                3,
+                7,
+                11
+              ]
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                4,
+                8,
+                12
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a great eater, very poor, a farmer, miserable, agitated, given up by his friends and relatives, and a servant"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_VAJRA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "9-11",
+        "rank": 1,
+        "note": "Benefics in the ascendant and the seventh while malefics hold the fourth and the tenth, as Saravali ch. 21 v. 14 states it. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            10
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "happy at the beginning and the end of his life, valorous, charming, devoid of desires and of fortune, and inimical"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_YAVA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "9-11",
+        "rank": 1,
+        "note": "The converse of Vajra: malefics in the ascendant and the seventh while benefics hold the fourth and the tenth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            10
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "observant of fasts and religious rules, a doer of auspicious acts, gaining happiness, wealth and sons in his middle life, charitable and firm"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_KAMALA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "12",
+        "rank": 1,
+        "note": "All the seven in the four angles, each of them occupied. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "rich and virtuous, long-lived, very famous, pure, a doer of hundreds of auspicious acts, and a king"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_VAPI",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "12",
+        "rank": 1,
+        "note": "All the seven in the cadent houses, or all in the succedent. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                3,
+                6,
+                9,
+                12
+              ]
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                2,
+                5,
+                8,
+                11
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "able to accumulate wealth, of lasting wealth, happiness and sons, free of afflictions of the eye, and a king"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_YUPA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "13",
+        "rank": 1,
+        "note": "All the seven in the four houses from the first. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "possessed of spiritual knowledge, interested in sacrificial rites, well wived, strong, observant of fasts, and distinguished"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_SARA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "13",
+        "rank": 1,
+        "note": "All the seven in the four houses from the fourth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a maker of arrows, the head of a prison, earning through animals, an eater of meat, and given to torture and mean handiwork"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_SAKTHI",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "13",
+        "rank": 1,
+        "note": "All the seven in the four houses from the seventh. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            7,
+            8,
+            9,
+            10
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "bereft of wealth, unsuccessful, miserable, mean, lazy, long-lived, interested and skilful in war, firm and auspicious"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_DANDA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "13",
+        "rank": 1,
+        "note": "All the seven in the four houses from the tenth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            10,
+            11,
+            12,
+            1
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "losing his sons and his wife, indigent, unkind, away from his own people, miserable, and a servant of mean men"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_NAUKA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "14",
+        "rank": 1,
+        "note": "All the seven confined to the seven houses from the first. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "requireAllHousesFilled": false
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "living by water, wealthy, famous, wicked, wretched, dirty and miserly"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_KOOTA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "14",
+        "rank": 1,
+        "note": "All the seven confined to the seven houses from the fourth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "requireAllHousesFilled": false
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a liar, the head of a jail, poor, crafty, cruel, and a dweller in hills and fortresses"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_CHATRA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "14",
+        "rank": 1,
+        "note": "All the seven confined to the seven houses from the seventh. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            1
+          ],
+          "requireAllHousesFilled": false
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "helpful to his own people, kind, dear to many kings, very intelligent, happy at the beginning and the end of his life, and long-lived"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_CHAPA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "14",
+        "rank": 1,
+        "note": "All the seven confined to the seven houses from the tenth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            10,
+            11,
+            12,
+            1,
+            2,
+            3,
+            4
+          ],
+          "requireAllHousesFilled": false
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a liar, a keeper of secrets, a thief, fond of wandering in forests, unlucky, and happy in the middle of his life"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_ARDHA_CHANDRA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "40",
+        "rank": 1,
+        "note": "All the seven confined to seven continuous houses beginning from a house that is not an angle, which is how Saravali ch. 21 v. 13 defines it; the Parashara chapter names the yoga and gives its effect without stating the figure. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8
+              ],
+              "requireAllHousesFilled": false
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "requireAllHousesFilled": false
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+              ],
+              "requireAllHousesFilled": false
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12
+              ],
+              "requireAllHousesFilled": false
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                8,
+                9,
+                10,
+                11,
+                12,
+                1,
+                2
+              ],
+              "requireAllHousesFilled": false
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                9,
+                10,
+                11,
+                12,
+                1,
+                2,
+                3
+              ],
+              "requireAllHousesFilled": false
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                11,
+                12,
+                1,
+                2,
+                3,
+                4,
+                5
+              ],
+              "requireAllHousesFilled": false
+            },
+            {
+              "type": "all-classical-grahas-in-houses",
+              "houses": [
+                12,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "requireAllHousesFilled": false
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a leader of armies, splendid of body, dear to the king, strong, and furnished with gems, gold and ornaments"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_CHAKRA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "15",
+        "rank": 1,
+        "note": "All the seven confined to the alternate houses from the ascendant. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            1,
+            3,
+            5,
+            7,
+            9,
+            11
+          ],
+          "requireAllHousesFilled": false
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor, at whose feet kings bow their diademed heads"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_SAMUDRA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "15",
+        "rank": 1,
+        "note": "All the seven in alternate signs from the second. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "all-classical-grahas-in-houses",
+          "houses": [
+            2,
+            4,
+            6,
+            8,
+            10,
+            12
+          ],
+          "requireAllHousesFilled": false
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "possessed of many precious stones and abundant wealth, pleasured, dear to the people, firm in his wealth, and well disposed"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_GOLA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "16-17",
+        "rank": 1,
+        "note": "The seven standing in 1 sign. Verse 17 adds that none of the seven Sankhya yogas holds where another Nabhasa yoga is derivable, which is written here as a cancellation naming each of the twenty-five. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MAALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKTHI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KOOTA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "strong, devoid of wealth, learning and intelligence, dirty, sorrowful and miserable"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_YUGA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "16-17",
+        "rank": 1,
+        "note": "The seven standing in 2 signs. Verse 17 adds that none of the seven Sankhya yogas holds where another Nabhasa yoga is derivable, which is written here as a cancellation naming each of the twenty-five. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 2
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MAALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKTHI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KOOTA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "heretical, devoid of wealth, discarded by others, and without sons, mother or virtue"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_SOOLA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "16-17",
+        "rank": 1,
+        "note": "The seven standing in 3 signs. Verse 17 adds that none of the seven Sankhya yogas holds where another Nabhasa yoga is derivable, which is written here as a cancellation naming each of the twenty-five. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 3
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MAALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKTHI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KOOTA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "sharp, indolent, bereft of wealth, torturous, prohibited, valiant, and famous through war"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_KEDARA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "16-17",
+        "rank": 1,
+        "note": "The seven standing in 4 signs. Verse 17 adds that none of the seven Sankhya yogas holds where another Nabhasa yoga is derivable, which is written here as a cancellation naming each of the twenty-five. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 4
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MAALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKTHI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KOOTA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "useful to many, an agriculturist, truthful, happy, fickle and wealthy"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_PASA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "16-17",
+        "rank": 1,
+        "note": "The seven standing in 5 signs. Verse 17 adds that none of the seven Sankhya yogas holds where another Nabhasa yoga is derivable, which is written here as a cancellation naming each of the twenty-five. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 5
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MAALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKTHI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KOOTA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "liable to imprisonment, skilful in work, deceiving of disposition, talkative, bereft of good qualities, and attended by many servants"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_DAMA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "16-17",
+        "rank": 1,
+        "note": "The seven standing in 6 signs. Verse 17 adds that none of the seven Sankhya yogas holds where another Nabhasa yoga is derivable, which is written here as a cancellation naming each of the twenty-five. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 6
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MAALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKTHI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KOOTA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "helpful to others, of righteously earned wealth, very affluent, famous, of many sons and gems, courageous and red-lettered"
+        }
+      ],
+      "timing": "throughout"
+    },
+    {
+      "key": "NABHASA_VEENA",
+      "category": "nabhasa",
+      "source": {
+        "text": "BPHS",
+        "chapter": "35",
+        "verse": "16-17",
+        "rank": 1,
+        "note": "The seven standing in 7 signs. Verse 17 adds that none of the seven Sankhya yogas holds where another Nabhasa yoga is derivable, which is written here as a cancellation naming each of the twenty-five. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation; Kalyana Varma gives the same yoga at Saravali ch. 21."
+      },
+      "conditions": [
+        {
+          "type": "occupied-sign-count",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "count": 7
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "NABHASA_RAJJU"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MUSALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_MAALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_GADA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKATA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VIHAGA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SRINGATAKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_HALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAJRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YAVA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KAMALA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_VAPI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_YUPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SARA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAKTHI"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_DANDA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_NAUKA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_KOOTA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHATRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAPA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_ARDHA_CHANDRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_CHAKRA"
+        },
+        {
+          "type": "rule",
+          "key": "NABHASA_SAMUDRA"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "fond of song, dance and instruments, skilful, happy, wealthy, and a leader of men"
+        }
+      ],
+      "timing": "throughout"
+    }
+  ]
+}

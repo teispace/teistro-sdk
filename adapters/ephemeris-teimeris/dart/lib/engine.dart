@@ -195,6 +195,18 @@ extension TeimerisEngine on Engine {
     return (answered['return']! as num).toInt();
   }
 
+  /// `tm_houses_calc`.
+  ({List<double> cusps, List<double> cuspSpeeds, TmAngles outAngles}) tmHousesCalc({TmHousesRequest? req}) {
+    final answered = (call('tm_houses_calc', <String, Object?>{'req': req?.toJson()})) as Map<String, Object?>;
+    return (cusps: (answered['cusps']! as List<Object?>).map((one) => (one! as num).toDouble()).toList(), cuspSpeeds: (answered['cusp_speeds']! as List<Object?>).map((one) => (one! as num).toDouble()).toList(), outAngles: TmAngles.fromJson(answered['out_angles']! as Map<String, Object?>));
+  }
+
+  /// `tm_houses_calc_many`.
+  ({List<double> cusps, List<TmAngles> outAngles}) tmHousesCalcMany({required List<TmHousesRequest> reqs}) {
+    final answered = (call('tm_houses_calc_many', <String, Object?>{'reqs': reqs.map((one) => one.toJson()).toList()})) as Map<String, Object?>;
+    return (cusps: (answered['cusps']! as List<Object?>).map((one) => (one! as num).toDouble()).toList(), outAngles: (answered['out_angles']! as List<Object?>).map((one) => TmAngles.fromJson(one! as Map<String, Object?>)).toList());
+  }
+
   /// `tm_house_position`.
   double tmHousePosition({required double armc, required double geoLatDeg, required double obliquityDeg, required int sys, required double lonDeg, required double latDeg}) {
     final answered = (call('tm_house_position', <String, Object?>{'armc': armc, 'geo_lat_deg': geoLatDeg, 'obliquity_deg': obliquityDeg, 'sys': sys, 'lon_deg': lonDeg, 'lat_deg': latDeg})) as Map<String, Object?>;
@@ -205,6 +217,12 @@ extension TeimerisEngine on Engine {
   List<int> tmChartDefaultBodies() {
     final answered = (call('tm_chart_default_bodies', const <String, Object?>{})) as Map<String, Object?>;
     return (answered['out_bodies']! as List<Object?>).map((one) => (one! as num).toInt()).toList();
+  }
+
+  /// `tm_chart_calc`.
+  ({List<TmPosition> outPositions, List<double> outCusps, List<double> outCuspSpeeds, TmAngles outAngles}) tmChartCalc({TmChartRequest? req, required List<int> bodies}) {
+    final answered = (call('tm_chart_calc', <String, Object?>{'req': req?.toJson(), 'bodies': bodies})) as Map<String, Object?>;
+    return (outPositions: (answered['out_positions']! as List<Object?>).map((one) => TmPosition.fromJson(one! as Map<String, Object?>)).toList(), outCusps: (answered['out_cusps']! as List<Object?>).map((one) => (one! as num).toDouble()).toList(), outCuspSpeeds: (answered['out_cusp_speeds']! as List<Object?>).map((one) => (one! as num).toDouble()).toList(), outAngles: TmAngles.fromJson(answered['out_angles']! as Map<String, Object?>));
   }
 
   /// `tm_set_jpl_file`.
@@ -701,6 +719,12 @@ extension TeimerisEngine on Engine {
     return TmCalendarRequest.fromJson(answered['req']! as Map<String, Object?>);
   }
 
+  /// `tm_calendar_grid`.
+  ({List<TmCalendarDay> outDays, List<TmPosition> outPositions}) tmCalendarGrid({TmCalendarRequest? req, required List<int> bodies}) {
+    final answered = (call('tm_calendar_grid', <String, Object?>{'req': req?.toJson(), 'bodies': bodies})) as Map<String, Object?>;
+    return (outDays: (answered['out_days']! as List<Object?>).map((one) => TmCalendarDay.fromJson(one! as Map<String, Object?>)).toList(), outPositions: (answered['out_positions']! as List<Object?>).map((one) => TmPosition.fromJson(one! as Map<String, Object?>)).toList());
+  }
+
   /// `tm_scan_request_init_sized`.
   TmScanRequest tmScanRequestInitSized() {
     final answered = (call('tm_scan_request_init_sized', const <String, Object?>{})) as Map<String, Object?>;
@@ -1019,6 +1043,173 @@ final class TmPositionRequest {
         'center': center,
         'ayanamsha': ayanamsha,
         'ayanamsha_set': ayanamshaSet,
+      };
+}
+
+/// `tm_angles`, as the engine declares it. Every field is required.
+final class TmAngles {
+  /// Every field, named.
+  const TmAngles({required this.ascendant, required this.midheaven, required this.armc, required this.vertex, required this.equatorialAscendant, required this.coAscendantKoch, required this.coAscendantMunkasey, required this.polarAscendant, required this.ascendantSpeed, required this.midheavenSpeed, required this.armcSpeed, required this.vertexSpeed, required this.systemUsed});
+
+  /// Read from the object the engine answers with.
+  factory TmAngles.fromJson(Map<String, Object?> json) => TmAngles(
+        ascendant: (json['ascendant']! as num).toDouble(),
+        midheaven: (json['midheaven']! as num).toDouble(),
+        armc: (json['armc']! as num).toDouble(),
+        vertex: (json['vertex']! as num).toDouble(),
+        equatorialAscendant: (json['equatorial_ascendant']! as num).toDouble(),
+        coAscendantKoch: (json['co_ascendant_koch']! as num).toDouble(),
+        coAscendantMunkasey: (json['co_ascendant_munkasey']! as num).toDouble(),
+        polarAscendant: (json['polar_ascendant']! as num).toDouble(),
+        ascendantSpeed: (json['ascendant_speed']! as num).toDouble(),
+        midheavenSpeed: (json['midheaven_speed']! as num).toDouble(),
+        armcSpeed: (json['armc_speed']! as num).toDouble(),
+        vertexSpeed: (json['vertex_speed']! as num).toDouble(),
+        systemUsed: (json['system_used']! as num).toInt(),
+      );
+
+  /// `ascendant`.
+  final double ascendant;
+
+  /// `midheaven`.
+  final double midheaven;
+
+  /// `armc`.
+  final double armc;
+
+  /// `vertex`.
+  final double vertex;
+
+  /// `equatorial_ascendant`.
+  final double equatorialAscendant;
+
+  /// `co_ascendant_koch`.
+  final double coAscendantKoch;
+
+  /// `co_ascendant_munkasey`.
+  final double coAscendantMunkasey;
+
+  /// `polar_ascendant`.
+  final double polarAscendant;
+
+  /// `ascendant_speed`.
+  final double ascendantSpeed;
+
+  /// `midheaven_speed`.
+  final double midheavenSpeed;
+
+  /// `armc_speed`.
+  final double armcSpeed;
+
+  /// `vertex_speed`.
+  final double vertexSpeed;
+
+  /// `system_used`.
+  final int systemUsed;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'ascendant': ascendant,
+        'midheaven': midheaven,
+        'armc': armc,
+        'vertex': vertex,
+        'equatorial_ascendant': equatorialAscendant,
+        'co_ascendant_koch': coAscendantKoch,
+        'co_ascendant_munkasey': coAscendantMunkasey,
+        'polar_ascendant': polarAscendant,
+        'ascendant_speed': ascendantSpeed,
+        'midheaven_speed': midheavenSpeed,
+        'armc_speed': armcSpeed,
+        'vertex_speed': vertexSpeed,
+        'system_used': systemUsed,
+      };
+}
+
+/// `tm_houses_request`, as the engine declares it. Every field is required.
+final class TmHousesRequest {
+  /// Every field, named.
+  const TmHousesRequest({required this.jdUt1, required this.geoLatDeg, required this.geoLonDeg, required this.system, required this.flags});
+
+  /// Read from the object the engine answers with.
+  factory TmHousesRequest.fromJson(Map<String, Object?> json) => TmHousesRequest(
+        jdUt1: (json['jd_ut1']! as num).toDouble(),
+        geoLatDeg: (json['geo_lat_deg']! as num).toDouble(),
+        geoLonDeg: (json['geo_lon_deg']! as num).toDouble(),
+        system: (json['system']! as num).toInt(),
+        flags: (json['flags']! as num).toInt(),
+      );
+
+  /// `jd_ut1`.
+  final double jdUt1;
+
+  /// `geo_lat_deg`.
+  final double geoLatDeg;
+
+  /// `geo_lon_deg`.
+  final double geoLonDeg;
+
+  /// `system`.
+  final int system;
+
+  /// `flags`.
+  final int flags;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd_ut1': jdUt1,
+        'geo_lat_deg': geoLatDeg,
+        'geo_lon_deg': geoLonDeg,
+        'system': system,
+        'flags': flags,
+      };
+}
+
+/// `tm_chart_request`, as the engine declares it. Every field is required.
+final class TmChartRequest {
+  /// Every field, named.
+  const TmChartRequest({required this.jd, required this.scale, required this.parts, required this.place, required this.flags, required this.system, required this.houseFlags});
+
+  /// Read from the object the engine answers with.
+  factory TmChartRequest.fromJson(Map<String, Object?> json) => TmChartRequest(
+        jd: (json['jd']! as num).toDouble(),
+        scale: (json['scale']! as num).toInt(),
+        parts: (json['parts']! as num).toInt(),
+        place: json['place'] == null ? null : TmObserver.fromJson(json['place']! as Map<String, Object?>),
+        flags: (json['flags']! as num).toInt(),
+        system: (json['system']! as num).toInt(),
+        houseFlags: (json['house_flags']! as num).toInt(),
+      );
+
+  /// `jd`.
+  final double jd;
+
+  /// `scale`.
+  final int scale;
+
+  /// `parts`.
+  final int parts;
+
+  /// `place`.
+  final TmObserver? place;
+
+  /// `flags`.
+  final int flags;
+
+  /// `system`.
+  final int system;
+
+  /// `house_flags`.
+  final int houseFlags;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd': jd,
+        'scale': scale,
+        'parts': parts,
+        'place': place?.toJson(),
+        'flags': flags,
+        'system': system,
+        'house_flags': houseFlags,
       };
 }
 
@@ -3137,6 +3328,35 @@ final class TmCalendarRequest {
         'options': options,
         'atmosphere': atmosphere?.toJson(),
         'horizon_height_deg': horizonHeightDeg,
+      };
+}
+
+/// `tm_calendar_day`, as the engine declares it. Every field is required.
+final class TmCalendarDay {
+  /// Every field, named.
+  const TmCalendarDay({required this.jd, required this.found, required this.status});
+
+  /// Read from the object the engine answers with.
+  factory TmCalendarDay.fromJson(Map<String, Object?> json) => TmCalendarDay(
+        jd: (json['jd']! as num).toDouble(),
+        found: (json['found']! as num).toInt(),
+        status: (json['status']! as num).toInt(),
+      );
+
+  /// `jd`.
+  final double jd;
+
+  /// `found`.
+  final int found;
+
+  /// `status`.
+  final int status;
+
+  /// The object the engine reads, keyed by its own field names.
+  Map<String, Object?> toJson() => <String, Object?>{
+        'jd': jd,
+        'found': found,
+        'status': status,
       };
 }
 

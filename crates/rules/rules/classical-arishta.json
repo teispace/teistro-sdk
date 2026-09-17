@@ -1,0 +1,2086 @@
+{
+  "rules": [
+    {
+      "key": "ARISHTA_MOON_IN_DUSTHANA_MALEFIC_ASPECT",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "3-6",
+        "rank": 1,
+        "note": "The Moon in the sixth, eighth or twelfth from the lagna and aspected by a malefic: the child dies soon. The verse adds that a benefic's aspect in the same figure leaves it living to about eight, which is a grading the SDK does not model."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                6,
+                8,
+                12
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": "MOON"
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_RETROGRADE_BENEFIC_IN_DUSTHANA",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "3-6",
+        "rank": 1,
+        "note": "A benefic retrograde in the sixth, eighth or twelfth and aspected by a malefic, the lagna unoccupied by a benefic: death within a month of birth."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "MOON"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-retrograde",
+                "planet": "SELF"
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  6,
+                  8,
+                  12
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-malefic",
+                "target": "SELF"
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_SATURN_MARS_SUN_IN_FIFTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "3-6",
+        "rank": 1,
+        "note": "Saturn, Mars and the Sun together in the fifth: the early death of the mother and of a brother."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            5
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            5
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MARS_IN_LAGNA_OR_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "3-6",
+        "rank": 1,
+        "note": "Mars in the lagna or the eighth, conjunct Saturn or the Sun or aspected by a malefic, and with no benefic's aspect: a source of immediate death."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            1,
+            8
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MARS",
+                "SATURN"
+              ]
+            },
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MARS",
+                "SUN"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": "MARS"
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MARS"
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_NODES_WITH_LUMINARIES_LAGNA_AFFLICTED",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "7-11",
+        "rank": 1,
+        "note": "Saturn and Mars both aspecting the lagna while the Sun and the Moon join Rahu elsewhere: the child lives only a fortnight."
+      },
+      "conditions": [
+        {
+          "type": "planet-aspects-house",
+          "from": "SATURN",
+          "houseRuled": 1
+        },
+        {
+          "type": "planet-aspects-house",
+          "from": "MARS",
+          "houseRuled": 1
+        },
+        {
+          "type": "planet-conjunct",
+          "planets": [
+            "SUN",
+            "MOON",
+            "RAHU"
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_SATURN_TENTH_MOON_SIXTH_MARS_SEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "7-11",
+        "rank": 1,
+        "note": "Saturn in the tenth, the Moon in the sixth and Mars in the seventh: immediate death of the child along with its mother."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_SATURN_LAGNA_MOON_EIGHTH_JUPITER_THIRD",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "7-11",
+        "rank": 1,
+        "note": "Saturn in the lagna, the Moon in the eighth and Jupiter in the third: immediate death."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            3
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_SUN_NINTH_MARS_SEVENTH_JUPITER_VENUS_ELEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "7-11",
+        "rank": 1,
+        "note": "The Sun in the ninth, Mars in the seventh, and Jupiter and Venus in the eleventh: a month of life."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "VENUS",
+          "houses": [
+            11
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_LUMINARY_VENUS_OR_RAHU_IN_TWELFTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "7-11",
+        "rank": 1,
+        "note": "Any graha in the twelfth is a source of short life, and the Sun, the Moon, Venus and Rahu especially; the aspect of one of those four on the twelfth counteracts it, which this rule requires to be absent."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "SUN",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "MOON",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                12
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "RAHU",
+              "houses": [
+                12
+              ]
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "planet-aspects-house",
+                "from": "SUN",
+                "houseRuled": 12
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "MOON",
+                "houseRuled": 12
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "VENUS",
+                "houseRuled": 12
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "RAHU",
+                "houseRuled": 12
+              }
+            ]
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_SATURN_TWELFTH_SUN_NINTH_MARS_EIGHTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "21",
+        "rank": 1,
+        "note": "Saturn in the twelfth, the Sun in the ninth and Mars in the eighth, with no benefic's aspect on them: instant death."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            8
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": "SATURN"
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": "SUN"
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "any-benefic",
+                "target": "MARS"
+              }
+            ]
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_WANING_MOON_IN_LAGNA_MALEFIC_SEVENTH",
+      "category": "arishta",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "22",
+        "rank": 1,
+        "note": "A malefic in the seventh while the waning Moon stands in the lagna: early death. The verse also reads the malefic in the rising decanate, which needs the drekkana of the lagna and is not built here."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MOON_ASPECTED_BY_THREE_MALEFICS",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "24",
+        "rank": 1,
+        "note": "The mother incurs evils when three malefics aspect the Moon at birth; benefics aspecting her bring the mother good instead, which this rule requires to be absent."
+      },
+      "conditions": [
+        {
+          "type": "count-aspecting",
+          "planets": "any-malefic",
+          "target": "MOON",
+          "atLeast": 3
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": "MOON"
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_FIVE_IN_THE_SECOND",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "25",
+        "rank": 1,
+        "note": "Rahu, Mercury, Venus, the Sun and Saturn occupying the second: the birth followed the father's death, and the mother too faces an early end."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "RAHU",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "MERCURY",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "VENUS",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "SUN",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "SATURN",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_SUN_EXALTED_OR_DEBILITATED_IN_SEVENTH",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "27",
+        "rank": 1,
+        "note": "The Sun exalted or debilitated in the seventh: the child is not raised on its mother's milk."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "SUN",
+          "dignities": [
+            "EXALTED",
+            "DEBILITATED"
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MALEFIC_IN_FOURTH_FROM_MOON",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "28",
+        "rank": 1,
+        "note": "A malefic in the fourth from the Moon and in a sign of its enemy, with no benefic in a kendra: the child loses its mother prematurely."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "SATURN",
+            "RAHU",
+            "KETU"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "MOON",
+                "houses": [
+                  4
+                ]
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "ENEMY",
+                  "GREAT_ENEMY"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              1,
+              4,
+              7,
+              10
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MALEFICS_IN_SIXTH_AND_TWELFTH",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "29",
+        "rank": 1,
+        "note": "Malefics in the sixth and the twelfth bring evils to the mother; the same verse gives the fourth and tenth for the father."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MERCURY_SECOND_MALEFICS_AROUND",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "30",
+        "rank": 1,
+        "note": "Mercury in the second while malefics hold the lagna, the seventh and the twelfth: the yoga destroys the whole family."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_JUPITER_SATURN_RAHU_IN_ORDER",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "31",
+        "rank": 1,
+        "note": "Jupiter in the lagna, Saturn in the second and Rahu in the third: the mother dies early."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            3
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MALEFIC_IN_TRIKONA_FROM_WANING_MOON",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "32",
+        "rank": 1,
+        "note": "A malefic in a trine from the waning Moon and joined by no benefic: the mother gives the child up."
+      },
+      "conditions": [
+        {
+          "type": "panchanga-paksha",
+          "paksha": "krishna"
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MARS",
+            "SATURN",
+            "RAHU",
+            "KETU"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house-from",
+                "planet": "SELF",
+                "reference": "MOON",
+                "houses": [
+                  1,
+                  5,
+                  9
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    1
+                  ],
+                  "atLeast": 1,
+                  "from": "SELF"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MARS_SATURN_IN_KENDRA_FROM_MOON",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "33",
+        "rank": 1,
+        "note": "Mars and Saturn together in a kendra from the Moon and in one navamsha: two mothers, and a short life even so."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": "MARS",
+          "reference": "MOON",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house-from",
+          "planet": "SATURN",
+          "reference": "MOON",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ]
+        },
+        {
+          "type": "planet-conjunct",
+          "planets": [
+            "MARS",
+            "SATURN"
+          ]
+        },
+        {
+          "type": "same-sign",
+          "of": {
+            "navamsha": "MARS"
+          },
+          "as": {
+            "navamsha": "SATURN"
+          }
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_JUPITER_LAGNA_FOUR_IN_SECOND",
+      "category": "arishta-father",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "35",
+        "rank": 1,
+        "note": "Jupiter in the lagna while Saturn, the Sun, Mars and Mercury stand together in the second: the father is lost at the native's marriage."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MERCURY",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_SUN_AFFLICTED_WITH_MALEFIC_IN_SEVENTH_FROM_HIM",
+      "category": "arishta-father",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "36",
+        "rank": 1,
+        "note": "The Sun with a malefic or hemmed between malefics while another malefic stands in the seventh from him: early loss of the father."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SUN",
+                "SATURN"
+              ]
+            },
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SUN",
+                "MARS"
+              ]
+            },
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SUN",
+                "RAHU"
+              ]
+            },
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "SUN",
+                "KETU"
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "any-malefic",
+                  "reference": "SUN",
+                  "houses": [
+                    12
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "any-malefic",
+                  "reference": "SUN",
+                  "houses": [
+                    2
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            7
+          ],
+          "atLeast": 1,
+          "from": "SUN"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_SUN_SEVENTH_MARS_TENTH_RAHU_TWELFTH",
+      "category": "arishta-father",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "37",
+        "rank": 1,
+        "note": "The Sun in the seventh, Mars in the tenth and Rahu in the twelfth: the father is unlikely to be sustained."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            7
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "RAHU",
+          "houses": [
+            12
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MARS_IN_TENTH_IN_ENEMY_SIGN",
+      "category": "arishta-father",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "38",
+        "rank": 1,
+        "note": "Mars in the tenth in a sign of his enemy: the father's early death, and the verse says doubtlessly."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "MARS",
+          "dignities": [
+            "ENEMY",
+            "GREAT_ENEMY"
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MOON_SIXTH_SATURN_LAGNA_MARS_SEVENTH",
+      "category": "arishta-father",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "39",
+        "rank": 1,
+        "note": "The Moon in the sixth, Saturn in the lagna and Mars in the seventh: no long span for the father."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MOON",
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            7
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_SUN_ASPECTED_BY_SATURN_IN_MARS_NAVAMSHA",
+      "category": "arishta-father",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "40",
+        "rank": 1,
+        "note": "The Sun aspected by Saturn and standing in the navamsha of Aries or Scorpio: the father had left the family or died before the birth."
+      },
+      "conditions": [
+        {
+          "type": "planet-aspects-planet",
+          "from": "SATURN",
+          "target": "SUN"
+        },
+        {
+          "type": "planet-in-sign",
+          "planet": {
+            "navamsha": "SUN"
+          },
+          "signs": [
+            "ARIES",
+            "SCORPIO"
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MALEFICS_IN_FOURTH_TENTH_AND_TWELFTH",
+      "category": "arishta-father",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "41",
+        "rank": 1,
+        "note": "Malefics holding the fourth, the tenth and the twelfth: both parents leave the child to its own fate."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            10
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            12
+          ],
+          "atLeast": 1
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_RAHU_WITH_JUPITER_IN_LAGNA_OR_FOURTH",
+      "category": "arishta-father",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "42",
+        "rank": 1,
+        "note": "Rahu and Jupiter together in the lagna or the fourth, in a sign inimical to them: the father does not see the native until the native's twenty-third year."
+      },
+      "conditions": [
+        {
+          "type": "planet-conjunct",
+          "planets": [
+            "RAHU",
+            "JUPITER"
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            1,
+            4
+          ]
+        },
+        {
+          "type": "planet-dignity",
+          "planet": "JUPITER",
+          "dignities": [
+            "ENEMY",
+            "GREAT_ENEMY"
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_SUN_HEMMED_OR_ASPECTED_BY_MALEFICS",
+      "category": "arishta-father",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "43-45",
+        "rank": 1,
+        "note": "The Sun indicates the father: malefics aspecting him or hemming him bring the father evils. The same verses read the Moon for the mother. The verses close by asking that the occupants' strength be estimated, which the kernel cannot yet do, so this rule answers broadly: it is the principle, not a graded reading."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-aspecting",
+              "planets": "any-malefic",
+              "target": "SUN",
+              "atLeast": 1
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "any-malefic",
+                  "reference": "SUN",
+                  "houses": [
+                    12
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "any-malefic",
+                  "reference": "SUN",
+                  "houses": [
+                    2
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MALEFICS_FROM_THE_SUN",
+      "category": "arishta-father",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "43-45",
+        "rank": 1,
+        "note": "Malefics in the sixth, eighth or fourth from the Sun bring the father inauspicious results. The verses close by asking that the occupants' strength be estimated, which the kernel cannot yet do, so this rule answers broadly: it is the principle, not a graded reading."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4,
+            6,
+            8
+          ],
+          "atLeast": 1,
+          "from": "SUN"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MOON_HEMMED_OR_ASPECTED_BY_MALEFICS",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "43-45",
+        "rank": 1,
+        "note": "The Moon indicates the mother: malefics aspecting her or hemming her bring the mother evils. The verses close by asking that the occupants' strength be estimated, which the kernel cannot yet do, so this rule answers broadly: it is the principle, not a graded reading."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-aspecting",
+              "planets": "any-malefic",
+              "target": "MOON",
+              "atLeast": 1
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "any-malefic",
+                  "reference": "MOON",
+                  "houses": [
+                    12
+                  ]
+                },
+                {
+                  "type": "planet-in-house-from",
+                  "planet": "any-malefic",
+                  "reference": "MOON",
+                  "houses": [
+                    2
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_MALEFICS_FROM_THE_MOON",
+      "category": "arishta-mother",
+      "source": {
+        "text": "BPHS",
+        "chapter": "9",
+        "verse": "43-45",
+        "rank": 1,
+        "note": "Malefics in the sixth, eighth or fourth from the Moon are adverse for the mother. The verses close by asking that the occupants' strength be estimated, which the kernel cannot yet do, so this rule answers broadly: it is the principle, not a graded reading."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            4,
+            6,
+            8
+          ],
+          "atLeast": 1,
+          "from": "MOON"
+        }
+      ],
+      "cancellations": [
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS"
+        },
+        {
+          "type": "rule",
+          "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER"
+        }
+      ],
+      "fullCancellationThreshold": 1
+    },
+    {
+      "key": "ARISHTA_BHANGA_BENEFIC_IN_KENDRA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "2",
+        "rank": 1,
+        "note": "Mercury, Jupiter or Venus in a kendra from the lagna destroys all the evils, as the Sun eliminates darkness. The antidotes stand in their own chapter, so they ship as rules of their own rather than as each evil's cancellation; a rule that carries them awaits a way to name a condition once and reference it."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "MERCURY",
+              "houses": [
+                1,
+                4,
+                7,
+                10
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "JUPITER",
+              "houses": [
+                1,
+                4,
+                7,
+                10
+              ]
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                1,
+                4,
+                7,
+                10
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_BHANGA_LAGNA_ASPECTED_BY_PAKSHA",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "5",
+        "rank": 1,
+        "note": "A benefic aspecting the lagna of a night birth in the bright half, or a malefic aspecting the lagna of a day birth in the dark half, destroys all the evils. It needs the chart to say whether the birth was by day."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-paksha",
+                  "paksha": "shukla"
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "birth-by-day"
+                  }
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "any-benefic",
+                  "houseRuled": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "panchanga-paksha",
+                  "paksha": "krishna"
+                },
+                {
+                  "type": "birth-by-day"
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": "any-malefic",
+                  "houseRuled": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_BHANGA_BENEFICS_IN_KENDRAS_AND_TRIKONAS",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "9",
+        "rank": 1,
+        "note": "Malefics surrounded by benefics while the kendras and trikonas are themselves benefic-occupied: the evils disappear soon, and do not follow from those bhavas. This rule reads the second half, benefics in the kendras and trikonas."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1,
+            4,
+            5,
+            7,
+            9,
+            10
+          ],
+          "atLeast": 2
+        }
+      ]
+    },
+    {
+      "key": "ARISHTA_BHANGA_MARS_WITH_JUPITER",
+      "category": "arishta-bhanga",
+      "source": {
+        "text": "BPHS",
+        "chapter": "10",
+        "verse": "7",
+        "rank": 1,
+        "note": "Mars joined by Jupiter or aspected by him is auspicious for the mother as well as for the native."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                "MARS",
+                "JUPITER"
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "MARS"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

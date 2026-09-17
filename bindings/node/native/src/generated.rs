@@ -1426,6 +1426,26 @@ pub struct ContextOptions {
     /// The locale every render resolves from (`ne-Deva-NP`).
     /// Example: en-Latn. May be null.
     pub locale: Option<String>,
+    /// Chart layouts of the consumer's own, to draw in beside the shipped
+    /// ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+    /// answers, with a key of its own. Every row is checked by the rules a
+    /// shipped one passes and refused by its place in the array and its own
+    /// field, as `options.layouts_json`, the row's index, then the field's
+    /// path; a key the SDK ships is
+    /// refused, so a row adds a layout and never replaces one. Null for none
+    /// (`03-design/chart-geometry.md` §7f). May be null.
+    pub layouts_json: Option<String>,
+    /// Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+    /// of definitions: each a key the catalogue does not have, its lords and
+    /// their years in order, the reference nakshatra, and optionally `count`,
+    /// `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+    /// `sources` (the document schema's `UduDefinition`). Every one is checked
+    /// by the rules a shipped row passes and refused by its place in the array
+    /// and its own field, as `options.dashas_json`, the index, then the field.
+    /// A request asks for one by the id
+    /// `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+    /// registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
+    pub dashas_json: Option<String>,
     /// Which of the SDK's own ephemerides to use when no provider vtable
     /// is given; ignored when one is (ADR-0028).
     /// Enum: TsEphemeris. Example: 0.
@@ -1439,6 +1459,8 @@ pub struct HeldContextOptions {
     profile: Option<std::ffi::CString>,
     settings_json: Option<std::ffi::CString>,
     locale: Option<std::ffi::CString>,
+    layouts_json: Option<std::ffi::CString>,
+    dashas_json: Option<std::ffi::CString>,
     ephemeris: u8,
 }
 
@@ -1454,6 +1476,14 @@ impl HeldContextOptions {
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
             locale: self.locale.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
+            layouts_json: self
+                .layouts_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            dashas_json: self
+                .dashas_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
             ephemeris: self.ephemeris,
         }
     }
@@ -1479,6 +1509,16 @@ impl ContextOptions {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            layouts_json: self
+                .layouts_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
+            dashas_json: self
+                .dashas_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
             ephemeris: ephemeris_from_str(&self.ephemeris)?,
         })
     }
@@ -1495,6 +1535,8 @@ impl ContextOptions {
             profile: unsafe { lent_text(raw.profile) },
             settings_json: unsafe { lent_text(raw.settings_json) },
             locale: unsafe { lent_text(raw.locale) },
+            layouts_json: unsafe { lent_text(raw.layouts_json) },
+            dashas_json: unsafe { lent_text(raw.dashas_json) },
             ephemeris: ephemeris_to_str(raw.ephemeris),
         }
     }
@@ -1754,7 +1796,7 @@ pub struct ChartRequest {
     /// Which of the document's sections to compute beside the
     /// foundation, as a bit set: 1 the day's almanac, 2 the planetary
     /// states, 4 the aspects, 8 the derived points, 16 the houses
-    /// service. Zero for the foundation alone, which is what every
+    /// service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every
     /// caller compiled against an earlier header passes by not passing
     /// it at all.
     ///
@@ -1776,6 +1818,40 @@ pub struct ChartRequest {
     /// already does.
     /// Enum: Varga.
     pub vargas: Vec<String>,
+    /// Which charts to draw, and in which layouts, in the order they should
+    /// be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+    /// catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+    /// count of zero for none.
+    ///
+    /// Packed, as `sections` is a bit set, so the request carries one array
+    /// and one count rather than two arrays that must agree; every ergonomic
+    /// layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+    pub drawings: Vec<u32>,
+    /// Which dashas to compute, in the order they should be answered in: each
+    /// a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+    /// the context registered (`0x8000` and up). Each one's balance and its
+    /// periods to its depth. Null with a count of zero for none.
+    ///
+    /// Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+    /// layer takes a catalogue member or a registered key and writes the id.
+    pub dashas: Vec<u32>,
+    /// A theme to write every drawing as SVG in, as JSON: an object of
+    /// `style` and `content` naming only what it changes, over the light
+    /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+    /// The SVGs come back in the blob's `svgs` section, in the context's
+    /// locale. Null for none, which costs nothing
+    /// (`03-design/render-svg.md`).
+    /// Example: {"extends":"dark"}. May be null.
+    pub theme_json: Option<String>,
+    /// Rules to answer over every chart, as JSON: `shipped` names the
+    /// kernel's sets, `rules` a consumer's own in the rule format, with
+    /// `readings`, `houses` and `longevity` choosing what else comes back
+    /// (`03-design/rules-at-the-boundary.md`). The answers come back in the
+    /// blob's `rules` section, and the sections the rules read are computed
+    /// whether or not `sections` asked for them. Null for none, which costs
+    /// nothing.
+    /// Example: {"shipped":["nabhasas"]}. May be null.
+    pub rules_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1789,6 +1865,10 @@ pub struct HeldChartRequest {
     utc_offset_seconds: i32,
     sections: u32,
     vargas: Vec<u16>,
+    drawings: Vec<u32>,
+    dashas: Vec<u16>,
+    theme_json: Option<std::ffi::CString>,
+    rules_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -1809,6 +1889,12 @@ impl HeldChartRequest {
             reserved_sections: Default::default(),
             vargas: self.vargas.as_ptr(),
             varga_count: self.vargas.len(),
+            drawings: self.drawings.as_ptr(),
+            drawing_count: self.drawings.len(),
+            dashas: self.dashas.as_ptr(),
+            dasha_count: self.dashas.len(),
+            theme_json: self.theme_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
+            rules_json: self.rules_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -1829,6 +1915,18 @@ impl ChartRequest {
                 .iter()
                 .map(|v| varga_from_str(v))
                 .collect::<Result<Vec<_>>>()?,
+            drawings: self.drawings.iter().map(|v| *v as u32).collect(),
+            dashas: self.dashas.iter().map(|v| *v as u16).collect(),
+            theme_json: self
+                .theme_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
+            rules_json: self
+                .rules_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -1854,6 +1952,16 @@ impl ChartRequest {
                 .iter()
                 .map(|v| varga_to_str(*v))
                 .collect(),
+            drawings: unsafe { slice_or_empty(raw.drawings, raw.drawing_count) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
+            dashas: unsafe { slice_or_empty(raw.dashas, raw.dasha_count) }
+                .iter()
+                .map(|v| *v as _)
+                .collect(),
+            theme_json: unsafe { lent_text(raw.theme_json) },
+            rules_json: unsafe { lent_text(raw.rules_json) },
         }
     }
 }
@@ -2614,6 +2722,28 @@ impl LastError {
     }
 }
 
+/// A refusal to build a handle, as the error this addon throws: the
+/// library's own sentence, with its whole record kept as `lastError` so
+/// the ergonomic layer rethrows it as the same `TeistroError` a context's
+/// refusal becomes. The record's strings are the library's, released here.
+fn refused(env: &Env, raw: &mut ffi::context::TsError) -> Error {
+    // SAFETY: a record the library wrote for this call, or left zeroed.
+    let record = unsafe { LastError::of(raw) };
+    // SAFETY: the same record, released once; a lent or zeroed one is ignored.
+    unsafe { ffi::context::ts_error_free(&raw mut *raw) };
+    let message = record.message.clone().unwrap_or_else(|| {
+        // SAFETY: the library returns a static NUL-terminated string.
+        unsafe { lent_text(ffi::ts_status_message(record.code)) }.unwrap_or_default()
+    });
+    let thrown = env
+        .create_error(Error::from_reason(message))
+        .and_then(|mut error| {
+            error.set_named_property("lastError", record)?;
+            Ok(Error::from(error.to_unknown()))
+        });
+    thrown.unwrap_or_else(|failed| failed)
+}
+
 /// What `ts_calendar_fixed_of_jd` hands back.
 #[napi(object)]
 #[derive(Clone, Debug)]
@@ -2651,10 +2781,12 @@ impl Context {
     /// ephemeris (positions are then `CAPABILITY`); `provider_user_data` is
     /// passed back to the vtable's functions untouched and must stay valid
     /// until `ts_context_free`. On success `*out_context` owns the context;
-    /// on failure, when `out_error` is not null, it receives the error's
-    /// message as a string to free with `ts_string_free`.
+    /// on failure, when `out_error` is not null, it receives the whole
+    /// refusal as a record that owns its strings, released by
+    /// `ts_error_free`.
     #[napi(constructor)]
     pub fn new(
+        env: Env,
         options: Option<ContextOptions>,
         provider: Option<crate::provider::ProviderInfo>,
         provider_positions: Option<Function<FnArgs<(PositionRequest,)>, Option<PositionColumns>>>,
@@ -2674,7 +2806,11 @@ impl Context {
         let (host_vtable, user_data) = crate::provider::parts(host.as_ref());
         let provider = host_vtable.as_ref().map_or(ptr::null(), |v| &raw const *v);
         let mut handle: *mut ffi::context::TsContext = ptr::null_mut();
-        let mut out_error = ffi::string::TsString::empty();
+        // SAFETY: every field is a plain integer, float or pointer, so
+        // all-zero is a valid value; a size, where the struct has one, is set
+        // before the call reads it.
+        let mut out_error: ffi::context::TsError = unsafe { core::mem::zeroed() };
+        out_error.struct_size = core::mem::size_of::<ffi::context::TsError>() as u32;
         // SAFETY: every pointer is valid for the call; the handle is owned
         // from here and freed once, in `Drop`.
         let status = unsafe {
@@ -2687,12 +2823,7 @@ impl Context {
             )
         };
         if status != core_::Status::Ok {
-            let message = take_string(&mut out_error);
-            return Err(Error::from_reason(if message.is_empty() {
-                format!("the context could not be built (code {})", status.code())
-            } else {
-                message
-            }));
+            return Err(refused(&env, &mut out_error));
         }
         Ok(Context { handle, host })
     }
@@ -2707,12 +2838,20 @@ impl Context {
     /// be freed immediately afterwards or kept to found another context; the
     /// library is unloaded when the last of them goes.
     #[napi(factory)]
-    pub fn new_with_provider(options: Option<ContextOptions>, provider: &Provider) -> Result<Self> {
+    pub fn new_with_provider(
+        env: Env,
+        options: Option<ContextOptions>,
+        provider: &Provider,
+    ) -> Result<Self> {
         let held_options = options.map(|v| v.read()).transpose()?;
         let raw_options = held_options.as_ref().map(HeldContextOptions::as_c);
         let options = raw_options.as_ref().map_or(ptr::null(), |v| &raw const *v);
         let mut handle: *mut ffi::context::TsContext = ptr::null_mut();
-        let mut out_error = ffi::string::TsString::empty();
+        // SAFETY: every field is a plain integer, float or pointer, so
+        // all-zero is a valid value; a size, where the struct has one, is set
+        // before the call reads it.
+        let mut out_error: ffi::context::TsError = unsafe { core::mem::zeroed() };
+        out_error.struct_size = core::mem::size_of::<ffi::context::TsError>() as u32;
         // SAFETY: every pointer is valid for the call; the handle is owned
         // from here and freed once, in `Drop`.
         let status = unsafe {
@@ -2724,12 +2863,7 @@ impl Context {
             )
         };
         if status != core_::Status::Ok {
-            let message = take_string(&mut out_error);
-            return Err(Error::from_reason(if message.is_empty() {
-                format!("the handle could not be built (code {})", status.code())
-            } else {
-                message
-            }));
+            return Err(refused(&env, &mut out_error));
         }
         Ok(Context { handle, host: None })
     }
@@ -2753,19 +2887,29 @@ impl Context {
     }
 
     /// Turns a failed call into an error whose message is the library's
-    /// own sentence.
-    fn check(&self, status: core_::Status) -> Result<()> {
+    /// own sentence, with the call's record attached as `lastError`.
+    fn check(&self, env: &Env, status: core_::Status) -> Result<()> {
         if status == core_::Status::Ok {
             return Ok(());
         }
-        let message = self
-            .last_error()
-            .and_then(|e| e.message)
+        let record = self.last_error();
+        let message = record
+            .as_ref()
+            .and_then(|e| e.message.clone())
             .unwrap_or_else(|| {
                 // SAFETY: the library returns a static NUL-terminated string.
                 unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default()
             });
-        Err(Error::from_reason(message))
+        let Some(record) = record else {
+            return Err(Error::from_reason(message));
+        };
+        let thrown = env
+            .create_error(Error::from_reason(message))
+            .and_then(|mut error| {
+                error.set_named_property("lastError", record)?;
+                Ok(Error::from(error.to_unknown()))
+            });
+        Err(thrown.unwrap_or_else(|failed| failed))
     }
 
     /// Lends the environment to the host provider for one call.
@@ -2795,7 +2939,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::context::ts_context_profile(self.handle, &raw mut out_profile) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { lent_text(out_profile.data) }.unwrap_or_default())
     }
 
@@ -2810,7 +2954,7 @@ impl Context {
         let status =
             unsafe { ffi::context::ts_context_settings_json(self.handle, &raw mut out_json) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_string(&mut out_json))
     }
 
@@ -2827,13 +2971,14 @@ impl Context {
         let status =
             unsafe { ffi::context::ts_context_settings_hash(self.handle, &raw mut out_hash) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { Hash::write(&out_hash) })
     }
 
-    /// Resolves a full key (`graha.SUN`, an alias, or a former key) to its
-    /// packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
-    /// the hint in the context's last error.
+    /// Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+    /// context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+    /// unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+    /// the context's last error.
     #[napi]
     pub fn key_parse(&self, env: Env, key: String) -> Result<u32> {
         let key = std::ffi::CString::new(key).map_err(|e| Error::from_reason(e.to_string()))?;
@@ -2842,7 +2987,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::key::ts_key_parse(self.handle, key.as_ptr(), &raw mut out_id) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_id as _)
     }
 
@@ -2858,7 +3003,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::key::ts_key_name(self.handle, id as u32, &raw mut out_key) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { lent_text(out_key.data) }.unwrap_or_default())
     }
 
@@ -2887,7 +3032,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { CalendarDate::write(&out_date) })
     }
 
@@ -2904,7 +3049,7 @@ impl Context {
         let status =
             unsafe { ffi::calendar::ts_calendar_to_fixed(self.handle, date, &raw mut out_fixed) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_fixed as _)
     }
 
@@ -2931,7 +3076,7 @@ impl Context {
             ffi::calendar::ts_calendar_convert(self.handle, date, into, &raw mut out_date)
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { CalendarDate::write(&out_date) })
     }
 
@@ -2958,7 +3103,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_length as _)
     }
 
@@ -2978,7 +3123,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_leap as _)
     }
 
@@ -2994,8 +3139,28 @@ impl Context {
         let status =
             unsafe { ffi::calendar::ts_calendar_weekday(self.handle, date, &raw mut out_weekday) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_weekday as _)
+    }
+
+    /// A chart layout this context can draw in, shipped or registered, as its
+    /// JSON row: the record `options.layouts_json` takes. Read a shipped row,
+    /// give it a key of its own, change what differs and register it
+    /// (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+    /// (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+    /// `INVALID_ARG` with the keys the context knows as the hint.
+    #[napi]
+    pub fn chart_layout_row(&self, env: Env, key: String) -> Result<String> {
+        let key = std::ffi::CString::new(key).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::chart::ts_chart_layout_row(self.handle, key.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
     }
 
     /// Founds a chart at an instant and a place and answers with its blob:
@@ -3019,7 +3184,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::chart::ts_chart_found(self.handle, request, &raw mut out_blob) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_blob(&mut out_blob))
     }
 
@@ -3052,7 +3217,7 @@ impl Context {
             ffi::time::ts_time_resolve(self.handle, civil, zone, &raw mut out_resolution)
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { ZoneResolution::write(&out_resolution) })
     }
 
@@ -3093,7 +3258,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(TimeCivilResult {
             civil: unsafe { CivilDateTime::write(&out_civil) },
             resolution: unsafe { ZoneResolution::write(&out_resolution) },
@@ -3124,7 +3289,7 @@ impl Context {
             ffi::time::ts_time_convert(self.handle, jd as f64, from, to, &raw mut out_conversion)
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { TimeConversion::write(&out_conversion) })
     }
 
@@ -3142,7 +3307,7 @@ impl Context {
         let status =
             unsafe { ffi::time::ts_time_delta_t(self.handle, jd_ut1 as f64, &raw mut out_delta_t) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { DeltaT::write(&out_delta_t) })
     }
 
@@ -3167,7 +3332,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { IntlLoaded::write(&out_loaded) })
     }
 
@@ -3181,7 +3346,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::intl::ts_intl_set_locale(self.handle, locale.as_ptr()) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(())
     }
 
@@ -3197,7 +3362,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::intl::ts_intl_locale(self.handle, &raw mut out_locale) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { lent_text(out_locale.data) }.unwrap_or_default())
     }
 
@@ -3210,7 +3375,7 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe { ffi::intl::ts_intl_has(self.handle, key.as_ptr(), &raw mut out_has) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(out_has as _)
     }
 
@@ -3246,7 +3411,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { lent_text(out_text.data) }.unwrap_or_default())
     }
 
@@ -3271,7 +3436,7 @@ impl Context {
         let status =
             unsafe { ffi::intl::ts_intl_entity(self.handle, key.as_ptr(), &raw mut out_json) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(unsafe { lent_text(out_json.data) }.unwrap_or_default())
     }
 
@@ -3304,7 +3469,7 @@ impl Context {
             ffi::intl::ts_intl_render(self.handle, key.as_ptr(), params_json, &raw mut out_blob)
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_blob(&mut out_blob))
     }
 
@@ -3324,7 +3489,7 @@ impl Context {
         let status =
             unsafe { ffi::positions::ts_positions(self.handle, request, &raw mut out_blob) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_blob(&mut out_blob))
     }
 
@@ -3356,7 +3521,7 @@ impl Context {
         let status =
             unsafe { ffi::panchanga::ts_panchanga_days(self.handle, request, &raw mut out_blob) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_blob(&mut out_blob))
     }
 
@@ -3378,7 +3543,7 @@ impl Context {
         let status =
             unsafe { ffi::ephemeris::ts_ephemeris_manifest(self.handle, &raw mut out_json) };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_string(&mut out_json))
     }
 
@@ -3415,7 +3580,7 @@ impl Context {
             )
         };
         self.leave()?;
-        self.check(status)?;
+        self.check(&env, status)?;
         Ok(take_string(&mut out_json))
     }
 
@@ -3469,12 +3634,16 @@ impl Provider {
     /// when its configuration is wrong — each of them the adapter's own
     /// judgement, passed through with its message rather than replaced.
     #[napi(constructor)]
-    pub fn new(path: String, config_json: String) -> Result<Self> {
+    pub fn new(env: Env, path: String, config_json: String) -> Result<Self> {
         let path = std::ffi::CString::new(path).map_err(|e| Error::from_reason(e.to_string()))?;
         let config_json =
             std::ffi::CString::new(config_json).map_err(|e| Error::from_reason(e.to_string()))?;
         let mut handle: *mut ffi::provider::TsProvider = ptr::null_mut();
-        let mut out_error = ffi::string::TsString::empty();
+        // SAFETY: every field is a plain integer, float or pointer, so
+        // all-zero is a valid value; a size, where the struct has one, is set
+        // before the call reads it.
+        let mut out_error: ffi::context::TsError = unsafe { core::mem::zeroed() };
+        out_error.struct_size = core::mem::size_of::<ffi::context::TsError>() as u32;
         // SAFETY: every pointer is valid for the call; the handle is owned
         // from here and freed once, in `Drop`.
         let status = unsafe {
@@ -3486,22 +3655,18 @@ impl Provider {
             )
         };
         if status != core_::Status::Ok {
-            let message = take_string(&mut out_error);
-            return Err(Error::from_reason(if message.is_empty() {
-                format!("the context could not be built (code {})", status.code())
-            } else {
-                message
-            }));
+            return Err(refused(&env, &mut out_error));
         }
         Ok(Provider { handle })
     }
 
     /// Turns a failed call into an error whose message is the library's
-    /// own sentence.
-    fn check(&self, status: core_::Status) -> Result<()> {
+    /// own sentence, with the call's record attached as `lastError`.
+    fn check(&self, env: &Env, status: core_::Status) -> Result<()> {
         if status == core_::Status::Ok {
             return Ok(());
         }
+        let _ = env;
         // SAFETY: the library returns a static NUL-terminated string.
         let message =
             unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();

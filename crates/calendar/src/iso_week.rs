@@ -15,6 +15,7 @@ pub struct IsoWeek;
 
 /// An ISO week date.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct IsoWeekDate {
     /// The week-year.
     pub week_year: i32,

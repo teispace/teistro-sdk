@@ -7,6 +7,7 @@ macro_rules! knob {
         $(#[$m])*
         #[non_exhaustive]
         #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+        #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
         pub enum $name {
             $( $(#[$vm])* #[serde(rename = $key)] $variant ),+
         }
@@ -122,6 +123,49 @@ knob!(
         Proportional = "PROPORTIONAL" }
 );
 knob!(
+    /// How a rashi dasha finds the stronger lord of Scorpio and Aquarius (crux
+    /// C51).
+    DualLord { /// BPHS ch. 46 vv. 158 to 166: a lord standing in the sign counts to the
+        /// other; else the lord in the stronger sign, a sign with an exalted
+        /// graha, then more grahas, then a dual over a fixed over a movable
+        /// sign, and on a tie the lord the greater count reaches.
+        Bphs = "BPHS", /// The recording engine: the lord in a kendra from the sign when only one
+        /// is, else Ketu or Rahu.
+        Kendra = "KENDRA" }
+);
+knob!(
+    /// Where the rashi dashas BPHS starts from the stronger of several signs
+    /// begin: Mandooka, Shoola and Trikona (crux C53).
+    RashiStart { /// BPHS ch. 46 vv. 179 to 184: Mandooka from the stronger of the lagna and
+        /// the seventh, Shoola of the second and the eighth, Trikona the
+        /// strongest of the trines, by vv. 158 to 166's strength.
+        Stronger = "STRONGER", /// The recording engine: each from the lagna.
+        Lagna = "LAGNA" }
+);
+knob!(
+    /// Which friendly signs make a dasha favourable, BPHS ch. 47 vv. 5 and 6
+    /// naming a "Shant" sign against an "inimical" one (crux C79).
+    ShantaSign { /// A friend's or a great friend's sign, the friendly signs set against
+        /// the inimical ones, which are an enemy's and a great enemy's.
+        Friendly = "FRIENDLY", /// A friend's sign alone, as ch. 45 v. 9 names Shanta (a great friend's
+        /// is Pramudita).
+        Friend = "FRIEND" }
+);
+knob!(
+    /// Which count of the ghatis of birth the Sayanadi avasthas add (crux C78).
+    SayanadiGhatis { /// The whole ghatis elapsed since the chart's sunrise.
+        Elapsed = "ELAPSED", /// The ghati running at birth: one more than those elapsed, unless birth
+        /// falls exactly on a ghati's start.
+        Running = "RUNNING" }
+);
+knob!(
+    /// The numbers Rahu and Ketu multiply by in the Sayanadi avasthas, which
+    /// BPHS ch. 45 v. 30 gives only for the Sun to Saturn (crux C78).
+    SayanadiNodes { /// Rahu 8 and Ketu 9, the nine grahas' order of BPHS ch. 3 carried on.
+        NineGrahaOrder = "NINE_GRAHA_ORDER", /// Both 8, as v. 37 pairs "Rahu (Ketu)" for the sub-state's additive.
+        SharedWithRahu = "SHARED_WITH_RAHU" }
+);
+knob!(
     /// Which window a daily panchanga finds the Moon's rise and set in.
     ///
     /// Every other field of an almanac day is bounded by sunrise; the
@@ -185,6 +229,67 @@ knob!(
         Lunar = "LUNAR", /// 324 days.
         Nakshatra324 = "NAKSHATRA_324" }
 );
+impl YearLength {
+    /// The days in one dasha year of this length.
+    ///
+    /// The astronomical lengths are the mean values at J2000 the
+    /// *Astronomical Almanac* gives in its glossary: the sidereal year
+    /// 365.256 363 days, the tropical year 365.242 190 days, and the synodic
+    /// month 29.530 589 days, of which the lunar year is twelve. The others
+    /// are the counts their names state: the Julian 365.25, the savana 360,
+    /// and the nakshatra year of twelve 27-day months, 324.
+    #[must_use]
+    pub const fn days(self) -> f64 {
+        match self {
+            YearLength::Julian36525 => 365.25,
+            YearLength::Savana360 => 360.0,
+            YearLength::Sidereal => 365.256_363,
+            YearLength::Tropical => 365.242_190,
+            YearLength::Lunar => 12.0 * 29.530_589,
+            YearLength::Nakshatra324 => 324.0,
+        }
+    }
+}
+
+knob!(
+    /// How a dasha's birth period is divided among its sub-periods.
+    BirthPeriod { /// Each sub-period its share of the balance the birth period runs for,
+        /// which the recording engine does on every recorded answer.
+        Compressed = "COMPRESSED", /// Each sub-period its share of the whole period, which began
+        /// before birth; those already over are dropped and the one running
+        /// is cut at birth.
+        Elapsed = "ELAPSED" }
+);
+knob!(
+    /// What a dasha answers past the end of its cycle.
+    AfterCycle { /// No period: the cycle has ended, as the recording engine answers.
+        End = "END", /// The cycle begins again, from its first lord and in full.
+        Repeat = "REPEAT" }
+);
+knob!(
+    /// Which pada table a nakshatra takes in the Kalachakra dasha (crux C54).
+    KalachakraMembership { /// The lists the conformance corpus's recording engine carries,
+        /// which differ from the triad rule at Ardra, Uttara Phalguni,
+        /// Jyeshtha, Shatabhisha and Revati.
+        Listed = "LISTED", /// By the nakshatra's place in its triad, as the published lists
+        /// read have it: the middle of each triad takes its chakra's second
+        /// table and the outer two the first.
+        Triad = "TRIAD" }
+);
+knob!(
+    /// How the Kalachakra balance at birth is taken (crux C55).
+    KalachakraBalance { /// The unelapsed part of the pada, of the first sign's years, as the
+        /// recording engine takes it.
+        FirstSign = "FIRST_SIGN", /// The elapsed part of the pada, of the pada's whole span, the signs
+        /// it covers skipped.
+        WholePada = "WHOLE_PADA" }
+);
+knob!(
+    /// What follows the ninth Kalachakra mahadasha (crux C56).
+    KalachakraAfterNinth { /// The same nine signs reversed, as the recording engine runs them.
+        Reverse = "REVERSE", /// The same nine in the same order.
+        Repeat = "REPEAT" }
+);
 knob!(
     /// A seed outside a conditional dasha's cycle.
     SeedOverflow { /// Wrap to the start, flagged.
@@ -212,11 +317,212 @@ knob!(
         ThreeSevenEleven = "THREE_SEVEN_ELEVEN" }
 );
 knob!(
-    /// How Ashtakavarga reductions treat a planet ruling two signs.
-    Ekadhipatya { /// The classical rule.
-        Classical = "CLASSICAL", /// Zero.
-        Zero = "ZERO", /// Transfer.
-        Transfer = "TRANSFER" }
+    /// How the Ashtakavarga's Ekadhipatya reduction treats a co-ruled sign
+    /// beside an occupied one (crux C60).
+    Ekadhipatya { /// BPHS ch. 68: an empty sign beside an occupied sign with the smaller
+        /// number keeps the difference, and otherwise goes to zero.
+        Bphs = "BPHS", /// The conformance corpus's recording engine: the empty sign always
+        /// goes to zero.
+        EmptyToZero = "EMPTY_TO_ZERO" }
+);
+knob!(
+    /// How the Vimshopaka scores a graha in a varga (crux C63).
+    Vimshopaka { /// BPHS ch. 7: 20 in exaltation or the own sign, else 18, 15, 10, 7
+        /// or 5 by the compound relationship with the sign's lord in the rasi
+        /// chart, times the varga's weight over 20.
+        Bphs = "BPHS", /// The conformance corpus's recording engine: the Saptavargaja
+        /// virupas over 45 by natural friendship, rounded to hundredths.
+        SaptavargajaVirupas = "SAPTAVARGAJA_VIRUPAS" }
+);
+knob!(
+    /// How the Shadbala's Saptavargaja scores a graha in each of its seven
+    /// vargas (crux C64).
+    Saptavargaja { /// B.V. Raman's reading of BPHS ch. 27: moolatrikona 45 (in the rasi
+        /// chart by its degrees), the own sign 30, then 22.5, 15, 7.5, 3.75 or
+        /// 1.875 by the compound relationship, its temporary half from the rasi
+        /// chart; exaltation is Uchcha's.
+        Compound = "COMPOUND", /// The conformance corpus's recording engine: exaltation 45,
+        /// moolatrikona or the own sign 30, then 15, 7.5 or 3.75 by natural
+        /// friendship alone, debilitation nothing.
+        Natural = "NATURAL" }
+);
+knob!(
+    /// How the Shadbala's Nathonnatha measures the hour (crux C65).
+    Nathonnatha { /// BPHS ch. 27 vv. 8 and 9: from midnight at any hour, the Moon, Mars
+        /// and Saturn twice the nata in ghatis, the Sun, Jupiter and Venus 60
+        /// less that.
+        Midnight = "MIDNIGHT", /// The recording engine: the day grahas rise to 60 at the middle of
+        /// the daylight and the night grahas at the middle of the night, each
+        /// with nothing outside its own arc.
+        Arc = "ARC" }
+);
+knob!(
+    /// Which night a birth before sunrise is measured in, for the Shadbala's
+    /// Nathonnatha and Tribhaga (crux C65).
+    PreDawnNight { /// The night it falls in, from the previous evening's sunset.
+        PreviousEvening = "PREVIOUS_EVENING", /// The recording engine's: from the civil date's own sunset, which
+        /// comes after the birth, so no night graha gains.
+        SameEvening = "SAME_EVENING" }
+);
+knob!(
+    /// Whether the Sun's Ayana bala is counted, doubled, in the Shadbala's
+    /// Kaala (crux C66).
+    SunAyana { /// BPHS ch. 27 v. 17 and Sripati: doubled in Kaala.
+        Doubled = "DOUBLED", /// The recording engine: not in Kaala at all.
+        NotInKaala = "NOT_IN_KAALA" }
+);
+knob!(
+    /// The Cheshta bala of the Sun and the Moon, which never retrogress
+    /// (crux C66).
+    LuminaryCheshta { /// BPHS ch. 27 v. 18: the Sun's is its Ayana bala and the Moon's her
+        /// Paksha bala.
+        AyanaAndPaksha = "AYANA_AND_PAKSHA", /// The recording engine: the Sun's Ayana, and a third of the Moon's
+        /// elongation.
+        AyanaAndElongation = "AYANA_AND_ELONGATION", /// Sripati, as B.V. Raman works it: neither has any.
+        None = "NONE" }
+);
+knob!(
+    /// The declination the Shadbala's Ayana bala reads, and the obliquity
+    /// its formula scales by (crux C66).
+    Kranti { /// The graha's true declination, from its ecliptic latitude and the
+        /// date's obliquity, as BPHS's notes take it from an ephemeris.
+        True = "TRUE", /// The recording engine: its tropical longitude at zero latitude, on
+        /// an obliquity of 23.4393°.
+        Ecliptic = "ECLIPTIC", /// Sripati, as B.V. Raman works it: the Hindu table of 362′, 341′,
+        /// 299′, 236′, 150′ and 52′ a 15° step of the sayana bhuja, on 24°.
+        HinduTable = "HINDU_TABLE" }
+);
+knob!(
+    /// Whose weekdays the Shadbala's Abda and Masa lords are (crux C67).
+    KaalaLords { /// BPHS ch. 27 v. 13: the ahargana's 360-day year and 30-day month.
+        Ahargana = "AHARGANA", /// The recording engine: the UT weekday of the last Mesha sankranti
+        /// for the year, and the lord of the Sun's sign for the month.
+        Sankranti = "SANKRANTI" }
+);
+knob!(
+    /// The kendras the Shadbala's Dig bala measures from (crux C68).
+    DigKendras { /// BPHS ch. 27 v. 7: the ascendant, the nadir, the descendant and
+        /// the midheaven.
+        Angles = "ANGLES", /// The recording engine: all four projected from the lagna's degree,
+        /// 30° a house.
+        LagnaProjection = "LAGNA_PROJECTION" }
+);
+knob!(
+    /// How the Shadbala's Drik bala weighs the drishtis a graha receives
+    /// (crux C69).
+    Drik { /// BPHS ch. 27 v. 19: a quarter of each benefic's sphuta drishti added
+        /// and each malefic's taken away, and Jupiter's and Mercury's added
+        /// again in full.
+        QuarterWithJupiterMercury = "QUARTER_WITH_JUPITER_MERCURY", /// Sripati, as B.V. Raman works it: a quarter of the net sphuta
+        /// drishti pinda.
+        Quarter = "QUARTER", /// The recording engine: each whole-sign graded drishti in full,
+        /// Mercury's taken away, the sum bounded at ±60.
+        Full = "FULL" }
+);
+knob!(
+    /// The Shadbala's natural strengths (crux C71).
+    Naisargika { /// BPHS ch. 27 v. 14: exact sevenths of a rupa.
+        Exact = "EXACT", /// The recording engine's, rounded to hundredths.
+        Hundredths = "HUNDREDTHS" }
+);
+knob!(
+    /// The rupas a graha's Shadbala must reach to be strong (crux C71).
+    RequiredRupas { /// BPHS ch. 27 vv. 32 and 33: 6.5, 6, 5, 7, 6.5, 5.5 and 5, Sun to
+        /// Saturn.
+        Bphs = "BPHS", /// Sripati, as B.V. Raman gives it and the recording engine takes it:
+        /// the Sun's 5.
+        Sripati = "SRIPATI" }
+);
+knob!(
+    /// Which decanate gives each gender of graha the Shadbala's Drekkana bala
+    /// (crux C72).
+    Drekkana { /// BPHS ch. 27 v. 6 as translated, and the recording engine: male
+        /// grahas the first, female the second, neuter the third.
+        MaleFemaleNeuter = "MALE_FEMALE_NEUTER", /// Sripati, as B.V. Raman works it: male the first, neuter the
+        /// second, female the third.
+        MaleNeuterFemale = "MALE_NEUTER_FEMALE" }
+);
+knob!(
+    /// Which grahas count as benefics for the Shadbala's Paksha and Drik
+    /// balas (crux C69).
+    Benefics { /// Jupiter and Venus; the Moon from the eighth day of the bright half
+        /// to the eighth of the dark; Mercury unless it shares its sign with
+        /// the Sun, Mars, Saturn, a node or a malefic Moon (B.V. Raman after
+        /// Sripati).
+        Conditional = "CONDITIONAL", /// The recording engine: the Moon, Mercury, Jupiter and Venus, always.
+        Fixed = "FIXED" }
+);
+knob!(
+    /// The mean elements the Shadbala's Cheshta bala reads for Mars to Saturn
+    /// (crux C70).
+    Cheshta { /// Kedarnath Dutt's tables as B.V. Raman gives them, the inferior
+        /// planets' mean the mean Sun's.
+        Sripati = "SRIPATI", /// The recording engine's J2000 elements, each inferior planet's own
+        /// seeghrochcha taken as its mean too.
+        RecordingEngine = "RECORDING_ENGINE" }
+);
+knob!(
+    /// Whether the Shadbala counts the Yuddha bala of grahas at war (crux C70).
+    Yuddha { /// Sripati, as B.V. Raman works it: two of Mars to Saturn within a
+        /// degree, the one of lesser longitude the victor, the difference of
+        /// their Sthana, Dig and Kaala over the difference of their discs.
+        Sripati = "SRIPATI", /// The recording engine: never.
+        None = "NONE" }
+);
+knob!(
+    /// How a graha's Ishta and Kashta phalas are read from its Uchcha and
+    /// Cheshta balas (crux C76).
+    IshtaKashta { /// BPHS ch. 28 vv. 2 to 6: the Uchcha and Cheshta rays, the Ishta their
+        /// mean over the balas and the Kashta 60 less it, the Sun's Cheshta
+        /// kendra its sayana longitude and three signs, the Moon's her
+        /// elongation.
+        Rays = "RAYS", /// Sripati, as B.V. Raman works it: the Ishta the square root of the
+        /// two balas' product and the Kashta of their complements', the
+        /// luminaries' Cheshta from the same kendras.
+        SquareRoots = "SQUARE_ROOTS", /// The recording engine: Raman's square roots of the Shadbala's own
+        /// Uchcha and Cheshta balas.
+        ShadbalaCheshta = "SHADBALA_CHESHTA" }
+);
+knob!(
+    /// How the Bhava bala's Dig bala reads a bhava's sign class (crux C73).
+    BhavaDig { /// BPHS ch. 27 vv. 26 to 28 as translated: the arc, over 3, from the
+        /// bhava madhya to the madhya of the house its class makes weakest,
+        /// Cancer and Scorpio insects, Sagittarius and Capricorn split at their
+        /// halves.
+        Bphs = "BPHS", /// Sripati, as B.V. Raman works it: ten virupas a house from that
+        /// house, Scorpio the only insect and Cancer watery, the halves split.
+        Sripati = "SRIPATI", /// The recording engine: ten virupas a house by the whole sign,
+        /// Sagittarius human and Capricorn quadruped throughout, Cancer an insect.
+        WholeSign = "WHOLE_SIGN" }
+);
+knob!(
+    /// How the Bhava bala weighs the drishtis a bhava receives (crux C74).
+    BhavaDrishti { /// BPHS ch. 27 v. 29 as translated, and the recording engine: a quarter
+        /// of the Dig bala added for a benefic's full drishti and taken away for
+        /// a malefic's, with Jupiter's and Mercury's Drik bala added when they
+        /// aspect it.
+        QuarterOfDig = "QUARTER_OF_DIG", /// Sripati, as B.V. Raman works it: the sphuta drishti on the bhava
+        /// madhya, Jupiter's and Mercury's in full and a quarter of each other
+        /// graha's, Mercury always a benefic.
+        Sphuta = "SPHUTA" }
+);
+knob!(
+    /// Whether the Bhava bala adds BPHS ch. 27 vv. 30 and 31's special rules
+    /// (crux C75).
+    BhavaSpecialRules { /// A rupa for each Jupiter and Mercury in the bhava and less one for
+        /// each Sun, Mars and Saturn, and 15 virupas for a sirshodaya sign by
+        /// day, a prishtodaya sign by night and an ubhayodaya sign in twilight.
+        Bphs = "BPHS", /// Sripati, as B.V. Raman works it, and the recording engine: none.
+        None = "NONE" }
+);
+knob!(
+    /// Where the Ashtakavarga's reductions and pindas are made (crux C59).
+    Shodhana { /// In each graha's own Ashtakavarga, its pindas from its own reduced
+        /// bindus and the grahas standing in each sign (BPHS chs. 67 to 69).
+        EachGraha = "EACH_GRAHA", /// On the sum of the seven, as the conformance corpus's recording
+        /// engine makes them: the rashi pinda of the reduced sum and a graha
+        /// pinda of the raw bindus.
+        Sarva = "SARVA" }
 );
 knob!(
     /// The convention for a divisional chart no text attests.

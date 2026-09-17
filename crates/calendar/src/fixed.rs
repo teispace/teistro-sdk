@@ -21,6 +21,7 @@ use teistro_core::quantity::{InvalidValue, JulianDay, Utc};
     serde::Serialize,
     serde::Deserialize,
 )]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
 pub struct FixedDay(i64);
 
@@ -125,6 +126,7 @@ impl fmt::Display for FixedDay {
 #[derive(
     Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
 )]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Weekday {
     /// Sunday.

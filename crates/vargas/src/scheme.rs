@@ -46,6 +46,7 @@ const SIGNS: u16 = 12;
 
 /// How a sign is sorted into groups, each with its own rule.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Classifier {
     /// One group: every sign treated alike.
@@ -85,6 +86,7 @@ impl Classifier {
 
 /// The multiplier a stepping rule puts on the sign.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SignBase {
     /// Count from a fixed sign, which the offset names: `a = 0`.
@@ -110,6 +112,7 @@ impl SignBase {
 
 /// How a part of a sign becomes a sign.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "map", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Map {
     /// Step through the signs: `(a·rashi + step·part + offset) mod 12`.
@@ -127,6 +130,7 @@ pub enum Map {
 
 /// Where the parts of a sign begin.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "spans", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Spans {
     /// The chart's divisions, each of `30/N` degrees.
@@ -140,6 +144,7 @@ pub enum Spans {
 /// One classifier group's rule: how wide its parts are, and where each
 /// one sends a body.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Group {
     /// Where its parts begin.
     pub spans: Spans,
@@ -167,6 +172,7 @@ impl Group {
 
 /// A divisional chart's rule.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Scheme {
     /// The catalogued chart, or `None` for an arbitrary D-N.
     pub varga: Option<Varga>,

@@ -61,6 +61,9 @@ mod choghadiya;
 mod kaala;
 mod panchaka;
 mod muhurta_yoga;
+mod chart_layout;
+mod vaiseshikamsa;
+mod avastha_cheshta;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -122,6 +125,9 @@ pub use choghadiya::*;
 pub use kaala::*;
 pub use panchaka::*;
 pub use muhurta_yoga::*;
+pub use chart_layout::*;
+pub use vaiseshikamsa::*;
+pub use avastha_cheshta::*;
 
 use crate::key::KeyId;
 
@@ -188,6 +194,9 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::Kaala => Kaala::from_key(key).map(Kaala::key_id),
         Kind::Panchaka => Panchaka::from_key(key).map(Panchaka::key_id),
         Kind::MuhurtaYoga => MuhurtaYoga::from_key(key).map(MuhurtaYoga::key_id),
+        Kind::ChartLayout => ChartLayout::from_key(key).map(ChartLayout::key_id),
+        Kind::Vaiseshikamsa => Vaiseshikamsa::from_key(key).map(Vaiseshikamsa::key_id),
+        Kind::AvasthaCheshta => AvasthaCheshta::from_key(key).map(AvasthaCheshta::key_id),
         _ => None,
     }
 }
@@ -255,6 +264,9 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::Kaala => Kaala::from_id(id.id()).map(Kaala::key),
         Kind::Panchaka => Panchaka::from_id(id.id()).map(Panchaka::key),
         Kind::MuhurtaYoga => MuhurtaYoga::from_id(id.id()).map(MuhurtaYoga::key),
+        Kind::ChartLayout => ChartLayout::from_id(id.id()).map(ChartLayout::key),
+        Kind::Vaiseshikamsa => Vaiseshikamsa::from_id(id.id()).map(Vaiseshikamsa::key),
+        Kind::AvasthaCheshta => AvasthaCheshta::from_id(id.id()).map(AvasthaCheshta::key),
         _ => None,
     }
 }

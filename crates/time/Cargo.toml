@@ -15,6 +15,12 @@ categories = ["date-and-time"]
 # (docs/06-cicd/03-release-process.md).
 publish = false
 
+[features]
+# Derives `schemars::JsonSchema` on the types a chart document carries,
+# so `cargo xtask gen document-schema` can describe it
+# (`docs/03-design/document-schema.md`).
+schema = ["dep:schemars", "teistro-astro/schema", "teistro-calendar/schema", "teistro-core/schema", "teistro-port-ephemeris/schema", "teistro-port-timezone/schema"]
+
 [dependencies]
 # The embedded zone database: tzdb as TZif, bundled and never read from
 # the host, so a resolution is the same on every machine (ADR-0022).
@@ -26,6 +32,7 @@ teistro-calendar = { path = "../calendar" }
 teistro-core = { path = "../core" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-port-timezone = { path = "../port-timezone" }
+schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.5", default-features = false }

@@ -64,6 +64,7 @@ where
 
 /// Saturn's eighth of an arc: which part it is, and when it runs.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Portion {
     /// Which eighth, counted from one as an almanac prints it.
     pub eighth: u8,

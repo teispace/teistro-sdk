@@ -17,6 +17,7 @@ mod siddhanta;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::SunriseConvention;
+use teistro_core::time::{LocalClock, LocalMeanTime};
 
 use crate::fixed::FixedDay;
 
@@ -100,6 +101,39 @@ pub trait SolarModel: Send + Sync {
     fn day_arc(&self, day: FixedDay, place: &Place) -> Result<Option<DayArc>, Error> {
         Ok(self.day_light(day, place)?.arc())
     }
+}
+
+/// The day a solar model reckons a civil date by.
+///
+/// A model counts days in the local mean time of the place's longitude, which
+/// is the civil date wherever the clock keeps within half a day of it — and
+/// is not where a clock was moved across the date line: Samoa's UTC+14 at
+/// 171.8° W is 25½ hours from its mean time, so its civil 31 December 2011
+/// is 30 December by the Sun. The mean-time day in force at the civil day's
+/// own noon is the one whose sunrise falls in that civil day, and it is the
+/// civil date itself everywhere else.
+#[must_use]
+pub fn mean_time_day(clock: &dyn LocalClock, place: &Place, civil: FixedDay) -> FixedDay {
+    let Ok(midnight) = civil.jd_at_midnight() else {
+        return civil;
+    };
+    let noon = midnight.get() + 0.5 - clock.offset_at(midnight).days();
+    FixedDay::from_local_jd(noon + LocalMeanTime::new(place.longitude).offset().days()).0
+}
+
+/// Sunrise and sunset of a civil date under a clock, however far the clock
+/// keeps from the place's mean time ([`mean_time_day`]).
+///
+/// # Errors
+///
+/// As [`SolarModel::day_light`].
+pub fn civil_day_light(
+    model: &dyn SolarModel,
+    clock: &dyn LocalClock,
+    place: &Place,
+    civil: FixedDay,
+) -> Result<DayLight, Error> {
+    model.day_light(mean_time_day(clock, place, civil), place)
 }
 
 impl<M: SolarModel + ?Sized> SolarModel for &M {

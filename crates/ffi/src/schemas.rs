@@ -495,6 +495,7 @@ pub fn charts() -> BlobSchema {
                     ColumnDef::new("chart_count", Scalar::U32, "How many charts the batch holds, and how many rows the `cast`, `day` and `timing` sections each hold."),
                     ColumnDef::new("graha_count", Scalar::U32, "How many grahas each chart holds; the `grahas` section holds `chart_count * graha_count` rows."),
                     ColumnDef::new("varga_count", Scalar::U32, "How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`."),
+                    ColumnDef::new("dasha_count", Scalar::U32, "How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows."),
                     ColumnDef::new("latitude_deg", Scalar::F64, "The place's latitude, degrees north."),
                     ColumnDef::new("longitude_deg", Scalar::F64, "The place's longitude, degrees east."),
                     ColumnDef::new("altitude_m", Scalar::F64, "The place's altitude, metres."),
@@ -503,23 +504,15 @@ pub fn charts() -> BlobSchema {
             chart_cast_section(2),
             chart_grahas_section(3),
             chart_readings_section(4),
-            SectionSchema::columns(
+            chart_cusps_section(
                 5,
                 "houses",
                 "The twelve bhavas for \"which house is it in\", charts outermost: row `i * 12 + j` is chart `i`, bhava `j`, first to twelfth.",
-                vec![
-                    ColumnDef::new("madhya_deg", Scalar::F64, "The bhava's centre, degrees."),
-                    ColumnDef::new("sandhi_deg", Scalar::F64, "The bhava's opening cusp, degrees."),
-                ],
             ),
-            SectionSchema::columns(
+            chart_cusps_section(
                 6,
                 "chalit",
                 "The twelve bhavas of each chart's chalit, the same shape as `houses`.",
-                vec![
-                    ColumnDef::new("madhya_deg", Scalar::F64, "The bhava's centre, degrees."),
-                    ColumnDef::new("sandhi_deg", Scalar::F64, "The bhava's opening cusp, degrees."),
-                ],
             ),
             SectionSchema::fixed(
                 7,
@@ -560,8 +553,385 @@ pub fn charts() -> BlobSchema {
                 "combustion_orbs",
                 "UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.",
             ),
+            SectionSchema::bytes(
+                21,
+                "drawings",
+                "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.",
+            ),
+            SectionSchema::bytes(
+                22,
+                "svgs",
+                "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.",
+            ),
+            chart_dashas_section(23),
+            chart_dasha_periods_section(24),
+            chart_ashtakavarga_section(25),
+            chart_ashtakavarga_bindus_section(26),
+            chart_sarvashtakavarga_section(27),
+            chart_vimshopaka_section(28),
+            chart_shadbala_section(29),
+            chart_bhava_bala_section(30),
+            chart_vaiseshikamsa_section(31),
+            chart_dasha_phala_section(32),
+            SectionSchema::bytes(
+                33,
+                "rules",
+                "UTF-8 JSON, canonical: an array with one entry per chart, each the rules the request's `rules_json` named that held on it — `present`, each `{rule, result}` with the rule by key — with `houses` and `longevity` when asked, and `unreadable` naming an input a rule named that the chart could not have (`03-design/rules-at-the-boundary.md`). Empty when no rules were asked for.",
+            ),
         ],
     }
+}
+
+/// Twelve bhavas a chart, each its centre and opening cusp: the `houses` and
+/// the `chalit` share the shape.
+fn chart_cusps_section(id: u32, name: &str, doc: &str) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        name,
+        doc,
+        vec![
+            ColumnDef::new("madhya_deg", Scalar::F64, "The bhava's centre, degrees."),
+            ColumnDef::new(
+                "sandhi_deg",
+                Scalar::F64,
+                "The bhava's opening cusp, degrees.",
+            ),
+        ],
+    )
+}
+
+/// Every chart's dashas: one row a chart a system, charts outermost and the
+/// systems in the order asked (`03-design/dasha-kernels.md`).
+fn chart_dashas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "dashas",
+        "Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.",
+        vec![
+            ColumnDef::new(
+                "system",
+                Scalar::U16,
+                "Which system: a catalogue id, or at `0x8000` and up the id of a system the context registered, which `ts_key_name` names.",
+            )
+            .of_enum("DashaSystem"),
+            ColumnDef::new(
+                "seeded",
+                Scalar::U8,
+                "1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero.",
+            ),
+            ColumnDef::new(
+                "signed",
+                Scalar::U8,
+                "1 when every period is a sign's, and `dasha_periods.sign` names it; 0 when the periods are their lords' and that column is zero.",
+            ),
+            ColumnDef::new(
+                "seed",
+                Scalar::U16,
+                "The nakshatra the Moon stood in, which seeds it; zero unless `seeded`.",
+            )
+            .of_enum("Nakshatra"),
+            ColumnDef::new("first_lord", Scalar::U16, "The lord it starts with.").of_enum("Graha"),
+            ColumnDef::new(
+                "overflow",
+                Scalar::U8,
+                "1 when the seed lay outside a conditional system's nakshatras and started at the first lord because the settings let it.",
+            ),
+            ColumnDef::new("balance", Scalar::U8, "How the balance was measured.")
+                .of_enum("TsBalance"),
+            ColumnDef::new(
+                "remaining",
+                Scalar::F64,
+                "The fraction of the first lord's period still to run at birth, 0 to 1.",
+            ),
+            ColumnDef::new(
+                "balance_days",
+                Scalar::F64,
+                "That fraction of the first lord's years, in days.",
+            ),
+            ColumnDef::new(
+                "balance_years",
+                Scalar::U32,
+                "The balance's whole years of the year length.",
+            ),
+            ColumnDef::new(
+                "balance_months",
+                Scalar::U8,
+                "Its whole months of a twelfth of the year length.",
+            ),
+            ColumnDef::new("balance_day_count", Scalar::U8, "Its whole days."),
+            ColumnDef::new(
+                "balance_hours",
+                Scalar::U8,
+                "Its hours, the rest rounded to the minute.",
+            ),
+            ColumnDef::new("balance_minutes", Scalar::U8, "Its minutes, rounded."),
+            ColumnDef::new(
+                "moon_span_from",
+                Scalar::F64,
+                "When the Moon entered its nakshatra, a Julian day (UTC); NaN when the balance was spatial and read no span.",
+            ),
+            ColumnDef::new(
+                "moon_span_to",
+                Scalar::F64,
+                "When it left, a Julian day (UTC); NaN when no span was read.",
+            ),
+            ColumnDef::new(
+                "depth",
+                Scalar::U8,
+                "How many levels the periods go down, 1 to 6.",
+            ),
+            ColumnDef::new(
+                "period_count",
+                Scalar::U32,
+                "How many rows of `dasha_periods` are this dasha's.",
+            ),
+        ],
+    )
+}
+
+/// Every chart's Ashtakavarga, a row a graha.
+fn chart_ashtakavarga_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "ashtakavarga",
+        "Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+            ColumnDef::new(
+                "shodhana",
+                Scalar::U8,
+                "Where the reductions and pindas were made; `reduced` in `ashtakavarga_bindus` is zero unless in each graha's own.",
+            )
+            .of_enum("TsShodhana"),
+            ColumnDef::new(
+                "ekadhipatya",
+                Scalar::U8,
+                "How a co-ruled sign beside an occupied one was reduced.",
+            )
+            .of_enum("TsEkadhipatya"),
+            ColumnDef::new("rashi_pinda", Scalar::U32, "Its rashi pinda."),
+            ColumnDef::new("graha_pinda", Scalar::U32, "Its graha pinda."),
+            ColumnDef::new("yoga_pinda", Scalar::U32, "Its yoga pinda, the two together."),
+        ],
+    )
+}
+
+/// Every graha's bindus by sign.
+fn chart_ashtakavarga_bindus_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "ashtakavarga_bindus",
+        "Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.",
+        vec![
+            ColumnDef::new("bindus", Scalar::U8, "Its bindus in the sign, 0 to 8."),
+            ColumnDef::new(
+                "reduced",
+                Scalar::U8,
+                "The same after both reductions, when they were made in each graha's own Ashtakavarga; zero otherwise.",
+            ),
+        ],
+    )
+}
+
+/// Every chart's sarvashtakavarga by sign.
+fn chart_sarvashtakavarga_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "sarvashtakavarga",
+        "Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.",
+        vec![
+            ColumnDef::new(
+                "sarva",
+                Scalar::U16,
+                "The seven grahas' bindus in the sign.",
+            ),
+            ColumnDef::new("trikona", Scalar::U16, "The sum after the trine reduction."),
+            ColumnDef::new("reduced", Scalar::U16, "The sum after both reductions."),
+        ],
+    )
+}
+
+/// Every chart's Vimshopaka, a row a graha.
+fn chart_vimshopaka_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "vimshopaka",
+        "Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+            ColumnDef::new("scoring", Scalar::U8, "How each varga was scored.")
+                .of_enum("TsVimshopakaScoring"),
+            ColumnDef::new("shadvarga", Scalar::F64, "Over the six vargas."),
+            ColumnDef::new("saptavarga", Scalar::F64, "Over the seven."),
+            ColumnDef::new("dashavarga", Scalar::F64, "Over the ten."),
+            ColumnDef::new("shodashavarga", Scalar::F64, "Over the sixteen."),
+        ],
+    )
+}
+
+/// Every chart's Shadbala, a row a graha, its value columns from the table
+/// the writer reads.
+fn chart_shadbala_section(id: u32) -> SectionSchema {
+    let mut columns = vec![ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha")];
+    columns.extend(
+        crate::chart::SHADBALA_COLUMNS
+            .iter()
+            .map(|(name, doc, _)| ColumnDef::new(name, Scalar::F64, doc)),
+    );
+    columns.push(ColumnDef::new(
+        "strong",
+        Scalar::U8,
+        "1 when the rupas reach the requirement, else 0.",
+    ));
+    SectionSchema::columns(
+        id,
+        "shadbala",
+        "Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).",
+        columns,
+    )
+}
+
+/// Every chart's Bhava bala, a row a bhava, its value columns from the table
+/// the writer reads.
+fn chart_bhava_bala_section(id: u32) -> SectionSchema {
+    let mut columns = vec![
+        ColumnDef::new(
+            "lord",
+            Scalar::U16,
+            "The lord of the sign its madhya falls in.",
+        )
+        .of_enum("Graha"),
+    ];
+    columns.extend(
+        crate::chart::BHAVA_BALA_COLUMNS
+            .iter()
+            .map(|(name, doc, _)| ColumnDef::new(name, Scalar::F64, doc)),
+    );
+    SectionSchema::columns(
+        id,
+        "bhava_bala",
+        "Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).",
+        columns,
+    )
+}
+
+/// Every chart's dasha phala, a row a graha: the Subhanka in each of the
+/// seven vargas, their totals, and what ch. 47 reads of the placement.
+fn chart_dasha_phala_section(id: u32) -> SectionSchema {
+    let mut columns = vec![ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha")];
+    columns.extend(
+        teistro::strength::shadbala::SAPTAVARGAJA_VARGAS
+            .iter()
+            .enumerate()
+            .map(|(k, varga)| {
+                let out_of = if k == 0 { 60 } else { 30 };
+                ColumnDef::new(
+                    &format!("subhanka_{}", varga.key().to_lowercase()),
+                    Scalar::F64,
+                    &format!(
+                        "Its Subhanka in the {}, out of {out_of}: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).",
+                        varga.key()
+                    ),
+                )
+            }),
+    );
+    columns.extend([
+        ColumnDef::new("subhanka", Scalar::F64, "The seven Subhankas together, out of 240."),
+        ColumnDef::new("asubhanka", Scalar::F64, "Their complements together, out of 240."),
+        ColumnDef::new(
+            "nature",
+            Scalar::U16,
+            "Whether its rasi place is auspicious, neutral or inauspicious (v. 10).",
+        )
+        .of_enum("Nature"),
+        ColumnDef::new(
+            "phase",
+            Scalar::U8,
+            "Where in its dasha its effects come, by its decanate and reversed when retrograde and for the nodes (ch. 47 vv. 3 and 4).",
+        )
+        .of_enum("TsDashaPhase"),
+        ColumnDef::new(
+            "favourable",
+            Scalar::U8,
+            "1 when it is in the lagna, exaltation, its own sign or a Shant sign (ch. 47 v. 5).",
+        ),
+        ColumnDef::new(
+            "unfavourable",
+            Scalar::U8,
+            "1 when it is in the sixth, eighth or twelfth, debilitation or an inimical sign (v. 6); both flags can stand.",
+        ),
+    ]);
+    SectionSchema::columns(
+        id,
+        "dasha_phala",
+        "Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.",
+        columns,
+    )
+}
+
+/// Every chart's Vaiseshikamsa, a row a graha, a count and a name a scheme.
+fn chart_vaiseshikamsa_section(id: u32) -> SectionSchema {
+    let mut columns = vec![
+        ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+        ColumnDef::new(
+            "impaired",
+            Scalar::U8,
+            "1 when it is combust, defeated in war or in Shayana, its names then not auspicious, else 0.",
+        ),
+    ];
+    for (scheme, _) in crate::chart::VAISESHIKAMSA_SCHEMES {
+        columns.push(ColumnDef::new(
+            &format!("{scheme}_good"),
+            Scalar::U8,
+            &format!("How many of the {scheme}'s vargas are good for it."),
+        ));
+        columns.push(
+            ColumnDef::new(
+                &format!("{scheme}_name"),
+                Scalar::U16,
+                &format!(
+                    "The name the {scheme} count earns; read only when that count is 2 or more."
+                ),
+            )
+            .of_enum("Vaiseshikamsa"),
+        );
+    }
+    SectionSchema::columns(
+        id,
+        "vaiseshikamsa",
+        "Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.",
+        columns,
+    )
+}
+
+/// Every dasha's periods, depth first in time order.
+fn chart_dasha_periods_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "dasha_periods",
+        "Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.",
+        vec![
+            ColumnDef::new("level", Scalar::U8, "How deep: 1 for a mahadasha."),
+            ColumnDef::new(
+                "index",
+                Scalar::U8,
+                "Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.",
+            ),
+            ColumnDef::new(
+                "sign",
+                Scalar::U16,
+                "The sign it is the period of, when its dasha is `signed`; zero otherwise.",
+            )
+            .of_enum("Rashi"),
+            ColumnDef::new("lord", Scalar::U16, "Its lord.").of_enum("Graha"),
+            ColumnDef::new(
+                "from_jd",
+                Scalar::F64,
+                "When it begins, a Julian day (UTC).",
+            ),
+            ColumnDef::new("to_jd", Scalar::F64, "When it ends, a Julian day (UTC)."),
+        ],
+    )
 }
 
 /// Every chart's drishti: which body looks at which, how strongly, and
@@ -928,7 +1298,31 @@ fn chart_states_section(id: u32) -> SectionSchema {
                 Scalar::F64,
                 "How near it stands to a pada edge, degrees.",
             ),
-        ],
+            ColumnDef::new(
+                "has_sayanadi",
+                Scalar::U8,
+                "1 for the nine grahas, which BPHS ch. 45 numbers; 0 for the outer planets, and for every body of a chart with no Moon.",
+            ),
+            ColumnDef::new(
+                "sayanadi",
+                Scalar::U16,
+                "The Sayanadi state; read only when `has_sayanadi`.",
+            )
+            .of_enum("AvasthaSayanadi"),
+        ]
+        .into_iter()
+        .chain(teistro_state::Anka::ALL.map(|anka| {
+            ColumnDef::new(
+                &format!("cheshta_{}", anka.get()),
+                Scalar::U16,
+                &format!(
+                    "The Sayanadi sub-state under a name whose first syllable's anka is {}; read only when `has_sayanadi`.",
+                    anka.get()
+                ),
+            )
+            .of_enum("AvasthaCheshta")
+        }))
+        .collect(),
     )
 }
 

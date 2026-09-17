@@ -754,6 +754,754 @@ the astronomical numbers do not move. Nothing else computes yet.
   under an unequal division a house can begin in one sign and be centred
   in another.
 
+- `crates/strength`, the strength measures, beginning with the Ashtakavarga:
+  each graha's bindus, the sarvashtakavarga, and their reductions and pindas
+  under BPHS's reading (the default) or the conformance corpus's engine's
+  (`strength.shodhana`, `strength.ekadhipatya`).
+
+  **Numbers:** new. Every settings hash moved with the new knob and the
+  reshaped `strength.ekadhipatya`, which nothing read before; no number the
+  SDK computed before changes.
+
+  The Vimshopaka followed: each graha's strength out of 20 across the
+  sixteen vargas under the shadvarga, saptavarga, dashavarga and
+  shodashavarga, with BPHS ch. 7's weights, scored by the text's points
+  (the default) or the corpus's engine's Saptavargaja virupas
+  (`strength.vimshopaka`, crux C63), through `ChartRequest::with_vimshopaka`,
+  the document's `vimshopaka` section, the boundary's section 28 and
+  `chart.vimshopaka` in every binding.
+
+  **Numbers:** new. Every settings hash moved with `strength.vimshopaka`,
+  and `conformance-baseline` is version 5; no number the SDK computed
+  before changes.
+
+  The Shadbala followed: each graha's six strengths in virupas, the Sthana
+  and Kaala by component, their sum in rupas and whether it reaches the
+  requirement, under BPHS ch. 27's reading (the default) or the corpus's
+  engine's at eleven forks, each a setting (`strength.saptavargaja`,
+  `nathonnatha`, `pre_dawn_night`, `sun_ayana`, `moon_cheshta`, `kranti`,
+  `kaala_lords`, `dig`, `drik`, `naisargika`, `required_rupas`; cruxes
+  C64–C71), through `ChartRequest::with_shadbala`, the document's `shadbala`
+  section, the boundary's section 29 and `chart.shadbala` in every binding.
+  `strength.bala_scheme` is now read, and `PARASHARA_EXTENDED` is refused as
+  unsupported. `Founder::angles_at` gives a chart's ascendant, midheaven and
+  true obliquity at an instant, and the façade re-exports the strength crate
+  as `teistro::strength`.
+
+  **Numbers:** new. Every settings hash moved with the eleven knobs, and
+  `conformance-baseline` is version 6; no number the SDK computed before
+  changes.
+
+  Then Sripati's reading, from B.V. Raman's worked Standard Horoscope:
+  `teistro_aspect::sphuta`, the sphuta drishti with the special aspects;
+  `ShadbalaRules::SRIPATI`, which reproduces Raman's worked Shadbala; four
+  more settings (`strength.drekkana`, `benefics`, `cheshta`, `yuddha`) and
+  new values for `kranti` (`HINDU_TABLE`), `drik` (`QUARTER`, the old
+  `QUARTER` now `QUARTER_WITH_JUPITER_MERCURY`) and `luminary_cheshta` (which
+  replaces `moon_cheshta`; `sun_ayana`'s `CHESHTA_ONLY` is `NOT_IN_KAALA`,
+  `required_rupas`'s `RECORDING_ENGINE` is `SRIPATI`); a Yuddha component in
+  `KaalaBala` and the boundary's `shadbala` section; and the ahargana's lords
+  divided on the count including the day of birth.
+
+  **Numbers:** the default Shadbala moves: the Drik reads the sphuta
+  drishti, the benefics are conditional, the Cheshta reads Kedarnath Dutt's
+  elements, grahas at war exchange a Yuddha bala, and the Saptavargaja gives
+  the moolatrikona's 45 in the rasi alone. `conformance-baseline` is version 7
+  and reproduces the corpus exactly as before.
+
+  The Bhava bala followed: each bhava's lord's Shadbala, Dig, drishti and
+  special rules under BPHS ch. 27's reading (the default), Sripati's or the
+  corpus's engine's (`strength.bhava_dig`, `bhava_drishti`,
+  `bhava_special_rules`; cruxes C73–C75), through
+  `ChartRequest::with_bhava_bala`, the document's `bhava_bala` section, the
+  boundary's section 30 and `chart.bhavaBala` in every binding.
+
+  **Numbers:** new. Every settings hash moved with the three knobs, and
+  `conformance-baseline` is version 8.
+
+  The Ishta and Kashta phalas followed, on each graha of the Shadbala reading
+  and its boundary section: BPHS ch. 28's rays (the default), Sripati's
+  square roots, or the engine's roots of its own Cheshta
+  (`strength.ishta_kashta`, crux C76).
+
+  **Numbers:** new; `conformance-baseline` is version 9.
+
+  The Vaiseshikamsa followed: each graha's count of good vargas and the name
+  it earns in the shadvarga, saptavarga, dashavarga and shodashavarga, from
+  BPHS ch. 6 vv. 42 to 53 (crux C77), through `ChartRequest::with_vaiseshikamsa`,
+  the document's `vaiseshikamsa` section, the boundary's section 31 and
+  `chart.vaiseshikamsa` in every binding; the thirty names are a new
+  catalogue kind, `vaiseshikamsa`.
+
+  **Numbers:** new. No settings hash moved.
+
+  The Sayanadi avasthas followed, from BPHS ch. 45 vv. 30 to 37: every
+  graha's state carries `sayanadi`, one of the twelve states and its
+  sub-state under each of the five ankas a name's first syllable can have
+  (`Sayanadi::cheshta(Anka)`), through the boundary's `states` section and
+  every binding. The sub-states are a new catalogue kind, `avastha_cheshta`.
+  Two knobs, `state.sayanadi_ghatis` and `state.sayanadi_nodes`, carry
+  what the verses leave open (crux C78). A graha in Shayana is now also
+  impaired in the Vaiseshikamsa (crux C77).
+
+  **Numbers:** new, and the Vaiseshikamsa's `impaired` moves for a graha in
+  Shayana. Every settings hash moved: the `state` group gained two knobs.
+
+  The dasha phala followed, from BPHS ch. 28 vv. 5 and 7 to 10 and ch. 47
+  vv. 3 to 6: the Shadbala carries each graha's Subha and Ashubha rays, and
+  `ChartRequest::with_dasha_phala` reads each of the nine grahas' Subhankas
+  in the seven vargas and their totals, its rasi place's nature, where in
+  its dasha its effects come (`DashaPhase`), and whether its placement makes
+  the dasha favourable or unfavourable, under a new knob,
+  `dasha.shanta_sign` (crux C79). It crosses as the document's
+  `dasha_phala` section, boundary section 32 and `chart.dashaPhala` in
+  every binding. `teistro_state::dignity::varga_dignity` reads a divisional
+  sign's dignity, and the Saptavargaja now shares its temporary friendship.
+
+  **Numbers:** new. Every settings hash moved: the `dasha` group gained a
+  knob.
+
+  A consumer's own nakshatra-seeded dasha system now registers, the Phase 5
+  exit's consumer-row clause. A `UduDefinition` goes on
+  `ContextBuilder::dasha_system` or `TsContextOptions.dashas_json`, and
+  every binding's context option takes one. Each is checked by the rules a
+  shipped row passes and refused by its place and field. A request asks for
+  it by key (`dasha_system.ACME_SAPTAKA`, an id from `0x8000`), and the
+  answer names it so. The reading carries its `definition`, so a stored
+  document rebuilds the cursor in a context that never registered it.
+  `DashaReading.system` is now a `DashaName`, a catalogued member or a
+  registered key, serialised as the bare key as before.
+  `ChartRequest::with_dashas` takes ids, and the boundary request's
+  `dashas` array is plain ids rather than an enum.
+
+  **Numbers:** unchanged for every catalogued system; a registered twin of
+  Vimshottari reproduces it to the bit.
+
+- Phase 6 begins with the measurement: the corpus moves to 0.10.0, which
+  records the recording engine's 605 yoga rules in its condition language
+  and their presences on 93 charts. `cargo xtask yogas` (held by
+  `check-yogas`) evaluates every rule under each reading of that language.
+  The engine's reading reproduces all 55 521 decisions, 5350 presences'
+  planets and every cancellation. The Moon's and Mercury's natures and
+  sign-against-orb conjunction are decided; five forks the corpus cannot
+  see are named; 116 rules with no positive case are listed. The page is
+  what the `rules` kernel will be built from.
+
+- `crates/rules`, the rules kernel's first slice: the recording engine's
+  condition language typed (three combinators and 22 predicates over the
+  grahas and the lagna) and read strictly, so an unknown field, predicate,
+  house or body is refused with its path; a `RuleChart`; the seven places
+  the language leaves open as `Readings`, the engine's choices the default;
+  and an `Evaluator` returning each rule's presence, participants, houses
+  and held cancellations. It reproduces every recorded yoga, and
+  `cargo xtask yogas` now measures the built kernel rather than a private
+  copy of its rules. The engine's 597 written rules over one chart take
+  about 10 microseconds.
+
+  **Numbers:** none; nothing in a chart document or the boundary reads the
+  kernel yet.
+
+- `teistro-rules` references: a condition can be about the lord of a sign,
+  the holder of a chara karaka, an arudha pada, the upapada, a body's
+  navamsha, or a sign counted from any of these, as BPHS chs. 29, 30, 33, 34
+  and 40 write their rules. A `BodyRef` is a body and a `SignRef` a sign, so a
+  rule asking for the dignity of a pada is refused when it is read. The
+  engine's rules read unchanged. `Placement` gains `navamsha` and `Readings`
+  gains `upapada` (crux C80). `teistro_points::arudha::pada` counts the pada
+  of any sign.
+
+  **Numbers:** none; the corpus's yogas reproduce as before.
+
+- `teistro-rules` traces: `Evaluator::explain` returns the rule's answer with
+  each condition checked, whether it held, the bodies it added and each
+  reference resolved, as a tree that serialises to JSON and prints as prose.
+  One evaluator runs both calls, so `evaluate` allocates no trace, costs the
+  same, and cannot disagree with an explanation.
+
+  **Numbers:** none.
+
+- `teistro-rules` tables: a rule can look a body's degree up in a
+  degrees-by-sign table (`planet-at-table-degree`) or a sign up in a
+  signs-by-tithi table (`planet-in-table-sign`), each table data with its
+  source. `Tables::classical` ships Jataka Parijata's Mrityu Bhagas (ch. 1
+  v. 57 and its translator's table) and Pushkara bhagas (v. 58), Brihat
+  Prajapatya's Moon row, and the Dagdha rashis. `Tables::check` refuses a rule
+  naming a missing table or the wrong kind. `RuleChart` gains `tithi`,
+  `Readings` gains `bhaga` (cruxes C82 to C84), and `Readings::default()` is
+  now `Readings::TEXTS`, which differs from `RECORDING_ENGINE` only there.
+
+  **Numbers:** none; no shipped rule reads a table yet.
+
+- The doshas: the corpus moves to 0.11.0, which records the recording engine's
+  natal dosha evaluator: 52 rules and their presences on 93 charts, with
+  severity, cancellations and net status. `teistro-rules` models what a dosha
+  adds once, for yogas too. A `Rule` gains reference groups, labelled
+  cancellations, a `Severity` rule, a cancellation threshold, remedies and
+  scope, and a `RuleResult` gains where it was found from, its severity and its
+  `NetStatus`. The language gains the lord, lagna, gandanta and panchanga
+  predicates, and `RuleChart.tithi` becomes `RuleChart.panchanga`. Under
+  `Readings::RECORDING_ENGINE_DOSHAS` the kernel reproduces every recorded
+  dosha of the 35 rules the language can say (crux C85).
+
+  **Numbers:** none.
+
+- The seventeen doshas the recording engine computes in code are rules:
+  `teistro_rules::shipped::computed_doshas` ships Kalsarpa, its twelve named
+  forms, Kala Amrita, Mrityu Bhaga, Dagdha Rashi and Badhaka, each with its
+  citation and the engine's severity. Each says present exactly where the
+  engine's code did on every recorded chart, and the last three reproduce every
+  recorded field. `all-planets-between-nodes` takes a `side`, a `SignRef` can
+  be `{"badhakaOf": …}` (crux C86), and a group can carry a `weight` a
+  count-based severity reads. `cargo xtask doshas` writes
+  `03-design/doshas-measured.md`, held by `check-doshas`.
+
+  **Numbers:** none.
+
+- The Neecha Bhanga family is sayable: `teistro_rules::shipped::computed_yogas`
+  ships the eight the recording engine computes in its yoga service, each one
+  condition over any debilitated graha, and all eight say present where that
+  code did. The language gains `for-any`, which binds `SELF` for the condition
+  inside it and takes every body that meets it as a participant;
+  `{"exaltationOf": …}`, `{"debilitationOf": …}` and `{"exaltedIn": …}`; and
+  `same-sign` and `same-body`. `SELF` outside a `for-any` is refused when a
+  rule is read. Their citation is unsettled (crux C87).
+
+  **Numbers:** none.
+
+- `in-varga` reads a condition inside a divisional chart: every body in its
+  sign there, its houses whole-sign from that division's lagna, its dignity
+  from that sign. An evaluator is given the divisions it may step into, and a
+  rule that reads a longitude inside one is refused when it is read.
+
+  **Numbers:** none.
+
+- A citation says how good its evidence is: `Source.rank`, 1 for a text, 2 for
+  an implementation, 3 for a secondary source, 4 for nothing found. Every rule
+  and table the SDK ships sets one, so a consumer can ask for only what a text
+  supports. The survey behind it is in
+  `01-research/feature-universe/04-yogas-doshas.md`: the "800 yogas" figure is
+  a program's screen count, not a classical number; seven of the recording
+  engine's doshas have no verse in seven full translations, and four more are
+  widened from what their chapters say (cruxes C88 to C91).
+
+  **Numbers:** none.
+
+- A class of bodies can aspect and can be counted: the aspect predicates take
+  `any-benefic` or `any-malefic` as well as a body reference, and
+  `count-in-houses` asks for at least so many of a class in houses counted from
+  any reference. Together with what the language already had, these say the
+  arishta verses of BPHS ch. 9 and the papa and shubha kartari of Phaladeepika
+  ch. 6 sl. 8.
+
+  **Numbers:** none; every recorded yoga and dosha reproduces as before.
+
+- A rule can name a point: `{"point": "GULIKA"}` resolves any point the
+  catalogue names — the upagrahas, the special lagnas, the sphutas — from the
+  set an evaluator is given (`with_points`), and resolves to nothing when the
+  chart does not carry it.
+
+  **Numbers:** none.
+
+- A chart's panchanga can carry a limb's ghatikas — how far the birth stood
+  into the tithi, the Moon's nakshatra and the rising sign, and how much was
+  left — and `at-limb-edge` reads them. On that,
+  `teistro_rules::shipped::gandantas` ships BPHS ch. 92's tithi, nakshatra and
+  lagna gandantas and its Abhukta Moola, at rank 1 with chapter and verse: the
+  SDK's first rules written from a text rather than mirrored from an
+  implementation. They measure a different quantity from the engine's
+  `planet-at-gandanta`, which reads degrees from a sign junction (crux C92).
+
+  **Numbers:** none.
+
+- `teistro_rules::shipped::arishtas` ships eleven of BPHS ch. 9's evils at
+  birth and four of ch. 10's antidotes, each read from the verse at rank 1.
+  `birth-by-day` reads whether the birth fell between sunrise and sunset, which
+  ch. 10 v. 5 asks beside the paksha. The verses that turn on a graha being
+  "strong" are deliberately not in the pack: the kernel has no strength
+  measure, and a cancellation that fires too often is worse than one that is
+  missing.
+
+  **Numbers:** none; these are new rules, and no recorded answer moves.
+
+- A rule can name another: `{"type": "rule", "key": …}` holds when that rule
+  holds, read from the set an evaluator is given, and `check_references`
+  refuses a set with a dangling key or a circle, naming it. With it, BPHS
+  ch. 9's evils carry ch. 10's antidotes as their cancellations while the
+  antidotes stay rules of their own, and the pack grew to the evils to the
+  mother and to the father: 32 evils and 4 antidotes. `count-aspecting` counts
+  how many bodies of a class aspect a reference, which ch. 9 v. 24's three
+  malefics on the Moon needed.
+
+  **Numbers:** none.
+
+- Varahamihira's Balarishta: eleven rules from Brihat Jataka ch. 6, read in
+  Chidambaram Iyer's 1885 translation, ship beside BPHS's. `planet-in-degrees`
+  reads a body's place within its sign, which v. 8's last navamsa needs, and is
+  refused inside an `in-varga` as every longitude is. The verses whose escape
+  turns on a *powerful* benefic carry that in their notes rather than in a
+  cancellation the kernel cannot measure.
+
+  **Numbers:** none.
+
+- A rule can say what happens when it holds: `Rule::outcome`, whose one kind is
+  a `life-span` — a count and the unit its verse uses — which a `RuleResult`
+  carries. It is what the texts actually grade an affliction by, and it
+  replaces an invented score. Ten rules of Saravali ch. 10 ship with the spans
+  Kalyana Varma gives them, from sixteen days to nine years.
+
+  **Numbers:** none.
+
+- Saravali chs. 11 and 12, the antidotes to those evils: eleven more rules,
+  one of them graded at a hundred years. Each evil of ch. 10 names ch. 12's
+  six, which counter the evils at birth generally, and those that name the
+  Moon name ch. 11's five beside them, ch. 11 being her chapter. The arishta
+  pack is now 53 evils and 15 antidotes over three texts.
+
+  **Numbers:** none.
+
+- The dwigraha generator: Brihat Jataka ch. 14's twenty-one pairs of grahas
+  sharing a sign and Phaladeepika ch. 18's seventy-two readings of the Moon in
+  each sign under each of six aspects, built from a table of what changes
+  rather than written out. Neither text grades anything, so `Outcome` gained a
+  second kind, `effect`, carrying what the verse says in words; `days()` now
+  answers only where a text counts a span. `shipped::readings()` is the set.
+
+  **Numbers:** none.
+
+- Jataka Parijata's lists beside them, as the appendix to Iyer's 1885 Brihat
+  Jataka prints them: every combination of the seven grahas sharing one sign,
+  from two to six — 21, 35, 35, 21 and 7. They run in combinatorial order, so
+  a rule's grahas are generated and only its reading is data. `readings()` is
+  now 212 rules, and the SDK ships 309.
+
+  **Numbers:** none.
+
+- Saravali chs. 22 to 29 beside them: each of the seven grahas in each of the
+  twelve signs, eighty-four readings, a chapter to a graha. `readings()` is now
+  296 rules, and the SDK ships 393. The chapters' further readings of a graha
+  under another's aspect, and ch. 23 v. 88's making the whole of them wait on
+  strength, are not here.
+
+  **Numbers:** none.
+
+- Saravali ch. 30 after them: each of the seven grahas in each of the twelve
+  bhavas, eighty-four more readings. `readings()` is now 380 rules, and the SDK
+  ships 477. The chapter's closing verses — malefics harming the bhava they
+  occupy except in the sixth, eighth and twelfth, and all of these readings
+  varying with strength — are not here.
+
+  **Numbers:** none.
+
+- The thirty-two Nabhasa yogas of BPHS ch. 35, read from the text, each with
+  the effect its verse gives: `shipped::nabhasas()`. The seven sankhya yogas
+  name the other twenty-five as cancellations, as v. 17 requires. Twenty-seven
+  of the thirty figures the recording engine also carries answer exactly as it
+  recorded over the 93 charts; the three that differ are readings, recorded as
+  crux C93 and pinned so that a divergence which moves — or disappears — fails
+  the build. The SDK ships 509 rules.
+
+  **Numbers:** 27 of 30 Nabhasa figures reproduce the engine's answers exactly;
+  every chart answers one sankhya yoga and 46 of the 93 are cancelled.
+
+- BPHS ch. 37's lunar yogas and ch. 38's solar ones beside them: the Moon
+  counted from the Sun, Adhi yoga, the three grades of benefics in the
+  upachayas from her, Sunapha, Anapha, Duradhara, Kemadruma, Vesi, Vosi and
+  Ubhayachari — fourteen rules, each with its verse's effect. The SDK ships
+  523 rules.
+
+  **Numbers:** 34 of the 38 figures the engine also carries reproduce its
+  answers exactly. Kemadruma is the fourth divergence (crux C94): read whole,
+  the verse answers 1 of the 93 charts where the engine answers 57.
+
+- **Breaking:** `Rule::outcome` and `RuleResult::outcome` become `outcomes`, a
+  list, because a verse may say more than one thing — Saravali ch. 37's Pancha
+  Mahapurusha verses describe the native *and* count his years. `life_span()`
+  and `effect()` on a rule and on a result reach either kind without matching.
+
+- The five Pancha Mahapurusha yogas as Saravali ch. 37 gives them, and the
+  named yogas of BPHS ch. 36 the language can say: Shubha, Ashubha, Gaja
+  Kesari, Amala, Parvata, Chamara, Srinatha, Matsya, Koorma, Khadga, Kalanidhi,
+  Kalpadruma, Lagnadhi and the three Trimurthi yogas. The SDK ships 544 rules.
+
+  **Numbers:** every Pancha Mahapurusha yoga reproduces the engine exactly, on
+  49 answers over the 93 charts; 41 of the 49 figures both carry now agree
+  exactly, and the four new divergences are crux C95.
+
+- Two predicates for everything Jaimini reads by. `rashi-aspects` is BPHS
+  ch. 26's aspect of the signs, held to the table the chapter prints over all
+  144 pairs; `argala` and `vipareeta-argala` are ch. 31's intervention, with
+  `ArgalaPlace` pairing each intervening house to the one that obstructs it so
+  a rule cannot pair them wrongly, and counted backwards from a node as the
+  verse directs. Seven rules use them: ch. 29 vv. 13 to 15's graded gains of
+  the eleventh from the pada of the ascendant, and ch. 39's two associations.
+  The SDK ships 551 rules.
+
+  **Numbers:** the graded gains nest as the verse says — 18 charts of the 93
+  answer the first grade, 14 the intervention, 12 a benefic's, 1 an exalted
+  benefic's.
+
+- Saravali chs. 49, 50 and 51: the part of a sign that rises — two halves,
+  three thirds and nine ninths of each of the twelve, a hundred and sixty-eight
+  readings. They need no division chart, and the number of parts is data, so
+  the chapter that does cut a sign nine ways needed no code at all.
+  `readings()` is now 548 rules and the SDK ships 719.
+
+  **Numbers:** one hora, one decanate and one navamsa rise in every chart, so
+  each division answers 93 times over the 93 — which says the degree bands tile
+  a sign with no gap and no overlap.
+
+- **Strength, which is what every omitted verse wanted.** A chart may carry
+  `Strengths` — a measure, each body's number and what it must reach — and
+  `planet-strong`, `planet-weak` and `planet-stronger-than` read them. The
+  kernel compares; it does not compute, so the measure and the reading of the
+  requirement (crux C71) stay with whoever builds the chart. Strong and weak
+  are two questions, not one and its negation: a chart that says nothing
+  answers false to both. `Rule::reads_strength` says which rules want a chart
+  that can answer.
+
+  BPHS ch. 31's intervention is now whole — v. 4 gives two tests and either
+  serves — and seven more yogas of ch. 36 ship (Kahala, Sankha, Bheri,
+  Mridanga, Lakshmi, Sarada, Kusuma), together with the three Brihat Jataka
+  arishtas whose escape is a *powerful* benefic, now carried as cancellations.
+  The SDK ships 726 rules.
+
+  **Numbers:** the corpus records the engine's Shadbala for 71 of the 93
+  charts. Completing the intervention moved two charts into the graded gains;
+  the new cancellations fire on 12 chart-rules where nothing fired before;
+  Mridanga answers none of the 93.
+
+- A nakshatra for any body: `planet-in-nakshatra` divides a body's own sidereal
+  longitude, and `same-nakshatra` asks whether two stand in one. Four more of
+  Saravali ch. 10's evils ship with it — the birth star identical with Ketu's,
+  the Sun in a tenth of Mars or Saturn under a strong malefic's aspect, Rahu in
+  an angle aspected by malefics, and the three lords combust. The SDK ships
+  730 rules.
+
+  **Numbers:** the computed nakshatra and pada agree with the corpus's recorded
+  ones over all 27 nakshatras and 4 padas on each of the 77 charts that record
+  one, and exactly one pair holds on each.
+
+- **What a house says when several grahas share it** (crux C96). Reading a
+  placement one graha at a time cannot say what several grahas in one house say
+  together. The texts answer in four shapes and refuse a fifth, and the SDK now
+  ships all four: Saravali ch. 31's 84 readings of each pair of the seven in
+  each of the four angles — the only family in the corpus keyed to a set in a
+  *named* house — and ch. 34's counts, three grahas in the ascendant and the
+  enemies answering the number in the sixth. A pair in a named house needed no
+  new predicate: a conjunction says one sign and `planet-in-house` says which.
+  `readings()` is now 632 rules and the SDK ships 817.
+
+  **Fixed:** the dwigraha pack attributed the pairwise-composition rule to
+  Brihat Jataka ch. 14 v. 5. That verse says only "in the case of other
+  planetary yogas the effects described shall be determined and applied"; the
+  pairwise split is N. Chidambaram Iyer's note (a) on it. Phaladeepika ch. 18
+  v. 5 is the verse that carries the rule, and the pack and the design page now
+  say so.
+
+  **Numbers:** Saravali ch. 31 v. 87 declines to give the same readings for
+  three, four, five or six grahas in an angle, so nothing of that shape ships.
+  A pair conjunct in an angle is a pair conjunct, so the four angle readings of
+  a pair can never answer more charts than Brihat Jataka's one reading of it —
+  which the test holds for all 21.
+
+- **A house read whole.** `Evaluator::house_reading` gathers everything bearing
+  on a house — its sign, the grahas standing there, every rule that held whose
+  participants stand there — and the `Composition`s the texts give for reading
+  them together. A composition is not a reading: it says nothing of the native,
+  only how what held is to be taken, and it carries its verse. Six ship, in
+  four kinds: `Compose` (Phaladeepika ch. 18 v. 5), `Arbitrate` (ch. 22 v. 19,
+  BPHS ch. 79 vv. 2 to 3, Saravali ch. 34 v. 66), `Modulate` (ch. 34 v. 65) and
+  `Refuse` (Saravali ch. 31 v. 87). Saravali ch. 19 v. 8's five-or-six-together
+  reading ships beside them. The SDK ships 818 rules.
+
+  **Numbers:** 48 of the 1116 houses of the corpus hold three grahas or more —
+  35 with three, 10 with four, 3 with five — which is exactly the case a
+  reading of one graha at a time cannot answer and the case the texts decline
+  to write. Over the 93 charts a consumer receives 4913 results gathered under
+  a house and 455 statements of how to read them together.
+
+- **The ascetic yogas of BPHS ch. 79**, the first rules strength unlocked and
+  the sharpest measurement the corpus has given. The yoga forms when four or
+  more grahas *possessed of strength* share a house, and the native takes the
+  order of *the strongest of them alone*; vv. 6 to 8's three further figures
+  ship beside them, and v. 4's cancellation with them. Saying "the strongest of
+  these" needed no predicate: it is `not` of a `for-any` over `same-sign` and
+  `planet-stronger-than`. The SDK ships 829 rules.
+
+  **Numbers:** the recording engine writes the same seven as "this graha shares
+  a sign with three others" and answers 34 chart-rules over the 93 where the
+  verse answers 1 — and on the one chart that satisfies the verse it fires four
+  at once, giving the native four holy orders where Parashara gives him one.
+  Crux C97.
+
+- `Evaluator::house_readings` evaluates each rule **once** and hands its result
+  to every house its participants stand in, where it had evaluated every rule
+  twelve times. A test holds the whole-chart path to the one-house path
+  reading for reading.
+
+- Saravali ch. 10 v. 14, the ascendant in a Nigala, Sarpa, Pakshi or Pasa
+  decanate, which had shipped as a refusal for want of a catalogue.
+  Phaladeepika ch. 3 vv. 13 and 14 give the catalogue in the verse, so the rule
+  ships — and with it the finding that **no two texts agree on which decanates
+  are the serpent's** (crux C98). It needed no divisional chart: a decanate is
+  a sign and a third of it. The SDK ships 830 rules.
+
+- **The rules kernel is reachable.** Until now the only crate that depended on
+  `teistro-rules` was `xtask`: every test passed, every gate was green, and 830
+  shipped rules could not be called by any consumer. The façade now depends on
+  it, re-exports it as `teistro::rules`, and adds `teistro::rule_chart` — the
+  join from a chart the SDK computed to the chart the rules read. It leaves
+  empty what it cannot fill (the SDK computes no chara karakas) and refuses a
+  graha the foundation or the states do not carry rather than defaulting it.
+
+  **Numbers:** `crates/sdk/tests/rules.rs` founds the corpus's first chart with
+  the built-in ephemeris, joins it and reads it; the navamsha the bridge
+  computes is the D9 the conformance corpus recorded for that chart, body for
+  body.
+
+- Saravali ch. 34's readings of a **named set of grahas in a named house** —
+  the rarest shape the texts carry and the one a reading of one graha at a time
+  cannot say. Fourteen ship: the named triple in the second (Mars, Saturn and
+  the Sun), the same under a weak Moon's aspect, named pairs in the second and
+  the seventh, Saturn standing *alone* in the second, and Saravali's Lagnadhi
+  from the sixth against Parashara's from the seventh. `HouseReading`, `Held`,
+  `Composition` and `Kind` now serialise, as a rule result already did. The SDK
+  ships 844 rules.
+
+  **Numbers:** over the 93 charts the named triple in the second never happens
+  and the named pair in the seventh happens seven times — thirteen answers
+  between every named-set-in-a-named-house rule the texts carry, which is how
+  rare the shape is.
+
+- **`Readings::TEXTS` now says what the texts say.** It claimed to be the
+  texts' reading wherever a text settles one, and was a single field. Two more
+  are settled: the nodes' motion, which BPHS ch. 31 v. 6 states plainly and
+  which the intervention's backward count already rests on, and which house a
+  body is in, which the verses count as whole signs from the lagna where
+  `Recorded` follows whatever the caller's chart carries.
+
+  **Numbers:** neither moves an answer over the 93 charts — no rule the SDK
+  writes asks whether a node is retrograde, and every house the corpus records
+  is already whole-sign. `crates/rules/tests/readings.rs` measures both flips
+  at zero and pins the fields, so a silent reversion fails rather than passing
+  on a corpus that cannot see it.
+
+- Four invariants over the whole shipped set, which no pack can check for
+  itself: a key names one rule, every rule reads back as itself through the
+  language, every rule is evaluable, and the categories are a closed vocabulary
+  of twenty-seven. Key uniqueness is the load-bearing one — a cancellation
+  names another rule by key.
+
+- BPHS ch. 44 vv. 38 and 39, the fate of the corpse, read from the
+  twenty-second decanate: a benefic's decanate burns the body, a malefic's
+  throws it in water, a mixed planet's lets it dry, a serpent's gives it to the
+  animals. It needed no new reference — twenty-one decanates are seven signs,
+  so the twenty-second is the eighth house's sign at the lagna's own third. The
+  SDK ships 848 rules.
+
+  **Numbers:** exactly one of the three lord-kinds answers each of the 93
+  charts, so the benefic, malefic and mixed split is exhaustive and disjoint;
+  seven charts take the serpent reading beside it. The serpent list is BPHS's
+  own (v. 40), not Phaladeepika's, so crux C98's anticipated table is *not*
+  extracted: the two rules cite different texts, and a shared table would have
+  coupled them into one answer the sources do not give.
+
+- Rules at the C boundary: `TsChartRequest` gains a nullable `rules_json`, and
+  section 33 `rules` of the charts blob carries each chart's answers as
+  canonical JSON, rules by key. A held rule in a house reading is written by
+  key too (`teistro_rules::key_of`). Refusals are named from the request's
+  root, `rules_json.rules[0]` (`03-design/rules-at-the-boundary.md`, step 2 of
+  4). No existing section moves.
+
+- A chart reading that answers rules: `RuleRequest` names shipped sets and a
+  consumer's own rules, validates into a `RuleSet` (each key once, every
+  reference resolved), and `sdk.chart().readings_with_rules` returns each
+  document with a `RulesReading` — the present results, and the house and
+  longevity readings when asked. A birth with no sunrise is read without the
+  points a rule named and says so in `unreadable`
+  (`03-design/rules-at-the-boundary.md`, step 1 of 4).
+
+  **Numbers:** over the corpus's 53 readable charts, the text-written and
+  generated sets (895 rules) answer 3 145 times, about 59 a chart, each chart
+  exactly as the same set evaluated through `RuleInputs`.
+
+- `natural-relation`: how one graha regards another by natural relationship,
+  and `Relation::between` for code; BPHS ch. 43 v. 67 and vv. 71 to 73's
+  second figure ship with it. The SDK ships 997 rules.
+
+  **Numbers:** the lagna lord's regard for the Sun partitions every chart but
+  the seven with Leo rising, 60 friend and 26 enemy; no lagna lord regards the
+  Sun as neutral.
+
+- BPHS ch. 44's manner, place and awareness of death (vv. 25 to 37) and the
+  worlds before birth and after death (vv. 41 to 45): 34 rules in the new
+  `marana` and `loka` categories. The SDK ships 993 rules.
+
+  **Numbers:** over the 93 charts the verses' partitions hold on every chart —
+  one place of death on each of the 59 with the third occupied, one by the
+  third's modality on all 93, one prenatal world on each of the 71 that compare
+  the luminaries' strength.
+
+- The marakas: `Evaluator::marakas` gives every graha's reasons from BPHS ch. 44
+  vv. 2 to 24, graded death or difficulty; `Evaluator::vulnerability` reads a
+  running chain with v. 8's malefic major period in a malefic sub-period; and
+  `teistro::maraka_windows` gives a dasha's windows over the ages a class of
+  life runs to. Every result carries `Presentation::Vulnerability` (crux C105).
+
+  **Numbers:** the prime reasons are the kernel's maraka class on all 93
+  charts; seven grahas of nine carry a death-bringing reason. The corpus's
+  first chart, medium life by its three pairs, has 18 windows from 32 to 64
+  years, 7 of them v. 8's fatal kind.
+
+- Pindayu, Nisargayu and Amsayu: `Evaluator::ayurdaya` sums BPHS ch. 43 vv. 4
+  to 32's three spans with each giver's basic years, reductions and net, and
+  `Ayurdaya::chosen` picks by strength with ties averaged (crux C104).
+
+  **Numbers:** the translator's seven basic years reproduce from his
+  longitudes and, to a hundredth, from the SDK's own cast of his chart, with
+  his Sun's and Moon's reductions. Over the 93 charts Pindayu averages 85
+  years, Nisargayu 79 and Amsayu 39.
+
+- The three pairs: `Evaluator::three_pairs` reads BPHS ch. 43 vv. 33 to 50 —
+  each pair's class, how the chart's was decided, Saturn's and Jupiter's
+  shifts, the years and their rectification under `ThreePairsRules` (crux
+  C103). `PointAt` carries a point's longitude.
+
+  **Numbers:** the translator's worked chart, cast by the SDK, matches his
+  longitudes to 0.1° and his three pair classes; the verses then lower his
+  short life to Yogarishta, which he does not apply. Over the corpus's 51
+  charts with a hora lagna, the pairs agree all three on 9 and differ on 14.
+
+- A class of life is an outcome: `Outcome::LifeClass` with `LifeClass`'s
+  seven classes and their spans (BPHS ch. 43 vv. 52 to 54), raised and lowered
+  a step as Jupiter and Saturn do (vv. 47 to 50). BPHS ch. 43's 21
+  combinations for the class of life ship in `ayur`. The SDK ships 959 rules.
+
+  **Numbers:** over the 93 charts, 97 long, 18 medium and 101 short; vv. 71 to
+  73 place the stronger lord in exactly one of the three house groups on every
+  chart that compares strength (crux C102).
+
+- BPHS ch. 39 v. 15's and v. 24's figures on the special lagnas, and the
+  bhava lagna they name (BPHS ch. 4 vv. 2 to 3, one sign in five ghatis),
+  now computed beside the hora and ghatika lagnas. The SDK ships 938 rules.
+
+  **Numbers:** a chart's points gain the bhava lagna; nothing else in the
+  points moves. Neither figure answers any of the 51 corpus charts the SDK
+  reads with points. V. 12 is not shipped: its two readings answer 6 charts
+  and 52 (crux C100).
+
+- **Fixed: a birth or a day near the date line.** Where a civil clock keeps
+  more than half a day from the place's mean time — Samoa, Tonga, Tokelau,
+  Kiribati's Line Islands — the local day's sunrise was taken from the wrong
+  date, and a birth before dawn was refused outright ("not in the local day").
+  A civil date now reaches a solar model as the mean-time date at its own noon
+  (`calendar::solar::civil_day_light`), in the chart's day, the daily
+  panchanga and the solar month-start rules.
+
+  **Numbers:** sunrise, sunset and everything counted from them move by a day
+  at those places, and only there; no chart elsewhere moves.
+
+- From a chart reading to rules in one step: `ChartRequest::with_rule_inputs`
+  asks for exactly what a rule set reads (derived by `Rule::vargas`,
+  `Rule::reads_strength` and `Rule::reads_points`), and
+  `teistro::RuleInputs::of(&document).evaluator(readings)` gives an evaluator
+  with the chart, its points and its divisions.
+
+  **Numbers:** the SDK's own reading of each of the corpus's charts matches the
+  corpus body by body except at one chart cast on a sign boundary, where the
+  Sun stands 0.2″ apart.
+
+- A rule result says which dasha periods deliver it. `Rule::timing` is
+  `concerned` (BPHS ch. 31: "the Rashi or planet concerned") or `throughout`
+  (ch. 35 v. 50, now on all 32 Nabhasa yogas); `Evaluator::delivery` answers
+  for a running chain given as `Running` lords and signs, and
+  `teistro::rule_periods` gives it the SDK's own. Two timed verses ship: BPHS
+  ch. 41 v. 16's wealth-givers and ch. 42 v. 13's harm to finances. The SDK
+  ships 936 rules.
+
+  **Numbers:** delivery is held against the verse read directly off each of
+  the 93 charts, 327 wealth-giving periods, and every Vimshottari mahadasha of
+  a chart the SDK founded agrees.
+
+- Chara karakas and divisions reach a consumer. `RuleChart::with_chara_karakas`
+  computes both karaka schemes from the longitudes (BPHS ch. 32, to the
+  arc-second), `RuleChart::varga_signs` places a chart in a division, and
+  `teistro::rule_vargas` does so under the SDK's classical schemes;
+  `teistro::rule_chart` now fills the karakas, so the twenty raja and Jaimini
+  rules that read one or a division answer for a chart the SDK computed.
+
+  **Numbers:** the seven-karaka scheme reproduces the corpus on all 93 charts.
+  The eight-karaka scheme reproduces on all 93 only in the recording engine's
+  order, which puts the Pitrikaraka last where BPHS puts the Darakaraka last;
+  `EightKarakas` chooses, defaulting to the verse (crux C101).
+
+- BPHS ch. 39's raja yogas and ch. 40's yogas for royal association: 56
+  rules in a new `raja` category, and `count-of`, a counting quantifier that
+  shares `for-any`'s evaluation. The SDK ships 934 rules.
+
+  **Numbers:** v. 37's angular lord joining a trinal lord agrees with the
+  recording engine on all 42 answers over the 93 charts; the fifth and ninth
+  lords answer five wider, the verse adding mutual aspect. "Benefics in
+  angles" is not shipped: some benefic answers 67 charts and every benefic 5
+  (crux C100).
+
+- BPHS ch. 42's combinations for penury: fifteen rules in a new `daridra`
+  category, with v. 17's other half (the Sun in the second unaspected by
+  Saturn) as a `dhana` rule. The marakas of BPHS ch. 44 vv. 3 to 5 are a
+  class: `any-maraka` beside `any-benefic` and `any-malefic`, a public
+  `Class`, a `planet-is` condition, and `except` on `count-in-houses` so a
+  body is not counted as joining itself. The SDK ships 878 rules.
+
+  **Numbers:** the sixteen answer between 0 and 40 of the 93 charts; the two
+  frequent ones were traced case by case and are the verse's arithmetic. The
+  Sun-in-the-second pair partitions the twelve charts with the Sun there.
+  Verse 12 is not shipped: its readings answer 57 charts or none (crux C99).
+
+- BPHS ch. 41's combinations for wealth: fourteen rules, the most particular
+  figures the SDK ships. Verses 2 to 8 each want the lord of the fifth in the
+  fifth and the lord of the eleventh in the eleventh, which holds for one or
+  two ascendants apiece, so a chart can answer at most one of the seven — a
+  test holds that. The SDK ships 862 rules.
+
+  **Numbers:** one of the fourteen answers once over the 93 charts. A figure
+  that pins a graha to a sign, a house and two companions is rare by
+  construction, and the SDK reports what the verse says rather than loosening
+  it until it fires.
+
+  **Also measured:** 823 rules over the 93 charts answer in 15 ms in release —
+  0.16 ms a chart, 0.2 µs a rule. The evaluator resolves a rule reference by
+  walking the set, which looked like a scaling defect; at that cost it is not
+  worth an index, and an index would have cost the evaluator its `Copy`. The
+  measurement stopped the work rather than starting it.
+
+- Rashi bala from BPHS ch. 46: `teistro_dasha::rashi::stronger_sign`
+  compares two signs as vv. 158 to 166 do, and two knobs read it.
+  `dasha.dual_lord` (`BPHS` by default, `KENDRA` the corpus engine's) finds
+  the stronger lord of Scorpio and Aquarius (crux C51). `dasha.rashi_start`
+  (`STRONGER` by default, `LAGNA` the engine's) starts Mandooka, Shoola and
+  Trikona from the stronger of their signs (crux C53). A rashi reading
+  records both in `DashaReading.rashi`. `conformance-baseline` keeps the
+  engine's readings as version 10.
+
+  **Numbers:** under the default settings, the Chara family's lords and
+  years move wherever the two dual lords' rules differ, 360 of the corpus's
+  616 answers, and the three systems' starts 98 of 231. Every settings hash
+  moved. The corpus's own readings are unchanged under
+  `conformance-baseline`.
+
+- PyJHora cross-checks: the corpus moves to 0.9.0, which records PyJHora
+  4.8.7's Vimshottari for 53 charts at evidence rank 3, and
+  `crates/dasha/tests/pyjhora.rs` gives the kernel the tool's Moon and each
+  of its years and holds every antardasha start to the year constant's
+  difference: a tenth of a millisecond where the constants agree. The written
+  balance differs as a convention (75 of 212 agree), counted.
+
+- The dasha cursor's budgets are measured: `crates/dasha/benches/dasha.rs`
+  times `at(t, 5)` for every kernel and a registered row (119 to 354 ns
+  against 20 µs) and a materialised depth-3 tree (15.8 µs against 500 µs).
+  `teistro-scenario` gains a `dashas` section, so the instruction-count gate
+  and the cross-architecture hash matrix now watch the cursor too.
+
 - `crates/points`, points that are not bodies but behave like them, and
   the measurement that decided them first. 25 tests.
 

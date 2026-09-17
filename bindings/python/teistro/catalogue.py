@@ -232,7 +232,7 @@ class Kind(Member):
     """The six Lajjitadi states."""
 
     avastha_sayanadi = 54
-    """The twelve Sayanadi states."""
+    """The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna."""
 
     point_family = 55
     """What kind of derived point."""
@@ -254,6 +254,15 @@ class Kind(Member):
 
     muhurta_yoga = 61
     """The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8)."""
+
+    chart_layout = 62
+    """The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more."""
+
+    vaiseshikamsa = 63
+    """The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's."""
+
+    avastha_cheshta = 64
+    """The three sub-states of a Sayanadi state, a remainder of three."""
 
 
 class Graha(Catalogued):
@@ -2549,7 +2558,7 @@ class AvasthaLajjitadi(Catalogued):
 
 
 class AvasthaSayanadi(Catalogued):
-    """The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`."""
+    """The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`."""
 
     SHAYANA = 0
     """Shayana"""
@@ -3133,6 +3142,150 @@ class MuhurtaYoga(Catalogued):
     """
 
 
+class ChartLayout(Catalogued):
+    """The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`."""
+
+    NORTH_INDIAN = 0
+    """The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise"""
+
+    SOUTH_INDIAN = 1
+    """The South Indian chart: signs fixed, Pisces top-left, running clockwise"""
+
+    EAST_INDIAN = 2
+    """The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise"""
+
+    NEPALI_LOTUS = 3
+    """The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals"""
+
+    SUDARSHAN_CHAKRA = 4
+    """The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun"""
+
+    WESTERN_WHEEL = 5
+    """The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class Vaiseshikamsa(Catalogued):
+    """The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`."""
+
+    KIMSHUKA = 0
+    """Kimshuka"""
+
+    VYANJANA = 1
+    """Vyanjana"""
+
+    CHAMARA = 2
+    """Chamara"""
+
+    CHATRA = 3
+    """Chatra"""
+
+    KUNDALA = 4
+    """Kundala"""
+
+    MUKUTA = 5
+    """Mukuta"""
+
+    PARIJATA = 6
+    """Parijata"""
+
+    UTTAMA = 7
+    """Uttama"""
+
+    GOPURA = 8
+    """Gopura"""
+
+    SIMHASANA = 9
+    """Simhasana"""
+
+    PARAVATA = 10
+    """Paravata"""
+
+    DEVALOKA = 11
+    """Devaloka"""
+
+    BRAHMALOKA = 12
+    """Brahmaloka"""
+
+    SHAKRAVAHANA = 13
+    """Shakravahana"""
+
+    SHRIDHAMA = 14
+    """Shridhama"""
+
+    BHEDAKA = 15
+    """Bhedaka"""
+
+    KUSUMA = 16
+    """Kusuma"""
+
+    NAGAPUSHPA = 17
+    """Nagapushpa"""
+
+    KANDUKA = 18
+    """Kanduka"""
+
+    KERALA = 19
+    """Kerala"""
+
+    KALPAVRIKSHA = 20
+    """Kalpavriksha"""
+
+    CHANDANAVANA = 21
+    """Chandanavana"""
+
+    PURNACHANDRA = 22
+    """Purnachandra"""
+
+    UCHCHAISHRAVA = 23
+    """Uchchaishrava"""
+
+    DHANVANTARI = 24
+    """Dhanvantari"""
+
+    SURYAKANTA = 25
+    """Suryakanta"""
+
+    VIDRUMA = 26
+    """Vidruma"""
+
+    CHAKRASIMHASANA = 27
+    """Chakrasimhasana"""
+
+    GOLOKA = 28
+    """Goloka"""
+
+    SHRIVALLABHA = 29
+    """Shrivallabha"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class AvasthaCheshta(Catalogued):
+    """The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`."""
+
+    DRISHTI = 0
+    """Drishti, a remainder of one: the state's effects middling"""
+
+    CHESHTA = 1
+    """Cheshta, a remainder of two: its effects in full"""
+
+    VICHESHTA = 2
+    """Vicheshta, a remainder of nothing: its effects slight"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -3449,6 +3602,73 @@ class Strength(Member):
 
     FULL = 4
     """A full aspect: the seventh, and a special graha's own two houses."""
+
+
+class Balance(Member):
+    """How a dasha's balance at birth was measured.
+
+    The settings' own `Balance`, which is a knob and not a catalogue member,
+    so it crosses as this boundary's own enum, as `TsStrength` does.
+    """
+
+    SPATIAL = 0
+    """By the elapsed part of the Moon's window of nakshatras."""
+
+    TEMPORAL = 1
+    """By the elapsed part of the Moon's stay in its nakshatra."""
+
+
+class Shodhana(Member):
+    """Where an Ashtakavarga's reductions and pindas were made: the settings'
+    own `Shodhana`, which is a knob and not a catalogue member.
+    """
+
+    EACH_GRAHA = 0
+    """In each graha's own Ashtakavarga (BPHS chs. 67 to 69)."""
+
+    SARVA = 1
+    """On the sum of the seven, as the conformance corpus's engine makes them."""
+
+
+class Ekadhipatya(Member):
+    """How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
+    an occupied one: the settings' own `Ekadhipatya`.
+    """
+
+    BPHS = 0
+    """BPHS ch. 68: an empty sign keeps a difference."""
+
+    EMPTY_TO_ZERO = 1
+    """The empty sign always goes to zero."""
+
+
+class VimshopakaScoring(Member):
+    """How a Vimshopaka scored a graha in a varga: the settings' own
+    `Vimshopaka`.
+    """
+
+    BPHS = 0
+    """BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
+    relationship with the sign's lord.
+    """
+
+    SAPTAVARGAJA_VIRUPAS = 1
+    """The conformance corpus's engine: the Saptavargaja virupas over 45 by
+    natural friendship, rounded to hundredths.
+    """
+
+
+class DashaPhase(Member):
+    """Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4)."""
+
+    COMMENCEMENT = 0
+    """At its commencement."""
+
+    MIDDLE = 1
+    """In its middle."""
+
+    END = 2
+    """At its end."""
 
 
 class DayPart(Member):
@@ -3782,6 +4002,9 @@ _KEYS: dict[str, dict[int, str]] = {
         59: "kaala",
         60: "panchaka",
         61: "muhurta_yoga",
+        62: "chart_layout",
+        63: "vaiseshikamsa",
+        64: "avastha_cheshta",
     },
     "Graha": {
         0: "SUN",
@@ -4742,6 +4965,54 @@ _KEYS: dict[str, dict[int, str]] = {
         4: "TRIPUSHKAR",
         -1: "UNKNOWN",
     },
+    "ChartLayout": {
+        0: "NORTH_INDIAN",
+        1: "SOUTH_INDIAN",
+        2: "EAST_INDIAN",
+        3: "NEPALI_LOTUS",
+        4: "SUDARSHAN_CHAKRA",
+        5: "WESTERN_WHEEL",
+        -1: "UNKNOWN",
+    },
+    "Vaiseshikamsa": {
+        0: "KIMSHUKA",
+        1: "VYANJANA",
+        2: "CHAMARA",
+        3: "CHATRA",
+        4: "KUNDALA",
+        5: "MUKUTA",
+        6: "PARIJATA",
+        7: "UTTAMA",
+        8: "GOPURA",
+        9: "SIMHASANA",
+        10: "PARAVATA",
+        11: "DEVALOKA",
+        12: "BRAHMALOKA",
+        13: "SHAKRAVAHANA",
+        14: "SHRIDHAMA",
+        15: "BHEDAKA",
+        16: "KUSUMA",
+        17: "NAGAPUSHPA",
+        18: "KANDUKA",
+        19: "KERALA",
+        20: "KALPAVRIKSHA",
+        21: "CHANDANAVANA",
+        22: "PURNACHANDRA",
+        23: "UCHCHAISHRAVA",
+        24: "DHANVANTARI",
+        25: "SURYAKANTA",
+        26: "VIDRUMA",
+        27: "CHAKRASIMHASANA",
+        28: "GOLOKA",
+        29: "SHRIVALLABHA",
+        -1: "UNKNOWN",
+    },
+    "AvasthaCheshta": {
+        0: "DRISHTI",
+        1: "CHESHTA",
+        2: "VICHESHTA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "ok",
         -1: "invalid-arg",
@@ -4840,6 +5111,27 @@ _KEYS: dict[str, dict[int, str]] = {
         2: "half",
         3: "three-quarters",
         4: "full",
+    },
+    "Balance": {
+        0: "spatial",
+        1: "temporal",
+    },
+    "Shodhana": {
+        0: "each-graha",
+        1: "sarva",
+    },
+    "Ekadhipatya": {
+        0: "bphs",
+        1: "empty-to-zero",
+    },
+    "VimshopakaScoring": {
+        0: "bphs",
+        1: "saptavargaja-virupas",
+    },
+    "DashaPhase": {
+        0: "commencement",
+        1: "middle",
+        2: "end",
     },
     "DayPart": {
         0: "daylight",
@@ -4993,4 +5285,7 @@ _KINDS: dict[str, str] = {
     "Kaala": "kaala",
     "Panchaka": "panchaka",
     "MuhurtaYoga": "muhurta_yoga",
+    "ChartLayout": "chart_layout",
+    "Vaiseshikamsa": "vaiseshikamsa",
+    "AvasthaCheshta": "avastha_cheshta",
 }

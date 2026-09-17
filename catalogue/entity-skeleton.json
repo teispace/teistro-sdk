@@ -967,5 +967,50 @@
     "SIDDHA": {},
     "DWIPUSHKAR": {},
     "TRIPUSHKAR": {}
+  },
+  "chart_layout": {
+    "NORTH_INDIAN": {},
+    "SOUTH_INDIAN": {},
+    "EAST_INDIAN": {},
+    "NEPALI_LOTUS": {},
+    "SUDARSHAN_CHAKRA": {},
+    "WESTERN_WHEEL": {}
+  },
+  "vaiseshikamsa": {
+    "KIMSHUKA": {},
+    "VYANJANA": {},
+    "CHAMARA": {},
+    "CHATRA": {},
+    "KUNDALA": {},
+    "MUKUTA": {},
+    "PARIJATA": {},
+    "UTTAMA": {},
+    "GOPURA": {},
+    "SIMHASANA": {},
+    "PARAVATA": {},
+    "DEVALOKA": {},
+    "BRAHMALOKA": {},
+    "SHAKRAVAHANA": {},
+    "SHRIDHAMA": {},
+    "BHEDAKA": {},
+    "KUSUMA": {},
+    "NAGAPUSHPA": {},
+    "KANDUKA": {},
+    "KERALA": {},
+    "KALPAVRIKSHA": {},
+    "CHANDANAVANA": {},
+    "PURNACHANDRA": {},
+    "UCHCHAISHRAVA": {},
+    "DHANVANTARI": {},
+    "SURYAKANTA": {},
+    "VIDRUMA": {},
+    "CHAKRASIMHASANA": {},
+    "GOLOKA": {},
+    "SHRIVALLABHA": {}
+  },
+  "avastha_cheshta": {
+    "DRISHTI": {},
+    "CHESHTA": {},
+    "VICHESHTA": {}
   }
 }

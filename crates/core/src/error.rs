@@ -24,6 +24,7 @@ use crate::ratio::RatioError;
 #[repr(i32)]
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Status {
     /// Success.
@@ -122,6 +123,7 @@ impl fmt::Display for Status {
 /// What, more precisely, went wrong; appended as the modules need.
 #[non_exhaustive]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Detail {
     /// A registered variant with no implementation (ADR-0018).
@@ -147,6 +149,7 @@ pub enum Detail {
 
 /// A reference to a localisable message: a key and its slots.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct MessageRef {
     /// The message key (`sdk.error.dstGap`).
     pub key: String,
@@ -169,6 +172,7 @@ pub struct Error {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct Extra {
     field: Option<String>,
     hint: Option<String>,
@@ -176,6 +180,7 @@ struct Extra {
 }
 
 #[derive(serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 struct ErrorRepr {
     status: Status,
     detail: Option<Detail>,
@@ -237,6 +242,23 @@ impl Error {
     pub fn with_field(mut self, field: impl Into<String>) -> Error {
         self.extra_mut().field = Some(field.into());
         self
+    }
+
+    /// Names the field from an outer record: `root.field`, or `root` itself
+    /// when the error named none. What a reader of one element of a list
+    /// calls to say which element it was (`layouts_json[2].shape.rings`).
+    ///
+    /// A field that begins with an index is joined without a dot:
+    /// `drawings` under `request` is `request.drawings`, `[1]` is
+    /// `request[1]`.
+    #[must_use]
+    pub fn under(self, root: &str) -> Error {
+        let field = match self.field() {
+            None | Some("") => root.to_owned(),
+            Some(inner) if inner.starts_with('[') => format!("{root}{inner}"),
+            Some(inner) => format!("{root}.{inner}"),
+        };
+        self.with_field(field)
     }
 
     /// Adds a hint.
@@ -302,6 +324,18 @@ impl<'de> serde::Deserialize<'de> for Error {
             }));
         }
         Ok(error)
+    }
+}
+
+/// The shape an error is written in, which is its private representation's.
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Error {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Error")
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        ErrorRepr::json_schema(generator)
     }
 }
 
@@ -374,6 +408,21 @@ mod tests {
     )]
 
     use super::*;
+
+    #[test]
+    fn a_field_is_named_from_an_outer_record() {
+        let inner = Error::invalid_arg("x").with_field("shape.rings");
+        assert_eq!(
+            inner.under("layouts_json[2]").field(),
+            Some("layouts_json[2].shape.rings")
+        );
+        assert_eq!(
+            Error::invalid_arg("x").under("theme_json").field(),
+            Some("theme_json")
+        );
+        let indexed = Error::invalid_arg("x").with_field("[1].varga");
+        assert_eq!(indexed.under("drawings").field(), Some("drawings[1].varga"));
+    }
     use crate::catalogue::Graha;
 
     #[test]

@@ -1,0 +1,1208 @@
+{
+  "rules": [
+    {
+      "key": "BPHS_LAGNA_AND_TWELFTH_LORDS_EXCHANGED_WITH_A_MARAKA",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "2",
+        "rank": 1,
+        "note": "The lagna lord in the twelfth while the twelfth lord stands in the lagna, the twelfth lord joined or aspected by a maraka. The translation attaches the maraka to the twelfth lord in the lagna, and so does this rule. A maraka is BPHS ch. 44 vv. 3 to 5's: a lord of the second or the seventh, a malefic standing in either, or a malefic joining either lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 12
+          },
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-maraka",
+              "houses": [
+                1
+              ],
+              "from": {
+                "lordOf": 12
+              },
+              "except": [
+                {
+                  "lordOf": 12
+                }
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-maraka",
+              "target": {
+                "lordOf": 12
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_AND_SIXTH_LORDS_EXCHANGED_WITH_A_MARAKA",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "3",
+        "rank": 1,
+        "note": "The lagna lord in the sixth while the sixth lord stands in the lagna, the sixth lord joined or aspected by a maraka, as v. 2 reads with the twelfth. A maraka is BPHS ch. 44 vv. 3 to 5's: a lord of the second or the seventh, a malefic standing in either, or a malefic joining either lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 6
+          },
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-maraka",
+              "houses": [
+                1
+              ],
+              "from": {
+                "lordOf": 6
+              },
+              "except": [
+                {
+                  "lordOf": 6
+                }
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-maraka",
+              "target": {
+                "lordOf": 6
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_OR_MOON_WITH_KETU_AND_LAGNA_LORD_IN_EIGHTH",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "4",
+        "rank": 1,
+        "note": "Ketu in the lagna or in the Moon's sign, while the lagna lord stands in the eighth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": "KETU",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": "MOON",
+              "as": "KETU"
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            8
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_LORD_WITH_A_MALEFIC_IN_A_DUSTHANA_AND_SECOND_LORD_INIMICAL",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "5",
+        "rank": 1,
+        "note": "The lagna lord joined by a malefic in the sixth, eighth or twelfth, while the second lord stands in an enemy's sign or in debilitation. The verse says even one born to a royal house. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "lordOf": 1
+          },
+          "except": [
+            {
+              "lordOf": 1
+            }
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "planet-dignity",
+          "planet": {
+            "lordOf": 2
+          },
+          "dignities": [
+            "ENEMY",
+            "GREAT_ENEMY",
+            "DEBILITATED",
+            "DEEP_DEBILITATED"
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_LORD_WITH_A_DUSTHANA_LORD_OR_SATURN_UNASPECTED_BY_BENEFICS",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "6",
+        "rank": 1,
+        "note": "The lagna lord in one sign with the lord of the sixth, the eighth or the twelfth, or with Saturn, and aspected by no benefic. A lagna lord that is also the lord it should join, as for Taurus and Scorpio rising, does not join itself. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 6
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 8
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": {
+                      "lordOf": 12
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": "SELF",
+                    "as": "SATURN"
+                  }
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 1
+                  }
+                }
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "lordOf": 1
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-benefic",
+            "target": {
+              "lordOf": 1
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FIFTH_LORD_IN_SIXTH_AND_NINTH_LORD_IN_TWELFTH_ASPECTED_BY_MARAKAS",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "7",
+        "rank": 1,
+        "note": "The fifth lord in the sixth and the ninth lord in the twelfth, each aspected by a maraka. A maraka is BPHS ch. 44 vv. 3 to 5's: a lord of the second or the seventh, a malefic standing in either, or a malefic joining either lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            6
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 9
+          },
+          "houses": [
+            12
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-maraka",
+          "target": {
+            "lordOf": 5
+          }
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "any-maraka",
+          "target": {
+            "lordOf": 9
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MALEFIC_IN_LAGNA_WITH_A_MARAKA",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "8",
+        "rank": 1,
+        "note": "A malefic that lords neither the tenth nor the ninth stands in the lagna, joined or aspected by a maraka. A maraka is BPHS ch. 44 vv. 3 to 5's: a lord of the second or the seventh, a malefic standing in either, or a malefic joining either lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-is",
+                "planet": "SELF",
+                "class": "malefic"
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 10
+                  }
+                }
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "same-body",
+                  "of": "SELF",
+                  "as": {
+                    "lordOf": 9
+                  }
+                }
+              },
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1
+                ]
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "count-in-houses",
+                    "planets": "any-maraka",
+                    "houses": [
+                      1
+                    ],
+                    "from": "SELF",
+                    "except": [
+                      "SELF"
+                    ],
+                    "atLeast": 1
+                  },
+                  {
+                    "type": "planet-aspects-planet",
+                    "from": "any-maraka",
+                    "target": "SELF"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DISPOSITORS_OF_DUSTHANA_LORDS_AFFLICTED_IN_DUSTHANAS",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "9",
+        "rank": 1,
+        "note": "The lords of the signs the sixth, eighth and twelfth lords stand in are all in the sixth, eighth or twelfth, and each joined or aspected by a malefic. The verse speaks of the dispositors together, and this rule asks it of all three. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": {
+              "lordOf": 6
+            }
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "from": {
+                "lordOf": {
+                  "lordOf": 6
+                }
+              },
+              "except": [
+                {
+                  "lordOf": {
+                    "lordOf": 6
+                  }
+                }
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": {
+                "lordOf": {
+                  "lordOf": 6
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": {
+              "lordOf": 8
+            }
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "from": {
+                "lordOf": {
+                  "lordOf": 8
+                }
+              },
+              "except": [
+                {
+                  "lordOf": {
+                    "lordOf": 8
+                  }
+                }
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": {
+                "lordOf": {
+                  "lordOf": 8
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": {
+              "lordOf": 12
+            }
+          },
+          "houses": [
+            6,
+            8,
+            12
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "from": {
+                "lordOf": {
+                  "lordOf": 12
+                }
+              },
+              "except": [
+                {
+                  "lordOf": {
+                    "lordOf": 12
+                  }
+                }
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": {
+                "lordOf": {
+                  "lordOf": 12
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "miserable and indigent"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOON_NAVAMSHA_LORD_WITH_A_MARAKA_OR_IN_A_MARAKA_HOUSE",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "10",
+        "rank": 1,
+        "note": "The lord of the Moon's navamsha sign joins a maraka or stands in the second or the seventh, the maraka houses of BPHS ch. 44 v. 2. A maraka is BPHS ch. 44 vv. 3 to 5's: a lord of the second or the seventh, a malefic standing in either, or a malefic joining either lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-maraka",
+              "houses": [
+                1
+              ],
+              "from": {
+                "lordOf": {
+                  "navamsha": "MOON"
+                }
+              },
+              "except": [
+                {
+                  "lordOf": {
+                    "navamsha": "MOON"
+                  }
+                }
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "lordOf": {
+                  "navamsha": "MOON"
+                }
+              },
+              "houses": [
+                2,
+                7
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_AND_NAVAMSHA_LAGNA_LORDS_WITH_MARAKAS",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "11",
+        "rank": 1,
+        "note": "The lord of the lagna and the lord of the navamsha lagna each joined or aspected by a maraka. A maraka is BPHS ch. 44 vv. 3 to 5's: a lord of the second or the seventh, a malefic standing in either, or a malefic joining either lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-maraka",
+              "houses": [
+                1
+              ],
+              "from": {
+                "lordOf": 1
+              },
+              "except": [
+                {
+                  "lordOf": 1
+                }
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-maraka",
+              "target": {
+                "lordOf": 1
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-maraka",
+              "houses": [
+                1
+              ],
+              "from": {
+                "lordOf": {
+                  "navamsha": "LAGNA"
+                }
+              },
+              "except": [
+                {
+                  "lordOf": {
+                    "navamsha": "LAGNA"
+                  }
+                }
+              ],
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-maraka",
+              "target": {
+                "lordOf": {
+                  "navamsha": "LAGNA"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penniless"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_EIGHTH_OR_TWELFTH_ASPECTED_BY_KARAKAMSHA_LORD_AND_LAGNA_LORD",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "14",
+        "rank": 1,
+        "note": "The eighth or the twelfth from the Atmakaraka or from the lagna aspected by both the lord of the Atmakaraka's navamsha sign and the lagna lord, seven chara karakas. The verse joins the two aspects with and, so this rule asks both of one sign. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": {
+                      "navamsha": {
+                        "karaka": "AK"
+                      }
+                    }
+                  },
+                  "target": {
+                    "from": {
+                      "karaka": "AK"
+                    },
+                    "house": 8
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 1
+                  },
+                  "target": {
+                    "from": {
+                      "karaka": "AK"
+                    },
+                    "house": 8
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": {
+                      "navamsha": {
+                        "karaka": "AK"
+                      }
+                    }
+                  },
+                  "target": {
+                    "from": {
+                      "karaka": "AK"
+                    },
+                    "house": 12
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 1
+                  },
+                  "target": {
+                    "from": {
+                      "karaka": "AK"
+                    },
+                    "house": 12
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": {
+                      "navamsha": {
+                        "karaka": "AK"
+                      }
+                    }
+                  },
+                  "target": {
+                    "from": "LAGNA",
+                    "house": 8
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 1
+                  },
+                  "target": {
+                    "from": "LAGNA",
+                    "house": 8
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": {
+                      "navamsha": {
+                        "karaka": "AK"
+                      }
+                    }
+                  },
+                  "target": {
+                    "from": "LAGNA",
+                    "house": 12
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 1
+                  },
+                  "target": {
+                    "from": "LAGNA",
+                    "house": 12
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "bereft of wealth"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_TWELFTH_FROM_ATMAKARAKA_OR_LAGNA_ASPECTED_BY_ITS_LORD",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "15",
+        "rank": 1,
+        "note": "The twelfth from the Atmakaraka aspected by the Atmakaraka's dispositor, or the twelfth from the lagna aspected by the lagna lord, seven chara karakas. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": {
+                "lordOf": {
+                  "karaka": "AK"
+                }
+              },
+              "target": {
+                "from": {
+                  "karaka": "AK"
+                },
+                "house": 12
+              }
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": {
+                "lordOf": 1
+              },
+              "target": 12
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a spendthrift"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MARS_AND_SATURN_IN_SECOND",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "16",
+        "rank": 1,
+        "note": "Mars and Saturn together in the second. Mercury's aspect on the two cancels it, and the verse then promises great wealth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "MARS",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "cancellations": [
+        {
+          "label": "Mercury aspects the two, and there is great wealth",
+          "type": "planet-aspects-planet",
+          "from": "MERCURY",
+          "target": "MARS"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealth destroyed"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SUN_IN_SECOND_ASPECTED_BY_SATURN",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "17",
+        "rank": 1,
+        "note": "The Sun in the second aspected by Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SATURN",
+          "target": "SUN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penury"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SUN_IN_SECOND_UNASPECTED_BY_SATURN",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "17",
+        "rank": 1,
+        "note": "The Sun in the second and not aspected by Saturn, the verse's other half. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SUN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "SATURN",
+            "target": "SUN"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "riches and fame"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SATURN_IN_SECOND_ASPECTED_BY_SUN",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "18",
+        "rank": 1,
+        "note": "Saturn in the second aspected by the Sun. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "SATURN",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "SUN",
+          "target": "SATURN"
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "penury"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_GRAHA_WITH_A_DUSTHANA_LORD_UNASPECTED_BY_TRINE_LORDS_HARMS_WEALTH",
+      "category": "daridra",
+      "source": {
+        "text": "BPHS",
+        "chapter": "42",
+        "verse": "13",
+        "rank": 1,
+        "note": "A graha joined by a lord of the sixth, eighth or twelfth other than itself, aspected by none of the trinal lords — the lords of the lagna, fifth and ninth — harms the native's finances in its own periods. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 6
+                        }
+                      },
+                      {
+                        "type": "not",
+                        "condition": {
+                          "type": "same-body",
+                          "of": "SELF",
+                          "as": {
+                            "lordOf": 6
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 8
+                        }
+                      },
+                      {
+                        "type": "not",
+                        "condition": {
+                          "type": "same-body",
+                          "of": "SELF",
+                          "as": {
+                            "lordOf": 8
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "lordOf": 12
+                        }
+                      },
+                      {
+                        "type": "not",
+                        "condition": {
+                          "type": "same-body",
+                          "of": "SELF",
+                          "as": {
+                            "lordOf": 12
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "not",
+                "condition": {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 1
+                      },
+                      "target": "SELF"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 5
+                      },
+                      "target": "SELF"
+                    },
+                    {
+                      "type": "planet-aspects-planet",
+                      "from": {
+                        "lordOf": 9
+                      },
+                      "target": "SELF"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "harm to finances in the periods of these grahas"
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,9 @@
 # Dasha kernels and tables
 
-Status: `draft`, 2026-09-04. The falsification pass for ADR-0017 on the
+Status: `draft`, 2026-09-04; the Vimshottari row measured 2026-09-15, a consumer's
+own system registering the same day
+([`dasha-measured.md`](dasha-measured.md), §"What the measurement
+settled"). The falsification pass for ADR-0017 on the
 dasha family: every catalogued system written as a row over a kernel, the
 schema corrected where a system refused to fit, and the rows marked V, T
 or S (ADR-0018). Implemented in Phase 5; the cursor and the exact period
@@ -22,6 +25,238 @@ start sign is the arudha lagna), Niryana Shoola from Shoola in one
 expression (the start sign is the navamsa lagna), and its proportional
 nakshatra builder is one function parameterised by sequence, total,
 start nakshatra and count direction that already serves six systems.
+
+## What the measurement settled
+
+The corpus records Vimshottari with its inputs and its whole tree under
+both balance methods, so `cargo xtask dashas` decided what this page had
+only designed. Four of its findings change the design:
+
+- **The birth period's sub-periods are compressed**, each its share of the
+  period it is in, the birth period being only as long as its balance. The
+  other reading (sized against the whole period, the elapsed ones dropped)
+  is refused by all 148 recorded answers, but both are taught and neither
+  by a rank-1 text, so K-udu gains `birth_period: Compressed | Elapsed`,
+  the knob `dasha.birth_period`, and crux C48.
+- **The cycle ends.** Past the ninth mahadasha the recording engine answers
+  no period. The cursor answers `None` there by default, and
+  `dasha.after_cycle: End | Repeat` makes the other reading reachable.
+- **Boundaries agree to a quarter of a millisecond and not to the bit**,
+  under any order of float arithmetic. That confirms the `Ratio` shares
+  below: a boundary is its parent's start plus an exact share of its
+  length, compared with the corpus to its tolerance (a thousandth of a
+  day).
+- **The balance is written with its minutes rounded**: whole years of the
+  year length, whole months of a twelfth of it, whole days, and the rest
+  rounded to the minute. Flooring disagrees with half the records.
+
+What it could not settle is crux C6: every record uses 365.25 days.
+
+## What building Vimshottari corrected
+
+`crates/dasha` builds the K-udu kernel with Vimshottari as its one row, and
+reproduces every recorded answer (`crates/dasha/tests/baseline.rs`: 148
+methods, 53 415 tree rows, 14 841 sampled children and 296 chains, worst
+boundary 1.4e-9 days). Building it corrected the schema once more:
+
+- **A fifth correction: whether the lords repeat.** The first seat rule
+  flagged every Vimshottari seed past the ninth nakshatra as overflowing,
+  because nine lords of one nakshatra cover nine. They run round three
+  times. Ashtottari's eight windows of three cover 24 once and leave three
+  outside; Yogini's eight lords do not divide 27 and repeat. No arithmetic
+  on the table tells these apart, so the row states `repeats`.
+- **A temporal balance over a window of nakshatras was refused**, because the
+  corpus then recorded the temporal method for Vimshottari only and no
+  source read defined it. The corpus's 0.2.0 records the recording engine's
+  reading for Ashtottari, and building the other rows took it (below).
+- **The elapsed reading keeps a period's place.** Under
+  `dasha.birth_period = ELAPSED` the first sub-period running at birth may
+  be the fourth in its sequence, and its path says so. A period carries
+  the whole span its children are shares of beside the span it runs for.
+- **The cursor allocates nothing.** Making a dasha allocates two small
+  tables; reading the chain at an instant, at any depth and in any cycle,
+  allocates nothing (`tests/allocations.rs`).
+
+## What building the other rows corrected
+
+`cargo xtask dasha-systems` (`dasha-systems-measured.md`) measured the eight
+other nakshatra-seeded systems the recording engine implements, 1184 answers
+computed from the corpus's own recorded Moon, and `crates/dasha` ships them
+as rows reproducing every one (`tests/systems.rs`):
+
+- **Every one is a row.** Ashtottari, Dwadashottari, Panchottari,
+  Shatabdika, Chaturashiti-sama, Dwisaptati-sama, Yogini and Tribhagi take
+  Vimshottari's seat, balance, compressed birth period, children and cycle
+  end; the corpus decides five of the seats outright and cannot choose
+  between the equivalent references of the other three.
+- **A sixth correction: a scale on a row.** Tribhagi is Vimshottari's lords
+  at two thirds of their years, twice round, the sub-periods still shares of
+  120; a third of the years three times round is refused by every answer.
+  The scale decorator the kernel table below names became two fields of the
+  row, `scale` and its `rounds`, rather than a wrapper, because nothing else
+  about the tree changes.
+- **A temporal balance over a window reads the Moon's own nakshatra.** The
+  window's whole nakshatras behind the seed are gone and the Moon's own is
+  gone by the time it has spent in it. Every Ashtottari answer agrees; the
+  window's remainder taken from the time fraction alone is refused; the Moon's
+  time across the whole window is not recorded and is not built.
+- **A child follows its parent's place in the row, not its graha.** Looking a
+  lord up by its graha is ambiguous for a row that names a graha twice, so a
+  period carries its lord's place and its children start from it.
+
+## What building the sign-based rows corrected
+
+`cargo xtask rashi-dashas` (`rashi-dashas-measured.md`) measured the
+recording engine's eight sign-based systems over 616 answers computed from
+the corpus's own charts, and `crates/dasha`'s `rashi` module ships them as
+rows reproducing every one (`tests/rashi.rs`, worst boundary 4.7e-10 days):
+
+- **The schema came out smaller than drafted.** Every system is a start
+  (lagna, arudha lagna, navamsa lagna), an order (consecutive, trine
+  groups, a drishti chain, a leap), a length (the count to the lord, the
+  same by dignity, fixed, by modality) and which lord a mahadasha names. The
+  draft's per-step direction rules and sub-progression tables are not
+  fields yet: every recorded system runs one direction rule and one
+  sub-progression, and each rival a school teaches is a crux (C49–C53, C2)
+  rather than a field nobody can fill.
+- **Footedness and parity are distinct types**, as the direction error
+  above predicted; counting by parity is refused on all 385 counted
+  answers.
+- **Drig's chain does not always reach twelve signs.** For 33 of 77 charts
+  the eleventh house aspects the ninth, and the engine appends the signs
+  left out in the zodiac's order (C52).
+- **A sign-based dasha allocates nothing**, its tables fixed arrays, and it
+  shares `Period`, `Chain` and the chain walk with the nakshatra-seeded
+  kernel through the `Timeline` trait.
+- **The arudha lagna is a point.** Padanadhamsa starts from it, and
+  `teistro-points` computes it (`arudhas-measured.md`).
+
+## What building the Kalachakra corrected
+
+`cargo xtask kalachakra` (`kalachakra-measured.md`) measured the recording
+engine's Kalachakra over 148 answers, and `crates/dasha`'s `kalachakra`
+module reproduces every one (`tests/kalachakra.rs`, worst boundary 9.3e-10
+days), allocating nothing:
+
+- **Its own kernel, as the table above says**, but a small one: four pada
+  tables of nine signs, the signs' years, a balance, and antardashas shared
+  by years from the mahadasha's place. It shares `Period`, `Chain`, the
+  chain walk and the span check with the other kernels through `Timeline`
+  and `Birth`.
+- **Every fork is a knob.** The published tables agree with the engine's
+  sign for sign, but which table five nakshatras take, the balance and what
+  follows the ninth mahadasha are read differently by the sources, so
+  `dasha.kalachakra_membership`, `dasha.kalachakra_balance` and
+  `dasha.kalachakra_after_ninth` default to the engine's reading and offer
+  the sources' (C54–C56). The next pada's nine is not offered: the sources
+  read do not settle how it crosses into the next nakshatra.
+- **It stops at the antardashas** (C58), and a reading says so: its depth is
+  the shallower of the settings' and two.
+- **The document records the choices applied** in a reading's `kalachakra`
+  field, so a stored document rebuilds the same periods whatever the
+  settings are now.
+
+## What BPHS ch. 46 settled for the sign-based rows (2026-09-15)
+
+The corpus's rows reproduce the recording engine, and two of its readings
+waited on a source: the stronger lord of Scorpio and Aquarius (C51) and where
+the systems that start from a stronger sign begin (C53). BPHS ch. 46 gives
+both, so the text's reading is the default and the engine's is
+`conformance-baseline`'s, the rule every strength module already follows.
+
+- **The sign's strength** is `rashi::stronger_sign` (`strength-schemes.md`,
+  "Rashi bala"), a comparison and not a score, because the verses give no
+  score.
+- **`dasha.dual_lord = BPHS`**: a lord standing in the sign counts to the
+  other; else the lord in the stronger sign; on equal signs the lord the
+  greater count reaches. `KENDRA` is the engine's kendra rule. Every row that
+  counts to or names a stronger lord reads it.
+- **`dasha.rashi_start = STRONGER`**: Mandooka from the stronger of the lagna
+  and the seventh, Shoola of the second and the eighth, Trikona the strongest
+  trine, the earlier sign on equal strength; the row says which houses in
+  `stronger_of`. `LAGNA` is the engine's.
+- **A reading records them** in `DashaReading.rashi`, so a stored document
+  rebuilds under the readings it was computed with; a document from before
+  the field existed was the engine's, which is what an absent field means.
+
+Over the corpus's 616 answers the dual-lord rule moves 360 and the start 98
+of the three systems' 231 (`tests/rashi.rs`, both pinned). The year the verses
+add for an exalted graha and take for a debilitated one is not built: they do
+not say whose sign it is (C51).
+
+## At the boundary and in the bindings
+
+A chart request names its systems (`TsChartRequest.dashas`, catalogue ids,
+each refused by its place when no row implements it) and the charts blob
+answers in two sections. `dashas` (23) holds one fixed row per chart per
+system, charts outermost: the seed, first lord, overflow, the balance with
+its method (the boundary's own `TsBalance`, since the settings' `Balance`
+is a knob and not a catalogue member) and written form, the Moon's span
+(NaN when the balance was spatial), the depth and `period_count`.
+`dasha_periods` (24) is **ragged** by `period_count`: each period as its
+`level`, its `index` under its parent, its lord and its span, depth first.
+A path is not carried as text: it is the index appended to the path of the
+nearest earlier period one level up, which each binding rebuilds while it
+decodes, and the chain at an instant is one walk over the same rows. The
+batch's `dasha_count` is one number because the request settles it, and
+the encoder refuses a batch whose charts disagree rather than writing a
+stride that lies.
+
+Node (`chart.dashas`), Python (`Chart.dashas`) and Dart (`Chart.dashas`)
+decode the sections once per batch, and `check-parity` holds all four
+surfaces, Rust included, to the same seeds, balances, 819 periods per
+chart and chains.
+
+Every row reaches the boundary the same way: a request names any of the
+seventeen, and a system the catalogue names with no row, Kalachakra for one,
+is refused by its place with the built systems as the hint. A sign-based
+dasha has no seed and no balance, so the `dashas` row says which of its
+columns hold: `seeded` for the seed, overflow and balance, and `signed` for
+the periods' `sign` column — two flags and not one family, because Tribhagi
+is seeded and scaled and Kalachakra will be seeded and signed. The façade
+reads the chart a sign-based dasha needs from the foundation: the grahas'
+signs and dignities under the settings, the navamsa lagna, and the arudha
+lagna `teistro-points` computes.
+
+## A consumer's own system (2026-09-15)
+
+Phase 5's exit asks for "a consumer-registered dasha system (a row in a
+consumer pack)". A K-udu system is already data, so the SDK takes one the
+way it takes a consumer's chart layout (ADR-0026 §1): a definition checked
+by the rules a shipped row passes, registered on the context before it is
+built, sealed after, and asked for by key.
+
+- **The definition** is `teistro_dasha::UduDefinition`, serde and a JSON
+  Schema: `key`, `sources`, `lords` (`{graha, years}` in order),
+  `reference` (a nakshatra, not an index), and `count`, `span`, `offset`,
+  `repeats` and `scale`, each defaulting to Vimshottari's shape, plus its
+  own `year_length` and `depth`, since the settings' per-system tables are
+  keyed by the catalogue. `UduRow::validate` is its validation, so a
+  registered row is refused by the same field a shipped one would be.
+- **Identity.** A row is named by a `DashaName`: a catalogued
+  `DashaSystem`, or a registered key. It serialises as the bare key either
+  way, so a document spells `VIMSHOTTARI` exactly as before and a
+  consumer's system as `ACME_SAPTA`. The registry refuses a key the
+  catalogue already has, so the two can never be confused. The row keeps
+  its lords as a `Cow<'static, [Lord]>`: borrowed for a shipped row and
+  owned for a registered one, with one kernel for both.
+- **The document stays self-contained.** A registered system's reading
+  carries its `definition` beside its rules, so a stored document rebuilds
+  its cursor with the definition it was computed from, whatever the
+  context has registered since. This follows the Kalachakra, whose reading
+  carries its own choices.
+- **The request.** `ChartRequest::with_dashas` takes anything that is a
+  `KeyId`: a catalogue member as before, or the id a context gave a
+  registered system (`sdk.keys().id("dasha_system.ACME_SAPTA")`). At the
+  boundary a request's `dashas` array already carries ids, and a
+  registered id is `0x8000` or more. `TsContextOptions.dashas_json` is a
+  JSON array of definitions, refused by index and field as
+  `layouts_json` is. The `dashas` section's `system` column carries the
+  registered id, and each binding names it from the definitions it passed.
+- **Scope.** Only nakshatra-seeded (K-udu) systems register. A K-rashi row
+  is code as much as data (its start, order and length rules are enums
+  that read a chart), and the Kalachakra is its own kernel. Registering
+  either waits for a consumer who needs it.
 
 ## Kernels
 
@@ -45,6 +280,8 @@ pub struct UduDashaDef {
     pub periods: PeriodSource,       // Table(Vec<Ratio>) | FromChart(ChartQuery)   (Ashtakavarga dasha, Tara dasha)
     pub sub_start: SubStartRule,     // FromSelf | FromNext | FromNth(u8)
     pub balance: BalanceMethod,      // Spatial | Temporal; the window is `map.span` seed units wide, never per system
+    pub birth_period: BirthPeriod,   // Compressed (measured default) | Elapsed (crux C48)
+    pub after_cycle: AfterCycle,     // End (measured default) | Repeat
     pub year_length: YearLengthId,   // per system, from the profile's table (see the cruxes page)
     pub scale: Option<CycleScale>,   // Tribhagi, Mudda
     pub applicability: Option<RuleRef>,   // a rules-engine rule (Ashtottari's conditions)
@@ -57,6 +294,7 @@ pub struct SeedToLord {
     pub direction: CountDir,         // FromReference | ToReference (Dwadashottari counts to Revati)
     pub span: u8,                    // seed units per lord: 1 for most, 3 for Ashtottari
     pub offset: u8,                  // added after the modulo: 3 for Yogini
+    pub repeats: bool,               // the lords run round the nakshatras again (Vimshottari, Yogini) or cover them once (Ashtottari)
     pub overflow: Overflow,          // WrapToStart | Reject, explicit when span × lords < cycle
 }
 // lord_index = ((signed_count(seed, reference, direction) / span) + offset) mod lords.len()
@@ -232,6 +470,71 @@ depth and window. Budgets: `at(t, 5)` under 20 microseconds with zero
 allocations; a materialised depth-3 tree under 500 microseconds; the
 per-request position cache keeps the ephemeris call count at one per
 foundation regardless of depth.
+
+**Measured 2026-09-15** (`cargo bench -p teistro-dasha --bench dasha`, an
+Apple M2 Pro, release; the medians of criterion's intervals):
+
+| operation | measured | budget |
+|---|---|---|
+| Vimshottari `at(t, 5)` | 354 ns | 20 µs |
+| Ashtottari `at(t, 5)` | 330 ns | 20 µs |
+| a registered row's `at(t, 5)` | 350 ns | 20 µs |
+| Chara `at(t, 5)` | 229 ns | 20 µs |
+| Kalachakra `at(t, 5)` (to its antardashas) | 119 ns | 20 µs |
+| Vimshottari `periods(120 years, 3)`, 819 periods materialised | 15.8 µs | 500 µs |
+| making a Vimshottari dasha | 75 ns | none set |
+
+Every read is some sixty times inside its budget and allocates nothing
+(`tests/allocations.rs`, at depth six for every row of every kernel). A
+wall-clock number on a shared runner is noise, so what CI gates is the
+instruction count: the scenario's `dashas` section walks the chain at depth
+five at 300 instants for every shipped row of every kernel, which the
+benchmarks workflow counts under callgrind against the pull request's base
+and the hash matrix digests across architectures.
+
+## PyJHora, beside the kernel (2026-09-15)
+
+Phase 5's exit asks for PyJHora cross-checks. The corpus's
+`pyjhora/vimshottari` (0.9.0) records PyJHora 4.8.7, run as a black box
+through its published functions, for 53 of the 55 charts, at evidence rank 3
+(`CLEAN_ROOM.md`: its values may verify the SDK, its code may not be read).
+`crates/dasha/tests/pyjhora.rs` gives the kernel the tool's own Moon and year
+and compares every period, so an ephemeris difference cannot hide in the
+answer.
+
+**The arithmetic agrees.** Over 16 232 antardashas, matched by mahadasha
+place and both lords:
+
+| the tool's year | its days | the kernel's | worst start difference |
+|---|---|---|---|
+| mean tropical | 365.24219 | `TROPICAL`, 365.24219 | 1.4e-9 days, a tenth of a millisecond |
+| mean sidereal | 365.256364 | `SIDEREAL`, 365.256363 | 1.2e-4 days, the constant's last digit over 120 years |
+| mean lunar | 354.36707 | `LUNAR`, 12 × 29.530589 | 2.4e-4 days, the same |
+| savana | about 360.004, computed | `SAVANA_360`, 360 | 0.69 days, the same |
+
+Each bound in the test is the two years' difference times 140 years, so a
+start that drifts for any reason but the constant fails.
+
+**What differs, and why it is not a correction** (a rank-3 source never
+corrects a rank-2 one):
+
+- **The birth mahadasha's antardashas.** The tool lists them from the
+  mahadasha's start, before birth, each its whole share, which is the SDK's
+  `dasha.birth_period = ELAPSED`; the corpus's rank-2 engine compresses them,
+  the SDK's default. The test reads the tool under `ELAPSED`.
+- **The written balance.** 75 of 212 agree. Under the sidereal and tropical
+  years the tool's day is one above the kernel's whole days, reading as the
+  day begun; under the lunar and savana years it does not write against the
+  dasha's year at all. A presentation, counted in the test so a change to
+  either shows.
+- **The tool's default year** is the true sidereal year, which measures 0.0
+  days in 4.8.7 and whose periods cannot be computed, and the Gregorian year
+  (365.2425 days) has no `YearLength`; both are recorded where they could be
+  and neither is compared.
+- **Its Moon is geocentric**, 0.40° from the corpus's topocentric Moon for
+  the first chart, which is why the comparison feeds the kernel the tool's.
+
+What this adds to crux C6 is in the register.
 
 ## Tests and golden vectors
 

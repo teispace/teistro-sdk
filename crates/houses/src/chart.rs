@@ -14,6 +14,7 @@ use crate::classify::{self, HOUSES, Quadrant};
 
 /// One bhava of a chart: where it is, whose it is, and what kind it is.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Bhava {
     /// The bhava, 1 to 12.
     pub number: u8,
@@ -53,6 +54,8 @@ impl Bhava {
 
 /// Where one body stands under both readings of a chart.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "HousesPlaced"))]
 pub struct Placed {
     /// Which body.
     pub graha: Graha,
@@ -73,6 +76,7 @@ impl Placed {
 
 /// The houses of one founded chart, under both readings.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Houses {
     bhavas: [Bhava; 12],
     placed: Vec<Placed>,

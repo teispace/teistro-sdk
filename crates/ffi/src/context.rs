@@ -12,7 +12,6 @@ use core::cell::{Ref, RefCell, RefMut};
 use core::ffi::{c_char, c_void};
 use core::ptr;
 use std::ffi::CString;
-use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use teistro_astro::DeltaTModel;
 use teistro_core::Status;
@@ -21,9 +20,11 @@ use teistro_core::settings::{Resolved, Settings};
 use teistro_intl::Intl;
 use teistro_port_ephemeris::{EphemerisProvider, ProviderVtable, VtableProvider};
 
-use crate::TS_CONTEXT_TEST_PROVIDER;
 use crate::string::{TsHash, TsStr, TsString};
-use crate::support::{c_struct, optional_text, read_in, with_context, write_out, write_plain};
+use crate::support::{
+    c_struct, check_size, construct, optional_text, read_in, with_context, write_out, write_plain,
+};
+use crate::{TS_CONTEXT_TEST_PROVIDER, TS_ERROR_OWNED};
 
 /// Which of the SDK's own ephemerides a context computes with when no
 /// provider vtable is given.
@@ -89,15 +90,45 @@ pub struct TsContextOptions {
     /// The locale every render resolves from (`ne-Deva-NP`).
     /// `api: nullable example=en-Latn`
     pub locale: *const c_char,
+    /// Chart layouts of the consumer's own, to draw in beside the shipped
+    /// ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+    /// answers, with a key of its own. Every row is checked by the rules a
+    /// shipped one passes and refused by its place in the array and its own
+    /// field, as `options.layouts_json`, the row's index, then the field's
+    /// path; a key the SDK ships is
+    /// refused, so a row adds a layout and never replaces one. Null for none
+    /// (`03-design/chart-geometry.md` §7f).
+    /// `api: nullable`
+    pub layouts_json: *const c_char,
+    /// Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+    /// of definitions: each a key the catalogue does not have, its lords and
+    /// their years in order, the reference nakshatra, and optionally `count`,
+    /// `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+    /// `sources` (the document schema's `UduDefinition`). Every one is checked
+    /// by the rules a shipped row passes and refused by its place in the array
+    /// and its own field, as `options.dashas_json`, the index, then the field.
+    /// A request asks for one by the id
+    /// `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+    /// registration order. Null for none (`03-design/dasha-kernels.md`).
+    /// `api: nullable`
+    pub dashas_json: *const c_char,
     /// Which of the SDK's own ephemerides to use when no provider vtable
     /// is given; ignored when one is (ADR-0028).
     /// `api: enum=TsEphemeris example=0`
     pub ephemeris: u8,
 }
 
-/// The last error of a call on a context: the status, the detail, and the
-/// message, field, hint and message key as strings the context lends
-/// until its next call; an `OK` record has empty strings.
+/// A failure as the library describes it: the status, the provider's
+/// code, and the detail, message, field, hint and message key.
+///
+/// Read from `ts_context_last_error`, the strings are **lent** by the
+/// context until its next call and `flags` is zero; an `OK` record has
+/// null strings. Written by a call that makes a handle and failed, the
+/// strings are **owned** by the record, `flags` carries
+/// `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+/// on a lent record does nothing, so freeing every record is never wrong.
+///
+/// `api: role=error`
 #[repr(C)]
 #[derive(Debug)]
 pub struct TsError {
@@ -108,8 +139,8 @@ pub struct TsError {
     pub status: i32,
     /// The provider's own code when the status is `PROVIDER`, else zero.
     pub provider_code: i32,
-    /// Reserved, zero.
-    pub reserved: u32,
+    /// `TS_ERROR_OWNED` when the record owns its strings, else zero.
+    pub flags: u32,
     /// The detail's name (`UNKNOWN_KEY`), or null.
     /// `api: nullable`
     pub detail: *const c_char,
@@ -171,19 +202,174 @@ struct Scratch {
     lent: Vec<CString>,
 }
 
-/// An error as `ts_context_last_error` reads it.
+/// An error with its strings made C strings once, from which either kind
+/// of [`TsError`] is laid out.
 struct StoredError {
     status: Status,
     provider_code: i32,
-    detail: Option<CString>,
-    message: CString,
-    field: Option<CString>,
-    hint: Option<CString>,
-    key: Option<CString>,
+    texts: Texts<CString>,
+}
+
+/// The five strings of an error record, in whichever form a record needs
+/// them: owned, borrowed, or as the pointers C reads.
+#[derive(Clone, Copy)]
+struct Texts<S> {
+    detail: Option<S>,
+    message: S,
+    field: Option<S>,
+    hint: Option<S>,
+    key: Option<S>,
+}
+
+impl<S> Texts<S> {
+    fn map<U>(self, mut f: impl FnMut(S) -> U) -> Texts<U> {
+        Texts {
+            detail: self.detail.map(&mut f),
+            message: f(self.message),
+            field: self.field.map(&mut f),
+            hint: self.hint.map(&mut f),
+            key: self.key.map(&mut f),
+        }
+    }
 }
 
 fn c_string(text: &str) -> CString {
     CString::new(text.replace('\0', " ")).unwrap_or_default()
+}
+
+impl StoredError {
+    /// An error's strings, made C strings.
+    fn of(error: &Error, provider_code: i32) -> StoredError {
+        StoredError {
+            status: error.status,
+            provider_code,
+            texts: Texts {
+                detail: error
+                    .detail
+                    .as_ref()
+                    .and_then(|d| serde_json::to_value(d).ok())
+                    .and_then(|v| v.as_str().map(c_string)),
+                message: c_string(&error.message),
+                field: error.field().map(c_string),
+                hint: error.hint().map(c_string),
+                key: error.key().map(|k| c_string(&k.key)),
+            },
+        }
+    }
+
+    /// The record lending this error's strings for as long as it lives.
+    fn lent(&self) -> TsError {
+        let borrowed = Texts {
+            detail: self.texts.detail.as_ref(),
+            message: &self.texts.message,
+            field: self.texts.field.as_ref(),
+            hint: self.texts.hint.as_ref(),
+            key: self.texts.key.as_ref(),
+        };
+        record(
+            self.status,
+            self.provider_code,
+            0,
+            borrowed.map(|s| s.as_ptr()),
+        )
+    }
+
+    /// The record owning this error's strings, which `ts_error_free`
+    /// takes back.
+    fn owned(self) -> TsError {
+        let released = self.texts.map(|s| s.into_raw().cast_const());
+        record(self.status, self.provider_code, TS_ERROR_OWNED, released)
+    }
+}
+
+/// One layout for every kind of record, so a lent one and an owned one
+/// cannot disagree about which string goes in which field.
+fn record(status: Status, provider_code: i32, flags: u32, texts: Texts<*const c_char>) -> TsError {
+    let or_null = |s: Option<*const c_char>| s.unwrap_or(ptr::null());
+    TsError {
+        struct_size: 0,
+        status: status.code(),
+        provider_code,
+        flags,
+        detail: or_null(texts.detail),
+        message: texts.message,
+        field: or_null(texts.field),
+        hint: or_null(texts.hint),
+        key: or_null(texts.key),
+    }
+}
+
+/// Writes a refusal whole into a caller's record, which owns its strings.
+///
+/// Null is allowed and ignored. A `struct_size` this build does not know
+/// leaves the record untouched and the call still returns its own status:
+/// a `SCHEMA_VERSION` about the diagnostics would replace the refusal the
+/// caller needs (`ffi-abi-and-api-description.md` §6.1).
+///
+/// # Safety
+///
+/// `out_error` must be null or a `TsError` valid for reads and writes.
+pub(crate) unsafe fn refuse_into(out_error: *mut TsError, error: &Error) {
+    // SAFETY: the caller's contract.
+    let Some(slot) = (unsafe { out_error.as_mut() }) else {
+        return;
+    };
+    if check_size::<TsError>(slot.struct_size).is_err() {
+        return;
+    }
+    *slot = TsError {
+        struct_size: slot.struct_size,
+        ..StoredError::of(error, 0).owned()
+    };
+}
+
+/// Releases the strings of a record a failed constructor wrote, and
+/// zeroes it but for its size; null, a lent record from
+/// `ts_context_last_error`, and a record already freed are all ignored.
+///
+/// # Safety
+///
+/// `error` must be null or a `TsError` valid for reads and writes, whose
+/// strings, when `flags` carries `TS_ERROR_OWNED`, are the ones this
+/// library wrote there and are not used again.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_error_free(error: *mut TsError) {
+    // SAFETY: the entry point's contract.
+    let Some(slot) = (unsafe { error.as_mut() }) else {
+        return;
+    };
+    if slot.flags & TS_ERROR_OWNED == 0 {
+        return;
+    }
+    for text in [slot.detail, slot.message, slot.field, slot.hint, slot.key] {
+        if !text.is_null() {
+            // SAFETY: an owned record's strings came from
+            // `CString::into_raw` in `StoredError::owned`, and the flag
+            // is cleared below, so each is taken back exactly once.
+            drop(unsafe { CString::from_raw(text.cast_mut()) });
+        }
+    }
+    *slot = TsError {
+        struct_size: slot.struct_size,
+        ..TsError::ok()
+    };
+}
+
+impl TsError {
+    /// The record of a call that succeeded: `OK`, and no strings.
+    fn ok() -> TsError {
+        TsError {
+            struct_size: 0,
+            status: Status::Ok.code(),
+            provider_code: 0,
+            flags: 0,
+            detail: ptr::null(),
+            message: ptr::null(),
+            field: ptr::null(),
+            hint: ptr::null(),
+            key: ptr::null(),
+        }
+    }
 }
 
 impl TsContext {
@@ -194,10 +380,8 @@ impl TsContext {
     /// An unknown profile, a patch that does not parse or contradicts the
     /// profile, a vtable that does not bind, an unknown locale.
     pub fn build(
-        profile: Option<&str>,
-        settings_json: Option<&str>,
+        texts: &OptionTexts<'_>,
         ephemeris: teistro::Ephemeris,
-        locale: Option<&str>,
     ) -> Result<TsContext, Error> {
         // **The façade composes it.** This function used to resolve the
         // profile, parse the patch, load the embedded bundles, start the
@@ -206,21 +390,51 @@ impl TsContext {
         // Rust consumer needed it too and two compositions kept equal by
         // hand is one composition and a hope.
         let mut building = teistro::Context::builder();
-        if let Some(id) = profile {
+        if let Some(id) = texts.profile {
             building = building.profile(id);
         }
-        if let Some(json) = settings_json {
+        if let Some(json) = texts.settings_json {
             building = building.settings_json(json);
         }
-        if let Some(tag) = locale {
+        if let Some(tag) = texts.locale {
             building = building.locale(tag);
+        }
+        if let Some(json) = texts.layouts_json {
+            for layout in layouts_of(json)? {
+                building = building.layout(layout);
+            }
+        }
+        if let Some(json) = texts.dashas_json {
+            for definition in dashas_of(json)? {
+                building = building.dasha_system(definition);
+            }
         }
         // One entry, never a chain: a C caller names one ephemeris and
         // gets it or a refusal, which is what `ts_context_new`'s
         // selector means. A chain is the ergonomic layers' shape,
         // assembled above this boundary.
+        // The builder names a registered layout by its place among the
+        // layouts; here those are the rows of `options.layouts_json`.
+        let inner = building.ephemeris([ephemeris]).build().map_err(|error| {
+            // The builder names a registered row by its place among the
+            // layouts or the dashas; here those are the options' arrays.
+            let renamed = error.field().and_then(|field| {
+                field
+                    .strip_prefix("layouts")
+                    .map(|rest| format!("options.layouts_json{rest}"))
+                    .or_else(|| {
+                        field
+                            .strip_prefix("dashas")
+                            .map(|rest| format!("options.dashas_json{rest}"))
+                    })
+            });
+            match renamed {
+                Some(field) => error.with_field(field),
+                None => error,
+            }
+        })?;
         Ok(TsContext {
-            inner: building.ephemeris([ephemeris]).build()?,
+            inner,
             scratch: RefCell::new(Scratch::default()),
             loaded: None,
         })
@@ -302,18 +516,7 @@ impl TsContext {
     pub(crate) fn record(&self, error: Option<Error>) {
         let mut scratch = self.scratch.borrow_mut();
         let provider_code = scratch.provider_code;
-        scratch.error = error.map(|e| StoredError {
-            status: e.status,
-            provider_code,
-            detail: e
-                .detail
-                .and_then(|d| serde_json::to_value(d).ok())
-                .and_then(|v| v.as_str().map(c_string)),
-            message: c_string(&e.message),
-            field: e.field().map(c_string),
-            hint: e.hint().map(c_string),
-            key: e.key().map(|k| c_string(&k.key)),
-        });
+        scratch.error = error.map(|e| StoredError::of(&e, provider_code));
     }
 
     /// Lends a string to the caller until the next call on this context.
@@ -373,8 +576,9 @@ fn resolve(ephemeris: u8, flags: u32) -> Result<TsEphemeris, Error> {
 /// ephemeris (positions are then `CAPABILITY`); `provider_user_data` is
 /// passed back to the vtable's functions untouched and must stay valid
 /// until `ts_context_free`. On success `*out_context` owns the context;
-/// on failure, when `out_error` is not null, it receives the error's
-/// message as a string to free with `ts_string_free`.
+/// on failure, when `out_error` is not null, it receives the whole
+/// refusal as a record that owns its strings, released by
+/// `ts_error_free`.
 ///
 /// # Safety
 ///
@@ -387,33 +591,13 @@ pub unsafe extern "C" fn ts_context_new(
     provider: *const ProviderVtable,
     provider_user_data: *mut c_void,
     out_context: *mut *mut TsContext,
-    out_error: *mut TsString,
+    out_error: *mut TsError,
 ) -> Status {
-    if out_context.is_null() {
-        return Status::InvalidArg;
-    }
-    let built = catch_unwind(AssertUnwindSafe(|| {
-        // SAFETY: the entry point's contract.
-        unsafe { build(options, provider, provider_user_data) }
-    }))
-    .unwrap_or_else(|_| {
-        Err(Error::internal(
-            "a panic was caught while building the context",
-        ))
-    });
-    match built {
-        Ok(context) => {
-            // SAFETY: non-null; the caller promises a writable slot.
-            unsafe { out_context.write(Box::into_raw(Box::new(context))) };
-            Status::Ok
-        }
-        Err(error) => {
-            if !out_error.is_null() {
-                // SAFETY: non-null; the caller promises a writable descriptor.
-                unsafe { out_error.write(TsString::from_string(error.to_string())) };
-            }
-            error.status
-        }
+    // SAFETY: the entry point's contract.
+    unsafe {
+        construct(out_context, "out_context", out_error, || {
+            build(options, provider, provider_user_data)
+        })
     }
 }
 
@@ -433,7 +617,7 @@ unsafe fn build(
     };
     let flags = options.map_or(0, |o| o.flags);
     // SAFETY: the entry point's contract.
-    let (profile, settings_json, locale) = unsafe { texts_of(options) }?;
+    let texts = unsafe { texts_of(options) }?;
     let ephemeris = options.map_or(0, |o| o.ephemeris);
     let chosen: teistro::Ephemeris = if provider.is_null() {
         own_ephemeris(ephemeris, flags)?
@@ -443,7 +627,7 @@ unsafe fn build(
         let bound = unsafe { VtableProvider::bind(ptr::read(provider), provider_user_data) }?;
         teistro::Ephemeris::Provider(Box::new(bound))
     };
-    TsContext::build(profile, settings_json, chosen, locale)
+    TsContext::build(&texts, chosen)
 }
 
 /// The ephemeris a caller asked for by name, or the refusal that says
@@ -486,11 +670,52 @@ fn builtin() -> Result<teistro::Ephemeris, Error> {
     .with_field("options.ephemeris"))
 }
 
-/// The three strings an options record carries: profile, settings and
-/// locale, each optional.
-pub(crate) type OptionTexts<'a> = (Option<&'a str>, Option<&'a str>, Option<&'a str>);
+/// The strings an options record carries, each optional, by name: a tuple
+/// of them let two constructors transpose one without a compiler noticing.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct OptionTexts<'a> {
+    /// The shipped profile's id.
+    pub profile: Option<&'a str>,
+    /// A JSON settings patch over the profile.
+    pub settings_json: Option<&'a str>,
+    /// The locale every render resolves from.
+    pub locale: Option<&'a str>,
+    /// A JSON array of the consumer's own layout rows.
+    pub layouts_json: Option<&'a str>,
+    /// A JSON array of the consumer's own dasha system definitions.
+    pub dashas_json: Option<&'a str>,
+}
 
-/// The three strings an options record carries, checked and borrowed.
+/// A consumer's layout rows, each read strictly and checked by the rules a
+/// shipped row passes, refused by its place in the array
+/// (`03-design/chart-geometry.md` §7f).
+fn layouts_of(json: &str) -> Result<Vec<teistro::Layout>, Error> {
+    const ROOT: &str = "options.layouts_json";
+    let rows: Vec<serde_json::Value> = teistro_core::strict::read(json, ROOT)?;
+    rows.into_iter()
+        .enumerate()
+        .map(|(index, row)| {
+            let at = format!("{ROOT}[{index}]");
+            let layout: teistro::Layout = teistro_core::strict::read_value(&row, &at)?;
+            layout.validate().map_err(|error| error.under(&at))?;
+            Ok(layout)
+        })
+        .collect()
+}
+
+/// A consumer's dasha system definitions, each read strictly; the context's
+/// registry checks each by the rules a shipped row passes and names it by
+/// its place.
+fn dashas_of(json: &str) -> Result<Vec<teistro::dasha::UduDefinition>, Error> {
+    const ROOT: &str = "options.dashas_json";
+    let rows: Vec<serde_json::Value> = teistro_core::strict::read(json, ROOT)?;
+    rows.into_iter()
+        .enumerate()
+        .map(|(index, row)| teistro_core::strict::read_value(&row, &format!("{ROOT}[{index}]")))
+        .collect()
+}
+
+/// The strings an options record carries, checked and borrowed.
 ///
 /// Shared by both ways of making a context, so a field added here reaches
 /// each of them and neither can forget one.
@@ -516,20 +741,18 @@ pub(crate) unsafe fn read_options<'a>(
 ///
 /// The record's strings must stay valid for the returned lifetime.
 unsafe fn texts_of<'a>(options: Option<&TsContextOptions>) -> Result<OptionTexts<'a>, Error> {
-    // SAFETY: the caller's contract.
-    unsafe {
-        Ok((
-            optional_text(
-                options.map_or(ptr::null(), |o| o.profile),
-                "options.profile",
-            )?,
-            optional_text(
-                options.map_or(ptr::null(), |o| o.settings_json),
-                "options.settings_json",
-            )?,
-            optional_text(options.map_or(ptr::null(), |o| o.locale), "options.locale")?,
-        ))
-    }
+    let field = |pick: fn(&TsContextOptions) -> *const c_char, name: &str| {
+        // SAFETY: the caller's contract: null, or a NUL-terminated string
+        // that stays valid for the returned lifetime.
+        unsafe { optional_text(options.map_or(ptr::null(), pick), name) }
+    };
+    Ok(OptionTexts {
+        profile: field(|o| o.profile, "options.profile")?,
+        settings_json: field(|o| o.settings_json, "options.settings_json")?,
+        locale: field(|o| o.locale, "options.locale")?,
+        layouts_json: field(|o| o.layouts_json, "options.layouts_json")?,
+        dashas_json: field(|o| o.dashas_json, "options.dashas_json")?,
+    })
 }
 
 /// Frees a context; null is ignored.
@@ -567,30 +790,11 @@ pub unsafe extern "C" fn ts_context_last_error(
         return Status::InvalidArg;
     };
     let scratch = ctx.scratch.borrow();
-    let record = scratch.error.as_ref().map_or_else(
-        || TsError {
-            struct_size: 0,
-            status: Status::Ok.code(),
-            provider_code: 0,
-            reserved: 0,
-            detail: ptr::null(),
-            message: ptr::null(),
-            field: ptr::null(),
-            hint: ptr::null(),
-            key: ptr::null(),
-        },
-        |e| TsError {
-            struct_size: 0,
-            status: e.status.code(),
-            provider_code: e.provider_code,
-            reserved: 0,
-            detail: e.detail.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
-            message: e.message.as_ptr(),
-            field: e.field.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
-            hint: e.hint.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
-            key: e.key.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
-        },
-    );
+    let record = scratch
+        .error
+        .as_ref()
+        .map_or_else(TsError::ok, StoredError::lent);
+
     // SAFETY: the entry point's contract.
     match unsafe { write_out(out_error, "out_error", record) } {
         Ok(()) => Status::Ok,
@@ -661,14 +865,16 @@ mod tests {
         reason = "tests fail by panicking"
     )]
 
-    use super::{TS_CONTEXT_TEST_PROVIDER, TsContext, TsEphemeris, own_ephemeris, resolve};
+    use super::{
+        OptionTexts, TS_CONTEXT_TEST_PROVIDER, TsContext, TsEphemeris, own_ephemeris, resolve,
+    };
     use teistro_core::settings::DEFAULT_CACHE_CELLS;
     use teistro_port_ephemeris::EphemerisProvider;
 
     /// The knob's default is the port's default, in one place.
     #[test]
     fn the_shipped_profile_remembers_what_a_range_needs() {
-        let context = TsContext::build(None, None, teistro::Ephemeris::None, None)
+        let context = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)
             .expect("the default profile");
         assert_eq!(
             context.settings().provider.cache_cells,
@@ -683,8 +889,14 @@ mod tests {
     fn the_knob_is_reachable_from_a_settings_patch() {
         for cells in [0u32, 1, 4096] {
             let patch = format!(r#"{{"provider":{{"cache_cells":{cells}}}}}"#);
-            let context = TsContext::build(None, Some(&patch), teistro::Ephemeris::None, None)
-                .expect("the patch applies");
+            let context = TsContext::build(
+                &OptionTexts {
+                    settings_json: Some(&patch),
+                    ..OptionTexts::default()
+                },
+                teistro::Ephemeris::None,
+            )
+            .expect("the patch applies");
             assert_eq!(context.settings().provider.cache_cells, cells);
         }
     }

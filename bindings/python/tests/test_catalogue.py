@@ -30,8 +30,17 @@ def every_enum() -> list[type[catalogue.Member]]:
 
 class TheCatalogue(unittest.TestCase):
     def test_there_are_as_many_enums_as_the_description_carries(self) -> None:
-        self.assertEqual(len(every_enum()), 95)
-        self.assertEqual(sum(len(list(found)) for found in every_enum()), 946 + 73)
+        # 96 since chart_layout joined the catalogue, whose eight members
+        # here are its six layouts, its UNKNOWN, and the kind's own member
+        # of `Kind`; 97 since the boundary's `Balance` crossed with the
+        # dashas, with its two methods; 99 since the Ashtakavarga's two readings
+        # crossed, two members each; 100 since the Vimshopaka's two scorings;
+        # 101 since the vaiseshikamsa kind, thirty names and its UNKNOWN;
+        # 102 since the avastha_cheshta kind, three sub-states and its UNKNOWN,
+        # each kind with its own member of `Kind`; 103 since the dasha phala's
+        # `DashaPhase`, three phases.
+        self.assertEqual(len(every_enum()), 103)
+        self.assertEqual(sum(len(list(found)) for found in every_enum()), 946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3)
 
     def test_every_member_is_an_int_with_a_key(self) -> None:
         for found in every_enum():

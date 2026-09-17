@@ -58,6 +58,13 @@ const moon: TmPosition = typed.tmPositionCalc({
 const query = typed.tmStarQueryInitSized();
 const stars: readonly TmStar[] = typed.tmStarSearch({ query: { ...query, nameContains: 'Aldeb' } });
 
+// Cusps are as long as the house system says, asked before the call.
+const houses = typed.tmHousesCalc({
+  req: { jdUt1: 2451545, geoLatDeg: 27.7172, geoLonDeg: 85.324, system: 0, flags: 0 },
+});
+const cusps: readonly number[] = houses.cusps;
+const ascendant: number = houses.outAngles.ascendant;
+
 // And nothing comes back as nothing.
 const nothing: void = typed.tmFallbackStatsReset();
 
@@ -66,4 +73,4 @@ const packaged: string = platformPackage();
 
 sdk.dispose();
 
-export { name, seconds, formatted, version, utc, perihelion, deltas, grid, defaults, moon, stars, nothing, where, packaged };
+export { name, seconds, formatted, version, utc, perihelion, deltas, grid, defaults, moon, stars, cusps, ascendant, nothing, where, packaged };

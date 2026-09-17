@@ -76,6 +76,38 @@
 //! - `almanac` and `check-almanac`: the falsification pass over the
 //!   shape of a batch of almanacs, which the panchanga blob's layout is
 //!   designed from.
+//! - `document-schema` and `check-document-schema`: the chart document's
+//!   JSON Schema, generated from the types and embedded by `teistro-serial`.
+//! - `dashas` and `check-dashas`: the falsification pass over the
+//!   Vimshottari dasha, which the dasha module is designed from — the
+//!   seed, the balance, the tree and its arithmetic, and the cycle's end.
+//! - `dasha-systems` and `check-dasha-systems`: the same over the eight
+//!   other nakshatra-seeded systems — each one's seat derived from its
+//!   recorded first lords, a temporal balance over a window, and Tribhagi's
+//!   scale.
+//! - `rashi-dashas` and `check-rashi-dashas`: the sign-based (Jaimini)
+//!   dashas — each system's start, order, years and antardashas, measured
+//!   beside the readings other schools give.
+//! - `arudhas` and `check-arudhas`: the twelve arudha padas, their lords and
+//!   their exception.
+//! - `kalachakra` and `check-kalachakra`: the Kalachakra dasha, measured
+//!   beside the readings the sources give at each of its forks.
+//! - `ashtakavarga` and `check-ashtakavarga`: the Ashtakavarga, the engine's
+//!   reductions and pindas measured beside BPHS's.
+//! - `yogas` and `check-yogas`: the yogas, every rule of the recording engine
+//!   evaluated over every recorded chart under each reading of its condition
+//!   language, before the rules kernel.
+//! - `doshas` and `check-doshas`: the doshas, the engine's own rules measured
+//!   under each reading its dosha evaluator leaves open, and the seventeen it
+//!   computes in code written as rules and held to what that code recorded.
+//! - `vimshopaka` and `check-vimshopaka`: the Vimshopaka, the engine's scale
+//!   measured beside BPHS's points.
+//! - `shadbala` and `check-shadbala`: the Shadbala, every one of the engine's
+//!   components reproduced and measured beside BPHS ch. 27's readings.
+//! - `bhava-bala` and `check-bhava-bala`: the built Bhava bala against the
+//!   engine's recorded houses, and each other reading one fork at a time.
+//! - `render` and `check-render`: the golden drawings, a real chart drawn in
+//!   every shipped layout in two locales and both themes, byte for byte.
 //! - `schema` and `check-schema`: the falsification pass over the chart
 //!   document's shape, which a JSON Schema for it is designed from —
 //!   which keys are required, what type each value has, which strings
@@ -116,9 +148,12 @@ mod accuracy;
 mod agreement;
 mod almanac;
 mod areas;
+mod arudhas;
+mod ashtakavarga;
 mod aspect;
 mod batching;
 mod bench;
+mod bhava_bala;
 mod binding;
 mod c_binding;
 mod calendars;
@@ -128,6 +163,10 @@ mod chebyshev;
 mod classical;
 mod consumer;
 mod dart_binding;
+mod dasha_systems;
+mod dashas;
+mod document_schema;
+mod doshas;
 mod engine;
 mod ephemgen;
 mod facade;
@@ -136,6 +175,7 @@ mod generated;
 mod hashes;
 mod houses;
 mod intl;
+mod kalachakra;
 mod lints;
 mod lunisolar;
 mod measure;
@@ -148,18 +188,24 @@ mod platform;
 mod pluto;
 mod points;
 mod python_binding;
+mod rashi_dashas;
 mod release;
+mod render;
+mod rules_corpus;
 mod rust_binding;
 mod rust_surface;
 mod schema;
 mod serial;
+mod shadbala;
 mod site;
 mod state;
 mod surface;
 mod time;
 mod topocentric;
 mod vargas;
+mod vimshopaka;
 mod vsop;
+mod yogas;
 
 use std::env;
 use std::fs;
@@ -194,6 +240,11 @@ const PASSES: &[Pass] = &[
     ("absence", absence::generate, absence::check_generated),
     ("serial", serial::generate, serial::check_generated),
     ("schema", schema::generate, schema::check_generated),
+    (
+        "document-schema",
+        document_schema::generate,
+        document_schema::check_generated,
+    ),
     ("almanac", almanac::generate, almanac::check_generated),
     ("lunisolar", lunisolar::generate, lunisolar::check_generated),
     (
@@ -212,6 +263,42 @@ const PASSES: &[Pass] = &[
         rust_surface::generate,
         rust_surface::check_generated,
     ),
+    ("render", render::generate, render::check_generated),
+    ("dashas", dashas::generate, dashas::check_generated),
+    (
+        "dasha-systems",
+        dasha_systems::generate,
+        dasha_systems::check_generated,
+    ),
+    (
+        "rashi-dashas",
+        rashi_dashas::generate,
+        rashi_dashas::check_generated,
+    ),
+    ("arudhas", arudhas::generate, arudhas::check_generated),
+    (
+        "kalachakra",
+        kalachakra::generate,
+        kalachakra::check_generated,
+    ),
+    (
+        "ashtakavarga",
+        ashtakavarga::generate,
+        ashtakavarga::check_generated,
+    ),
+    (
+        "vimshopaka",
+        vimshopaka::generate,
+        vimshopaka::check_generated,
+    ),
+    ("shadbala", shadbala::generate, shadbala::check_generated),
+    (
+        "bhava-bala",
+        bhava_bala::generate,
+        bhava_bala::check_generated,
+    ),
+    ("yogas", yogas::generate, yogas::check_generated),
+    ("doshas", doshas::generate, doshas::check_generated),
 ];
 
 /// Runs a pass, or says it is not one.

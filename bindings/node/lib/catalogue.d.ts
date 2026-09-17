@@ -112,7 +112,10 @@ export type Kind =
   | 'choghadiya'
   | 'kaala'
   | 'panchaka'
-  | 'muhurta_yoga';
+  | 'muhurta_yoga'
+  | 'chart_layout'
+  | 'vaiseshikamsa'
+  | 'avastha_cheshta';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -321,7 +324,7 @@ export declare const Kind: {
    */
   readonly AvasthaLajjitadi: 'avastha_lajjitadi';
   /**
-   * The twelve Sayanadi states.
+   * The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna.
    */
   readonly AvasthaSayanadi: 'avastha_sayanadi';
   /**
@@ -352,6 +355,18 @@ export declare const Kind: {
    * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
    */
   readonly MuhurtaYoga: 'muhurta_yoga';
+  /**
+   * The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
+   */
+  readonly ChartLayout: 'chart_layout';
+  /**
+   * The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's.
+   */
+  readonly Vaiseshikamsa: 'vaiseshikamsa';
+  /**
+   * The three sub-states of a Sayanadi state, a remainder of three.
+   */
+  readonly AvasthaCheshta: 'avastha_cheshta';
 };
 
 /**
@@ -4142,7 +4157,7 @@ export declare const AvasthaLajjitadi: {
 export declare const AvasthaLajjitadiById: ReadonlyMap<number, AvasthaLajjitadi>;
 
 /**
- * The twelve Sayanadi states. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
+ * The twelve Sayanadi states, a remainder of twelve from the graha's nakshatra, number and navamsha, the Moon's nakshatra, the ghatis of birth and the lagna. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_SAYANADI << 16) | member`.
  */
 export type AvasthaSayanadi =
   | 'avastha_sayanadi.SHAYANA'
@@ -5105,6 +5120,245 @@ export declare const MuhurtaYoga: {
 export declare const MuhurtaYogaById: ReadonlyMap<number, MuhurtaYoga>;
 
 /**
+ * The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_LAYOUT << 16) | member`.
+ */
+export type ChartLayout =
+  | 'chart_layout.NORTH_INDIAN'
+  | 'chart_layout.SOUTH_INDIAN'
+  | 'chart_layout.EAST_INDIAN'
+  | 'chart_layout.NEPALI_LOTUS'
+  | 'chart_layout.SUDARSHAN_CHAKRA'
+  | 'chart_layout.WESTERN_WHEEL'
+  | 'unknown';
+
+/** Every ChartLayout by name; the values are the strings the union accepts. */
+export declare const ChartLayout: {
+  /**
+   * The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise
+   */
+  readonly NorthIndian: 'chart_layout.NORTH_INDIAN';
+  /**
+   * The South Indian chart: signs fixed, Pisces top-left, running clockwise
+   */
+  readonly SouthIndian: 'chart_layout.SOUTH_INDIAN';
+  /**
+   * The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise
+   */
+  readonly EastIndian: 'chart_layout.EAST_INDIAN';
+  /**
+   * The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals
+   */
+  readonly NepaliLotus: 'chart_layout.NEPALI_LOTUS';
+  /**
+   * The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun
+   */
+  readonly SudarshanChakra: 'chart_layout.SUDARSHAN_CHAKRA';
+  /**
+   * The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock
+   */
+  readonly WesternWheel: 'chart_layout.WESTERN_WHEEL';
+};
+
+/**
+ * Every ChartLayout by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ChartLayoutById: ReadonlyMap<number, ChartLayout>;
+
+/**
+ * The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. Members are the catalogue's ids; the full key id is `(TS_KIND_VAISESHIKAMSA << 16) | member`.
+ */
+export type Vaiseshikamsa =
+  | 'vaiseshikamsa.KIMSHUKA'
+  | 'vaiseshikamsa.VYANJANA'
+  | 'vaiseshikamsa.CHAMARA'
+  | 'vaiseshikamsa.CHATRA'
+  | 'vaiseshikamsa.KUNDALA'
+  | 'vaiseshikamsa.MUKUTA'
+  | 'vaiseshikamsa.PARIJATA'
+  | 'vaiseshikamsa.UTTAMA'
+  | 'vaiseshikamsa.GOPURA'
+  | 'vaiseshikamsa.SIMHASANA'
+  | 'vaiseshikamsa.PARAVATA'
+  | 'vaiseshikamsa.DEVALOKA'
+  | 'vaiseshikamsa.BRAHMALOKA'
+  | 'vaiseshikamsa.SHAKRAVAHANA'
+  | 'vaiseshikamsa.SHRIDHAMA'
+  | 'vaiseshikamsa.BHEDAKA'
+  | 'vaiseshikamsa.KUSUMA'
+  | 'vaiseshikamsa.NAGAPUSHPA'
+  | 'vaiseshikamsa.KANDUKA'
+  | 'vaiseshikamsa.KERALA'
+  | 'vaiseshikamsa.KALPAVRIKSHA'
+  | 'vaiseshikamsa.CHANDANAVANA'
+  | 'vaiseshikamsa.PURNACHANDRA'
+  | 'vaiseshikamsa.UCHCHAISHRAVA'
+  | 'vaiseshikamsa.DHANVANTARI'
+  | 'vaiseshikamsa.SURYAKANTA'
+  | 'vaiseshikamsa.VIDRUMA'
+  | 'vaiseshikamsa.CHAKRASIMHASANA'
+  | 'vaiseshikamsa.GOLOKA'
+  | 'vaiseshikamsa.SHRIVALLABHA'
+  | 'unknown';
+
+/** Every Vaiseshikamsa by name; the values are the strings the union accepts. */
+export declare const Vaiseshikamsa: {
+  /**
+   * Kimshuka
+   */
+  readonly Kimshuka: 'vaiseshikamsa.KIMSHUKA';
+  /**
+   * Vyanjana
+   */
+  readonly Vyanjana: 'vaiseshikamsa.VYANJANA';
+  /**
+   * Chamara
+   */
+  readonly Chamara: 'vaiseshikamsa.CHAMARA';
+  /**
+   * Chatra
+   */
+  readonly Chatra: 'vaiseshikamsa.CHATRA';
+  /**
+   * Kundala
+   */
+  readonly Kundala: 'vaiseshikamsa.KUNDALA';
+  /**
+   * Mukuta
+   */
+  readonly Mukuta: 'vaiseshikamsa.MUKUTA';
+  /**
+   * Parijata
+   */
+  readonly Parijata: 'vaiseshikamsa.PARIJATA';
+  /**
+   * Uttama
+   */
+  readonly Uttama: 'vaiseshikamsa.UTTAMA';
+  /**
+   * Gopura
+   */
+  readonly Gopura: 'vaiseshikamsa.GOPURA';
+  /**
+   * Simhasana
+   */
+  readonly Simhasana: 'vaiseshikamsa.SIMHASANA';
+  /**
+   * Paravata
+   */
+  readonly Paravata: 'vaiseshikamsa.PARAVATA';
+  /**
+   * Devaloka
+   */
+  readonly Devaloka: 'vaiseshikamsa.DEVALOKA';
+  /**
+   * Brahmaloka
+   */
+  readonly Brahmaloka: 'vaiseshikamsa.BRAHMALOKA';
+  /**
+   * Shakravahana
+   */
+  readonly Shakravahana: 'vaiseshikamsa.SHAKRAVAHANA';
+  /**
+   * Shridhama
+   */
+  readonly Shridhama: 'vaiseshikamsa.SHRIDHAMA';
+  /**
+   * Bhedaka
+   */
+  readonly Bhedaka: 'vaiseshikamsa.BHEDAKA';
+  /**
+   * Kusuma
+   */
+  readonly Kusuma: 'vaiseshikamsa.KUSUMA';
+  /**
+   * Nagapushpa
+   */
+  readonly Nagapushpa: 'vaiseshikamsa.NAGAPUSHPA';
+  /**
+   * Kanduka
+   */
+  readonly Kanduka: 'vaiseshikamsa.KANDUKA';
+  /**
+   * Kerala
+   */
+  readonly Kerala: 'vaiseshikamsa.KERALA';
+  /**
+   * Kalpavriksha
+   */
+  readonly Kalpavriksha: 'vaiseshikamsa.KALPAVRIKSHA';
+  /**
+   * Chandanavana
+   */
+  readonly Chandanavana: 'vaiseshikamsa.CHANDANAVANA';
+  /**
+   * Purnachandra
+   */
+  readonly Purnachandra: 'vaiseshikamsa.PURNACHANDRA';
+  /**
+   * Uchchaishrava
+   */
+  readonly Uchchaishrava: 'vaiseshikamsa.UCHCHAISHRAVA';
+  /**
+   * Dhanvantari
+   */
+  readonly Dhanvantari: 'vaiseshikamsa.DHANVANTARI';
+  /**
+   * Suryakanta
+   */
+  readonly Suryakanta: 'vaiseshikamsa.SURYAKANTA';
+  /**
+   * Vidruma
+   */
+  readonly Vidruma: 'vaiseshikamsa.VIDRUMA';
+  /**
+   * Chakrasimhasana
+   */
+  readonly Chakrasimhasana: 'vaiseshikamsa.CHAKRASIMHASANA';
+  /**
+   * Goloka
+   */
+  readonly Goloka: 'vaiseshikamsa.GOLOKA';
+  /**
+   * Shrivallabha
+   */
+  readonly Shrivallabha: 'vaiseshikamsa.SHRIVALLABHA';
+};
+
+/**
+ * Every Vaiseshikamsa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VaiseshikamsaById: ReadonlyMap<number, Vaiseshikamsa>;
+
+/**
+ * The three sub-states of a Sayanadi state, a remainder of three. Members are the catalogue's ids; the full key id is `(TS_KIND_AVASTHA_CHESHTA << 16) | member`.
+ */
+export type AvasthaCheshta = 'avastha_cheshta.DRISHTI' | 'avastha_cheshta.CHESHTA' | 'avastha_cheshta.VICHESHTA' | 'unknown';
+
+/** Every AvasthaCheshta by name; the values are the strings the union accepts. */
+export declare const AvasthaCheshta: {
+  /**
+   * Drishti, a remainder of one: the state's effects middling
+   */
+  readonly Drishti: 'avastha_cheshta.DRISHTI';
+  /**
+   * Cheshta, a remainder of two: its effects in full
+   */
+  readonly Cheshta: 'avastha_cheshta.CHESHTA';
+  /**
+   * Vicheshta, a remainder of nothing: its effects slight
+   */
+  readonly Vicheshta: 'avastha_cheshta.VICHESHTA';
+};
+
+/**
+ * Every AvasthaCheshta by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AvasthaCheshtaById: ReadonlyMap<number, AvasthaCheshta>;
+
+/**
  * The status of a call, with the code it has at the C boundary.
  */
 export type Status =
@@ -5674,6 +5928,133 @@ export declare const Strength: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const StrengthById: ReadonlyMap<number, Strength>;
+
+/**
+ * How a dasha's balance at birth was measured.
+ *
+ * The settings' own `Balance`, which is a knob and not a catalogue member,
+ * so it crosses as this boundary's own enum, as `TsStrength` does.
+ */
+export type Balance = 'spatial' | 'temporal';
+
+/** Every Balance by name; the values are the strings the union accepts. */
+export declare const Balance: {
+  /**
+   * By the elapsed part of the Moon's window of nakshatras.
+   */
+  readonly Spatial: 'spatial';
+  /**
+   * By the elapsed part of the Moon's stay in its nakshatra.
+   */
+  readonly Temporal: 'temporal';
+};
+
+/**
+ * Every Balance by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BalanceById: ReadonlyMap<number, Balance>;
+
+/**
+ * Where an Ashtakavarga's reductions and pindas were made: the settings'
+ * own `Shodhana`, which is a knob and not a catalogue member.
+ */
+export type Shodhana = 'each-graha' | 'sarva';
+
+/** Every Shodhana by name; the values are the strings the union accepts. */
+export declare const Shodhana: {
+  /**
+   * In each graha's own Ashtakavarga (BPHS chs. 67 to 69).
+   */
+  readonly EachGraha: 'each-graha';
+  /**
+   * On the sum of the seven, as the conformance corpus's engine makes them.
+   */
+  readonly Sarva: 'sarva';
+};
+
+/**
+ * Every Shodhana by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ShodhanaById: ReadonlyMap<number, Shodhana>;
+
+/**
+ * How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
+ * an occupied one: the settings' own `Ekadhipatya`.
+ */
+export type Ekadhipatya = 'bphs' | 'empty-to-zero';
+
+/** Every Ekadhipatya by name; the values are the strings the union accepts. */
+export declare const Ekadhipatya: {
+  /**
+   * BPHS ch. 68: an empty sign keeps a difference.
+   */
+  readonly Bphs: 'bphs';
+  /**
+   * The empty sign always goes to zero.
+   */
+  readonly EmptyToZero: 'empty-to-zero';
+};
+
+/**
+ * Every Ekadhipatya by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const EkadhipatyaById: ReadonlyMap<number, Ekadhipatya>;
+
+/**
+ * How a Vimshopaka scored a graha in a varga: the settings' own
+ * `Vimshopaka`.
+ */
+export type VimshopakaScoring = 'bphs' | 'saptavargaja-virupas';
+
+/** Every VimshopakaScoring by name; the values are the strings the union accepts. */
+export declare const VimshopakaScoring: {
+  /**
+   * BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
+   * relationship with the sign's lord.
+   */
+  readonly Bphs: 'bphs';
+  /**
+   * The conformance corpus's engine: the Saptavargaja virupas over 45 by
+   * natural friendship, rounded to hundredths.
+   */
+  readonly SaptavargajaVirupas: 'saptavargaja-virupas';
+};
+
+/**
+ * Every VimshopakaScoring by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VimshopakaScoringById: ReadonlyMap<number, VimshopakaScoring>;
+
+/**
+ * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
+ */
+export type DashaPhase = 'commencement' | 'middle' | 'end';
+
+/** Every DashaPhase by name; the values are the strings the union accepts. */
+export declare const DashaPhase: {
+  /**
+   * At its commencement.
+   */
+  readonly Commencement: 'commencement';
+  /**
+   * In its middle.
+   */
+  readonly Middle: 'middle';
+  /**
+   * At its end.
+   */
+  readonly End: 'end';
+};
+
+/**
+ * Every DashaPhase by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DashaPhaseById: ReadonlyMap<number, DashaPhase>;
 
 /**
  * Which arc of its day an instant falls in.

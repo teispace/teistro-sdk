@@ -24,6 +24,8 @@ import {
   packFrame,
   sdkVersion,
   unpackFrame,
+  ChartLayout,
+  DashaSystem,
   Varga,
 } from './lib/index.js';
 
@@ -211,7 +213,23 @@ placed.grahas.forEach((graha, j) => {
 // ── A chart and an almanac, under a geocentric profile ─────────────────
 // Everything after this runs on the SDK's own default profile, which is
 // geocentric, so that the two centres are both exercised.
-const geo = new Context({ profile: 'parashari-classical', locale: 'ne-Deva-NP', testProvider: true });
+// A layout of the consumer's own, registered on the context the charts are
+// drawn under: the South Indian row renamed, as every runner registers it
+// (`03-design/chart-geometry.md` §7f).
+const shipped = new Context({ testProvider: true });
+const kerala = { ...shipped.chart.layout('SOUTH_INDIAN'), key: 'ACME_KERALA' };
+shipped.dispose();
+// A dasha system of the consumer's own, the same definition every runner
+// registers: a backward count, a two-nakshatra window, an offset, a savana
+// year and a depth of two (`03-design/dasha-kernels.md`).
+const parityDasha = JSON.parse('{"key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}');
+const geo = new Context({
+  profile: 'parashari-classical',
+  locale: 'ne-Deva-NP',
+  testProvider: true,
+  layouts: [kerala],
+  dashaSystems: [parityDasha],
+});
 put('geo-profile', geo.profile);
 put('geo-settings-hash', geo.settingsHash);
 
@@ -228,9 +246,27 @@ const charts = geo.chart.foundMany({
   place,
   utcOffsetSeconds: 20700,
   vargas: [Varga.D9, Varga.D10],
+  dashas: [DashaSystem.Vimshottari, DashaSystem.Chara, DashaSystem.Kalachakra, 'dasha_system.ACME_PARITY'],
+  // A grid of the founded chart, a grid of a divisional one, and the wheel:
+  // straight edges, a divisional chart's own lagna, arcs, marks and the
+  // rounded coordinates the wheel's trigonometry leaves.
+  drawings: [
+    { layout: ChartLayout.NorthIndian, varga: Varga.D1 },
+    { layout: ChartLayout.SouthIndian, varga: Varga.D9 },
+    { layout: ChartLayout.WesternWheel, varga: Varga.D1 },
+    { layout: 'chart_layout.ACME_KERALA', varga: Varga.D9 },
+  ],
+  // Every drawing written as SVG too, so the four agree on the bytes.
+  theme: 'dark',
   aspects: true,
   points: true,
   houses: true,
+  ashtakavarga: true,
+  vimshopaka: true,
+  vaiseshikamsa: true,
+  dashaPhala: true,
+  shadbala: true,
+  bhavaBala: true,
   state: true,
 });
 put('chart-varga-count', charts.vargaCount);
@@ -280,6 +316,10 @@ for (const chart of charts) {
     put(`${key}-holding`, state.lajjitadi.holding.join(',') || 'none');
     put(`${key}-undecided`, state.lajjitadi.undecided.join(',') || 'none');
     put(`${key}-war`, state.war ? `${state.war.opponent}:${state.war.isWinner}` : 'none');
+    put(
+      `${key}-sayanadi`,
+      state.sayanadi ? `${state.sayanadi.avastha} ${state.sayanadi.cheshtas.join(',')}` : 'none',
+    );
     put(`${key}-sign-edge`, state.boundaries.signDeg);
   });
   chart.bhavas.forEach((bhava) => {
@@ -305,6 +345,94 @@ for (const chart of charts) {
     put(`chart-${i}-aspect-${k}-from-sign`, drishti.fromEdge.signDeg);
     put(`chart-${i}-aspect-${k}-to-sign`, drishti.toEdge.signDeg);
   });
+  chart.drawings.forEach((drawing, d) => {
+    const key = `chart-${i}-drawing-${d}`;
+    put(key, drawing.layout);
+    put(`${key}-varga`, drawing.varga);
+    put(`${key}-cells`, drawing.cells.length);
+    put(`${key}-frames`, drawing.frame.length);
+    put(`${key}-marks`, drawing.marks.length);
+    put(`${key}-svg`, drawing.svg);
+    drawing.cells.forEach((cell, c) => {
+      const at = `${key}-cell-${c}`;
+      put(`${at}-sign`, cell.sign);
+      put(`${at}-house`, cell.house);
+      put(`${at}-lagna`, cell.lagna);
+      put(`${at}-ring`, cell.ring);
+      put(`${at}-bodies`, cell.bodies.join(',') || 'none');
+      put(`${at}-label`, `${number(cell.label.x)},${number(cell.label.y)}`);
+      put(`${at}-anchor`, `${number(cell.anchor.x)},${number(cell.anchor.y)}`);
+      put(`${at}-start`, `${number(cell.outline.start.x)},${number(cell.outline.start.y)}`);
+      put(`${at}-steps`, cell.outline.segments.map((step) => step.kind).join(','));
+    });
+    drawing.marks.forEach((mark, m) => {
+      const at = `${key}-mark-${m}`;
+      put(at, mark.body);
+      put(`${at}-at`, `${number(mark.at.x)},${number(mark.at.y)}`);
+      put(`${at}-lon`, mark.longitudeDeg);
+    });
+  });
+  put(`chart-${i}-dasha-count`, chart.dashas.length);
+  const av = chart.ashtakavarga;
+  put(`chart-${i}-ashtakavarga`, `${av.shodhana} ${av.ekadhipatya}`);
+  av.grahas.forEach((g) => {
+    const key = `chart-${i}-ashtakavarga-${g.graha}`;
+    put(key, g.bindus.join(','));
+    put(`${key}-reduced`, g.reduced ? g.reduced.join(',') : null);
+    put(`${key}-pindas`, `${g.rashiPinda},${g.grahaPinda},${g.yogaPinda}`);
+  });
+  put(`chart-${i}-sarvashtakavarga`, `${av.sarva.join(',')};${av.trikona.join(',')};${av.reduced.join(',')}`);
+  chart.shadbala.grahas.forEach((g) => {
+    const key = `chart-${i}-shadbala-${g.graha}`;
+    const { sthana: st, kaala: ka } = g;
+    const parts = [st.uchcha, st.saptavargaja, st.ojayugma, st.kendradi, st.drekkana, g.dig];
+    parts.push(ka.nathonnatha, ka.paksha, ka.tribhaga, ka.abda, ka.masa, ka.vara, ka.hora, ka.ayana, ka.yuddha);
+    parts.push(g.cheshta, g.naisargika, g.drik);
+    put(key, parts.map(number).join(','));
+    put(`${key}-total`, `${number(g.virupas)},${number(g.rupas)},${number(g.requiredRupas)},${g.strong},${number(g.ishta)},${number(g.kashta)},${number(g.subhaRashmi)},${number(g.ashubhaRashmi)}`);
+  });
+  chart.bhavaBala.bhavas.forEach((b) => {
+    put(`chart-${i}-bhava-bala-${b.bhava}`, `${b.lord} ${[b.adhipati, b.dig, b.drishti, b.special, b.virupas].map(number).join(',')}`);
+  });
+  chart.vaiseshikamsa.grahas.forEach((g) => {
+    const standings = [g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga];
+    put(`chart-${i}-vaiseshikamsa-${g.graha}`, `${standings.map((s) => `${s.goodVargas}:${s.name}`).join(',')} ${g.impaired}`);
+  });
+  chart.dashaPhala.grahas.forEach((g) => {
+    put(
+      `chart-${i}-dasha-phala-${g.graha}`,
+      `${g.subhankas.map(number).join(',')} ${g.nature} ${g.phase} ${g.favourable} ${g.unfavourable}`,
+    );
+  });
+  const vs = chart.vimshopaka;
+  put(`chart-${i}-vimshopaka`, vs.scoring);
+  vs.grahas.forEach((g) => {
+    put(`chart-${i}-vimshopaka-${g.graha}`, [g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga].map(number).join(','));
+  });
+  chart.dashas.forEach((dasha, j) => {
+    const key = `chart-${i}-dasha-${j}`;
+    const balance = dasha.balance;
+    put(key, dasha.system);
+    put(`${key}-seed`, dasha.seed);
+    put(`${key}-first-lord`, dasha.firstLord);
+    put(`${key}-overflow`, dasha.overflow);
+    put(`${key}-balance`, balance?.method ?? null);
+    put(`${key}-remaining`, balance?.remaining ?? null);
+    put(`${key}-balance-days`, balance?.days ?? null);
+    const w = balance?.written;
+    put(`${key}-balance-written`, w ? [w.years, w.months, w.days, w.hours, w.minutes].join(',') : null);
+    put(`${key}-moon-span-from`, dasha.moonSpan?.from ?? null);
+    put(`${key}-moon-span-to`, dasha.moonSpan?.to ?? null);
+    put(`${key}-depth`, dasha.depth);
+    put(`${key}-periods`, dasha.periods.length);
+    dasha.periods.forEach((period, k) => {
+      if (period.level > 2) return;
+      put(`${key}-period-${k}`, `${period.path}${period.sign ? ` ${period.sign}` : ''} ${period.lord}`);
+      put(`${key}-period-${k}-from`, period.from);
+      put(`${key}-period-${k}-to`, period.to);
+    });
+    put(`${key}-at`, dasha.at(chart.instant + 5000).map((period) => period.path).join(','));
+  });
   chart.vargas.forEach((varga, v) => {
     put(`chart-${i}-varga-${v}`, varga.varga);
     put(`chart-${i}-varga-${v}-lagna-rashi`, varga.lagna.rashi);
@@ -312,9 +440,9 @@ for (const chart of charts) {
     put(`chart-${i}-varga-${v}-lagna-sign`, varga.lagna.sign);
     varga.grahas.forEach((placed, j) => {
       put(`chart-${i}-varga-${v}-graha-${j}`, placed.graha);
-      put(`chart-${i}-varga-${v}-graha-${j}-rashi`, placed.rashi);
-      put(`chart-${i}-varga-${v}-graha-${j}-part`, placed.part);
-      put(`chart-${i}-varga-${v}-graha-${j}-sign`, placed.sign);
+      put(`chart-${i}-varga-${v}-graha-${j}-rashi`, placed.at.rashi);
+      put(`chart-${i}-varga-${v}-graha-${j}-part`, placed.at.part);
+      put(`chart-${i}-varga-${v}-graha-${j}-sign`, placed.at.sign);
     });
   });
   chart.grahas.forEach((graha, j) => {
@@ -467,6 +595,7 @@ for (const [path, member] of [
   ['frame.canonical', shape.frame.canonical],
   ['frame.pack', shape.frame.pack],
   ['frame.unpack', shape.frame.unpack],
+  ['chart.layout', shape.chart.layout],
   ['chart.found', shape.chart.found],
   ['chart.found_many', shape.chart.foundMany],
   ['almanac.of', shape.almanac.of],

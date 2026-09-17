@@ -1,0 +1,49 @@
+kind: chart_layout
+number: 62
+version: 1
+doc: "The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more."
+members:
+  - key: NORTH_INDIAN
+    id: 0
+    doc: "The North Indian chart: houses fixed, house 1 the top diamond, running anticlockwise"
+    sources:
+      - text: "Wikipedia, Kundali (astrology)"
+        ref: "figure Kundali_02a.png"
+    mark: V
+  - key: SOUTH_INDIAN
+    id: 1
+    doc: "The South Indian chart: signs fixed, Pisces top-left, running clockwise"
+    sources:
+      - text: "Wikipedia, Kundali (astrology)"
+        ref: "figure Kundali_01a.png"
+    mark: V
+  - key: EAST_INDIAN
+    id: 2
+    doc: "The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise"
+    sources:
+      - text: "Wikipedia, Kundali (astrology)"
+        ref: "figure Kundali_03a.png"
+    mark: V
+  - key: NEPALI_LOTUS
+    id: 3
+    doc: "The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals"
+    sources:
+      - text: "baseline-engine"
+        ref: "the application's kundali lotus frame"
+    mark: V
+  - key: SUDARSHAN_CHAKRA
+    id: 4
+    doc: "The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun"
+    sources:
+      - text: "tutorials on the Sudarshana chakra"
+        ref: "the order of its rings"
+      - text: "baseline-engine"
+        ref: "the application's Sudarshan chakra view: its proportions, start and direction (crux C47)"
+    mark: T
+  - key: WESTERN_WHEEL
+    id: 5
+    doc: "The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock"
+    sources:
+      - text: "tutorials on reading an astrological chart wheel"
+        ref: "the first house's cusp at nine o'clock, the houses anticlockwise"
+    mark: V

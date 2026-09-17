@@ -65,13 +65,44 @@ every shipped profile. The v1 inventory:
 | dasha | `year_length` | map system to `YearLengthKey` | `JULIAN_365_25`, `SAVANA_360`, `SIDEREAL`, `TROPICAL`, `LUNAR`, `NAKSHATRA_324` (the defaults per system are crux C6) |
 | dasha | `depth` | map system to `Depth` | 1 to 6 |
 | dasha | `seed_overflow` | enum | `WRAP_TO_START`, `REJECT` |
+| dasha | `birth_period` | enum | `COMPRESSED` (the corpus's, every recorded answer), `ELAPSED` (crux C48) |
+| dasha | `after_cycle` | enum | `END` (the corpus's), `REPEAT` (crux C48) |
+| dasha | `kalachakra_membership` | enum | `LISTED` (the corpus's), `TRIAD` (crux C54) |
+| dasha | `kalachakra_balance` | enum | `FIRST_SIGN` (the corpus's), `WHOLE_PADA` (crux C55) |
+| dasha | `kalachakra_after_ninth` | enum | `REVERSE` (the corpus's), `REPEAT` (crux C56) |
+| dasha | `dual_lord` | enum | `BPHS` (the default, ch. 46 vv. 158 to 166), `KENDRA` (the corpus's engine; crux C51) |
+| dasha | `rashi_start` | enum | `STRONGER` (the default, ch. 46 vv. 179 to 184), `LAGNA` (the corpus's engine; crux C53) |
+| dasha | `shanta_sign` | enum | `FRIENDLY` (the default, a friend's or great friend's sign), `FRIEND` (crux C79) |
 | jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |
 | aspect | `node_aspects` | enum | `NONE`, `FIVE_SEVEN_NINE`, `THREE_SEVEN_ELEVEN` |
 | aspect | `drishti_table` | key | the aspect model's tables |
 | state | `combustion_orbs` | key | the cited orb tables (`BPHS`, `SURYA_SIDDHANTA`) |
+| state | `sayanadi_ghatis` | enum | `ELAPSED` (the default), `RUNNING` (crux C78) |
+| state | `sayanadi_nodes` | enum | `NINE_GRAHA_ORDER` (the default, Rahu 8 and Ketu 9), `SHARED_WITH_RAHU` (crux C78) |
 | strength | `bala_scheme` | `BalaSchemeKey` | `PARASHARA`, `PARASHARA_EXTENDED` |
-| strength | `ekadhipatya` | enum | `CLASSICAL`, `ZERO`, `TRANSFER` |
+| strength | `ekadhipatya` | enum | `BPHS` (the default, ch. 68), `EMPTY_TO_ZERO` (the corpus's engine; crux C60) |
+| strength | `shodhana` | enum | `EACH_GRAHA` (the default, chs. 67 to 69), `SARVA` (the corpus's engine; crux C59) |
+| strength | `vimshopaka` | enum | `BPHS` (the default, ch. 7's points by compound relationship), `SAPTAVARGAJA_VIRUPAS` (the corpus's engine; crux C63) |
+| strength | `saptavargaja` | enum | `COMPOUND` (the default, Raman's figures by the compound relationship), `NATURAL` (the corpus's engine; crux C64) |
+| strength | `nathonnatha` | enum | `MIDNIGHT` (the default, ch. 27 vv. 8 and 9), `ARC` (the corpus's engine; crux C65) |
+| strength | `pre_dawn_night` | enum | `PREVIOUS_EVENING` (the default), `SAME_EVENING` (the corpus's engine, which loses the night; crux C65) |
+| strength | `sun_ayana` | enum | `DOUBLED` (the default, v. 17, and Sripati), `NOT_IN_KAALA` (the corpus's engine; crux C66) |
+| strength | `luminary_cheshta` | enum | `AYANA_AND_PAKSHA` (the default, v. 18), `AYANA_AND_ELONGATION` (the corpus's engine), `NONE` (Sripati; crux C66) |
+| strength | `kranti` | enum | `TRUE` (the default, the ephemeris latitude and the date's obliquity), `ECLIPTIC` (the corpus's engine), `HINDU_TABLE` (Sripati's 24° table; crux C66) |
+| strength | `kaala_lords` | enum | `AHARGANA` (the default, v. 13), `SANKRANTI` (the corpus's engine; crux C67) |
+| strength | `dig` | enum | `ANGLES` (the default, v. 7), `LAGNA_PROJECTION` (the corpus's engine; crux C68) |
+| strength | `drik` | enum | `QUARTER_WITH_JUPITER_MERCURY` (the default, v. 19 on the sphuta drishti), `QUARTER` (Sripati), `FULL` (the corpus's engine; crux C69) |
+| strength | `naisargika` | enum | `EXACT` (the default, v. 14), `HUNDREDTHS` (the corpus's engine; crux C71) |
+| strength | `required_rupas` | enum | `BPHS` (the default, vv. 32 and 33), `SRIPATI` (the Sun's 5, the corpus's engine's too; crux C71) |
+| strength | `drekkana` | enum | `MALE_FEMALE_NEUTER` (the default, v. 6, the corpus's engine), `MALE_NEUTER_FEMALE` (Sripati; crux C72) |
+| strength | `benefics` | enum | `CONDITIONAL` (the default and Sripati: the Moon by phase, Mercury by company), `FIXED` (the corpus's engine; crux C69) |
+| strength | `cheshta` | enum | `SRIPATI` (the default, Kedarnath Dutt's elements), `RECORDING_ENGINE` (crux C70) |
+| strength | `yuddha` | enum | `SRIPATI` (the default), `NONE` (the corpus's engine; crux C70) |
+| strength | `ishta_kashta` | enum | `RAYS` (the default, ch. 28 vv. 2 to 6), `SQUARE_ROOTS` (Sripati), `SHADBALA_CHESHTA` (the corpus's engine; crux C76) |
+| strength | `bhava_dig` | enum | `BPHS` (the default, vv. 26 to 28), `SRIPATI`, `WHOLE_SIGN` (the corpus's engine; crux C73) |
+| strength | `bhava_drishti` | enum | `QUARTER_OF_DIG` (the default, v. 29, the corpus's engine), `SPHUTA` (Sripati; crux C74) |
+| strength | `bhava_special_rules` | enum | `BPHS` (the default, vv. 30 and 31), `NONE` (Sripati, the corpus's engine; crux C75) |
 | varga | `unattested_dn` | enum | `CYCLIC`, or a named scheme |
 | calendar | `civil_calendar` | `CalendarKey` | `GREGORIAN`, `BIKRAM_SAMBAT`, … |
 | calendar | `lunar_month` | enum | `AMANTA`, `PURNIMANTA` |

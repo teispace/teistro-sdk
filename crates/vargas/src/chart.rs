@@ -22,6 +22,7 @@ use crate::scheme::Scheme;
 ///
 /// Defaulting to the rashi for both, which is the plain chart.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Axis {
     /// The chart the grahas are placed in.
     pub grahas: Scheme,
@@ -66,6 +67,7 @@ impl Default for Axis {
 
 /// Where one graha stands in a divisional chart.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GrahaPlacement {
     /// Which graha.
     pub graha: Graha,
@@ -75,6 +77,7 @@ pub struct GrahaPlacement {
 
 /// One divisional chart of one founded moment.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct VargaChart {
     /// Which chart, or which pair of them.
     pub axis: Axis,

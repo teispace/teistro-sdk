@@ -136,7 +136,11 @@ fn field_role(
     if is_struct_size(f) {
         return FieldRole::Handshake;
     }
-    if is_reserved(f) {
+    // A failure record's ownership flag is the C caller's bookkeeping: a
+    // binding copies the strings out and hands the record back to the
+    // library's error free, which reads the flag itself, so no binding
+    // shows it and none writes anything but zero into it.
+    if is_reserved(f) || (s.role == StructRole::Error && f.name == "flags") {
         return FieldRole::Reserved;
     }
     if let Some((_, of)) = counts.iter().find(|(len, _)| *len == f.name) {
@@ -231,7 +235,10 @@ pub fn infer_role(api: &Api, param_name: &str, ty: &TypeRef, previous: Option<&P
                     StructRole::OwnedString if out => Role::StringOut,
                     StructRole::OwnedString => Role::StringFree,
                     StructRole::BorrowedString => Role::StrOut,
-                    StructRole::Object | StructRole::Columns if out => Role::StructOut,
+                    StructRole::Object | StructRole::Columns | StructRole::Error if out => {
+                        Role::StructOut
+                    }
+                    StructRole::Error => Role::ErrorFree,
                     StructRole::Object | StructRole::Columns => Role::StructIn,
                 }
             }
@@ -323,6 +330,24 @@ pub fn factories<'a>(api: &'a Api, opaque: &OpaqueDef) -> Vec<&'a FunctionDef> {
                 })
         })
         .collect()
+}
+
+/// The function that releases a failure record's owned strings, which a
+/// binding calls after reading what a failed way in wrote.
+#[must_use]
+pub fn error_free(api: &Api) -> Option<&FunctionDef> {
+    api.functions
+        .iter()
+        .find(|f| f.params.iter().any(|p| p.role == Role::ErrorFree))
+}
+
+/// The failure record a way in writes when it refuses, if it takes one.
+#[must_use]
+pub fn refusal_out<'a>(api: &Api, f: &'a FunctionDef) -> Option<&'a ParamDef> {
+    f.params.iter().find(|p| {
+        p.role == Role::StructOut
+            && pointee_struct(api, p).is_some_and(|s| s.role == StructRole::Error)
+    })
 }
 
 /// The function that frees an opaque type's handle.
@@ -420,11 +445,13 @@ pub fn is_named(param: &ParamDef, name: &str) -> bool {
 
 /// The constants a binding renders: every described one but the ABI
 /// version, which each binding already states as the version it was
-/// generated for.
+/// generated for, and the failure record's flags, which describe a field
+/// no binding shows (see `field_role`).
 pub fn constants(api: &Api) -> impl Iterator<Item = &crate::model::ConstantDef> {
-    api.constants
-        .iter()
-        .filter(|c| !c.name.ends_with("ABI_VERSION") || c.name.starts_with("VTABLE"))
+    api.constants.iter().filter(|c| {
+        (!c.name.ends_with("ABI_VERSION") || c.name.starts_with("VTABLE"))
+            && !c.name.starts_with("TS_ERROR_")
+    })
 }
 
 /// A constant's name without the C prefix every symbol carries, so each

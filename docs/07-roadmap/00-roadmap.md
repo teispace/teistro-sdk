@@ -464,6 +464,71 @@ says (registry entry 14).
 
 ## Phase 5: Strength and dashas
 
+**Started 2026-09-15 with the measurement, as every Phase 4 module was.**
+The Vimshottari row is falsified over the corpus's whole `dashas` section
+(`03-design/dasha-measured.md`, `check-dashas`): the seed, the balance and
+its written form, the tree to five levels and the running chains are
+decided, and three things the design page had not said are settled — the
+birth period's sub-periods are compressed, the cycle ends after nine, and
+boundaries agree to a quarter of a millisecond and not to the bit. Crux C6
+is untouched (every record uses 365.25 days) and C48 is new. **The K-udu
+kernel and the cursor are built** (`crates/dasha`), Vimshottari the first
+row, reproducing every recorded answer and allocation-free to read, and
+**a chart reading carries its dashas** (`ChartRequest::with_dashas`), the
+temporal balance searched in the chart's own frame, and **crosses the
+boundary into every binding**, the four surfaces agreeing value for value.
+**The eight other nakshatra-seeded systems are rows too**
+(`03-design/dasha-systems-measured.md`, `check-dasha-systems`): the
+corpus's 0.2.0 records them from its own recorded Moon, the measurement
+derives each seat and settles a temporal balance over a window and
+Tribhagi's scale, and every one of 1184 answers is reproduced. **The
+sign-based dashas are rows of the K-rashi kernel** too
+(`03-design/rashi-dashas-measured.md`, `check-rashi-dashas`): the eight the
+recording engine implements, measured beside each school's rival reading
+(cruxes C49–C53) and reproduced on all 616 answers, with the arudha padas
+they start from (`arudhas-measured.md`), in the document and every binding.
+**The Kalachakra has its own kernel** (`03-design/kalachakra-measured.md`,
+`check-kalachakra`), measured at every fork the sources read differently
+and built with each fork a knob (C54–C58). **Strength has begun with the
+Ashtakavarga** (`03-design/ashtakavarga-measured.md`, `check-ashtakavarga`):
+BPHS read beside the corpus's engine, the text's reductions and pindas the
+default and the engine's the conformance profile's (C59–C62), in
+`crates/strength`, the document and every binding. **The Vimshopaka
+followed** (`03-design/vimshopaka-measured.md`, `check-vimshopaka`): the
+text's weights, which the engine shares, and the text's points the default
+beside the engine's Saptavargaja virupas (C63). **The Shadbala followed**
+(`03-design/shadbala-measured.md`, `check-shadbala`): every component of the
+engine's reproduced, BPHS ch. 27's reading the default at eleven forks, each a
+setting (C64–C71), then Sripati's reading from B.V. Raman's worked example
+(`ShadbalaRules::SRIPATI`, the sphuta drishti, C45 closed, C72). **The Bhava
+bala followed** (`03-design/bhava-bala-measured.md`, `check-bhava-bala`): the
+built module against every recorded house, three readings at three forks
+(C73–C75), **and the Ishta and Kashta phalas** on the Shadbala reading (C76).
+**The Vaiseshikamsa followed** (C77), **then the Sayanadi avasthas** (C78),
+which the Vaiseshikamsa's impaired flag now reads, **then the dasha phala**
+(C79): the rays, the Subhankas, and ch. 47's timing and placement. **A
+consumer's own dasha system now registers** (`03-design/dasha-kernels.md`,
+"A consumer's own system"), closing the exit's consumer-row clause: a
+`UduDefinition` on the context builder or `TsContextOptions.dashas_json`,
+asked for by its key, carried in the document with its definition so a
+stored document rebuilds it anywhere, and registered by every parity runner.
+**`dasha_at` at depth five is measured** at 119 to 354 nanoseconds across
+the kernels against its 20-microsecond budget, allocation-free, and a
+materialised 120-year depth-3 tree at 15.8 microseconds against 500
+(`crates/dasha/benches`), with the scenario's `dashas` section putting the
+cursor under the instruction-count gate and the hash matrix. **PyJHora's
+Vimshottari is recorded and held** (`pyjhora/vimshottari` in the corpus's
+0.9.0, `03-design/dasha-measured.md`): given the tool's Moon and year the
+kernel agrees on 16 232 periods to a tenth of a millisecond, and what differs
+— the birth period's reading, the written balance, the tool's broken default
+year — is recorded against crux C6. Every clause of the exit that the dasha
+layer owns is now met; the golden vectors reproduced and the per-row
+invariants stood already. **Rashi bala followed from BPHS ch. 46**
+(`strength-schemes.md`): the verses' sign comparison, read by the rashi
+dashas' dual lord and stronger starts, the text's reading the default and the
+engine's `conformance-baseline`'s (C51, C53). Next: the yogas the
+interpretation layer reads, which Phase 6's rules engine carries.
+
 `strength` as scheme tables (varga kernel, then the aspect model, then
 the schemes; `parashari-baseline` first), the `dasha` kernels with the 18
 baseline systems as verified rows, the lazy cursor, the whole-table
@@ -477,6 +542,42 @@ PyJHora cross-checks recorded; a consumer-registered dasha system (a row
 in a consumer pack) passes.
 
 ## Phase 6: Rules, interpretation and the text corpus
+
+**Started 2026-09-15 with the measurement**, as every module since Phase 4
+has: the corpus's 0.10.0 records the engine's 605 yoga rules and their
+presences on 93 charts, and `yogas-measured.md` (`check-yogas`) reproduces
+all 55 521 decisions under the engine's reading of its condition language,
+decides two forks, names five the corpus cannot see and counts the 116 rules
+with no positive case. **The kernel's first slice is built**: `crates/rules`
+types the language (19 predicates of the corpus's and the three unrecorded
+aspect and combustion ones, three combinators, over planet and lagna
+bodies), evaluates to a `RuleResult` with participants, houses and held
+cancellations, reproduces every recorded yoga, and the pass now measures it;
+597 rules over a chart take about 10 µs against the 2 ms budget. **The first
+references are built** as two types, `BodyRef` and `SignRef`: lords, karakas,
+arudha padas, the upapada, navamshas and signs counted from them, each
+exercised by a BPHS rule. **The trace is built**: `explain` returns each
+condition checked with what it held and resolved, from the same evaluator as
+`evaluate`, which stays at 11 µs. **Tables are built**: cited degrees-by-sign
+and signs-by-tithi tables with their predicates, Jataka Parijata's Mrityu
+Bhagas and the Dagdha rashis shipped. **Cancellation and severity are built**
+with the doshas (corpus 0.11.0): reference groups, severities and net status
+on one `Rule`, the engine's 35 language-expressible doshas reproduced. **Its 17 computed doshas are rules** too, measured in `doshas-measured.md`:
+each says present where its code did, and Mrityu Bhaga, Dagdha Rashi and
+Badhaka reproduce every field. **The Neecha Bhanga family is rules** as well,
+over a `for-any` quantifier rather than the divisional predicate the page
+expected, and `in-varga` is built anyway. **The classical corpus was then
+surveyed** (`01-research/feature-universe/04-yogas-doshas.md`): the order of
+work is now the rest of the arishta corpus (thirty-six of about 120 rules are built,
+BPHS chs. 9 and 10, Brihat Jataka ch. 6 and Saravali chs. 10 to 12, whole but
+whole, strength and all) and the readings generator over Brihat Jataka ch. 14,
+Phaladeepika ch. 18, Jataka Parijata and Saravali chs. 22 to 31 and 49 to 51,
+with a house read whole and the texts' own composition rules beside it,
+reachable from the façade as `teistro::rules` and `teistro::rule_chart` while
+the four bindings wait on a rule crossing the C boundary,
+rashi drishti and argala, nakshatra references, D3 and D30, strength ranking,
+and the longevity band as an outcome. Next: with the references that need points the
+chart does not yet carry added as rules need them.
 
 `rules` engine with the v2 algebra landed in order (reference subjects,
 `RuleResult` with traces, table lookups, cancellation and severity) before

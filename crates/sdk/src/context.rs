@@ -10,6 +10,8 @@ use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
     DEFAULT_PROFILE, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
 };
+use teistro_dasha::{DashaSystems, UduDefinition};
+use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
 use teistro_port_ephemeris::{CachingProvider, EphemerisProvider, PositionRequest};
@@ -48,6 +50,13 @@ pub struct Context {
     ///
     /// Read by `time()`, and by `positions` when it lands.
     delta_t: DeltaTModel,
+    /// The layouts a chart can be drawn in: the shipped ones and any the
+    /// builder was given, sealed, so nothing changes under a context that
+    /// draws.
+    layouts: Layouts,
+    /// The consumer's nakshatra-seeded dasha systems, sealed as the layouts
+    /// are.
+    dashas: DashaSystems,
 }
 
 impl core::fmt::Debug for Context {
@@ -236,6 +245,20 @@ impl Context {
     pub fn delta_t(&self) -> DeltaTModel {
         self.delta_t
     }
+
+    /// The layouts this context can draw a chart in: the shipped ones, then
+    /// any the builder was given.
+    #[must_use]
+    pub const fn layouts(&self) -> &Layouts {
+        &self.layouts
+    }
+
+    /// The dasha systems a consumer registered with this context, beside the
+    /// ones the catalogue has.
+    #[must_use]
+    pub const fn dashas(&self) -> &DashaSystems {
+        &self.dashas
+    }
 }
 
 /// A context under construction.
@@ -251,6 +274,8 @@ pub struct ContextBuilder {
     settings_json: Option<String>,
     locale: Option<String>,
     chain: Option<Vec<Ephemeris>>,
+    layouts: Vec<Layout>,
+    dashas: Vec<UduDefinition>,
 }
 
 impl core::fmt::Debug for ContextBuilder {
@@ -264,6 +289,32 @@ impl core::fmt::Debug for ContextBuilder {
 }
 
 impl ContextBuilder {
+    /// A chart layout of the consumer's own, a regional chart the SDK does
+    /// not ship, to draw in beside the shipped ones (ADR-0026 §1).
+    ///
+    /// Checked when the context is built, by the same rules a shipped layout
+    /// passes; a key the SDK ships is refused, so a layout is added and never
+    /// replaced.
+    #[must_use]
+    pub fn layout(mut self, layout: Layout) -> ContextBuilder {
+        self.layouts.push(layout);
+        self
+    }
+
+    /// A nakshatra-seeded dasha system of the consumer's own, asked for by
+    /// the id [`keys`](crate::Context::keys) gives its key
+    /// (`dasha_system.ACME_SAPTAKA`) like any catalogued system.
+    ///
+    /// Checked when the context is built, by the rules a shipped row passes,
+    /// and refused by its place and field (`dashas[0].span`); a key the
+    /// catalogue has is refused, so a system is added and never replaced
+    /// (`03-design/dasha-kernels.md`, "A consumer's own system").
+    #[must_use]
+    pub fn dasha_system(mut self, definition: UduDefinition) -> ContextBuilder {
+        self.dashas.push(definition);
+        self
+    }
+
     /// The shipped profile to resolve the settings from.
     #[must_use]
     pub fn profile(mut self, id: impl Into<String>) -> ContextBuilder {
@@ -354,11 +405,28 @@ impl ContextBuilder {
         let chain = self.chain.unwrap_or_else(|| vec![Ephemeris::None]);
         let opened = ephemeris::open(chain)?;
         let provider = remembering(opened, settings.settings.provider.cache_cells);
+        let mut layouts = Layouts::new();
+        for (index, layout) in self.layouts.into_iter().enumerate() {
+            // Named by its place, so a caller who gave several knows which.
+            layouts
+                .register(layout)
+                .map_err(|error| error.under(&format!("layouts[{index}]")))?;
+        }
+        layouts.seal();
+        let mut dashas = DashaSystems::new();
+        for (index, definition) in self.dashas.into_iter().enumerate() {
+            dashas
+                .register(definition)
+                .map_err(|error| error.under(&format!("dashas[{index}]")))?;
+        }
+        dashas.seal();
         Ok(Context {
             settings,
             provider,
             intl: RefCell::new(intl),
             delta_t,
+            layouts,
+            dashas,
         })
     }
 }

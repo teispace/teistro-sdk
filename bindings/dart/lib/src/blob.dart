@@ -773,6 +773,13 @@ final class ChartsStates {
     required this.signDeg,
     required this.nakshatraDeg,
     required this.padaDeg,
+    required this.hasSayanadi,
+    required this.sayanadi,
+    required this.cheshta1,
+    required this.cheshta2,
+    required this.cheshta3,
+    required this.cheshta4,
+    required this.cheshta5,
     required this.length,
   });
 
@@ -865,6 +872,549 @@ final class ChartsStates {
 
   /// How near it stands to a pada edge, degrees.
   final Float64List padaDeg;
+
+  /// 1 for the nine grahas, which BPHS ch. 45 numbers; 0 for the outer planets, and for every body of a chart with no Moon.
+  final Uint8List hasSayanadi;
+
+  /// The Sayanadi state; read only when `has_sayanadi`.
+  final Uint16List sayanadi;
+
+  /// The Sayanadi sub-state under a name whose first syllable's anka is 1; read only when `has_sayanadi`.
+  final Uint16List cheshta1;
+
+  /// The Sayanadi sub-state under a name whose first syllable's anka is 2; read only when `has_sayanadi`.
+  final Uint16List cheshta2;
+
+  /// The Sayanadi sub-state under a name whose first syllable's anka is 3; read only when `has_sayanadi`.
+  final Uint16List cheshta3;
+
+  /// The Sayanadi sub-state under a name whose first syllable's anka is 4; read only when `has_sayanadi`.
+  final Uint16List cheshta4;
+
+  /// The Sayanadi sub-state under a name whose first syllable's anka is 5; read only when `has_sayanadi`.
+  final Uint16List cheshta5;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dashas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.
+final class ChartsDashas {
+  const ChartsDashas({
+    required this.system,
+    required this.seeded,
+    required this.signed,
+    required this.seed,
+    required this.firstLord,
+    required this.overflow,
+    required this.balance,
+    required this.remaining,
+    required this.balanceDays,
+    required this.balanceYears,
+    required this.balanceMonths,
+    required this.balanceDayCount,
+    required this.balanceHours,
+    required this.balanceMinutes,
+    required this.moonSpanFrom,
+    required this.moonSpanTo,
+    required this.depth,
+    required this.periodCount,
+    required this.length,
+  });
+
+  /// Which system: a catalogue id, or at `0x8000` and up the id of a system the context registered, which `ts_key_name` names.
+  final Uint16List system;
+
+  /// 1 when a nakshatra seeds the dasha and it has a balance at birth: then `seed`, `overflow` and the balance columns are its; 0 for a sign-based dasha, whose first period runs whole from birth, and those columns are zero.
+  final Uint8List seeded;
+
+  /// 1 when every period is a sign's, and `dasha_periods.sign` names it; 0 when the periods are their lords' and that column is zero.
+  final Uint8List signed;
+
+  /// The nakshatra the Moon stood in, which seeds it; zero unless `seeded`.
+  final Uint16List seed;
+
+  /// The lord it starts with.
+  final Uint16List firstLord;
+
+  /// 1 when the seed lay outside a conditional system's nakshatras and started at the first lord because the settings let it.
+  final Uint8List overflow;
+
+  /// How the balance was measured.
+  final Uint8List balance;
+
+  /// The fraction of the first lord's period still to run at birth, 0 to 1.
+  final Float64List remaining;
+
+  /// That fraction of the first lord's years, in days.
+  final Float64List balanceDays;
+
+  /// The balance's whole years of the year length.
+  final Uint32List balanceYears;
+
+  /// Its whole months of a twelfth of the year length.
+  final Uint8List balanceMonths;
+
+  /// Its whole days.
+  final Uint8List balanceDayCount;
+
+  /// Its hours, the rest rounded to the minute.
+  final Uint8List balanceHours;
+
+  /// Its minutes, rounded.
+  final Uint8List balanceMinutes;
+
+  /// When the Moon entered its nakshatra, a Julian day (UTC); NaN when the balance was spatial and read no span.
+  final Float64List moonSpanFrom;
+
+  /// When it left, a Julian day (UTC); NaN when no span was read.
+  final Float64List moonSpanTo;
+
+  /// How many levels the periods go down, 1 to 6.
+  final Uint8List depth;
+
+  /// How many rows of `dasha_periods` are this dasha's.
+  final Uint32List periodCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dasha_periods` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
+final class ChartsDashaPeriods {
+  const ChartsDashaPeriods({
+    required this.level,
+    required this.index,
+    required this.sign,
+    required this.lord,
+    required this.fromJd,
+    required this.toJd,
+    required this.length,
+  });
+
+  /// How deep: 1 for a mahadasha.
+  final Uint8List level;
+
+  /// Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.
+  final Uint8List index;
+
+  /// The sign it is the period of, when its dasha is `signed`; zero otherwise.
+  final Uint16List sign;
+
+  /// Its lord.
+  final Uint16List lord;
+
+  /// When it begins, a Julian day (UTC).
+  final Float64List fromJd;
+
+  /// When it ends, a Julian day (UTC).
+  final Float64List toJd;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `ashtakavarga` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).
+final class ChartsAshtakavarga {
+  const ChartsAshtakavarga({
+    required this.graha,
+    required this.shodhana,
+    required this.ekadhipatya,
+    required this.rashiPinda,
+    required this.grahaPinda,
+    required this.yogaPinda,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// Where the reductions and pindas were made; `reduced` in `ashtakavarga_bindus` is zero unless in each graha's own.
+  final Uint8List shodhana;
+
+  /// How a co-ruled sign beside an occupied one was reduced.
+  final Uint8List ekadhipatya;
+
+  /// Its rashi pinda.
+  final Uint32List rashiPinda;
+
+  /// Its graha pinda.
+  final Uint32List grahaPinda;
+
+  /// Its yoga pinda, the two together.
+  final Uint32List yogaPinda;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `ashtakavarga_bindus` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.
+final class ChartsAshtakavargaBindus {
+  const ChartsAshtakavargaBindus({
+    required this.bindus,
+    required this.reduced,
+    required this.length,
+  });
+
+  /// Its bindus in the sign, 0 to 8.
+  final Uint8List bindus;
+
+  /// The same after both reductions, when they were made in each graha's own Ashtakavarga; zero otherwise.
+  final Uint8List reduced;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `sarvashtakavarga` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
+final class ChartsSarvashtakavarga {
+  const ChartsSarvashtakavarga({
+    required this.sarva,
+    required this.trikona,
+    required this.reduced,
+    required this.length,
+  });
+
+  /// The seven grahas' bindus in the sign.
+  final Uint16List sarva;
+
+  /// The sum after the trine reduction.
+  final Uint16List trikona;
+
+  /// The sum after both reductions.
+  final Uint16List reduced;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `vimshopaka` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
+final class ChartsVimshopaka {
+  const ChartsVimshopaka({
+    required this.graha,
+    required this.scoring,
+    required this.shadvarga,
+    required this.saptavarga,
+    required this.dashavarga,
+    required this.shodashavarga,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// How each varga was scored.
+  final Uint8List scoring;
+
+  /// Over the six vargas.
+  final Float64List shadvarga;
+
+  /// Over the seven.
+  final Float64List saptavarga;
+
+  /// Over the ten.
+  final Float64List dashavarga;
+
+  /// Over the sixteen.
+  final Float64List shodashavarga;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `shadbala` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
+final class ChartsShadbala {
+  const ChartsShadbala({
+    required this.graha,
+    required this.uchcha,
+    required this.saptavargaja,
+    required this.ojayugma,
+    required this.kendradi,
+    required this.drekkana,
+    required this.dig,
+    required this.nathonnatha,
+    required this.paksha,
+    required this.tribhaga,
+    required this.abda,
+    required this.masa,
+    required this.vara,
+    required this.hora,
+    required this.ayana,
+    required this.yuddha,
+    required this.cheshta,
+    required this.naisargika,
+    required this.drik,
+    required this.virupas,
+    required this.rupas,
+    required this.requiredRupas,
+    required this.ishta,
+    required this.kashta,
+    required this.subhaRashmi,
+    required this.ashubhaRashmi,
+    required this.strong,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// Sthana: from the distance to the debilitation point, 0 to 60.
+  final Float64List uchcha;
+
+  /// Sthana: from the dignity in the seven vargas.
+  final Float64List saptavargaja;
+
+  /// Sthana: from the rasi's and navamsha's parity, 0, 15 or 30.
+  final Float64List ojayugma;
+
+  /// Sthana: from the house, 60, 30 or 15.
+  final Float64List kendradi;
+
+  /// Sthana: from the decanate, 0 or 15.
+  final Float64List drekkana;
+
+  /// Dig: from the distance to the powerless kendra, 0 to 60.
+  final Float64List dig;
+
+  /// Kaala: from the hour, 0 to 60.
+  final Float64List nathonnatha;
+
+  /// Kaala: from the Moon's elongation, the Moon's doubled.
+  final Float64List paksha;
+
+  /// Kaala: 60 to the lord of the third of the day or night, and to Jupiter.
+  final Float64List tribhaga;
+
+  /// Kaala: 15 to the year's lord.
+  final Float64List abda;
+
+  /// Kaala: 30 to the month's lord.
+  final Float64List masa;
+
+  /// Kaala: 45 to the weekday's lord.
+  final Float64List vara;
+
+  /// Kaala: 60 to the hour's lord.
+  final Float64List hora;
+
+  /// Kaala: from the declination.
+  final Float64List ayana;
+
+  /// Kaala: gained by the victor and lost by the vanquished of a planetary war.
+  final Float64List yuddha;
+
+  /// Cheshta: motional strength.
+  final Float64List cheshta;
+
+  /// Naisargika: natural strength.
+  final Float64List naisargika;
+
+  /// Drik: aspectual strength, which may be negative.
+  final Float64List drik;
+
+  /// The six together, virupas.
+  final Float64List virupas;
+
+  /// The six together, rupas.
+  final Float64List rupas;
+
+  /// The rupas it must reach to be strong.
+  final Float64List requiredRupas;
+
+  /// How far it tends to good, 0 to 60 (BPHS ch. 28).
+  final Float64List ishta;
+
+  /// How far it tends to harm, 0 to 60.
+  final Float64List kashta;
+
+  /// Its auspicious rays, 1 to 7: the mean of its Uchcha and Cheshta rays (BPHS ch. 28 v. 5).
+  final Float64List subhaRashmi;
+
+  /// Its inauspicious rays, 8 less the auspicious.
+  final Float64List ashubhaRashmi;
+
+  /// 1 when the rupas reach the requirement, else 0.
+  final Uint8List strong;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `bhava_bala` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
+final class ChartsBhavaBala {
+  const ChartsBhavaBala({
+    required this.lord,
+    required this.adhipati,
+    required this.dig,
+    required this.drishti,
+    required this.special,
+    required this.virupas,
+    required this.length,
+  });
+
+  /// The lord of the sign its madhya falls in.
+  final Uint16List lord;
+
+  /// The lord's Shadbala.
+  final Float64List adhipati;
+
+  /// From its direction, 0 to 60.
+  final Float64List dig;
+
+  /// From the drishtis it receives, which may be negative.
+  final Float64List drishti;
+
+  /// From its occupants and its sign's rising, under BPHS's special rules.
+  final Float64List special;
+
+  /// The four together.
+  final Float64List virupas;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `vaiseshikamsa` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
+final class ChartsVaiseshikamsa {
+  const ChartsVaiseshikamsa({
+    required this.graha,
+    required this.impaired,
+    required this.shadvargaGood,
+    required this.shadvargaName,
+    required this.saptavargaGood,
+    required this.saptavargaName,
+    required this.dashavargaGood,
+    required this.dashavargaName,
+    required this.shodashavargaGood,
+    required this.shodashavargaName,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// 1 when it is combust, defeated in war or in Shayana, its names then not auspicious, else 0.
+  final Uint8List impaired;
+
+  /// How many of the shadvarga's vargas are good for it.
+  final Uint8List shadvargaGood;
+
+  /// The name the shadvarga count earns; read only when that count is 2 or more.
+  final Uint16List shadvargaName;
+
+  /// How many of the saptavarga's vargas are good for it.
+  final Uint8List saptavargaGood;
+
+  /// The name the saptavarga count earns; read only when that count is 2 or more.
+  final Uint16List saptavargaName;
+
+  /// How many of the dashavarga's vargas are good for it.
+  final Uint8List dashavargaGood;
+
+  /// The name the dashavarga count earns; read only when that count is 2 or more.
+  final Uint16List dashavargaName;
+
+  /// How many of the shodashavarga's vargas are good for it.
+  final Uint8List shodashavargaGood;
+
+  /// The name the shodashavarga count earns; read only when that count is 2 or more.
+  final Uint16List shodashavargaName;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `dasha_phala` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.
+final class ChartsDashaPhala {
+  const ChartsDashaPhala({
+    required this.graha,
+    required this.subhankaD1,
+    required this.subhankaD2,
+    required this.subhankaD3,
+    required this.subhankaD7,
+    required this.subhankaD9,
+    required this.subhankaD12,
+    required this.subhankaD30,
+    required this.subhanka,
+    required this.asubhanka,
+    required this.nature,
+    required this.phase,
+    required this.favourable,
+    required this.unfavourable,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// Its Subhanka in the D1, out of 60: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD1;
+
+  /// Its Subhanka in the D2, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD2;
+
+  /// Its Subhanka in the D3, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD3;
+
+  /// Its Subhanka in the D7, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD7;
+
+  /// Its Subhanka in the D9, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD9;
+
+  /// Its Subhanka in the D12, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD12;
+
+  /// Its Subhanka in the D30, out of 30: the points of its dignity there (BPHS ch. 28 vv. 7 to 9).
+  final Float64List subhankaD30;
+
+  /// The seven Subhankas together, out of 240.
+  final Float64List subhanka;
+
+  /// Their complements together, out of 240.
+  final Float64List asubhanka;
+
+  /// Whether its rasi place is auspicious, neutral or inauspicious (v. 10).
+  final Uint16List nature;
+
+  /// Where in its dasha its effects come, by its decanate and reversed when retrograde and for the nodes (ch. 47 vv. 3 and 4).
+  final Uint8List phase;
+
+  /// 1 when it is in the lagna, exaltation, its own sign or a Shant sign (ch. 47 v. 5).
+  final Uint8List favourable;
+
+  /// 1 when it is in the sixth, eighth or twelfth, debilitation or an inimical sign (v. 6); both flags can stand.
+  final Uint8List unfavourable;
 
   /// The number of rows every column holds.
   final int length;
@@ -964,6 +1514,7 @@ final class Charts {
     required this.chartCount,
     required this.grahaCount,
     required this.vargaCount,
+    required this.dashaCount,
     required this.latitudeDeg,
     required this.longitudeDeg,
     required this.altitudeM,
@@ -993,6 +1544,19 @@ final class Charts {
     required this.bhavas,
     required this.states,
     required this.combustionOrbs,
+    required this.drawings,
+    required this.svgs,
+    required this.dashas,
+    required this.dashaPeriods,
+    required this.ashtakavarga,
+    required this.ashtakavargaBindus,
+    required this.sarvashtakavarga,
+    required this.vimshopaka,
+    required this.shadbala,
+    required this.bhavaBala,
+    required this.vaiseshikamsa,
+    required this.dashaPhala,
+    required this.rules,
   });
 
   /// What kind of chart these are.
@@ -1006,6 +1570,9 @@ final class Charts {
 
   /// How many divisional charts were asked for, in the order asked; zero when none were. The `vargas` section holds `chart_count * varga_count` rows and `varga_grahas` holds `chart_count * varga_count * graha_count`.
   final int vargaCount;
+
+  /// How many dashas were asked for, in the order asked; zero when none were. The `dashas` section holds `chart_count * dasha_count` rows.
+  final int dashaCount;
 
   /// The place's latitude, degrees north.
   final double latitudeDeg;
@@ -1096,6 +1663,45 @@ final class Charts {
   /// UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.
   final String combustionOrbs;
 
+  /// UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.
+  final String drawings;
+
+  /// UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.
+  final String svgs;
+
+  /// Every chart's dashas, charts outermost and then the systems in the order asked: row `i * dasha_count + j` is chart `i`'s `j`th. Each row's periods are the next `period_count` rows of `dasha_periods`, in the same order. Empty when no dashas were asked for.
+  final ChartsDashas dashas;
+
+  /// Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.
+  final ChartsDashaPeriods dashaPeriods;
+
+  /// Every chart's Ashtakavarga, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Its bindus are the `ashtakavarga_bindus` rows `(i * 7 + g) * 12` to the next eleven, and its chart's sums the `sarvashtakavarga` rows `i * 12` to the next eleven. Empty when the Ashtakavarga was not asked for (`03-design/ashtakavarga-measured.md`).
+  final ChartsAshtakavarga ashtakavarga;
+
+  /// Every graha's bindus by sign, Aries to Pisces, in the `ashtakavarga` section's order: twelve rows a graha. Empty when the Ashtakavarga was not asked for.
+  final ChartsAshtakavargaBindus ashtakavargaBindus;
+
+  /// Every chart's sums by sign, Aries to Pisces, charts outermost: twelve rows a chart. Empty when the Ashtakavarga was not asked for.
+  final ChartsSarvashtakavarga sarvashtakavarga;
+
+  /// Every chart's Vimshopaka, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha, each score out of 20. Empty when the Vimshopaka was not asked for (`03-design/vimshopaka-measured.md`).
+  final ChartsVimshopaka vimshopaka;
+
+  /// Every chart's Shadbala in virupas, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha. Read under the context's `strength.*` settings, which the provenance carries. Empty when the Shadbala was not asked for (`03-design/shadbala-measured.md`).
+  final ChartsShadbala shadbala;
+
+  /// Every chart's Bhava bala in virupas, a row a bhava, the first to the twelfth, charts outermost: row `i * 12 + h` is chart `i`'s bhava `h + 1`. Read under the context's `strength.bhava_*` settings, which the provenance carries. Empty when the Bhava bala was not asked for (`03-design/bhava-bala-measured.md`).
+  final ChartsBhavaBala bhavaBala;
+
+  /// Every chart's Vaiseshikamsa, a row a graha, Sun to Saturn, charts outermost: row `i * 7 + g` is chart `i`'s `g`th graha (BPHS ch. 6 vv. 42 to 53). Empty when the Vaiseshikamsa was not asked for.
+  final ChartsVaiseshikamsa vaiseshikamsa;
+
+  /// Every chart's dasha phala, a row a graha, Sun to Ketu, charts outermost: row `i * 9 + g` is chart `i`'s `g`th graha. Read under the context's `dasha.shanta_sign`. Empty when the dasha phala was not asked for.
+  final ChartsDashaPhala dashaPhala;
+
+  /// UTF-8 JSON, canonical: an array with one entry per chart, each the rules the request's `rules_json` named that held on it — `present`, each `{rule, result}` with the rule by key — with `houses` and `longevity` when asked, and `unreadable` naming an input a rule named that the chart could not have (`03-design/rules-at-the-boundary.md`). Empty when no rules were asked for.
+  final String rules;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1123,14 +1729,28 @@ Charts decodeCharts(Uint8List bytes) {
   final atBhavas = blob.section(18, 'bhavas');
   final atStates = blob.section(19, 'states');
   final atCombustionOrbs = blob.section(20, 'combustion_orbs');
+  final atDrawings = blob.section(21, 'drawings');
+  final atSvgs = blob.section(22, 'svgs');
+  final atDashas = blob.section(23, 'dashas');
+  final atDashaPeriods = blob.section(24, 'dasha_periods');
+  final atAshtakavarga = blob.section(25, 'ashtakavarga');
+  final atAshtakavargaBindus = blob.section(26, 'ashtakavarga_bindus');
+  final atSarvashtakavarga = blob.section(27, 'sarvashtakavarga');
+  final atVimshopaka = blob.section(28, 'vimshopaka');
+  final atShadbala = blob.section(29, 'shadbala');
+  final atBhavaBala = blob.section(30, 'bhava_bala');
+  final atVaiseshikamsa = blob.section(31, 'vaiseshikamsa');
+  final atDashaPhala = blob.section(32, 'dasha_phala');
+  final atRules = blob.section(33, 'rules');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
     grahaCount: blob.data.getUint32(atSummary.offset + 16, Endian.little),
     vargaCount: blob.data.getUint32(atSummary.offset + 24, Endian.little),
-    latitudeDeg: blob.data.getFloat64(atSummary.offset + 32, Endian.little),
-    longitudeDeg: blob.data.getFloat64(atSummary.offset + 40, Endian.little),
-    altitudeM: blob.data.getFloat64(atSummary.offset + 48, Endian.little),
+    dashaCount: blob.data.getUint32(atSummary.offset + 32, Endian.little),
+    latitudeDeg: blob.data.getFloat64(atSummary.offset + 40, Endian.little),
+    longitudeDeg: blob.data.getFloat64(atSummary.offset + 48, Endian.little),
+    altitudeM: blob.data.getFloat64(atSummary.offset + 56, Endian.little),
     cast: ChartsCast(
       instant: Float64List.sublistView(
         blob.bytes,
@@ -1723,9 +2343,567 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atStates, 29),
         blob.columnOffset(atStates, 29) + atStates.count * 8,
       ),
+      hasSayanadi: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 30),
+        blob.columnOffset(atStates, 30) + atStates.count * 1,
+      ),
+      sayanadi: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 31),
+        blob.columnOffset(atStates, 31) + atStates.count * 2,
+      ),
+      cheshta1: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 32),
+        blob.columnOffset(atStates, 32) + atStates.count * 2,
+      ),
+      cheshta2: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 33),
+        blob.columnOffset(atStates, 33) + atStates.count * 2,
+      ),
+      cheshta3: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 34),
+        blob.columnOffset(atStates, 34) + atStates.count * 2,
+      ),
+      cheshta4: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 35),
+        blob.columnOffset(atStates, 35) + atStates.count * 2,
+      ),
+      cheshta5: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atStates, 36),
+        blob.columnOffset(atStates, 36) + atStates.count * 2,
+      ),
       length: atStates.count,
     ),
     combustionOrbs: blob.text(atCombustionOrbs),
+    drawings: blob.text(atDrawings),
+    svgs: blob.text(atSvgs),
+    dashas: ChartsDashas(
+      system: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 0),
+        blob.columnOffset(atDashas, 0) + atDashas.count * 2,
+      ),
+      seeded: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 1),
+        blob.columnOffset(atDashas, 1) + atDashas.count * 1,
+      ),
+      signed: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 2),
+        blob.columnOffset(atDashas, 2) + atDashas.count * 1,
+      ),
+      seed: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 3),
+        blob.columnOffset(atDashas, 3) + atDashas.count * 2,
+      ),
+      firstLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 4),
+        blob.columnOffset(atDashas, 4) + atDashas.count * 2,
+      ),
+      overflow: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 5),
+        blob.columnOffset(atDashas, 5) + atDashas.count * 1,
+      ),
+      balance: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 6),
+        blob.columnOffset(atDashas, 6) + atDashas.count * 1,
+      ),
+      remaining: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 7),
+        blob.columnOffset(atDashas, 7) + atDashas.count * 8,
+      ),
+      balanceDays: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 8),
+        blob.columnOffset(atDashas, 8) + atDashas.count * 8,
+      ),
+      balanceYears: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 9),
+        blob.columnOffset(atDashas, 9) + atDashas.count * 4,
+      ),
+      balanceMonths: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 10),
+        blob.columnOffset(atDashas, 10) + atDashas.count * 1,
+      ),
+      balanceDayCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 11),
+        blob.columnOffset(atDashas, 11) + atDashas.count * 1,
+      ),
+      balanceHours: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 12),
+        blob.columnOffset(atDashas, 12) + atDashas.count * 1,
+      ),
+      balanceMinutes: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 13),
+        blob.columnOffset(atDashas, 13) + atDashas.count * 1,
+      ),
+      moonSpanFrom: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 14),
+        blob.columnOffset(atDashas, 14) + atDashas.count * 8,
+      ),
+      moonSpanTo: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 15),
+        blob.columnOffset(atDashas, 15) + atDashas.count * 8,
+      ),
+      depth: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 16),
+        blob.columnOffset(atDashas, 16) + atDashas.count * 1,
+      ),
+      periodCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashas, 17),
+        blob.columnOffset(atDashas, 17) + atDashas.count * 4,
+      ),
+      length: atDashas.count,
+    ),
+    dashaPeriods: ChartsDashaPeriods(
+      level: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 0),
+        blob.columnOffset(atDashaPeriods, 0) + atDashaPeriods.count * 1,
+      ),
+      index: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 1),
+        blob.columnOffset(atDashaPeriods, 1) + atDashaPeriods.count * 1,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 2),
+        blob.columnOffset(atDashaPeriods, 2) + atDashaPeriods.count * 2,
+      ),
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 3),
+        blob.columnOffset(atDashaPeriods, 3) + atDashaPeriods.count * 2,
+      ),
+      fromJd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 4),
+        blob.columnOffset(atDashaPeriods, 4) + atDashaPeriods.count * 8,
+      ),
+      toJd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPeriods, 5),
+        blob.columnOffset(atDashaPeriods, 5) + atDashaPeriods.count * 8,
+      ),
+      length: atDashaPeriods.count,
+    ),
+    ashtakavarga: ChartsAshtakavarga(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 0),
+        blob.columnOffset(atAshtakavarga, 0) + atAshtakavarga.count * 2,
+      ),
+      shodhana: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 1),
+        blob.columnOffset(atAshtakavarga, 1) + atAshtakavarga.count * 1,
+      ),
+      ekadhipatya: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 2),
+        blob.columnOffset(atAshtakavarga, 2) + atAshtakavarga.count * 1,
+      ),
+      rashiPinda: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 3),
+        blob.columnOffset(atAshtakavarga, 3) + atAshtakavarga.count * 4,
+      ),
+      grahaPinda: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 4),
+        blob.columnOffset(atAshtakavarga, 4) + atAshtakavarga.count * 4,
+      ),
+      yogaPinda: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavarga, 5),
+        blob.columnOffset(atAshtakavarga, 5) + atAshtakavarga.count * 4,
+      ),
+      length: atAshtakavarga.count,
+    ),
+    ashtakavargaBindus: ChartsAshtakavargaBindus(
+      bindus: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavargaBindus, 0),
+        blob.columnOffset(atAshtakavargaBindus, 0) + atAshtakavargaBindus.count * 1,
+      ),
+      reduced: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAshtakavargaBindus, 1),
+        blob.columnOffset(atAshtakavargaBindus, 1) + atAshtakavargaBindus.count * 1,
+      ),
+      length: atAshtakavargaBindus.count,
+    ),
+    sarvashtakavarga: ChartsSarvashtakavarga(
+      sarva: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSarvashtakavarga, 0),
+        blob.columnOffset(atSarvashtakavarga, 0) + atSarvashtakavarga.count * 2,
+      ),
+      trikona: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSarvashtakavarga, 1),
+        blob.columnOffset(atSarvashtakavarga, 1) + atSarvashtakavarga.count * 2,
+      ),
+      reduced: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSarvashtakavarga, 2),
+        blob.columnOffset(atSarvashtakavarga, 2) + atSarvashtakavarga.count * 2,
+      ),
+      length: atSarvashtakavarga.count,
+    ),
+    vimshopaka: ChartsVimshopaka(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 0),
+        blob.columnOffset(atVimshopaka, 0) + atVimshopaka.count * 2,
+      ),
+      scoring: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 1),
+        blob.columnOffset(atVimshopaka, 1) + atVimshopaka.count * 1,
+      ),
+      shadvarga: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 2),
+        blob.columnOffset(atVimshopaka, 2) + atVimshopaka.count * 8,
+      ),
+      saptavarga: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 3),
+        blob.columnOffset(atVimshopaka, 3) + atVimshopaka.count * 8,
+      ),
+      dashavarga: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 4),
+        blob.columnOffset(atVimshopaka, 4) + atVimshopaka.count * 8,
+      ),
+      shodashavarga: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVimshopaka, 5),
+        blob.columnOffset(atVimshopaka, 5) + atVimshopaka.count * 8,
+      ),
+      length: atVimshopaka.count,
+    ),
+    shadbala: ChartsShadbala(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 0),
+        blob.columnOffset(atShadbala, 0) + atShadbala.count * 2,
+      ),
+      uchcha: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 1),
+        blob.columnOffset(atShadbala, 1) + atShadbala.count * 8,
+      ),
+      saptavargaja: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 2),
+        blob.columnOffset(atShadbala, 2) + atShadbala.count * 8,
+      ),
+      ojayugma: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 3),
+        blob.columnOffset(atShadbala, 3) + atShadbala.count * 8,
+      ),
+      kendradi: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 4),
+        blob.columnOffset(atShadbala, 4) + atShadbala.count * 8,
+      ),
+      drekkana: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 5),
+        blob.columnOffset(atShadbala, 5) + atShadbala.count * 8,
+      ),
+      dig: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 6),
+        blob.columnOffset(atShadbala, 6) + atShadbala.count * 8,
+      ),
+      nathonnatha: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 7),
+        blob.columnOffset(atShadbala, 7) + atShadbala.count * 8,
+      ),
+      paksha: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 8),
+        blob.columnOffset(atShadbala, 8) + atShadbala.count * 8,
+      ),
+      tribhaga: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 9),
+        blob.columnOffset(atShadbala, 9) + atShadbala.count * 8,
+      ),
+      abda: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 10),
+        blob.columnOffset(atShadbala, 10) + atShadbala.count * 8,
+      ),
+      masa: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 11),
+        blob.columnOffset(atShadbala, 11) + atShadbala.count * 8,
+      ),
+      vara: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 12),
+        blob.columnOffset(atShadbala, 12) + atShadbala.count * 8,
+      ),
+      hora: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 13),
+        blob.columnOffset(atShadbala, 13) + atShadbala.count * 8,
+      ),
+      ayana: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 14),
+        blob.columnOffset(atShadbala, 14) + atShadbala.count * 8,
+      ),
+      yuddha: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 15),
+        blob.columnOffset(atShadbala, 15) + atShadbala.count * 8,
+      ),
+      cheshta: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 16),
+        blob.columnOffset(atShadbala, 16) + atShadbala.count * 8,
+      ),
+      naisargika: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 17),
+        blob.columnOffset(atShadbala, 17) + atShadbala.count * 8,
+      ),
+      drik: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 18),
+        blob.columnOffset(atShadbala, 18) + atShadbala.count * 8,
+      ),
+      virupas: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 19),
+        blob.columnOffset(atShadbala, 19) + atShadbala.count * 8,
+      ),
+      rupas: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 20),
+        blob.columnOffset(atShadbala, 20) + atShadbala.count * 8,
+      ),
+      requiredRupas: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 21),
+        blob.columnOffset(atShadbala, 21) + atShadbala.count * 8,
+      ),
+      ishta: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 22),
+        blob.columnOffset(atShadbala, 22) + atShadbala.count * 8,
+      ),
+      kashta: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 23),
+        blob.columnOffset(atShadbala, 23) + atShadbala.count * 8,
+      ),
+      subhaRashmi: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 24),
+        blob.columnOffset(atShadbala, 24) + atShadbala.count * 8,
+      ),
+      ashubhaRashmi: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 25),
+        blob.columnOffset(atShadbala, 25) + atShadbala.count * 8,
+      ),
+      strong: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atShadbala, 26),
+        blob.columnOffset(atShadbala, 26) + atShadbala.count * 1,
+      ),
+      length: atShadbala.count,
+    ),
+    bhavaBala: ChartsBhavaBala(
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 0),
+        blob.columnOffset(atBhavaBala, 0) + atBhavaBala.count * 2,
+      ),
+      adhipati: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 1),
+        blob.columnOffset(atBhavaBala, 1) + atBhavaBala.count * 8,
+      ),
+      dig: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 2),
+        blob.columnOffset(atBhavaBala, 2) + atBhavaBala.count * 8,
+      ),
+      drishti: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 3),
+        blob.columnOffset(atBhavaBala, 3) + atBhavaBala.count * 8,
+      ),
+      special: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 4),
+        blob.columnOffset(atBhavaBala, 4) + atBhavaBala.count * 8,
+      ),
+      virupas: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atBhavaBala, 5),
+        blob.columnOffset(atBhavaBala, 5) + atBhavaBala.count * 8,
+      ),
+      length: atBhavaBala.count,
+    ),
+    vaiseshikamsa: ChartsVaiseshikamsa(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 0),
+        blob.columnOffset(atVaiseshikamsa, 0) + atVaiseshikamsa.count * 2,
+      ),
+      impaired: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 1),
+        blob.columnOffset(atVaiseshikamsa, 1) + atVaiseshikamsa.count * 1,
+      ),
+      shadvargaGood: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 2),
+        blob.columnOffset(atVaiseshikamsa, 2) + atVaiseshikamsa.count * 1,
+      ),
+      shadvargaName: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 3),
+        blob.columnOffset(atVaiseshikamsa, 3) + atVaiseshikamsa.count * 2,
+      ),
+      saptavargaGood: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 4),
+        blob.columnOffset(atVaiseshikamsa, 4) + atVaiseshikamsa.count * 1,
+      ),
+      saptavargaName: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 5),
+        blob.columnOffset(atVaiseshikamsa, 5) + atVaiseshikamsa.count * 2,
+      ),
+      dashavargaGood: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 6),
+        blob.columnOffset(atVaiseshikamsa, 6) + atVaiseshikamsa.count * 1,
+      ),
+      dashavargaName: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 7),
+        blob.columnOffset(atVaiseshikamsa, 7) + atVaiseshikamsa.count * 2,
+      ),
+      shodashavargaGood: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 8),
+        blob.columnOffset(atVaiseshikamsa, 8) + atVaiseshikamsa.count * 1,
+      ),
+      shodashavargaName: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atVaiseshikamsa, 9),
+        blob.columnOffset(atVaiseshikamsa, 9) + atVaiseshikamsa.count * 2,
+      ),
+      length: atVaiseshikamsa.count,
+    ),
+    dashaPhala: ChartsDashaPhala(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 0),
+        blob.columnOffset(atDashaPhala, 0) + atDashaPhala.count * 2,
+      ),
+      subhankaD1: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 1),
+        blob.columnOffset(atDashaPhala, 1) + atDashaPhala.count * 8,
+      ),
+      subhankaD2: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 2),
+        blob.columnOffset(atDashaPhala, 2) + atDashaPhala.count * 8,
+      ),
+      subhankaD3: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 3),
+        blob.columnOffset(atDashaPhala, 3) + atDashaPhala.count * 8,
+      ),
+      subhankaD7: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 4),
+        blob.columnOffset(atDashaPhala, 4) + atDashaPhala.count * 8,
+      ),
+      subhankaD9: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 5),
+        blob.columnOffset(atDashaPhala, 5) + atDashaPhala.count * 8,
+      ),
+      subhankaD12: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 6),
+        blob.columnOffset(atDashaPhala, 6) + atDashaPhala.count * 8,
+      ),
+      subhankaD30: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 7),
+        blob.columnOffset(atDashaPhala, 7) + atDashaPhala.count * 8,
+      ),
+      subhanka: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 8),
+        blob.columnOffset(atDashaPhala, 8) + atDashaPhala.count * 8,
+      ),
+      asubhanka: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 9),
+        blob.columnOffset(atDashaPhala, 9) + atDashaPhala.count * 8,
+      ),
+      nature: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 10),
+        blob.columnOffset(atDashaPhala, 10) + atDashaPhala.count * 2,
+      ),
+      phase: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 11),
+        blob.columnOffset(atDashaPhala, 11) + atDashaPhala.count * 1,
+      ),
+      favourable: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 12),
+        blob.columnOffset(atDashaPhala, 12) + atDashaPhala.count * 1,
+      ),
+      unfavourable: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDashaPhala, 13),
+        blob.columnOffset(atDashaPhala, 13) + atDashaPhala.count * 1,
+      ),
+      length: atDashaPhala.count,
+    ),
+    rules: blob.text(atRules),
   );
 }
 

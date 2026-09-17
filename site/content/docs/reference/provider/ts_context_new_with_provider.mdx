@@ -13,7 +13,7 @@ The context takes its own reference to the adapter, so this handle may be freed 
 <Tab value="C">
 
 ```c
-ts_status ts_context_new_with_provider(const ts_context_options * options, const ts_provider * provider, ts_context * * out_context, ts_string * out_error);
+ts_status ts_context_new_with_provider(const ts_context_options * options, const ts_provider * provider, ts_context * * out_context, ts_error * out_error);
 ```
 
 </Tab>
@@ -44,7 +44,7 @@ The generated `TeistroLibrary`; `package:teistro` wraps it.
 | `options` | `const ts_context_options *` | a struct read | — |
 | `provider` | `const ts_provider *` | the handle | — |
 | `out_context` | `ts_context * *` | receives a handle | — |
-| `out_error` | `ts_string *` | receives a string | — |
+| `out_error` | `ts_error *` | a struct written | — |
 
 ## What it hands back
 

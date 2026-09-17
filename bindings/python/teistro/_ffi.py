@@ -22,6 +22,7 @@ from .catalogue import (
     Astronomy,
     Auspiciousness,
     AvasthaBaladi,
+    AvasthaCheshta,
     AvasthaDeeptadi,
     AvasthaJagradadi,
     AvasthaLajjitadi,
@@ -30,6 +31,7 @@ from .catalogue import (
     Ayanamsha,
     AyanamshaCategory,
     BalaScheme,
+    Balance,
     Body,
     BodyClass,
     Burning,
@@ -37,10 +39,12 @@ from .catalogue import (
     Centre,
     CharaKaraka,
     ChartKind,
+    ChartLayout,
     Choghadiya,
     Chosen,
     Coordinates,
     DashaFamily,
+    DashaPhase,
     DashaSystem,
     DayPart,
     DayState,
@@ -51,6 +55,7 @@ from .catalogue import (
     Direction,
     DistanceUnit,
     Dst,
+    Ekadhipatya,
     Ephemeris,
     Equinox,
     Era,
@@ -94,6 +99,7 @@ from .catalogue import (
     Samvatsara,
     Scale,
     Sex,
+    Shodhana,
     SpeedModel,
     Star,
     StarClass,
@@ -105,9 +111,11 @@ from .catalogue import (
     TimeScale,
     Tithi,
     TithiClass,
+    Vaiseshikamsa,
     Vara,
     Varga,
     Varna,
+    VimshopakaScoring,
     Yoga,
     YogaCause,
     Yoni,
@@ -145,11 +153,11 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_str": 16,
     "ts_hash": 32,
     "ts_blob": 24,
-    "ts_context_options": 40,
+    "ts_context_options": 56,
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 80,
+    "ts_chart_request": 128,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -175,11 +183,11 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_str": 8,
     "ts_hash": 32,
     "ts_blob": 12,
-    "ts_context_options": 24,
+    "ts_context_options": 32,
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 64,
+    "ts_chart_request": 88,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -464,14 +472,22 @@ class _ContextOptionsStruct(ctypes.Structure):
         ("profile", ctypes.c_char_p),
         ("settings_json", ctypes.c_char_p),
         ("locale", ctypes.c_char_p),
+        ("layouts_json", ctypes.c_char_p),
+        ("dashas_json", ctypes.c_char_p),
         ("ephemeris", ctypes.c_uint8),
     ]
 
 
 class _ErrorStruct(ctypes.Structure):
-    """The last error of a call on a context: the status, the detail, and the
-    message, field, hint and message key as strings the context lends
-    until its next call; an `OK` record has empty strings.
+    """A failure as the library describes it: the status, the provider's
+    code, and the detail, message, field, hint and message key.
+
+    Read from `ts_context_last_error`, the strings are **lent** by the
+    context until its next call and `flags` is zero; an `OK` record has
+    null strings. Written by a call that makes a handle and failed, the
+    strings are **owned** by the record, `flags` carries
+    `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+    on a lent record does nothing, so freeing every record is never wrong.
 
     The C layout, field for field. `Error` is the value class over it.
     """
@@ -480,7 +496,7 @@ class _ErrorStruct(ctypes.Structure):
         ("struct_size", ctypes.c_uint32),
         ("status", ctypes.c_int32),
         ("provider_code", ctypes.c_int32),
-        ("reserved", ctypes.c_uint32),
+        ("flags", ctypes.c_uint32),
         ("detail", ctypes.c_char_p),
         ("message", ctypes.c_char_p),
         ("field", ctypes.c_char_p),
@@ -561,6 +577,12 @@ class _ChartRequestStruct(ctypes.Structure):
         ("reserved_sections", ctypes.c_uint32),
         ("vargas", ctypes.POINTER(ctypes.c_uint16)),
         ("varga_count", ctypes.c_size_t),
+        ("drawings", ctypes.POINTER(ctypes.c_uint32)),
+        ("drawing_count", ctypes.c_size_t),
+        ("dashas", ctypes.POINTER(ctypes.c_uint16)),
+        ("dasha_count", ctypes.c_size_t),
+        ("theme_json", ctypes.c_char_p),
+        ("rules_json", ctypes.c_char_p),
     ]
 
 
@@ -1659,6 +1681,30 @@ class ContextOptions:
     Example: en-Latn. May be null.
     """
 
+    layouts_json: Optional[str] = None
+    """Chart layouts of the consumer's own, to draw in beside the shipped
+    ones, as a JSON array of layout rows: each the row `ts_chart_layout_row`
+    answers, with a key of its own. Every row is checked by the rules a
+    shipped one passes and refused by its place in the array and its own
+    field, as `options.layouts_json`, the row's index, then the field's
+    path; a key the SDK ships is
+    refused, so a row adds a layout and never replaces one. Null for none
+    (`03-design/chart-geometry.md` §7f). May be null.
+    """
+
+    dashas_json: Optional[str] = None
+    """Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
+    of definitions: each a key the catalogue does not have, its lords and
+    their years in order, the reference nakshatra, and optionally `count`,
+    `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
+    `sources` (the document schema's `UduDefinition`). Every one is checked
+    by the rules a shipped row passes and refused by its place in the array
+    and its own field, as `options.dashas_json`, the index, then the field.
+    A request asks for one by the id
+    `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
+    registration order. Null for none (`03-design/dasha-kernels.md`). May be null.
+    """
+
     def _into(self, raw: _ContextOptionsStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -1677,6 +1723,12 @@ class ContextOptions:
         _locale = None if self.locale is None else self.locale.encode("utf-8")
         owned.append(_locale)
         raw.locale = _locale
+        _layouts_json = None if self.layouts_json is None else self.layouts_json.encode("utf-8")
+        owned.append(_layouts_json)
+        raw.layouts_json = _layouts_json
+        _dashas_json = None if self.dashas_json is None else self.dashas_json.encode("utf-8")
+        owned.append(_dashas_json)
+        raw.dashas_json = _dashas_json
         raw.ephemeris = _c_value(self.ephemeris)
 
     def _to_c(self, owned: list[Any]) -> _ContextOptionsStruct:
@@ -1698,15 +1750,23 @@ class ContextOptions:
             profile=_text(raw.profile),
             settings_json=_text(raw.settings_json),
             locale=_text(raw.locale),
+            layouts_json=_text(raw.layouts_json),
+            dashas_json=_text(raw.dashas_json),
             ephemeris=Ephemeris(raw.ephemeris),
         )
 
 
 @dataclass(frozen=True)
 class Error:
-    """The last error of a call on a context: the status, the detail, and the
-    message, field, hint and message key as strings the context lends
-    until its next call; an `OK` record has empty strings.
+    """A failure as the library describes it: the status, the provider's
+    code, and the detail, message, field, hint and message key.
+
+    Read from `ts_context_last_error`, the strings are **lent** by the
+    context until its next call and `flags` is zero; an `OK` record has
+    null strings. Written by a call that makes a handle and failed, the
+    strings are **owned** by the record, `flags` carries
+    `TS_ERROR_OWNED`, and `ts_error_free` releases them. `ts_error_free`
+    on a lent record does nothing, so freeing every record is never wrong.
     """
 
     status: Status
@@ -2028,7 +2088,7 @@ class ChartRequest:
     """Which of the document's sections to compute beside the
     foundation, as a bit set: 1 the day's almanac, 2 the planetary
     states, 4 the aspects, 8 the derived points, 16 the houses
-    service. Zero for the foundation alone, which is what every
+    service, 32 the Ashtakavarga, 64 the Vimshopaka, 128 the Shadbala, 256 the Bhava bala, 512 the Vaiseshikamsa, 1024 the dasha phala. Zero for the foundation alone, which is what every
     caller compiled against an earlier header passes by not passing
     it at all.
 
@@ -2051,6 +2111,48 @@ class ChartRequest:
     array says "none" without needing one, which is what `instants`
     already does.
     Enum: Varga.
+    """
+
+    drawings: Sequence[int]
+    """Which charts to draw, and in which layouts, in the order they should
+    be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
+    catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
+    count of zero for none.
+
+    Packed, as `sections` is a bit set, so the request carries one array
+    and one count rather than two arrays that must agree; every ergonomic
+    layer takes named pairs and writes the bits (`03-design/chart-geometry.md`).
+    """
+
+    dashas: Sequence[int]
+    """Which dashas to compute, in the order they should be answered in: each
+    a `DashaSystem` catalogue id, or the id `ts_key_parse` gives a system
+    the context registered (`0x8000` and up). Each one's balance and its
+    periods to its depth. Null with a count of zero for none.
+
+    Ids and not an enum, as `drawings` carries layout ids: every ergonomic
+    layer takes a catalogue member or a registered key and writes the id.
+    """
+
+    theme_json: Optional[str] = None
+    """A theme to write every drawing as SVG in, as JSON: an object of
+    `style` and `content` naming only what it changes, over the light
+    theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+    The SVGs come back in the blob's `svgs` section, in the context's
+    locale. Null for none, which costs nothing
+    (`03-design/render-svg.md`).
+    Example: {"extends":"dark"}. May be null.
+    """
+
+    rules_json: Optional[str] = None
+    """Rules to answer over every chart, as JSON: `shipped` names the
+    kernel's sets, `rules` a consumer's own in the rule format, with
+    `readings`, `houses` and `longevity` choosing what else comes back
+    (`03-design/rules-at-the-boundary.md`). The answers come back in the
+    blob's `rules` section, and the sections the rules read are computed
+    whether or not `sections` asked for them. Null for none, which costs
+    nothing.
+    Example: {"shipped":["nabhasas"]}. May be null.
     """
 
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
@@ -2079,6 +2181,24 @@ class ChartRequest:
         owned.append(_vargas)
         raw.vargas = ctypes.cast(_vargas, ctypes.POINTER(ctypes.c_uint16))
         raw.varga_count = len(self.vargas)
+        _drawings = (ctypes.c_uint32 * len(self.drawings))(
+            *(_c_value(_v) for _v in self.drawings)
+        )
+        owned.append(_drawings)
+        raw.drawings = ctypes.cast(_drawings, ctypes.POINTER(ctypes.c_uint32))
+        raw.drawing_count = len(self.drawings)
+        _dashas = (ctypes.c_uint16 * len(self.dashas))(
+            *(_c_value(_v) for _v in self.dashas)
+        )
+        owned.append(_dashas)
+        raw.dashas = ctypes.cast(_dashas, ctypes.POINTER(ctypes.c_uint16))
+        raw.dasha_count = len(self.dashas)
+        _theme_json = None if self.theme_json is None else self.theme_json.encode("utf-8")
+        owned.append(_theme_json)
+        raw.theme_json = _theme_json
+        _rules_json = None if self.rules_json is None else self.rules_json.encode("utf-8")
+        owned.append(_rules_json)
+        raw.rules_json = _rules_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2109,6 +2229,14 @@ class ChartRequest:
             ]
             if raw.vargas
             else [],
+            drawings=[raw.drawings[_i] for _i in range(raw.drawing_count)]
+            if raw.drawings
+            else [],
+            dashas=[raw.dashas[_i] for _i in range(raw.dasha_count)]
+            if raw.dashas
+            else [],
+            theme_json=_text(raw.theme_json),
+            rules_json=_text(raw.rules_json),
         )
 
 
@@ -2800,13 +2928,18 @@ class TeistroLibrary:
             ctypes.POINTER(_BlobStruct),
         ]
         self.ts_blob_free.restype = None
+        self.ts_error_free: Any = library.ts_error_free
+        self.ts_error_free.argtypes = [
+            ctypes.POINTER(_ErrorStruct),
+        ]
+        self.ts_error_free.restype = None
         self.ts_context_new: Any = library.ts_context_new
         self.ts_context_new.argtypes = [
             ctypes.POINTER(_ContextOptionsStruct),
             ctypes.POINTER(_ProviderVtableStruct),
             ctypes.c_void_p,
             ctypes.POINTER(ctypes.POINTER(_Context)),
-            ctypes.POINTER(_StringStruct),
+            ctypes.POINTER(_ErrorStruct),
         ]
         self.ts_context_new.restype = ctypes.c_int32
         self.ts_context_free: Any = library.ts_context_free
@@ -2927,6 +3060,13 @@ class TeistroLibrary:
             ctypes.POINTER(ctypes.c_double),
         ]
         self.ts_calendar_fixed_of_jd.restype = ctypes.c_int64
+        self.ts_chart_layout_row: Any = library.ts_chart_layout_row
+        self.ts_chart_layout_row.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_chart_layout_row.restype = ctypes.c_int32
         self.ts_chart_found: Any = library.ts_chart_found
         self.ts_chart_found.argtypes = [
             ctypes.POINTER(_Context),
@@ -3052,7 +3192,7 @@ class TeistroLibrary:
             ctypes.c_char_p,
             ctypes.c_char_p,
             ctypes.POINTER(ctypes.POINTER(_Provider)),
-            ctypes.POINTER(_StringStruct),
+            ctypes.POINTER(_ErrorStruct),
         ]
         self.ts_provider_load.restype = ctypes.c_int32
         self.ts_context_new_with_provider: Any = library.ts_context_new_with_provider
@@ -3060,7 +3200,7 @@ class TeistroLibrary:
             ctypes.POINTER(_ContextOptionsStruct),
             ctypes.POINTER(_Provider),
             ctypes.POINTER(ctypes.POINTER(_Context)),
-            ctypes.POINTER(_StringStruct),
+            ctypes.POINTER(_ErrorStruct),
         ]
         self.ts_context_new_with_provider.restype = ctypes.c_int32
         self.ts_provider_free: Any = library.ts_provider_free
@@ -3094,13 +3234,15 @@ class TeistroContext:
         ephemeris (positions are then `CAPABILITY`); `provider_user_data` is
         passed back to the vtable's functions untouched and must stay valid
         until `ts_context_free`. On success `*out_context` owns the context;
-        on failure, when `out_error` is not null, it receives the error's
-        message as a string to free with `ts_string_free`.
+        on failure, when `out_error` is not null, it receives the whole
+        refusal as a record that owns its strings, released by
+        `ts_error_free`.
         """
         owned: list[Any] = []
         handle = ctypes.POINTER(_Context)()
         _options = options._to_c(owned)
-        _out_error = _StringStruct()
+        _out_error = _ErrorStruct()
+        _out_error.struct_size = ctypes.sizeof(_ErrorStruct)
         status = Status(lib.ts_context_new(
             ctypes.byref(_options),
             provider,
@@ -3127,7 +3269,8 @@ class TeistroContext:
         owned: list[Any] = []
         handle = ctypes.POINTER(_Context)()
         _options = options._to_c(owned)
-        _out_error = _StringStruct()
+        _out_error = _ErrorStruct()
+        _out_error.struct_size = ctypes.sizeof(_ErrorStruct)
         status = Status(lib.ts_context_new_with_provider(
             ctypes.byref(_options),
             provider._raw,
@@ -3172,15 +3315,7 @@ class TeistroContext:
         raw.struct_size = ctypes.sizeof(_ErrorStruct)
         if self._handle is not None:
             if self._lib.ts_context_last_error(self._handle, ctypes.byref(raw)) == 0:
-                found = Error._of(raw)
-                raise TeistroError(
-                    status,
-                    found.message or status.key,
-                    detail=found.detail or "",
-                    field=found.field or "",
-                    hint=found.hint or "",
-                    key=found.key or "",
-                )
+                raise _refusal(status, Error._of(raw))
         raise TeistroError(status, status.key)
 
     def last_error(self) -> Error:
@@ -3244,9 +3379,10 @@ class TeistroContext:
         return hash
 
     def key_parse(self, key: str) -> int:
-        """Resolves a full key (`graha.SUN`, an alias, or a former key) to its
-        packed id. An unknown key is `UNSUPPORTED` with the nearest known key as
-        the hint in the context's last error.
+        """Resolves a full key (`graha.SUN`, an alias, a former key, or a member the
+        context registered, `chart_layout.ACME_KERALA`) to its packed id. An
+        unknown key is `UNSUPPORTED` with the nearest known key as the hint in
+        the context's last error.
         """
         owned: list[Any] = []
         _key = key.encode("utf-8")
@@ -3373,6 +3509,29 @@ class TeistroContext:
         owned.clear()
         weekday = _out_weekday.value
         return weekday
+
+    def chart_layout_row(self, key: str) -> str:
+        """A chart layout this context can draw in, shipped or registered, as its
+        JSON row: the record `options.layouts_json` takes. Read a shipped row,
+        give it a key of its own, change what differs and register it
+        (`03-design/chart-geometry.md` §7f). `key` is the layout's key, bare
+        (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
+        `INVALID_ARG` with the keys the context knows as the hint.
+        """
+        owned: list[Any] = []
+        _key = key.encode("utf-8")
+        owned.append(_key)
+        _out_json = _StringStruct()
+        status = Status(self._lib.ts_chart_layout_row(
+            self._raw,
+            _key,
+            ctypes.byref(_out_json),
+        ))
+        if status != Status.OK:
+            self._raise(status)
+        owned.clear()
+        json = _take_string(self._lib, _out_json)
+        return json
 
     def chart_found(self, request: ChartRequest) -> bytes:
         """Founds a chart at an instant and a place and answers with its blob:
@@ -3783,7 +3942,8 @@ class TeistroProvider:
         owned.append(_path)
         _config_json = config_json.encode("utf-8")
         owned.append(_config_json)
-        _out_error = _StringStruct()
+        _out_error = _ErrorStruct()
+        _out_error.struct_size = ctypes.sizeof(_ErrorStruct)
         status = Status(lib.ts_provider_load(
             _path,
             _config_json,
@@ -3828,15 +3988,7 @@ class TeistroProvider:
         raw.struct_size = ctypes.sizeof(_ErrorStruct)
         if self._handle is not None:
             if self._lib.ts_context_last_error(self._handle, ctypes.byref(raw)) == 0:
-                found = Error._of(raw)
-                raise TeistroError(
-                    status,
-                    found.message or status.key,
-                    detail=found.detail or "",
-                    field=found.field or "",
-                    hint=found.hint or "",
-                    key=found.key or "",
-                )
+                raise _refusal(status, Error._of(raw))
         raise TeistroError(status, status.key)
 
 
@@ -3968,16 +4120,32 @@ def calendar_fixed_of_jd(lib: TeistroLibrary, jd: float) -> CalendarFixedOfJdRes
     return CalendarFixedOfJdResult(value=value, fraction=fraction)
 
 
-def _refuse(lib: TeistroLibrary, status: Status, detail: Any) -> None:
-    """Raises a refusal from a call with no context to ask.
-
-    `detail` is the owned string such a call fills when it has more to
-    say than a code, which is freed here whether or not it is used.
-    """
-    said = "" if detail is None else _take_string(lib, detail)
-    raise TeistroError(
-        status, said or _text(lib.ts_status_message(int(status)))
+def _refusal(status: Status, found: Error) -> TeistroError:
+    """The exception for a refusal the library described, from either kind
+    of record: one a context lent or one a failed way in wrote."""
+    return TeistroError(
+        status,
+        found.message or status.key,
+        detail=found.detail or "",
+        field=found.field or "",
+        hint=found.hint or "",
+        key=found.key or "",
     )
+
+
+def _refuse(lib: TeistroLibrary, status: Status, record: Any) -> None:
+    """Raises a refusal from a call with no context to keep it.
+
+    `record` is the failure record such a call writes whole — its field,
+    its hint and its detail as well as its sentence — and its strings are
+    the library's, released here whether or not they are used.
+    """
+    if record is not None:
+        found = Error._of(record)
+        lib.ts_error_free(ctypes.byref(record))
+        if found.message:
+            raise _refusal(status, found)
+    raise TeistroError(status, _text(lib.ts_status_message(int(status))))
 
 
 def _take_string(lib: TeistroLibrary, raw: Any) -> str:

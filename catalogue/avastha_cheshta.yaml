@@ -1,0 +1,30 @@
+kind: avastha_cheshta
+number: 64
+version: 1
+doc: "The three sub-states of a Sayanadi state, a remainder of three."
+attributes: { remainder: u8 }
+members:
+  - key: DRISHTI
+    id: 0
+    doc: "Drishti, a remainder of one: the state's effects middling"
+    attributes: { remainder: 1 }
+    sources:
+      - text: BPHS
+        ref: "45.30-39"
+    mark: T
+  - key: CHESHTA
+    id: 1
+    doc: "Cheshta, a remainder of two: its effects in full"
+    attributes: { remainder: 2 }
+    sources:
+      - text: BPHS
+        ref: "45.30-39"
+    mark: T
+  - key: VICHESHTA
+    id: 2
+    doc: "Vicheshta, a remainder of nothing: its effects slight"
+    attributes: { remainder: 0 }
+    sources:
+      - text: BPHS
+        ref: "45.30-39"
+    mark: T

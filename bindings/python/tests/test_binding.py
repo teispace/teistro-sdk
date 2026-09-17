@@ -11,18 +11,37 @@ from __future__ import annotations
 import json
 import os
 import unittest
+from typing import Optional
 
 from teistro import (
+    Altitude,
+    AvasthaSayanadi,
+    DashaDefinition,
+    DashaPhase,
+    Nature,
+    Balance,
     Body,
     Calendar,
+    ChartLayout,
+    DashaSystem,
+    Drawing,
+    Ekadhipatya,
+    LayoutRow,
     Ephemeris,
     EphemerisProvider,
+    Latitude,
+    Observer,
     Plugin,
+    Rashi,
     Scale,
+    Shodhana,
     Status,
     Teistro,
     TeistroError,
     TimeScale,
+    Theme,
+    Varga,
+    VimshopakaScoring,
     at,
     date,
     fixed_zone,
@@ -221,6 +240,22 @@ class Keys(WithLibrary):
         error = caught.exception
         self.assertNotEqual(error.status, Status.OK)
         self.assertIn("SUN", error.hint or error.message)
+
+    def test_a_context_that_cannot_be_built_says_which_field_and_why(self) -> None:
+        # No context exists to keep this refusal, so the record crosses
+        # whole from the call that failed (ffi-abi-and-api-description.md
+        # §6.1) — the same field and hint a context's refusal carries.
+        with self.assertRaises(TeistroError) as caught:
+            self.teistro.context(profile="vedic-classic")
+        error = caught.exception
+        self.assertEqual(error.status, Status.UNSUPPORTED)
+        self.assertIn("no shipped profile `vedic-classic`", error.message)
+        self.assertEqual(error.field, "profile")
+        self.assertIn("parashari-classical", error.hint)
+        with self.assertRaises(TeistroError) as caught:
+            self.teistro.context(locale="xx-Latn")
+        self.assertEqual(caught.exception.field, "locale")
+        self.assertIn("ne-Deva-NP", caught.exception.hint)
 
 
 class TheLocaleEngine(WithLibrary):
@@ -526,3 +561,332 @@ class AnEngine(WithLibrary):
         self.assertGreater(self.ctx.time.delta_t(2451545.0).seconds, 60)
         self.assertEqual(self.ctx.keys.name(self.ctx.keys.id("graha.SUN")), "graha.SUN")
 
+    def test_a_drawing_names_a_layout_and_a_varga_or_is_refused(self) -> None:
+        """A drawing is a `(ChartLayout, Varga)` pair; anything else is
+        refused naming its place in the list, before the boundary is
+        crossed (`03-design/chart-geometry.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(0)
+        )
+        for wrong in ((Varga.D1, ChartLayout.NORTH_INDIAN), (ChartLayout.NORTH_INDIAN,), "north_indian"):
+            with self.subTest(wrong=wrong), self.assertRaises(TeistroError) as caught:
+                self.ctx.chart.found(
+                    instant=2451545.0,
+                    place=observer,
+                    utc_offset_seconds=0,
+                    drawings=[(ChartLayout.SOUTH_INDIAN, Varga.D9), wrong],  # type: ignore[list-item]
+                )
+            self.assertEqual(caught.exception.field, "drawings[1]")
+
+    def test_a_theme_writes_each_drawing_as_svg_and_a_wrong_one_is_refused(self) -> None:
+        """A theme writes every drawing as SVG in the context's locale, and
+        a wrong one is refused by its path (`03-design/render-svg.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        drawings = [(ChartLayout.NORTH_INDIAN, Varga.D1), (ChartLayout.WESTERN_WHEEL, Varga.D1)]
+
+        def found(theme: Optional[Theme]) -> list[Drawing]:
+            return self.ctx.chart.found(
+                instant=2451545.0, place=observer, utc_offset_seconds=20700, drawings=drawings, theme=theme
+            ).drawings
+
+        self.assertIsNone(found(None)[0].svg, "no theme, no SVG")
+        north, wheel = found("dark")
+        assert north.svg is not None and wheel.svg is not None
+        self.assertTrue(north.svg.startswith('<svg xmlns="http://www.w3.org/2000/svg"'))
+        self.assertIn('data-body="graha.SUN">सू', north.svg)
+        self.assertIn('fill="#121212"', north.svg)
+        self.assertIn("<line ", wheel.svg)
+
+        glyphs = found({"extends": "light", "style": {"size": 600}, "content": {"body_form": "glyph"}})[0].svg
+        assert glyphs is not None
+        self.assertIn('viewBox="0 0 600 600"', glyphs)
+        self.assertIn('data-body="graha.SUN">☉', glyphs)
+
+        with self.assertRaises(TeistroError) as wrong:
+            found({"style": {"ink": "black"}})
+        self.assertEqual(wrong.exception.field, "theme_json.style.ink")
+        with self.assertRaises(TeistroError) as unknown:
+            found("sepia")  # type: ignore[arg-type]
+        self.assertEqual(unknown.exception.field, "theme_json.extends")
+
+    def test_a_chart_carries_its_ashtakavarga_and_each_graha_s_reductions(self) -> None:
+        """A chart's Ashtakavarga crosses whole: each graha's bindus holding the
+        classical totals, the sum, and each graha's reductions under the default
+        reading; None unless asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, ashtakavarga=True)
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).ashtakavarga)
+        av = chart.ashtakavarga
+        assert av is not None
+        self.assertEqual((av.shodhana, av.ekadhipatya), (Shodhana.EACH_GRAHA, Ekadhipatya.BPHS))
+        self.assertEqual([sum(g.bindus) for g in av.grahas], [48, 49, 39, 54, 56, 52, 39])
+        self.assertEqual(sum(av.sarva), 337)
+        reduced = [g.reduced for g in av.grahas]
+        assert all(r is not None for r in reduced)
+        self.assertEqual(
+            av.reduced,
+            tuple(sum(r[sign] for r in reduced if r is not None) for sign in range(12)),
+        )
+        self.assertTrue(all(g.yoga_pinda == g.rashi_pinda + g.graha_pinda for g in av.grahas))
+
+    def test_a_chart_carries_its_bhava_bala_each_bhava_s_strength(self) -> None:
+        """A chart's Bhava bala crosses whole: every bhava's components under the
+        default reading, the verses', whose totals are their parts'; None unless
+        asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, bhava_bala=True)
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).bhava_bala)
+        bb = chart.bhava_bala
+        assert bb is not None
+        self.assertEqual([b.bhava for b in bb.bhavas], list(range(1, 13)))
+        for b in bb.bhavas:
+            self.assertAlmostEqual(b.adhipati + b.dig + b.drishti + b.special, b.virupas, places=9)
+            self.assertTrue(0.0 <= b.dig <= 60.0)
+
+    def test_a_chart_carries_its_shadbala_each_graha_s_six_strengths(self) -> None:
+        """A chart's Shadbala crosses whole: every graha's six strengths under
+        the default reading, the chapter's, whose natural strengths are 28
+        sevenths of a rupa and whose totals are their components'; None unless
+        asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, shadbala=True)
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).shadbala)
+        sb = chart.shadbala
+        assert sb is not None
+        self.assertEqual(len(sb.grahas), 7)
+        self.assertAlmostEqual(sum(g.naisargika for g in sb.grahas), 240.0, places=9)
+        for g in sb.grahas:
+            six = g.sthana.total + g.dig + g.kaala.total + g.cheshta + g.naisargika + g.drik
+            self.assertAlmostEqual(six, g.virupas, places=9)
+            self.assertEqual(g.strong, g.rupas >= g.required_rupas)
+
+    def test_a_chart_carries_its_dasha_phala_and_the_shadbala_its_rays(self) -> None:
+        """A chart's dasha phala crosses whole: the nine grahas' Subhankas within
+        each varga's share and complementary in total, a nature and a phase
+        each; None unless asked, and the Shadbala's rays beside the phalas."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(
+            instant=2451545.0, place=observer, utc_offset_seconds=20700, dasha_phala=True, shadbala=True
+        )
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).dasha_phala)
+        reading = chart.dasha_phala
+        assert reading is not None
+        self.assertEqual([g.graha.name for g in reading.grahas][-2:], ["RAHU", "KETU"])
+        for g in reading.grahas:
+            self.assertEqual(len(g.subhankas), 7)
+            for k, points in enumerate(g.subhankas):
+                self.assertTrue(0 <= points <= (60 if k == 0 else 30))
+            self.assertAlmostEqual(g.subhanka + g.asubhanka, 240.0, places=9)
+            self.assertIsInstance(g.nature, Nature)
+            self.assertIsInstance(g.phase, DashaPhase)
+        shadbala = chart.shadbala
+        assert shadbala is not None
+        for s in shadbala.grahas:
+            self.assertTrue(1 <= s.subha_rashmi <= 7)
+            self.assertAlmostEqual(s.subha_rashmi + s.ashubha_rashmi, 8.0, places=9)
+
+    def test_a_graha_s_state_carries_its_sayanadi_and_a_sub_state_for_every_anka(self) -> None:
+        """Every graha's state carries its Sayanadi: the nine grahas a state and
+        a sub-state under each of the five ankas, the outer planets none."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        states = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, state=True).states
+        nine = {"SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN", "RAHU", "KETU"}
+        for state in states:
+            if state.graha.name not in nine:
+                self.assertIsNone(state.sayanadi)
+                continue
+            sayanadi = state.sayanadi
+            assert sayanadi is not None
+            self.assertIsInstance(sayanadi.avastha, AvasthaSayanadi)
+            self.assertEqual(len(sayanadi.cheshtas), 5)
+            self.assertEqual(sayanadi.cheshta(3), sayanadi.cheshtas[2])
+            with self.assertRaises(ValueError):
+                sayanadi.cheshta(6)
+
+    def test_a_chart_carries_its_vaiseshikamsa_each_scheme_s_count_and_name(self) -> None:
+        """A chart's Vaiseshikamsa crosses whole: each scheme's count within its
+        vargas, a name for every count from two; None unless asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, vaiseshikamsa=True)
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).vaiseshikamsa)
+        reading = chart.vaiseshikamsa
+        assert reading is not None
+        self.assertEqual(len(reading.grahas), 7)
+        for g in reading.grahas:
+            for standing, vargas in (
+                (g.shadvarga, 6),
+                (g.saptavarga, 7),
+                (g.dashavarga, 10),
+                (g.shodashavarga, 16),
+            ):
+                self.assertLessEqual(standing.good_vargas, vargas)
+                self.assertEqual(standing.name is None, standing.good_vargas < 2)
+
+    def test_a_chart_carries_its_vimshopaka_each_graha_s_four_scores(self) -> None:
+        """A chart's Vimshopaka crosses whole: every graha's four scores out of
+        20 under the default reading, the text's, whose least in any varga is
+        5; None unless asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, vimshopaka=True)
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).vimshopaka)
+        vs = chart.vimshopaka
+        assert vs is not None
+        self.assertIs(vs.scoring, VimshopakaScoring.BPHS)
+        self.assertEqual([g.graha.name for g in vs.grahas], ["SUN", "MOON", "MARS", "MERCURY", "JUPITER", "VENUS", "SATURN"])
+        for g in vs.grahas:
+            for score in (g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga):
+                self.assertTrue(5.0 <= score <= 20.0, f"{g.graha}: {score}")
+
+    def test_a_consumer_dasha_system_registers_is_asked_for_by_key_and_reads_as_its_twin(self) -> None:
+        """A consumer's own dasha system crosses: registered on the context,
+        asked for by its key, named by it in the answer, and every period its
+        catalogued twin's; a definition the checks refuse is named by its place
+        and field (`03-design/dasha-kernels.md`)."""
+        years = (("KETU", 7), ("VENUS", 20), ("SUN", 6), ("MOON", 10), ("MARS", 7),
+                 ("RAHU", 18), ("JUPITER", 16), ("SATURN", 19), ("MERCURY", 17))
+        twin: DashaDefinition = {
+            "key": "ACME_VIMSHOTTARI",
+            "lords": [{"graha": graha, "years": count} for graha, count in years],
+            "reference": "ASHWINI",
+        }
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        with self.teistro.context(test_provider=True, dasha_systems=[twin]) as ctx:
+            chart = ctx.chart.found(
+                instant=2451545.0,
+                place=observer,
+                utc_offset_seconds=20700,
+                dashas=["dasha_system.ACME_VIMSHOTTARI", DashaSystem.VIMSHOTTARI],
+            )
+            consumer, shipped = chart.dashas
+            self.assertEqual(consumer.system, "dasha_system.ACME_VIMSHOTTARI")
+            self.assertIs(shipped.system, DashaSystem.VIMSHOTTARI)
+            self.assertEqual(consumer.periods, shipped.periods)
+            self.assertEqual(consumer.balance, shipped.balance)
+            with self.assertRaises(TeistroError) as stray:
+                ctx.chart.found(
+                    instant=2451545.0, place=observer, utc_offset_seconds=20700, dashas=["dasha_system.ACME_OTHER"]
+                )
+            self.assertEqual(stray.exception.field, "dashas[0]")
+        with self.assertRaises(TeistroError) as narrow:
+            self.teistro.context(test_provider=True, dasha_systems=[{**twin, "span": 0}])
+        self.assertEqual(narrow.exception.field, "options.dashas_json[0].span")
+
+    def test_a_chart_carries_its_dashas_their_periods_and_the_chain_at_an_instant(self) -> None:
+        """A chart's dashas cross whole: the balance, the periods to the
+        settings' depth with their paths, and the chain at an instant read
+        off them (`03-design/dasha-kernels.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(
+            instant=2451545.0,
+            place=observer,
+            utc_offset_seconds=20700,
+            dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.CHARA],
+        )
+        self.assertEqual(
+            self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).dashas, []
+        )
+        dasha, chara = chart.dashas
+        self.assertIs(dasha.system, DashaSystem.VIMSHOTTARI)
+        assert dasha.balance is not None
+        self.assertIs(dasha.balance.method, Balance.SPATIAL)
+        self.assertTrue(0 < dasha.balance.remaining <= 1)
+        self.assertIsNone(dasha.moon_span)
+        self.assertEqual(dasha.depth, 3)
+        self.assertEqual(len(dasha.periods), 9 + 81 + 729)
+        first, second = dasha.periods[:2]
+        self.assertEqual((first.path, first.level, first.span.from_jd), ("0", 1, 2451545.0))
+        self.assertIs(first.lord, dasha.first_lord)
+        self.assertEqual((second.path, second.level, second.lord), ("0/0", 2, dasha.first_lord))
+        self.assertEqual(dasha.periods[-1].path, "8/8/8")
+        self.assertIsNone(first.sign, "a nakshatra-seeded period is its lord's")
+
+        # A sign-based dasha: no seed, no balance, twelve signs each divided
+        # in twelve from its own sign.
+        self.assertIs(chara.system, DashaSystem.CHARA)
+        self.assertEqual((chara.seed, chara.balance), (None, None))
+        self.assertEqual(len(chara.periods), 12 + 144 + 1728)
+        maha, own = chara.periods[:2]
+        self.assertEqual((maha.path, own.path, own.sign, maha.span.from_jd), ("0", "0/0", maha.sign, 2451545.0))
+        self.assertIsInstance(maha.sign, Rashi)
+        self.assertIs(chara.first_lord, maha.lord)
+        self.assertEqual(len({p.sign for p in chara.periods if p.level == 1}), 12, "every sign once")
+        self.assertEqual(len(chara.at(2451545.0 + 5000)), 3)
+
+        instant = 2451545.0 + 5000
+        chain = dasha.at(instant)
+        self.assertEqual([period.level for period in chain], [1, 2, 3])
+        self.assertTrue(all(p.span.from_jd <= instant < p.span.to_jd for p in chain))
+        self.assertEqual(dasha.at(2451544.0), [], "before birth")
+
+        with self.assertRaises(TeistroError) as caught:
+            self.ctx.chart.found(
+                instant=2451545.0,
+                place=observer,
+                utc_offset_seconds=0,
+                dashas=[DashaSystem.VIMSHOTTARI, DashaSystem.SUDARSHANA_CHAKRA],
+            )
+        self.assertEqual(caught.exception.field, "dashas[1]")
+
+    def test_a_layout_of_your_own_is_registered_drawn_by_its_key_and_refused_by_its_field(self) -> None:
+        """A shipped row copied, renamed and registered, drawn by its key,
+        and a wrong row refused by its place and field
+        (`03-design/chart-geometry.md` §7f)."""
+        row = self.ctx.chart.layout("SOUTH_INDIAN")
+        self.assertEqual(self.ctx.chart.layout(ChartLayout.SOUTH_INDIAN), row, "bare or full")
+        with self.assertRaises(TeistroError) as unknown:
+            self.ctx.chart.layout("ACME_KERALA")
+        self.assertEqual(unknown.exception.field, "key")
+
+        kerala: LayoutRow = {**row, "key": "ACME_KERALA"}
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        with self.teistro.context(profile=PROFILE, test_provider=True, layouts=[kerala]) as ctx:
+            self.assertEqual(ctx.chart.layout("chart_layout.ACME_KERALA"), kerala)
+            self.assertEqual(ctx.keys.name(ctx.keys.id("chart_layout.ACME_KERALA")), "chart_layout.ACME_KERALA")
+            south, own = ctx.chart.found(
+                instant=2451545.0,
+                place=observer,
+                utc_offset_seconds=20700,
+                drawings=[(ChartLayout.SOUTH_INDIAN, Varga.D1), ("chart_layout.ACME_KERALA", Varga.D1)],
+            ).drawings
+            self.assertEqual(own.layout, "chart_layout.ACME_KERALA")
+            self.assertEqual(south.layout, ChartLayout.SOUTH_INDIAN)
+            self.assertEqual(own.cells, south.cells, "the same row draws the same chart")
+            with self.assertRaises(TeistroError) as unregistered:
+                ctx.chart.found(
+                    instant=2451545.0,
+                    place=observer,
+                    utc_offset_seconds=0,
+                    drawings=[("chart_layout.ACME_ODIA", Varga.D1)],
+                )
+            self.assertEqual(unregistered.exception.field, "drawings[0]")
+
+        def refused(layouts: list[LayoutRow]) -> Optional[str]:
+            with self.assertRaises(TeistroError) as caught:
+                self.teistro.context(test_provider=True, layouts=layouts)
+            return caught.exception.field
+
+        self.assertEqual(refused([kerala, row]), "options.layouts_json[1].key")
+        misspelt = {**kerala, "shape": {**kerala["shape"], "heading": "clockwise"}}
+        self.assertEqual(refused([misspelt]), "options.layouts_json[0].shape.heading")  # type: ignore[list-item]

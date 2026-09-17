@@ -196,12 +196,46 @@ an entry with no output.
 | `product` | 2 | the named inputs' lengths, multiplied in layout order | all of it |
 | `asked` | 11 | the caller's `out_capacity`, an argument | cut to the count the engine gives |
 | `total` | 4 | 64, then exactly what the engine reported | all of it |
-| `unstated` | 7 | — | — |
+| `call` | 3 | what another exported function answers, asked before the call — once, or once per element taking the largest | all of it |
+| `unstated` | 4 | — | — |
 
-A `length` or `product` that names a struct input's field
-(`req.day_count`) is sized by nothing this marshaller reads, and is
-queued with the `unstated` ones; the measured page lists all nine with
-the engine's own reason.
+A `length` or `product` may name a struct input's field — the calendar
+grid is `req.day_count` days long — and is read from the request the arm
+already built, through a `length` helper that refuses a negative or
+oversized value rather than casting it; an absent request measures zero,
+and the engine refuses the absent request itself.
+
+**A `call` extent** is the house cusps: `tm_house_cusp_count()` of the
+requested system, which no parameter holds and no product states. The
+engine lists it as `{"kind": "call", "function": "tm_house_cusp_count",
+"of": ["req.system"]}`, and its extractor refuses a sizing function that
+is not exported, does not return a `size_t`, takes anything but values,
+or is named with the wrong number of arguments — values only, because a
+length that needed a context or a pointer would need the answer to ask
+the question. The arm calls it before the call it sizes. Twelve cusps
+come back for Placidus and thirty-six for Gauquelin's sectors, and a
+test holds both.
+
+**An output parallel to another** — the cusp speeds beside the cusps — is
+room for as many as its twin, cut where its twin is cut, and answered as
+its own list. It is learned exactly when its twin is sized before the
+call, which a gathered output is not.
+
+**A call spread over an array** is `tm_houses_calc_many`'s cusps: the
+batch lays every chart out at the *widest* requested system's stride, so
+the room is `count ×` the largest `tm_house_cusp_count()` over the
+requests — `"of": ["reqs[].system"], "reduce": "max", "times": "count"`.
+The extractor refuses a per-element argument anywhere but a call, a
+spread call without `reduce`, a `reduce` on a call made once, and a
+`times` that is not the length of the array spread over. A test holds
+the layout itself: one Placidus chart beside one Gauquelin fills
+seventy-two cusps, and the Placidus chart's twelve open its slot exactly
+as the single call answers them.
+
+The measured page lists the four outputs still unsized, each with the
+engine's own reason: the chart blob's three, whose length is what the
+blob holds, and the encoded blob, whose size the call reports only once
+it fits.
 
 ### Three rules the room follows
 
@@ -260,9 +294,11 @@ failure** — `tm_set_ayanamsha refused with status -1, invalid argument:
 no such ayanamsha: 15`. That is the difference between a code and knowing
 what to change.
 
-The record has to be read with care, because not every failure writes it
+The record has to be read with care, because not every failure wrote it
 (`05-testing/02-engine-findings.md` D3): a null argument refused by a
-bare return leaves the previous failure's message in place. So an arm
+bare return left the previous failure's message in place. The engine is
+fixed (`7de669e`), and the guard stays, because a null context and the
+functions that take no context still return with nothing written. So an arm
 with a context snapshots the record before the call — two reads when it
 is clean, which every success leaves it, and a copy only while it holds
 an earlier failure — and attaches the message only when the record
@@ -310,13 +346,28 @@ exact because the queue groups a function by its hardest blocker.
 | plain structs | 95 | §3 |
 | arrays | 112 | §4 |
 | a struct carrying a string | 118 | §3, one step with the next |
-| **a struct pointing at another** | **135** | §3 |
-| an output sized by another call, and a parallel output | 139 | `tm_house_cusp_count()`, `req.day_count`; an optional twin |
+| a struct pointing at another | 135 | §3 |
+| an output sized by another call or a field, and a parallel output | 138 | §4 |
+| **a call spread over an array** | **139** | §4 |
 
-The last ten are genuinely different: three carry opaque bytes, four a
-function-pointer vtable or a `char**`, and three return a pointer into
-the engine's own memory whose lifetime the JSON boundary has no way to
-state.
+### The last ten, and what each would need
+
+They are queued rather than refused, because reaching the engine's whole
+surface is the point of the namespace — but none is a shape the next
+generator step brings in, and each says what it would cost:
+
+| functions | what stands in the way | what it would take |
+|---|---|---|
+| `tm_chart_encode`, `tm_chart_decode`, `tm_chart_blob_info` | the engine's chart blob is bytes, and the decode outputs are as long as the blob says | a `bytes` crossing (base64 in a JSON string) and a `call` extent that reads a struct `tm_chart_blob_info` fills; the SDK's own document is the portable form of a chart, so this is the engine's cache format and nobody else's |
+| `tm_config_init_sized`, `tm_fetch_config_init_sized` | allocator and transport function pointers, and a `char **` path list | nothing a JSON caller can supply; and both configure a context, which is the adapter's own (§2's reason the twelve are never offered) |
+| `tm_position_calc_grid_columns` | a struct of eight `double *` columns the engine writes through | the column block is a zero-copy shape for C; across JSON it is `tm_position_calc_grid`, which is callable, with the columns zipped back into rows |
+| `tm_last_error` | a pointer to a struct the engine owns | a returned-struct kind; and every refusal already carries its message (§4), so it adds nothing a caller lacks |
+| `tm_embedded_files`, `tm_embedded_find` | pointers into the engine's own tables, each struct carrying raw file bytes | a returned-array kind and a decision to cross megabytes of ephemeris data through JSON, which is the wrong door for it |
+
+So the passthrough stops here on purpose: of the ten, only `tm_last_error`
+has a JSON shape the generator could reach with one more kind, and it
+would repeat what every refusal already says. Each of the others would
+cross something a JSON caller cannot supply or should not receive.
 
 The plan this table replaced said an array of numbers would reach 99 and
 an array of structs 114, as two steps. They are one step, because the
@@ -349,7 +400,10 @@ easiest.
   it, forty requests keep forty pointers alive, a batch with one bad body
   answers the other two, and a successful batch carries no mark; and a
   refusal carries the engine's message while an earlier failure's message
-  is never repeated.
+  is never repeated; twelve cusps for Placidus and thirty-six for
+  Gauquelin with their speeds beside them, a chart sized by its bodies and
+  its system at once, a calendar grid three days by two bodies long, and a
+  house batch laid out at its widest stride.
 - The helpers' unit tests, for what the real engine never reaches: a
   gather that must ask twice and one whose answer grows, room past the
   bound, a product that overflows, a `Keep` whose first pointers survive
@@ -364,12 +418,6 @@ easiest.
 
 ## 8. Open questions
 
-- **An output sized by another call** (§6): the house cusps are as long as
-  `tm_house_cusp_count()` of the requested system, and the calendar grid
-  as long as a field of its request. Both are expressible — an extent that
-  names a function, or a field — and neither is yet.
-- **The engine's error record** (D3) is fixed in the engine only once its
-  123 null-check prologues record their own failures.
 
 ADR-0030's rule that what proves universal is promoted into the port
 applies to all of it.

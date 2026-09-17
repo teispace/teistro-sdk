@@ -8,9 +8,9 @@ The engine describes **161 functions**, beside 57 structs, 40 enums and 2 callba
 
 | standing | functions | what it means |
 |---|---:|---|
-| **callable** | 135 | offered at `sdk.engine.*` today |
+| **callable** | 139 | offered at `sdk.engine.*` today |
 | **the adapter's own** | 12 | never offered, whatever their shape |
-| **not yet marshalled** | 14 | a queue for the generator, not a refusal |
+| **not yet marshalled** | 10 | a queue for the generator, not a refusal |
 
 ## What the adapter will not hand over
 
@@ -33,13 +33,13 @@ They are named here rather than left to the marshaller to fail on, because the r
 
 ## What is callable
 
-**135 functions**. 45 of them take and answer scalars and enums alone, which is the shape a JSON object carries without a marshaller having to know anything else.
+**139 functions**. 45 of them take and answer scalars and enums alone, which is the shape a JSON object carries without a marshaller having to know anything else.
 
 26 carry a string: nine read one the caller passes, five fill a buffer of the marshaller's, and twelve answer with one the engine lends and the marshaller copies before anything else can move it.
 
-62 carry a struct, which crosses as a JSON object keyed by the engine's own field names, nested as the struct nests; eight of them carry a string as well. Every field is required going in, and the struct's own `struct_size` crosses in neither direction — the arm fills it, because the engine reads the struct only as far as it says (`03-design/engine-passthrough.md`).
+65 carry a struct, which crosses as a JSON object keyed by the engine's own field names, nested as the struct nests; eight of them carry a string as well. Every field is required going in, and the struct's own `struct_size` crosses in neither direction — the arm fills it, because the engine reads the struct only as far as it says (`03-design/engine-passthrough.md`).
 
-29 carry an array, which crosses as a JSON array of whatever its element crosses as. The engine's description says how long each output is, and the marshaller sizes it from that and nothing else: 14 are as long as the inputs they answer, eleven are as long as the caller asks — how many eclipses to find, which is an argument — and cut to the count the engine gives, and four are as long as the engine says there are, which the marshaller learns by asking and asks again when there are more than fitted. No caller passes a capacity for an answer whose length is already decided.
+33 carry an array, which crosses as a JSON array of whatever its element crosses as. The engine's description says how long each output is, and the marshaller sizes it from that and nothing else: 18 are as long as the inputs they answer or a field of the request says, three are as long as another function answers — the house cusps, `tm_house_cusp_count()` of the requested system, asked before the call — eleven are as long as the caller asks — how many eclipses to find, which is an argument — and cut to the count the engine gives, and four are as long as the engine says there are, which the marshaller learns by asking and asks again when there are more than fitted. No caller passes a capacity for an answer whose length is already decided.
 
 | function | carries | changes engine state |
 |---|---|---|
@@ -72,8 +72,11 @@ They are named here rather than left to the marshaller to fail on, because the r
 | `tm_house_cusp_count` |  |  |
 | `tm_house_system_name` | a string it lends |  |
 | `tm_house_system_count` |  |  |
+| `tm_houses_calc` | a struct it reads, a struct it fills, an array it fills |  |
+| `tm_houses_calc_many` | an array it reads, an array it fills |  |
 | `tm_house_position` |  |  |
 | `tm_chart_default_bodies` | an array it fills |  |
+| `tm_chart_calc` | a struct it reads, a struct it fills, an array it reads, an array it fills |  |
 | `tm_set_jpl_file` | a string it reads | **yes** |
 | `tm_jpl_info` |  |  |
 | `tm_set_ayanamsha` |  | **yes** |
@@ -155,6 +158,7 @@ They are named here rather than left to the marshaller to fail on, because the r
 | `tm_crossing_search` | a struct it reads, an array it fills |  |
 | `tm_node_crossing_search` | a struct it reads, an array it fills |  |
 | `tm_calendar_request_init_sized` | a struct it fills |  |
+| `tm_calendar_grid` | a struct it reads, an array it reads, an array it fills |  |
 | `tm_scan_request_init_sized` | a struct it fills |  |
 | `tm_scan_grid` | a struct it reads, an array it fills |  |
 | `tm_angle_normalize_deg` |  |  |
@@ -187,12 +191,10 @@ A consumer who wants the change *recorded* has the settings for it (ADR-0013's o
 
 ## What the marshaller has not learned
 
-**14 functions**, grouped by the hardest thing in the way and listed easiest first. This is a queue rather than a refusal: each group is one shape the generator has to learn, and learning one brings its whole group in at once.
+**ten functions**, grouped by the hardest thing in the way and listed easiest first. This is a queue rather than a refusal: each group is one shape the generator has to learn, and learning one brings its whole group in at once.
 
 | what it takes or returns | functions | examples |
 |---|---:|---|
-| an output whose length it cannot compute | 2 | `tm_houses_calc_many`, `tm_calendar_grid` |
-| an optional output parallel to another | 2 | `tm_houses_calc`, `tm_chart_calc` |
 | opaque bytes | 3 | `tm_chart_encode`, `tm_chart_blob_info`, `tm_chart_decode` |
 | a struct no JSON object describes | 4 | `tm_config_init_sized`, `tm_position_calc_grid_columns`, `tm_fetch_config_init_sized` |
 | a pointer it returns | 3 | `tm_last_error`, `tm_embedded_files`, `tm_embedded_find` |
@@ -201,15 +203,10 @@ The order of work, with what each step releases, is in `03-design/engine-passthr
 
 ### The outputs it cannot size
 
-**nine output arrays**, each with the engine's own account of what decides its length. None is guessed: an output sized wrongly is a truncated answer at best, and at worst a refusal the caller has no way to fix.
+**four output arrays**, each with the engine's own account of what decides its length. None is guessed: an output sized wrongly is a truncated answer at best, and at worst a refusal the caller has no way to fix.
 
 | function | output | its length is |
 |---|---|---|
-| `tm_houses_calc` | `cusps` | tm_house_cusp_count() of the requested system |
-| `tm_houses_calc_many` | `cusps` | count times the widest requested system's cusp count |
-| `tm_chart_calc` | `out_cusps` | tm_house_cusp_count() of the requested system |
-| `tm_calendar_grid` | `out_days` | as long as `req.day_count`, a field the marshaller would have to read before it could allocate |
-| `tm_calendar_grid` | `out_positions` | the product of `req.day_count` × `body_count`, one of them a field the marshaller would have to read first |
 | `tm_chart_encode` | `out_blob` | the encoded size, which the call returns only once it fits |
 | `tm_chart_decode` | `out_bodies` | what the blob holds; tm_chart_blob_info() |
 | `tm_chart_decode` | `out_positions` | what the blob holds; tm_chart_blob_info() |
@@ -223,11 +220,11 @@ ADR-0030 puts a typed façade in the **adapter's** package, generated from this 
 |---:|---:|---|
 | 1 | 110 | **the value itself** — a number, a string, a struct |
 | 0 | 11 | nothing |
-| more | 14 | a record: an object, a Dart record, a `TypedDict` |
+| more | 18 | a record: an object, a Dart record, a `TypedDict` |
 
-**110 of the 135 answer with exactly one value**, so a façade that always returned an object would have made every one of them an indexing exercise for the sake of 14. Those 14 get a record apiece — `tm_utc_to_jd`, `tm_get_tidal_acceleration`, `tm_get_delta_t_override`, `tm_from_horizontal`, `tm_embedded_coverage`, `tm_solar_eclipse_how`, `tm_occultation_how`, `tm_lunar_eclipse_how`, `tm_visibility_defaults`, `tm_version`, `tm_solar_eclipse_where`, `tm_occultation_where`, `tm_scan_grid`, `tm_jpl_info` — which is 14 types per target rather than 135.
+**110 of the 139 answer with exactly one value**, so a façade that always returned an object would have made every one of them an indexing exercise for the sake of 18. Those 18 get a record apiece — `tm_utc_to_jd`, `tm_houses_calc_many`, `tm_get_tidal_acceleration`, `tm_get_delta_t_override`, `tm_from_horizontal`, `tm_embedded_coverage`, `tm_solar_eclipse_how`, `tm_occultation_how`, `tm_lunar_eclipse_how`, `tm_visibility_defaults`, `tm_calendar_grid`, `tm_version`, `tm_houses_calc`, `tm_solar_eclipse_where`, `tm_occultation_where`, `tm_scan_grid`, `tm_chart_calc`, `tm_jpl_info` — which is 18 types per target rather than 139.
 
-The same count settles a question every target would otherwise have raised. `return` — the key a function's own return value comes back under — **never appears beside another key**: every one of those 14 is a status-returning function with out-parameters. So no record field is ever named `return`, and no target has to rename a keyword it could not spell.
+The same count settles a question every target would otherwise have raised. `return` — the key a function's own return value comes back under — **never appears beside another key**: every one of those 18 is a status-returning function with out-parameters. So no record field is ever named `return`, and no target has to rename a keyword it could not spell.
 
 ## What this does not measure
 

@@ -15,6 +15,7 @@ use crate::frame::Frame;
 
 /// What is searched for a boundary.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Quantity {
     /// A body's ecliptic longitude, degrees.
@@ -140,6 +141,7 @@ impl fmt::Display for Quantity {
 /// A lattice of boundaries: every `origin + k × step` degrees, or the
 /// single boundary at the origin when the step is zero.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Lattice {
     /// The first line, degrees.
     pub origin_deg: f64,
@@ -206,6 +208,7 @@ impl Lattice {
 
 /// Which way a boundary was passed.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Direction {
     /// The quantity was increasing through the boundary.
@@ -246,6 +249,7 @@ impl Direction {
 
 /// A crossing found.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Event {
     /// The instant, UT1.
     pub instant: JulianDay<Ut1>,

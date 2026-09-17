@@ -1,0 +1,3950 @@
+{
+  "rules": [
+    {
+      "key": "BPHS_MAHA_RAJA_LAGNA_AND_FIFTH_LORDS_EXCHANGED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "6-7",
+        "rank": 1,
+        "note": "The lords of the lagna and the fifth exchange signs, the first of the two Maha Raja figures. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "mutual-exchange",
+          "house1": 1,
+          "house2": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "Maha Raja yoga: famous and happy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MAHA_RAJA_ATMAKARAKA_AND_PUTRAKARAKA_WELL_PLACED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "6-7",
+        "rank": 1,
+        "note": "The Atmakaraka and the Putrakaraka each in the lagna or the fifth, or in exaltation, its own sign or its own navamsha, and each aspected by a benefic. The translator's note reads them jointly or separately, and this rule asks it of each. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "karaka": "AK"
+                  },
+                  "houses": [
+                    1,
+                    5
+                  ]
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "karaka": "AK"
+                  },
+                  "as": {
+                    "exaltationOf": {
+                      "karaka": "AK"
+                    }
+                  }
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "karaka": "AK"
+                    }
+                  },
+                  "as": {
+                    "karaka": "AK"
+                  }
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "navamsha": {
+                        "karaka": "AK"
+                      }
+                    }
+                  },
+                  "as": {
+                    "karaka": "AK"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-benefic",
+              "target": {
+                "karaka": "AK"
+              }
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "karaka": "PK"
+                  },
+                  "houses": [
+                    1,
+                    5
+                  ]
+                },
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "karaka": "PK"
+                  },
+                  "as": {
+                    "exaltationOf": {
+                      "karaka": "PK"
+                    }
+                  }
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "karaka": "PK"
+                    }
+                  },
+                  "as": {
+                    "karaka": "PK"
+                  }
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "navamsha": {
+                        "karaka": "PK"
+                      }
+                    }
+                  },
+                  "as": {
+                    "karaka": "PK"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-benefic",
+              "target": {
+                "karaka": "PK"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "Maha Raja yoga: famous and happy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_LORD_AND_ATMAKARAKA_IN_LAGNA_FIFTH_OR_SEVENTH_WITH_BENEFICS",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "8",
+        "rank": 1,
+        "note": "The lagna lord and the Atmakaraka each in the lagna, the fifth or the seventh, joined or aspected by a benefic. Where the lagna lord is the Atmakaraka the two conditions are one. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "lordOf": 1
+              },
+              "houses": [
+                1,
+                5,
+                7
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    1
+                  ],
+                  "from": {
+                    "lordOf": 1
+                  },
+                  "except": [
+                    {
+                      "lordOf": 1
+                    }
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "any-benefic",
+                  "target": {
+                    "lordOf": 1
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "karaka": "AK"
+              },
+              "houses": [
+                1,
+                5,
+                7
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    1
+                  ],
+                  "from": {
+                    "karaka": "AK"
+                  },
+                  "except": [
+                    {
+                      "karaka": "AK"
+                    }
+                  ],
+                  "atLeast": 1
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "any-benefic",
+                  "target": {
+                    "karaka": "AK"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_KING_BY_BENEFICS_SECOND_FOURTH_AND_FIFTH_FROM_LAGNA_LORD",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "9",
+        "rank": 1,
+        "note": "A benefic in each of the second, fourth and fifth counted from the lagna lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            2
+          ],
+          "from": {
+            "lordOf": 1
+          },
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            4
+          ],
+          "from": {
+            "lordOf": 1
+          },
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            5
+          ],
+          "from": {
+            "lordOf": 1
+          },
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_KING_BY_MALEFICS_THIRD_AND_SIXTH_FROM_LAGNA_LORD",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "10",
+        "rank": 1,
+        "note": "A malefic in each of the third and sixth counted from the lagna lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            3
+          ],
+          "from": {
+            "lordOf": 1
+          },
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "from": {
+            "lordOf": 1
+          },
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_KING_BY_BENEFICS_SECOND_FOURTH_AND_FIFTH_FROM_ATMAKARAKA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "9",
+        "rank": 1,
+        "note": "A benefic in each of the second, fourth and fifth counted from the Atmakaraka. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            2
+          ],
+          "from": {
+            "karaka": "AK"
+          },
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            4
+          ],
+          "from": {
+            "karaka": "AK"
+          },
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            5
+          ],
+          "from": {
+            "karaka": "AK"
+          },
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_KING_BY_MALEFICS_THIRD_AND_SIXTH_FROM_ATMAKARAKA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "10",
+        "rank": 1,
+        "note": "A malefic in each of the third and sixth counted from the Atmakaraka. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            3
+          ],
+          "from": {
+            "karaka": "AK"
+          },
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "from": {
+            "karaka": "AK"
+          },
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_VENUS_IN_A_ROYAL_PLACE_WITH_JUPITER_OR_THE_MOON",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "11",
+        "rank": 1,
+        "note": "Venus in the Karakamsha sign, the fifth from it, the lagna or the arudha lagna, joined or aspected by Jupiter or the Moon. The Karakamsha is read in the rasi chart, the sign the Atmakaraka's navamsha names. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": "VENUS",
+              "as": {
+                "navamsha": {
+                  "karaka": "AK"
+                }
+              }
+            },
+            {
+              "type": "same-sign",
+              "of": "VENUS",
+              "as": {
+                "from": {
+                  "navamsha": {
+                    "karaka": "AK"
+                  }
+                },
+                "house": 5
+              }
+            },
+            {
+              "type": "planet-in-house",
+              "planet": "VENUS",
+              "houses": [
+                1
+              ]
+            },
+            {
+              "type": "same-sign",
+              "of": "VENUS",
+              "as": {
+                "arudha": 1
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": "VENUS",
+              "as": "JUPITER"
+            },
+            {
+              "type": "same-sign",
+              "of": "VENUS",
+              "as": "MOON"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "JUPITER",
+              "target": "VENUS"
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "MOON",
+              "target": "VENUS"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "related to royal circles"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ONE_GRAHA_ON_THE_LAGNA_OF_SIX_VARGAS",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "13-14",
+        "rank": 1,
+        "note": "One and the same graha occupies or aspects the lagna in each of the six vargas: the rasi, hora, drekkana, navamsha, dwadashamsha and trimshamsha. The verse grades the result by whether the aspect is full, half or a quarter, which a whole-sign graha drishti does not measure, and the translator declines to explain aspects inside a varga; this rule reads each varga's houses and full aspects as the rasi's. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "planet-in-house",
+                    "planet": "SELF",
+                    "houses": [
+                      1
+                    ]
+                  },
+                  {
+                    "type": "planet-aspects-house",
+                    "from": "SELF",
+                    "houseRuled": 1
+                  }
+                ]
+              },
+              {
+                "type": "in-varga",
+                "varga": "D2",
+                "condition": {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SELF",
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-house",
+                      "from": "SELF",
+                      "houseRuled": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "in-varga",
+                "varga": "D3",
+                "condition": {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SELF",
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-house",
+                      "from": "SELF",
+                      "houseRuled": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "in-varga",
+                "varga": "D9",
+                "condition": {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SELF",
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-house",
+                      "from": "SELF",
+                      "houseRuled": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "in-varga",
+                "varga": "D12",
+                "condition": {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SELF",
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-house",
+                      "from": "SELF",
+                      "houseRuled": 1
+                    }
+                  ]
+                }
+              },
+              {
+                "type": "in-varga",
+                "varga": "D30",
+                "condition": {
+                  "type": "or",
+                  "conditions": [
+                    {
+                      "type": "planet-in-house",
+                      "planet": "SELF",
+                      "houses": [
+                        1
+                      ]
+                    },
+                    {
+                      "type": "planet-aspects-house",
+                      "from": "SELF",
+                      "houseRuled": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga, doubtlessly"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DIGNIFIED_GRAHAS_ON_THE_LAGNA_HORA_AND_GHATIKA_LAGNAS",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "15",
+        "rank": 1,
+        "note": "A graha exalted or in its own sign in the sign of each of the three lagnas — the natal, the hora and the ghatika (BPHS ch. 4 vv. 4 to 8) — the verse's first figure. The special lagnas are points a chart reading carries, and a chart without them, a birth with no sunrise among them, answers false. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": 1
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "exaltationOf": "SELF"
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": "SELF"
+                    },
+                    "as": "SELF"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "point": "HORA_LAGNA"
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "exaltationOf": "SELF"
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": "SELF"
+                    },
+                    "as": "SELF"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "point": "GHATI_LAGNA"
+                }
+              },
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "exaltationOf": "SELF"
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": "SELF"
+                    },
+                    "as": "SELF"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_EXALTED_GRAHAS_ON_THE_LAGNA_DREKKANA_AND_NAVAMSHA_LAGNAS",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "15",
+        "rank": 1,
+        "note": "An exalted graha in the lagna of the rasi chart, of the drekkana and of the navamsha — the verse's second figure. Its first is BPHS_DIGNIFIED_GRAHAS_ON_THE_LAGNA_HORA_AND_GHATIKA_LAGNAS. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1
+                ]
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "exaltationOf": "SELF"
+                }
+              }
+            ]
+          },
+          "atLeast": 1
+        },
+        {
+          "type": "in-varga",
+          "varga": "D3",
+          "condition": {
+            "type": "count-of",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": {
+                    "exaltationOf": "SELF"
+                  }
+                }
+              ]
+            },
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "in-varga",
+          "varga": "D9",
+          "condition": {
+            "type": "count-of",
+            "planets": [
+              "SUN",
+              "MOON",
+              "MARS",
+              "MERCURY",
+              "JUPITER",
+              "VENUS",
+              "SATURN"
+            ],
+            "then": {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-in-house",
+                  "planet": "SELF",
+                  "houses": [
+                    1
+                  ]
+                },
+                {
+                  "type": "same-sign",
+                  "of": "SELF",
+                  "as": {
+                    "exaltationOf": "SELF"
+                  }
+                }
+              ]
+            },
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOON_AND_A_BENEFIC_IN_ARUDHA_LAGNA_AND_JUPITER_SECOND",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "16",
+        "rank": 1,
+        "note": "The Moon and another benefic in the arudha lagna while Jupiter is in the second, and each place aspected by a graha exalted or in its own sign. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": {
+            "arudha": 1
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "arudha": 1
+          },
+          "except": [
+            "MOON"
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            2
+          ]
+        },
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "exaltationOf": "SELF"
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": "SELF"
+                    },
+                    "as": "SELF"
+                  }
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": {
+                  "arudha": 1
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "or",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "exaltationOf": "SELF"
+                    }
+                  },
+                  {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": "SELF"
+                    },
+                    "as": "SELF"
+                  }
+                ]
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "SELF",
+                "houseRuled": 2
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_BENEFICS_LAGNA_SECOND_FOURTH_AND_A_MALEFIC_THIRD",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "17",
+        "rank": 1,
+        "note": "A benefic in each of the lagna, the second and the fourth, and a malefic in the third. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            2
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            4
+          ],
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            3
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king or equal to a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_A_BENEFIC_EXALTED_IN_THE_SECOND",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "18",
+        "rank": 1,
+        "note": "One of the Moon, Jupiter, Venus and Mercury exalted in the second. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MOON",
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  2
+                ]
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "exaltationOf": "SELF"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DEBILITATED_GRAHAS_SIXTH_EIGHTH_THIRD_AND_LAGNA_LORD_DIGNIFIED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "19",
+        "rank": 1,
+        "note": "A debilitated graha in each of the sixth, eighth and third — the translation's third, where v. 20 reads the twelfth — while the lagna lord, exalted or in its own sign, aspects the lagna. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  6
+                ]
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "debilitationOf": "SELF"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  8
+                ]
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "debilitationOf": "SELF"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  3
+                ]
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "debilitationOf": "SELF"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 1
+              },
+              "as": {
+                "exaltationOf": {
+                  "lordOf": 1
+                }
+              }
+            },
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": {
+                  "lordOf": 1
+                }
+              },
+              "as": {
+                "lordOf": 1
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-house",
+          "from": {
+            "lordOf": 1
+          },
+          "houseRuled": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DUSTHANA_LORDS_AFFLICTED_AND_LAGNA_LORD_DIGNIFIED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "20",
+        "rank": 1,
+        "note": "The lords of the sixth, eighth and twelfth each debilitated, in an enemy's sign or combust, while the lagna lord, exalted or in its own sign, aspects the lagna. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 6
+              },
+              "as": {
+                "debilitationOf": {
+                  "lordOf": 6
+                }
+              }
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 6
+              },
+              "dignities": [
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            },
+            {
+              "type": "planet-combust",
+              "planet": {
+                "lordOf": 6
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 8
+              },
+              "as": {
+                "debilitationOf": {
+                  "lordOf": 8
+                }
+              }
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 8
+              },
+              "dignities": [
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            },
+            {
+              "type": "planet-combust",
+              "planet": {
+                "lordOf": 8
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 12
+              },
+              "as": {
+                "debilitationOf": {
+                  "lordOf": 12
+                }
+              }
+            },
+            {
+              "type": "planet-dignity",
+              "planet": {
+                "lordOf": 12
+              },
+              "dignities": [
+                "ENEMY",
+                "GREAT_ENEMY"
+              ]
+            },
+            {
+              "type": "planet-combust",
+              "planet": {
+                "lordOf": 12
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 1
+              },
+              "as": {
+                "exaltationOf": {
+                  "lordOf": 1
+                }
+              }
+            },
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": {
+                  "lordOf": 1
+                }
+              },
+              "as": {
+                "lordOf": 1
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-house",
+          "from": {
+            "lordOf": 1
+          },
+          "houseRuled": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_TENTH_LORD_DIGNIFIED_ASPECTS_LAGNA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "21",
+        "rank": 1,
+        "note": "The tenth lord, exalted or in its own sign, aspects the lagna. The verse's second figure, benefics in the angles, is not here (crux C100). Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "lordOf": 10
+              },
+              "as": {
+                "exaltationOf": {
+                  "lordOf": 10
+                }
+              }
+            },
+            {
+              "type": "same-body",
+              "of": {
+                "lordOf": {
+                  "lordOf": 10
+                }
+              },
+              "as": {
+                "lordOf": 10
+              }
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-house",
+          "from": {
+            "lordOf": 10
+          },
+          "houseRuled": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ATMAKARAKA_IN_A_BENEFICS_SIGN_OR_NAVAMSHA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "22",
+        "rank": 1,
+        "note": "The Atmakaraka in a sign or a navamsha ruled by a natural benefic: the Moon, Mercury, Jupiter or Venus. The verse's second figure, benefics in the angles from the Karakamsha, is not here (crux C100). Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MOON",
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "same-body",
+                "of": "SELF",
+                "as": {
+                  "lordOf": {
+                    "karaka": "AK"
+                  }
+                }
+              },
+              {
+                "type": "same-body",
+                "of": "SELF",
+                "as": {
+                  "lordOf": {
+                    "navamsha": {
+                      "karaka": "AK"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ARUDHA_LAGNA_AND_DARAPADA_WELL_RELATED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "23",
+        "rank": 1,
+        "note": "The arudha lagna and the darapada, the pada of the seventh, in mutual angles, third and eleventh, or trines. A shared sign is read as an angle and a trine both. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house-from",
+          "planet": {
+            "arudha": 7
+          },
+          "reference": {
+            "arudha": 1
+          },
+          "houses": [
+            1,
+            3,
+            4,
+            5,
+            7,
+            9,
+            10,
+            11
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "doubtlessly a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_EXALTED_ASPECTS_ON_TWO_OF_THE_BHAVA_HORA_AND_GHATIKA_LAGNAS",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "24",
+        "rank": 1,
+        "note": "Two or all three of the bhava, hora and ghatika lagnas (BPHS ch. 4 vv. 2 to 8) each aspected by an exalted graha, by graha drishti on the lagna's sign. The special lagnas are points a chart reading carries, and a chart without them answers false. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "BHAVA_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "HORA_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "BHAVA_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "GHATI_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "HORA_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "SUN",
+                    "MOON",
+                    "MARS",
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS",
+                    "SATURN"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "same-sign",
+                        "of": "SELF",
+                        "as": {
+                          "exaltationOf": "SELF"
+                        }
+                      },
+                      {
+                        "type": "planet-aspects-planet",
+                        "from": "SELF",
+                        "target": {
+                          "point": "GHATI_LAGNA"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ARUDHA_LAGNA_HELD_BY_AN_EXALTED_GRAHA_OR_JUPITER_OR_VENUS_UNOBSTRUCTED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "26-27",
+        "rank": 1,
+        "note": "The arudha lagna occupied by an exalted graha, or by Jupiter or Venus, and no malefic intervening on it: no argala stands from a place a malefic occupies. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "for-any",
+              "then": {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "arudha": 1
+                    }
+                  },
+                  {
+                    "type": "same-sign",
+                    "of": "SELF",
+                    "as": {
+                      "exaltationOf": "SELF"
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "type": "same-sign",
+              "of": "JUPITER",
+              "as": {
+                "arudha": 1
+              }
+            },
+            {
+              "type": "same-sign",
+              "of": "VENUS",
+              "as": {
+                "arudha": 1
+              }
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "argala",
+                    "on": {
+                      "arudha": 1
+                    },
+                    "place": "second"
+                  },
+                  {
+                    "type": "count-in-houses",
+                    "planets": "any-malefic",
+                    "houses": [
+                      2
+                    ],
+                    "from": {
+                      "arudha": 1
+                    },
+                    "atLeast": 1
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "argala",
+                    "on": {
+                      "arudha": 1
+                    },
+                    "place": "fourth"
+                  },
+                  {
+                    "type": "count-in-houses",
+                    "planets": "any-malefic",
+                    "houses": [
+                      4
+                    ],
+                    "from": {
+                      "arudha": 1
+                    },
+                    "atLeast": 1
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "argala",
+                    "on": {
+                      "arudha": 1
+                    },
+                    "place": "fifth"
+                  },
+                  {
+                    "type": "count-in-houses",
+                    "planets": "any-malefic",
+                    "houses": [
+                      5
+                    ],
+                    "from": {
+                      "arudha": 1
+                    },
+                    "atLeast": 1
+                  }
+                ]
+              },
+              {
+                "type": "and",
+                "conditions": [
+                  {
+                    "type": "argala",
+                    "on": {
+                      "arudha": 1
+                    },
+                    "place": "eleventh"
+                  },
+                  {
+                    "type": "count-in-houses",
+                    "planets": "any-malefic",
+                    "houses": [
+                      11
+                    ],
+                    "from": {
+                      "arudha": 1
+                    },
+                    "atLeast": 1
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOON_IN_A_BENEFIC_ARUDHA_LAGNA_AND_JUPITER_SECOND",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "27",
+        "rank": 1,
+        "note": "The arudha lagna a sign of a natural benefic holding the Moon, while Jupiter is in the second. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MOON",
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "same-body",
+            "of": "SELF",
+            "as": {
+              "lordOf": {
+                "arudha": 1
+              }
+            }
+          }
+        },
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": {
+            "arudha": 1
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            2
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DEBILITATED_DUSTHANA_LORD_ASPECTS_LAGNA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "28",
+        "rank": 1,
+        "note": "One of the lords of the sixth, eighth and twelfth, debilitated, aspects the lagna. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 6
+                  },
+                  "as": {
+                    "debilitationOf": {
+                      "lordOf": 6
+                    }
+                  }
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": {
+                    "lordOf": 6
+                  },
+                  "houseRuled": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 8
+                  },
+                  "as": {
+                    "debilitationOf": {
+                      "lordOf": 8
+                    }
+                  }
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": {
+                    "lordOf": 8
+                  },
+                  "houseRuled": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 12
+                  },
+                  "as": {
+                    "debilitationOf": {
+                      "lordOf": 12
+                    }
+                  }
+                },
+                {
+                  "type": "planet-aspects-house",
+                  "from": {
+                    "lordOf": 12
+                  },
+                  "houseRuled": 1
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_WEALTH_LORD_ASPECTS_LAGNA_AND_VENUS_ON_ARUDHA_ELEVENTH",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "29",
+        "rank": 1,
+        "note": "A lord of the fourth, tenth, second or eleventh aspects the lagna, while Venus aspects the eleventh from the arudha lagna and a benefic occupies the arudha lagna. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-aspects-house",
+              "from": {
+                "lordOf": 4
+              },
+              "houseRuled": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": {
+                "lordOf": 10
+              },
+              "houseRuled": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": {
+                "lordOf": 2
+              },
+              "houseRuled": 1
+            },
+            {
+              "type": "planet-aspects-house",
+              "from": {
+                "lordOf": 11
+              },
+              "houseRuled": 1
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": "VENUS",
+          "target": {
+            "from": {
+              "arudha": 1
+            },
+            "house": 11
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "arudha": 1
+          },
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DEBILITATED_GRAHA_IN_SIXTH_OR_EIGHTH_ASPECTS_LAGNA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "30",
+        "rank": 1,
+        "note": "A debilitated graha in the sixth or the eighth aspects the lagna. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  6,
+                  8
+                ]
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "debilitationOf": "SELF"
+                }
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "SELF",
+                "houseRuled": 1
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_DEBILITATED_GRAHA_IN_THIRD_OR_ELEVENTH_ASPECTS_LAGNA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "31",
+        "rank": 1,
+        "note": "A debilitated graha in the third or the eleventh aspects the lagna. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  3,
+                  11
+                ]
+              },
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "debilitationOf": "SELF"
+                }
+              },
+              {
+                "type": "planet-aspects-house",
+                "from": "SELF",
+                "houseRuled": 1
+              }
+            ]
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FIFTH_AND_NINTH_LORDS_RELATED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "33-34",
+        "rank": 1,
+        "note": "The lords of the fifth and ninth aspect each other, share a sign, or stand in the seventh from each other. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 5
+                  },
+                  "target": {
+                    "lordOf": 9
+                  }
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": 9
+                  },
+                  "target": {
+                    "lordOf": 5
+                  }
+                }
+              ]
+            },
+            {
+              "type": "lord-conjunct-lord",
+              "house1": 5,
+              "house2": 9
+            },
+            {
+              "type": "planet-in-house-from",
+              "planet": {
+                "lordOf": 9
+              },
+              "reference": {
+                "lordOf": 5
+              },
+              "houses": [
+                7
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "obtains a kingdom"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FOURTH_AND_TENTH_LORDS_EXCHANGED_ASPECTED_BY_TRINE_LORDS",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "35",
+        "rank": 1,
+        "note": "The fourth lord in the tenth and the tenth lord in the fourth, the pair aspected by the fifth lord and by the ninth lord. They stand opposite, so an aspect on either is read as an aspect on the pair. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 4
+          },
+          "houses": [
+            10
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 10
+          },
+          "houses": [
+            4
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": {
+                "lordOf": 5
+              },
+              "target": {
+                "lordOf": 4
+              }
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": {
+                "lordOf": 5
+              },
+              "target": {
+                "lordOf": 10
+              }
+            }
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-aspects-planet",
+              "from": {
+                "lordOf": 9
+              },
+              "target": {
+                "lordOf": 4
+              }
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": {
+                "lordOf": 9
+              },
+              "target": {
+                "lordOf": 10
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "attains a kingdom"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_FOURTH_FIFTH_TENTH_LORDS_IN_NINTH",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "36",
+        "rank": 1,
+        "note": "The lords of the fifth, tenth, fourth and lagna all in the ninth. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 10
+          },
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 4
+          },
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 1
+          },
+          "houses": [
+            9
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a ruler with fame in the four directions"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LORDS_OF_4_AND_5_JOINED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "37",
+        "rank": 1,
+        "note": "The lord of the fourth joins the lord of the fifth, one of the verse's four figures as the translator counts them. One graha lording both houses is counted as joined, as the kernel's lord-conjunct-lord reads it. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-conjunct-lord",
+          "house1": 4,
+          "house2": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "obtains a kingdom"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LORDS_OF_4_AND_9_JOINED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "37",
+        "rank": 1,
+        "note": "The lord of the fourth joins the lord of the ninth, one of the verse's four figures as the translator counts them. One graha lording both houses is counted as joined, as the kernel's lord-conjunct-lord reads it. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-conjunct-lord",
+          "house1": 4,
+          "house2": 9
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "obtains a kingdom"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LORDS_OF_10_AND_5_JOINED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "37",
+        "rank": 1,
+        "note": "The lord of the tenth joins the lord of the fifth, one of the verse's four figures as the translator counts them. One graha lording both houses is counted as joined, as the kernel's lord-conjunct-lord reads it. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-conjunct-lord",
+          "house1": 10,
+          "house2": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "obtains a kingdom"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LORDS_OF_10_AND_9_JOINED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "37",
+        "rank": 1,
+        "note": "The lord of the tenth joins the lord of the ninth, one of the verse's four figures as the translator counts them. One graha lording both houses is counted as joined, as the kernel's lord-conjunct-lord reads it. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "lord-conjunct-lord",
+          "house1": 10,
+          "house2": 9
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "obtains a kingdom"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FIFTH_LORD_ANGULAR_WITH_NINTH_OR_LAGNA_LORD",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "38",
+        "rank": 1,
+        "note": "The fifth lord in the lagna, the fourth or the tenth, joined by the ninth lord or the lagna lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 5
+          },
+          "houses": [
+            1,
+            4,
+            10
+          ]
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 5
+                  },
+                  "as": {
+                    "lordOf": 9
+                  }
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 5
+                    },
+                    "as": {
+                      "lordOf": 9
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "lordOf": 5
+                  },
+                  "as": {
+                    "lordOf": 1
+                  }
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": 5
+                    },
+                    "as": {
+                      "lordOf": 1
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_JUPITER_OWN_NINTH_WITH_VENUS_OR_FIFTH_LORD",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "39",
+        "rank": 1,
+        "note": "Jupiter in his own sign as the ninth, joined by Venus or by the fifth lord. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            9
+          ]
+        },
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": "JUPITER"
+          },
+          "as": "JUPITER"
+        },
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": "JUPITER",
+              "as": "VENUS"
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": "JUPITER",
+                  "as": {
+                    "lordOf": 5
+                  }
+                },
+                {
+                  "type": "not",
+                  "condition": {
+                    "type": "same-body",
+                    "of": "JUPITER",
+                    "as": {
+                      "lordOf": 5
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "obtains kinghood"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOON_AND_VENUS_THIRD_ELEVENTH_OR_IN_MUTUAL_ASPECT",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "41",
+        "rank": 1,
+        "note": "The Moon and Venus in the third and eleventh from each other, or aspecting each other wherever they stand, the two figures the translator's note reads. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house-from",
+              "planet": "VENUS",
+              "reference": "MOON",
+              "houses": [
+                3,
+                11
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "MOON",
+                  "target": "VENUS"
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": "VENUS",
+                  "target": "MOON"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a Raja yoga"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_STRONG_VARGOTTAMA_MOON_ASPECTED_BY_FOUR",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "42",
+        "rank": 1,
+        "note": "The Moon strong, in the same sign in the rasi and the navamsha, and aspected by four grahas or more. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-strong",
+          "planet": "MOON"
+        },
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": {
+            "navamsha": "MOON"
+          }
+        },
+        {
+          "type": "count-of",
+          "then": {
+            "type": "planet-aspects-planet",
+            "from": "SELF",
+            "target": "MOON"
+          },
+          "atLeast": 4
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ONE_TO_THREE_GRAHAS_EXALTED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "44",
+        "rank": 1,
+        "note": "One, two or three of the seven grahas exalted. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-sign",
+            "of": "SELF",
+            "as": {
+              "exaltationOf": "SELF"
+            }
+          },
+          "atLeast": 1,
+          "atMost": 3
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "one of royal birth becomes a king, another equal to a king or wealthy"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_FOUR_OR_FIVE_GRAHAS_EXALTED_OR_MOOLATRIKONA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "45",
+        "rank": 1,
+        "note": "Four or five of the seven grahas exalted or in their moolatrikona. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "or",
+            "conditions": [
+              {
+                "type": "same-sign",
+                "of": "SELF",
+                "as": {
+                  "exaltationOf": "SELF"
+                }
+              },
+              {
+                "type": "planet-dignity",
+                "planet": "SELF",
+                "dignities": [
+                  "MOOLTRIKONA"
+                ]
+              }
+            ]
+          },
+          "atLeast": 4,
+          "atMost": 5
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "even one of base birth becomes a king"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_SIX_GRAHAS_EXALTED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "46",
+        "rank": 1,
+        "note": "Six of the seven grahas exalted. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-of",
+          "planets": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN"
+          ],
+          "then": {
+            "type": "same-sign",
+            "of": "SELF",
+            "as": {
+              "exaltationOf": "SELF"
+            }
+          },
+          "atLeast": 6
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an emperor"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_A_BENEFIC_EXALTED_AND_A_BENEFIC_ANGULAR",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "47",
+        "rank": 1,
+        "note": "One of Jupiter, Venus and Mercury exalted, while a benefic stands in an angle. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "same-sign",
+            "of": "SELF",
+            "as": {
+              "exaltationOf": "SELF"
+            }
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1,
+            4,
+            7,
+            10
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king or equal to one"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_EVERY_BENEFIC_ANGULAR_AND_EVERY_MALEFIC_IN_UPACHAYAS",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "48",
+        "rank": 1,
+        "note": "Every benefic in an angle and every malefic in the third, sixth or eleventh: the verse says all. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-benefic",
+            "houses": [
+              2,
+              3,
+              5,
+              6,
+              8,
+              9,
+              11,
+              12
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1,
+              2,
+              4,
+              5,
+              7,
+              8,
+              9,
+              10,
+              12
+            ],
+            "atLeast": 1
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "though of mean descent, ascends the throne"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_TENTH_LORD_WITH_AMATYAKARAKA_OR_ITS_DISPOSITOR",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "1",
+        "rank": 1,
+        "note": "The tenth lord joined or aspected by the Amatyakaraka or by the lord of the sign it stands in. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 10
+                      },
+                      "as": {
+                        "karaka": "AmK"
+                      }
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": 10
+                        },
+                        "as": {
+                          "karaka": "AmK"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "karaka": "AmK"
+                  },
+                  "target": {
+                    "lordOf": 10
+                  }
+                }
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 10
+                      },
+                      "as": {
+                        "lordOf": {
+                          "karaka": "AmK"
+                        }
+                      }
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": 10
+                        },
+                        "as": {
+                          "lordOf": {
+                            "karaka": "AmK"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-aspects-planet",
+                  "from": {
+                    "lordOf": {
+                      "karaka": "AmK"
+                    }
+                  },
+                  "target": {
+                    "lordOf": 10
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a chief in the king's court"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_TENTH_AND_ELEVENTH_FREE_OF_MALEFICS_AND_ELEVENTH_LORD_ASPECTS_IT",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "2",
+        "rank": 1,
+        "note": "No malefic in or aspecting the tenth or the eleventh, and the eleventh aspected by its own lord. The translator's note offers a second reading in which the tenth is aspected by its lord too; this rule is the verse's. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              10,
+              11
+            ],
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-malefic",
+            "houseRuled": 10
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-malefic",
+            "houseRuled": 11
+          }
+        },
+        {
+          "type": "planet-aspects-house",
+          "from": {
+            "lordOf": 11
+          },
+          "houseRuled": 11
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a chief in the king's court"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_AMATYAKARAKA_WITH_ATMAKARAKAS_DISPOSITOR",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "3",
+        "rank": 1,
+        "note": "The Amatyakaraka joined by the lord of the sign the Atmakaraka stands in. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "and",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "karaka": "AmK"
+              },
+              "as": {
+                "lordOf": {
+                  "karaka": "AK"
+                }
+              }
+            },
+            {
+              "type": "not",
+              "condition": {
+                "type": "same-body",
+                "of": {
+                  "karaka": "AmK"
+                },
+                "as": {
+                  "lordOf": {
+                    "karaka": "AK"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "great intelligence, a king's minister"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_AMATYAKARAKA_STRONG_WITH_A_BENEFIC_OR_DIGNIFIED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "4",
+        "rank": 1,
+        "note": "The Amatyakaraka strong and joined by a benefic, or in its own sign or exaltation. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "planet-strong",
+                  "planet": {
+                    "karaka": "AmK"
+                  }
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    1
+                  ],
+                  "from": {
+                    "karaka": "AmK"
+                  },
+                  "except": [
+                    {
+                      "karaka": "AmK"
+                    }
+                  ],
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "karaka": "AmK"
+                  },
+                  "as": {
+                    "exaltationOf": {
+                      "karaka": "AmK"
+                    }
+                  }
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "karaka": "AmK"
+                    }
+                  },
+                  "as": {
+                    "karaka": "AmK"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "surely a king's minister"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_AMATYAKARAKA_IN_LAGNA_FIFTH_OR_NINTH",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "5",
+        "rank": 1,
+        "note": "The Amatyakaraka in the lagna, the fifth or the ninth. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "karaka": "AmK"
+          },
+          "houses": [
+            1,
+            5,
+            9
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a famous king's minister"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ARMY_CHIEF_BY_MALEFICS_THIRD_AND_SIXTH_FROM_ATMAKARAKA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "7",
+        "rank": 1,
+        "note": "A malefic in each of the third and sixth from the Atmakaraka. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            3
+          ],
+          "from": {
+            "karaka": "AK"
+          },
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "from": {
+            "karaka": "AK"
+          },
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an army chief"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ARMY_CHIEF_BY_MALEFICS_THIRD_AND_SIXTH_FROM_ARUDHA_LAGNA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "7",
+        "rank": 1,
+        "note": "A malefic in each of the third and sixth from the arudha lagna. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            3
+          ],
+          "from": {
+            "arudha": 1
+          },
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "from": {
+            "arudha": 1
+          },
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an army chief"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ARMY_CHIEF_BY_MALEFICS_THIRD_AND_SIXTH_FROM_LAGNA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "7",
+        "rank": 1,
+        "note": "A malefic in each of the third and sixth from the lagna. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            3
+          ],
+          "from": 1,
+          "atLeast": 1
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-malefic",
+          "houses": [
+            6
+          ],
+          "from": 1,
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "an army chief"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ATMAKARAKA_WELL_PLACED_ASPECTED_BY_NINTH_LORD",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "8",
+        "rank": 1,
+        "note": "The Atmakaraka in an angle or a trine, exalted or in its own sign, and aspected by the ninth lord. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "karaka": "AK"
+              },
+              "houses": [
+                1,
+                4,
+                5,
+                7,
+                9,
+                10
+              ]
+            },
+            {
+              "type": "or",
+              "conditions": [
+                {
+                  "type": "same-sign",
+                  "of": {
+                    "karaka": "AK"
+                  },
+                  "as": {
+                    "exaltationOf": {
+                      "karaka": "AK"
+                    }
+                  }
+                },
+                {
+                  "type": "same-body",
+                  "of": {
+                    "lordOf": {
+                      "karaka": "AK"
+                    }
+                  },
+                  "as": {
+                    "karaka": "AK"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "planet-aspects-planet",
+          "from": {
+            "lordOf": 9
+          },
+          "target": {
+            "karaka": "AK"
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king's minister"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_MOONS_DISPOSITOR_AS_ATMAKARAKA_IN_LAGNA_WITH_A_BENEFIC",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "9",
+        "rank": 1,
+        "note": "The lord of the Moon's sign is the Atmakaraka and stands in the lagna joined by a benefic. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "same-body",
+          "of": {
+            "lordOf": "MOON"
+          },
+          "as": {
+            "karaka": "AK"
+          }
+        },
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "karaka": "AK"
+          },
+          "houses": [
+            1
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "karaka": "AK"
+          },
+          "except": [
+            {
+              "karaka": "AK"
+            }
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king's minister in advanced age"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ATMAKARAKA_IN_FIFTH_SEVENTH_NINTH_OR_TENTH_WITH_A_BENEFIC",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "10",
+        "rank": 1,
+        "note": "The Atmakaraka in the fifth, seventh, ninth or tenth, joined by a benefic. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "karaka": "AK"
+          },
+          "houses": [
+            5,
+            7,
+            9,
+            10
+          ]
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "karaka": "AK"
+          },
+          "except": [
+            {
+              "karaka": "AK"
+            }
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "wealth through royal patronage"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_NINTHS_ARUDHA_ON_LAGNA_OR_ATMAKARAKA_NINTH",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "11",
+        "rank": 1,
+        "note": "The arudha of the ninth falls in the lagna, or the Atmakaraka stands in the ninth. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "same-sign",
+              "of": {
+                "arudha": 9
+              },
+              "as": 1
+            },
+            {
+              "type": "planet-in-house",
+              "planet": {
+                "karaka": "AK"
+              },
+              "houses": [
+                9
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "associated with royal circles"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_ELEVENTH_LORD_IN_ELEVENTH_UNASPECTED_AND_ATMAKARAKA_WITH_A_BENEFIC",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "12",
+        "rank": 1,
+        "note": "The eleventh lord in the eleventh with no malefic aspecting it, while the Atmakaraka is joined by a benefic. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "planet-in-house",
+          "planet": {
+            "lordOf": 11
+          },
+          "houses": [
+            11
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-house",
+            "from": "any-malefic",
+            "houseRuled": 11
+          }
+        },
+        {
+          "type": "count-in-houses",
+          "planets": "any-benefic",
+          "houses": [
+            1
+          ],
+          "from": {
+            "karaka": "AK"
+          },
+          "except": [
+            {
+              "karaka": "AK"
+            }
+          ],
+          "atLeast": 1
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "gains through royal association"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_TENTH_AND_LAGNA_LORDS_EXCHANGED",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "13",
+        "rank": 1,
+        "note": "The lords of the tenth and the lagna exchange signs. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "mutual-exchange",
+          "house1": 1,
+          "house2": 10
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "associated with the king in a great manner"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_VENUS_AND_MOON_FOURTH_FROM_KARAKAMSHA",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "14",
+        "rank": 1,
+        "note": "Venus and the Moon in the fourth from the Karakamsha, read in the rasi chart. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "same-sign",
+          "of": "VENUS",
+          "as": {
+            "from": {
+              "navamsha": {
+                "karaka": "AK"
+              }
+            },
+            "house": 4
+          }
+        },
+        {
+          "type": "same-sign",
+          "of": "MOON",
+          "as": {
+            "from": {
+              "navamsha": {
+                "karaka": "AK"
+              }
+            },
+            "house": 4
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "royal insignia"
+        }
+      ]
+    },
+    {
+      "key": "BPHS_LAGNA_LORD_OR_ATMAKARAKA_WITH_FIFTH_LORD_ANGULAR_OR_TRINE",
+      "category": "raja",
+      "source": {
+        "text": "BPHS",
+        "chapter": "40",
+        "verse": "15",
+        "rank": 1,
+        "note": "The lagna lord or the Atmakaraka joined by the fifth lord in an angle or a trine. Chara karakas are the seven of BPHS ch. 32 vv. 1 to 2, the grahas from the Sun to Saturn. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "lordOf": 1
+                      },
+                      "as": {
+                        "lordOf": 5
+                      }
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": {
+                          "lordOf": 1
+                        },
+                        "as": {
+                          "lordOf": 5
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "lordOf": 1
+                  },
+                  "houses": [
+                    1,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "and",
+                  "conditions": [
+                    {
+                      "type": "same-sign",
+                      "of": {
+                        "karaka": "AK"
+                      },
+                      "as": {
+                        "lordOf": 5
+                      }
+                    },
+                    {
+                      "type": "not",
+                      "condition": {
+                        "type": "same-body",
+                        "of": {
+                          "karaka": "AK"
+                        },
+                        "as": {
+                          "lordOf": 5
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "planet-in-house",
+                  "planet": {
+                    "karaka": "AK"
+                  },
+                  "houses": [
+                    1,
+                    4,
+                    5,
+                    7,
+                    9,
+                    10
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "a king's minister"
+        }
+      ]
+    }
+  ]
+}

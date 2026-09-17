@@ -55,6 +55,7 @@ pub const SHIPPED: [&str; 1] = [PARASHARA];
 /// How strongly a graha looks at a sign, in the quarters the tradition
 /// counts a drishti in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Strength {
     /// No aspect at all.
@@ -78,6 +79,20 @@ impl Strength {
         Strength::ThreeQuarters,
         Strength::Full,
     ];
+
+    /// The key the document and the settings spell it with, as serde
+    /// writes it: the spelling every domain enum's `key()` uses. The
+    /// bindings' boundary enums spell the same member in kebab case.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Strength::None => "NONE",
+            Strength::Quarter => "QUARTER",
+            Strength::Half => "HALF",
+            Strength::ThreeQuarters => "THREE_QUARTERS",
+            Strength::Full => "FULL",
+        }
+    }
 
     /// The quarters of a full aspect this is, 0 to 4.
     #[must_use]
@@ -107,12 +122,9 @@ impl Strength {
     /// This aspect's value in virupas, **as the whole-sign table gives
     /// it**: a quarter is fifteen.
     ///
-    /// This is not the sphuta drishti, which interpolates between the
-    /// houses and which the SDK does not ship because no source in the
-    /// project gives its construction (crux C45,
-    /// `03-design/aspect-and-drishti.md` §8). It is the same unit and
-    /// the same value at each house, which is the specification any
-    /// future construction has to meet.
+    /// This is not the sphuta drishti ([`crate::sphuta`]), which measures
+    /// by degree and gives the special aspects their own additions
+    /// (crux C45).
     #[must_use]
     pub const fn virupas(self) -> u16 {
         self.quarters() as u16 * (FULL_VIRUPAS / 4)
@@ -328,6 +340,19 @@ mod tests {
     };
     use teistro_core::catalogue::{Graha, Rashi};
     use teistro_core::settings::NodeAspects;
+
+    /// A member's key is its serialised form, so a document and a caller
+    /// printing `key()` never spell it two ways.
+    #[test]
+    fn a_key_is_what_serde_writes() {
+        for member in Strength::ALL {
+            assert_eq!(
+                serde_json::to_value(member).unwrap(),
+                member.key(),
+                "{member:?}"
+            );
+        }
+    }
 
     #[test]
     fn the_table_is_the_classical_one() {

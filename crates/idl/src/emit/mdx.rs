@@ -381,6 +381,7 @@ fn role(role: crate::model::Role) -> &'static str {
         Role::BlobOut => "receives a blob",
         Role::BlobFree => "the blob being freed",
         Role::StringFree => "the string being freed",
+        Role::ErrorFree => "the error record being freed",
         Role::StrOut => "receives a lent string",
         Role::ScalarOut => "receives a number",
         Role::ArrayIn => "an array read",

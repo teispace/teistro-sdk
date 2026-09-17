@@ -30,7 +30,7 @@ reviewed change to one line rather than a quiet edit in one fixture.
 | 1 | classical texts and printed almanacs | hand-entered, with the verse or page cited on every value | planned, per crux in `01-research/feature-universe/19-verification-cruxes.md` |
 | 2 | the baseline engine | an export script in the baseline engine's own repository, run against its built packages and its ephemeris files | 115 fixtures over 55 charts (spike 1) |
 | 2 | Teimeris | its own conformance corpus through its port adapter (spike 3 built the adapter; `spikes/03-ephemeris-port/`) | planned |
-| 3 | PyJHora, JHora and Parashara's Light printouts | scripted exports and hand-entered printouts, marked rank 3 | planned |
+| 3 | PyJHora, JHora and Parashara's Light printouts | scripted exports and hand-entered printouts, marked rank 3 | PyJHora 4.8.7's Vimshottari for 53 charts under five years (`pyjhora/vimshottari`, 0.9.0), held by `crates/dasha/tests/pyjhora.rs`; the printouts planned |
 
 ## Spike 1: the baseline export
 

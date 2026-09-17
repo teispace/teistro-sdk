@@ -25,16 +25,18 @@ use core::ptr;
 use std::ffi::CString;
 
 use teistro_core::Status;
-use teistro_core::catalogue::{Calendar, Era, Graha};
+use teistro_core::catalogue::{Calendar, DashaSystem, Era, Graha, Varga};
 use teistro_ffi::blob::{TsBlob, ts_blob_free};
 use teistro_ffi::calendar::{
     TsCalendarDate, TsResolution, ts_calendar_convert, ts_calendar_fixed_of_jd,
     ts_calendar_from_fixed, ts_calendar_is_leap, ts_calendar_jd_of_fixed, ts_calendar_month_length,
     ts_calendar_to_fixed, ts_calendar_weekday,
 };
+use teistro_ffi::chart::{TsChartRequest, ts_chart_found, ts_chart_layout_row};
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
     ts_context_new, ts_context_profile, ts_context_settings_hash, ts_context_settings_json,
+    ts_error_free,
 };
 use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
@@ -50,9 +52,53 @@ use teistro_ffi::time::{
     TsZoneResolution, TsZoneSource, TsZoneSpec, ts_time_civil, ts_time_convert, ts_time_delta_t,
     ts_time_resolve,
 };
-use teistro_ffi::{TS_CONTEXT_TEST_PROVIDER, ts_abi_version};
+use teistro_ffi::{TS_CONTEXT_TEST_PROVIDER, TS_ERROR_OWNED, ts_abi_version};
 use teistro_idl::blob::Reader;
 use teistro_port_ephemeris::{Body, Coordinates, Frame, PositionRequestC, TimeScale};
+
+/// An error record's status and strings, copied out: the status, the
+/// message, the field, the hint and the detail.
+type Record = (
+    Status,
+    String,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+);
+
+/// An empty record with this build's size, ready for a call to write.
+fn blank_error() -> TsError {
+    TsError {
+        struct_size: size_of::<TsError>() as u32,
+        status: 99,
+        provider_code: 0,
+        flags: 0,
+        detail: ptr::null(),
+        message: ptr::null(),
+        field: ptr::null(),
+        hint: ptr::null(),
+        key: ptr::null(),
+    }
+}
+
+/// A record's strings copied out, whoever owns them.
+fn read_record(error: &TsError) -> Record {
+    let text = |p: *const core::ffi::c_char| {
+        if p.is_null() {
+            None
+        } else {
+            // SAFETY: the library writes NUL-terminated strings.
+            Some(unsafe { CStr::from_ptr(p) }.to_string_lossy().into_owned())
+        }
+    };
+    (
+        Status::from_code(error.status).unwrap(),
+        text(error.message).unwrap_or_default(),
+        text(error.field),
+        text(error.hint),
+        text(error.detail),
+    )
+}
 
 /// A context with its options, freed on drop.
 #[derive(Debug)]
@@ -66,7 +112,7 @@ impl Ctx {
         profile: Option<&str>,
         settings_json: Option<&str>,
         locale: Option<&str>,
-    ) -> Result<Ctx, (Status, String)> {
+    ) -> Result<Ctx, Record> {
         Ctx::with_ephemeris(flags, TsEphemeris::None, profile, settings_json, locale)
     }
 
@@ -77,7 +123,47 @@ impl Ctx {
         profile: Option<&str>,
         settings_json: Option<&str>,
         locale: Option<&str>,
-    ) -> Result<Ctx, (Status, String)> {
+    ) -> Result<Ctx, Record> {
+        Ctx::open(flags, ephemeris, profile, settings_json, locale, None, None)
+    }
+
+    /// A context on the test provider with a consumer's own layouts.
+    fn with_layouts(layouts_json: &str) -> Result<Ctx, Record> {
+        Ctx::open(
+            TS_CONTEXT_TEST_PROVIDER,
+            TsEphemeris::None,
+            None,
+            None,
+            None,
+            Some(layouts_json),
+            None,
+        )
+    }
+
+    /// A context on the test provider with a consumer's own dasha systems.
+    fn with_dashas(dashas_json: &str) -> Result<Ctx, Record> {
+        Ctx::open(
+            TS_CONTEXT_TEST_PROVIDER,
+            TsEphemeris::None,
+            None,
+            None,
+            None,
+            None,
+            Some(dashas_json),
+        )
+    }
+
+    fn open(
+        flags: u32,
+        ephemeris: TsEphemeris,
+        profile: Option<&str>,
+        settings_json: Option<&str>,
+        locale: Option<&str>,
+        layouts_json: Option<&str>,
+        dashas_json: Option<&str>,
+    ) -> Result<Ctx, Record> {
+        let layouts = layouts_json.map(|p| CString::new(p).unwrap());
+        let dashas = dashas_json.map(|p| CString::new(p).unwrap());
         let profile = profile.map(|p| CString::new(p).unwrap());
         let settings = settings_json.map(|p| CString::new(p).unwrap());
         let locale = locale.map(|p| CString::new(p).unwrap());
@@ -87,10 +173,12 @@ impl Ctx {
             profile: profile.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             settings_json: settings.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             locale: locale.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
+            layouts_json: layouts.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
+            dashas_json: dashas.as_ref().map_or(ptr::null(), |p| p.as_ptr()),
             ephemeris: ephemeris as u8,
         };
         let mut handle = ptr::null_mut();
-        let mut error = TsString::empty();
+        let mut error = blank_error();
         // SAFETY: valid pointers for the call.
         let status = unsafe {
             ts_context_new(
@@ -104,59 +192,30 @@ impl Ctx {
         if status == Status::Ok {
             return Ok(Ctx { handle });
         }
-        // SAFETY: the library wrote a NUL-terminated string.
-        let message = unsafe { CStr::from_ptr(error.data.cast()) }
-            .to_string_lossy()
-            .into_owned();
-        // SAFETY: a descriptor the library wrote.
-        unsafe { ts_string_free(&raw mut error) };
-        Err((status, message))
+        assert_eq!(
+            error.flags, TS_ERROR_OWNED,
+            "a constructor's record owns its strings"
+        );
+        let record = read_record(&error);
+        assert_eq!(record.0, status, "the record is the call's own refusal");
+        // SAFETY: a record the library wrote, freed once.
+        unsafe { ts_error_free(&raw mut error) };
+        Err(record)
     }
 
     fn defaults() -> Ctx {
         Ctx::new(0, None, None, None).expect("a context with every default")
     }
 
-    fn last_error(
-        &self,
-    ) -> (
-        Status,
-        String,
-        Option<String>,
-        Option<String>,
-        Option<String>,
-    ) {
-        let mut error = TsError {
-            struct_size: size_of::<TsError>() as u32,
-            status: 99,
-            provider_code: 0,
-            reserved: 0,
-            detail: ptr::null(),
-            message: ptr::null(),
-            field: ptr::null(),
-            hint: ptr::null(),
-            key: ptr::null(),
-        };
+    fn last_error(&self) -> Record {
+        let mut error = blank_error();
         // SAFETY: a live handle and a valid struct with its size set.
         assert_eq!(
             unsafe { ts_context_last_error(self.handle, &raw mut error) },
             Status::Ok
         );
-        let text = |p: *const core::ffi::c_char| {
-            if p.is_null() {
-                None
-            } else {
-                // SAFETY: the library lends NUL-terminated strings.
-                Some(unsafe { CStr::from_ptr(p) }.to_string_lossy().into_owned())
-            }
-        };
-        (
-            Status::from_code(error.status).unwrap(),
-            text(error.message).unwrap_or_default(),
-            text(error.field),
-            text(error.hint),
-            text(error.detail),
-        )
+        assert_eq!(error.flags, 0, "a context's record lends its strings");
+        read_record(&error)
     }
 }
 
@@ -254,24 +313,108 @@ fn a_context_with_every_default_reports_its_settings() {
 }
 
 #[test]
+fn a_refused_construction_owns_its_record_and_frees_it_once() {
+    let profile = CString::new("nepali-defualt").unwrap();
+    let options = TsContextOptions {
+        struct_size: size_of::<TsContextOptions>() as u32,
+        flags: 0,
+        profile: profile.as_ptr(),
+        settings_json: ptr::null(),
+        locale: ptr::null(),
+        layouts_json: ptr::null(),
+        dashas_json: ptr::null(),
+        ephemeris: 0,
+    };
+    let new = |out: *mut *mut TsContext, error: *mut TsError| {
+        // SAFETY: valid options; the slots are the test's to pass.
+        unsafe { ts_context_new(&raw const options, ptr::null(), ptr::null_mut(), out, error) }
+    };
+    let mut handle = ptr::null_mut();
+
+    // No record asked for: the status alone.
+    assert_eq!(new(&raw mut handle, ptr::null_mut()), Status::Unsupported);
+
+    // A record of a size this build does not know is left alone, and the
+    // call still says what it refused rather than `SCHEMA_VERSION`.
+    let mut stale = blank_error();
+    stale.struct_size = 8;
+    assert_eq!(new(&raw mut handle, &raw mut stale), Status::Unsupported);
+    assert_eq!(
+        (stale.status, stale.flags, stale.message),
+        (99, 0, ptr::null())
+    );
+
+    // The whole refusal, owned.
+    let mut error = blank_error();
+    assert_eq!(new(&raw mut handle, &raw mut error), Status::Unsupported);
+    assert!(handle.is_null(), "no handle is written on failure");
+    assert_eq!(error.flags, TS_ERROR_OWNED);
+    let (_, _, field, hint, _) = read_record(&error);
+    assert_eq!(field.as_deref(), Some("profile"));
+    assert!(hint.is_some_and(|h| h.contains("nepali-default")));
+
+    // Freed, zeroed but for the size, and a second free is a no-op.
+    // SAFETY: the record the call wrote.
+    unsafe { ts_error_free(&raw mut error) };
+    assert_eq!(
+        (error.struct_size, error.status, error.flags, error.message),
+        (size_of::<TsError>() as u32, 0, 0, ptr::null())
+    );
+    // SAFETY: as above; the flag is clear now.
+    unsafe { ts_error_free(&raw mut error) };
+    // SAFETY: null is ignored.
+    unsafe { ts_error_free(ptr::null_mut()) };
+
+    // A null slot for the handle is refused, and the record names it.
+    let mut error = blank_error();
+    assert_eq!(new(ptr::null_mut(), &raw mut error), Status::InvalidArg);
+    assert_eq!(read_record(&error).2.as_deref(), Some("out_context"));
+    // SAFETY: the record the call wrote.
+    unsafe { ts_error_free(&raw mut error) };
+
+    // A lent record is not the caller's to free: freeing it does nothing,
+    // and its strings are still the context's.
+    let ctx = Ctx::defaults();
+    let mut id = 0u32;
+    let unknown = CString::new("graha.SUNN").unwrap();
+    // SAFETY: a live handle and valid slots.
+    let refused = unsafe { ts_key_parse(ctx.handle, unknown.as_ptr(), &raw mut id) };
+    assert_eq!(refused, Status::Unsupported);
+    let mut lent = blank_error();
+    // SAFETY: a live handle and a valid struct with its size set.
+    unsafe { ts_context_last_error(ctx.handle, &raw mut lent) };
+    let before = read_record(&lent);
+    // SAFETY: a lent record; the call must leave it alone.
+    unsafe { ts_error_free(&raw mut lent) };
+    assert_eq!(read_record(&lent), before);
+}
+
+#[test]
 fn a_context_refuses_what_it_cannot_build_and_says_why() {
-    let (status, message) = Ctx::new(0, Some("vedic-classic"), None, None).unwrap_err();
-    assert_eq!(status, Status::Unsupported);
-    assert!(
-        message.contains("no shipped profile `vedic-classic`")
-            && message.contains("parashari-classical"),
-        "{message}"
+    let (status, message, field, hint, _) =
+        Ctx::new(0, Some("vedic-classic"), None, None).unwrap_err();
+    assert_eq!(
+        (status, message.as_str(), field.as_deref()),
+        (
+            Status::Unsupported,
+            "no shipped profile `vedic-classic`",
+            Some("profile")
+        )
     );
-    let (status, message) =
+    assert!(hint.is_some_and(|h| h.contains("parashari-classical")));
+    let (status, message, field, ..) =
         Ctx::new(0, None, Some(r#"{"frame": {"zodiacs": "TROPICAL"}}"#), None).unwrap_err();
-    assert_eq!(status, Status::InvalidArg);
-    assert!(
-        message.contains("unknown field `zodiacs`") && message.contains("settings_json"),
-        "{message}"
+    assert_eq!(
+        (status, field.as_deref()),
+        (Status::InvalidArg, Some("settings_json"))
     );
-    let (status, message) = Ctx::new(0, None, None, Some("xx-Latn")).unwrap_err();
-    assert_eq!(status, Status::Unsupported);
-    assert!(message.contains("ne-Deva-NP"), "{message}");
+    assert!(message.contains("unknown field `zodiacs`"), "{message}");
+    let (status, _, field, hint, _) = Ctx::new(0, None, None, Some("xx-Latn")).unwrap_err();
+    assert_eq!(
+        (status, field.as_deref()),
+        (Status::Unsupported, Some("locale"))
+    );
+    assert!(hint.is_some_and(|h| h.contains("ne-Deva-NP")));
     let patched = Ctx::new(
         0,
         Some("nepali-default"),
@@ -304,6 +447,8 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
         profile: ptr::null(),
         settings_json: ptr::null(),
         locale: ptr::null(),
+        layouts_json: ptr::null(),
+        dashas_json: ptr::null(),
         ephemeris: TsEphemeris::None as u8,
     };
     let mut handle = ptr::null_mut();
@@ -360,7 +505,7 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
     };
     let path = CString::new(path.to_string_lossy().as_ref()).unwrap();
     let mut provider: *mut TsProvider = ptr::null_mut();
-    let mut error = TsString::empty();
+    let mut error = blank_error();
     // SAFETY: a live path and writable slots.
     let status = unsafe {
         ts_provider_load(
@@ -370,11 +515,12 @@ fn an_engine_is_loaded_from_a_shared_library_and_computes() {
             &raw mut error,
         )
     };
-    if status != Status::Ok {
-        // SAFETY: the library wrote a descriptor or left it empty.
-        let said = unsafe { core::slice::from_raw_parts(error.data, error.len) };
-        panic!("loading the adapter: {}", String::from_utf8_lossy(said));
-    }
+    assert_eq!(
+        status,
+        Status::Ok,
+        "loading the adapter: {:?}",
+        read_record(&error)
+    );
 
     let mut context: *mut TsContext = ptr::null_mut();
     // SAFETY: a live handle and writable slots.
@@ -1194,5 +1340,409 @@ fn keys_parse_to_packed_ids_and_back_with_suggestions() {
     assert_eq!(
         unsafe { ts_key_parse(ptr::null(), key.as_ptr(), &raw mut id) },
         Status::InvalidArg
+    );
+}
+
+/// A shipped layout's row, as the boundary answers it.
+fn layout_row(ctx: &Ctx, key: &str) -> Result<String, Record> {
+    let key = CString::new(key).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live handle, a NUL-terminated key and a valid slot.
+    match unsafe { ts_chart_layout_row(ctx.handle, key.as_ptr(), &raw mut json) } {
+        Status::Ok => Ok(owned(json)),
+        _ => Err(ctx.last_error()),
+    }
+}
+
+/// A consumer's own layout, registered from a binding: read a shipped row,
+/// rename it, register it, find its key and draw in it
+/// (`03-design/chart-geometry.md` §7f).
+#[test]
+fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
+    let base = Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, None, None).unwrap();
+    let row = layout_row(&base, "chart_layout.SOUTH_INDIAN").unwrap();
+    assert_eq!(
+        layout_row(&base, "SOUTH_INDIAN").unwrap(),
+        row,
+        "bare or full"
+    );
+    let unknown = layout_row(&base, "ACME_KERALA").unwrap_err();
+    assert_eq!(unknown.2.as_deref(), Some("key"));
+    assert!(
+        unknown
+            .3
+            .as_deref()
+            .unwrap_or_default()
+            .contains("NORTH_INDIAN")
+    );
+
+    let kerala = row.replacen("\"SOUTH_INDIAN\"", "\"ACME_KERALA\"", 1);
+    let ctx = Ctx::with_layouts(&format!("[{kerala}]")).expect("a renamed row registers");
+    assert_eq!(layout_row(&ctx, "ACME_KERALA").unwrap(), kerala);
+
+    // The key resolves to a registered id, and the id back to the key.
+    let full = CString::new("chart_layout.ACME_KERALA").unwrap();
+    let mut id = 0u32;
+    // SAFETY: a live handle and valid slots.
+    assert_eq!(
+        unsafe { ts_key_parse(ctx.handle, full.as_ptr(), &raw mut id) },
+        Status::Ok
+    );
+    assert!(id & 0xFFFF >= 0x8000, "a registered id: {id:#x}");
+    let mut name = TsStr {
+        data: ptr::null(),
+        len: 0,
+    };
+    // SAFETY: a live handle and a valid slot.
+    assert_eq!(
+        unsafe { ts_key_name(ctx.handle, id, &raw mut name) },
+        Status::Ok
+    );
+    assert_eq!(lent(name), "chart_layout.ACME_KERALA");
+
+    // Drawn by that id, the chart comes back placed in the consumer's row.
+    let instants = [2_451_545.0];
+    let drawings = [((id & 0xFFFF) << 16) | u32::from(Varga::D1.id())];
+    // And a dasha beside the drawing, so the ragged sections cross too.
+    let dashas = [DashaSystem::Vimshottari.id()];
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: drawings.as_ptr(),
+            drawing_count: drawings.len(),
+            dashas: dashas.as_ptr(),
+            dasha_count: dashas.len(),
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let drawn = reader.text("drawings").unwrap();
+    assert!(drawn.contains("\"layout\":\"ACME_KERALA\""), "{drawn}");
+
+    // One dasha row, whose periods are the next `period_count` rows: nine
+    // mahadashas, 81 antardashas and 729 below them at the default depth.
+    assert_eq!(
+        reader.fixed("summary").unwrap()[4].as_i64(),
+        1,
+        "dasha_count"
+    );
+    assert_eq!(reader.count("dashas"), Some(1));
+    let period_count = reader.column("dashas", "period_count").unwrap()[0].as_i64();
+    assert_eq!(period_count, 9 + 81 + 729);
+    assert_eq!(reader.count("dasha_periods"), Some(819));
+    let levels = reader.column("dasha_periods", "level").unwrap();
+    assert_eq!(
+        (levels[0].as_i64(), levels[1].as_i64(), levels[2].as_i64()),
+        (1, 2, 3)
+    );
+    let from = reader.column("dasha_periods", "from_jd").unwrap();
+    assert_eq!(
+        from[0].as_f64(),
+        2_451_545.0,
+        "the first mahadasha runs from birth"
+    );
+
+    // A row is refused by its place and field: a shipped key, a misspelt
+    // field, and a row the checks refuse.
+    let refused = |rows: String| match Ctx::with_layouts(&rows) {
+        Ok(_) => panic!("{rows} registered"),
+        Err(record) => record,
+    };
+    let shipped = refused(format!("[{kerala}, {row}]"));
+    assert_eq!(shipped.2.as_deref(), Some("options.layouts_json[1].key"));
+    // A misspelt extra field is named by its path; a misspelt required one
+    // is refused as the field it is missing.
+    let extra = kerala.replacen(
+        "\"direction\"",
+        "\"heading\":\"clockwise\",\"direction\"",
+        1,
+    );
+    let typo = refused(format!("[{extra}]"));
+    assert_eq!(
+        typo.2.as_deref(),
+        Some("options.layouts_json[0].shape.heading"),
+        "{typo:?}"
+    );
+    let missing = refused(format!(
+        "[{}]",
+        kerala.replacen("\"direction\"", "\"heading\"", 1)
+    ));
+    assert!(missing.1.contains("direction"), "{missing:?}");
+    // A row the checks refuse: two cells holding Pisces.
+    let twice = kerala.replacen("\"value\":\"ARIES\"", "\"value\":\"PISCES\"", 1);
+    let invalid = refused(format!("[{twice}]"));
+    assert!(
+        invalid
+            .2
+            .as_deref()
+            .is_some_and(|field| field.starts_with("options.layouts_json[0].shape.cells[")),
+        "{invalid:?}"
+    );
+    let not_rows = refused(String::from("{}"));
+    assert_eq!(not_rows.2.as_deref(), Some("options.layouts_json"));
+}
+
+/// A consumer's dasha system crosses whole: registered through
+/// `options.dashas_json`, named by `ts_key_parse`, asked for by that id, and
+/// answered in the `dashas` section under the same id with its own periods; a
+/// definition the row's checks refuse is named by its place and field.
+#[test]
+fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
+    let saptaka = r#"{"key":"ACME_SAPTAKA","lords":[
+        {"graha":"SUN","years":10},{"graha":"MOON","years":10},{"graha":"MARS","years":10},
+        {"graha":"MERCURY","years":10},{"graha":"JUPITER","years":10},{"graha":"VENUS","years":10},
+        {"graha":"SATURN","years":10}],"reference":"KRITTIKA"}"#;
+    let ctx = Ctx::with_dashas(&format!("[{saptaka}]")).expect("a consumer's system registers");
+    let full = CString::new("dasha_system.ACME_SAPTAKA").unwrap();
+    let mut id = 0u32;
+    // SAFETY: a live handle and valid slots.
+    assert_eq!(
+        unsafe { ts_key_parse(ctx.handle, full.as_ptr(), &raw mut id) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    assert_eq!(id & 0xFFFF, 0x8000, "the first registered id");
+
+    let instants = [2_451_545.0];
+    let dashas = [
+        u16::try_from(id & 0xFFFF).unwrap(),
+        DashaSystem::Vimshottari.id(),
+    ];
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: dashas.as_ptr(),
+            dasha_count: dashas.len(),
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let systems = reader.column("dashas", "system").unwrap();
+    assert_eq!(
+        (systems[0].as_i64(), systems[1].as_i64()),
+        (0x8000, i64::from(DashaSystem::Vimshottari.id()))
+    );
+    // Seven lords of ten years: seven mahadashas, 49 below them and 343 below
+    // those at the default depth of three.
+    let counts = reader.column("dashas", "period_count").unwrap();
+    assert_eq!(counts[0].as_i64(), 7 + 49 + 343);
+
+    // An id nothing registered is refused by its place in the request.
+    let stray = [0x8001_u16];
+    let asked = TsChartRequest {
+        dashas: stray.as_ptr(),
+        dasha_count: stray.len(),
+        ..request
+    };
+    let mut none = TsBlob::empty();
+    // SAFETY: as above.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const asked, &raw mut none) };
+    assert_eq!(status, Status::InvalidArg);
+    let record = ctx.last_error();
+    assert_eq!(record.2.as_deref(), Some("dashas[0]"), "{record:?}");
+    assert!(
+        record
+            .3
+            .as_deref()
+            .unwrap_or_default()
+            .contains("ACME_SAPTAKA"),
+        "{record:?}"
+    );
+
+    // A definition the row's checks refuse, and one taking a catalogued key.
+    let refused = |rows: String| match Ctx::with_dashas(&rows) {
+        Ok(_) => panic!("{rows} registered"),
+        Err(record) => record,
+    };
+    let narrow = refused(format!(
+        "[{}]",
+        saptaka.replacen("\"KRITTIKA\"", "\"KRITTIKA\",\"span\":0", 1)
+    ));
+    assert_eq!(
+        narrow.2.as_deref(),
+        Some("options.dashas_json[0].span"),
+        "{narrow:?}"
+    );
+    let taken = refused(format!(
+        "[{}]",
+        saptaka.replacen("ACME_SAPTAKA", "VIMSHOTTARI", 1)
+    ));
+    assert_eq!(
+        taken.2.as_deref(),
+        Some("options.dashas_json[0].key"),
+        "{taken:?}"
+    );
+    let typo = refused(format!(
+        "[{}]",
+        saptaka.replacen("\"reference\"", "\"refrence\"", 1)
+    ));
+    assert!(
+        typo.1.contains("reference") || typo.1.contains("refrence"),
+        "{typo:?}"
+    );
+}
+
+/// A chart request's `rules_json` answers rules over every chart in the same
+/// crossing: section `rules` carries each chart's present rules by key, and
+/// the longevity readings when asked; a rule that does not read is refused by
+/// its place from the request's root (`03-design/rules-at-the-boundary.md`).
+#[test]
+fn a_chart_request_answers_rules_in_the_same_crossing() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_447_995.489_583_333_5, 2_451_545.0];
+    let rules = CString::new(r#"{"shipped": ["nabhasas"], "longevity": true}"#).unwrap();
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: rules.as_ptr(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let rules_json: serde_json::Value =
+        serde_json::from_slice(reader.bytes("rules").unwrap()).unwrap();
+    let per_chart = rules_json.as_array().unwrap();
+    assert_eq!(per_chart.len(), 2, "one entry a chart");
+    for chart in per_chart {
+        let present = chart["present"].as_array().unwrap();
+        assert!(!present.is_empty());
+        for held in present {
+            // A rule by its key, never the whole rule again.
+            assert!(held["rule"].is_string(), "{held}");
+            assert_eq!(held["result"]["present"], serde_json::Value::Bool(true));
+        }
+        assert!(chart["longevity"]["ayurdaya"]["pindayu"]["years"].is_number());
+        assert!(chart.get("houses").is_none(), "houses were not asked for");
+    }
+    // The same request without rules carries an empty section.
+    let plain = TsChartRequest {
+        rules_json: ptr::null(),
+        ..request
+    };
+    let mut none = TsBlob::empty();
+    // SAFETY: as above.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const plain, &raw mut none) },
+        Status::Ok
+    );
+    // SAFETY: as above.
+    let plain_bytes = unsafe { core::slice::from_raw_parts(none.data, none.len) }.to_vec();
+    // SAFETY: as above.
+    unsafe { ts_blob_free(&raw mut none) };
+    let plain_reader = Reader::parse(&plain_bytes, &schema).unwrap();
+    assert!(plain_reader.bytes("rules").unwrap().is_empty());
+
+    // A rule that does not read is refused from the request's root.
+    let broken = CString::new(r#"{"rules": [{"key": "X", "category": "raja"}]}"#).unwrap();
+    let refused = TsChartRequest {
+        rules_json: broken.as_ptr(),
+        ..request
+    };
+    let mut nothing = TsBlob::empty();
+    // SAFETY: as above.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const refused, &raw mut nothing) };
+    assert_eq!(status, Status::InvalidArg);
+    let record = ctx.last_error();
+    assert_eq!(
+        record.2.as_deref(),
+        Some("rules_json.rules[0]"),
+        "{record:?}"
     );
 }

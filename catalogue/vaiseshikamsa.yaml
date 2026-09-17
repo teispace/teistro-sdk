@@ -1,0 +1,246 @@
+kind: vaiseshikamsa
+number: 63
+version: 1
+doc: "The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's."
+attributes: { good_vargas: u8 }
+members:
+  - key: KIMSHUKA
+    id: 0
+    doc: "Kimshuka"
+    attributes: { good_vargas: 2 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: VYANJANA
+    id: 1
+    doc: "Vyanjana"
+    attributes: { good_vargas: 3 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: CHAMARA
+    id: 2
+    doc: "Chamara"
+    attributes: { good_vargas: 4 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: CHATRA
+    id: 3
+    doc: "Chatra"
+    attributes: { good_vargas: 5 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: KUNDALA
+    id: 4
+    doc: "Kundala"
+    attributes: { good_vargas: 6 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: MUKUTA
+    id: 5
+    doc: "Mukuta"
+    attributes: { good_vargas: 7 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: PARIJATA
+    id: 6
+    doc: "Parijata"
+    attributes: { good_vargas: 2 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: UTTAMA
+    id: 7
+    doc: "Uttama"
+    attributes: { good_vargas: 3 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: GOPURA
+    id: 8
+    doc: "Gopura"
+    attributes: { good_vargas: 4 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: SIMHASANA
+    id: 9
+    doc: "Simhasana"
+    attributes: { good_vargas: 5 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: PARAVATA
+    id: 10
+    doc: "Paravata"
+    attributes: { good_vargas: 6 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: DEVALOKA
+    id: 11
+    doc: "Devaloka"
+    attributes: { good_vargas: 7 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: BRAHMALOKA
+    id: 12
+    doc: "Brahmaloka"
+    attributes: { good_vargas: 8 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: SHAKRAVAHANA
+    id: 13
+    doc: "Shakravahana"
+    attributes: { good_vargas: 9 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: SHRIDHAMA
+    id: 14
+    doc: "Shridhama"
+    attributes: { good_vargas: 10 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: BHEDAKA
+    id: 15
+    doc: "Bhedaka"
+    attributes: { good_vargas: 2 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: KUSUMA
+    id: 16
+    doc: "Kusuma"
+    attributes: { good_vargas: 3 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: NAGAPUSHPA
+    id: 17
+    doc: "Nagapushpa"
+    attributes: { good_vargas: 4 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: KANDUKA
+    id: 18
+    doc: "Kanduka"
+    attributes: { good_vargas: 5 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: KERALA
+    id: 19
+    doc: "Kerala"
+    attributes: { good_vargas: 6 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: KALPAVRIKSHA
+    id: 20
+    doc: "Kalpavriksha"
+    attributes: { good_vargas: 7 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: CHANDANAVANA
+    id: 21
+    doc: "Chandanavana"
+    attributes: { good_vargas: 8 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: PURNACHANDRA
+    id: 22
+    doc: "Purnachandra"
+    attributes: { good_vargas: 9 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: UCHCHAISHRAVA
+    id: 23
+    doc: "Uchchaishrava"
+    attributes: { good_vargas: 10 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: DHANVANTARI
+    id: 24
+    doc: "Dhanvantari"
+    attributes: { good_vargas: 11 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: SURYAKANTA
+    id: 25
+    doc: "Suryakanta"
+    attributes: { good_vargas: 12 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: VIDRUMA
+    id: 26
+    doc: "Vidruma"
+    attributes: { good_vargas: 13 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: CHAKRASIMHASANA
+    id: 27
+    doc: "Chakrasimhasana"
+    attributes: { good_vargas: 14 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: GOLOKA
+    id: 28
+    doc: "Goloka"
+    attributes: { good_vargas: 15 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T
+  - key: SHRIVALLABHA
+    id: 29
+    doc: "Shrivallabha"
+    attributes: { good_vargas: 16 }
+    sources:
+      - text: BPHS
+        ref: "6.42-53"
+    mark: T

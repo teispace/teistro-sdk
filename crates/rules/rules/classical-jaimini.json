@@ -1,0 +1,778 @@
+{
+  "rules": [
+    {
+      "key": "ARUDHA_GAINS",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "29",
+        "verse": "13",
+        "rank": 1,
+        "note": "Grahas standing in or aspecting the eleventh from the pada of the ascendant, the twelfth from that pada being free of a malefic standing in it or aspecting it. The verse grades the gains by how many reach the eleventh, which the SDK reports as the rule's participants rather than as a number of its own. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "count-in-houses",
+              "planets": "any-benefic",
+              "houses": [
+                1
+              ],
+              "from": {
+                "from": {
+                  "arudha": 1
+                },
+                "house": 11
+              },
+              "atLeast": 1
+            },
+            {
+              "type": "count-in-houses",
+              "planets": "any-malefic",
+              "houses": [
+                1
+              ],
+              "from": {
+                "from": {
+                  "arudha": 1
+                },
+                "house": 11
+              },
+              "atLeast": 1
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-benefic",
+              "target": {
+                "from": {
+                  "arudha": 1
+                },
+                "house": 11
+              }
+            },
+            {
+              "type": "planet-aspects-planet",
+              "from": "any-malefic",
+              "target": {
+                "from": {
+                  "arudha": 1
+                },
+                "house": 11
+              }
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "from": {
+              "from": {
+                "arudha": 1
+              },
+              "house": 12
+            },
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": {
+              "from": {
+                "arudha": 1
+              },
+              "house": 12
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "gains, in proportion to the grahas standing in or aspecting the eleventh from the pada of the ascendant"
+        }
+      ]
+    },
+    {
+      "key": "ARUDHA_GAINS_WITH_ARGALA",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "29",
+        "verse": "14",
+        "rank": 1,
+        "note": "An intervention on the eleventh from the pada of the ascendant, from the second, fourth, fifth or eleventh from it, unobstructed by the house that obstructs it (ch. 31). Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "argala",
+              "on": {
+                "from": {
+                  "arudha": 1
+                },
+                "house": 11
+              },
+              "place": "second"
+            },
+            {
+              "type": "argala",
+              "on": {
+                "from": {
+                  "arudha": 1
+                },
+                "house": 11
+              },
+              "place": "fourth"
+            },
+            {
+              "type": "argala",
+              "on": {
+                "from": {
+                  "arudha": 1
+                },
+                "house": 11
+              },
+              "place": "fifth"
+            },
+            {
+              "type": "argala",
+              "on": {
+                "from": {
+                  "arudha": 1
+                },
+                "house": 11
+              },
+              "place": "eleventh"
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "from": {
+              "from": {
+                "arudha": 1
+              },
+              "house": 12
+            },
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": {
+              "from": {
+                "arudha": 1
+              },
+              "house": 12
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "greater gains, an intervention standing on the eleventh from the pada"
+        }
+      ]
+    },
+    {
+      "key": "ARUDHA_GAINS_WITH_BENEFIC_ARGALA",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "29",
+        "verse": "14",
+        "rank": 1,
+        "note": "The same intervention caused by a benefic: the intervention stands and a benefic is one of the grahas that make it. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "argala",
+                  "on": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "place": "second"
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    2
+                  ],
+                  "from": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "argala",
+                  "on": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "place": "fourth"
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    4
+                  ],
+                  "from": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "argala",
+                  "on": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "place": "fifth"
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    5
+                  ],
+                  "from": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "atLeast": 1
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "argala",
+                  "on": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "place": "eleventh"
+                },
+                {
+                  "type": "count-in-houses",
+                  "planets": "any-benefic",
+                  "houses": [
+                    11
+                  ],
+                  "from": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "atLeast": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "from": {
+              "from": {
+                "arudha": 1
+              },
+              "house": 12
+            },
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": {
+              "from": {
+                "arudha": 1
+              },
+              "house": 12
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "greater gains still, the intervention on the eleventh from the pada being a benefic's"
+        }
+      ]
+    },
+    {
+      "key": "ARUDHA_GAINS_WITH_EXALTED_BENEFIC_ARGALA",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "29",
+        "verse": "14",
+        "rank": 1,
+        "note": "The same again with the benefic in his exaltation. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "argala",
+                  "on": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "place": "second"
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-in-house-from",
+                        "planet": "SELF",
+                        "reference": {
+                          "from": {
+                            "arudha": 1
+                          },
+                          "house": 11
+                        },
+                        "houses": [
+                          2
+                        ]
+                      },
+                      {
+                        "type": "planet-dignity",
+                        "planet": "SELF",
+                        "dignities": [
+                          "EXALTED"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "argala",
+                  "on": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "place": "fourth"
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-in-house-from",
+                        "planet": "SELF",
+                        "reference": {
+                          "from": {
+                            "arudha": 1
+                          },
+                          "house": 11
+                        },
+                        "houses": [
+                          4
+                        ]
+                      },
+                      {
+                        "type": "planet-dignity",
+                        "planet": "SELF",
+                        "dignities": [
+                          "EXALTED"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "argala",
+                  "on": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "place": "fifth"
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-in-house-from",
+                        "planet": "SELF",
+                        "reference": {
+                          "from": {
+                            "arudha": 1
+                          },
+                          "house": 11
+                        },
+                        "houses": [
+                          5
+                        ]
+                      },
+                      {
+                        "type": "planet-dignity",
+                        "planet": "SELF",
+                        "dignities": [
+                          "EXALTED"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "and",
+              "conditions": [
+                {
+                  "type": "argala",
+                  "on": {
+                    "from": {
+                      "arudha": 1
+                    },
+                    "house": 11
+                  },
+                  "place": "eleventh"
+                },
+                {
+                  "type": "for-any",
+                  "planets": [
+                    "MERCURY",
+                    "JUPITER",
+                    "VENUS"
+                  ],
+                  "then": {
+                    "type": "and",
+                    "conditions": [
+                      {
+                        "type": "planet-in-house-from",
+                        "planet": "SELF",
+                        "reference": {
+                          "from": {
+                            "arudha": 1
+                          },
+                          "house": 11
+                        },
+                        "houses": [
+                          11
+                        ]
+                      },
+                      {
+                        "type": "planet-dignity",
+                        "planet": "SELF",
+                        "dignities": [
+                          "EXALTED"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "from": {
+              "from": {
+                "arudha": 1
+              },
+              "house": 12
+            },
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": {
+              "from": {
+                "arudha": 1
+              },
+              "house": 12
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "higher gains again, the benefic that intervenes standing in his exaltation"
+        }
+      ]
+    },
+    {
+      "key": "ARUDHA_GAINS_BENEFIC_ASPECT_FROM_LAGNA_OR_NINTH",
+      "category": "dhana",
+      "source": {
+        "text": "BPHS",
+        "chapter": "29",
+        "verse": "15",
+        "rank": 1,
+        "note": "A benefic standing in the ascendant or the ninth and aspecting the eleventh from the pada of the ascendant; the verse ranks the ninth above the ascendant, which the SDK does not grade. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "for-any",
+          "planets": [
+            "MERCURY",
+            "JUPITER",
+            "VENUS"
+          ],
+          "then": {
+            "type": "and",
+            "conditions": [
+              {
+                "type": "planet-in-house",
+                "planet": "SELF",
+                "houses": [
+                  1,
+                  9
+                ]
+              },
+              {
+                "type": "planet-aspects-planet",
+                "from": "SELF",
+                "target": {
+                  "from": {
+                    "arudha": 1
+                  },
+                  "house": 11
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "count-in-houses",
+            "planets": "any-malefic",
+            "houses": [
+              1
+            ],
+            "from": {
+              "from": {
+                "arudha": 1
+              },
+              "house": 12
+            },
+            "atLeast": 1
+          }
+        },
+        {
+          "type": "not",
+          "condition": {
+            "type": "planet-aspects-planet",
+            "from": "any-malefic",
+            "target": {
+              "from": {
+                "arudha": 1
+              },
+              "house": 12
+            }
+          }
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "gains increasing in the ascending order, a benefic in the ascendant or the ninth aspecting the eleventh from the pada"
+        }
+      ]
+    },
+    {
+      "key": "JAIMINI_AK_PK_ASSOCIATED",
+      "category": "jaimini",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "3-5",
+        "rank": 1,
+        "note": "The Atmakaraka and the Putrakaraka associated: sharing a sign, or aspecting one another by rashi drishti, which is the aspect ch. 26 gives the signs and Jaimini reads by. The verse grades the effect full, half or a quarter by their strengths, which the kernel cannot measure. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "planet-conjunct",
+              "planets": [
+                {
+                  "karaka": "AK"
+                },
+                {
+                  "karaka": "PK"
+                }
+              ]
+            },
+            {
+              "type": "rashi-aspects",
+              "from": {
+                "karaka": "AK"
+              },
+              "target": {
+                "karaka": "PK"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "entitled to royal honours, the Atmakaraka and the Putrakaraka standing together"
+        }
+      ]
+    },
+    {
+      "key": "JAIMINI_LAGNA_AND_FIFTH_LORDS_ASSOCIATED",
+      "category": "jaimini",
+      "source": {
+        "text": "BPHS",
+        "chapter": "39",
+        "verse": "3-5",
+        "rank": 1,
+        "note": "The lord of the ascendant and the lord of the fifth associated, read from the natal ascendant as the same verses direct: sharing a sign, or aspecting one another by rashi drishti. Read from the Maharishi Parashara Hora Shastra in R. Santhanam's translation."
+      },
+      "conditions": [
+        {
+          "type": "or",
+          "conditions": [
+            {
+              "type": "lord-conjunct-lord",
+              "house1": 1,
+              "house2": 5
+            },
+            {
+              "type": "rashi-aspects",
+              "from": {
+                "lordOf": 1
+              },
+              "target": {
+                "lordOf": 5
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "type": "effect",
+          "text": "entitled to royal honours, the lord of the ascendant and the lord of the fifth standing together"
+        }
+      ]
+    }
+  ]
+}
