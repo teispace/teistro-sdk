@@ -205,10 +205,22 @@ impl ChartRequest {
         self,
         rules: impl IntoIterator<Item = &'r teistro_rules::Rule>,
     ) -> ChartRequest {
-        let (mut points, mut strength) = (false, false);
+        self.rule_inputs(rules, true)
+    }
+
+    /// What `rules` read, the points only where `points` allows: a birth with
+    /// no sunrise has no special lagnas, and a reading for rules alone is read
+    /// without them rather than refused (`03-design/rules-at-the-boundary.md`
+    /// §5).
+    pub(crate) fn rule_inputs<'r>(
+        self,
+        rules: impl IntoIterator<Item = &'r teistro_rules::Rule>,
+        points: bool,
+    ) -> ChartRequest {
+        let (mut named_points, mut strength) = (false, false);
         let mut asked = self.vargas.clone();
         for rule in rules {
-            points |= rule.reads_points();
+            named_points |= rule.reads_points();
             strength |= rule.reads_strength();
             for varga in rule.vargas() {
                 if !asked.contains(&varga) {
@@ -217,13 +229,18 @@ impl ChartRequest {
             }
         }
         let mut request = self.with_state().with_vargas(asked);
-        if points {
+        if named_points && points {
             request = request.with_points();
         }
         if strength {
             request = request.with_shadbala();
         }
         request
+    }
+
+    /// Whether the request itself asks for the derived points.
+    pub(crate) const fn asks_points(&self) -> bool {
+        self.sections.has(Sections::POINTS)
     }
 
     /// The upagrahas and the special lagnas.

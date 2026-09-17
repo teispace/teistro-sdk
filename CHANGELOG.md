@@ -1306,6 +1306,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- A chart reading that answers rules: `RuleRequest` names shipped sets and a
+  consumer's own rules, validates into a `RuleSet` (each key once, every
+  reference resolved), and `sdk.chart().readings_with_rules` returns each
+  document with a `RulesReading` — the present results, and the house and
+  longevity readings when asked. A birth with no sunrise is read without the
+  points a rule named and says so in `unreadable`
+  (`03-design/rules-at-the-boundary.md`, step 1 of 4).
+
+  **Numbers:** over the corpus's 53 readable charts, the text-written and
+  generated sets (895 rules) answer 3 145 times, about 59 a chart, each chart
+  exactly as the same set evaluated through `RuleInputs`.
+
 - `natural-relation`: how one graha regards another by natural relationship,
   and `Relation::between` for code; BPHS ch. 43 v. 67 and vv. 71 to 73's
   second figure ship with it. The SDK ships 997 rules.

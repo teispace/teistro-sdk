@@ -506,3 +506,130 @@ fn a_chart_s_maraka_windows_lie_in_the_ages_its_class_of_life_runs_to() {
         (teistro::rules::LifeClass::Medium, 18, 7)
     );
 }
+
+/// A reading asked to answer rules, over every corpus chart: each chart's
+/// present rules are the ones the same set answers on a chart read and
+/// evaluated the other way round, through `RuleInputs`; a birth with no
+/// sunrise is read without the points a rule named and says so; and the
+/// house and longevity readings come back when asked.
+#[test]
+fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
+    use teistro::{RuleRequest, ShippedRules};
+
+    let sdk = Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("the conformance profile and the built-in ephemeris");
+    let set = RuleRequest::shipped([ShippedRules::Nabhasas, ShippedRules::Readings])
+        .with_houses()
+        .with_longevity()
+        .rule_set()
+        .expect("a valid set");
+    let (mut charts, mut present, mut unreadable) = (0, 0, Vec::new());
+    let mut refused = Vec::new();
+    for (name, chart) in common::charts() {
+        let input = &chart["input"];
+        let number = |value: &serde_json::Value| value.as_f64().unwrap();
+        let place = Place::new(
+            Latitude::try_new(number(&input["place"]["latitude"])).unwrap(),
+            Longitude::try_new(number(&input["place"]["longitude"])).unwrap(),
+            Altitude::try_new(number(&input["place"]["altitude_m"])).unwrap(),
+        );
+        let offset = UtcOffset::try_from_seconds(
+            i32::try_from(input["resolved"]["tz_offset_min"].as_i64().unwrap() * 60).unwrap(),
+        )
+        .unwrap();
+        let instant = JulianDay::<Utc>::literal(number(&input["resolved"]["jd_ut"]));
+        let request = teistro::ChartRequest::at(place, offset);
+        let read = match sdk.chart().readings_with_rules(&[instant], &request, &set) {
+            Ok(read) => read.value,
+            Err(error) => {
+                refused.push((name, error.status));
+                continue;
+            }
+        };
+        assert_eq!(read.len(), 1, "{name}: one chart asked, one answered");
+        let (document, reading) = &read[0];
+        // The other road: the document's own inputs, evaluated directly.
+        let inputs = RuleInputs::of(document).unwrap();
+        let evaluator = inputs.evaluator(Readings::TEXTS).with_rules(set.rules());
+        let expected: Vec<&str> = set
+            .rules()
+            .iter()
+            .filter(|rule| evaluator.evaluate(rule).present)
+            .map(|rule| rule.key.as_str())
+            .collect();
+        let answered: Vec<&str> = reading
+            .present
+            .iter()
+            .map(|held| held.rule.key.as_str())
+            .collect();
+        assert_eq!(answered, expected, "{name}");
+        assert_eq!(reading.houses.as_ref().map(Vec::len), Some(12), "{name}");
+        let longevity = reading.longevity.as_ref().unwrap();
+        assert_eq!(
+            longevity.three_pairs.is_some(),
+            reading.unreadable.is_empty(),
+            "{name}"
+        );
+        if !reading.unreadable.is_empty() {
+            unreadable.push(name.clone());
+        }
+        present += answered.len();
+        charts += 1;
+    }
+    // About 59 of the set's 895 rules hold a chart, which is why only the present
+    // are carried; Tromsø's two are read without the points a rule named, and
+    // only the two charts at the built-in ephemeris's edges are refused.
+    let refused: Vec<(&str, teistro::Status)> = refused
+        .iter()
+        .map(|(name, status)| (name.as_str(), *status))
+        .collect();
+    assert_eq!((charts, present, set.rules().len()), (53, 3145, 895));
+    assert_eq!(
+        unreadable,
+        ["c028-troms-1988-06-21.json", "c029-troms-1988-12-21.json"]
+    );
+    assert_eq!(
+        refused,
+        [
+            ("c047-london-1800-01-02.json", teistro::Status::Provider),
+            ("c048-kathmandu-2399-12-30.json", teistro::Status::Provider),
+        ]
+    );
+}
+
+/// A rule request refuses what it cannot evaluate, naming where.
+#[test]
+fn a_rule_request_refuses_a_set_it_cannot_evaluate_by_name() {
+    use teistro::{RuleRequest, ShippedRules};
+
+    let unknown = RuleRequest::from_json(r#"{"shipped": ["almanac"]}"#).unwrap_err();
+    assert!(unknown.message.contains("almanac"), "{}", unknown.message);
+    let broken = RuleRequest::from_json(
+        r#"{"rules": [{"key": "MINE", "category": "raja", "source": {"text": "BPHS"},
+            "conditions": [{"type": "planet-in-house", "planet": "SUN", "houses": [1]}]},
+            {"key": "BROKEN", "category": "raja", "source": {"text": "BPHS"},
+            "conditions": [{"type": "no-such-condition"}]}]}"#,
+    )
+    .unwrap_err();
+    assert_eq!(broken.field(), Some("rules[1]"));
+    // A consumer's rule may name a shipped rule, but not repeat one.
+    let shipped = &ShippedRules::Nabhasas.rules()[0];
+    let twice = RuleRequest::shipped([ShippedRules::Nabhasas])
+        .with_rules([shipped.clone()])
+        .rule_set()
+        .unwrap_err();
+    assert!(twice.message.contains(&shipped.key), "{}", twice.message);
+    let dangling: Rule = serde_json::from_str(
+        r#"{"key": "MINE", "category": "raja", "source": {"text": "BPHS"},
+            "conditions": [{"type": "rule", "key": "NOT_IN_THE_SET"}]}"#,
+    )
+    .unwrap();
+    let error = RuleRequest::default()
+        .with_rules([dangling])
+        .rule_set()
+        .unwrap_err();
+    assert_eq!(error.field(), Some("rules"));
+}

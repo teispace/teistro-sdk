@@ -1,6 +1,6 @@
 # Rules at the boundary: a chart reading that answers rules in every binding
 
-Status: `design`, 2026-09-17. It settles the question
+Status: `design`, 2026-09-17; step 1 built the same day. It settles the question
 [`surface-areas.md`](surface-areas.md) §9 left open — how a rule and a rule
 result cross the C ABI — so that Node, Dart and Python reach the kernel
 [`rules-engine.md`](rules-engine.md) describes, which Rust reaches today
@@ -74,8 +74,11 @@ It is an object:
   the three spans and the marakas. Both default to false, so a consumer pays
   for what it asks.
 
-The façade takes the same record as `ChartRequest::with_rules(RuleRequest)`,
-so the C boundary and Rust read one type.
+The façade reads the same record as `RuleRequest`, validated into a `RuleSet`
+(each key once, every reference resolved), and `sdk.chart().readings_with_rules`
+answers it — so the C boundary and Rust read one type. The result is kept out
+of the `Document`, which would otherwise make the serial crate depend on the
+rules kernel and change the document schema three gates hold.
 
 ## 4. The result
 
@@ -90,9 +93,10 @@ per chart in the order asked for.
 }
 ```
 
-- **Only present results are carried.** Most rules do not hold a given
-  chart, and an absent result says nothing a missing key does not; how many
-  hold a chart is measured when step 1 is built. A consumer wanting "is X
+- **Only present results are carried.** Measured through the SDK over the
+  corpus's 53 readable charts, the text-written and generated sets together,
+  895 rules, answer 3 145 times: about 59 a chart, one rule in fifteen. An
+  absent result says nothing a missing key does not. A consumer wanting "is X
   present" looks for its key.
 - **Every result carries its rule's key**, and nothing else of the rule: the
   rule is the consumer's own, or a shipped one it can read by key.

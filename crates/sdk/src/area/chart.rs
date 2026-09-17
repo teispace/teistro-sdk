@@ -43,6 +43,9 @@ use crate::area::system_of;
 use crate::context::Context;
 use crate::ephemeris::no_ephemeris;
 use crate::reading::{ChartRequest, Sections};
+use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
+use crate::rules_bridge::RuleInputs;
+use teistro_rules::longevity::{AyurdayaRules, ThreePairsRules};
 
 /// `sdk.chart`: the foundation every reading is built on — the lagna,
 /// the day's lagna, the ayanamsha applied, the day part, the grahas
@@ -239,6 +242,74 @@ impl<'a> ChartArea<'a> {
             Ok(Envelope::new(documents, founded.provenance))
         })?;
         Ok(Envelope::sealing(founded.value, founded.provenance))
+    }
+
+    /// Readings asked to answer a set of rules as well: each document with
+    /// the sections the rules read added to the request's own, and what the
+    /// chart answers by rule (`03-design/rules-at-the-boundary.md`).
+    ///
+    /// A birth that cannot have an input only a rule named — the special
+    /// lagnas of a day with no sunrise — is read without it rather than
+    /// refused, and its reading says so in `unreadable`; a section the request
+    /// asked for itself is refused as [`ChartArea::readings`] refuses it.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::readings`], and whatever the rule inputs refuse.
+    pub fn readings_with_rules<'r>(
+        self,
+        instants: &[JulianDay<Utc>],
+        request: &ChartRequest,
+        set: &'r RuleSet,
+    ) -> Result<Envelope<Vec<(Document, RulesReading<'r>)>>, Error> {
+        let asked = request.clone().rule_inputs(set.rules(), true);
+        let (documents, provenance, unreadable) = match self.readings(instants, &asked) {
+            Ok(read) => (read.value, read.provenance, false),
+            // Only the points a rule named, never ones the caller asked for.
+            Err(error)
+                if !request.asks_points()
+                    && error
+                        .field()
+                        .is_some_and(|field| field.starts_with("points")) =>
+            {
+                let without = request.clone().rule_inputs(set.rules(), false);
+                let read = self.readings(instants, &without)?;
+                (read.value, read.provenance, true)
+            }
+            Err(error) => return Err(error),
+        };
+        let readings = set.readings().readings();
+        let mut answered = Vec::with_capacity(documents.len());
+        for document in documents {
+            let inputs = RuleInputs::of(&document)?;
+            let evaluator = inputs.evaluator(readings).with_rules(set.rules());
+            let present = set
+                .rules()
+                .iter()
+                .filter_map(|rule| {
+                    let result = evaluator.evaluate(rule);
+                    result.present.then_some(Present { rule, result })
+                })
+                .collect();
+            let houses = set.houses().then(|| evaluator.house_readings(set.rules()));
+            let longevity = set.longevity().then(|| Longevity {
+                three_pairs: evaluator.three_pairs(ThreePairsRules::VERSE),
+                ayurdaya: evaluator.ayurdaya(AyurdayaRules::default()),
+                marakas: evaluator.marakas(),
+            });
+            let reading = RulesReading {
+                present,
+                houses,
+                longevity,
+                unreadable: if unreadable {
+                    vec!["points"]
+                } else {
+                    Vec::new()
+                },
+            };
+            answered.push((document, reading));
+        }
+        Ok(Envelope::sealing(answered, provenance))
     }
 
     /// One reading: the batch of one, unwrapped.

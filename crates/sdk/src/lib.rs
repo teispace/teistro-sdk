@@ -51,6 +51,7 @@ mod scale;
 pub use area::{
     AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea,
 };
+mod rule_request;
 mod rules_bridge;
 
 pub use context::{Context, ContextBuilder};
@@ -113,6 +114,9 @@ pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
 pub use teistro_render_svg as render_svg;
 // Dashas: a system as a row, the balance at birth, and the period tree read
 // without building it (`03-design/dasha-kernels.md`).
+pub use crate::rule_request::{
+    Longevity, Present, RuleReadings, RuleRequest, RuleSet, RulesReading, ShippedRules,
+};
 pub use crate::rules_bridge::{
     MarakaWindow, RuleInputs, maraka_windows, rule_chart, rule_periods, rule_vargas,
 };
