@@ -2166,7 +2166,7 @@ mod tests {
             })
         );
         assert!(explanation.to_string().starts_with(
-            "EXAMPLE: present, MARS, MOON in house 1\n  holds or, adding MARS, MOON\n"
+            "EXAMPLE: present, MARS, MOON in house 1\n  holds: one of these, adding MARS, MOON\n"
         ));
 
         // Not present: no cancellation is checked.
@@ -2184,7 +2184,7 @@ mod tests {
         assert!(!explanation.result.present && explanation.cancellations.is_empty());
         assert_eq!(
             explanation.to_string(),
-            "EXAMPLE: not present\n  fails planet-in-house\n    SUN stands in ARIES, house 1\n"
+            "EXAMPLE: not present\n  fails: SUN stands in the 7th house\n    SUN stands in ARIES, house 1\n"
         );
     }
 
@@ -2525,20 +2525,20 @@ mod tests {
             explanation.to_string(),
             "EXAMPLE: present, MARS in house 7, severity 100, partly cancelled\n\
              \u{20} from Lagna (LAGNA):\n\
-             \u{20}   holds planet-in-house-from, adding MARS\n\
+             \u{20}   holds: MARS stands in the 7th from LAGNA, adding MARS\n\
              \u{20}     LAGNA stands in ARIES, house 1\n\
              \u{20}     MARS stands in LIBRA, house 7\n\
              \u{20} from Moon (MOON):\n\
-             \u{20}   holds planet-in-house-from, adding MARS\n\
+             \u{20}   holds: MARS stands in the 4th from MOON, adding MARS\n\
              \u{20}     MOON stands in CANCER, house 4\n\
              \u{20}     MARS stands in LIBRA, house 7\n\
              \u{20} from Venus (VENUS):\n\
-             \u{20}   fails planet-in-house-from\n\
+             \u{20}   fails: MARS stands in the 8th from VENUS\n\
              \u{20}     VENUS stands in LIBRA, house 7\n\
              \u{20}     MARS stands in LIBRA, house 7\n\
              \u{20} cancellations:\n\
-             \u{20}   holds planet-conjunct, adding VENUS, MARS\n\
-             \u{20}   fails planet-aspects-planet\n\
+             \u{20}   holds: VENUS and MARS share a sign, adding VENUS, MARS\n\
+             \u{20}   fails: JUPITER aspects MARS\n\
              \u{20}     MARS stands in LIBRA, house 7\n"
         );
         assert_eq!(

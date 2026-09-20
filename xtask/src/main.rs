@@ -100,6 +100,9 @@
 //! - `doshas` and `check-doshas`: the doshas, the engine's own rules measured
 //!   under each reading its dosha evaluator leaves open, and the seventeen it
 //!   computes in code written as rules and held to what that code recorded.
+//! - `rule-doc` and `check-rule-doc`: the prose every rule renders to, with
+//!   the collisions that would hide a change from a reviewer; with an
+//!   argument — a pack, a category or a key — it prints the passages instead.
 //! - `vimshopaka` and `check-vimshopaka`: the Vimshopaka, the engine's scale
 //!   measured beside BPHS's points.
 //! - `shadbala` and `check-shadbala`: the Shadbala, every one of the engine's
@@ -191,6 +194,7 @@ mod python_binding;
 mod rashi_dashas;
 mod release;
 mod render;
+mod rule_doc;
 mod rules_corpus;
 mod rust_binding;
 mod rust_surface;
@@ -299,6 +303,7 @@ const PASSES: &[Pass] = &[
     ),
     ("yogas", yogas::generate, yogas::check_generated),
     ("doshas", doshas::generate, doshas::check_generated),
+    ("rule-doc", rule_doc::generate, rule_doc::check_generated),
 ];
 
 /// Runs a pass, or says it is not one.
@@ -319,6 +324,14 @@ fn main() {
     let Some(command) = args.first().map(String::as_str) else {
         std::process::exit(usage());
     };
+    // A pass that also answers a question: with an argument, `rule-doc`
+    // prints the passages rather than writing the page.
+    if command == "rule-doc" && args.len() > 1 {
+        std::process::exit(rule_doc::print(
+            &repo_root(),
+            args.get(1).map(String::as_str),
+        ));
+    }
     if let Some(code) = generated_page(command) {
         std::process::exit(code);
     }
@@ -411,6 +424,7 @@ fn usage() -> i32 {
          the generated pages, each written by its name and gated by `check-`:\n  \
          {}\n\n\
          everything else:\n  \
+         rule-doc PACK|CATEGORY|KEY | \
          vsop [DIR] | moon | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | \

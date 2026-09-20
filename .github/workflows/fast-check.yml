@@ -122,6 +122,8 @@ jobs:
         run: cargo xtask check-yogas
       - name: Doshas page (the engine's dosha rules measured, and the seventeen it computes in code written as rules)
         run: cargo xtask check-doshas
+      - name: Rule prose page (every rule rendered to English, and the renderings two different meanings would share)
+        run: cargo xtask check-rule-doc
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read and every gate run)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

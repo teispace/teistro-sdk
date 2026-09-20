@@ -1,6 +1,10 @@
 //! How a rule's answer was reached (`03-design/rules-engine.md`, "Rules
 //! classify and grade": the trace).
 //!
+//! Each step reads as a sentence and not as the schema's own word for a
+//! predicate ([`prose`](crate::prose)): the conditions inside a combination
+//! are the steps beneath it, so a step prints only its opening.
+//!
 //! [`Evaluator::explain`](crate::Evaluator::explain) answers what
 //! [`Evaluator::evaluate`](crate::Evaluator::evaluate) answers and also returns
 //! an [`Explanation`]: a tree of [`Step`]s, one for each condition checked, in
@@ -42,7 +46,7 @@
 //! assert_eq!(
 //!     explanation.to_string(),
 //!     "LORD_OF_TEN_IN_A_KENDRA: present, SATURN in house 1\n\
-//!      \u{20} holds planet-in-kendra, adding SATURN\n\
+//!      \u{20} holds: the lord of house 10 stands in a kendra, adding SATURN\n\
 //!      \u{20}   house 10 is CAPRICORN\n\
 //!      \u{20}   the lord of house 10 is SATURN\n\
 //!      \u{20}   the lord of house 10 stands in ARIES, house 1\n"
@@ -327,9 +331,9 @@ impl Step<'_> {
         let indent = "  ".repeat(depth + 1);
         write!(
             f,
-            "{indent}{} {}",
+            "{indent}{}: {}",
             if self.held { "holds" } else { "fails" },
-            self.condition.kind()
+            crate::prose::opening(self.condition)
         )?;
         if !self.added.is_empty() {
             write!(f, ", adding {}", keys(&self.added))?;

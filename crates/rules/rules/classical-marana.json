@@ -946,16 +946,11 @@
                   "type": "in-varga",
                   "varga": "D3",
                   "condition": {
-                    "type": "or",
-                    "conditions": [
-                      {
-                        "type": "same-body",
-                        "of": {
-                          "lordOf": "SUN"
-                        },
-                        "as": "JUPITER"
-                      }
-                    ]
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": "SUN"
+                    },
+                    "as": "JUPITER"
                   }
                 }
               ]
@@ -972,16 +967,11 @@
                   "type": "in-varga",
                   "varga": "D3",
                   "condition": {
-                    "type": "or",
-                    "conditions": [
-                      {
-                        "type": "same-body",
-                        "of": {
-                          "lordOf": "MOON"
-                        },
-                        "as": "JUPITER"
-                      }
-                    ]
+                    "type": "same-body",
+                    "of": {
+                      "lordOf": "MOON"
+                    },
+                    "as": "JUPITER"
                   }
                 }
               ]
@@ -1278,18 +1268,13 @@
       },
       "conditions": [
         {
-          "type": "or",
-          "conditions": [
-            {
-              "type": "planet-in-house",
-              "planet": "JUPITER",
-              "houses": [
-                12,
-                7,
-                6,
-                8
-              ]
-            }
+          "type": "planet-in-house",
+          "planet": "JUPITER",
+          "houses": [
+            12,
+            7,
+            6,
+            8
           ]
         }
       ],

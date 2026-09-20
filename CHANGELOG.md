@@ -1306,6 +1306,27 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- Every rule renders to prose (`03-design/rule-doc.md`, built). A condition is
+  one sentence and a rule a short passage carrying what it holds beside its
+  conditions — its groups and their labels, its cancellations and their
+  threshold, its severity, its outcomes, its timing, its remedies, its
+  citation — from one vocabulary in `teistro_rules::prose`, which the trace
+  reads too: a step prints "holds: the lord of house 10 stands in a kendra"
+  where it printed the schema's own `planet-in-kendra`. `cargo xtask rule-doc
+  <pack|category|key>` prints the passages; `check-rule-doc` holds the
+  measurement. `language::KINDS` lists the 64 predicates for whoever walks the
+  language, held against `Condition::kind` both ways by `check-lints`'
+  `every-predicate-is-listed`.
+
+  **Numbers:** none move. 1654 rules — the 997 shipped and the corpus's own
+  beside them — hold 5415 conditions written 2600 ways, which say 2596 things
+  and read as 2596 sentences: no two meanings share a sentence. Four
+  renderings are shared by two spellings of one meaning, and three of those
+  were single-armed combinators in `classical-marana.json`, simplified when
+  the pass first found them; `Or` of one condition is that condition, so no
+  answer moves. Two of the 64 kinds occur in no pack at all and are held by
+  the golden test alone.
+
 - Rules in every binding: Node's `rules` option and `chart.rules`, Python's
   `rules=` and `chart.rules`, Dart's `RuleRequest` and `chart.rules` — shipped
   sets and a consumer's own rules, answered in the chart's own crossing

@@ -10,6 +10,12 @@
 //! whether it is present, the bodies it consulted, their houses and the
 //! cancellations that held.
 //!
+//! A rule also says itself in English ([`prose`]): a condition is one
+//! sentence and a rule a passage carrying its groups, cancellations,
+//! severity, outcomes, timing, remedies and citation, so an astrologer
+//! reviews a change without reading the schema. The trace reads the same
+//! sentences (`03-design/rule-doc.md`).
+//!
 //! The language is the recording engine's, and its reading is the default:
 //! over the conformance corpus's 93 charts the kernel reproduces all 605 of
 //! its yoga rules' 55 521 decisions, their participants and their
@@ -36,6 +42,7 @@ pub mod eval;
 pub mod house;
 pub mod language;
 pub mod longevity;
+pub mod prose;
 pub mod reference;
 pub mod rule;
 pub mod shipped;

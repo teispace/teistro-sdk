@@ -1306,6 +1306,16 @@ pinned hash; rules that always co-fire across the corpus are flagged as
 probable duplicates; every rule renders to prose (`teistro rule-doc`) so
 an astrologer can review a change without reading the schema.
 
+**Built, the prose (2026-09-20)** — [`rule-doc.md`](rule-doc.md). A
+condition is one sentence and a rule a passage carrying everything it holds
+beside its conditions, from one vocabulary that the trace reads too: a step
+now prints "holds: the lord of house 10 stands in a kendra" where it printed
+the schema's own `planet-in-kendra`. `cargo xtask rule-doc <pack|category|key>`
+prints the passages and the pass measures them: 1654 rules' 5415 conditions
+are written 2600 ways, which say 2596 things and read as 2596 sentences, so
+no two meanings share a sentence. The three single-armed combinators it found
+in a shipped pack were simplified when it first ran.
+
 ## Sequencing
 
 1. `Ref` (changes every signature).

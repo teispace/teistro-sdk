@@ -1065,6 +1065,67 @@ fn matrix_rows(doc: &serde_yaml_ng::Value) -> Vec<&serde_yaml_ng::Value> {
     out
 }
 
+/// The condition language's kinds are listed once, and the list is complete.
+///
+/// `Condition::kind` names each predicate and `language::KINDS` lists them
+/// for whoever walks the language — the prose pass reports one rendering for
+/// each kind, and a kind missing from the list would simply not be reported.
+/// A private copy of a list is how a generator's description goes stale, so
+/// this holds the two against each other both ways.
+fn predicates_are_listed(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "every-predicate-is-listed";
+    const FILE: &str = "crates/rules/src/language.rs";
+    let Ok(text) = std::fs::read_to_string(root.join(FILE)) else {
+        outcome.failures.push(Finding {
+            file: String::from(FILE),
+            line: 1,
+            text: String::from("cannot be read"),
+            rule: RULE,
+        });
+        return;
+    };
+    let quoted = regex::Regex::new(r#""([a-z-]+)""#)
+        .unwrap_or_else(|error| panic!("the pattern compiles: {error}"));
+    let between = |start: &str, end: &str| -> Vec<String> {
+        text.split_once(start)
+            .and_then(|(_, rest)| rest.split_once(end))
+            .map(|(block, _)| {
+                quoted
+                    .captures_iter(block)
+                    .filter_map(|found| found.get(1).map(|name| String::from(name.as_str())))
+                    .collect()
+            })
+            .unwrap_or_default()
+    };
+    let listed = between("pub const KINDS: [&str; ", "];");
+    let named = between("pub const fn kind(&self)", "\n    }");
+    let line = text
+        .lines()
+        .position(|line| line.contains("pub const KINDS"))
+        .map_or(1, |at| at + 1);
+    for (left, right, what) in [
+        (&listed, &named, "listed but no predicate answers it"),
+        (&named, &listed, "answered by a predicate but not listed"),
+    ] {
+        for kind in left {
+            if !right.contains(kind) {
+                outcome.failures.push(Finding {
+                    file: String::from(FILE),
+                    line,
+                    text: format!("`{kind}` is {what}"),
+                    rule: RULE,
+                });
+            }
+        }
+    }
+    outcome.allowed.push(Finding {
+        file: String::from(FILE),
+        line,
+        text: format!("{} predicates listed", listed.len()),
+        rule: RULE,
+    });
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
@@ -1097,6 +1158,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     platform_runners(root, &mut outcome);
     targets_declare_their_features(root, &mut outcome);
     serialised_types_describe_themselves(root, &mut outcome);
+    predicates_are_listed(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -1113,6 +1175,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "runner-matches-the-platform-table",
         "target-declares-the-feature-it-needs",
         "serialised-type-describes-itself",
+        "every-predicate-is-listed",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();

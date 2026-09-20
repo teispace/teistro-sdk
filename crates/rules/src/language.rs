@@ -278,6 +278,87 @@ fn is_lagna(from: &SignRef) -> bool {
     *from == lagna()
 }
 
+/// Every kind of condition the language has, as a rule spells its `type`,
+/// in the order [`Condition::kind`] answers them.
+///
+/// A generator that walks the language — the prose pass reports one rendering
+/// for each kind — needs the list, and a list a reader keeps privately is a
+/// list that goes stale. `check-lints`' `every-predicate-is-listed` holds this
+/// one against the arms of [`Condition::kind`], both ways.
+///
+/// ```
+/// use teistro_rules::language::KINDS;
+///
+/// assert_eq!(KINDS.len(), 64);
+/// assert!(KINDS.contains(&"planet-in-kendra"));
+/// ```
+pub const KINDS: [&str; 64] = [
+    "and",
+    "or",
+    "not",
+    "planet-in-house",
+    "planet-in-sign",
+    "planet-dignity",
+    "planet-in-kendra",
+    "planet-in-trikona",
+    "planet-in-kendra-from",
+    "lord-of-house-in-kendra",
+    "lord-of-house-in-house",
+    "planet-conjunct",
+    "planet-in-house-from",
+    "no-planet-in-houses-from",
+    "mutual-exchange",
+    "lord-conjunct-lord",
+    "all-planets-between-nodes",
+    "occupied-sign-count",
+    "all-classical-grahas-in-houses",
+    "n-grahas-conjunct-with",
+    "chara-karaka-in-house",
+    "planet-combust",
+    "planet-retrograde",
+    "planet-aspects-planet",
+    "planet-aspects-house",
+    "planet-at-table-degree",
+    "planet-in-table-sign",
+    "lord-of-house-debilitated",
+    "lord-of-house-combust",
+    "lord-of-house-strong",
+    "lord-of-house-is",
+    "lord-of-house-conjunct-planet",
+    "lagna-in-sign",
+    "planet-in-house-and-sign",
+    "planet-at-gandanta",
+    "planet-in-degrees",
+    "panchanga-tithi",
+    "panchanga-paksha",
+    "panchanga-vara",
+    "panchanga-nakshatra",
+    "panchanga-yoga",
+    "panchanga-karana",
+    "birth-during-eclipse",
+    "birth-on-sankranti",
+    "planet-in-nakshatra",
+    "same-nakshatra",
+    "planet-strong",
+    "planet-weak",
+    "planet-stronger-than",
+    "rashi-aspects",
+    "argala",
+    "vipareeta-argala",
+    "for-any",
+    "count-of",
+    "in-varga",
+    "count-in-houses",
+    "count-aspecting",
+    "rule",
+    "at-limb-edge",
+    "birth-by-day",
+    "same-sign",
+    "same-body",
+    "planet-is",
+    "natural-relation",
+];
+
 /// A condition: a predicate over the chart, or a combination of conditions.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(
