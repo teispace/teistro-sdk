@@ -280,6 +280,7 @@ def main() -> None:
                 ("chart_layout.ACME_KERALA", Varga.D9),
             ],
             theme="dark",
+            rules={"shipped": ["nabhasas"], "longevity": True},
             aspects=True,
             points=True,
             houses=True,
@@ -398,6 +399,10 @@ def main() -> None:
                 put(f"chart-{i}-aspect-{k}-strength", one.strength.key)
                 put(f"chart-{i}-aspect-{k}-from-sign", one.from_edge.sign_deg)
                 put(f"chart-{i}-aspect-{k}-to-sign", one.to_edge.sign_deg)
+            answered = chart.rules
+            assert answered is not None
+            put(f"chart-{i}-rules-present", ",".join(held["rule"] for held in answered["present"]))
+            put(f"chart-{i}-rules-pindayu", answered["longevity"]["ayurdaya"]["pindayu"]["years"])
             for d, drawing in enumerate(chart.drawings):
                 key = f"chart-{i}-drawing-{d}"
                 put(key, drawing.layout_key)

@@ -231,6 +231,9 @@ __all__ = [
     "ChartLayout",
     "Drawing",
     "LayoutRow",
+    "RuleRequest",
+    "RulesReading",
+    "ShippedRules",
     "Theme",
     "ThemeContent",
     "ThemeRecord",
@@ -1011,6 +1014,7 @@ class ChartArea(_Area):
         dashas: Sequence[Union[DashaSystem, str]] = (),
         drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
         theme: Optional[Theme] = None,
+        rules: Optional[RuleRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1044,6 +1048,7 @@ class ChartArea(_Area):
             dashas=dashas,
             drawings=drawings,
             theme=theme,
+            rules=rules,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1067,6 +1072,7 @@ class ChartArea(_Area):
         dashas: Sequence[Union[DashaSystem, str]] = (),
         drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
         theme: Optional[Theme] = None,
+        rules: Optional[RuleRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1120,6 +1126,7 @@ class ChartArea(_Area):
             dashas=_dasha_ids(dashas, self._context._registered_dashas),
             drawings=_drawing_bits(drawings, self._context._registered_layouts),
             theme_json=_theme_json(theme),
+            rules_json=_rules_json(rules),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -2463,6 +2470,46 @@ def _theme_json(theme: Optional[Theme]) -> Optional[str]:
     )
 
 
+ShippedRules = Literal["doshas", "yogas", "gandantas", "arishtas", "readings", "nabhasas"]
+"""A set of rules the SDK ships."""
+
+
+class RuleRequest(TypedDict, total=False):
+    """The rules a request asks a chart to answer
+    (`03-design/rules-at-the-boundary.md`): shipped sets by name and a
+    consumer's own rules in the SDK's rule format."""
+
+    shipped: List[ShippedRules]
+    rules: List[Mapping[str, Any]]
+    readings: Literal["texts", "recording-engine"]
+    houses: bool
+    longevity: bool
+
+
+class RulesReading(TypedDict, total=False):
+    """What a chart answers by rule, as the SDK writes it: `present`, each
+    `{rule, result}` with the rule by key, and `houses` and `longevity` when
+    asked. A maraka result is a vulnerability, never a date."""
+
+    present: List[Dict[str, Any]]
+    houses: List[Dict[str, Any]]
+    longevity: Dict[str, Any]
+    unreadable: List[str]
+
+
+def _rules_json(rules: Optional[RuleRequest]) -> Optional[str]:
+    """The rules as the JSON the boundary reads, or nothing for none."""
+    if rules is None:
+        return None
+    if isinstance(rules, Mapping):
+        return json.dumps(rules)
+    raise TeistroError(
+        Status.INVALID_ARG,
+        "rules is a rule request record, such as {'shipped': ['nabhasas']}",
+        field="rules",
+    )
+
+
 @dataclass(frozen=True)
 class Drawing:
     """A chart drawn in a layout (`03-design/chart-geometry.md`)."""
@@ -2888,6 +2935,13 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else []
 
     @property
+    def rules(self) -> Optional[RulesReading]:
+        """What this chart answers by rule; `None` unless the request named
+        rules (`03-design/rules-at-the-boundary.md`)."""
+        parsed = self.batch._rules
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def drawings(self) -> list[Drawing]:
         """The charts drawn in the layouts asked for, in the order asked;
         empty unless `drawings` named some (`03-design/chart-geometry.md`).
@@ -3005,6 +3059,12 @@ class ChartBatch:
     def __len__(self) -> int:
         """How many charts the batch holds."""
         return self.decoded.chart_count
+
+    @cached_property
+    def _rules(self) -> list[RulesReading]:
+        """Every chart's answers by rule, parsed once; empty when none were asked for."""
+        text = self.decoded.rules
+        return json.loads(text) if text else []
 
     @cached_property
     def _drawings(self) -> list[list[Drawing]]:

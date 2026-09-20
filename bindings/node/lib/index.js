@@ -683,6 +683,16 @@ export class Chart {
   }
 
   /**
+   * What this chart answers by rule, as the SDK writes it: `present`, each
+   * `{ rule, result }` with the rule by key, and `houses` and `longevity` when
+   * the request asked; `null` unless the request named rules
+   * (`03-design/rules-at-the-boundary.md`).
+   */
+  get rules() {
+    return rulesOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The drishti this chart casts, strongest first among those a body
    * casts; empty unless `aspects: true` asked for them.
    *
@@ -1799,6 +1809,7 @@ class ChartArea extends Area {
         dashas: dashaIds(request.dashas, this.#dashas),
         drawings: drawingBits(request.drawings, this.#registered),
         themeJson: themeJson(request.theme),
+        rulesJson: rulesJson(request.rules),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -2121,6 +2132,55 @@ function shadbalasOf(batch) {
     SHADBALAS.set(batch, decoded);
   }
   return decoded;
+}
+
+/** Each batch's rule answers, parsed once however many charts read them. */
+const RULES = new WeakMap();
+
+/**
+ * Every chart's answers by rule in a batch: the `rules` section's JSON, one
+ * entry a chart, frozen as it was written.
+ *
+ * @param {Charts} batch
+ * @returns {object[]}
+ */
+function rulesOf(batch) {
+  let parsed = RULES.get(batch);
+  if (parsed === undefined) {
+    const { rules } = batch.decoded;
+    parsed = rules ? JSON.parse(rules).map((chart) => deepFreeze(chart)) : [];
+    RULES.set(batch, parsed);
+  }
+  return parsed;
+}
+
+/**
+ * A value frozen to its leaves, so a reading handed out is a reading kept.
+ *
+ * @template T
+ * @param {T} value
+ * @returns {T}
+ */
+function deepFreeze(value) {
+  if (value !== null && typeof value === 'object') {
+    for (const inner of Object.values(value)) deepFreeze(inner);
+    Object.freeze(value);
+  }
+  return value;
+}
+
+/**
+ * The rules a request asks a chart to answer, as the JSON the boundary reads
+ * (`03-design/rules-at-the-boundary.md`). The SDK refuses what it cannot read,
+ * naming the field from `rules_json`.
+ *
+ * @param {object|undefined} rules
+ * @returns {string|undefined}
+ */
+function rulesJson(rules) {
+  if (rules === undefined || rules === null) return undefined;
+  if (typeof rules === 'object' && !Array.isArray(rules)) return JSON.stringify(rules);
+  throw new TypeError('rules: expected a rule request record, e.g. { shipped: ["nabhasas"] }');
 }
 
 /** Each batch's drawings, parsed once however many charts read them. */

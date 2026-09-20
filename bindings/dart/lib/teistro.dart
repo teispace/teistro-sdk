@@ -699,6 +699,7 @@ final class ChartArea extends _Area {
     List<(KeyOf<ChartLayout>, Varga)> drawings =
         const <(KeyOf<ChartLayout>, Varga)>[],
     ChartTheme? theme,
+    RuleRequest? rules,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -718,6 +719,7 @@ final class ChartArea extends _Area {
     dashas: dashas,
     drawings: drawings,
     theme: theme,
+    rules: rules,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -757,6 +759,7 @@ final class ChartArea extends _Area {
     List<(KeyOf<ChartLayout>, Varga)> drawings =
         const <(KeyOf<ChartLayout>, Varga)>[],
     ChartTheme? theme,
+    RuleRequest? rules,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -797,6 +800,7 @@ final class ChartArea extends _Area {
             dashas: _dashaIds(dashas, _context._registeredDashas),
             drawings: _drawingBits(drawings, _context._registeredLayouts),
             themeJson: theme?._json,
+            rulesJson: rules?._json,
           ),
         ),
       ),
@@ -3309,6 +3313,89 @@ Dasha _dashaOf(Charts batch, int row, int start, int count) {
   );
 }
 
+/// Each batch's answers by rule, parsed once however many charts read them.
+final Expando<List<Map<String, Object?>>> _rules =
+    Expando<List<Map<String, Object?>>>('rules');
+
+List<Map<String, Object?>> _rulesOf(Charts batch) =>
+    _rules[batch] ??=
+        batch.rules.isEmpty
+            ? const <Map<String, Object?>>[]
+            : [
+              for (final chart in jsonDecode(batch.rules) as List<Object?>)
+                chart! as Map<String, Object?>,
+            ];
+
+/// A set of rules the SDK ships.
+enum ShippedRules {
+  /// The recording engine's doshas the SDK computes.
+  doshas,
+
+  /// The recording engine's yogas the SDK computes.
+  yogas,
+
+  /// The gandantas of BPHS ch. 92.
+  gandantas,
+
+  /// The evils at birth and their cancellations.
+  arishtas,
+
+  /// The generated readings of a graha, a pair and a rising part.
+  readings,
+
+  /// The yogas, doshas and classes of life written from the texts.
+  nabhasas,
+}
+
+/// The readings a request evaluates rules under.
+enum RuleReadings {
+  /// The texts' readings wherever a text settles one.
+  texts('texts'),
+
+  /// The recording engine's.
+  recordingEngine('recording-engine');
+
+  const RuleReadings(this._key);
+  final String _key;
+}
+
+/// The rules a request asks a chart to answer
+/// (`03-design/rules-at-the-boundary.md`): shipped sets by name and a
+/// consumer's own rules in the SDK's rule format.
+final class RuleRequest {
+  /// A request for [shipped] sets and a consumer's own [rules].
+  const RuleRequest({
+    this.shipped = const <ShippedRules>[],
+    this.rules = const <Map<String, Object?>>[],
+    this.readings = RuleReadings.texts,
+    this.houses = false,
+    this.longevity = false,
+  });
+
+  /// The shipped sets to evaluate.
+  final List<ShippedRules> shipped;
+
+  /// A consumer's own rules, which may name shipped rules by key.
+  final List<Map<String, Object?>> rules;
+
+  /// The readings to evaluate under.
+  final RuleReadings readings;
+
+  /// Whether to add the twelve house readings.
+  final bool houses;
+
+  /// Whether to add the three pairs, the three spans and the marakas.
+  final bool longevity;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'shipped': [for (final set in shipped) set.name],
+    'rules': rules,
+    'readings': readings._key,
+    'houses': houses,
+    'longevity': longevity,
+  });
+}
+
 /// Each batch's drawings, parsed once however many charts read them.
 final Expando<List<List<Drawing>>> _drawings = Expando<List<List<Drawing>>>(
   'drawings',
@@ -3699,6 +3786,15 @@ final class Chart {
   List<Drawing> get drawings {
     final all = _drawingsOf(batch);
     return index < all.length ? all[index] : const <Drawing>[];
+  }
+
+  /// What this chart answers by rule, as the SDK writes it: `present`, each
+  /// `{rule, result}` with the rule by key, and `houses` and `longevity` when
+  /// asked; null unless the request named rules
+  /// (`03-design/rules-at-the-boundary.md`).
+  Map<String, Object?>? get rules {
+    final all = _rulesOf(batch);
+    return index < all.length ? all[index] : null;
   }
 
   /// The divisional charts asked for, in the order they were asked.

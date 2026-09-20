@@ -301,6 +301,7 @@ void main() {
       (ChartLayout.registered('ACME_KERALA'), Varga.d9),
     ],
     theme: ChartTheme.dark,
+    rules: const RuleRequest(shipped: [ShippedRules.nabhasas], longevity: true),
     aspects: true,
     points: true,
     houses: true,
@@ -418,6 +419,20 @@ void main() {
       put('chart-$i-aspect-$k-from-sign', one.fromEdge.signDeg);
       put('chart-$i-aspect-$k-to-sign', one.toEdge.signDeg);
     }
+    final answered = chart.rules!;
+    put(
+      'chart-$i-rules-present',
+      (answered['present']! as List<Object?>)
+          .map((held) => (held! as Map<String, Object?>)['rule'])
+          .join(','),
+    );
+    final ayurdaya =
+        (answered['longevity']! as Map<String, Object?>)['ayurdaya']!
+            as Map<String, Object?>;
+    put(
+      'chart-$i-rules-pindayu',
+      (ayurdaya['pindayu']! as Map<String, Object?>)['years'],
+    );
     final drawings = chart.drawings;
     for (var d = 0; d < drawings.length; d += 1) {
       final drawing = drawings[d];

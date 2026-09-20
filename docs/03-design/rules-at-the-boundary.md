@@ -1,6 +1,6 @@
 # Rules at the boundary: a chart reading that answers rules in every binding
 
-Status: `design`, 2026-09-17; steps 1 and 2 built the same day. It settles the question
+Status: `built`, designed and built 2026-09-17. It settles the question
 [`surface-areas.md`](surface-areas.md) §9 left open — how a rule and a rule
 result cross the C ABI — so that Node, Dart and Python reach the kernel
 [`rules-engine.md`](rules-engine.md) describes, which Rust reaches today
@@ -149,5 +149,16 @@ The JSON is written once per chart.
    rules, and a rule that does not read refused as `rules_json.rules[0]`.
 3. Node, Dart and Python: the option and the parsed section, each binding's
    own test, and the parity runners printing each chart's present keys, so
-   `check-parity` holds the four to one answer.
+   `check-parity` holds the four to one answer. **Built**: Node's `rules`
+   option and `chart.rules` (typed `RuleRequest` and `RulesReading`, frozen to
+   the leaves), Python's `rules=` argument and `chart.rules` (strict
+   `TypedDict`s), Dart's `RuleRequest` with `ShippedRules` and `RuleReadings`
+   and `chart.rules`; each binding's test answers the Nabhasa set, finds a
+   consumer's rule naming a shipped one by key present, and sees a malformed
+   rule refused as `rules_json.rules[0]`. The four parity runners ask for the
+   Nabhasa set with longevity and print each chart's present keys and its
+   Pindayu; **all four agree on every one of 6 758 values** (the Rust runner
+   reading with `readings_with_rules`, as the boundary does).
 4. `check-areas` and the surface pages, and `surface-areas.md` §9 closed.
+   **Done**: the rules ride on the `chart` area's `found`, so no area is added
+   and the measured pages hold as they were.

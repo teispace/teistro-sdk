@@ -1306,6 +1306,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- Rules in every binding: Node's `rules` option and `chart.rules`, Python's
+  `rules=` and `chart.rules`, Dart's `RuleRequest` and `chart.rules` — shipped
+  sets and a consumer's own rules, answered in the chart's own crossing
+  (`03-design/rules-at-the-boundary.md`, built).
+
+  **Numbers:** the four parity runners ask for the Nabhasa set with longevity
+  and agree on all 6 758 values, each chart's present rules and Pindayu among
+  them.
+
 - Rules at the C boundary: `TsChartRequest` gains a nullable `rules_json`, and
   section 33 `rules` of the charts blob carries each chart's answers as
   canonical JSON, rules by key. A held rule in a house reading is written by

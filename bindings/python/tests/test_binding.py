@@ -39,6 +39,8 @@ from teistro import (
     Teistro,
     TeistroError,
     TimeScale,
+    RuleRequest,
+    RulesReading,
     Theme,
     Varga,
     VimshopakaScoring,
@@ -610,6 +612,40 @@ class AnEngine(WithLibrary):
         with self.assertRaises(TeistroError) as unknown:
             found("sepia")  # type: ignore[arg-type]
         self.assertEqual(unknown.exception.field, "theme_json.extends")
+
+    def test_rules_are_answered_in_the_same_crossing_and_a_wrong_one_is_refused(self) -> None:
+        """A request's rules come back as each chart's `rules`, a consumer's own
+        rule naming a shipped one by key, with the longevity readings; a rule
+        that does not read is refused by its place
+        (`03-design/rules-at-the-boundary.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+
+        def found(rules: Optional[RuleRequest]) -> Optional[RulesReading]:
+            return self.ctx.chart.found(
+                instant=2451545.0, place=observer, utc_offset_seconds=20700, rules=rules
+            ).rules
+
+        self.assertIsNone(found(None), "no rules, no answers")
+        answered = found({"shipped": ["nabhasas"], "longevity": True})
+        assert answered is not None
+        present = answered["present"]
+        self.assertTrue(present)
+        for held in present:
+            self.assertIsInstance(held["rule"], str)
+            self.assertIs(held["result"]["present"], True)
+        self.assertIsInstance(answered["longevity"]["ayurdaya"]["pindayu"]["years"], float)
+
+        mine = {"key": "MINE", "category": "raja", "source": {"text": "BPHS"},
+                "conditions": [{"type": "rule", "key": present[0]["rule"]}]}
+        with_mine = found({"shipped": ["nabhasas"], "rules": [mine]})
+        assert with_mine is not None
+        self.assertTrue(any(held["rule"] == "MINE" for held in with_mine["present"]))
+
+        with self.assertRaises(TeistroError) as wrong:
+            found({"rules": [{"key": "X", "category": "raja"}]})
+        self.assertEqual(wrong.exception.field, "rules_json.rules[0]")
 
     def test_a_chart_carries_its_ashtakavarga_and_each_graha_s_reductions(self) -> None:
         """A chart's Ashtakavarga crosses whole: each graha's bindus holding the

@@ -258,6 +258,9 @@ const charts = geo.chart.foundMany({
   ],
   // Every drawing written as SVG too, so the four agree on the bytes.
   theme: 'dark',
+  // The text-written rules and the longevity readings, so the four agree on
+  // what every chart answers by rule.
+  rules: { shipped: ['nabhasas'], longevity: true },
   aspects: true,
   points: true,
   houses: true,
@@ -345,6 +348,8 @@ for (const chart of charts) {
     put(`chart-${i}-aspect-${k}-from-sign`, drishti.fromEdge.signDeg);
     put(`chart-${i}-aspect-${k}-to-sign`, drishti.toEdge.signDeg);
   });
+  put(`chart-${i}-rules-present`, chart.rules.present.map((held) => held.rule).join(','));
+  put(`chart-${i}-rules-pindayu`, chart.rules.longevity.ayurdaya.pindayu.years);
   chart.drawings.forEach((drawing, d) => {
     const key = `chart-${i}-drawing-${d}`;
     put(key, drawing.layout);

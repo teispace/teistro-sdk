@@ -717,6 +717,38 @@ export interface ThemeContent {
   readonly degrees?: boolean;
 }
 
+/** A set of rules the SDK ships. */
+export type ShippedRules = 'doshas' | 'yogas' | 'gandantas' | 'arishtas' | 'readings' | 'nabhasas';
+
+/**
+ * The rules a request asks a chart to answer (`03-design/rules-at-the-boundary.md`):
+ * shipped sets by name and a consumer's own rules in the SDK's rule format.
+ */
+export interface RuleRequest {
+  /** The shipped sets to evaluate. */
+  readonly shipped?: readonly ShippedRules[];
+  /** A consumer's own rules, which may name shipped rules by key. */
+  readonly rules?: readonly Readonly<Record<string, unknown>>[];
+  /** The readings to evaluate under; `'texts'` by default. */
+  readonly readings?: 'texts' | 'recording-engine';
+  /** Whether to add the twelve house readings. */
+  readonly houses?: boolean;
+  /** Whether to add the three pairs, the three spans and the marakas. */
+  readonly longevity?: boolean;
+}
+
+/** What a chart answers by rule, as the SDK writes it. */
+export interface RulesReading {
+  /** Every rule that held, in the set's order, each by key with what it answered. */
+  readonly present: readonly { readonly rule: string; readonly result: Readonly<Record<string, unknown>> }[];
+  /** The twelve house readings, when asked for. */
+  readonly houses?: readonly Readonly<Record<string, unknown>>[];
+  /** The longevity readings, when asked for; a maraka result is a vulnerability, never a date. */
+  readonly longevity?: Readonly<Record<string, unknown>>;
+  /** An input a rule named that the chart could not have, such as `'points'`. */
+  readonly unreadable?: readonly string[];
+}
+
 /**
  * The theme a request writes its drawings as SVG in: a shipped theme's name,
  * or a record naming only what it changes (`03-design/render-svg.md`).
@@ -965,6 +997,8 @@ export declare class Chart {
   readonly vargas: readonly DivisionalChart[];
   /** The charts drawn in the layouts asked for, in the order asked; empty unless `drawings` named some. */
   readonly drawings: readonly Drawing[];
+  /** What the chart answers by rule; `null` unless `rules` named some. */
+  readonly rules: RulesReading | null;
   /** The dashas asked for, in the order asked; empty unless `dashas` named some. */
   readonly dashas: readonly Dasha[];
   /** The Ashtakavarga; `null` unless `ashtakavarga` asked for it. */
@@ -1234,6 +1268,12 @@ export interface ChartRequest {
    * `svg`; no SVG by default.
    */
   readonly theme?: Theme;
+  /**
+   * Rules to answer over every chart, read back as each chart's `rules`; the
+   * sections they read are computed whether or not they are asked for here.
+   * None by default.
+   */
+  readonly rules?: RuleRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

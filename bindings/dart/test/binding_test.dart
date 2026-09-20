@@ -637,6 +637,81 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('rules are answered in the same crossing, and a wrong one is refused '
+      'by its field', () {
+    final ctx = context();
+    Map<String, Object?>? found(RuleRequest? rules) =>
+        ctx.chart
+            .found(
+              instant: 2451545.0,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              rules: rules,
+            )
+            .rules;
+
+    expect(found(null), isNull, reason: 'no rules, no answers');
+    final answered =
+        found(
+          const RuleRequest(shipped: [ShippedRules.nabhasas], longevity: true),
+        )!;
+    final present = answered['present']! as List<Object?>;
+    expect(present, isNotEmpty);
+    for (final held in present.cast<Map<String, Object?>>()) {
+      expect(held['rule'], isA<String>());
+      expect((held['result']! as Map<String, Object?>)['present'], isTrue);
+    }
+    final longevity = answered['longevity']! as Map<String, Object?>;
+    final ayurdaya = longevity['ayurdaya']! as Map<String, Object?>;
+    expect((ayurdaya['pindayu']! as Map<String, Object?>)['years'], isA<num>());
+
+    final first = (present.first! as Map<String, Object?>)['rule']! as String;
+    final withMine =
+        found(
+          RuleRequest(
+            shipped: const [ShippedRules.nabhasas],
+            rules: [
+              <String, Object?>{
+                'key': 'MINE',
+                'category': 'raja',
+                'source': <String, Object?>{'text': 'BPHS'},
+                'conditions': [
+                  <String, Object?>{'type': 'rule', 'key': first},
+                ],
+              },
+            ],
+          ),
+        )!;
+    expect(
+      (withMine['present']! as List<Object?>).cast<Map<String, Object?>>().any(
+        (held) => held['rule'] == 'MINE',
+      ),
+      isTrue,
+    );
+
+    expect(
+      () => found(
+        const RuleRequest(
+          rules: [
+            <String, Object?>{'key': 'X', 'category': 'raja'},
+          ],
+        ),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'rules_json.rules[0]',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a layout of your own is registered, drawn by its key, and refused by '
       'its field', () {
     final base = context();

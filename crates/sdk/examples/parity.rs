@@ -99,6 +99,33 @@ fn resolution(of: &CalendarResolution) -> &'static str {
     }
 }
 
+/// What every chart answers by rule, as the report prints it: the rules of the
+/// set that held, by key, and the Pindayu the three spans give
+/// (`03-design/rules-at-the-boundary.md`).
+fn the_rules(report: &mut Report, by_rule: &[teistro::RulesReading<'_>]) {
+    for (index, reading) in by_rule.iter().enumerate() {
+        let keys: Vec<&str> = reading
+            .present
+            .iter()
+            .map(|held| held.rule.key.as_str())
+            .collect();
+        put(
+            report,
+            &format!("chart-{index}-rules-present"),
+            keys.join(","),
+        );
+        let pindayu = reading
+            .longevity
+            .as_ref()
+            .map_or(0.0, |longevity| longevity.ayurdaya.pindayu.years);
+        put(
+            report,
+            &format!("chart-{index}-rules-pindayu"),
+            number(pindayu),
+        );
+    }
+}
+
 /// The report, as a map so the keys come out sorted whatever order the
 /// sections are written in.
 type Report = BTreeMap<String, String>;
@@ -762,10 +789,18 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         JulianDay::<Utc>::literal(2_460_600.25),
     ];
     let asked = the_chart_request(place, offset, &geo);
-    let read = geo
+    // The text-written rules and the longevity readings, as the other three
+    // ask for them, so the four agree on what every chart answers by rule.
+    let rules = teistro::RuleRequest::shipped([teistro::ShippedRules::Nabhasas])
+        .with_longevity()
+        .rule_set()
+        .expect("a valid set");
+    let answered = geo
         .chart()
-        .readings(&instants, &asked)
+        .readings_with_rules(&instants, &asked, &rules)
         .expect("the test provider");
+    let (documents, by_rule): (Vec<_>, Vec<_>) = answered.value.into_iter().unzip();
+    let read = Envelope::new(documents, answered.provenance);
     put(
         report,
         "chart-varga-count",
@@ -782,6 +817,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
             .and_then(|d| d.aspects.as_ref())
             .map_or_else(String::new, |a| a.table().to_owned()),
     );
+    the_rules(report, &by_rule);
     for (index, document) in read.value.iter().enumerate() {
         the_drawings(report, &geo, index, document);
         one_varga_chart(report, index, document);

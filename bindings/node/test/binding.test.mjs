@@ -739,6 +739,49 @@ test('a drawing names a layout and a varga or is refused', () => {
 });
 
 /**
+ * A request's rules come back as each chart's `rules`: the shipped set's and a
+ * consumer's own, the consumer's naming a shipped one by key, with the
+ * longevity readings asked for; a rule that does not read is refused by its
+ * place (`03-design/rules-at-the-boundary.md`).
+ */
+test('rules are answered in the same crossing, and a wrong one is refused by its field', () => {
+  const ctx = context();
+  const request = {
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  assert.equal(ctx.chart.found(request).rules, null, 'no rules, no answers');
+
+  const answered = ctx.chart.found({ ...request, rules: { shipped: ['nabhasas'], longevity: true } }).rules;
+  assert.ok(answered.present.length > 0);
+  for (const held of answered.present) {
+    assert.equal(typeof held.rule, 'string');
+    assert.equal(held.result.present, true);
+  }
+  assert.equal(typeof answered.longevity.ayurdaya.pindayu.years, 'number');
+  assert.ok(Object.isFrozen(answered.present[0].result), 'a reading handed out is a reading kept');
+
+  // A consumer's rule naming a shipped one holds where it holds.
+  const shipped = answered.present[0].rule;
+  const mine = {
+    key: 'MINE',
+    category: 'raja',
+    source: { text: 'BPHS' },
+    conditions: [{ type: 'rule', key: shipped }],
+  };
+  const withMine = ctx.chart.found({ ...request, rules: { shipped: ['nabhasas'], rules: [mine] } }).rules;
+  assert.ok(withMine.present.some((held) => held.rule === 'MINE'));
+
+  assert.throws(
+    () => ctx.chart.found({ ...request, rules: { rules: [{ key: 'X', category: 'raja' }] } }),
+    (error) => error instanceof TeistroError && error.field === 'rules_json.rules[0]',
+  );
+  assert.throws(() => ctx.chart.found({ ...request, rules: ['nabhasas'] }), /rules: expected/u);
+  ctx.dispose();
+});
+
+/**
  * A theme writes every drawing as SVG in the context's locale; every field a
  * theme record can name is one the SDK reads, and a wrong one is refused by
  * its path.
