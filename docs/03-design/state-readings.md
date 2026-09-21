@@ -57,10 +57,14 @@ the spellings would differ and named `ASHWINI` against a catalogue
 |---|---:|---:|---|
 | key an existing kind exactly | 21 | 233 | nothing |
 | name a shipped rule | 1 | 62 | nothing |
-| key an existing kind by prefix | 1 | 12 | twelve written aliases |
+| key an existing kind under another spelling | 2 | 15 | fifteen written aliases |
 | a graha and a house together | 1 | 108 | one open kind |
-| key **two** existing kinds | 1 | 7 | two candidate kinds, and one refusal |
-| no subject in the SDK yet | 13 | 131 | a decision each |
+| key **two** existing kinds | 1 | 7 | two candidate kinds |
+| no subject in the SDK yet | 12 | 126 | a decision each |
+
+Three further keys of mapped categories are **refused by name** (§4), so
+the rows above account for 551 of the 554 records and the refusals for the
+rest.
 
 The 21 are `avastha-baladi`, `avastha-jagradadi`, `avastha-deeptadi`,
 `avastha-lajjitadi`, `gana`, `nadi`, `yoni`, `varna`, `tatwa`,
@@ -89,11 +93,14 @@ reading. A timing says when a dosha acts, not what it means, and calling
 it a reading would be a claim the corpus does not make. The measured page
 prints the three numbers apart for that reason.
 
-**`lagna-rashi` is a prefix and `graha-bhava` is a pair.** `LAGNA_ARIES`
-is `rashi.ARIES` behind a prefix, and stripping it would be exactly the
-inference §4 of the rule-readings page forbids — a rule that worked for
-twelve keys and would quietly mis-file the thirteenth. Twelve written
-aliases cost twelve lines and cannot mis-file anything.
+**Two categories spell a member's key their own way, and `graha-bhava` is
+a pair.** `LAGNA_ARIES` is `rashi.ARIES` behind a prefix, and
+`inauspicious-kaal`'s `yamaganda` is `kaala.YAMAGHANDA` behind nothing at
+all — no normalisation turns one into the other. Stripping the prefix
+would be exactly the inference §4 of the rule-readings page forbids: a
+rule that worked for twelve keys and would quietly mis-file the
+thirteenth. Fifteen written aliases cost fifteen lines and cannot
+mis-file anything.
 `graha-bhava`'s 108 keys are `JUP_IN_1` … `KETU_IN_12`: nine grahas by
 abbreviation against twelve houses, and the only key in the whole corpus
 that names two subjects at once.
@@ -154,7 +161,8 @@ refused both ways by the gate.
 | `planet-condition` | `dignity.<KEY>` or `state.<KEY>`, whichever names it | `phala` |
 | the 21 above | the kind of the same subject | a written word: `phala` for most, `namakarana`, `ishtaDevata`, `direction`, `colour`, `mantra`, `dashaPhala`, `dashaActivation` |
 | `dosha-timing` | `rule.<KEY>`, the open kind | `timing` |
-| `lagna-rashi` | `rashi.<SIGN>`, by twelve written aliases | `lagnaPhala` |
+| `lagna-rashi` | `rashi.<SIGN>`, by written alias | `lagnaPhala` |
+| `inauspicious-kaal` | `kaala.<KEY>`, by written alias | `phala` |
 | `graha-bhava` | `graha_bhava.<GRAHA>_IN_<house>` | a record of its own: `name`, `prose`, facets |
 
 **A category may name more than one kind, and a key must name exactly
@@ -167,14 +175,16 @@ and **two would be an ambiguity the table has to settle** rather than
 something to pick between. `shadbala-strength` and `muhurta-factor` will
 want the same widening when something says them.
 
-**A key with no subject is refused by name, not dropped.**
-`planet-condition`'s eighth key is `COMBUST_CANCELLED`, and the SDK
-computes combustion but not its cancellation, so no member names it.
-`migrate::STATE_REFUSALS` carries it with the reason, and the gate holds
+**A key with no subject is refused by name, not dropped.** Three are:
+`planet-condition`'s `COMBUST_CANCELLED`, because the SDK computes
+combustion and not its cancellation; and `inauspicious-kaal`'s
+`dur-muhurta` and `varjyam`, because it divides the day into muhurtas
+without naming any of them and computes no varjyam window at all.
+`migrate::STATE_REFUSALS` carries each with its reason, and the gate holds
 the list both ways: a key there that names a member now fails, and a key
-that names none and is not there fails. Without it a corpus with one known
-gap would fail the migration on every run, and the pressure would be to
-widen the check rather than to record the gap.
+that names none and is not there fails. Without it a corpus with three
+known gaps would fail the migration on every run, and the pressure would
+be to widen the check rather than to record the gaps.
 
 **The form is written beside the category and not derived from it**, for
 the same reason the keys are. A reading's passage and its facets take the
@@ -258,9 +268,9 @@ before — *every shipped rule carries a reading* — becomes one it can.
    (`export-state-readings.mjs`): 38 categories, 554 records, 5 facets.
 3. **`teistro-intl migrate states`**, with the category table of §4, the
    twelve lagna aliases and the nine graha abbreviations, reporting every
-   category it did not map. **Built**: 25 categories, 422 readings into
-   347 records in each of four locales, 0 unknown keys, 1 refused by name,
-   13 categories reported unmapped.
+   category it did not map. **Built**: 26 categories, 425 readings into
+   350 records in each of four locales, 0 unknown keys, 3 refused by name,
+   12 categories reported unmapped.
 
    Migrating an **overlay** root found three things the loader and the
    validator had only ever seen complete roots do. A record was
@@ -290,11 +300,10 @@ before — *every shipped rule carries a reading* — becomes one it can.
 
 ## 8. What this design does not settle
 
-- **The 13 categories with no subject here yet**, 131 records: the eight
+- **The 12 categories with no subject here yet**, 126 records: the eight
   `ayurdaya-*` families (41), `muhurta-factor` (47),
-  `shadbala-strength` (28), `sade-sati-phala` (5), `auspicious-kaal` (5)
-  and `inauspicious-kaal` (5). Three shapes among them, and each is a
-  decision rather than a task.
+  `shadbala-strength` (28), `sade-sati-phala` (5) and `auspicious-kaal`
+  (5). Three shapes among them, and each is a decision rather than a task.
 
   `shadbala-strength` and `muhurta-factor` are **composite keys** like
   `graha-bhava` — a graha and a strength band, a factor and a verdict — so
@@ -304,9 +313,19 @@ before — *every shipped rule carries a reading* — becomes one it can.
   than migrating one, so the records would arrive at a key space nothing
   can produce. That is why they wait on the module and not on this page.
 
-  `sade-sati-phala` waits on Phase 7's `gochar`, and the `-kaal` families
-  on its muhurta search. The `ayurdaya-*` families key onto a longevity
-  model the SDK has not built.
+  `auspicious-kaal` is the one whose reason had to be corrected by
+  checking rather than assumed. Its subjects are not unmodelled: the SDK
+  computes **Abhijit** and **Brahma** muhurta today
+  (`panchanga::Muhurtas`). It carries them as *fields* rather than as
+  catalogue members, and Vijaya and Godhuli it does not compute at all, so
+  there is no key space to migrate into — a kind naming the auspicious
+  muhurtas is a catalogue decision with its own sourcing, not a step here.
+  Its sibling `inauspicious-kaal` went the other way for the same reason
+  read the other way round: `kaala` **is** a kind, the SDK computes all
+  three of its members, and three written aliases were the whole gap.
+
+  `sade-sati-phala` waits on Phase 7's `gochar`. The `ayurdaya-*` families
+  key onto a longevity model the SDK has not built.
 
   None of them blocks the other 25, and the gate lists them by name so the
   list cannot rot into prose.
@@ -315,7 +334,7 @@ before — *every shipped rule carries a reading* — becomes one it can.
   name** — five special lagnas, three `state` members and the 18 rules
   that had no reading — because `entity-names.md` §4 refuses a translated
   stub and those kinds have no vetted table. The reading answers; the
-  subject's own name does not. And 211 of the 422 readings have **no
+  subject's own name does not. And 214 of the 425 readings have **no
   composer that says them**: they are loaded and a consumer reads them
   directly, which is not nothing, but a reading nothing says has not
   reached a reader. Both are counted on the measured page rather than

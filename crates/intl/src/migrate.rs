@@ -867,7 +867,7 @@ const fn state(
 /// subject for is reported and skipped rather than guessed at, and the
 /// fourteen that are missing from this list are named in
 /// `03-design/state-readings.md` §8.
-pub const STATE_CATEGORIES: [StateCategory; 25] = [
+pub const STATE_CATEGORIES: [StateCategory; 26] = [
     state("avastha-baladi", &["avastha_baladi"], "phala"),
     state("avastha-deeptadi", &["avastha_deeptadi"], "phala"),
     state("avastha-jagradadi", &["avastha_jagradadi"], "phala"),
@@ -879,6 +879,7 @@ pub const STATE_CATEGORIES: [StateCategory; 25] = [
     state("graha-bhava", &[GRAHA_BHAVA_KIND], ""),
     state("graha-color", &["graha"], "colour"),
     state("graha-direction", &["graha"], "direction"),
+    state("inauspicious-kaal", &["kaala"], "phala"),
     state("ishta-devata", &["rashi"], "ishtaDevata"),
     state("lagna-rashi", &["rashi"], "lagnaPhala"),
     state("mantra-ritual", &["graha"], "mantra"),
@@ -909,25 +910,31 @@ pub const GRAHA_ABBREVIATIONS: [(&str, &str); 9] = [
     ("VEN", "VENUS"),
 ];
 
-/// The engine's twelve lagna keys and the sign each names.
+/// Where a state category's key is spelled differently from the member it
+/// names: the category, the engine's key, and the catalogue's.
 ///
-/// Written out rather than stripped of a prefix: a rule that took
-/// `LAGNA_` off the front would work for all twelve and mis-file the
-/// thirteenth silently, which is the inference
-/// `03-design/interpretation-records.md` §4 forbids.
-pub const LAGNA_RASHIS: [(&str, &str); 12] = [
-    ("LAGNA_AQUARIUS", "AQUARIUS"),
-    ("LAGNA_ARIES", "ARIES"),
-    ("LAGNA_CANCER", "CANCER"),
-    ("LAGNA_CAPRICORN", "CAPRICORN"),
-    ("LAGNA_GEMINI", "GEMINI"),
-    ("LAGNA_LEO", "LEO"),
-    ("LAGNA_LIBRA", "LIBRA"),
-    ("LAGNA_PISCES", "PISCES"),
-    ("LAGNA_SAGITTARIUS", "SAGITTARIUS"),
-    ("LAGNA_SCORPIO", "SCORPIO"),
-    ("LAGNA_TAURUS", "TAURUS"),
-    ("LAGNA_VIRGO", "VIRGO"),
+/// Written out rather than derived. Stripping `LAGNA_` would work for all
+/// twelve signs and mis-file the thirteenth silently, and no normalisation
+/// turns `yamaganda` into `YAMAGHANDA` — which is the inference
+/// `03-design/interpretation-records.md` §4 forbids and the reason this is
+/// a list. It is keyed by category as well as key, because two categories
+/// may spell the same word for different subjects.
+pub const STATE_KEY_ALIASES: [(&str, &str, &str); 15] = [
+    ("inauspicious-kaal", "gulika", "GULIKA_KAALA"),
+    ("inauspicious-kaal", "rahu-kaal", "RAHU_KAALA"),
+    ("inauspicious-kaal", "yamaganda", "YAMAGHANDA"),
+    ("lagna-rashi", "LAGNA_AQUARIUS", "AQUARIUS"),
+    ("lagna-rashi", "LAGNA_ARIES", "ARIES"),
+    ("lagna-rashi", "LAGNA_CANCER", "CANCER"),
+    ("lagna-rashi", "LAGNA_CAPRICORN", "CAPRICORN"),
+    ("lagna-rashi", "LAGNA_GEMINI", "GEMINI"),
+    ("lagna-rashi", "LAGNA_LEO", "LEO"),
+    ("lagna-rashi", "LAGNA_LIBRA", "LIBRA"),
+    ("lagna-rashi", "LAGNA_PISCES", "PISCES"),
+    ("lagna-rashi", "LAGNA_SAGITTARIUS", "SAGITTARIUS"),
+    ("lagna-rashi", "LAGNA_SCORPIO", "SCORPIO"),
+    ("lagna-rashi", "LAGNA_TAURUS", "TAURUS"),
+    ("lagna-rashi", "LAGNA_VIRGO", "VIRGO"),
 ];
 
 /// The state readings exporter's document.
@@ -963,11 +970,27 @@ pub struct StateRow {
 
 /// The catalogue key a category's key names, or why it names none.
 ///
+/// The key is read through [`STATE_KEY_ALIASES`] first, then held to
+/// naming a member of **exactly one** of the category's kinds
+/// ([`StateCategory::kinds`]).
+///
+/// ```
+/// use teistro_intl::migrate::state_key;
+///
+/// assert_eq!(state_key("nakshatra-phala", &["nakshatra"], "ASHWINI")?, "nakshatra.ASHWINI");
+/// // A written alias, because no normalisation would reach it.
+/// assert_eq!(state_key("inauspicious-kaal", &["kaala"], "yamaganda")?, "kaala.YAMAGHANDA");
+/// // One of two candidate kinds answers; the other does not.
+/// assert_eq!(state_key("planet-condition", &["dignity", "state"], "COMBUST")?, "state.COMBUST");
+/// assert!(state_key("planet-condition", &["dignity", "state"], "COMBUST_CANCELLED").is_err());
+/// # Ok::<(), String>(())
+/// ```
+///
 /// # Errors
 ///
-/// A key no catalogue member and no written alias answers to, a
-/// `graha-bhava` key that is not a graha and a house from 1 to 12, or a
-/// reading of an open kind whose key no pack could name.
+/// A key no member of any candidate kind and no written alias answers to;
+/// a key **two** of them answer to, which the table has to settle; or a
+/// `graha_bhava` key that is not a graha and a house from 1 to 12.
 pub fn state_key(category: &str, kinds: &[&str], key: &str) -> Result<String, String> {
     if kinds == [GRAHA_BHAVA_KIND] {
         let (abbreviation, house) = key
@@ -986,15 +1009,10 @@ pub fn state_key(category: &str, kinds: &[&str], key: &str) -> Result<String, St
         }
         return Ok(crate::source::graha_bhava_key(graha, bhava));
     }
-    let key = if category == "lagna-rashi" {
-        LAGNA_RASHIS
-            .iter()
-            .find(|(lagna, _)| *lagna == key)
-            .ok_or_else(|| format!("`{key}` is no lagna of the engine's twelve"))?
-            .1
-    } else {
-        key
-    };
+    let key = STATE_KEY_ALIASES
+        .iter()
+        .find(|(of, spelling, _)| *of == category && *spelling == key)
+        .map_or(key, |(_, _, member)| *member);
     // Exactly one candidate kind must own the key. Two would be an
     // ambiguity the table has to settle, and none means the SDK has no
     // subject for this reading (`03-design/state-readings.md` §4).
@@ -1028,11 +1046,23 @@ pub fn state_key(category: &str, kinds: &[&str], key: &str) -> Result<String, St
 /// that resolves nowhere and is not here fails. So it can only shrink, and
 /// it cannot quietly become a way of dropping records
 /// (`03-design/state-readings.md` §4).
-pub const STATE_REFUSALS: [(&str, &str, &str); 1] = [(
-    "planet-condition",
-    "COMBUST_CANCELLED",
-    "the SDK computes combustion but not its cancellation, and no `state` member names one",
-)];
+pub const STATE_REFUSALS: [(&str, &str, &str); 3] = [
+    (
+        "inauspicious-kaal",
+        "dur-muhurta",
+        "the SDK divides the day into muhurtas but names none of them, so the censured one has no key",
+    ),
+    (
+        "inauspicious-kaal",
+        "varjyam",
+        "the SDK computes no varjyam window, and no kind names one",
+    ),
+    (
+        "planet-condition",
+        "COMBUST_CANCELLED",
+        "the SDK computes combustion but not its cancellation, and no `state` member names one",
+    ),
+];
 
 /// The form a reading's summary, passage and facets take on a record.
 ///

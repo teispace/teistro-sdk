@@ -741,7 +741,7 @@ fn mapped_and_unmapped(base: &Records) -> (BTreeMap<String, usize>, BTreeMap<Str
 /// held to the migration's own table by a claim below — every category
 /// named here must be one `STATE_CATEGORIES` does not map — so it cannot
 /// quietly disagree with the code (`03-design/state-readings.md` §8).
-const UNMAPPED: [(&str, usize); 13] = [
+const UNMAPPED: [(&str, usize); 12] = [
     ("auspicious-kaal", 5),
     ("ayurdaya-balarishta", 4),
     ("ayurdaya-classical-rule", 5),
@@ -751,7 +751,6 @@ const UNMAPPED: [(&str, usize); 13] = [
     ("ayurdaya-method", 3),
     ("ayurdaya-tier", 4),
     ("ayurdaya-vulnerability", 9),
-    ("inauspicious-kaal", 5),
     ("muhurta-factor", 47),
     ("sade-sati-phala", 5),
     ("shadbala-strength", 28),

@@ -602,16 +602,17 @@ message at all.
 **And the rest of that corpus was here too.** The same package exports one
 `STATE_INTERPRETATIONS` of 38 categories and 554 records, in the same four
 languages: what a graha in a bhava, a nakshatra, a tithi, a lagna, a
-graha's condition or a dosha's timing means. 25 of the categories key onto
-subjects this SDK already has — 216 of the 217 keys in the 21 that key one
-kind are the catalogue's own spelling, character for character — and they
+graha's condition, an inauspicious kaala or a dosha's timing means. 26 of
+the categories key onto subjects this SDK already has — 216 of the 217
+keys in the 21 that need no alias are the catalogue's own spelling,
+character for character — and they
 are migrated, gated and measured (`03-design/state-readings.md`,
-`03-design/state-readings-measured.md`): 422 readings into 347 records a
-locale, with one key refused by name because the SDK has no subject for
-it. Every shipped rule now carries text in four languages: 639 a reading,
-and the 18 that had none a `timing`. The 13 categories with no subject
-here are named on the measured page rather than described in prose, and
-each waits on a module rather than on a key. What is left of the list below is
+`03-design/state-readings-measured.md`): 425 readings into 350 records a
+locale, with three keys refused by name because the SDK has no subject for
+them. Every shipped rule now carries text in four languages: 639 a
+reading, and the 18 that had none a `timing`. The 12 categories with no
+subject here are named on the measured page rather than described in
+prose, and each waits on a module rather than on a key. What is left of the list below is
 still a sourcing question.
 
 **What is left of it needs the source translations to hand, and is

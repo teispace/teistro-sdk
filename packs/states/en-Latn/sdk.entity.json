@@ -1015,6 +1015,20 @@
       "general": "Bhāgya-Kalā Raja Yoga, dharmic artist, women-driven fortune, religious travel, guru's grace."
     }
   },
+  "kaala": {
+    "GULIKA_KAALA": {
+      "phala": "Gulika Kaal (Mandi), ruled by Saturn’s son, is to be avoided for auspicious work.",
+      "phalaProse": "The Gulika Kaal (Mandi) is the eighth-part of the day ruled by Gulika, the son of Saturn, falling at a different time by weekday. It is to be avoided for beginning auspicious work; what is begun in it tends to recur (whatever Gulika touches multiplies) — so recurrence is welcome in good things but harmful in ill. Auspicious acts should not be done in it, and lending or giving in it is prohibited."
+    },
+    "RAHU_KAALA": {
+      "phala": "Rahu Kaal, an eighth of the day, is to be avoided for all auspicious work.",
+      "phalaProse": "The Rahu Kaal is the eighth part of the day’s duration (about an hour and a half), falling at a different time according to the weekday. It is wholly to be avoided for beginning auspicious work — journeys, buying and selling, house-entry and marriage resolves should not be made in it. Some, however, hold it acceptable for rites aimed at subduing enemies and for the worship of Saturn and Rahu. Work begun in it meets obstacles and delay."
+    },
+    "YAMAGHANDA": {
+      "phala": "Yamaganda Kaal, ruled by Yama, is to be avoided for auspicious work, especially journeys.",
+      "phalaProse": "The Yamaganda Kaal is the eighth-part of the day ruled by Yama, falling at a different time by weekday. It is to be avoided for beginning auspicious work and is especially prohibited for starting a journey — travel begun in it brings obstacles and distress, and the work tends to be fruitless. Being connected with Yama, the lord of death, it is shunned for auspicious occasions."
+    }
+  },
   "rashi": {
     "AQUARIUS": {
       "ishtaDevata": "For Karakamsha in Aquarius, the Ishta-devata is Saturn / Shiva.",

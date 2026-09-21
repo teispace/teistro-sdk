@@ -8,7 +8,7 @@ difference. The design it measures is
 
 ## Where the corpus landed
 
-25 of the engine's 38 state categories map onto a subject this SDK has, and they become 347 records under 20 kinds. The mapping is a written table and not a resemblance: a category with no subject here is skipped and named below rather than guessed at.
+26 of the engine's 38 state categories map onto a subject this SDK has, and they become 350 records under 21 kinds. The mapping is a written table and not a resemblance: a category with no subject here is skipped and named below rather than guessed at.
 
 | category | kinds | form | records |
 |---|---|---|---:|
@@ -23,6 +23,7 @@ difference. The design it measures is
 | `graha-bhava` | `graha_bhava` | a record of its own | 108 |
 | `graha-color` | `graha` | `colour` | 9 |
 | `graha-direction` | `graha` | `direction` | 9 |
+| `inauspicious-kaal` | `kaala` | `phala` | 3 |
 | `ishta-devata` | `rashi` | `ishtaDevata` | 12 |
 | `lagna-rashi` | `rashi` | `lagnaPhala` | 12 |
 | `mantra-ritual` | `graha` | `mantra` | 9 |
@@ -40,7 +41,7 @@ difference. The design it measures is
 
 ## What it did not map
 
-13 categories, 131 records. The list is exhaustive rather than counted, because a category that gains a subject and a corpus that gains a category both have to change this page. Each is a decision rather than a task, and `state-readings.md` §8 says which kind of one.
+12 categories, 126 records. The list is exhaustive rather than counted, because a category that gains a subject and a corpus that gains a category both have to change this page. Each is a decision rather than a task, and `state-readings.md` §8 says which kind of one.
 
 | category | records |
 |---|---:|
@@ -53,7 +54,6 @@ difference. The design it measures is
 | `ayurdaya-method` | 3 |
 | `ayurdaya-tier` | 4 |
 | `ayurdaya-vulnerability` | 9 |
-| `inauspicious-kaal` | 5 |
 | `muhurta-factor` | 47 |
 | `sade-sati-phala` | 5 |
 | `shadbala-strength` | 28 |
@@ -106,7 +106,7 @@ rendered here through that message, in each strict locale, and must
 answer from the locale's own record without a fallback and without a
 warning: 422 renderings.
 
-**211 readings have no composer that says them yet**, by the category
+**214 readings have no composer that says them yet**, by the category
 they came from. They are not errors — the records load and a consumer
 reads them directly — but a reading nothing says is work that has not
 reached a reader, so the list is here rather than in a sentence.
@@ -123,6 +123,7 @@ reached a reader, so the list is here rather than in a sentence.
 | `gana` | 3 |
 | `graha-color` | 9 |
 | `graha-direction` | 9 |
+| `inauspicious-kaal` | 3 |
 | `ishta-devata` | 12 |
 | `mantra-ritual` | 9 |
 | `nadi` | 3 |
@@ -139,7 +140,7 @@ reached a reader, so the list is here rather than in a sentence.
 
 ## What it leaves open
 
-**1 reading refused.** A key of a mapped category that names no member
+**3 readings refused.** A key of a mapped category that names no member
 of any of its kinds is a reading this SDK has no subject for. It is
 written down with the reason rather than reported afresh each run, and
 the list fails both ways: a key here that names a member now fails, and
@@ -147,6 +148,8 @@ one that names none and is not here fails.
 
 | category | key | why |
 |---|---|---|
+| `inauspicious-kaal` | `dur-muhurta` | the SDK divides the day into muhurtas but names none of them, so the censured one has no key |
+| `inauspicious-kaal` | `varjyam` | the SDK computes no varjyam window, and no kind names one |
 | `planet-condition` | `COMBUST_CANCELLED` | the SDK computes combustion but not its cancellation, and no `state` member names one |
 
 **26 readings land on a record the base locale does not name.** The
@@ -163,8 +166,8 @@ so the count is here.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every refused key is absent from the packs | **holds** | 0 of 1 disagree |
-| every record carried is one the base locale can resolve or an open kind's own | **holds** | 0 of 1388 disagree |
+| every refused key is absent from the packs | **holds** | 0 of 3 disagree |
+| every record carried is one the base locale can resolve or an open kind's own | **holds** | 0 of 1400 disagree |
 
 ## What the state readings cost
 
@@ -176,24 +179,24 @@ it. A consumer loads one pack a locale from each root it wants.
 
 | locale | source | pack |
 |---|---:|---:|
-| `en-Latn` | 202 KB | 195 KB |
-| `hi-Deva-IN` | 384 KB | 377 KB |
-| `ne-Deva-NP` | 362 KB | 356 KB |
-| `sa-Deva` | 354 KB | 348 KB |
-| **all** | **1304 KB** | **1278 KB** |
+| `en-Latn` | 203 KB | 197 KB |
+| `hi-Deva-IN` | 387 KB | 381 KB |
+| `ne-Deva-NP` | 365 KB | 359 KB |
+| `sa-Deva` | 357 KB | 351 KB |
+| **all** | **1315 KB** | **1289 KB** |
 
 Beside the rule readings' 2581 KB, which is the other pack a consumer
-that wants both would load: 3860 KB in all for four languages, and 1093
+that wants both would load: 3870 KB in all for four languages, and 1096
 KB for one.
 
 ## What the packs decide
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every record names a catalogue member, or a well-formed key of an open kind | **holds** | 0 of 347 disagree |
-| every locale carries every record the base locale carries | **holds** | 0 of 1388 disagree |
-| every record carries a form to be read by | **holds** | 0 of 1388 disagree |
+| every record names a catalogue member, or a well-formed key of an open kind | **holds** | 0 of 350 disagree |
+| every locale carries every record the base locale carries | **holds** | 0 of 1400 disagree |
+| every record carries a form to be read by | **holds** | 0 of 1400 disagree |
 | every locale's state readings build into a pack an engine can load | **holds** | 0 of 4 disagree |
-| every form answers from the loaded packs, with no source tree behind them | **holds** | 0 of 3856 disagree |
+| every form answers from the loaded packs, with no source tree behind them | **holds** | 0 of 3880 disagree |
 | a rule's reading still answers after the state readings are loaded over it | **holds** | 0 of 528 disagree |
 

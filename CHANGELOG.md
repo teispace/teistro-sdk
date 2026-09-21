@@ -1369,6 +1369,29 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **The three inauspicious kaalas, and one alias table instead of two.**
+  The previous entry's own prose said the `-kaal` families key onto
+  subjects the SDK has not modelled. Checking rather than believing it
+  found `kaala` is a catalogue kind whose three members —
+  `RAHU_KAALA`, `GULIKA_KAALA`, `YAMAGHANDA` — the SDK computes on every
+  day it builds an almanac for. The whole gap was spelling: no
+  normalisation turns `yamaganda` into `YAMAGHANDA`. Three written aliases
+  closed it, and `inauspicious-kaal` is mapped.
+
+  Its other two keys are refused by name for reasons that had to be
+  checked too: `dur-muhurta`, because the SDK divides the day into
+  muhurtas without naming any of them, and `varjyam`, because it computes
+  no such window. Its sibling `auspicious-kaal` stays unmapped for the
+  corrected reason — Abhijit and Brahma muhurta **are** computed
+  (`panchanga::Muhurtas`), but as fields rather than catalogue members, so
+  there is no key space to migrate into and a kind naming them is a
+  catalogue decision with its own sourcing.
+
+  The twelve lagna signs and the three kaalas are now one
+  `migrate::STATE_KEY_ALIASES` keyed by category, where there had been a
+  table for the lagnas and a branch in the resolver for them. 26
+  categories map, 425 readings into 350 records a locale, 12 left.
+
 - **A state category may name more than one catalogue kind, and a key with
   no subject is refused by name.** `planet-condition` is the case that
   asked for it: a graha's condition is a `dignity` where the sign gives it
