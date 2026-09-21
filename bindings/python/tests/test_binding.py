@@ -691,7 +691,7 @@ class AnEngine(WithLibrary):
             len(plans["strength"]), 7 * 2, "a score and a sufficiency each"
         )
         # And the houses read the bhavas, which it never asked for either.
-        self.assertEqual(len(plans["houses"]), 12, "the twelve bhavas")
+        self.assertEqual(len(plans["houses"]), 12 * 2, "a sign and a lord each")
         # And the positions read the same states the placements do.
         self.assertEqual(len(plans["positions"]), 10, "the lagna, then the nine")
         # The drishtis read the aspects section, never asked for either.

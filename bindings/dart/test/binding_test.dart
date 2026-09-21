@@ -758,7 +758,7 @@ void _engineTests() {
     );
     // And the houses read the bhavas, which it never asked for either.
     final ruled = plans['houses']! as List<Object?>;
-    expect(ruled, hasLength(12), reason: 'the twelve bhavas, the first first');
+    expect(ruled, hasLength(12 * 2), reason: 'a sign and a lord each');
     // And the positions read the same states the placements do.
     final degrees = plans['positions']! as List<Object?>;
     expect(degrees, hasLength(10), reason: 'the lagna, then the nine grahas');

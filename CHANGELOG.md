@@ -1369,6 +1369,26 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **The houses say the sign each bhava falls in, beside its lord.** A
+  `Bhava` carries the sign its **middle** falls in and the graha that rules
+  that sign; for three composers the plan said only the second.
+  `sdk.reason.bhavaInRashi` says the first, so `houses` emits two items a
+  bhava — *the 1st house in Pisces*, *पहिलो भाव मीनमा*.
+
+  It cost **no new vocabulary**: a `Rashi` is catalogued and named in every
+  locale, and the ordinal shape is the one `grahaInBhava` already had
+  translated in both strict locales. The composer repeats the record rather
+  than choosing between a house's middle and its cusp — they differ only
+  under an unequal division, and every division the corpus records is
+  whole-sign, so the page says it cannot tell them apart rather than
+  claiming a branch it has not exercised.
+
+  What a bhava knows besides — its quadrant, and whether it is a trine, a
+  house of difficulty or one that grows better with time — stays unsaid for
+  a reason now named rather than assumed: `Quadrant` is a Rust enum and the
+  rest are predicates, so none is a catalogue member and a message would
+  need words no locale here has been given.
+
 - **The strengths say whether a graha is strong enough, and never say
   "strong".** The Shadbala carries two facts about each graha — the rupas
   it scores and the rupas its text requires, beside whether it reaches them

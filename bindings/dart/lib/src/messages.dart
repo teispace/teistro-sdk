@@ -1781,6 +1781,8 @@ final class MessagesSdkReason {
   final Renderer _r;
 
   String appName() => _r.render('sdk.reason.appName');
+  String bhavaInRashi({required int bhava, required RashiKey rashi}) =>
+      _r.render('sdk.reason.bhavaInRashi', {'bhava': bhava, 'rashi': {r'$entity': rashi.key}});
   String conjunction({required int count, required GrahaKey graha}) =>
       _r.render('sdk.reason.conjunction', {'count': count, 'graha': {r'$entity': graha.key}});
   String exactLongitude({required num longitude}) =>

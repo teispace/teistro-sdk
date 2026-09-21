@@ -562,16 +562,18 @@ fn unsaid_houses(out: &mut String, root: &Path, plans: &[Composed]) {
     let named: Vec<String> = systems.iter().map(|name| format!("`{name}`")).collect();
     let _ = write!(
         out,
-        "And the **houses** say who rules each bhava and nothing else, which \
-         is the largest silence a composer here carries. The corpus records a \
-         division for {} of these charts, every one of them under {}, of which \
-         {} came back degenerate — and records for each which bodies fall in \
-         a different house under the chalit: {} of {} placings do. A bhava also knows the sign it falls in, which third of the \
-         wheel it stands in and whether it is a trine, a house of difficulty \
-         or one that grows better with time. **No locale carries a message \
-         for any of it**, so the plan claims none of it. Each is a sentence a \
-         locale would have to be given before a composer could say it, which \
-         is a translator's decision and not a composer's.\n\n",
+        "And the **houses** say the sign each bhava falls in and the graha \
+         that rules it. The corpus records a division for {} of these charts, \
+         every one of them under {}, of which {} came back degenerate — and \
+         records for each which bodies fall in a different house under the \
+         chalit: {} of {} placings do. The sign cost no new vocabulary, \
+         because a `Rashi` is catalogued and every locale names one; what a \
+         bhava knows **besides** is which third of the wheel it stands in and \
+         whether it is a trine, a house of difficulty or one that grows \
+         better with time, and none of those is a catalogue member — a \
+         `Quadrant` is a Rust enum and the rest are predicates. Saying them \
+         needs words no locale here has been given, which is the shape the \
+         state readings' §8 names, not a composer's decision.\n\n",
         count(reached.len()),
         named.join(" and "),
         count(degenerate),
@@ -590,9 +592,10 @@ fn unsaid_houses(out: &mut String, root: &Path, plans: &[Composed]) {
          divisions in all, {} of them under an unequal system, and the \
          composer reaches none of those. It matters because a bhava's sign is \
          the sign its *middle* falls in, which is the same as its cusp's only \
-         where the division is equal — so the branch that tells the two apart \
-         is the houses service's to hold, and this page does not claim to \
-         have tried it.\n\n",
+         where the division is equal — so the composer says the sign the \
+         **record** carries, which is its middle's, and this page cannot tell \
+         the two apart on a corpus where they never differ. The branch is the \
+         houses service's to hold; nothing here claims to have tried it.\n\n",
         count(all),
         count(unequal),
     );

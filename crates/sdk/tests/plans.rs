@@ -166,14 +166,14 @@ fn the_strengths_are_said_strongest_first_with_what_each_needs() {
 }
 
 /// The houses are the fourth composer and the second over a section. It
-/// says who rules each bhava — the relation the rest of the tradition is
-/// read through, and the one no other composer says — and nothing else,
-/// because nothing else a bhava knows has a message in any locale.
+/// says the sign each bhava falls in and the graha that rules that sign —
+/// the relation the rest of the tradition is read through — and nothing
+/// else, because nothing else a bhava knows is a catalogue member.
 #[test]
-fn the_houses_are_said_by_their_lords_and_claim_nothing_more() {
+fn the_houses_are_said_by_their_signs_and_their_lords() {
     let (sdk, document) = common::reading("{}", ChartRequest::with_houses);
     let plan = sdk.interpret().houses(&document).expect("the houses");
-    assert_eq!(plan.len(), 12, "the twelve bhavas, the first house first");
+    assert_eq!(plan.len(), 12 * 2, "a sign and a lord each");
 
     // Every item is the lord the document's own bhava carries, in the
     // houses' own order: the façade adapts and does not re-derive.
@@ -195,12 +195,26 @@ fn the_houses_are_said_by_their_lords_and_claim_nothing_more() {
         .filter_map(|item| item.params.get("bhava").cloned())
         .collect();
     assert_eq!(numbers[0], teistro::Value::Int(1));
-    assert_eq!(numbers[11], teistro::Value::Int(12));
+    assert_eq!(numbers[23], teistro::Value::Int(12));
 
-    // The bhava carries its sign, its cusps and its quadrant; the plan
-    // claims none of them, because no locale can say them.
+    // Every sign is the document's own bhava's, which is the sign its
+    // middle falls in: the facade adapts and does not re-derive.
+    let signs: Vec<teistro::Value> = read
+        .all()
+        .iter()
+        .map(|bhava| teistro::Value::catalogued(bhava.sign))
+        .collect();
+    let said: Vec<teistro::Value> = plan
+        .items
+        .iter()
+        .filter_map(|item| item.params.get("rashi").cloned())
+        .collect();
+    assert_eq!(said, signs);
+
+    // The bhava carries its cusps and its quadrant besides; the plan claims
+    // neither, because neither is a catalogue member any locale can name.
     let written = serde_json::to_string(&plan).expect("a plan writes");
-    for claim in ["rashi", "madhya", "sandhi", "quadrant"] {
+    for claim in ["madhya", "sandhi", "quadrant"] {
         assert!(!written.contains(claim), "`{claim}` is in {written}");
     }
 

@@ -8,11 +8,11 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 20 903 items, 224 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 21 803 items, 234 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 2 599 240 bytes of JSON over the 93 charts, 27 948 bytes a
-chart, 33 790 bytes for the widest and 124 bytes an item. The verses'
+golden file: 2 680 840 bytes of JSON over the 93 charts, 28 826 bytes a
+chart, 34 878 bytes for the widest and 122 bytes an item. The verses'
 own cited words are **not** what weighs it — 112 962 bytes, 4% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
@@ -22,13 +22,13 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 62 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 20903 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 20903 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 20903 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 20903 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 64 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 21803 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 21803 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 21803 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 21803 disagree |
 
-Every one of the 41 806 renderings — 20 903 in each of 2 strict
+Every one of the 43 606 renderings — 21 803 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -58,6 +58,7 @@ about.
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
 | `sdk.reading.status` | 348 |
+| `sdk.reason.bhavaInRashi` | 900 |
 | `sdk.reason.grahaAt` | 837 |
 | `sdk.reason.grahaInBhava` | 837 |
 | `sdk.reason.grahaInRashi` | 837 |
@@ -68,7 +69,7 @@ about.
 | `sdk.reason.strength.meets` | 497 |
 | `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 20 903
+**The verse's own statement is not translated.** 2449 of the 21 803
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -119,25 +120,28 @@ reaches them, and never "strong", which is a word no locale here has
 been given and a machine translation of it would be the stub the project
 refuses.
 
-And the **houses** say who rules each bhava and nothing else, which is
-the largest silence a composer here carries. The corpus records a
-division for 75 of these charts, every one of them under `whole-sign`,
-of which 0 came back degenerate — and records for each which bodies
-fall in a different house under the chalit: 135 of 675 placings do. A
-bhava also knows the sign it falls in, which third of the wheel it
-stands in and whether it is a trine, a house of difficulty or one that
-grows better with time. **No locale carries a message for any of it**,
-so the plan claims none of it. Each is a sentence a locale would have to
-be given before a composer could say it, which is a translator's
-decision and not a composer's.
+And the **houses** say the sign each bhava falls in and the graha that
+rules it. The corpus records a division for 75 of these charts, every
+one of them under `whole-sign`, of which 0 came back degenerate — and
+records for each which bodies fall in a different house under the
+chalit: 135 of 675 placings do. The sign cost no new vocabulary, because
+a `Rashi` is catalogued and every locale names one; what a bhava knows
+**besides** is which third of the wheel it stands in and whether it is a
+trine, a house of difficulty or one that grows better with time, and
+none of those is a catalogue member — a `Quadrant` is a Rust enum and
+the rest are predicates. Saying them needs words no locale here has been
+given, which is the shape the state readings' §8 names, not a
+composer's decision.
 
 That every one of them is whole-sign is a fact about **this** corpus and
 not about the recordings: the conformance repository holds 83 divisions
 in all, 8 of them under an unequal system, and the composer reaches none
 of those. It matters because a bhava's sign is the sign its *middle*
 falls in, which is the same as its cusp's only where the division is
-equal — so the branch that tells the two apart is the houses service's
-to hold, and this page does not claim to have tried it.
+equal — so the composer says the sign the **record** carries, which is
+its middle's, and this page cannot tell the two apart on a corpus where
+they never differ. The branch is the houses service's to hold; nothing
+here claims to have tried it.
 
 And the **rest of a placement** is now said. A placement is nine facts:
 `placements` says the sign and the house, `positions` the longitude, and
@@ -176,7 +180,7 @@ but `sdk.entity` renders each one's own word.
 
 ## What the packs carry, and what reads it
 
-31 of the 38 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+32 of the 39 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -414,17 +418,29 @@ Mercury scores 6.379 rupas
 Mercury falls short of the 7.00 rupas its text requires
 Saturn scores 6.267 rupas
 Saturn reaches the 5.00 rupas its text requires
+the 1st house in Pisces
 Jupiter rules house 1
+the 2nd house in Aries
 Mars rules house 2
+the 3rd house in Taurus
 Venus rules house 3
+the 4th house in Gemini
 Mercury rules house 4
+the 5th house in Cancer
 Moon rules house 5
+the 6th house in Leo
 Sun rules house 6
+the 7th house in Virgo
 Mercury rules house 7
+the 8th house in Libra
 Venus rules house 8
+the 9th house in Scorpio
 Mars rules house 9
+the 10th house in Sagittarius
 Jupiter rules house 10
+the 11th house in Capricorn
 Saturn rules house 11
+the 12th house in Aquarius
 Saturn rules house 12
 ```
 
@@ -638,16 +654,28 @@ NEECHA_BHANGA_EXALT_LORD_KENDRA: चन्द्र संलग्न छ
 बुधले आवश्यक ७.०० रूपा पुग्दैन
 शनिले ६.२६७ रूपा पाउँछ
 शनिले आवश्यक ५.०० रूपा पुग्छ
+पहिलो भाव मीनमा
 गुरु १ भावको स्वामी हो
+दोस्रो भाव मेषमा
 मंगल २ भावको स्वामी हो
+तेस्रो भाव वृषभमा
 शुक्र ३ भावको स्वामी हो
+चौथो भाव मिथुनमा
 बुध ४ भावको स्वामी हो
+५औं भाव कर्कटमा
 चन्द्र ५ भावको स्वामी हो
+६औं भाव सिंहमा
 सूर्य ६ भावको स्वामी हो
+७औं भाव कन्यामा
 बुध ७ भावको स्वामी हो
+८औं भाव तुलामा
 शुक्र ८ भावको स्वामी हो
+९औं भाव वृश्चिकमा
 मंगल ९ भावको स्वामी हो
+१०औं भाव धनुमा
 गुरु १० भावको स्वामी हो
+११औं भाव मकरमा
 शनि ११ भावको स्वामी हो
+१२औं भाव कुम्भमा
 शनि १२ भावको स्वामी हो
 ```

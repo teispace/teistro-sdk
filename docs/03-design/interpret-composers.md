@@ -327,6 +327,26 @@ mean-node chart. The true node turns; the mean node does not. So the
 condition carries information and is said of every graha that holds it, and
 the measured page counts it rather than this page assuming it.
 
+**`houses`** — the sign each of the twelve bhavas falls in, and the graha
+that rules that sign. Two items a bhava, because they are two facts; the
+sign was unsaid for three composers and cost **no new vocabulary**, since a
+`Rashi` is catalogued and named in every locale and the ordinal shape was
+the one `grahaInBhava` already had translated.
+
+It is the sign the house's **middle** falls in, which is what `Bhava`
+carries and what the tradition means: under an unequal division a house can
+begin in one sign and be centred in another. The composer repeats the
+record rather than choosing between them, and the measured page cannot tell
+the two apart, because every division the corpus records is whole-sign —
+which is a gap in the corpus, said as one, rather than a branch claimed
+tested.
+
+What a bhava knows besides — its quadrant, and whether it is a trine, a
+house of difficulty or one that grows better with time — is the shape
+[`state-readings.md`](state-readings.md) §8 names: computed, and not a
+catalogue member. `Quadrant` is a Rust enum and the rest are predicates, so
+a message would have to name each in words no locale here has been given.
+
 **`strength`** — what the chart weighs, and whether that is enough. It says
 **two** items of each graha because the Shadbala carries two facts: the
 rupas it scores (`score`) and the rupas its text requires beside whether it
@@ -498,12 +518,15 @@ a test that a plan round-trips through JSON.
     rather than what the SDK computed. **Built**: `sdk.phala`, six
     messages, each saying a record a loaded pack brings, and `Vocabulary`
     generalised from one subject to any.
-12. The **strengths'** second fact. **Built**:
+12. The **bhava's sign**, the third silence in as many steps and the one
+    that cost nothing: `sdk.reason.bhavaInRashi`, over a kind already
+    catalogued and an ordinal shape already translated. **Built**.
+13. The **strengths'** second fact. **Built**:
     `sdk.reason.strength.meets`, one message, two sentences a locale — the
     rupas a graha's text requires and whether it reaches them. The
     Shadbala had carried it since `strength` was written; no locale had a
     message for it.
-13. The **lagna**, said at last. **Built**: `sdk.reason.pointInRashi` and
+14. The **lagna**, said at last. **Built**: `sdk.reason.pointInRashi` and
     `sdk.reason.pointAt`, two messages that read a point rather than a
     graha, said by `placements` and `positions`. It was the oldest silence
     in this page — counted at 93 items, one a chart, for six composers —

@@ -1837,7 +1837,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         // And the houses read the bhavas, which `sections` never asked for
         // either.
         let lords = chart["houses"].as_array().unwrap();
-        assert_eq!(lords.len(), 12, "the twelve bhavas, the first house first");
+        assert_eq!(lords.len(), 12 * 2, "a sign and a lord each");
         // And the positions read the same states the placements do, so one
         // request computing them serves both composers.
         let degrees = chart["positions"].as_array().unwrap();

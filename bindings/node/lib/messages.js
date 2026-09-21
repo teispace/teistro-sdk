@@ -618,6 +618,7 @@ export function messages(r) {
       },
       reason: {
         appName: () => r.render('sdk.reason.appName'),
+        bhavaInRashi: (p) => r.render('sdk.reason.bhavaInRashi', { bhava: p.bhava, rashi: { '$entity': p.rashi } }),
         conjunction: (p) => r.render('sdk.reason.conjunction', { count: p.count, graha: { '$entity': p.graha } }),
         exactLongitude: (p) => r.render('sdk.reason.exactLongitude', { longitude: p.longitude }),
         grahaAt: (p) => r.render('sdk.reason.grahaAt', { graha: { '$entity': p.graha }, longitude: p.longitude }),

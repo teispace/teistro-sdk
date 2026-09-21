@@ -2,6 +2,7 @@
   "appName": "Teistro",
   "welcome": "Welcome to {sdk.reason.appName :msg}",
   "grahaInBhava": ".input {$graha :entity kind=graha} .input {$bhava :integer select=ordinal} .match $bhava one {{{$graha} in the {$bhava}st house}} two {{{$graha} in the {$bhava}nd house}} few {{{$graha} in the {$bhava}rd house}} * {{{$graha} in the {$bhava}th house}}",
+  "bhavaInRashi": ".input {$bhava :integer select=ordinal} .input {$rashi :entity kind=rashi} .match $bhava one {{the {$bhava}st house in {$rashi}}} two {{the {$bhava}nd house in {$rashi}}} few {{the {$bhava}rd house in {$rashi}}} * {{the {$bhava}th house in {$rashi}}}",
   "grahaInRashi": "{$graha :entity kind=graha} in {$rashi :entity kind=rashi}",
   "pointInRashi": "{$point :entity kind=point} in {$rashi :entity kind=rashi}",
   "grahaAt": "{$graha :entity kind=graha} at {$longitude :zodiac form=degree-in-sign}",

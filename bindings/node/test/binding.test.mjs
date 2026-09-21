@@ -820,7 +820,7 @@ test('plans compose in the same crossing, and render with nothing in between', (
     'the seven grahas, a score and a sufficiency each',
   );
   // And the houses read the bhavas, which this request never asked for either.
-  assert.equal(plans.houses.length, 12, 'the twelve bhavas, the first house first');
+  assert.equal(plans.houses.length, 12 * 2, 'a sign and a lord each');
   // And the positions read the same states the placements do.
   assert.equal(plans.positions.length, 10, 'the lagna, then the nine grahas');
   // The drishtis read the aspects section, which this request never asked for.

@@ -780,6 +780,13 @@ class MessagesSdkReason:
         """`sdk.reason.appName`"""
         return self._r.render("sdk.reason.appName")
 
+    def bhava_in_rashi(self, *, bhava: int, rashi: RashiKey) -> str:
+        """`sdk.reason.bhavaInRashi`"""
+        return self._r.render(
+            "sdk.reason.bhavaInRashi",
+            {"bhava": bhava, "rashi": {"$entity": rashi.value}},
+        )
+
     def conjunction(self, *, count: int, graha: GrahaKey) -> str:
         """`sdk.reason.conjunction`"""
         return self._r.render(

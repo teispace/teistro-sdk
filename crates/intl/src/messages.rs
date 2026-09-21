@@ -1349,6 +1349,25 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.reason.bhavaInRashi`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct BhavaInRashi {
+            /// The `bhava` parameter.
+            pub bhava: i64,
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+        }
+
+        impl crate::TypedMessage for BhavaInRashi {
+            const KEY: &'static str = "sdk.reason.bhavaInRashi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("bhava", crate::Value::Int(self.bhava)),
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                ])
+            }
+        }
+
         /// The message `sdk.reason.conjunction`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct Conjunction {
