@@ -739,6 +739,7 @@ void _engineTests() {
             strength: true,
             houses: true,
             positions: true,
+            aspects: true,
           ),
           rules: const RuleRequest(shipped: [ShippedRules.nabhasas]),
         )!;
@@ -755,6 +756,9 @@ void _engineTests() {
     // And the positions read the same states the placements do.
     final degrees = plans['positions']! as List<Object?>;
     expect(degrees, hasLength(9), reason: 'the nine grahas, the lagna a point');
+    // The drishtis read the aspects section, never asked for either.
+    final looks = plans['aspects']! as List<Object?>;
+    expect(looks, isNotEmpty, reason: 'every chart holds a drishti');
 
     // Each item said by handing its params straight to the renderer, which
     // is the property the crossing exists for.
@@ -766,6 +770,7 @@ void _engineTests() {
           ...weighed,
           ...ruled,
           ...degrees,
+          ...looks,
         ].cast<Map<String, Object?>>()) {
       final key = item['key']! as String;
       expect(key, startsWith('sdk.'));

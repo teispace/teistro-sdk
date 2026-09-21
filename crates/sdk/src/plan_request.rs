@@ -52,6 +52,9 @@ pub struct PlanRequest {
     /// Where each graha stands to the degree, which `placements` rounds
     /// away. It reads what `placements` reads, so it costs no section.
     pub positions: bool,
+    /// Which graha looks at which, and how strongly. It reads the aspects
+    /// section, which the request computes for it.
+    pub aspects: bool,
 }
 
 impl PlanRequest {
@@ -90,11 +93,23 @@ impl PlanRequest {
         self
     }
 
+    /// A request for the drishtis.
+    #[must_use]
+    pub const fn with_aspects(mut self) -> PlanRequest {
+        self.aspects = true;
+        self
+    }
+
     /// Whether any composer was asked for, so a caller can skip the work
     /// rather than compose an empty answer.
     #[must_use]
     pub const fn asks_for_something(self) -> bool {
-        self.placements || self.readings || self.strength || self.houses || self.positions
+        self.placements
+            || self.readings
+            || self.strength
+            || self.houses
+            || self.positions
+            || self.aspects
     }
 
     /// A request read from JSON.

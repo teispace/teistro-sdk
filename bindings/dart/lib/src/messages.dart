@@ -775,6 +775,17 @@ final class EntityForms {
   final Gender? gender;
 }
 
+final class MessagesSdkAspect {
+  const MessagesSdkAspect(this._r);
+
+  final Renderer _r;
+
+  String cast({required GrahaKey from, required String strength, required GrahaKey to}) =>
+      _r.render('sdk.aspect.cast', {'from': {r'$entity': from.key}, 'strength': strength, 'to': {r'$entity': to.key}});
+  String mutual({required GrahaKey first, required GrahaKey second}) =>
+      _r.render('sdk.aspect.mutual', {'first': {r'$entity': first.key}, 'second': {r'$entity': second.key}});
+}
+
 final class MessagesSdkCalendarBikramSambatDate {
   const MessagesSdkCalendarBikramSambatDate(this._r);
 
@@ -1746,6 +1757,7 @@ final class MessagesSdk {
 
   final Renderer _r;
 
+  MessagesSdkAspect get aspect => MessagesSdkAspect(_r);
   MessagesSdkCalendar get calendar => MessagesSdkCalendar(_r);
   MessagesSdkEntity get entity => MessagesSdkEntity(_r);
   MessagesSdkReading get reading => MessagesSdkReading(_r);

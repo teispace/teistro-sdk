@@ -13,17 +13,21 @@
 //! with is the per-language snapshot the module checklist asks for
 //! (`09-guidelines/03-adding-a-module.md` §7), held byte for byte.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 use std::path::Path;
 
+use teistro_aspect::{Drishti, Strength, drishti};
+use teistro_core::angle::Nas;
+use teistro_core::boundary::Boundaries;
 use teistro_core::catalogue::{Graha, Rashi};
+use teistro_core::quantity::Degrees;
 use teistro_houses::chart::Bhava;
 use teistro_houses::classify::{Quadrant, lord_of};
-use teistro_interpret::{KEYS, Plan, houses, placements, positions, readings, strength};
+use teistro_interpret::{KEYS, Plan, aspects, houses, placements, positions, readings, strength};
 use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::{Intl, Rendered};
-use teistro_rules::{Evaluator, Readings as RuleReadings, Rule, RuleChart, shipped};
+use teistro_rules::{Body, Evaluator, Readings as RuleReadings, Rule, RuleChart, shipped};
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, count, fill, plural, table};
@@ -198,6 +202,63 @@ fn divisions(root: &Path) -> BTreeMap<String, Divided> {
     out
 }
 
+/// The drishtis a recorded chart holds, computed from its **signs**.
+///
+/// The corpus records no aspect at all — not a relation, not a strength —
+/// so unlike the strengths and the houses there is nothing recorded to
+/// compose from. What it does record is where every graha stands, and a
+/// drishti is a function of the looking graha and two signs
+/// (`aspect::drishti::between`), so the relations are derived here and the
+/// page says they were. Whether they are the right relations is
+/// `aspect-drishti-measured.md`'s business; what this pass decides is
+/// whether a plan made of them can be said.
+/// How near a longitude stands to each division's edge.
+///
+/// A drishti carries these and no composer reads them; they are filled
+/// honestly anyway, because a zero would say the body sits exactly on a
+/// boundary, which is a claim rather than an absence — and for the same
+/// reason a longitude that is not a degree is refused here rather than
+/// given a zero. The corpus reader already refuses one, so this is the
+/// second statement of the same rule and not a branch that fires.
+fn edges(longitude: f64) -> Result<Boundaries, String> {
+    Degrees::try_new(longitude.rem_euclid(360.0))
+        .map(|degrees| Boundaries::of(Nas::from_degrees(degrees)))
+        .map_err(|why| format!("{longitude}: {why}"))
+}
+
+fn relations(chart: &RuleChart) -> Result<Vec<Drishti>, String> {
+    let mut out = Vec::new();
+    for from in Graha::ALL.into_iter().take(9) {
+        let Some(here) = chart.placements.get(Body::Graha(from).index()) else {
+            continue;
+        };
+        for to in Graha::ALL.into_iter().take(9) {
+            if from == to {
+                continue;
+            }
+            let Some(there) = chart.placements.get(Body::Graha(to).index()) else {
+                continue;
+            };
+            let strength = drishti::between(from, here.sign, there.sign);
+            if strength == Strength::None {
+                continue;
+            }
+            out.push(Drishti {
+                from,
+                to,
+                houses: drishti::house_count(here.sign, there.sign),
+                strength,
+                // The composer reads neither, but the chart carries the
+                // longitudes, so these are the real edges rather than a
+                // placeholder zero claiming a body sits on a boundary.
+                from_edge: edges(here.longitude)?,
+                to_edge: edges(there.longitude)?,
+            });
+        }
+    }
+    Ok(out)
+}
+
 /// The rules the readings composer is measured over: every set the kernel
 /// ships whose rules say something in words, a span, a class, a severity or
 /// a cancellation.
@@ -247,6 +308,7 @@ fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
                 .collect();
             let mut plan = placements(&chart);
             plan.items.extend(positions(&chart));
+            plan.items.extend(aspects(&relations(&chart)?));
             plan.items
                 .extend(readings(held.iter().map(|(rule, result)| (*rule, result))));
             if let Some(weighed) = weighed.get(&name) {
@@ -460,8 +522,7 @@ fn unsaid_houses(out: &mut String, root: &Path, plans: &[Composed]) {
         .iter()
         .filter_map(|composed| divided.get(&composed.name))
         .collect();
-    let systems: std::collections::BTreeSet<&str> =
-        reached.iter().map(|read| read.system.as_str()).collect();
+    let systems: BTreeSet<&str> = reached.iter().map(|read| read.system.as_str()).collect();
     let degenerate = reached.iter().filter(|read| read.degenerate).count();
     let placed: usize = reached.iter().map(|read| read.placed).sum();
     let shifted: usize = reached.iter().map(|read| read.shifted).sum();
@@ -536,8 +597,9 @@ fn unsaid_positions(out: &mut String, plans: &[Composed]) {
          a dignity that is not neutral, {} are vargottama, and {} carry a \
          chara karaka. **The plan says none of it.** That is the sharpest \
          statement of where the composers stop — not at what the SDK \
-         computes, but at what a locale can say — and the next composer is \
-         therefore the first that must be given a new translated key.\n\n",
+         computes, but at what a locale can say. Closing one of the six \
+         means writing a message in every strict locale, which is what \
+         `sdk.aspect` did for the drishti.\n\n",
         plural(placed.len(), "graha"),
         count(retrograde),
         count(combust),
@@ -593,12 +655,26 @@ const SPARE: [(&str, &str); 7] = [
 /// read it shows up here instead of quietly sitting unread.
 fn coverage(out: &mut String, tree: &Tree) {
     let Some(base) = tree.base() else { return };
+    // The scope is **derived**, not listed: every namespace a composer
+    // already emits from, split by the locale's own rule. Adding a composer
+    // over a new namespace widens this by itself, and a namespace that is
+    // not a reading vocabulary — `sdk.calendar`, which formats dates —
+    // stays out without being named. Naming the two it started with is
+    // what let `sdk.aspect` slip past this very check on its first run.
+    let namespaces: BTreeSet<&str> = KEYS
+        .iter()
+        .filter_map(|key| base.split(key).map(|(namespace, _)| namespace))
+        .collect();
     let messages: Vec<String> = base
         .keys()
-        .filter(|key| key.starts_with("sdk.reason.") || key.starts_with("sdk.reading."))
+        .filter(|key| {
+            base.split(key)
+                .is_some_and(|(namespace, _)| namespaces.contains(namespace))
+        })
         .collect();
     let spare: BTreeMap<&str, &str> = SPARE.iter().copied().collect();
     let read = messages.iter().filter(|key| KEYS.contains(&key.as_str()));
+    let named: Vec<String> = namespaces.iter().map(|ns| format!("`{ns}`")).collect();
     let unaccounted: Vec<&String> = messages
         .iter()
         .filter(|key| !KEYS.contains(&key.as_str()) && !spare.contains_key(key.as_str()))
@@ -606,12 +682,15 @@ fn coverage(out: &mut String, tree: &Tree) {
     let _ = write!(
         out,
         "## What the packs carry, and what reads it\n\n{} of the {} the base \
-         locale carries under `sdk.reason` and `sdk.reading` are emitted by \
-         a composer. The rest are listed one by one with the reason no \
-         composer reads them, because \"there is nothing left to compose\" is \
-         a claim that goes stale the moment a message is written.\n\n",
+         locale carries under {} are emitted by a composer. The namespaces \
+         are the ones the composers already read, taken from `KEYS` rather \
+         than named here, so a composer over a new one widens this by \
+         itself. The rest are listed one by one with the reason no composer \
+         reads them, because \"there is nothing left to compose\" is a claim \
+         that goes stale the moment a message is written.\n\n",
         count(read.count()),
         plural(messages.len(), "message"),
+        named.join(", "),
     );
     out.push_str("| message | why no composer reads it |\n|---|---|\n");
     for (key, why) in SPARE {
@@ -627,10 +706,10 @@ fn coverage(out: &mut String, tree: &Tree) {
     if unaccounted.is_empty() {
         out.push_str(
             "No message is unaccounted for: every one either has a composer \
-             or has a reason. **So the next composer needs a key that does \
-             not exist yet**, which is a translator's decision and not a \
-             build — the largest gap being the drishti, a whole computed \
-             section no locale has a word for.\n\n",
+             or has a reason. **So a further composer needs a key that does \
+             not exist yet**, as `aspects` did: the drishti had no word in \
+             any locale until `sdk.aspect` was written for it. What remains \
+             unsaid is counted above rather than guessed at here.\n\n",
         );
     } else {
         for key in unaccounted {

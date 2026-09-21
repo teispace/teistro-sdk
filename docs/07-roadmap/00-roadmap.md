@@ -608,7 +608,8 @@ the yoga and dosha packs are exported from the baseline engine (Q6
 settled: Teispace owns it) and re-validated against the stricter schema;
 the seven detectors the baseline engine wrote as code become rules;
 `teistro rule-doc` renders every rule to prose; `interpret` with narrative
-plans for the eight composers; `render-svg`, the optional first-party
+plans, a composer for each thing a chart has to say that a locale can say
+back (six so far, and `interpret-measured.md` counts what is left); `render-svg`, the optional first-party
 renderer above the core, turning Phase 4's geometry plus a theme record
 into a deterministic SVG string in every binding (ADR-0026);
 `teistro-intl migrate baseline` bringing the four-language name tables

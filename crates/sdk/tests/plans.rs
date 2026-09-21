@@ -307,6 +307,57 @@ fn a_consumer_writes_its_own_composer_with_the_published_surface_alone() {
     assert!(!said.is_fallback, "a strict locale carries it itself");
 }
 
+/// The drishtis are the sixth composer and **the first whose messages were
+/// written for it**: no locale carried a word for an aspect, so `sdk.aspect`
+/// was added in English and Nepali from the tradition's own vocabulary. This
+/// says the plan is composed; that both locales can say it is the measured
+/// page's business, and it holds every item of all 93 recorded charts.
+#[test]
+fn the_drishtis_are_said_with_the_messages_written_for_them() {
+    let (sdk, document) = common::reading("{}", ChartRequest::with_aspects);
+    let plan = sdk.interpret().aspects(&document).expect("the aspects");
+    assert!(!plan.is_empty(), "every chart holds a drishti");
+
+    let read = document.aspects.as_ref().expect("the aspects asked for");
+    let casts = plan
+        .items
+        .iter()
+        .filter(|item| item.key == "sdk.aspect.cast")
+        .count();
+    assert_eq!(casts, read.all().len(), "one cast a relation");
+    let pairs = plan
+        .items
+        .iter()
+        .filter(|item| item.key == "sdk.aspect.mutual")
+        .count();
+    assert_eq!(pairs, read.mutual().count(), "one item a mutual pair");
+
+    // Every item renders from each strict locale's own message: the point
+    // of writing the pack in both rather than one.
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        sdk.intl().set_locale(locale).expect("a strict locale");
+        for item in &plan {
+            let said = sdk.intl().render(&item.key, &item.params);
+            assert_eq!(said.resolved_from.as_deref(), Some(locale), "{}", item.key);
+            assert!(!said.is_fallback, "{} fell back in {locale}", item.key);
+            assert!(said.warnings.is_empty(), "{:?}", said.warnings);
+        }
+    }
+
+    // The edges say how near a boundary the reading stands, which is a fact
+    // about the ayanamsha rather than about the native; no locale carries it
+    // and the plan claims none of it.
+    let written = serde_json::to_string(&plan).expect("a plan writes");
+    for claim in ["edge", "sign_deg", "nakshatra_deg", "houses"] {
+        assert!(!written.contains(claim), "`{claim}` is in {written}");
+    }
+
+    // A document without the section is refused by the knob's name.
+    let (without, bare) = common::reading("{}", |request| request);
+    let refused = without.interpret().aspects(&bare).unwrap_err();
+    assert_eq!(refused.field(), Some("aspects"));
+}
+
 /// A plan crosses as its own JSON, and what comes back is what went out:
 /// the shape a golden file holds and the boundary's `plans` section carries
 /// are one shape, which is what lets a fixture move between them. A plan is

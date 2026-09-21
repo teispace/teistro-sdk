@@ -1,7 +1,7 @@
 //! `sdk.interpret`: what a reading says, as a narrative plan.
 
 use teistro_core::error::Error;
-use teistro_interpret::{Plan, houses, placements, positions, readings, strength};
+use teistro_interpret::{Plan, aspects, houses, placements, positions, readings, strength};
 use teistro_serial::document::Document;
 
 use crate::context::Context;
@@ -106,6 +106,33 @@ impl<'a> InterpretArea<'a> {
                      for them with `ChartRequest::with_houses`",
                 )
                 .with_field("houses")
+            })
+    }
+
+    /// Which graha looks at which, and how strongly, with every pair that
+    /// looks back said once more as the pair it is.
+    ///
+    /// The first composer whose messages were written for it: no locale
+    /// carried a word for a drishti, so `sdk.aspect` was added in English
+    /// and Nepali from the tradition's own vocabulary
+    /// (`03-design/interpret-composers.md` §4).
+    ///
+    /// # Errors
+    ///
+    /// A document without its aspects, naming the section to ask for: the
+    /// drishtis are computed only when a request asks, so a composer says
+    /// which knob was not turned rather than answering an empty plan.
+    pub fn aspects(self, document: &Document) -> Result<Plan, Error> {
+        document
+            .aspects
+            .as_ref()
+            .map(|read| aspects(read.all()))
+            .ok_or_else(|| {
+                Error::invalid_arg(
+                    "the document carries no aspects, which the aspects composer says; ask for \
+                     them with `ChartRequest::with_aspects`",
+                )
+                .with_field("aspects")
             })
     }
 

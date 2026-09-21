@@ -1,0 +1,4 @@
+{
+  "cast": ".input {$from :entity kind=graha form=prose} .input {$to :entity kind=graha form=prose} .input {$strength :string} .match $strength QUARTER {{{$from}ले {$to}लाई पाद दृष्टि दिन्छ}} HALF {{{$from}ले {$to}लाई अर्ध दृष्टि दिन्छ}} THREE_QUARTERS {{{$from}ले {$to}लाई त्रिपाद दृष्टि दिन्छ}} * {{{$from}ले {$to}लाई पूर्ण दृष्टि दिन्छ}}",
+  "mutual": ".input {$first :entity kind=graha form=prose} .input {$second :entity kind=graha form=prose} {{{$first} र {$second}बीच परस्पर दृष्टि छ}}"
+}

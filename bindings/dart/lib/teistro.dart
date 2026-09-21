@@ -3423,6 +3423,7 @@ final class PlanRequest {
     this.strength = false,
     this.houses = false,
     this.positions = false,
+    this.aspects = false,
   });
 
   /// Where each of the nine grahas stands and who shares a sign.
@@ -3440,12 +3441,16 @@ final class PlanRequest {
   /// Where each graha stands to the degree, which `placements` rounds away.
   final bool positions;
 
+  /// Which graha looks at which, and how strongly.
+  final bool aspects;
+
   String get _json => jsonEncode(<String, Object?>{
     'placements': placements,
     'readings': readings,
     'strength': strength,
     'houses': houses,
     'positions': positions,
+    'aspects': aspects,
   });
 }
 

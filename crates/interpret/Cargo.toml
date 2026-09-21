@@ -12,6 +12,7 @@ readme = "README.md"
 publish = false
 
 [dependencies]
+teistro-aspect = { path = "../aspect" }
 teistro-core = { path = "../core" }
 teistro-houses = { path = "../houses" }
 teistro-intl = { path = "../intl", default-features = false }

@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 10 581 items, 113 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 15 577 items, 167 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 1 387 061 bytes of JSON over the 93 charts, 14 914 bytes a
-chart, 20 144 bytes for the widest and 131 bytes an item. The verses'
-own cited words are **not** what weighs it — 112 962 bytes, 8% — so
+golden file: 1 978 257 bytes of JSON over the 93 charts, 21 271 bytes a
+chart, 26 340 bytes for the widest and 126 bytes an item. The verses'
+own cited words are **not** what weighs it — 112 962 bytes, 5% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -22,13 +22,13 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 24 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 10581 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 10581 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 10581 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 10581 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 28 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 15577 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 15577 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 15577 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 15577 disagree |
 
-Every one of the 21 162 renderings — 10 581 in each of 2 strict
+Every one of the 31 154 renderings — 15 577 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -36,6 +36,8 @@ about.
 
 | key | items |
 |---|---|
+| `sdk.aspect.cast` | 3679 |
+| `sdk.aspect.mutual` | 1317 |
 | `sdk.reading.effect` | 2449 |
 | `sdk.reading.lifeClass` | 214 |
 | `sdk.reading.lifeSpan` | 96 |
@@ -49,7 +51,7 @@ about.
 | `sdk.reason.occupants` | 204 |
 | `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 10 581
+**The verse's own statement is not translated.** 2449 of the 15 577
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -100,12 +102,12 @@ place: 243 stand retrograde, 66 are burnt by the Sun, 534 hold a dignity
 that is not neutral, 106 are vargottama, and 651 carry a chara karaka.
 **The plan says none of it.** That is the sharpest statement of where
 the composers stop — not at what the SDK computes, but at what a
-locale can say — and the next composer is therefore the first that
-must be given a new translated key.
+locale can say. Closing one of the six means writing a message in every
+strict locale, which is what `sdk.aspect` did for the drishti.
 
 ## What the packs carry, and what reads it
 
-12 of the 19 messages the base locale carries under `sdk.reason` and `sdk.reading` are emitted by a composer. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+14 of the 21 messages the base locale carries under `sdk.aspect`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -118,9 +120,10 @@ must be given a new translated key.
 | `sdk.reason.conjunction` | a count of what `occupants` already names, graha by graha |
 
 No message is unaccounted for: every one either has a composer or has a
-reason. **So the next composer needs a key that does not exist yet**,
-which is a translator's decision and not a build — the largest gap
-being the drishti, a whole computed section no locale has a word for.
+reason. **So a further composer needs a key that does not exist yet**,
+as `aspects` did: the drishti had no word in any locale until
+`sdk.aspect` was written for it. What remains unsaid is counted above
+rather than guessed at here.
 
 ## One chart, said
 
@@ -161,6 +164,60 @@ Venus at 14°13′ Aquarius
 Saturn at 1°15′ Capricorn
 Rahu at 19°17′ Capricorn
 Ketu at 19°17′ Cancer
+the Sun casts a three-quarter aspect on the Moon
+the Sun casts a quarter aspect on Jupiter
+the Sun casts a quarter aspect on Saturn
+the Sun casts a quarter aspect on Rahu
+the Sun casts a three-quarter aspect on Ketu
+the Moon casts a three-quarter aspect on Mars
+the Moon casts a three-quarter aspect on Jupiter
+the Moon casts a three-quarter aspect on Venus
+the Moon casts a quarter aspect on Saturn
+the Moon casts a quarter aspect on Rahu
+the Moon casts a half aspect on Ketu
+Mars casts a quarter aspect on the Sun
+Mars casts a quarter aspect on the Moon
+Mars casts a quarter aspect on Mercury
+Mars casts a half aspect on Jupiter
+Mercury casts a three-quarter aspect on the Moon
+Mercury casts a quarter aspect on Jupiter
+Mercury casts a quarter aspect on Saturn
+Mercury casts a quarter aspect on Rahu
+Mercury casts a three-quarter aspect on Ketu
+Jupiter aspects Mars fully
+Jupiter aspects Venus fully
+Jupiter casts a three-quarter aspect on Saturn
+Jupiter casts a three-quarter aspect on Rahu
+Venus casts a quarter aspect on the Sun
+Venus casts a quarter aspect on the Moon
+Venus casts a quarter aspect on Mercury
+Venus casts a half aspect on Jupiter
+Saturn casts a three-quarter aspect on the Sun
+Saturn casts a three-quarter aspect on Mercury
+Saturn aspects Ketu fully
+Rahu casts a three-quarter aspect on the Sun
+Rahu casts a three-quarter aspect on Mercury
+Rahu aspects Ketu fully
+Ketu casts a quarter aspect on the Sun
+Ketu casts a half aspect on the Moon
+Ketu casts a three-quarter aspect on Mars
+Ketu casts a quarter aspect on Mercury
+Ketu casts a three-quarter aspect on Venus
+Ketu aspects Saturn fully
+Ketu aspects Rahu fully
+the Sun and Saturn aspect each other
+the Sun and Rahu aspect each other
+the Sun and Ketu aspect each other
+the Moon and Mars aspect each other
+the Moon and Venus aspect each other
+the Moon and Ketu aspect each other
+Mars and Jupiter aspect each other
+Mercury and Saturn aspect each other
+Mercury and Rahu aspect each other
+Mercury and Ketu aspect each other
+Jupiter and Venus aspect each other
+Saturn and Ketu aspect each other
+Rahu and Ketu aspect each other
 NABHASA_PASA: liable to imprisonment, skilful in work, deceiving of disposition, talkative, bereft of good qualities, and attended by many servants
 NABHASA_PASA: Sun, Moon, Mars, Mercury, Jupiter, Venus and Saturn take part
 LUNAR_MOON_IN_PANAPHARA_FROM_THE_SUN: of middling wealth, intelligence and skill
@@ -271,6 +328,60 @@ Saturn rules house 12
 शनि १°१५′ मकरमा
 राहु १९°१७′ मकरमा
 केतु १९°१७′ कर्कटमा
+सूर्यले चन्द्रलाई त्रिपाद दृष्टि दिन्छ
+सूर्यले गुरुलाई पाद दृष्टि दिन्छ
+सूर्यले शनिलाई पाद दृष्टि दिन्छ
+सूर्यले राहुलाई पाद दृष्टि दिन्छ
+सूर्यले केतुलाई त्रिपाद दृष्टि दिन्छ
+चन्द्रले मंगललाई त्रिपाद दृष्टि दिन्छ
+चन्द्रले गुरुलाई त्रिपाद दृष्टि दिन्छ
+चन्द्रले शुक्रलाई त्रिपाद दृष्टि दिन्छ
+चन्द्रले शनिलाई पाद दृष्टि दिन्छ
+चन्द्रले राहुलाई पाद दृष्टि दिन्छ
+चन्द्रले केतुलाई अर्ध दृष्टि दिन्छ
+मंगलले सूर्यलाई पाद दृष्टि दिन्छ
+मंगलले चन्द्रलाई पाद दृष्टि दिन्छ
+मंगलले बुधलाई पाद दृष्टि दिन्छ
+मंगलले गुरुलाई अर्ध दृष्टि दिन्छ
+बुधले चन्द्रलाई त्रिपाद दृष्टि दिन्छ
+बुधले गुरुलाई पाद दृष्टि दिन्छ
+बुधले शनिलाई पाद दृष्टि दिन्छ
+बुधले राहुलाई पाद दृष्टि दिन्छ
+बुधले केतुलाई त्रिपाद दृष्टि दिन्छ
+गुरुले मंगललाई पूर्ण दृष्टि दिन्छ
+गुरुले शुक्रलाई पूर्ण दृष्टि दिन्छ
+गुरुले शनिलाई त्रिपाद दृष्टि दिन्छ
+गुरुले राहुलाई त्रिपाद दृष्टि दिन्छ
+शुक्रले सूर्यलाई पाद दृष्टि दिन्छ
+शुक्रले चन्द्रलाई पाद दृष्टि दिन्छ
+शुक्रले बुधलाई पाद दृष्टि दिन्छ
+शुक्रले गुरुलाई अर्ध दृष्टि दिन्छ
+शनिले सूर्यलाई त्रिपाद दृष्टि दिन्छ
+शनिले बुधलाई त्रिपाद दृष्टि दिन्छ
+शनिले केतुलाई पूर्ण दृष्टि दिन्छ
+राहुले सूर्यलाई त्रिपाद दृष्टि दिन्छ
+राहुले बुधलाई त्रिपाद दृष्टि दिन्छ
+राहुले केतुलाई पूर्ण दृष्टि दिन्छ
+केतुले सूर्यलाई पाद दृष्टि दिन्छ
+केतुले चन्द्रलाई अर्ध दृष्टि दिन्छ
+केतुले मंगललाई त्रिपाद दृष्टि दिन्छ
+केतुले बुधलाई पाद दृष्टि दिन्छ
+केतुले शुक्रलाई त्रिपाद दृष्टि दिन्छ
+केतुले शनिलाई पूर्ण दृष्टि दिन्छ
+केतुले राहुलाई पूर्ण दृष्टि दिन्छ
+सूर्य र शनिबीच परस्पर दृष्टि छ
+सूर्य र राहुबीच परस्पर दृष्टि छ
+सूर्य र केतुबीच परस्पर दृष्टि छ
+चन्द्र र मंगलबीच परस्पर दृष्टि छ
+चन्द्र र शुक्रबीच परस्पर दृष्टि छ
+चन्द्र र केतुबीच परस्पर दृष्टि छ
+मंगल र गुरुबीच परस्पर दृष्टि छ
+बुध र शनिबीच परस्पर दृष्टि छ
+बुध र राहुबीच परस्पर दृष्टि छ
+बुध र केतुबीच परस्पर दृष्टि छ
+गुरु र शुक्रबीच परस्पर दृष्टि छ
+शनि र केतुबीच परस्पर दृष्टि छ
+राहु र केतुबीच परस्पर दृष्टि छ
 NABHASA_PASA: liable to imprisonment, skilful in work, deceiving of disposition, talkative, bereft of good qualities, and attended by many servants
 NABHASA_PASA: सूर्य, चन्द्र, मंगल, बुध, गुरु, शुक्र र शनि संलग्न छन्
 LUNAR_MOON_IN_PANAPHARA_FROM_THE_SUN: of middling wealth, intelligence and skill

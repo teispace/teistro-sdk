@@ -554,7 +554,8 @@ pub struct TsChartRequest {
     pub rules_json: *const c_char,
     /// Narrative plans to compose over every chart, as JSON: an object
     /// naming the composers to run — `placements`, `readings`, `strength`,
-    /// `houses` and `positions` — each false by default. The plans come back in the blob's `plans`
+    /// `houses`, `positions` and `aspects` — each false by default. The
+    /// plans come back in the blob's `plans`
     /// section, holding no words at all — an item's params are the JSON
     /// `ts_intl_render` takes, so a binding says one by handing it
     /// straight back, in any locale and in as many as it likes
@@ -2334,6 +2335,8 @@ struct Plans {
     houses: Option<Plan>,
     #[serde(skip_serializing_if = "Option::is_none")]
     positions: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    aspects: Option<Plan>,
 }
 
 /// The charts a request asks for, the canonical JSON of what they answer by
@@ -2385,8 +2388,13 @@ fn sections_for(request: ChartRequest, asked: PlanRequest) -> ChartRequest {
     } else {
         request
     };
-    if asked.houses {
+    let request = if asked.houses {
         request.with_houses()
+    } else {
+        request
+    };
+    if asked.aspects {
+        request.with_aspects()
     } else {
         request
     }
@@ -2427,6 +2435,10 @@ fn compose(
             positions: asked
                 .positions
                 .then(|| sdk.interpret().positions(document))
+                .transpose()?,
+            aspects: asked
+                .aspects
+                .then(|| sdk.interpret().aspects(document))
                 .transpose()?,
         });
     }

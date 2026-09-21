@@ -246,21 +246,14 @@ impl Aspects {
 
     /// Every pair that looks at each other, each pair once, in the
     /// foundation's order.
+    ///
+    /// The rule is [`mutual_pairs`]'s: taking a pair once is a property of
+    /// a **set of relations** rather than of this container, so it lives
+    /// over a slice and a reader that holds only the relations — a
+    /// narrative composer, a pass measuring one — shares this answer
+    /// rather than writing a second one.
     pub fn mutual(&self) -> impl Iterator<Item = Mutual> {
-        self.relations.iter().filter_map(move |outward| {
-            let back = self.between(outward.to, outward.from)?;
-            // Once per pair, taking the direction the foundation lists
-            // first.
-            let first = self.order(outward.from)?;
-            let second = self.order(outward.to)?;
-            (first < second).then_some(Mutual {
-                first: outward.from,
-                second: outward.to,
-                houses: outward.houses,
-                outward: outward.strength,
-                back: back.strength,
-            })
-        })
+        mutual_pairs(&self.relations)
     }
 
     /// The bodies sharing a sign with this one, which is what the
@@ -290,11 +283,55 @@ impl Aspects {
             .find(|placed| placed.graha == graha)
             .map(|placed| placed.sign)
     }
+}
 
-    /// Where a body comes in the foundation's own order.
-    fn order(&self, graha: Graha) -> Option<usize> {
-        self.placed.iter().position(|placed| placed.graha == graha)
+/// Every pair among these relations that looks at each other, each pair
+/// once, in the order the relations first name a body as the one looking.
+///
+/// That order is the founding order where the relations came from a founded
+/// chart, because dropping the bodies that cast nothing keeps what is left
+/// in the same relative order — and a body that casts nothing is in no
+/// mutual pair either.
+///
+/// ```
+/// use teistro_aspect::{Drishti, Strength, mutual_pairs};
+/// # use teistro_core::boundary::Boundaries;
+/// # use teistro_core::catalogue::Graha;
+/// # let edge = Boundaries { sign_deg: 15.0, nakshatra_deg: 6.0, pada_deg: 3.0 };
+/// # let at = |from, to, houses, strength| Drishti {
+/// #     from, to, houses, strength, from_edge: edge, to_edge: edge,
+/// # };
+/// // Saturn and Jupiter look at each other; Mars looks at Saturn alone.
+/// let relations = [
+///     at(Graha::Saturn, Graha::Jupiter, 7, Strength::Full),
+///     at(Graha::Jupiter, Graha::Saturn, 7, Strength::Full),
+///     at(Graha::Mars, Graha::Saturn, 4, Strength::ThreeQuarters),
+/// ];
+/// let pairs: Vec<_> = mutual_pairs(&relations).collect();
+/// assert_eq!(pairs.len(), 1, "once per pair, and Mars is not looked back at");
+/// assert_eq!(pairs[0].first, Graha::Saturn);
+/// ```
+pub fn mutual_pairs(relations: &[Drishti]) -> impl Iterator<Item = Mutual> + '_ {
+    /// Where a body first appears as the one looking, which is the order
+    /// the relations were built in.
+    fn order(relations: &[Drishti], graha: Graha) -> Option<usize> {
+        relations.iter().position(|relation| relation.from == graha)
     }
+    relations.iter().filter_map(move |outward| {
+        let back = relations
+            .iter()
+            .find(|back| back.from == outward.to && back.to == outward.from)?;
+        // Once per pair, taking the direction listed first.
+        let first = order(relations, outward.from)?;
+        let second = order(relations, outward.to)?;
+        (first < second).then_some(Mutual {
+            first: outward.from,
+            second: outward.to,
+            houses: outward.houses,
+            outward: outward.strength,
+            back: back.strength,
+        })
+    })
 }
 
 /// A longitude the foundation carries, as the canonical angle.

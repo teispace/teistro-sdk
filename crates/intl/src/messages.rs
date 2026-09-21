@@ -32,6 +32,51 @@ impl From<Gender> for crate::Value {
 
 /// The `sdk` group.
 pub mod sdk {
+    /// The `aspect` group.
+    pub mod aspect {
+        /// The message `sdk.aspect.cast`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Cast {
+            /// The `from` parameter.
+            pub from: teistro_core::catalogue::Graha,
+            /// The `strength` parameter.
+            pub strength: String,
+            /// The `to` parameter.
+            pub to: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for Cast {
+            const KEY: &'static str = "sdk.aspect.cast";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("from", crate::Value::catalogued(self.from)),
+                    ("strength", crate::Value::Str(self.strength.clone())),
+                    ("to", crate::Value::catalogued(self.to)),
+                ])
+            }
+        }
+
+        /// The message `sdk.aspect.mutual`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Mutual {
+            /// The `first` parameter.
+            pub first: teistro_core::catalogue::Graha,
+            /// The `second` parameter.
+            pub second: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for Mutual {
+            const KEY: &'static str = "sdk.aspect.mutual";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("first", crate::Value::catalogued(self.first)),
+                    ("second", crate::Value::catalogued(self.second)),
+                ])
+            }
+        }
+
+    }
+
     /// The `calendar` group.
     pub mod calendar {
         /// The `BIKRAM_SAMBAT` group.

@@ -676,6 +676,7 @@ class AnEngine(WithLibrary):
                 "strength": True,
                 "houses": True,
                 "positions": True,
+                "aspects": True,
             },
             {"shipped": ["nabhasas"]},
         )
@@ -689,6 +690,8 @@ class AnEngine(WithLibrary):
         self.assertEqual(len(plans["houses"]), 12, "the twelve bhavas")
         # And the positions read the same states the placements do.
         self.assertEqual(len(plans["positions"]), 9, "the nine grahas")
+        # The drishtis read the aspects section, never asked for either.
+        self.assertTrue(plans["aspects"], "every chart holds a drishti")
 
         said = 0
         for item in [
@@ -697,6 +700,7 @@ class AnEngine(WithLibrary):
             *plans["strength"],
             *plans["houses"],
             *plans["positions"],
+            *plans["aspects"],
         ]:
             self.assertTrue(item["key"].startswith("sdk."))
             rendered = self.ctx.intl.render(item["key"], item["params"])

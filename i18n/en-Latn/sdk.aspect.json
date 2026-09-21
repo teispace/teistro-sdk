@@ -1,0 +1,4 @@
+{
+  "cast": ".input {$from :entity kind=graha form=prose} .input {$to :entity kind=graha form=prose} .input {$strength :string} .match $strength QUARTER {{{$from} casts a quarter aspect on {$to}}} HALF {{{$from} casts a half aspect on {$to}}} THREE_QUARTERS {{{$from} casts a three-quarter aspect on {$to}}} * {{{$from} aspects {$to} fully}}",
+  "mutual": ".input {$first :entity kind=graha form=prose} .input {$second :entity kind=graha form=prose} {{{$first} and {$second} aspect each other}}"
+}

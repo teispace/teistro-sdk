@@ -179,6 +179,12 @@ fn the_plans(
                     .positions(document)
                     .unwrap_or_else(|_| teistro::Plan::default()),
             ),
+            (
+                "aspects",
+                sdk.interpret()
+                    .aspects(document)
+                    .unwrap_or_else(|_| teistro::Plan::default()),
+            ),
         ];
         for (composer, plan) in composed {
             put(

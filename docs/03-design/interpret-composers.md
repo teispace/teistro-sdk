@@ -201,6 +201,63 @@ Taurus" of the same body. Neither is wrong: one reads the longitude, the
 other reads it rounded. A composer cannot fix it without rounding the sign
 too, which would make the plan disagree with the chart.
 
+**`aspects`** — which graha looks at which, and how strongly: a `cast` item
+for every drishti the chart holds and a `mutual` item for every pair that
+looks at each other. **Built**, and it is the **first composer that spends
+translation debt**: `sdk.aspect` is a namespace of two messages written for
+it, in English and in Nepali, because no locale carried a word for a drishti
+— not "looks at", not a grading, not the relation.
+
+**That is a decision this page records rather than a task it performed.**
+Four composers shipped free because the packs held a message nobody read,
+and the fifth exhausted them. The drishti was the largest thing the SDK
+computes and cannot say, so it is where the debt is first spent. The
+precedent is `sdk.reading`'s six: written from the texts' own vocabulary
+rather than invented prose, and **flagged for the native review the roadmap
+already requires for `ne` and `hi`**. The terms are the tradition's own —
+पाद, अर्ध, त्रिपाद and पूर्ण दृष्टि for the quarters a drishti is counted
+in, and परस्पर दृष्टि for a mutual one — so a reviewer is checking grammar
+and register, not a translator's guess at a technical term.
+
+The grading is the message's, not the composer's. `Strength` is not a
+catalogued entity, so `cast` selects on the slot the way `sdk.reading`'s
+`lifeClass` and `status` do, with the arms spelled exactly as
+`Strength::key()` writes them — `QUARTER`, `HALF`, `THREE_QUARTERS` and `*`
+for `FULL`, the house style of putting the last member on the catch-all.
+`Strength::None` is never stored by `Aspects`, so it can never reach the
+catch-all and be said as "full"; the composer skips it anyway and a test
+holds that, because a catch-all that would lie is worth one branch.
+
+**`mutual` is not a restatement.** A pair that looks at each other already
+has two `cast` items, but *parasparadrishti* is a named condition the texts
+read as one thing, and a consumer would otherwise derive it by scanning. It
+is the same argument that puts `occupants` beside `grahaInRashi` in
+`placements`.
+
+Its subject is a **slice of relations** rather than the `Aspects` container,
+which is what let the pairing stay in one place. `Aspects::mutual()` took
+each pair once by the foundation's order of bodies; that rule is a property
+of a set of relations and not of the container, so it moved to
+`aspect::mutual_pairs` over a slice and `Aspects::mutual()` delegates to it,
+so the composer and the container answer from one implementation rather than
+two. `plans.rs` holds them against each other — the plan's `mutual` items
+counted against `Aspects::mutual()` over the same document — and
+`crates/aspect`'s own test still holds the rule over a founded chart.
+
+What it does not say: how near either end stands to a sign edge
+(`from_edge`, `to_edge`), which is a statement about how much an ayanamsha
+that moved would change the reading rather than about the native; and which
+drishti table the settings named, which is a setting. Neither has a message,
+and neither is a sentence a reading wants.
+
+One thing the corpus cannot decide. **It records no aspect at all**, so
+unlike `strength` and `houses` there are no recorded values to compose from.
+The pass computes the relations from the corpus's recorded **signs** with
+`aspect::drishti::between`, and the page says so: what is measured is that a
+plan of them can be said in both strict locales, which is this pass's
+question anyway. Whether the drishtis themselves are right is
+`aspect-drishti-measured.md`'s business.
+
 Every item names its rule in a `rule` slot the base messages declare and do
 not print, so a consumer can group a plan by rule and a locale that wants the
 key in its prose has it. The measured page's snapshot prints it as a prefix,
@@ -290,23 +347,23 @@ a test that a plan round-trips through JSON.
   in four languages, are data and not code; they arrive through `migrate
   baseline` and turn `placements` from a description into an interpretation
   without changing its shape.
-- **The next composer needs a new translated key, and that is a decision
-  rather than a task.** Four composers have shipped for free because the
-  packs carried a message nobody read; that pool is now empty. The largest
-  gap left is the **drishti**: `Document.aspects` is a computed section with
-  no composer at all, and **no locale carries a word for it** — not "looks
-  at", not a strength, not a table's name. The same is true of a bhava's
-  sign and class, of the chalit shift, of whether a graha reaches its
-  required rupas, and of a nakshatra and its pada. Writing those messages
-  means writing Nepali, which the roadmap already holds to native review for
-  `ne` and `hi`. The precedent is `sdk.reading`'s six, written from the
-  texts' own vocabulary and flagged for review rather than machine
-  translated — so the question is not whether it can be done but whose call
-  it is, and it is the maintainer's.
+- **A further composer needs a new translated key** — answered once, and
+  the answer is the pattern. Five composers shipped for free because the
+  packs carried a message nobody read; `positions` emptied that pool, and
+  the largest gap left was the **drishti**, a computed section with no word
+  in any locale. §4's `aspects` closed it by writing `sdk.aspect` in English
+  and Nepali from the tradition's own terms — पाद, अर्ध, त्रिपाद and
+  पूर्ण दृष्टि, परस्पर दृष्टि — and flagging it for the native review the
+  roadmap already requires for `ne` and `hi`, exactly as `sdk.reading`'s six
+  were. What is left is the same shape and smaller: a bhava's sign and
+  class, the chalit shift, whether a graha reaches its required rupas, and a
+  nakshatra with its pada. Each is a message to write and a review to get,
+  not a design question — and `interpret-measured.md` counts them so the
+  size of the gap is a measurement rather than a memory.
 
 - **A consumer's own composer** — **settled for v1.0, and not by building a
   registry.** This page said a registry cost nothing to add once a second
-  composer existed to prove the interface. Five now exist, and what they
+  composer existed to prove the interface. Six now exist, and what they
   proved is that the registry was the wrong thing to reach for.
 
   The promise in the extensibility table is *a narrative plan function

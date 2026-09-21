@@ -5,6 +5,10 @@
 export function messages(r) {
   return {
     sdk: {
+      aspect: {
+        cast: (p) => r.render('sdk.aspect.cast', { from: { '$entity': p.from }, strength: p.strength, to: { '$entity': p.to } }),
+        mutual: (p) => r.render('sdk.aspect.mutual', { first: { '$entity': p.first }, second: { '$entity': p.second } }),
+      },
       calendar: {
         bikramSambat: {
           date: {

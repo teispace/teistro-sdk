@@ -729,6 +729,11 @@ class MessagesSdk:
 
 
     @property
+    def aspect(self) -> MessagesSdkAspect:
+        """The messages under `aspect`."""
+        return MessagesSdkAspect(self._r)
+
+    @property
     def calendar(self) -> MessagesSdkCalendar:
         """The messages under `calendar`."""
         return MessagesSdkCalendar(self._r)
@@ -3973,6 +3978,28 @@ class MessagesSdkCalendarBikramSambatDate:
         return self._r.render(
             "sdk.calendar.BIKRAM_SAMBAT.date.numeric",
             {"day": day, "month": month, "year": year},
+        )
+
+
+class MessagesSdkAspect:
+    """The messages under `MessagesSdkAspect`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def cast(self, *, from_: GrahaKey, strength: str, to: GrahaKey) -> str:
+        """`sdk.aspect.cast`"""
+        return self._r.render(
+            "sdk.aspect.cast",
+            {"from": {"$entity": from_.value}, "strength": strength, "to": {"$entity": to.value}},
+        )
+
+    def mutual(self, *, first: GrahaKey, second: GrahaKey) -> str:
+        """`sdk.aspect.mutual`"""
+        return self._r.render(
+            "sdk.aspect.mutual",
+            {"first": {"$entity": first.value}, "second": {"$entity": second.value}},
         )
 
 

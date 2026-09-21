@@ -72,23 +72,25 @@ def main() -> None:
                 "strength": True,
                 "houses": True,
                 "positions": True,
+                "aspects": True,
             },
         )
         plans = chart.plans
         assert plans is not None
         placements, readings = plans["placements"], plans["readings"]
         weights, ruled = plans["strength"], plans["houses"]
-        degrees = plans["positions"]
+        degrees, looks = plans["positions"], plans["aspects"]
 
         print("BS 2042-09-17  00:20  Kathmandu")
         print(
             f"plan     {len(placements)} placement items, "
             f"{len(readings)} reading items, {len(weights)} strengths, "
-            f"{len(ruled)} lordships, {len(degrees)} positions"
+            f"{len(ruled)} lordships, {len(degrees)} positions, "
+            f"{len(looks)} drishtis"
         )
         keys = dict.fromkeys(
             item["key"]
-            for item in [*placements, *readings, *weights, *ruled, *degrees]
+            for item in [*placements, *readings, *weights, *ruled, *degrees, *looks]
         )
         print(f"keys     {', '.join(keys)}")
 
@@ -98,7 +100,7 @@ def main() -> None:
         for locale in ("en-Latn", "ne-Deva-NP"):
             ctx.intl.locale = locale
             print(f"\n{locale}")
-            for item in [*placements, *weights, *ruled, *degrees]:
+            for item in [*placements, *weights, *ruled, *degrees, *looks]:
                 said = ctx.intl.render(item["key"], item["params"])
                 print(f"  {said.text}{'  (fallback)' if said.is_fallback else ''}")
             # A reading names its rule in a slot the message does not

@@ -59,11 +59,12 @@ fn main() -> Result<(), Error> {
     let request = ChartRequest::at(place, resolved.zone.offset)
         .with_state()
         .with_shadbala()
-        .with_houses();
+        .with_houses()
+        .with_aspects();
     let document = sdk.chart().reading(resolved.instant, &request)?.value;
 
     // ── The plan ───────────────────────────────────────────────────────
-    // Four composers, one plan: a report concatenates what it wants to say
+    // Five composers, one plan: a report concatenates what it wants to say
     // in the order it wants to say it, which is what a flat plan is for.
     // Where a graha *stands* and what it *rules* are different facts, and
     // it takes two composers to say both.
@@ -73,6 +74,9 @@ fn main() -> Result<(), Error> {
     // `positions` says what `placements` rounds away, which is why it is a
     // composer of its own: a page picks the precision it wants.
     plan.items.extend(sdk.interpret().positions(&document)?);
+    // The first composer whose messages were written for it: no locale
+    // carried a word for a drishti until `sdk.aspect` was added.
+    plan.items.extend(sdk.interpret().aspects(&document)?);
     println!("plan  {} items, {} keys", plan.len(), plan.keys().len());
     for key in plan.keys() {
         println!("  {key}");

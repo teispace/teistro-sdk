@@ -1369,6 +1369,51 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A sixth composer, `aspects`, and the first whose messages were written
+  for it.** Which graha looks at which and how strongly: a `cast` item for
+  every drishti a chart holds and a `mutual` item for every pair that looks
+  back. Four composers shipped free because the packs held a message nobody
+  read and the fifth exhausted them, so **this is where the translation debt
+  is first spent** — `sdk.aspect` is a namespace of two messages added in
+  English and in Nepali, because no locale carried a word for a drishti: not
+  "looks at", not a grading, not the relation.
+
+  **The terms are the tradition's, not a translator's guess.** पाद, अर्ध,
+  त्रिपाद and पूर्ण दृष्टि for the quarters a drishti is counted in, and
+  परस्पर दृष्टि for a mutual one, so the native review the roadmap already
+  requires for `ne` and `hi` is checking grammar and register rather than
+  vocabulary. The precedent is `sdk.reading`'s six, written the same way and
+  flagged the same way.
+
+  The grading belongs to the message: `Strength` is not a catalogued entity,
+  so `cast` selects on the slot as `sdk.reading`'s `lifeClass` does, with
+  arms spelled exactly as `Strength::key()` writes them. `Strength::None` is
+  never stored by `Aspects` and the composer skips it anyway, because the
+  catch-all arm is `FULL` and a catch-all that would say "fully" of no
+  aspect at all is worth one branch to make unreachable.
+
+  **`mutual` is a typed pair rather than a list.** It began as
+  `{$grahas :list}`, which generated `Vec<crate::Value>` and rendered "Sun
+  and Saturn" beside `cast`'s "the Sun casts…"; two entity slots generate
+  two `Graha`s, read better and match `Mutual { first, second }` exactly.
+
+  `Aspects::mutual()` took each pair once by the foundation's order. That
+  rule is a property of a **set of relations** and not of the container, so
+  it moved to `aspect::mutual_pairs` over a slice and `Aspects::mutual()`
+  delegates to it — the composer, the façade and the measured pass now share
+  one implementation instead of three.
+
+  **Numbers:** none move. 93 charts now compose to 15 577 items, up from
+  10 581, and all 31 154 renderings still answer from the strict locale's
+  own message with no fallback and nothing to warn about.
+
+  The coverage table that was supposed to catch a message left unread almost
+  missed this one: it named `sdk.reason` and `sdk.reading` rather than
+  deriving them, so a whole new namespace fell outside its own scope. It now
+  takes the namespaces from `KEYS`, so a composer over a new one widens the
+  check by itself — 14 of 21 messages emitted, across `sdk.aspect`,
+  `sdk.reading` and `sdk.reason`.
+
 - **A consumer's own composer is settled for v1.0 — by testing the promise
   rather than by building a registry.** `03-design/interpret-composers.md`
   §8 said a registry cost nothing to add once a second composer existed to

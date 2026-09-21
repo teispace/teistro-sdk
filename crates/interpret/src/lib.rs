@@ -41,15 +41,17 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
-use teistro_intl::messages::sdk::{reading, reason};
+use teistro_intl::messages::sdk::{aspect, reading, reason};
 use teistro_intl::{Params, TypedMessage};
 
+mod aspects;
 mod houses;
 mod placements;
 mod positions;
 mod readings;
 mod strength;
 
+pub use aspects::aspects;
 pub use houses::houses;
 pub use placements::placements;
 pub use positions::positions;
@@ -64,7 +66,7 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 12] = [
+pub const KEYS: [&str; 14] = [
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
     <reason::GrahaAt as TypedMessage>::KEY,
@@ -77,6 +79,8 @@ pub const KEYS: [&str; 12] = [
     <reading::Participants as TypedMessage>::KEY,
     <reading::Status as TypedMessage>::KEY,
     <reading::Severity as TypedMessage>::KEY,
+    <aspect::Cast as TypedMessage>::KEY,
+    <aspect::Mutual as TypedMessage>::KEY,
 ];
 
 /// One thing to say: a message key and the slots it is said with.

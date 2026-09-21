@@ -310,6 +310,7 @@ void main() {
       strength: true,
       houses: true,
       positions: true,
+      aspects: true,
     ),
     aspects: true,
     points: true,

@@ -766,6 +766,8 @@ export interface PlanRequest {
   readonly houses?: boolean;
   /** Where each graha stands to the degree, which `placements` rounds away. */
   readonly positions?: boolean;
+  /** Which graha looks at which, and how strongly. */
+  readonly aspects?: boolean;
 }
 
 /**
@@ -792,6 +794,8 @@ export interface Plans {
   readonly houses?: readonly PlanItem[];
   /** Where each graha stands to the degree; absent unless `positions` asked. */
   readonly positions?: readonly PlanItem[];
+  /** Which graha looks at which; absent unless `aspects` asked for it. */
+  readonly aspects?: readonly PlanItem[];
 }
 
 /**

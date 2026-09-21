@@ -68,6 +68,7 @@ void main() {
       strength: true,
       houses: true,
       positions: true,
+      aspects: true,
     ),
   );
 
@@ -82,12 +83,15 @@ void main() {
       (plans['houses']! as List<Object?>).cast<Map<String, Object?>>();
   final degrees =
       (plans['positions']! as List<Object?>).cast<Map<String, Object?>>();
+  final looks =
+      (plans['aspects']! as List<Object?>).cast<Map<String, Object?>>();
 
   print('BS 2042-09-17  00:20  Kathmandu');
   print(
     'plan     ${placements.length} placement items, '
     '${readings.length} reading items, ${weights.length} strengths, '
-    '${ruled.length} lordships, ${degrees.length} positions',
+    '${ruled.length} lordships, ${degrees.length} positions, '
+    '${looks.length} drishtis',
   );
   final keys = <String>{
     for (final item in [
@@ -96,6 +100,7 @@ void main() {
       ...weights,
       ...ruled,
       ...degrees,
+      ...looks,
     ])
       item['key']! as String,
   };
@@ -107,7 +112,13 @@ void main() {
   for (final locale in ['en-Latn', 'ne-Deva-NP']) {
     ctx.intl.locale = locale;
     print('\n$locale');
-    for (final item in [...placements, ...weights, ...ruled, ...degrees]) {
+    for (final item in [
+      ...placements,
+      ...weights,
+      ...ruled,
+      ...degrees,
+      ...looks,
+    ]) {
       final said = ctx.intl.render(
         item['key']! as String,
         item['params']! as Map<String, Object?>,

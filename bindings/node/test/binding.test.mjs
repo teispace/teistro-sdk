@@ -799,7 +799,14 @@ test('plans compose in the same crossing, and render with nothing in between', (
   const plans = ctx.chart.found({
     ...request,
     rules: { shipped: ['nabhasas'] },
-    interpret: { placements: true, readings: true, strength: true, houses: true, positions: true },
+    interpret: {
+      placements: true,
+      readings: true,
+      strength: true,
+      houses: true,
+      positions: true,
+      aspects: true,
+    },
   }).plans;
   assert.ok(plans.placements.length > 0, 'every chart places its grahas');
   assert.ok(Array.isArray(plans.readings), 'asked for, so present');
@@ -810,6 +817,8 @@ test('plans compose in the same crossing, and render with nothing in between', (
   assert.equal(plans.houses.length, 12, 'the twelve bhavas, the first house first');
   // And the positions read the same states the placements do.
   assert.equal(plans.positions.length, 9, 'the nine grahas, the lagna is a point');
+  // The drishtis read the aspects section, which this request never asked for.
+  assert.ok(plans.aspects.length > 0, 'every chart holds a drishti');
   assert.ok(Object.isFrozen(plans.placements[0]), 'a plan handed out is a plan kept');
 
   let said = 0;
@@ -819,6 +828,7 @@ test('plans compose in the same crossing, and render with nothing in between', (
     ...plans.strength,
     ...plans.houses,
     ...plans.positions,
+    ...plans.aspects,
   ]) {
     assert.match(item.key, /^sdk\./u);
     const rendered = ctx.intl.render(item.key, item.params);
