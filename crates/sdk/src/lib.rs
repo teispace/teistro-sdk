@@ -49,7 +49,8 @@ mod render;
 mod scale;
 
 pub use area::{
-    AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea,
+    AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea, IntlArea, KeysArea,
+    TimeArea,
 };
 mod rule_request;
 mod rules_bridge;
@@ -122,6 +123,8 @@ pub use crate::rules_bridge::{
 };
 pub use teistro_dasha as dasha;
 pub use teistro_dasha::{DashaCursor, DashaReading, PeriodRow, Timeline};
+pub use teistro_interpret as interpret;
+pub use teistro_interpret::{Item, Plan};
 pub use teistro_rules as rules;
 pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths};
 // Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each

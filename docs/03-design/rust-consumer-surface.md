@@ -420,6 +420,14 @@ principle:
    ephemeris that describes no operations of its own, which is what the
    built-in is.
 
+   **A ninth area, `interpret`, arrived with the composers (2026-09-21).**
+   It is the first area that is **Rust only**: a narrative plan does not
+   cross the C boundary yet, so the other three bindings do not have it,
+   and `check-areas` — which measures the boundary's own areas — does not
+   see it. That is the honest state rather than a gap: the area exists
+   where its consumer is, and it joins the boundary when a plan has a
+   crossing of its own to ride on.
+
    **And `chart` and `almanac`, so all eight areas and the root are
    built.** The runner came first, as the paragraph below asks, and it
    was the right order: with it in place the two compositions were

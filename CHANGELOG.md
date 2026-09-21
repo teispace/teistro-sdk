@@ -1317,6 +1317,12 @@ the astronomical numbers do not move. Nothing else computes yet.
   file. `cargo xtask interpret` measures it and `check-interpret` holds the
   page.
 
+  The façade carries it: `sdk.interpret().placements(&document)` is a ninth
+  area — the first that is **Rust only**, since a plan has no crossing of its
+  own yet — `teistro::{Plan, Item}` and `teistro::interpret` are re-exported,
+  and a tenth worked example says one birth record in English and in Nepali,
+  run by `check-rust` like the rest.
+
   **Numbers:** none move. The composer adds no message: `sdk.reason` already
   carried `grahaInRashi`, `grahaInBhava` and `occupants` in both strict
   locales, so there is no translation debt and no fallback anywhere. 93

@@ -24,6 +24,7 @@ teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
 teistro-dasha = { path = "../dasha" }
 teistro-houses = { path = "../houses" }
+teistro-interpret = { path = "../interpret" }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
 teistro-points = { path = "../points" }

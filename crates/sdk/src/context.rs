@@ -18,7 +18,8 @@ use teistro_port_ephemeris::{CachingProvider, EphemerisProvider, PositionRequest
 
 use crate::BUNDLES;
 use crate::area::{
-    AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea,
+    AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea, IntlArea, KeysArea,
+    TimeArea,
 };
 use crate::ephemeris::{self, Ephemeris, no_ephemeris};
 
@@ -208,6 +209,13 @@ impl Context {
     #[must_use]
     pub fn chart(&self) -> ChartArea<'_> {
         ChartArea::of(self)
+    }
+
+    /// What a reading says, as a narrative plan of message keys and
+    /// slots, which [`Context::intl`] renders in any locale.
+    #[must_use]
+    pub fn interpret(&self) -> InterpretArea<'_> {
+        InterpretArea::of(self)
     }
 
     /// A panchanga: the five limbs of a day and its periods, for a day

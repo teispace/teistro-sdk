@@ -1465,6 +1465,7 @@ dependencies = [
  "teistro-ephemeris-builtin",
  "teistro-geometry",
  "teistro-houses",
+ "teistro-interpret",
  "teistro-intl",
  "teistro-panchanga",
  "teistro-points",
