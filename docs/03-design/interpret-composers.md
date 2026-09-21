@@ -304,8 +304,45 @@ a test that a plan round-trips through JSON.
   translated — so the question is not whether it can be done but whose call
   it is, and it is the maintainer's.
 
-- **A consumer's own composer.** The extensibility table already promises one
-  (a plan function in Rust, a declarative plan in v1.x). A registry costs
-  nothing to add once a second composer exists to prove the interface, and
-  guessing it from one is how a registry gets the wrong shape.
+- **A consumer's own composer** — **settled for v1.0, and not by building a
+  registry.** This page said a registry cost nothing to add once a second
+  composer existed to prove the interface. Five now exist, and what they
+  proved is that the registry was the wrong thing to reach for.
+
+  The promise in the extensibility table is *a narrative plan function
+  (Rust)*, and that is **already kept**: `Plan`, `Item`, `TypedMessage`,
+  `params` and the generated `messages` tree are all published through
+  `teistro`, `Plan::items` is public, and a composer is a function returning
+  a `Plan`. A consumer writes one and concatenates it, exactly as the
+  shipped composers are concatenated. `plans.rs` holds an acceptance test
+  that does it with the published surface alone, so the table's row is a
+  gated fact rather than a claim. The table's validation column — *keys
+  exist* — is the consumer's to check and needs no machinery either, but it
+  takes the right field, and writing this page got it wrong. The claim was
+  that `Rendered::is_fallback` reported an unknown key; the acceptance test
+  failed and said otherwise. `is_fallback` means a **fallback locale**
+  answered. A key no locale carries at all is not a fallback, because
+  nothing fell back: `resolved_from` is `None`, and `Intl::has` answers
+  before rendering at all. The measurement pass has always checked both
+  (`is_fallback || resolved_from.is_none()`); only the prose was wrong, and
+  a test written against the promise is what caught it.
+
+  So a registry buys nothing in Rust. It would buy one thing only: letting a
+  consumer's composer be **named at the boundary**, so it runs inside the
+  SDK's crossing for Node, Dart and Python. That is the v1.x *declarative
+  plan*, and it is a boundary decision rather than a Rust one, because
+  `interpret_json` refuses an unknown member by design — a typo composing
+  nothing silently is the dead end the no-dead-ends mandate forbids. A
+  registry makes unknown names something to look up instead of something to
+  refuse, and that trade wants deciding on its own rather than as a
+  side-effect of adding a map.
+
+  And if one is built, **the subject is not `&Document`**, which is what
+  five composers showed and one could not have. Four of the five take a
+  document at the façade; `readings` takes a `RulesReading`, because a
+  rule's answers are not in the document and never will be. A registry keyed
+  on `&Document` would therefore exclude the composer a consumer most wants
+  to extend — the one that says what its own rule pack found. The subject is
+  a record of what the crossing answered, the document and the rules'
+  reading together.
 - **The report.** Sections, their order, and which composers fill them.

@@ -21,7 +21,7 @@ filesystem.
 | varga scheme | a row over the varga kernel (`03-design/varga-kernel.md`: divisions, span rule, a linear map or an explicit table, citations) | custom D-N under a named convention and named school variants | spans sum to 30 degrees, entries in range, cyclic maps cover evenly, explicit and linear forms agree |
 | bala scheme | a row over the strength kernel (`03-design/strength-schemes.md`: groups, component references with variants and weights, aggregation, required rupas) | school conventions | six groups exactly, no duplicate component, every variant implemented or refused at load |
 | points | a declarative formula over positions and cusps (A+B−C style with day/night variants) | Arabic parts, sahamas, custom points | dependency check |
-| composers | a narrative plan function (Rust) or a declarative plan (v1.x) | new prose shapes | keys exist |
+| composers | a narrative plan function (Rust, **built**: `Plan`, `Item`, `TypedMessage` and the generated `messages` tree are published, and `crates/sdk/tests/plans.rs` composes with the published surface alone) or a declarative plan named at the boundary (v1.x, and a decision rather than a task: `interpret_json` refuses an unknown member by design) | new prose shapes | keys exist — `Intl::has` answers before rendering; after it, `Rendered::resolved_from` is `None` when no locale carried the key at all, which is a **different** failure from `is_fallback`, where a fallback locale answered |
 | profiles | a settings record | school or product defaults | complete and valid |
 | limits | per context | batch sizes, ranges, caches | bounds |
 

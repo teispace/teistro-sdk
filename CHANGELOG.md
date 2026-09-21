@@ -1369,6 +1369,39 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A consumer's own composer is settled for v1.0 — by testing the promise
+  rather than by building a registry.** `03-design/interpret-composers.md`
+  §8 said a registry cost nothing to add once a second composer existed to
+  prove the interface. Five now exist, and what they proved is that the
+  registry was the wrong thing to reach for.
+
+  The extensibility table's promise is *a narrative plan function (Rust)*,
+  and it was **already kept**: `Plan`, `Item`, `TypedMessage`, `params` and
+  the generated `messages` tree are published through `teistro`, and a
+  composer is a function returning a `Plan`. `crates/sdk/tests/plans.rs`
+  now writes one with the published surface alone — the grahas sharing the
+  Moon's sign, which no shipped composer says — concatenates it with the
+  SDK's own and renders the whole plan, so the table's row is a gated fact
+  rather than a claim.
+
+  A registry would buy one thing only: naming a consumer's composer **at the
+  boundary**, which is the v1.x declarative plan. That trades against
+  `interpret_json` refusing an unknown member by design, so it is a decision
+  and not a detail. And if it is built, **the subject is not `&Document`**:
+  four of the five take a document at the façade, and `readings` takes a
+  `RulesReading` because a rule's answers are not in the document and never
+  will be. A registry keyed on the document would exclude exactly the
+  composer a consumer most wants to extend — the one that says what its own
+  rule pack found.
+
+  **The test falsified the documentation on its first run.** Two pages said
+  an unknown key surfaces as `Rendered::is_fallback`. It does not:
+  `is_fallback` means a *fallback locale* answered, while a key no locale
+  carries at all is not a fallback because nothing fell back — it leaves
+  `resolved_from` empty, and `Intl::has` answers before rendering. The
+  measurement pass had always checked both; only the prose conflated them.
+  Both pages now name the right field, and the test names both failures.
+
 - **A fifth composer, `positions`**, and the last the shipped packs can
   carry for free: where each graha stands **to the degree**
   (`sdk.reason.grahaAt`, "Mars at 12°35′ Scorpio" and

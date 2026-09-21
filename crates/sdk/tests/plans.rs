@@ -228,6 +228,85 @@ fn the_positions_say_the_degree_placements_rounds_away() {
     assert_eq!(refused.field(), Some("state"));
 }
 
+/// **A consumer's own composer**, written with nothing but the published
+/// surface — which is the extensibility table's promise for composers, "a
+/// narrative plan function (Rust)", turned from a claim into a test
+/// (`02-architecture/08-extensibility.md`).
+///
+/// Nothing here is a registry and nothing is registered: a composer is a
+/// function returning a `Plan`, and a report concatenates what it wants.
+/// That is the whole interface, and this test is what says so.
+#[test]
+fn a_consumer_writes_its_own_composer_with_the_published_surface_alone() {
+    use teistro::catalogue::{Graha, Rashi};
+    use teistro::messages::sdk::reason;
+    use teistro::rules::{Body, RuleChart};
+    use teistro::{Item, Plan, TypedMessage};
+
+    /// A consumer's composer: the grahas that share a sign with the Moon,
+    /// which no shipped composer says. It reads the same reading the SDK's
+    /// own composers read, and emits a key the packs already carry.
+    fn with_the_moon(chart: &RuleChart) -> Plan {
+        let moon = chart.placements[Body::Graha(Graha::Moon).index()].sign;
+        let mut plan = Plan::default();
+        for graha in Graha::ALL.into_iter().take(9) {
+            let at = chart.placements[Body::Graha(graha).index()];
+            if graha != Graha::Moon && at.sign == moon {
+                plan.say(&reason::GrahaInRashi {
+                    graha,
+                    rashi: at.sign,
+                });
+            }
+        }
+        plan
+    }
+
+    let (sdk, document) = common::reading("{}", ChartRequest::with_state);
+    let inputs = RuleInputs::of(&document).expect("the rules' inputs");
+
+    // It composes, it concatenates with the SDK's own, and the whole plan
+    // renders — the consumer's items are not second-class.
+    let mut plan = sdk.interpret().placements(&document).expect("placements");
+    let mine = with_the_moon(&inputs.chart);
+    plan.items.extend(mine.items.clone());
+    assert!(plan.len() > mine.len());
+    for item in &plan {
+        let said = sdk.intl().render(&item.key, &item.params);
+        assert!(!said.text.is_empty(), "{} said nothing", item.key);
+        assert!(!said.is_fallback, "{} fell back", item.key);
+    }
+
+    // And the table's validation column, "keys exist", is a property the
+    // consumer can check for itself. **Two different failures, and only one
+    // of them is a fallback**: `is_fallback` says a *fallback locale*
+    // answered, while a key no locale carries at all leaves `resolved_from`
+    // empty. A consumer checking the first would never see the second,
+    // which is why this test names both.
+    let slots = reason::GrahaInRashi {
+        graha: Graha::Moon,
+        rashi: Rashi::Aries,
+    }
+    .params();
+    let invented = Item::new("sdk.reason.notAMessage", slots);
+    assert!(!sdk.intl().has(&invented.key), "asked before rendering");
+    let said = sdk.intl().render(&invented.key, &invented.params);
+    assert_eq!(said.resolved_from, None, "no locale answered it");
+    assert!(!said.is_fallback, "nothing fell back: nothing answered");
+
+    // The key a composer does emit is carried by the strict locale itself,
+    // so it neither falls back nor goes unanswered.
+    sdk.intl()
+        .set_locale("ne-Deva-NP")
+        .expect("a strict locale");
+    let carried = Item::of(&reason::GrahaInRashi {
+        graha: Graha::Moon,
+        rashi: Rashi::Aries,
+    });
+    let said = sdk.intl().render(&carried.key, &carried.params);
+    assert_eq!(said.resolved_from.as_deref(), Some("ne-Deva-NP"));
+    assert!(!said.is_fallback, "a strict locale carries it itself");
+}
+
 /// A plan crosses as its own JSON, and what comes back is what went out:
 /// the shape a golden file holds and the boundary's `plans` section carries
 /// are one shape, which is what lets a fixture move between them. A plan is
