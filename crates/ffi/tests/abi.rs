@@ -1837,7 +1837,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         // And the positions read the same states the placements do, so one
         // request computing them serves both composers.
         let degrees = chart["positions"].as_array().unwrap();
-        assert_eq!(degrees.len(), 9, "the nine grahas, the lagna is a point");
+        assert_eq!(degrees.len(), 10, "the lagna, then the nine grahas");
         // And the drishtis read the aspects section, which `sections` never
         // asked for either.
         let looks = chart["aspects"].as_array().unwrap();

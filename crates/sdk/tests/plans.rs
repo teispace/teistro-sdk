@@ -204,7 +204,8 @@ fn the_houses_are_said_by_their_lords_and_claim_nothing_more() {
 fn the_positions_say_the_degree_placements_rounds_away() {
     let (sdk, document) = common::reading("{}", ChartRequest::with_state);
     let plan = sdk.interpret().positions(&document).expect("the positions");
-    assert_eq!(plan.len(), 9, "the nine grahas, the lagna is a point");
+    assert_eq!(plan.len(), 10, "the lagna, then the nine grahas");
+    assert_eq!(plan.items[0].key, "sdk.reason.pointAt", "the lagna first");
 
     // Every item carries the chart's own longitude as a number: the words
     // and the rounding are the locale's.
@@ -214,9 +215,9 @@ fn the_positions_say_the_degree_placements_rounds_away() {
         .iter()
         .filter_map(|item| item.params.get("longitude").cloned())
         .collect();
-    assert_eq!(said.len(), 9);
+    assert_eq!(said.len(), 10);
     assert_eq!(
-        said[0],
+        said[1],
         teistro::Value::Num(inputs.chart.placements[0].longitude)
     );
 

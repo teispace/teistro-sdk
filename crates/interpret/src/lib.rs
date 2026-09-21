@@ -32,7 +32,8 @@
 //! let chart = RuleChart { placements: [placement; 10], panchanga: None, strengths: None };
 //!
 //! let plan = placements(&chart);
-//! assert_eq!(plan.items[0].key, "sdk.reason.grahaInRashi");
+//! assert_eq!(plan.items[0].key, "sdk.reason.pointInRashi", "the lagna frames the rest");
+//! assert_eq!(plan.items[1].key, "sdk.reason.grahaInRashi");
 //! assert!(plan.items.iter().all(|item| KEYS.contains(&item.key.as_str())));
 //! // Nothing but keys and slots: the words are the locale's.
 //! let written = serde_json::to_string(&plan)?;
@@ -75,9 +76,11 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 28] = [
+pub const KEYS: [&str; 30] = [
+    <reason::PointInRashi as TypedMessage>::KEY,
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
+    <reason::PointAt as TypedMessage>::KEY,
     <reason::GrahaAt as TypedMessage>::KEY,
     <reason::Occupants as TypedMessage>::KEY,
     <reason::Lordship as TypedMessage>::KEY,

@@ -836,6 +836,20 @@ class MessagesSdkReason:
             {"grahas": grahas, "rashi": {"$entity": rashi.value}},
         )
 
+    def point_at(self, *, longitude: float, point: PointKey) -> str:
+        """`sdk.reason.pointAt`"""
+        return self._r.render(
+            "sdk.reason.pointAt",
+            {"longitude": longitude, "point": {"$entity": point.value}},
+        )
+
+    def point_in_rashi(self, *, point: PointKey, rashi: RashiKey) -> str:
+        """`sdk.reason.pointInRashi`"""
+        return self._r.render(
+            "sdk.reason.pointInRashi",
+            {"point": {"$entity": point.value}, "rashi": {"$entity": rashi.value}},
+        )
+
     def rashi_nature(self, *, rashi: RashiKey) -> str:
         """`sdk.reason.rashiNature`"""
         return self._r.render(

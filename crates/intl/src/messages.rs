@@ -1498,6 +1498,44 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.reason.pointAt`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct PointAt {
+            /// The `longitude` parameter.
+            pub longitude: f64,
+            /// The `point` parameter.
+            pub point: teistro_core::catalogue::Point,
+        }
+
+        impl crate::TypedMessage for PointAt {
+            const KEY: &'static str = "sdk.reason.pointAt";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("longitude", crate::Value::Num(self.longitude)),
+                    ("point", crate::Value::catalogued(self.point)),
+                ])
+            }
+        }
+
+        /// The message `sdk.reason.pointInRashi`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct PointInRashi {
+            /// The `point` parameter.
+            pub point: teistro_core::catalogue::Point,
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+        }
+
+        impl crate::TypedMessage for PointInRashi {
+            const KEY: &'static str = "sdk.reason.pointInRashi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("point", crate::Value::catalogued(self.point)),
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                ])
+            }
+        }
+
         /// The message `sdk.reason.rashiNature`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct RashiNature {

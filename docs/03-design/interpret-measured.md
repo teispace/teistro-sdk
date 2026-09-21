@@ -8,11 +8,11 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 20 220 items, 217 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 20 406 items, 219 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 2 523 303 bytes of JSON over the 93 charts, 27 132 bytes a
-chart, 32 781 bytes for the widest and 124 bytes an item. The verses'
+golden file: 2 543 661 bytes of JSON over the 93 charts, 27 351 bytes a
+chart, 33 005 bytes for the widest and 124 bytes an item. The verses'
 own cited words are **not** what weighs it — 112 962 bytes, 4% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
@@ -22,13 +22,13 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 56 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 20220 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 20220 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 20220 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 20220 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 60 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 20406 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 20406 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 20406 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 20406 disagree |
 
-Every one of the 40 440 renderings — 20 220 in each of 2 strict
+Every one of the 40 812 renderings — 20 406 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -63,9 +63,11 @@ about.
 | `sdk.reason.grahaInRashi` | 837 |
 | `sdk.reason.lordship` | 900 |
 | `sdk.reason.occupants` | 204 |
+| `sdk.reason.pointAt` | 93 |
+| `sdk.reason.pointInRashi` | 93 |
 | `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 20 220
+**The verse's own statement is not translated.** 2449 of the 20 406
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -94,11 +96,16 @@ matched states **no** effect of its own, which is why a reading is said
 for a rule rather than for one of its statements: those rules were the
 silent ones.
 
-What they cannot say is counted too: the **lagna** stands in every one
-of these charts and is in none of the placement items, because those
-messages read a graha and the lagna is `point.LAGNA` — 93 items it
-does not say, one a chart. It does take part in a reading, where the
-message names no kind and the lagna is the point it is.
+**The lagna is said now, and it took a message that reads a point.** It
+stands in every one of these charts and was in none of the placement
+items, because those messages read a graha and the lagna is
+`point.LAGNA`: 93 items it did not say, one a chart.
+`sdk.reason.pointInRashi` and `sdk.reason.pointAt` read a **point**
+instead, and both strict locales already named eight members of that
+kind — the ascendant, the five upagrahas, Gulika and Mandi — so the
+vocabulary was bought before the frame was written. It is said first,
+because it is what the rest is read against, and by its sign alone: its
+bhava is the first by definition.
 
 And the **strengths** say what a graha weighs and not whether it is
 strong enough. The corpus records a Shadbala for 71 of these charts, 497
@@ -165,7 +172,7 @@ but `sdk.entity` renders each one's own word.
 
 ## What the packs carry, and what reads it
 
-28 of the 35 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+30 of the 37 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -196,6 +203,7 @@ and a change to a composer or to a message moves it.
 **en-Latn**
 
 ```text
+Ascendant in Pisces
 Sun in Aries
 Sun in the 2nd house
 Moon in Scorpio
@@ -217,6 +225,7 @@ Ketu in the 5th house
 Sun and Mercury in Aries
 Saturn and Rahu in Capricorn
 Mars and Venus in Aquarius
+Ascendant at 25°06′ Pisces
 Sun at 0°03′ Aries
 Moon at 11°47′ Scorpio
 Mars at 1°05′ Aquarius
@@ -411,6 +420,7 @@ Saturn rules house 12
 **ne-Deva-NP**
 
 ```text
+लग्न मीनमा
 सूर्य मेषमा
 सूर्य दोस्रो भावमा
 चन्द्र वृश्चिकमा
@@ -432,6 +442,7 @@ Saturn rules house 12
 मेषमा सूर्य र बुध
 मकरमा शनि र राहु
 कुम्भमा मंगल र शुक्र
+लग्न २५°०६′ मीनमा
 सूर्य ०°०३′ मेषमा
 चन्द्र ११°४७′ वृश्चिकमा
 मंगल १°०५′ कुम्भमा

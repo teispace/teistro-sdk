@@ -94,9 +94,23 @@ pub struct Plan {
 ## 4. The first composers
 
 **`placements`** — what the chart is, from the kernel's `RuleChart`: for each
-of the nine grahas and the lagna, where it stands (`grahaInRashi`,
-`grahaInBhava`), and for each sign holding two or more, who shares it
-(`occupants`). Every message is one of the eight that already exist.
+of the nine grahas, where it stands (`grahaInRashi`, `grahaInBhava`), and
+for each sign holding two or more, who shares it (`occupants`).
+
+**The lagna took a message of its own, and it reads a *point*.** It is
+placed in the chart like a graha, but it is `point.LAGNA` in the catalogue
+and those three messages read a `Graha` — so for six composers it stood in
+every chart and was in no item, which the measured page counted at 93, one
+a chart. `sdk.reason.pointInRashi` and `sdk.reason.pointAt` read a point
+instead. Two things made that cheap rather than a translation project:
+both strict locales already name eight members of the `point` kind — the
+ascendant, the five upagrahas, Gulika and Mandi — so the vocabulary was
+bought before the frame was written; and the message is general, so a
+composer that one day places Gulika says it through the same key.
+
+It is said **first**, because it is what the rest of the chart is read
+against, and by its **sign alone**: the lagna's bhava is the first by
+definition, and an item saying so would say nothing.
 
 **`readings`** — what the rules answered: for each rule a chart held, what
 its verse says, who took part, whether a cancellation moved it and how grave
@@ -466,6 +480,11 @@ a test that a plan round-trips through JSON.
     rather than what the SDK computed. **Built**: `sdk.phala`, six
     messages, each saying a record a loaded pack brings, and `Vocabulary`
     generalised from one subject to any.
+12. The **lagna**, said at last. **Built**: `sdk.reason.pointInRashi` and
+    `sdk.reason.pointAt`, two messages that read a point rather than a
+    graha, said by `placements` and `positions`. It was the oldest silence
+    in this page — counted at 93 items, one a chart, for six composers —
+    and it cost two messages because the `point` kind was already named.
 
 ## 8. What this design does not settle
 

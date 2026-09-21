@@ -1795,6 +1795,10 @@ final class MessagesSdkReason {
       _r.render('sdk.reason.lordship', {'bhava': bhava, 'graha': {r'$entity': graha.key}});
   String occupants({required List<Object> grahas, required RashiKey rashi}) =>
       _r.render('sdk.reason.occupants', {'grahas': grahas, 'rashi': {r'$entity': rashi.key}});
+  String pointAt({required num longitude, required PointKey point}) =>
+      _r.render('sdk.reason.pointAt', {'longitude': longitude, 'point': {r'$entity': point.key}});
+  String pointInRashi({required PointKey point, required RashiKey rashi}) =>
+      _r.render('sdk.reason.pointInRashi', {'point': {r'$entity': point.key}, 'rashi': {r'$entity': rashi.key}});
   String rashiNature({required RashiKey rashi}) =>
       _r.render('sdk.reason.rashiNature', {'rashi': {r'$entity': rashi.key}});
   MessagesSdkReasonStrength get strength => MessagesSdkReasonStrength(_r);

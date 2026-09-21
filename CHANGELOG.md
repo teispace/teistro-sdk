@@ -1369,6 +1369,28 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **The lagna is said.** It stands in every chart and was in none of the
+  placement items, because `grahaInRashi`, `grahaInBhava` and `grahaAt`
+  read a `Graha` and the lagna is `point.LAGNA` — 93 items a corpus, one a
+  chart, unsaid for six composers and counted on the measured page the
+  whole time. Two new messages read a **point** instead
+  (`sdk.reason.pointInRashi`, `sdk.reason.pointAt`), and `placements` and
+  `positions` say them.
+
+  It cost two sentences a locale rather than a translation project,
+  because both strict locales already name eight members of the `point`
+  kind — the ascendant, the five upagrahas, Gulika and Mandi — so the
+  vocabulary was bought before the frame was written. The messages are
+  general, so a composer that one day places Gulika says it through the
+  same key.
+
+  The lagna is said **first**, because it is what the rest of a chart is
+  read against, and by its **sign alone**: its bhava is the first by
+  definition. A plan of placements is one item longer, and a plan of
+  positions too; 93 charts now compose to 20 406 items and every one of
+  the 40 812 renderings answers from its own locale with nothing to warn
+  about.
+
 - **The three inauspicious kaalas, and one alias table instead of two.**
   The previous entry's own prose said the `-kaal` families key onto
   subjects the SDK has not modelled. Checking rather than believing it

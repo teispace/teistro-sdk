@@ -28,17 +28,18 @@
 //! the other reads it rounded, and rounding the sign to match would make the
 //! plan disagree with the chart.
 
-use teistro_core::catalogue::Graha;
+use teistro_core::catalogue::{Graha, Point};
 use teistro_intl::messages::sdk::reason;
 use teistro_rules::{Body, RuleChart};
 
 use crate::Plan;
 
-/// Where each of the nine grahas stands, to the degree.
+/// Where the lagna and each of the nine grahas stand, to the degree.
 ///
-/// The order is the catalogue's — the Sun to Ketu — so the same chart
-/// always gives the same plan. A body the chart does not place is left out
-/// rather than said at zero, as `placements` leaves it out.
+/// The order is `placements`': the lagna, then the catalogue's, the Sun to
+/// Ketu, so the same chart always gives the same plan. A body the chart
+/// does not place is left out rather than said at zero, as `placements`
+/// leaves it out.
 ///
 /// ```
 /// # use teistro_core::catalogue::{Dignity, Rashi};
@@ -56,13 +57,20 @@ use crate::Plan;
 /// # };
 /// # let chart = RuleChart { placements: [placement; 10], panchanga: None, strengths: None };
 /// let plan = teistro_interpret::positions(&chart);
-/// assert_eq!(plan.len(), 9, "the nine grahas, the lagna is a point");
-/// assert_eq!(plan.items[0].key, "sdk.reason.grahaAt");
+/// assert_eq!(plan.len(), 10, "the lagna, then the nine grahas");
+/// assert_eq!(plan.items[0].key, "sdk.reason.pointAt");
+/// assert_eq!(plan.items[1].key, "sdk.reason.grahaAt");
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[must_use]
 pub fn positions(chart: &RuleChart) -> Plan {
     let mut plan = Plan::default();
+    if let Some(at) = chart.placements.get(Body::Lagna.index()) {
+        plan.say(&reason::PointAt {
+            point: Point::Lagna,
+            longitude: at.longitude,
+        });
+    }
     for graha in Graha::ALL.into_iter().take(9) {
         let Some(at) = chart.placements.get(Body::Graha(graha).index()) else {
             continue;
@@ -120,16 +128,16 @@ mod tests {
     #[test]
     fn every_graha_is_said_where_it_stands() {
         let plan = positions(&chart());
-        assert_eq!(plan.len(), 9, "the nine grahas, the lagna is a point");
+        assert_eq!(plan.len(), 10, "the lagna, then the nine grahas");
         assert_eq!(
-            plan.items[0],
+            plan.items[1],
             Item::of(&reason::GrahaAt {
                 graha: Graha::Sun,
                 longitude: degrees(0),
             })
         );
         assert_eq!(
-            plan.items[8],
+            plan.items[9],
             Item::of(&reason::GrahaAt {
                 graha: Graha::Ketu,
                 longitude: degrees(8),
@@ -137,12 +145,20 @@ mod tests {
         );
     }
 
-    /// The lagna stands in the chart and is a point, not a graha, so this
-    /// composer leaves it out exactly as `placements` does.
+    /// The lagna stands in the chart and is a point, not a graha, so it is
+    /// said through the message that reads a point.
     #[test]
-    fn the_lagna_is_left_out_as_it_is_everywhere_else() {
-        let written = serde_json::to_string(&positions(&chart())).unwrap();
-        assert!(!written.contains("LAGNA"), "{written}");
+    fn the_lagna_is_said_through_the_message_that_reads_a_point() {
+        let plan = positions(&chart());
+        assert_eq!(
+            plan.items[0],
+            Item::of(&reason::PointAt {
+                point: Point::Lagna,
+                longitude: degrees(9),
+            })
+        );
+        let written = serde_json::to_string(&plan).unwrap();
+        assert!(written.contains("point.LAGNA"), "{written}");
     }
 
     /// The longitude crosses as a number and not as a rendered angle: the
@@ -151,7 +167,7 @@ mod tests {
     fn a_longitude_crosses_as_a_number() {
         let plan = positions(&chart());
         assert_eq!(
-            plan.items[1].params.get("longitude"),
+            plan.items[2].params.get("longitude"),
             Some(&Value::Num(degrees(1)))
         );
         let written = serde_json::to_string(&plan).unwrap();
@@ -167,7 +183,7 @@ mod tests {
     fn it_says_what_placements_says_and_the_degree_besides() {
         let chart = chart();
         let both = positions(&chart).len() + placements(&chart).len();
-        assert_eq!(positions(&chart).len(), 9);
+        assert_eq!(positions(&chart).len(), 10);
         assert!(both > placements(&chart).len(), "a knob, not a replacement");
     }
 

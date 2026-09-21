@@ -458,8 +458,8 @@ fn costs(out: &mut String, plans: &[Composed], items: usize) {
     );
 }
 
-/// The key table, and the two silences that belong to no section: the verse
-/// a reading cites untranslated, and the lagna no placement message names.
+/// The key table, the verse a reading cites untranslated, and the lagna —
+/// a silence until a message that reads a point closed it.
 fn what_they_say(
     out: &mut String,
     by_key: &BTreeMap<&str, usize>,
@@ -494,11 +494,16 @@ fn what_they_say(
     the_readings_seam(out, by_key, composed_rules, carried);
     let _ = write!(
         out,
-        "What they cannot say is counted too: the **lagna** stands in every \
-         one of these charts and is in none of the placement items, because \
-         those messages read a graha and the lagna is `point.LAGNA` — {} it \
-         does not say, one a chart. It does take part in a reading, where the \
-         message names no kind and the lagna is the point it is.\n\n",
+        "**The lagna is said now, and it took a message that reads a \
+         point.** It stands in every one of these charts and was in none of \
+         the placement items, because those messages read a graha and the \
+         lagna is `point.LAGNA`: {} it did not say, one a chart. \
+         `sdk.reason.pointInRashi` and `sdk.reason.pointAt` read a **point** \
+         instead, and both strict locales already named eight members of \
+         that kind — the ascendant, the five upagrahas, Gulika and Mandi — \
+         so the vocabulary was bought before the frame was written. It is \
+         said first, because it is what the rest is read against, and by its \
+         sign alone: its bhava is the first by definition.\n\n",
         plural(charts, "item")
     );
 }

@@ -626,6 +626,8 @@ export function messages(r) {
         greeting: (p) => r.render('sdk.reason.greeting', { gender: p.gender, name: p.name }),
         lordship: (p) => r.render('sdk.reason.lordship', { bhava: p.bhava, graha: { '$entity': p.graha } }),
         occupants: (p) => r.render('sdk.reason.occupants', { grahas: p.grahas, rashi: { '$entity': p.rashi } }),
+        pointAt: (p) => r.render('sdk.reason.pointAt', { longitude: p.longitude, point: { '$entity': p.point } }),
+        pointInRashi: (p) => r.render('sdk.reason.pointInRashi', { point: { '$entity': p.point }, rashi: { '$entity': p.rashi } }),
         rashiNature: (p) => r.render('sdk.reason.rashiNature', { rashi: { '$entity': p.rashi } }),
         strength: {
           rank: (p) => r.render('sdk.reason.strength.rank', { rank: p.rank }),

@@ -14,9 +14,12 @@
 //! 2. **One plan, every locale.** The same plan is rendered twice here, and
 //!    `Rendered` says which locale answered — so a consumer can prove the
 //!    locale had the message rather than falling back to English.
-//! 3. **A composer says what it can say.** The lagna stands in the chart and
-//!    is in no item: these messages read a graha, and the lagna is a point.
-//!    A composer that guessed would be worse than one that says nothing.
+//! 3. **A composer says what it can say, and a subject needs a message that
+//!    reads it.** The lagna stands in every chart and was in no item for six
+//!    composers, because the placement messages read a graha and the lagna
+//!    is `point.LAGNA`. It is said now, through a message that reads a
+//!    **point** — not by widening the one that reads a graha, and not by
+//!    guessing.
 //! 4. **It is the reading that is interpreted**, not the ephemeris: the plan
 //!    is composed from the document the SDK already answered with, so
 //!    nothing is computed twice.
