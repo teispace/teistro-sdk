@@ -113,6 +113,60 @@ generator lands early — because a generated surface grows itself as the
 SDK grows — with only the packaged, signed, install-checked server in
 Phase 9.
 
+## Q38. Whether a computed value that is not a catalogue member should become one: `open`
+
+Raised 2026-09-22 by migrating the baseline engine's state readings.
+**74 of the 126 records still unmigrated describe something the SDK
+already computes and gives no key to.**
+
+`rules::longevity` computes all three ayurdaya methods, the four haranas,
+fifteen maraka reasons and the vulnerability over a dasha's running
+levels, and serialises every one of them in **kebab-case** — which is the
+very spelling the corpus keys by (`pindayu`, `shatrukshetra`,
+`saturn-ayushkaraka`). `rules::LifeClass` is what `sdk.reading.lifeClass`
+has said in two languages since the readings landed.
+`houses::Quadrant` is which third of the wheel a bhava stands in, and
+trikona, dusthana and upachaya are predicates on a `Bhava`.
+`panchanga::Muhurtas` carries Abhijit and Brahma as **fields**. None of
+them is a catalogue member, so no reading can hang on any of them and no
+composer can say one (`03-design/state-readings.md` §8,
+`03-design/interpret-measured.md`).
+
+The question is therefore not *does the SDK model this?* but **did the
+model reach the catalogue?** — and it is worth deciding once, because the
+same answer settles a dozen instances.
+
+**Option A — give them kinds.** Each becomes a `catalogue/<kind>.yaml`
+with its members, and the readings migrate as every other category did.
+It is what the corpus is waiting for and what a composer needs.
+Against it: a kind's **number is permanent at the C boundary and is never
+reused**, so a kind added and regretted is carried forever; and
+`entity-names.md` §4 refuses a translated stub, so every member needs a
+name from a vetted source before any locale can print it — though a kind
+with no names is legal and useful (`state` and `rule` are both), and the
+readings are the text a consumer actually wants.
+
+**Option B — leave them Rust enums and let the readings wait.** Costs
+nothing now and keeps the catalogue small. Against it: the records exist,
+are translated into five languages, and are unreachable; and the same
+question returns with every corpus that keys onto a computed value.
+
+**Option C — a kind for each *family* as its module lands**, rather than
+all at once: `life_class` with Phase 5's longevity work, the muhurta
+kinds with Phase 7's muhurta search. Spreads the permanent decisions over
+the phases that have the sources to name them.
+
+**Recommended: C.** A is right about the destination and wrong about the
+timing — `entity-names.md` §4 exists because naming without a source is
+how a catalogue goes bad, and the phases that build these modules are the
+ones that will have the texts open. B is only tenable if nobody minds the
+readings staying unread, which the measured pages now count out loud.
+
+What is **not** waiting on this: 26 of the 38 categories are migrated,
+gated and said. The rest are named on
+`03-design/state-readings-measured.md`, so the list cannot rot while the
+question is open.
+
 ## Decisions log
 
 Decisions are recorded in the table above with the date; the reasoning is

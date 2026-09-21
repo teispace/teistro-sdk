@@ -644,10 +644,29 @@ rather than embedded** because `i18n/` is compiled into every artefact
 (`03-design/interpretation-records.md`, `03-design/state-readings.md`);
 Rust crates published.
 
-Exit: 624 rules evaluate identically to the baseline engine on the regression set with
-positive and negative charts per rule; composed text matches the baseline engine byte
-for byte in four languages on the snapshot set; native review sign-off
+Exit: 624 rules evaluate identically to the baseline engine on the
+regression set with positive and negative charts per rule; every
+composer's plan is **said** in every strict locale without a fallback and
+without a warning over the recorded corpus; every reading the SDK says is
+the baseline engine's own text, byte for byte; native review sign-off
 recorded for `ne` and `hi`.
+
+**The middle clause was corrected on 2026-09-22.** It read "composed text
+matches the baseline engine byte for byte in four languages on the
+snapshot set", which was written before the composers were designed and
+cannot be met by the design that followed — and that is the criterion's
+fault rather than the design's. A composer emits a **plan**: message keys
+and slots, holding no words, so that one plan renders in every locale the
+engine carries. The sentences are this SDK's own, written and translated
+here, and there is no byte of the baseline engine's prose for them to
+match. Where the engine's own words *are* said — a rule's reading, a
+graha in a bhava, a nakshatra's phala — they are said **verbatim**,
+because the migration carries the record across unchanged, and that is
+the half of the old clause worth keeping. The other half is now what the
+design actually promises and what
+[`interpret-measured.md`](../03-design/interpret-measured.md) measures on
+every run: 21 803 items over 93 charts, every one rendering from its own
+locale's message.
 
 ## Phase 7: Techniques and traditions
 
