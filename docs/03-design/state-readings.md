@@ -300,34 +300,48 @@ before — *every shipped rule carries a reading* — becomes one it can.
 
 ## 8. What this design does not settle
 
-- **The 12 categories with no subject here yet**, 126 records: the eight
-  `ayurdaya-*` families (41), `muhurta-factor` (47),
-  `shadbala-strength` (28), `sade-sati-phala` (5) and `auspicious-kaal`
-  (5). Three shapes among them, and each is a decision rather than a task.
+- **The 12 categories with no key space here yet**, 126 records. The
+  heading is the correction: *"no subject"* was what this page said twice
+  and it was wrong twice, so the grouping below is by what each actually
+  needs. Checking beat believing both times, and the corpus was the one
+  that settled it.
 
-  `shadbala-strength` and `muhurta-factor` are **composite keys** like
-  `graha-bhava` — a graha and a strength band, a factor and a verdict — so
-  they would take the same treatment once something says them. Neither is
-  only a key question: a band is a threshold over rupas that the corpus
-  does not record, and inventing four would be making up a rule rather
-  than migrating one, so the records would arrive at a key space nothing
-  can produce. That is why they wait on the module and not on this page.
+  **Seventy-four of the records describe something the SDK already
+  computes and does not give a key.** The eight `ayurdaya-*` families (41)
+  are the largest: `rules::longevity` computes all three methods
+  (`Method::{Pindayu, Nisargayu, Amsayu}`), all four haranas
+  (`Reductions`: combustion, enemy sign, visible half, rising), every
+  maraka reason (`maraka::Reason`, fifteen of them) and the vulnerability
+  over a dasha's running levels — and it **serialises them in kebab-case**,
+  which is the very spelling the corpus keys by (`pindayu`,
+  `shatrukshetra`, `saturn-ayushkaraka`). `ayurdaya-tier`'s four are
+  `rules::LifeClass`, which `sdk.reading.lifeClass` already says in two
+  languages. They are Rust enums and not catalogue kinds, so a reading has
+  nothing to hang on. `auspicious-kaal` (5) is the same shape smaller:
+  Abhijit and Brahma are computed as **fields** on `panchanga::Muhurtas`,
+  and Vijaya and Godhuli are not computed at all. `shadbala-strength` (28)
+  is the shape plus a rule: the Shadbala is computed, the four bands are a
+  threshold the corpus does not record, and inventing four would be making
+  up a rule rather than migrating one.
 
-  `auspicious-kaal` is the one whose reason had to be corrected by
-  checking rather than assumed. Its subjects are not unmodelled: the SDK
-  computes **Abhijit** and **Brahma** muhurta today
-  (`panchanga::Muhurtas`). It carries them as *fields* rather than as
-  catalogue members, and Vijaya and Godhuli it does not compute at all, so
-  there is no key space to migrate into — a kind naming the auspicious
-  muhurtas is a catalogue decision with its own sourcing, not a step here.
-  Its sibling `inauspicious-kaal` went the other way for the same reason
-  read the other way round: `kaala` **is** a kind, the SDK computes all
-  three of its members, and three written aliases were the whole gap.
+  Giving those enums catalogue kinds is a **catalogue decision** and not a
+  step in a migration: a kind's number is permanent at the C boundary, and
+  every member needs a mark and a vetted source under
+  [`entity-names.md`](entity-names.md) §4. It wants the maintainer, which
+  is why it is here and not done.
 
-  `sade-sati-phala` waits on Phase 7's `gochar`. The `ayurdaya-*` families
-  key onto a longevity model the SDK has not built.
+  **Fifty-two describe something the SDK does not compute yet**:
+  `muhurta-factor` (47) and `sade-sati-phala` (5), both Phase 7's, and
+  both composite keys like `graha-bhava` when their modules arrive.
 
-  None of them blocks the other 25, and the gate lists them by name so the
+  `inauspicious-kaal` is the one that went the other way, and it is worth
+  keeping beside these as the test: `kaala` **is** a kind, the SDK computes
+  all three of its members, and three written aliases were the whole gap.
+  The difference between it and its sibling is not how much of the
+  tradition the SDK models — it is whether the model reached the
+  catalogue.
+
+  None of them blocks the other 26, and the gate lists them by name so the
   list cannot rot into prose.
 - **Two shortfalls this corpus creates rather than closes**, both
   measured. 26 readings land on a record the base locale does **not
