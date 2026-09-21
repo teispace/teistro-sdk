@@ -1,0 +1,8 @@
+{
+  "effect": ".input {$rule :string} {{{$text}}}",
+  "lifeSpan": ".input {$rule :string} .input {$unit :string} .input {$count :integer} .match $unit days {{a life of {$count} days}} months {{a life of {$count} months}} * {{a life of {$count} years}}",
+  "lifeClass": ".input {$rule :string} .input {$class :string} .match $class balarishta {{death in infancy}} yogarishta {{an evil from a yoga}} short {{a short life}} medium {{a medium life}} long {{a long life}} divine {{a super-natural life}} * {{an illimitable life}}",
+  "participants": ".input {$rule :string} .input {$count :integer} .match $count one {{{$grahas :list type=and} takes part}} * {{{$grahas :list type=and} take part}}",
+  "status": ".input {$rule :string} .input {$status :string} .match $status fully-cancelled {{cancelled}} partially-cancelled {{partly cancelled}} * {{in force}}",
+  "severity": ".input {$rule :string} {{severity {$severity :integer}}}"
+}

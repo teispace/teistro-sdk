@@ -9,26 +9,15 @@
 //!
 //! What it cannot say is counted rather than hidden: the **lagna** is placed
 //! in the chart like a graha but is `point.LAGNA` in the catalogue, and the
-//! messages here read a `graha`, so the composer leaves it out until a
-//! message of its own is written and translated.
+//! messages here read a graha, so the composer leaves it out until a message
+//! of its own is written and translated.
 
 use teistro_core::catalogue::{Graha, Rashi};
-use teistro_intl::{Value, params};
+use teistro_intl::Value;
+use teistro_intl::messages::sdk::reason;
 use teistro_rules::{Body, RuleChart};
 
-use crate::{Plan, entity};
-
-/// Every message key this module can emit.
-///
-/// `check-interpret` holds it against the packs and against what the
-/// composers emit over the corpus, both ways: a key no locale carries
-/// renders as a visible fallback, and a key nothing emits is a message
-/// nobody reads.
-pub const KEYS: [&str; 3] = [
-    "sdk.reason.grahaInRashi",
-    "sdk.reason.grahaInBhava",
-    "sdk.reason.occupants",
-];
+use crate::Plan;
 
 /// Where each of the nine grahas stands, and who shares a sign.
 ///
@@ -42,23 +31,16 @@ pub fn placements(chart: &RuleChart) -> Plan {
         let Some(at) = chart.placements.get(Body::Graha(graha).index()) else {
             continue;
         };
-        let who = entity(graha.full_key());
-        plan.push(
-            "sdk.reason.grahaInRashi",
-            params([
-                ("graha", who.clone()),
-                ("rashi", entity(at.sign.full_key())),
-            ]),
-        );
-        plan.push(
-            "sdk.reason.grahaInBhava",
-            params([
-                ("graha", who),
-                ("bhava", Value::Int(i64::from(at.house.get()))),
-            ]),
-        );
+        plan.say(&reason::GrahaInRashi {
+            graha,
+            rashi: at.sign,
+        });
+        plan.say(&reason::GrahaInBhava {
+            graha,
+            bhava: i64::from(at.house.get()),
+        });
     }
-    for sign in Rashi::ALL {
+    for rashi in Rashi::ALL {
         let together: Vec<Value> = Graha::ALL
             .into_iter()
             .take(9)
@@ -66,25 +48,22 @@ pub fn placements(chart: &RuleChart) -> Plan {
                 chart
                     .placements
                     .get(Body::Graha(*graha).index())
-                    .is_some_and(|at| at.sign == sign)
+                    .is_some_and(|at| at.sign == rashi)
             })
-            .map(|graha| entity(graha.full_key()))
+            .map(Value::catalogued)
             .collect();
         if together.len() > 1 {
-            plan.push(
-                "sdk.reason.occupants",
-                params([
-                    ("grahas", Value::List(together)),
-                    ("rashi", entity(sign.full_key())),
-                ]),
-            );
+            plan.say(&reason::Occupants {
+                grahas: together,
+                rashi,
+            });
         }
     }
     plan
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     #![allow(
         clippy::unwrap_used,
         clippy::expect_used,
@@ -97,9 +76,11 @@ mod tests {
     use teistro_rules::{House, Placement};
 
     use super::*;
+    use crate::{Item, KEYS};
 
-    /// A chart with each graha one sign further round, the lagna in Aries.
-    fn chart() -> RuleChart {
+    /// A chart with each graha one sign further round, the Moon joining the
+    /// Sun so that one sign is shared.
+    pub(crate) fn chart() -> RuleChart {
         let mut placements = [Placement {
             longitude: 15.0,
             sign: Rashi::Aries,
@@ -112,13 +93,15 @@ mod tests {
             navamsha: Rashi::Aries,
         }; 10];
         for (at, placement) in placements.iter_mut().enumerate() {
-            let sign = Rashi::ALL[at % 12];
-            placement.sign = sign;
+            placement.sign = Rashi::ALL[at % 12];
             placement.house = House::try_new(u8::try_from(at % 12).unwrap() + 1).unwrap();
         }
-        // The Moon joins the Sun in Aries, so one sign is shared.
         placements[1].sign = Rashi::Aries;
         placements[1].house = House::try_new(1).unwrap();
+        // The lagna rises in Aries, so a whole-sign house is the sign's own
+        // number and a rule reading houses reads what these placements say.
+        placements[9].sign = Rashi::Aries;
+        placements[9].house = House::try_new(1).unwrap();
         RuleChart {
             placements,
             panchanga: None,
@@ -133,33 +116,27 @@ mod tests {
         assert_eq!(plan.len(), 9 * 2 + 1);
         assert_eq!(
             plan.items[0],
-            crate::Item::new(
-                "sdk.reason.grahaInRashi",
-                params([
-                    ("graha", entity("graha.SUN")),
-                    ("rashi", entity("rashi.ARIES")),
-                ])
-            )
+            Item::of(&reason::GrahaInRashi {
+                graha: Graha::Sun,
+                rashi: Rashi::Aries,
+            })
         );
         assert_eq!(
             plan.items[1],
-            crate::Item::new(
-                "sdk.reason.grahaInBhava",
-                params([("graha", entity("graha.SUN")), ("bhava", Value::Int(1))])
-            )
+            Item::of(&reason::GrahaInBhava {
+                graha: Graha::Sun,
+                bhava: 1,
+            })
         );
         assert_eq!(
             plan.items.last().unwrap(),
-            &crate::Item::new(
-                "sdk.reason.occupants",
-                params([
-                    (
-                        "grahas",
-                        Value::List(vec![entity("graha.SUN"), entity("graha.MOON")])
-                    ),
-                    ("rashi", entity("rashi.ARIES")),
-                ])
-            )
+            &Item::of(&reason::Occupants {
+                grahas: vec![
+                    Value::catalogued(Graha::Sun),
+                    Value::catalogued(Graha::Moon)
+                ],
+                rashi: Rashi::Aries,
+            })
         );
     }
 
@@ -167,26 +144,20 @@ mod tests {
     /// read a graha, and `point.LAGNA` is not one.
     #[test]
     fn the_lagna_is_left_out_until_it_has_a_message() {
-        let plan = placements(&chart());
-        let written = serde_json::to_string(&plan).unwrap();
+        let written = serde_json::to_string(&placements(&chart())).unwrap();
         assert!(!written.contains("LAGNA"), "{written}");
     }
 
-    /// Every key the composer emits is listed, so the gate over the packs
-    /// sees all of them.
+    /// Every key it emits is listed, so the gate over the packs sees all of
+    /// them.
     #[test]
     fn it_emits_only_listed_keys() {
-        let plan = placements(&chart());
-        for key in plan.keys() {
+        for key in placements(&chart()).keys() {
             assert!(KEYS.contains(&key), "`{key}` is not in KEYS");
-        }
-        // And every listed key is emitted by a chart that exercises them all.
-        for key in KEYS {
-            assert!(plan.keys().contains(&key), "`{key}` is emitted by nothing");
         }
     }
 
-    /// The same chart gives the same plan, byte for byte.
+    /// The same chart gives the same plan, byte for byte, and reads back.
     #[test]
     fn a_plan_is_the_same_bytes_every_time() {
         let once = serde_json::to_string(&placements(&chart())).unwrap();

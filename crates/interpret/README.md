@@ -13,12 +13,14 @@ composer rather than the translator.
 |---|---|
 | [`lib`](src/lib.rs) | `Item` (a message key and its slots) and `Plan` (what a composer says, in order): ordered, serialisable both ways, and the same bytes for the same input |
 | [`placements`](src/placements.rs) | where each of the nine grahas stands and who shares a sign, from the rules kernel's own `RuleChart` |
+| [`readings`](src/readings.rs) | what each rule a chart held says: its verse's statement, who took part, whether a cancellation moved it, how grave it is |
 
 ```rust
-use teistro_interpret::placements;
+use teistro_interpret::{placements, readings};
 
 // A chart the SDK founded, read as the rules kernel reads it.
-let plan = placements(&chart);
+let mut plan = placements(&chart);
+plan.items.extend(readings(held));
 for item in &plan {
     println!("{}", sdk.intl().render(&item.key, &item.params).text);
 }
@@ -34,7 +36,12 @@ for item in &plan {
 - **The corpus has no oracle for prose.** It records numbers, keys and flags
   and not one composed sentence, so a plan is measured by whether it can be
   *said*: every item of every recorded chart's plan renders in each strict
-  locale with no fallback and nothing to warn about (3756 renderings).
+  locale with no fallback and nothing to warn about (16 694 renderings).
+- **A composer says what a locale can say for itself.** `sdk.reading`'s six
+  messages are mechanical — a span, a class, a list with an agreeing verb, a
+  status, a severity. The verse's own statement crosses as a slot in the
+  words the rule cites and is not translated, because a machine translation
+  of a cited text would be worse than the visible seam.
 - **What a composer cannot say is counted.** The lagna stands in every chart
   and in no plan, because these messages read a graha and the lagna is
   `point.LAGNA`; the measured page says so rather than letting it be missed.

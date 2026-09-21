@@ -1317,20 +1317,35 @@ the astronomical numbers do not move. Nothing else computes yet.
   file. `cargo xtask interpret` measures it and `check-interpret` holds the
   page.
 
+  A second composer, `readings`, says what each rule a chart held says: its
+  verse's statement, who took part with a verb that agrees, whether a
+  cancellation moved it and how grave it is. It brings `sdk.reading`, six
+  messages in English and Nepali, built on the **typed** accessors the intl
+  generator already writes — so a message that gains or loses a slot stops
+  the composer compiling, and `KEYS` is the messages' own constants rather
+  than a list of strings beside them. The verse's own statement is not
+  translated: it crosses as a slot in the words the rule cites, because a
+  machine translation of a cited text would be worse than the visible seam.
+  `LifeClass::key` and `NetStatus::key` join the kernel, each held to what
+  serde writes by a test, so a message selects on one list and not two.
+
   The façade carries it: `sdk.interpret().placements(&document)` is a ninth
   area — the first that is **Rust only**, since a plan has no crossing of its
   own yet — `teistro::{Plan, Item}` and `teistro::interpret` are re-exported,
   and a tenth worked example says one birth record in English and in Nepali,
   run by `check-rust` like the rest.
 
-  **Numbers:** none move. The composer adds no message: `sdk.reason` already
-  carried `grahaInRashi`, `grahaInBhava` and `occupants` in both strict
-  locales, so there is no translation debt and no fallback anywhere. 93
-  recorded charts compose to 1878 items, and all 3756 renderings — every item
+  **Numbers:** none move. The placements composer adds no message:
+  `sdk.reason` already carried `grahaInRashi`, `grahaInBhava` and `occupants`
+  in both strict locales. Over 93 recorded charts and five shipped rule packs
+  the two composers write 8347 items, and all 16 694 renderings — every item
   in each strict locale — answer from that locale's own message with nothing
-  to warn about. What it cannot say is counted: the lagna stands in every
-  chart and in no plan, one item a chart, because these messages read a graha
-  and the lagna is `point.LAGNA`.
+  to warn about. 2449 of those items carry the verse's own words untranslated,
+  and the measured page says so rather than letting a reader mistake the seam
+  for a defect. What the placements composer cannot say is counted: the lagna
+  stands in every chart and in none of its items, one a chart, because those
+  messages read a graha and the lagna is `point.LAGNA` — it does take part in
+  a reading, where the message names no kind.
 
 - Every rule renders to prose (`03-design/rule-doc.md`, built). A condition is
   one sentence and a rule a short passage carrying what it holds beside its

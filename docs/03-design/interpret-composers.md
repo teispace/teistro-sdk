@@ -1,6 +1,6 @@
 # Composers: a chart's answers as a narrative plan
 
-Status: `built` (steps 1 and 2), designed and built 2026-09-21; measured in
+Status: `built`, designed and built 2026-09-21; measured in
 [`interpret-measured.md`](interpret-measured.md). It builds the layer
 [`../02-architecture/03-localization-architecture.md`](../02-architecture/03-localization-architecture.md)
 fixes under "Composers" — *a composer returns a narrative plan: an ordered
@@ -98,11 +98,24 @@ of the nine grahas and the lagna, where it stands (`grahaInRashi`,
 `grahaInBhava`), and for each sign holding two or more, who shares it
 (`occupants`). Every message is one of the eight that already exist.
 
-**`readings`** — what the rules answered: for each present rule, what its
-verse says. This one needs a namespace of its own (§7), and it comes second
-for the reason §2 gives — the keys it adds must be written in Nepali before
-they can ship, and the machinery should be proven before that debt is taken
-on.
+**`readings`** — what the rules answered: for each rule a chart held, what
+its verse says, who took part, whether a cancellation moved it and how grave
+it is. **Built** over a namespace of its own, `sdk.reading`, six messages in
+both strict locales.
+
+Its messages are deliberately **mechanical** — a span, a class of life, a
+list of grahas with a verb that agrees with it, a status, a severity —
+because those are the parts a locale can say for itself. **The verse's own
+statement is not translated**: it crosses as a `text` slot in the words the
+rule cites, and the message prints them as they are, so a Nepali reading says
+everything but the verse's sentence in Nepali. A machine translation there
+would be worse than the visible seam, and the seam closes when a locale
+carries a reading of that rule written by someone who reads the text.
+
+Every item names its rule in a `rule` slot the base messages declare and do
+not print, so a consumer can group a plan by rule and a locale that wants the
+key in its prose has it. The measured page's snapshot prints it as a prefix,
+because a reviewer of a rendering needs to know which rule said what.
 
 ## 5. What decides a key
 
@@ -152,7 +165,11 @@ a test that a plan round-trips through JSON.
    renders it; the Rust example.
 4. `readings`, with the `sdk.reading` namespace written in English and
    Nepali, and the rule's own cited effect as a slot where no locale carries
-   a reading of its own.
+   a reading of its own. **Built**: 93 charts against five shipped packs
+   compose to 8347 items, 16 694 renderings, no fallback and no warning.
+   The Nepali of `sdk.reading` awaits the native review the roadmap's exit
+   criterion already requires for `ne` and `hi`; the terms are the texts'
+   own (अल्पायु, मध्यायु, पूर्णायु), not invented prose.
 
 ## 8. What this design does not settle
 

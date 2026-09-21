@@ -910,6 +910,130 @@ pub mod sdk {
 
     }
 
+    /// The `reading` group.
+    pub mod reading {
+        /// The message `sdk.reading.effect`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Effect {
+            /// The `rule` parameter.
+            pub rule: String,
+            /// The `text` parameter.
+            pub text: String,
+        }
+
+        impl crate::TypedMessage for Effect {
+            const KEY: &'static str = "sdk.reading.effect";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("rule", crate::Value::Str(self.rule.clone())),
+                    ("text", crate::Value::Str(self.text.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.reading.lifeClass`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct LifeClass {
+            /// The `class` parameter.
+            pub class: String,
+            /// The `rule` parameter.
+            pub rule: String,
+        }
+
+        impl crate::TypedMessage for LifeClass {
+            const KEY: &'static str = "sdk.reading.lifeClass";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("class", crate::Value::Str(self.class.clone())),
+                    ("rule", crate::Value::Str(self.rule.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.reading.lifeSpan`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct LifeSpan {
+            /// The `count` parameter.
+            pub count: i64,
+            /// The `rule` parameter.
+            pub rule: String,
+            /// The `unit` parameter.
+            pub unit: String,
+        }
+
+        impl crate::TypedMessage for LifeSpan {
+            const KEY: &'static str = "sdk.reading.lifeSpan";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("count", crate::Value::Int(self.count)),
+                    ("rule", crate::Value::Str(self.rule.clone())),
+                    ("unit", crate::Value::Str(self.unit.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.reading.participants`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Participants {
+            /// The `count` parameter.
+            pub count: i64,
+            /// The `grahas` parameter.
+            pub grahas: Vec<crate::Value>,
+            /// The `rule` parameter.
+            pub rule: String,
+        }
+
+        impl crate::TypedMessage for Participants {
+            const KEY: &'static str = "sdk.reading.participants";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("count", crate::Value::Int(self.count)),
+                    ("grahas", crate::Value::List(self.grahas.clone())),
+                    ("rule", crate::Value::Str(self.rule.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.reading.severity`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Severity {
+            /// The `rule` parameter.
+            pub rule: String,
+            /// The `severity` parameter.
+            pub severity: i64,
+        }
+
+        impl crate::TypedMessage for Severity {
+            const KEY: &'static str = "sdk.reading.severity";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("rule", crate::Value::Str(self.rule.clone())),
+                    ("severity", crate::Value::Int(self.severity)),
+                ])
+            }
+        }
+
+        /// The message `sdk.reading.status`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Status {
+            /// The `rule` parameter.
+            pub rule: String,
+            /// The `status` parameter.
+            pub status: String,
+        }
+
+        impl crate::TypedMessage for Status {
+            const KEY: &'static str = "sdk.reading.status";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("rule", crate::Value::Str(self.rule.clone())),
+                    ("status", crate::Value::Str(self.status.clone())),
+                ])
+            }
+        }
+
+    }
+
     /// The `reason` group.
     pub mod reason {
         /// The message `sdk.reason.appName`.

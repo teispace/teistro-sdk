@@ -1,0 +1,8 @@
+{
+  "effect": ".input {$rule :string} {{{$text}}}",
+  "lifeSpan": ".input {$rule :string} .input {$unit :string} .input {$count :integer} .match $unit days {{{$count} दिनको आयु}} months {{{$count} महिनाको आयु}} * {{{$count} वर्षको आयु}}",
+  "lifeClass": ".input {$rule :string} .input {$class :string} .match $class balarishta {{बाल्यकालमै मृत्यु}} yogarishta {{योगजन्य अरिष्ट}} short {{अल्पायु}} medium {{मध्यायु}} long {{पूर्णायु}} divine {{दिव्य आयु}} * {{अमितायु}}",
+  "participants": ".input {$rule :string} .input {$count :integer} .match $count one {{{$grahas :list type=and} संलग्न छ}} * {{{$grahas :list type=and} संलग्न छन्}}",
+  "status": ".input {$rule :string} .input {$status :string} .match $status fully-cancelled {{रद्द}} partially-cancelled {{आंशिक रूपमा रद्द}} * {{प्रभावी}}",
+  "severity": ".input {$rule :string} {{तीव्रता {$severity :integer}}}"
+}

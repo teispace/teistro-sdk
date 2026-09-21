@@ -41,11 +41,34 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
-use teistro_intl::{Params, Value};
+use teistro_intl::messages::sdk::{reading, reason};
+use teistro_intl::{Params, TypedMessage};
 
 mod placements;
+mod readings;
 
-pub use placements::{KEYS, placements};
+pub use placements::placements;
+pub use readings::readings;
+
+/// Every message key a composer of this module can emit.
+///
+/// The keys are the generated messages' own associated constants, so a
+/// message that changes its name changes this list with it, and
+/// `check-interpret` holds the list against the packs and against what the
+/// composers emit over the corpus, both ways: a key no locale carries would
+/// render as a visible fallback, and a key nothing emits is a message nobody
+/// reads.
+pub const KEYS: [&str; 9] = [
+    <reason::GrahaInRashi as TypedMessage>::KEY,
+    <reason::GrahaInBhava as TypedMessage>::KEY,
+    <reason::Occupants as TypedMessage>::KEY,
+    <reading::Effect as TypedMessage>::KEY,
+    <reading::LifeSpan as TypedMessage>::KEY,
+    <reading::LifeClass as TypedMessage>::KEY,
+    <reading::Participants as TypedMessage>::KEY,
+    <reading::Status as TypedMessage>::KEY,
+    <reading::Severity as TypedMessage>::KEY,
+];
 
 /// One thing to say: a message key and the slots it is said with.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -59,7 +82,19 @@ pub struct Item {
 }
 
 impl Item {
-    /// An item.
+    /// An item from a **typed** message — `messages::sdk::reason::GrahaInRashi`
+    /// and its like, generated from `i18n/` — which is how a composer says
+    /// anything: the key is the message's own, the slots are its fields, and
+    /// a message that gains or loses one stops the composer compiling.
+    #[must_use]
+    pub fn of<M: TypedMessage>(message: &M) -> Item {
+        Item {
+            key: String::from(M::KEY),
+            params: message.params(),
+        }
+    }
+
+    /// An item from a key and slots, for a consumer composing its own.
     #[must_use]
     pub fn new(key: impl Into<String>, params: Params) -> Item {
         Item {
@@ -94,7 +129,12 @@ pub struct Plan {
 }
 
 impl Plan {
-    /// Adds an item.
+    /// Says a typed message.
+    pub fn say<M: TypedMessage>(&mut self, message: &M) {
+        self.items.push(Item::of(message));
+    }
+
+    /// Adds an item, for a consumer composing its own.
     pub fn push(&mut self, key: impl Into<String>, params: Params) {
         self.items.push(Item::new(key, params));
     }
@@ -153,10 +193,4 @@ impl<'p> IntoIterator for &'p Plan {
     fn into_iter(self) -> Self::IntoIter {
         self.items.iter()
     }
-}
-
-/// A catalogued member as a slot: its full key, which is what `:entity`
-/// reads.
-fn entity(full_key: &str) -> Value {
-    Value::Entity(String::from(full_key))
 }

@@ -739,6 +739,11 @@ class MessagesSdk:
         return MessagesSdkEntity(self._r)
 
     @property
+    def reading(self) -> MessagesSdkReading:
+        """The messages under `reading`."""
+        return MessagesSdkReading(self._r)
+
+    @property
     def reason(self) -> MessagesSdkReason:
         """The messages under `reason`."""
         return MessagesSdkReason(self._r)
@@ -847,6 +852,56 @@ class MessagesSdkReasonStrength:
         return self._r.render(
             "sdk.reason.strength.score",
             {"graha": {"$entity": graha.value}, "score": score},
+        )
+
+
+class MessagesSdkReading:
+    """The messages under `MessagesSdkReading`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def effect(self, *, rule: str, text: str) -> str:
+        """`sdk.reading.effect`"""
+        return self._r.render(
+            "sdk.reading.effect",
+            {"rule": rule, "text": text},
+        )
+
+    def life_class(self, *, class_: str, rule: str) -> str:
+        """`sdk.reading.lifeClass`"""
+        return self._r.render(
+            "sdk.reading.lifeClass",
+            {"class": class_, "rule": rule},
+        )
+
+    def life_span(self, *, count: int, rule: str, unit: str) -> str:
+        """`sdk.reading.lifeSpan`"""
+        return self._r.render(
+            "sdk.reading.lifeSpan",
+            {"count": count, "rule": rule, "unit": unit},
+        )
+
+    def participants(self, *, count: int, grahas: Sequence[object], rule: str) -> str:
+        """`sdk.reading.participants`"""
+        return self._r.render(
+            "sdk.reading.participants",
+            {"count": count, "grahas": grahas, "rule": rule},
+        )
+
+    def severity(self, *, rule: str, severity: int) -> str:
+        """`sdk.reading.severity`"""
+        return self._r.render(
+            "sdk.reading.severity",
+            {"rule": rule, "severity": severity},
+        )
+
+    def status(self, *, rule: str, status: str) -> str:
+        """`sdk.reading.status`"""
+        return self._r.render(
+            "sdk.reading.status",
+            {"rule": rule, "status": status},
         )
 
 

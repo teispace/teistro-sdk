@@ -1683,6 +1683,25 @@ final class MessagesSdkEntity {
   MessagesSdkEntityYoni get yoni => MessagesSdkEntityYoni(_r);
 }
 
+final class MessagesSdkReading {
+  const MessagesSdkReading(this._r);
+
+  final Renderer _r;
+
+  String effect({required String rule, required String text}) =>
+      _r.render('sdk.reading.effect', {'rule': rule, 'text': text});
+  String lifeClass({required String class, required String rule}) =>
+      _r.render('sdk.reading.lifeClass', {'class': class, 'rule': rule});
+  String lifeSpan({required int count, required String rule, required String unit}) =>
+      _r.render('sdk.reading.lifeSpan', {'count': count, 'rule': rule, 'unit': unit});
+  String participants({required int count, required List<Object> grahas, required String rule}) =>
+      _r.render('sdk.reading.participants', {'count': count, 'grahas': grahas, 'rule': rule});
+  String severity({required String rule, required int severity}) =>
+      _r.render('sdk.reading.severity', {'rule': rule, 'severity': severity});
+  String status({required String rule, required String status}) =>
+      _r.render('sdk.reading.status', {'rule': rule, 'status': status});
+}
+
 final class MessagesSdkReasonStrength {
   const MessagesSdkReasonStrength(this._r);
 
@@ -1729,6 +1748,7 @@ final class MessagesSdk {
 
   MessagesSdkCalendar get calendar => MessagesSdkCalendar(_r);
   MessagesSdkEntity get entity => MessagesSdkEntity(_r);
+  MessagesSdkReading get reading => MessagesSdkReading(_r);
   MessagesSdkReason get reason => MessagesSdkReason(_r);
 }
 

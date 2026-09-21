@@ -584,6 +584,14 @@ export function messages(r) {
           tiger: () => r.entity('yoni.TIGER'),
         },
       },
+      reading: {
+        effect: (p) => r.render('sdk.reading.effect', { rule: p.rule, text: p.text }),
+        lifeClass: (p) => r.render('sdk.reading.lifeClass', { class: p.class, rule: p.rule }),
+        lifeSpan: (p) => r.render('sdk.reading.lifeSpan', { count: p.count, rule: p.rule, unit: p.unit }),
+        participants: (p) => r.render('sdk.reading.participants', { count: p.count, grahas: p.grahas, rule: p.rule }),
+        severity: (p) => r.render('sdk.reading.severity', { rule: p.rule, severity: p.severity }),
+        status: (p) => r.render('sdk.reading.status', { rule: p.rule, status: p.status }),
+      },
       reason: {
         appName: () => r.render('sdk.reason.appName'),
         conjunction: (p) => r.render('sdk.reason.conjunction', { count: p.count, graha: { '$entity': p.graha } }),

@@ -17,10 +17,10 @@ use std::collections::BTreeMap;
 use std::fmt::Write as _;
 use std::path::Path;
 
-use teistro_interpret::{KEYS, Plan, placements};
+use teistro_interpret::{KEYS, Plan, placements, readings};
 use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::{Intl, Rendered};
-use teistro_rules::RuleChart;
+use teistro_rules::{Evaluator, Readings as RuleReadings, Rule, RuleChart, shipped};
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, count, fill, plural, table};
@@ -31,13 +31,30 @@ const ROOT: &str = "fixtures/baseline/yogas";
 /// The chart the page ends with, rendered whole: the corpus's first.
 const SNAPSHOT: &str = "c001-kathmandu-1990-04-14";
 
-/// One chart of the corpus and the plan its placements compose to.
+/// One chart of the corpus and the plan its composers write.
 struct Composed {
     name: String,
     plan: Plan,
 }
 
-fn composed(root: &Path) -> Result<Vec<Composed>, String> {
+/// The rules the readings composer is measured over: every set the kernel
+/// ships whose rules say something in words, a span, a class, a severity or
+/// a cancellation.
+fn rules() -> Vec<Rule> {
+    let mut rules = Vec::new();
+    for pack in [
+        shipped::nabhasas(),
+        shipped::arishtas(),
+        shipped::gandantas(),
+        shipped::computed_doshas(),
+        shipped::computed_yogas(),
+    ] {
+        rules.extend(pack.iter().cloned());
+    }
+    rules
+}
+
+fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
     let mut out = Vec::new();
     for dir in ["charts", "variants"] {
         let directory = root.join(ROOT).join(dir);
@@ -57,10 +74,18 @@ fn composed(root: &Path) -> Result<Vec<Composed>, String> {
                 .file_stem()
                 .map(|stem| stem.to_string_lossy().into_owned())
                 .unwrap_or_default();
-            out.push(Composed {
-                name,
-                plan: placements(&chart),
-            });
+            let evaluator = Evaluator::new(&chart, RuleReadings::TEXTS).with_rules(rules);
+            let held: Vec<(&Rule, teistro_rules::RuleResult)> = rules
+                .iter()
+                .filter_map(|rule| {
+                    let result = evaluator.evaluate(rule);
+                    result.present.then_some((rule, result))
+                })
+                .collect();
+            let mut plan = placements(&chart);
+            plan.items
+                .extend(readings(held.iter().map(|(rule, result)| (*rule, result))));
+            out.push(Composed { name, plan });
         }
     }
     Ok(out)
@@ -106,13 +131,22 @@ fn say(intl: &mut Intl, tag: &str, plans: &[Composed]) -> Result<Said, String> {
     Ok(said)
 }
 
-/// The text of one plan in one locale, item by item.
+/// The text of one plan in one locale, item by item, each line prefixed
+/// with the rule it came from where the item names one. The prefix is the
+/// page's, not the prose's: a reader reviewing a snapshot needs to know
+/// which rule said what, and the `rule` slot is there for exactly that.
 fn lines(intl: &mut Intl, tag: &str, plan: &Plan) -> Result<Vec<String>, String> {
     intl.set_locale(tag).map_err(|err| err.to_string())?;
     Ok(plan
         .items
         .iter()
-        .map(|item| intl.render(&item.key, &item.params).text)
+        .map(|item| {
+            let said = intl.render(&item.key, &item.params).text;
+            match item.params.get("rule") {
+                Some(teistro_intl::Value::Str(rule)) => format!("{rule}: {said}"),
+                _ => said,
+            }
+        })
         .collect())
 }
 
@@ -173,7 +207,8 @@ fn page(root: &Path) -> Result<String, String> {
         .map(|locale| locale.tag.clone())
         .collect();
     let mut intl = Intl::from_tree(&tree).map_err(|err| err.to_string())?;
-    let plans = composed(root)?;
+    let shipped = rules();
+    let plans = composed(root, &shipped)?;
     let mut by_key: BTreeMap<&str, usize> = KEYS.iter().map(|key| (*key, 0)).collect();
     for composed in &plans {
         for item in &composed.plan {
@@ -218,12 +253,30 @@ fn page(root: &Path) -> Result<String, String> {
         let _ = writeln!(out, "| `{key}` | {} |", count(*at));
     }
     out.push('\n');
+    let effects = by_key
+        .get(<teistro_intl::messages::sdk::reading::Effect as teistro_intl::TypedMessage>::KEY)
+        .copied()
+        .unwrap_or_default();
+    let _ = write!(
+        out,
+        "**The verse's own statement is not translated.** {} of the {} — every \
+         `sdk.reading.effect` — carry the words the rule itself cites, in the \
+         language the rule was written in, and the message prints them as they \
+         are. So a Nepali reading says the placements, who took part, the span, \
+         the class and the cancellation in Nepali, and the verse's sentence in \
+         the translator's English, until a locale carries a reading of that \
+         rule written by someone who reads the text. A machine translation \
+         there would be worse than the visible seam.\n\n",
+        count(effects),
+        plural(items, "item")
+    );
     let _ = write!(
         out,
         "What they cannot say is counted too: the **lagna** stands in every \
-         one of these charts and is in none of these plans, because the \
-         messages read a graha and the lagna is `point.LAGNA` — {} it does \
-         not say, one a chart.\n\n",
+         one of these charts and is in none of the placement items, because \
+         those messages read a graha and the lagna is `point.LAGNA` — {} it \
+         does not say, one a chart. It does take part in a reading, where the \
+         message names no kind and the lagna is the point it is.\n\n",
         plural(plans.len(), "item")
     );
 

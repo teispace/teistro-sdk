@@ -136,6 +136,10 @@ name = "ephemeris"
 required-features = ["builtin-ephemeris"]
 
 [[example]]
+name = "interpretation"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
 name = "panchanga"
 required-features = ["builtin-ephemeris"]
 

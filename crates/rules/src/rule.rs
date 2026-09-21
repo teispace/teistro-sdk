@@ -290,6 +290,23 @@ pub enum LifeClass {
 }
 
 impl LifeClass {
+    /// Its key, as a rule writes it and as a message selects on it.
+    ///
+    /// One list, not two: a test holds it against what serde writes, so a
+    /// class renamed in one place is refused rather than half-renamed.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            LifeClass::Balarishta => "balarishta",
+            LifeClass::Yogarishta => "yogarishta",
+            LifeClass::Short => "short",
+            LifeClass::Medium => "medium",
+            LifeClass::Long => "long",
+            LifeClass::Divine => "divine",
+            LifeClass::Unlimited => "unlimited",
+        }
+    }
+
     /// Every class, from the shortest up.
     pub const ALL: [LifeClass; 7] = [
         LifeClass::Balarishta,
@@ -398,6 +415,20 @@ pub enum NetStatus {
     PartiallyCancelled,
     /// At least the threshold held.
     FullyCancelled,
+}
+
+impl NetStatus {
+    /// Its key, as a result writes it and as a message selects on it.
+    ///
+    /// One list, not two: a test holds it against what serde writes.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            NetStatus::Active => "active",
+            NetStatus::PartiallyCancelled => "partially-cancelled",
+            NetStatus::FullyCancelled => "fully-cancelled",
+        }
+    }
 }
 
 /// A rule.
@@ -837,6 +868,27 @@ mod tests {
     )]
 
     use super::*;
+
+    /// A key and what serde writes are one list, not two.
+    #[test]
+    fn a_key_is_what_serde_writes() {
+        for class in LifeClass::ALL {
+            assert_eq!(
+                serde_json::to_value(class).unwrap(),
+                serde_json::Value::from(class.key())
+            );
+        }
+        for status in [
+            NetStatus::Active,
+            NetStatus::PartiallyCancelled,
+            NetStatus::FullyCancelled,
+        ] {
+            assert_eq!(
+                serde_json::to_value(status).unwrap(),
+                serde_json::Value::from(status.key())
+            );
+        }
+    }
 
     fn rule(json: &str) -> Result<Rule, serde_json::Error> {
         serde_json::from_str(json)
