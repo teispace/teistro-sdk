@@ -2518,6 +2518,7 @@ class PlanRequest(TypedDict, total=False):
     aspects: bool
     conditions: bool
     karakas: bool
+    chalit: bool
     phala: bool
 
 
@@ -2542,6 +2543,7 @@ class Plans(TypedDict, total=False):
     aspects: List[PlanItem]
     conditions: List[PlanItem]
     karakas: List[PlanItem]
+    chalit: List[PlanItem]
     phala: List[PlanItem]
 
 

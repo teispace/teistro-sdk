@@ -18,6 +18,7 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use teistro_aspect::{Drishti, Strength, drishti};
+use teistro_chart::foundation::GrahaPosition;
 use teistro_core::angle::Nas;
 use teistro_core::boundary::Boundaries;
 use teistro_core::catalogue::{Graha, Rashi};
@@ -25,8 +26,8 @@ use teistro_core::quantity::Degrees;
 use teistro_houses::chart::Bhava;
 use teistro_houses::classify::{Quadrant, lord_of};
 use teistro_interpret::{
-    KEYS, Plan, aspects, conditions, houses, karakas, phala, placements, positions, readings,
-    strength,
+    KEYS, Plan, aspects, chalit, conditions, houses, karakas, phala, placements, positions,
+    readings, strength,
 };
 use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::{Intl, Rendered};
@@ -143,6 +144,57 @@ struct Divided {
     degenerate: bool,
     placed: usize,
     shifted: usize,
+    /// Each graha under **both** house readings, built from the recorded
+    /// `planet_houses` (the chalit's) and `shifted` (which names the
+    /// placement system's where the two differ). The fields the composer
+    /// does not read keep the record's own zeroes, as the bhavas do.
+    positions: Vec<GrahaPosition>,
+}
+
+/// The grahas of a recorded chalit, under both readings.
+fn positions_of(chalit: &serde_json::Value) -> Vec<GrahaPosition> {
+    let shifted: BTreeMap<&str, u8> = chalit["shifted"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|row| {
+            let planet = row["planet"].as_str()?;
+            let whole = u8::try_from(row["whole_sign_house"].as_u64()?).ok()?;
+            Some((planet, whole))
+        })
+        .collect();
+    let mut out = Vec::new();
+    for graha in Graha::ALL.into_iter().take(9) {
+        let Some(bhava) = chalit["planet_houses"][graha.key()]
+            .as_u64()
+            .and_then(|n| u8::try_from(n).ok())
+        else {
+            continue;
+        };
+        // Where the record names no shift, the two readings agree.
+        let house = shifted.get(graha.key()).copied().unwrap_or(bhava);
+        out.push(GrahaPosition {
+            graha,
+            longitude_deg: 0.0,
+            tropical_deg: 0.0,
+            latitude_deg: 0.0,
+            distance_au: 0.0,
+            speed_deg_per_day: 0.0,
+            placement: placed_at(bhava),
+            house: placed_at(house),
+        });
+    }
+    out
+}
+
+/// A placement in a bhava and nothing else the composer reads.
+fn placed_at(bhava: u8) -> teistro_chart::bhava::Placement {
+    teistro_chart::bhava::Placement {
+        bhava,
+        method: teistro_core::catalogue::HouseSystem::WholeSign,
+        through: 0.0,
+        from_madhya_deg: 0.0,
+    }
 }
 
 /// Every chart whose division the corpus records, by its file stem.
@@ -203,6 +255,7 @@ fn divisions(root: &Path) -> BTreeMap<String, Divided> {
                         .as_object()
                         .map_or(0, serde_json::Map::len),
                     shifted: chalit["shifted"].as_array().map_or(0, Vec::len),
+                    positions: positions_of(chalit),
                 },
             );
         }
@@ -333,6 +386,7 @@ fn composed(
             }
             if let Some(divided) = divided.get(&name) {
                 plan.items.extend(houses(&divided.bhavas));
+                plan.items.extend(chalit(&divided.positions));
             }
             out.push(Composed { name, plan, chart });
         }
@@ -551,6 +605,14 @@ fn unsaid_strength(out: &mut String, root: &Path) {
 /// charts under Placidus, and none of them is in this corpus.
 fn unsaid_houses(out: &mut String, root: &Path, plans: &[Composed]) {
     let divided = divisions(root);
+    let said_shifts: usize = plans
+        .iter()
+        .flat_map(|composed| composed.plan.iter())
+        .filter(|item| {
+            item.key
+                == <teistro_intl::messages::sdk::reason::ChalitShift as teistro_intl::TypedMessage>::KEY
+        })
+        .count();
     let reached: Vec<&Divided> = plans
         .iter()
         .filter_map(|composed| divided.get(&composed.name))
@@ -573,12 +635,18 @@ fn unsaid_houses(out: &mut String, root: &Path, plans: &[Composed]) {
          better with time, and none of those is a catalogue member — a \
          `Quadrant` is a Rust enum and the rest are predicates. Saying them \
          needs words no locale here has been given, which is the shape the \
-         state readings' §8 names, not a composer's decision.\n\n",
+         state readings' §8 names, not a composer's decision.\n\n\
+         **The shift itself is said**, by a composer of its own: {} of the \
+         plan's items are `sdk.reason.chalitShift`, one for each placing the \
+         corpus records as moving, and none for a placing it does not — the \
+         two counts are the same number above and below, so a composer that \
+         said one shift too many or too few would change this page.\n\n",
         count(reached.len()),
         named.join(" and "),
         count(degenerate),
         count(shifted),
         count(placed),
+        count(said_shifts),
     );
     let all = divided.len();
     let unequal = divided

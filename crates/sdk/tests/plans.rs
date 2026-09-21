@@ -165,6 +165,36 @@ fn the_strengths_are_said_strongest_first_with_what_each_needs() {
     assert_eq!(refused.field(), Some("shadbala"));
 }
 
+/// The chalit is the tenth composer and the only one over the chart's own
+/// grahas: it says where the placement system and the chalit put a graha in
+/// different bhavas, and nothing where they agree.
+#[test]
+fn the_chalit_says_only_where_the_two_house_readings_disagree() {
+    let (sdk, document) = common::reading("{}", |request| request);
+    let plan = sdk.interpret().chalit(&document);
+
+    // Every item is a graha the document itself records in two different
+    // bhavas, and every such graha is an item: the composer reads the
+    // chart and derives nothing.
+    let disagreeing: Vec<teistro::Value> = document
+        .foundation
+        .grahas
+        .iter()
+        .filter(|graha| graha.house.bhava != graha.placement.bhava)
+        .map(|graha| teistro::Value::catalogued(graha.graha))
+        .collect();
+    let said: Vec<teistro::Value> = plan
+        .items
+        .iter()
+        .filter_map(|item| item.params.get("graha").cloned())
+        .collect();
+    assert_eq!(said, disagreeing);
+
+    // It needs no section: both readings are on the chart's own grahas, so
+    // a request that asked for nothing still composes it.
+    assert!(document.houses.is_none(), "nothing asked for the bhavas");
+}
+
 /// The houses are the fourth composer and the second over a section. It
 /// says the sign each bhava falls in and the graha that rules that sign —
 /// the relation the rest of the tradition is read through — and nothing

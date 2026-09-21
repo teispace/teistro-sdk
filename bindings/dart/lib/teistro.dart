@@ -3426,6 +3426,7 @@ final class PlanRequest {
     this.aspects = false,
     this.conditions = false,
     this.karakas = false,
+    this.chalit = false,
     this.phala = false,
   });
 
@@ -3454,6 +3455,10 @@ final class PlanRequest {
   /// Which chara karaka each graha holds, under both schemes.
   final bool karakas;
 
+  /// Where the placement system and the chalit put a graha in different
+  /// bhavas. It says nothing of a chart whose readings agree.
+  final bool chalit;
+
   /// What a loaded corpus of state readings says of this chart's subjects:
   /// a graha in a bhava, the lagna's sign, each limb of the panchanga. It
   /// says nothing until a pack carrying those readings is loaded.
@@ -3468,6 +3473,7 @@ final class PlanRequest {
     'aspects': aspects,
     'conditions': conditions,
     'karakas': karakas,
+    'chalit': chalit,
     'phala': phala,
   });
 }

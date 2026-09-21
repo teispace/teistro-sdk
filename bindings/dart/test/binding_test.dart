@@ -742,6 +742,7 @@ void _engineTests() {
             aspects: true,
             conditions: true,
             karakas: true,
+            chalit: true,
           ),
           rules: const RuleRequest(shipped: [ShippedRules.nabhasas]),
         )!;
@@ -762,6 +763,9 @@ void _engineTests() {
     // And the positions read the same states the placements do.
     final degrees = plans['positions']! as List<Object?>;
     expect(degrees, hasLength(10), reason: 'the lagna, then the nine grahas');
+    // The chalit needs no section: both readings are on the grahas.
+    final shifts = plans['chalit']! as List<Object?>;
+    expect(shifts.length, lessThanOrEqualTo(9), reason: 'at most one a graha');
     // The drishtis read the aspects section, never asked for either.
     final looks = plans['aspects']! as List<Object?>;
     expect(looks, isNotEmpty, reason: 'every chart holds a drishti');

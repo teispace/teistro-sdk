@@ -1368,6 +1368,28 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.reason.chalitShift`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct ChalitShift {
+            /// The `bhava` parameter.
+            pub bhava: i64,
+            /// The `chalit` parameter.
+            pub chalit: i64,
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for ChalitShift {
+            const KEY: &'static str = "sdk.reason.chalitShift";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("bhava", crate::Value::Int(self.bhava)),
+                    ("chalit", crate::Value::Int(self.chalit)),
+                    ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
         /// The message `sdk.reason.conjunction`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct Conjunction {

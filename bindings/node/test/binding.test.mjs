@@ -808,6 +808,7 @@ test('plans compose in the same crossing, and render with nothing in between', (
       aspects: true,
       conditions: true,
       karakas: true,
+      chalit: true,
     },
   }).plans;
   assert.ok(plans.placements.length > 0, 'every chart places its grahas');
@@ -828,6 +829,11 @@ test('plans compose in the same crossing, and render with nothing in between', (
   // The conditions and the karakas read the same states the placements do.
   assert.ok(plans.conditions.length >= 18, 'a dignity and a navamsha for each of the nine');
   assert.equal(plans.karakas.length, 15, 'seven of the seven, eight of the eight');
+  // The chalit reads the chart's own grahas, so it needs no section at all;
+  // it says only the placings the two house readings disagree on, and an
+  // agreeing chart says none.
+  assert.ok(Array.isArray(plans.chalit), 'asked for, so present');
+  assert.ok(plans.chalit.length <= 9, 'at most one a graha');
   assert.ok(Object.isFrozen(plans.placements[0]), 'a plan handed out is a plan kept');
 
   let said = 0;

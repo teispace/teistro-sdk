@@ -2342,6 +2342,8 @@ struct Plans {
     #[serde(skip_serializing_if = "Option::is_none")]
     karakas: Option<Plan>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    chalit: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     phala: Option<Plan>,
 }
 
@@ -2382,6 +2384,9 @@ fn read_charts(
 /// A composer asking for a section it was not given would be a dead end: the
 /// consumer asked for the plan, not for the knob underneath it.
 fn sections_for(request: ChartRequest, asked: PlanRequest) -> ChartRequest {
+    // `chalit` needs no section at all: both house readings are on the
+    // chart's own grahas, which every founded chart carries.
+    //
     // `placements`, `positions`, `conditions`, `karakas` and `phala` all
     // read the graha states through `RuleInputs`, so any one asks for them.
     let request = if asked.placements
@@ -2459,6 +2464,7 @@ fn compose(
                 .karakas
                 .then(|| sdk.interpret().karakas(document))
                 .transpose()?,
+            chalit: asked.chalit.then(|| sdk.interpret().chalit(document)),
             phala: asked
                 .phala
                 .then(|| sdk.interpret().phala(document))

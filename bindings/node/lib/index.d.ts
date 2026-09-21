@@ -773,6 +773,11 @@ export interface PlanRequest {
   /** Which chara karaka each graha holds, under both schemes. */
   readonly karakas?: boolean;
   /**
+   * Where the placement system and the chalit put a graha in different
+   * bhavas. Says nothing of a chart whose readings agree.
+   */
+  readonly chalit?: boolean;
+  /**
    * What a loaded corpus of state readings says of this chart's subjects: a
    * graha in a bhava, the lagna's sign, each limb of the panchanga. Says
    * nothing until a pack carrying those readings is loaded.
@@ -810,6 +815,8 @@ export interface Plans {
   readonly conditions?: readonly PlanItem[];
   /** Each graha's chara karakas; absent unless `karakas` asked for them. */
   readonly karakas?: readonly PlanItem[];
+  /** Where the two house readings disagree; absent unless `chalit` asked. */
+  readonly chalit?: readonly PlanItem[];
   /** What a loaded corpus says of the chart's subjects; absent unless `phala` asked. */
   readonly phala?: readonly PlanItem[];
 }

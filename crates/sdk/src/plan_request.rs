@@ -63,6 +63,11 @@ pub struct PlanRequest {
     /// Which chara karaka each graha holds, under both schemes. It reads
     /// what `placements` reads, so it costs no section.
     pub karakas: bool,
+    /// Where the two house readings put a graha in different bhavas: the
+    /// placement system's and the chalit's. It reads the chart's own
+    /// grahas, so it costs no section, and it says nothing of a chart
+    /// whose readings agree.
+    pub chalit: bool,
     /// What a loaded corpus of state readings says of this chart's
     /// subjects: a graha in a bhava, the lagna's sign, each limb of the
     /// panchanga. It costs no section, and it says **nothing** until a
@@ -78,7 +83,7 @@ impl PlanRequest {
     /// holds the list against the record's own serialisation, both ways, so
     /// a composer added without a name here fails rather than going
     /// unmentioned in the refusal a typo earns.
-    pub const MEMBERS: [&'static str; 9] = [
+    pub const MEMBERS: [&'static str; 10] = [
         "placements",
         "readings",
         "strength",
@@ -87,6 +92,7 @@ impl PlanRequest {
         "aspects",
         "conditions",
         "karakas",
+        "chalit",
         "phala",
     ];
 
@@ -146,6 +152,13 @@ impl PlanRequest {
         self
     }
 
+    /// A request for where the two house readings disagree.
+    #[must_use]
+    pub const fn with_chalit(mut self) -> PlanRequest {
+        self.chalit = true;
+        self
+    }
+
     /// A request for what a loaded corpus says of the chart's subjects.
     #[must_use]
     pub const fn with_phala(mut self) -> PlanRequest {
@@ -165,6 +178,7 @@ impl PlanRequest {
             || self.aspects
             || self.conditions
             || self.karakas
+            || self.chalit
             || self.phala
     }
 

@@ -679,6 +679,7 @@ class AnEngine(WithLibrary):
                 "aspects": True,
                 "conditions": True,
                 "karakas": True,
+                    "chalit": True,
             },
             {"shipped": ["nabhasas"]},
         )
@@ -694,6 +695,8 @@ class AnEngine(WithLibrary):
         self.assertEqual(len(plans["houses"]), 12 * 2, "a sign and a lord each")
         # And the positions read the same states the placements do.
         self.assertEqual(len(plans["positions"]), 10, "the lagna, then the nine")
+        # The chalit needs no section: both readings are on the grahas.
+        self.assertLessEqual(len(plans["chalit"]), 9, "at most one a graha")
         # The drishtis read the aspects section, never asked for either.
         self.assertTrue(plans["aspects"], "every chart holds a drishti")
         # The conditions and the karakas read the same states the

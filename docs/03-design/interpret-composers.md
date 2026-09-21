@@ -327,6 +327,33 @@ mean-node chart. The true node turns; the mean node does not. So the
 condition carries information and is said of every graha that holds it, and
 the measured page counts it rather than this page assuming it.
 
+**`chalit`** — where the two house readings put a graha in different
+bhavas. **Built** over `sdk.reason.chalitShift`, one message, and it is
+the tenth composer.
+
+A chart places every graha **twice** — under the placement system, which
+is what most of the tradition means by "in the seventh", and under the
+chalit, which reads the cusps — and keeps both without recomputing either
+(`chart-bhava-chalit.md`). Over the recorded corpus they differ for 135 of
+675 placings, and the measured page holds the composer's item count
+against the corpus's own `shifted` list: one item a recorded shift, none
+for a placing the corpus does not record as moving, so a composer that
+said one too many or too few changes that page.
+
+**It says only the grahas that differ**, because agreement is the ordinary
+case and an item a graha would bury the disagreement in eight repetitions
+of it. A chart whose readings agree throughout composes to nothing here,
+which is the answer and not a failure.
+
+**Why it is not a line inside `placements`.** That composer reads a
+`RuleChart`, which carries one house a graha, and the façade's
+`placements(document)` is held by a test to be exactly
+`interpret::placements(&RuleInputs::of(document)?.chart)` — the façade
+adapts and does not re-derive. Both readings live on the chart foundation,
+so this composer reads that, and takes the narrowest type carrying them as
+every composer here does. The message needs no `.match`: `lordship` had
+already settled that a house can be said by its number.
+
 **`houses`** — the sign each of the twelve bhavas falls in, and the graha
 that rules that sign. Two items a bhava, because they are two facts; the
 sign was unsaid for three composers and cost **no new vocabulary**, since a
@@ -518,21 +545,26 @@ a test that a plan round-trips through JSON.
     rather than what the SDK computed. **Built**: `sdk.phala`, six
     messages, each saying a record a loaded pack brings, and `Vocabulary`
     generalised from one subject to any.
-12. The **bhava's sign**, the third silence in as many steps and the one
+12. The **chalit shift**, the last silence the measured page counted.
+    **Built**: `chalit`, the tenth composer, over one message and the
+    chart's own grahas.
+13. The **bhava's sign**, the third silence in as many steps and the one
     that cost nothing: `sdk.reason.bhavaInRashi`, over a kind already
     catalogued and an ordinal shape already translated. **Built**.
-13. The **strengths'** second fact. **Built**:
+14. The **strengths'** second fact. **Built**:
     `sdk.reason.strength.meets`, one message, two sentences a locale — the
     rupas a graha's text requires and whether it reaches them. The
     Shadbala had carried it since `strength` was written; no locale had a
     message for it.
-14. The **lagna**, said at last. **Built**: `sdk.reason.pointInRashi` and
+15. The **lagna**, said at last. **Built**: `sdk.reason.pointInRashi` and
     `sdk.reason.pointAt`, two messages that read a point rather than a
     graha, said by `placements` and `positions`. It was the oldest silence
     in this page — counted at 93 items, one a chart, for six composers —
     and it cost two messages because the `point` kind was already named.
 
 ## 8. What this design does not settle
+
+
 
 - **The interpretation records.** 108 graha-in-bhava cells with condition
   modifiers and conjunction synthesis, and a reading for each yoga and dosha,

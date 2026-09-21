@@ -1369,6 +1369,27 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A tenth composer, `chalit`: where the two house readings disagree.** A
+  chart places every graha twice — under the placement system, which is
+  what most of the tradition means by "in the seventh", and under the
+  chalit, which reads the cusps — and keeps both without recomputing
+  either. They differ for **135 of 675** placings in the recorded corpus
+  and nothing said so. `sdk.reason.chalitShift` says it: *Sun in house 2 by
+  sign and house 1 by chalit*, *सूर्य राशिले २ भावमा, चलितले १ भावमा*.
+
+  **It says only the grahas that differ.** Agreement is the ordinary case
+  and an item a graha would bury the disagreement in eight repetitions of
+  it; a chart whose readings agree composes to nothing here, which is the
+  answer and not a failure. The measured page holds the composer's item
+  count against the corpus's own `shifted` list in both directions, so a
+  composer that said one shift too many or too few changes that page.
+
+  It reads the chart's own grahas rather than the rules' chart, which
+  carries one house a graha — the façade is held by a test to adapt and
+  never re-derive — so it is a composer of its own, needs **no section**,
+  and is a tenth member of `PlanRequest`, off by default and present in all
+  three bindings.
+
 - **The houses say the sign each bhava falls in, beside its lord.** A
   `Bhava` carries the sign its **middle** falls in and the graha that rules
   that sign; for three composers the plan said only the second.

@@ -787,6 +787,13 @@ class MessagesSdkReason:
             {"bhava": bhava, "rashi": {"$entity": rashi.value}},
         )
 
+    def chalit_shift(self, *, bhava: int, chalit: int, graha: GrahaKey) -> str:
+        """`sdk.reason.chalitShift`"""
+        return self._r.render(
+            "sdk.reason.chalitShift",
+            {"bhava": bhava, "chalit": chalit, "graha": {"$entity": graha.value}},
+        )
+
     def conjunction(self, *, count: int, graha: GrahaKey) -> str:
         """`sdk.reason.conjunction`"""
         return self._r.render(

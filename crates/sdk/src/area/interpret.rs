@@ -2,7 +2,8 @@
 
 use teistro_core::error::Error;
 use teistro_interpret::{
-    Plan, aspects, conditions, houses, karakas, phala, placements, positions, readings, strength,
+    Plan, aspects, chalit as say_chalit, conditions, houses, karakas, phala, placements, positions,
+    readings, strength,
 };
 use teistro_serial::document::Document;
 
@@ -101,6 +102,19 @@ impl<'a> InterpretArea<'a> {
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn karakas(self, document: &Document) -> Result<Plan, Error> {
         Ok(karakas(&RuleInputs::of(document)?.chart))
+    }
+
+    /// Where the placement system and the chalit put a graha in different
+    /// bhavas.
+    ///
+    /// A chart places every graha twice and keeps both readings; this says
+    /// where they disagree, and **nothing at all** where they do not,
+    /// because the disagreement is the fact. It reads the chart's own
+    /// grahas rather than the rules' chart, which carries one house a
+    /// graha (`03-design/interpret-composers.md` §8).
+    #[must_use]
+    pub fn chalit(self, document: &Document) -> Plan {
+        say_chalit(&document.foundation.grahas)
     }
 
     /// What a loaded corpus of state readings says of this chart's

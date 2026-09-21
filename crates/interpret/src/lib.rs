@@ -49,6 +49,7 @@ use teistro_intl::messages::sdk::phala as phala_messages;
 use teistro_intl::{Params, TypedMessage};
 
 mod aspects;
+mod chalit;
 mod conditions;
 mod houses;
 mod karakas;
@@ -59,6 +60,7 @@ mod readings;
 mod strength;
 
 pub use aspects::aspects;
+pub use chalit::chalit;
 pub use conditions::conditions;
 pub use houses::houses;
 pub use karakas::karakas;
@@ -76,11 +78,12 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 32] = [
+pub const KEYS: [&str; 33] = [
     <reason::PointInRashi as TypedMessage>::KEY,
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
     <reason::BhavaInRashi as TypedMessage>::KEY,
+    <reason::ChalitShift as TypedMessage>::KEY,
     <reason::PointAt as TypedMessage>::KEY,
     <reason::GrahaAt as TypedMessage>::KEY,
     <reason::Occupants as TypedMessage>::KEY,

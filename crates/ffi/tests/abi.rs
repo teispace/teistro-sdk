@@ -1773,7 +1773,8 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     let rules = CString::new(r#"{"shipped": ["nabhasas"]}"#).unwrap();
     let plans = CString::new(
         r#"{"placements": true, "readings": true, "strength": true, "houses": true,
-            "positions": true, "aspects": true, "conditions": true, "karakas": true}"#,
+            "positions": true, "aspects": true, "conditions": true, "karakas": true,
+            "chalit": true}"#,
     )
     .unwrap();
     let request = sized(
@@ -1856,6 +1857,10 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         );
         let karakas = chart["karakas"].as_array().unwrap();
         assert!(!karakas.is_empty(), "every chart ranks its chara karakas");
+        // The chalit reads the chart's own grahas, so `sections` asked for
+        // nothing on its behalf either; it says only the disagreements.
+        let shifts = chart["chalit"].as_array().unwrap();
+        assert!(shifts.len() <= 9, "at most one a graha");
         for item in placements
             .iter()
             .chain(chart["readings"].as_array().unwrap())
