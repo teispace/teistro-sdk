@@ -128,6 +128,10 @@ name = "almanac"
 required-features = ["builtin-ephemeris"]
 
 [[example]]
+name = "phala"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
 name = "readings"
 required-features = ["builtin-ephemeris"]
 

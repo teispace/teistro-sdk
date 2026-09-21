@@ -98,6 +98,44 @@ the corpus does not make.
 `VEDHA_DOSHA`. They are the same ten the readings' page lists: the milan
 rules, waiting on Phase 8's `matching` rather than on anything here.
 
+## What a composer can say
+
+A pack that loads is half of it; the other half is that a record reaches
+a reader. Every reading the `phala` composer has a message for is
+rendered here through that message, in each strict locale, and must
+answer from the locale's own record without a fallback and without a
+warning: 422 renderings.
+
+**204 readings have no composer that says them yet**, by the category
+they came from. They are not errors — the records load and a consumer
+reads them directly — but a reading nothing says is work that has not
+reached a reader, so the list is here rather than in a sentence.
+
+| category | readings nothing says |
+|---|---:|
+| `avastha-baladi` | 5 |
+| `avastha-deeptadi` | 9 |
+| `avastha-jagradadi` | 3 |
+| `avastha-lajjitadi` | 6 |
+| `dasha-lord-activation` | 9 |
+| `dasha-lord-effect` | 9 |
+| `dosha-timing` | 62 |
+| `gana` | 3 |
+| `graha-color` | 9 |
+| `graha-direction` | 9 |
+| `ishta-devata` | 12 |
+| `mantra-ritual` | 9 |
+| `nadi` | 3 |
+| `namakarana-nakshatra` | 27 |
+| `special-lagna` | 5 |
+| `tatwa` | 5 |
+| `varna` | 5 |
+| `yoni` | 14 |
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| every reading a composer says renders from the locale's own record, with no fallback and no warning | **holds** | 0 of 422 disagree |
+
 ## What the state readings cost
 
 **Loaded, not embedded**, for the reason the rule readings are

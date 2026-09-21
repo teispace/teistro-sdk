@@ -42,12 +42,16 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_intl::messages::sdk::{aspect, condition, karaka, reading, reason};
+// The composer below is `phala` too, so the message module is named in
+// full where its keys are listed.
+use teistro_intl::messages::sdk::phala as phala_messages;
 use teistro_intl::{Params, TypedMessage};
 
 mod aspects;
 mod conditions;
 mod houses;
 mod karakas;
+mod phala;
 mod placements;
 mod positions;
 mod readings;
@@ -57,6 +61,7 @@ pub use aspects::aspects;
 pub use conditions::conditions;
 pub use houses::houses;
 pub use karakas::karakas;
+pub use phala::phala;
 pub use placements::placements;
 pub use positions::positions;
 pub use readings::readings;
@@ -70,7 +75,7 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 22] = [
+pub const KEYS: [&str; 28] = [
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
     <reason::GrahaAt as TypedMessage>::KEY,
@@ -93,6 +98,12 @@ pub const KEYS: [&str; 22] = [
     <condition::Combust as TypedMessage>::KEY,
     <karaka::OfSeven as TypedMessage>::KEY,
     <karaka::OfEight as TypedMessage>::KEY,
+    <phala_messages::GrahaInBhava as TypedMessage>::KEY,
+    <phala_messages::LagnaRashi as TypedMessage>::KEY,
+    <phala_messages::Tithi as TypedMessage>::KEY,
+    <phala_messages::Vara as TypedMessage>::KEY,
+    <phala_messages::Nakshatra as TypedMessage>::KEY,
+    <phala_messages::Yoga as TypedMessage>::KEY,
 ];
 
 /// One thing to say: a message key and the slots it is said with.
@@ -235,10 +246,26 @@ impl<'p> IntoIterator for &'p Plan {
 /// building a locale engine, and so the question a composer asks is
 /// visible in its signature.
 pub trait Vocabulary {
+    /// Whether the base locale carries this form of the record at this
+    /// **full** catalogue key (`nakshatra.ASHWINI`, `phala`).
+    ///
+    /// One question for every subject, because a composer asking after a
+    /// graha in a bhava and one asking after a rule are asking the same
+    /// thing of the same records. A reading of a rule is the `name` form
+    /// of a `rule` record, which is what [`Vocabulary::has_reading`]
+    /// spells.
+    fn has_form(&self, key: &str, form: &str) -> bool;
+
     /// Whether the base locale carries a reading of this rule, named by
     /// the rule's own key (`RUCHAKA`, not `rule.RUCHAKA`).
-    fn has_reading(&self, rule: &str) -> bool;
+    fn has_reading(&self, rule: &str) -> bool {
+        self.has_form(&reading_key(rule), NAME_FORM)
+    }
 }
+
+/// The form a record's summary is carried under, which is what a reading
+/// is named by.
+pub const NAME_FORM: &str = "name";
 
 /// The catalogue key a rule's reading is carried under.
 ///
@@ -259,7 +286,7 @@ pub fn reading_key(rule: &str) -> String {
 pub struct NoReadings;
 
 impl Vocabulary for NoReadings {
-    fn has_reading(&self, _rule: &str) -> bool {
+    fn has_form(&self, _key: &str, _form: &str) -> bool {
         false
     }
 }
@@ -269,8 +296,8 @@ impl Vocabulary for teistro_intl::Intl {
     /// shape. A reader's locale that lacks the record falls back along its
     /// chain when the item is rendered; that is the renderer's business
     /// and not the plan's.
-    fn has_reading(&self, rule: &str) -> bool {
-        self.entity_from(teistro_intl::source::BASE_LOCALE, &reading_key(rule))
-            .is_some()
+    fn has_form(&self, key: &str, form: &str) -> bool {
+        self.entity_from(teistro_intl::source::BASE_LOCALE, key)
+            .is_some_and(|record| record.form(form).is_some())
     }
 }

@@ -21,7 +21,7 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use teistro_intl::migrate::{STATE_CATEGORIES, StateCategory};
-use teistro_intl::source::{BASE_LOCALE, ENTITY_NAMESPACE, Entry, Tree};
+use teistro_intl::source::{BASE_LOCALE, Completeness, ENTITY_NAMESPACE, Entry, Tree};
 use teistro_rules::Rule;
 
 use crate::generated::{Output, check, write};
@@ -460,6 +460,166 @@ fn what_the_packs_decide(
     Ok(())
 }
 
+/// The form a record's summary is carried under.
+const NAME_FORM: &str = "name";
+
+/// The message that says a graha in a bhava, which is the one of the six
+/// that takes more than the subject's own key.
+const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
+
+/// The message a composer says a subject with, and the slot the record's
+/// key fills, by the kind the key names and the form the reading is under.
+///
+/// It is the composer's own table read backwards: `phala` says a graha in
+/// a bhava, the lagna's sign and each limb of the panchanga, and this asks
+/// whether the corpus's every such record can be **said**. A subject the
+/// composer has no message for is not in this list and is counted apart,
+/// because a reading nothing can say is work that does not reach a reader
+/// (`03-design/state-readings.md` §5).
+const SAID_BY: [(&str, &str, &str, &str); 6] = [
+    ("graha_bhava", NAME_FORM, GRAHA_IN_BHAVA, "phala"),
+    ("rashi", "lagnaPhala", "sdk.phala.lagnaRashi", "rashi"),
+    ("tithi", "phala", "sdk.phala.tithi", "tithi"),
+    ("vara", "phala", "sdk.phala.vara", "vara"),
+    ("nakshatra", "phala", "sdk.phala.nakshatra", "nakshatra"),
+    ("yoga", "phala", "sdk.phala.yoga", "yoga"),
+];
+
+/// Every reading a composer can say, rendered in every strict locale from
+/// the record the pack carries.
+///
+/// This is the half a pack alone cannot prove: that the records reach a
+/// reader. Each is rendered through the same message the `phala` composer
+/// emits, and the rendering must answer from the locale's own record, warn
+/// about nothing, and print the record's own form rather than the
+/// subject's name — which is what a missing form would fall back to.
+/// An engine carrying every locale of `i18n/` with both corpora loaded
+/// over it, which is the consumer that wants the words and the readings.
+fn engine_with_both(root: &Path) -> Result<(teistro_intl::Intl, Vec<String>), String> {
+    let tree = Tree::load(&root.join("i18n")).map_err(|why| format!("i18n: {why}"))?;
+    let strict: Vec<String> = tree
+        .locales
+        .values()
+        .filter(|locale| locale.meta.completeness == Completeness::Strict)
+        .map(|locale| locale.tag.clone())
+        .collect();
+    let mut intl = teistro_intl::Intl::from_tree(&tree).map_err(|why| why.to_string())?;
+    for corpus in [READINGS, ROOT] {
+        let loaded = Tree::load(&root.join(corpus)).map_err(|why| format!("{corpus}: {why}"))?;
+        for locale in loaded.locales.values() {
+            let bytes = teistro_intl::pack::build(locale, ENTITY_NAMESPACE)
+                .map_err(|why| format!("{corpus}/{}: {why}", locale.tag))?;
+            intl.load_pack(&bytes)
+                .map_err(|why| format!("{corpus}/{}: {why}", locale.tag))?;
+        }
+    }
+    Ok((intl, strict))
+}
+
+/// The slots the message that says this subject takes.
+fn slots_for(message: &str, slot: &str, key: &str) -> teistro_intl::Params {
+    let mut slots = teistro_intl::params([(slot, teistro_intl::Value::Entity(key.to_string()))]);
+    if message == GRAHA_IN_BHAVA {
+        slots.insert(
+            String::from("graha"),
+            teistro_intl::Value::Entity(String::from("graha.SUN")),
+        );
+        slots.insert(String::from("bhava"), teistro_intl::Value::Int(1));
+    }
+    slots
+}
+
+fn what_a_composer_can_say(
+    out: &mut String,
+    root: &Path,
+    per_locale: &BTreeMap<String, Records>,
+    base: &Records,
+) -> Result<(), String> {
+    let (mut intl, strict) = engine_with_both(root)?;
+    let mut said = 0usize;
+    let mut wrong = 0usize;
+    let mut unsaid: BTreeMap<&str, usize> = BTreeMap::new();
+    for (key, forms) in base {
+        // A reading is a category's contribution, which is one summary
+        // form; its passage and its facets belong to that reading and are
+        // not readings of their own.
+        for category in categories_of(key, forms) {
+            let Some(state) = STATE_CATEGORIES
+                .iter()
+                .find(|state| state.category == category)
+            else {
+                continue;
+            };
+            let form = if state.form.is_empty() {
+                NAME_FORM
+            } else {
+                state.form
+            };
+            let Some((_, _, message, slot)) = SAID_BY
+                .iter()
+                .find(|(kind, under, _, _)| *kind == kind_of(key) && *under == form)
+            else {
+                *unsaid.entry(category).or_default() += 1;
+                continue;
+            };
+            let slots = slots_for(message, slot, key);
+            for tag in &strict {
+                intl.set_locale(tag).map_err(|why| why.to_string())?;
+                let rendered = intl.render(message, &slots);
+                said += 1;
+                let carried = per_locale
+                    .get(tag)
+                    .and_then(|records| records.get(key))
+                    .is_some_and(|forms| forms.iter().any(|here| here == form));
+                if carried
+                    && (rendered.is_fallback
+                        || !rendered.warnings.is_empty()
+                        || rendered.text.is_empty())
+                {
+                    wrong += 1;
+                }
+            }
+        }
+    }
+    out.push_str("## What a composer can say\n\n");
+    let _ = write!(
+        out,
+        "A pack that loads is half of it; the other half is that a record \
+         reaches a reader. Every reading the `phala` composer has a message \
+         for is rendered here through that message, in each strict locale, \
+         and must answer from the locale's own record without a fallback \
+         and without a warning: {}.\n\n",
+        plural(said, "rendering"),
+    );
+    if unsaid.is_empty() {
+        out.push_str("Every reading in the corpus has a composer that says it.\n\n");
+    } else {
+        let total: usize = unsaid.values().sum();
+        let _ = write!(
+            out,
+            "**{} have no composer that says them yet**, by the category \
+             they came from. They are not errors — the records load and a \
+             consumer reads them directly — but a reading nothing says is \
+             work that has not reached a reader, so the list is here rather \
+             than in a sentence.\n\n| category | readings nothing says |\
+             \n|---|---:|\n",
+            plural(total, "reading"),
+        );
+        for (category, readings) in &unsaid {
+            let _ = writeln!(out, "| `{category}` | {} |", count(*readings));
+        }
+        out.push('\n');
+    }
+    out.push_str(&table(&[Claim::counted(
+        "every reading a composer says renders from the locale's own record, with no fallback and \
+         no warning",
+        wrong,
+        said,
+    )]));
+    out.push('\n');
+    Ok(())
+}
+
 /// An engine carrying one empty locale, so a pack is loaded into something
 /// that never read either source tree — which is the consumer's situation.
 fn empty_engine(tag: &str) -> Result<teistro_intl::Intl, teistro_intl::render::IntlError> {
@@ -548,6 +708,7 @@ fn main_page(root: &Path) -> Result<String, String> {
     what_it_did_not_map(&mut out, &unmapped);
     where_two_corpora_meet(&mut out, base);
     what_it_adds_to_the_readings(&mut out, &rules, base_readings, base);
+    what_a_composer_can_say(&mut out, root, &per_locale, base)?;
     let built = what_it_costs(&mut out, root, &tree, &readings_tree)?;
     what_the_packs_decide(&mut out, &per_locale, base, base_readings, &built)?;
     Ok(fill(&out))

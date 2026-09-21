@@ -754,6 +754,11 @@ class MessagesSdk:
         return MessagesSdkKaraka(self._r)
 
     @property
+    def phala(self) -> MessagesSdkPhala:
+        """The messages under `phala`."""
+        return MessagesSdkPhala(self._r)
+
+    @property
     def reading(self) -> MessagesSdkReading:
         """The messages under `reading`."""
         return MessagesSdkReading(self._r)
@@ -924,6 +929,56 @@ class MessagesSdkReading:
         return self._r.render(
             "sdk.reading.status",
             {"rule": rule, "status": status},
+        )
+
+
+class MessagesSdkPhala:
+    """The messages under `MessagesSdkPhala`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def graha_in_bhava(self, *, bhava: int, graha: GrahaKey, phala: str) -> str:
+        """`sdk.phala.grahaInBhava`"""
+        return self._r.render(
+            "sdk.phala.grahaInBhava",
+            {"bhava": bhava, "graha": {"$entity": graha.value}, "phala": {"$entity": phala}},
+        )
+
+    def lagna_rashi(self, *, rashi: RashiKey) -> str:
+        """`sdk.phala.lagnaRashi`"""
+        return self._r.render(
+            "sdk.phala.lagnaRashi",
+            {"rashi": {"$entity": rashi.value}},
+        )
+
+    def nakshatra(self, *, nakshatra: NakshatraKey) -> str:
+        """`sdk.phala.nakshatra`"""
+        return self._r.render(
+            "sdk.phala.nakshatra",
+            {"nakshatra": {"$entity": nakshatra.value}},
+        )
+
+    def tithi(self, *, tithi: TithiKey) -> str:
+        """`sdk.phala.tithi`"""
+        return self._r.render(
+            "sdk.phala.tithi",
+            {"tithi": {"$entity": tithi.value}},
+        )
+
+    def vara(self, *, vara: VaraKey) -> str:
+        """`sdk.phala.vara`"""
+        return self._r.render(
+            "sdk.phala.vara",
+            {"vara": {"$entity": vara.value}},
+        )
+
+    def yoga(self, *, yoga: YogaKey) -> str:
+        """`sdk.phala.yoga`"""
+        return self._r.render(
+            "sdk.phala.yoga",
+            {"yoga": {"$entity": yoga.value}},
         )
 
 

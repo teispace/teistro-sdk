@@ -25,7 +25,8 @@ use teistro_core::quantity::Degrees;
 use teistro_houses::chart::Bhava;
 use teistro_houses::classify::{Quadrant, lord_of};
 use teistro_interpret::{
-    KEYS, Plan, aspects, conditions, houses, karakas, placements, positions, readings, strength,
+    KEYS, Plan, aspects, conditions, houses, karakas, phala, placements, positions, readings,
+    strength,
 };
 use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::{Intl, Rendered};
@@ -51,6 +52,9 @@ const DIVISIONS: &str = "fixtures/baseline";
 const SNAPSHOT: &str = "c001-kathmandu-1990-04-14";
 /// The rule readings a locale carries, loaded rather than embedded.
 const READINGS: &str = "packs/readings";
+/// The state readings, loaded beside them: what a chart *is* rather than
+/// what it triggers (`03-design/state-readings.md`).
+const STATES: &str = "packs/states";
 
 /// One chart of the corpus and the plan its composers write.
 struct Composed {
@@ -318,6 +322,7 @@ fn composed(
             plan.items.extend(positions(&chart));
             plan.items.extend(conditions(&chart));
             plan.items.extend(karakas(&chart));
+            plan.items.extend(phala(&chart, vocabulary));
             plan.items.extend(aspects(&relations(&chart)?));
             plan.items.extend(readings(
                 held.iter().map(|(rule, result)| (*rule, result)),
@@ -960,12 +965,14 @@ fn decided(out: &mut String, said: &[(String, Said)], items: usize, locales: usi
 /// locale's pack and loading it is what a consumer does, so it is what this
 /// pass does.
 fn load_readings(root: &Path, intl: &mut Intl) -> Result<(), String> {
-    let tree = Tree::load(&root.join(READINGS)).map_err(|err| err.to_string())?;
-    for locale in tree.locales.values() {
-        let bytes = teistro_intl::pack::build(locale, teistro_intl::source::ENTITY_NAMESPACE)
-            .map_err(|err| format!("{READINGS}/{}: {err}", locale.tag))?;
-        intl.load_pack(&bytes)
-            .map_err(|err| format!("{READINGS}/{}: {err}", locale.tag))?;
+    for corpus in [READINGS, STATES] {
+        let tree = Tree::load(&root.join(corpus)).map_err(|err| err.to_string())?;
+        for locale in tree.locales.values() {
+            let bytes = teistro_intl::pack::build(locale, teistro_intl::source::ENTITY_NAMESPACE)
+                .map_err(|err| format!("{corpus}/{}: {err}", locale.tag))?;
+            intl.load_pack(&bytes)
+                .map_err(|err| format!("{corpus}/{}: {err}", locale.tag))?;
+        }
     }
     Ok(())
 }

@@ -599,6 +599,14 @@ export function messages(r) {
         ofEight: (p) => r.render('sdk.karaka.ofEight', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
         ofSeven: (p) => r.render('sdk.karaka.ofSeven', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
       },
+      phala: {
+        grahaInBhava: (p) => r.render('sdk.phala.grahaInBhava', { bhava: p.bhava, graha: { '$entity': p.graha }, phala: { '$entity': p.phala } }),
+        lagnaRashi: (p) => r.render('sdk.phala.lagnaRashi', { rashi: { '$entity': p.rashi } }),
+        nakshatra: (p) => r.render('sdk.phala.nakshatra', { nakshatra: { '$entity': p.nakshatra } }),
+        tithi: (p) => r.render('sdk.phala.tithi', { tithi: { '$entity': p.tithi } }),
+        vara: (p) => r.render('sdk.phala.vara', { vara: { '$entity': p.vara } }),
+        yoga: (p) => r.render('sdk.phala.yoga', { yoga: { '$entity': p.yoga } }),
+      },
       reading: {
         effect: (p) => r.render('sdk.reading.effect', { rule: p.rule, text: p.text }),
         lifeClass: (p) => r.render('sdk.reading.lifeClass', { class: p.class, rule: p.rule }),

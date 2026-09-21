@@ -1087,6 +1087,112 @@ pub mod sdk {
 
     }
 
+    /// The `phala` group.
+    pub mod phala {
+        /// The message `sdk.phala.grahaInBhava`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct GrahaInBhava {
+            /// The `bhava` parameter.
+            pub bhava: i64,
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `phala` parameter.
+            pub phala: String,
+        }
+
+        impl crate::TypedMessage for GrahaInBhava {
+            const KEY: &'static str = "sdk.phala.grahaInBhava";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("bhava", crate::Value::Int(self.bhava)),
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("phala", crate::Value::entity(&self.phala)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.lagnaRashi`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct LagnaRashi {
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+        }
+
+        impl crate::TypedMessage for LagnaRashi {
+            const KEY: &'static str = "sdk.phala.lagnaRashi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.nakshatra`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Nakshatra {
+            /// The `nakshatra` parameter.
+            pub nakshatra: teistro_core::catalogue::Nakshatra,
+        }
+
+        impl crate::TypedMessage for Nakshatra {
+            const KEY: &'static str = "sdk.phala.nakshatra";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.tithi`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Tithi {
+            /// The `tithi` parameter.
+            pub tithi: teistro_core::catalogue::Tithi,
+        }
+
+        impl crate::TypedMessage for Tithi {
+            const KEY: &'static str = "sdk.phala.tithi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("tithi", crate::Value::catalogued(self.tithi)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.vara`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Vara {
+            /// The `vara` parameter.
+            pub vara: teistro_core::catalogue::Vara,
+        }
+
+        impl crate::TypedMessage for Vara {
+            const KEY: &'static str = "sdk.phala.vara";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("vara", crate::Value::catalogued(self.vara)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.yoga`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Yoga {
+            /// The `yoga` parameter.
+            pub yoga: teistro_core::catalogue::Yoga,
+        }
+
+        impl crate::TypedMessage for Yoga {
+            const KEY: &'static str = "sdk.phala.yoga";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("yoga", crate::Value::catalogued(self.yoga)),
+                ])
+            }
+        }
+
+    }
+
     /// The `reading` group.
     pub mod reading {
         /// The message `sdk.reading.effect`.

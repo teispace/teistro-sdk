@@ -17,7 +17,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value as Json};
 use teistro_core::key::resolve;
 
-use crate::source::{BASE_LOCALE, ENTITY_NAMESPACE, Entity, Entry, META_FILE, Tree};
+use crate::source::{
+    BASE_LOCALE, ENTITY_NAMESPACE, Entity, Entry, GRAHA_BHAVA_KIND, IN_BHAVA, META_FILE, Tree,
+};
 
 /// The exporter's document.
 #[derive(Clone, Debug, Deserialize)]
@@ -873,18 +875,6 @@ pub const STATE_CATEGORIES: [StateCategory; 24] = [
     state("yoni", "yoni", "phala"),
 ];
 
-/// The catalogue's second **open** kind: a graha and a bhava together.
-///
-/// Open for the same reason `rule` is — the catalogue holds the kind and
-/// not the members — but for a different cause: these members are the
-/// product of two closed kinds, and 108 rows of generated table would buy
-/// a `resolve` the migration's own grammar already performs
-/// (`03-design/state-readings.md` §4).
-pub const GRAHA_BHAVA_KIND: &str = "graha_bhava";
-
-/// What separates the graha from the house in a `graha-bhava` key.
-const IN_BHAVA: &str = "_IN_";
-
 /// The engine's graha abbreviations, written out because four of the nine
 /// differ from the catalogue's spelling and a prefix rule cannot tell which.
 pub const GRAHA_ABBREVIATIONS: [(&str, &str); 9] = [
@@ -974,7 +964,7 @@ pub fn state_key(category: &str, kind: &str, key: &str) -> Result<String, String
         if !(1..=12).contains(&bhava) {
             return Err(format!("house {bhava} is not one of twelve"));
         }
-        return Ok(format!("{GRAHA_BHAVA_KIND}.{graha}{IN_BHAVA}{bhava}"));
+        return Ok(crate::source::graha_bhava_key(graha, bhava));
     }
     if category == "lagna-rashi" {
         let sign = LAGNA_RASHIS

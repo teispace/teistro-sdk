@@ -8,11 +8,11 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 19 290 items, 207 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 20 220 items, 217 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 2 404 610 bytes of JSON over the 93 charts, 25 856 bytes a
-chart, 31 500 bytes for the widest and 124 bytes an item. The verses'
+golden file: 2 523 303 bytes of JSON over the 93 charts, 27 132 bytes a
+chart, 32 781 bytes for the widest and 124 bytes an item. The verses'
 own cited words are **not** what weighs it — 112 962 bytes, 4% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
@@ -22,13 +22,13 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 44 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 19290 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 19290 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 19290 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 19290 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 56 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 20220 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 20220 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 20220 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 20220 disagree |
 
-Every one of the 38 580 renderings — 19 290 in each of 2 strict
+Every one of the 40 440 renderings — 20 220 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -45,6 +45,12 @@ about.
 | `sdk.condition.vargottama` | 106 |
 | `sdk.karaka.ofEight` | 744 |
 | `sdk.karaka.ofSeven` | 651 |
+| `sdk.phala.grahaInBhava` | 837 |
+| `sdk.phala.lagnaRashi` | 93 |
+| `sdk.phala.nakshatra` | 0 |
+| `sdk.phala.tithi` | 0 |
+| `sdk.phala.vara` | 0 |
+| `sdk.phala.yoga` | 0 |
 | `sdk.reading.effect` | 2449 |
 | `sdk.reading.lifeClass` | 214 |
 | `sdk.reading.lifeSpan` | 96 |
@@ -59,7 +65,7 @@ about.
 | `sdk.reason.occupants` | 204 |
 | `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 19 290
+**The verse's own statement is not translated.** 2449 of the 20 220
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -159,7 +165,7 @@ but `sdk.entity` renders each one's own word.
 
 ## What the packs carry, and what reads it
 
-22 of the 29 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+28 of the 35 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -258,6 +264,16 @@ Venus is the Amatyakaraka of the eight
 Saturn is the Putrakaraka of the seven
 Saturn is the Gnatikaraka of the eight
 Rahu is the Matrikaraka of the eight
+Sun in 2nd: harsh speech, family discord, strained eyes/wealth, gains via authority per Phaladeepika 8 / BPHS 21.
+Moon in 9th: fortunate, dharmic, fond of pilgrimage, devoted heart per Phaladeepika 8 / BPHS 22.
+Mars in 12th: heavy expenditure, hidden enemies, weapon/fire losses; Maṅgalik yoga per Phaladeepika 8 / BPHS 23.
+Mercury in 2nd: Vāk-Dhana Yoga. Sweet speech, business acumen, family support per Phaladeepika 8.
+Jupiter in 4th: maternal happiness, home, vehicles, dharmic householder, heart-peace per Phaladeepika 8.
+Venus in 12th: Śayyā-Sukha (bed-comfort) Yoga, sensory spending, mokṣa-art leaning per Phaladeepika 8 / BPHS 22.
+Saturn in 11th: Lābha-Sthairya Yoga. Long-term wealth accumulation, service-class fame per Phaladeepika 8.
+Rahu in 11th: unconventional Lābha Yoga. Wealth via foreign sources, sudden desire-fulfilment per BPHS 28.
+Ketu in 5th: mantra-siddhi, esoteric intelligence, progeny concern, past-life impressions per BPHS.
+Pisces Lagna: emotional, compassionate, spiritual, imaginative. Jupiterian faith and devotion (Brihat Jataka 1).
 the Sun casts a three-quarter aspect on the Moon
 the Sun casts a quarter aspect on Jupiter
 the Sun casts a quarter aspect on Saturn
@@ -463,6 +479,16 @@ Saturn rules house 12
 सात कारकमध्ये शनि पुत्रकारक हो
 आठ कारकमध्ये शनि ज्ञातिकारक हो
 आठ कारकमध्ये राहु मातृकारक हो
+सूर्य दोस्रोमा कठोर वाणी, कुटुम्ब-कलह, नेत्र-धनमा प्रयत्न।
+चन्द्र नवौंमा भाग्यवान्, धार्मिक, तीर्थ-यात्रा-प्रिय, मातृ-धर्म-निष्ठ।
+मंगल बाह्रौंमा व्यय-बाहुल्य, गुप्त-शत्रु, शस्त्र-अग्नि-व्यय, मांगलिक-योग।
+बुध दोस्रोमा वाक्-धन-योग। मधुर वचन, व्यापार-कौशल, कुटुम्ब-पोषण।
+गुरु चौथोमा मातृ-गृह-वाहन-योग। हृदय-सुख, धार्मिक गृहस्थ।
+शुक्र बाह्रौंमा शय्या-सुख-योग, भोग-व्यय, मोक्ष-कला-प्रवृत्ति।
+शनि एघारौंमा लाभ-स्थैर्य-योग। दीर्घकालिक धन-सञ्चय, सेवा-वर्ग-कीर्ति।
+राहु एघारौंमा अकल्पित लाभ-योग। विदेश-स्रोतले धन, अकल्पित इष्ट-सिद्धि।
+केतु पाँचौंमा मन्त्र-सिद्धि, गूढ-प्रज्ञा, सन्तति-चिन्ता, पूर्व-जन्म-संस्कार।
+मीन लग्न: भावुक, दयालु, आध्यात्मिक, कल्पनाशील। बृहस्पतिको प्रभावले श्रद्धावान्।
 सूर्यले चन्द्रलाई त्रिपाद दृष्टि दिन्छ
 सूर्यले गुरुलाई पाद दृष्टि दिन्छ
 सूर्यले शनिलाई पाद दृष्टि दिन्छ

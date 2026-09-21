@@ -772,6 +772,12 @@ export interface PlanRequest {
   readonly conditions?: boolean;
   /** Which chara karaka each graha holds, under both schemes. */
   readonly karakas?: boolean;
+  /**
+   * What a loaded corpus of state readings says of this chart's subjects: a
+   * graha in a bhava, the lagna's sign, each limb of the panchanga. Says
+   * nothing until a pack carrying those readings is loaded.
+   */
+  readonly phala?: boolean;
 }
 
 /**
@@ -804,6 +810,8 @@ export interface Plans {
   readonly conditions?: readonly PlanItem[];
   /** Each graha's chara karakas; absent unless `karakas` asked for them. */
   readonly karakas?: readonly PlanItem[];
+  /** What a loaded corpus says of the chart's subjects; absent unless `phala` asked. */
+  readonly phala?: readonly PlanItem[];
 }
 
 /**

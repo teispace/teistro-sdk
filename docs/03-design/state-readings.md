@@ -244,8 +244,16 @@ before — *every shipped rule carries a reading* — becomes one it can.
    a **closed** kind's members become an enum at the boundary, and an open
    kind has none — so the second one is a file and a number.
 5. **The measured page and `check-state-readings`.** **Built**.
-6. **The `phala` composer**, its messages, its `PlanRequest` member and a
-   worked example.
+6. **The `phala` composer**, its messages and its `PlanRequest` member.
+   **Built**: six messages under `sdk.phala`, a ninth member of
+   `PlanRequest` off by default, and `Vocabulary` generalised from
+   `has_reading(rule)` to `has_form(key, form)` — a second subject made it
+   the general question it always was. Over the corpus's 93 charts the
+   composer says 930 items it could not say before: a reading for every
+   graha in its bhava and for every lagna's sign. Its four panchanga
+   messages say nothing there, because those charts record no panchanga;
+   the measured page renders every reading the composer has a message for,
+   in each strict locale, and holds that none falls back or warns.
 
 ## 8. What this design does not settle
 

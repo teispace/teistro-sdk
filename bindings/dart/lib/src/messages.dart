@@ -1722,6 +1722,25 @@ final class MessagesSdkKaraka {
       _r.render('sdk.karaka.ofSeven', {'graha': {r'$entity': graha.key}, 'karaka': {r'$entity': karaka.key}});
 }
 
+final class MessagesSdkPhala {
+  const MessagesSdkPhala(this._r);
+
+  final Renderer _r;
+
+  String grahaInBhava({required int bhava, required GrahaKey graha, required String phala}) =>
+      _r.render('sdk.phala.grahaInBhava', {'bhava': bhava, 'graha': {r'$entity': graha.key}, 'phala': {r'$entity': phala}});
+  String lagnaRashi({required RashiKey rashi}) =>
+      _r.render('sdk.phala.lagnaRashi', {'rashi': {r'$entity': rashi.key}});
+  String nakshatra({required NakshatraKey nakshatra}) =>
+      _r.render('sdk.phala.nakshatra', {'nakshatra': {r'$entity': nakshatra.key}});
+  String tithi({required TithiKey tithi}) =>
+      _r.render('sdk.phala.tithi', {'tithi': {r'$entity': tithi.key}});
+  String vara({required VaraKey vara}) =>
+      _r.render('sdk.phala.vara', {'vara': {r'$entity': vara.key}});
+  String yoga({required YogaKey yoga}) =>
+      _r.render('sdk.phala.yoga', {'yoga': {r'$entity': yoga.key}});
+}
+
 final class MessagesSdkReading {
   const MessagesSdkReading(this._r);
 
@@ -1792,6 +1811,7 @@ final class MessagesSdk {
   MessagesSdkCondition get condition => MessagesSdkCondition(_r);
   MessagesSdkEntity get entity => MessagesSdkEntity(_r);
   MessagesSdkKaraka get karaka => MessagesSdkKaraka(_r);
+  MessagesSdkPhala get phala => MessagesSdkPhala(_r);
   MessagesSdkReading get reading => MessagesSdkReading(_r);
   MessagesSdkReason get reason => MessagesSdkReason(_r);
 }

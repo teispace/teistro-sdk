@@ -1369,6 +1369,28 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A ninth composer, `phala`: the first that says what a *corpus* carries
+  rather than what the SDK computed.** It says the reading a loaded pack
+  holds for this chart's subjects — a graha in a bhava, the lagna's sign,
+  and each limb of the panchanga — through six messages under `sdk.phala`
+  in English and Nepali. It is a member of `PlanRequest` off by default and
+  is **silent until a pack of state readings is loaded**, so a chart
+  composes to exactly the plan it did before until a consumer asks for the
+  words. Over the recorded corpus it says 930 items no composer could say
+  before.
+
+  `Vocabulary`, the trait a composer asks before choosing what to say, was
+  spelled for one subject (`has_reading(rule)`). A second subject made it
+  the general question it always was: `has_form(key, form)` over a
+  catalogue key, with `has_reading` the spelling that names a rule's
+  record. Existing implementations keep working through the provided
+  method.
+
+  `examples/phala.rs` runs the whole path: load both corpora, compose, say
+  it in English and Nepali, then read a record that two corpora describe —
+  `nakshatra.ASHWINI` with its `name`, its `iast`, its `phala` and its
+  `namakarana` together, which is the merge on load seen from the outside.
+
 - **The state readings: a reading for what a chart *is*, not only for what
   it triggers.** The baseline engine exports one `STATE_INTERPRETATIONS` of
   38 categories and 554 records — a graha in a bhava, a nakshatra, a tithi,

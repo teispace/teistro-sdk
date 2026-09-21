@@ -3426,6 +3426,7 @@ final class PlanRequest {
     this.aspects = false,
     this.conditions = false,
     this.karakas = false,
+    this.phala = false,
   });
 
   /// Where each of the nine grahas stands and who shares a sign.
@@ -3453,6 +3454,11 @@ final class PlanRequest {
   /// Which chara karaka each graha holds, under both schemes.
   final bool karakas;
 
+  /// What a loaded corpus of state readings says of this chart's subjects:
+  /// a graha in a bhava, the lagna's sign, each limb of the panchanga. It
+  /// says nothing until a pack carrying those readings is loaded.
+  final bool phala;
+
   String get _json => jsonEncode(<String, Object?>{
     'placements': placements,
     'readings': readings,
@@ -3462,6 +3468,7 @@ final class PlanRequest {
     'aspects': aspects,
     'conditions': conditions,
     'karakas': karakas,
+    'phala': phala,
   });
 }
 

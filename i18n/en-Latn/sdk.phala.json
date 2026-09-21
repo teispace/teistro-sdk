@@ -1,0 +1,8 @@
+{
+  "grahaInBhava": ".input {$graha :entity kind=graha} .input {$bhava :integer} {{{$phala :entity kind=graha_bhava}}}",
+  "lagnaRashi": "{$rashi :entity kind=rashi form=lagnaPhala}",
+  "tithi": "{$tithi :entity kind=tithi form=phala}",
+  "vara": "{$vara :entity kind=vara form=phala}",
+  "nakshatra": "{$nakshatra :entity kind=nakshatra form=phala}",
+  "yoga": "{$yoga :entity kind=yoga form=phala}"
+}

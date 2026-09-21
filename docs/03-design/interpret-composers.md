@@ -335,6 +335,35 @@ composes the corpus's **recorded** karakas, as `strength` composes recorded
 rupas and `houses` recorded cusp signs, so its numbers are the recording
 engine's ranking and the SDK's own answer for the same chart can differ.
 
+**`phala`** — what a loaded corpus of **state readings** says of this
+chart's subjects: a graha in a bhava, the lagna's sign, and each limb of the
+panchanga. **Built** over `sdk.phala`, six messages
+(`03-design/state-readings.md`).
+
+**It is the first composer that says what the SDK did not compute.** Every
+other one turns an answer into an item; this one turns a *record* into one,
+and is silent unless a pack carrying those records has been loaded. A chart
+composes to exactly the plan it did before until a consumer asks for the
+words, which is why it is a member of `PlanRequest` and off by default: a
+plan that grew by a hundred items the moment a pack was loaded would change
+every consumer's page without being asked.
+
+**It asks the same trait `readings` asks**, of the same base locale and for
+the same reason. `Vocabulary` was spelled for one subject
+(`has_reading(rule)`); a second subject made it the general question it
+always was — `has_form(key, form)` over a catalogue key — and a reading of a
+rule is now the `name` form of a `rule` record, which is what `has_reading`
+spells.
+
+**What it cannot say yet is counted rather than hidden.** The corpus
+carries 415 readings and this composer has a message for 211 of them; the
+rest are listed by the category they came from on
+`state-readings-measured.md`, which also renders every one it *can* say in
+each strict locale and holds that none falls back or warns. Four of its six
+messages emit nothing over the yoga corpus, because those charts record no
+panchanga — the dosha corpus does, and the reachability claim is what
+exercises them meanwhile.
+
 **Why it is not four more lines inside `conditions`.** A chara karaka is
 Jaimini's reading of a placement, not a Parashari condition of it, and a
 report that wants the dignity does not automatically want the Atmakaraka.
@@ -432,6 +461,11 @@ a test that a plan round-trips through JSON.
     `Placement` carries is an item, and what the composers still cannot say
     belongs to the sections rather than to the placements — a bhava's sign
     and class, the chalit shift, whether a graha reaches its required rupas.
+
+11. `phala`, the ninth, and the first that says what a **corpus** carries
+    rather than what the SDK computed. **Built**: `sdk.phala`, six
+    messages, each saying a record a loaded pack brings, and `Vocabulary`
+    generalised from one subject to any.
 
 ## 8. What this design does not settle
 

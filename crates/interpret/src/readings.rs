@@ -172,8 +172,11 @@ mod tests {
     struct Carried(&'static [&'static str]);
 
     impl Vocabulary for Carried {
-        fn has_reading(&self, rule: &str) -> bool {
-            self.0.contains(&rule)
+        fn has_form(&self, key: &str, form: &str) -> bool {
+            form == crate::NAME_FORM
+                && key
+                    .strip_prefix("rule.")
+                    .is_some_and(|rule| self.0.contains(&rule))
         }
     }
 

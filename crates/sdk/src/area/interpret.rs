@@ -2,7 +2,7 @@
 
 use teistro_core::error::Error;
 use teistro_interpret::{
-    Plan, aspects, conditions, houses, karakas, placements, positions, readings, strength,
+    Plan, aspects, conditions, houses, karakas, phala, placements, positions, readings, strength,
 };
 use teistro_serial::document::Document;
 
@@ -101,6 +101,26 @@ impl<'a> InterpretArea<'a> {
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn karakas(self, document: &Document) -> Result<Plan, Error> {
         Ok(karakas(&RuleInputs::of(document)?.chart))
+    }
+
+    /// What a loaded corpus of state readings says of this chart's
+    /// subjects: a graha in a bhava, the lagna's sign, and each limb of the
+    /// panchanga.
+    ///
+    /// **It says nothing until a pack carrying those readings is loaded**,
+    /// which is not a failure but the composer's whole shape: every other
+    /// composer says what the SDK computed, and this one says what a corpus
+    /// carries, so it asks the context's base locale for each subject and
+    /// is silent where the answer is no
+    /// (`03-design/state-readings.md` §5).
+    ///
+    /// # Errors
+    ///
+    /// A document a rule cannot read: one without its graha states, naming
+    /// the section to ask for ([`RuleInputs::of`]).
+    pub fn phala(self, document: &Document) -> Result<Plan, Error> {
+        let engine = self.context.locale_engine();
+        Ok(phala(&RuleInputs::of(document)?.chart, &*engine))
     }
 
     /// Each graha's Shadbala in rupas, the strongest first.

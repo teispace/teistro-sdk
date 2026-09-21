@@ -2518,6 +2518,7 @@ class PlanRequest(TypedDict, total=False):
     aspects: bool
     conditions: bool
     karakas: bool
+    phala: bool
 
 
 class PlanItem(TypedDict):
@@ -2541,6 +2542,7 @@ class Plans(TypedDict, total=False):
     aspects: List[PlanItem]
     conditions: List[PlanItem]
     karakas: List[PlanItem]
+    phala: List[PlanItem]
 
 
 def _rules_json(rules: Optional[RuleRequest]) -> Optional[str]:

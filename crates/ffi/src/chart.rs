@@ -2341,6 +2341,8 @@ struct Plans {
     conditions: Option<Plan>,
     #[serde(skip_serializing_if = "Option::is_none")]
     karakas: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    phala: Option<Plan>,
 }
 
 /// The charts a request asks for, the canonical JSON of what they answer by
@@ -2380,9 +2382,14 @@ fn read_charts(
 /// A composer asking for a section it was not given would be a dead end: the
 /// consumer asked for the plan, not for the knob underneath it.
 fn sections_for(request: ChartRequest, asked: PlanRequest) -> ChartRequest {
-    // `placements`, `positions`, `conditions` and `karakas` all read the
-    // graha states through `RuleInputs`, so any one of them asks for them.
-    let request = if asked.placements || asked.positions || asked.conditions || asked.karakas {
+    // `placements`, `positions`, `conditions`, `karakas` and `phala` all
+    // read the graha states through `RuleInputs`, so any one asks for them.
+    let request = if asked.placements
+        || asked.positions
+        || asked.conditions
+        || asked.karakas
+        || asked.phala
+    {
         request.with_state()
     } else {
         request
@@ -2451,6 +2458,10 @@ fn compose(
             karakas: asked
                 .karakas
                 .then(|| sdk.interpret().karakas(document))
+                .transpose()?,
+            phala: asked
+                .phala
+                .then(|| sdk.interpret().phala(document))
                 .transpose()?,
         });
     }

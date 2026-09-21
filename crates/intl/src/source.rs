@@ -545,6 +545,33 @@ pub fn is_open_kind_key(full: &str) -> bool {
     })
 }
 
+/// The catalogue's second **open** kind: a graha and a bhava together.
+///
+/// Open because its members are the product of two closed kinds, and 108
+/// rows of generated table would buy a `resolve` the key's own grammar
+/// already performs (`03-design/state-readings.md` §4).
+pub const GRAHA_BHAVA_KIND: &str = "graha_bhava";
+
+/// What separates the graha from the house in a `graha_bhava` key.
+pub const IN_BHAVA: &str = "_IN_";
+
+/// The `graha_bhava` key for a graha's own key and a house from 1 to 12.
+///
+/// The spelling is here rather than in each of its callers: the migration
+/// that writes these records and the composer that reads them must agree,
+/// and a key written twice is a key that disagrees once.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_intl::source::graha_bhava_key;
+///
+/// assert_eq!(graha_bhava_key(Graha::Jupiter.key(), 1), "graha_bhava.JUPITER_IN_1");
+/// ```
+#[must_use]
+pub fn graha_bhava_key(graha: &str, bhava: u8) -> String {
+    format!("{GRAHA_BHAVA_KIND}.{graha}{IN_BHAVA}{bhava}")
+}
+
 /// Whether `s` names a form of an entity record: a `camelCase` word.
 #[must_use]
 pub fn is_form_name(s: &str) -> bool {
