@@ -8,11 +8,11 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 9744 items, 104 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 10 581 items, 113 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 1 299 717 bytes of JSON over the 93 charts, 13 975 bytes a
-chart, 19 204 bytes for the widest and 133 bytes an item. The verses'
+golden file: 1 387 061 bytes of JSON over the 93 charts, 14 914 bytes a
+chart, 20 144 bytes for the widest and 131 bytes an item. The verses'
 own cited words are **not** what weighs it — 112 962 bytes, 8% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
@@ -22,14 +22,15 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 22 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 9744 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 9744 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 9744 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 9744 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 24 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 10581 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 10581 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 10581 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 10581 disagree |
 
-Every one of the 19 488 renderings — 9744 in each of 2 strict locales
-— answered from the locale's own message with nothing to warn about.
+Every one of the 21 162 renderings — 10 581 in each of 2 strict
+locales — answered from the locale's own message with nothing to warn
+about.
 
 ## What the composers say
 
@@ -41,14 +42,15 @@ Every one of the 19 488 renderings — 9744 in each of 2 strict locales
 | `sdk.reading.participants` | 3333 |
 | `sdk.reading.severity` | 29 |
 | `sdk.reading.status` | 348 |
+| `sdk.reason.grahaAt` | 837 |
 | `sdk.reason.grahaInBhava` | 837 |
 | `sdk.reason.grahaInRashi` | 837 |
 | `sdk.reason.lordship` | 900 |
 | `sdk.reason.occupants` | 204 |
 | `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 9744 items
-— every `sdk.reading.effect` — carry the words the rule itself
+**The verse's own statement is not translated.** 2449 of the 10 581
+items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
 part, the span, the class and the cancellation in Nepali, and the
@@ -90,6 +92,36 @@ falls in, which is the same as its cusp's only where the division is
 equal — so the branch that tells the two apart is the houses service's
 to hold, and this page does not claim to have tried it.
 
+And the **positions** say where a graha stands and not what it is doing
+there. A placement is nine facts; three are said — the sign and the
+house by `placements`, the longitude by `positions` — and the six that
+remain have no message in any locale. Over the 837 grahas these charts
+place: 243 stand retrograde, 66 are burnt by the Sun, 534 hold a dignity
+that is not neutral, 106 are vargottama, and 651 carry a chara karaka.
+**The plan says none of it.** That is the sharpest statement of where
+the composers stop — not at what the SDK computes, but at what a
+locale can say — and the next composer is therefore the first that
+must be given a new translated key.
+
+## What the packs carry, and what reads it
+
+12 of the 19 messages the base locale carries under `sdk.reason` and `sdk.reading` are emitted by a composer. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+
+| message | why no composer reads it |
+|---|---|
+| `sdk.reason.appName` | the pack's own name, said inside `welcome` |
+| `sdk.reason.welcome` | a greeting the packs ship as an example |
+| `sdk.reason.greeting` | the same, and the only message reading a gender |
+| `sdk.reason.exactLongitude` | a longitude alone (`222°34′35″`) — a fragment a consumer formats with, not a sentence a plan says |
+| `sdk.reason.strength.rank` | an ordinal alone (`1st`, `१लो`) — the same, and why `strength` carries the ranking in the items' order instead |
+| `sdk.reason.rashiNature` | a fact about the zodiac rather than about a chart: every chart would say the same twelve sentences |
+| `sdk.reason.conjunction` | a count of what `occupants` already names, graha by graha |
+
+No message is unaccounted for: every one either has a composer or has a
+reason. **So the next composer needs a key that does not exist yet**,
+which is a translator's decision and not a build — the largest gap
+being the drishti, a whole computed section no locale has a word for.
+
 ## One chart, said
 
 `c001-kathmandu-1990-04-14`, every item of its plan, in each strict
@@ -120,6 +152,15 @@ Ketu in the 5th house
 Sun and Mercury in Aries
 Saturn and Rahu in Capricorn
 Mars and Venus in Aquarius
+Sun at 0°03′ Aries
+Moon at 11°47′ Scorpio
+Mars at 1°05′ Aquarius
+Mercury at 19°28′ Aries
+Jupiter at 10°37′ Gemini
+Venus at 14°13′ Aquarius
+Saturn at 1°15′ Capricorn
+Rahu at 19°17′ Capricorn
+Ketu at 19°17′ Cancer
 NABHASA_PASA: liable to imprisonment, skilful in work, deceiving of disposition, talkative, bereft of good qualities, and attended by many servants
 NABHASA_PASA: Sun, Moon, Mars, Mercury, Jupiter, Venus and Saturn take part
 LUNAR_MOON_IN_PANAPHARA_FROM_THE_SUN: of middling wealth, intelligence and skill
@@ -221,6 +262,15 @@ Saturn rules house 12
 मेषमा सूर्य र बुध
 मकरमा शनि र राहु
 कुम्भमा मंगल र शुक्र
+सूर्य ०°०३′ मेषमा
+चन्द्र ११°४७′ वृश्चिकमा
+मंगल १°०५′ कुम्भमा
+बुध १९°२८′ मेषमा
+गुरु १०°३७′ मिथुनमा
+शुक्र १४°१३′ कुम्भमा
+शनि १°१५′ मकरमा
+राहु १९°१७′ मकरमा
+केतु १९°१७′ कर्कटमा
 NABHASA_PASA: liable to imprisonment, skilful in work, deceiving of disposition, talkative, bereft of good qualities, and attended by many servants
 NABHASA_PASA: सूर्य, चन्द्र, मंगल, बुध, गुरु, शुक्र र शनि संलग्न छन्
 LUNAR_MOON_IN_PANAPHARA_FROM_THE_SUN: of middling wealth, intelligence and skill

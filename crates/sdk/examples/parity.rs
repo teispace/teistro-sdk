@@ -173,6 +173,12 @@ fn the_plans(
                     .houses(document)
                     .unwrap_or_else(|_| teistro::Plan::default()),
             ),
+            (
+                "positions",
+                sdk.interpret()
+                    .positions(document)
+                    .unwrap_or_else(|_| teistro::Plan::default()),
+            ),
         ];
         for (composer, plan) in composed {
             put(

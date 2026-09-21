@@ -764,6 +764,8 @@ export interface PlanRequest {
   readonly strength?: boolean;
   /** The lord of each of the twelve bhavas, first house first. */
   readonly houses?: boolean;
+  /** Where each graha stands to the degree, which `placements` rounds away. */
+  readonly positions?: boolean;
 }
 
 /**
@@ -788,6 +790,8 @@ export interface Plans {
   readonly strength?: readonly PlanItem[];
   /** Who rules each bhava; absent unless `houses` asked for it. */
   readonly houses?: readonly PlanItem[];
+  /** Where each graha stands to the degree; absent unless `positions` asked. */
+  readonly positions?: readonly PlanItem[];
 }
 
 /**

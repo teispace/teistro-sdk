@@ -47,14 +47,21 @@ const chart = ctx.chart.found({
   // The rules whose answers the readings composer will say. The sections
   // they read are computed whether or not they are asked for here.
   rules: { shipped: ['nabhasas', 'arishtas'] },
-  interpret: { placements: true, readings: true, strength: true, houses: true },
+  interpret: {
+    placements: true,
+    readings: true,
+    strength: true,
+    houses: true,
+    positions: true,
+  },
 });
 
-const { placements, readings, strength, houses } = chart.plans;
+const { placements, readings, strength, houses, positions } = chart.plans;
 console.log('BS 2042-09-17  00:20  Kathmandu');
 console.log(
   `plan     ${placements.length} placement items, ${readings.length} reading items, ` +
-    `${strength.length} strengths, ${houses.length} lordships`,
+    `${strength.length} strengths, ${houses.length} lordships, ` +
+    `${positions.length} positions`,
 );
 console.log(`keys     ${[...new Set(placements.concat(readings).map((item) => item.key))].join(', ')}`);
 
@@ -64,7 +71,7 @@ console.log(`keys     ${[...new Set(placements.concat(readings).map((item) => it
 for (const locale of ['en-Latn', 'ne-Deva-NP']) {
   ctx.intl.locale = locale;
   console.log(`\n${locale}`);
-  for (const item of [...placements, ...strength, ...houses]) {
+  for (const item of [...placements, ...strength, ...houses, ...positions]) {
     const said = ctx.intl.render(item.key, item.params);
     console.log(`  ${said.text}${said.isFallback ? '  (fallback)' : ''}`);
   }
@@ -86,6 +93,10 @@ console.log(`a strength item claims "strong": ${strong}`);
 // them, so the houses plan says the lord and stops there.
 const classed = houses.some((item) => JSON.stringify(item.params).includes('rashi'));
 console.log(`a houses item claims a sign: ${classed}`);
+// A position crosses as a number: the degree signs a reader sees are the
+// locale's rendering, never a string the composer wrote.
+const written = positions.some((item) => JSON.stringify(item.params).includes('\u00b0'));
+console.log(`a position item carries a rendered angle: ${written}`);
 console.log(`\nthe lagna is in the placements: ${lagna}`);
 
 try {

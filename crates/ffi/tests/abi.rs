@@ -1771,9 +1771,11 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     .unwrap();
     let instants = [2_447_995.489_583_333_5, 2_451_545.0];
     let rules = CString::new(r#"{"shipped": ["nabhasas"]}"#).unwrap();
-    let plans =
-        CString::new(r#"{"placements": true, "readings": true, "strength": true, "houses": true}"#)
-            .unwrap();
+    let plans = CString::new(
+        r#"{"placements": true, "readings": true, "strength": true, "houses": true,
+            "positions": true}"#,
+    )
+    .unwrap();
     let request = sized(
         TsChartRequest {
             struct_size: 0,
@@ -1832,11 +1834,16 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         // either.
         let lords = chart["houses"].as_array().unwrap();
         assert_eq!(lords.len(), 12, "the twelve bhavas, the first house first");
+        // And the positions read the same states the placements do, so one
+        // request computing them serves both composers.
+        let degrees = chart["positions"].as_array().unwrap();
+        assert_eq!(degrees.len(), 9, "the nine grahas, the lagna is a point");
         for item in placements
             .iter()
             .chain(chart["readings"].as_array().unwrap())
             .chain(weighed)
             .chain(lords)
+            .chain(degrees)
         {
             // A plan holds keys and slots, never a rendered word.
             let key = item["key"].as_str().unwrap();
@@ -1933,7 +1940,8 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         record.1.contains("placements")
             && record.1.contains("readings")
             && record.1.contains("strength")
-            && record.1.contains("houses"),
+            && record.1.contains("houses")
+            && record.1.contains("positions"),
         "{record:?}"
     );
 }

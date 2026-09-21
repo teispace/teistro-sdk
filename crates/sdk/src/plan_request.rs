@@ -26,9 +26,9 @@ use teistro_core::error::Error;
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
-// **Why four bools rather than a bit set.** `struct_excessive_bools` asks
+// **Why a bool a composer rather than a bit set.** `struct_excessive_bools` asks
 // whether a bit set was meant; this design answered that before the fourth
-// composer arrived. A composer will want options of its own — which rules to
+// composer arrived, and the answer has not changed since. A composer will want options of its own — which rules to
 // read, which house — and a bit set has nowhere to put them, while `sections`
 // is a bit set because its members never will
 // (`03-design/plans-at-the-boundary.md` §3). The members are also the JSON
@@ -49,6 +49,9 @@ pub struct PlanRequest {
     /// The lord of each of the twelve bhavas. It reads the houses section,
     /// which the request computes for it.
     pub houses: bool,
+    /// Where each graha stands to the degree, which `placements` rounds
+    /// away. It reads what `placements` reads, so it costs no section.
+    pub positions: bool,
 }
 
 impl PlanRequest {
@@ -80,11 +83,18 @@ impl PlanRequest {
         self
     }
 
+    /// A request for the positions, to the degree.
+    #[must_use]
+    pub const fn with_positions(mut self) -> PlanRequest {
+        self.positions = true;
+        self
+    }
+
     /// Whether any composer was asked for, so a caller can skip the work
     /// rather than compose an empty answer.
     #[must_use]
     pub const fn asks_for_something(self) -> bool {
-        self.placements || self.readings || self.strength || self.houses
+        self.placements || self.readings || self.strength || self.houses || self.positions
     }
 
     /// A request read from JSON.
@@ -97,8 +107,9 @@ impl PlanRequest {
     /// be caught by.
     pub fn from_json(text: &str) -> Result<PlanRequest, Error> {
         serde_json::from_str(text).map_err(|err| {
-            Error::invalid_arg(format!("the plan request does not read: {err}"))
-                .with_hint("an object of `placements`, `readings`, `strength` and `houses`")
+            Error::invalid_arg(format!("the plan request does not read: {err}")).with_hint(
+                "an object of `placements`, `readings`, `strength`, `houses` and `positions`",
+            )
         })
     }
 

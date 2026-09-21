@@ -670,7 +670,13 @@ class AnEngine(WithLibrary):
 
         self.assertIsNone(found(None), "no composer, no plans")
         plans = found(
-            {"placements": True, "readings": True, "strength": True, "houses": True},
+            {
+                "placements": True,
+                "readings": True,
+                "strength": True,
+                "houses": True,
+                "positions": True,
+            },
             {"shipped": ["nabhasas"]},
         )
         assert plans is not None
@@ -681,6 +687,8 @@ class AnEngine(WithLibrary):
         self.assertEqual(len(plans["strength"]), 7, "the seven grahas")
         # And the houses read the bhavas, which it never asked for either.
         self.assertEqual(len(plans["houses"]), 12, "the twelve bhavas")
+        # And the positions read the same states the placements do.
+        self.assertEqual(len(plans["positions"]), 9, "the nine grahas")
 
         said = 0
         for item in [
@@ -688,6 +696,7 @@ class AnEngine(WithLibrary):
             *plans["readings"],
             *plans["strength"],
             *plans["houses"],
+            *plans["positions"],
         ]:
             self.assertTrue(item["key"].startswith("sdk."))
             rendered = self.ctx.intl.render(item["key"], item["params"])

@@ -1,7 +1,7 @@
 //! `sdk.interpret`: what a reading says, as a narrative plan.
 
 use teistro_core::error::Error;
-use teistro_interpret::{Plan, houses, placements, readings, strength};
+use teistro_interpret::{Plan, houses, placements, positions, readings, strength};
 use teistro_serial::document::Document;
 
 use crate::context::Context;
@@ -52,6 +52,20 @@ impl<'a> InterpretArea<'a> {
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn placements(self, document: &Document) -> Result<Plan, Error> {
         Ok(placements(&RuleInputs::of(document)?.chart))
+    }
+
+    /// Where each of the nine grahas stands, to the degree.
+    ///
+    /// `placements` says the sign; this says the sign and the degree, so a
+    /// consumer picks the precision its page wants rather than being given
+    /// both (`03-design/interpret-composers.md` §4).
+    ///
+    /// # Errors
+    ///
+    /// A document a rule cannot read: one without its graha states, naming
+    /// the section to ask for ([`RuleInputs::of`]).
+    pub fn positions(self, document: &Document) -> Result<Plan, Error> {
+        Ok(positions(&RuleInputs::of(document)?.chart))
     }
 
     /// Each graha's Shadbala in rupas, the strongest first.

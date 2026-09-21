@@ -63,13 +63,16 @@ fn main() -> Result<(), Error> {
     let document = sdk.chart().reading(resolved.instant, &request)?.value;
 
     // ── The plan ───────────────────────────────────────────────────────
-    // Three composers, one plan: a report concatenates what it wants to say
+    // Four composers, one plan: a report concatenates what it wants to say
     // in the order it wants to say it, which is what a flat plan is for.
     // Where a graha *stands* and what it *rules* are different facts, and
     // it takes two composers to say both.
     let mut plan: Plan = sdk.interpret().placements(&document)?;
     plan.items.extend(sdk.interpret().strength(&document)?);
     plan.items.extend(sdk.interpret().houses(&document)?);
+    // `positions` says what `placements` rounds away, which is why it is a
+    // composer of its own: a page picks the precision it wants.
+    plan.items.extend(sdk.interpret().positions(&document)?);
     println!("plan  {} items, {} keys", plan.len(), plan.keys().len());
     for key in plan.keys() {
         println!("  {key}");

@@ -190,6 +190,44 @@ fn the_houses_are_said_by_their_lords_and_claim_nothing_more() {
     assert_eq!(refused.field(), Some("houses"));
 }
 
+/// The positions are the fifth composer. They say what `placements` rounds
+/// away — the degree — and are a composer of their own rather than a line
+/// inside it, because `grahaAt` subsumes `grahaInRashi` and a plan saying
+/// both would name the sign twice a graha.
+#[test]
+fn the_positions_say_the_degree_placements_rounds_away() {
+    let (sdk, document) = common::reading("{}", ChartRequest::with_state);
+    let plan = sdk.interpret().positions(&document).expect("the positions");
+    assert_eq!(plan.len(), 9, "the nine grahas, the lagna is a point");
+
+    // Every item carries the chart's own longitude as a number: the words
+    // and the rounding are the locale's.
+    let inputs = RuleInputs::of(&document).expect("the rules' inputs");
+    let said: Vec<teistro::Value> = plan
+        .items
+        .iter()
+        .filter_map(|item| item.params.get("longitude").cloned())
+        .collect();
+    assert_eq!(said.len(), 9);
+    assert_eq!(
+        said[0],
+        teistro::Value::Num(inputs.chart.placements[0].longitude)
+    );
+
+    // A plan holds no rendered angle, so the degree signs are the
+    // renderer's and never the composer's.
+    let written = serde_json::to_string(&plan).expect("a plan writes");
+    for rendered in ["\u{b0}", "\u{2032}", "\u{2033}"] {
+        assert!(!written.contains(rendered), "{written}");
+    }
+
+    // It needs what `placements` needs and nothing more, so a document
+    // without the states is refused by the same name.
+    let (without, bare) = common::reading("{}", |request| request);
+    let refused = without.interpret().positions(&bare).unwrap_err();
+    assert_eq!(refused.field(), Some("state"));
+}
+
 /// A plan crosses as its own JSON, and what comes back is what went out:
 /// the shape a golden file holds and the boundary's `plans` section carries
 /// are one shape, which is what lets a fixture move between them. A plan is

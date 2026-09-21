@@ -1369,6 +1369,48 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A fifth composer, `positions`**, and the last the shipped packs can
+  carry for free: where each graha stands **to the degree**
+  (`sdk.reason.grahaAt`, "Mars at 12°35′ Scorpio" and
+  "मंगल १२°३५′ वृश्चिकमा"). It reads what `placements` reads, so it costs a
+  request no section of its own, and `grahaAt` was already carried by both
+  strict locales, hand-translated and tested, and read by nothing.
+
+  **It is a composer rather than a line inside `placements`** because
+  `grahaInRashi` says the sign and `grahaAt` says the sign *and* the degree:
+  one subsumes the other, and a composer emitting both would repeat itself
+  once a graha. Apart, the precision is a knob — a narrative report asks for
+  `placements`, a position table asks for `positions`, and a consumer asking
+  for both can see that it pays for the sign twice. It does not emit
+  `sdk.reason.exactLongitude`, which renders a longitude alone
+  ("222°34′35″"): that is a fragment a consumer formats with and not a
+  sentence a plan says, the line `strength` drew at `strength.rank`. The
+  rule has now held twice and is stated as one.
+
+  **The measured page now says where the composers stop.** A placement is
+  nine facts; three are said, and the six that remain have no message in any
+  locale. Over the 837 grahas the corpus places: 243 stand retrograde, 66
+  are burnt by the Sun, 534 hold a dignity that is not neutral, 106 are
+  vargottama, 651 carry a chara karaka — and the plan says none of it. That
+  is not a gap in what the SDK computes but in what a locale can say.
+
+  **Numbers:** none move. 93 charts now compose to 10 581 items, up from
+  9744, and all 21 162 renderings still answer from the strict locale's own
+  message with no fallback and nothing to warn about.
+
+  With it the free pool is empty, and the page **decides** that rather than
+  the prose claiming it: it now lists every message the base locale carries
+  under `sdk.reason` and `sdk.reading`, says which composer emits it, and
+  prints any that is neither emitted nor given a reason as unaccounted.
+  Twelve of nineteen are emitted; the seven left are two fragments
+  (`exactLongitude`, `strength.rank`), a fact about the zodiac rather than
+  a chart (`rashiNature`), a count of what `occupants` already names
+  (`conjunction`), and the packs' three example messages. **The next
+  composer must therefore be given a key that does not exist yet**, which
+  is a translator's decision and the maintainer's call — the largest gap
+  being the drishti, a whole computed section (`Document.aspects`) that no
+  locale has a word for.
+
 - **A fourth composer, `houses`**, and the first to say what a graha
   *rules* rather than where it stands: the lord of each of the twelve
   bhavas, the first house first (`03-design/interpret-composers.md` §4).

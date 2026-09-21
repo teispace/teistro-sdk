@@ -1,6 +1,6 @@
 # `teistro-interpret`
 
-Status: `building`, 2026-09-21: the plan and four composers. The design
+Status: `building`, 2026-09-21: the plan and five composers. The design
 is [`docs/03-design/interpret-composers.md`](../../docs/03-design/interpret-composers.md),
 measured in [`docs/03-design/interpret-measured.md`](../../docs/03-design/interpret-measured.md).
 
@@ -16,6 +16,7 @@ composer rather than the translator.
 | [`readings`](src/readings.rs) | what each rule a chart held says: its verse's statement, who took part, whether a cancellation moved it, how grave it is |
 | [`strength`](src/strength.rs) | each graha's Shadbala in rupas, the strongest first, over `Document.shadbala` — the first composer over a *section* |
 | [`houses`](src/houses.rs) | the lord of each of the twelve bhavas, first house first, over `Document.houses` — the first to say what a graha *rules* rather than where it stands |
+| [`positions`](src/positions.rs) | where each graha stands to the degree, which `placements` rounds away — a composer of its own so the precision is a knob |
 
 ```rust
 use teistro_interpret::{houses, placements, readings};
@@ -42,7 +43,7 @@ for item in &plan {
 - **The corpus has no oracle for prose.** It records numbers, keys and flags
   and not one composed sentence, so a plan is measured by whether it can be
   *said*: every item of every recorded chart's plan renders in each strict
-  locale with no fallback and nothing to warn about (19 488 renderings).
+  locale with no fallback and nothing to warn about (21 162 renderings).
 - **A composer says what a locale can say for itself.** `sdk.reading`'s six
   messages are mechanical — a span, a class, a list with an agreeing verb, a
   status, a severity. The verse's own statement crosses as a slot in the
@@ -52,9 +53,12 @@ for item in &plan {
   and in no plan, because these messages read a graha and the lagna is
   `point.LAGNA`; whether a graha reaches its required rupas has no message
   either, nor has a bhava's sign, its class or a body shifted by the chalit.
-  The measured page counts each rather than letting it be missed, and a
-  machine-translated sentence for any of them is the stub the project
-  refuses.
+  A placement is nine facts and the composers can say three: over 837
+  recorded grahas, 243 stand retrograde, 66 are burnt, 534 hold a dignity
+  and 651 carry a chara karaka, and the plan says none of it. The measured
+  page counts each rather than letting it be missed, and a machine-translated
+  sentence for any of them is the stub the project refuses — which is why
+  the next composer is a decision rather than a task.
 
 ## Tests
 

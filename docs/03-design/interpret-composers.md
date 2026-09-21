@@ -168,6 +168,39 @@ the houses service's to hold — deriving a madhya from a recorded cusp would
 be this pass re-implementing the rule it is measuring — and the measured
 page says how many charts it was measured on rather than implying more.
 
+**`positions`** — where each graha stands **to the degree**:
+`sdk.reason.grahaAt`, which renders "Mars at 12°35′ Scorpio" and
+"मंगल १२°३५′ वृश्चिकमा". **Built**, and the fourth in a row that adds no
+message: `grahaAt` was carried by both strict locales, hand-translated and
+tested, and read by nothing. It reads the same `RuleChart` `placements`
+reads, so it needs no section a request does not already compute.
+
+**Why it is a composer of its own rather than a line inside `placements`.**
+`grahaInRashi` says the sign; `grahaAt` says the sign *and* the degree, so
+one subsumes the other and a composer emitting both would repeat itself once
+a graha. Splitting them makes the precision a **knob**: a narrative report
+asks for `placements` and a position table asks for `positions`, and a
+consumer that wants both is asking for the sign twice and can see that it
+is. This is the first place a composer's *option* would have done instead —
+`PlanRequest` is a record of named members rather than a bit set precisely
+so a composer can grow one — and it is deliberately not taken: an option
+that changes which key a composer emits changes the plan's shape with a
+member's value, and a second composer costs a consumer nothing.
+
+It does **not** emit `sdk.reason.exactLongitude`, which renders an absolute
+longitude alone — "222°34′35″". That is a fragment a consumer formats with
+and not a sentence a plan says, which is the same line `strength` drew at
+`strength.rank`. The rule has now held twice, so it is worth stating as one:
+**a message in the pack is a plan item when it says something on its own.**
+
+One honest caveat, and it belongs to `intl` rather than to the composer.
+`grahaAt` rounds to arc-minutes for display, so a body at 29.9999° Aries
+renders as "0°00′ Taurus" — `crates/intl` tests exactly that case. A plan
+carrying both composers therefore says "Sun in Aries" and "Sun at 0°00′
+Taurus" of the same body. Neither is wrong: one reads the longitude, the
+other reads it rounded. A composer cannot fix it without rounding the sign
+too, which would make the plan disagree with the chart.
+
 Every item names its rule in a `rule` slot the base messages declare and do
 not print, so a consumer can group a plan by rule and a locale that wants the
 key in its prose has it. The measured page's snapshot prints it as a prefix,
@@ -240,6 +273,15 @@ a test that a plan round-trips through JSON.
    `strength` is measured over its recorded rupas — whether those signs are
    right is the houses service's business, and what this pass decides is
    whether a plan made of them can be said.
+8. `positions`, the degree `placements` rounds away. **Built**, and the
+   last composer the shipped packs can carry for free. The measured page
+   settles that rather than this one claiming it: it lists every message
+   the base locale carries under `sdk.reason` and `sdk.reading`, says which
+   composer emits it, and prints any that is neither emitted nor given a
+   reason as **unaccounted**. Twelve of nineteen are emitted; the seven left
+   are two fragments (`exactLongitude`, `strength.rank`), a fact about the
+   zodiac rather than a chart (`rashiNature`), a count of what `occupants`
+   already names (`conjunction`), and the packs' three example messages.
 
 ## 8. What this design does not settle
 
@@ -248,6 +290,20 @@ a test that a plan round-trips through JSON.
   in four languages, are data and not code; they arrive through `migrate
   baseline` and turn `placements` from a description into an interpretation
   without changing its shape.
+- **The next composer needs a new translated key, and that is a decision
+  rather than a task.** Four composers have shipped for free because the
+  packs carried a message nobody read; that pool is now empty. The largest
+  gap left is the **drishti**: `Document.aspects` is a computed section with
+  no composer at all, and **no locale carries a word for it** — not "looks
+  at", not a strength, not a table's name. The same is true of a bhava's
+  sign and class, of the chalit shift, of whether a graha reaches its
+  required rupas, and of a nakshatra and its pada. Writing those messages
+  means writing Nepali, which the roadmap already holds to native review for
+  `ne` and `hi`. The precedent is `sdk.reading`'s six, written from the
+  texts' own vocabulary and flagged for review rather than machine
+  translated — so the question is not whether it can be done but whose call
+  it is, and it is the maintainer's.
+
 - **A consumer's own composer.** The extensibility table already promises one
   (a plan function in Rust, a declarative plan in v1.x). A registry costs
   nothing to add once a second composer exists to prove the interface, and

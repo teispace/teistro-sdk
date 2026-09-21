@@ -20,7 +20,7 @@ use std::path::Path;
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_houses::chart::Bhava;
 use teistro_houses::classify::{Quadrant, lord_of};
-use teistro_interpret::{KEYS, Plan, houses, placements, readings, strength};
+use teistro_interpret::{KEYS, Plan, houses, placements, positions, readings, strength};
 use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::{Intl, Rendered};
 use teistro_rules::{Evaluator, Readings as RuleReadings, Rule, RuleChart, shipped};
@@ -48,6 +48,7 @@ const SNAPSHOT: &str = "c001-kathmandu-1990-04-14";
 struct Composed {
     name: String,
     plan: Plan,
+    chart: RuleChart,
 }
 
 /// What the corpus records of a chart's Shadbala, as the strength composer
@@ -245,6 +246,7 @@ fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
                 })
                 .collect();
             let mut plan = placements(&chart);
+            plan.items.extend(positions(&chart));
             plan.items
                 .extend(readings(held.iter().map(|(rule, result)| (*rule, result))));
             if let Some(weighed) = weighed.get(&name) {
@@ -253,7 +255,7 @@ fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
             if let Some(divided) = divided.get(&name) {
                 plan.items.extend(houses(&divided.bhavas));
             }
-            out.push(Composed { name, plan });
+            out.push(Composed { name, plan, chart });
         }
     }
     Ok(out)
@@ -502,6 +504,145 @@ fn unsaid_houses(out: &mut String, root: &Path, plans: &[Composed]) {
     );
 }
 
+/// What the **positions** do not say, counted from the same charts the
+/// composers read (`03-design/interpret-composers.md` §4).
+///
+/// A `Placement` is nine facts. Three of them are now said — the sign and
+/// the house by `placements`, the longitude by `positions` — and the six
+/// that are left have no message in any locale, so this counts how much of
+/// each the corpus actually holds. It is the sharpest statement of where
+/// the composers stop: not at what the SDK computes, but at what a locale
+/// can say.
+fn unsaid_positions(out: &mut String, plans: &[Composed]) {
+    let placed: Vec<&teistro_rules::Placement> = plans
+        .iter()
+        .flat_map(|composed| composed.chart.placements.iter().take(9))
+        .collect();
+    let retrograde = placed.iter().filter(|at| at.retrograde).count();
+    let combust = placed.iter().filter(|at| at.combust).count();
+    let dignified = placed
+        .iter()
+        .filter(|at| at.dignity != teistro_core::catalogue::Dignity::Neutral)
+        .count();
+    let vargottama = placed.iter().filter(|at| at.navamsha == at.sign).count();
+    let karaka = placed.iter().filter(|at| at.karaka7.is_some()).count();
+    let _ = write!(
+        out,
+        "And the **positions** say where a graha stands and not what it is \
+         doing there. A placement is nine facts; three are said — the sign \
+         and the house by `placements`, the longitude by `positions` — and \
+         the six that remain have no message in any locale. Over the {} these \
+         charts place: {} stand retrograde, {} are burnt by the Sun, {} hold \
+         a dignity that is not neutral, {} are vargottama, and {} carry a \
+         chara karaka. **The plan says none of it.** That is the sharpest \
+         statement of where the composers stop — not at what the SDK \
+         computes, but at what a locale can say — and the next composer is \
+         therefore the first that must be given a new translated key.\n\n",
+        plural(placed.len(), "graha"),
+        count(retrograde),
+        count(combust),
+        count(dignified),
+        count(vargottama),
+        count(karaka),
+    );
+}
+
+/// Why a message the base locale carries is read by no composer.
+///
+/// The list is exhaustive and written here rather than in prose, because a
+/// claim about which messages are spare goes stale the moment one is
+/// written: this page reports any message it does not recognise as
+/// **unaccounted**, which is the gate asking for a reason rather than
+/// assuming there is none.
+const SPARE: [(&str, &str); 7] = [
+    (
+        "sdk.reason.appName",
+        "the pack's own name, said inside `welcome`",
+    ),
+    (
+        "sdk.reason.welcome",
+        "a greeting the packs ship as an example",
+    ),
+    (
+        "sdk.reason.greeting",
+        "the same, and the only message reading a gender",
+    ),
+    (
+        "sdk.reason.exactLongitude",
+        "a longitude alone (`222°34′35″`) — a fragment a consumer formats with, not a sentence a plan says",
+    ),
+    (
+        "sdk.reason.strength.rank",
+        "an ordinal alone (`1st`, `१लो`) — the same, and why `strength` carries the ranking in the items' order instead",
+    ),
+    (
+        "sdk.reason.rashiNature",
+        "a fact about the zodiac rather than about a chart: every chart would say the same twelve sentences",
+    ),
+    (
+        "sdk.reason.conjunction",
+        "a count of what `occupants` already names, graha by graha",
+    ),
+];
+
+/// Every message the base locale carries, and which composer reads it.
+///
+/// This is where the composers' coverage of the packs is decided rather
+/// than asserted in prose. A message that is neither emitted nor listed in
+/// [`SPARE`] is printed as unaccounted, so writing one and forgetting to
+/// read it shows up here instead of quietly sitting unread.
+fn coverage(out: &mut String, tree: &Tree) {
+    let Some(base) = tree.base() else { return };
+    let messages: Vec<String> = base
+        .keys()
+        .filter(|key| key.starts_with("sdk.reason.") || key.starts_with("sdk.reading."))
+        .collect();
+    let spare: BTreeMap<&str, &str> = SPARE.iter().copied().collect();
+    let read = messages.iter().filter(|key| KEYS.contains(&key.as_str()));
+    let unaccounted: Vec<&String> = messages
+        .iter()
+        .filter(|key| !KEYS.contains(&key.as_str()) && !spare.contains_key(key.as_str()))
+        .collect();
+    let _ = write!(
+        out,
+        "## What the packs carry, and what reads it\n\n{} of the {} the base \
+         locale carries under `sdk.reason` and `sdk.reading` are emitted by \
+         a composer. The rest are listed one by one with the reason no \
+         composer reads them, because \"there is nothing left to compose\" is \
+         a claim that goes stale the moment a message is written.\n\n",
+        count(read.count()),
+        plural(messages.len(), "message"),
+    );
+    out.push_str("| message | why no composer reads it |\n|---|---|\n");
+    for (key, why) in SPARE {
+        let known = messages.iter().any(|carried| carried == key);
+        let why = if known {
+            why
+        } else {
+            "**not in the packs any more**"
+        };
+        let _ = writeln!(out, "| `{key}` | {why} |");
+    }
+    out.push('\n');
+    if unaccounted.is_empty() {
+        out.push_str(
+            "No message is unaccounted for: every one either has a composer \
+             or has a reason. **So the next composer needs a key that does \
+             not exist yet**, which is a translator's decision and not a \
+             build — the largest gap being the drishti, a whole computed \
+             section no locale has a word for.\n\n",
+        );
+    } else {
+        for key in unaccounted {
+            let _ = writeln!(
+                out,
+                "- `{key}` is carried, emitted by nothing, and unexplained"
+            );
+        }
+        out.push('\n');
+    }
+}
+
 /// The claims the packs and the corpus decide, and whatever went wrong.
 fn decided(out: &mut String, said: &[(String, Said)], items: usize, locales: usize) {
     out.push_str("## What the corpus decides\n\n");
@@ -606,6 +747,10 @@ fn page(root: &Path) -> Result<String, String> {
     unsaid_strength(&mut out, root);
 
     unsaid_houses(&mut out, root, &plans);
+
+    unsaid_positions(&mut out, &plans);
+
+    coverage(&mut out, &tree);
 
     let snapshot = plans
         .iter()

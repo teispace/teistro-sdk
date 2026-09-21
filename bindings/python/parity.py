@@ -290,6 +290,7 @@ def main() -> None:
                 "readings": True,
                 "strength": True,
                 "houses": True,
+                "positions": True,
             },
             aspects=True,
             points=True,

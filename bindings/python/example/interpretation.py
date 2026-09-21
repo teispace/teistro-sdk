@@ -71,21 +71,24 @@ def main() -> None:
                 "readings": True,
                 "strength": True,
                 "houses": True,
+                "positions": True,
             },
         )
         plans = chart.plans
         assert plans is not None
         placements, readings = plans["placements"], plans["readings"]
         weights, ruled = plans["strength"], plans["houses"]
+        degrees = plans["positions"]
 
         print("BS 2042-09-17  00:20  Kathmandu")
         print(
             f"plan     {len(placements)} placement items, "
             f"{len(readings)} reading items, {len(weights)} strengths, "
-            f"{len(ruled)} lordships"
+            f"{len(ruled)} lordships, {len(degrees)} positions"
         )
         keys = dict.fromkeys(
-            item["key"] for item in [*placements, *readings, *weights, *ruled]
+            item["key"]
+            for item in [*placements, *readings, *weights, *ruled, *degrees]
         )
         print(f"keys     {', '.join(keys)}")
 
@@ -95,7 +98,7 @@ def main() -> None:
         for locale in ("en-Latn", "ne-Deva-NP"):
             ctx.intl.locale = locale
             print(f"\n{locale}")
-            for item in [*placements, *weights, *ruled]:
+            for item in [*placements, *weights, *ruled, *degrees]:
                 said = ctx.intl.render(item["key"], item["params"])
                 print(f"  {said.text}{'  (fallback)' if said.is_fallback else ''}")
             # A reading names its rule in a slot the message does not
@@ -115,6 +118,10 @@ def main() -> None:
         # any of them, so the houses plan says the lord and stops there.
         signed = any("rashi" in json.dumps(item["params"]) for item in ruled)
         print(f"a houses item claims a sign: {signed}")
+        # A position crosses as a number: the degree signs a reader sees
+        # are the locale's rendering, never a string the composer wrote.
+        angled = any("\u00b0" in json.dumps(item["params"]) for item in degrees)
+        print(f"a position item carries a rendered angle: {angled}")
 
         try:
             ctx.chart.found(

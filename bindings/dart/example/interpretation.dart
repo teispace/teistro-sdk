@@ -67,6 +67,7 @@ void main() {
       readings: true,
       strength: true,
       houses: true,
+      positions: true,
     ),
   );
 
@@ -79,15 +80,23 @@ void main() {
       (plans['strength']! as List<Object?>).cast<Map<String, Object?>>();
   final ruled =
       (plans['houses']! as List<Object?>).cast<Map<String, Object?>>();
+  final degrees =
+      (plans['positions']! as List<Object?>).cast<Map<String, Object?>>();
 
   print('BS 2042-09-17  00:20  Kathmandu');
   print(
     'plan     ${placements.length} placement items, '
     '${readings.length} reading items, ${weights.length} strengths, '
-    '${ruled.length} lordships',
+    '${ruled.length} lordships, ${degrees.length} positions',
   );
   final keys = <String>{
-    for (final item in [...placements, ...readings, ...weights, ...ruled])
+    for (final item in [
+      ...placements,
+      ...readings,
+      ...weights,
+      ...ruled,
+      ...degrees,
+    ])
       item['key']! as String,
   };
   print('keys     ${keys.join(', ')}');
@@ -98,7 +107,7 @@ void main() {
   for (final locale in ['en-Latn', 'ne-Deva-NP']) {
     ctx.intl.locale = locale;
     print('\n$locale');
-    for (final item in [...placements, ...weights, ...ruled]) {
+    for (final item in [...placements, ...weights, ...ruled, ...degrees]) {
       final said = ctx.intl.render(
         item['key']! as String,
         item['params']! as Map<String, Object?>,
@@ -131,6 +140,12 @@ void main() {
     (item) => jsonEncode(item['params']).contains('rashi'),
   );
   print('a houses item claims a sign: $signed');
+  // A position crosses as a number: the degree signs a reader sees are the
+  // locale's rendering, never a string the composer wrote.
+  final angled = degrees.any(
+    (item) => jsonEncode(item['params']).contains('\u00b0'),
+  );
+  print('a position item carries a rendered angle: $angled');
 
   try {
     ctx.chart.found(

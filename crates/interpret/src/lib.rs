@@ -46,11 +46,13 @@ use teistro_intl::{Params, TypedMessage};
 
 mod houses;
 mod placements;
+mod positions;
 mod readings;
 mod strength;
 
 pub use houses::houses;
 pub use placements::placements;
+pub use positions::positions;
 pub use readings::readings;
 pub use strength::strength;
 
@@ -62,9 +64,10 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 11] = [
+pub const KEYS: [&str; 12] = [
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
+    <reason::GrahaAt as TypedMessage>::KEY,
     <reason::Occupants as TypedMessage>::KEY,
     <reason::Lordship as TypedMessage>::KEY,
     <reason::strength::Score as TypedMessage>::KEY,
