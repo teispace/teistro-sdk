@@ -221,14 +221,54 @@ mod tests {
         assert!((Bhuja::of(20.0).complement_deg() - 70.0).abs() < 1e-12);
     }
 
+    /// How much an arc recovered from its own sine may miss by.
+    ///
+    /// Reading an arc back out of a sine is **ill conditioned near the
+    /// quadrant's end**: the sine is flat there, so an error of one ulp in
+    /// it spreads over `1/cos(arc)` of arc. At 89.999998° the cosine is
+    /// 3.3e-8 and a single ulp of the radius is already 2e-7 degrees out —
+    /// which is arithmetic and not a defect, and a fixed bound of 1e-9
+    /// asserts something no `f64` can do.
+    ///
+    /// **The table's own inverse is exempt**: it interpolates 24 linear
+    /// segments, so its arc is the exact inverse of its sine whatever the
+    /// conditioning of the true one.
+    fn arc_tolerance(arc_deg: f64) -> f64 {
+        const ULP_OF_RADIUS: f64 = RADIUS * f64::EPSILON;
+        1e-9 + (ULP_OF_RADIUS / RADIUS / arc_deg.to_radians().cos()).to_degrees()
+    }
+
     proptest! {
         #[test]
         fn the_table_inverts_and_tracks_the_true_sine(arc in 0.0f64..90.0) {
             let sine = Trig::Table.sine(arc);
             prop_assert!((Trig::Table.arc(sine) - arc).abs() < 1e-9);
             prop_assert!((sine - Trig::Exact.sine(arc)).abs() < 2.0);
-            prop_assert!((Trig::Exact.arc(Trig::Exact.sine(arc)) - arc).abs() < 1e-9);
+            let read_back = Trig::Exact.arc(Trig::Exact.sine(arc));
+            prop_assert!(
+                (read_back - arc).abs() < arc_tolerance(arc),
+                "{arc} read back as {read_back}, past {}",
+                arc_tolerance(arc)
+            );
             prop_assert!((Trig::Table.cosine_ratio(arc) - Trig::Exact.cosine_ratio(arc)).abs() < 0.04);
         }
+    }
+
+    /// The bound above is the conditioning and not a licence: away from the
+    /// quadrant's end the exact reading still inverts to a nanodegree, and
+    /// it is only the last fraction of a degree that needs more.
+    #[test]
+    fn the_exact_reading_inverts_tightly_away_from_the_quadrants_end() {
+        for arc in [0.0, 1.0, 30.0, 45.0, 60.0, 80.0, 89.0] {
+            assert!(arc_tolerance(arc) < 1.1e-9, "{arc}: {}", arc_tolerance(arc));
+            let read_back = Trig::Exact.arc(Trig::Exact.sine(arc));
+            assert!(
+                (read_back - arc).abs() < 1e-9,
+                "{arc} read back as {read_back}"
+            );
+        }
+        // And the end itself is where it has to give: a hundredth of a
+        // degree short of 90 already needs more than a nanodegree.
+        assert!(arc_tolerance(89.999_999) > 1e-8);
     }
 }
