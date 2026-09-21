@@ -185,6 +185,18 @@ fn the_plans(
                     .aspects(document)
                     .unwrap_or_else(|_| teistro::Plan::default()),
             ),
+            (
+                "conditions",
+                sdk.interpret()
+                    .conditions(document)
+                    .unwrap_or_else(|_| teistro::Plan::default()),
+            ),
+            (
+                "karakas",
+                sdk.interpret()
+                    .karakas(document)
+                    .unwrap_or_else(|_| teistro::Plan::default()),
+            ),
         ];
         for (composer, plan) in composed {
             put(

@@ -739,9 +739,19 @@ class MessagesSdk:
         return MessagesSdkCalendar(self._r)
 
     @property
+    def condition(self) -> MessagesSdkCondition:
+        """The messages under `condition`."""
+        return MessagesSdkCondition(self._r)
+
+    @property
     def entity(self) -> MessagesSdkEntity:
         """The messages under `entity`."""
         return MessagesSdkEntity(self._r)
+
+    @property
+    def karaka(self) -> MessagesSdkKaraka:
+        """The messages under `karaka`."""
+        return MessagesSdkKaraka(self._r)
 
     @property
     def reading(self) -> MessagesSdkReading:
@@ -907,6 +917,28 @@ class MessagesSdkReading:
         return self._r.render(
             "sdk.reading.status",
             {"rule": rule, "status": status},
+        )
+
+
+class MessagesSdkKaraka:
+    """The messages under `MessagesSdkKaraka`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def of_eight(self, *, graha: GrahaKey, karaka: CharaKarakaKey) -> str:
+        """`sdk.karaka.ofEight`"""
+        return self._r.render(
+            "sdk.karaka.ofEight",
+            {"graha": {"$entity": graha.value}, "karaka": {"$entity": karaka.value}},
+        )
+
+    def of_seven(self, *, graha: GrahaKey, karaka: CharaKarakaKey) -> str:
+        """`sdk.karaka.ofSeven`"""
+        return self._r.render(
+            "sdk.karaka.ofSeven",
+            {"graha": {"$entity": graha.value}, "karaka": {"$entity": karaka.value}},
         )
 
 
@@ -3533,6 +3565,49 @@ class MessagesSdkEntityAvasthaBaladi:
     def yuva(self) -> EntityForms:
         """The forms of `avastha_baladi.YUVA` in the current locale."""
         return self._r.entity("avastha_baladi.YUVA")
+
+
+class MessagesSdkCondition:
+    """The messages under `MessagesSdkCondition`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def combust(self, *, graha: GrahaKey) -> str:
+        """`sdk.condition.combust`"""
+        return self._r.render(
+            "sdk.condition.combust",
+            {"graha": {"$entity": graha.value}},
+        )
+
+    def dignity(self, *, dignity: DignityKey, graha: GrahaKey) -> str:
+        """`sdk.condition.dignity`"""
+        return self._r.render(
+            "sdk.condition.dignity",
+            {"dignity": {"$entity": dignity.value}, "graha": {"$entity": graha.value}},
+        )
+
+    def navamsha(self, *, graha: GrahaKey, rashi: RashiKey) -> str:
+        """`sdk.condition.navamsha`"""
+        return self._r.render(
+            "sdk.condition.navamsha",
+            {"graha": {"$entity": graha.value}, "rashi": {"$entity": rashi.value}},
+        )
+
+    def retrograde(self, *, graha: GrahaKey) -> str:
+        """`sdk.condition.retrograde`"""
+        return self._r.render(
+            "sdk.condition.retrograde",
+            {"graha": {"$entity": graha.value}},
+        )
+
+    def vargottama(self, *, graha: GrahaKey) -> str:
+        """`sdk.condition.vargottama`"""
+        return self._r.render(
+            "sdk.condition.vargottama",
+            {"graha": {"$entity": graha.value}},
+        )
 
 
 class MessagesSdkCalendar:

@@ -1,0 +1,7 @@
+{
+  "dignity": "{$graha :entity kind=graha form=prose} {$dignity :entity kind=dignity}मा छ",
+  "navamsha": "नवांशमा {$graha :entity kind=graha} {$rashi :entity kind=rashi}मा",
+  "vargottama": "{$graha :entity kind=graha form=prose} वर्गोत्तम छ",
+  "retrograde": "{$graha :entity kind=graha form=prose} वक्री छ",
+  "combust": "{$graha :entity kind=graha form=prose} अस्तंगत छ"
+}

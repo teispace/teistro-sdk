@@ -1,0 +1,4 @@
+{
+  "ofSeven": "{$graha :entity kind=graha form=prose} is the {$karaka :entity kind=chara_karaka} of the seven",
+  "ofEight": "{$graha :entity kind=graha form=prose} is the {$karaka :entity kind=chara_karaka} of the eight"
+}

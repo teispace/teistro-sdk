@@ -64,7 +64,7 @@ fn main() -> Result<(), Error> {
     let document = sdk.chart().reading(resolved.instant, &request)?.value;
 
     // ── The plan ───────────────────────────────────────────────────────
-    // Five composers, one plan: a report concatenates what it wants to say
+    // Seven composers, one plan: a report concatenates what it wants to say
     // in the order it wants to say it, which is what a flat plan is for.
     // Where a graha *stands* and what it *rules* are different facts, and
     // it takes two composers to say both.
@@ -77,6 +77,11 @@ fn main() -> Result<(), Error> {
     // The first composer whose messages were written for it: no locale
     // carried a word for a drishti until `sdk.aspect` was added.
     plan.items.extend(sdk.interpret().aspects(&document)?);
+    // What a graha *is* where it stands, and which chara karaka it holds:
+    // the six facts of a placement the two composers above round away.
+    // Both read the same states `placements` does, so they cost no knob.
+    plan.items.extend(sdk.interpret().conditions(&document)?);
+    plan.items.extend(sdk.interpret().karakas(&document)?);
     println!("plan  {} items, {} keys", plan.len(), plan.keys().len());
     for key in plan.keys() {
         println!("  {key}");

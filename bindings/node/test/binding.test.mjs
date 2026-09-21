@@ -806,6 +806,8 @@ test('plans compose in the same crossing, and render with nothing in between', (
       houses: true,
       positions: true,
       aspects: true,
+      conditions: true,
+      karakas: true,
     },
   }).plans;
   assert.ok(plans.placements.length > 0, 'every chart places its grahas');
@@ -819,6 +821,9 @@ test('plans compose in the same crossing, and render with nothing in between', (
   assert.equal(plans.positions.length, 9, 'the nine grahas, the lagna is a point');
   // The drishtis read the aspects section, which this request never asked for.
   assert.ok(plans.aspects.length > 0, 'every chart holds a drishti');
+  // The conditions and the karakas read the same states the placements do.
+  assert.ok(plans.conditions.length >= 18, 'a dignity and a navamsha for each of the nine');
+  assert.equal(plans.karakas.length, 15, 'seven of the seven, eight of the eight');
   assert.ok(Object.isFrozen(plans.placements[0]), 'a plan handed out is a plan kept');
 
   let said = 0;
@@ -829,6 +834,8 @@ test('plans compose in the same crossing, and render with nothing in between', (
     ...plans.houses,
     ...plans.positions,
     ...plans.aspects,
+    ...plans.conditions,
+    ...plans.karakas,
   ]) {
     assert.match(item.key, /^sdk\./u);
     const rendered = ctx.intl.render(item.key, item.params);

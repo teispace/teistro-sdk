@@ -69,6 +69,8 @@ void main() {
       houses: true,
       positions: true,
       aspects: true,
+      conditions: true,
+      karakas: true,
     ),
   );
 
@@ -85,13 +87,18 @@ void main() {
       (plans['positions']! as List<Object?>).cast<Map<String, Object?>>();
   final looks =
       (plans['aspects']! as List<Object?>).cast<Map<String, Object?>>();
+  final states =
+      (plans['conditions']! as List<Object?>).cast<Map<String, Object?>>();
+  final karakas =
+      (plans['karakas']! as List<Object?>).cast<Map<String, Object?>>();
 
   print('BS 2042-09-17  00:20  Kathmandu');
   print(
     'plan     ${placements.length} placement items, '
     '${readings.length} reading items, ${weights.length} strengths, '
     '${ruled.length} lordships, ${degrees.length} positions, '
-    '${looks.length} drishtis',
+    '${looks.length} drishtis, ${states.length} conditions, '
+    '${karakas.length} karakas',
   );
   final keys = <String>{
     for (final item in [
@@ -101,6 +108,8 @@ void main() {
       ...ruled,
       ...degrees,
       ...looks,
+      ...states,
+      ...karakas,
     ])
       item['key']! as String,
   };
@@ -118,6 +127,8 @@ void main() {
       ...ruled,
       ...degrees,
       ...looks,
+      ...states,
+      ...karakas,
     ]) {
       final said = ctx.intl.render(
         item['key']! as String,

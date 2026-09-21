@@ -1773,7 +1773,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     let rules = CString::new(r#"{"shipped": ["nabhasas"]}"#).unwrap();
     let plans = CString::new(
         r#"{"placements": true, "readings": true, "strength": true, "houses": true,
-            "positions": true, "aspects": true}"#,
+            "positions": true, "aspects": true, "conditions": true, "karakas": true}"#,
     )
     .unwrap();
     let request = sized(
@@ -1842,6 +1842,16 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         // asked for either.
         let looks = chart["aspects"].as_array().unwrap();
         assert!(!looks.is_empty(), "every chart holds a drishti");
+        // The conditions and the karakas read the graha states through
+        // `RuleInputs`, as the placements do, so the same section serves
+        // four composers and `sections` asked for none of it.
+        let conditions = chart["conditions"].as_array().unwrap();
+        assert!(
+            conditions.len() >= 9 * 2,
+            "a dignity and a navamsha for each of the nine"
+        );
+        let karakas = chart["karakas"].as_array().unwrap();
+        assert!(!karakas.is_empty(), "every chart ranks its chara karakas");
         for item in placements
             .iter()
             .chain(chart["readings"].as_array().unwrap())
@@ -1849,6 +1859,8 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             .chain(lords)
             .chain(degrees)
             .chain(looks)
+            .chain(conditions)
+            .chain(karakas)
         {
             // A plan holds keys and slots, never a rendered word.
             let key = item["key"].as_str().unwrap();
@@ -1947,7 +1959,9 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             && record.1.contains("strength")
             && record.1.contains("houses")
             && record.1.contains("positions")
-            && record.1.contains("aspects"),
+            && record.1.contains("aspects")
+            && record.1.contains("conditions")
+            && record.1.contains("karakas"),
         "{record:?}"
     );
 }

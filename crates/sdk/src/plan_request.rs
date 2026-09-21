@@ -55,9 +55,34 @@ pub struct PlanRequest {
     /// Which graha looks at which, and how strongly. It reads the aspects
     /// section, which the request computes for it.
     pub aspects: bool,
+    /// What each graha **is** where it stands: its dignity, its navamsha and
+    /// whether that makes it vargottama, whether it is retrograde and
+    /// whether the Sun burns it. It reads what `placements` reads, so it
+    /// costs no section.
+    pub conditions: bool,
+    /// Which chara karaka each graha holds, under both schemes. It reads
+    /// what `placements` reads, so it costs no section.
+    pub karakas: bool,
 }
 
 impl PlanRequest {
+    /// Every composer this request can name, which is every member it has.
+    ///
+    /// The boundary reads these names out of JSON, so they are API; a test
+    /// holds the list against the record's own serialisation, both ways, so
+    /// a composer added without a name here fails rather than going
+    /// unmentioned in the refusal a typo earns.
+    pub const MEMBERS: [&'static str; 8] = [
+        "placements",
+        "readings",
+        "strength",
+        "houses",
+        "positions",
+        "aspects",
+        "conditions",
+        "karakas",
+    ];
+
     /// A request for the placements.
     #[must_use]
     pub const fn with_placements(mut self) -> PlanRequest {
@@ -100,6 +125,20 @@ impl PlanRequest {
         self
     }
 
+    /// A request for each graha's conditions.
+    #[must_use]
+    pub const fn with_conditions(mut self) -> PlanRequest {
+        self.conditions = true;
+        self
+    }
+
+    /// A request for the chara karakas.
+    #[must_use]
+    pub const fn with_karakas(mut self) -> PlanRequest {
+        self.karakas = true;
+        self
+    }
+
     /// Whether any composer was asked for, so a caller can skip the work
     /// rather than compose an empty answer.
     #[must_use]
@@ -110,6 +149,8 @@ impl PlanRequest {
             || self.houses
             || self.positions
             || self.aspects
+            || self.conditions
+            || self.karakas
     }
 
     /// A request read from JSON.
@@ -122,9 +163,10 @@ impl PlanRequest {
     /// be caught by.
     pub fn from_json(text: &str) -> Result<PlanRequest, Error> {
         serde_json::from_str(text).map_err(|err| {
-            Error::invalid_arg(format!("the plan request does not read: {err}")).with_hint(
-                "an object of `placements`, `readings`, `strength`, `houses` and `positions`",
-            )
+            Error::invalid_arg(format!("the plan request does not read: {err}")).with_hint(format!(
+                "an object of `{}`",
+                PlanRequest::MEMBERS.join("`, `")
+            ))
         })
     }
 
@@ -148,5 +190,59 @@ impl PlanRequest {
             .with_hint("name the rules in the rule request beside this one"));
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(
+        clippy::unwrap_used,
+        clippy::panic,
+        reason = "tests unwrap what they build and fail by panicking"
+    )]
+
+    use super::PlanRequest;
+
+    /// The names the boundary reads are the record's own members, held both
+    /// ways: a composer added without a name here, or a name here that no
+    /// member answers to, fails. It is the same shape as `KEYS` against the
+    /// packs, for the same reason — the list is what a refusal quotes, and a
+    /// list written by hand beside a struct is the claim that rots.
+    #[test]
+    fn every_member_is_named_and_every_name_is_a_member() {
+        let serialised = serde_json::to_value(PlanRequest::default()).unwrap();
+        let members: Vec<&str> = serialised
+            .as_object()
+            .unwrap()
+            .keys()
+            .map(String::as_str)
+            .collect();
+        let mut named = PlanRequest::MEMBERS.to_vec();
+        named.sort_unstable();
+        let mut sorted = members.clone();
+        sorted.sort_unstable();
+        assert_eq!(sorted, named, "MEMBERS and the record disagree");
+    }
+
+    /// Any one member is enough to ask for something, so a composer added
+    /// without being counted in `asks_for_something` fails here rather than
+    /// composing nothing at the boundary.
+    #[test]
+    fn any_member_asks_for_something() {
+        assert!(!PlanRequest::default().asks_for_something());
+        for member in PlanRequest::MEMBERS {
+            let request = PlanRequest::from_json(&format!(r#"{{"{member}": true}}"#)).unwrap();
+            assert!(request.asks_for_something(), "`{member}` asks for nothing");
+        }
+    }
+
+    /// A typo is refused, and the refusal names what it could have meant.
+    #[test]
+    fn a_name_that_is_not_a_member_is_refused_with_the_ones_that_are() {
+        let wrong = PlanRequest::from_json(r#"{"karakaz": true}"#).unwrap_err();
+        let said = wrong.to_string();
+        for member in PlanRequest::MEMBERS {
+            assert!(said.contains(member), "`{member}` unmentioned in {said}");
+        }
     }
 }

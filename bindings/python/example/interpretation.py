@@ -73,6 +73,8 @@ def main() -> None:
                 "houses": True,
                 "positions": True,
                 "aspects": True,
+                "conditions": True,
+                "karakas": True,
             },
         )
         plans = chart.plans
@@ -80,17 +82,28 @@ def main() -> None:
         placements, readings = plans["placements"], plans["readings"]
         weights, ruled = plans["strength"], plans["houses"]
         degrees, looks = plans["positions"], plans["aspects"]
+        states, karakas = plans["conditions"], plans["karakas"]
 
         print("BS 2042-09-17  00:20  Kathmandu")
         print(
             f"plan     {len(placements)} placement items, "
             f"{len(readings)} reading items, {len(weights)} strengths, "
             f"{len(ruled)} lordships, {len(degrees)} positions, "
-            f"{len(looks)} drishtis"
+            f"{len(looks)} drishtis, {len(states)} conditions, "
+            f"{len(karakas)} karakas"
         )
         keys = dict.fromkeys(
             item["key"]
-            for item in [*placements, *readings, *weights, *ruled, *degrees, *looks]
+            for item in [
+                *placements,
+                *readings,
+                *weights,
+                *ruled,
+                *degrees,
+                *looks,
+                *states,
+                *karakas,
+            ]
         )
         print(f"keys     {', '.join(keys)}")
 
@@ -100,7 +113,15 @@ def main() -> None:
         for locale in ("en-Latn", "ne-Deva-NP"):
             ctx.intl.locale = locale
             print(f"\n{locale}")
-            for item in [*placements, *weights, *ruled, *degrees, *looks]:
+            for item in [
+                *placements,
+                *weights,
+                *ruled,
+                *degrees,
+                *looks,
+                *states,
+                *karakas,
+            ]:
                 said = ctx.intl.render(item["key"], item["params"])
                 print(f"  {said.text}{'  (fallback)' if said.is_fallback else ''}")
             # A reading names its rule in a slot the message does not

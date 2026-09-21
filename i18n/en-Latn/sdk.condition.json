@@ -1,0 +1,7 @@
+{
+  "dignity": "{$graha :entity kind=graha form=prose} has {$dignity :entity kind=dignity} dignity",
+  "navamsha": "{$graha :entity kind=graha} in {$rashi :entity kind=rashi} in the navamsha",
+  "vargottama": "{$graha :entity kind=graha form=prose} is vargottama",
+  "retrograde": "{$graha :entity kind=graha form=prose} is retrograde",
+  "combust": "{$graha :entity kind=graha form=prose} is burnt by the Sun"
+}

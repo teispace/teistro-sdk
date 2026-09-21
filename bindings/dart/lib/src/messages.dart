@@ -980,6 +980,23 @@ final class MessagesSdkCalendar {
       _r.render('sdk.calendar.weekdayShort', {'weekday': weekday});
 }
 
+final class MessagesSdkCondition {
+  const MessagesSdkCondition(this._r);
+
+  final Renderer _r;
+
+  String combust({required GrahaKey graha}) =>
+      _r.render('sdk.condition.combust', {'graha': {r'$entity': graha.key}});
+  String dignity({required DignityKey dignity, required GrahaKey graha}) =>
+      _r.render('sdk.condition.dignity', {'dignity': {r'$entity': dignity.key}, 'graha': {r'$entity': graha.key}});
+  String navamsha({required GrahaKey graha, required RashiKey rashi}) =>
+      _r.render('sdk.condition.navamsha', {'graha': {r'$entity': graha.key}, 'rashi': {r'$entity': rashi.key}});
+  String retrograde({required GrahaKey graha}) =>
+      _r.render('sdk.condition.retrograde', {'graha': {r'$entity': graha.key}});
+  String vargottama({required GrahaKey graha}) =>
+      _r.render('sdk.condition.vargottama', {'graha': {r'$entity': graha.key}});
+}
+
 final class MessagesSdkEntityAvasthaBaladi {
   const MessagesSdkEntityAvasthaBaladi(this._r);
 
@@ -1694,6 +1711,17 @@ final class MessagesSdkEntity {
   MessagesSdkEntityYoni get yoni => MessagesSdkEntityYoni(_r);
 }
 
+final class MessagesSdkKaraka {
+  const MessagesSdkKaraka(this._r);
+
+  final Renderer _r;
+
+  String ofEight({required GrahaKey graha, required CharaKarakaKey karaka}) =>
+      _r.render('sdk.karaka.ofEight', {'graha': {r'$entity': graha.key}, 'karaka': {r'$entity': karaka.key}});
+  String ofSeven({required GrahaKey graha, required CharaKarakaKey karaka}) =>
+      _r.render('sdk.karaka.ofSeven', {'graha': {r'$entity': graha.key}, 'karaka': {r'$entity': karaka.key}});
+}
+
 final class MessagesSdkReading {
   const MessagesSdkReading(this._r);
 
@@ -1759,7 +1787,9 @@ final class MessagesSdk {
 
   MessagesSdkAspect get aspect => MessagesSdkAspect(_r);
   MessagesSdkCalendar get calendar => MessagesSdkCalendar(_r);
+  MessagesSdkCondition get condition => MessagesSdkCondition(_r);
   MessagesSdkEntity get entity => MessagesSdkEntity(_r);
+  MessagesSdkKaraka get karaka => MessagesSdkKaraka(_r);
   MessagesSdkReading get reading => MessagesSdkReading(_r);
   MessagesSdkReason get reason => MessagesSdkReason(_r);
 }

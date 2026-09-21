@@ -311,6 +311,8 @@ void main() {
       houses: true,
       positions: true,
       aspects: true,
+      conditions: true,
+      karakas: true,
     ),
     aspects: true,
     points: true,

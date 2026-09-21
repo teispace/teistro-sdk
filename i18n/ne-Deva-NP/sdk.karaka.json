@@ -1,0 +1,4 @@
+{
+  "ofSeven": "सात कारकमध्ये {$graha :entity kind=graha form=prose} {$karaka :entity kind=chara_karaka} हो",
+  "ofEight": "आठ कारकमध्ये {$graha :entity kind=graha form=prose} {$karaka :entity kind=chara_karaka} हो"
+}

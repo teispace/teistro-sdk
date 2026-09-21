@@ -1,7 +1,9 @@
 //! `sdk.interpret`: what a reading says, as a narrative plan.
 
 use teistro_core::error::Error;
-use teistro_interpret::{Plan, aspects, houses, placements, positions, readings, strength};
+use teistro_interpret::{
+    Plan, aspects, conditions, houses, karakas, placements, positions, readings, strength,
+};
 use teistro_serial::document::Document;
 
 use crate::context::Context;
@@ -66,6 +68,39 @@ impl<'a> InterpretArea<'a> {
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn positions(self, document: &Document) -> Result<Plan, Error> {
         Ok(positions(&RuleInputs::of(document)?.chart))
+    }
+
+    /// What each of the nine grahas **is** where it stands: its dignity,
+    /// its navamsha sign and whether that makes it vargottama, whether it
+    /// is retrograde and whether the Sun burns it.
+    ///
+    /// `placements` and `positions` say where a graha stands; this says the
+    /// four facts of the same placement that neither of them says
+    /// (`03-design/interpret-composers.md` §4).
+    ///
+    /// # Errors
+    ///
+    /// A document a rule cannot read: one without its graha states, naming
+    /// the section to ask for ([`RuleInputs::of`]).
+    pub fn conditions(self, document: &Document) -> Result<Plan, Error> {
+        Ok(conditions(&RuleInputs::of(document)?.chart))
+    }
+
+    /// Which chara karaka each of the nine grahas holds, under the
+    /// seven-karaka scheme and the eight-karaka one.
+    ///
+    /// Both, because they disagree: over the recorded corpus they give a
+    /// graha the same karaka about as often as a different one, so emitting
+    /// one would be choosing for the consumer. Which ordering the eight are
+    /// ranked in is the chart's, not this composer's
+    /// (`RuleChart::with_chara_karakas`).
+    ///
+    /// # Errors
+    ///
+    /// A document a rule cannot read: one without its graha states, naming
+    /// the section to ask for ([`RuleInputs::of`]).
+    pub fn karakas(self, document: &Document) -> Result<Plan, Error> {
+        Ok(karakas(&RuleInputs::of(document)?.chart))
     }
 
     /// Each graha's Shadbala in rupas, the strongest first.

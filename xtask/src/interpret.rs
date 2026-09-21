@@ -24,7 +24,9 @@ use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::quantity::Degrees;
 use teistro_houses::chart::Bhava;
 use teistro_houses::classify::{Quadrant, lord_of};
-use teistro_interpret::{KEYS, Plan, aspects, houses, placements, positions, readings, strength};
+use teistro_interpret::{
+    KEYS, Plan, aspects, conditions, houses, karakas, placements, positions, readings, strength,
+};
 use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::{Intl, Rendered};
 use teistro_rules::{Body, Evaluator, Readings as RuleReadings, Rule, RuleChart, shipped};
@@ -308,6 +310,8 @@ fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
                 .collect();
             let mut plan = placements(&chart);
             plan.items.extend(positions(&chart));
+            plan.items.extend(conditions(&chart));
+            plan.items.extend(karakas(&chart));
             plan.items.extend(aspects(&relations(&chart)?));
             plan.items
                 .extend(readings(held.iter().map(|(rule, result)| (*rule, result))));
@@ -565,48 +569,159 @@ fn unsaid_houses(out: &mut String, root: &Path, plans: &[Composed]) {
     );
 }
 
-/// What the **positions** do not say, counted from the same charts the
-/// composers read (`03-design/interpret-composers.md` §4).
+/// What the corpus holds of the six facts a placement carries beyond its
+/// sign, its house and its longitude — the ones `conditions` and `karakas`
+/// say (`03-design/interpret-composers.md` §4).
 ///
-/// A `Placement` is nine facts. Three of them are now said — the sign and
-/// the house by `placements`, the longitude by `positions` — and the six
-/// that are left have no message in any locale, so this counts how much of
-/// each the corpus actually holds. It is the sharpest statement of where
-/// the composers stop: not at what the SDK computes, but at what a locale
-/// can say.
-fn unsaid_positions(out: &mut String, plans: &[Composed]) {
-    let placed: Vec<&teistro_rules::Placement> = plans
-        .iter()
-        .flat_map(|composed| composed.chart.placements.iter().take(9))
-        .collect();
-    let retrograde = placed.iter().filter(|at| at.retrograde).count();
-    let combust = placed.iter().filter(|at| at.combust).count();
-    let dignified = placed
-        .iter()
-        .filter(|at| at.dignity != teistro_core::catalogue::Dignity::Neutral)
-        .count();
-    let vargottama = placed.iter().filter(|at| at.navamsha == at.sign).count();
-    let karaka = placed.iter().filter(|at| at.karaka7.is_some()).count();
+/// A composer that says a condition only where it holds says nothing at all
+/// on a corpus that holds none, so the page counts rather than assumes.
+#[derive(Default)]
+struct Rest {
+    placed: usize,
+    retrograde: usize,
+    nodes_retrograde: usize,
+    combust: usize,
+    vargottama: usize,
+    dignities: BTreeMap<&'static str, usize>,
+    seven: usize,
+    eight: usize,
+    agree: usize,
+    differ: usize,
+    only_eight: usize,
+    /// Charts recording at least one node **direct**, and how many of those
+    /// are true-node variants: the measurement that decides whether saying
+    /// "Rahu is retrograde" carries information or repeats a definition.
+    charts_direct: usize,
+    charts_direct_true: usize,
+    charts_true_node: usize,
+}
+
+fn rest_of(plans: &[Composed]) -> Rest {
+    let mut rest = Rest::default();
+    for composed in plans {
+        let is_true_node = composed.name.contains("true-node");
+        rest.charts_true_node += usize::from(is_true_node);
+        let mut any_direct = false;
+        for graha in Graha::ALL.into_iter().take(9) {
+            let Some(at) = composed.chart.placements.get(Body::Graha(graha).index()) else {
+                continue;
+            };
+            rest.placed += 1;
+            let is_node = matches!(graha, Graha::Rahu | Graha::Ketu);
+            if at.retrograde {
+                rest.retrograde += 1;
+                rest.nodes_retrograde += usize::from(is_node);
+            } else if is_node {
+                any_direct = true;
+            }
+            rest.combust += usize::from(at.combust);
+            rest.vargottama += usize::from(at.navamsha == at.sign);
+            *rest.dignities.entry(at.dignity.key()).or_default() += 1;
+            rest.seven += usize::from(at.karaka7.is_some());
+            rest.eight += usize::from(at.karaka8.is_some());
+            match (at.karaka7, at.karaka8) {
+                (Some(of_seven), Some(of_eight)) if of_seven == of_eight => rest.agree += 1,
+                (Some(_), Some(_)) => rest.differ += 1,
+                (None, Some(_)) => rest.only_eight += 1,
+                _ => {}
+            }
+        }
+        if any_direct {
+            rest.charts_direct += 1;
+            rest.charts_direct_true += usize::from(is_true_node);
+        }
+    }
+    rest
+}
+
+/// What the two karaka schemes disagree about, and what that decides.
+fn the_karaka_schemes(out: &mut String, rest: &Rest) {
     let _ = write!(
         out,
-        "And the **positions** say where a graha stands and not what it is \
-         doing there. A placement is nine facts; three are said — the sign \
-         and the house by `placements`, the longitude by `positions` — and \
-         the six that remain have no message in any locale. Over the {} these \
-         charts place: {} stand retrograde, {} are burnt by the Sun, {} hold \
-         a dignity that is not neutral, {} are vargottama, and {} carry a \
-         chara karaka. **The plan says none of it.** That is the sharpest \
-         statement of where the composers stop — not at what the SDK \
-         computes, but at what a locale can say. Closing one of the six \
-         means writing a message in every strict locale, which is what \
-         `sdk.aspect` did for the drishti.\n\n",
-        plural(placed.len(), "graha"),
-        count(retrograde),
-        count(combust),
-        count(dignified),
-        count(vargottama),
-        count(karaka),
+        "**The two karaka schemes are not a formality.** Where both name a \
+         graha they name the same karaka {} times and a different one {}, \
+         and the eight reach {} the seven do not rank at all. A composer \
+         emitting one of them would be choosing for the consumer in about \
+         half of all cases, so `karakas` emits both and the key says which \
+         — `ofSeven` or `ofEight` — so that filtering by key gives one \
+         scheme whole. Which order the eight are ranked in is the chart's \
+         and not the composer's: `rule_chart` follows BPHS ch. 32, the \
+         recording engine puts the Pitrikaraka last, and these are the \
+         corpus's **recorded** karakas, as the rupas above are its recorded \
+         rupas.\n\n",
+        count(rest.agree),
+        count(rest.differ),
+        plural(rest.only_eight, "graha"),
     );
+}
+
+/// Whether the nodes' retrogression is a fact or a definition, and which
+/// dignities the corpus actually holds.
+fn the_conditions_counted(out: &mut String, rest: &Rest, charts: usize) {
+    let _ = write!(
+        out,
+        "**Saying a node is retrograde carries information**, which is a \
+         measurement and not an assumption. {} of the {} retrogressions are \
+         Rahu's and Ketu's, and the nodes would be a tautology if they \
+         always moved backwards — but {} of these {} charts record them \
+         **direct**, and {} of those {} are `--true-node` variants, of {} \
+         the corpus holds. The true node turns; the mean node does not. So \
+         the condition is said of every graha that holds it, the nodes \
+         included.\n\n",
+        count(rest.nodes_retrograde),
+        count(rest.retrograde),
+        count(rest.charts_direct),
+        count(charts),
+        count(rest.charts_direct_true),
+        count(rest.charts_direct),
+        count(rest.charts_true_node),
+    );
+    let absent: Vec<&str> = teistro_core::catalogue::Dignity::ALL
+        .into_iter()
+        .map(teistro_core::catalogue::Dignity::key)
+        .filter(|key| !rest.dignities.contains_key(key))
+        .collect();
+    let all = teistro_core::catalogue::Dignity::ALL.len();
+    let _ = write!(
+        out,
+        "**A dignity is said of every graha, `NEUTRAL` included**, because \
+         *sama* is a dignity the texts name rather than the absence of one \
+         — which is the line `aspects` draws on the other side, skipping \
+         `Strength::None`. It crosses as an **entity** and not as a string, \
+         so the message has no arms to go stale: {} of the catalogue's {} \
+         dignities occur in these charts{}, and a locale carrying nothing \
+         but `sdk.entity` renders each one's own word.\n\n",
+        count(all - absent.len()),
+        count(all),
+        if absent.is_empty() {
+            String::new()
+        } else {
+            format!(" (no chart records {})", absent.join(", "))
+        },
+    );
+}
+
+/// The rest of a placement, now that every one of its nine facts is said.
+fn the_rest_of_a_placement(out: &mut String, plans: &[Composed]) {
+    let rest = rest_of(plans);
+    let _ = write!(
+        out,
+        "And the **rest of a placement** is now said. A placement is nine \
+         facts: `placements` says the sign and the house, `positions` the \
+         longitude, and `conditions` and `karakas` the six that were left. \
+         Over the {} these charts place: {} stand retrograde, {} are burnt \
+         by the Sun, {} are vargottama, {} carry a chara karaka among seven \
+         and {} among eight. Every one of them is an item now, where before \
+         the plan said none of it.\n\n",
+        plural(rest.placed, "graha"),
+        count(rest.retrograde),
+        count(rest.combust),
+        count(rest.vargottama),
+        count(rest.seven),
+        count(rest.eight),
+    );
+    the_karaka_schemes(out, &rest);
+    the_conditions_counted(out, &rest, plans.len());
 }
 
 /// Why a message the base locale carries is read by no composer.
@@ -707,9 +822,14 @@ fn coverage(out: &mut String, tree: &Tree) {
         out.push_str(
             "No message is unaccounted for: every one either has a composer \
              or has a reason. **So a further composer needs a key that does \
-             not exist yet**, as `aspects` did: the drishti had no word in \
-             any locale until `sdk.aspect` was written for it. What remains \
-             unsaid is counted above rather than guessed at here.\n\n",
+             not exist yet**, as `aspects` did for the drishti and as \
+             `conditions` and `karakas` did for the rest of a placement. \
+             The second time cost less than the first: four of those seven \
+             messages say a value the **entity** namespace already names in \
+             all five locales — a dignity, a rashi, two chara karakas — so \
+             what had to be written was the frame and not the vocabulary. \
+             What remains unsaid is counted above rather than guessed at \
+             here.\n\n",
         );
     } else {
         for key in unaccounted {
@@ -827,7 +947,7 @@ fn page(root: &Path) -> Result<String, String> {
 
     unsaid_houses(&mut out, root, &plans);
 
-    unsaid_positions(&mut out, &plans);
+    the_rest_of_a_placement(&mut out, &plans);
 
     coverage(&mut out, &tree);
 

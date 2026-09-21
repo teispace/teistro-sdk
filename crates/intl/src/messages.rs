@@ -815,6 +815,96 @@ pub mod sdk {
 
     }
 
+    /// The `condition` group.
+    pub mod condition {
+        /// The message `sdk.condition.combust`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Combust {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for Combust {
+            const KEY: &'static str = "sdk.condition.combust";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
+        /// The message `sdk.condition.dignity`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Dignity {
+            /// The `dignity` parameter.
+            pub dignity: teistro_core::catalogue::Dignity,
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for Dignity {
+            const KEY: &'static str = "sdk.condition.dignity";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("dignity", crate::Value::catalogued(self.dignity)),
+                    ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
+        /// The message `sdk.condition.navamsha`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Navamsha {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+        }
+
+        impl crate::TypedMessage for Navamsha {
+            const KEY: &'static str = "sdk.condition.navamsha";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                ])
+            }
+        }
+
+        /// The message `sdk.condition.retrograde`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Retrograde {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for Retrograde {
+            const KEY: &'static str = "sdk.condition.retrograde";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
+        /// The message `sdk.condition.vargottama`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Vargottama {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for Vargottama {
+            const KEY: &'static str = "sdk.condition.vargottama";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
+    }
+
     /// The `entity` group.
     pub mod entity {
         /// The `avastha_baladi` group.
@@ -951,6 +1041,48 @@ pub mod sdk {
 
         /// The `yoni` group.
         pub mod yoni {
+        }
+
+    }
+
+    /// The `karaka` group.
+    pub mod karaka {
+        /// The message `sdk.karaka.ofEight`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct OfEight {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `karaka` parameter.
+            pub karaka: teistro_core::catalogue::CharaKaraka,
+        }
+
+        impl crate::TypedMessage for OfEight {
+            const KEY: &'static str = "sdk.karaka.ofEight";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("karaka", crate::Value::catalogued(self.karaka)),
+                ])
+            }
+        }
+
+        /// The message `sdk.karaka.ofSeven`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct OfSeven {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `karaka` parameter.
+            pub karaka: teistro_core::catalogue::CharaKaraka,
+        }
+
+        impl crate::TypedMessage for OfSeven {
+            const KEY: &'static str = "sdk.karaka.ofSeven";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("karaka", crate::Value::catalogued(self.karaka)),
+                ])
+            }
         }
 
     }

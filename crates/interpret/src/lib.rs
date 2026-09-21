@@ -41,18 +41,22 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
-use teistro_intl::messages::sdk::{aspect, reading, reason};
+use teistro_intl::messages::sdk::{aspect, condition, karaka, reading, reason};
 use teistro_intl::{Params, TypedMessage};
 
 mod aspects;
+mod conditions;
 mod houses;
+mod karakas;
 mod placements;
 mod positions;
 mod readings;
 mod strength;
 
 pub use aspects::aspects;
+pub use conditions::conditions;
 pub use houses::houses;
+pub use karakas::karakas;
 pub use placements::placements;
 pub use positions::positions;
 pub use readings::readings;
@@ -66,7 +70,7 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 14] = [
+pub const KEYS: [&str; 21] = [
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
     <reason::GrahaAt as TypedMessage>::KEY,
@@ -81,6 +85,13 @@ pub const KEYS: [&str; 14] = [
     <reading::Severity as TypedMessage>::KEY,
     <aspect::Cast as TypedMessage>::KEY,
     <aspect::Mutual as TypedMessage>::KEY,
+    <condition::Dignity as TypedMessage>::KEY,
+    <condition::Navamsha as TypedMessage>::KEY,
+    <condition::Vargottama as TypedMessage>::KEY,
+    <condition::Retrograde as TypedMessage>::KEY,
+    <condition::Combust as TypedMessage>::KEY,
+    <karaka::OfSeven as TypedMessage>::KEY,
+    <karaka::OfEight as TypedMessage>::KEY,
 ];
 
 /// One thing to say: a message key and the slots it is said with.

@@ -83,6 +83,13 @@ export function messages(r) {
         weekdayName: (p) => r.render('sdk.calendar.weekdayName', { weekday: p.weekday }),
         weekdayShort: (p) => r.render('sdk.calendar.weekdayShort', { weekday: p.weekday }),
       },
+      condition: {
+        combust: (p) => r.render('sdk.condition.combust', { graha: { '$entity': p.graha } }),
+        dignity: (p) => r.render('sdk.condition.dignity', { dignity: { '$entity': p.dignity }, graha: { '$entity': p.graha } }),
+        navamsha: (p) => r.render('sdk.condition.navamsha', { graha: { '$entity': p.graha }, rashi: { '$entity': p.rashi } }),
+        retrograde: (p) => r.render('sdk.condition.retrograde', { graha: { '$entity': p.graha } }),
+        vargottama: (p) => r.render('sdk.condition.vargottama', { graha: { '$entity': p.graha } }),
+      },
       entity: {
         avasthaBaladi: {
           bala: () => r.entity('avastha_baladi.BALA'),
@@ -587,6 +594,10 @@ export function messages(r) {
           serpent: () => r.entity('yoni.SERPENT'),
           tiger: () => r.entity('yoni.TIGER'),
         },
+      },
+      karaka: {
+        ofEight: (p) => r.render('sdk.karaka.ofEight', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
+        ofSeven: (p) => r.render('sdk.karaka.ofSeven', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
       },
       reading: {
         effect: (p) => r.render('sdk.reading.effect', { rule: p.rule, text: p.text }),

@@ -1,6 +1,6 @@
 # `teistro-interpret`
 
-Status: `building`, 2026-09-21: the plan and six composers. The design
+Status: `building`, 2026-09-21: the plan and eight composers. The design
 is [`docs/03-design/interpret-composers.md`](../../docs/03-design/interpret-composers.md),
 measured in [`docs/03-design/interpret-measured.md`](../../docs/03-design/interpret-measured.md).
 
@@ -18,6 +18,8 @@ composer rather than the translator.
 | [`houses`](src/houses.rs) | the lord of each of the twelve bhavas, first house first, over `Document.houses` — the first to say what a graha *rules* rather than where it stands |
 | [`positions`](src/positions.rs) | where each graha stands to the degree, which `placements` rounds away — a composer of its own so the precision is a knob |
 | [`aspects`](src/aspects.rs) | which graha looks at which and how strongly, with every mutual pair said once more — the first composer whose messages were written for it (`sdk.aspect`, English and Nepali, awaiting native review) |
+| [`conditions`](src/conditions.rs) | what each graha *is* where it stands: its dignity, its navamsha and the vargottama it may make, its retrogression, its combustion — `sdk.condition`, whose values the entity namespace already named |
+| [`karakas`](src/karakas.rs) | which chara karaka each graha holds, under the seven-karaka scheme and the eight — both, because they disagree about half the time |
 
 ```rust
 use teistro_interpret::{houses, placements, readings};
@@ -45,10 +47,18 @@ for item in &plan {
   is the first to spend the debt: `sdk.aspect`'s two messages were written
   for it in English and Nepali from the tradition's own terms, and await the
   native review the roadmap requires for `ne` and `hi`.
+- **Where a composer says a catalogued value, the vocabulary is already
+  bought.** `sdk.entity` names 34 catalogue kinds in all five locales, so
+  four of `sdk.condition`'s and `sdk.karaka`'s seven messages needed only a
+  frame: a dignity, a rashi and two chara karakas cross as **entity** slots
+  and render in a locale that carries no message at all. An entity slot is
+  also the typed one — the generated struct takes a `Dignity`, not a string
+  — and it cannot go stale the way eleven `.match` arms over a
+  `#[non_exhaustive]` enum would.
 - **The corpus has no oracle for prose.** It records numbers, keys and flags
   and not one composed sentence, so a plan is measured by whether it can be
   *said*: every item of every recorded chart's plan renders in each strict
-  locale with no fallback and nothing to warn about (31 154 renderings).
+  locale with no fallback and nothing to warn about (38 122 renderings).
 - **A composer says what a locale can say for itself.** `sdk.reading`'s six
   messages are mechanical — a span, a class, a list with an agreeing verb, a
   status, a severity. The verse's own statement crosses as a slot in the
@@ -58,12 +68,13 @@ for item in &plan {
   and in no plan, because these messages read a graha and the lagna is
   `point.LAGNA`; whether a graha reaches its required rupas has no message
   either, nor has a bhava's sign, its class or a body shifted by the chalit.
-  A placement is nine facts and the composers can say three: over 837
-  recorded grahas, 243 stand retrograde, 66 are burnt, 534 hold a dignity
-  and 651 carry a chara karaka, and the plan says none of it. The measured
-  page counts each rather than letting it be missed, and a machine-translated
-  sentence for any of them is the stub the project refuses — which is why
-  the next composer is a decision rather than a task.
+  A placement is nine facts, and `conditions` and `karakas` closed the six
+  the first composers left: the dignity, the navamsha and its vargottama,
+  the retrogression, the combustion and the two chara karakas are all items
+  now. What is still unsaid belongs to the *sections* rather than to the
+  placements, and the measured page counts each rather than letting it be
+  missed — a machine-translated sentence for any of them is the stub the
+  project refuses, so a further composer is a decision and not only a task.
 
 ## Tests
 

@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 15 577 items, 167 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 19 061 items, 204 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 1 978 257 bytes of JSON over the 93 charts, 21 271 bytes a
-chart, 26 340 bytes for the widest and 126 bytes an item. The verses'
-own cited words are **not** what weighs it — 112 962 bytes, 5% — so
+golden file: 2 375 224 bytes of JSON over the 93 charts, 25 540 bytes a
+chart, 30 596 bytes for the widest and 124 bytes an item. The verses'
+own cited words are **not** what weighs it — 112 962 bytes, 4% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -22,13 +22,13 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 28 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 15577 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 15577 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 15577 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 15577 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 42 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 19061 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 19061 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 19061 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 19061 disagree |
 
-Every one of the 31 154 renderings — 15 577 in each of 2 strict
+Every one of the 38 122 renderings — 19 061 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -38,6 +38,13 @@ about.
 |---|---|
 | `sdk.aspect.cast` | 3679 |
 | `sdk.aspect.mutual` | 1317 |
+| `sdk.condition.combust` | 66 |
+| `sdk.condition.dignity` | 837 |
+| `sdk.condition.navamsha` | 837 |
+| `sdk.condition.retrograde` | 243 |
+| `sdk.condition.vargottama` | 106 |
+| `sdk.karaka.ofEight` | 744 |
+| `sdk.karaka.ofSeven` | 651 |
 | `sdk.reading.effect` | 2449 |
 | `sdk.reading.lifeClass` | 214 |
 | `sdk.reading.lifeSpan` | 96 |
@@ -51,7 +58,7 @@ about.
 | `sdk.reason.occupants` | 204 |
 | `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 15 577
+**The verse's own statement is not translated.** 2449 of the 19 061
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -94,20 +101,44 @@ falls in, which is the same as its cusp's only where the division is
 equal — so the branch that tells the two apart is the houses service's
 to hold, and this page does not claim to have tried it.
 
-And the **positions** say where a graha stands and not what it is doing
-there. A placement is nine facts; three are said — the sign and the
-house by `placements`, the longitude by `positions` — and the six that
-remain have no message in any locale. Over the 837 grahas these charts
-place: 243 stand retrograde, 66 are burnt by the Sun, 534 hold a dignity
-that is not neutral, 106 are vargottama, and 651 carry a chara karaka.
-**The plan says none of it.** That is the sharpest statement of where
-the composers stop — not at what the SDK computes, but at what a
-locale can say. Closing one of the six means writing a message in every
-strict locale, which is what `sdk.aspect` did for the drishti.
+And the **rest of a placement** is now said. A placement is nine facts:
+`placements` says the sign and the house, `positions` the longitude, and
+`conditions` and `karakas` the six that were left. Over the 837 grahas
+these charts place: 243 stand retrograde, 66 are burnt by the Sun, 106
+are vargottama, 651 carry a chara karaka among seven and 744 among
+eight. Every one of them is an item now, where before the plan said none
+of it.
+
+**The two karaka schemes are not a formality.** Where both name a graha
+they name the same karaka 326 times and a different one 325, and the
+eight reach 93 grahas the seven do not rank at all. A composer emitting
+one of them would be choosing for the consumer in about half of all
+cases, so `karakas` emits both and the key says which — `ofSeven` or
+`ofEight` — so that filtering by key gives one scheme whole. Which
+order the eight are ranked in is the chart's and not the composer's:
+`rule_chart` follows BPHS ch. 32, the recording engine puts the
+Pitrikaraka last, and these are the corpus's **recorded** karakas, as
+the rupas above are its recorded rupas.
+
+**Saying a node is retrograde carries information**, which is a
+measurement and not an assumption. 182 of the 243 retrogressions are
+Rahu's and Ketu's, and the nodes would be a tautology if they always
+moved backwards — but 2 of these 93 charts record them **direct**, and
+2 of those 2 are `--true-node` variants, of 6 the corpus holds. The true
+node turns; the mean node does not. So the condition is said of every
+graha that holds it, the nodes included.
+
+**A dignity is said of every graha, `NEUTRAL` included**, because *sama*
+is a dignity the texts name rather than the absence of one — which is
+the line `aspects` draws on the other side, skipping `Strength::None`.
+It crosses as an **entity** and not as a string, so the message has no
+arms to go stale: 10 of the catalogue's 11 dignities occur in these
+charts (no chart records DEEP_EXALTED), and a locale carrying nothing
+but `sdk.entity` renders each one's own word.
 
 ## What the packs carry, and what reads it
 
-14 of the 21 messages the base locale carries under `sdk.aspect`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+21 of the 28 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -121,9 +152,13 @@ strict locale, which is what `sdk.aspect` did for the drishti.
 
 No message is unaccounted for: every one either has a composer or has a
 reason. **So a further composer needs a key that does not exist yet**,
-as `aspects` did: the drishti had no word in any locale until
-`sdk.aspect` was written for it. What remains unsaid is counted above
-rather than guessed at here.
+as `aspects` did for the drishti and as `conditions` and `karakas` did
+for the rest of a placement. The second time cost less than the first:
+four of those seven messages say a value the **entity** namespace
+already names in all five locales — a dignity, a rashi, two chara
+karakas — so what had to be written was the frame and not the
+vocabulary. What remains unsaid is counted above rather than guessed at
+here.
 
 ## One chart, said
 
@@ -164,6 +199,44 @@ Venus at 14°13′ Aquarius
 Saturn at 1°15′ Capricorn
 Rahu at 19°17′ Capricorn
 Ketu at 19°17′ Cancer
+the Sun has Exalted dignity
+Sun in Aries in the navamsha
+the Sun is vargottama
+the Moon has Debilitated dignity
+Moon in Libra in the navamsha
+Mars has Friend dignity
+Mars in Libra in the navamsha
+Mercury has Friend dignity
+Mercury in Virgo in the navamsha
+Jupiter has Neutral dignity
+Jupiter in Capricorn in the navamsha
+Venus has Great Friend dignity
+Venus in Aquarius in the navamsha
+Venus is vargottama
+Saturn has Own Sign dignity
+Saturn in Capricorn in the navamsha
+Saturn is vargottama
+Rahu has Neutral dignity
+Rahu in Gemini in the navamsha
+Rahu is retrograde
+Ketu has Neutral dignity
+Ketu in Sagittarius in the navamsha
+Ketu is retrograde
+the Sun is the Darakaraka of the seven
+the Sun is the Pitrikaraka of the eight
+the Moon is the Bhratrikaraka of the seven
+the Moon is the Bhratrikaraka of the eight
+Mars is the Gnatikaraka of the seven
+Mars is the Darakaraka of the eight
+Mercury is the Atmakaraka of the seven
+Mercury is the Atmakaraka of the eight
+Jupiter is the Matrikaraka of the seven
+Jupiter is the Putrakaraka of the eight
+Venus is the Amatyakaraka of the seven
+Venus is the Amatyakaraka of the eight
+Saturn is the Putrakaraka of the seven
+Saturn is the Gnatikaraka of the eight
+Rahu is the Matrikaraka of the eight
 the Sun casts a three-quarter aspect on the Moon
 the Sun casts a quarter aspect on Jupiter
 the Sun casts a quarter aspect on Saturn
@@ -328,6 +401,44 @@ Saturn rules house 12
 शनि १°१५′ मकरमा
 राहु १९°१७′ मकरमा
 केतु १९°१७′ कर्कटमा
+सूर्य उच्चमा छ
+नवांशमा सूर्य मेषमा
+सूर्य वर्गोत्तम छ
+चन्द्र नीचमा छ
+नवांशमा चन्द्र तुलामा
+मंगल मित्रमा छ
+नवांशमा मंगल तुलामा
+बुध मित्रमा छ
+नवांशमा बुध कन्यामा
+गुरु सममा छ
+नवांशमा गुरु मकरमा
+शुक्र अधिमित्रमा छ
+नवांशमा शुक्र कुम्भमा
+शुक्र वर्गोत्तम छ
+शनि स्वक्षेत्रमा छ
+नवांशमा शनि मकरमा
+शनि वर्गोत्तम छ
+राहु सममा छ
+नवांशमा राहु मिथुनमा
+राहु वक्री छ
+केतु सममा छ
+नवांशमा केतु धनुमा
+केतु वक्री छ
+सात कारकमध्ये सूर्य दारकारक हो
+आठ कारकमध्ये सूर्य पितृकारक हो
+सात कारकमध्ये चन्द्र भ्रातृकारक हो
+आठ कारकमध्ये चन्द्र भ्रातृकारक हो
+सात कारकमध्ये मंगल ज्ञातिकारक हो
+आठ कारकमध्ये मंगल दारकारक हो
+सात कारकमध्ये बुध आत्मकारक हो
+आठ कारकमध्ये बुध आत्मकारक हो
+सात कारकमध्ये गुरु मातृकारक हो
+आठ कारकमध्ये गुरु पुत्रकारक हो
+सात कारकमध्ये शुक्र अमात्यकारक हो
+आठ कारकमध्ये शुक्र अमात्यकारक हो
+सात कारकमध्ये शनि पुत्रकारक हो
+आठ कारकमध्ये शनि ज्ञातिकारक हो
+आठ कारकमध्ये राहु मातृकारक हो
 सूर्यले चन्द्रलाई त्रिपाद दृष्टि दिन्छ
 सूर्यले गुरुलाई पाद दृष्टि दिन्छ
 सूर्यले शनिलाई पाद दृष्टि दिन्छ

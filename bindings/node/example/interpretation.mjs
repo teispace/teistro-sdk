@@ -54,15 +54,19 @@ const chart = ctx.chart.found({
     houses: true,
     positions: true,
     aspects: true,
+    conditions: true,
+    karakas: true,
   },
 });
 
-const { placements, readings, strength, houses, positions, aspects } = chart.plans;
+const { placements, readings, strength, houses, positions, aspects, conditions, karakas } =
+  chart.plans;
 console.log('BS 2042-09-17  00:20  Kathmandu');
 console.log(
   `plan     ${placements.length} placement items, ${readings.length} reading items, ` +
     `${strength.length} strengths, ${houses.length} lordships, ` +
-    `${positions.length} positions, ${aspects.length} drishtis`,
+    `${positions.length} positions, ${aspects.length} drishtis, ` +
+    `${conditions.length} conditions, ${karakas.length} karakas`,
 );
 console.log(`keys     ${[...new Set(placements.concat(readings).map((item) => item.key))].join(', ')}`);
 
@@ -72,7 +76,15 @@ console.log(`keys     ${[...new Set(placements.concat(readings).map((item) => it
 for (const locale of ['en-Latn', 'ne-Deva-NP']) {
   ctx.intl.locale = locale;
   console.log(`\n${locale}`);
-  for (const item of [...placements, ...strength, ...houses, ...positions, ...aspects]) {
+  for (const item of [
+    ...placements,
+    ...strength,
+    ...houses,
+    ...positions,
+    ...aspects,
+    ...conditions,
+    ...karakas,
+  ]) {
     const said = ctx.intl.render(item.key, item.params);
     console.log(`  ${said.text}${said.isFallback ? '  (fallback)' : ''}`);
   }

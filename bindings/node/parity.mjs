@@ -270,6 +270,8 @@ const charts = geo.chart.foundMany({
     houses: true,
     positions: true,
     aspects: true,
+    conditions: true,
+    karakas: true,
   },
   aspects: true,
   points: true,

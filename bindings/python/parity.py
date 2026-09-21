@@ -292,6 +292,8 @@ def main() -> None:
                 "houses": True,
                 "positions": True,
                 "aspects": True,
+                "conditions": True,
+                "karakas": True,
             },
             aspects=True,
             points=True,

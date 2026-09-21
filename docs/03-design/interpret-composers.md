@@ -263,6 +263,85 @@ not print, so a consumer can group a plan by rule and a locale that wants the
 key in its prose has it. The measured page's snapshot prints it as a prefix,
 because a reviewer of a rendering needs to know which rule said what.
 
+**`conditions`** — what a graha **is** where it stands, as against where it
+stands: its dignity, its navamsha sign and whether that sign makes it
+vargottama, whether it is retrograde, and whether the Sun burns it. **Built**
+over `sdk.condition`, five messages in English and Nepali, and it reads the
+same `RuleChart` `placements` reads, so it costs a request no section.
+
+**It closes the silence `positions` left, and the measured page had counted
+it.** A `Placement` is nine facts; `placements` said the sign and the house
+and `positions` the longitude, and the other six had no message in any
+locale. `conditions` says four of them and `karakas` the last two, so every
+fact a placement carries is now an item.
+
+**The second composer to spend translation debt, and much the cheaper.**
+Two of its five messages say a value the **entity** namespace already names
+in all five locales — a dignity and a rashi — so the terms that had to be
+written are the three conditions that have no value to name: वक्री,
+अस्तंगत and वर्गोत्तम. They are the tradition's own, flagged for the same
+native review `sdk.aspect` and `sdk.reading` wait on. This is worth stating
+as a rule rather than an observation: **where a composer says a catalogued
+value, the vocabulary is already bought.** `sdk.entity` carries 34 kinds in
+five locales, and a message with an entity slot reaches all of them.
+
+**A dignity crosses as an entity and not as a string**, which is where this
+composer differs from `aspects` and deliberately. `cast` selects on a slot
+with the arms spelled as `Strength::key()` writes them, because `Strength`
+is not catalogued. `Dignity` is, and it is `#[non_exhaustive]` with members
+appended, so eleven arms and a catch-all would read a twelfth as the
+eleventh — a message that goes wrong by standing still. An entity slot
+renders each member's own word and cannot.
+
+**A dignity is said of every graha, `NEUTRAL` included**, where `aspects`
+skips `Strength::None`. The two look alike and are not: no aspect is an
+absence, and the catch-all would have said "fully" of it, while *sama* is a
+dignity the texts name. The three conditions that **are** absences — not
+retrograde, not burnt, not vargottama — are said only where they hold, and
+a test holds that a quiet chart says none of them.
+
+**Vargottama stands beside the navamsha rather than instead of it**, which
+is the argument that put `mutual` beside the two casts it is made of: the
+fact is the sign, the name is what the texts read, and a consumer would
+otherwise derive the name by comparing two items.
+
+One thing the corpus decided rather than the page. Three quarters of the
+retrogressions in these charts are the nodes', which would make "Rahu is
+retrograde" a tautology worth skipping — except that the corpus records the
+nodes **direct** in two of its six `--true-node` variants, and never in a
+mean-node chart. The true node turns; the mean node does not. So the
+condition carries information and is said of every graha that holds it, and
+the measured page counts it rather than this page assuming it.
+
+**`karakas`** — which chara karaka each graha holds, under the seven-karaka
+scheme and the eight-karaka one. **Built** over `sdk.karaka`, two messages,
+and it reads the same `RuleChart` too.
+
+**Both schemes, because they disagree.** Over the corpus's 93 charts the two
+give a graha the same karaka 326 times and a different one 325, and the
+eight rank one graha a chart the seven do not rank at all. A composer
+emitting one of them would be choosing for the consumer, silently, in about
+half of all cases — the dead end the no-dead-ends mandate forbids. It emits
+both, and **the key says which** rather than a slot: `ofSeven` and
+`ofEight`, so a consumer filtering by key gets one scheme whole instead of
+reading a value to find out what it has.
+
+**Which order the eight are ranked in is the chart's and not the
+composer's.** `rule_chart` computes them as BPHS ch. 32 orders them
+(`EightKarakas::Parashara`); the recording engine puts the Pitrikaraka last,
+and `RuleChart::with_chara_karakas` switches. The composer repeats whatever
+the chart carries. That is worth knowing when reading the measured page: it
+composes the corpus's **recorded** karakas, as `strength` composes recorded
+rupas and `houses` recorded cusp signs, so its numbers are the recording
+engine's ranking and the SDK's own answer for the same chart can differ.
+
+**Why it is not four more lines inside `conditions`.** A chara karaka is
+Jaimini's reading of a placement, not a Parashari condition of it, and a
+report that wants the dignity does not automatically want the Atmakaraka.
+Apart, the tradition is a knob — the same argument that separated
+`positions` from `placements`, made over a tradition rather than over a
+precision.
+
 ## 5. What decides a key
 
 A composer that emits a key the locale does not carry produces a visible
@@ -331,14 +410,28 @@ a test that a plan round-trips through JSON.
    right is the houses service's business, and what this pass decides is
    whether a plan made of them can be said.
 8. `positions`, the degree `placements` rounds away. **Built**, and the
-   last composer the shipped packs can carry for free. The measured page
-   settles that rather than this one claiming it: it lists every message
-   the base locale carries under `sdk.reason` and `sdk.reading`, says which
-   composer emits it, and prints any that is neither emitted nor given a
-   reason as **unaccounted**. Twelve of nineteen are emitted; the seven left
-   are two fragments (`exactLongitude`, `strength.rank`), a fact about the
-   zodiac rather than a chart (`rashiNature`), a count of what `occupants`
-   already names (`conjunction`), and the packs' three example messages.
+   last composer the shipped packs could carry for free. The measured page
+   settles what is left rather than this one claiming it: it takes the
+   namespaces from `KEYS`, lists every message the base locale carries
+   under them, says which composer emits it, and prints any that is
+   neither emitted nor given a reason as **unaccounted**. The seven that
+   are spare are two fragments (`exactLongitude`, `strength.rank`), a fact
+   about the zodiac rather than a chart (`rashiNature`), a count of what
+   `occupants` already names (`conjunction`), and the packs' three example
+   messages. The counts live on that page, which is generated and gated, so
+   they cannot go stale here.
+9. `aspects`, the drishti, and the **first composer written a message**.
+   **Built**: `sdk.aspect` in English and Nepali, the relations derived from
+   the corpus's recorded signs because it records no aspect at all, and the
+   pairing rule moved onto a slice so the composer and `Aspects` share one
+   implementation.
+10. `conditions` and `karakas`, the six facts of a placement that
+    `placements` and `positions` leave unsaid. **Built**: `sdk.condition`
+    and `sdk.karaka`, seven messages, four of which say a value the entity
+    namespace already names in all five locales. With them every fact a
+    `Placement` carries is an item, and what the composers still cannot say
+    belongs to the sections rather than to the placements — a bhava's sign
+    and class, the chalit shift, whether a graha reaches its required rupas.
 
 ## 8. What this design does not settle
 
@@ -347,23 +440,29 @@ a test that a plan round-trips through JSON.
   in four languages, are data and not code; they arrive through `migrate
   baseline` and turn `placements` from a description into an interpretation
   without changing its shape.
-- **A further composer needs a new translated key** — answered once, and
-  the answer is the pattern. Five composers shipped for free because the
-  packs carried a message nobody read; `positions` emptied that pool, and
-  the largest gap left was the **drishti**, a computed section with no word
-  in any locale. §4's `aspects` closed it by writing `sdk.aspect` in English
-  and Nepali from the tradition's own terms — पाद, अर्ध, त्रिपाद and
-  पूर्ण दृष्टि, परस्पर दृष्टि — and flagging it for the native review the
-  roadmap already requires for `ne` and `hi`, exactly as `sdk.reading`'s six
-  were. What is left is the same shape and smaller: a bhava's sign and
-  class, the chalit shift, whether a graha reaches its required rupas, and a
-  nakshatra with its pada. Each is a message to write and a review to get,
-  not a design question — and `interpret-measured.md` counts them so the
-  size of the gap is a measurement rather than a memory.
+- **A further composer needs a new translated key** — answered twice now,
+  and the second answer is cheaper than the first. Five composers shipped
+  for free because the packs carried a message nobody read; `positions`
+  emptied that pool. `aspects` spent the debt on the **drishti**, a computed
+  section with no word in any locale, writing `sdk.aspect` from the
+  tradition's own terms — पाद, अर्ध, त्रिपाद and पूर्ण दृष्टि, परस्पर
+  दृष्टि — and flagging it for the native review the roadmap already
+  requires for `ne` and `hi`, exactly as `sdk.reading`'s six were.
+  `conditions` and `karakas` then spent much less for more, because **where
+  a composer says a catalogued value the vocabulary is already bought**:
+  four of their seven messages carry a dignity, a rashi or a chara karaka
+  as an entity slot, and `sdk.entity` names those in all five locales. Only
+  a condition with no value to name — वक्री, अस्तंगत, वर्गोत्तम — had to
+  be written. What is left is the same shape and belongs to the sections
+  rather than to the placements: a bhava's sign and class, the chalit
+  shift, whether a graha reaches its required rupas, and a nakshatra with
+  its pada. Each is a message to write and a review to get, not a design
+  question — and `interpret-measured.md` counts them so the size of the gap
+  is a measurement rather than a memory.
 
 - **A consumer's own composer** — **settled for v1.0, and not by building a
   registry.** This page said a registry cost nothing to add once a second
-  composer existed to prove the interface. Six now exist, and what they
+  composer existed to prove the interface. Eight now exist, and what they
   proved is that the registry was the wrong thing to reach for.
 
   The promise in the extensibility table is *a narrative plan function
@@ -395,7 +494,7 @@ a test that a plan round-trips through JSON.
   side-effect of adding a map.
 
   And if one is built, **the subject is not `&Document`**, which is what
-  five composers showed and one could not have. Four of the five take a
+  several composers showed and one could not have. All but one take a
   document at the façade; `readings` takes a `RulesReading`, because a
   rule's answers are not in the document and never will be. A registry keyed
   on `&Document` would therefore exclude the composer a consumer most wants

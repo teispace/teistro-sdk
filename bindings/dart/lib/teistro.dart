@@ -3424,6 +3424,8 @@ final class PlanRequest {
     this.houses = false,
     this.positions = false,
     this.aspects = false,
+    this.conditions = false,
+    this.karakas = false,
   });
 
   /// Where each of the nine grahas stands and who shares a sign.
@@ -3444,6 +3446,13 @@ final class PlanRequest {
   /// Which graha looks at which, and how strongly.
   final bool aspects;
 
+  /// What each graha is where it stands: its dignity, its navamsha and the
+  /// vargottama it may make, its retrogression and its combustion.
+  final bool conditions;
+
+  /// Which chara karaka each graha holds, under both schemes.
+  final bool karakas;
+
   String get _json => jsonEncode(<String, Object?>{
     'placements': placements,
     'readings': readings,
@@ -3451,6 +3460,8 @@ final class PlanRequest {
     'houses': houses,
     'positions': positions,
     'aspects': aspects,
+    'conditions': conditions,
+    'karakas': karakas,
   });
 }
 

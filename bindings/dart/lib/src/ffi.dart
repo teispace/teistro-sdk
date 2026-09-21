@@ -933,8 +933,8 @@ final class ChartRequestStruct extends ffi.Struct {
 
   /// Narrative plans to compose over every chart, as JSON: an object
   /// naming the composers to run — `placements`, `readings`, `strength`,
-  /// `houses`, `positions` and `aspects` — each false by default. The
-  /// plans come back in the blob's `plans`
+  /// `houses`, `positions`, `aspects`, `conditions` and `karakas` — each
+  /// false by default. The plans come back in the blob's `plans`
   /// section, holding no words at all — an item's params are the JSON
   /// `ts_intl_render` takes, so a binding says one by handing it
   /// straight back, in any locale and in as many as it likes
@@ -2860,8 +2860,8 @@ final class ChartRequest {
 
   /// Narrative plans to compose over every chart, as JSON: an object
   /// naming the composers to run — `placements`, `readings`, `strength`,
-  /// `houses`, `positions` and `aspects` — each false by default. The
-  /// plans come back in the blob's `plans`
+  /// `houses`, `positions`, `aspects`, `conditions` and `karakas` — each
+  /// false by default. The plans come back in the blob's `plans`
   /// section, holding no words at all — an item's params are the JSON
   /// `ts_intl_render` takes, so a binding says one by handing it
   /// straight back, in any locale and in as many as it likes

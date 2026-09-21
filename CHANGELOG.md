@@ -1369,6 +1369,71 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A seventh and an eighth composer, `conditions` and `karakas`: every
+  fact a placement carries is now said.** A `Placement` is nine facts.
+  `placements` said the sign and the house and `positions` the longitude;
+  the other six had no message in any locale, and the measured page had
+  counted them for three composers running. `conditions` says four — the
+  dignity, the navamsha sign, the vargottama that sign may make, the
+  retrogression and the combustion — and `karakas` the two chara karakas.
+  Neither costs a request a section: both read the same graha states
+  `placements` reads, so one knob now serves four composers.
+
+  **The second time translation debt was spent, and it cost much less than
+  the first**, for a reason worth stating as a rule: **where a composer says
+  a catalogued value, the vocabulary is already bought.** Four of the seven
+  new messages carry a dignity, a rashi or a chara karaka as an `:entity`
+  slot, and `sdk.entity` names those in all five shipped locales — so only
+  a condition with no value to name had to be written: वक्री, अस्तंगत and
+  वर्गोत्तम, the tradition's own terms, flagged for the native review `ne`
+  and `hi` already wait on.
+
+  An entity slot is also the **typed** one, and that is not only ergonomics.
+  The generated `sdk.condition.dignity` takes a `Dignity`, not a string, and
+  renders each member's own word. Eleven `.match` arms with a catch-all —
+  the shape `aspects` uses for `Strength`, which is not catalogued — would
+  have read a twelfth member as the eleventh, and `Dignity` is
+  `#[non_exhaustive]` with members appended by the catalogue. The message
+  cannot go wrong by standing still.
+
+  **A dignity is said of every graha, `NEUTRAL` included**, where `aspects`
+  skips `Strength::None`. The two look alike and are not: no aspect is an
+  absence, and its catch-all would have said "fully" of it, while *sama* is
+  a dignity the texts name. The three conditions that **are** absences —
+  not retrograde, not burnt, not vargottama — are said only where they hold.
+  Vargottama stands beside the navamsha rather than instead of it, for the
+  reason `mutual` stands beside its two casts: the fact is the sign, and the
+  name is what the texts read.
+
+  **`karakas` emits both schemes because they disagree.** Over the corpus's
+  93 charts the seven-karaka scheme and the eight give a graha the same
+  karaka 326 times and a different one 325, and the eight rank 93 grahas the
+  seven do not rank at all. Emitting one would have chosen for the consumer
+  in half of all cases, so both are emitted and **the key** says which —
+  `ofSeven`, `ofEight` — so filtering by key gives one scheme whole rather
+  than reading a slot to find out. Which order the eight are ranked in stays
+  the chart's: `rule_chart` follows BPHS ch. 32 and
+  `RuleChart::with_chara_karakas` switches to the recording engine's.
+
+  **The corpus settled a question the design page would otherwise have
+  guessed.** Three quarters of the retrogressions these charts hold are the
+  nodes' — 182 of 243 — which looked like a tautology worth skipping. It is
+  not: 2 of the 93 charts record Rahu and Ketu **direct**, and both are
+  `--true-node` variants, of the 6 the corpus holds. The true node turns and
+  the mean node does not, so the condition carries information and is said.
+
+  `PlanRequest` gained the two members, and with them a `MEMBERS` list the
+  refusal quotes and a test holds against the record's own serialisation,
+  both ways. The hint it printed had gone stale one composer earlier — it
+  still named five when there were six — which is exactly the shape a list
+  written by hand beside a struct takes.
+
+  **Numbers:** none move. 93 charts now compose to 19 061 items, up from
+  15 577, and all 38 122 renderings still answer from the strict locale's
+  own message with no fallback and nothing to warn about. 21 of 28 messages
+  are emitted, across `sdk.aspect`, `sdk.condition`, `sdk.karaka`,
+  `sdk.reading` and `sdk.reason`.
+
 - **A sixth composer, `aspects`, and the first whose messages were written
   for it.** Which graha looks at which and how strongly: a `cast` item for
   every drishti a chart holds and a `mutual` item for every pair that looks

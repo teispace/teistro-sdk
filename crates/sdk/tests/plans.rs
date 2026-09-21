@@ -358,6 +358,101 @@ fn the_drishtis_are_said_with_the_messages_written_for_them() {
     assert_eq!(refused.field(), Some("aspects"));
 }
 
+/// The conditions are the seventh composer. They close the six facts of a
+/// placement that `placements` and `positions` leave unsaid — four of them
+/// here and the two chara karakas in `karakas` — and they read the same
+/// graha states, so a document that can be placed can be conditioned.
+#[test]
+fn the_conditions_say_what_a_graha_is_where_it_stands() {
+    let (sdk, document) = common::reading("{}", ChartRequest::with_state);
+    let plan = sdk
+        .interpret()
+        .conditions(&document)
+        .expect("the conditions");
+    let inputs = RuleInputs::of(&document).expect("the rules' inputs");
+    let placed = &inputs.chart.placements[..9];
+
+    // A dignity and a navamsha for each of the nine, and the three
+    // conditions that are absences only where they hold.
+    let of = |key: &str| plan.items.iter().filter(|item| item.key == key).count();
+    assert_eq!(of("sdk.condition.dignity"), 9, "sama is a dignity too");
+    assert_eq!(of("sdk.condition.navamsha"), 9);
+    assert_eq!(
+        of("sdk.condition.vargottama"),
+        placed.iter().filter(|at| at.navamsha == at.sign).count()
+    );
+    assert_eq!(
+        of("sdk.condition.retrograde"),
+        placed.iter().filter(|at| at.retrograde).count()
+    );
+    assert_eq!(
+        of("sdk.condition.combust"),
+        placed.iter().filter(|at| at.combust).count()
+    );
+    let named = of("sdk.condition.vargottama")
+        + of("sdk.condition.retrograde")
+        + of("sdk.condition.combust");
+    assert_eq!(plan.len(), 18 + named, "nothing said that was not counted");
+
+    // A dignity crosses as the catalogue's own key, not as a rendered word,
+    // which is what lets a locale carrying nothing but `sdk.entity` say it.
+    let said = plan.items[0].params.get("dignity").cloned();
+    assert_eq!(said, Some(teistro::Value::catalogued(placed[0].dignity)));
+
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        sdk.intl().set_locale(locale).expect("a strict locale");
+        for item in &plan {
+            let said = sdk.intl().render(&item.key, &item.params);
+            assert_eq!(said.resolved_from.as_deref(), Some(locale), "{}", item.key);
+            assert!(!said.is_fallback, "{} fell back in {locale}", item.key);
+            assert!(said.warnings.is_empty(), "{:?}", said.warnings);
+        }
+    }
+
+    // It needs what `placements` needs and nothing more.
+    let (without, bare) = common::reading("{}", |request| request);
+    let refused = without.interpret().conditions(&bare).unwrap_err();
+    assert_eq!(refused.field(), Some("state"));
+}
+
+/// The karakas are the eighth composer, and the only one that says the same
+/// fact twice on purpose: the two chara karaka schemes disagree about half
+/// the time, so emitting one would choose for the consumer. The key says
+/// which scheme, so filtering by key gives one whole.
+#[test]
+fn the_karakas_say_both_schemes_because_they_disagree() {
+    let (sdk, document) = common::reading("{}", ChartRequest::with_state);
+    let plan = sdk.interpret().karakas(&document).expect("the karakas");
+    let inputs = RuleInputs::of(&document).expect("the rules' inputs");
+    let placed = &inputs.chart.placements[..9];
+
+    let of = |key: &str| plan.items.iter().filter(|item| item.key == key).count();
+    assert_eq!(
+        of("sdk.karaka.ofSeven"),
+        placed.iter().filter(|at| at.karaka7.is_some()).count()
+    );
+    assert_eq!(
+        of("sdk.karaka.ofEight"),
+        placed.iter().filter(|at| at.karaka8.is_some()).count()
+    );
+    assert_eq!(of("sdk.karaka.ofSeven"), 7, "the Sun to Saturn");
+    assert_eq!(of("sdk.karaka.ofEight"), 8, "and Rahu besides");
+
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        sdk.intl().set_locale(locale).expect("a strict locale");
+        for item in &plan {
+            let said = sdk.intl().render(&item.key, &item.params);
+            assert_eq!(said.resolved_from.as_deref(), Some(locale), "{}", item.key);
+            assert!(!said.is_fallback, "{} fell back in {locale}", item.key);
+            assert!(said.warnings.is_empty(), "{:?}", said.warnings);
+        }
+    }
+
+    let (without, bare) = common::reading("{}", |request| request);
+    let refused = without.interpret().karakas(&bare).unwrap_err();
+    assert_eq!(refused.field(), Some("state"));
+}
+
 /// A plan crosses as its own JSON, and what comes back is what went out:
 /// the shape a golden file holds and the boundary's `plans` section carries
 /// are one shape, which is what lets a fixture move between them. A plan is

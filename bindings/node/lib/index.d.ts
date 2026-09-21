@@ -768,6 +768,10 @@ export interface PlanRequest {
   readonly positions?: boolean;
   /** Which graha looks at which, and how strongly. */
   readonly aspects?: boolean;
+  /** What each graha is where it stands: dignity, navamsha, motion, combustion. */
+  readonly conditions?: boolean;
+  /** Which chara karaka each graha holds, under both schemes. */
+  readonly karakas?: boolean;
 }
 
 /**
@@ -796,6 +800,10 @@ export interface Plans {
   readonly positions?: readonly PlanItem[];
   /** Which graha looks at which; absent unless `aspects` asked for it. */
   readonly aspects?: readonly PlanItem[];
+  /** What each graha is where it stands; absent unless `conditions` asked. */
+  readonly conditions?: readonly PlanItem[];
+  /** Each graha's chara karakas; absent unless `karakas` asked for them. */
+  readonly karakas?: readonly PlanItem[];
 }
 
 /**

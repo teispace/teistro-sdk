@@ -740,6 +740,8 @@ void _engineTests() {
             houses: true,
             positions: true,
             aspects: true,
+            conditions: true,
+            karakas: true,
           ),
           rules: const RuleRequest(shipped: [ShippedRules.nabhasas]),
         )!;
@@ -759,6 +761,12 @@ void _engineTests() {
     // The drishtis read the aspects section, never asked for either.
     final looks = plans['aspects']! as List<Object?>;
     expect(looks, isNotEmpty, reason: 'every chart holds a drishti');
+    // The conditions and the karakas read the same states the placements
+    // do, so one section serves four composers.
+    final states = plans['conditions']! as List<Object?>;
+    expect(states.length, greaterThanOrEqualTo(18), reason: 'nine of each');
+    final karakas = plans['karakas']! as List<Object?>;
+    expect(karakas, hasLength(15), reason: 'seven of seven, eight of eight');
 
     // Each item said by handing its params straight to the renderer, which
     // is the property the crossing exists for.
@@ -771,6 +779,8 @@ void _engineTests() {
           ...ruled,
           ...degrees,
           ...looks,
+          ...states,
+          ...karakas,
         ].cast<Map<String, Object?>>()) {
       final key = item['key']! as String;
       expect(key, startsWith('sdk.'));

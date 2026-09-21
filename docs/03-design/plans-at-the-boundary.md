@@ -19,8 +19,9 @@ render a message, and cannot get from one to the other.
 In scope: how a plan is asked for, what comes back, what a binding does with
 it, errors, cost, and the gates.
 
-Out of scope: the six composers still to come, which add keys and not
-mechanism; the report section catalogue, which groups plans into a document;
+Out of scope: the composers themselves, which add keys and not
+mechanism — `interpret-composers.md` is where they are decided and
+`interpret-measured.md` counts them; the report section catalogue, which groups plans into a document;
 and a **rendered** plan at the boundary, which §7 declines with a reason.
 
 ## 2. What the research found
@@ -82,7 +83,9 @@ It is an object, one member per composer:
 - **An unknown member is refused**, naming the composers there are. A typo
   that silently composes nothing is the dead end the no-dead-ends mandate
   forbids; a composer added later is a member added here, and the refusal
-  lists it from one place.
+  lists it from one place — `PlanRequest::MEMBERS`, which a test holds
+  against the record's own serialisation both ways, because the hint was
+  hand-written once and went stale one composer later.
 - An object rather than a bit set, because a composer will want options of
   its own — which rules to read, which house — and a bit set has nowhere to
   put them. `sections` is a bit set because its members never will.

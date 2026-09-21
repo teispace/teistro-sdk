@@ -677,6 +677,8 @@ class AnEngine(WithLibrary):
                 "houses": True,
                 "positions": True,
                 "aspects": True,
+                "conditions": True,
+                "karakas": True,
             },
             {"shipped": ["nabhasas"]},
         )
@@ -692,6 +694,12 @@ class AnEngine(WithLibrary):
         self.assertEqual(len(plans["positions"]), 9, "the nine grahas")
         # The drishtis read the aspects section, never asked for either.
         self.assertTrue(plans["aspects"], "every chart holds a drishti")
+        # The conditions and the karakas read the same states the
+        # placements do, so one section serves four composers.
+        self.assertGreaterEqual(
+            len(plans["conditions"]), 18, "a dignity and a navamsha each"
+        )
+        self.assertEqual(len(plans["karakas"]), 15, "seven and eight")
 
         said = 0
         for item in [
@@ -701,6 +709,8 @@ class AnEngine(WithLibrary):
             *plans["houses"],
             *plans["positions"],
             *plans["aspects"],
+            *plans["conditions"],
+            *plans["karakas"],
         ]:
             self.assertTrue(item["key"].startswith("sdk."))
             rendered = self.ctx.intl.render(item["key"], item["params"])
