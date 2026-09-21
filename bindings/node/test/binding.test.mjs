@@ -115,6 +115,25 @@ test('a pack loads at runtime and lays its record over the one standing', () => 
   assert.equal(after.forms.name, before.name, 'the map carries the named ones too');
 });
 
+test('an almanac keeps each day\'s rows of a per-day list by range', () => {
+  const ctx = context();
+  const week = ctx.almanac.of({
+    from: { calendar: Calendar.Gregorian, year: 2024, eraYear: 0, month: 6, day: 17, resolution: Resolution.Defined, computedMonth: 0, computedDay: 0 },
+    to: { calendar: Calendar.Gregorian, year: 2024, eraYear: 0, month: 6, day: 19, resolution: Resolution.Defined, computedMonth: 0, computedDay: 0 },
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  });
+  assert.equal(week.length, 3);
+
+  // The rows of a per-day list are one run inside a column the whole
+  // batch shares, and the batch knows where each day's run begins.
+  const [start, end] = week.range('kaalas', 0);
+  assert.ok(start <= end, `${start} to ${end}`);
+  assert.equal(end - start, week.at(0).kaalas.length, 'the run is that day\'s rows');
+  const [nextStart] = week.range('kaalas', 1);
+  assert.equal(nextStart, end, 'one day\'s run ends where the next begins');
+});
+
 test('a refusal carries its status, its field and its hint', () => {
   const ctx = context();
   assert.throws(
@@ -1087,6 +1106,13 @@ test('a consumer dasha system registers, is asked for by its key and reads as it
   assert.deepEqual(consumer.periods, shipped.periods);
   assert.deepEqual(consumer.balance, shipped.balance);
   assert.equal(ctx.keys.name(ctx.keys.id('dasha_system.ACME_VIMSHOTTARI')), 'dasha_system.ACME_VIMSHOTTARI');
+  // The batch knows a registered system's key by the id inside its packed
+  // key — the low half — which is how a consumer reads back a name the
+  // catalogue never had. An id the batch never saw answers with nothing
+  // rather than with a guess.
+  const registered = ctx.keys.id('dasha_system.ACME_VIMSHOTTARI') & 0xffff;
+  assert.equal(chart.batch.dashaName(registered), 'dasha_system.ACME_VIMSHOTTARI');
+  assert.equal(chart.batch.dashaName(0xfffe), undefined, 'an id it never saw');
   assert.throws(
     () => ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, dashas: ['dasha_system.ACME_OTHER'] }),
     (error) => error instanceof TypeError && error.message.startsWith('dashas[0]'),

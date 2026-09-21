@@ -20,17 +20,17 @@ therefore one nothing touches.
 
 | binding | declares | exercised | untouched |
 |---|---:|---:|---:|
-| Node | 32 | 30 | 2 |
+| Node | 32 | 32 | 0 |
 | Dart | 22 | 21 | 1 |
-| Python | 117 | 113 | 4 |
+| Python | 117 | 115 | 2 |
 
-**7 members nothing names**, of 171 members the three layers declare.
+**3 members nothing names**, of 171 members the three layers declare.
 They are listed rather than counted, because a member that stops being
 exercised has to change this page and one that starts has to as well.
 
-- **Node**: `dashaName`, `range`
+- **Node**: every member is touched.
 - **Dart**: `callJson`
-- **Python**: `call_json`, `keeps_its_sign`, `last_error`, `manifest_json`
+- **Python**: `call_json`, `manifest_json`
 
 | proposed rule | verdict | measured |
 |---|---|---|

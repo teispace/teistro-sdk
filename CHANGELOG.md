@@ -1388,10 +1388,17 @@ the astronomical numbers do not move. Nothing else computes yet.
   area a consumer with a context reaches for. Both assert it now, and that
   the two paths agree.
 
-  What is left is seven of 171: `dashaName` and `range` in Node,
-  `callJson` in Dart, and `call_json`, `keeps_its_sign`, `last_error` and
-  `manifest_json` in Python. Three of those are the engine passthrough's
-  JSON forms, which need an engine the workspace does not carry.
+  Four more followed: Node's batch never answered a **registered dasha
+  system's key by its id**, nor did an almanac ever say where one day's
+  rows of a per-day list begin and end; Python had never read a **varga
+  placement's** own question — whether the division left a body in the
+  sign it was already in, which the D1 always does and a D9 rarely — nor
+  the **last error** a refusal leaves on the context.
+
+  **Three of 171 are left, and all three are the same thing**: `callJson`,
+  `call_json` and `manifest_json`, the engine passthrough's JSON forms,
+  which need a real engine the workspace does not carry. Node is now
+  exercised member for member.
 
 - **A page measuring what each binding's own surface has ever been used
   for.** `entry-point-is-reachable` holds that every boundary function is

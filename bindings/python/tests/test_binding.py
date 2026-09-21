@@ -658,6 +658,43 @@ class AnEngine(WithLibrary):
             self.assertGreaterEqual(bhava.sandhi_deg, 0.0)
             self.assertLess(bhava.sandhi_deg, 360.0)
 
+    def test_a_divisional_chart_says_where_a_body_moved_and_where_it_stayed(self) -> None:
+        """A varga placement knows the sign the division put a body in and
+        whether that is the sign it was already in — the D1 leaves every
+        body where it was, and a D9 rarely does."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172),
+            longitude_deg=Longitude(85.324),
+            altitude_m=Altitude(1400),
+        )
+        chart = self.ctx.chart.found(
+            instant=2451545.0,
+            place=observer,
+            utc_offset_seconds=20700,
+            vargas=[Varga.D1, Varga.D9],
+        )
+        first, ninth = chart.vargas
+        self.assertEqual(first.varga, Varga.D1)
+        self.assertTrue(
+            all(placed.at.keeps_its_sign for placed in first.grahas),
+            "the D1 is the rashi chart and moves nothing",
+        )
+        self.assertEqual(ninth.varga, Varga.D9)
+        moved = [p for p in ninth.grahas if not p.at.keeps_its_sign]
+        self.assertTrue(moved, "a navamsha moves most bodies")
+        for placed in moved:
+            self.assertNotEqual(placed.at.sign, placed.at.rashi)
+
+    def test_the_last_error_is_the_failing_call_s_own(self) -> None:
+        """A refusal crosses whole, and the context keeps the last one: a
+        consumer that caught the exception can still read what the library
+        said about it."""
+        with self.assertRaises(TeistroError):
+            self.ctx.intl.entity("graha.SUNN")
+        last = self.ctx.last_error
+        self.assertEqual(last.status, Status.UNSUPPORTED)
+        self.assertIn("SUNN", last.message)
+
     def test_a_theme_writes_each_drawing_as_svg_and_a_wrong_one_is_refused(self) -> None:
         """A theme writes every drawing as SVG in the context's locale, and
         a wrong one is refused by its path (`03-design/render-svg.md`)."""
