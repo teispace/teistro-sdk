@@ -432,6 +432,23 @@ pub fn is_key_segment(s: &str) -> bool {
     }
 }
 
+/// Whether a full key names a member of an **open** catalogue kind, whose
+/// members are a consumer's packs rather than a table.
+///
+/// `rule` is the only one, and the catalogue cannot know a consumer's rule
+/// keys — that is what open means. So a reading's key is held to being well
+/// formed here, and to naming a shipped rule by the gate that reads the
+/// rule packs, which is a stronger check than `resolve` could give
+/// (`03-design/interpretation-records.md` §4).
+#[must_use]
+pub fn is_open_kind_key(full: &str) -> bool {
+    full.split_once('.').is_some_and(|(kind, member)| {
+        teistro_core::catalogue::Kind::from_name(kind)
+            .is_some_and(teistro_core::catalogue::Kind::is_open)
+            && is_member_key(member)
+    })
+}
+
 /// Whether `s` is a key a catalogue member or a rule pack could carry.
 ///
 /// **Not "screaming snake case"**, and the corpus said so rather than this

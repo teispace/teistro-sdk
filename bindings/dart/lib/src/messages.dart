@@ -1735,6 +1735,8 @@ final class MessagesSdkReading {
       _r.render('sdk.reading.lifeSpan', {'count': count, 'rule': rule, 'unit': unit});
   String participants({required int count, required List<Object> grahas, required String rule}) =>
       _r.render('sdk.reading.participants', {'count': count, 'grahas': grahas, 'rule': rule});
+  String says({required String reading, required String rule}) =>
+      _r.render('sdk.reading.says', {'reading': {r'$entity': reading}, 'rule': rule});
   String severity({required String rule, required int severity}) =>
       _r.render('sdk.reading.severity', {'rule': rule, 'severity': severity});
   String status({required String rule, required String status}) =>

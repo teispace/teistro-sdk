@@ -171,19 +171,42 @@ them, and a maintainer who wants the family reading writes the record.
 ## 5. What reads one
 
 `readings` emits `sdk.reading.effect` with the rule's cited text as a slot.
-With a corpus loaded it must choose: **the locale's own reading where there
-is one, the cited text where there is not.**
+With a corpus loaded it chooses: **the locale's own reading where there is
+one, the cited text where there is not.** **Built.**
 
 That choice is the one §5 of `interpret-composers.md` reserved — *where a
 composer chooses between a general key and a specific one it asks the base
 locale, not the reader's* — and the trait it said would "arrive with the
-composer that chooses" arrives here. Asking the **base** locale keeps a plan
-language-neutral: the same chart gives the same plan whoever reads it, and
-a locale without the corpus falls back to the reading the base locale has
-rather than to a different plan.
+composer that chooses" arrived here: `Vocabulary`, with one question,
+`has_reading(rule)`. It is a trait rather than an `&Intl` so a composer is
+testable without a locale engine and so the question is visible in the
+signature; `NoReadings` is the named answer for a consumer that has loaded
+no pack, because a silent default would be the composer making the
+consumer's choice.
 
-A reading is prose, so it crosses as a slot the way a cited verse does.
-What changes is where the words come from, not the plan's shape.
+**A reading is said for the rule, not for a statement.** A rule citing three
+statements gets one reading, not three copies of the same passage — and a
+rule citing **none** says its reading too. That last case is the one the
+first draft missed and the corpus corrected: of the kernel's shipped rules,
+every single one that has a reading states no effect of its own. They were
+the silent rules, and a written reading is exactly what they lacked.
+
+**It says the summary, not the passage.** `sdk.reading.says` renders the
+record's `name` form. A plan item is a sentence — it sits beside "Moon
+takes part" and "in force" — and some of the corpus's `full` passages run
+to several hundred words, a few of them describing the *rule* rather than
+the native. So the plan says the sentence and the record keeps the essay: a
+consumer wanting the passage or a facet reads the entity directly, which is
+one call on an engine it already has.
+
+**How much this closes is a measurement, and a modest one.** The readings
+were written against the recording engine's rule keys; the kernel ships
+packs written independently. They are not two spellings of one set:
+dropping the kernel's leading segment matches 44 of its 263 nabhasas and
+**none** of its 73 arishtas. 12 of the 365 rules the measured pass composes
+carry a reading, and they produce 229 items. The gap is reported rather
+than closed with a guess — see §4 — and closing it means either the shipped
+packs adopting the engine's keys or readings written for the kernel's.
 
 ## 6. The measurement, and the gates
 
@@ -227,6 +250,10 @@ A generated page, `interpretation-records-measured.md`, held by
 4. **The pack as an artefact**: built from the migrated records, versioned,
    and loaded rather than embedded.
 5. **The composer's choice**, with the trait that asks the base locale.
+   **Built**: `Vocabulary`, `NoReadings`, `sdk.reading.says`, and the
+   renderer taught the same open-kind rule the loader and the validator
+   learned — it resolved the key a third time and would have warned on
+   every reading.
 6. **The measured page and `check-interpretations`.**
 7. **The boundary and the bindings**, so a reading crosses as the rest does.
 

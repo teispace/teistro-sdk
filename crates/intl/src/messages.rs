@@ -1171,6 +1171,25 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.reading.says`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Says {
+            /// The `reading` parameter.
+            pub reading: String,
+            /// The `rule` parameter.
+            pub rule: String,
+        }
+
+        impl crate::TypedMessage for Says {
+            const KEY: &'static str = "sdk.reading.says";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("reading", crate::Value::entity(&self.reading)),
+                    ("rule", crate::Value::Str(self.rule.clone())),
+                ])
+            }
+        }
+
         /// The message `sdk.reading.severity`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct Severity {

@@ -1759,7 +1759,14 @@ impl<'a> Eval<'a> {
                 self.warn(format!("entity `{key}` is not a `{kind}`"));
             }
         }
-        if let Err(unknown) = teistro_core::key::resolve(&key) {
+        // An **open** kind's members are a consumer's packs rather than a
+        // table, so the catalogue cannot resolve one and a warning here
+        // would fire on every rule reading. The key is held to being well
+        // formed instead, and the packs decide the rest
+        // (`03-design/interpretation-records.md` §4).
+        if !crate::source::is_open_kind_key(&key)
+            && let Err(unknown) = teistro_core::key::resolve(&key)
+        {
             self.warn(format!("entity `{key}` is not a catalogue key: {unknown}"));
         }
         let form = options.get("form").map_or("name", String::as_str);

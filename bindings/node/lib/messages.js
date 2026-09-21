@@ -604,6 +604,7 @@ export function messages(r) {
         lifeClass: (p) => r.render('sdk.reading.lifeClass', { class: p.class, rule: p.rule }),
         lifeSpan: (p) => r.render('sdk.reading.lifeSpan', { count: p.count, rule: p.rule, unit: p.unit }),
         participants: (p) => r.render('sdk.reading.participants', { count: p.count, grahas: p.grahas, rule: p.rule }),
+        says: (p) => r.render('sdk.reading.says', { reading: { '$entity': p.reading }, rule: p.rule }),
         severity: (p) => r.render('sdk.reading.severity', { rule: p.rule, severity: p.severity }),
         status: (p) => r.render('sdk.reading.status', { rule: p.rule, status: p.status }),
       },

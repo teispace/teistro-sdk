@@ -49,6 +49,8 @@ const WEIGHTS: &str = "fixtures/baseline/shadbala";
 const DIVISIONS: &str = "fixtures/baseline";
 /// The chart the page ends with, rendered whole: the corpus's first.
 const SNAPSHOT: &str = "c001-kathmandu-1990-04-14";
+/// The rule readings a locale carries, loaded rather than embedded.
+const READINGS: &str = "packs/readings";
 
 /// One chart of the corpus and the plan its composers write.
 struct Composed {
@@ -278,7 +280,11 @@ fn rules() -> Vec<Rule> {
     rules
 }
 
-fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
+fn composed(
+    root: &Path,
+    rules: &[Rule],
+    vocabulary: &dyn teistro_interpret::Vocabulary,
+) -> Result<Vec<Composed>, String> {
     let weighed = weights(root);
     let divided = divisions(root);
     let mut out = Vec::new();
@@ -313,8 +319,10 @@ fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
             plan.items.extend(conditions(&chart));
             plan.items.extend(karakas(&chart));
             plan.items.extend(aspects(&relations(&chart)?));
-            plan.items
-                .extend(readings(held.iter().map(|(rule, result)| (*rule, result))));
+            plan.items.extend(readings(
+                held.iter().map(|(rule, result)| (*rule, result)),
+                vocabulary,
+            ));
             if let Some(weighed) = weighed.get(&name) {
                 plan.items.extend(strength(&weighed.reading));
             }
@@ -447,7 +455,14 @@ fn costs(out: &mut String, plans: &[Composed], items: usize) {
 
 /// The key table, and the two silences that belong to no section: the verse
 /// a reading cites untranslated, and the lagna no placement message names.
-fn what_they_say(out: &mut String, by_key: &BTreeMap<&str, usize>, items: usize, charts: usize) {
+fn what_they_say(
+    out: &mut String,
+    by_key: &BTreeMap<&str, usize>,
+    items: usize,
+    charts: usize,
+    composed_rules: usize,
+    carried: usize,
+) {
     out.push_str("## What the composers say\n\n");
     out.push_str("| key | items |\n|---|---|\n");
     for (key, at) in by_key {
@@ -471,6 +486,7 @@ fn what_they_say(out: &mut String, by_key: &BTreeMap<&str, usize>, items: usize,
         count(effects),
         plural(items, "item")
     );
+    the_readings_seam(out, by_key, composed_rules, carried);
     let _ = write!(
         out,
         "What they cannot say is counted too: the **lagna** stands in every \
@@ -724,6 +740,53 @@ fn the_rest_of_a_placement(out: &mut String, plans: &[Composed]) {
     the_conditions_counted(out, &rest, plans.len());
 }
 
+/// Where the seam closes and where it does not, which is a measurement and
+/// not a promise (`03-design/interpretation-records.md` §5).
+///
+/// `readings` says a rule's own reading where the base locale carries one
+/// and the verse's cited words where it does not. How often that helps is a
+/// fact about **two rule sets** rather than about the mechanism: the
+/// readings were written against the recording engine's keys, and the
+/// kernel ships packs of its own.
+fn the_readings_seam(
+    out: &mut String,
+    by_key: &BTreeMap<&str, usize>,
+    composed_rules: usize,
+    carried: usize,
+) {
+    let says = by_key
+        .get(<teistro_intl::messages::sdk::reading::Says as teistro_intl::TypedMessage>::KEY)
+        .copied()
+        .unwrap_or_default();
+    let _ = write!(
+        out,
+        "**Where a locale has been given a reading, the seam closes**, and \
+         the measurement says how far. A readings pack is loaded here the \
+         way a consumer loads one, and `readings` asks the **base** locale \
+         for each rule: {} of the {} this pass composes carry a reading, and \
+         they produced {}, said in each locale's own words instead of the \
+         verse's English.\n\n",
+        count(carried),
+        plural(composed_rules, "rule"),
+        plural(says, "`sdk.reading.says` item"),
+    );
+    let _ = write!(
+        out,
+        "**That ratio is a fact about two rule sets and not about the \
+         mechanism.** The readings were written against the recording \
+         engine's rule keys, where they cover all but eighteen \
+         ([`interpretation-records-measured.md`](interpretation-records-measured.md)); \
+         the kernel ships packs written independently, and their keys are \
+         not the same keys. They are not two spellings of one set either — \
+         dropping the kernel's leading segment matches 44 of its 263 \
+         nabhasas and none of its 73 arishtas — so nothing is mapped across \
+         by resemblance, and the page reports the gap rather than closing \
+         it with a guess. Every rule that matched states **no** effect of \
+         its own, which is why a reading is said for a rule rather than for \
+         one of its statements: those rules were the silent ones.\n\n",
+    );
+}
+
 /// Why a message the base locale carries is read by no composer.
 ///
 /// The list is exhaustive and written here rather than in prose, because a
@@ -890,6 +953,23 @@ fn decided(out: &mut String, said: &[(String, Said)], items: usize, locales: usi
     }
 }
 
+/// Loads the rule readings into an engine, as a consumer would.
+///
+/// The records live in a root of their own because `i18n/` is compiled into
+/// every artefact and this corpus is several times its size; building each
+/// locale's pack and loading it is what a consumer does, so it is what this
+/// pass does.
+fn load_readings(root: &Path, intl: &mut Intl) -> Result<(), String> {
+    let tree = Tree::load(&root.join(READINGS)).map_err(|err| err.to_string())?;
+    for locale in tree.locales.values() {
+        let bytes = teistro_intl::pack::build(locale, teistro_intl::source::ENTITY_NAMESPACE)
+            .map_err(|err| format!("{READINGS}/{}: {err}", locale.tag))?;
+        intl.load_pack(&bytes)
+            .map_err(|err| format!("{READINGS}/{}: {err}", locale.tag))?;
+    }
+    Ok(())
+}
+
 fn page(root: &Path) -> Result<String, String> {
     let tree = Tree::load(&root.join("i18n")).map_err(|err| err.to_string())?;
     let strict: Vec<String> = tree
@@ -899,8 +979,21 @@ fn page(root: &Path) -> Result<String, String> {
         .map(|locale| locale.tag.clone())
         .collect();
     let mut intl = Intl::from_tree(&tree).map_err(|err| err.to_string())?;
+    // The readings are **loaded**, as a consumer loads them: the pack is
+    // built from `packs/readings` and handed to the engine through the same
+    // `load_pack` the boundary offers, so this pass measures the path that
+    // ships rather than a merge only it can do
+    // (`03-design/interpretation-records.md` §3).
+    load_readings(root, &mut intl)?;
     let shipped = rules();
-    let plans = composed(root, &shipped)?;
+    // How many of the rules this pass composes the base locale carries a
+    // reading for — asked of the same vocabulary the composer asks, so the
+    // page cannot claim a coverage the plan did not get.
+    let carried = shipped
+        .iter()
+        .filter(|rule| teistro_interpret::Vocabulary::has_reading(&intl, &rule.key))
+        .count();
+    let plans = composed(root, &shipped, &intl)?;
     let mut by_key: BTreeMap<&str, usize> = KEYS.iter().map(|key| (*key, 0)).collect();
     for composed in &plans {
         for item in &composed.plan {
@@ -941,7 +1034,14 @@ fn page(root: &Path) -> Result<String, String> {
 
     decided(&mut out, &said, items, strict.len());
 
-    what_they_say(&mut out, &by_key, items, plans.len());
+    what_they_say(
+        &mut out,
+        &by_key,
+        items,
+        plans.len(),
+        shipped.len(),
+        carried,
+    );
 
     unsaid_strength(&mut out, root);
 

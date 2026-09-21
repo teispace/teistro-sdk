@@ -70,7 +70,7 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 21] = [
+pub const KEYS: [&str; 22] = [
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
     <reason::GrahaAt as TypedMessage>::KEY,
@@ -78,6 +78,7 @@ pub const KEYS: [&str; 21] = [
     <reason::Lordship as TypedMessage>::KEY,
     <reason::strength::Score as TypedMessage>::KEY,
     <reading::Effect as TypedMessage>::KEY,
+    <reading::Says as TypedMessage>::KEY,
     <reading::LifeSpan as TypedMessage>::KEY,
     <reading::LifeClass as TypedMessage>::KEY,
     <reading::Participants as TypedMessage>::KEY,
@@ -216,5 +217,60 @@ impl<'p> IntoIterator for &'p Plan {
 
     fn into_iter(self) -> Self::IntoIter {
         self.items.iter()
+    }
+}
+
+/// What a composer asks **the base locale** before choosing between a
+/// general message and one written for a particular subject.
+///
+/// `readings` is the composer that chooses: a rule's own reading where a
+/// locale has been given one, and the verse's cited words where it has not.
+/// It asks the **base** locale and not the reader's, because the base
+/// locale is a fact of the build and the reader's is not — a plan that
+/// changed shape with the reader would not be language-neutral, and the
+/// same chart would compose differently for two people
+/// (`03-design/interpret-composers.md` §5).
+///
+/// It is a trait rather than an `&Intl` so a composer can be tested without
+/// building a locale engine, and so the question a composer asks is
+/// visible in its signature.
+pub trait Vocabulary {
+    /// Whether the base locale carries a reading of this rule, named by
+    /// the rule's own key (`RUCHAKA`, not `rule.RUCHAKA`).
+    fn has_reading(&self, rule: &str) -> bool;
+}
+
+/// The catalogue key a rule's reading is carried under.
+///
+/// `rule` is the catalogue's only **open** kind, so this is a spelling and
+/// not a lookup (`03-design/interpretation-records.md` §4).
+#[must_use]
+pub fn reading_key(rule: &str) -> String {
+    format!("rule.{rule}")
+}
+
+/// A vocabulary carrying no reading at all: every rule composes from the
+/// words its verse cites.
+///
+/// This is what a consumer that has not loaded a readings pack has, and it
+/// is named rather than defaulted — a composer that silently assumed one
+/// or the other would be making the consumer's choice for it.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct NoReadings;
+
+impl Vocabulary for NoReadings {
+    fn has_reading(&self, _rule: &str) -> bool {
+        false
+    }
+}
+
+impl Vocabulary for teistro_intl::Intl {
+    /// The base locale's own record, which is what decides the plan's
+    /// shape. A reader's locale that lacks the record falls back along its
+    /// chain when the item is rendered; that is the renderer's business
+    /// and not the plan's.
+    fn has_reading(&self, rule: &str) -> bool {
+        self.entity_from(teistro_intl::source::BASE_LOCALE, &reading_key(rule))
+            .is_some()
     }
 }

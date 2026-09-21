@@ -905,6 +905,13 @@ class MessagesSdkReading:
             {"count": count, "grahas": grahas, "rule": rule},
         )
 
+    def says(self, *, reading: str, rule: str) -> str:
+        """`sdk.reading.says`"""
+        return self._r.render(
+            "sdk.reading.says",
+            {"reading": {"$entity": reading}, "rule": rule},
+        )
+
     def severity(self, *, rule: str, severity: int) -> str:
         """`sdk.reading.severity`"""
         return self._r.render(

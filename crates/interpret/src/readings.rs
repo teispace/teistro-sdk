@@ -18,7 +18,7 @@ use teistro_intl::Value;
 use teistro_intl::messages::sdk::reading;
 use teistro_rules::{Body, NetStatus, Outcome, Rule, RuleResult, Unit};
 
-use crate::Plan;
+use crate::{Plan, Vocabulary};
 
 /// The unit a span is counted in, as its message selects on it.
 const fn unit(unit: Unit) -> &'static str {
@@ -64,16 +64,47 @@ fn body(body: Body) -> Value {
 /// and how grave it is. A rule whose verse states nothing and
 /// whose result says nothing else contributes nothing — a composer that
 /// filled the gap would be inventing.
+///
+/// **What its verse says has two forms, and the vocabulary chooses.** Where
+/// the base locale carries a reading of the rule, the item is
+/// `sdk.reading.says`, which names the reading as an entity and lets each
+/// locale render its own words. Where it does not, the item is
+/// `sdk.reading.effect`, which carries the verse's cited words as a slot
+/// and prints them untranslated — the visible seam, kept rather than
+/// papered over with a machine translation.
+///
+/// A rule that states its effect in several statements gets **one** reading
+/// where it has one: the reading is of the rule, not of a statement, and
+/// saying the same passage three times would be a defect. Its cited
+/// statements are what it has instead when no reading was written.
+///
+/// The question goes to the **base** locale, so a plan is the same whoever
+/// reads it ([`Vocabulary`]).
 #[must_use]
-pub fn readings<'r, I>(present: I) -> Plan
+pub fn readings<'r, I>(present: I, vocabulary: &dyn Vocabulary) -> Plan
 where
     I: IntoIterator<Item = (&'r Rule, &'r RuleResult)>,
 {
     let mut plan = Plan::default();
     for (rule, result) in present {
         let named = || rule.key.clone();
+        // A reading is of the **rule**, not of one of its statements, so it
+        // is said once for a rule that has one and it replaces whatever
+        // statements that rule cites. That also means a rule stating no
+        // effect at all — every computed dosha, the whole neecha-bhanga
+        // family — says its reading where one was written, which is the
+        // case the first draft missed: those rules were silent in words
+        // and a written reading is exactly what they were missing.
+        let carried = vocabulary.has_reading(&rule.key);
+        if carried {
+            plan.say(&reading::Says {
+                rule: named(),
+                reading: crate::reading_key(&rule.key),
+            });
+        }
         for outcome in &result.outcomes {
             match outcome {
+                Outcome::Effect { .. } if carried => {}
                 Outcome::Effect { text } => plan.say(&reading::Effect {
                     rule: named(),
                     text: text.clone(),
@@ -134,7 +165,17 @@ mod tests {
 
     use super::*;
     use crate::placements::tests::chart;
-    use crate::{Item, KEYS};
+    use crate::{Item, KEYS, NoReadings, Plan};
+
+    /// A vocabulary that carries a reading for the rules named, which is
+    /// what a loaded readings pack gives a composer.
+    struct Carried(&'static [&'static str]);
+
+    impl Vocabulary for Carried {
+        fn has_reading(&self, rule: &str) -> bool {
+            self.0.contains(&rule)
+        }
+    }
 
     fn rule(json: &str) -> Rule {
         serde_json::from_str(json).unwrap_or_else(|err| panic!("{json} reads: {err}"))
@@ -165,7 +206,7 @@ mod tests {
     #[test]
     fn a_rule_says_its_verse_and_who_made_it() {
         let (rule, result) = present();
-        let plan = readings([(&rule, &result)]);
+        let plan = readings([(&rule, &result)], &NoReadings);
         assert_eq!(plan.len(), 4);
         assert_eq!(
             plan.items[0],
@@ -219,7 +260,7 @@ mod tests {
         assert!(!result.present, "the chart says nothing of the day");
         // Present or not, a rule with no outcome and no participants says
         // nothing at all.
-        assert!(readings([(&quiet, &result)]).is_empty());
+        assert!(readings([(&quiet, &result)], &NoReadings).is_empty());
     }
 
     /// The status and the severity are said when the result carries them.
@@ -228,7 +269,7 @@ mod tests {
         let (rule, mut result) = present();
         result.status = Some(NetStatus::PartiallyCancelled);
         result.severity = Some(60);
-        let plan = readings([(&rule, &result)]);
+        let plan = readings([(&rule, &result)], &NoReadings);
         assert_eq!(
             plan.items[plan.len() - 2],
             Item::of(&reading::Status {
@@ -270,5 +311,84 @@ mod tests {
                 }
             }
         }
+    }
+
+    /// Where the base locale carries a reading, it replaces the verse's
+    /// cited words — once for the rule, however many statements it cites.
+    #[test]
+    fn a_reading_replaces_the_words_the_verse_cites() {
+        let (rule, result) = present();
+        let without = readings([(&rule, &result)], &NoReadings);
+        let with = readings([(&rule, &result)], &Carried(&["AN_EXAMPLE"]));
+
+        let effects = |plan: &Plan| {
+            plan.items
+                .iter()
+                .filter(|item| item.key == "sdk.reading.effect")
+                .count()
+        };
+        let said = |plan: &Plan| {
+            plan.items
+                .iter()
+                .filter(|item| item.key == "sdk.reading.says")
+                .count()
+        };
+        assert_eq!(effects(&without), 1);
+        assert_eq!(said(&without), 0);
+        assert_eq!(effects(&with), 0, "the reading replaced it");
+        assert_eq!(said(&with), 1, "said once for the rule");
+        assert_eq!(
+            with.items[0],
+            Item::of(&reading::Says {
+                rule: String::from("AN_EXAMPLE"),
+                reading: String::from("rule.AN_EXAMPLE"),
+            })
+        );
+        assert_eq!(
+            with.len(),
+            without.len(),
+            "one reading for one cited statement"
+        );
+    }
+
+    /// A rule that states no effect at all still says its reading, which is
+    /// the case that matters: every kernel rule with a reading is one of
+    /// the silent ones.
+    #[test]
+    fn a_rule_that_says_nothing_in_words_still_says_its_reading() {
+        let quiet = rule(
+            r#"{
+                "key": "QUIET",
+                "category": "example",
+                "source": { "text": "an example" },
+                "conditions": [{ "type": "birth-by-day" }]
+            }"#,
+        );
+        let chart = chart();
+        let result = Evaluator::new(&chart, Readings::TEXTS).evaluate(&quiet);
+        // With nothing written for it, such a rule contributes nothing.
+        assert!(readings([(&quiet, &result)], &NoReadings).is_empty());
+        // With a reading, it says the one thing it has to say.
+        let with = readings([(&quiet, &result)], &Carried(&["QUIET"]));
+        assert_eq!(with.len(), 1);
+        assert_eq!(with.items[0].key, "sdk.reading.says");
+    }
+
+    /// The vocabulary is asked by the rule's own key and answers for that
+    /// rule alone: nothing is matched by resemblance
+    /// (`03-design/interpretation-records.md` §4).
+    #[test]
+    fn a_reading_is_not_shared_with_a_rule_of_a_similar_name() {
+        let (rule, result) = present();
+        let plan = readings([(&rule, &result)], &Carried(&["AN_EXAMPLE_OF_SOMETHING"]));
+        assert!(
+            plan.items.iter().all(|item| item.key != "sdk.reading.says"),
+            "{plan:?}"
+        );
+    }
+
+    #[test]
+    fn a_reading_key_is_the_rule_under_its_open_kind() {
+        assert_eq!(crate::reading_key("RUCHAKA"), "rule.RUCHAKA");
     }
 }

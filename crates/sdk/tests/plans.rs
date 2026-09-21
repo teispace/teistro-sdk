@@ -66,7 +66,13 @@ fn a_plan_through_the_facade_is_the_plan_the_composers_write() {
         !held.is_empty(),
         "the chart holds rules to say something of"
     );
-    let expected = teistro::interpret::readings(held.iter().map(|(rule, result)| (*rule, result)));
+    // The façade asks its own locale engine which readings it carries; a
+    // context with no readings pack loaded carries none, which is what
+    // `NoReadings` says here, so the two must agree item for item.
+    let expected = teistro::interpret::readings(
+        held.iter().map(|(rule, result)| (*rule, result)),
+        &teistro::interpret::NoReadings,
+    );
     assert_eq!(sdk.interpret().readings(reading), expected);
 
     // And the placements, which read the document rather than the rules.

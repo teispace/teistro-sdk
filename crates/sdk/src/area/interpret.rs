@@ -178,13 +178,23 @@ impl<'a> InterpretArea<'a> {
     /// carries the rules' answers — `sdk.chart().readings_with_rules` gives
     /// one — and composing from the answers rather than evaluating again is
     /// what keeps this a rename of work already done.
+    ///
+    /// **What a rule's verse says has two forms**, and the context's locale
+    /// engine decides which: where the base locale carries a reading of the
+    /// rule — loaded from a readings pack — the item names that reading and
+    /// each locale renders its own words; where it does not, the item
+    /// carries the verse's cited words untranslated. A context with no
+    /// readings pack loaded composes exactly as it did before
+    /// (`03-design/interpretation-records.md` §5).
     #[must_use]
     pub fn readings(self, reading: &RulesReading<'_>) -> Plan {
+        let engine = self.context.locale_engine();
         readings(
             reading
                 .present
                 .iter()
                 .map(|present| (present.rule, &present.result)),
+            &*engine,
         )
     }
 }

@@ -8,11 +8,11 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 19 061 items, 204 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 19 290 items, 207 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 2 375 224 bytes of JSON over the 93 charts, 25 540 bytes a
-chart, 30 596 bytes for the widest and 124 bytes an item. The verses'
+golden file: 2 404 610 bytes of JSON over the 93 charts, 25 856 bytes a
+chart, 31 500 bytes for the widest and 124 bytes an item. The verses'
 own cited words are **not** what weighs it — 112 962 bytes, 4% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
@@ -22,13 +22,13 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 42 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 19061 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 19061 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 19061 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 19061 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 44 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 19290 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 19290 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 19290 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 19290 disagree |
 
-Every one of the 38 122 renderings — 19 061 in each of 2 strict
+Every one of the 38 580 renderings — 19 290 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -49,6 +49,7 @@ about.
 | `sdk.reading.lifeClass` | 214 |
 | `sdk.reading.lifeSpan` | 96 |
 | `sdk.reading.participants` | 3333 |
+| `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
 | `sdk.reading.status` | 348 |
 | `sdk.reason.grahaAt` | 837 |
@@ -58,7 +59,7 @@ about.
 | `sdk.reason.occupants` | 204 |
 | `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 19 061
+**The verse's own statement is not translated.** 2449 of the 19 290
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -66,6 +67,26 @@ part, the span, the class and the cancellation in Nepali, and the
 verse's sentence in the translator's English, until a locale carries a
 reading of that rule written by someone who reads the text. A machine
 translation there would be worse than the visible seam.
+
+**Where a locale has been given a reading, the seam closes**, and the
+measurement says how far. A readings pack is loaded here the way a
+consumer loads one, and `readings` asks the **base** locale for each
+rule: 12 of the 365 rules this pass composes carry a reading, and they
+produced 229 `sdk.reading.says` items, said in each locale's own words
+instead of the verse's English.
+
+**That ratio is a fact about two rule sets and not about the
+mechanism.** The readings were written against the recording engine's
+rule keys, where they cover all but eighteen
+([`interpretation-records-measured.md`](interpretation-records-measured.md));
+the kernel ships packs written independently, and their keys are not the
+same keys. They are not two spellings of one set either — dropping the
+kernel's leading segment matches 44 of its 263 nabhasas and none of its
+73 arishtas — so nothing is mapped across by resemblance, and the page
+reports the gap rather than closing it with a guess. Every rule that
+matched states **no** effect of its own, which is why a reading is said
+for a rule rather than for one of its statements: those rules were the
+silent ones.
 
 What they cannot say is counted too: the **lagna** stands in every one
 of these charts and is in none of the placement items, because those
@@ -138,7 +159,7 @@ but `sdk.entity` renders each one's own word.
 
 ## What the packs carry, and what reads it
 
-21 of the 28 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+22 of the 29 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -344,8 +365,11 @@ ARISHTA_BHANGA_MARS_WITH_JUPITER: Jupiter and Mars take part
 BJ_MALEFICS_IN_TWELFTH_AND_SECOND: Mars, Sun and Mercury take part
 BJ_MALEFICS_IN_FIFTH_AND_NINTH: Ketu and Moon take part
 SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON: Jupiter takes part
+NEECHA_BHANGA_RAJA: Neecha-Bhanga Raja-Yoga — aggregate. Debility cancelled, raja-yoga effect.
 NEECHA_BHANGA_RAJA: Moon takes part
+NEECHA_BHANGA_DEBIL_LORD_KENDRA: Neecha-Bhanga — lord of debilitation sign in kendra. Defect-source neutralized.
 NEECHA_BHANGA_DEBIL_LORD_KENDRA: Moon takes part
+NEECHA_BHANGA_EXALT_LORD_KENDRA: Neecha-Bhanga — lord of exaltation sign in kendra. Lift-protection.
 NEECHA_BHANGA_EXALT_LORD_KENDRA: Moon takes part
 Sun scores 8.846 rupas
 Jupiter scores 7.887 rupas
@@ -546,8 +570,11 @@ ARISHTA_BHANGA_MARS_WITH_JUPITER: गुरु र मंगल संलग्�
 BJ_MALEFICS_IN_TWELFTH_AND_SECOND: मंगल, सूर्य र बुध संलग्न छन्
 BJ_MALEFICS_IN_FIFTH_AND_NINTH: केतु र चन्द्र संलग्न छन्
 SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON: गुरु संलग्न छ
+NEECHA_BHANGA_RAJA: नीचभङ्ग राजयोग — समग्र — नीच-दोष निवारण राजयोग।
 NEECHA_BHANGA_RAJA: चन्द्र संलग्न छ
+NEECHA_BHANGA_DEBIL_LORD_KENDRA: नीचभङ्ग — नीच-राशीश केन्द्रमा — दोष-कारक नियन्त्रण।
 NEECHA_BHANGA_DEBIL_LORD_KENDRA: चन्द्र संलग्न छ
+NEECHA_BHANGA_EXALT_LORD_KENDRA: नीचभङ्ग — उच्च-राशीश केन्द्रमा — उत्थान संरक्षण।
 NEECHA_BHANGA_EXALT_LORD_KENDRA: चन्द्र संलग्न छ
 सूर्यले ८.८४६ रूपा पाउँछ
 गुरुले ७.८८७ रूपा पाउँछ

@@ -204,8 +204,13 @@ fn ts_type(kind: &ParamType) -> String {
         ParamType::String => String::from("string"),
         ParamType::Context(context) => pascal(context),
         ParamType::Integer | ParamType::Number => String::from("number"),
-        ParamType::Entity(Some(kind)) => format!("{}Key", pascal(kind)),
-        ParamType::Entity(None) => String::from("EntityKey"),
+        ParamType::Entity(Some(kind)) if closed_catalogue_kind(kind) => {
+            format!("{}Key", pascal(kind))
+        }
+        // An open kind has no generated enum to name — its members are a
+        // consumer's packs — so its key crosses as text, which is what
+        // `rust_type` has always done and these three did not.
+        ParamType::Entity(_) => String::from("EntityKey"),
         ParamType::List => String::from("readonly (string | EntityKey)[]"),
         ParamType::Date => String::from("DateValue"),
         ParamType::Time => String::from("TimeValue"),
@@ -465,11 +470,15 @@ pub fn javascript(model: &Model) -> String {
 
 fn dart_type(kind: &ParamType) -> String {
     match kind {
-        ParamType::String | ParamType::Entity(None) => String::from("String"),
         ParamType::Context(context) => pascal(context),
         ParamType::Integer => String::from("int"),
         ParamType::Number => String::from("num"),
-        ParamType::Entity(Some(kind)) => format!("{}Key", pascal(kind)),
+        ParamType::Entity(Some(kind)) if closed_catalogue_kind(kind) => {
+            format!("{}Key", pascal(kind))
+        }
+        // Text, and an entity of an **open** kind or of no kind: its key as
+        // text, because an open kind has no generated enum to name.
+        ParamType::String | ParamType::Entity(_) => String::from("String"),
         ParamType::List => String::from("List<Object>"),
         ParamType::Date => String::from("DateValue"),
         ParamType::Time => String::from("TimeValue"),
@@ -486,8 +495,10 @@ fn dart_type(kind: &ParamType) -> String {
 fn dart_value(name: &str, kind: &ParamType) -> String {
     match kind {
         ParamType::Context(_) => format!("{name}.key"),
-        ParamType::Entity(Some(_)) => format!("{{r'$entity': {name}.key}}"),
-        ParamType::Entity(None) => format!("{{r'$entity': {name}}}"),
+        ParamType::Entity(Some(kind)) if closed_catalogue_kind(kind) => {
+            format!("{{r'$entity': {name}.key}}")
+        }
+        ParamType::Entity(_) => format!("{{r'$entity': {name}}}"),
         ParamType::Date => format!("{{r'$date': {name}.json}}"),
         ParamType::Time => format!("{{r'$time': {name}.json}}"),
         ParamType::DateTime => format!("{{r'$datetime': {name}.json}}"),
@@ -696,11 +707,15 @@ class Renderer(Protocol):
 
 fn python_type(kind: &ParamType) -> String {
     match kind {
-        ParamType::String | ParamType::Entity(None) => String::from("str"),
         ParamType::Context(context) => pascal(context),
         ParamType::Integer => String::from("int"),
         ParamType::Number => String::from("float"),
-        ParamType::Entity(Some(kind)) => format!("{}Key", pascal(kind)),
+        ParamType::Entity(Some(kind)) if closed_catalogue_kind(kind) => {
+            format!("{}Key", pascal(kind))
+        }
+        // Text, and an entity of an **open** kind or of no kind: its key as
+        // text, because an open kind has no generated enum to name.
+        ParamType::String | ParamType::Entity(_) => String::from("str"),
         ParamType::List => String::from("Sequence[object]"),
         ParamType::Date => String::from("DateValue"),
         ParamType::Time => String::from("TimeValue"),
@@ -717,8 +732,10 @@ fn python_type(kind: &ParamType) -> String {
 fn python_value(name: &str, kind: &ParamType) -> String {
     let tag = match kind {
         ParamType::Context(_) => return format!("{name}.value"),
-        ParamType::Entity(Some(_)) => return format!("{{\"$entity\": {name}.value}}"),
-        ParamType::Entity(None) => "$entity",
+        ParamType::Entity(Some(kind)) if closed_catalogue_kind(kind) => {
+            return format!("{{\"$entity\": {name}.value}}");
+        }
+        ParamType::Entity(_) => "$entity",
         ParamType::Date => "$date",
         ParamType::Time => "$time",
         ParamType::DateTime => "$datetime",
