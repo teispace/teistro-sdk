@@ -768,6 +768,76 @@ fn python_in_utf8(root: &Path, outcome: &mut Outcome) {
 /// Every target of the façade crate that names a feature-gated
 /// ephemeris declares the feature it needs.
 ///
+/// That a tier feature turns on the base feature it refines.
+///
+/// A crate whose sources read `#[cfg(feature = "builtin-ephemeris")]` and
+/// whose manifest offers `builtin-compact`, `builtin-standard` and
+/// `builtin-full` has four features and one guard: a tier that forwards to
+/// a dependency without also naming the crate's own base feature builds a
+/// library with a built-in ephemeris underneath and no way to ask for it.
+///
+/// That is not hypothetical either. `teistro-ffi`'s tiers forwarded only —
+/// `builtin-standard = ["teistro/builtin-standard"]` — so every tier build
+/// refused `TsEphemeris::Builtin` as `UNSUPPORTED`, and the verify matrix's
+/// three tier jobs failed on it. The façade next door had the same four
+/// features written the right way, which is the shape this project keeps
+/// meeting: one rule, two places, right in one of them.
+///
+/// The rule reads both the sources and the manifest, so a crate that stops
+/// gating on the feature stops being held to it, and one that starts cannot
+/// be added without the line.
+fn tiers_turn_on_their_base(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "a-tier-turns-on-its-base";
+    const BASE: &str = "builtin-ephemeris";
+    for crate_dir in ["crates/ffi", "crates/sdk"] {
+        let manifest = root.join(crate_dir).join("Cargo.toml");
+        let Ok(text) = std::fs::read_to_string(&manifest) else {
+            continue;
+        };
+        // Only a crate that actually gates on the base feature can be
+        // broken by a tier that leaves it off.
+        if !gates_on(&root.join(crate_dir).join("src"), BASE) {
+            continue;
+        }
+        for (at, line) in text.lines().enumerate() {
+            let Some((name, rest)) = line.split_once('=') else {
+                continue;
+            };
+            let name = name.trim();
+            if !name.starts_with("builtin-") || name == BASE || !rest.contains('[') {
+                continue;
+            }
+            if !rest.contains(BASE) {
+                outcome.failures.push(Finding {
+                    file: format!("{crate_dir}/Cargo.toml"),
+                    line: at + 1,
+                    text: format!(
+                        "`{name}` forwards a tier without turning on `{BASE}`, so this \
+                         crate's own `cfg` stays off and the built-in cannot be asked for"
+                    ),
+                    rule: RULE,
+                });
+            }
+        }
+    }
+}
+
+/// Whether any source under `dir` gates on `feature`.
+fn gates_on(dir: &Path, feature: &str) -> bool {
+    let needle = format!("feature = \"{feature}\"");
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return false;
+    };
+    entries.flatten().any(|entry| {
+        let path = entry.path();
+        if path.is_dir() {
+            return gates_on(&path, feature);
+        }
+        path.extension().is_some_and(|ext| ext == "rs")
+            && std::fs::read_to_string(&path).is_ok_and(|text| text.contains(&needle))
+    })
+}
+
 /// `Ephemeris::Builtin` exists only under `builtin-ephemeris`, so an
 /// example or a test that names it and does **not** carry
 /// `required-features` breaks a `--no-default-features` build of the
@@ -1152,6 +1222,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     knob_readers(root, &mut outcome);
     boundary_sources(root, &mut outcome);
     workflows_parse(root, &mut outcome);
+    tiers_turn_on_their_base(root, &mut outcome);
     entry_points_reachable(root, &mut outcome);
     gate_runners(root, &mut outcome);
     python_in_utf8(root, &mut outcome);
@@ -1174,6 +1245,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "python-runs-in-utf8-mode",
         "runner-matches-the-platform-table",
         "target-declares-the-feature-it-needs",
+        "a-tier-turns-on-its-base",
         "serialised-type-describes-itself",
         "every-predicate-is-listed",
     ] {

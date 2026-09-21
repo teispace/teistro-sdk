@@ -1355,6 +1355,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   the other way: `ts_intl_render` reaches two crates where it reached three,
   because reading a parameter no longer needs the calendar.
 
+- **A library built at an ephemeris tier could not be asked for it.**
+  `teistro-ffi`'s tier features forwarded to the façade without turning on
+  the boundary's own `builtin-ephemeris` — `builtin-standard =
+  ["teistro/builtin-standard"]` — and that feature is what its `#[cfg]`
+  guards read. So `--features builtin-compact`, `builtin-standard` and
+  `builtin-full` each linked a library with a built-in ephemeris underneath
+  and refused `TsEphemeris::Builtin` as `UNSUPPORTED`: `ts_context_new`
+  answered "this build of the library has no built-in ephemeris" to a build
+  that had one. The façade's own four features were written the right way
+  next door. Each tier now names `builtin-ephemeris` as the façade's does,
+  and `check-lints`' `a-tier-turns-on-its-base` reads the sources and the
+  manifest together, so only a crate that gates on the feature is held to
+  it and one that starts gating cannot forward without it.
+
 - A narrative plan crosses the C boundary
   (`03-design/plans-at-the-boundary.md`, building), so what a chart has to
   say is no longer Rust's alone. It rides on `ts_chart_found` as the rules

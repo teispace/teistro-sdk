@@ -57,10 +57,17 @@ default = ["builtin-ephemeris"]
 # Forwarded to the façade, which is where the built-in is now reached
 # from: the boundary no longer holds that crate, so a tier is a feature
 # of one crate rather than of two that could disagree.
+#
+# Each tier turns on `builtin-ephemeris` here as well as forwarding, the
+# way the façade's own tiers do. Forwarding alone left this crate's
+# `#[cfg(feature = "builtin-ephemeris")]` off while the façade underneath
+# had a built-in, so `ts_context_new` refused `TsEphemeris::Builtin` as
+# `UNSUPPORTED` — a library built at a tier that could not be asked for
+# the tier it was built at.
 builtin-ephemeris = ["teistro/builtin-ephemeris"]
-builtin-compact = ["teistro/builtin-compact"]
-builtin-standard = ["teistro/builtin-standard"]
-builtin-full = ["teistro/builtin-full"]
+builtin-compact = ["builtin-ephemeris", "teistro/builtin-compact"]
+builtin-standard = ["builtin-ephemeris", "teistro/builtin-standard"]
+builtin-full = ["builtin-ephemeris", "teistro/builtin-full"]
 
 
 [dev-dependencies]

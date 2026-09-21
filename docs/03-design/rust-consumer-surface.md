@@ -529,6 +529,18 @@ principle:
      the sources — so a target that stops naming the built-in stops
      needing the line, and one that starts cannot be added without it.
 
+     The same hole had a second mouth, found on 2026-09-21 when the verify
+     matrix was dispatched on a long branch for the first time: a crate's
+     **tier** features can forward without turning the crate's own base
+     feature on. `teistro-ffi`'s read `builtin-standard =
+     ["teistro/builtin-standard"]`, so all three tier builds linked a
+     library that had a built-in underneath and refused
+     `TsEphemeris::Builtin` as `UNSUPPORTED`; the façade's four features
+     next door were written the right way. `check-lints`'
+     `a-tier-turns-on-its-base` reads the sources and the manifest
+     together, so only a crate that actually gates on the feature is held
+     to it.
+
    And one thing it deliberately did **not** do: the eight files repeat
    small helpers — a clock formatter, a sign lookup, an
    entity-name-or-key fallback. An example is a program a reader is
