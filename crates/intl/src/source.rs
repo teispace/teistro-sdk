@@ -572,10 +572,20 @@ pub fn graha_bhava_key(graha: &str, bhava: u8) -> String {
     format!("{GRAHA_BHAVA_KIND}.{graha}{IN_BHAVA}{bhava}")
 }
 
-/// Whether `s` names a form of an entity record: a `camelCase` word.
+/// The one word a form may not be called.
+///
+/// Every binding's entity carries a `forms` map of **every** form beside
+/// its named fields, because a record's forms are an open set and a
+/// corpus adds to it. A form called `forms` would shadow that map in all
+/// three languages, so it is refused here rather than discovered there.
+pub const RESERVED_FORM: &str = "forms";
+
+/// Whether `s` names a form of an entity record: a `camelCase` word, and
+/// not [`RESERVED_FORM`].
 #[must_use]
 pub fn is_form_name(s: &str) -> bool {
-    s.bytes().next().is_some_and(|b| b.is_ascii_lowercase())
+    s != RESERVED_FORM
+        && s.bytes().next().is_some_and(|b| b.is_ascii_lowercase())
         && s.bytes().all(|b| b.is_ascii_alphanumeric())
 }
 
@@ -751,7 +761,11 @@ fn entity(
                 if !is_form_name(field) {
                     return Err(SourceError::new(
                         file,
-                        format!("`{key}.{field}`: a form name is a camelCase word"),
+                        format!(
+                            "`{key}.{field}`: a form name is a camelCase word and not \
+                             `{RESERVED_FORM}`, which every binding's entity uses for the \
+                             map of them all"
+                        ),
                     ));
                 }
                 entity.forms.insert(field.clone(), text.clone());

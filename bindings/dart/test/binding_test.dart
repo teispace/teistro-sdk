@@ -6,11 +6,19 @@
 // `TEISTRO_LIBRARY` names it.
 
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:teistro/teistro.dart';
 import 'package:test/test.dart';
 
 final Teistro teistro = Teistro.open();
+
+/// The fixture directory `cargo xtask check-dart` names, and a reader for
+/// the files in it — the convention `blob_test.dart` follows.
+final String _fixtures =
+    Platform.environment['TEISTRO_FIXTURES'] ?? '../../target/tsrb';
+Uint8List _readFixture(String name) =>
+    File('$_fixtures/$name').readAsBytesSync();
 
 /// A context with the analytic test provider; every test builds its own.
 Context context({
@@ -80,6 +88,30 @@ void main() {
       throwsStateError,
       reason: 'a freed context is closed',
     );
+  });
+
+  test('a pack loads at runtime and lays its record over the one standing', () {
+    // The fixture pack is the base locale's, so this context reads that
+    // one: a record is a locale's, and loading into `en-Latn` does not
+    // touch what `ne-Deva-NP` says of the same key.
+    final ctx = context(locale: 'en-Latn');
+    final before = ctx.intl.entity('graha.SUN');
+    expect(before.name, isNotEmpty, reason: 'the engine names the Sun');
+    expect(before.forms['phala'], isNull);
+
+    final loaded = ctx.intl.loadPack(_readFixture('overlay.tpack'));
+    expect(loaded.entries, 1);
+    expect(loaded.replaced, 0, reason: 'nothing was thrown away');
+    expect(loaded.merged, 1, reason: 'the record kept what the pack lacked');
+    expect(loaded.locale, 'en-Latn');
+    expect(loaded.sha256, matches(RegExp(r'^[0-9a-f]{64}$')));
+
+    // A record's forms are an open set, so a form no locale of `i18n/`
+    // carries is reached through `forms` and not by a named field.
+    final after = ctx.intl.entity('graha.SUN');
+    expect(after.forms['phala'], 'a reading of the Sun');
+    expect(after.name, before.name);
+    expect(after.forms['name'], before.name);
   });
 
   test('a refusal carries its status, its field and its hint', () {

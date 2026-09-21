@@ -51,6 +51,12 @@ export interface EntityForms {
   readonly short?: string;
   readonly glyph?: string;
   readonly gender?: Gender;
+  /**
+   * Every form the locale carries, including any a loaded pack brought:
+   * a record's forms are an open set, and the fields above are only the
+   * ones `i18n/` guarantees.
+   */
+  readonly forms: Readonly<Record<string, string>>;
 }
 
 export interface Renderer {

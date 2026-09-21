@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import enum
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Mapping, Optional, Protocol, Sequence, TypedDict
 
 class Gender(enum.StrEnum):
@@ -684,6 +684,12 @@ class EntityForms:
 
     gender: Optional[Gender] = None
 
+    forms: Mapping[str, str] = field(default_factory=dict)
+    """Every form the locale carries, including any a loaded pack
+    brought: a record's forms are an open set, and the named fields
+    above are only the ones `i18n/` guarantees.
+    """
+
     @classmethod
     def of(cls, raw: object) -> EntityForms:
         """The forms as the boundary hands them out, whether as the JSON
@@ -701,6 +707,11 @@ class EntityForms:
             name=text("name") or "",
             prose=text("prose") or "",
             short=text("short"),
+            forms={
+                name: value
+                for name, value in forms.items()
+                if isinstance(value, str)
+            },
             glyph=text("glyph"),
             gender=next(
                 (g for g in Gender if g.value == text("gender")), None

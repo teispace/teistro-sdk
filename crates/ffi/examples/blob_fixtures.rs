@@ -138,6 +138,47 @@ fn main() {
     assert!(status == Status::Ok, "the message renders");
     write(dir, "intl_render.tsrb", &take(&mut blob));
 
+    write(dir, PACK, &overlay_pack());
+
     // SAFETY: the handle came from `ts_context_new` and is not used again.
     unsafe { ts_context_free(context) };
+}
+
+/// The fixture pack's name, which every binding's test reads.
+const PACK: &str = "overlay.tpack";
+
+/// A one-record pack that **overlays** a record the engine already has:
+/// `graha.SUN` with a form it does not carry.
+///
+/// Every binding generates `loadPack` and, until this, no binding had ever
+/// called it — the path existed in four languages and ran in none, which
+/// is the configuration nothing exercises. One record is enough to prove
+/// all of it: the bytes cross, the record lands, and the shipped `name`
+/// survives beside the new form, which is the merge that a pack carrying
+/// one form depends on.
+fn overlay_pack() -> Vec<u8> {
+    use std::collections::BTreeMap;
+
+    use teistro_intl::source::{ENTITY_NAMESPACE, Entity, Entry, LocaleSource, Namespace};
+
+    let mut forms = BTreeMap::new();
+    forms.insert(String::from("phala"), String::from("a reading of the Sun"));
+    let mut namespace = Namespace::default();
+    namespace.insert(
+        String::from("graha.SUN"),
+        Entry::Entity(Entity {
+            forms,
+            gender: None,
+            glyph: None,
+        }),
+    );
+    let locale = LocaleSource {
+        tag: String::from("en-Latn"),
+        meta: serde_json::from_value(serde_json::json!({ "locale": "en-Latn" }))
+            .expect("a tag is a locale"),
+        namespaces: [(String::from(ENTITY_NAMESPACE), namespace)]
+            .into_iter()
+            .collect(),
+    };
+    teistro_intl::pack::build(&locale, ENTITY_NAMESPACE).expect("the fixture pack builds")
 }

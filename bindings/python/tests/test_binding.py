@@ -55,7 +55,7 @@ from teistro import (
     when_unknown,
 )
 from teistro._ffi import Longitude
-from tests.support import LOCALE, PROFILE, WithLibrary
+from tests.support import LOCALE, PROFILE, WithLibrary, fixture
 
 
 class TheLibrary(WithLibrary):
@@ -112,6 +112,34 @@ class AContext(WithLibrary):
         self.assertIn("frame", settings)
         # The document round-trips as its own canonical JSON.
         self.assertEqual(json.loads(self.ctx.settings_json), settings)
+
+    def test_a_pack_loads_and_lays_its_record_over_the_one_standing(self) -> None:
+        # The fixture pack is the base locale's, so this context reads that
+        # one: a record is a locale's, and loading into `en-Latn` does not
+        # touch what `ne-Deva-NP` says of the same key.
+        ctx = self.teistro.context(
+            profile=PROFILE, locale="en-Latn", test_provider=True
+        )
+        try:
+            before = ctx.intl.entity("graha.SUN")
+            self.assertTrue(before.name, "the engine names the Sun")
+            self.assertIsNone(before.forms.get("phala"))
+
+            loaded = ctx.intl.load_pack(fixture("overlay.tpack"))
+            self.assertEqual(loaded.entries, 1)
+            self.assertEqual(loaded.replaced, 0, "nothing was thrown away")
+            self.assertEqual(loaded.merged, 1, "the record kept what the pack lacked")
+            self.assertEqual(loaded.locale, "en-Latn")
+            self.assertEqual(len(loaded.sha256), 64)
+
+            # A record's forms are an open set, so a form no locale of
+            # `i18n/` carries is reached through `forms`.
+            after = ctx.intl.entity("graha.SUN")
+            self.assertEqual(after.forms["phala"], "a reading of the Sun")
+            self.assertEqual(after.name, before.name)
+            self.assertEqual(after.forms["name"], before.name)
+        finally:
+            ctx.close()
 
     def test_a_closed_context_refuses_rather_than_crashes(self) -> None:
         ctx = self.teistro.context(test_provider=True)

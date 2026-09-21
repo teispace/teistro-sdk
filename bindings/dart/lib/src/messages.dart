@@ -746,6 +746,7 @@ final class EntityForms {
     this.short,
     this.glyph,
     this.gender,
+    this.forms = const <String, String>{},
   });
 
   /// The forms as the boundary hands them out, whether
@@ -760,6 +761,10 @@ final class EntityForms {
       name: text('name') ?? '',
       prose: text('prose') ?? '',
       short: text('short'),
+      forms: <String, String>{
+        for (final entry in forms.entries)
+          if (entry.value is String) entry.key: entry.value! as String,
+      },
       glyph: text('glyph'),
       gender: Gender.values
           .where((g) => g.key == text('gender'))
@@ -773,6 +778,10 @@ final class EntityForms {
   final String? short;
   final String? glyph;
   final Gender? gender;
+  /// Every form the locale carries, including any a loaded pack
+  /// brought: a record's forms are an open set, and the fields above
+  /// are only the ones `i18n/` guarantees.
+  final Map<String, String> forms;
 }
 
 final class MessagesSdkAspect {

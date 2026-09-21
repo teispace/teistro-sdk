@@ -139,6 +139,17 @@ the standing record carries is kept, and the gender and the glyph are the
 file's where it has one.** A message entry still replaces, because a
 message is one string and has nothing to merge.
 
+**And a reading a pack brings must be readable back.** It was not: every
+binding's generated entity decoded the forms `i18n/` declares — `name`,
+`prose`, `iast`, `short`, `glyph`, `gender` — and **dropped the rest**, so
+a `phala` or a `timing` crossed the boundary and was thrown away on
+arrival. No binding had ever called `loadPack`, in any language, so
+nothing had shown it. Each binding's entity now carries a `forms` map of
+every form beside its named fields, and each binding's tests load a
+fixture pack and read a corpus form back out of it. `forms` is a reserved
+form name for the same reason a kind number is permanent: a record with a
+form called `forms` would shadow the map in three languages at once.
+
 `Loaded` and `ts_intl_loaded` report the two outcomes apart — `replaced`
 for an entry that kept nothing of what stood, `merged` for a record that
 kept something — so what was applied is a number a consumer can read, in

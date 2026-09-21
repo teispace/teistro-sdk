@@ -4,6 +4,8 @@
 // `cargo xtask check-node` builds the addon and runs this file. Node's own
 // test runner and assertions only, so the binding's tests need no install.
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
@@ -37,6 +39,13 @@ import {
   unpackFrame,
 } from '../lib/index.js';
 import * as catalogue from '../lib/catalogue.js';
+
+/**
+ * The fixture directory `cargo xtask check-node` passes, and a reader for
+ * the files in it — the same convention `blob.test.mjs` follows.
+ */
+const fixtures = process.argv[2] ?? 'target/tsrb';
+const read = (name) => new Uint8Array(readFileSync(join(fixtures, name)));
 
 /** A context with the analytic test provider; every test builds its own. */
 function context(options = {}) {
@@ -79,6 +88,31 @@ test('a context resolves its settings and reports them', () => {
 
   // The default profile is the one `defaultProfile()` names.
   assert.equal(new Context({ testProvider: true }).profile, defaultProfile());
+});
+
+test('a pack loads at runtime and lays its record over the one standing', () => {
+  // The fixture pack is the base locale's, so this context reads that one:
+  // a record is a locale's, and loading into `en-Latn` does not touch what
+  // `ne-Deva-NP` says of the same key.
+  const ctx = context({ locale: 'en-Latn' });
+  const before = ctx.intl.entity('graha.SUN');
+  assert.ok(before.name, 'the engine names the Sun');
+  assert.equal(before.forms.phala, undefined);
+
+  const loaded = ctx.intl.loadPack(read('overlay.tpack'));
+  assert.equal(loaded.entries, 1);
+  assert.equal(loaded.replaced, 0, 'nothing was thrown away');
+  assert.equal(loaded.merged, 1, 'the record kept what the pack did not carry');
+  assert.equal(loaded.locale, 'en-Latn');
+  assert.match(loaded.sha256, /^[0-9a-f]{64}$/u);
+
+  // The form the pack brought answers, and the shipped name still does.
+  // A record's forms are an open set, so a form no locale of `i18n/`
+  // carries is reached through `forms` rather than by a named field.
+  const after = ctx.intl.entity('graha.SUN');
+  assert.equal(after.forms.phala, 'a reading of the Sun');
+  assert.equal(after.name, before.name);
+  assert.equal(after.forms.name, before.name, 'the map carries the named ones too');
 });
 
 test('a refusal carries its status, its field and its hint', () => {

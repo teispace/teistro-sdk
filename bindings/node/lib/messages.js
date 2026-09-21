@@ -652,5 +652,8 @@ export function entityForms(json) {
     short: forms.short,
     glyph: forms.glyph,
     gender: forms.gender,
+    forms: Object.freeze(
+      Object.fromEntries(Object.entries(forms).filter(([, text]) => typeof text === 'string')),
+    ),
   });
 }

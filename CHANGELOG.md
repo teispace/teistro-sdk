@@ -1369,6 +1369,29 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **Every binding can read a reading now. None could before.** No binding
+  test or example had ever called `loadPack` — the function was generated
+  into all three and executed from none — so nothing had shown that the
+  path only half worked. The bytes crossed and the record landed, and then
+  each binding's generated entity decoded the six forms `i18n/` declares
+  and **dropped every other one**. A `phala`, a `timing`, a `namakarana`
+  arrived at the boundary and was thrown away on the way out: the whole
+  999-record corpus was unreachable from Node, Dart and Python.
+
+  A record's forms are an **open** set, so each binding's entity now
+  carries a `forms` map of every form beside its named fields:
+  `entity.forms.phala`, `entity.forms['phala']`, `entity.forms["phala"]`.
+  The named fields stay, because they are the ones `i18n/` guarantees and
+  they type-check. `forms` is a **reserved form name** — a record with a
+  form called that would shadow the map in three languages at once.
+
+  Each binding's tests now load a fixture pack that lays one form over
+  `graha.SUN` and read it back, asserting the counts the record returns
+  (`entries`, `replaced`, `merged`) and that the shipped name survived
+  beside the new form. The fixture is written by the same
+  `blob_fixtures` example the three gates already run, so no gate gained
+  plumbing.
+
 - **A lint holds every composer to every binding.** A `PlanRequest`
   crosses the boundary as JSON rather than as a struct, so none of the
   three bindings generates its plan surface from the API description: each

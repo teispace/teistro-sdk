@@ -69,6 +69,21 @@ record standing: `nakshatra.ASHWINI` ends with its `name`, its `iast`, its
 `phala` and its `namakarana` together. The record returned counts what was
 kept (`merged`) beside what was not (`replaced`).
 
+**Read a corpus form through `forms`.** A record's forms are an open set,
+so each binding's entity carries named fields for the ones `i18n/`
+guarantees — `name`, `prose`, `iast` — and a `forms` map of every one it
+has, which is where a reading a pack brought will be:
+
+| | |
+|---|---|
+| Rust | `record.form("phala")` |
+| Node | `entity.forms.phala` |
+| Dart | `entity.forms['phala']` |
+| Python | `entity.forms["phala"]` |
+
+Each binding's tests load a pack and read a form back out of it, so the
+path above is exercised in every language rather than described.
+
 Loading one changes what the composers say without changing how they are
 called: `readings` says a rule's own reading where the base locale carries
 one, and `phala` says nothing at all until a states pack is loaded. The
