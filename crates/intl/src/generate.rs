@@ -608,15 +608,21 @@ fn dart_group(classes: &mut Vec<String>, name: &str, group: &Group) {
                 if message.params.is_empty() {
                     let _ = writeln!(out, "  String {member}() => _r.render('{}');", message.key);
                 } else {
+                    // The slot keeps the name the message gave it; the Dart
+                    // parameter cannot, where that name is a keyword —
+                    // `sdk.reading.lifeClass` selects on `$class`, and
+                    // `required String class` does not parse. Python renames
+                    // it too (`class_`); JavaScript needs no rename, because
+                    // its parameter is one object.
                     let signature: Vec<String> = message
                         .params
                         .iter()
-                        .map(|(n, k)| format!("required {} {n}", dart_type(k)))
+                        .map(|(n, k)| format!("required {} {}", dart_type(k), dart_name(n)))
                         .collect();
                     let map: Vec<String> = message
                         .params
                         .iter()
-                        .map(|(n, k)| format!("'{n}': {}", dart_value(n, k)))
+                        .map(|(n, k)| format!("'{n}': {}", dart_value(&dart_name(n), k)))
                         .collect();
                     let _ = writeln!(
                         out,

@@ -1690,8 +1690,8 @@ final class MessagesSdkReading {
 
   String effect({required String rule, required String text}) =>
       _r.render('sdk.reading.effect', {'rule': rule, 'text': text});
-  String lifeClass({required String class, required String rule}) =>
-      _r.render('sdk.reading.lifeClass', {'class': class, 'rule': rule});
+  String lifeClass({required String class$, required String rule}) =>
+      _r.render('sdk.reading.lifeClass', {'class': class$, 'rule': rule});
   String lifeSpan({required int count, required String rule, required String unit}) =>
       _r.render('sdk.reading.lifeSpan', {'count': count, 'rule': rule, 'unit': unit});
   String participants({required int count, required List<Object> grahas, required String rule}) =>

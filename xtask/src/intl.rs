@@ -72,11 +72,68 @@ pub(crate) fn generate(root: &Path) -> i32 {
 }
 
 pub(crate) fn check_generated(root: &Path) -> i32 {
-    let failures = check(root, &outputs(root), "cargo xtask gen intl");
+    let written = outputs(root);
+    let failures = check(root, &written, "cargo xtask gen intl");
     let tree = Tree::load(&root.join("i18n")).expect("the i18n/ sources load");
     let unnamed = unnamed_members(&tree, &document_kinds());
     let naming = named_or_listed(&unnamed, UNNAMED);
-    i32::from(failures != 0 || naming != 0)
+    let keywords = dart_parses(&written);
+    i32::from(failures != 0 || naming != 0 || keywords != 0)
+}
+
+/// Every Dart keyword, as the language lists them: a word from this list
+/// cannot be an identifier, whatever else it is.
+const DART_KEYWORDS: [&str; 33] = [
+    "assert", "break", "case", "catch", "class", "const", "continue", "default", "do", "else",
+    "enum", "extends", "false", "final", "finally", "for", "if", "in", "is", "new", "null",
+    "rethrow", "return", "super", "switch", "this", "throw", "true", "try", "var", "void", "while",
+    "with",
+];
+
+/// That no identifier in the generated Dart is a Dart keyword.
+///
+/// A message's slot names the Dart parameter, and `sdk.reading.lifeClass`
+/// selects on a slot called `class`: the emitter wrote `required String
+/// class`, which does not parse. Nothing here saw it, because a generated
+/// file being **up to date** says nothing about its compiling, and the gate
+/// that compiles Dart runs in the verify matrix rather than in fast-check.
+/// So the class is held where the file is written: the identifiers are read
+/// back out of what was just generated, and a keyword among them fails.
+fn dart_parses(written: &[Output]) -> i32 {
+    let Some(dart) = written.iter().find(|out| out.path == DART_MESSAGES) else {
+        println!("FAIL  {DART_MESSAGES} was not generated");
+        return 1;
+    };
+    let mut wrong = Vec::new();
+    let mut read = 0usize;
+    for line in dart.text.lines() {
+        // `required <type> <name>` in a parameter list, and `get <name>`.
+        let names = line
+            .split("required ")
+            .skip(1)
+            .filter_map(|piece| piece.split([',', '}']).next())
+            .filter_map(|decl| decl.split_whitespace().next_back())
+            .chain(
+                line.split(" get ")
+                    .skip(1)
+                    .filter_map(|after| after.split_whitespace().next()),
+            );
+        for name in names {
+            read += 1;
+            if DART_KEYWORDS.contains(&name) {
+                wrong.push(format!("`{name}` in `{}`", line.trim()));
+            }
+        }
+    }
+    if wrong.is_empty() {
+        println!("ok    {DART_MESSAGES}: {read} identifiers, none a Dart keyword");
+        return 0;
+    }
+    println!("FAIL  {DART_MESSAGES} writes Dart keywords as identifiers:");
+    for one in &wrong {
+        println!("      {one}");
+    }
+    1
 }
 
 /// The members a chart document can carry that no strict locale names
