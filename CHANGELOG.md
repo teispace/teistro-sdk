@@ -1395,10 +1395,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   sign it was already in, which the D1 always does and a D9 rarely — nor
   the **last error** a refusal leaves on the context.
 
-  **Three of 171 are left, and all three are the same thing**: `callJson`,
+  **Three of 216 are left, and all three are the same thing**: `callJson`,
   `call_json` and `manifest_json`, the engine passthrough's JSON forms,
   which need a real engine the workspace does not carry. Node is now
   exercised member for member.
+
+  The page reads a **fourth** surface: the Rust areas the bindings' layer
+  classes mirror. All 45 of them were already exercised, which is the
+  contrast worth having on the same page — the surface the SDK's own tests
+  use was whole, and the three that mirror it were not, which is exactly
+  why nothing noticed.
 
 - **A page measuring what each binding's own surface has ever been used
   for.** `entry-point-is-reachable` holds that every boundary function is

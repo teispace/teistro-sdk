@@ -1,7 +1,9 @@
-//! Which of each binding's own surface its tests and examples ever touch.
+//! Which of each consumer surface its own tests and examples ever touch.
 //!
 //! Beside [`binding-surface-measured.md`], which measures what a binding
-//! **is**; this measures what anything has ever **done** with it.
+//! **is**; this measures what anything has ever **done** with it, and it
+//! reads four surfaces: the three bindings' hand-written layers and the
+//! Rust areas they mirror.
 //!
 //! [`binding-surface-measured.md`]: ../../docs/03-design/binding-surface-measured.md
 //!
@@ -14,12 +16,16 @@
 //! the six `i18n/` declares was dropped on the way out. A whole corpus was
 //! unreachable from three languages and every gate was green.
 //!
-//! So this pass asks the other question. For each binding it reads the
-//! **hand-written** layer — the part no generator owns — and counts how
-//! many of the members it declares are named anywhere in that binding's
-//! tests or examples. What none of them names is listed by name, because
-//! the list is short enough to be exhaustive and a member that stops being
+//! So this pass asks the other question. For each surface it reads the
+//! **hand-written** declarations — the part no generator owns — and counts
+//! how many of them are named anywhere in that surface's own tests or
+//! examples. What none of them names is listed by name, because the list
+//! is short enough to be exhaustive and a member that stops being
 //! exercised has to change this page.
+//!
+//! The Rust areas are here to be read the others against: they are what
+//! each binding's layer classes mirror, and they were exercised member for
+//! member while three of the layers that mirror them were not.
 //!
 //! It searches for the member's name rather than for a call, so a property
 //! read counts as much as a call and the count errs towards *exercised*.
@@ -37,9 +43,9 @@ use crate::measure::{Claim, count, fill, plural, table};
 
 const PAGE: &str = "docs/03-design/binding-exercise-measured.md";
 
-/// One binding's hand-written layer, and where its callers live.
+/// One consumer surface's own declarations, and where its callers live.
 struct Layer {
-    /// The language, as the page names it.
+    /// The surface, as the page names it.
     binding: &'static str,
     /// The hand-written surface: the file a generator does not write.
     surface: &'static str,
@@ -110,6 +116,29 @@ fn python_members(text: &str) -> BTreeSet<String> {
         .collect()
 }
 
+/// Every method the Rust areas declare: four spaces, `pub fn` or
+/// `pub const fn`, inside an `impl`.
+///
+/// The areas are the Rust consumer's entry points and the thing each
+/// binding's layer classes mirror, so they are the fourth surface this
+/// page reads and the one to compare the others against.
+fn rust_members(text: &str) -> BTreeSet<String> {
+    text.lines()
+        .filter_map(|line| {
+            // Four spaces exactly: a method of an `impl`, where two is a
+            // field of a struct and more is inside a body.
+            let rest = line.strip_prefix("    ")?;
+            if rest.starts_with(' ') {
+                return None;
+            }
+            let rest = rest.strip_prefix("pub ")?;
+            let rest = rest.strip_prefix("const ").unwrap_or(rest);
+            let (name, _) = rest.strip_prefix("fn ")?.split_once('(')?;
+            identifier(name).map(str::to_owned)
+        })
+        .collect()
+}
+
 /// A Dart declaration: two spaces, a return type, the member, and a body
 /// that opens on the same line or continues onto the next.
 ///
@@ -169,7 +198,7 @@ fn identifier(name: &str) -> Option<&str> {
     .then_some(name)
 }
 
-const LAYERS: [Layer; 3] = [
+const LAYERS: [Layer; 4] = [
     Layer {
         binding: "Node",
         surface: "bindings/node/lib/index.d.ts",
@@ -185,6 +214,13 @@ const LAYERS: [Layer; 3] = [
         extension: "dart",
     },
     Layer {
+        binding: "Rust",
+        surface: "crates/sdk/src/area",
+        declares: rust_members,
+        callers: ["crates/sdk/tests", "crates/sdk/examples"],
+        extension: "rs",
+    },
+    Layer {
         binding: "Python",
         surface: "bindings/python/teistro/__init__.py",
         declares: python_members,
@@ -194,9 +230,30 @@ const LAYERS: [Layer; 3] = [
 ];
 
 /// Every member the layer declares.
+///
+/// A surface is one file in three of the four languages and a directory in
+/// the fourth: Rust's areas are a module each, and reading the directory
+/// is what keeps an area added from being an area unmeasured.
 fn declared(root: &Path, layer: &Layer) -> Result<BTreeSet<String>, String> {
-    let text = std::fs::read_to_string(root.join(layer.surface))
-        .map_err(|why| format!("{}: {why}", layer.surface))?;
+    let path = root.join(layer.surface);
+    if path.is_dir() {
+        let mut found = BTreeSet::new();
+        let entries =
+            std::fs::read_dir(&path).map_err(|why| format!("{}: {why}", layer.surface))?;
+        let mut paths: Vec<_> = entries
+            .flatten()
+            .map(|entry| entry.path())
+            .filter(|path| path.extension().is_some_and(|kind| kind == "rs"))
+            .collect();
+        paths.sort();
+        for file in paths {
+            let text = std::fs::read_to_string(&file)
+                .map_err(|why| format!("{}: {why}", file.display()))?;
+            found.extend((layer.declares)(&text));
+        }
+        return Ok(found);
+    }
+    let text = std::fs::read_to_string(&path).map_err(|why| format!("{}: {why}", layer.surface))?;
     Ok((layer.declares)(&text))
 }
 
@@ -244,12 +301,12 @@ fn names(text: &str, member: &str) -> bool {
 
 fn main_page(root: &Path) -> Result<String, String> {
     let mut out = String::new();
-    out.push_str("# What the bindings exercise, measured\n\n");
+    out.push_str("# What each consumer surface exercises, measured\n\n");
     out.push_str(
-        "Status: `generated` by `cargo xtask exercised` over each binding's \
-         hand-written layer and its own tests and examples, 2026-09-22. Do \
-         not edit: `check-exercised` regenerates this page and fails on any \
-         difference.\n\n",
+        "Status: `generated` by `cargo xtask exercised` over each surface's \
+         own declarations and its own tests and examples, 2026-09-22. \
+         Do not edit: `check-exercised` regenerates this page and fails on \
+         any difference.\n\n",
     );
     out.push_str(
         "`entry-point-is-reachable` holds that every boundary function is \
@@ -258,15 +315,17 @@ fn main_page(root: &Path) -> Result<String, String> {
          difference cost a whole corpus: `loadPack` was generated into \
          three bindings and executed from none, so nothing showed that a \
          record's forms were being dropped on the way out. This page asks \
-         the other question of the layer a generator does **not** own.\n\n",
+         the other question of the four surfaces a generator does **not** \
+         own — the three bindings' layers and the Rust areas they mirror, \
+         which is the one to read the others against.\n\n",
     );
     out.push_str(
         "A member counts as exercised when its name appears after a dot \
-         anywhere in that binding's tests or examples, so a property read \
+         anywhere in that surface's own tests or examples, so a property read \
          counts as much as a call and the count errs towards exercised. A \
          member named here is therefore one nothing touches.\n\n",
     );
-    out.push_str("| binding | declares | exercised | untouched |\n|---|---:|---:|---:|\n");
+    out.push_str("| surface | declares | exercised | untouched |\n|---|---:|---:|---:|\n");
     let mut untouched_by: Vec<(&str, Vec<String>)> = Vec::new();
     let mut declared_all = 0usize;
     let mut untouched_all = 0usize;
@@ -293,7 +352,7 @@ fn main_page(root: &Path) -> Result<String, String> {
     out.push('\n');
     let _ = write!(
         out,
-        "**{} nothing names**, of {} the three layers declare. They are \
+        "**{} nothing names**, of {} the four surfaces declare. They are \
          listed rather than counted, because a member that stops being \
          exercised has to change this page and one that starts has to as \
          well.\n\n",
@@ -310,7 +369,7 @@ fn main_page(root: &Path) -> Result<String, String> {
     }
     out.push('\n');
     out.push_str(&table(&[Claim::counted(
-        "every binding's hand-written layer is read and its members found",
+        "every surface is read and its members found",
         LAYERS
             .iter()
             .filter(|layer| declared(root, layer).is_ok_and(|found| found.is_empty()))

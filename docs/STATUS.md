@@ -45,7 +45,11 @@ are real coverage rather than a number being chased: Python had never read
 an almanac day beyond the limbs its example prints, never read a founded
 chart's own day, and never read the twelve bhavas of the chalit; two
 bindings round-tripped a frame through the free functions and never
-through the area a consumer with a context reaches for. **Three of 171 are left and all three are the same thing** —
+through the area a consumer with a context reaches for. The page reads a **fourth** surface now, the Rust areas the bindings'
+layer classes mirror, and all 45 of them were already exercised — the
+contrast worth having on one page, because the surface the SDK's own tests
+use was whole and the three mirroring it were not, which is why nothing
+noticed. **Three of 216 are left and all three are the same thing** —
 `callJson`, `call_json` and `manifest_json`, the engine passthrough's JSON
 forms, which need a real engine the workspace does not carry. Node is
 exercised member for member. Before it, **a page measures what
