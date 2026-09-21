@@ -269,13 +269,36 @@ A generated page, `interpretation-records-measured.md`, held by
 
 ## 8. What this design does not settle
 
-- **The other corpora.** Graha-in-bhava (108 cells with condition modifiers
-  and conjunction synthesis), panchanga phala, dasha phala, shadbala
-  strength, avastha, planetary condition, sade sati, ayurdaya, avakhada,
-  namakarana, muhurta and the nine milan files are the same mechanism
-  pointed elsewhere. Each waits on the composer that would say it —
-  graha-in-bhava on `placements` becoming an interpretation, milan on
-  Phase 8's `matching` — and none waits on this page.
+- **The other corpora, which are larger and better shaped than this page
+  first said.** They are not a dozen loose files: the engine exports one
+  `STATE_INTERPRETATIONS` of **38 categories**, in the same
+  `{sa,ne,en,hi} × {summary, full, effects}` shape the rule readings use,
+  so the migration written here reads them unchanged.
+
+  What makes them worth their own page is that **most key onto catalogue
+  kinds the SDK already has**: `nakshatra-phala` 27, `tithi-phala` 30,
+  `yoga-phala` 27, `yoni` 14, `lagna-rashi` 12, `ishta-devata` 12,
+  `graha-direction` and `graha-color` 9 each, the four avastha families,
+  `gana`, `nadi`, `varna`, `tatwa`. Those need **no new kind and no new
+  key**: a reading becomes another *form* on a record that already exists,
+  so `nakshatra.ASHWINA` gains a `phala` beside its `name` and `iast`, and
+  every locale that carries the entity carries the reading.
+
+  Three things stand in the way and each is a decision rather than a task.
+  **The spellings differ** — `ASHWINI` against the catalogue's `ASHWINA`,
+  `LAGNA_ARIES` against `ARIES`, `JUP_IN_1` against `JUPITER` — which is
+  what `migrate::KEY_ALIASES` exists for and what §4 forbids inferring.
+  **`graha-bhava`'s 108 cells are the one genuinely composite key**, a
+  graha and a house together, so they want a second open kind where the
+  others want none; `catalogue::OPEN_KINDS` is a list of one and is built
+  to take a second. And **a form is not free**: a reading on every
+  nakshatra is carried by the embedded `sdk.entity`, which is the pack §3
+  refused to grow, so these want a loaded pack of their own rather than a
+  form on the shipped one.
+
+  Each still waits on the composer that would say it — graha-in-bhava on
+  `placements` becoming an interpretation, the nine milan files on Phase
+  8's `matching` — and none waits on this page.
 - **Whether a family reading may stand for its variants.** §4 refuses to
   infer one. Writing twelve Kalsarpa records, or giving a rule an explicit
   `reads:` pointer to another rule's record, are both defensible and both
