@@ -567,17 +567,40 @@ each says present where its code did, and Mrityu Bhaga, Dagdha Rashi and
 Badhaka reproduce every field. **The Neecha Bhanga family is rules** as well,
 over a `for-any` quantifier rather than the divisional predicate the page
 expected, and `in-varga` is built anyway. **The classical corpus was then
-surveyed** (`01-research/feature-universe/04-yogas-doshas.md`): the order of
-work is now the rest of the arishta corpus (thirty-six of about 120 rules are built,
-BPHS chs. 9 and 10, Brihat Jataka ch. 6 and Saravali chs. 10 to 12, whole but
-whole, strength and all) and the readings generator over Brihat Jataka ch. 14,
-Phaladeepika ch. 18, Jataka Parijata and Saravali chs. 22 to 31 and 49 to 51,
-with a house read whole and the texts' own composition rules beside it,
-reachable from the façade as `teistro::rules` and `teistro::rule_chart` while
-the four bindings wait on a rule crossing the C boundary,
-rashi drishti and argala, nakshatra references, D3 and D30, strength ranking,
-and the longevity band as an outcome. Next: with the references that need points the
-chart does not yet carry added as rules need them.
+surveyed** (`01-research/feature-universe/04-yogas-doshas.md`): it set out an
+order of work of which **most is now built**, checked item by item on
+2026-09-21 rather than assumed:
+
+- **The readings generator is built** — 632 rules, over Brihat Jataka
+  ch. 14's pairs, Phaladeepika ch. 18's Moon and Jataka Parijata's lists —
+  and **a house is read whole** beside it: `HouseReading` carries the
+  house, its sign, its occupants, every rule that held there and the
+  **texts' own composition rules**, each read from a verse.
+- **Rashi drishti and argala are built**, as the `rashi-aspects`, `argala`
+  and `vipareeta-argala` predicates; **nakshatra references** as
+  `planet-in-nakshatra` and `same-nakshatra`; **D3 and D30** through
+  `in-varga` over the varga kernel; **strength ranking** as
+  `planet-strong`, `planet-weak` and `planet-stronger-than`; and **the
+  longevity band as an outcome** as `Outcome::LifeSpan` and
+  `Outcome::LifeClass`. All sixty-four predicates are listed in
+  `language::KINDS` and held by a lint both ways.
+- **The four bindings no longer wait on a rule crossing the C boundary.**
+  Rules cross on `ts_chart_found`'s `rules_json` and come back in the
+  charts blob's `rules` section in Node, Dart, Python and Rust
+  (`03-design/rules-at-the-boundary.md`), and a narrative plan crosses
+  beside them (`03-design/plans-at-the-boundary.md`).
+
+**What is left of it needs the source translations to hand, and is
+therefore a sourcing question rather than a coding one.** The rest of the
+arishta corpus is thirty-six of about 120 rules built, over BPHS chs. 9
+and 10 (ch. 9 vv. 12 to 20, 23, 26 and 34 and most of ch. 10 are the gap),
+Brihat Jataka ch. 6 and Saravali chs. 10 to 12; and the readings want
+Saravali chs. 22 to 31 and 49 to 51, which no rule cites yet. Each rule
+carries a note paraphrasing what its verse says, so writing one without
+the verse in front of you invents scripture in a product whose worth is
+fidelity to cited sources — and the survey's own downloads are not in the
+repository. Next: the references that need points the chart does not yet
+carry, added as rules need them.
 
 `rules` engine with the v2 algebra landed in order (reference subjects,
 `RuleResult` with traces, table lookups, cancellation and severity) before
