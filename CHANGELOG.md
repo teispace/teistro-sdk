@@ -1369,6 +1369,22 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **The strengths say whether a graha is strong enough, and never say
+  "strong".** The Shadbala carries two facts about each graha — the rupas
+  it scores and the rupas its text requires, beside whether it reaches them
+  — and for four composers the second crossed in the document and was
+  absent from the plan, counted at 341 of 497 grahas.
+  `sdk.reason.strength.meets` says it, so `strength` now emits two items a
+  graha: *Mercury falls short of the 7.00 rupas its text requires*, *बुधले
+  आवश्यक ७.०० रूपा पुग्दैन*.
+
+  It names the **requirement** and not a verdict. "Strong" is a word the
+  tradition spends carefully and no locale here has been given it; what the
+  Shadbala computes is a number and a comparison, so that is what the
+  message says. The two items sit together, score then sufficiency, so a
+  consumer filtering to `score` still reads the ranking in the items'
+  order.
+
 - **The lagna is said.** It stands in every chart and was in none of the
   placement items, because `grahaInRashi`, `grahaInBhava` and `grahaAt`
   read a `Graha` and the lagna is `point.LAGNA` — 93 items a corpus, one a

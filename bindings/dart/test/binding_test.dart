@@ -751,13 +751,17 @@ void _engineTests() {
     // The strengths read the Shadbala, which this request never asked for:
     // a composer's own section is computed for it.
     final weighed = plans['strength']! as List<Object?>;
-    expect(weighed, hasLength(7), reason: 'the seven grahas, Sun to Saturn');
+    expect(
+      weighed,
+      hasLength(7 * 2),
+      reason: 'the seven grahas, a score and a sufficiency each',
+    );
     // And the houses read the bhavas, which it never asked for either.
     final ruled = plans['houses']! as List<Object?>;
     expect(ruled, hasLength(12), reason: 'the twelve bhavas, the first first');
     // And the positions read the same states the placements do.
     final degrees = plans['positions']! as List<Object?>;
-    expect(degrees, hasLength(9), reason: 'the nine grahas, the lagna a point');
+    expect(degrees, hasLength(10), reason: 'the lagna, then the nine grahas');
     // The drishtis read the aspects section, never asked for either.
     final looks = plans['aspects']! as List<Object?>;
     expect(looks, isNotEmpty, reason: 'every chart holds a drishti');

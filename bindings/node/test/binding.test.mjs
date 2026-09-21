@@ -814,11 +814,15 @@ test('plans compose in the same crossing, and render with nothing in between', (
   assert.ok(Array.isArray(plans.readings), 'asked for, so present');
   // The strengths read the Shadbala, which this request never asked for:
   // a composer's own section is computed for it.
-  assert.equal(plans.strength.length, 7, 'the seven grahas, Sun to Saturn');
+  assert.equal(
+    plans.strength.length,
+    7 * 2,
+    'the seven grahas, a score and a sufficiency each',
+  );
   // And the houses read the bhavas, which this request never asked for either.
   assert.equal(plans.houses.length, 12, 'the twelve bhavas, the first house first');
   // And the positions read the same states the placements do.
-  assert.equal(plans.positions.length, 9, 'the nine grahas, the lagna is a point');
+  assert.equal(plans.positions.length, 10, 'the lagna, then the nine grahas');
   // The drishtis read the aspects section, which this request never asked for.
   assert.ok(plans.aspects.length > 0, 'every chart holds a drishti');
   // The conditions and the karakas read the same states the placements do.

@@ -14,6 +14,7 @@
   "occupants": "{$grahas :list type=and} in {$rashi :entity kind=rashi}",
   "strength": {
     "score": "{$graha :entity kind=graha} scores {$score :number minimumFractionDigits=2} rupas",
+    "meets": ".input {$graha :entity kind=graha} .input {$required :number minimumFractionDigits=2} .input {$reaches :string} .match $reaches yes {{{$graha} reaches the {$required} rupas its text requires}} * {{{$graha} falls short of the {$required} rupas its text requires}}",
     "rank": ".input {$rank :integer select=ordinal} .match $rank one {{{$rank}st}} two {{{$rank}nd}} few {{{$rank}rd}} * {{{$rank}th}}"
   }
 }

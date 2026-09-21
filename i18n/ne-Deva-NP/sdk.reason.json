@@ -14,6 +14,7 @@
   "occupants": "{$rashi :entity kind=rashi}मा {$grahas :list type=and}",
   "strength": {
     "score": "{$graha :entity kind=graha}ले {$score :number minimumFractionDigits=2} रूपा पाउँछ",
+    "meets": ".input {$graha :entity kind=graha} .input {$required :number minimumFractionDigits=2} .input {$reaches :string} .match $reaches yes {{{$graha}ले आवश्यक {$required} रूपा पुग्छ}} * {{{$graha}ले आवश्यक {$required} रूपा पुग्दैन}}",
     "rank": ".input {$rank :integer select=ordinal} .match $rank 1 {{{$rank}लो}} 2 {{{$rank}रो}} 3 {{{$rank}रो}} 4 {{{$rank}थो}} * {{{$rank}औं}}"
   }
 }

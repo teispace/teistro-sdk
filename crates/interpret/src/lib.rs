@@ -76,7 +76,7 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 30] = [
+pub const KEYS: [&str; 31] = [
     <reason::PointInRashi as TypedMessage>::KEY,
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
@@ -85,6 +85,7 @@ pub const KEYS: [&str; 30] = [
     <reason::Occupants as TypedMessage>::KEY,
     <reason::Lordship as TypedMessage>::KEY,
     <reason::strength::Score as TypedMessage>::KEY,
+    <reason::strength::Meets as TypedMessage>::KEY,
     <reading::Effect as TypedMessage>::KEY,
     <reading::Says as TypedMessage>::KEY,
     <reading::LifeSpan as TypedMessage>::KEY,

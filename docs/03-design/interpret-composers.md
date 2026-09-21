@@ -327,6 +327,24 @@ mean-node chart. The true node turns; the mean node does not. So the
 condition carries information and is said of every graha that holds it, and
 the measured page counts it rather than this page assuming it.
 
+**`strength`** — what the chart weighs, and whether that is enough. It says
+**two** items of each graha because the Shadbala carries two facts: the
+rupas it scores (`score`) and the rupas its text requires beside whether it
+reaches them (`meets`). For four composers the second crossed in the
+document and was absent from the plan, counted at 341 of 497 grahas.
+
+**It names the requirement and never a verdict.** "Strong" is a word the
+tradition spends carefully and no locale here has been given it; what the
+Shadbala computes is a number and a comparison, so that is what the message
+says — *Mercury falls short of the 7.00 rupas its text requires*, *मंगलले
+आवश्यक ५.०० रूपा पुग्छ*. The selector is a word and not a boolean, as every
+other selector in the packs is, and the composer names both arms as
+constants so the two cannot drift apart.
+
+`sdk.reason.strength.rank` is still not emitted: an ordinal alone is a
+fragment a consumer formats with, and the ranking is carried by the items'
+order.
+
 **`karakas`** — which chara karaka each graha holds, under the seven-karaka
 scheme and the eight-karaka one. **Built** over `sdk.karaka`, two messages,
 and it reads the same `RuleChart` too.
@@ -480,7 +498,12 @@ a test that a plan round-trips through JSON.
     rather than what the SDK computed. **Built**: `sdk.phala`, six
     messages, each saying a record a loaded pack brings, and `Vocabulary`
     generalised from one subject to any.
-12. The **lagna**, said at last. **Built**: `sdk.reason.pointInRashi` and
+12. The **strengths'** second fact. **Built**:
+    `sdk.reason.strength.meets`, one message, two sentences a locale — the
+    rupas a graha's text requires and whether it reaches them. The
+    Shadbala had carried it since `strength` was written; no locale had a
+    message for it.
+13. The **lagna**, said at last. **Built**: `sdk.reason.pointInRashi` and
     `sdk.reason.pointAt`, two messages that read a point rather than a
     graha, said by `placements` and `positions`. It was the oldest silence
     in this page — counted at 93 items, one a chart, for six composers —

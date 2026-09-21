@@ -874,6 +874,13 @@ class MessagesSdkReasonStrength:
         self._r = renderer
 
 
+    def meets(self, *, graha: GrahaKey, reaches: str, required: float) -> str:
+        """`sdk.reason.strength.meets`"""
+        return self._r.render(
+            "sdk.reason.strength.meets",
+            {"graha": {"$entity": graha.value}, "reaches": reaches, "required": required},
+        )
+
     def rank(self, *, rank: int) -> str:
         """`sdk.reason.strength.rank`"""
         return self._r.render(

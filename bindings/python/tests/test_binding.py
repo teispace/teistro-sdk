@@ -687,11 +687,13 @@ class AnEngine(WithLibrary):
         self.assertIsInstance(plans["readings"], list)
         # The strengths read the Shadbala, which this request never asked
         # for: a composer's own section is computed for it.
-        self.assertEqual(len(plans["strength"]), 7, "the seven grahas")
+        self.assertEqual(
+            len(plans["strength"]), 7 * 2, "a score and a sufficiency each"
+        )
         # And the houses read the bhavas, which it never asked for either.
         self.assertEqual(len(plans["houses"]), 12, "the twelve bhavas")
         # And the positions read the same states the placements do.
-        self.assertEqual(len(plans["positions"]), 9, "the nine grahas")
+        self.assertEqual(len(plans["positions"]), 10, "the lagna, then the nine")
         # The drishtis read the aspects section, never asked for either.
         self.assertTrue(plans["aspects"], "every chart holds a drishti")
         # The conditions and the karakas read the same states the

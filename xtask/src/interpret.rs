@@ -520,13 +520,16 @@ fn unsaid_strength(out: &mut String, root: &Path) {
     let sufficient: usize = weighed.values().map(|weighed| weighed.sufficient).sum();
     let _ = write!(
         out,
-        "And the **strengths** say what a graha weighs and not whether it is \
-         strong enough. The corpus records a Shadbala for {} of these charts, \
-         {} in all, and for each of them whether it reaches the rupas its \
-         text requires — {} of {} do. The plan says none of that: no locale \
-         carries a message for it, and a machine-translated \"strong\" would \
-         be the stub the project refuses. What it says instead is the \
-         ordering, strongest first, which needs no word at all.\n\n",
+        "And the **strengths** say what a graha weighs *and* whether that is \
+         enough. The corpus records a Shadbala for {} of these charts, {} in \
+         all, and for each of them the rupas its text requires and whether it \
+         reaches them — {} of {} do. Both are items now, score then \
+         sufficiency, where for four composers the second crossed in the \
+         document and was absent from the plan. The message names the \
+         **requirement** and not a verdict: it says the rupas the text asks \
+         for and whether the graha reaches them, and never \"strong\", which \
+         is a word no locale here has been given and a machine translation of \
+         it would be the stub the project refuses.\n\n",
         count(charts),
         plural(grahas, "graha"),
         count(sufficient),

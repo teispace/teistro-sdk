@@ -87,7 +87,7 @@ fn a_plan_through_the_facade_is_the_plan_the_composers_write() {
     // on its behalf — which is the same rule the boundary follows for a
     // composer's own section.
     let weighed = sdk.interpret().strength(document).expect("the strengths");
-    assert_eq!(weighed.len(), 7);
+    assert_eq!(weighed.len(), 7 * 2, "a score and a sufficiency each");
 }
 
 /// A request that asks for a reading without rules is refused by name, and
@@ -113,17 +113,17 @@ fn a_reading_without_rules_is_refused_and_so_is_a_composer_that_is_not_one() {
 
 /// The strengths are the third kind of composer: over a section rather than
 /// over the chart's placements or a rule's answer. It says what each graha
-/// weighs, strongest first, and says nothing of whether it is strong enough,
-/// because no locale carries a message for that.
+/// weighs, strongest first, and the rupas its text requires beside whether
+/// it reaches them — two facts and two items, and never a verdict.
 #[test]
-fn the_strengths_are_said_strongest_first_and_claim_nothing_more() {
+fn the_strengths_are_said_strongest_first_with_what_each_needs() {
     let (sdk, document) = common::reading("{}", |request| {
         request
             .with_rule_inputs(shipped::nabhasas())
             .with_shadbala()
     });
     let plan = sdk.interpret().strength(&document).expect("the strengths");
-    assert_eq!(plan.len(), 7, "the seven grahas, Sun to Saturn");
+    assert_eq!(plan.len(), 7 * 2, "a score and a sufficiency each");
 
     let shadbala = document.shadbala.as_ref().expect("the Shadbala asked for");
     let mut weights: Vec<f64> = shadbala.grahas.iter().map(|graha| graha.rupas).collect();
@@ -138,10 +138,25 @@ fn the_strengths_are_said_strongest_first_and_claim_nothing_more() {
         .collect();
     assert_eq!(said, weights, "strongest first");
 
-    // The document carries `strong` and `required_rupas`; the plan does not.
+    // It says the requirement and whether it was met, and never the
+    // document's own word for it: "strong" is a verdict no locale here has
+    // been given, and a machine translation of it would be a stub.
+    let required: Vec<f64> = shadbala
+        .grahas
+        .iter()
+        .map(|graha| graha.required_rupas)
+        .collect();
+    let said: Vec<f64> = plan
+        .items
+        .iter()
+        .filter_map(|item| match item.params.get("required") {
+            Some(teistro::Value::Num(rupas)) => Some(*rupas),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(said.len(), required.len(), "one requirement a graha");
     let written = serde_json::to_string(&plan).expect("a plan writes");
     assert!(!written.contains("strong"), "{written}");
-    assert!(!written.contains("required"), "{written}");
 
     // A document without the section is refused by the knob's name, not
     // answered with an empty plan.

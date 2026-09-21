@@ -1554,6 +1554,28 @@ pub mod sdk {
 
         /// The `strength` group.
         pub mod strength {
+            /// The message `sdk.reason.strength.meets`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Meets {
+                /// The `graha` parameter.
+                pub graha: teistro_core::catalogue::Graha,
+                /// The `reaches` parameter.
+                pub reaches: String,
+                /// The `required` parameter.
+                pub required: f64,
+            }
+
+            impl crate::TypedMessage for Meets {
+                const KEY: &'static str = "sdk.reason.strength.meets";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("graha", crate::Value::catalogued(self.graha)),
+                        ("reaches", crate::Value::Str(self.reaches.clone())),
+                        ("required", crate::Value::Num(self.required)),
+                    ])
+                }
+            }
+
             /// The message `sdk.reason.strength.rank`.
             #[derive(Clone, Debug, PartialEq)]
             pub struct Rank {

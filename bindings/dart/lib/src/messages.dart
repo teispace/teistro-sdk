@@ -1767,6 +1767,8 @@ final class MessagesSdkReasonStrength {
 
   final Renderer _r;
 
+  String meets({required GrahaKey graha, required String reaches, required num required}) =>
+      _r.render('sdk.reason.strength.meets', {'graha': {r'$entity': graha.key}, 'reaches': reaches, 'required': required});
   String rank({required int rank}) =>
       _r.render('sdk.reason.strength.rank', {'rank': rank});
   String score({required GrahaKey graha, required num score}) =>

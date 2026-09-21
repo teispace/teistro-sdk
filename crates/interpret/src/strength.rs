@@ -6,17 +6,24 @@
 //! `Document.shadbala`, which a request asks for by name, and needs no rules
 //! beside it.
 //!
-//! Like [`placements`](crate::placements) it adds no message of its own —
-//! `sdk.reason.strength.score` is carried by both strict locales, translated
-//! by hand — so a plan of strengths renders in English and in Nepali the day
-//! it is written.
+//! `sdk.reason.strength.score` was carried by both strict locales before
+//! this composer was written; `sdk.reason.strength.meets` is its own, two
+//! sentences a locale.
 //!
-//! What it cannot say is counted rather than hidden. The Shadbala says of
-//! each graha whether it reaches the rupas its text requires, and no locale
-//! carries a message for *that*: a graha's `required_rupas` and its `strong`
-//! cross in the document and are absent from the plan until a message is
-//! written and translated. Saying "strong" in a locale that has no word for
-//! it here would be the machine-translated stub the project refuses.
+//! It says **two** things of each graha, because they are two facts: what it
+//! weighs (`score`) and whether that is enough (`meets`). The Shadbala
+//! carries both — `rupas` beside `required_rupas` and `strong` — and for
+//! four composers the second crossed in the document and was absent from
+//! the plan, counted on the measured page at 341 of 497 grahas reaching
+//! their requirement.
+//!
+//! **It says the requirement and not a verdict.** The message names the
+//! rupas the text asks for and whether the graha reaches them, which is
+//! what the Shadbala computes; it does not say "strong", which is a word
+//! the tradition spends carefully and a machine translation of it would be
+//! the stub the project refuses. The two items sit together, score then
+//! sufficiency, so a consumer filtering to `score` still reads the ranking
+//! in the items' order.
 //!
 //! `sdk.reason.strength.rank` is **not** emitted, and not because it is
 //! missing: it renders an ordinal alone — `1st`, `१लो` — which is a
@@ -46,9 +53,25 @@ pub fn strength(shadbala: &ShadbalaReading) -> Plan {
             graha: graha.graha,
             score: graha.rupas,
         });
+        plan.say(&reason::strength::Meets {
+            graha: graha.graha,
+            required: graha.required_rupas,
+            reaches: String::from(if graha.strong { REACHES } else { SHORT }),
+        });
     }
     plan
 }
+
+/// What `sdk.reason.strength.meets` selects on when a graha reaches the
+/// rupas its text requires, and when it does not.
+///
+/// A word and not a boolean, because the message is a `.match` like every
+/// other selector in the packs, and a locale reads the arm it needs. The
+/// two are named here so the composer and the message cannot drift: a
+/// third state would be a third arm and a third constant.
+const REACHES: &str = "yes";
+/// The other arm, which the message reaches through its catch-all.
+const SHORT: &str = "no";
 
 #[cfg(test)]
 mod tests {
@@ -106,7 +129,7 @@ mod tests {
     #[test]
     fn the_strongest_graha_is_said_first() {
         let plan = strength(&reading());
-        assert_eq!(plan.len(), 7);
+        assert_eq!(plan.len(), 7 * 2, "a score and a sufficiency each");
         assert_eq!(
             plan.items[0],
             Item::of(&reason::strength::Score {
@@ -115,8 +138,8 @@ mod tests {
             })
         );
         assert_eq!(
-            plan.items.last().unwrap(),
-            &Item::of(&reason::strength::Score {
+            plan.items[plan.len() - 2],
+            Item::of(&reason::strength::Score {
                 graha: Graha::Sun,
                 score: 1.0,
             })
@@ -137,22 +160,44 @@ mod tests {
             })
             .collect();
         assert_eq!(said[0], "graha.SUN");
-        assert_eq!(said[6], "graha.SATURN");
+        assert_eq!(said[13], "graha.SATURN");
     }
 
-    /// Whether a graha reaches its required rupas has no message in any
-    /// locale, so the plan does not claim it.
+    /// Whether a graha reaches its required rupas is the second fact the
+    /// Shadbala carries, and both arms of the message are exercised: the
+    /// catch-all is the one a plan reaches when a graha falls short, and a
+    /// test over a reading where every graha is strong would never take it.
     #[test]
-    fn it_does_not_say_what_no_locale_can_say() {
+    fn it_says_the_requirement_and_whether_each_graha_reaches_it() {
         let mut read = reading();
-        for graha in &mut read.grahas {
-            graha.strong = true;
+        for (at, graha) in read.grahas.iter_mut().enumerate() {
             graha.required_rupas = 5.0;
+            graha.strong = graha.rupas >= graha.required_rupas;
+            assert_eq!(graha.strong, at >= 4, "the four weakest fall short");
         }
-        let written = serde_json::to_string(&strength(&read)).unwrap();
-        // The document carries both; the plan claims neither.
+        let plan = strength(&read);
+        assert_eq!(
+            plan.items[1],
+            Item::of(&reason::strength::Meets {
+                graha: Graha::Saturn,
+                required: 5.0,
+                reaches: String::from(REACHES),
+            }),
+            "the strongest reaches it"
+        );
+        assert_eq!(
+            plan.items.last().unwrap(),
+            &Item::of(&reason::strength::Meets {
+                graha: Graha::Sun,
+                required: 5.0,
+                reaches: String::from(SHORT),
+            }),
+            "the weakest does not"
+        );
+        // It says the requirement, never a verdict: no locale is asked for
+        // a word like "strong", which is the stub the project refuses.
+        let written = serde_json::to_string(&plan).unwrap();
         assert!(!written.contains("strong"), "{written}");
-        assert!(!written.contains("required"), "{written}");
     }
 
     #[test]

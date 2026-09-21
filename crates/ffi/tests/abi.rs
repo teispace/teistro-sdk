@@ -1829,7 +1829,11 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         // The strengths read the Shadbala, and `sections` never asked for
         // it: a composer's own section is computed for it, as a rule's is.
         let weighed = chart["strength"].as_array().unwrap();
-        assert_eq!(weighed.len(), 7, "the seven grahas, Sun to Saturn");
+        assert_eq!(
+            weighed.len(),
+            7 * 2,
+            "the seven grahas, a score and a sufficiency each"
+        );
         // And the houses read the bhavas, which `sections` never asked for
         // either.
         let lords = chart["houses"].as_array().unwrap();

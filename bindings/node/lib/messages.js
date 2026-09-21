@@ -630,6 +630,7 @@ export function messages(r) {
         pointInRashi: (p) => r.render('sdk.reason.pointInRashi', { point: { '$entity': p.point }, rashi: { '$entity': p.rashi } }),
         rashiNature: (p) => r.render('sdk.reason.rashiNature', { rashi: { '$entity': p.rashi } }),
         strength: {
+          meets: (p) => r.render('sdk.reason.strength.meets', { graha: { '$entity': p.graha }, reaches: p.reaches, required: p.required }),
           rank: (p) => r.render('sdk.reason.strength.rank', { rank: p.rank }),
           score: (p) => r.render('sdk.reason.strength.score', { graha: { '$entity': p.graha }, score: p.score }),
         },
