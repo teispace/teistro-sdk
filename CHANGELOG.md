@@ -1369,6 +1369,26 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A lint holds every composer to every binding.** A `PlanRequest`
+  crosses the boundary as JSON rather than as a struct, so none of the
+  three bindings generates its plan surface from the API description: each
+  spells the record itself, which is three copies of one list that nothing
+  held together. Two composers in a row had to be remembered into three
+  files by hand.
+
+  `composer-reaches-every-binding` reads `PlanRequest::MEMBERS` and
+  requires each name in **both** declarations of each binding — the request
+  a caller fills in and the record of plans it gets back — because one
+  without the other is a composer that can be asked for and never read, or
+  read and never asked for. It reads the declarations by their anchors
+  rather than counting words, because `chalit` and `houses` are also names
+  of chart sections and a substring count says nothing.
+
+  No other gate sees this failure: `check-parity` compares the values a
+  scenario answers, and a composer nobody can ask for answers nothing. The
+  lint was proved red by removing one member from one binding before it was
+  believed.
+
 - **The reading corpora tell a consumer how to use them.** Two roots of
   649 and 350 records a locale sat in `packs/` with nothing but the design
   pages to explain them: no README, and the top-level one never mentioned

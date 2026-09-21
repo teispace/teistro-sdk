@@ -80,6 +80,17 @@ It is an object, one member per composer:
 
 - Every member defaults to false, so a consumer pays for what it asks, and
   null costs nothing.
+- **Every member reaches every binding**, held by a lint. A `PlanRequest`
+  crosses as JSON rather than as a struct, so none of the three bindings
+  generates its surface from the API description: each spells the record
+  itself, which is three copies of one list. `composer-reaches-every-binding`
+  reads `PlanRequest::MEMBERS` and requires each name in both declarations
+  of each binding — the request a caller fills in and the record of plans it
+  gets back — because one without the other is a composer that can be asked
+  for and never read, or read and never asked for. It was added after two
+  composers in a row had to be remembered into three files by hand, and no
+  other gate sees that failure: `check-parity` compares the values a
+  scenario answers, and a composer nobody can ask for answers nothing.
 - **An unknown member is refused**, naming the composers there are. A typo
   that silently composes nothing is the dead end the no-dead-ends mandate
   forbids; a composer added later is a member added here, and the refusal

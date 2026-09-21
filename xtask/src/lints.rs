@@ -564,6 +564,113 @@ fn gate_runners(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// The hand-written surface of each binding that names the composers.
+///
+/// A `PlanRequest` crosses the boundary as **JSON**, not as a struct, so
+/// none of these is generated from the API description the way the rest of
+/// a binding is: each language spells the record itself. That is three
+/// copies of one list, which is the shape this repository keeps finding,
+/// and nothing held them together until a composer was added twice and
+/// each binding had to be remembered.
+const PLAN_SURFACES: [(&str, [&str; 2]); 3] = [
+    (
+        "bindings/node/lib/index.d.ts",
+        ["interface PlanRequest {", "interface Plans {"],
+    ),
+    (
+        "bindings/dart/lib/teistro.dart",
+        ["final class PlanRequest {", "final class PlanRequest {"],
+    ),
+    (
+        "bindings/python/teistro/__init__.py",
+        ["class PlanRequest(TypedDict", "class Plans(TypedDict"],
+    ),
+];
+
+/// The line an anchor is on, one-based, for a finding to point at.
+fn line_of(text: &str, anchor: &str) -> usize {
+    text.find(anchor).map_or(1, |at| {
+        text.get(..at).unwrap_or_default().lines().count() + 1
+    })
+}
+
+/// The declaration an anchor opens: from the anchor to the first line
+/// after it that starts in the first column, which ends a block in each of
+/// the three languages — a `}` for TypeScript and Dart, the next `class`
+/// or `def` for Python.
+///
+/// Dart names its request and its record of plans in one class, so both
+/// anchors are the same line there and the block is read twice.
+fn block_from<'t>(text: &'t str, anchor: &str) -> Option<&'t str> {
+    let start = text.find(anchor)?;
+    let body = text.get(start..)?;
+    let mut end = body.len();
+    for (at, _) in body.match_indices('\n') {
+        let rest = body.get(at + 1..).unwrap_or_default();
+        if rest
+            .chars()
+            .next()
+            .is_some_and(|first| !first.is_whitespace())
+        {
+            end = at + 1 + rest.find('\n').unwrap_or(rest.len());
+            break;
+        }
+    }
+    body.get(..end)
+}
+
+/// That every composer a request can name reaches every binding.
+///
+/// It checks that the member is **named twice**, which is the floor every
+/// binding meets: once on the request a caller fills in and once on the
+/// record of plans it gets back. One of the two alone is a composer that
+/// can be asked for and never read, or read and never asked for. How each
+/// spells them is its own business and its own test asserts it.
+///
+/// What this catches is the failure that actually happens — a composer
+/// added to `PlanRequest` and to one or two of the three surfaces — which
+/// no other gate sees: `check-parity` compares the values a scenario
+/// answers, and a composer nobody can ask for answers nothing.
+fn composers_reach_every_binding(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "composer-reaches-every-binding";
+    for (surface, anchors) in PLAN_SURFACES {
+        let path = root.join(surface);
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            outcome.failures.push(Finding {
+                file: surface.to_owned(),
+                line: 1,
+                text: String::from("names the composers and could not be read"),
+                rule: RULE,
+            });
+            continue;
+        };
+        for anchor in anchors {
+            let Some(block) = block_from(&text, anchor) else {
+                outcome.failures.push(Finding {
+                    file: surface.to_owned(),
+                    line: 1,
+                    text: format!("`{anchor}` is not in this binding any more"),
+                    rule: RULE,
+                });
+                continue;
+            };
+            for member in teistro::PlanRequest::MEMBERS {
+                if block.contains(member) {
+                    continue;
+                }
+                outcome.failures.push(Finding {
+                    file: surface.to_owned(),
+                    line: line_of(&text, anchor),
+                    text: format!(
+                        "`PlanRequest::MEMBERS` has `{member}` and `{anchor}` does not name it"
+                    ),
+                    rule: RULE,
+                });
+            }
+        }
+    }
+}
+
 /// Every boundary module the description is read from.
 ///
 /// The API description is extracted from a hand-written list of sources
@@ -1230,6 +1337,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     targets_declare_their_features(root, &mut outcome);
     serialised_types_describe_themselves(root, &mut outcome);
     predicates_are_listed(root, &mut outcome);
+    composers_reach_every_binding(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -1248,6 +1356,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "a-tier-turns-on-its-base",
         "serialised-type-describes-itself",
         "every-predicate-is-listed",
+        "composer-reaches-every-binding",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();
