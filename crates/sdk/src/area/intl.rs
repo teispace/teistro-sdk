@@ -119,7 +119,16 @@ impl<'a> IntlArea<'a> {
     }
 
     /// A locale pack loaded at run time, whose locales join the embedded
-    /// ones.
+    /// ones. The bytes are a `.tpack` or `.tbundle` written by
+    /// `teistro-intl build`, from wherever the consumer got them — a file
+    /// beside the binary, a download, an asset in an application bundle.
+    ///
+    /// This is how a corpus too large to embed reaches a consumer. The
+    /// SDK's readings — one for each yoga and dosha, in four languages —
+    /// ship this way rather than inside the library, because a consumer
+    /// computing a Julian day should not carry them to do it
+    /// (`03-design/interpretation-records.md` §3). Loading one changes
+    /// what a composer **says**, not how it is called.
     ///
     /// # Errors
     ///

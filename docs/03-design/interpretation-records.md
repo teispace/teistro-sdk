@@ -248,7 +248,10 @@ A generated page, `interpretation-records-measured.md`, held by
    kept; a root created from nothing is what ran that branch. A base locale
    falls back to nothing, is complete by definition, and keeps Latin digits.
 4. **The pack as an artefact**: built from the migrated records, versioned,
-   and loaded rather than embedded.
+   and loaded rather than embedded. **Built**: `check-interpretations`
+   builds every locale's pack and loads it into an engine that never read
+   the source tree, so the artefact is exercised rather than assumed, and
+   the page prints source and pack bytes side by side.
 5. **The composer's choice**, with the trait that asks the base locale.
    **Built**: `Vocabulary`, `NoReadings`, `sdk.reading.says`, and the
    renderer taught the same open-kind rule the loader and the validator
@@ -256,6 +259,13 @@ A generated page, `interpretation-records-measured.md`, held by
    every reading.
 6. **The measured page and `check-interpretations`.**
 7. **The boundary and the bindings**, so a reading crosses as the rest does.
+   **Nothing was needed**: a plan already crosses on `interpret_json`, and
+   `ts_intl_load_pack` was already at the boundary and in all three
+   bindings. What was missing was in Rust, where `pack` and `Tree` were
+   not published — a consumer with locale sources of its own could not
+   build a pack from the crate that defines one — and `examples/readings.rs`
+   now runs the whole path: build, load, compose, render in two languages,
+   then read the passage and its facets off the record.
 
 ## 8. What this design does not settle
 
@@ -274,6 +284,15 @@ A generated page, `interpretation-records-measured.md`, held by
   Hindi, not a machine translation, but it has not been reviewed here. It
   joins `sdk.reading`, `sdk.aspect`, `sdk.condition` and `sdk.karaka` in
   the roadmap's `ne`/`hi` sign-off.
-- **The pack's distribution.** A file beside the binding, a separate
-  package per language, or a download — a packaging decision that wants
-  the binding surface settled first.
+- **Where the built packs are published** — but not their shape, which is
+  settled. **One pack per locale**, which is what `teistro-intl build`
+  already writes and what the measurement now builds and loads on every
+  run: a Nepali application takes 736 KB rather than 2 581, and chooses.
+  They are **not committed**: the pack is 2 581 KB against a source of
+  2 665, so storing both would double the corpus in the repository to save
+  3%, and everything generated here is regenerated and gated rather than
+  stored. The binding surface needs nothing further — `loadPack` is
+  already on the C boundary and in all three bindings, and `readings.rs`
+  runs the whole path end to end. What is left is which release artefact
+  or companion package carries them, which belongs with Phase 9's release
+  pipeline and not here.

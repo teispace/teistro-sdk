@@ -207,33 +207,75 @@ fn facet_gaps(out: &mut String, per_locale: &BTreeMap<String, Readings>, base: &
     out.push('\n');
 }
 
-/// What the corpus costs, which is why it is loaded and not embedded.
-fn what_it_costs(out: &mut String, root: &Path, tree: &Tree) {
-    out.push_str("## What the readings cost\n\n");
-    let mut bytes: BTreeMap<String, usize> = BTreeMap::new();
-    for tag in tree.locales.keys() {
-        let path = root
+/// What the corpus costs **built**, which is the number a consumer pays,
+/// and that the built artefact loads and answers.
+///
+/// The source JSON is what this repository carries; the pack is what ships.
+/// Both are printed because they are different questions, and the pack is
+/// built here rather than trusted: an artefact nothing exercises is one
+/// that has already stopped working (`unbuilt-configuration-is-broken`).
+fn what_it_costs(out: &mut String, root: &Path, tree: &Tree) -> Result<Built, String> {
+    let mut built = Built::default();
+    for (tag, locale) in &tree.locales {
+        let source = root
             .join(ROOT)
             .join(tag)
             .join(format!("{ENTITY_NAMESPACE}.json"));
-        let size = std::fs::metadata(&path)
+        let source_bytes = std::fs::metadata(&source)
             .map_or(0, |meta| usize::try_from(meta.len()).unwrap_or(usize::MAX));
-        bytes.insert(tag.clone(), size);
+        let bytes = teistro_intl::pack::build(locale, ENTITY_NAMESPACE)
+            .map_err(|why| format!("{ROOT}/{tag}: {why}"))?;
+        built.packs.insert(tag.clone(), (source_bytes, bytes.len()));
+        built.bytes.push((tag.clone(), bytes));
     }
-    let total: usize = bytes.values().sum();
+    out.push_str("## What the readings cost\n\n");
+    let source: usize = built.packs.values().map(|(source, _)| source).sum();
+    let packed: usize = built.packs.values().map(|(_, packed)| packed).sum();
     let _ = write!(
         out,
         "They are **loaded, not embedded**: `crates/sdk`'s build script \
          compiles `i18n/` into every artefact the SDK produces, and this \
          corpus is several times that root's size, so a consumer computing \
          a Julian day would carry every Nepali yoga reading to do it. The \
-         numbers are why the decision is a decision.\n\n| locale | \
-         records |\n|---|---:|\n",
+         numbers are why the decision is a decision — and the pack is not \
+         much smaller than its source, so nothing is being deferred to \
+         compression.\n\n| locale | source | pack |\n|---|---:|---:|\n",
     );
-    for (tag, size) in &bytes {
-        let _ = writeln!(out, "| `{tag}` | {} KB |", count(size / 1024));
+    for (tag, (source, packed)) in &built.packs {
+        let _ = writeln!(
+            out,
+            "| `{tag}` | {} KB | {} KB |",
+            count(source / 1024),
+            count(packed / 1024)
+        );
     }
-    let _ = write!(out, "| **all** | **{} KB** |\n\n", count(total / 1024));
+    let _ = write!(
+        out,
+        "| **all** | **{} KB** | **{} KB** |\n\nOne pack a locale, because \
+         a Nepali application wants Nepali and its fallback rather than \
+         four languages' worth of prose: {} KB of the {} KB, and the \
+         consumer chooses.\n\n",
+        count(source / 1024),
+        count(packed / 1024),
+        count(
+            built
+                .packs
+                .get("ne-Deva-NP")
+                .map_or(0, |(_, packed)| *packed)
+                / 1024
+        ),
+        count(packed / 1024),
+    );
+    Ok(built)
+}
+
+/// The packs this pass built, so the claims can load them.
+#[derive(Default)]
+struct Built {
+    /// Source and pack bytes per locale.
+    packs: BTreeMap<String, (usize, usize)>,
+    /// The pack bytes themselves.
+    bytes: Vec<(String, Vec<u8>)>,
 }
 
 /// The claims the packs and the records decide.
@@ -241,7 +283,8 @@ fn what_the_packs_decide(
     out: &mut String,
     per_locale: &BTreeMap<String, Readings>,
     base: &Readings,
-) {
+    built: &Built,
+) -> Result<(), String> {
     let records: usize = per_locale.values().map(BTreeMap::len).sum();
     let mut claims = vec![Claim::counted(
         "every reading names a key a rule pack could name",
@@ -271,9 +314,59 @@ fn what_the_packs_decide(
             .count(),
         records,
     ));
+    // The artefact, exercised rather than assumed: every pack loads into
+    // an engine that did not have it, and every reading answers from the
+    // locale's own record afterwards.
+    let mut unloadable = 0usize;
+    let mut unanswered = 0usize;
+    for (tag, bytes) in &built.bytes {
+        let mut engine = teistro_intl::Intl::new(BTreeMap::new())
+            .or_else(|_| empty_engine(tag))
+            .map_err(|why| format!("{tag}: {why}"))?;
+        if engine.load_pack(bytes).is_err() {
+            unloadable += 1;
+            continue;
+        }
+        for key in base.keys() {
+            if engine
+                .entity_from(tag, &format!("{RULE_PREFIX}{key}"))
+                .is_none()
+            {
+                unanswered += 1;
+            }
+        }
+    }
+    claims.push(Claim::counted(
+        "every locale's readings build into a pack an engine can load",
+        unloadable,
+        built.bytes.len(),
+    ));
+    claims.push(Claim::counted(
+        "every reading answers from the loaded pack, with no source tree behind it",
+        unanswered,
+        base.len() * built.bytes.len(),
+    ));
     out.push_str("## What the packs decide\n\n");
     out.push_str(&table(&claims));
     out.push('\n');
+    Ok(())
+}
+
+/// An engine carrying one empty locale, so a pack is loaded into something
+/// that never read the source tree — which is the consumer's situation and
+/// the only way this pass can prove the artefact stands on its own.
+fn empty_engine(tag: &str) -> Result<teistro_intl::Intl, teistro_intl::render::IntlError> {
+    let mut locales = BTreeMap::new();
+    locales.insert(
+        tag.to_string(),
+        teistro_intl::source::LocaleSource {
+            tag: tag.to_string(),
+            meta: serde_json::from_value(serde_json::json!({ "locale": tag }))
+                .unwrap_or_else(|_| unreachable!("a tag is a locale")),
+            namespaces: BTreeMap::new(),
+        },
+    );
+    teistro_intl::Intl::new(locales)
 }
 
 fn main_page(root: &Path) -> Result<String, String> {
@@ -298,8 +391,8 @@ fn main_page(root: &Path) -> Result<String, String> {
     coverage(&mut out, &rules, base, per_locale.len());
     facets_carried(&mut out, &per_locale);
     facet_gaps(&mut out, &per_locale, base);
-    what_it_costs(&mut out, root, &tree);
-    what_the_packs_decide(&mut out, &per_locale, base);
+    let built = what_it_costs(&mut out, root, &tree)?;
+    what_the_packs_decide(&mut out, &per_locale, base, &built)?;
     Ok(fill(&out))
 }
 

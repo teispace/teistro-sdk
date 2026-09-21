@@ -63,15 +63,20 @@ They are **loaded, not embedded**: `crates/sdk`'s build script compiles
 `i18n/` into every artefact the SDK produces, and this corpus is several
 times that root's size, so a consumer computing a Julian day would carry
 every Nepali yoga reading to do it. The numbers are why the decision is
-a decision.
+a decision — and the pack is not much smaller than its source, so
+nothing is being deferred to compression.
 
-| locale | records |
-|---|---:|
-| `en-Latn` | 465 KB |
-| `hi-Deva-IN` | 802 KB |
-| `ne-Deva-NP` | 758 KB |
-| `sa-Deva` | 638 KB |
-| **all** | **2665 KB** |
+| locale | source | pack |
+|---|---:|---:|
+| `en-Latn` | 465 KB | 443 KB |
+| `hi-Deva-IN` | 802 KB | 782 KB |
+| `ne-Deva-NP` | 758 KB | 736 KB |
+| `sa-Deva` | 638 KB | 618 KB |
+| **all** | **2665 KB** | **2581 KB** |
+
+One pack a locale, because a Nepali application wants Nepali and its
+fallback rather than four languages' worth of prose: 736 KB of the 2581
+KB, and the consumer chooses.
 
 ## What the packs decide
 
@@ -80,4 +85,6 @@ a decision.
 | every reading names a key a rule pack could name | **holds** | 0 of 649 disagree |
 | every locale carries a reading for every rule the base locale reads | **holds** | 0 of 2596 disagree |
 | every reading carries a summary to be named by | **holds** | 0 of 2596 disagree |
+| every locale's readings build into a pack an engine can load | **holds** | 0 of 4 disagree |
+| every reading answers from the loaded pack, with no source tree behind it | **holds** | 0 of 2596 disagree |
 

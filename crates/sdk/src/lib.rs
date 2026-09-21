@@ -138,9 +138,15 @@ pub use teistro_strength as strength;
 // `ctx.intl.messages.sdk.reason.grahaInBhava({ … })`.
 pub use teistro_intl::messages;
 // What the locale area takes and answers with.
-pub use teistro_intl::source::Entity;
+pub use teistro_intl::source::{Entity, Tree};
 pub use teistro_intl::translit::Script;
 pub use teistro_intl::{Intl, Loaded, Params, Rendered, TypedMessage, Value, params};
+// Making a pack, which is the other half of loading one. `Loaded` is what
+// `load_pack` answers with and was published already; this is what a
+// consumer with locale sources of its own — or with the SDK's readings
+// corpus, which is loaded rather than embedded — builds one from
+// (`03-design/interpretation-records.md` §3).
+pub use teistro_intl::pack;
 // What `positions` takes and answers with, and what an ephemeris of
 // your own implements. Re-exported because a consumer needing five
 // dependencies to call one operation is the thing this crate exists to
