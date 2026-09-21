@@ -119,6 +119,11 @@ pub enum Command {
         /// Where to write it; the root by default.
         #[arg(long)]
         out: Option<PathBuf>,
+        /// The root holds **prose** rather than names, so the target is
+        /// cased by sentence and not by word. A corpus of readings is
+        /// passages; `i18n/` is names (`derive::Casing`).
+        #[arg(long)]
+        prose: bool,
     },
     /// Transliterates text between scripts (`deva`, `iast`).
     Translit {
@@ -322,9 +327,10 @@ fn run_derive(
     from: &str,
     to: &str,
     root: &Path,
+    casing: crate::derive::Casing,
 ) -> Result<bool, Box<dyn std::error::Error>> {
     let overrides = crate::derive::overrides_of(root, to)?;
-    let derived = crate::derive::derive(tree, from, to, &overrides)?;
+    let derived = crate::derive::derive(tree, from, to, &overrides, casing)?;
     for (path, text) in &derived.files {
         let path = root.join(path);
         if let Some(parent) = path.parent() {
@@ -485,9 +491,22 @@ pub fn run(cli: Cli) -> Result<bool, Box<dyn std::error::Error>> {
             }
             Ok(true)
         }
-        Command::Derive { from, to, out } => {
-            run_derive(&tree, &from, &to, out.as_deref().unwrap_or(&cli.root))
-        }
+        Command::Derive {
+            from,
+            to,
+            out,
+            prose,
+        } => run_derive(
+            &tree,
+            &from,
+            &to,
+            out.as_deref().unwrap_or(&cli.root),
+            if prose {
+                crate::derive::Casing::Sentences
+            } else {
+                crate::derive::Casing::Names
+            },
+        ),
         Command::Translit { from, to, text } => run_translit(&from, &to, &text),
         Command::Render {
             locale,

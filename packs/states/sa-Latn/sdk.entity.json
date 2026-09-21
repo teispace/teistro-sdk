@@ -1,0 +1,1714 @@
+{
+  "avastha_baladi": {
+    "BALA": {
+      "phala": "Bālāvasthāyāṃ grahaḥ pādabalaṃ (25%) dadāti.",
+      "phalaProse": "Viṣamarāśau prathame ṣaḍaṃśe (0–6 aṃśa), samarāśau ca antye ṣaḍaṃśe sthitaḥ grahaḥ bālāvastho bhavati. Eṣa śiśuvat alpatejaskaḥ san svaphalasya pādamātraṃ (25%) vitarati."
+    },
+    "KUMARA": {
+      "phala": "Kumārāvasthāyāṃ grahaḥ ardhabalaṃ (50%) dadāti.",
+      "phalaProse": "Viṣamarāśau dvitīye ṣaḍaṃśe (6–12 aṃśa), samarāśau ca caturthe ṣaḍaṃśe sthitaḥ grahaḥ kumārāvastho bhavati. Eṣa kiśoravat ardhavikasitabalaḥ san svaphalasya ardhabhāgaṃ (50%) prayacchati."
+    },
+    "MRITA": {
+      "phala": "Mṛtāvasthāyāṃ grahaḥ sarvathā phalahīnaḥ prāyaḥ śūnyabalaḥ bhavati.",
+      "phalaProse": "Viṣamarāśau antye ṣaḍaṃśe (24–30 aṃśa), samarāśau ca prathame ṣaḍaṃśe sthitaḥ grahaḥ mṛtāvastho bhavati. Eṣa sarvathā niṣprāṇaḥ śūnyabalaḥ san śubhaphalaṃ dātuṃ na śaknoti."
+    },
+    "VRIDDHA": {
+      "phala": "Vṛddhāvasthāyāṃ grahaḥ alpabalaṃ kṣīṇaphalaṃ ca dadāti.",
+      "phalaProse": "Viṣamarāśau caturthe ṣaḍaṃśe (18–24 aṃśa), samarāśau ca dvitīye ṣaḍaṃśe sthitaḥ grahaḥ vṛddhāvastho bhavati. Eṣa kṣīyamāṇatejaskaḥ san svaphalasya nagaṇyaṃ bhāgaṃ (prāyaḥ nyūnataraṃ) vitarati."
+    },
+    "YUVA": {
+      "phala": "Yuvāvasthāyāṃ grahaḥ pūrṇabalaṃ (100%) dadāti.",
+      "phalaProse": "Viṣamarāśau tṛtīye ṣaḍaṃśe (12–18 aṃśa), samarāśau ca tṛtīye ṣaḍaṃśe sthitaḥ grahaḥ yuvāvastho bhavati. Eṣa pūrṇayauvanatejoyuktaḥ san svakārakatvaphalaṃ sampūrṇarūpeṇa (100%) sādhayati. Eṣā sarvaśreṣṭhā balavatī cāvasthā."
+    }
+  },
+  "avastha_deeptadi": {
+    "DEEPTA": {
+      "phala": "Dīptāvasthāyāṃ (svoccasthaḥ) grahaḥ sarvottamaṃ yaśaḥ aiśvaryaṃ ca dadāti.",
+      "phalaProse": "Svoccarāśisthitaḥ grahaḥ dīpta iti kathyate. Eṣaḥ mahātejasā pradīptaḥ san jātakasya paramaṃ saubhāgyaṃ, kīrtiṃ, lakṣmīkṛpāṃ, sarvasukhañca vardhayati. Eṣā sarvaśreṣṭhadaśā."
+    },
+    "DINA": {
+      "phala": "Dīnāvasthāyāṃ (śatrurāśisthaḥ) grahaḥ duḥkhaṃ dainyatāṃ ca janayati.",
+      "phalaProse": "Śatrurāśisthitaḥ grahaḥ dīna iti kathyate. Eṣaḥ sarvathā balahīnaḥ nirīhaśca bhūtvā jātakasya dainyatāṃ, mānasikakleśaṃ, udyogahāniñca phalayati."
+    },
+    "DUKHI": {
+      "phala": "Duḥkhitāvasthāyāṃ (pāpayuktaḥ) grahaḥ śokamayīṃ pīḍāṃ vipattiṃ ca dadāti.",
+      "phalaProse": "Pāpayuktaḥ śatrusambaddho vā grahaḥ duḥkhita iti vikhyātaḥ. Eṣaḥ śokaviklavaḥ san manastāpaṃ, viphalatāṃ, kauṭumbikakleśaṃ ca sadā janayati."
+    },
+    "KHALA": {
+      "phala": "Khalāvasthāyāṃ (nīcasthaḥ) grahaḥ malināṃ buddhiṃ duḥkhaṃ ca janayati.",
+      "phalaProse": "Nīcarāśisthitaḥ grahaḥ khala iti nigadyate. Eṣaḥ duṣṭasvabhāvayuktaḥ san jātakasya kalahapriyatāṃ, durbuddhiṃ, dhanahāniñca sadā prayacchati."
+    },
+    "KOPA": {
+      "phala": "Kopāvasthāyāṃ (grahayuddhasthaḥ) grahaḥ mānasikaviplavaṃ vivādaṃ ca janayati.",
+      "phalaProse": "Grahayuddhe parājitaḥ pāpakrāntaḥ vā grahaḥ kopa iti sañjñitaḥ. Eṣaḥ atyantaṃ kruddhaḥ san jātakasya ugratāṃ, kalahaṃ, śatrubhītiñca karoti."
+    },
+    "MUDITA": {
+      "phala": "Muditāvasthāyāṃ (mitrarāśisthaḥ) grahaḥ santoṣaṃ sauhārdaṃ ca vardhayati.",
+      "phalaProse": "Mitrarāśisthitaḥ grahaḥ mudita iti sañjñitaḥ. Eṣaḥ harṣātirekeṇa vidyāṃ, dhanalābhaṃ, bandhujanānāṃ saukhyaṃ, cittaprasannatāñca sadā vitarati."
+    },
+    "SHANTA": {
+      "phala": "Śāntāvasthāyāṃ (śubhavargasthaḥ) grahaḥ saumyatāṃ ādhyātmikaśāntiṃ ca dadāti.",
+      "phalaProse": "Śubhavargeṣu śubhayuktadṛṣṭo vā sthitaḥ grahaḥ śānta iti kathyate. Eṣaḥ praśāntamanaḥ bhūtvā jātakasya satkarmapravṛttiṃ, dhārmikabuddhiṃ, sukhamayīṃ saumyatāñca dadāti."
+    },
+    "SWASTHA": {
+      "phala": "Svasthāvasthāyāṃ (svarāśisthaḥ) grahaḥ ārogyaṃ sukhaṃ sthairyaṃ ca karoti.",
+      "phalaProse": "Svakīyarāśisthitaḥ grahaḥ svastha iti kathyate. Nijagṛhe niścintaṃ susthitaḥ san eṣaḥ ārogyaṃ, mānasikaśāntiṃ, pārivārikasthairyaṃ, lakṣmīvṛddhiśca sampādayati."
+    },
+    "VIKALA": {
+      "phala": "Vikalāvasthāyāṃ (astaṅgataḥ) grahaḥ sarvathā prabhāvarahitaḥ mando vā bhavati.",
+      "phalaProse": "Sūryatejasā abhibhūtaḥ astaṅgataḥ grahaḥ vikala iti kathyate. Eṣaḥ hṛtatejaskaḥ aṅgahīnaḥ iva bhūtvā svakīyaṃ phalaṃ dātuṃ na śaknoti."
+    }
+  },
+  "avastha_jagradadi": {
+    "JAGRAT": {
+      "phala": "Jāgradavasthāyāṃ grahaḥ pūrṇajāgarūkaḥ pūrṇaphalapradātā bhavati.",
+      "phalaProse": "Svocce svarāśisthe vā vartamānaḥ grahaḥ jāgradavastho jāyate. Eṣa pūrṇasajagaḥ san svakīyakāryāṇi tīvrabalena nirbādhaṃ ca sampādayati."
+    },
+    "SUSHUPTI": {
+      "phala": "Suṣuptyavasthāyāṃ grahaḥ prasuptaḥ sarvathā kṣīṇaphalaḥ bhavati.",
+      "phalaProse": "Śatrugṛhe nīcarāśau vā vartamānaḥ grahaḥ suṣuptyavastho bhavati. Eṣa gāḍhanidritaḥ iva cetanārahitaḥ san niṣphalaprāyaḥ mandabalaśca bhavati."
+    },
+    "SWAPNA": {
+      "phala": "Svapnāvasthāyāṃ grahaḥ madhyamaṃ miśraphalaṃ dadāti.",
+      "phalaProse": "Mitragṛhe samarāśau vā vartamānaḥ grahaḥ svapnāvastho bhavati. Eṣa ardhanidritaḥ iva madhyamabalaṃ miśritaphalaṃ vā pradāti."
+    }
+  },
+  "avastha_lajjitadi": {
+    "GARVITA": {
+      "phala": "Garvitāvasthāyāṃ (uccamūlatrikoṇasthaḥ) grahaḥ rājyamānaṃ samṛddhiṃ ca dadāti.",
+      "phalaProse": "Svakīyoccarāśau mūlatrikoṇe vā sthitaḥ grahaḥ garvita iti kathyate. Eṣaḥ jātakasya rājakīyasammānaṃ, mahāvaibhavaṃ, uccādhikāraṃ, dṛḍhaniścayatāñca phalayati."
+    },
+    "KSHOBHITA": {
+      "phala": "Kṣobhitāvasthāyāṃ grahaḥ tīvraṃ viplavaṃ kāryanāśaṃ ca karoti.",
+      "phalaProse": "Sūryeṇa saha yuktaḥ pāpagrahadṛṣṭaḥ krūrasambaddho vā grahaḥ kṣobhita iti vikhyātaḥ. Eṣaḥ kṣubdhaḥ san jātakasya sarvavighnaṃ, mānasikakleśaṃ, dāridryañca karoti."
+    },
+    "KSHUDHA": {
+      "phala": "Kṣudhitāvasthāyāṃ (śatruyuktaḥ) grahaḥ atṛptiṃ duḥkhaṃ dāridryaṃ ca janayati.",
+      "phalaProse": "Śatrurāśau śatruyutaḥ śatrudṛṣṭo vā grahaḥ kṣudhita iti sañjñitaḥ. Eṣaḥ bubhukṣitaḥ iva vyākulaḥ bhūtvā jātakasya nirantarakaṣṭaṃ, daridratām, atṛptiñca karoti."
+    },
+    "LAJJITA": {
+      "phala": "Lajjitāvasthāyāṃ grahaḥ ātmaglāniṃ santativighnaṃ ca karoti.",
+      "phalaProse": "Pañcamabhāve rāhu-ketu-sūrya-śani-maṅgalaiḥ saha yuktaḥ grahaḥ lajjita iti kathyate. Eṣaḥ jātakasya buddhibhraṃśaṃ, santatipratirodhaṃ, sāmājikamaryādāhāniñca karoti."
+    },
+    "MUDITA": {
+      "phala": "Muditāvasthāyāṃ (mitrayuktaḥ) grahaḥ aiśvaryaṃ saukhyaṃ maitrīṃ ca vivardhayati.",
+      "phalaProse": "Mitrarāśau mitragrahaiḥ yuktaḥ śubhadṛṣṭo vā grahaḥ mudita iti sañjñitaḥ. Eṣaḥ prasannacittaḥ bhūtvā jātakasya sukhasampadaṃ, kauṭumbikapremaṃ, dhanalābhañca sadā karoti."
+    },
+    "TRISHITA": {
+      "phala": "Tṛṣitāvasthāyāṃ (jalarāśau pāpadṛṣṭe) grahaḥ cañcalatāṃ bhramaṃ ca janayati.",
+      "phalaProse": "Jalarāśau vartamānaḥ pāpagrahaiḥ dṛṣṭaḥ yukto vā grahaḥ tṛṣita iti vikhyātaḥ. Eṣaḥ pipāsitaḥ iva cañcalaḥ san jātakasya bhramaṃ, vāsanāṃ, bhāvukakleśañca karoti."
+    }
+  },
+  "graha": {
+    "JUPITER": {
+      "colour": "Guroḥ varṇaḥ pītaḥ.",
+      "colourProse": "Guroḥ śubhavarṇaḥ pītaḥ svarṇaśca; ete jñānadharmasamṛddhiśubhatvavardhakāḥ.",
+      "dashaActivation": "Gurudaśāyāṃ yogaphalaṃ prakaṭībhavati.",
+      "dashaActivationProse": "Guroḥ mahādaśāyām antardaśāyāṃ vā ayaṃ yogaḥ svaphalaṃ prakaṭayati — jñānadhanadharmasantānasambaddharūpeṇa.",
+      "dashaPhala": "Gurudaśāyāṃ jñānaṃ dhanaṃ santānasukhaṃ dharmaśca, durbale tu śraddhāhāniḥ medorogaśca.",
+      "dashaPhalaProse": "Gurumahādaśā ṣoḍaśavarṣaparyantā. Balini śubhe gurau jñānalābhaḥ, dhanadhānyasamṛddhiḥ, santānasukham, dharmakarmapravṛttiḥ, gurudevabrāhmaṇasammānaḥ, padonnatiḥ, yaśaśca bhavati. Jātakaḥ sadācārī udāraḥ vivekī āstikaśca. Pāpayute durbale vā gurau śraddhāhāniḥ, santānakleśaḥ, medovṛddhiḥ, yakṛdrogaḥ, dharmavimukhatā, arthahāniśca sambhavati. Guruḥ jñānadhanasantānakārakaḥ ākāśatattvapradhānaśca, ataḥ asya daśā śubhā vṛddhikarī ca.",
+      "direction": "Guroḥ dik īśānī.",
+      "directionProse": "Guroḥ anukūlā dik īśānī (uttarapūrvā); taddigmukhaṃ kāryaṃ jñānadharmasamṛddhipradam.",
+      "mantra": "Gurumantrajapaḥ prātaḥ īśānābhimukham.",
+      "mantraProse": "Guroḥ mantrajapaḥ prātaḥkāle īśānābhimukhaṃ guruvāre ca praśastaḥ; pītapuṣpacandanasahitaḥ."
+    },
+    "KETU": {
+      "colour": "Ketoḥ varṇaḥ dhūmra-kapiśaḥ.",
+      "colourProse": "Ketoḥ śubhavarṇaḥ dhūmraḥ kapiśo (pāṭalamiśraśca); ete vairāgyamokṣādhyātmavardhakāḥ.",
+      "dashaActivation": "Ketudaśāyāṃ yogaphalaṃ prakaṭībhavati.",
+      "dashaActivationProse": "Ketoḥ mahādaśāyām antardaśāyāṃ vā ayaṃ yogaḥ svaphalaṃ prakaṭayati — vairāgyamokṣādhyātmagūḍhavidyāsambaddharūpeṇa.",
+      "dashaPhala": "Ketudaśāyāṃ vairāgyaṃ mokṣapravṛttiḥ ādhyātmikasiddhiśca, duṣṭe tu kleśaḥ bhayaṃ gūḍharogāśca.",
+      "dashaPhalaProse": "Ketumahādaśā saptavarṣaparyantā. Śubhasthe balini vā ketau ādhyātmikonnatiḥ, jñānavairāgyam, mokṣapravṛttiḥ, gūḍhavidyāsiddhiḥ, tīrthāṭanam, akasmātphalalābhaśca bhavati. Jātakaḥ antarmukhaḥ vivekī mokṣābhilāṣī ca. Pāpayute durbale vā ketau akāraṇakleśaḥ, aniścitabhayam, gūḍharogaḥ (nidānātītaḥ), apavādaḥ, svajanaviyogaḥ, mānasikavikṣepaśca sambhavati. Ketuḥ chāyāgrahaḥ mokṣakārakaśca, ataḥ asya daśā vairāgyasya āntarikasādhanāyāśca kālaḥ.",
+      "direction": "Ketoḥ dik nairṛtyā (dakṣiṇā ca).",
+      "directionProse": "Ketoḥ anukūlā dik nairṛtyā; taddigmukhaṃ kāryaṃ vairāgyamokṣādhyātmasiddhipradam.",
+      "mantra": "Ketumantrajapaḥ sāyaṃ nairṛtyābhimukham.",
+      "mantraProse": "Ketoḥ mantrajapaḥ sāyaṅkāle nairṛtyābhimukhaṃ maṅgalavāre ca praśastaḥ; kapiśadravyasahitaḥ."
+    },
+    "MARS": {
+      "colour": "Kujasya varṇaḥ raktaḥ.",
+      "colourProse": "Kujasya śubhavarṇaḥ raktaḥ aruṇaśca; ete parākramasāhasotsāhavardhakāḥ.",
+      "dashaActivation": "Bhaumadaśāyāṃ yogaphalaṃ prakaṭībhavati.",
+      "dashaActivationProse": "Kujasya mahādaśāyām antardaśāyāṃ vā ayaṃ yogaḥ svaphalaṃ prakaṭayati — parākramasāhasabhūmisambaddharūpeṇa.",
+      "dashaPhala": "Bhaumadaśāyāṃ parākramaḥ bhūmilābhaḥ sāhasaṃ ca, duṣṭe tu raktapittaṃ kalaho vraṇāśca.",
+      "dashaPhalaProse": "Bhaumamahādaśā saptavarṣaparyantā. Balini śubhe kuje parākramaḥ, bhūmilābhaḥ, bhrātṛsukham, senāparākramaḥ, śatrujayaḥ, sāhasam, udyamasiddhiśca bhavati. Jātakaḥ ūrjasvī nirbhīkaḥ kriyāśīlaśca. Pāpayute durbale vā kuje raktapittavikāraḥ, vraṇaḥ, agniśastrabhayam, kalahaḥ, bhrātṛkleśaḥ, raktacāpaśca sambhavati. Kujaḥ agnitattvapradhānaḥ parākramakārakaśca, ataḥ asya daśā sāhasasya saṅgharṣasya ca kālaḥ.",
+      "direction": "Kujasya dik dakṣiṇā.",
+      "directionProse": "Kujasya anukūlā dik dakṣiṇā; dakṣiṇābhimukhaṃ kāryaṃ parākramasāhasapradam.",
+      "mantra": "Kujamantrajapaḥ prātaḥ dakṣiṇābhimukham.",
+      "mantraProse": "Kujasya mantrajapaḥ prātaḥkāle dakṣiṇābhimukhaṃ maṅgalavāre ca praśastaḥ; raktapuṣpaguḍasahitaḥ."
+    },
+    "MERCURY": {
+      "colour": "Budhasya varṇaḥ haritaḥ.",
+      "colourProse": "Budhasya śubhavarṇaḥ haritaḥ; ayaṃ buddhividyāsaṃvādavyāpāravardhakaḥ.",
+      "dashaActivation": "Budhadaśāyāṃ yogaphalaṃ prakaṭībhavati.",
+      "dashaActivationProse": "Budhasya mahādaśāyām antardaśāyāṃ vā ayaṃ yogaḥ svaphalaṃ prakaṭayati — buddhivāṇīvyāpārasambaddharūpeṇa.",
+      "dashaPhala": "Budhadaśāyāṃ vidyā vyāpārakauśalaṃ dhanaṃ ca, duṣṭe tu vākkleśaḥ tvagrogo bhramaśca.",
+      "dashaPhalaProse": "Budhamahādaśā saptadaśavarṣaparyantā. Balini śubhe budhe vidyālābhaḥ, vyāpārasiddhiḥ, buddhivaibhavam, lekhanavaktṛtvakauśalam, mitrasukham, dhanāgamaḥ, gaṇitaśāstranaipuṇyaṃ ca bhavati. Jātakaḥ caturaḥ vāgmī vyavahārakuśalaśca. Pāpayute durbale vā budhe vākkleśaḥ, tvagrogaḥ, snāyudaurbalyam, buddhibhramaḥ, vyāpārahāniḥ, apavādaśca sambhavati. Budhaḥ buddhivākkārakaḥ pṛthvītattvapradhānaśca, ataḥ asya daśā vidyāyāḥ vāṇijyasya ca kālaḥ.",
+      "direction": "Budhasya dik uttarā.",
+      "directionProse": "Budhasya anukūlā dik uttarā; uttarābhimukhaṃ kāryaṃ buddhividyāvyāpārapradam.",
+      "mantra": "Budhamantrajapaḥ prātaḥ uttarābhimukham.",
+      "mantraProse": "Budhasya mantrajapaḥ prātaḥkāle uttarābhimukhaṃ budhavāre ca praśastaḥ; haritapuṣpasahitaḥ."
+    },
+    "MOON": {
+      "colour": "Candrasya varṇaḥ śvetaḥ.",
+      "colourProse": "Candrasya śubhavarṇaḥ śvetaḥ rajataśca; ete manaḥśāntisaumyatāmātṛsaukhyavardhakāḥ.",
+      "dashaActivation": "Candradaśāyāṃ yogaphalaṃ prakaṭībhavati.",
+      "dashaActivationProse": "Candrasya mahādaśāyām antardaśāyāṃ vā ayaṃ yogaḥ svaphalaṃ prakaṭayati — manaḥsukhamātṛsambaddharūpeṇa.",
+      "dashaPhala": "Candradaśāyāṃ manaḥsukhaṃ mātṛsukhaṃ dhanaṃ ca, durbale tu mānasakleśaḥ kapharogāśca.",
+      "dashaPhalaProse": "Candramahādaśā daśavarṣaparyantā. Balini śubhe candre manaḥśāntiḥ, mātṛsukham, dhanalābhaḥ, jalayānayātrā, sukhasamṛddhiḥ, janapriyatā, strīsukhaṃ ca bhavati. Jātakaḥ saumyaḥ bhāvukaḥ kalpanāśīlaśca. Kṣīṇe pāpayute vā candre mānasacañcalatā, viṣādaḥ, kaphajvaraḥ, mātṛkleśaḥ, dhananāśaḥ, anidrā ca sambhavati. Candraḥ manaḥkārakaḥ jalatattvapradhānaśca, ataḥ asya daśā bhāvanānāṃ sambandhānāṃ ca prādhānyakālaḥ.",
+      "direction": "Candrasya dik vāyavyā.",
+      "directionProse": "Candrasya anukūlā dik vāyavyā (uttarapaścimā); taddigmukhaṃ kāryaṃ manaḥśāntimātṛsaukhyapradam.",
+      "mantra": "Candramantrajapaḥ rātrau vāyavyābhimukham.",
+      "mantraProse": "Candrasya mantrajapaḥ rātrau vāyavyābhimukhaṃ somavāre ca praśastaḥ; śvetapuṣpajalasahitaḥ."
+    },
+    "RAHU": {
+      "colour": "Rāhoḥ varṇaḥ dhūmraḥ.",
+      "colourProse": "Rāhoḥ śubhavarṇaḥ dhūmraḥ nīlamiśraśca; ete ākasmikalābharahasyabodhasāhasavardhakāḥ.",
+      "dashaActivation": "Rāhudaśāyāṃ yogaphalaṃ prakaṭībhavati.",
+      "dashaActivationProse": "Rāhoḥ mahādaśāyām antardaśāyāṃ vā ayaṃ yogaḥ svaphalaṃ prakaṭayati — ākasmikalābhavideśamahattvākāṅkṣāsambaddharūpeṇa.",
+      "dashaPhala": "Rāhudaśāyāṃ ākasmikalābhaḥ videśayogaḥ mahattvākāṅkṣā ca, duṣṭe tu bhramaḥ bhayaṃ viṣarogāśca.",
+      "dashaPhalaProse": "Rāhumahādaśā aṣṭādaśavarṣaparyantā. Śubhasthe balini vā rāhau ākasmikadhanalābhaḥ, videśagamanam, rājanaitikonnatiḥ, apūrvasiddhiḥ, prasiddhiḥ, adbhutakāryasāphalyaṃ ca bhavati. Jātakaḥ mahattvākāṅkṣī kūṭanītijñaḥ apāramparikaśca. Pāpayute durbale vā rāhau buddhibhramaḥ, akāraṇabhayam, viṣakīṭarogaḥ, apavādaḥ, vañcanā, mānasikāśāntiḥ, ākasmikahāniśca sambhavati. Rāhuḥ chāyāgrahaḥ māyākārakaśca, ataḥ asya daśā aniścitaphalā tīvraparivartanakarī ca.",
+      "direction": "Rāhoḥ dik nairṛtyā.",
+      "directionProse": "Rāhoḥ anukūlā dik nairṛtyā (dakṣiṇapaścimā); taddigmukhaṃ kāryaṃ akasmātsiddhivideśayogapradam.",
+      "mantra": "Rāhumantrajapaḥ sāyaṃ nairṛtyābhimukham.",
+      "mantraProse": "Rāhoḥ mantrajapaḥ sāyaṅkāle nairṛtyābhimukhaṃ śanivāre ca praśastaḥ; dhūmradravyasahitaḥ."
+    },
+    "SATURN": {
+      "colour": "Śaneḥ varṇaḥ nīlaḥ kṛṣṇaśca.",
+      "colourProse": "Śaneḥ śubhavarṇaḥ nīlaḥ kṛṣṇaśca; ete dhairyakarmasthairyanyāyavardhakāḥ.",
+      "dashaActivation": "Śanidaśāyāṃ yogaphalaṃ prakaṭībhavati.",
+      "dashaActivationProse": "Śaneḥ mahādaśāyām antardaśāyāṃ vā ayaṃ yogaḥ svaphalaṃ prakaṭayati — karmadhairyasevādīrghakālikalābhasambaddharūpeṇa (vilambena kintu sthāyi).",
+      "dashaPhala": "Śanidaśāyāṃ śramaḥ vilambaḥ vairāgyaṃ karmaphalaṃ ca, duṣṭe tu duḥkhaṃ rogo dāridryaṃ ca.",
+      "dashaPhalaProse": "Śanimahādaśā ekonatriṃśadvarṣaparyantā (ekonaviṃśatyadhikavarṣāṇi — 19 varṣāṇi). Balini śubhe śanau dhairyeṇa karmaṇā ca sthāyī siddhiḥ, sevāpadam, bhūmijanasamarthanam, dīrghakālikalābhaḥ, vairāgyavivekaśca bhavati. Jātakaḥ pariśramī sahanaśīlaḥ nyāyapriyaśca. Pāpayute durbale vā śanau duḥkham, vilambaḥ, vātarogaḥ, dāridryam, sthānabhraṃśaḥ, mānasikāvasādaḥ, svajanaviyogaśca sambhavati. Śaniḥ karmāyuḥkārakaḥ vāyutattvapradhānaśca, ataḥ asya daśā śramasya parīkṣāyāḥ paripakvatāyāśca kālaḥ.",
+      "direction": "Śaneḥ dik paścimā.",
+      "directionProse": "Śaneḥ anukūlā dik paścimā; paścimābhimukhaṃ kāryaṃ dhairyakarmasthairyapradam.",
+      "mantra": "Śanimantrajapaḥ sāyaṃ paścimābhimukham.",
+      "mantraProse": "Śaneḥ mantrajapaḥ sāyaṅkāle paścimābhimukhaṃ śanivāre ca praśastaḥ; nīlapuṣpatailasahitaḥ."
+    },
+    "SUN": {
+      "colour": "Sūryasya varṇaḥ rakta-tāmraḥ.",
+      "colourProse": "Sūryasya śubhavarṇaḥ raktaḥ tāmraḥ kesaraśca; ete varṇāḥ ātmabalatejaḥpratiṣṭhāvardhakāḥ.",
+      "dashaActivation": "Sūryadaśāyāṃ yogaphalaṃ prakaṭībhavati.",
+      "dashaActivationProse": "Sūryasya mahādaśāyām antardaśāyāṃ vā ayaṃ yogaḥ svaphalaṃ prakaṭayati — pratiṣṭhādhikāratejaḥsambaddharūpeṇa.",
+      "dashaPhala": "Sūryadaśāyāṃ rājamānyatā tejaḥ pitṛsukhaṃ ca, kintu pittajarogāḥ kleśāśca.",
+      "dashaPhalaProse": "Sūryamahādaśā ṣaḍvarṣaparyantā. Śubhasthe balini sūrye rājasammānaḥ, adhikāraḥ, pitṛsukham, ārogyam, uccapadaprāptiḥ, dhairyaṃ ca bhavati. Jātakaḥ tejasvī ātmaviśvāsī netṛtvaguṇayuktaśca jāyate. Durbale pāpayute vā sūrye pittajvaraḥ, netrarogaḥ, pitṛkleśaḥ, uccādhikāribhiḥ saha virodhaḥ, sthānabhraṃśaśca sambhavati. Sūryaḥ agnitattvapradhānaḥ ātmakārakaśca, ataḥ asya daśā ātmapratiṣṭhāyāḥ kīrteśca kālaḥ.",
+      "direction": "Sūryasya dik pūrvā.",
+      "directionProse": "Sūryasya anukūlā dik pūrvā; pūrvābhimukhaṃ kāryaṃ upāsanā ca tejobalapradā.",
+      "mantra": "Sūryamantrajapaḥ aruṇodaye pūrvābhimukham.",
+      "mantraProse": "Sūryasya mantrajapaḥ aruṇodaye (sūryodayakāle) pūrvābhimukhaṃ ravivāre ca praśastaḥ; tāmrapātrajalārghyasahitaḥ."
+    },
+    "VENUS": {
+      "colour": "Śukrasya varṇaḥ śveta-vicitraḥ.",
+      "colourProse": "Śukrasya śubhavarṇaḥ śvetaḥ gulābī vicitraśca; ete sukhasaubhāgyakalādāmpatyavardhakāḥ.",
+      "dashaActivation": "Śukradaśāyāṃ yogaphalaṃ prakaṭībhavati.",
+      "dashaActivationProse": "Śukrasya mahādaśāyām antardaśāyāṃ vā ayaṃ yogaḥ svaphalaṃ prakaṭayati — sukhavaibhavadāmpatyakalāsambaddharūpeṇa.",
+      "dashaPhala": "Śukradaśāyāṃ sukhaṃ vaibhavaṃ kalāsaubhāgyaṃ dāmpatyasukhaṃ ca, duṣṭe tu kāmakleśo mūtrarogaśca.",
+      "dashaPhalaProse": "Śukramahādaśā viṃśativarṣaparyantā. Balini śubhe śukre sukhasamṛddhiḥ, vāhanabhūṣaṇavastralābhaḥ, kalāsaṅgītaprītiḥ, dāmpatyasukham, strīsaubhāgyam, bhogaiśvaryaṃ ca bhavati. Jātakaḥ saundaryapriyaḥ rasikaḥ ākarṣakaśca. Pāpayute durbale vā śukre kāmakleśaḥ, dāmpatyavirodhaḥ, mūtrajananarogaḥ, madhumehaḥ, bhogātirekahāniśca sambhavati. Śukraḥ kalākāmabhogakārakaḥ jalatattvapradhānaśca, ataḥ asya daśā sukhasaubhāgyabhogānāṃ kālaḥ.",
+      "direction": "Śukrasya dik āgneyī.",
+      "directionProse": "Śukrasya anukūlā dik āgneyī (dakṣiṇapūrvā); taddigmukhaṃ kāryaṃ sukhasaubhāgyadāmpatyapradam.",
+      "mantra": "Śukramantrajapaḥ prātaḥ āgneyābhimukham.",
+      "mantraProse": "Śukrasya mantrajapaḥ prātaḥkāle āgneyābhimukhaṃ śukravāre ca praśastaḥ; śvetapuṣpasugandhasahitaḥ."
+    }
+  },
+  "rule": {
+    "ABHUKTA_MOOLA_DOSHA": {
+      "timing": "Abhuktamūladoṣaḥ bālye (prathamavarṣeṣu) tatsandhikālajaphalaṃ sūcayati.",
+      "timingProse": "Abhuktamūladoṣasya (jyeṣṭhāntamūlādinakṣatrasandhau janmanaḥ) phalakālaḥ prāyaḥ bālye prathamavarṣeṣu prakaṭībhavati. Asmin kāle bālārogyakleśaḥ, pitṛmātṛsannidhau ariṣṭasūcanaṃ ca. Aṣṭottarīdaśārambhe viśeṣataḥ sāvadhānatā; śāntikarmaṇā (mūlaśāntyā) parihāraḥ."
+    },
+    "AMAVASYA_DOSHA": {
+      "timing": "Amāvāsyādoṣaḥ candradaśāyāṃ kṣīṇacandragocare ca manobalakṣayaṃ sūcayati.",
+      "timingProse": "Amāvāsyādoṣasya (amāvāsyāsannidhau kṣīṇacandrajanmanaḥ) phalakālaḥ candramahādaśāntardaśāsu, amāvāsyāsannidhigocare ca. Asmin kāle manobalakṣayaḥ, ātmaviśvāsanyūnatā, mātṛsukhabādhā, viṣādaśca sūcyate. Śubhagrahayoge pūrṇimāgocare ca śamanam."
+    },
+    "ANGARAK_DOSHA": {
+      "timing": "Aṅgārakadoṣaḥ (kujarāhuyuteḥ) kujarāhudaśāyāṃ krodhāgnidurghaṭanāṃ sūcayati.",
+      "timingProse": "Aṅgārakadoṣasya (maṅgalarāhuyuteḥ) phalakālaḥ kuja-rāhu mahādaśāntardaśāsu. Asmin kāle atyadhikakrodhaḥ, raktapittavikāraḥ, agniśastradurghaṭanābhayam, ākasmikakalahaśca sūcyate. Kujagocare rāhusthānopari phalodrekaḥ; dhairyasaṃyamābhyāṃ śamanam."
+    },
+    "ANSHIK_MANGAL": {
+      "timing": "Āṃśikamaṅgaladoṣaḥ kujadaśāyāṃ vivāhakāle ca alpadāmpatyakleśaṃ sūcayati.",
+      "timingProse": "Āṃśikamaṅgaladoṣasya (nyūnatarakujadoṣasya) phalakālaḥ kujamahādaśāntardaśāsu, vivāhayogye vayasi ca. Pūrṇamaṅgalāpekṣayā alpataraḥ kleśaḥ — svalpadāmpatyamatabhedaḥ, ārambhavilambaḥ vā. Kujagocare saptame phalodrekaḥ; bhaṅgayoge prāyaḥ nagaṇyam."
+    },
+    "BADHAKA_DOSHA": {
+      "timing": "Bādhakadoṣaḥ bādhakeśadaśāyāṃ bādhakagrahagocare ca vighnabādhāṃ sūcayati.",
+      "timingProse": "Bādhakadoṣasya phalakālaḥ bādhakeśa (care ekādaśeśaḥ, sthire navameśaḥ, dvisvabhāve saptameśaḥ) mahādaśāntardaśāsu. Asmin kāle akasmāt vighnāḥ, kāryavilambaḥ, guptavirodhaḥ, siddhiprāye bādhā ca sūcyate. Bādhakeśagocare bādhakasthānopari phalodrekaḥ; bādhakeśaśāntyā śamanam."
+    },
+    "BANDHU_DOSHA": {
+      "timing": "Bandhudoṣaḥ caturtheśadaśāyāṃ gṛhamātṛsukhabādhāṃ sūcayati.",
+      "timingProse": "Bandhudoṣasya phalakālaḥ caturtheśa (bandhubhāveśa) tatsambaddhagrahāṇāṃ ca daśāsu. Asmin kāle mātṛsukhabādhā, gṛhakleśaḥ, bandhuvirodhaḥ, sthāvarasampattivighnaśca sūcyate. Kaṇṭakaśanigocare caturthe phalodrekaḥ; caturtheśabale śamanam."
+    },
+    "BHADRA_DOSHA": {
+      "timing": "Bhadrādoṣaḥ (viṣṭikaraṇajanmanaḥ) tatkaraṇasambaddhakārye vighnaṃ sūcayati.",
+      "timingProse": "Bhadrādoṣasya (viṣṭi-bhadrākaraṇe janmanaḥ) phalakālaḥ śubhakāryārambhakāle, tathā bhadrākaraṇagocare prakaṭībhavati. Asmin kāle śubhakāryavighnaḥ, ārambhavilambaḥ, akasmātbādhā ca sūcyate. Bhadrāmukhatyāgena śubhamuhūrtacayanena ca parihāraḥ."
+    },
+    "BHAKOOT_DOSHA": {
+      "timing": "Bhakūṭadoṣaḥ vivāhottarakāle rāśyantaragocare ca dāmpatyāsāmañjasyaṃ sūcayati.",
+      "timingProse": "Bhakūṭadoṣasya (vadhūvarayoḥ candrarāśyoḥ ṣaḍaṣṭadvidvādaśādisambandhasya) phalakālaḥ vivāhottaraṃ dāmpatyajīvane prakaṭībhavati. Asmin kāle manomilanābhāvaḥ, ārthikasantānaviṣamatā, pārasparikamatabhedaśca sūcyate. Rāśīśamaitryāṃ grahabale ca śamanam; gocare candrayoḥ viṣamasthitau phalodrekaḥ."
+    },
+    "BRAHMA_DOSHA": {
+      "timing": "Brahmadoṣaḥ gurudaśāyāṃ dvitīyapañcameśadaśāyāṃ ca, dharmalopajaphalaṃ sūcayati.",
+      "timingProse": "Brahmadoṣasya (brahmahatyādipūrvajakarmasūcakasya) phalakālaḥ prāyaḥ guru (dharmakāraka) mahādaśāyām, tathā dvitīyapañcamanavameśadaśāsu prakaṭībhavati. Asmin kāle kuladharmalopajaḥ kleśaḥ, santānabādhā, vidyāvyāghātaśca sūcyate. Gurugocare pañcame navame vā śubhe śamanam; brāhmaṇapūjādānādibhiḥ śāntiḥ."
+    },
+    "CHANDAL_DOSHA": {
+      "timing": "Cāṇḍāladoṣaḥ (gururāhuyuteḥ) gururāhudaśāyāṃ dharmavivekabhramaṃ sūcayati.",
+      "timingProse": "Cāṇḍāladoṣasya (gururāhuyuteḥ, gurucāṇḍālasadṛśasya) phalakālaḥ guru-rāhu daśāsu. Asmin kāle dharmavivekabhramaḥ, gurujanavirodhaḥ, anaitikākarṣaṇam, uccaśikṣāvighnaśca sūcyate. Gurugocare svoccamitrarāśau śubhe śamanam."
+    },
+    "CHANDRA_DOSHA": {
+      "timing": "Candradoṣaḥ candradaśāyāṃ durbalagocare ca mānasamātṛkleśaṃ sūcayati.",
+      "timingProse": "Candradoṣasya (candrapīḍāyāḥ) phalakālaḥ candramahādaśāntardaśāsu, tathā kṣīṇacandragocare amāvāsyāsannidhau ca. Asmin kāle mānasacañcalatā, viṣādaḥ, mātṛkleśaḥ, kaphajarogaḥ, nidrābhaṅgaśca sūcyate. Śubhacandragocare pūrṇimāsannidhau ca śamanam."
+    },
+    "DAGDHA_RASHI_DOSHA": {
+      "timing": "Dagdharāśidoṣaḥ tadrāśīśadaśāyāṃ tadbhāvaphalakṣayaṃ sūcayati.",
+      "timingProse": "Dagdharāśidoṣasya (vāratithisaṃyogena dagdhabhūtarāśau grahasthiteḥ) phalakālaḥ dagdharāśīśasya tatsthagrahāṇāṃ ca daśāsu. Asmin kāle tadrāśisambaddhabhāvaphalakṣayaḥ, prayatnaniṣphalatā, miśraphalaṃ ca sūcyate. Śubhagrahadṛṣṭyā bale ca phalaṃ kiñcit sudharati."
+    },
+    "DARIDRA_DOSHA": {
+      "timing": "Daridradoṣaḥ dhaneśalābheśadaśāyāṃ arthasaṅkaṭavyayādhikyaṃ sūcayati.",
+      "timingProse": "Daridradoṣasya (dhanalābhasthānadūṣaṇasya) phalakālaḥ dhaneśa (dvitīyeśa) lābheśa (ekādaśeśa) taddūṣakagrahāṇāṃ ca daśāsu. Asmin kāle arthasaṅkaṭaḥ, vyayādhikyam, ṛṇavṛddhiḥ, sañcayabādhā ca sūcyate. Śubhagrahadaśāgocare dvitīyaikādaśe śamanam."
+    },
+    "ECLIPSE_DOSHA": {
+      "timing": "Grahaṇajanmadoṣaḥ sūryacandrarāhuketudaśāyāṃ grahaṇakāle ca tīvraphalaṃ sūcayati.",
+      "timingProse": "Grahaṇajanmadoṣasya (grahaṇakāle janmanaḥ) phalakālaḥ sūryacandrarāhuketūnāṃ daśāsu, tathā pratyakṣagrahaṇakāle prakaṭībhavati. Asmin kāle ārogyakleśaḥ, mānasikāśāntiḥ, pitṛmātṛsukhabādhā, akasmātvighnaśca sūcyate. Grahaṇaśāntijapadānaiḥ parihāraḥ."
+    },
+    "GANA_DOSHA": {
+      "timing": "Gaṇadoṣaḥ vivāhottarakāle svabhāvamelanābhāvena kleśaṃ sūcayati.",
+      "timingProse": "Gaṇadoṣasya (vadhūvarayoḥ devamanuṣyarākṣasagaṇavaiṣamyasya, viśeṣataḥ devarākṣasamelane) phalakālaḥ vivāhottaraṃ prakaṭībhavati. Asmin kāle svabhāvabhedaḥ, mānasikamatabhedaḥ, pārasparikāsantoṣaśca sūcyate. Rāśīśamaitryāṃ nāḍībhede ca śamanam; candrabale manomilanam."
+    },
+    "GANDANTA_DOSHA": {
+      "timing": "Gaṇḍāntadoṣaḥ bālye tatsandhinakṣatrarāśigocare ca ariṣṭaṃ sūcayati.",
+      "timingProse": "Gaṇḍāntadoṣasya (jalāgnirāśyoḥ sandhau, mīnameṣakarkasiṃhavṛścikadhanuḥsandhau, revatyaśvinyādinakṣatrasandhau janmanaḥ) phalakālaḥ prāyaḥ bālye prathamavarṣeṣu, tatsandhigocare ca prakaṭībhavati. Asmin kāle bālāriṣṭam, ārogyabhayam, pitṛmātṛkleśaśca. Gaṇḍāntaśāntyā parihāraḥ."
+    },
+    "GRAHAN_DOSHA": {
+      "timing": "Grahaṇadoṣaḥ sūryacandrarāhuketudaśāyāṃ grahaṇakāle ca tīvraṃ phalati.",
+      "timingProse": "Grahaṇadoṣasya (sūryacandrayoḥ rāhuketuyuteḥ) phalakālaḥ teṣāṃ grahāṇāṃ mahādaśāntardaśāsu, tathā pratyakṣagrahaṇakāle (sūryagrahaṇe candragrahaṇe vā) tīvratamaṃ prakaṭībhavati. Grasitasūrye pitṛātmabalakṣayaḥ, grasitacandre mātṛmanobalakṣayaśca sūcyate. Rāhuketugocare janmasūryacandropari phalodrekaḥ."
+    },
+    "GURU_CHANDAL": {
+      "timing": "Gurucāṇḍāladoṣaḥ gururāhudaśāyāṃ vivekadharmavibhramaṃ sūcayati.",
+      "timingProse": "Gurucāṇḍālayogasya (gururāhuyuteḥ) phalakālaḥ prāyaḥ guru-rāhu mahādaśāyām antardaśāyāṃ ca prakaṭībhavati. Asmin kāle vivekabhramaḥ, dharmavimukhatā, gurujanavirodhaḥ, anaitikamārgākarṣaṇaṃ ca sūcyate; kintu balini gurau apūrvā aparamparāgatā siddhirapi. Gurugocare svoccamitrarāśau śubhe śamanam."
+    },
+    "KALA_AMRITA_YOGA": {
+      "timing": "Kālāmṛtayogaḥ (kālasarpasya śubharūpaḥ) rāhuketudaśāyāṃ vilambānantaraphalaṃ sūcayati.",
+      "timingProse": "Kālāmṛtayogasya (ketulagnataḥ rāhusaptamāntaṃ sarvagrahasamāveśasya, kālasarpasya śubhaprakārasya) phalakālaḥ rāhu-ketudaśāsu. Asmin kāle prārambhe vilambasaṅgharṣau, tataḥ paraṃ (prāyaḥ pañcatriṃśadvarṣānantaram) akasmāt asādhāraṇasiddhiḥ, ādhyātmikonnatiśca sūcyate. Dhairyeṇa phalaṃ madhuram."
+    },
+    "KALSARPA": {
+      "timing": "Kālasarpadoṣaḥ rāhuketudaśāyāṃ śanigocare ca prabalaṃ phalati.",
+      "timingProse": "Kālasarpadoṣasya pradhānaphalakālaḥ rāhu-ketu mahādaśāyām antardaśāyāṃ ca bhavati, yadā sarvagrahāṇāṃ rāhuketvakṣamadhyasthatvena sañcitaḥ doṣaḥ vipākaṃ yāti. Śaneḥ gocare viśeṣataḥ janmarāśitaḥ sāḍhesātīkāle, grahaṇakāle ca phalodrekaḥ. Prāyaḥ pañcaviṃśatitaḥ ṣaṭtriṃśadvarṣamadhye jīvanasaṅgharṣaḥ prakaṭībhavati; tataḥ paraṃ krameṇa śamanam."
+    },
+    "KALSARPA_ANANT": {
+      "timing": "Anantakālasarpaḥ (lagnastharāhuḥ) rāhuketudaśāyāṃ ātmasvāsthyabādhāṃ sūcayati.",
+      "timingProse": "Anantakālasarpayoge rāhuḥ lagne ketuḥ saptame tiṣṭhataḥ. Phalakālaḥ rāhu-ketu mahādaśāntardaśāsu, viśeṣataḥ pañcaviṃśativarṣānantaram. Asmin kāle ātmaviśvāsabhaṅgaḥ, svāsthyabādhā, dāmpatyakleśaśca; śanisāḍhesātīkāle phalodrekaḥ. Śanaiḥ paripakvatayā śamanam."
+    },
+    "KALSARPA_GHATAK": {
+      "timing": "Ghātakakālasarpaḥ (daśamastharāhuḥ) karmapadapratiṣṭhābādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Ghātakakālasarpayoge rāhuḥ daśame ketuḥ caturthe. Phalakālaḥ rāhu-ketudaśāsu; asmin kāle karmakṣetravighnaḥ, padapratiṣṭhābhaṅgaḥ, vyavasāyāniścayaḥ, uccādhikārivirodhaśca sūcyate. Tathāpi daśamastharāhuḥ rājanaitikonnatyarthamapi balī. Śanigocare daśame phalodrekaḥ."
+    },
+    "KALSARPA_KARKOTAK": {
+      "timing": "Karkoṭakakālasarpaḥ (aṣṭamastharāhuḥ) āyuguhyarogākasmikabādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Karkoṭakakālasarpayoge rāhuḥ aṣṭame ketuḥ dvitīye. Phalakālaḥ rāhu-ketudaśāsu; asmin kāle āyukṣayabhayam, guhyarogaḥ, ākasmikavighnaḥ, mānasikāśāntiśca sūcyate. Tathāpi gūḍhavidyāsiddhyarthamapi kalpate. Śanigocare aṣṭame phalodrekaḥ."
+    },
+    "KALSARPA_KULIK": {
+      "timing": "Kulikakālasarpaḥ (dvitīyastharāhuḥ) dhanavākkuṭumbabādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Kulikakālasarpayoge rāhuḥ dvitīye ketuḥ aṣṭame. Phalakālaḥ rāhu-ketudaśāsu; asmin kāle dhanasañcayabādhā, vākkleśaḥ, kuṭumbavirodhaḥ, ākasmikavyayaśca sūcyate. Śanigocare dvitīye aṣṭame vā phalodrekaḥ."
+    },
+    "KALSARPA_MAHAPADMA": {
+      "timing": "Mahāpadmakālasarpaḥ (ṣaṣṭhastharāhuḥ) śatrurogaṛṇabādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Mahāpadmakālasarpayoge rāhuḥ ṣaṣṭhe ketuḥ dvādaśe. Phalakālaḥ rāhu-ketudaśāsu; asmin kāle śatrupīḍā, rogaḥ, ṛṇavṛddhiḥ, vyayādhikyaṃ ca sūcyate. Tathāpi ṣaṣṭhastharāhuḥ śatrujayāya api kalpate yadā balī. Śanigocare ṣaṣṭhe dvādaśe vā phalodrekaḥ."
+    },
+    "KALSARPA_PADMA": {
+      "timing": "Padmakālasarpaḥ (pañcamastharāhuḥ) santānavidyābādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Padmakālasarpayoge rāhuḥ pañcame ketuḥ ekādaśe. Phalakālaḥ rāhu-ketudaśāsu; asmin kāle santānotpattivilambaḥ, vidyāvyāghātaḥ, buddhibhramaśca sūcyate. Rāhugocare pañcame phalodrekaḥ; pañcameśabale śamanam."
+    },
+    "KALSARPA_SHANKHACHUD": {
+      "timing": "Śaṅkhacūḍakālasarpaḥ (navamastharāhuḥ) bhāgyadharmapitṛbādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Śaṅkhacūḍakālasarpayoge rāhuḥ navame ketuḥ tṛtīye. Phalakālaḥ rāhu-ketudaśāsu; asmin kāle bhāgyavilambaḥ, dharmavibhramaḥ, pitṛkleśaḥ, dīrghayātrāvighnaśca sūcyate. Rāhugocare navame phalodrekaḥ; gurubale śamanam."
+    },
+    "KALSARPA_SHANKHPAL": {
+      "timing": "Śaṅkhapālakālasarpaḥ (caturthastharāhuḥ) mātṛgṛhasukhabādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Śaṅkhapālakālasarpayoge rāhuḥ caturthe ketuḥ daśame. Phalakālaḥ rāhu-ketudaśāsu; asmin kāle mātṛsukhabādhā, gṛhavāhanakleśaḥ, mānasikāśāntiḥ, karmakṣetravighnaśca sūcyate. Kaṇṭakaśanigocare (caturthe) phalodrekaḥ."
+    },
+    "KALSARPA_SHESHNAG": {
+      "timing": "Śeṣanāgakālasarpaḥ (dvādaśastharāhuḥ) vyayavideśamokṣabādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Śeṣanāgakālasarpayoge rāhuḥ dvādaśe ketuḥ ṣaṣṭhe. Phalakālaḥ rāhu-ketudaśāsu; asmin kāle vyayādhikyam, nidrābhaṅgaḥ, guptaśatrubhayam, videśavāsaḥ, mānasikāśāntiśca sūcyate. Tathāpi dvādaśastharāhuḥ mokṣādhyātmasādhanārthamapi kalpate."
+    },
+    "KALSARPA_TAKSHAK": {
+      "timing": "Takṣakakālasarpaḥ (saptamastharāhuḥ) dāmpatyabhāgīdārībādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Takṣakakālasarpayoge rāhuḥ saptame ketuḥ lagne. Phalakālaḥ rāhu-ketudaśāsu, viśeṣataḥ vivāhakāle. Asmin kāle dāmpatyakleśaḥ, bhāgīdārīvirodhaḥ, vivāhavilambaḥ, paradeśasambandhaśca sūcyate. Śanigocare saptame phalodrekaḥ."
+    },
+    "KALSARPA_VASUKI": {
+      "timing": "Vāsukikālasarpaḥ (tṛtīyastharāhuḥ) parākramabhrātṛbādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Vāsukikālasarpayoge rāhuḥ tṛtīye ketuḥ navame. Phalakālaḥ rāhu-ketudaśāsu; asmin kāle parākramabādhā, bhrātṛvirodhaḥ, bhāgyavilambaḥ, yātrākleśaśca sūcyate. Udyame tu rāhubalāt asādhāraṇasāhasam."
+    },
+    "KALSARPA_VISHDHAR": {
+      "timing": "Viṣadharakālasarpaḥ (ekādaśastharāhuḥ) lābhamitraicchābādhāṃ noḍaladaśāyāṃ sūcayati.",
+      "timingProse": "Viṣadharakālasarpayoge rāhuḥ ekādaśe ketuḥ pañcame. Phalakālaḥ rāhu-ketudaśāsu; asmin kāle lābhavilambaḥ, mitravirodhaḥ, icchāpūrtivighnaḥ, ākasmikalābhahānicakraṃ ca sūcyate. Tathāpi ekādaśastharāhuḥ ākasmikamahālābhāyāpi kalpate."
+    },
+    "KEMDRUM_DOSHA": {
+      "timing": "Kemadrumadoṣaḥ candradaśāyāṃ candragocare ca mānasakleśadāridryaṃ sūcayati.",
+      "timingProse": "Kemadrumadoṣasya (candrāt dvitīyadvādaśayoḥ grahābhāve) phalakālaḥ prāyaḥ candramahādaśāyām antardaśāyāṃ ca prakaṭībhavati. Candrasya durbalagocarakāle, amāvāsyāsannidhau ca mānasacañcalatā, ekākitvam, arthasaṅkaṭaṃ ca vardhate. Yadi candraḥ kendre śubhadṛṣṭe vā bhavati tadā bhaṅgaḥ; anyathā bālye yauvane vā kleśaḥ."
+    },
+    "KENDRADHIPATI_DOSHA": {
+      "timing": "Kendrādhipatidoṣaḥ śubhagrahakendreśadaśāyāṃ śubhaphalakṣayaṃ sūcayati.",
+      "timingProse": "Kendrādhipatidoṣasya (śubhagrahasya kendreśatvena śubhatvahāneḥ) phalakālaḥ tasya śubhagrahasya (guruśukrādeḥ) kendreśasya mahādaśāntardaśāsu. Asmin kāle apekṣitaśubhaphalakṣayaḥ, miśraphalam, udyame aniścayaśca sūcyate. Kendreśasya anyaśubhasambandhe phalaṃ kiñcit sudharati."
+    },
+    "KRISHNA_PAKSHA_DOSHA": {
+      "timing": "Kṛṣṇapakṣadoṣaḥ candradaśāyāṃ kṣīṇacandragocare ca manobalanyūnatāṃ sūcayati.",
+      "timingProse": "Kṛṣṇapakṣadoṣasya (kṛṣṇapakṣe kṣīṇacandrajanmanaḥ) phalakālaḥ candramahādaśāntardaśāsu, kṛṣṇapakṣagocare ca. Asmin kāle manobalanyūnatā, ātmaviśvāsābhāvaḥ, cañcalatā, mātṛsukhabādhā ca sūcyate. Śuklapakṣagocare pūrṇimāsannidhau śubhagrahayoge ca śamanam."
+    },
+    "KUJA_BHANGA_ABSENT": {
+      "timing": "Kujabhaṅgābhāvaḥ kujadaśāyāṃ maṅgaladoṣasya anivāritaphalaṃ sūcayati.",
+      "timingProse": "Kujabhaṅgābhāvasya (maṅgaladoṣasya bhaṅgayogābhāvasya) phalakālaḥ kujamahādaśāntardaśāsu, vivāhakāle ca. Bhaṅgābhāvāt maṅgaladoṣaḥ anivāritaḥ pūrṇaphaladaḥ — dāmpatyakleśaḥ, vivāhavilambaśca prabalataraḥ. Ubhayoḥ doṣasāmye parihāraḥ; anyathā kujagocare saptame phalodrekaḥ."
+    },
+    "MAHENDRA_ABSENCE": {
+      "timing": "Mahendrābhāvaḥ vivāhottarakāle vaṃśasantānaśubhābhāvena mandaphalaṃ sūcayati.",
+      "timingProse": "Mahendrābhāvasya (varanakṣatrāt vadhūnakṣatrasya caturthasaptadaśādigaṇanāyā abhāvasya) phalakālaḥ vivāhottaraṃ prakaṭībhavati. Ayaṃ doṣo na prabalaḥ kintu śubhābhāvasūcakaḥ — dīrghāyuvaṃśasantānavṛddheḥ mahendrakṛtaśubhasya abhāvamātram. Anyakūṭabale phalaṃ sāmānyam."
+    },
+    "MANGAL_DOSHA": {
+      "timing": "Maṅgaladoṣaḥ kujadaśāyāṃ kujagocare ca viśeṣataḥ vivāhakāle phalati.",
+      "timingProse": "Maṅgaladoṣasya phalakālaḥ prāyaḥ kuja (maṅgala) mahādaśāyām antardaśāyāṃ vā, tathā vivāhayogye vayasi (prāyaḥ caturviṃśatitaḥ triṃśadvarṣaparyantam) prakaṭībhavati. Kujasya saptamāṣṭamalagnādigocare dāmpatyakleśaḥ vardhate. Yadi aniṣṭakujaḥ saptameśadaśāṃ prāpnoti tadā vivāhavilambaḥ kalaho vā sambhavati. Bhaṅgayogasattve (kujabhaṅge) phalaṃ nyūnībhavati."
+    },
+    "MATRI_DOSHA": {
+      "timing": "Mātṛdoṣaḥ caturtheśacandradaśāyāṃ mātṛsukhakleśaṃ sūcayati.",
+      "timingProse": "Mātṛdoṣasya phalakālaḥ caturtheśa (mātṛbhāveśa) mātṛkārakacandrayoḥ daśāsu. Asmin kāle mātṛārogyakleśaḥ, mātṛviyogabhayam, gṛhasukhabādhā ca sūcyate. Candragocare kṣīṇe caturthe vā phalodrekaḥ; candracaturtheśabale śamanam."
+    },
+    "MOOL_DOSHA": {
+      "timing": "Mūladoṣaḥ bālye (viśeṣataḥ prathamavarṣe) pitṛmātṛsannidhau ariṣṭaṃ sūcayati.",
+      "timingProse": "Mūladoṣasya (mūlāśleṣājyeṣṭhārevatyādimūlasañjñakanakṣatre janmanaḥ) phalakālaḥ prāyaḥ bālye prathamavarṣeṣu prakaṭībhavati. Asmin kāle bālārogyakleśaḥ, pādacaraṇabhedānusāraṃ pitṛmātṛkulāriṣṭasūcanaṃ ca. Mūlaśāntikarmaṇā (saptaviṃśatidinottaraṃ nakṣatrajapena) parihāraḥ."
+    },
+    "MRITYU_BHAGA_DOSHA": {
+      "timing": "Mṛtyubhāgadoṣaḥ tadgrahadaśāyāṃ tatkārakabhāve ariṣṭaṃ sūcayati.",
+      "timingProse": "Mṛtyubhāgadoṣasya (grahasya mṛtyubhāgāṃśe sthiteḥ) phalakālaḥ tasya grahasya mahādaśāntardaśāsu prakaṭībhavati. Asmin kāle tatkārakabhāvasambaddhāriṣṭam, ārogyakleśaḥ, tatkārakaviṣayavighnaśca sūcyate. Grahaśāntyā tadbhāvabale ca parihāraḥ."
+    },
+    "NADI_DOSHA": {
+      "timing": "Nāḍīdoṣaḥ vivāhottarakāle santānārogyabādhāṃ sūcayati.",
+      "timingProse": "Nāḍīdoṣasya (vadhūvarayoḥ ekanāḍīsāmyasya, aṣṭakūṭe gurutamadoṣasya) phalakālaḥ vivāhottaraṃ santānārogyaviṣaye prakaṭībhavati. Asmin kāle santānotpattibādhā, dāmpatyārogyakleśaḥ, vaṃśavṛddhivighnaśca sūcyate. Nāḍībhede rāśīśaikye nakṣatrabhede vā śamanam."
+    },
+    "NAGA_DOSHA": {
+      "timing": "Nāgadoṣaḥ rāhuketudaśāyāṃ pañcameśadaśāyāṃ ca santānabādhāṃ sūcayati.",
+      "timingProse": "Nāgadoṣasya (sarpaśāpasūcakasya) phalakālaḥ prāyaḥ rāhu-ketu mahādaśāyām antardaśāyāṃ ca, tathā pañcameśa (santānabhāveśa) daśāyāṃ prakaṭībhavati. Asmin kāle santānotpattivilambaḥ, garbhabādhā, santānārogyakleśaśca sūcyate. Rāhuketugocare pañcame phalodrekaḥ; nāgapūjāsarpasaṃskārādibhiḥ śāntiḥ."
+    },
+    "PATNI_DOSHA": {
+      "timing": "Patnīdoṣaḥ saptameśaśukradaśāyāṃ dāmpatyakleśaṃ sūcayati.",
+      "timingProse": "Patnīdoṣasya phalakālaḥ saptameśa (kalatrabhāveśa) dārakārakaśukrayoḥ daśāsu, viśeṣataḥ vivāhottarakāle. Asmin kāle dāmpatyavirodhaḥ, kalatrārogyakleśaḥ, viyogabhayaśca sūcyate. Śanigocare saptame śukre kṣīṇe vā phalodrekaḥ; saptameśaśukrabale śamanam."
+    },
+    "PITRA_DOSHA": {
+      "timing": "Pitṛdoṣaḥ sūryarāhudaśāyāṃ navameśadaśāyāṃ ca, grahaṇakāle ca phalati.",
+      "timingProse": "Pitṛdoṣasya phalakālaḥ prāyaḥ sūrya-rāhu mahādaśāyām antardaśāyāṃ ca, tathā navameśa (bhāgyeśa) pitṛkārakasūryasambaddhadaśāyāṃ prakaṭībhavati. Sūryagrahaṇakāle, pitṛpakṣe, śanigocare ca pitṛṛṇaphalodrekaḥ. Santānasukhe, pitṛsukhe, vaṃśavṛddhau ca bādhā anena kālena sūcyate. Śrāddhatarpaṇādibhiḥ śāntiḥ."
+    },
+    "PURNA_MANGAL": {
+      "timing": "Pūrṇamaṅgaladoṣaḥ kujadaśāyāṃ vivāhakāle ca prabaladāmpatyakleśaṃ sūcayati.",
+      "timingProse": "Pūrṇamaṅgaladoṣasya (prabalakujadoṣasya) phalakālaḥ kujamahādaśāntardaśāsu, vivāhayogye vayasi ca tīvratamam. Asmin kāle dāmpatyavirodhaḥ, vivāhavilambaḥ, kalatrārogyakleśaśca. Kujagocare saptamāṣṭame phalodrekaḥ; ubhayoḥ melane (vadhūvarayoḥ) doṣasāmye parasparaṃ śamanam."
+    },
+    "PUTRA_DOSHA": {
+      "timing": "Putradoṣaḥ pañcameśagurudaśāyāṃ santānabādhāṃ sūcayati.",
+      "timingProse": "Putradoṣasya phalakālaḥ pañcameśa (santānabhāveśa) putrakārakaguruyoḥ daśāsu. Asmin kāle santānotpattivilambaḥ, garbhabādhā, santānārogyacintā ca sūcyate. Rāhuketugocare pañcame gurau kṣīṇe vā phalodrekaḥ; pañcameśagurubale santānasaukhyam."
+    },
+    "RAJJU_DOSHA": {
+      "timing": "Rajjudoṣaḥ vivāhottarakāle ekarajjusāmyena dāmpatyadīrghāyurbādhāṃ sūcayati.",
+      "timingProse": "Rajjudoṣasya (vadhūvaranakṣatrayoḥ ekarajjusāmyasya) phalakālaḥ vivāhottaraṃ prakaṭībhavati. Asmin kāle dāmpatyadīrghāyurbādhā, viyogabhayam, sahajīvanakleśaśca sūcyate (rajjubhedānusāraṃ śiraḥkaṇṭhādiaṅgaphalam). Rajjubhede śubhagrahabale ca śamanam."
+    },
+    "RIN_DOSHA_PITRI": {
+      "timing": "Pitṛṛṇadoṣaḥ sūryanavameśadaśāyāṃ pitṛkulaṛṇakleśaṃ sūcayati.",
+      "timingProse": "Pitṛṛṇadoṣasya phalakālaḥ sūrya (pitṛkāraka) navameśayoḥ daśāsu. Asmin kāle pitṛkulaṛṇajaḥ kleśaḥ, pitṛsukhabādhā, kartavyabhāraḥ, akāraṇavilambaśca sūcyate. Sūryagrahaṇapitṛpakṣayoḥ phalodrekaḥ; pitṛtarpaṇaśrāddhaiḥ śāntiḥ."
+    },
+    "RIN_DOSHA_STRI": {
+      "timing": "Strīṛṇadoṣaḥ śukrasaptameśadaśāyāṃ strīvargaṛṇakleśaṃ sūcayati.",
+      "timingProse": "Strīṛṇadoṣasya phalakālaḥ śukra (strīkāraka) saptameśayoḥ daśāsu. Asmin kāle strīvargasambandhita ṛṇajaḥ kleśaḥ, dāmpatyabādhā, strīśāpasūcakavighnaśca sūcyate. Śukragocare kṣīṇe saptame vā phalodrekaḥ; strīsammānadānadharmaiḥ śāntiḥ."
+    },
+    "RIN_DOSHA_SWAJAN": {
+      "timing": "Svajanaṛṇadoṣaḥ tṛtīyaikādaśeśadaśāyāṃ bandhusvajanaṛṇakleśaṃ sūcayati.",
+      "timingProse": "Svajanaṛṇadoṣasya phalakālaḥ tṛtīyeśa (bhrātṛbhāveśa) ekādaśeśa (lābhabandhubhāveśa) ca daśāsu. Asmin kāle bandhusvajanasambandhita ṛṇajaḥ kleśaḥ, bhrātṛvirodhaḥ, sahāyakavañcanā ca sūcyate. Śanigocare tṛtīyaikādaśe phalodrekaḥ; svajanasevādānaiḥ śāntiḥ."
+    },
+    "SANKRANTI_DOSHA": {
+      "timing": "Saṅkrāntidoṣaḥ sūryadaśāyāṃ saṅkrāntigocarakāle ca kleśaṃ sūcayati.",
+      "timingProse": "Saṅkrāntidoṣasya (sūryasaṅkrāntipuṇyakālasannidhau janmanaḥ) phalakālaḥ sūryamahādaśāntardaśāsu, saṅkrāntigocarakāle ca prakaṭībhavati. Asmin kāle ārogyacañcalatā, pitṛsukhabādhā, miśraphalaṃ ca sūcyate (saṅkrāntiprakārānusāraṃ phalabhedaḥ). Sūryaśāntidānaiḥ parihāraḥ."
+    },
+    "SHANI_DOSHA": {
+      "timing": "Śanidoṣaḥ śanimahādaśāyāṃ sāḍhesātīkāle ca śramavilambakleśaṃ sūcayati.",
+      "timingProse": "Śanidoṣasya phalakālaḥ prāyaḥ śanimahādaśāyām antardaśāyāṃ ca, viśeṣataḥ janmarāśitaḥ sāḍhesātī (sārdhasaptavarṣātmake śanigocare) tathā kaṇṭakaśani (caturthāṣṭamagocare) kāle prakaṭībhavati. Asmin kāle śramādhikyam, vilambaḥ, sthānabhraṃśaḥ, svajanaviyogaśca; kintu dhairyeṇa karmaṇā ca ante sthāyī phalaprāptiḥ."
+    },
+    "SHRAPIT_DOSHA": {
+      "timing": "Śāpitadoṣaḥ (śanirāhuyuteḥ) śanirāhudaśāyāṃ pūrvakarmakleśaṃ sūcayati.",
+      "timingProse": "Śāpitadoṣasya (śanirāhuyuteḥ, pūrvajanmaśāpasūcakasya) phalakālaḥ śani-rāhu mahādaśāntardaśāsu, viśeṣataḥ sāḍhesātīkāle. Asmin kāle dīrghakālikavilambaḥ, akāraṇakleśaḥ, svajanaviyogaḥ, mānasikāvasādaḥ, karmabandhaśca sūcyate. Dhairyasevādānadharmaiḥ krameṇa śamanam."
+    },
+    "STREE_DEERGH_ABSENCE": {
+      "timing": "Strīdīrghābhāvaḥ vivāhottarakāle dāmpatyasaukhyadīrghatāśubhābhāvaṃ sūcayati.",
+      "timingProse": "Strīdīrghābhāvasya (varanakṣatrāt vadhūnakṣatrasya navādhikagaṇanāyā abhāvasya) phalakālaḥ vivāhottaraṃ prakaṭībhavati. Ayaṃ śubhābhāvasūcakaḥ — dāmpatyasaukhyasya dīrghatāyāḥ strīdīrghakṛtaśubhasya abhāvamātram, na prabaladoṣaḥ. Rāśīśamaitryāṃ grahabale ca phalaṃ sāmānyam."
+    },
+    "TITHI_DOSHA": {
+      "timing": "Tithidoṣaḥ (riktādikṣayatithijanmanaḥ) tattithigocare śubhakārye vighnaṃ sūcayati.",
+      "timingProse": "Tithidoṣasya (riktā-kṣaya-dagdhāditithau janmanaḥ) phalakālaḥ śubhakāryārambhakāle, tattithigocare ca prakaṭībhavati. Asmin kāle śubhakāryavighnaḥ, ārambhavilambaḥ, saṅkalpabhaṅgaśca sūcyate. Śubhatithimuhūrtacayanena parihāraḥ."
+    },
+    "VAIDHRITI_DOSHA": {
+      "timing": "Vaidhṛtiyogadoṣaḥ tadyogagocare śubhakārye bādhāṃ sūcayati.",
+      "timingProse": "Vaidhṛtiyogadoṣasya (vaidhṛti-vyatīpātādiduṣṭayoge janmanaḥ) phalakālaḥ śubhakāryārambhakāle, tadyogagocare ca prakaṭībhavati. Asmin kāle śubhakāryabādhā, akasmātvighnaḥ, saṅkalpavikṣepaśca sūcyate. Yogaśāntyā śubhamuhūrtacayanena ca parihāraḥ."
+    },
+    "VEDHA_DOSHA": {
+      "timing": "Vedhadoṣaḥ vivāhottarakāle parasparabādhakanakṣatravedhena kleśaṃ sūcayati.",
+      "timingProse": "Vedhadoṣasya (vadhūvarayoḥ nakṣatrayoḥ parasparavedhasya) phalakālaḥ vivāhottaraṃ prakaṭībhavati. Asmin kāle pārasparikabādhā, akāraṇavirodhaḥ, sahajīvanavighnaśca sūcyate. Vedhanakṣatrayoḥ rāśīśamaitryāṃ śubhagrahayoge ca śamanam."
+    },
+    "VISHA_KANYA_DOSHA": {
+      "timing": "Viṣakanyādoṣaḥ vivāhottarakāle dāmpatyakalatrāriṣṭaṃ sūcayati.",
+      "timingProse": "Viṣakanyādoṣasya (tithivāranakṣatraduṣṭasaṃyogajanmanaḥ) phalakālaḥ vivāhottaraṃ dāmpatyajīvane prakaṭībhavati. Asmin kāle dāmpatyavirodhaḥ, kalatrārogyakleśaḥ, vaivāhikasaukhyabādhā ca sūcyate. Śubhagrahayoge grahabale śāntikarmaṇā ca doṣo nyūnībhavati; adhunā ayaṃ doṣo vivādāspadaḥ bahubhiḥ khaṇḍitaśca."
+    },
+    "VISH_YOGA_DOSHA": {
+      "timing": "Viṣayogadoṣaḥ (śanicandrayuteḥ) śanicandradaśāyāṃ viṣādanirāśāṃ sūcayati.",
+      "timingProse": "Viṣayogadoṣasya (śanicandrayuteḥ) phalakālaḥ śani-candra mahādaśāntardaśāsu, tathā sāḍhesātīkāle. Asmin kāle mānasaviṣādaḥ, nirāśā, ekākitvam, utsāhakṣayaḥ, kaphavātarogaśca sūcyate. Śubhacandragocare gurudṛṣṭyā ca śamanam."
+    },
+    "VYATIPATA_DOSHA": {
+      "timing": "Vyatīpātayogadoṣaḥ tadyogagocare śubhakārye akasmātvighnaṃ sūcayati.",
+      "timingProse": "Vyatīpātayogadoṣasya (saptadaśe vyatīpātayoge janmanaḥ) phalakālaḥ śubhakāryārambhakāle, vyatīpātagocare ca prakaṭībhavati. Asmin kāle akasmātvighnaḥ, durghaṭanābhayam, saṅkalpabhaṅgaśca sūcyate. Yogaśāntyā śubhamuhūrtacayanena ca parihāraḥ."
+    },
+    "YAMAGHANTA_DOSHA": {
+      "timing": "Yamaghaṇṭadoṣaḥ tadvāranakṣatrayogagocare śubhakārye bādhāṃ sūcayati.",
+      "timingProse": "Yamaghaṇṭadoṣasya (vāranakṣatraduṣṭasaṃyoge, yamaghaṇṭayoge janmanaḥ) phalakālaḥ śubhakāryārambhakāle, tadyogagocare ca prakaṭībhavati. Asmin kāle śubhakāryabādhā, yātrāvighnaḥ, akasmātkleśaśca sūcyate. Śubhamuhūrtacayanena yogaśāntyā ca parihāraḥ."
+    }
+  },
+  "gana": {
+    "DEVA": {
+      "phala": "Devagaṇaḥ sāttvikaḥ saumyaḥ dhārmikaśca.",
+      "phalaProse": "Devagaṇe nava nakṣatrāṇi (aśvinī, mṛgaśirā, punarvasu, puṣya, hasta, svāti, anurādhā, śravaṇa, revatī ca) antarbhavanti. Devagaṇajātaḥ sāttvikasvabhāvaḥ, saumyaḥ, paropakārī, ṛjuḥ, kṣamāśīlaḥ, devapūjādidharmakarmanirataśca bhavati. Śāntacittaḥ niyamapriyaḥ mitabhāṣī ca; krodhalobhādayo vikārāḥ alpāḥ. Gaṇakūṭe (aṣṭakūṭamadhye ṣaṭ aṅkāḥ) devadevayoḥ melanamuttamam, devamanuṣyayoḥ madhyamam, devarākṣasayostu nikṛṣṭatamaṃ vaimanasyakaram."
+    },
+    "MANUSHYA": {
+      "phala": "Manuṣyagaṇaḥ rājasaḥ santulitaḥ mahattvākāṅkṣī ca.",
+      "phalaProse": "Manuṣyagaṇe nava nakṣatrāṇi (bharaṇī, rohiṇī, ārdrā, pūrvāphālgunī, uttarāphālgunī, pūrvāṣāḍhā, uttarāṣāḍhā, pūrvābhādrapadā, uttarābhādrapadā ca) antarbhavanti. Manuṣyagaṇajātaḥ rājasasvabhāvaḥ, laukikādhyātmikayoḥ samanvayakārī, mahattvākāṅkṣī kintu naitikaḥ, vyāvahārikaḥ sāmājikaśca bhavati. Sukhaduḥkhe samatāṃ dhārayan puruṣārthacatuṣṭaye pravṛttaḥ. Gaṇakūṭe manuṣyamanuṣyayoḥ melanamuttamam, devamanuṣyayoḥ śubham, manuṣyarākṣasayostu alpaphalam."
+    },
+    "RAKSHASA": {
+      "phala": "Rākṣasagaṇaḥ tāmasaḥ dṛḍhaḥ prabhāvī ca.",
+      "phalaProse": "Rākṣasagaṇe nava nakṣatrāṇi (kṛttikā, āśleṣā, maghā, citrā, viśākhā, jyeṣṭhā, mūlā, dhaniṣṭhā, śatabhiṣā ca) antarbhavanti. Rākṣasagaṇajātaḥ tāmasasvabhāvaḥ, dṛḍhasaṅkalpaḥ, spaṣṭavaktā, svatantraḥ prabhāvī ca. Kadācit ugraḥ haṭhī ca, kintu nirbhīkaḥ sāhasī anyāyapratirodhī ca. Gaṇakūṭe rākṣasarākṣasayoḥ melanaṃ sahyam, devarākṣasayostu nikṛṣṭatamaṃ vaimanasyakaram; manuṣyarākṣasayoḥ madhyamam."
+    }
+  },
+  "graha_bhava": {
+    "JUPITER_IN_1": {
+      "name": "Gururlagne rājayogakārakaḥ. Prajñāvān, dhārmikaḥ, dīrghāyuḥ, saumya-ākṛtiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye gururlagnasthaḥ jātakaṃ prajñāvantaṃ, dhārmikaṃ, dīrghāyuṣaṃ, saumya-ākṛtiṃ, guru-śiṣya-vatsalaṃ ca karoti. Bṛhatpārāśarahorāśāstre 21 adhyāye etatsthānaṃ śreṣṭha-rājayogakārakaṃ uktam — guruḥ kāraka-sthāne ātma-śuddhiṃ, vidyā-vardhanaṃ, guru-kṛpāṃ ca prāpayati.",
+      "general": "Rājayogaḥ, prajñā, dharmaniṣṭhā, dīrghāyuḥ, saumya-vyaktitvam, guru-kṛpā, sat-śāstrajñānam."
+    },
+    "JUPITER_IN_10": {
+      "name": "Gururdaśame karma-dharma-rājayogaḥ. Ucca-pada-yaśasvī, dharma-vyavasāyī.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye gururdaśamasthaḥ karma-kāraka-kendra-rājayogakārakaḥ — ucca-pada-yaśaṃ, dharma-vyavasāyaṃ, rāja-sammānaṃ, sat-kīrtiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 21 — kāraka-kendra-yogaḥ uccakarma-pradaḥ.",
+      "general": "Karma-dharma-rājayogaḥ, ucca-pada-prāptiḥ, dharma-vyavasāyaḥ, rāja-sammānam, sat-kīrtiḥ."
+    },
+    "JUPITER_IN_11": {
+      "name": "Gururekādaśe lābha-dharmayogaḥ. Nirantara-dhana-vṛddhiḥ, dhārmika-mitra-kuṭumba-vardhanam.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye gururekādaśasthaḥ lābha-dharma-yogakārakaḥ — nirantara-dhana-vṛddhiṃ, dhārmika-mitra-kuṭumba-vardhanaṃ, iṣṭa-siddhiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 21 — gururlābhasthāne sarvārtha-vardhakaḥ.",
+      "general": "Lābha-dharma-yogaḥ, nirantara-dhana-vṛddhiḥ, dhārmika-mitra-kuṭumba-vardhanam, iṣṭa-siddhiḥ, jyeṣṭha-bhrātṛ-sukham."
+    },
+    "JUPITER_IN_12": {
+      "name": "Gururdvādaśe mokṣa-yogaḥ, dāna-śīlaḥ, tīrtha-vāsī, kintu vyaya-bāhulyam.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye gururdvādaśasthaḥ mokṣa-yogakārakaḥ — dāna-dharma-śīlaṃ, tīrtha-āśrama-vāsaṃ, ādhyātmika-vyayaṃ, videśa-dharma-kīrtiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 21 — guruḥ vyaya-sthāne mokṣa-kārakaḥ, śubha-vyaye dharma-dāna-pravṛttiṃ, ante sad-gatiṃ ca dadāti. Vyaya-bāhulyaṃ tu dharma-kārye.",
+      "general": "Mokṣa-yogaḥ, dāna-śīlatā, tīrtha-āśrama-vāsaḥ, ādhyātmika-vyayaḥ, sad-gatiḥ."
+    },
+    "JUPITER_IN_2": {
+      "name": "Gururdvitīye dhana-vāk-yogaḥ. Samṛddhaḥ, madhura-satya-vāṇī, kuṭumba-poṣakaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye gururdvitīyasthaḥ dhana-vāk-yogakārakaḥ — dhana-samṛddhiṃ, madhura-satya-vāṇīṃ, kuṭumba-poṣaṇaṃ, ucca-śikṣāṃ ca dadāti. Bṛhatpārāśarahorāśāstre 21 — guruḥ dhana-sthāne sarva-sampat-vardhakaḥ, vidyā-dhana-saṃyogaḥ. Vāṇyāṃ dharma-satya-prakaṭanam.",
+      "general": "Dhana-samṛddhiḥ, madhura-satya-vāṇī, kuṭumba-poṣaṇam, ucca-śikṣā, dhana-vāk-yogaḥ."
+    },
+    "JUPITER_IN_3": {
+      "name": "Gurustṛtīye dhārmika-parākramaḥ, bhrātṛ-sukhī, kintu alpa-sva-parākrama-kāraka-hāniḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye gurustṛtīyasthaḥ jātakaṃ dhārmika-parākramiṇaṃ, bhrātṛ-sukhinaṃ, upadeśa-dāna-śīlaṃ ca karoti. Bṛhatpārāśarahorāśāstre 21 — guruḥ upacaya-tṛtīye sva-kārakatve īṣat-kṣīṇaḥ (guruḥ manda-sthāne na prakarṣeṇa phalati), tathāpi dharma-sañcāra-vṛttiṃ, sat-parāmarśa-kauśalaṃ, anuja-sukhaṃ ca dadāti. Upacaya-tvāt phalaṃ krameṇa vardhate.",
+      "general": "Dhārmika-parākramaḥ, bhrātṛ-sukham, upadeśa-śīlatā, sat-parāmarśaḥ, kramika-vṛddhiḥ."
+    },
+    "JUPITER_IN_4": {
+      "name": "Guruścaturthe mātṛ-gṛha-vāhana-yogaḥ. Hṛdaya-sukhaṃ, dhārmika-gṛhasthaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye guruścaturthasthaḥ jātakaṃ mātṛ-sukha-samṛddhaṃ, gṛha-vāhana-sampannaṃ, dhārmika-gṛhastha-vṛttiṃ, hṛdaya-śāntiṃ ca prāpayati. Bṛhatpārāśarahorāśāstre 21 — guruḥ sukhasthāne kendra-kāraka-yogakārakaḥ.",
+      "general": "Mātṛ-sukham, gṛha-vāhana-sampattiḥ, dhārmika-gṛhastha-vṛttiḥ, hṛdaya-śāntiḥ, paitṛka-gṛha-vardhanam."
+    },
+    "JUPITER_IN_5": {
+      "name": "Guruḥ pañcame putra-prajñā-yogaḥ. Santati-sukhī, mantra-siddhaḥ, vidvān.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye guruḥ pañcamasthaḥ jātakaṃ putra-prajñā-saṃyoga-rājayogakārakaṃ — santati-sukhaṃ, mantra-siddhiṃ, vidyā-kauśalaṃ, rāja-kīrti-vardhanaṃ ca prāpayati. Bṛhatpārāśarahorāśāstre 21 — guruḥ kāraka-kāraka-sthāne sarvottama rājayogaḥ.",
+      "general": "Putra-prajñā-rājayogaḥ, santati-sukham, mantra-siddhiḥ, vidyā-kauśalam, rāja-kīrtiḥ."
+    },
+    "JUPITER_IN_6": {
+      "name": "Guruḥ ṣaṣṭhe śatru-śamanam, dharmeṇa-vivāda-vijayaḥ, kintu kāraka-sthāna-hāniḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye guruḥ ṣaṣṭhasthaḥ jātakaṃ dharmeṇa-śatru-śamanaṃ, vivāda-vijayaṃ, ṛṇa-nivāraṇaṃ ca karoti, paraṃ guroḥ kāraka-sthāna-hāniṃ (śubha-kārakaḥ duḥsthāne pīḍitaḥ) sūcayati. Bṛhatpārāśarahorāśāstre 21 — guruḥ ripu-sthāne nyāya-dharma-balena śatru-nivārakaḥ, cikitsā-nyāya-sevā-kṣetre pratiṣṭhā-kārakaḥ, paraṃ sva-śubha-phale īṣat-nyūnatā. Upacaya-tvāt krameṇa vijayaḥ.",
+      "general": "Śatru-śamanam, vivāda-vijayaḥ, ṛṇa-nivāraṇam, sevā-nyāya-pratiṣṭhā, kāraka-hāniḥ."
+    },
+    "JUPITER_IN_7": {
+      "name": "Guruḥ saptame dhārmika-kalatrayogaḥ. Dāmpatya-sukhī, sad-vyāpārī.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye guruḥ saptamasthaḥ jātakaṃ dhārmika-kalatra-yogayuktaṃ, dāmpatya-sukhinaṃ, sad-vyāpāriṇaṃ, videśa-yātra-lābhaṃ ca prāpayati. Bṛhatpārāśarahorāśāstre 21 — guruḥ kalatra-sthāne jāyāṃ śāstrajñāṃ, sāttvika-vyavahāraṃ dadāti. Tathāpi avivāhita-yogaḥ kvacit jāyate yadā gururbrahmacarya-pūjana-vṛttiṃ prerayati.",
+      "general": "Dhārmika-dāmpatyam, śāstrajña-jāyā, sad-vyāpāraḥ, videśa-yātrā-lābhaḥ, kalatra-kāraṇena khyātiḥ."
+    },
+    "JUPITER_IN_8": {
+      "name": "Gururaṣṭame dīrghāyuḥ, gūḍha-śāstra-jñaḥ, dāna-prāptiḥ, kintu śubha-kāraka-hāniḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye gururaṣṭamasthaḥ jātakaṃ dīrghāyuṣaṃ, gūḍha-śāstra-darśana-jñaṃ, akasmāt-dhana-dāya-prāptaṃ ca karoti, paraṃ śubha-kārakatva-hāniṃ (guruḥ randhra-duḥsthāne) sūcayati. Bṛhatpārāśarahorāśāstre 21 — guruḥ āyur-sthāne āyuṣ-vardhakaḥ, mokṣa-śāstra-pravṛttaḥ, dāya-vasīyata-lābhakārakaḥ; tathāpi gṛha-sukha-bhāgya-phale īṣat-nyūnatā. Śubha-dṛṣṭyā āyuṣ-dāna-yogaḥ.",
+      "general": "Dīrghāyuḥ, gūḍha-śāstra-jñānam, dāya-prāptiḥ, mokṣa-pravṛttiḥ, śubha-kāraka-hāniḥ."
+    },
+    "JUPITER_IN_9": {
+      "name": "Gururnavame dharma-rājayogaḥ. Atyanta-bhāgyavān, guru-kṛpā-pātraḥ, śāstrajñaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye gururnavamasthaḥ sarvocca-dharma-rājayogakārakaḥ — kāraka-kāraka-trikoṇayogaḥ. Jātakaḥ atyanta-bhāgyavān, guru-kṛpā-pātraḥ, sarva-śāstra-jñaḥ, dharmātmā ca bhavati. Bṛhatpārāśarahorāśāstre 21 — etatsthānaṃ jyotiṣa-śāstre ati-ślāghitam.",
+      "general": "Sarvocca-dharma-rājayogaḥ, atyanta-saubhāgyam, guru-kṛpā, sarva-śāstra-jñānam, dharmātmatvam."
+    },
+    "KETU_IN_1": {
+      "name": "Keturlagne ātma-saṃśayaḥ, vairāgya-pravṛttiḥ, gūḍha-antardṛṣṭiḥ, śiro-carma-cintā.",
+      "prose": "Bṛhatpārāśarahorāśāstre keturlagnasthaḥ jātakaṃ ātma-saṃśaya-yuktaṃ, antarmukha-vairāgya-pravṛttaṃ, gūḍha-antardṛṣṭi-sampannaṃ, kintu ātma-paricaya-bhrama-pravaṇaṃ ca karoti. Ketuḥ tanu-sthāne mokṣa-kārakatvena sāṃsārika-anāsaktiṃ, śiro-carma-doṣa-sambhāvanāṃ, rahasya-vidyā-ākarṣaṇaṃ ca janayati. Śubha-dṛṣṭyā ādhyātmika-antardṛṣṭi-yogaḥ; pīḍite ātma-viśvāsa-nyūnatā.",
+      "general": "Ātma-saṃśayaḥ, vairāgya-pravṛttiḥ, gūḍha-antardṛṣṭiḥ, śiro-carma-cintā, ādhyātmikatā."
+    },
+    "KETU_IN_10": {
+      "name": "Keturdaśame apāramparika-karma, karma-vairāgyam, gūḍha-śodha-vyavasāyaḥ, kīrti-cāñcalyam.",
+      "prose": "Bṛhatpārāśarahorāśāstre keturdaśamasthaḥ jātakaṃ apāramparika-karma-kṣetra-pravṛttaṃ, karma-phale anāsaktaṃ, gūḍha-śodha-tantra-jyotiṣa-cikitsā-vyavasāya-kuśalaṃ, kintu kīrti-sthiratāyāṃ cāñcalya-pravaṇaṃ ca karoti. Ketuḥ karma-sthāne pūrva-karma-dakṣatāṃ, akasmāt-karma-parivartanaṃ, yaśa-nirapekṣatāṃ ca janayati. Śubha-dṛṣṭyā gūḍha-vidyā-karma-kīrti-yogaḥ; pīḍite karma-asthairya-māna-cāñcalye.",
+      "general": "Apāramparika-karma, karma-vairāgyam, gūḍha-śodha-vyavasāyaḥ, kīrti-cāñcalyam, pūrva-karma-dakṣatā."
+    },
+    "KETU_IN_11": {
+      "name": "Keturekādaśe akasmāt-lābhaḥ, apāramparika-mitraḥ, icchā-vairāgyam, gūḍha-neṭavarka.",
+      "prose": "Bṛhatpārāśarahorāśāstre keturekādaśasthaḥ śubha-sthāna-gataḥ — akasmāt-lābhaṃ, apāramparika-gūḍha-mitra-maṇḍalaṃ, icchā-pūrtau anāsaktiṃ ca karoti. Ketuḥ lābha-sthāne upacaya-tvena prabalaḥ — ādhyātmika-gūḍha-samudāya-sambandhaṃ, anapekṣita-dhana-lābhaṃ, jyeṣṭha-bhrātṛ-sambandha-śaityaṃ vā dadāti. Etat ketoḥ śubha-sthānam. Śubha-dṛṣṭyā akasmāt-lābha-yogaḥ; pīḍite lābha-cāñcalya-mitra-viraktī.",
+      "general": "Akasmāt-lābhaḥ, apāramparika-mitraḥ, icchā-vairāgyam, gūḍha-samudāyaḥ, anapekṣita-dhanam."
+    },
+    "KETU_IN_12": {
+      "name": "Keturdvādaśe mokṣa-yogaḥ. Mokṣa-yogyatā, sūkṣma-dṛṣṭiḥ, videśa-vāsaḥ, sāttvika-tyāgaḥ.",
+      "prose": "Bṛhatpārāśarahorāśāstre 29 adhyāye keturdvādaśasthaḥ sarvotkṛṣṭa-mokṣa-yogakārakaḥ — mokṣa-yogyatāṃ, sūkṣma-dṛṣṭiṃ, videśa-vāsaṃ, sāttvika-tyāgaṃ, gupta-dāna-kīrtiṃ ca dadāti. Phaladīpikā 8 — ketoḥ vyaya-sthānaṃ mokṣa-kāraka-kāraka-saṃyogaḥ.",
+      "general": "Sarvotkṛṣṭa-mokṣa-yogaḥ, mokṣa-yogyatā, sūkṣma-dṛṣṭiḥ, videśa-vāsaḥ, sāttvika-tyāgaḥ, gupta-dāna-kīrtiḥ."
+    },
+    "KETU_IN_2": {
+      "name": "Keturdvitīye anāsakta-vāṇī, dhana-aniścayaḥ, mantra-vāk-siddhiḥ, kuṭumba-viraktiḥ.",
+      "prose": "Bṛhatpārāśarahorāśāstre keturdvitīyasthaḥ jātakaṃ alpa-vā-gūḍha-vāṇīyuktaṃ, dhana-viṣaye anāsakta-aniścayaṃ, kintu mantra-vāk-siddhi-pravaṇaṃ ca karoti. Ketuḥ dhana-sthāne dhana-saṅgrahe viraktiṃ, kuṭumba-sambandha-śaityaṃ, anna-mukha-doṣa-sambhāvanāṃ ca janayati. Śubha-dṛṣṭyā mantra-tantra-vāk-siddhi-yogaḥ; pīḍite dhana-cāñcalya-vāk-doṣau.",
+      "general": "Anāsakta-vāṇī, dhana-aniścayaḥ, mantra-vāk-siddhiḥ, kuṭumba-viraktiḥ, anna-doṣaḥ."
+    },
+    "KETU_IN_3": {
+      "name": "Ketustṛtīye nirbhīka-parākramaḥ, gūḍha-sañcāra-kauśalam, bhrātṛ-viraktiḥ.",
+      "prose": "Bṛhatpārāśarahorāśāstre ketustṛtīyasthaḥ jātakaṃ nirbhīka-parākramiṇaṃ, gūḍha-sañcāra-lekhana-kuśalaṃ, antarjñāna-sampannaṃ, kintu bhrātṛ-sambandha-śaitya-pravaṇaṃ ca karoti. Ketuḥ upacaya-tṛtīye sāhasa-vṛddhiṃ, sūkṣma-tarka-śaktiṃ, gupta-vidyā-pravṛttiṃ dadāti — upacaya-tvāt śubha-sthānam. Śubha-dṛṣṭyā anveṣaṇa-parākrama-yogaḥ; pīḍite bhrātṛ-kalaha-cāñcalye.",
+      "general": "Nirbhīka-parākramaḥ, gūḍha-sañcāra-kauśalam, antarjñānam, bhrātṛ-viraktiḥ, sūkṣma-tarkaḥ."
+    },
+    "KETU_IN_4": {
+      "name": "Ketuścaturthe gṛha-anāsaktiḥ, mātṛ-viyoga-cintā, antarmukha-śānti-anveṣaṇam.",
+      "prose": "Bṛhatpārāśarahorāśāstre ketuścaturthasthaḥ jātakasya gṛha-sukha-anāsaktiṃ, mātṛ-sambandha-śaityaṃ vā viyoga-cintāṃ, antarmukha-śānti-anveṣaṇaṃ ca sūcayati. Ketuḥ sukha-sthāne sāṃsārika-gṛha-sukhe viraktiṃ, sthāna-calanaṃ, hṛdaya-asantoṣaṃ vā janayati, paraṃ ādhyātmika-śānti-tṛṣṇāṃ, gūḍha-vidyā-gṛha-sādhanāṃ ca. Śubha-dṛṣṭyā antaḥśānti-mokṣa-yogaḥ; pīḍite gṛha-aśānti-mātṛ-kaṣṭau.",
+      "general": "Gṛha-anāsaktiḥ, mātṛ-viyoga-cintā, antarmukha-śānti-anveṣaṇam, sthāna-calanam, ādhyātmikatā."
+    },
+    "KETU_IN_5": {
+      "name": "Ketuḥ pañcame mantra-siddhiḥ, gūḍha-prajñā, santati-cintā, pūrva-janma-saṃskāra-smṛtiḥ.",
+      "prose": "Bṛhatpārāśarahorāśāstre ketuḥ pañcamasthaḥ jātakaṃ mantra-tantra-siddhi-pravaṇaṃ, gūḍha-prajñā-antarjñāna-sampannaṃ, pūrva-janma-saṃskāra-prabhāvitaṃ, kintu santati-viṣaye cintā-vilamba-yuktaṃ ca karoti. Ketuḥ putra-sthāne pūrva-puṇya-mokṣa-kārakatvena ādhyātmika-buddhiṃ dadāti, paraṃ santāna-kāraka-kṣobhaṃ (garbha-skhalana-vā-vilamba-sambhāvanāṃ) janayati. Śubha-dṛṣṭyā mantra-siddhi-prajñā-yogaḥ; pīḍite santati-kaṣṭam.",
+      "general": "Mantra-siddhiḥ, gūḍha-prajñā, santati-cintā, pūrva-janma-saṃskāraḥ, ādhyātmika-buddhiḥ."
+    },
+    "KETU_IN_6": {
+      "name": "Ketuḥ ṣaṣṭhe śatru-nāśakaḥ, roga-nidāna-kuśalaḥ, ṛṇa-vijayī, gūḍha-cikitsā-śaktiḥ.",
+      "prose": "Bṛhatpārāśarahorāśāstre ketuḥ ṣaṣṭhasthaḥ śubha-sthāna-gataḥ — śatru-nāśakaṃ, roga-nidāna-gūḍha-cikitsā-kuśalaṃ, ṛṇa-śatru-vijayinaṃ ca karoti. Ketuḥ ripu-sthāne upacaya-tvena prabalaḥ — sūkṣma-roga-nidānaṃ, tantra-mantra-cikitsāṃ, spardhā-vijayaṃ dadāti. Etat ketoḥ śreṣṭha-sthānam. Śubha-dṛṣṭyā vaidya-tāntrika-śodha-yogaḥ; pīḍite udara-gupta-roga-śaṅkā.",
+      "general": "Śatru-nāśaḥ, roga-nidāna-kauśalam, ṛṇa-vijayaḥ, gūḍha-cikitsā-śaktiḥ, spardhā-vijayaḥ."
+    },
+    "KETU_IN_7": {
+      "name": "Ketuḥ saptame dāmpatya-anāsaktiḥ, sambandha-vairāgyam, sāthī-gūḍha-svabhāvaḥ, vyāpāra-udāsīnatā.",
+      "prose": "Bṛhatpārāśarahorāśāstre ketuḥ saptamasthaḥ jātakasya dāmpatye anāsaktiṃ, sambandha-vairāgyaṃ, sāthinaḥ gūḍha-antarmukha-svabhāvaṃ, vivāha-vilambaṃ vā sūcayati. Ketuḥ kalatra-sthāne sāṃsārika-dāmpatya-sukhe viraktiṃ, sājhedārī-viṣaye udāsīnatāṃ, gupta-sambandha-pravṛttiṃ vā janayati. Śubha-dṛṣṭyā ādhyātmika-sahacara-yogaḥ; pīḍite dāmpatya-śaitya-vicheda-śaṅkā.",
+      "general": "Dāmpatya-anāsaktiḥ, sambandha-vairāgyam, gūḍha-sāthī, vivāha-vilambaḥ, vyāpāra-udāsīnatā."
+    },
+    "KETU_IN_8": {
+      "name": "Keturaṣṭame gūḍha-tantra-siddhiḥ, mokṣa-pravṛttiḥ, akasmāt-ghaṭanā, āyur-gūḍha-cintā.",
+      "prose": "Bṛhatpārāśarahorāśāstre keturaṣṭamasthaḥ jātakaṃ gūḍha-tantra-yoga-siddhi-pravaṇaṃ, mokṣa-anveṣakaṃ, antarjñāna-dṛṣṭi-sampannaṃ, kintu akasmāt-ghaṭanā-āyur-gūḍha-cintā-yuktaṃ ca karoti. Ketuḥ randhra-sthāne mokṣa-kārakatvena kuṇḍalinī-yoga-gūḍha-vidyā-siddhiṃ dadāti (etat ketoḥ ati-śubha-sthānam iti kecit), paraṃ ākasmika-parivartana-bhaya-pravṛttiṃ ca. Śubha-dṛṣṭyā yoga-siddhi-mokṣa-yogaḥ; pīḍite durghaṭanā-gupta-roga-śaṅkā.",
+      "general": "Gūḍha-tantra-siddhiḥ, mokṣa-pravṛttiḥ, akasmāt-ghaṭanā, āyur-gūḍha-cintā, kuṇḍalinī-yogaḥ."
+    },
+    "KETU_IN_9": {
+      "name": "Keturnavame mokṣa-dharma-yogaḥ. Ādhyātmikaḥ, guru-kṛpā-pātraḥ, antardṛṣṭimān.",
+      "prose": "Bṛhatpārāśarahorāśāstre 29 adhyāye keturnavamasthaḥ mokṣa-dharma-yogakārakaḥ — ādhyātmika-vṛttiṃ, guru-kṛpā-yogaṃ, antardṛṣṭiṃ, sūkṣma-śāstra-jñānaṃ, pūrva-janma-smṛtiṃ ca dadāti. Phaladīpikā 8 — ketorbhāgya-sthānaṃ ati-śubham.",
+      "general": "Mokṣa-dharma-yogaḥ, ādhyātmikatā, guru-kṛpā, antardṛṣṭiḥ, sūkṣma-śāstra-jñānam."
+    },
+    "MARS_IN_1": {
+      "name": "Maṅgalo lagne tejasvī, sāhasī, ugra-svabhāvaḥ, kṣata-cihnaḥ. (Māṅgalika-yogaḥ)",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalo lagnasthaḥ jātakaṃ tejasvinaṃ, sāhasinaṃ, ugra-svabhāvaṃ, netṛtva-śīlaṃ, kintu krodha-pravaṇaṃ, kṣata-cihna-yuktaṃ ca karoti. Bṛhatpārāśarahorāśāstre 23 — kujaḥ tanu-sthāne bala-vardhakaḥ, paraṃ kuja-doṣa-kārakaḥ (māṅgalika) — dāmpatya-sāmañjasye yatna-sādhyatā. Ucca-sva-rāśi-kuje sāhasaṃ netṛtve pariṇamate.",
+      "general": "Tejasvitā, sāhasam, netṛtvam, ugra-svabhāvaḥ, krodha-pravṛttiḥ, māṅgalika-yogaḥ."
+    },
+    "MARS_IN_10": {
+      "name": "Maṅgalo daśame rucaka-samāna-rājayogaḥ. Ati-karmaṭhaḥ, senā-nāyakatvam, rāja-sammānam.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalo daśamasthaḥ karma-viśeṣa-rājayogakārakaḥ — kujaḥ karma-sthānātmakena ucca-sthānena vā senā-nāyakatvaṃ, ati-karmaṭhatāṃ, rāja-sammānaṃ, sāhasika-kīrtiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 24 — digbalī kujaḥ karma-yaśaṃ vardhayati.",
+      "general": "Karma-rājayogaḥ, senā-nāyakatvam, ati-karmaṭhatā, rāja-sammānam, sāhasika-kīrtiḥ."
+    },
+    "MARS_IN_11": {
+      "name": "Maṅgala ekādaśe lābha-śaurya-yogaḥ. Sāhasena-nirantara-lābhaḥ, jyeṣṭha-bhrātṛ-vṛddhiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgala ekādaśasthaḥ lābha-śaurya-yogakārakaḥ — sāhasena nirantara-lābhaṃ, jyeṣṭha-bhrātṛ-vardhanaṃ, udyamaśīlatayā-iṣṭa-siddhiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 24 — kuja ekādaśasthaḥ sarvārtha-vardhakaḥ.",
+      "general": "Lābha-śaurya-yogaḥ, nirantara-lābhaḥ, jyeṣṭha-bhrātṛ-vardhanam, udyamaśīlatā, iṣṭa-siddhiḥ."
+    },
+    "MARS_IN_12": {
+      "name": "Maṅgalo dvādaśe vyaya-bāhulyam, gupta-śatruḥ, śastra-agni-vyayaḥ, māṅgalika-yogaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalo dvādaśasthaḥ jātakasya vyaya-bāhulyaṃ, gupta-śatru-pīḍāṃ, śayyā-sukha-nyūnatāṃ, śastra-agni-kāraṇena vyayaṃ ca sūcayati. Bṛhatpārāśarahorāśāstre 23 — kujaḥ vyaya-sthāne ūrjā-vyayaṃ, krodha-janya-hāniṃ, kuja-doṣaṃ (māṅgalika) ca janayati. Tathāpi videśa-parākrameṇa lābhaḥ, gupta-kārya-senā-śalya-kṣetre prāvīṇyaṃ ca. Śubha-dṛṣṭyā vyaya-niyantraṇam.",
+      "general": "Vyaya-bāhulyam, gupta-śatruḥ, śayyā-sukha-nyūnatā, videśa-parākramaḥ, māṅgalika-yogaḥ."
+    },
+    "MARS_IN_2": {
+      "name": "Maṅgalo dvitīye kaṭhora-vāṇī, kuṭumba-kalahaḥ, sāhasena-dhanam, māṅgalika-yogaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalo dvitīyasthaḥ jātakaṃ kaṭhora-vāṇīyuktaṃ, kuṭumba-kalaha-pravaṇaṃ, sāhasena-arjita-dhanaṃ ca karoti. Bṛhatpārāśarahorāśāstre 23 — kujaḥ dhana-sthāne vāṇī-tīkṣṇatāṃ, anna-viṣaye uṣṇatāṃ, kuja-doṣaṃ (māṅgalika) ca janayati. Bhūmi-dhātu-yantra-vyāpāreṇa artha-lābhastu bhavati.",
+      "general": "Kaṭhora-vāṇī, kuṭumba-kalahaḥ, sāhasa-dhanam, bhūmi-dhātu-vyāpāraḥ, māṅgalika-yogaḥ."
+    },
+    "MARS_IN_3": {
+      "name": "Maṅgalastṛtīye parākrama-yogaḥ. Mahā-śūraḥ, jyeṣṭha-bhrātṛ-tejaḥ, sva-bala-samṛddhaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalastṛtīyasthaḥ parākrama-yogakārakaḥ — kāraka-kāraka-saṃyogaḥ. Mahā-śauryaṃ, jyeṣṭha-bhrātṛ-tejaḥ, sva-bala-samṛddhiṃ, udyamaśīlatāṃ ca dadāti. Bṛhatpārāśarahorāśāstre 24 — maṅgalasya upacaya-sthāneṣu eva śreṣṭha-phalaṃ uktam.",
+      "general": "Parākrama-yogaḥ, mahā-śauryam, jyeṣṭha-bhrātṛ-vṛddhiḥ, sva-bala-samṛddhiḥ, udyamaśīlatā."
+    },
+    "MARS_IN_4": {
+      "name": "Maṅgalaścaturthe gṛha-aśāntiḥ, mātṛ-kaṣṭam, bhūmi-vāhana-saṅgharṣaḥ, māṅgalika-yogaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalaścaturthasthaḥ jātakasya gṛha-aśāntiṃ, mātṛ-sukha-hāniṃ, bhūmi-vāhana-viṣaye saṅgharṣaṃ, hṛdaya-tāpaṃ ca sūcayati. Bṛhatpārāśarahorāśāstre 23 — kujaḥ sukha-sthāne kāraka-virodhaṃ (kujaḥ sukha-kāraka-candra-viruddhaḥ) janayati, yena gṛha-śānti-kṣayaḥ, sthāna-calanaṃ ca bhavati. Kuja-doṣo'pi (māṅgalika). Bhūmi-dhātu-vyavasāyena tu lābhaḥ.",
+      "general": "Gṛha-aśāntiḥ, mātṛ-kaṣṭam, bhūmi-vāhana-saṅgharṣaḥ, sthāna-calanam, māṅgalika-yogaḥ."
+    },
+    "MARS_IN_5": {
+      "name": "Maṅgalaḥ pañcame tīkṣṇa-buddhiḥ, santati-viṣaye yatnaḥ, sāhasī, spardhā-vijayī.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalaḥ pañcamasthaḥ jātakaṃ tīkṣṇa-buddhiṃ, sāhasinaṃ, spardhā-vijayinaṃ, kintu santati-viṣaye kaṣṭa-vā-vilamba-yuktaṃ karoti. Bṛhatpārāśarahorāśāstre 23 — kujaḥ putra-sthāne manasaḥ uṣṇatāṃ, gaṇita-yantra-kauśalaṃ, saṭṭā-sāhasaṃ dadāti, paraṃ santāna-kārakatve kṣobhaṃ — ataḥ santati-rakṣāyāṃ yatnaḥ. Ucca-kuje buddhi-tejaḥ netṛtve phalati.",
+      "general": "Tīkṣṇa-buddhiḥ, spardhā-vijayaḥ, saṭṭā-sāhasam, santati-yatnaḥ, gaṇita-yantra-kauśalam."
+    },
+    "MARS_IN_6": {
+      "name": "Maṅgalaḥ ṣaṣṭhe śatru-jaya-yogaḥ. Roga-nivṛttiḥ, ṛṇa-kṣayaḥ, balavān.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalaḥ ṣaṣṭhasthaḥ śatru-jaya-viparīta-rājayogakārakaḥ — ṣaṣṭha-sthānātmakena kujena śatravo jitā bhavanti, rogā nivṛttāḥ, ṛṇāni ca kṣīyante. Bṛhatpārāśarahorāśāstre 24 — upacaya-kujaḥ ari-sthāne ati-balapradaḥ.",
+      "general": "Śatru-jayaḥ, roga-nivṛttiḥ, ṛṇa-kṣayaḥ, śārīrika-balam, sāhasam."
+    },
+    "MARS_IN_7": {
+      "name": "Maṅgalaḥ saptame dāmpatya-kalahaḥ, kuja-doṣaḥ (māṅgalika), sāthī-tejasvī, vyāpāra-sāhasam.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalaḥ saptamasthaḥ prabala-kuja-doṣa-kārakaḥ (māṅgalika) — dāmpatye kalahaṃ, mata-bhedaṃ, vivāha-vilambaṃ vā sūcayati. Bṛhatpārāśarahorāśāstre 23 — kujaḥ kalatra-sthāne sāthinaḥ tejasvitāṃ, svātantrya-priyatāṃ, vyāpāre sāhasaṃ dadāti, paraṃ sāmañjasye yatna-sādhyatā. Ubhayoḥ kuṇḍalyoḥ kuja-sāmye doṣa-śamanam; ucca-sva-rāśi-kuje vā kalatra-kāraka-dṛṣṭyā nyūnatā.",
+      "general": "Dāmpatya-kalahaḥ, māṅgalika-yogaḥ, vivāha-vilambaḥ, tejasvī-sāthī, vyāpāra-sāhasam."
+    },
+    "MARS_IN_8": {
+      "name": "Maṅgalo'ṣṭame alpāyu-śaṅkā, śastra-agni-bhayam, rakta-vikāraḥ, māṅgalika-yogaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalo'ṣṭamasthaḥ jātakasya āyur-viṣaye śaṅkāṃ, śastra-agni-durghaṭanā-bhayaṃ, rakta-pitta-vikāraṃ, krodha-pravṛttiṃ ca sūcayati. Bṛhatpārāśarahorāśāstre 23 — kujaḥ randhra-sthāne māraka-sūcakaḥ, śalya-kriyā-sambhāvanāṃ, gūḍha-śodha-śaktiṃ ca dadāti. Kuja-doṣo'pi (māṅgalika). Tathāpi ucca-kuje śalya-cikitsā-śodha-kṣetre prāvīṇyam; śubha-dṛṣṭyā mārakatva-śamanam.",
+      "general": "Āyu-śaṅkā, śastra-agni-bhayam, rakta-vikāraḥ, śalya-śodha-śaktiḥ, māṅgalika-yogaḥ."
+    },
+    "MARS_IN_9": {
+      "name": "Maṅgalo navame sāhasa-dharmaḥ, pitṛ-mata-bhedaḥ, udyamī-bhāgyam, senā-nīti-kauśalam.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye maṅgalo navamasthaḥ jātakaṃ udyama-śīla-bhāgyavantaṃ, dharma-rakṣakaṃ, senā-nīti-kuśalaṃ, kintu pitṛ-mata-bheda-pravaṇaṃ ca karoti. Bṛhatpārāśarahorāśāstre 23 — kujaḥ bhāgya-trikoṇe parākrameṇa bhāgyodayaṃ, dharma-yuddha-vṛttiṃ, guru-viṣaye ugra-mataṃ ca dadāti. Ucca-kuje dharma-senā-netṛtvam; pīḍite pitṛ-sukha-hāniḥ.",
+      "general": "Udyamī-bhāgyam, dharma-rakṣā, senā-nīti-kauśalam, pitṛ-mata-bhedaḥ, parākrama-bhāgyodayaḥ."
+    },
+    "MERCURY_IN_1": {
+      "name": "Budho lagne vākpaṭuḥ, buddhimān, hāsya-priyaḥ, yuvaka-tejaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budho lagnasthaḥ jātakaṃ vākpaṭuṃ, buddhimantaṃ, hāsya-priyaṃ, yuvaka-samāna-tejasaṃ, gaṇita-śāstra-kauśalinaṃ ca karoti. Bṛhatpārāśarahorāśāstre 23 — budhaḥ kāraka-tanu-saṃyogāt buddhimattāṃ, sañcāra-kauśalaṃ ca dadāti.",
+      "general": "Vākpaṭutā, buddhimattā, hāsya-prītiḥ, yuvaka-tejaḥ, gaṇita-śāstra-kauśalam."
+    },
+    "MERCURY_IN_10": {
+      "name": "Budho daśame karma-vāk-yogaḥ. Buddhi-sañcāra-kauśalena-yaśam, ucca-pada-prāptiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budho daśamasthaḥ karma-vāk-rājayogakārakaḥ — kāraka-kendra-yogaḥ. Buddhi-sañcāra-kauśalena yaśaṃ, rāja-sammānaṃ, ucca-pada-prāptiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 23 — karma-kārakeṇa karma-sthānātmanā saṃyogaḥ.",
+      "general": "Karma-vāk-rājayogaḥ, buddhi-sañcāra-yaśam, rāja-sammānam, ucca-pada-prāptiḥ, vyāpāra-kīrtiḥ."
+    },
+    "MERCURY_IN_11": {
+      "name": "Budha ekādaśe lābha-vāk-yogaḥ. Nirantara-vyāpāra-lābhaḥ, mitra-sañcāra-kuśalaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budha ekādaśasthaḥ lābha-vāk-yogakārakaḥ — nirantara-vyāpāra-lābhaṃ, mitra-sañcāra-kauśalaṃ, saṭṭā-śeyara-vardhanaṃ, iṣṭa-siddhiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 23 — budho lābhasthāne sarvārtha-vardhakaḥ.",
+      "general": "Lābha-vāk-yogaḥ, nirantara-vyāpāra-lābhaḥ, mitra-sañcāra-kauśalam, saṭṭā-śeyara-lābhaḥ, iṣṭa-siddhiḥ."
+    },
+    "MERCURY_IN_12": {
+      "name": "Budho dvādaśe vyaya-gaṇanā, gupta-lekhanam, mauna-priyaḥ, videśa-sañcāraḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budho dvādaśasthaḥ jātakaṃ vyaya-śīlaṃ, gupta-lekhana-kuśalaṃ, mauna-priyaṃ, alpa-sambhāṣaṇaṃ, kintu kalpanā-śīlaṃ ca karoti. Bṛhatpārāśarahorāśāstre 23 — budhaḥ vyaya-sthāne sañcāra-kārakatva-nyūnatāṃ, videśa-vyāpāra-sañcāraṃ, gupta-śodha-lekhanaṃ dadāti. Pīḍite vāk-saṅkocaḥ, śubha-dṛṣṭyā videśa-lekhana-kīrtiḥ.",
+      "general": "Vyaya-gaṇanā, gupta-lekhanam, mauna-prītiḥ, videśa-sañcāraḥ, kalpanā-śīlatā."
+    },
+    "MERCURY_IN_2": {
+      "name": "Budho dvitīye vāk-dhana-yogaḥ. Madhura-vacanaḥ, sva-kuṭumba-poṣakaḥ, vyāpāra-kuśalaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budho dvitīyasthaḥ vāk-dhana-yogakārakaḥ — madhura-vacanaṃ, kuṭumba-poṣaṇaṃ, vyāpāra-kauśalena-dhanārjanaṃ, manojña-vyavahāraṃ ca dadāti. Bṛhatpārāśarahorāśāstre 23 — vāk-kārakaḥ dhanasthāne arthārjana-vāṇīṃ dadāti.",
+      "general": "Vāk-dhana-yogaḥ, madhura-vacanam, vyāpāra-kuśalatā, kuṭumba-poṣaṇam, manojña-vyavahāraḥ."
+    },
+    "MERCURY_IN_3": {
+      "name": "Budhastṛtīye lekhana-sañcāra-kauśalam, bhrātṛ-sukhī, buddhi-parākramaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budhastṛtīyasthaḥ jātakaṃ lekhana-sañcāra-kuśalaṃ, bhrātṛ-sukhinaṃ, buddhi-parākramiṇaṃ, bahu-kalā-nipuṇaṃ ca karoti. Bṛhatpārāśarahorāśāstre 23 — budhaḥ upacaya-tṛtīye sañcāra-kārakatva-vṛddhiṃ, lekhana-sampādana-vāṇijya-kauśalaṃ, mitra-bāhulyaṃ ca dadāti. Upacaya-tvāt phalaṃ kāla-krameṇa vardhate.",
+      "general": "Lekhana-kauśalam, sañcāra-nipuṇatā, bhrātṛ-sukham, buddhi-parākramaḥ, bahu-kalā-nipuṇatā."
+    },
+    "MERCURY_IN_4": {
+      "name": "Budhaścaturthe vidyā-gṛha-yogaḥ. Mātṛ-sukhī, vidvān-gṛhasthaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budhaścaturthasthaḥ vidyā-gṛha-yogakārakaḥ — mātṛ-sukhī, vidvān-gṛhasthaḥ, gṛha-vāhana-sampannaḥ, sad-vyavahārī ca bhavati. Bṛhatpārāśarahorāśāstre 23 — budhaḥ sukha-sthāne vidyā-vardhanaṃ dadāti.",
+      "general": "Vidyā-gṛha-yogaḥ, mātṛ-sukham, gṛha-vāhana-sampattiḥ, sad-vyavahāraḥ, hṛdaya-śāntiḥ."
+    },
+    "MERCURY_IN_5": {
+      "name": "Budhaḥ pañcame prajñā-yogaḥ. Buddhimān, mantra-siddhaḥ, saṭṭā-śeyara-kuśalaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budhaḥ pañcamasthaḥ prajñā-rājayogakārakaḥ — kāraka-trikoṇa-yogaḥ. Buddhimattā, mantra-siddhiḥ, saṭṭā-śeyara-kauśalaṃ, gaṇita-śāstra-kīrtiḥ, santati-sukhaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 23 — vidyā-kārakaḥ pūrva-puṇye phalitaḥ.",
+      "general": "Prajñā-rājayogaḥ, mantra-siddhiḥ, saṭṭā-śeyara-kuśalatā, gaṇita-kīrtiḥ, santati-sukham."
+    },
+    "MERCURY_IN_6": {
+      "name": "Budhaḥ ṣaṣṭhe tarka-vijayī, cikitsā-gaṇita-kuśalaḥ, kintu snāyu-cintā.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budhaḥ ṣaṣṭhasthaḥ jātakaṃ tarka-vivāda-vijayinaṃ, cikitsā-gaṇita-kuśalaṃ, sevā-kṣetra-nipuṇaṃ, kintu snāyu-carma-cintā-yuktaṃ ca karoti. Bṛhatpārāśarahorāśāstre 23 — budhaḥ upacaya-ṣaṣṭhe śatru-tarka-vijayaṃ, viśleṣaṇa-kauśalaṃ, lekhā-gaṇita-prāvīṇyaṃ dadāti, paraṃ adhika-cintanena snāyu-daurbalyaṃ vā. Upacaya-tvāt krameṇa vijayaḥ.",
+      "general": "Tarka-vijayaḥ, cikitsā-gaṇita-kauśalam, sevā-nipuṇatā, viśleṣaṇam, snāyu-cintā."
+    },
+    "MERCURY_IN_7": {
+      "name": "Budhaḥ saptame vyāpāra-kalatrayogaḥ. Buddhimatī-jāyā, sad-vyavasāyī.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budhaḥ saptamasthaḥ vyāpāra-kalatrayoga-kārakaḥ — buddhimatī-jāyāṃ, sad-vyavasāya-kauśalaṃ, sājhedārī-vyāpāreṇa-vardhanaṃ, yātrā-lābhaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 23 — budhaḥ kalatra-sthāne vyāpāra-vāṇīṃ vardhayati.",
+      "general": "Vyāpāra-kalatra-yogaḥ, buddhimatī-jāyā, sājhedārī-kauśalam, yātrā-lābhaḥ, sad-vyavasāyaḥ."
+    },
+    "MERCURY_IN_8": {
+      "name": "Budho'ṣṭame gūḍha-vidyā-kuśalaḥ, anusandhāna-śīlaḥ, snāyu-vāk-cintā.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budho'ṣṭamasthaḥ jātakaṃ gūḍha-vidyā-anusandhāna-kuśalaṃ, jyotiṣa-tantra-gaṇita-śodha-pravṛttaṃ, kintu snāyu-daurbalya-vāk-cintā-yuktaṃ ca karoti. Bṛhatpārāśarahorāśāstre 23 — budhaḥ randhra-sthāne manasaḥ gahana-śodha-śaktiṃ, gupta-jñānaṃ dadāti, paraṃ cintā-bāhulyaṃ, sambhāṣaṇe saṅkocaṃ vā. Dīrghāyur-yogastu bahudhā. Śubha-dṛṣṭyā śodha-vaijñānika-yogaḥ.",
+      "general": "Gūḍha-vidyā-kauśalam, anusandhāna-śaktiḥ, gupta-jñānam, snāyu-vāk-cintā, dīrghāyuḥ."
+    },
+    "MERCURY_IN_9": {
+      "name": "Budho navame śāstra-jñaḥ, dharma-darśana-kuśalaḥ, bhāgya-vān, upadeśakaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye budho navamasthaḥ jātakaṃ śāstra-jñaṃ, dharma-darśana-kuśalaṃ, bhāgya-vantaṃ, sad-upadeśakaṃ ca karoti. Bṛhatpārāśarahorāśāstre 23 — budhaḥ bhāgya-trikoṇe buddhi-dharma-saṃyogaṃ, tarka-sahita-dharma-jñānaṃ, lekhana-pravacana-kauśalaṃ, yātrā-lābhaṃ ca dadāti. Guru-budha-sambandhe vidvattā prakarṣeṇa.",
+      "general": "Śāstra-jñānam, dharma-darśana-kauśalam, bhāgya-vṛddhiḥ, upadeśakatvam, lekhana-pravacanam."
+    },
+    "MOON_IN_1": {
+      "name": "Candro lagne manasvī, saumya-kāntiḥ, mātṛ-vatsalaḥ, bhoga-samṛddhaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candro lagnasthaḥ jātakaṃ manasvinaṃ, saumya-kāntiṃ, mātṛ-vatsalaṃ, bhoga-samṛddhaṃ, samvedanaśīlaṃ ca karoti. Bṛhatpārāśarahorāśāstre 22 — candra-lagnāt bhāva-kāraka-yogāḥ bahavaḥ utpadyante.",
+      "general": "Manasvitā, saumya-kāntiḥ, mātṛ-vatsalatā, bhoga-samṛddhiḥ, samvedanaśīlatā."
+    },
+    "MOON_IN_10": {
+      "name": "Candro daśame karma-kāraka-rājayogaḥ. Jana-priya-karma, manorañjaka-vyavasāyaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candro daśamasthaḥ karma-kāraka-rājayogakārakaḥ — jana-priya-karma, manorañjaka-vyavasāyaṃ, mātṛ-karma-saṃyogaṃ, ati-karmaṭhatāṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — candraḥ karma-sthāne jana-samūha-kīrtiṃ vardhayati.",
+      "general": "Karma-kāraka-rājayogaḥ, jana-priya-karma, manorañjaka-vyavasāyaḥ, mātṛ-karma-saṃyogaḥ, ati-karmaṭhatā."
+    },
+    "MOON_IN_11": {
+      "name": "Candra ekādaśe lābha-mano-yogaḥ. Nirantara-dhana-lābhaḥ, mitra-mano-kīrtiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candra ekādaśasthaḥ lābha-mano-yogakārakaḥ — nirantara-dhana-lābhaṃ, mitra-kuṭumbena-mano-vardhanaṃ, iṣṭa-siddhiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — candro lābhasthāne sarvārtha-vardhakaḥ.",
+      "general": "Lābha-mano-yogaḥ, nirantara-dhana-lābhaḥ, mitra-mano-kīrtiḥ, jyeṣṭha-bhrātṛ-sukham, iṣṭa-siddhiḥ."
+    },
+    "MOON_IN_12": {
+      "name": "Candro dvādaśe vyaya-śīlaḥ, mano-ekānta-priyaḥ, nidrā-svapna-bahulaḥ, mokṣa-pravṛttiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candro dvādaśasthaḥ jātakaṃ vyaya-śīlaṃ, ekānta-priyaṃ, nidrā-svapna-bahulaṃ, paradeśa-vāsa-pravṛttaṃ ca karoti. Bṛhatpārāśarahorāśāstre 22 — candraḥ vyaya-sthāne manasaḥ antarmukhatāṃ, kalpanā-śīlatāṃ, vyaya-bāhulyaṃ dadāti, paraṃ mokṣa-sādhanāyāṃ, śayyā-sukhe, gūḍha-kalpanāyāṃ ca pravṛttim — kavi-kalākāra-yogakārakaḥ. Kṣīṇa-candre mānasika-cintā vardhate.",
+      "general": "Vyaya-śīlatā, ekānta-prītiḥ, kalpanā-śīlatā, mokṣa-pravṛttiḥ, videśa-vāsaḥ."
+    },
+    "MOON_IN_2": {
+      "name": "Candro dvitīye madhura-vāṇī, dhana-sañcayaḥ, kuṭumba-vatsalaḥ, anna-priyaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candro dvitīyasthaḥ jātakaṃ madhura-vāṇīyuktaṃ, dhana-sañcaya-śīlaṃ, kuṭumba-vatsalaṃ, anna-rasa-priyaṃ ca karoti. Bṛhatpārāśarahorāśāstre 22 — candraḥ dhana-sthāne pūrṇa-bale dhana-samṛddhiṃ, kṣīṇa-bale dhana-cāñcalyaṃ dadāti. Mano-madhuratā vāṇyāṃ prakaṭate.",
+      "general": "Madhura-vāṇī, dhana-sañcayaḥ, kuṭumba-vātsalyam, anna-rasa-prītiḥ, bala-sāpekṣa-dhana-sthairyam."
+    },
+    "MOON_IN_3": {
+      "name": "Candrastṛtīye bhrātṛ-sukhī, sāhasī, yātrā-priyaḥ, cañcala-manāḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candrastṛtīyasthaḥ jātakaṃ bhrātṛ-sukhinaṃ (viśeṣataḥ bhaginī-sukhinaṃ), sāhasinaṃ, yātrā-priyaṃ, cañcala-manasaṃ ca karoti. Bṛhatpārāśarahorāśāstre 22 — candraḥ upacaya-tṛtīye parākrama-vardhakaḥ, kalā-sañcāra-kuśalaḥ, mitra-bahulaśca. Manasaḥ utsāhaḥ udyame prakaṭate.",
+      "general": "Bhrātṛ-bhaginī-sukham, sāhasam, yātrā-prītiḥ, cañcala-manaḥ, sañcāra-kauśalam."
+    },
+    "MOON_IN_4": {
+      "name": "Candraścaturthe digbalī mātṛ-gṛha-rājayogaḥ. Ati-mātṛ-sukhī, hṛdaya-śāntiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candraścaturthasthaḥ digbalī mātṛ-gṛha-rājayogakārakaḥ — mātṛ-sukhaṃ, gṛha-śāntiṃ, hṛdaya-prasannatāṃ, dhārmika-gṛhastha-vṛttiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — candrasya caturthaṃ digbala-sthānaṃ sarvottamam.",
+      "general": "Digbalī mātṛ-gṛha-rājayogaḥ, ati-mātṛ-sukham, hṛdaya-śāntiḥ, gṛha-vaibhavam, dhārmika-gṛhasthaḥ."
+    },
+    "MOON_IN_5": {
+      "name": "Candraḥ pañcame mano-prajñā-yogaḥ. Buddhimān, santati-sukhī, mantra-kuśalaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candraḥ pañcamasthaḥ mano-prajñā-rājayogakārakaḥ — mano-kārakaḥ pūrva-puṇya-sthāne tiṣṭhan buddhimattāṃ, santati-sukhaṃ, mantra-kauśalaṃ, samvedanaśīla-kīrtiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — kāraka-trikoṇa-yogaḥ.",
+      "general": "Mano-prajñā-rājayogaḥ, buddhimattā, santati-sukham, mantra-kauśalam, samvedanaśīla-kīrtiḥ."
+    },
+    "MOON_IN_6": {
+      "name": "Candraḥ ṣaṣṭhe mano-vyākulatā, udara-rogaḥ, ṛṇa-śatru-cintā, sevā-vṛttiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candraḥ ṣaṣṭhasthaḥ jātakasya mano-vyākulatāṃ, udara-jala-roga-pravṛttiṃ, ṛṇa-śatru-cintāṃ, sevā-vṛttiṃ ca sūcayati. Bṛhatpārāśarahorāśāstre 22 — candraḥ ripu-sthāne kāraka-hāniṃ (manaḥ ṣaṣṭha-duḥsthāne pīḍitam) janayati, yena mānasika-asthairyaṃ, mātā-svāsthya-cintā ca bhavati. Tathāpi upacaya-tvāt śatru-vijayaḥ, sevā-kṣetre pratiṣṭhā ca labhyate.",
+      "general": "Mano-vyākulatā, udara-rogaḥ, ṛṇa-śatru-cintā, sevā-vṛttiḥ, mātā-svāsthya-cintā."
+    },
+    "MOON_IN_7": {
+      "name": "Candraḥ saptame samvedanaśīla-kalatrayogaḥ. Saumya-jāyā, yātrā-lābhaḥ, sahayogi-svabhāvaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candraḥ saptamasthaḥ samvedanaśīla-kalatrayoga-kārakaḥ — saumya-jāyāṃ, yātrā-lābhaṃ, sahayogi-vyāpāraṃ, mano-vaidyatā-guṇaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — candraḥ kalatra-sthāne manorañjaka-vyavahāraṃ dadāti.",
+      "general": "Samvedanaśīla-kalatra-yogaḥ, saumya-jāyā, yātrā-lābhaḥ, sahayogī-vyāpāraḥ, mano-vaidyatā."
+    },
+    "MOON_IN_8": {
+      "name": "Candro'ṣṭame mano-daurbalyam, mātā-svāsthya-cintā, gūḍha-vidyā-pravṛttiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candro'ṣṭamasthaḥ jātakasya mano-daurbalyaṃ, avasāda-pravṛttiṃ, mātā-āyur-viṣaye cintāṃ, jala-roga-sambhāvanāṃ ca sūcayati. Bṛhatpārāśarahorāśāstre 22 — candraḥ randhra-sthāne manasaḥ asthairyaṃ, bhaya-śīlatāṃ janayati, paraṃ gūḍha-vidyā-tantra-jyotiṣa-pravṛttiṃ, āyuṣ-anveṣaṇaṃ ca dadāti. Pūrṇa-candraḥ śubha-dṛṣṭyā doṣaṃ śamayati.",
+      "general": "Mano-daurbalyam, avasāda-pravṛttiḥ, mātā-svāsthya-cintā, gūḍha-vidyā-prītiḥ, jala-rogaḥ."
+    },
+    "MOON_IN_9": {
+      "name": "Candro navame bhāgya-vān, dhārmikaḥ, tīrtha-yātrā-priyaḥ, mātṛ-dharma-niṣṭhaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye candro navamasthaḥ jātakaṃ bhāgya-vantaṃ, dhārmikaṃ, tīrtha-yātrā-priyaṃ, sad-guru-bhaktaṃ, mātṛ-dharma-niṣṭhaṃ ca karoti. Bṛhatpārāśarahorāśāstre 22 — candraḥ bhāgya-trikoṇe śubhadaḥ — manasaḥ dharma-pravṛttiṃ, jana-priyatāṃ, yātrā-sukhaṃ, sad-bhāvanā ca dadāti. Pūrṇa-candre bhāgyodayaḥ suspaṣṭaḥ.",
+      "general": "Bhāgya-vṛddhiḥ, dharma-niṣṭhā, tīrtha-yātrā, jana-priyatā, guru-bhaktiḥ."
+    },
+    "RAHU_IN_1": {
+      "name": "Rāhurlagne ati-mahattvākāṅkṣā, asāmānya-vyaktitvam, māyā-prabhāvaḥ, bhrama-pravṛttiḥ.",
+      "prose": "Bṛhatpārāśarahorāśāstre rāhurlagnasthaḥ jātakaṃ ati-mahattvākāṅkṣiṇaṃ, asāmānya-ākarṣaka-vyaktitvaṃ, videśa-vilakṣaṇa-viṣaya-priyaṃ, kintu bhrama-ahaṅkāra-pravaṇaṃ ca karoti. Rāhuḥ tanu-sthāne ātma-pradarśana-tīvratāṃ, akasmāt-utthāna-patanaṃ, carma-śiro-vikāra-sambhāvanāṃ ca janayati. Śubha-rāśi-dṛṣṭyā jana-prabhāva-yogaḥ; pīḍite bhrama-māna-hāniḥ.",
+      "general": "Ati-mahattvākāṅkṣā, asāmānya-vyaktitvam, videśa-prītiḥ, bhrama-pravṛttiḥ, akasmāt-utthānam."
+    },
+    "RAHU_IN_10": {
+      "name": "Rāhurdaśame akalpita-karma-rājayogaḥ. Videśa-vyāpāreṇa-yaśam, adhikāraḥ, ucca-pada-prāptiḥ.",
+      "prose": "Bṛhatpārāśarahorāśāstre 28 adhyāye rāhurdaśamasthaḥ akalpita-karma-rājayogakārakaḥ — videśa-vyāpāreṇa yaśaṃ, akalpita-adhikāraṃ, sahasā ucca-pada-prāptiṃ, anūṭha-karma-kīrtiṃ ca dadāti. Phaladīpikā 8 — rāhoḥ karma-sthānaṃ ati-śubham.",
+      "general": "Akalpita-karma-rājayogaḥ, videśa-vyāpāra-yaśam, akalpita-adhikāraḥ, ucca-pada-prāptiḥ, anūṭha-karma-kīrtiḥ."
+    },
+    "RAHU_IN_11": {
+      "name": "Rāhurekādaśe akalpita-lābha-yogaḥ. Videśa-srotena-dhanam, akalpita-iṣṭa-siddhiḥ.",
+      "prose": "Bṛhatpārāśarahorāśāstre 28 adhyāye rāhurekādaśasthaḥ akalpita-lābha-yogakārakaḥ — videśa-srotena-dhana-lābhaṃ, akalpita-iṣṭa-siddhiṃ, mitra-kuṭumba-vardhanaṃ ca dadāti. Phaladīpikā 8 — rāhoḥ lābhasthānaṃ ati-śubham.",
+      "general": "Akalpita-lābha-yogaḥ, videśa-dhanam, akalpita-iṣṭa-siddhiḥ, mitra-kuṭumba-vardhanam, anūṭha-lābhaḥ."
+    },
+    "RAHU_IN_12": {
+      "name": "Rāhurdvādaśe videśa-vāsa-yogaḥ, vyaya-bāhulyam, gupta-kāryam, mokṣa-bhrama-dvandvam.",
+      "prose": "Bṛhatpārāśarahorāśāstre rāhurdvādaśasthaḥ jātakaṃ videśa-vāsa-yoga-yuktaṃ, vyaya-bāhulyaṃ, gupta-kārya-kuśalaṃ, kintu anidrā-bhrama-gupta-śatru-pravaṇaṃ ca karoti. Rāhuḥ vyaya-sthāne mokṣa-vā-māyā-dvandvaṃ, videśa-kāraṇena-vyaya-lābhaṃ, gupta-śodha-tantra-pravṛttiṃ ca janayati. Śubha-dṛṣṭyā videśa-sthira-vāsa-ādhyātmika-yogaḥ; pīḍite anidrā-bhaya-vyaya-hānī.",
+      "general": "Videśa-vāsa-yogaḥ, vyaya-bāhulyam, gupta-kāryam, mokṣa-bhrama-dvandvam, anidrā-pravṛttiḥ."
+    },
+    "RAHU_IN_2": {
+      "name": "Rāhurdvitīye kuṭumba-bāhya-dhanam, aniyamita-vāṇī, videśa-āya, dhana-cāñcalyam.",
+      "prose": "Bṛhatpārāśarahorāśāstre rāhurdvitīyasthaḥ jātakaṃ apāramparika-srota-dhana-arjinaṃ, videśa-vā-takanīkī-āya-yuktaṃ, kintu aniyamita-vāṇīṃ, kuṭumba-bāhya-sambandha-pravaṇaṃ ca karoti. Rāhuḥ dhana-sthāne dhana-cāñcalyaṃ, akasmāt-lābha-hāniṃ, anna-mukha-doṣa-sambhāvanāṃ ca janayati. Śubha-dṛṣṭyā asāmānya-vyāpāreṇa mahā-dhanam; pīḍite mithyā-bhāṣaṇa-dhana-kalahau.",
+      "general": "Apāramparika-dhanam, aniyamita-vāṇī, videśa-āya, dhana-cāñcalyam, akasmāt-lābha-hāniḥ."
+    },
+    "RAHU_IN_3": {
+      "name": "Rāhustṛtīye ati-parākrama-yogaḥ. Sāhasena-yaśam, jyeṣṭha-bhrātṛ-tejaḥ, videśa-gamanam.",
+      "prose": "Bṛhatpārāśarahorāśāstre 28 adhyāye rāhustṛtīyasthaḥ ati-parākrama-yogakārakaḥ — asādhāraṇa-sāhasaṃ, jyeṣṭha-bhrātṛ-tejaṃ, videśa-gamanaṃ, akalpita-yaśaṃ ca dadāti. Phaladīpikā 8 — rāhusyopacaya-sthāne (3/6/10/11) sarvottama-phalam.",
+      "general": "Ati-parākrama-yogaḥ, asādhāraṇa-sāhasam, jyeṣṭha-bhrātṛ-tejaḥ, videśa-gamanam, akalpita-yaśam."
+    },
+    "RAHU_IN_4": {
+      "name": "Rāhuścaturthe gṛha-aśāntiḥ, mātṛ-viyogaḥ, videśa-gṛha-yogaḥ, mano-vyākulatā.",
+      "prose": "Bṛhatpārāśarahorāśāstre rāhuścaturthasthaḥ jātakasya gṛha-aśāntiṃ, mātṛ-sukha-hāniṃ vā mātṛ-viyogaṃ, videśa-gṛha-vāsa-yogaṃ, mano-vyākulatāṃ ca sūcayati. Rāhuḥ sukha-sthāne bhūmi-vāhana-viṣaye aniścayaṃ, sthāna-calanaṃ, apāramparika-gṛha-vātāvaraṇaṃ ca janayati. Śubha-dṛṣṭyā videśa-bhūmi-lābha-yogaḥ; pīḍite gṛha-kalaha-mano-aśāntī.",
+      "general": "Gṛha-aśāntiḥ, mātṛ-viyogaḥ, videśa-gṛha-yogaḥ, mano-vyākulatā, sthāna-calanam."
+    },
+    "RAHU_IN_5": {
+      "name": "Rāhuḥ pañcame apāramparika-buddhiḥ, santati-cintā, mantra-tantra-pravṛttiḥ, saṭṭā-sāhasam.",
+      "prose": "Bṛhatpārāśarahorāśāstre rāhuḥ pañcamasthaḥ jātakaṃ apāramparika-tīkṣṇa-buddhiṃ, saṭṭā-śeyara-sāhasinaṃ, mantra-tantra-gūḍha-vidyā-pravṛttaṃ, kintu santati-viṣaye cintā-vilamba-yuktaṃ ca karoti. Rāhuḥ putra-sthāne pūrva-karma-gata-asāmānya-pravṛttiṃ, garbha-sambandha-kaṣṭaṃ vā janayati. Śubha-dṛṣṭyā takanīkī-prajñā-dhana-yogaḥ; pīḍite santati-kaṣṭa-durvyasana-śaṅkā.",
+      "general": "Apāramparika-buddhiḥ, saṭṭā-sāhasam, mantra-tantra-pravṛttiḥ, santati-cintā, takanīkī-prajñā."
+    },
+    "RAHU_IN_6": {
+      "name": "Rāhuḥ ṣaṣṭhe śatru-nāśa-yogaḥ. Rājakīya-śatrujayaḥ, ṛṇa-nāśaḥ, śaktimān.",
+      "prose": "Bṛhatpārāśarahorāśāstre 28 adhyāye rāhuḥ ṣaṣṭhasthaḥ śatru-nāśa-viparīta-rājayogakārakaḥ — rāhurduṣṭa-sthāne tiṣṭhan rāja-śatrujayaṃ, ṛṇa-nāśaṃ, akalpita-śaktiṃ, adhikāra-kīrtiṃ ca dadāti. Phaladīpikā 8 — rāhoḥ ṣaṣṭha-sthānaṃ sarvottama-śubhadam.",
+      "general": "Śatru-nāśa-viparīta-rājayogaḥ, rāja-śatrujayaḥ, ṛṇa-nāśaḥ, akalpita-śaktiḥ, adhikāra-kīrtiḥ."
+    },
+    "RAHU_IN_7": {
+      "name": "Rāhuḥ saptame apāramparika-dāmpatyam, videśa-sāthī, vyāpāra-cāñcalyam, sambandha-bhramaḥ.",
+      "prose": "Bṛhatpārāśarahorāśāstre rāhuḥ saptamasthaḥ jātakasya apāramparika-vā-videśa-kalatra-sambandhaṃ, dāmpatye bhrama-aniścayaṃ, vyāpāra-cāñcalyaṃ ca sūcayati. Rāhuḥ kalatra-sthāne bhinna-saṃskṛti-vā-asāmānya-sāthinaṃ, sājhedārī-viṣaye akasmāt-parivartanaṃ janayati. Śubha-dṛṣṭyā videśa-sājhedārī-vyāpāra-yogaḥ; pīḍite dāmpatya-bhrama-vicheda-śaṅkā.",
+      "general": "Apāramparika-dāmpatyam, videśa-sāthī, vyāpāra-cāñcalyam, sambandha-bhramaḥ, sājhedārī-parivartanam."
+    },
+    "RAHU_IN_8": {
+      "name": "Rāhuraṣṭame gūḍha-tantra-śaktiḥ, akasmāt-ghaṭanā-pravṛttiḥ, gupta-dhana-lābhaḥ, āyur-cintā.",
+      "prose": "Bṛhatpārāśarahorāśāstre rāhuraṣṭamasthaḥ jātakaṃ gūḍha-tantra-jyotiṣa-śodha-śaktiṃ, akasmāt-ghaṭanā-pravṛttiṃ, gupta-vā-dāya-dhana-lābhaṃ, kintu āyur-svāsthya-cintā-yuktaṃ ca karoti. Rāhuḥ randhra-sthāne ākasmika-utthāna-patanaṃ, rahasya-vidyā-ākarṣaṇaṃ, mānasika-gūḍha-bhayaṃ ca janayati. Śubha-dṛṣṭyā śodha-tantra-dhana-yogaḥ; pīḍite durghaṭanā-gupta-śatru-śaṅkā.",
+      "general": "Gūḍha-tantra-śaktiḥ, akasmāt-ghaṭanā, gupta-dhana-lābhaḥ, āyur-cintā, rahasya-vidyā-ākarṣaṇam."
+    },
+    "RAHU_IN_9": {
+      "name": "Rāhurnavame apāramparika-dharmaḥ, videśa-bhāgyodayaḥ, guru-mata-bhedaḥ, darśana-jijñāsā.",
+      "prose": "Bṛhatpārāśarahorāśāstre rāhurnavamasthaḥ jātakaṃ apāramparika-dharma-darśana-jijñāsuṃ, videśa-kāraṇena-bhāgyodayaṃ, kintu pāramparika-guru-mata-bheda-pravaṇaṃ ca karoti. Rāhuḥ bhāgya-trikoṇe vilakṣaṇa-vicāra-dhārāṃ, dūra-deśa-yātrā-yogaṃ, pitṛ-vā-guru-viṣaye bhrama-saṃśayaṃ ca janayati. Śubha-dṛṣṭyā videśa-darśana-kīrti-yogaḥ; pīḍite dharma-bhrama-pitṛ-kaṣṭau.",
+      "general": "Apāramparika-dharmaḥ, videśa-bhāgyodayaḥ, guru-mata-bhedaḥ, darśana-jijñāsā, dūra-yātrā-yogaḥ."
+    },
+    "SATURN_IN_1": {
+      "name": "Śanirlagne manda-ārambhaḥ, gambhīraḥ, śramī, vilambita-unnatiḥ, vāta-rogaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śanirlagnasthaḥ jātakaṃ gambhīraṃ, śrama-śīlaṃ, alpa-bhāṣiṇaṃ, manda-ārambhaṃ, kintu dhairyavantaṃ ca karoti. Bṛhatpārāśarahorāśāstre 24 — śaniḥ tanu-sthāne bālye kaṣṭaṃ, vilambita-unnatiṃ, vāta-roga-pravṛttiṃ dadāti, paraṃ uttara-āyuṣi sthira-pratiṣṭhāṃ, karmaṭhatāṃ ca. Sva-ucca-rāśi-śanau dhīra-netṛtvaṃ; pīḍite dīrgha-saṅgharṣaḥ.",
+      "general": "Gāmbhīryam, śrama-śīlatā, vilambita-unnatiḥ, vāta-rogaḥ, uttara-āyu-sthairyam."
+    },
+    "SATURN_IN_10": {
+      "name": "Śanirdaśame śaśa-samāna-karma-rājayogaḥ. Dīrgha-karma-yaśam, rāja-sammānam, sevā-nāyakatvam.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śanirdaśamasthaḥ karma-viśeṣa-rājayogakārakaḥ — śaniḥ karma-sthānātmakena digbalī dīrgha-karma-yaśaṃ, rāja-sammānaṃ, sevā-nāyakatvaṃ, sthira-ucca-padaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 25 — digbalī śaniḥ karma-yaśaṃ vardhayati.",
+      "general": "Karma-rājayogaḥ, dīrgha-karma-yaśam, rāja-sammānam, sevā-nāyakatvam, sthira-ucca-padam."
+    },
+    "SATURN_IN_11": {
+      "name": "Śaniḥ ekādaśe lābha-sthairya-yogaḥ. Dīrghakālika-dhana-sañcayaḥ, sevā-varga-kīrtiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śaniḥ ekādaśasthaḥ lābha-sthairya-yogakārakaḥ — dīrghakālika-dhana-sañcayaṃ, sevā-varga-kīrtiṃ, sthira-iṣṭa-siddhiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 25 — śaneḥ sarvottama-sthānam ekādaśam.",
+      "general": "Lābha-sthairya-yogaḥ, dīrghakālika-dhana-sañcayaḥ, sevā-varga-kīrtiḥ, sthira-iṣṭa-siddhiḥ."
+    },
+    "SATURN_IN_12": {
+      "name": "Śanirdvādaśe vyaya-saṃyamaḥ, ekānta-vairāgyam, videśa-vāsaḥ, mokṣa-pravṛttiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śanirdvādaśasthaḥ jātakaṃ vyaya-śīlaṃ (kintu saṃyamena-niyantritaṃ), ekānta-vairāgya-pravṛttaṃ, videśa-vāsa-priyaṃ, gupta-kārya-kuśalaṃ ca karoti. Bṛhatpārāśarahorāśāstre 24 — śaniḥ vyaya-sthāne mokṣa-kārakatvena tyāga-vairāgya-yoga-sādhanāṃ, gupta-sevā-kārāgāra-āśrama-sambaddha-karma ca dadāti. Pīḍite nidrā-nāśaḥ, gupta-śatruḥ; śubha-dṛṣṭyā mokṣa-tapa-yogaḥ, videśa-sthira-karma ca.",
+      "general": "Vyaya-saṃyamaḥ, ekānta-vairāgyam, videśa-vāsaḥ, mokṣa-pravṛttiḥ, gupta-kārya-kauśalam."
+    },
+    "SATURN_IN_2": {
+      "name": "Śanirdvitīye dhana-sañcaya-vilambaḥ, mita-vāṇī, śrameṇa-dhanam, kuṭumba-bhāraḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śanirdvitīyasthaḥ jātakaṃ mita-kaṭhora-vāṇīyuktaṃ, śrameṇa-dhana-arjinaṃ, dhana-sañcaya-vilambaṃ, kuṭumba-bhāra-vahanaṃ ca karoti. Bṛhatpārāśarahorāśāstre 24 — śaniḥ dhana-sthāne ārambhe dhana-kaṣṭaṃ, paraṃ pariśrama-saṃyamena uttara-kāle sthira-sañcayaṃ dadāti. Pīḍite netra-danta-cintā; ucca-śanau śrameṇa mahā-dhana-sañcayaḥ.",
+      "general": "Mita-vāṇī, śrama-dhanam, dhana-vilambaḥ, kuṭumba-bhāraḥ, uttara-kāla-sañcayaḥ."
+    },
+    "SATURN_IN_3": {
+      "name": "Śanistṛtīye dhairya-parākrama-yogaḥ. Dīrgha-pariśrameṇa-yaśam, jyeṣṭha-bhrātṛ-dīrghāyuḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śanistṛtīyasthaḥ dhairya-parākrama-yogakārakaḥ — dīrgha-pariśrameṇa-yaśaṃ, jyeṣṭha-bhrātṛ-dīrghāyuṃ, sthira-udyamaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 25 — śaniḥ upacaya-sthāneṣu ati-śubhadaḥ.",
+      "general": "Dhairya-parākrama-yogaḥ, dīrgha-pariśrama-yaśam, jyeṣṭha-bhrātṛ-dīrghāyuḥ, sthira-udyamaḥ."
+    },
+    "SATURN_IN_4": {
+      "name": "Śaniścaturthe gṛha-sukha-hāniḥ, mātṛ-kaṣṭam, hṛdaya-asantoṣaḥ, sthāna-tyāgaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śaniścaturthasthaḥ jātakasya gṛha-sukha-hāniṃ, mātṛ-kaṣṭaṃ, hṛdaya-asantoṣaṃ, sthāna-tyāga-pravṛttiṃ ca sūcayati. Bṛhatpārāśarahorāśāstre 24 — śaniḥ sukha-sthāne kāraka-virodhaṃ (śaniḥ sukha-kāraka-candra-viruddhaḥ) janayati, yena gṛha-śānti-nyūnatā, bālye mātṛ-viyoga-kaṣṭaṃ vā. Tathāpi bhūmi-khanija-purātana-vyavasāyena uttara-kāle sthira-sampattiḥ. Śubha-dṛṣṭyā doṣa-śamanam.",
+      "general": "Gṛha-sukha-hāniḥ, mātṛ-kaṣṭam, hṛdaya-asantoṣaḥ, sthāna-tyāgaḥ, bhūmi-vyavasāya-lābhaḥ."
+    },
+    "SATURN_IN_5": {
+      "name": "Śaniḥ pañcame santati-vilambaḥ, gambhīra-buddhiḥ, mantra-dhairyam, cintā-pravṛttiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śaniḥ pañcamasthaḥ jātakaṃ gambhīra-dīrgha-dṛṣṭi-buddhiṃ, kintu santati-vilamba-vā-alpa-santati-yuktaṃ, cintā-pravaṇaṃ ca karoti. Bṛhatpārāśarahorāśāstre 24 — śaniḥ putra-sthāne pūrva-puṇya-phala-vilambaṃ, santāna-kāraka-kṣobhaṃ dadāti, paraṃ gahana-śodha-buddhiṃ, dhairya-śīla-mantra-sādhanāṃ ca. Śubha-dṛṣṭyā vilambena santati-sukham; ucca-śanau dīrgha-dṛṣṭi-nīti-prajñā.",
+      "general": "Santati-vilambaḥ, gambhīra-buddhiḥ, cintā-pravṛttiḥ, mantra-dhairyam, dīrgha-dṛṣṭiḥ."
+    },
+    "SATURN_IN_6": {
+      "name": "Śaniḥ ṣaṣṭhe śatru-roga-jaya-yogaḥ. Dīrgha-saṅgharṣeṇa-vijayaḥ, sevā-kīrtiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śaniḥ ṣaṣṭhasthaḥ śatru-roga-jaya-viparīta-rājayogakārakaḥ — dīrgha-saṅgharṣeṇa śatru-jayaṃ, roga-nivṛttiṃ, ṛṇa-kṣayaṃ, sevā-kīrtiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 25 — śaneḥ upacaya-sthānāt śreṣṭha-phalam.",
+      "general": "Śatru-roga-jaya-yogaḥ, dīrgha-saṅgharṣa-vijayaḥ, ṛṇa-kṣayaḥ, sevā-kīrtiḥ, dhairyam."
+    },
+    "SATURN_IN_7": {
+      "name": "Śaniḥ saptame vilamba-vivāhaḥ, sthira-dāmpatyam, vayo-adhika-sāthī, vyāpāra-dhairyam.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śaniḥ saptamasthaḥ jātakasya vivāha-vilambaṃ, kintu dīrgha-sthira-dāmpatyaṃ, vayo-adhika-vā-gambhīra-sāthinaṃ, vyāpāre dhairya-kauśalaṃ ca sūcayati. Bṛhatpārāśarahorāśāstre 24 — śaniḥ kalatra-sthāne ārambhe sambandha-śaityaṃ, paraṃ uttara-kāle niṣṭhāṃ, dīrgha-sājhedārī-sthairyaṃ dadāti. Ucca-sva-rāśi-śanau sthira-dāmpatyaṃ; pīḍite dāmpatya-śaityaṃ vā vicheda-śaṅkā.",
+      "general": "Vivāha-vilambaḥ, sthira-dāmpatyam, gambhīra-sāthī, vyāpāra-dhairyam, dīrgha-sājhedārī."
+    },
+    "SATURN_IN_8": {
+      "name": "Śaniraṣṭame dīrghāyu-yogaḥ, gūḍha-śodhaḥ, manda-svāsthyam, vilambita-dāya-lābhaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śaniraṣṭamasthaḥ jātakaṃ dīrghāyuṣaṃ, gūḍha-vidyā-śodha-śīlaṃ, kintu manda-svāsthya-vāta-roga-pravṛttaṃ ca karoti. Bṛhatpārāśarahorāśāstre 24 — śaniḥ randhra-sthāne āyuṣ-kārakatvena dīrghāyuṃ dadāti (āyuṣ-kārakaḥ āyuṣ-sthāne), tathāpi cira-sthāyi-roga-kaṣṭaṃ, vilambita-dāya-vasīyata-lābhaṃ, gupta-śatru-cintāṃ ca. Śubha-dṛṣṭyā gahana-anusandhāna-dīrghāyu-yogaḥ.",
+      "general": "Dīrghāyuḥ, gūḍha-śodhaḥ, manda-svāsthyam, vilambita-dāya-lābhaḥ, vāta-rogaḥ."
+    },
+    "SATURN_IN_9": {
+      "name": "Śanirnavame vilambita-bhāgyam, pitṛ-kaṣṭam, karma-dharma-niṣṭhā, nyāya-priyaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śanirnavamasthaḥ jātakaṃ karma-dharma-niṣṭhaṃ, nyāya-priyaṃ, pariśrameṇa-bhāgyodayaṃ, kintu vilambita-bhāgyaṃ, pitṛ-kaṣṭa-pravaṇaṃ ca karoti. Bṛhatpārāśarahorāśāstre 24 — śaniḥ bhāgya-trikoṇe pūrva-bhāgya-phala-vilambaṃ, pitṛ-sukha-nyūnatāṃ dadāti, paraṃ kaṭhora-śrama-nyāya-niṣṭhayā uttara-kāle sthira-bhāgyaṃ, dharma-pratiṣṭhāṃ ca. Ucca-śanau vidhi-nyāya-netṛtvam.",
+      "general": "Vilambita-bhāgyam, pitṛ-kaṣṭam, karma-dharma-niṣṭhā, nyāya-priyatā, śrama-bhāgyodayaḥ."
+    },
+    "SUN_IN_1": {
+      "name": "Sūryo lagne pittaprakṛtiḥ, tejasvī, svābhimānī, ugraḥ, rāja-sammānitaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryo lagnasthaḥ jātakaṃ tejasvinaṃ, svābhimāninaṃ, pitta-prakṛtiṃ, ugra-svabhāvaṃ, rāja-sammānitaṃ ca karoti. Bṛhatpārāśarahorāśāstre 21 — ātma-kārakaḥ tanu-sthāne ātma-tejaḥ vardhayati kintu pitṛ-sukhaṃ kiñcit nyūnayati.",
+      "general": "Tejasvitā, svābhimānam, rāja-sammānam, ugra-svabhāvaḥ, pitta-prakṛtiḥ."
+    },
+    "SUN_IN_10": {
+      "name": "Sūryo daśame digbalī rājayogakārakaḥ. Ucca-rāja-padaṃ, adhikāraṃ, yaśaṃ dadāti.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryo daśamasthaḥ digbalī karma-rājayogakārakaḥ — ucca-rāja-padaṃ, adhikāraṃ, rāja-sammānaṃ, sthira-yaśaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 21 — raveḥ karma-sthānaṃ sarvottamaṃ uktam. Amalā-yoga-kārakaśca.",
+      "general": "Digbalī karma-rājayogaḥ, ucca-rāja-padam, adhikāraḥ, rāja-sammānam, sthira-yaśam, amalā-kīrtiḥ."
+    },
+    "SUN_IN_11": {
+      "name": "Sūryo lābhasthāne rāja-lābha-yogaḥ. Rāja-sammānena-dhana-vṛddhiḥ, jyeṣṭha-bhrātṛ-tejaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryo lābhasthāne rāja-lābha-yogakārakaḥ — rāja-sammānena dhana-vṛddhiṃ, jyeṣṭha-bhrātṛ-tejaṃ, adhikāra-kīrtiṃ, iṣṭa-siddhiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 21 — sūryo upacaya-lābhasthānāt sarvārtha-vardhakaḥ.",
+      "general": "Rāja-lābha-yogaḥ, rāja-sammāna-dhanam, jyeṣṭha-bhrātṛ-tejaḥ, adhikāra-kīrtiḥ, iṣṭa-siddhiḥ."
+    },
+    "SUN_IN_12": {
+      "name": "Sūryo dvādaśe vyaya-bāhulyam, pitṛ-viyogaḥ, netra-doṣaḥ, mokṣa-pravṛttiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryo dvādaśasthaḥ jātakasya vyaya-bāhulyaṃ, pitṛ-sukha-hāniṃ, netra-doṣaṃ, māna-hāniṃ vā sūcayati. Bṛhatpārāśarahorāśāstre 21 — raviḥ vyaya-sthāne tejo-vyayaṃ, rāja-kopa-sambhāvanāṃ, videśa-vāsaṃ ca dadāti. Tathāpi mokṣa-pravṛttiḥ, ekānta-sādhanā, ādhyātmika-vyayaśca kvacit śubhaḥ. Śubha-dṛṣṭyā videśa-kīrti-yogaḥ.",
+      "general": "Vyaya-bāhulyam, pitṛ-viyogaḥ, netra-doṣaḥ, videśa-vāsaḥ, mokṣa-pravṛttiḥ."
+    },
+    "SUN_IN_2": {
+      "name": "Sūryo dvitīye kaṭhora-vāṇī, kuṭumba-kalahaḥ, netra-dhana-viṣaye yatnaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryo dvitīyasthaḥ jātakaṃ kaṭhora-vāṇīyuktaṃ, rāja-sevayā dhanārjinaṃ, kintu kuṭumbe māna-bheda-pravaṇaṃ karoti. Bṛhatpārāśarahorāśāstre 21 — raviḥ dhanasthāne netra-pīḍāṃ, mukha-doṣaṃ, kuṭumba-viṣaye ahaṅkāra-janita-kalahaṃ ca sūcayati. Rāja-kāryeṇa artha-lābhastu bhavati.",
+      "general": "Kaṭhora-vāṇī, rāja-sevā-dhanam, kuṭumba-māna-bhedaḥ, netra-doṣa-sambhāvanā, svābhimānaḥ."
+    },
+    "SUN_IN_3": {
+      "name": "Sūryastṛtīye parākrama-yogaḥ. Sāhasī, bhrātṛ-śreṣṭhaḥ, sva-bala-vijayī.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryastṛtīyasthaḥ jātakaṃ parākramiṇaṃ, sāhasinaṃ, sva-bala-vijayinaṃ, alpa-bhrātṛ-sukhaṃ kintu bhrātṛṣu śreṣṭhaṃ ca karoti. Bṛhatpārāśarahorāśāstre 21 — raviḥ upacaya-tṛtīye bala-vardhakaḥ, udyama-śīlaḥ, śatru-nivārakaśca. Parākrameṇa kīrtiṃ dadāti.",
+      "general": "Parākramaḥ, sāhasam, sva-bala-vijayaḥ, bhrātṛṣu śreṣṭhatā, udyama-śīlatā."
+    },
+    "SUN_IN_4": {
+      "name": "Sūryaścaturthe mātṛ-sukha-hāniḥ, gṛha-aśāntiḥ, hṛdaya-tāpaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryaścaturthasthaḥ jātakasya mātṛ-sukha-hāniṃ, gṛha-aśāntiṃ, hṛdaya-tāpaṃ, sukha-sthāna-kṣayaṃ ca sūcayati. Bṛhatpārāśarahorāśāstre 21 — raviḥ sukha-sthāne kāraka-virodhaṃ (sūryaḥ sukha-kāraka-candra-viruddhaḥ) janayati, yena gṛha-vāhana-saukhye nyūnatā, mātṛ-svāsthya-cintā ca bhavati. Tathāpi paitṛka-pada-pratiṣṭhā kvacit labhyate.",
+      "general": "Mātṛ-sukha-hāniḥ, gṛha-aśāntiḥ, hṛdaya-tāpaḥ, sukha-nyūnatā, paitṛka-pada-sambhāvanā."
+    },
+    "SUN_IN_5": {
+      "name": "Sūryaḥ pañcame buddhi-mān, alpa-santatiḥ, rāja-kṛpā, ucca-śikṣā.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryaḥ pañcamasthaḥ jātakaṃ buddhimantaṃ, mantra-vidyā-kuśalaṃ, rāja-kṛpā-pātraṃ, kintu alpa-santatiṃ vā santati-vilambaṃ karoti. Bṛhatpārāśarahorāśāstre 21 — raviḥ putra-sthāne prakhara-buddhiṃ, pitrā-sambaddha-kīrtiṃ dadāti, paraṃ santāna-kāraka-tve kṣīṇaḥ — ataḥ santati-viṣaye yatna-sādhyatā.",
+      "general": "Prakhara-buddhiḥ, ucca-śikṣā, rāja-kṛpā, alpa-santatiḥ, santati-vilambaḥ."
+    },
+    "SUN_IN_6": {
+      "name": "Sūryaḥ ṣaṣṭhe śatru-vijayī, roga-nāśakaḥ, bala-vān, ari-bhañjanaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryaḥ ṣaṣṭhasthaḥ jātakaṃ śatru-vijayinaṃ, roga-nāśakaṃ, bala-vantaṃ, ṛṇa-muktaṃ ca karoti. Bṛhatpārāśarahorāśāstre 21 — raviḥ upacaya-ṣaṣṭhe prabalaḥ — ari-vargaṃ bhanakti, sva-tejasā rogān kṣiṇoti, spardhāyāṃ vijayaṃ dadāti. Etat śubha-sthānaṃ raveḥ balāya.",
+      "general": "Śatru-vijayaḥ, roga-nāśaḥ, bala-vṛddhiḥ, ṛṇa-muktiḥ, spardhā-vijayaḥ."
+    },
+    "SUN_IN_7": {
+      "name": "Sūryaḥ saptame dāmpatye māna-bhedaḥ, kalatra-svātantryam, rāja-dvārā-yaśaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryaḥ saptamasthaḥ jātakasya dāmpatye māna-bhedaṃ, kalatra-svābhimāna-saṅgharṣaṃ, vilamba-vivāhaṃ vā sūcayati. Bṛhatpārāśarahorāśāstre 21 — raviḥ kalatra-sthāne ahaṅkāra-kārakatvena dāmpatya-sāmañjasye bādhāṃ janayati, tathāpi rāja-sevā-vyāpāreṇa yaśo-lābhaṃ dadāti. Kalatra-kāraka-śukra-dṛṣṭyā doṣa-śamanam.",
+      "general": "Dāmpatya-māna-bhedaḥ, vilamba-vivāhaḥ, kalatra-svātantryam, rāja-yaśaḥ, svābhimāna-saṅgharṣaḥ."
+    },
+    "SUN_IN_8": {
+      "name": "Sūryo'ṣṭame alpa-netra-tejaḥ, pitṛ-kaṣṭam, svāsthya-cintā, manda-kīrtiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryo'ṣṭamasthaḥ jātakasya netra-teja-hāniṃ, pitṛ-kaṣṭaṃ, akasmāt-svāsthya-cintāṃ, manda-kīrtiṃ ca sūcayati. Bṛhatpārāśarahorāśāstre 21 — raviḥ randhra-sthāne tejo-hāniṃ, pituḥ āyur-viṣaye doṣaṃ, māna-kṣayaṃ ca janayati. Āyuṣ-dīrghatā tu kvacit, paraṃ pratiṣṭhā-prāptau bahu-yatnaḥ apekṣyate. Dṛṣṭi-śubha-yoge doṣa-śamanam.",
+      "general": "Netra-teja-hāniḥ, pitṛ-kaṣṭam, svāsthya-cintā, māna-kṣayaḥ, manda-kīrtiḥ."
+    },
+    "SUN_IN_9": {
+      "name": "Sūryo navame pitṛ-bhāgya-yogaḥ. Pitṛ-sukhī, dhārmikaḥ, rāja-kīrtimān.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye sūryo navamasthaḥ pitṛ-bhāgya-yogakārakaḥ — pitṛ-sukhaṃ, dharma-niṣṭhāṃ, rāja-kīrtiṃ, guru-kṛpāṃ ca dadāti. Bṛhatpārāśarahorāśāstre 21 — raverbhāgya-sthānāt pitṛ-kāraka-trikoṇa-yogaḥ.",
+      "general": "Pitṛ-bhāgya-yogaḥ, pitṛ-sukham, dharma-niṣṭhā, rāja-kīrtiḥ, guru-kṛpā."
+    },
+    "VENUS_IN_1": {
+      "name": "Śukro lagne sundara-kāntiḥ, kalāpriyaḥ, bhoga-samṛddhaḥ, sukha-vān.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukro lagnasthaḥ jātakaṃ sundara-kāntiṃ, kalāpriyaṃ, bhoga-samṛddhaṃ, sukhinaṃ, strī-sammānitaṃ ca karoti. Bṛhatpārāśarahorāśāstre 22 — śukraḥ kāraka-tanu-saṃyogāt kalātmaka-vyaktitvaṃ dadāti.",
+      "general": "Saundaryam, kalā-prītiḥ, bhoga-samṛddhiḥ, strī-sammānam, madhura-vyavahāraḥ."
+    },
+    "VENUS_IN_10": {
+      "name": "Śukro daśame kalā-karma-yaśaḥ. Saundarya-vilāsa-vyavasāyaḥ, madhura-kīrtiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukro daśamasthaḥ kalā-karma-yaśa-kārakaḥ — saundarya-kalā-vilāsa-vastra-ābhūṣaṇa-manorañjana-kṣetre yaśaṃ, madhura-kīrtiṃ, rāja-sammānaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — śukraḥ karma-kendre digbala-samīpe kalā-vyavasāyena pratiṣṭhāṃ janayati. Strī-sahayogena-karma-vṛddhiḥ.",
+      "general": "Kalā-karma-yaśaḥ, saundarya-vilāsa-vyavasāyaḥ, madhura-kīrtiḥ, rāja-sammānam, strī-karma-sahayogaḥ."
+    },
+    "VENUS_IN_11": {
+      "name": "Śukra ekādaśe lābha-kalā-yogaḥ. Nirantara-lābhaḥ, strī-mitradvārā-dhanam.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukra ekādaśasthaḥ lābha-kalā-yogakārakaḥ — nirantara-dhana-lābhaṃ, strī-mitra-dvārā-dhana-vardhanaṃ, kalātmaka-vyāpāreṇa-yaśaṃ, iṣṭa-siddhiṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — śukro lābhasthāne sarvārtha-lābhakārakaḥ.",
+      "general": "Lābha-kalā-yogaḥ, nirantara-dhana-lābhaḥ, strī-mitra-dhanam, kalātmaka-vyāpāraḥ, iṣṭa-siddhiḥ."
+    },
+    "VENUS_IN_12": {
+      "name": "Śukro dvādaśe śayyā-sukha-yogaḥ, bhoga-vyayaḥ, mokṣa-kalā-pravṛttiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukro dvādaśasthaḥ jātakaṃ śayyā-sukha-samṛddhaṃ, bhoga-vilāsa-vyaya-śīlaṃ, videśa-vāsa-priyaṃ, gupta-prema-pravṛttaṃ ca karoti. Bṛhatpārāśarahorāśāstre 22 — śukraḥ vyaya-sthāne bhoga-vyaya-kārakaḥ, paraṃ śayyā-sukhe (bhoga-kārakaḥ vyaya-sthāne) śreṣṭha-phalaṃ, mokṣa-kalā-pravṛttiṃ ca dadāti — etat \"śayyā-sukha-yogaḥ\" iti prasiddham. Vilāsa-vyaya-niyantraṇaṃ tu apekṣyate.",
+      "general": "Śayyā-sukha-yogaḥ, bhoga-vilāsa-vyayaḥ, videśa-vāsaḥ, mokṣa-kalā-pravṛttiḥ, gupta-prema."
+    },
+    "VENUS_IN_2": {
+      "name": "Śukro dvitīye dhana-kalā-yogaḥ. Madhura-vāṇī, sundara-vastu-saṅgrahaḥ, kuṭumba-sukhī.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukro dvitīyasthaḥ dhana-kalā-yogakārakaḥ — madhura-vāṇīṃ, dhana-samṛddhiṃ, sundara-vastu-ābhūṣaṇa-saṅgrahaṃ, kuṭumba-sukhaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — śukraḥ dhana-sthāne kalā-vāṇijyena-dhanārjanaṃ, manojña-bhāṣaṇaṃ ca janayati. Strī-kāraṇena-dhana-vṛddhiḥ kvacit.",
+      "general": "Dhana-kalā-yogaḥ, madhura-vāṇī, ābhūṣaṇa-saṅgrahaḥ, kuṭumba-sukham, kalā-vāṇijya-dhanam."
+    },
+    "VENUS_IN_3": {
+      "name": "Śukrastṛtīye kalā-sañcāra-kauśalam, bhaginī-sukhī, sukha-yātrā-priyaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukrastṛtīyasthaḥ jātakaṃ kalā-sañcāra-kuśalaṃ, bhaginī-sukhinaṃ, sukha-yātrā-priyaṃ, madhura-vyavahāriṇaṃ ca karoti. Bṛhatpārāśarahorāśāstre 22 — śukraḥ upacaya-tṛtīye kalā-nṛtya-saṅgīta-parākramaṃ, mitra-sukhaṃ, saundarya-pracāra-kauśalaṃ ca dadāti. Sva-kārakatve īṣat-nyūnatā, paraṃ upacaya-vṛddhiḥ.",
+      "general": "Kalā-sañcāra-kauśalam, bhaginī-sukham, sukha-yātrā, madhura-vyavahāraḥ, mitra-sukham."
+    },
+    "VENUS_IN_4": {
+      "name": "Śukraścaturthe gṛha-vāhana-bhoga-yogaḥ. Mātṛ-sukhī, sundara-gṛhasthaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukraścaturthasthaḥ gṛha-vāhana-bhoga-samṛddhiṃ, sundara-gṛhastha-vṛttiṃ, mātṛ-sukhaṃ, strī-sahayogena-dhana-vardhanaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — śukraḥ sukha-sthāne bhoga-kendra-rājayogakārakaḥ.",
+      "general": "Gṛha-vāhana-bhoga-samṛddhiḥ, mātṛ-sukham, sundara-gṛhasthaḥ, strī-dhana-saṃyogaḥ, hṛdaya-sukham."
+    },
+    "VENUS_IN_5": {
+      "name": "Śukraḥ pañcame kāvya-kalā-santati-yogaḥ. Buddhimān, kalākāraḥ, santati-sukhī.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukraḥ pañcamasthaḥ kāvya-kalā-santati-yogakārakaḥ — buddhimattā, kalātmaka-vṛttiḥ, santati-sukhaṃ, sundara-strī-sambandhaṃ, rāja-kīrti-vardhanaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — kāraka-trikoṇa-rājayogaḥ.",
+      "general": "Kāvya-kalā-vṛttiḥ, buddhimattā, santati-sukham, rāja-kīrtiḥ, sundara-strī-sambandhaḥ."
+    },
+    "VENUS_IN_6": {
+      "name": "Śukraḥ ṣaṣṭhe kalatra-sukha-hāniḥ, bhoga-vighnaḥ, sevā-kalā-vṛttiḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukraḥ ṣaṣṭhasthaḥ jātakasya kalatra-sukha-hāniṃ, bhoga-vighnaṃ, sambandha-kalahaṃ vā sūcayati, paraṃ sevā-kalā-cikitsā-kṣetre prāvīṇyaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — śukraḥ ripu-sthāne kāraka-hāniṃ (kalatra-kārakaḥ duḥsthāne pīḍitaḥ) janayati, yena dāmpatye bādhā, ṛṇa-vivāda-sambhāvanā ca. Upacaya-tvāt śatru-vijayaḥ, kalā-sevayā jīvikā ca.",
+      "general": "Kalatra-sukha-hāniḥ, bhoga-vighnaḥ, sevā-kalā-vṛttiḥ, ṛṇa-vivādaḥ, śatru-vijayaḥ."
+    },
+    "VENUS_IN_7": {
+      "name": "Śukraḥ saptame kāraka-kāraka-yogaḥ. Sundara-jāyādvārā-vṛddhiḥ, dāmpatya-sukhī.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukraḥ saptamasthaḥ kāraka-kāraka-yogakārakaḥ — śukraḥ kalatra-kārakaḥ kalatra-sthāne tiṣṭhan sundara-jāyāṃ, dāmpatya-sukhaṃ, strī-sahayogena-vardhanaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — śreṣṭha-kalatra-yogaḥ.",
+      "general": "Sundara-jāyā, dāmpatya-sukham, strī-sahayogaḥ, vyāpāra-lābhaḥ, yātrā-sukham."
+    },
+    "VENUS_IN_8": {
+      "name": "Śukro'ṣṭame dāya-dhana-lābhaḥ, gūḍha-bhoga-pravṛttiḥ, kintu kalatra-āyur-cintā.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukro'ṣṭamasthaḥ jātakaṃ dāya-vasīyata-dhana-lābhaṃ, gūḍha-bhoga-pravṛttiṃ, dīrgha-bhoga-śaktiṃ ca dadāti, paraṃ kalatra-āyur-viṣaye cintāṃ, sambandha-gopanaṃ vā sūcayati. Bṛhatpārāśarahorāśāstre 22 — śukraḥ randhra-sthāne kalatra-kārakatva-kṣobhaṃ, paraṃ akasmāt-dhana-strī-dhana-lābhaṃ, gupta-kalā-pravṛttiṃ ca janayati. Śubha-dṛṣṭyā dāya-yogaḥ.",
+      "general": "Dāya-dhana-lābhaḥ, gūḍha-bhoga-pravṛttiḥ, strī-dhana-lābhaḥ, kalatra-āyur-cintā, dīrgha-bhogaḥ."
+    },
+    "VENUS_IN_9": {
+      "name": "Śukro navame bhāgya-kalā-yogaḥ. Dhārmika-kalākāraḥ, strī-kāraṇena-bhāgyodayaḥ.",
+      "prose": "Phaladīpikāyām aṣṭame adhyāye śukro navamasthaḥ bhāgya-kalā-yogakārakaḥ — dhārmika-kalākāritvaṃ, strī-kāraṇena-bhāgyodayaṃ, sundara-dharma-yātrāṃ, guru-kṛpā-sahitaṃ bhāgyaṃ ca dadāti. Bṛhatpārāśarahorāśāstre 22 — kāraka-trikoṇa-rājayogaḥ.",
+      "general": "Bhāgya-kalā-yogaḥ, dhārmika-kalākāraḥ, strī-bhāgyodayaḥ, dharma-yātrā, guru-kṛpā."
+    }
+  },
+  "kaala": {
+    "GULIKA_KAALA": {
+      "phala": "Gulikakālaḥ (māndikālaḥ) śaniputraśāsitaḥ śubhakāryavarjyo'śubhakālaḥ.",
+      "phalaProse": "Gulikakālaḥ (māndiḥ) śaniputragulikena śāsitaḥ dinamānāṣṭamāṃśaḥ, vārānusāraṃ bhinnasamayasthaḥ. Ayaṃ śubhakāryārambhe varjyaḥ; asmin ārabdhaṃ karma punaḥpunaḥ āvartate (gulikaḥ yat spṛśati tat vardhate iti) — ataḥ śubhe āvartanaṃ, aśubhe ca āvartanaṃ vardhate. Śubhakarma na kuryāt; ṛṇadānādi niṣiddham."
+    },
+    "RAHU_KAALA": {
+      "phala": "Rāhukālaḥ dinasya aṣṭamāṃśaḥ sarvaśubhakāryavarjyaḥ aśubhakālaḥ.",
+      "phalaProse": "Rāhukālaḥ dinamānasya aṣṭamo bhāgaḥ (prāyaḥ dīḍaghaṭikā, sārdhahorātmakaḥ), vārānusāraṃ bhinnasamayasthaḥ. Ayaṃ śubhakāryārambhe sarvathā varjyaḥ — yātrā, krayavikrayaḥ, gṛhapraveśaḥ, vivāhasaṅkalpādi asmin na kuryāt. Tathāpi śatrunāśābhicārakarmaṇi, śanirāhupūjane ca kecit grāhyaṃ manyante. Ārabdhakārye vighnavilambau."
+    },
+    "YAMAGHANDA": {
+      "phala": "Yamagaṇḍakālaḥ yamaśāsitaḥ śubhakāryavarjyaḥ, viśeṣato yātrāniṣedhakaḥ.",
+      "phalaProse": "Yamagaṇḍakālaḥ yamena śāsitaḥ dinamānāṣṭamāṃśaḥ, vārānusāraṃ bhinnasamayasthaḥ. Ayaṃ śubhakāryārambhe varjyaḥ, viśeṣato yātrārambhe niṣiddhaḥ — asmin ārabdhā yātrā vighnakleśakarī, kāryaṃ ca niṣphalaprāyam. Mṛtyukārakayamasambaddhatvāt maṅgalakārye tyājyaḥ."
+    }
+  },
+  "rashi": {
+    "AQUARIUS": {
+      "ishtaDevata": "Kumbhakārakāṃśe iṣṭadevatā śaniḥ / śivaḥ.",
+      "ishtaDevataProse": "Kārakāṃśe kumbharāśau iṣṭadevatā prāyaḥ śaniḥ śivo vā; vairāgyasevājñānamuktipradā upāsanā praśastā.",
+      "lagnaPhala": "Kumbhalagne vicāraśīlaḥ, mānavatā-priyaḥ, svatantra-cittaḥ, gambhīraḥ. Śani-prabhāvāt dūra-darśī.",
+      "lagnaPhalaGeneral": "Vicāra-śīlatā, mānavatā-priyatā, svātantryam, dūra-darśitā, mitratā, haṭha, dīrgha-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye kumbhalagno jātakaḥ dīrgha-madhyama-dehaḥ, gambhīra-mukhaḥ, vicāra-śīlaḥ, mānavatā-hita-rataḥ, svatantra-cittaḥ, mitra-priyaḥ ca bhavati. Śani-svāmitvāt dūra-darśitā, sahana-śīlatā, sāmājika-cintanaṃ ca prabalāḥ; ekākitva-haṭha-doṣau. Sārāvalyāṃ ayaṃ vāyu-sthira-rāśiḥ sudhārakaṃ, gahana-vicārakaṃ, jana-kalyāṇa-rataṃ karoti."
+    },
+    "ARIES": {
+      "ishtaDevata": "Meṣakārakāṃśe iṣṭadevatā sūryaḥ / kārtikeyaḥ.",
+      "ishtaDevataProse": "Kārakāṃśe meṣarāśau iṣṭadevatā prāyaḥ sūryaḥ kārtikeyo vā; tejobalasāhasapradā upāsanā praśastā.",
+      "lagnaPhala": "Meṣalagne capalaḥ, sāhasī, kṛśadehaḥ, raktavarṇaḥ. Netṛtvaśīlaḥ, krodhī, svatantraḥ.",
+      "lagnaPhalaGeneral": "Sāhasam, netṛtvam, svātantryam, śīghra-nirṇayaḥ, spardhā, krodha-cāpalyam, kṛśa-tejasvi-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye meṣalagno jātakaḥ kṛśa-madhyama-dehaḥ, raktābha-gauraḥ, capala-netraḥ, sāhasī, ugra-svabhāvaḥ, netṛtva-priyaḥ, svatantra-vṛttiḥ ca bhavati. Kuja-svāmitvāt ātmani tejaḥ, spardhā, śīghra-nirṇayaḥ prabalāḥ; krodha-cāpalye doṣau. Sārāvalyāṃ pañcame adhyāye ayaṃ agni-cara-rāśiḥ udyama-śīlaṃ, agragāminaṃ, raṇa-dakṣaṃ karoti."
+    },
+    "CANCER": {
+      "ishtaDevata": "Karkakārakāṃśe iṣṭadevatā pārvatī / candraḥ.",
+      "ishtaDevataProse": "Kārakāṃśe karkarāśau iṣṭadevatā prāyaḥ pārvatī candro vā; manaḥśāntimātṛsaukhyabhāvanāsthairyapradā upāsanā praśastā.",
+      "lagnaPhala": "Karkalagne bhāvukaḥ, mātṛ-bhaktaḥ, gṛha-priyaḥ, saṃvedanaśīlaḥ. Candra-prabhāvāt capala-manāḥ.",
+      "lagnaPhalaGeneral": "Bhāvukatā, mātṛ-gṛha-bhaktiḥ, saṃvedanā, smṛtiḥ, kalpanā, manaścāpalyam, gaura-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye karkalagno jātakaḥ sthūla-madhyama-dehaḥ, gaura-varṇaḥ, bhāvuka-hṛdayaḥ, mātṛ-gṛha-jala-priyaḥ, saṃvedanaśīlaḥ, kalpanā-śīlaḥ ca bhavati. Candra-svāmitvāt bhāva-pravaṇatā, smṛti-śaktiḥ, poṣaṇa-vṛttiḥ ca prabalāḥ; manaścāpalya-ati-bhāvukate doṣau. Sārāvalyāṃ ayaṃ jala-cara-rāśiḥ parivartana-śīlaṃ, sneha-pradhānaṃ, jana-sevā-rataṃ karoti."
+    },
+    "CAPRICORN": {
+      "ishtaDevata": "Makarakārakāṃśe iṣṭadevatā śaniḥ / kṛṣṇaḥ.",
+      "ishtaDevataProse": "Kārakāṃśe makararāśau iṣṭadevatā prāyaḥ śaniḥ kṛṣṇo vā; dhairyakarmanyāyaśaniśāntipradā upāsanā praśastā.",
+      "lagnaPhala": "Makaralagne karma-niṣṭhaḥ, dhairyavān, mahattvākāṅkṣī, gambhīraḥ. Śani-prabhāvāt śrama-śīlaḥ.",
+      "lagnaPhalaGeneral": "Karma-niṣṭhā, dhairyam, mahattvākāṅkṣā, śrama-śīlatā, sahana-śaktiḥ, ati-cintā, kṛśa-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye makaralagno jātakaḥ kṛśa-dīrgha-dehaḥ, gambhīra-mukhaḥ, karma-niṣṭhaḥ, dhairyavān, mahattvākāṅkṣī, vyavahāra-kuśalaḥ ca bhavati. Śani-svāmitvāt śrama-śīlatā, sahana-śaktiḥ, dīrgha-kālika-dṛṣṭiḥ ca prabalāḥ; ati-cintā-nairāśya-doṣau. Sārāvalyāṃ ayaṃ pṛthvī-cara-rāśiḥ udyaminaṃ, sopāna-krama-ārohiṇaṃ, uttara-vayasi-samṛddhaṃ karoti."
+    },
+    "GEMINI": {
+      "ishtaDevata": "Mithunakārakāṃśe iṣṭadevatā viṣṇuḥ / sarasvatī.",
+      "ishtaDevataProse": "Kārakāṃśe mithunarāśau iṣṭadevatā prāyaḥ viṣṇuḥ sarasvatī vā; buddhividyāsaṃvādapradā upāsanā praśastā.",
+      "lagnaPhala": "Mithunalagne buddhimān, vāk-paṭuḥ, capala-manāḥ, dvi-svabhāvaḥ. Budha-prabhāvāt kuśala-vyavahārī.",
+      "lagnaPhalaGeneral": "Buddhiḥ, vāk-kauśalam, tarkaḥ, bahu-kārya-dakṣatā, hāsya-rasaḥ, manaścāpalyam, sūkṣma-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye mithunalagno jātakaḥ madhyama-tanu-dehaḥ, capala-netraḥ, vāk-paṭuḥ, buddhimān, hāsya-rasikaḥ, dvi-svabhāva-cittaḥ ca bhavati. Budha-svāmitvāt tarka-śaktiḥ, sambhāṣaṇa-kauśalam, bahu-viṣaya-grahaṇaṃ ca prabalāḥ; asthiratā-saṃśayau doṣau. Sārāvalyāṃ ayaṃ vāyu-dvi-svabhāva-rāśiḥ lekhana-vāṇijya-sañcāra-dakṣaṃ karoti."
+    },
+    "LEO": {
+      "ishtaDevata": "Siṃhakārakāṃśe iṣṭadevatā śivaḥ / sūryaḥ.",
+      "ishtaDevataProse": "Kārakāṃśe siṃharāśau iṣṭadevatā prāyaḥ śivaḥ sūryo vā; ātmabalanetṛtvatejaḥpradā upāsanā praśastā.",
+      "lagnaPhala": "Siṃhalagne tejasvī, mānī, netṛ-śīlaḥ, udāraḥ. Sūrya-prabhāvāt rāja-tulya-vyaktitvam.",
+      "lagnaPhalaGeneral": "Tejaḥ, mānaḥ, netṛtvam, audāryam, sthira-saṅkalpaḥ, ahaṅkāraḥ, unnata-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye siṃhalagno jātakaḥ unnata-dṛḍha-dehaḥ, tejasvi-mukhaḥ, mānī, udāra-hṛdayaḥ, netṛtva-priyaḥ, sthira-saṅkalpaḥ ca bhavati. Sūrya-svāmitvāt ātma-gauravam, adhikāra-vṛttiḥ, audāryaṃ ca prabalāḥ; ahaṅkāra-darpa-doṣau. Sārāvalyāṃ ayaṃ agni-sthira-rāśiḥ rāja-tulyaṃ, yaśa-kāminaṃ, sattva-pradhānaṃ karoti."
+    },
+    "LIBRA": {
+      "ishtaDevata": "Tulākārakāṃśe iṣṭadevatā lakṣmīḥ / sarasvatī.",
+      "ishtaDevataProse": "Kārakāṃśe tulārāśau iṣṭadevatā prāyaḥ lakṣmīḥ sarasvatī vā; santulanasaubhāgyakalānyāyapradā upāsanā praśastā.",
+      "lagnaPhala": "Tulālagne nyāya-priyaḥ, sama-darśī, kalā-rasikaḥ, saumyaḥ. Śukra-prabhāvāt sambandha-kuśalaḥ.",
+      "lagnaPhalaGeneral": "Nyāya-priyatā, santulanam, kalā-rasaḥ, sambandha-kauśalam, saumyatā, nirṇaya-dvaidham, sama-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye tulālagno jātakaḥ sama-dīrgha-dehaḥ, saumya-mukhaḥ, nyāya-priyaḥ, sama-darśī, kalā-vyavahāra-kuśalaḥ, sandhi-priyaḥ ca bhavati. Śukra-svāmitvāt saundarya-rasaḥ, sama-buddhiḥ, sambandha-nipuṇatā ca prabalāḥ; nirṇaya-dvaidhe vilambe doṣau. Sārāvalyāṃ ayaṃ vāyu-cara-rāśiḥ vyavahāra-dakṣaṃ, sahakāra-priyaṃ, santulana-śīlaṃ karoti."
+    },
+    "PISCES": {
+      "ishtaDevata": "Mīnakārakāṃśe iṣṭadevatā viṣṇuḥ / guruḥ.",
+      "ishtaDevataProse": "Kārakāṃśe mīnarāśau iṣṭadevatā prāyaḥ viṣṇurbṛhaspatirvā; jñānamokṣabhaktikaruṇāpradā upāsanā praśastā.",
+      "lagnaPhala": "Mīnalagne bhāvukaḥ, dayāluḥ, ādhyātmikaḥ, kalpanā-śīlaḥ. Guru-prabhāvāt śraddhāvān.",
+      "lagnaPhalaGeneral": "Bhāvukatā, dayā, ādhyātmikatā, kalpanā, śraddhā, palāyana-vṛttiḥ, mṛdu-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye mīnalagno jātakaḥ sthūla-mṛdu-dehaḥ, saumya-netraḥ, bhāvukaḥ, dayāluḥ, ādhyātmikaḥ, kalpanā-śīlaḥ, śraddhāvān ca bhavati. Guru-svāmitvāt dharma-śraddhā, paropakāra-vṛttiḥ, antar-dṛṣṭiḥ ca prabalāḥ; ati-bhāvukatā-palāyana-vṛtti-doṣau. Sārāvalyāṃ ayaṃ jala-dvi-svabhāva-rāśiḥ karuṇā-pradhānaṃ, sevā-tyāga-rataṃ, adhyātma-abhimukhaṃ karoti."
+    },
+    "SAGITTARIUS": {
+      "ishtaDevata": "Dhanukārakāṃśe iṣṭadevatā viṣṇuḥ / dattātreyaḥ.",
+      "ishtaDevataProse": "Kārakāṃśe dhanurāśau iṣṭadevatā prāyaḥ viṣṇurdattātreyo vā; jñānadharmagurukṛpāpradā upāsanā praśastā.",
+      "lagnaPhala": "Dhanurlagne dhārmikaḥ, āśāvādī, spaṣṭa-vaktā, jñāna-priyaḥ. Guru-prabhāvāt nīti-niṣṭhaḥ.",
+      "lagnaPhalaGeneral": "Dhārmikatā, āśāvādaḥ, jñāna-priyatā, nīti-niṣṭhā, spaṣṭa-vacanam, ati-āśā, unnata-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye dhanurlagno jātakaḥ unnata-dṛḍha-dehaḥ, tejasvi-mukhaḥ, dhārmikaḥ, āśāvādī, spaṣṭa-vaktā, jñāna-dharma-priyaḥ ca bhavati. Guru-svāmitvāt nīti-niṣṭhā, udāra-dṛṣṭiḥ, guru-śiṣya-vṛttiḥ ca prabalāḥ; ati-spaṣṭa-vacane ati-āśāyāṃ doṣau. Sārāvalyāṃ ayaṃ agni-dvi-svabhāva-rāśiḥ dharma-darśana-yātrā-priyaṃ, upadeśakaṃ, satya-niṣṭhaṃ karoti."
+    },
+    "SCORPIO": {
+      "ishtaDevata": "Vṛścikakārakāṃśe iṣṭadevatā nṛsiṃhaḥ / hanumān.",
+      "ishtaDevataProse": "Kārakāṃśe vṛścikarāśau iṣṭadevatā prāyaḥ nṛsiṃho hanumān vā; śatrujayasāhasarakṣaṇapradā upāsanā praśastā.",
+      "lagnaPhala": "Vṛścikalagne gūḍhaḥ, tīvraḥ, saṅkalpa-dṛḍhaḥ, rahasya-priyaḥ. Kuja-prabhāvāt adamya-icchā-śaktiḥ.",
+      "lagnaPhalaGeneral": "Icchā-śaktiḥ, gūḍhatā, saṅkalpa-dṛḍhatā, anveṣaṇam, sahana-śīlatā, īrṣyā, dṛḍha-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye vṛścikalagno jātakaḥ dṛḍha-gupta-dehaḥ, tīkṣṇa-netraḥ, gūḍha-svabhāvaḥ, saṅkalpa-dṛḍhaḥ, rahasya-priyaḥ, gambhīraḥ ca bhavati. Kuja-svāmitvāt tīvra-icchā-śaktiḥ, anveṣaṇa-vṛttiḥ, sahana-śīlatā ca prabalāḥ; īrṣyā-pratiśodha-doṣau. Sārāvalyāṃ ayaṃ jala-sthira-rāśiḥ gahana-śodhakaṃ, parivartana-samarthaṃ, adhyātma-rahasya-rataṃ karoti."
+    },
+    "TAURUS": {
+      "ishtaDevata": "Vṛṣakārakāṃśe iṣṭadevatā gaurī / lakṣmīḥ.",
+      "ishtaDevataProse": "Kārakāṃśe vṛṣarāśau iṣṭadevatā prāyaḥ gaurī lakṣmīrvā; saubhāgyasamṛddhisaundaryapradā upāsanā praśastā.",
+      "lagnaPhala": "Vṛṣalagne sthiraḥ, dhairyavān, sukha-bhoga-priyaḥ, ākarṣakaḥ. Śukra-prabhāvāt kalā-rasikaḥ.",
+      "lagnaPhalaGeneral": "Sthairyam, dhairyam, kalā-saundarya-rasaḥ, dhana-saṅgrahaḥ, bhoga-priyatā, haṭhaḥ, dṛḍha-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye vṛṣalagno jātakaḥ sthūla-dṛḍha-dehaḥ, medhura-vāk, ākarṣaka-mukhaḥ, dhairyavān, sukha-bhoga-kalā-priyaḥ, sthira-cittaḥ ca bhavati. Śukra-svāmitvāt saundarya-rasaḥ, dhana-saṅgraha-śaktiḥ, bhoga-vāsanā ca prabalāḥ; ālasya-haṭha-doṣau. Sārāvalyāṃ ayaṃ pṛthvī-sthira-rāśiḥ sahana-śīlaṃ, pariśramiṇaṃ, artha-sañcaya-dakṣaṃ karoti."
+    },
+    "VIRGO": {
+      "ishtaDevata": "Kanyākārakāṃśe iṣṭadevatā viṣṇuḥ / sarasvatī.",
+      "ishtaDevataProse": "Kārakāṃśe kanyārāśau iṣṭadevatā prāyaḥ viṣṇuḥ sarasvatī vā; vivekavidyāsevāśuddhipradā upāsanā praśastā.",
+      "lagnaPhala": "Kanyālagne viśleṣakaḥ, sevā-śīlaḥ, śuci-priyaḥ, buddhimān. Budha-prabhātāt sūkṣma-dṛṣṭiḥ.",
+      "lagnaPhalaGeneral": "Viśleṣaṇam, sevā-vṛttiḥ, śucitā, sūkṣma-buddhiḥ, kārya-kauśalam, ati-cintā, madhyama-dehaḥ.",
+      "lagnaPhalaProse": "Bṛhajjātake prathame adhyāye kanyālagno jātakaḥ madhyama-tanu-dehaḥ, śuci-priyaḥ, viśleṣaṇa-dakṣaḥ, sevā-nirataḥ, vinamraḥ, kārya-kuśalaḥ ca bhavati. Budha-svāmitvāt sūkṣma-buddhiḥ, doṣa-darśana-śaktiḥ, śuddhi-vṛttiḥ ca prabalāḥ; ati-cintā-chidrānveṣaṇe doṣau. Sārāvalyāṃ ayaṃ pṛthvī-dvi-svabhāva-rāśiḥ pariśramiṇaṃ, gaṇaka-dakṣaṃ, ārogya-sajagaṃ karoti."
+    }
+  },
+  "nadi": {
+    "AADI": {
+      "phala": "Ādināḍī vātaprakṛtiṃ sūcayati.",
+      "phalaProse": "Ādināḍyāṃ nava nakṣatrāṇi (aśvinī, ārdrā, punarvasu, uttarāphālgunī, hasta, jyeṣṭhā, mūlā, śatabhiṣā, pūrvābhādrapadā ca). Ādināḍījātaḥ vātapradhānaprakṛtiḥ — capalaḥ, kriyāśīlaḥ, śīghracintakaśca. Nāḍīkūṭaṃ (aṣṭakūṭamadhye aṣṭāṅkaiḥ sarvādhikaṃ balavat) ārogyasantatyośca vicārakam; ubhayoḥ samānanāḍyoḥ satoḥ nāḍīdoṣaḥ, yaḥ santatibādhāṃ dāmpatyakleśaṃ vā sūcayati. Ekanakṣatre pādabhedena vā parihāraḥ sambhavati."
+    },
+    "ANTYA": {
+      "phala": "Antyanāḍī kaphaprakṛtiṃ sūcayati.",
+      "phalaProse": "Antyanāḍyāṃ nava nakṣatrāṇi (kṛttikā, rohiṇī, āśleṣā, maghā, svāti, viśākhā, uttarāṣāḍhā, śravaṇa, revatī ca). Antyanāḍījātaḥ kaphapradhānaprakṛtiḥ — sthiraḥ, śāntaḥ, sahiṣṇuḥ poṣakaśca. Vivāhe ubhayoḥ antyanāḍyoḥ satoḥ nāḍīdoṣaḥ. Ādi-antyayoḥ (vāta-kaphayoḥ) melanaṃ tu śreṣṭhaṃ svāsthyasantatipradaṃ ca."
+    },
+    "MADHYA": {
+      "phala": "Madhyanāḍī pittaprakṛtiṃ sūcayati.",
+      "phalaProse": "Madhyanāḍyāṃ nava nakṣatrāṇi (bharaṇī, mṛgaśirā, puṣya, pūrvāphālgunī, citrā, anurādhā, pūrvāṣāḍhā, dhaniṣṭhā, uttarābhādrapadā ca). Madhyanāḍījātaḥ pittapradhānaprakṛtiḥ — tīkṣṇaḥ, uṣṇasvabhāvaḥ, utsāhī netṛtvaśīlaśca. Vivāhe ubhayoḥ madhyanāḍyoḥ satoḥ nāḍīdoṣaḥ, yaḥ ārogyasantatyoḥ bādhāṃ sūcayati. Madhyanāḍau doṣaḥ tīvratamo manyate."
+    }
+  },
+  "nakshatra": {
+    "ANURADHA": {
+      "namakarana": "Anurādhājātaḥ maitrīpriyaḥ sahayogī bhaktaśca.",
+      "namakaranaProse": "Anurādhānakṣatre (mitradevatā, śanisvāmī) jātaḥ maitrīpriyaḥ, sahayogī, bhaktaḥ, saṅgaṭhanakuśalaśca. Nāmakaraṇe maitrīṃ bhaktiṃ ca sūcayan nāma praśastam.",
+      "phala": "Anurādhā — maitryāḥ, saṅgaṭhanasya, sarvaśubhasya ca mṛdunakṣatram.",
+      "phalaProse": "Anurādhā mitradevatādhiṣṭhitaṃ mṛdumaitranakṣatram. Maitrīsambandhaḥ, saṅgaṭhanakarma, yātrā, sarvamaṅgalakāryaṃ ca praśastam. Snehasiddhipradaṃ śubhaṃ ca."
+    },
+    "ARDRA": {
+      "namakarana": "Ārdrājātaḥ tīkṣṇabuddhiḥ parivartanaśīlaḥ gahanaśca.",
+      "namakaranaProse": "Ārdrānakṣatre (rudradevatā, rāhusvāmī) jātaḥ tīkṣṇabuddhiḥ, parivartanaśīlaḥ, gahanacintakaḥ, saṃvedanaśīlaśca. Nāmakaraṇe gāmbhīryaṃ buddhiṃ ca sūcayan nāma praśastam.",
+      "phala": "Ārdrā — tīkṣṇograkāryasya nakṣatram; śubhamaṅgale varjyam.",
+      "phalaProse": "Ārdrā rudrādhiṣṭhitaṃ tīkṣṇogranakṣatram. Śatrunāśaḥ, abhicāraḥ, tīkṣṇasāhasakarma ca yogyam; kintu vivāhagṛhārambhādiśubhamaṅgale varjyam. Ugraphalam."
+    },
+    "ASHLESHA": {
+      "namakarana": "Āśleṣājātaḥ gūḍhaḥ kūṭanītijñaḥ medhāvī ca.",
+      "namakaranaProse": "Āśleṣānakṣatre (sarpadevatā, budhasvāmī) jātaḥ gūḍhaḥ, kūṭanītijñaḥ, medhāvī, rahasyapriyaśca. Nāmakaraṇe buddhiṃ gāmbhīryaṃ ca sūcayan nāma praśastam.",
+      "phala": "Āśleṣā — mantrasiddheḥ, tīkṣṇakarmaṇaḥ ca nakṣatram; śubhamaṅgale varjyam.",
+      "phalaProse": "Āśleṣā nāgadevatādhiṣṭhitaṃ tīkṣṇadāruṇanakṣatram. Mantrasiddhiḥ, guptakarma, viṣauṣadham, tīkṣṇasādhyakāryaṃ ca yogyam; kintu śubhamaṅgale prāyaḥ varjyam."
+    },
+    "ASHWINI": {
+      "namakarana": "Aśvinījātaḥ capalaḥ tejasvī ārogyapradaśca.",
+      "namakaranaProse": "Aśvinīnakṣatre (aśvinīkumāradevatā, ketusvāmī) jātaḥ capalaḥ, tejasvī, kriyāśīlaḥ, ārogyapriyaśca. Nāmakaraṇe ārambhaśīlatāṃ sphūrtiṃ cikitsānaipuṇyaṃ ca sūcayan nāma praśastam.",
+      "phala": "Aśvinī — śīghrakāryasya, ārogyasya, yātrāyāśca nakṣatram.",
+      "phalaProse": "Aśvinī aśvinīkumārādhiṣṭhitaṃ kṣipralaghu nakṣatram. Auṣadhakriyā, yātrā, śīghrasādhyakāryam, vāhanakrayaśca praśastam. Ārogyapradaṃ capalaṃ ca; mandakārye na praśastam."
+    },
+    "BHARANI": {
+      "namakarana": "Bharaṇījātaḥ dṛḍhaḥ saṃyamī kartavyaniṣṭhaśca.",
+      "namakaranaProse": "Bharaṇīnakṣatre (yamadevatā, śukrasvāmī) jātaḥ dṛḍhasaṅkalpaḥ, saṃyamī, kartavyaniṣṭhaḥ, nyāyapriyaśca. Nāmakaraṇe dṛḍhatāṃ śuddhatāṃ ca sūcayan nāma praśastam.",
+      "phala": "Bharaṇī — ugrakāryasya, dṛḍhaniścayasya ca nakṣatram; śubhamaṅgale varjyam.",
+      "phalaProse": "Bharaṇī yamādhiṣṭhitam ugrakrūranakṣatram. Dṛḍhaniścayakarma, vivādanirākaraṇam, ugrasādhyakāryaṃ ca yogyam; kintu vivāhādisaumyamaṅgale prāyaḥ varjyam."
+    },
+    "CHITRA": {
+      "namakarana": "Citrājātaḥ saundaryapriyaḥ kalākāraḥ ākarṣakaśca.",
+      "namakaranaProse": "Citrānakṣatre (tvaṣṭṛdevatā, bhaumasvāmī) jātaḥ saundaryapriyaḥ, kalākāraḥ, ākarṣakaḥ, sṛjanaśīlaśca. Nāmakaraṇe saundaryaṃ śilpaṃ ca sūcayan nāma praśastam.",
+      "phala": "Citrā — kalāyāḥ, śilpasya, saundaryasya ca mṛdunakṣatram.",
+      "phalaProse": "Citrā tvaṣṭṛviśvakarmadevatādhiṣṭhitaṃ mṛdumaitranakṣatram. Śilpakalā, gṛhasajjā, vastrābhūṣaṇam, saundaryakarma ca praśastam. Ākarṣakaṃ saumyaphalaṃ ca."
+    },
+    "DHANISHTHA": {
+      "namakarana": "Dhaniṣṭhājātaḥ samṛddhipriyaḥ layapriyaḥ udāraśca.",
+      "namakaranaProse": "Dhaniṣṭhānakṣatre (vasudevatā, bhaumasvāmī) jātaḥ samṛddhipriyaḥ, layasaṅgītapriyaḥ, udāraḥ, sāmājikaśca. Nāmakaraṇe samṛddhiṃ layaṃ ca sūcayan nāma praśastam.",
+      "phala": "Dhaniṣṭhā — saṅgītasya, dhanasya, utsavasya ca caranakṣatram.",
+      "phalaProse": "Dhaniṣṭhā vasudevatādhiṣṭhitaṃ caracalanakṣatram. Saṅgītam, dhanakarma, utsavaḥ, yātrā ca praśastam. Samṛddhipradaṃ capalaṃ ca; sthirakārye nyūnam."
+    },
+    "HASTA": {
+      "namakarana": "Hastajātaḥ nipuṇaḥ kuśalaḥ pariśramī ca.",
+      "namakaranaProse": "Hastanakṣatre (savitṛdevatā, candrasvāmī) jātaḥ hastanipuṇaḥ, kuśalaḥ, pariśramī, caturaśca. Nāmakaraṇe kauśalaṃ pariśramaṃ ca sūcayan nāma praśastam.",
+      "phala": "Hasta — śilpakarmaṇaḥ, vidyāyāḥ, sarvaśubhasya ca kṣipranakṣatram.",
+      "phalaProse": "Hasta savitṛsūryadevatādhiṣṭhitaṃ kṣipralaghunakṣatram. Hastaśilpam, vidyārambhaḥ, vāṇijyam, sarvamaṅgalakāryaṃ ca praśastam. Siddhipradaṃ śubhaṃ ca."
+    },
+    "JYESHTHA": {
+      "namakarana": "Jyeṣṭhājātaḥ netṛtvaguṇī saṃrakṣakaḥ gambhīraśca.",
+      "namakaranaProse": "Jyeṣṭhānakṣatre (indradevatā, budhasvāmī) jātaḥ netṛtvaguṇī, saṃrakṣakaḥ, gambhīraḥ, anubhavapriyaśca. Nāmakaraṇe netṛtvaṃ saṃrakṣaṇaṃ ca sūcayan nāma praśastam.",
+      "phala": "Jyeṣṭhā — sāhasakarmaṇaḥ, adhikārasya ca tīkṣṇanakṣatram; śubhamaṅgale varjyam.",
+      "phalaProse": "Jyeṣṭhā indradevatādhiṣṭhitaṃ tīkṣṇadāruṇanakṣatram. Sāhasakarma, adhikāragrahaṇam, śatrunāśaḥ, tīkṣṇasādhyakāryaṃ ca yogyam; kintu śubhamaṅgale varjyam."
+    },
+    "KRITTIKA": {
+      "namakarana": "Kṛttikājātaḥ tejasvī nirbhīkaḥ netṛtvaguṇī ca.",
+      "namakaranaProse": "Kṛttikānakṣatre (agnidevatā, sūryasvāmī) jātaḥ tejasvī, nirbhīkaḥ, netṛtvaguṇī, tīkṣṇabuddhiśca. Nāmakaraṇe tejaḥ netṛtvaṃ ca sūcayan nāma praśastam.",
+      "phala": "Kṛttikā — tīkṣṇakāryasya, agnikarmaṇaḥ, sāhasasya ca nakṣatram.",
+      "phalaProse": "Kṛttikā agnidevatādhiṣṭhitaṃ tīkṣṇamiśranakṣatram. Agnisambandhakarma, tīkṣṇasāhasakāryam, śatrunāśaḥ, chedanādikarma ca yogyam. Tejaḥpradaṃ kintu ugraphalam."
+    },
+    "MAGHA": {
+      "namakarana": "Maghājātaḥ pratiṣṭhāpriyaḥ paramparāniṣṭhaḥ netṛtvaguṇī ca.",
+      "namakaranaProse": "Maghānakṣatre (pitṛdevatā, ketusvāmī) jātaḥ pratiṣṭhāpriyaḥ, paramparāniṣṭhaḥ, netṛtvaguṇī, gauravaśīlaśca. Nāmakaraṇe gauravaṃ paramparāṃ ca sūcayan nāma praśastam.",
+      "phala": "Maghā — pitṛkarmaṇaḥ, rājakāryasya, paramparāyāśca ugranakṣatram.",
+      "phalaProse": "Maghā pitṛdevatādhiṣṭhitam ugranakṣatram. Pitṛtarpaṇam, rājasambandhakarma, paramparāgatakāryam, ugrasādhyakāryaṃ ca yogyam; saumyamaṅgale tu nyūnapraśastam."
+    },
+    "MRIGASHIRA": {
+      "namakarana": "Mṛgaśirājātaḥ jijñāsuḥ saumyaḥ anveṣaṇapriyaśca.",
+      "namakaranaProse": "Mṛgaśirānakṣatre (somadevatā, bhaumasvāmī) jātaḥ jijñāsuḥ, saumyaḥ, anveṣaṇapriyaḥ, capalaśca. Nāmakaraṇe jijñāsāṃ saumyatāṃ ca sūcayan nāma praśastam.",
+      "phala": "Mṛgaśirā — yātrāyāḥ, kalāyāḥ, saumyakāryasya ca mṛdunakṣatram.",
+      "phalaProse": "Mṛgaśirā somacandrādhiṣṭhitaṃ mṛdumaitranakṣatram. Yātrā, kalākarma, saṅgītam, vastrābhūṣaṇakrayaḥ, mitramelanaṃ ca praśastam. Saumyaphalaṃ capalaṃ ca."
+    },
+    "MULA": {
+      "namakarana": "Mūlajātaḥ anveṣakaḥ mūlagāmī dṛḍhaśca.",
+      "namakaranaProse": "Mūlanakṣatre (nirṛtidevatā, ketusvāmī) jātaḥ anveṣakaḥ, mūlagāmī, dṛḍhasaṅkalpaḥ, tattvānveṣī ca. Nāmakaraṇe gahanatāṃ anveṣaṇaṃ ca sūcayan nāma praśastam.",
+      "phala": "Mūla — mūlavicchedasya, auṣadhasya, tīkṣṇakarmaṇaśca nakṣatram; śubhamaṅgale varjyam.",
+      "phalaProse": "Mūla nirṛtidevatādhiṣṭhitaṃ tīkṣṇadāruṇanakṣatram. Mūlocchedaḥ, auṣadhakarma, mantrasādhanā, tīkṣṇakāryaṃ ca yogyam; kintu vivāhādiśubhamaṅgale varjyam."
+    },
+    "PUNARVASU": {
+      "namakarana": "Punarvasujātaḥ āśāvādī udāraḥ dharmaniṣṭhaśca.",
+      "namakaranaProse": "Punarvasunakṣatre (aditidevatā, gurusvāmī) jātaḥ āśāvādī, udāraḥ, dharmaniṣṭhaḥ, punarutthānaśīlaśca. Nāmakaraṇe udāratāṃ dharmaṃ ca sūcayan nāma praśastam.",
+      "phala": "Punarvasu — yātrāyāḥ, punarārambhasya, saumyakāryasya ca caranakṣatram.",
+      "phalaProse": "Punarvasu aditidevatādhiṣṭhitaṃ caracalanakṣatram. Yātrā, punarārambhaḥ, gṛhagamanam, saumyamaṅgalakāryaṃ ca praśastam. Śubhaṃ capalaṃ ca; sthirakārye nyūnaphalam."
+    },
+    "PURVA_ASHADHA": {
+      "namakarana": "Pūrvāṣāḍhājātaḥ ajeyaḥ utsāhī prabhāvaśālī ca.",
+      "namakaranaProse": "Pūrvāṣāḍhānakṣatre (āpodevatā, śukrasvāmī) jātaḥ ajeyabhāvaḥ, utsāhī, prabhāvaśālī, dṛḍhamatiśca. Nāmakaraṇe vijayaṃ utsāhaṃ ca sūcayan nāma praśastam.",
+      "phala": "Pūrvāṣāḍhā — jalakarmaṇaḥ, vijayasya, sāhasasya ca ugranakṣatram.",
+      "phalaProse": "Pūrvāṣāḍhā āpjaladevatādhiṣṭhitam ugranakṣatram. Jalasambandhakarma, vijayayātrā, sāhasakarma, naukākāryaṃ ca yogyam. Aparājayapradam; saumyamaṅgale nyūnapraśastam."
+    },
+    "PURVA_BHADRAPADA": {
+      "namakarana": "Pūrvābhādrapadājātaḥ ādhyātmikaḥ gambhīraḥ tejasvī ca.",
+      "namakaranaProse": "Pūrvābhādrapadānakṣatre (ajaikapāddevatā, gurusvāmī) jātaḥ ādhyātmikaḥ, gambhīraḥ, tejasvī, dārśanikaśca. Nāmakaraṇe ādhyātmikatāṃ gāmbhīryaṃ ca sūcayan nāma praśastam.",
+      "phala": "Pūrvabhādrapadā — tīvrakarmaṇaḥ, tapasaḥ ca ugranakṣatram; śubhamaṅgale varjyam.",
+      "phalaProse": "Pūrvabhādrapadā ajaikapāddevatādhiṣṭhitam ugradāruṇanakṣatram. Tapaḥ, tīvrasādhanā, ugrakarma ca yogyam; kintu vivāhādisaumyamaṅgale varjyam."
+    },
+    "PURVA_PHALGUNI": {
+      "namakarana": "Pūrvāphālgunījātaḥ rasikaḥ udāraḥ kalāpriyaśca.",
+      "namakaranaProse": "Pūrvāphālgunīnakṣatre (bhagadevatā, śukrasvāmī) jātaḥ rasikaḥ, udāraḥ, kalāpriyaḥ, sukhapriyaśca. Nāmakaraṇe rasikatāṃ kalāṃ ca sūcayan nāma praśastam.",
+      "phala": "Pūrvaphālgunī — vivāhasya, premṇaḥ, sukhabhogasya ca ugranakṣatram.",
+      "phalaProse": "Pūrvaphālgunī bhagadevatādhiṣṭhitam ugranakṣatram. Vivāhasambandhaḥ, premakāryam, kalāsukhabhogaḥ, sandhivārtā ca yogyam. Ānandapradam; ugrasañjñe'pi maṅgale praśastam."
+    },
+    "PUSHYA": {
+      "namakarana": "Puṣyajātaḥ poṣakaḥ dharmaniṣṭhaḥ sthiraśca.",
+      "namakaranaProse": "Puṣyanakṣatre (bṛhaspatidevatā, śanisvāmī) jātaḥ poṣakaḥ, dharmaniṣṭhaḥ, sthiraḥ, sevābhāvī ca. Nāmakaraṇe poṣaṇaṃ sthairyaṃ ca sūcayan nāma praśastam (puṣyaḥ śubhatamanakṣatreṣu ekaḥ).",
+      "phala": "Puṣya — sarvaśubhakāryasya paramaśreṣṭhaṃ nakṣatram; vivāhe tu varjyam.",
+      "phalaProse": "Puṣya bṛhaspatidevatādhiṣṭhitaṃ kṣipralaghu paramaśubhanakṣatram. Sarvamaṅgalakāryam, dhanasañcayaḥ, auṣadham, rājyābhiṣekaḥ ca praśastam; kintu śāstravacanāt vivāhe varjyam."
+    },
+    "REVATI": {
+      "namakarana": "Revatījātaḥ poṣakaḥ dayāluḥ samṛddhipradaśca.",
+      "namakaranaProse": "Revatīnakṣatre (pūṣandevatā, budhasvāmī) jātaḥ poṣakaḥ, dayāluḥ, samṛddhipradaḥ, mārgadarśakaśca. Nāmakaraṇe poṣaṇaṃ dayāṃ ca sūcayan nāma praśastam (revatī śubhāntanakṣatram).",
+      "phala": "Revatī — yātrāyāḥ, poṣaṇasya, sarvaśubhasya ca mṛdunakṣatram.",
+      "phalaProse": "Revatī pūṣandevatādhiṣṭhitaṃ mṛdumaitranakṣatram. Yātrā, poṣaṇakarma, vāṇijyam, sarvamaṅgalakāryaṃ ca praśastam. Saumyaphalaṃ rakṣāpradaṃ ca."
+    },
+    "ROHINI": {
+      "namakarana": "Rohiṇījātaḥ ākarṣakaḥ sṛjanaśīlaḥ samṛddhipriyaśca.",
+      "namakaranaProse": "Rohiṇīnakṣatre (brahmādevatā, candrasvāmī) jātaḥ ākarṣakaḥ, sṛjanaśīlaḥ, kalāpriyaḥ, samṛddhipriyaśca. Nāmakaraṇe saundaryaṃ sṛjanaśīlatāṃ ca sūcayan nāma praśastam.",
+      "phala": "Rohiṇī — sthirakāryasya, kṛṣeḥ, gṛhārambhasya ca paramaśubhanakṣatram.",
+      "phalaProse": "Rohiṇī brahmādhiṣṭhitaṃ dhruvasthiranakṣatram. Gṛhārambhaḥ, kṛṣiḥ, sthāvarasampatkrayaḥ, vṛkṣāropaṇam, sarvaśubhamaṅgalaṃ ca paramapraśastam. Sthiraphalaṃ samṛddhipradaṃ ca."
+    },
+    "SHATABHISHA": {
+      "namakarana": "Śatabhiṣājātaḥ rahasyānveṣī svatantraḥ cikitsāpriyaśca.",
+      "namakaranaProse": "Śatabhiṣānakṣatre (varuṇadevatā, rāhusvāmī) jātaḥ rahasyānveṣī, svatantraḥ, cikitsāpriyaḥ, gahanacintakaśca. Nāmakaraṇe rahasyabodhaṃ svātantryaṃ ca sūcayan nāma praśastam.",
+      "phala": "Śatabhiṣā — auṣadhasya, mantrasiddheḥ, guptakarmaṇaśca caranakṣatram.",
+      "phalaProse": "Śatabhiṣā varuṇadevatādhiṣṭhitaṃ caracalanakṣatram. Auṣadhakarma, mantrasādhanā, guptakāryam, jalakarma ca yogyam. Ārogyapradaṃ kintu ekāntapriyaṃ ca."
+    },
+    "SHRAVANA": {
+      "namakarana": "Śravaṇajātaḥ śrotā vidyāpriyaḥ susaṃskṛtaśca.",
+      "namakaranaProse": "Śravaṇanakṣatre (viṣṇudevatā, candrasvāmī) jātaḥ śrotā, vidyāpriyaḥ, susaṃskṛtaḥ, saṃvādakuśalaśca. Nāmakaraṇe vidyāṃ śravaṇaśīlatāṃ ca sūcayan nāma praśastam.",
+      "phala": "Śravaṇa — śravaṇavidyāyāḥ, yātrāyāḥ, dharmasya ca caranakṣatram.",
+      "phalaProse": "Śravaṇa viṣṇudevatādhiṣṭhitaṃ caracalanakṣatram. Śāstraśravaṇam, vidyā, yātrā, dharmakarma, saṅgītaṃ ca praśastam. Jñānapradaṃ śubhaṃ ca."
+    },
+    "SWATI": {
+      "namakarana": "Svātījātaḥ svatantraḥ santulitaḥ vyavahārakuśalaśca.",
+      "namakaranaProse": "Svātīnakṣatre (vāyudevatā, rāhusvāmī) jātaḥ svatantraḥ, santulitaḥ, vyavahārakuśalaḥ, gatiśīlaśca. Nāmakaraṇe svātantryaṃ santulanaṃ ca sūcayan nāma praśastam.",
+      "phala": "Svātī — vāṇijyasya, yātrāyāḥ, svatantrakāryasya ca caranakṣatram.",
+      "phalaProse": "Svātī vāyudevatādhiṣṭhitaṃ caracalanakṣatram. Vāṇijyam, yātrā, vāhanakarma, svatantravyavahāraḥ ca praśastam. Capalaṃ śubhaṃ ca; sthirakārye nyūnaphalam."
+    },
+    "UTTARA_ASHADHA": {
+      "namakarana": "Uttarāṣāḍhājātaḥ dharmaniṣṭhaḥ sthiraḥ vijayī ca.",
+      "namakaranaProse": "Uttarāṣāḍhānakṣatre (viśvedevadevatā, sūryasvāmī) jātaḥ dharmaniṣṭhaḥ, sthiraḥ, vijayī, siddhāntapriyaśca. Nāmakaraṇe dharmaṃ sthairyaṃ ca sūcayan nāma praśastam.",
+      "phala": "Uttarāṣāḍhā — sthiravijayasya, dharmakāryasya ca dhruvanakṣatram.",
+      "phalaProse": "Uttarāṣāḍhā viśvedevādhiṣṭhitaṃ dhruvasthiranakṣatram. Sthiravijayaḥ, dharmakarma, gṛhārambhaḥ, dīrghakālikasaṅkalpaśca paramapraśastam. Sthiraphalaṃ aparājayaṃ ca."
+    },
+    "UTTARA_BHADRAPADA": {
+      "namakarana": "Uttarābhādrapadājātaḥ śāntaḥ jñānī dānaśīlaśca.",
+      "namakaranaProse": "Uttarābhādrapadānakṣatre (ahirbudhnyadevatā, śanisvāmī) jātaḥ śāntaḥ, jñānī, dānaśīlaḥ, gambhīraśca. Nāmakaraṇe śāntiṃ jñānaṃ ca sūcayan nāma praśastam.",
+      "phala": "Uttarabhādrapadā — sthirakāryasya, gāmbhīryasya ca dhruvanakṣatram.",
+      "phalaProse": "Uttarabhādrapadā ahirbudhnyadevatādhiṣṭhitaṃ dhruvasthiranakṣatram. Sthirakāryam, gṛhārambhaḥ, gambhīrasaṅkalpaḥ, dharmakarma ca praśastam. Sthiraphalaṃ śāntaṃ ca."
+    },
+    "UTTARA_PHALGUNI": {
+      "namakarana": "Uttarāphālgunījātaḥ sevābhāvī viśvasanīyaḥ sthiraśca.",
+      "namakaranaProse": "Uttarāphālgunīnakṣatre (aryamādevatā, sūryasvāmī) jātaḥ sevābhāvī, viśvasanīyaḥ, sthiraḥ, sahayogapriyaśca. Nāmakaraṇe viśvāsaṃ sevāṃ ca sūcayan nāma praśastam.",
+      "phala": "Uttaraphālgunī — vivāhasya, sthirakāryasya ca dhruvanakṣatram.",
+      "phalaProse": "Uttaraphālgunī aryamadevatādhiṣṭhitaṃ dhruvasthiranakṣatram. Vivāhaḥ, gṛhārambhaḥ, sthirasambandhaḥ, dīrghakālikakarma ca paramapraśastam. Sthiraphalaṃ śubhaṃ ca."
+    },
+    "VISHAKHA": {
+      "namakarana": "Viśākhājātaḥ lakṣyaniṣṭhaḥ mahattvākāṅkṣī dṛḍhaśca.",
+      "namakaranaProse": "Viśākhānakṣatre (indrāgnidevatā, gurusvāmī) jātaḥ lakṣyaniṣṭhaḥ, mahattvākāṅkṣī, dṛḍhasaṅkalpaḥ, udyamī ca. Nāmakaraṇe lakṣyaniṣṭhāṃ utsāhaṃ ca sūcayan nāma praśastam.",
+      "phala": "Viśākhā — saṅkalpasiddheḥ, spardhāvijayasya ca miśranakṣatram.",
+      "phalaProse": "Viśākhā indrāgnidevatādhiṣṭhitaṃ miśrasādhāraṇanakṣatram. Saṅkalpapūrtiḥ, spardhā, lakṣyasādhanam, dhanakarma ca yogyam; ārambhe mandam ante siddhipradam."
+    }
+  },
+  "state": {
+    "COMBUST": {
+      "phala": "Astaṅgataḥ (dagdhaḥ) grahaḥ sūryatejasā tirohitabalaḥ bhavati.",
+      "phalaProse": "Yadā graho divākarasamīpe varttate tadā sa ravikiraṇairācchāditaḥ astaṅgato (dagdho) jāyate. Eṣa nijatejasā vihīnaḥ san svakīyakārakatvaphalaṃ pradātuṃ na śaknoti, mandaṃ kleśapradaṃ vā phalaṃ vitarati."
+    },
+    "RETROGRADE": {
+      "phala": "Vakrī grahaḥ ceṣṭābalayuktaḥ san tīvram antarmukhaṃ ca phalaṃ dadāti.",
+      "phalaProse": "Vakrī (vakragatiḥ) graho vilakṣaṇagatyā vilomaṃ gacchan pratīyate. Eṣa ceṣṭābalena samanvitaḥ san jātakasya jīvane tīvram, akasmāt, pūrvakarmasambaddhaṃ (prārabdhamūlakaṃ) phalaṃ vitarati. Śubhagrahāṇāṃ vakratvaṃ maṅgalakaraṃ pāpagrahāṇāṃ ca krūraṃ bhavati."
+    },
+    "VARGOTTAMA": {
+      "phala": "Vargottamaḥ grahaḥ svoccatulyabalavān sthiratamaṃ śubhaphalaṃ ca dadāti.",
+      "phalaProse": "Yadā graho janmakuṇḍalyāṃ (D1) navāṃśakuṇḍalyāṃ (D9) ca ekasminneva rāśau tiṣṭhati tadā sa vargottamaḥ kathyate. Eṣa grahasya śaktiṃ dṛḍhatāṃ ca atīva vardhayati, tasya śubhaphalaṃ śāśvataprāyaṃ bhavati."
+    }
+  },
+  "dignity": {
+    "DEBILITATED": {
+      "phala": "Nīcasthaḥ grahaḥ sarvathā nirbalaḥ mandaṃ vikṛtaṃ vā phalaṃ dadāti.",
+      "phalaProse": "Svakīyanīcarāśisthitaḥ grahaḥ cetanāhīnaḥ balahīnaśca bhavati. Tasya kārakāṇi vikṛtarūpeṇa nyūnātinyūnena vā phalībhavanti, yadi nīcabhaṅgarājayogo na ghaṭeta."
+    },
+    "EXALTED": {
+      "phala": "Uccasthaḥ grahaḥ pūrṇabalayuktaḥ san rājyasukhaṃ sarvottamaphalaṃ ca dadāti.",
+      "phalaProse": "Nijaparamoccarāśisthitaḥ grahaḥ paramabalavān gauravayuktaśca bhavati. Eṣaḥ svakārakatvasya bhāvagatasya ca phalasya sarvotkṛṣṭaṃ, śubhatamaṃ, rājyamānayuktaṃ ca pariṇāmaṃ sādhayati."
+    },
+    "MOOLTRIKONA": {
+      "phala": "Mūlatrikoṇasthaḥ grahaḥ atīva ūrjāyuktaḥ kāryasādhakaśca bhavati.",
+      "phalaProse": "Svakīyamūlatrikoṇe vartamānaḥ grahaḥ atīva ūrjāyuktaḥ kriyāśīlaśca bhavati. Eṣaḥ uccasadṛśaphalaṃ dadāti, jātakasya jīvanoddeśyaṃ saphalīkartuṃ sāhāyyaṃ karoti."
+    },
+    "OWN_SIGN": {
+      "phala": "Svarāśisthaḥ grahaḥ sudṛḍhaḥ niścitaṃ sukhaṃ kalyāṇaṃ ca karoti.",
+      "phalaProse": "Svagṛhe niścintaṃ pratiṣṭhitaḥ grahaḥ svātmaviśvāsayukto bhavati. Eṣaḥ svakārakatvasya bhāvasya ca sthiraṃ, nirbādhaṃ, sukhamayaṃ ca phalaṃ jātakasya jīvane prakaṭīkaroti."
+    }
+  },
+  "point": {
+    "GHATI_LAGNA": {
+      "phala": "Ghaṭīlagnaṃ sattāyāḥ, adhikārasya, padapratiṣṭhāyāśca dyotakam bhavati.",
+      "phalaProse": "Ghaṭīlagnaṃ jātakasya sattāyāḥ, śāsanakṣamatāyāḥ, adhikārasya, samāje uccapadapratiṣṭhāyāśca vicāre prayujyate. Etallagnaṃ tīvronnatiṃ rājakīyasaphalatāñca sūcayati."
+    },
+    "HORA_LAGNA": {
+      "phala": "Horālagnaṃ dhanadhānyasampatteḥ ārthikapravāhasya ca paramasūcakam.",
+      "phalaProse": "Horālagnaṃ jātakasya jīvanasya dhanasampatteḥ, ārthikapravāhasya, ājīvikāyāḥ, bhautikasampadāñca vicāre prayujyate. Asya balaṃ grahāṇāṃ sambandhaśca vipulaṃ dhanaiśvaryaṃ sūcayati."
+    },
+    "PRANAPADA_LAGNA": {
+      "phala": "Prāṇapadalagnaṃ prāṇabalasya, śārīrikasvāsthyasya, jīvanaśakteśca dyotakam.",
+      "phalaProse": "Prāṇapadalagnaṃ jātakasya dehasya prāṇaśakteḥ, ārogyasya, śārīrikadṛḍhatāyāḥ, jīvanorjāyāśca vicāre prayujyate. Asya śubhatvaṃ dīrghāyuṣyaṃ susvāsthyañca sūcayati."
+    },
+    "SREE_LAGNA": {
+      "phala": "Śrīlagnaṃ saubhāgyasya, devyāḥ lakṣmyāḥ anugrahasya, dāmpatyasukhasya ca sūcakam.",
+      "phalaProse": "Śrīlagnaṃ jātakasya jīvanasya pracurasaubhāgyasya, devyāḥ mahālakṣmyāḥ sākṣātkṛpāyāḥ, dāmpatyasukhasya, aiśvaryasya ca sūcakam. Asya śubhatvaṃ vaivāhikasaukhyaṃ śriyañca dadāti."
+    },
+    "VARNADA_LAGNA": {
+      "phala": "Varṇadalagnaṃ sāmājikabhūmikāyāḥ, sārvajanikamaryādāyāḥ, kartavyaniṣṭhāyāśca sūcakam.",
+      "phalaProse": "Varṇadalagnaṃ jātakasya samāje sthānasya, varṇasya (dhārmika-vyāvasāyikabhūmikāyāḥ), sārvajanikacaritrasya, kartavyaniṣṭhāyāśca sūcakam. Asya balaṃ samāje samādaraṃ sūcayati."
+    }
+  },
+  "tatwa": {
+    "AGNI": {
+      "phala": "Agnitattvaṃ tejaḥ utsāhaṃ netṛtvaṃ ca sūcayati.",
+      "phalaProse": "Agnitattve sapta nakṣatrāṇi (maghā, pūrvāphālgunī, uttarāphālgunī, hasta, citrā, svāti, viśākhā ca). Agnitattvapradhānaḥ tejasvī, utsāhī, spaṣṭavaktā netṛtvaguṇayuktaśca bhavati. Śīghrakopī kintu kriyāśīlaḥ, sāhasī, sattvaśīlaḥ nirbhīkaśca; pācanaśaktiḥ ojaśca prabalau. Pañcatattvamelane agni-vāyuyoḥ sakhyam (agnirvāyunā vardhate), agni-jalayostu virodhaḥ."
+    },
+    "AKASHA": {
+      "phala": "Ākāśatattvaṃ ādhyātmikatāṃ viśālatāṃ anāsaktiṃ ca sūcayati.",
+      "phalaProse": "Ākāśatattve pañca nakṣatrāṇi (dhaniṣṭhā, śatabhiṣā, pūrvābhādrapadā, uttarābhādrapadā, revatī ca). Ākāśatattvapradhānaḥ ādhyātmikaḥ, viśālacittaḥ, anāsaktaḥ, dārśanikaḥ sūkṣmacintakaśca bhavati. Udāradṛṣṭiḥ, svātantryapriyaḥ, gūḍhavidyānurāgī, kintu kadācit vyavahāre udāsīnaḥ. Ākāśaṃ sarvavyāpakaṃ nirākāraṃ ca; anena jātakaḥ sīmātītaṃ cintanaṃ mokṣābhimukhatāṃ ca prakaṭayati."
+    },
+    "JALA": {
+      "phala": "Jalatattvaṃ bhāvukatāṃ antaḥprajñāṃ poṣakaṃ ca sūcayati.",
+      "phalaProse": "Jalatattvapradhānaḥ bhāvukaḥ, antaḥprajñaḥ, anukūlanaśīlaḥ, poṣakaḥ sarasacittaśca bhavati. Saṃvedanaśīlaḥ, snehaśīlaḥ, smṛtimān, kalpanāpriyaśca; jalavat paristhityanurūpaṃ svarūpaṃ dhārayati. Kaphaprakṛtyā (antyanāḍīgaṇena) sambaddhā jalīyatā śāntiṃ sthiratāṃ poṣaṇaṃ ca sūcayati. Pañcatattvamelane jala-pṛthivyoḥ sakhyam, jala-agnyostu virodhaḥ."
+    },
+    "PRITHVI": {
+      "phala": "Pṛthvītattvaṃ sthairyaṃ dhairyaṃ vyāvahārikatāṃ ca sūcayati.",
+      "phalaProse": "Pṛthvītattve nava nakṣatrāṇi (aśvinī, bharaṇī, kṛttikā, rohiṇī, mṛgaśirā, ārdrā, punarvasu, puṣya, āśleṣā ca). Pṛthvītattvapradhānaḥ sthiraḥ, dhairyavān, vyāvahārikaḥ, bhautikaniṣṭhaḥ, pariśramī viśvasanīyaśca bhavati. Sahanaśīlaḥ saṅgrahaśīlaḥ dīrghadarśī ca; āpatsu api avicalaḥ. Pañcatattvamelane pṛthvī-jalayoḥ sakhyam (jalena bhūmiḥ sarasā bhavati), pṛthvī-vāyuyostu alpavirodhaḥ."
+    },
+    "VAYU": {
+      "phala": "Vāyutattvaṃ buddhiṃ cāñcalyaṃ sambhāṣaṇakuśalatāṃ ca sūcayati.",
+      "phalaProse": "Vāyutattve ṣaṭ nakṣatrāṇi (anurādhā, jyeṣṭhā, mūlā, pūrvāṣāḍhā, uttarāṣāḍhā, śravaṇa ca). Vāyutattvapradhānaḥ buddhimān, cañcalaḥ, sambhāṣaṇakuśalaḥ, parivartanaśīlaḥ jijñāsuśca bhavati. Nityaṃ nūtanavicārayuktaḥ, gatiśīlaḥ, samparkapriyaḥ, kintu kadācit asthiracittaḥ. Pañcatattvamelane vāyu-agnyoḥ sakhyam, vāyu-pṛthivyostu alpavirodhaḥ."
+    }
+  },
+  "tithi": {
+    "AMAVASYA": {
+      "phala": "Amāvāsyā — pitṛkarmaṇaḥ, tarpaṇasya, śubhārambhavarjanasya ca tithiḥ.",
+      "phalaProse": "Amāvāsyā pitṛdevatādhiṣṭhitā tithiḥ. Pitṛtarpaṇam, śrāddham, dānam, śāntikarma ca praśastam; kintu candrābhāvāt navamaṅgalārambhaḥ varjyaḥ. Adhyātmacintanāya hitā."
+    },
+    "KRISHNA_ASHTAMI": {
+      "phala": "Kṛṣṇāṣṭamī — śaktyupāsanāyāḥ, ugrakāryasya ca jayātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣāṣṭamī kālabhairavadevatādhiṣṭhitā jayātithiḥ. Śaktyupāsanā, kālabhairavapūjā, sāhasakarma ca yogyam. Balapradā kintu ugraphalā."
+    },
+    "KRISHNA_CHATURDASHI": {
+      "phala": "Kṛṣṇacaturdaśī — ugropāsanāyāḥ, śubhārambhavarjanasya ca riktātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣacaturdaśī rudrakālīdevatādhiṣṭhitā riktātithiḥ. Māsaśivarātriḥ, rudrakālīpūjā, ugrakarma ca yogyam; riktāsañjñatvāt navaśubhārambhaḥ varjyaḥ."
+    },
+    "KRISHNA_CHATURTHI": {
+      "phala": "Kṛṣṇacaturthī — gaṇeśapūjāyāḥ, vighnanāśasya ca riktātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣacaturthī gaṇeśadevatādhiṣṭhitā riktātithiḥ. Saṅkaṣṭīgaṇeśapūjā, vighnanāśasaṅkalpaśca praśastam; riktāsañjñatvāt navaśubhārambhaḥ varjyaḥ."
+    },
+    "KRISHNA_DASHAMI": {
+      "phala": "Kṛṣṇadaśamī — dharmakāryasya, saumyavyavahārasya ca pūrṇātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣadaśamī dharmarājadevatādhiṣṭhitā pūrṇātithiḥ. Dharmakarma, saumyavyavahāraḥ, nityaśubhakāryaṃ ca yogyam. Sāmānyaśubhā śāntaphalā ca."
+    },
+    "KRISHNA_DVITIYA": {
+      "phala": "Kṛṣṇadvitīyā — sthirakāryasya, maitryāḥ ca bhadrātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣadvitīyā brahmadevatādhiṣṭhitā bhadrātithiḥ. Sthirakāryam, maitrīsambandhaḥ, saumyavyavahāraśca yogyam. Śāntaphalā sāmānyaśubhā ca."
+    },
+    "KRISHNA_DWADASHI": {
+      "phala": "Kṛṣṇadvādaśī — pāraṇasya, dānasya ca bhadrātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣadvādaśī viṣṇudevatādhiṣṭhitā bhadrātithiḥ. Vratapāraṇam, dānam, viṣṇusevā ca yogyam. Saumyā puṇyavṛddhikarī ca."
+    },
+    "KRISHNA_EKADASHI": {
+      "phala": "Kṛṣṇaikādaśī — upavāsasya, viṣṇubhakteśca nandātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣaikādaśī viṣṇudevatādhiṣṭhitā nandātithiḥ. Upavāsaḥ, viṣṇupūjā, vratam, dharmakarma ca praśastam. Puṇyapradā ādhyātmikasiddhikarī ca."
+    },
+    "KRISHNA_NAVAMI": {
+      "phala": "Kṛṣṇanavamī — śubhārambhavarjanasya, ugropāsanāyāśca riktātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣanavamī durgādevatādhiṣṭhitā riktātithiḥ. Devīpūjā, ugrakarma ca yogyam; riktāsañjñatvāt navaśubhārambhaḥ varjyaḥ. Sāvadhānaphalā."
+    },
+    "KRISHNA_PANCHAMI": {
+      "phala": "Kṛṣṇapañcamī — dhanakāryasya, auṣadhasya ca pūrṇātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣapañcamī nāgadevatādhiṣṭhitā pūrṇātithiḥ. Dhanavyavahāraḥ, auṣadhasevanam, nāgapūjā ca yogyam. Sāmānyaśubhā sthiraphalā ca."
+    },
+    "KRISHNA_PRATIPADA": {
+      "phala": "Kṛṣṇapratipadā — saumyakāryasya, sāmānyārambhasya ca nandātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣapratipadā agnidevatādhiṣṭhitā nandātithiḥ. Saumyakāryam, nityakarma ca yogyam; kṣīyamāṇacandratvāt dīrghavṛddhikārye nyūnaphalam. Sāmānyaśubhā."
+    },
+    "KRISHNA_SAPTAMI": {
+      "phala": "Kṛṣṇasaptamī — yātrāyāḥ, ārogyakarmaṇaśca bhadrātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣasaptamī sūryadevatādhiṣṭhitā bhadrātithiḥ. Yātrā, ārogyakarma, sūryopāsanā ca yogyam. Sāmānyaśubhā tejaḥpradā ca."
+    },
+    "KRISHNA_SHASHTHI": {
+      "phala": "Kṛṣṇaṣaṣṭhī — śauryasya, spardhāyāśca nandātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣaṣaṣṭhī kārtikeyadevatādhiṣṭhitā nandātithiḥ. Śauryakarma, spardhā, balaprayogakāryaṃ ca yogyam. Utsāhapradā sāmānyaśubhā ca."
+    },
+    "KRISHNA_TRAYODASHI": {
+      "phala": "Kṛṣṇatrayodaśī — śivapūjāyāḥ, pradoṣavratasya ca jayātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣatrayodaśī kāmadevaśivadevatādhiṣṭhitā jayātithiḥ. Pradoṣavratam, śivapūjā, maitrīkarma ca praśastam. Vijayapradā saumyā ca."
+    },
+    "KRISHNA_TRITIYA": {
+      "phala": "Kṛṣṇatṛtīyā — sāhasakāryasya, spardhāyāśca jayātithiḥ.",
+      "phalaProse": "Kṛṣṇapakṣatṛtīyā gaurīdevatādhiṣṭhitā jayātithiḥ. Sāhasakarma, spardhā, vivādanirākaraṇaṃ ca yogyam. Vijayapradā kintu kṣīṇapakṣatvāt mandaphalā."
+    },
+    "PURNIMA": {
+      "phala": "Pūrṇimā — pūrṇacandrasya, satyanārāyaṇapūjāyāḥ, sarvaśubhasya ca pūrṇātithiḥ.",
+      "phalaProse": "Pūrṇimā candradevatādhiṣṭhitā pūrṇātithiḥ. Pūrṇacandrabalāt sarvaśubhakāryam, satyanārāyaṇavratam, dānam, maṅgalakarma ca praśastam. Paramaśubhā sampūrṇaphaladā ca."
+    },
+    "SHUKLA_ASHTAMI": {
+      "phala": "Śuklāṣṭamī — śakteḥ, durgāpūjāyāḥ, dṛḍhakāryasya ca jayātithiḥ.",
+      "phalaProse": "Śuklapakṣāṣṭamī durgādevatādhiṣṭhitā jayātithiḥ. Śaktyupāsanā, durgāpūjā, sāhasakarma, śastrasambandhakāryaṃ ca praśastam. Vijayapradā balapradā ca."
+    },
+    "SHUKLA_CHATURDASHI": {
+      "phala": "Śuklacaturdaśī — ugropāsanāyāḥ, riktakāryavarjanasya ca riktātithiḥ.",
+      "phalaProse": "Śuklapakṣacaturdaśī rudraśivadevatādhiṣṭhitā riktātithiḥ. Rudropāsanā, ugrakarma ca praśastam; kintu riktāsañjñatvāt navaśubhārambhaḥ varjyaḥ."
+    },
+    "SHUKLA_CHATURTHI": {
+      "phala": "Śuklacaturthī — vighnaharaṇasya, gaṇeśapūjāyāḥ, riktakāryavarjanasya ca tithiḥ.",
+      "phalaProse": "Śuklapakṣacaturthī gaṇeśadevatādhiṣṭhitā riktātithiḥ. Gaṇeśārādhanā vighnanāśaśca praśastam; kintu riktāsañjñatvāt navaśubhārambhaḥ varjyaḥ. Vighnaharaṇasaṅkalpāya hitā."
+    },
+    "SHUKLA_DASHAMI": {
+      "phala": "Śukladaśamī — dharmasya, sarvaśubhakāryasya ca pūrṇātithiḥ.",
+      "phalaProse": "Śuklapakṣadaśamī dharmarājadevatādhiṣṭhitā pūrṇātithiḥ. Dharmakāryam, vijayayātrā, sarvamaṅgalakarma ca praśastam. Saumyā sarvasiddhipradā ca."
+    },
+    "SHUKLA_DVITIYA": {
+      "phala": "Śukladvitīyā — sthāpanāyāḥ, maitryāḥ, saumyakāryasya ca bhadrātithiḥ.",
+      "phalaProse": "Śuklapakṣadvitīyā brahmadevatādhiṣṭhitā bhadrātithiḥ. Ādhārasthāpanam, maitrīsambandhaḥ, ābhūṣaṇakrayaḥ, saumyamaṅgalakāryaṃ ca śubham. Sthiraphalapradā śāntā ca."
+    },
+    "SHUKLA_DWADASHI": {
+      "phala": "Śukladvādaśī — pāraṇasya, dānasya, viṣṇusevāyāśca bhadrātithiḥ.",
+      "phalaProse": "Śuklapakṣadvādaśī viṣṇudevatādhiṣṭhitā bhadrātithiḥ. Vratapāraṇam, dānam, viṣṇusevā, śubhamaṅgalakāryaṃ ca praśastam. Saumyā puṇyavṛddhikarī ca."
+    },
+    "SHUKLA_EKADASHI": {
+      "phala": "Śuklaikādaśī — upavāsasya, viṣṇubhakteḥ, dharmakāryasya ca nandātithiḥ.",
+      "phalaProse": "Śuklapakṣaikādaśī viṣṇudevatādhiṣṭhitā nandātithiḥ. Upavāsaḥ, viṣṇupūjā, vratam, dharmakāryaṃ ca praśastam. Ādhyātmikasiddhipradā puṇyapradā ca."
+    },
+    "SHUKLA_NAVAMI": {
+      "phala": "Śuklanavamī — ugrakāryasya, śubhārambhavarjanasya ca riktātithiḥ.",
+      "phalaProse": "Śuklapakṣanavamī ambikādevatādhiṣṭhitā riktātithiḥ. Devīpūjā, ugrasāhasakarma ca praśastam; kintu riktāsañjñatvāt vivāhādinavaśubhārambhaḥ varjyaḥ."
+    },
+    "SHUKLA_PANCHAMI": {
+      "phala": "Śuklapañcamī — vidyāyāḥ, dhanasya, auṣadhasya ca pūrṇātithiḥ.",
+      "phalaProse": "Śuklapakṣapañcamī nāgasarpadevatādhiṣṭhitā pūrṇātithiḥ. Vidyārambhaḥ, dhanasañcayaḥ, auṣadhasevanam, sarasvatīpūjā ca praśastam. Samṛddhipradā śubhā ca."
+    },
+    "SHUKLA_PRATIPADA": {
+      "phala": "Śuklapratipadā — navavārambhasya, vṛddheḥ, maṅgalasaṅkalpasya ca tithiḥ.",
+      "phalaProse": "Śuklapakṣapratipadā agnidevatādhiṣṭhitā nandātithiḥ. Navakāryārambhaḥ, saṅkalpaḥ, gṛhapraveśaḥ, śubhamaṅgalaṃ ca praśastam. Vardhamānacandrabalāt kāryavṛddhiḥ śubhā."
+    },
+    "SHUKLA_SAPTAMI": {
+      "phala": "Śuklasaptamī — yātrāyāḥ, ārogyasya, sūryopāsanāyāśca bhadrātithiḥ.",
+      "phalaProse": "Śuklapakṣasaptamī sūryadevatādhiṣṭhitā bhadrātithiḥ. Yātrā, ārogyakarma, sūryopāsanā, vāhanakrayaśca praśastam. Tejaḥpradā sarvaśubhakāryayogyā ca."
+    },
+    "SHUKLA_SHASHTHI": {
+      "phala": "Śuklaṣaṣṭhī — śauryasya, spardhāvijayasya, kārtikeyapūjāyāśca nandātithiḥ.",
+      "phalaProse": "Śuklapakṣaṣaṣṭhī kārtikeyadevatādhiṣṭhitā nandātithiḥ. Śauryakāryam, spardhā, rājasambandhakarma, santānārthapūjā ca praśastam. Utsāhapradā śubhā ca."
+    },
+    "SHUKLA_TRAYODASHI": {
+      "phala": "Śuklatrayodaśī — kāmakāryasya, saundaryasya, śivapūjāyāśca jayātithiḥ.",
+      "phalaProse": "Śuklapakṣatrayodaśī kāmadevaśivadevatādhiṣṭhitā jayātithiḥ. Premakāryam, saundaryavardhanam, śivapūjā, mitramelanaṃ ca praśastam. Ākarṣaṇasiddhipradā śubhā ca."
+    },
+    "SHUKLA_TRITIYA": {
+      "phala": "Śuklatṛtīyā — vijayasya, maṅgalakāryasya, gṛhārambhasya ca jayātithiḥ.",
+      "phalaProse": "Śuklapakṣatṛtīyā gaurīdevatādhiṣṭhitā jayātithiḥ. Akṣayatṛtīyāsadṛśī atiśubhā; vivāhaḥ, gṛhārambhaḥ, svarṇakrayaḥ, sarvamaṅgalakāryaṃ ca praśastam. Vijayapradā."
+    }
+  },
+  "vara": {
+    "BUDHAVARA": {
+      "phala": "Budhavāraḥ budhādhiṣṭhitaḥ — buddheḥ, vāṇijyasya, vidyāyāśca dinam.",
+      "phalaProse": "Budhavāsaraḥ budhasya vāsaraḥ. Asmin dine buddhiḥ, sañcāraḥ, lekhanam, vāṇijyam, vidyābhyāsaśca praśastam. Sandhivārtā, gaṇitakarma, sandeśapreṣaṇaṃ ca siddhyanti. Divā medhākārye saphalatā; rātrau adhyayanaṃ mananaṃ ca hitakaram."
+    },
+    "GURUVARA": {
+      "phala": "Guruvāraḥ bṛhaspatyadhiṣṭhitaḥ — jñānasya, dharmasya, maṅgalakāryasya ca dinam.",
+      "phalaProse": "Guruvāsaraḥ bṛhaspateḥ vāsaraḥ. Asmin dine jñānam, dharmaḥ, gurusevā, śubhamaṅgalakāryaṃ ca praśastam. Śikṣaṇam, yātrā, dhanasañcayaḥ, vivāhādimaṅgalaṃ ca siddhyanti. Divā śubhakarma phalapradam; rātrau prārthanā adhyayanaṃ ca hitakaram."
+    },
+    "MANGALAVARA": {
+      "phala": "Maṅgalavāraḥ kujādhiṣṭhitaḥ — śauryasya, ūrjāyāḥ, vivādasya ca dinam.",
+      "phalaProse": "Maṅgalavāsaraḥ kujasya vāsaraḥ. Asmin dine śauryam, sāhasam, bhūmisambandhakarma, śastrakāryaṃ ca prabalam. Ṛṇamocanam, spardhā, vīrakarma ca siddhyanti; kintu krodhaḥ kalahaśca varjyaḥ. Divā udyamaḥ phalapradaḥ; rātrau saṃyamaḥ śāntiśca hitakaraḥ."
+    },
+    "RAVIVARA": {
+      "phala": "Ravivāraḥ sūryādhiṣṭhitaḥ — tejasaḥ, netṛtvasya, ārogyasya ca dinam.",
+      "phalaProse": "Ravivāsaraḥ sūryasya vāsaraḥ. Asmin dine ātmaviśvāsaḥ, netṛtvam, rājakāryam, pitṛsambandhakāryaṃ ca śubham. Ārogyacintā, devapūjā, uccapadābhigamanaṃ ca praśastam. Divā karma tejasvi; rātrau viśrāmaḥ śāntiśca hitaḥ."
+    },
+    "SHANIVARA": {
+      "phala": "Śanivāraḥ śanyadhiṣṭhitaḥ — śramasya, dhairyasya, kaṭhinakāryasya ca dinam.",
+      "phalaProse": "Śanivāsaraḥ śaneḥ vāsaraḥ. Asmin dine śramaḥ, dhairyam, sevākarma, kaṭhinapariśramaśca praśastam. Lohakāryam, sthirasampattiḥ, dīrghakālikakarma ca siddhyanti. Hanumatśanipūjā hitakarī. Divā pariśramaḥ phalapradaḥ; rātrau saṃyamaḥ śāntiśca hitaḥ."
+    },
+    "SHUKRAVARA": {
+      "phala": "Śukravāraḥ śukrādhiṣṭhitaḥ — premṇaḥ, kalāyāḥ, sukhabhogasya ca dinam.",
+      "phalaProse": "Śukravāsaraḥ śukrasya vāsaraḥ. Asmin dine prema, kalā, saṅgītam, saundaryam, sukhabhogaśca prabalam. Vivāhasambandhaḥ, alaṅkārakrayaḥ, vastrābharaṇaṃ ca śubham. Divā kalāsukhakarma phalapradam; rātrau rasarañjanaṃ prītiśca sukhadā."
+    },
+    "SOMAVARA": {
+      "phala": "Somavāraḥ candrādhiṣṭhitaḥ — manasaḥ, jalasya, mātṛsambandhasya ca dinam.",
+      "phalaProse": "Somavāsaraḥ candrasya vāsaraḥ. Asmin dine manaḥ saumyaṃ bhāvukaṃ ca; mātṛkāryam, jalasambandhakarma, gṛhakāryaṃ ca śubham. Śivārādhanā praśastā. Divā komalakāryeṣu siddhiḥ; rātrau candrabalāt śāntiḥ nidrā ca sukhadā."
+    }
+  },
+  "varna": {
+    "BRAHMIN": {
+      "phala": "Brāhmaṇavarṇaḥ jñānapriyaṃ vidyānurāgiṇaṃ sūcayati.",
+      "phalaProse": "Brāhmaṇavarṇe catvāri nakṣatrāṇi (kṛttikā, pūrvāphālgunī, pūrvāṣāḍhā, pūrvābhādrapadā ca) antarbhavanti. Varṇaḥ sāmājikabhedaṃ na sūcayati, api tu jātasya sahajāṃ mānasavṛttimeva; brāhmaṇavarṇajātasya cittaṃ sāttvikaṃ, jñānapriyaṃ, vidyānurāgi, cintanaśīlaṃ ca bhavati. Ete adhyayanādhyāpane, jñānaśodhane, parāmarśane dharmakarmaṇi ca svābhāvikīṃ pratibhāṃ dhārayanti. Varṇakūṭe (aṣṭakūṭamadhye ekāṅkena ahaṅkārakarmavṛttimelanavicārakam) varasya varṇaḥ kanyāvarṇāt samaḥ adhiko vā śreyān; nyūne varṇadoṣaḥ."
+    },
+    "KSHATRIYA": {
+      "phala": "Kṣatriyavarṇaḥ śauryaṃ netṛtvaṃ adhikāraṃ ca sūcayati.",
+      "phalaProse": "Kṣatriyavarṇe ṣaṭ nakṣatrāṇi (puṣya, uttarāphālgunī, citrā, mūlā, uttarāṣāḍhā, uttarābhādrapadā ca) antarbhavanti. Varṇaḥ sahajāṃ mānasavṛttimeva sūcayati; kṣatriyavarṇajātasya cittaṃ rājasaṃ, śauryayuktaṃ, netṛtvapriyaṃ tejasvi ca bhavati. Ete senāsañcālane, praśāsane, adhikārapade, pratirakṣaṇe sāhasakarmaṇi ca svābhāvikīṃ pratibhāṃ dhārayanti. Varṇakūṭe (aṣṭakūṭamadhye ekāṅkena ahaṅkārakarmavṛttimelanavicārakam) varasya varṇaḥ kanyāvarṇāt samaḥ adhiko vā śreyān; nyūne varṇadoṣaḥ."
+    },
+    "MLECCHA": {
+      "phala": "Mlecchavarṇaḥ caturvarṇabāhyaṃ svatantraṃ aparamparāgataṃ ca sūcayati.",
+      "phalaProse": "Mlecchavarṇe sapta nakṣatrāṇi (bharaṇī, ārdrā, āśleṣā, svāti, viśākhā, śravaṇa, śatabhiṣā ca) antarbhavanti. Mlecchaḥ brāhmaṇakṣatriyavaiśyaśūdrarūpāyāḥ caturvarṇavyavasthāyāḥ bāhyaḥ gaṇyate — svatantraḥ, aparamparāgataḥ, paradeśīyapravṛttiḥ sahajamuktacittaśca. Ete navīnakarmasu, aparipāṭivṛttau, paradeśasambaddhakārye svādhīnavyavasāye ca svābhāvikīṃ pratibhāṃ dhārayanti. Varṇakramabāhyatvāt varṇakūṭe (aṣṭakūṭamadhye ekāṅke) sāmānyakramatulanā na pravartate; ayaṃ mānena grāhyaḥ, na tu hīnatayā."
+    },
+    "SHUDRA": {
+      "phala": "Śūdravarṇaḥ sevāṃ śramaśīlatāṃ niṣṭhāṃ ca sūcayati.",
+      "phalaProse": "Śūdravarṇe pañca nakṣatrāṇi (rohiṇī, maghā, anurādhā, dhaniṣṭhā, revatī ca) antarbhavanti. Varṇaḥ sahajāṃ mānasavṛttimeva sūcayati; śūdravarṇajātasya cittaṃ sevāśīlaṃ, śramapriyaṃ, niṣṭhāvat bhūmisambaddhaṃ ca bhavati. Ete sevākarmaṇi, śilpakauśale, hastakarmaṇi, svāmibhaktau śramasādhyakārye ca svābhāvikīṃ pratibhāṃ dhārayanti. Varṇakūṭe (aṣṭakūṭamadhye ekāṅkena ahaṅkārakarmavṛttimelanavicārakam) varasya varṇaḥ kanyāvarṇāt samaḥ adhiko vā śreyān; nyūne varṇadoṣaḥ."
+    },
+    "VAISHYA": {
+      "phala": "Vaiśyavarṇaḥ vāṇijyaṃ vyāvahārikatāṃ samṛddhiṃ ca sūcayati.",
+      "phalaProse": "Vaiśyavarṇe pañca nakṣatrāṇi (aśvinī, mṛgaśirā, punarvasu, hasta, jyeṣṭhā ca) antarbhavanti. Varṇaḥ sahajāṃ mānasavṛttimeva sūcayati; vaiśyavarṇajātasya cittaṃ rājasaṃ kintu vyāvahārikaṃ, vāṇijyakuśalaṃ, samṛddhipriyaṃ prabandhanipuṇaṃ ca bhavati. Ete vyāpāre, vinimaye, arthaprabandhane, kṛṣivāṇijye udyame ca svābhāvikīṃ pratibhāṃ dhārayanti. Varṇakūṭe (aṣṭakūṭamadhye ekāṅkena ahaṅkārakarmavṛttimelanavicārakam) varasya varṇaḥ kanyāvarṇāt samaḥ adhiko vā śreyān; nyūne varṇadoṣaḥ."
+    }
+  },
+  "yoga": {
+    "ATIGANDA": {
+      "phala": "Atigaṇḍayogaḥ — vighnasya, saṅkaṭasya ca aśubhayogaḥ; śubhārambhe varjyaḥ.",
+      "phalaProse": "Atigaṇḍayogaḥ aśubhadāruṇasañjñakaḥ; saṅkaṭavighnasūcakaḥ. Navaśubhārambhaḥ varjyaḥ; śāntikarma, vighnaharaṇasaṅkalpaśca hitaḥ. Sāvadhānatā āvaśyakā."
+    },
+    "AYUSHMAN": {
+      "phala": "Āyuṣmānyogaḥ — ārogyasya, dīrghāyuṣaḥ, sthirakāryasya ca śubhayogaḥ.",
+      "phalaProse": "Āyuṣmānyogaḥ śubhasañjñakaḥ. Ārogyakarma, āyurvardhanam, sthirakāryam, sarvamaṅgalaṃ ca praśastam. Dīrghaphalapradaḥ ārogyakaraśca."
+    },
+    "BRAHMA": {
+      "phala": "Brahmayogaḥ — jñānasya, sṛjanasya, sarvaśubhasya ca paramaśubhayogaḥ.",
+      "phalaProse": "Brahmayogaḥ paramaśubhasañjñakaḥ. Jñānakarma, sṛjanātmakakāryam, gṛhārambhaḥ, sarvamaṅgalaṃ ca paramapraśastam. Śreṣṭhaphalapradaḥ atiśubhaśca."
+    },
+    "DHRITI": {
+      "phala": "Dhṛtiyogaḥ — dhairyasya, sthiratāyā, santoṣasya ca śubhayogaḥ.",
+      "phalaProse": "Dhṛtiyogaḥ śubhasañjñakaḥ. Dhairyakarma, sthirasaṅkalpaḥ, santoṣakāryam, sarvaśubhaṃ ca praśastam. Dhairyapradaḥ sthiraphalaśca."
+    },
+    "DHRUVA": {
+      "phala": "Dhruvayogaḥ — sthairyasya, dṛḍhasaṅkalpasya, sthirakāryasya ca yogaḥ.",
+      "phalaProse": "Dhruvayogaḥ sthirasañjñakaḥ śubhayogaḥ. Sthirakāryam, gṛhārambhaḥ, sthāvarasampatkrayaḥ, dīrghakālikasaṅkalpaśca praśastam. Dṛḍhatā sthairyaṃ ca dadāti; capalakārye nyūnaphalam."
+    },
+    "GANDA": {
+      "phala": "Gaṇḍayogaḥ — vighnasya, bādhāyāśca aśubhayogaḥ; śubhārambhe varjyaḥ.",
+      "phalaProse": "Gaṇḍayogaḥ aśubhasañjñakaḥ; vighnabādhāsūcakaḥ. Navaśubhārambhaḥ varjyaḥ; śāntikarma, vighnaharaṇasaṅkalpaśca hitaḥ. Sāvadhānatā āvaśyakā."
+    },
+    "HARSHANA": {
+      "phala": "Harṣaṇayogaḥ — harṣasya, ānandasya, jñānakāryasya ca śubhayogaḥ.",
+      "phalaProse": "Harṣaṇayogaḥ śubhasañjñakaḥ. Ānandakāryam, utsavaḥ, vidyā, sarvamaṅgalaṃ ca praśastam. Harṣapradaḥ śubhaśca."
+    },
+    "INDRA": {
+      "phala": "Indrayogaḥ — aiśvaryasya, netṛtvasya, rājakāryasya ca śubhayogaḥ.",
+      "phalaProse": "Indrayogaḥ śubhasañjñakaḥ. Aiśvaryakarma, netṛtvam, rājasambandhakāryam, sarvamaṅgalaṃ ca praśastam. Aiśvaryapradaḥ śubhaśca."
+    },
+    "PARIGHA": {
+      "phala": "Parighayogaḥ — vighnasya, avarodhasya ca aśubhayogaḥ; śubhārambhe varjyaḥ.",
+      "phalaProse": "Parighayogaḥ aśubhasañjñakaḥ; avarodhavighnasūcakaḥ. Navaśubhārambhaḥ varjyaḥ; uttarārdhe nyūnadoṣaḥ. Śāntikarma hitam."
+    },
+    "PRITI": {
+      "phala": "Prītiyogaḥ — snehasya, maitryāḥ, sukhakāryasya ca śubhayogaḥ.",
+      "phalaProse": "Prītiyogaḥ śubhasañjñakaḥ. Snehasambandhaḥ, maitrī, sukhakāryam, maṅgalakarma ca praśastam. Prītipradaḥ sarvaśubhakāryayogyaśca."
+    },
+    "SADHYA": {
+      "phala": "Sādhyayogaḥ — sādhyakāryasya, siddheḥ, maṅgalasya ca śubhayogaḥ.",
+      "phalaProse": "Sādhyayogaḥ śubhasañjñakaḥ. Sādhyakāryasiddhiḥ, maṅgalakarma, sarvaśubhaṃ ca praśastam. Kāryasādhanapradaḥ śubhaśca."
+    },
+    "SAUBHAGYA": {
+      "phala": "Saubhāgyayogaḥ — saubhāgyasya, samṛddheḥ, maṅgalakāryasya ca śubhayogaḥ.",
+      "phalaProse": "Saubhāgyayogaḥ śubhasañjñakaḥ. Vivāhaḥ, maṅgalakāryam, samṛddhikarma, sarvaśubhaṃ ca praśastam. Saubhāgyapradaḥ atiśubhaśca."
+    },
+    "SHIVA": {
+      "phala": "Śivayogaḥ — kalyāṇasya, dharmasya, sarvaśubhasya ca śubhayogaḥ.",
+      "phalaProse": "Śivayogaḥ śubhasañjñakaḥ. Dharmakarma, kalyāṇakāryam, śivapūjā, sarvamaṅgalaṃ ca praśastam. Kalyāṇapradaḥ atiśubhaśca."
+    },
+    "SHOBHANA": {
+      "phala": "Śobhanayogaḥ — saundaryasya, śobhanakāryasya, maṅgalasya ca śubhayogaḥ.",
+      "phalaProse": "Śobhanayogaḥ śubhasañjñakaḥ. Saundaryakarma, alaṅkāraḥ, śobhanamaṅgalakāryam, sarvaśubhaṃ ca praśastam. Kāntipradaḥ śubhaśca."
+    },
+    "SHOOLA": {
+      "phala": "Śūlayogaḥ — vivādasya, pīḍāyāśca aśubhayogaḥ; śubhārambhe varjyaḥ.",
+      "phalaProse": "Śūlayogaḥ aśubhasañjñakaḥ; vivādapīḍāsūcakaḥ. Navaśubhārambhaḥ varjyaḥ; ugrakarmaṇi eva yogyaḥ. Śāntikarma hitam."
+    },
+    "SHUBHA": {
+      "phala": "Śubhayogaḥ — maṅgalasya, kalyāṇasya, sarvaśubhakāryasya ca śubhayogaḥ.",
+      "phalaProse": "Śubhayogaḥ śubhasañjñakaḥ. Sarvamaṅgalakāryam, śubhārambhaḥ, kalyāṇakarma ca praśastam. Śubhaphalapradaḥ sarvakāryayogyaśca."
+    },
+    "SHUKLA": {
+      "phala": "Śuklayogaḥ — śuddhatāyā, saumyakāryasya, maṅgalasya ca śubhayogaḥ.",
+      "phalaProse": "Śuklayogaḥ śubhasañjñakaḥ. Saumyamaṅgalakāryam, śuddhakarma, sarvaśubhaṃ ca praśastam. Saumyaphalapradaḥ śubhaśca."
+    },
+    "SIDDHA": {
+      "phala": "Siddhayogaḥ — siddheḥ, saphalatāyā, sarvaśubhakāryasya ca śubhayogaḥ.",
+      "phalaProse": "Siddhayogaḥ śubhasañjñakaḥ. Sarvakāryasiddhiḥ, maṅgalārambhaḥ, vidyākarma ca praśastam. Siddhipradaḥ śubhaśca."
+    },
+    "SIDDHI": {
+      "phala": "Siddhiyogaḥ — kāryasiddheḥ, saphalatāyā, sarvaśubhasya ca śubhayogaḥ.",
+      "phalaProse": "Siddhiyogaḥ śubhasañjñakaḥ. Kāryārambhaḥ, siddhipradakarma, sarvamaṅgalaṃ ca paramapraśastam. Saphalatāpradaḥ atiśubhaśca."
+    },
+    "SUKARMA": {
+      "phala": "Sukarmayogaḥ — satkarmaṇaḥ, puṇyakāryasya, sarvaśubhasya ca śubhayogaḥ.",
+      "phalaProse": "Sukarmayogaḥ śubhasañjñakaḥ. Satkarma, puṇyakāryam, dānam, sarvamaṅgalaṃ ca praśastam. Karmasiddhipradaḥ śubhaśca."
+    },
+    "VAIDHRITI": {
+      "phala": "Vaidhṛtiyogaḥ — mahāvighnasya aśubhayogaḥ; śubhārambhe sarvathā varjyaḥ.",
+      "phalaProse": "Vaidhṛtiyogaḥ atiaśubhadāruṇasañjñakaḥ; mahāvighnasūcakaḥ. Sarvaśubhārambhaḥ varjyaḥ; kevalaṃ śāntidānajapakarma hitam. Atīva sāvadhānatā āvaśyakā."
+    },
+    "VAJRA": {
+      "phala": "Vajrayogaḥ — kaṭhoratāyā, āghātasya ca aśubhayogaḥ; śubhārambhe varjyaḥ.",
+      "phalaProse": "Vajrayogaḥ aśubhasañjñakaḥ; kaṭhorāghātasūcakaḥ. Navaśubhārambhaḥ varjyaḥ; ugradṛḍhakarmaṇi eva yogyaḥ. Sāvadhānatā hitā."
+    },
+    "VARIYANA": {
+      "phala": "Varīyānyogaḥ — śreṣṭhakāryasya, sukhasya, sarvaśubhasya ca śubhayogaḥ.",
+      "phalaProse": "Varīyānyogaḥ śubhasañjñakaḥ. Śreṣṭhakāryam, sukhabhogaḥ, maṅgalakarma, sarvaśubhaṃ ca praśastam. Utkṛṣṭaphalapradaḥ śubhaśca."
+    },
+    "VISHKAMBHA": {
+      "phala": "Viṣkambhayogaḥ — bādhāsūcakaḥ aśubhayogaḥ; ārambhe sāvadhānatā hitā.",
+      "phalaProse": "Viṣkambhayogaḥ aśubhasañjñakaḥ; ārambhe vighnabādhāsūcakaḥ. Navaśubhārambhe sāvadhānatā hitā; pariśrameṇa tu ante siddhiḥ sambhavā. Śāntikarma praśastam."
+    },
+    "VRIDDHI": {
+      "phala": "Vṛddhiyogaḥ — vṛddheḥ, samṛddheḥ, dhanakāryasya ca śubhayogaḥ.",
+      "phalaProse": "Vṛddhiyogaḥ śubhasañjñakaḥ. Dhanavṛddhiḥ, vyāpārārambhaḥ, samṛddhikarma, sarvaśubhaṃ ca praśastam. Vardhamānaphalapradaḥ śubhaśca."
+    },
+    "VYAGHATA": {
+      "phala": "Vyāghātayogaḥ — āghātasya, virodhasya ca aśubhayogaḥ; śubhārambhe varjyaḥ.",
+      "phalaProse": "Vyāghātayogaḥ aśubhasañjñakaḥ; āghātavirodhasūcakaḥ. Navaśubhārambhaḥ varjyaḥ; ugrakarmaṇi eva yogyaḥ. Śāntikarma hitam."
+    },
+    "VYATIPATA": {
+      "phala": "Vyatīpātayogaḥ — mahāvighnasya aśubhayogaḥ; śubhārambhe sarvathā varjyaḥ.",
+      "phalaProse": "Vyatīpātayogaḥ atiaśubhadāruṇasañjñakaḥ; mahāvighnasūcakaḥ. Sarvaśubhārambhaḥ varjyaḥ; kevalaṃ śāntidānajapakarma hitam. Atīva sāvadhānatā āvaśyakā."
+    }
+  },
+  "yoni": {
+    "BUFFALO": {
+      "phala": "Mahiṣayoniḥ balaṃ sahanaśīlatāṃ śramaśīlaṃ ca sūcayati.",
+      "phalaProse": "Mahiṣayonau hasta-svātyoḥ nakṣatre antarbhavataḥ. Mahiṣayonijātaḥ balavān, sahanaśīlaḥ, śramaśīlaḥ dṛḍhaśca; gambhīraḥ, mandakopī, pariśrameṇa kāryasiddhikaraḥ sthiraśca. Vyavahāre bhāravahanakṣamaḥ, dhairyavān, kaṣṭasahiṣṇuḥ, dīrghakālikakarmasu ca saphalaḥ. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; aśvayonistu mahiṣasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "CAT": {
+      "phala": "Mārjārayoniḥ svatantraṃ caturaṃ ca sūcayati.",
+      "phalaProse": "Mārjārayonau punarvasu-āśleṣe nakṣatre antarbhavataḥ. Mārjārayonijātaḥ svatantraḥ, caturaḥ, manasvī satarkaśca; svacchandaḥ, avasarakuśalaḥ, mṛdubāhyaḥ kintu svārtharakṣī. Vyavahāre ātmanirbharaḥ, sukhapriyaḥ, sūkṣmaceṣṭaḥ, svakīyakṣetraṃ ca sāvadhānena rakṣati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; mūṣakayonistu mārjārasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "COW": {
+      "phala": "Goyoniḥ saumyaṃ sahiṣṇuṃ poṣakaṃ ca sūcayati.",
+      "phalaProse": "Goyonau uttarāphālgunī-uttarābhādrapade nakṣatre antarbhavataḥ. Goyonijātaḥ saumyaḥ, sahiṣṇuḥ, poṣakaḥ śāntaḥ dhārmikaśca; paropakārī, udāraḥ, śramaśīlaḥ santoṣī ca. Vyavahāre pālanapoṣaṇanirataḥ, kuṭumbavatsalaḥ, sthiracittaḥ, sevayā ca sarveṣāṃ hitakārī bhavati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; vyāghrayonistu goyonyāḥ sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "DEER": {
+      "phala": "Mṛgayoniḥ saumyaṃ cañcalaṃ bhīruṃ ca sūcayati.",
+      "phalaProse": "Mṛgayonau anurādhā-jyeṣṭhe nakṣatre antarbhavataḥ. Mṛgayonijātaḥ saumyaḥ, cañcalaḥ, saundaryapriyaḥ bhīruḥ saṃvedanaśīlaśca; kalāpriyaḥ, śīghratrastaḥ, svatantracārī komalahṛdayaśca. Vyavahāre sukumāraḥ, saundaryarasikaḥ, saṅgharṣaparāṅmukhaḥ, śāntavātāvaraṇapriyaśca bhavati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; śvayonistu mṛgasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "DOG": {
+      "phala": "Śvayoniḥ svāmibhaktiṃ satarkatāṃ ca sūcayati.",
+      "phalaProse": "Śvayonau ārdrā-mūle nakṣatre antarbhavataḥ. Śvayonijātaḥ svāmibhaktaḥ, satarkaḥ, rakṣaṇaśīlaḥ niṣṭhāvān ca; sāhasī, sevāparaḥ, mitravatsalaḥ kadācicca śīghrakopī. Vyavahāre viśvāsapātraḥ, kartavyaniṣṭhaḥ, āśritānāṃ rakṣakaḥ, snehena ca sahajavaśaḥ bhavati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; mṛgayonistu śvasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "ELEPHANT": {
+      "phala": "Gajayoniḥ gāmbhīryaṃ balaṃ sthairyaṃ ca sūcayati.",
+      "phalaProse": "Gajayonau bharaṇī-revatī nakṣatre antarbhavataḥ. Gajayonijātaḥ gambhīraḥ, balavān, sthiraḥ, dhairyavān sammānanīyaśca; mandagatiḥ kintu dṛḍhasaṅkalpaḥ, svalpakopī sahiṣṇuśca. Vyavahāre viśālahṛdayaḥ, uttaradāyitvabhāravahanakṣamaḥ, gṛhasthajīvane sthairyaṃ samṛddhiṃ ca ānayati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; siṃhayonistu gajasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "GOAT": {
+      "phala": "Meṣayoniḥ saumyaṃ mṛduṃ snehaśīlaṃ ca sūcayati.",
+      "phalaProse": "Meṣayonau kṛttikā-puṣye nakṣatre antarbhavataḥ. Meṣayonijātaḥ saumyaḥ, mṛdusvabhāvaḥ, snehaśīlaḥ santoṣī ca; anukūlanaśīlaḥ, samūhapriyaḥ, alpakalahapriyaḥ śāntacittaśca. Vyavahāre sahajasantuṣṭaḥ, parivārasamājayoḥ maitrīpūrṇaḥ, komalasvabhāvena sarvapriyaśca bhavati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; vānarayonistu meṣasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "HORSE": {
+      "phala": "Aśvayoniḥ cañcalaṃ tejasvinaṃ ca sūcayati.",
+      "phalaProse": "Aśvayonau aśvinī-śatabhiṣe nakṣatre antarbhavataḥ. Aśvayonijātaḥ cañcalaḥ, tejasvī, ojasvī, udyamaśīlaḥ vegavāṃśca; gatipriyaḥ svatantraḥ sthiratāyāṃ ca aruciḥ. Vyavahāre śīghranirṇayī, sāhasapriyaḥ, yātrāpravāsakarmasu nipuṇaḥ, paratantratāṃ ca na sahate. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat dāmpatye jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; mahiṣayonistu aśvasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "LION": {
+      "phala": "Siṃhayoniḥ parākramaṃ netṛtvaṃ gāmbhīryaṃ ca sūcayati.",
+      "phalaProse": "Siṃhayonau dhaniṣṭhā-pūrvābhādrapade nakṣatre antarbhavataḥ. Siṃhayonijātaḥ parākramī, netā, gambhīraḥ ātmābhimānī tejasvī ca; svādhikārapriyaḥ, udāraḥ, anuyāyivatsalaḥ avamānanāsahiṣṇuśca. Vyavahāre adhikārapadayogyaḥ, spaṣṭavaktā, prabhāvaśālī, svatantranirṇayī ca bhavati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; gajayonistu siṃhasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "MONGOOSE": {
+      "phala": "Nakulayoniḥ sāhasaṃ satarkatāṃ cāpalyaṃ ca sūcayati.",
+      "phalaProse": "Nakulayonau uttarāṣāḍhānakṣatram ekameva antarbhavati. Nakulayonijātaḥ sāhasī, satarkaḥ, capalaḥ nirbhīkaḥ niścayī ca; kṣiprapratikriyaḥ, ātmarakṣākuśalaḥ, saṅkaṭe dhīraḥ svatantraśca. Vyavahāre āpatsu avicalaḥ, śatrupratirodhī, dṛḍhaniścayaḥ, svalpe'pi bhaye ca na vicalati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; sarpayonistu nakulasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "MONKEY": {
+      "phala": "Vānarayoniḥ cāpalyaṃ cāturyaṃ krīḍāśīlaṃ ca sūcayati.",
+      "phalaProse": "Vānarayonau pūrvāṣāḍhā-śravaṇe nakṣatre antarbhavataḥ. Vānarayonijātaḥ capalaḥ, caturaḥ, krīḍāśīlaḥ buddhimān ca; vinodapriyaḥ, anukaraṇakuśalaḥ, bahumukhapratibhaḥ calacittaśca. Vyavahāre āśugrāhī, sāmājikaḥ, upāyacaturaḥ, nūtanasthānakāryayośca śīghrasamāyojī bhavati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; meṣayonistu vānarasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "RAT": {
+      "phala": "Mūṣakayoniḥ cāpalyaṃ cāturyaṃ ca sūcayati.",
+      "phalaProse": "Mūṣakayonau maghā-pūrvāphālgunyau nakṣatre antarbhavataḥ. Mūṣakayonijātaḥ capalaḥ, caturaḥ, saṅgrahaśīlaḥ buddhimāṃśca; kriyāśīlaḥ, alpasantoṣī, bahukāryapravṛttaḥ sāvadhānaśca. Vyavahāre mitavyayī, udyamī, saṅkaṭe śīghrabuddhiḥ, sādhanasaṅgrahe ca nipuṇaḥ. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; mārjārayonistu mūṣakasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "SERPENT": {
+      "phala": "Sarpayoniḥ rahasyapriyaṃ tīkṣṇabuddhiṃ sūcayati.",
+      "phalaProse": "Sarpayonau rohiṇī-mṛgaśire nakṣatre antarbhavataḥ. Sarpayonijātaḥ rahasyapriyaḥ, tīkṣṇabuddhiḥ, sūkṣmadarśī ekāntapriyaśca; gūḍhabhāvaḥ, smaraṇaśīlaḥ, avasarajñaḥ kadācicca pratiśodhī. Vyavahāre mantraṇākuśalaḥ, saṅkaṭe śāntaḥ, guptavidyāsu ākarṣitaḥ, svakīyabhāvān ca na prakaṭayati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; nakulayonistu sarpasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    },
+    "TIGER": {
+      "phala": "Vyāghrayoniḥ sāhasaṃ tejaḥ svātantryaṃ ca sūcayati.",
+      "phalaProse": "Vyāghrayonau citrā-viśākhe nakṣatre antarbhavataḥ. Vyāghrayonijātaḥ sāhasī, tejasvī, svatantraḥ prabalaḥ ātmābhimānī ca; nirbhīkaḥ, svādhikārapriyaḥ, ekākikāryakṣamaḥ śīghrakopī ca. Vyavahāre netṛtvaśīlaḥ, pratispardhī, anyāyāsahiṣṇuḥ, svamārgānugāmī ca bhavati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; goyonistu vyāghrasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
+    }
+  }
+}

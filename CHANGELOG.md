@@ -1369,6 +1369,31 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A fifth locale for both reading corpora, derived rather than
+  translated — and the defect deriving it found.** `sa-Latn` is `sa-Deva`
+  in Latin script, as it already is in `i18n/`. Transliterating a corpus of
+  **prose** through the same path showed that it **title-cased every
+  word**: right for a name (`Aśvinī Kumāra`, which is how the sources' own
+  `iast` forms are written) and wrong for a passage, which came out
+  `Gururlagne Rājayogakārakaḥ. Prajñāvān, Dhārmikaḥ` where the text says a
+  sentence.
+
+  Casing is now **declared by the caller** — `derive::Casing::{Names,
+  Sentences}`, and `teistro-intl derive --prose` — because the source
+  script carries no case and nothing in the text could tell a two-word
+  passage from a two-word name. A rule that counted words would be the
+  inference this project refuses elsewhere. Sentence casing capitalises
+  the first letter of the text and of each sentence after it, treating the
+  danda as the stop it is, and touches nothing else.
+
+  Both corpora now carry `packs/readings/sa-Latn` and
+  `packs/states/sa-Latn`, and `check-state-readings` re-derives each and
+  holds the checked-in files against it, exactly as `check-intl` does for
+  `i18n/sa-Latn`. Every claim on both measured pages holds with the fifth
+  locale: 1 750 records, 4 850 forms answering from loaded packs, and the
+  readings of a rule still standing under the state readings laid over
+  them.
+
 - **A tenth composer, `chalit`: where the two house readings disagree.** A
   chart places every graha twice — under the placement system, which is
   what most of the tradition means by "in the seventh", and under the

@@ -8,7 +8,7 @@ difference. The design it measures is
 
 ## What the packs and the readings say of each other
 
-639 of the 657 rules the shipped packs hold carry a reading, in 4 locales. The two lists below are exhaustive rather than counted, because a rule that gains a reading and a reading that loses its rule both have to change this page.
+639 of the 657 rules the shipped packs hold carry a reading, in 5 locales. The two lists below are exhaustive rather than counted, because a rule that gains a reading and a reading that loses its rule both have to change this page.
 
 | | |
 |---|---:|
@@ -31,22 +31,22 @@ work already done.
 
 A record's `name` is its summary and its `prose` is the passage; the
 rest are the reading's named facets, and they are an **open** set rather
-than a fixed record — a reading carries the facets it has. Over 2596
+than a fixed record — a reading carries the facets it has. Over 3245
 language-records:
 
 | facet | records |
 |---|---:|
-| `body` | 31 |
-| `career` | 655 |
-| `general` | 1312 |
-| `longevity` | 27 |
-| `material` | 357 |
-| `mind` | 1048 |
-| `relationships` | 420 |
-| `spirituality` | 583 |
-| `wealth` | 128 |
+| `body` | 36 |
+| `career` | 778 |
+| `general` | 1640 |
+| `longevity` | 34 |
+| `material` | 433 |
+| `mind` | 1289 |
+| `relationships` | 506 |
+| `spirituality` | 707 |
+| `wealth` | 155 |
 
-**A facet the base locale has is not always a facet another has.** 387
+**A facet the base locale has is not always a facet another has.** 609
 facets in all, counted rather than hidden: where a locale lacks a facet
 its record's summary stands in, which is a visible shortfall and not a
 wrong answer.
@@ -56,6 +56,7 @@ wrong answer.
 | `hi-Deva-IN` | 154 |
 | `ne-Deva-NP` | 11 |
 | `sa-Deva` | 222 |
+| `sa-Latn` | 222 |
 
 ## What the readings cost
 
@@ -72,10 +73,11 @@ nothing is being deferred to compression.
 | `hi-Deva-IN` | 802 KB | 782 KB |
 | `ne-Deva-NP` | 758 KB | 736 KB |
 | `sa-Deva` | 638 KB | 618 KB |
-| **all** | **2665 KB** | **2581 KB** |
+| `sa-Latn` | 358 KB | 338 KB |
+| **all** | **3023 KB** | **2920 KB** |
 
 One pack a locale, because a Nepali application wants Nepali and its
-fallback rather than four languages' worth of prose: 736 KB of the 2581
+fallback rather than every language's worth of prose: 736 KB of the 2920
 KB, and the consumer chooses.
 
 ## What the packs decide
@@ -83,8 +85,8 @@ KB, and the consumer chooses.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every reading names a key a rule pack could name | **holds** | 0 of 649 disagree |
-| every locale carries a reading for every rule the base locale reads | **holds** | 0 of 2596 disagree |
-| every reading carries a summary to be named by | **holds** | 0 of 2596 disagree |
-| every locale's readings build into a pack an engine can load | **holds** | 0 of 4 disagree |
-| every reading answers from the loaded pack, with no source tree behind it | **holds** | 0 of 2596 disagree |
+| every locale carries a reading for every rule the base locale reads | **holds** | 0 of 3245 disagree |
+| every reading carries a summary to be named by | **holds** | 0 of 3245 disagree |
+| every locale's readings build into a pack an engine can load | **holds** | 0 of 5 disagree |
+| every reading answers from the loaded pack, with no source tree behind it | **holds** | 0 of 3245 disagree |
 

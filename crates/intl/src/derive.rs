@@ -40,11 +40,38 @@ pub struct Derived {
     pub agreeing: usize,
 }
 
+/// How a derived locale capitalises what it transliterates.
+///
+/// The source script has no case, so the target's is the derivation's to
+/// choose — and the right choice depends on what the root holds, which is
+/// why it is **declared** and never inferred from the text. A name table
+/// and a corpus of passages both reach this function, and a rule that
+/// guessed between them by counting words would be exactly the inference
+/// this project refuses elsewhere.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Casing {
+    /// Every word's first letter, which is how a Latin script writes a
+    /// **name** and how the sources' own `iast` forms are written:
+    /// `Aśvinī Kumāra`, not `Aśvinī kumāra`. This is what `i18n/` wants,
+    /// where every form is a name.
+    #[default]
+    Names,
+    /// The first letter of each sentence, which is how a Latin script
+    /// writes **prose**. A corpus of readings is passages, and title-casing
+    /// one gives `Gururlagne Rājayogakārakaḥ. Prajñāvān, Dhārmikaḥ` where
+    /// the text says a sentence (`03-design/state-readings.md`).
+    Sentences,
+}
+
 /// A locale derived from another by transliteration.
 ///
 /// `overrides` is the target's `_overrides.json` as it stands: a map of
 /// `<kind>.<KEY>` to the forms that replace the mechanical result
 /// (`{"graha.SUN": {"name": "Sūrya"}}`).
+///
+/// `casing` says what the root holds — names or prose — because the source
+/// script carries no case and the target's is not derivable from the text
+/// ([`Casing`]).
 ///
 /// # Errors
 ///
@@ -54,6 +81,7 @@ pub fn derive(
     from: &str,
     to: &str,
     overrides: &BTreeMap<String, BTreeMap<String, String>>,
+    casing: Casing,
 ) -> Result<Derived, String> {
     let source = tree
         .locales
@@ -117,7 +145,7 @@ pub fn derive(
             let value = if form == "iast" {
                 text.clone()
             } else {
-                capitalised(&latin(text)?)
+                cased(&latin(text)?, casing)
             };
             derived.forms.insert(form.clone(), value);
         }
@@ -168,6 +196,19 @@ pub fn overrides_of(
     serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))
 }
 
+/// What ends a sentence, in either script's punctuation: the Latin stops
+/// and the danda, which a Devanagari source writes and the transliteration
+/// carries through.
+const SENTENCE_ENDS: [char; 5] = ['.', '!', '?', '।', '॥'];
+
+/// Transliterated text, cased as the root it came from is written.
+fn cased(text: &str, casing: Casing) -> String {
+    match casing {
+        Casing::Names => capitalised(text),
+        Casing::Sentences => sentence_cased(text),
+    }
+}
+
 /// A name as a Latin script writes one: every word's first letter a
 /// capital, which is how the sources' own `iast` forms are written
 /// (`Aśvinī Kumāra`, not `Aśvinī kumāra`).
@@ -181,6 +222,31 @@ fn capitalised(text: &str) -> String {
         })
         .collect::<Vec<_>>()
         .join(" ")
+}
+
+/// Prose as a Latin script writes it: the first letter of the text and of
+/// every sentence after it a capital, and nothing else touched.
+///
+/// A letter is capitalised only where a sentence has ended and the words
+/// between have not started one — so `8 adhyāye` keeps its digit and
+/// capitalises the letter that follows it, and an abbreviation's stop is
+/// treated as an end like any other, which is the cost of not parsing the
+/// language.
+fn sentence_cased(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut starting = true;
+    for letter in text.chars() {
+        if starting && letter.is_alphabetic() {
+            out.extend(letter.to_uppercase());
+            starting = false;
+        } else {
+            out.push(letter);
+            if SENTENCE_ENDS.contains(&letter) {
+                starting = true;
+            }
+        }
+    }
+    out
 }
 
 /// The script half of a locale tag (`sa-Latn` is `Latn`), lowercased.
@@ -231,10 +297,41 @@ mod tests {
         Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"))
     }
 
+    /// A name table is cased by word and a corpus of prose by sentence,
+    /// and the derivation is told which: the source script carries no case
+    /// and no rule over the text could tell a two-word passage from a
+    /// two-word name.
+    #[test]
+    fn prose_is_cased_by_sentence_and_a_name_by_word() {
+        let passage = "gururlagne rājayogakārakaḥ. prajñāvān, dhārmikaḥ. 8 adhyāye uktam";
+        assert_eq!(
+            super::sentence_cased(passage),
+            "Gururlagne rājayogakārakaḥ. Prajñāvān, dhārmikaḥ. 8 Adhyāye uktam",
+            "each sentence opens with a capital and nothing else moves"
+        );
+        assert_eq!(
+            super::capitalised(passage),
+            "Gururlagne Rājayogakārakaḥ. Prajñāvān, Dhārmikaḥ. 8 Adhyāye Uktam",
+            "a name table capitalises every word, which is why prose needs its own"
+        );
+        // The danda ends a sentence where a transliteration keeps it.
+        assert_eq!(super::sentence_cased("ekaḥ। dvau"), "Ekaḥ। Dvau");
+        // And text that starts with punctuation still capitalises its
+        // first letter rather than nothing.
+        assert_eq!(super::sentence_cased("— ekaḥ"), "— Ekaḥ");
+        assert_eq!(super::sentence_cased(""), "");
+    }
+
     #[test]
     fn a_latin_locale_is_derived_from_the_devanagari_one() {
-        let derived = derive(&tree(), "sa-Deva", "sa-Latn", &BTreeMap::new())
-            .unwrap_or_else(|e| panic!("{e}"));
+        let derived = derive(
+            &tree(),
+            "sa-Deva",
+            "sa-Latn",
+            &BTreeMap::new(),
+            Casing::Names,
+        )
+        .unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(derived.files.len(), 2);
         assert_eq!(
             derived.entities, 426,
@@ -274,8 +371,8 @@ mod tests {
         // (`docs/03-design/entity-names.md` §3). Every one must still
         // match an entity, and each replaces a name and its prose.
         let overrides = overrides_of(&sdk_root(), "sa-Latn").unwrap_or_else(|e| panic!("{e}"));
-        let derived =
-            derive(&tree(), "sa-Deva", "sa-Latn", &overrides).unwrap_or_else(|e| panic!("{e}"));
+        let derived = derive(&tree(), "sa-Deva", "sa-Latn", &overrides, Casing::Names)
+            .unwrap_or_else(|e| panic!("{e}"));
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
         assert_eq!(derived.overridden, 2 * overrides.len());
         let entities = &derived.files[1].1;
@@ -300,8 +397,8 @@ mod tests {
             String::from("graha.VULCAN"),
             BTreeMap::from([(String::from("name"), String::from("Vulcan"))]),
         );
-        let derived =
-            derive(&tree(), "sa-Deva", "sa-Latn", &overrides).unwrap_or_else(|e| panic!("{e}"));
+        let derived = derive(&tree(), "sa-Deva", "sa-Latn", &overrides, Casing::Names)
+            .unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(derived.overridden, 1);
         assert_eq!(derived.stale, vec![String::from("graha.VULCAN")]);
         assert!(derived.files[1].1.contains("\"name\": \"Sūrya\""));
@@ -310,14 +407,26 @@ mod tests {
     #[test]
     fn a_locale_or_a_script_the_build_does_not_know_is_refused_by_name() {
         assert!(
-            derive(&tree(), "xx-Deva", "xx-Latn", &BTreeMap::new())
-                .unwrap_err()
-                .contains("no locale `xx-Deva`")
+            derive(
+                &tree(),
+                "xx-Deva",
+                "xx-Latn",
+                &BTreeMap::new(),
+                Casing::Names
+            )
+            .unwrap_err()
+            .contains("no locale `xx-Deva`")
         );
         assert!(
-            derive(&tree(), "sa-Deva", "sa-Taml", &BTreeMap::new())
-                .unwrap_err()
-                .contains("names no script")
+            derive(
+                &tree(),
+                "sa-Deva",
+                "sa-Taml",
+                &BTreeMap::new(),
+                Casing::Names
+            )
+            .unwrap_err()
+            .contains("names no script")
         );
     }
 }

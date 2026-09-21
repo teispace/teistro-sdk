@@ -287,7 +287,17 @@ before — *every shipped rule carries a reading* — becomes one it can.
    a **closed** kind's members become an enum at the boundary, and an open
    kind has none — so the second one is a file and a number.
 5. **The measured page and `check-state-readings`.** **Built**.
-6. **The `phala` composer**, its messages and its `PlanRequest` member.
+6. **The fifth locale, derived rather than translated.** `sa-Latn` is
+   `sa-Deva` in Latin script, as it is in `i18n/`, and deriving it here
+   found a defect the name tables had never shown: the transliteration
+   **title-cased every word**, which is right for a name (`Aśvinī
+   Kumāra`) and wrong for a passage (`Gururlagne Rājayogakārakaḥ.
+   Prajñāvān, Dhārmikaḥ`). Casing is now **declared** by the caller —
+   names or sentences — because the source script carries no case and no
+   rule over the text could tell a two-word passage from a two-word name.
+   `check-state-readings` re-derives both corpora's `sa-Latn` and holds
+   the checked-in files against it, as `check-intl` does for `i18n/`.
+7. **The `phala` composer**, its messages and its `PlanRequest` member.
    **Built**: six messages under `sdk.phala`, a ninth member of
    `PlanRequest` off by default, and `Vocabulary` generalised from
    `has_reading(rule)` to `has_form(key, form)` — a second subject made it

@@ -167,7 +167,7 @@ so the count is here.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every refused key is absent from the packs | **holds** | 0 of 3 disagree |
-| every record carried is one the base locale can resolve or an open kind's own | **holds** | 0 of 1400 disagree |
+| every record carried is one the base locale can resolve or an open kind's own | **holds** | 0 of 1750 disagree |
 
 ## What the state readings cost
 
@@ -183,10 +183,11 @@ it. A consumer loads one pack a locale from each root it wants.
 | `hi-Deva-IN` | 387 KB | 381 KB |
 | `ne-Deva-NP` | 365 KB | 359 KB |
 | `sa-Deva` | 357 KB | 351 KB |
-| **all** | **1315 KB** | **1289 KB** |
+| `sa-Latn` | 198 KB | 191 KB |
+| **all** | **1513 KB** | **1481 KB** |
 
-Beside the rule readings' 2581 KB, which is the other pack a consumer
-that wants both would load: 3870 KB in all for four languages, and 1096
+Beside the rule readings' 2920 KB, which is the other pack a consumer
+that wants both would load: 4401 KB in all for every language, and 1096
 KB for one.
 
 ## What the packs decide
@@ -194,9 +195,9 @@ KB for one.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every record names a catalogue member, or a well-formed key of an open kind | **holds** | 0 of 350 disagree |
-| every locale carries every record the base locale carries | **holds** | 0 of 1400 disagree |
-| every record carries a form to be read by | **holds** | 0 of 1400 disagree |
-| every locale's state readings build into a pack an engine can load | **holds** | 0 of 4 disagree |
-| every form answers from the loaded packs, with no source tree behind them | **holds** | 0 of 3880 disagree |
-| a rule's reading still answers after the state readings are loaded over it | **holds** | 0 of 528 disagree |
+| every locale carries every record the base locale carries | **holds** | 0 of 1750 disagree |
+| every record carries a form to be read by | **holds** | 0 of 1750 disagree |
+| every locale's state readings build into a pack an engine can load | **holds** | 0 of 5 disagree |
+| every form answers from the loaded packs, with no source tree behind them | **holds** | 0 of 4850 disagree |
+| a rule's reading still answers after the state readings are loaded over it | **holds** | 0 of 660 disagree |
 

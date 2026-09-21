@@ -345,7 +345,7 @@ fn what_it_costs(
         out,
         "| **all** | **{} KB** | **{} KB** |\n\nBeside the rule readings' \
          {} KB, which is the other pack a consumer that wants both would \
-         load: {} KB in all for four languages, and {} KB for one.\n\n",
+         load: {} KB in all for every language, and {} KB for one.\n\n",
         count(source / 1024),
         count(packed / 1024),
         count(beside / 1024),
@@ -794,8 +794,41 @@ fn main_page(root: &Path) -> Result<String, String> {
     Ok(fill(&out))
 }
 
+/// The locale each corpus derives by transliteration, and the one it is
+/// derived from — as `i18n/` derives its own (`check-intl`).
+///
+/// A corpus of **prose** cases by sentence rather than by word, which is
+/// the whole reason `Casing` is declared: transliterating a passage with a
+/// name table's rule gives `Gururlagne Rājayogakārakaḥ. Prajñāvān` where
+/// the text says a sentence.
+const DERIVED: (&str, &str) = ("sa-Deva", "sa-Latn");
+
+/// The checked-in derived locale of a root, regenerated so it cannot drift
+/// from the source it is transliterated out of.
+fn derived_locale(root: &Path, corpus: &str) -> Result<Vec<Output>, String> {
+    let dir = root.join(corpus);
+    let tree = Tree::load(&dir).map_err(|why| format!("{corpus}: {why}"))?;
+    let overrides = teistro_intl::derive::overrides_of(&dir, DERIVED.1)?;
+    let derived = teistro_intl::derive::derive(
+        &tree,
+        DERIVED.0,
+        DERIVED.1,
+        &overrides,
+        teistro_intl::derive::Casing::Sentences,
+    )?;
+    Ok(derived
+        .files
+        .iter()
+        .map(|(path, text)| Output::new(format!("{corpus}/{}", path.display()), text.clone()))
+        .collect())
+}
+
 fn outputs(root: &Path) -> Result<Vec<Output>, String> {
-    Ok(vec![Output::new(PAGE, main_page(root)?)])
+    let mut outputs = vec![Output::new(PAGE, main_page(root)?)];
+    for corpus in [READINGS, ROOT] {
+        outputs.extend(derived_locale(root, corpus)?);
+    }
+    Ok(outputs)
 }
 
 /// Writes the page.

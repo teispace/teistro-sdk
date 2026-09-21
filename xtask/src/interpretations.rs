@@ -253,7 +253,7 @@ fn what_it_costs(out: &mut String, root: &Path, tree: &Tree) -> Result<Built, St
         out,
         "| **all** | **{} KB** | **{} KB** |\n\nOne pack a locale, because \
          a Nepali application wants Nepali and its fallback rather than \
-         four languages' worth of prose: {} KB of the {} KB, and the \
+         every language's worth of prose: {} KB of the {} KB, and the \
          consumer chooses.\n\n",
         count(source / 1024),
         count(packed / 1024),

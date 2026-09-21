@@ -10,7 +10,7 @@ use std::path::Path;
 use teistro_core::catalogue::{Kind, key_of};
 use teistro_core::key::KeyId;
 
-use teistro_intl::derive::{derive, overrides_of};
+use teistro_intl::derive::{Casing, derive, overrides_of};
 use teistro_intl::generate::{
     Model, RustPaths, dart, javascript, python, rust, typescript_declarations,
 };
@@ -43,7 +43,7 @@ fn outputs(root: &Path) -> Vec<Output> {
     let model = Model::of(base).expect("every base message parses");
     let overrides = overrides_of(&root.join("i18n"), DERIVED.1)
         .unwrap_or_else(|e| panic!("the derived locale's overrides load: {e}"));
-    let derived = derive(&tree, DERIVED.0, DERIVED.1, &overrides)
+    let derived = derive(&tree, DERIVED.0, DERIVED.1, &overrides, Casing::Names)
         .unwrap_or_else(|e| panic!("{} derives from {}: {e}", DERIVED.1, DERIVED.0));
     if !derived.stale.is_empty() {
         println!(
