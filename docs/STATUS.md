@@ -394,7 +394,10 @@ provider's DUT1).
    by 417, where the mean node beside it is inside one. Both accounts are
    in `03-design/completion-measured.md` with the candidates named.
 
-   **The next task is Phase 4's plugin and surface work** (ADR-0029,
+   **The task that followed it was Phase 4's plugin and surface work**,
+   which is built; what is next now is at the top of this file under
+   **Last updated**, and the rest of this item is the account of how
+   Phase 4 went rather than a direction to take (ADR-0029,
    ADR-0030, researched in
    [`01-research/platform/15-provider-plugins-and-targets.md`](01-research/platform/15-provider-plugins-and-targets.md)).
    The maintainer's brief of 2026-09-11: an ephemeris is **plugged in**
