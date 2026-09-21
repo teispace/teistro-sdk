@@ -449,6 +449,22 @@ fn check_day_periods(findings: &mut Findings, tag: &str, meta: &Meta) {
     }
 }
 
+/// Whether a full key names a member of an **open** catalogue kind, whose
+/// members are a consumer's packs rather than a table.
+///
+/// `rule` is the only one, and the catalogue cannot know a consumer's rule
+/// keys — that is what open means. So a reading's key is held to being well
+/// formed here, and to naming a shipped rule by the gate that reads the
+/// rule packs, which is a stronger check than `resolve` could give
+/// (`03-design/interpretation-records.md` §4).
+fn is_open_kind_key(full: &str) -> bool {
+    full.split_once('.').is_some_and(|(kind, member)| {
+        teistro_core::catalogue::Kind::from_name(kind)
+            .is_some_and(teistro_core::catalogue::Kind::is_open)
+            && crate::source::is_member_key(member)
+    })
+}
+
 fn check_entity(
     findings: &mut Findings,
     base: &LocaleSource,
@@ -476,7 +492,9 @@ fn check_entity(
         .strip_prefix(ENTITY_NAMESPACE)
         .and_then(|rest| rest.strip_prefix('.'))
         .unwrap_or(key);
-    if let Err(unknown) = teistro_core::key::resolve(catalogue_key) {
+    if !is_open_kind_key(catalogue_key)
+        && let Err(unknown) = teistro_core::key::resolve(catalogue_key)
+    {
         findings.error(tag, key, format!("not a catalogue key: {unknown}"));
     }
     if *tag != base.tag {

@@ -202,6 +202,24 @@ pub enum MigrateSource {
         #[arg(long)]
         overwrite: bool,
     },
+    /// The baseline engine's reading for each yoga and dosha, from its
+    /// readings exporter's document, into a root of its own.
+    ///
+    /// Not into `i18n/`: that root is compiled into every artefact, and
+    /// the corpus is several times its size, so the readings ship as a
+    /// pack that is loaded rather than one that is embedded
+    /// (`03-design/interpretation-records.md` §3).
+    Readings {
+        /// The exporter's document.
+        #[arg(long)]
+        dump: PathBuf,
+        /// The root to write the readings into.
+        #[arg(long)]
+        out: PathBuf,
+        /// Replace records the locales already have.
+        #[arg(long)]
+        overwrite: bool,
+    },
 }
 
 /// A generator target.
@@ -213,6 +231,31 @@ pub enum Target {
     Dart,
     /// Rust.
     Rs,
+}
+
+/// Applies a planned migration to a root, prints what it wrote, and
+/// validates what is there afterwards.
+///
+/// Both migrations end this way — the entity name tables and the rule
+/// readings — so it is one function: a migration is not done when the files
+/// are written but when the root still loads and validates.
+fn apply_migration(
+    migration: &mut crate::migrate::Migration,
+    root: &Path,
+    overwrite: bool,
+) -> Result<bool, Box<dyn std::error::Error>> {
+    for path in crate::migrate::apply(migration, root, overwrite)? {
+        println!("written {}", path.display());
+    }
+    print!("{}", migration.report.markdown());
+    let reloaded = crate::migrate::reload(root)?;
+    let report = validate::validate(&reloaded);
+    println!(
+        "after the migration: {} errors, {} warnings",
+        report.errors(),
+        report.diagnostics.len() - report.errors()
+    );
+    Ok(report.passed() && migration.report.unknown_keys.is_empty())
 }
 
 /// Writes a locale derived from another, and reports what it took.
@@ -418,18 +461,19 @@ pub fn run(cli: Cli) -> Result<bool, Box<dyn std::error::Error>> {
                 .or_else(|| Some(tree.root.join("../catalogue/entity-skeleton.json")))
                 .and_then(|path| crate::migrate::read_skeleton(&path));
             let mut migration = crate::migrate::plan(&dump, skeleton.as_ref());
-            for path in crate::migrate::apply(&mut migration, &tree.root, overwrite)? {
-                println!("written {}", path.display());
-            }
-            print!("{}", migration.report.markdown());
-            let reloaded = crate::migrate::reload(&tree.root)?;
-            let report = validate::validate(&reloaded);
-            println!(
-                "after the migration: {} errors, {} warnings",
-                report.errors(),
-                report.diagnostics.len() - report.errors()
-            );
-            Ok(report.passed() && migration.report.unknown_keys.is_empty())
+            apply_migration(&mut migration, &tree.root, overwrite)
+        }
+        Command::Migrate {
+            source:
+                MigrateSource::Readings {
+                    dump,
+                    out,
+                    overwrite,
+                },
+        } => {
+            let dump = crate::migrate::read_readings_dump(&dump)?;
+            let mut migration = crate::migrate::plan_readings(&dump);
+            apply_migration(&mut migration, &out, overwrite)
         }
         Command::Export {
             format: ExportFormat::Xliff { locale, out },

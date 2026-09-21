@@ -181,6 +181,7 @@ mod generated;
 mod hashes;
 mod houses;
 mod interpret;
+mod interpretations;
 mod intl;
 mod kalachakra;
 mod lints;
@@ -309,6 +310,11 @@ const PASSES: &[Pass] = &[
     ("doshas", doshas::generate, doshas::check_generated),
     ("rule-doc", rule_doc::generate, rule_doc::check_generated),
     ("interpret", interpret::generate, interpret::check_generated),
+    (
+        "interpretations",
+        interpretations::generate,
+        interpretations::check_generated,
+    ),
 ];
 
 /// Runs a pass, or says it is not one.

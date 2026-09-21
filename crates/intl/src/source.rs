@@ -412,8 +412,8 @@ pub fn is_namespace_name(s: &str) -> bool {
         })
 }
 
-/// Whether `s` is a key segment: a `camelCase` identifier, or a catalogue
-/// key (`UPPER_SNAKE`) for entities and rule keys.
+/// Whether `s` is a key segment: a `camelCase` identifier, or a member key
+/// ([`is_member_key`]) for entities and rule readings.
 #[must_use]
 pub fn is_key_segment(s: &str) -> bool {
     let Some(first) = s.bytes().next() else {
@@ -427,12 +427,27 @@ pub fn is_key_segment(s: &str) -> bool {
     }
     if first.is_ascii_lowercase() {
         s.bytes().all(|b| b.is_ascii_alphanumeric())
-    } else if first.is_ascii_uppercase() {
-        s.bytes()
-            .all(|b| b.is_ascii_uppercase() || b.is_ascii_digit() || b == b'_')
     } else {
-        false
+        is_member_key(s)
     }
+}
+
+/// Whether `s` is a key a catalogue member or a rule pack could carry.
+///
+/// **Not "screaming snake case"**, and the corpus said so rather than this
+/// being a preference: five of the 657 shipped rules carry a karaka's own
+/// abbreviation mid-key — `JAIMINI_AK_AmK_KENDRA_TOGETHER`, `JAIMINI_AmK_10`
+/// and three more — so a rule admitting only upper case refuses five real
+/// rules' readings. `rule` is the catalogue's only **open** kind, whose
+/// members are a consumer's packs rather than a table, so this says what no
+/// pack could name and the packs themselves decide the rest
+/// (`03-design/interpretation-records.md` §4).
+#[must_use]
+pub fn is_member_key(s: &str) -> bool {
+    s.bytes().next().is_some_and(|b| b.is_ascii_uppercase())
+        && s.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'_')
+        && !s.ends_with('_')
+        && !s.contains("__")
 }
 
 fn load_locale(dir: &Path) -> Result<LocaleSource, SourceError> {

@@ -310,7 +310,14 @@ pub fn plan(dump: &Dump, skeleton: Option<&Json>) -> Migration {
 /// The metadata of a locale the migration creates: Devanagari digits with
 /// the Indian grouping, a fallback to the base, `base` completeness until
 /// its messages are translated, and the list patterns of the language.
+///
+/// **The base locale is the exception, and it took a second corpus to find
+/// it.** `i18n/` already had `en-Latn/_meta.json`, so this only ever ran
+/// for the others; a root created from scratch gave the base a fallback to
+/// itself, which the validator refuses and rightly. A base locale falls
+/// back to nothing and is complete by definition.
 fn new_locale_meta(tag: &str) -> Json {
+    let base = tag == BASE_LOCALE;
     let (and, or) = match tag {
         "hi-Deva-IN" => ("{0} और {1}", "{0} या {1}"),
         "sa-Deva" => ("{0} तथा {1}", "{0} वा {1}"),
@@ -319,12 +326,12 @@ fn new_locale_meta(tag: &str) -> Json {
     serde_json::json!({
         "locale": tag,
         "direction": "ltr",
-        "numberingSystem": "deva",
-        "grouping": [3, 2],
+        "numberingSystem": if base { "latn" } else { "deva" },
+        "grouping": if base { vec![3] } else { vec![3, 2] },
         "decimal": ".",
         "group": ",",
-        "fallback": [BASE_LOCALE],
-        "completeness": "base",
+        "fallback": if base { Vec::new() } else { vec![BASE_LOCALE] },
+        "completeness": if base { "strict" } else { "base" },
         "contexts": { "gender": ["m", "f", "n"] },
         "termStyle": "vernacular",
         "listPatterns": {
@@ -610,4 +617,172 @@ mod tests {
         );
         let _ = std::fs::remove_dir_all(&root);
     }
+}
+
+// ─── The rule readings ────────────────────────────────────────────────
+//
+// The same one-time import pointed at a different corpus: the baseline
+// engine's reading for each yoga and dosha, in the same four languages
+// (`03-design/interpretation-records.md`). A reading carries no parameters,
+// so it is an **entity** of the catalogue's `rule` kind and not a message —
+// 649 records over three fields would otherwise generate some 1 950 structs
+// into four surfaces for text nothing interpolates.
+//
+// It is planned into a root of its own rather than into `i18n/`, because
+// `crates/sdk/build.rs` compiles `i18n/` into every artefact and this corpus
+// is 2.54 MB against an `i18n/` of 360 KB. A consumer computing a Julian day
+// should not carry every Nepali yoga reading to do it, so the records ship
+// as a pack that is loaded rather than one that is embedded.
+
+/// The catalogue kind a rule reading is keyed under, and the catalogue's
+/// only **open** kind: its members are a consumer's rule packs and not a
+/// table, so a key here is checked for being well formed and the packs
+/// decide whether it names a rule.
+pub const RULE_KIND: &str = "rule";
+
+/// The readings exporter's document.
+#[derive(Clone, Debug, Deserialize)]
+pub struct ReadingsDump {
+    /// `teistro-conformance/baseline-readings/1`.
+    pub schema: String,
+    /// The engine and its version.
+    pub tool: String,
+    /// The export date.
+    #[serde(default)]
+    pub exported: String,
+    /// The engine's language codes, in the document's order.
+    pub languages: Vec<String>,
+    /// Every effect facet the document uses, sorted. Reported rather than
+    /// relied on: a record carries the facets its reading has.
+    #[serde(default)]
+    pub facets: Vec<String>,
+    /// The readings, by rule key.
+    pub readings: BTreeMap<String, ReadingRow>,
+}
+
+/// One rule's reading in every language the document carries.
+#[derive(Clone, Debug, Deserialize)]
+pub struct ReadingRow {
+    /// `yoga` or `dosha`, which is the engine's own grouping.
+    pub group: String,
+    /// The classical text the reading cites, where it names one. **Not
+    /// migrated**: a rule already carries its own citation, and a second
+    /// copy beside the prose would be the one-rule-in-two-places shape.
+    #[serde(default)]
+    pub source: Option<String>,
+    /// The reading per language code.
+    #[serde(flatten)]
+    pub languages: BTreeMap<String, Reading>,
+}
+
+/// One language's reading of one rule.
+#[derive(Clone, Debug, Default, Deserialize)]
+pub struct Reading {
+    /// One sentence.
+    #[serde(default)]
+    pub summary: Option<String>,
+    /// The passage.
+    #[serde(default)]
+    pub full: Option<String>,
+    /// The named facets, an open set.
+    #[serde(default)]
+    pub effects: BTreeMap<String, String>,
+}
+
+/// Whether a key is one a rule pack could name.
+///
+/// The loader and this importer must agree on what a key looks like, so
+/// there is one function and this is its name here:
+/// [`source::is_member_key`](crate::source::is_member_key), which says why
+/// it is looser than upper case.
+#[must_use]
+pub fn well_formed_rule_key(key: &str) -> bool {
+    crate::source::is_member_key(key)
+}
+
+/// Plans the migration of a readings dump: every well-formed key becomes an
+/// entity record of the `rule` kind for every language the dump carries.
+///
+/// The forms are `name` (the summary, which a record must have because
+/// loading guarantees a non-empty name), `prose` (the full passage) and one
+/// per effect facet. Nothing is inferred: a key that resembles another's is
+/// not given its reading, because a rule's reading is a claim about that
+/// rule (`03-design/interpretation-records.md` §4).
+///
+/// The report reads: `mapped` counts the records each of the engine's
+/// groups gave, and `unknown_keys` lists what was skipped and why.
+#[must_use]
+pub fn plan_readings(dump: &ReadingsDump) -> Migration {
+    let mut migration = Migration::default();
+    let tags: BTreeMap<&str, &str> = LOCALES.iter().copied().collect();
+    for (key, row) in &dump.readings {
+        if !well_formed_rule_key(key) {
+            migration
+                .report
+                .unknown_keys
+                .push(format!("{key}: not a rule key"));
+            continue;
+        }
+        let full = format!("{RULE_KIND}.{key}");
+        let mut written_any = false;
+        for (code, reading) in &row.languages {
+            let Some(tag) = tags.get(code.as_str()) else {
+                continue;
+            };
+            let Some(summary) = reading.summary.as_ref().filter(|s| !s.trim().is_empty()) else {
+                migration
+                    .report
+                    .unknown_keys
+                    .push(format!("{key} ({code}): no summary to name the record by"));
+                continue;
+            };
+            let mut forms = BTreeMap::new();
+            forms.insert(String::from("name"), summary.clone());
+            if let Some(full_text) = reading.full.as_ref().filter(|s| !s.trim().is_empty()) {
+                forms.insert(String::from("prose"), full_text.clone());
+            }
+            for (facet, text) in &reading.effects {
+                if !text.trim().is_empty() {
+                    forms.insert(facet.clone(), text.clone());
+                }
+            }
+            push_record(
+                migration.records.entry((*tag).to_string()).or_default(),
+                full.clone(),
+                Entity {
+                    forms,
+                    gender: None,
+                    glyph: None,
+                },
+            );
+            written_any = true;
+        }
+        if written_any {
+            *migration
+                .report
+                .mapped
+                .entry(row.group.clone())
+                .or_default() += 1;
+        }
+    }
+    migration
+}
+
+/// Reads a readings dump.
+///
+/// # Errors
+///
+/// A file that cannot be read or is not the readings exporter's document.
+pub fn read_readings_dump(path: &Path) -> Result<ReadingsDump, String> {
+    let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let dump: ReadingsDump =
+        serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
+    if dump.schema != "teistro-conformance/baseline-readings/1" {
+        return Err(format!(
+            "{}: schema `{}` is not the readings exporter's",
+            path.display(),
+            dump.schema
+        ));
+    }
+    Ok(dump)
 }
