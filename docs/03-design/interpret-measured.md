@@ -201,13 +201,20 @@ but `sdk.entity` renders each one's own word.
 
 No message is unaccounted for: every one either has a composer or has a
 reason. **So a further composer needs a key that does not exist yet**,
-as `aspects` did for the drishti and as `conditions` and `karakas` did
-for the rest of a placement. The second time cost less than the first:
-four of those seven messages say a value the **entity** namespace
-already names in all five locales — a dignity, a rashi, two chara
-karakas — so what had to be written was the frame and not the
-vocabulary. What remains unsaid is counted above rather than guessed at
-here.
+as every one since the fifth has: the drishti, the rest of a placement,
+a reading a pack carries, the lagna, the rupas a graha's text requires,
+a bhava's sign, the chalit's disagreement.
+
+**What each cost was decided by the catalogue and not by the sentence.**
+Where the thing being said is a catalogue member, `sdk.entity` already
+names it in all five locales and only the frame had to be written — a
+dignity, a rashi, a point, two chara karakas. Where it is not, the words
+are the whole cost, and the silences that remain are all of that kind: a
+bhava's quadrant, a longevity tier, a strength band are computed and are
+not catalogue members, so a message would have to name each in words no
+locale here has been given (`state-readings.md` §8). The question a new
+composer asks is not whether the SDK knows the fact but whether the
+model reached the catalogue.
 
 ## One chart, said
 
