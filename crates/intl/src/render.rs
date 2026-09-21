@@ -27,7 +27,9 @@ use teistro_core::catalogue::{Calendar, Catalogued, Kind, Rashi};
 use crate::source::{BASE_LOCALE, Entity, Entry, LocaleSource, Meta, Tree};
 
 /// A time of day, for `:time` and `:datetime`.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
+)]
 pub struct ClockTime {
     /// 0 to 23.
     pub hour: u8,
@@ -51,7 +53,9 @@ impl ClockTime {
 
 /// A ghati-pala count since sunrise, for `:ghati`; the time crate's
 /// `GhatiPala` has the same three fields.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
+#[derive(
+    Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
+)]
 pub struct Ghati {
     /// Ghatis, 0 to 60.
     pub ghati: u8,
@@ -74,7 +78,13 @@ impl Ghati {
 }
 
 /// A parameter value.
-#[derive(Clone, Debug, PartialEq)]
+///
+/// It reads and writes as `{"kind": "entity", "value": "graha.SUN"}`: a
+/// narrative plan is a list of message keys and these, and a plan that
+/// cannot be written down cannot be stored, sent or held by a golden file
+/// (`03-design/interpret-composers.md`).
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+#[serde(tag = "kind", content = "value", rename_all = "camelCase")]
 pub enum Value {
     /// Text.
     Str(String),

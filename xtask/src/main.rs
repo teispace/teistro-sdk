@@ -103,6 +103,9 @@
 //! - `rule-doc` and `check-rule-doc`: the prose every rule renders to, with
 //!   the collisions that would hide a change from a reviewer; with an
 //!   argument — a pack, a category or a key — it prints the passages instead.
+//! - `interpret` and `check-interpret`: the narrative plans the composers
+//!   write over every recorded chart, and whether every item of them renders
+//!   in each strict locale without a fallback or a warning.
 //! - `vimshopaka` and `check-vimshopaka`: the Vimshopaka, the engine's scale
 //!   measured beside BPHS's points.
 //! - `shadbala` and `check-shadbala`: the Shadbala, every one of the engine's
@@ -177,6 +180,7 @@ mod ffi;
 mod generated;
 mod hashes;
 mod houses;
+mod interpret;
 mod intl;
 mod kalachakra;
 mod lints;
@@ -304,6 +308,7 @@ const PASSES: &[Pass] = &[
     ("yogas", yogas::generate, yogas::check_generated),
     ("doshas", doshas::generate, doshas::check_generated),
     ("rule-doc", rule_doc::generate, rule_doc::check_generated),
+    ("interpret", interpret::generate, interpret::check_generated),
 ];
 
 /// Runs a pass, or says it is not one.

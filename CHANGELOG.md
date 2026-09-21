@@ -1306,6 +1306,26 @@ the astronomical numbers do not move. Nothing else computes yet.
   extracted: the two rules cite different texts, and a shared table would have
   coupled them into one answer the sources do not give.
 
+- The composers' first step (`03-design/interpret-composers.md`, built):
+  `crates/interpret` gives a **narrative plan** — `Plan`, an ordered list of
+  `Item`s, each a message key and its slots — and `placements`, which says
+  where each of the nine grahas stands and who shares a sign, from the rules
+  kernel's own `RuleChart`. A plan holds no words, reads and writes as JSON,
+  and is the same bytes for the same chart, so `sdk.intl` renders one plan in
+  every locale. `teistro_intl::Value` gained serde derives, because a plan
+  that cannot be written down cannot be stored, sent or held by a golden
+  file. `cargo xtask interpret` measures it and `check-interpret` holds the
+  page.
+
+  **Numbers:** none move. The composer adds no message: `sdk.reason` already
+  carried `grahaInRashi`, `grahaInBhava` and `occupants` in both strict
+  locales, so there is no translation debt and no fallback anywhere. 93
+  recorded charts compose to 1878 items, and all 3756 renderings — every item
+  in each strict locale — answer from that locale's own message with nothing
+  to warn about. What it cannot say is counted: the lagna stands in every
+  chart and in no plan, one item a chart, because these messages read a graha
+  and the lagna is `point.LAGNA`.
+
 - Every rule renders to prose (`03-design/rule-doc.md`, built). A condition is
   one sentence and a rule a short passage carrying what it holds beside its
   conditions — its groups and their labels, its cancellations and their

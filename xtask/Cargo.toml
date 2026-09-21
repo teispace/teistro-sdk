@@ -23,6 +23,7 @@ teistro-calendar = { path = "../crates/calendar" }
 teistro-core = { path = "../crates/core" }
 teistro-ffi = { path = "../crates/ffi" }
 teistro-idl = { path = "../crates/idl" }
+teistro-interpret = { path = "../crates/interpret" }
 teistro-intl = { path = "../crates/intl", default-features = false }
 teistro-port-ephemeris = { path = "../crates/port-ephemeris" }
 teistro-rules = { path = "../crates/rules" }

@@ -1,0 +1,24 @@
+[package]
+name = "teistro-interpret"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's composers: a chart's answers as a narrative plan of message keys and slots"
+readme = "README.md"
+# Publishes at the first release, never on a phase boundary
+# (docs/06-cicd/03-release-process.md).
+publish = false
+
+[dependencies]
+teistro-core = { path = "../core" }
+teistro-intl = { path = "../intl", default-features = false }
+teistro-rules = { path = "../rules" }
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"
+
+[lints]
+workspace = true

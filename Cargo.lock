@@ -1647,6 +1647,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-interpret"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-core",
+ "teistro-intl",
+ "teistro-rules",
+]
+
+[[package]]
 name = "teistro-intl"
 version = "0.0.0"
 dependencies = [
@@ -2207,6 +2218,7 @@ dependencies = [
  "teistro-ephemeris-builtin",
  "teistro-ffi",
  "teistro-idl",
+ "teistro-interpret",
  "teistro-intl",
  "teistro-port-ephemeris",
  "teistro-rules",

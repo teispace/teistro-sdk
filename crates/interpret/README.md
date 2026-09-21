@@ -1,0 +1,46 @@
+# `teistro-interpret`
+
+Status: `building`, 2026-09-21: the plan and the first composer. The design
+is [`docs/03-design/interpret-composers.md`](../../docs/03-design/interpret-composers.md),
+measured in [`docs/03-design/interpret-measured.md`](../../docs/03-design/interpret-measured.md).
+
+The composers: what the SDK computed, turned into a **narrative plan** — an
+ordered list of message keys and their slots. A plan holds no words, so one
+plan renders in every locale the engine carries, and a golden plan tests the
+composer rather than the translator.
+
+| module | what it settles |
+|---|---|
+| [`lib`](src/lib.rs) | `Item` (a message key and its slots) and `Plan` (what a composer says, in order): ordered, serialisable both ways, and the same bytes for the same input |
+| [`placements`](src/placements.rs) | where each of the nine grahas stands and who shares a sign, from the rules kernel's own `RuleChart` |
+
+```rust
+use teistro_interpret::placements;
+
+// A chart the SDK founded, read as the rules kernel reads it.
+let plan = placements(&chart);
+for item in &plan {
+    println!("{}", sdk.intl().render(&item.key, &item.params).text);
+}
+```
+
+## What the research found
+
+- **The vocabulary was already there.** `i18n/*/sdk.reason.json` carries
+  `grahaInRashi`, `grahaInBhava` and `occupants` in both strict locales,
+  translated by hand. The first composer therefore adds **no** message and no
+  translation debt, which matters because a strict locale cannot carry a
+  missing key and the project forbids machine-translated stubs.
+- **The corpus has no oracle for prose.** It records numbers, keys and flags
+  and not one composed sentence, so a plan is measured by whether it can be
+  *said*: every item of every recorded chart's plan renders in each strict
+  locale with no fallback and nothing to warn about (3756 renderings).
+- **What a composer cannot say is counted.** The lagna stands in every chart
+  and in no plan, because these messages read a graha and the lagna is
+  `point.LAGNA`; the measured page says so rather than letting it be missed.
+
+## Tests
+
+`cargo test -p teistro-interpret`, and `cargo xtask interpret` for the
+measurement (`check-interpret` holds the page, its counts and the rendered
+snapshot in both languages).
