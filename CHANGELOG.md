@@ -1312,10 +1312,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   where each of the nine grahas stands and who shares a sign, from the rules
   kernel's own `RuleChart`. A plan holds no words, reads and writes as JSON,
   and is the same bytes for the same chart, so `sdk.intl` renders one plan in
-  every locale. `teistro_intl::Value` gained serde derives, because a plan
+  every locale. `teistro_intl::Value` reads and writes JSON, because a plan
   that cannot be written down cannot be stored, sent or held by a golden
-  file. `cargo xtask interpret` measures it and `check-interpret` holds the
-  page.
+  file — and it does so in the shape **the C boundary has always taken**:
+  text, a number and a list as themselves, and everything else as one
+  `$`-tagged object, `{"$entity": "graha.SUN"}` and the four beside it. One
+  shape, written once in `teistro_intl::wire`, so a binding can hand a plan's
+  slots straight back to `ts_intl_render` without converting them first; the
+  boundary's own hand-written reader, ninety lines that knew the same five
+  tags, is gone, and its test passes unchanged against the shared one.
+  `cargo xtask interpret` measures it and `check-interpret` holds the page.
 
   A second composer, `readings`, says what each rule a chart held says: its
   verse's statement, who took part with a verb that agrees, whether a
@@ -1345,7 +1351,9 @@ the astronomical numbers do not move. Nothing else computes yet.
   for a defect. What the placements composer cannot say is counted: the lagna
   stands in every chart and in none of its items, one a chart, because those
   messages read a graha and the lagna is `point.LAGNA` — it does take part in
-  a reading, where the message names no kind.
+  a reading, where the message names no kind. One measured number moves
+  the other way: `ts_intl_render` reaches two crates where it reached three,
+  because reading a parameter no longer needs the calendar.
 
 - Every rule renders to prose (`03-design/rule-doc.md`, built). A condition is
   one sentence and a rule a short passage carrying what it holds beside its

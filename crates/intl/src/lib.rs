@@ -55,6 +55,7 @@ pub mod runtime;
 pub mod source;
 pub mod translit;
 pub mod validate;
+pub mod wire;
 #[cfg(feature = "cli")]
 pub mod xliff;
 

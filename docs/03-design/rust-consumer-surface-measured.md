@@ -12,12 +12,12 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| an area's operations come from one SDK crate, so a Rust consumer already has the area | falsified | 7 of 8 disagree; more than one: `almanac (11)`, `calendar (2)`, `chart (11)`, `engine (2)`, `frame (2)`, `intl (3)`, `time (4)` |
+| an area's operations come from one SDK crate, so a Rust consumer already has the area | falsified | 7 of 8 disagree; more than one: `almanac (11)`, `calendar (2)`, `chart (11)`, `engine (2)`, `frame (2)`, `intl (2)`, `time (4)` |
 | every area reaches the boundary, so every area names crates | **holds** | 0 of 9 disagree; so every row of the table below is a measurement and not a gap |
 | an entry point's work reaches one SDK crate, so a façade over it is a rename | falsified | 23 of 48 disagree; 23 reach two or more; 8 reach none at all, and those are the C caller's memory: `ts_abi_version`, `ts_sdk_version`, `ts_default_profile`, `ts_build_info`, `ts_string_free`, `ts_blob_free`, `ts_context_free`, `ts_provider_free` |
 | the façade owns the composition: every crate a context needs is one it depends on | **holds** | 0 of 13 disagree; so every area's composition has a home outside the C boundary |
 | and the boundary is inverted onto it, so the composition is written once | **holds** | 0 of 1 disagree; `teistro-ffi` depends on `teistro` |
-| every type an area's signature names is reachable from the crate root | falsified | 13 of 58 disagree; not reachable: `Chain`, `Content`, `DashaName`, `DashaSystems`, `Evaluator`, `Labels`, `LifeClass`, `Readings`, `Rule`, `Running`, `Theme`, `UduDefinition`, `VargaSigns` |
+| every type an area's signature names is reachable from the crate root | falsified | 12 of 58 disagree; not reachable: `Chain`, `Content`, `DashaName`, `DashaSystems`, `Evaluator`, `Labels`, `Readings`, `Rule`, `Running`, `Theme`, `UduDefinition`, `VargaSigns` |
 
 **The composition has one home**, and it is the façade: every crate a context needs is one the façade depends on, and the boundary depends on the façade rather than composing them itself. That is the state [the design page](rust-consumer-surface.md) asks for, and these two rows are its acceptance test.
 
@@ -31,7 +31,7 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 | `chart` | 11 | `teistro-aspect`, `teistro-astro`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-geometry`, `teistro-houses`, `teistro-port-ephemeris`, `teistro-serial`, `teistro-state`, `teistro-time` |
 | `engine` | 2 | `teistro-core`, `teistro-port-ephemeris` |
 | `frame` | 2 | `teistro-core`, `teistro-port-ephemeris` |
-| `intl` | 3 | `teistro-calendar`, `teistro-core`, `teistro-intl` |
+| `intl` | 2 | `teistro-core`, `teistro-intl` |
 | `keys` | 1 | `teistro-core` |
 | `time` | 4 | `teistro-astro`, `teistro-calendar`, `teistro-core`, `teistro-time` |
 
@@ -45,7 +45,6 @@ Widest first. Read through the boundary's own helpers, because a body that names
 | `ts_panchanga_days` | `panchanga` | 11 | `teistro-aspect`, `teistro-astro`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-houses`, `teistro-panchanga`, `teistro-port-ephemeris`, `teistro-serial`, `teistro-state`, `teistro-time` |
 | `ts_positions` | `positions` | 4 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris`, `teistro-time` |
 | `ts_time_civil` | `time` | 4 | `teistro-astro`, `teistro-calendar`, `teistro-core`, `teistro-time` |
-| `ts_intl_render` | `intl` | 3 | `teistro-calendar`, `teistro-core`, `teistro-intl` |
 | `ts_time_convert` | `time` | 3 | `teistro-astro`, `teistro-core`, `teistro-time` |
 | `ts_time_delta_t` | `time` | 3 | `teistro-astro`, `teistro-core`, `teistro-time` |
 | `ts_time_resolve` | `time` | 3 | `teistro-astro`, `teistro-core`, `teistro-time` |
@@ -62,6 +61,7 @@ Widest first. Read through the boundary's own helpers, because a body that names
 | `ts_frame_canonical` | `frame` | 2 | `teistro-core`, `teistro-port-ephemeris` |
 | `ts_frame_pack` | `frame` | 2 | `teistro-core`, `teistro-port-ephemeris` |
 | `ts_frame_unpack` | `frame` | 2 | `teistro-core`, `teistro-port-ephemeris` |
+| `ts_intl_render` | `intl` | 2 | `teistro-core`, `teistro-intl` |
 | `ts_intl_transliterate` | `intl` | 2 | `teistro-core`, `teistro-intl` |
 | `ts_provider_load` | `provider` | 2 | `teistro-core`, `teistro-port-ephemeris` |
 | `ts_calendar_fixed_of_jd` | `calendar` | 1 | `teistro-calendar` |

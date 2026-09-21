@@ -11,13 +11,11 @@
 use core::ffi::c_char;
 use core::fmt::Write as _;
 
-use teistro_calendar::CalendarDate;
 use teistro_core::Status;
-use teistro_core::catalogue::Calendar;
 use teistro_core::error::Error;
 use teistro_idl::blob::{FixedValue, Writer};
+use teistro_intl::Params;
 use teistro_intl::translit::{Script, transliterate};
-use teistro_intl::{ClockTime, Ghati, Params, Value};
 
 use crate::blob::TsBlob;
 use crate::context::{TsContext, unknown_locale};
@@ -330,122 +328,21 @@ pub unsafe extern "C" fn ts_intl_render(
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
 }
-
-/// Parameters from their JSON form.
+/// The parameters of a render, as the JSON `ts_intl_render` documents.
+///
+/// One parser, and it is the locale engine's own
+/// ([`teistro_intl::wire`]): a consumer writing parameters and a composer
+/// writing a narrative plan therefore cannot be told apart by the reader,
+/// and a shape added there is taken here without a second reading of it.
 ///
 /// # Errors
 ///
-/// Text that is not a JSON object, or a value no parameter type takes.
+/// JSON that is not an object of values, naming the parameter it stopped
+/// at.
 pub fn params_from_json(text: &str) -> Result<Params, Error> {
-    let value: serde_json::Value = serde_json::from_str(text).map_err(|e| {
-        Error::invalid_arg(format!("`params_json` does not parse: {e}")).with_field("params_json")
-    })?;
-    let serde_json::Value::Object(map) = value else {
-        return Err(
-            Error::invalid_arg("`params_json` must be a JSON object").with_field("params_json")
-        );
-    };
-    map.into_iter()
-        .map(|(name, v)| value_from_json(&name, &v).map(|value| (name, value)))
-        .collect()
-}
-
-fn refuse(name: &str, what: &str) -> Error {
-    Error::invalid_arg(format!("parameter `{name}`: {what}")).with_field(name)
-}
-
-fn value_from_json(name: &str, value: &serde_json::Value) -> Result<Value, Error> {
-    use serde_json::Value as Json;
-    match value {
-        Json::String(s) => Ok(Value::Str(s.clone())),
-        Json::Number(n) => n
-            .as_i64()
-            .map(Value::Int)
-            .or_else(|| n.as_f64().map(Value::Num))
-            .ok_or_else(|| refuse(name, "a number outside the range of an integer or a double")),
-        Json::Array(items) => items
-            .iter()
-            .map(|item| value_from_json(name, item))
-            .collect::<Result<Vec<_>, _>>()
-            .map(Value::List),
-        Json::Object(map) => {
-            let mut entries = map.iter();
-            let (Some((tag, inner)), None) = (entries.next(), entries.next()) else {
-                return Err(refuse(
-                    name,
-                    "an object must have exactly one `$`-tagged key",
-                ));
-            };
-            match tag.as_str() {
-                "$entity" => inner.as_str().map(Value::entity).ok_or_else(|| {
-                    refuse(name, "`$entity` takes a catalogue key such as `graha.SUN`")
-                }),
-                "$date" => date_from_json(name, inner).map(Value::Date),
-                "$time" => time_from_json(name, inner).map(Value::Time),
-                "$datetime" => Ok(Value::DateTime(
-                    date_from_json(name, inner.get("date").unwrap_or(&Json::Null))?,
-                    time_from_json(name, inner.get("time").unwrap_or(&Json::Null))?,
-                )),
-                "$ghati" => {
-                    let field = |key: &str| small(name, inner, key);
-                    Ok(Value::Ghati(Ghati::new(
-                        field("ghati")?,
-                        field("pala")?,
-                        field("vipala")?,
-                    )))
-                }
-                other => Err(refuse(
-                    name,
-                    &format!(
-                        "`{other}` is not a tag; the tags are $entity, $date, $time, $datetime, $ghati"
-                    ),
-                )),
-            }
-        }
-        Json::Bool(_) | Json::Null => {
-            Err(refuse(name, "booleans and null are not parameter values"))
-        }
-    }
-}
-
-fn small(name: &str, object: &serde_json::Value, key: &str) -> Result<u8, Error> {
-    object
-        .get(key)
-        .and_then(serde_json::Value::as_u64)
-        .and_then(|v| u8::try_from(v).ok())
-        .ok_or_else(|| refuse(name, &format!("`{key}` must be an integer from 0 to 255")))
-}
-
-fn date_from_json(name: &str, object: &serde_json::Value) -> Result<CalendarDate, Error> {
-    let calendar = object
-        .get("calendar")
-        .and_then(serde_json::Value::as_str)
-        .and_then(Calendar::from_key)
-        .ok_or_else(|| {
-            refuse(
-                name,
-                "`calendar` must be a calendar key such as `GREGORIAN`",
-            )
-        })?;
-    let year = object
-        .get("year")
-        .and_then(serde_json::Value::as_i64)
-        .and_then(|v| i32::try_from(v).ok())
-        .ok_or_else(|| refuse(name, "`year` must be an integer"))?;
-    Ok(CalendarDate::defined(
-        calendar,
-        year,
-        small(name, object, "month")?,
-        small(name, object, "day")?,
-    ))
-}
-
-fn time_from_json(name: &str, object: &serde_json::Value) -> Result<ClockTime, Error> {
-    Ok(ClockTime::new(
-        small(name, object, "hour")?,
-        small(name, object, "minute")?,
-        small(name, object, "second")?,
-    ))
+    serde_json::from_str::<Params>(text).map_err(|err| {
+        Error::invalid_arg(format!("`params_json` does not read: {err}")).with_field("params_json")
+    })
 }
 
 #[cfg(test)]
@@ -457,6 +354,8 @@ mod tests {
     )]
 
     use super::*;
+    use teistro_core::catalogue::Calendar;
+    use teistro_intl::{ClockTime, Ghati, Value};
 
     #[test]
     fn parameters_come_from_json_with_their_types() {

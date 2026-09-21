@@ -36,7 +36,7 @@
 //! assert!(plan.items.iter().all(|item| KEYS.contains(&item.key.as_str())));
 //! // Nothing but keys and slots: the words are the locale's.
 //! let written = serde_json::to_string(&plan)?;
-//! assert!(written.contains(r#"{"kind":"entity","value":"graha.SUN"}"#));
+//! assert!(written.contains(r#"{"$entity":"graha.SUN"}"#));
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 

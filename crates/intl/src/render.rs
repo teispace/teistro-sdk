@@ -79,12 +79,13 @@ impl Ghati {
 
 /// A parameter value.
 ///
-/// It reads and writes as `{"kind": "entity", "value": "graha.SUN"}`: a
-/// narrative plan is a list of message keys and these, and a plan that
-/// cannot be written down cannot be stored, sent or held by a golden file
-/// (`03-design/interpret-composers.md`).
-#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
-#[serde(tag = "kind", content = "value", rename_all = "camelCase")]
+/// It reads and writes as the JSON the boundary has always taken: text, a
+/// number and a list as themselves, and everything else as a single
+/// `$`-tagged object — `{"$entity": "graha.SUN"}`, `{"$date": {…}}`,
+/// `{"$time": {…}}`, `{"$datetime": {…}}`, `{"$ghati": {…}}`. One shape, so
+/// a narrative plan that crosses the boundary carries slots a binding can
+/// hand straight back to `render` (`03-design/interpret-composers.md`).
+#[derive(Clone, Debug, PartialEq)]
 pub enum Value {
     /// Text.
     Str(String),
