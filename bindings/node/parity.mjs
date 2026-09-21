@@ -261,6 +261,9 @@ const charts = geo.chart.foundMany({
   // The text-written rules and the longevity readings, so the four agree on
   // what every chart answers by rule.
   rules: { shipped: ['nabhasas'], longevity: true },
+  // Both composers, so the four agree on what every chart *says* and not
+  // only on what it computes (`03-design/plans-at-the-boundary.md`).
+  interpret: { placements: true, readings: true },
   aspects: true,
   points: true,
   houses: true,
@@ -350,6 +353,15 @@ for (const chart of charts) {
   });
   put(`chart-${i}-rules-present`, chart.rules.present.map((held) => held.rule).join(','));
   put(`chart-${i}-rules-pindayu`, chart.rules.longevity.ayurdaya.pindayu.years);
+  // **Every item said**, not merely counted: this is the only place the
+  // four bindings are compared on text, and it exercises the composers,
+  // the params shape and the locale engine in one comparison.
+  for (const [composer, items] of Object.entries(chart.plans)) {
+    put(`chart-${i}-plan-${composer}-count`, items.length);
+    items.forEach((item, n) => {
+      put(`chart-${i}-plan-${composer}-${n}`, `${item.key}: ${ctx.intl.render(item.key, item.params).text}`);
+    });
+  }
   chart.drawings.forEach((drawing, d) => {
     const key = `chart-${i}-drawing-${d}`;
     put(key, drawing.layout);

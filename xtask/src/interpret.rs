@@ -91,6 +91,36 @@ fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
     Ok(out)
 }
 
+/// What a plan costs written down, which is what it costs to cross a
+/// boundary: the JSON `Plan` serialises to, and how much of that is the
+/// verses' own cited words rather than keys and slots.
+struct Written {
+    bytes: usize,
+    cited: usize,
+}
+
+/// A plan's written size, and the share of it the cited verses take.
+///
+/// The cited text is measured from the items themselves rather than from
+/// the JSON, because it is the one slot whose length is a text's and not
+/// the SDK's: every other slot is a key, a number or a short list.
+fn written(plan: &Plan) -> Written {
+    let bytes = serde_json::to_string(plan).map_or(0, |json| json.len());
+    let cited = plan
+        .items
+        .iter()
+        .filter(|item| {
+            item.key
+                == <teistro_intl::messages::sdk::reading::Effect as teistro_intl::TypedMessage>::KEY
+        })
+        .filter_map(|item| match item.params.get("text") {
+            Some(teistro_intl::Value::Str(text)) => Some(text.len()),
+            _ => None,
+        })
+        .sum();
+    Written { bytes, cited }
+}
+
 /// How a locale answered every item of every plan.
 #[derive(Default)]
 struct Said {
@@ -148,6 +178,35 @@ fn lines(intl: &mut Intl, tag: &str, plan: &Plan) -> Result<Vec<String>, String>
             }
         })
         .collect())
+}
+
+/// What the plans cost written down, which is what they cost to cross a
+/// boundary or to fill a golden file
+/// (`03-design/plans-at-the-boundary.md` §2).
+fn costs(out: &mut String, plans: &[Composed], items: usize) {
+    let sizes: Vec<Written> = plans
+        .iter()
+        .map(|composed| written(&composed.plan))
+        .collect();
+    let bytes: usize = sizes.iter().map(|size| size.bytes).sum();
+    let cited: usize = sizes.iter().map(|size| size.cited).sum();
+    let widest = sizes.iter().map(|size| size.bytes).max().unwrap_or(0);
+    let _ = write!(
+        out,
+        "Written down, a plan is what it costs to cross a boundary or fill a \
+         golden file: {} of JSON over the {}, {} a chart, {} for the widest \
+         and {} an item. The verses' own cited words are **not** what weighs \
+         it — {}, {}% — so what a plan costs is the items themselves, each \
+         naming its message and its rule again. Small enough to cross whole: \
+         nothing here asks to be packed.\n\n",
+        plural(bytes, "byte"),
+        plural(plans.len(), "chart"),
+        plural(bytes.checked_div(plans.len()).unwrap_or(0), "byte"),
+        plural(widest, "byte"),
+        plural(bytes.checked_div(items).unwrap_or(0), "byte"),
+        plural(cited, "byte"),
+        cited.saturating_mul(100).checked_div(bytes).unwrap_or(0),
+    );
 }
 
 /// The claims the packs and the corpus decide, and whatever went wrong.
@@ -244,6 +303,8 @@ fn page(root: &Path) -> Result<String, String> {
         plural(items, "item"),
         plural(items.checked_div(plans.len()).unwrap_or(0), "item"),
     );
+
+    costs(&mut out, &plans, items);
 
     decided(&mut out, &said, items, strict.len());
 

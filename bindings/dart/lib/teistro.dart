@@ -700,6 +700,7 @@ final class ChartArea extends _Area {
         const <(KeyOf<ChartLayout>, Varga)>[],
     ChartTheme? theme,
     RuleRequest? rules,
+    PlanRequest? interpret,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -720,6 +721,7 @@ final class ChartArea extends _Area {
     drawings: drawings,
     theme: theme,
     rules: rules,
+    interpret: interpret,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -760,6 +762,7 @@ final class ChartArea extends _Area {
         const <(KeyOf<ChartLayout>, Varga)>[],
     ChartTheme? theme,
     RuleRequest? rules,
+    PlanRequest? interpret,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -801,6 +804,7 @@ final class ChartArea extends _Area {
             drawings: _drawingBits(drawings, _context._registeredLayouts),
             themeJson: theme?._json,
             rulesJson: rules?._json,
+            interpretJson: interpret?._json,
           ),
         ),
       ),
@@ -3318,13 +3322,24 @@ final Expando<List<Map<String, Object?>>> _rules =
     Expando<List<Map<String, Object?>>>('rules');
 
 List<Map<String, Object?>> _rulesOf(Charts batch) =>
-    _rules[batch] ??=
-        batch.rules.isEmpty
-            ? const <Map<String, Object?>>[]
-            : [
-              for (final chart in jsonDecode(batch.rules) as List<Object?>)
-                chart! as Map<String, Object?>,
-            ];
+    _rules[batch] ??= _sectionOf(batch.rules);
+
+/// Each batch's narrative plans, parsed once however many charts read them.
+final Expando<List<Map<String, Object?>>> _plans =
+    Expando<List<Map<String, Object?>>>('plans');
+
+List<Map<String, Object?>> _plansOf(Charts batch) =>
+    _plans[batch] ??= _sectionOf(batch.plans);
+
+/// A blob section of canonical JSON, one object a chart; empty where the
+/// request did not ask for the section.
+List<Map<String, Object?>> _sectionOf(String json) =>
+    json.isEmpty
+        ? const <Map<String, Object?>>[]
+        : [
+          for (final chart in jsonDecode(json) as List<Object?>)
+            chart! as Map<String, Object?>,
+        ];
 
 /// A set of rules the SDK ships.
 enum ShippedRules {
@@ -3393,6 +3408,26 @@ final class RuleRequest {
     'readings': readings._key,
     'houses': houses,
     'longevity': longevity,
+  });
+}
+
+/// The narrative plans a request asks a chart for
+/// (`03-design/plans-at-the-boundary.md`). Each composer is off by default,
+/// and [readings] needs a [RuleRequest] beside it, since it says what the
+/// rules a chart held answered.
+final class PlanRequest {
+  /// A request for the composers named.
+  const PlanRequest({this.placements = false, this.readings = false});
+
+  /// Where each of the nine grahas stands and who shares a sign.
+  final bool placements;
+
+  /// What each rule the chart held says.
+  final bool readings;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'placements': placements,
+    'readings': readings,
   });
 }
 
@@ -3794,6 +3829,17 @@ final class Chart {
   /// (`03-design/rules-at-the-boundary.md`).
   Map<String, Object?>? get rules {
     final all = _rulesOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// What this chart has to say, as the composers wrote it: `placements` and
+  /// `readings`, each a list of `{key, params}` holding no words at all. An
+  /// item's `params` are the very map [IntlArea.render] takes, so it says
+  /// itself in the context's locale — and the same plan says it in any
+  /// other. Null unless the request named a composer
+  /// (`03-design/plans-at-the-boundary.md`).
+  Map<String, Object?>? get plans {
+    final all = _plansOf(batch);
     return index < all.length ? all[index] : null;
   }
 

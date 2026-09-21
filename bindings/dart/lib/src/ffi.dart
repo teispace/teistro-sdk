@@ -931,6 +931,18 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"shipped":["nabhasas"]}. May be null.
   external ffi.Pointer<ffi.Char> rulesJson;
 
+  /// Narrative plans to compose over every chart, as JSON: an object
+  /// naming the composers to run, `placements` and `readings`, each
+  /// false by default. The plans come back in the blob's `plans`
+  /// section, holding no words at all — an item's params are the JSON
+  /// `ts_intl_render` takes, so a binding says one by handing it
+  /// straight back, in any locale and in as many as it likes
+  /// (`03-design/plans-at-the-boundary.md`). `readings` says what the
+  /// rules answered, so it needs `rules_json` beside it. Null for none,
+  /// which costs nothing.
+  /// Example: {"placements":true}. May be null.
+  external ffi.Pointer<ffi.Char> interpretJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2746,7 +2758,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -2844,6 +2856,18 @@ final class ChartRequest {
   /// Example: {"shipped":["nabhasas"]}. May be null.
   final String? rulesJson;
 
+  /// Narrative plans to compose over every chart, as JSON: an object
+  /// naming the composers to run, `placements` and `readings`, each
+  /// false by default. The plans come back in the blob's `plans`
+  /// section, holding no words at all — an item's params are the JSON
+  /// `ts_intl_render` takes, so a binding says one by handing it
+  /// straight back, in any locale and in as many as it likes
+  /// (`03-design/plans-at-the-boundary.md`). `readings` says what the
+  /// rules answered, so it needs `rules_json` beside it. Null for none,
+  /// which costs nothing.
+  /// Example: {"placements":true}. May be null.
+  final String? interpretJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -2889,6 +2913,9 @@ final class ChartRequest {
     raw.rulesJson = rulesJson == null
         ? ffi.nullptr
         : rulesJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.interpretJson = interpretJson == null
+        ? ffi.nullptr
+        : interpretJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -2920,6 +2947,9 @@ final class ChartRequest {
         rulesJson: raw.rulesJson == ffi.nullptr
             ? null
             : raw.rulesJson.cast<pkg_ffi.Utf8>().toDartString(),
+        interpretJson: raw.interpretJson == ffi.nullptr
+            ? null
+            : raw.interpretJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

@@ -750,6 +750,39 @@ export interface RulesReading {
 }
 
 /**
+ * The narrative plans a request asks a chart for
+ * (`03-design/plans-at-the-boundary.md`). Each composer is off by default,
+ * and `readings` needs `rules` beside it, since it says what the rules a
+ * chart held answered.
+ */
+export interface PlanRequest {
+  /** Where each of the nine grahas stands and who shares a sign. */
+  readonly placements?: boolean;
+  /** What each rule the chart held says. */
+  readonly readings?: boolean;
+}
+
+/**
+ * One thing to say: a message key and its slots. The slots are the very
+ * record `intl.render` takes, so `sdk.intl.render(item.key, item.params)`
+ * says it, in whatever locale the context is in.
+ */
+export interface PlanItem {
+  /** The message to say it with. */
+  readonly key: string;
+  /** Its slots, ready for `intl.render`. */
+  readonly params: Readonly<Record<string, unknown>>;
+}
+
+/** What a chart has to say, holding no words: the composers asked for. */
+export interface Plans {
+  /** Where the grahas stand; absent unless `placements` asked for it. */
+  readonly placements?: readonly PlanItem[];
+  /** What the rules answered; absent unless `readings` asked for it. */
+  readonly readings?: readonly PlanItem[];
+}
+
+/**
  * The theme a request writes its drawings as SVG in: a shipped theme's name,
  * or a record naming only what it changes (`03-design/render-svg.md`).
  */
@@ -999,6 +1032,8 @@ export declare class Chart {
   readonly drawings: readonly Drawing[];
   /** What the chart answers by rule; `null` unless `rules` named some. */
   readonly rules: RulesReading | null;
+  /** What the chart has to say; `null` unless `interpret` named a composer. */
+  readonly plans: Plans | null;
   /** The dashas asked for, in the order asked; empty unless `dashas` named some. */
   readonly dashas: readonly Dasha[];
   /** The Ashtakavarga; `null` unless `ashtakavarga` asked for it. */
@@ -1274,6 +1309,12 @@ export interface ChartRequest {
    * None by default.
    */
   readonly rules?: RuleRequest;
+  /**
+   * Narrative plans to compose over every chart, read back as each chart's
+   * `plans`: keys and slots holding no words, which `intl.render` says in
+   * any locale. None by default.
+   */
+  readonly interpret?: PlanRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

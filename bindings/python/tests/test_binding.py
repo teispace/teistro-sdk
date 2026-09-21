@@ -39,6 +39,8 @@ from teistro import (
     Teistro,
     TeistroError,
     TimeScale,
+    PlanRequest,
+    Plans,
     RuleRequest,
     RulesReading,
     Theme,
@@ -646,6 +648,50 @@ class AnEngine(WithLibrary):
         with self.assertRaises(TeistroError) as wrong:
             found({"rules": [{"key": "X", "category": "raja"}]})
         self.assertEqual(wrong.exception.field, "rules_json.rules[0]")
+
+    def test_plans_compose_in_the_same_crossing_and_render_with_nothing_in_between(self) -> None:
+        """A request's plans come back as each chart's `plans`, holding no
+        words — and this says them, by handing each item's `params` straight
+        to `intl.render`. That is the property the crossing exists for: no
+        step between the plan and the renderer
+        (`03-design/plans-at-the-boundary.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+
+        def found(interpret: Optional[PlanRequest], rules: Optional[RuleRequest] = None) -> Optional[Plans]:
+            return self.ctx.chart.found(
+                instant=2451545.0,
+                place=observer,
+                utc_offset_seconds=20700,
+                rules=rules,
+                interpret=interpret,
+            ).plans
+
+        self.assertIsNone(found(None), "no composer, no plans")
+        plans = found({"placements": True, "readings": True}, {"shipped": ["nabhasas"]})
+        assert plans is not None
+        self.assertTrue(plans["placements"], "every chart places its grahas")
+        self.assertIsInstance(plans["readings"], list)
+
+        said = 0
+        for item in [*plans["placements"], *plans["readings"]]:
+            self.assertTrue(item["key"].startswith("sdk."))
+            rendered = self.ctx.intl.render(item["key"], item["params"])
+            self.assertTrue(rendered.text, f"{item['key']} said nothing")
+            self.assertEqual(rendered.is_fallback, 0, f"{item['key']} fell back")
+            self.assertEqual(rendered.warning_count, 0, f"{item['key']} warned")
+            said += 1
+        self.assertGreater(said, 20, f"only {said} items said")
+
+        # A reading says what the rules answered, so it needs rules beside it.
+        with self.assertRaises(TeistroError) as alone:
+            found({"readings": True})
+        self.assertEqual(alone.exception.field, "interpret_json.readings")
+        # And a composer that is not one is refused beside the ones that are.
+        with self.assertRaises(TeistroError) as typo:
+            found({"readigns": True})  # type: ignore[arg-type]
+        self.assertEqual(typo.exception.field, "interpret_json")
 
     def test_a_chart_carries_its_ashtakavarga_and_each_graha_s_reductions(self) -> None:
         """A chart's Ashtakavarga crosses whole: each graha's bindus holding the

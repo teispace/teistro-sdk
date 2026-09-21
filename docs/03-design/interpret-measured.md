@@ -10,6 +10,14 @@ difference. The design it measures is
 
 93 recorded charts composed to 8347 items, 89 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
+Written down, a plan is what it costs to cross a boundary or fill a
+golden file: 1 169 365 bytes of JSON over the 93 charts, 12 573 bytes a
+chart, 17 425 bytes for the widest and 140 bytes an item. The verses'
+own cited words are **not** what weighs it — 112 962 bytes, 9% — so
+what a plan costs is the items themselves, each naming its message and
+its rule again. Small enough to cross whole: nothing here asks to be
+packed.
+
 ## What the corpus decides
 
 | proposed rule | verdict | measured |

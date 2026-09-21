@@ -231,6 +231,9 @@ __all__ = [
     "ChartLayout",
     "Drawing",
     "LayoutRow",
+    "PlanItem",
+    "PlanRequest",
+    "Plans",
     "RuleRequest",
     "RulesReading",
     "ShippedRules",
@@ -1015,6 +1018,7 @@ class ChartArea(_Area):
         drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
         theme: Optional[Theme] = None,
         rules: Optional[RuleRequest] = None,
+        interpret: Optional[PlanRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1049,6 +1053,7 @@ class ChartArea(_Area):
             drawings=drawings,
             theme=theme,
             rules=rules,
+            interpret=interpret,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1073,6 +1078,7 @@ class ChartArea(_Area):
         drawings: Sequence[Tuple[Union[ChartLayout, str], Varga]] = (),
         theme: Optional[Theme] = None,
         rules: Optional[RuleRequest] = None,
+        interpret: Optional[PlanRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1127,6 +1133,7 @@ class ChartArea(_Area):
             drawings=_drawing_bits(drawings, self._context._registered_layouts),
             theme_json=_theme_json(theme),
             rules_json=_rules_json(rules),
+            interpret_json=_interpret_json(interpret),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -2497,16 +2504,55 @@ class RulesReading(TypedDict, total=False):
     unreadable: List[str]
 
 
+class PlanRequest(TypedDict, total=False):
+    """The narrative plans a request asks a chart for
+    (`03-design/plans-at-the-boundary.md`). Each composer is off by default,
+    and `readings` needs `rules` beside it, since it says what the rules a
+    chart held answered."""
+
+    placements: bool
+    readings: bool
+
+
+class PlanItem(TypedDict):
+    """One thing to say: a message key and its slots. The slots are the very
+    mapping `intl.render` takes, so `sdk.intl.render(item["key"],
+    item["params"])` says it, in whatever locale the context is in."""
+
+    key: str
+    params: Dict[str, Any]
+
+
+class Plans(TypedDict, total=False):
+    """What a chart has to say, holding no words: the composers asked for,
+    and only those."""
+
+    placements: List[PlanItem]
+    readings: List[PlanItem]
+
+
 def _rules_json(rules: Optional[RuleRequest]) -> Optional[str]:
     """The rules as the JSON the boundary reads, or nothing for none."""
-    if rules is None:
+    return _record_json(rules, "rules", "{'shipped': ['nabhasas']}")
+
+
+def _interpret_json(interpret: Optional[PlanRequest]) -> Optional[str]:
+    """The plans as the JSON the boundary reads, or nothing for none."""
+    return _record_json(interpret, "interpret", "{'placements': True}")
+
+
+def _record_json(value: Optional[Mapping[str, Any]], field: str, example: str) -> Optional[str]:
+    """A request option that crosses as a JSON record, written down; nothing
+    where it was not given. Anything else is refused here, named and shown,
+    rather than across the boundary."""
+    if value is None:
         return None
-    if isinstance(rules, Mapping):
-        return json.dumps(rules)
+    if isinstance(value, Mapping):
+        return json.dumps(value)
     raise TeistroError(
         Status.INVALID_ARG,
-        "rules is a rule request record, such as {'shipped': ['nabhasas']}",
-        field="rules",
+        f"{field} is a request record, such as {example}",
+        field=field,
     )
 
 
@@ -2942,6 +2988,17 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def plans(self) -> Optional[Plans]:
+        """What this chart has to say, as the composers wrote it:
+        `placements` and `readings`, each a list of `{key, params}` holding
+        no words at all. An item's `params` are the mapping `intl.render`
+        takes, so it says itself in the context's locale — and the same plan
+        says it in any other (`03-design/plans-at-the-boundary.md`). `None`
+        unless the request named a composer."""
+        parsed = self.batch._plans
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def drawings(self) -> list[Drawing]:
         """The charts drawn in the layouts asked for, in the order asked;
         empty unless `drawings` named some (`03-design/chart-geometry.md`).
@@ -3064,6 +3121,13 @@ class ChartBatch:
     def _rules(self) -> list[RulesReading]:
         """Every chart's answers by rule, parsed once; empty when none were asked for."""
         text = self.decoded.rules
+        return json.loads(text) if text else []
+
+    @cached_property
+    def _plans(self) -> list[Plans]:
+        """Every chart's narrative plans, parsed once; empty when no composer
+        was asked for."""
+        text = self.decoded.plans
         return json.loads(text) if text else []
 
     @cached_property

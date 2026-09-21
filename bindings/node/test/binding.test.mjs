@@ -782,6 +782,61 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
 });
 
 /**
+ * A request's plans come back as each chart's `plans`, holding no words —
+ * and the test says them, by handing each item's `params` straight to
+ * `intl.render`. That is the property the crossing exists for: no step
+ * between the plan and the renderer (`03-design/plans-at-the-boundary.md`).
+ */
+test('plans compose in the same crossing, and render with nothing in between', () => {
+  const ctx = context();
+  const request = {
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  assert.equal(ctx.chart.found(request).plans, null, 'no composer, no plans');
+
+  const plans = ctx.chart.found({
+    ...request,
+    rules: { shipped: ['nabhasas'] },
+    interpret: { placements: true, readings: true },
+  }).plans;
+  assert.ok(plans.placements.length > 0, 'every chart places its grahas');
+  assert.ok(Array.isArray(plans.readings), 'asked for, so present');
+  assert.ok(Object.isFrozen(plans.placements[0]), 'a plan handed out is a plan kept');
+
+  let said = 0;
+  for (const item of [...plans.placements, ...plans.readings]) {
+    assert.match(item.key, /^sdk\./u);
+    const rendered = ctx.intl.render(item.key, item.params);
+    assert.ok(rendered.text.length > 0, `${item.key} said nothing`);
+    assert.equal(rendered.isFallback, false, `${item.key} fell back`);
+    assert.deepEqual(rendered.warnings, [], `${item.key} warned`);
+    said += 1;
+  }
+  assert.ok(said > 20, `only ${said} items said`);
+
+  // One plan, said again in another locale: a plan carries no locale.
+  ctx.intl.locale = 'ne-Deva-NP';
+  const nepali = ctx.intl.render(plans.placements[0].key, plans.placements[0].params);
+  assert.equal(nepali.isFallback, false);
+  assert.notEqual(nepali.text, ctx.chart.found(request).plans, 'said, not empty');
+
+  // A reading says what the rules answered, so it needs rules beside it.
+  assert.throws(
+    () => ctx.chart.found({ ...request, interpret: { readings: true } }),
+    (error) => error instanceof TeistroError && error.field === 'interpret_json.readings',
+  );
+  // And a composer that is not one is refused beside the ones that are.
+  assert.throws(
+    () => ctx.chart.found({ ...request, interpret: { readigns: true } }),
+    (error) => error instanceof TeistroError && error.field === 'interpret_json',
+  );
+  assert.throws(() => ctx.chart.found({ ...request, interpret: ['placements'] }), /interpret: expected/u);
+  ctx.dispose();
+});
+
+/**
  * A theme writes every drawing as SVG in the context's locale; every field a
  * theme record can name is one the SDK reads, and a wrong one is refused by
  * its path.

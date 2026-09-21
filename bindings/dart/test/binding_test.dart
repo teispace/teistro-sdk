@@ -712,6 +712,69 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('plans compose in the same crossing, and render with nothing in '
+      'between', () {
+    final ctx = context();
+    Map<String, Object?>? found(PlanRequest? interpret, {RuleRequest? rules}) =>
+        ctx.chart
+            .found(
+              instant: 2451545.0,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              rules: rules,
+              interpret: interpret,
+            )
+            .plans;
+
+    expect(found(null), isNull, reason: 'no composer, no plans');
+    final plans =
+        found(
+          const PlanRequest(placements: true, readings: true),
+          rules: const RuleRequest(shipped: [ShippedRules.nabhasas]),
+        )!;
+    final placements = plans['placements']! as List<Object?>;
+    expect(placements, isNotEmpty, reason: 'every chart places its grahas');
+    expect(plans['readings'], isA<List<Object?>>());
+
+    // Each item said by handing its params straight to the renderer, which
+    // is the property the crossing exists for.
+    var said = 0;
+    for (final item
+        in [
+          ...placements,
+          ...plans['readings']! as List<Object?>,
+        ].cast<Map<String, Object?>>()) {
+      final key = item['key']! as String;
+      expect(key, startsWith('sdk.'));
+      final rendered = ctx.intl.render(
+        key,
+        item['params']! as Map<String, Object?>,
+      );
+      expect(rendered.text, isNotEmpty, reason: '$key said nothing');
+      expect(rendered.isFallback, 0, reason: '$key fell back');
+      expect(rendered.warningCount, 0, reason: '$key warned');
+      said += 1;
+    }
+    expect(said, greaterThan(20), reason: 'only $said items said');
+
+    // A reading says what the rules answered, so it needs rules beside it.
+    expect(
+      () => found(const PlanRequest(readings: true)),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'interpret_json.readings',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a layout of your own is registered, drawn by its key, and refused by '
       'its field', () {
     final base = context();

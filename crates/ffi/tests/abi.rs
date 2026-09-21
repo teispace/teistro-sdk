@@ -1427,6 +1427,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             dasha_count: dashas.len(),
             theme_json: ptr::null(),
             rules_json: ptr::null(),
+            interpret_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1559,6 +1560,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             dasha_count: dashas.len(),
             theme_json: ptr::null(),
             rules_json: ptr::null(),
+            interpret_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1679,6 +1681,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             dasha_count: 0,
             theme_json: ptr::null(),
             rules_json: rules.as_ptr(),
+            interpret_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1714,6 +1717,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
     // The same request without rules carries an empty section.
     let plain = TsChartRequest {
         rules_json: ptr::null(),
+        interpret_json: ptr::null(),
         ..request
     };
     let mut none = TsBlob::empty();
@@ -1733,6 +1737,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
     let broken = CString::new(r#"{"rules": [{"key": "X", "category": "raja"}]}"#).unwrap();
     let refused = TsChartRequest {
         rules_json: broken.as_ptr(),
+        interpret_json: ptr::null(),
         ..request
     };
     let mut nothing = TsBlob::empty();
@@ -1743,6 +1748,177 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
     assert_eq!(
         record.2.as_deref(),
         Some("rules_json.rules[0]"),
+        "{record:?}"
+    );
+}
+
+/// A chart request composes narrative plans in the same crossing: the
+/// placements and the readings of every chart, each holding no words, each
+/// item's params the very JSON `ts_intl_render` takes — so the test says one
+/// by handing an item straight back to the renderer, which is the property
+/// the crossing exists for. A reading without rules is refused by name, and
+/// a composer that is not one is refused beside the composers there are
+/// (`03-design/plans-at-the-boundary.md`).
+#[test]
+fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_447_995.489_583_333_5, 2_451_545.0];
+    let rules = CString::new(r#"{"shipped": ["nabhasas"]}"#).unwrap();
+    let plans = CString::new(r#"{"placements": true, "readings": true}"#).unwrap();
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: rules.as_ptr(),
+            interpret_json: plans.as_ptr(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let composed: serde_json::Value =
+        serde_json::from_slice(reader.bytes("plans").unwrap()).unwrap();
+    let per_chart = composed.as_array().unwrap();
+    assert_eq!(per_chart.len(), 2, "one entry a chart");
+
+    let mut said = 0;
+    for chart in per_chart {
+        let placements = chart["placements"].as_array().unwrap();
+        assert!(!placements.is_empty(), "every chart places its grahas");
+        assert!(chart["readings"].is_array(), "asked for, so present");
+        for item in placements
+            .iter()
+            .chain(chart["readings"].as_array().unwrap())
+        {
+            // A plan holds keys and slots, never a rendered word.
+            let key = item["key"].as_str().unwrap();
+            assert!(key.starts_with("sdk."), "{item}");
+            // And its params are the renderer's own: handed straight back,
+            // with nothing in between, they say the item.
+            let key = CString::new(key).unwrap();
+            let params = CString::new(serde_json::to_string(&item["params"]).unwrap()).unwrap();
+            let mut rendered = TsBlob::empty();
+            // SAFETY: a live context, two NUL-terminated strings, a valid slot.
+            assert_eq!(
+                unsafe {
+                    ts_intl_render(ctx.handle, key.as_ptr(), params.as_ptr(), &raw mut rendered)
+                },
+                Status::Ok,
+                "{:?}",
+                ctx.last_error()
+            );
+            // SAFETY: the library wrote `len` bytes.
+            let said_bytes =
+                unsafe { core::slice::from_raw_parts(rendered.data, rendered.len) }.to_vec();
+            // SAFETY: a descriptor the library wrote.
+            unsafe { ts_blob_free(&raw mut rendered) };
+            let render_schema = schemas::intl_render();
+            let render_reader = Reader::parse(&said_bytes, &render_schema).unwrap();
+            assert!(
+                !render_reader.text("text").unwrap().is_empty(),
+                "{key:?} said nothing"
+            );
+            // A fallback would mean the locale does not carry the key, and a
+            // warning that a slot did not fit it.
+            let flags = render_reader.fixed("flags").unwrap();
+            assert_eq!(flags[0].as_i64(), 0, "{key:?} fell back");
+            assert_eq!(flags[2].as_i64(), 0, "{key:?} warned");
+            said += 1;
+        }
+    }
+    assert!(said > 20, "only {said} items said");
+
+    // The same request without a composer carries an empty section.
+    let plain = TsChartRequest {
+        interpret_json: ptr::null(),
+        ..request
+    };
+    let mut none = TsBlob::empty();
+    // SAFETY: as above.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const plain, &raw mut none) },
+        Status::Ok
+    );
+    // SAFETY: as above.
+    let plain_bytes = unsafe { core::slice::from_raw_parts(none.data, none.len) }.to_vec();
+    // SAFETY: as above.
+    unsafe { ts_blob_free(&raw mut none) };
+    assert!(
+        Reader::parse(&plain_bytes, &schema)
+            .unwrap()
+            .bytes("plans")
+            .unwrap()
+            .is_empty()
+    );
+
+    // A reading needs rules to say what they answered.
+    let alone = CString::new(r#"{"readings": true}"#).unwrap();
+    let refused = TsChartRequest {
+        rules_json: ptr::null(),
+        interpret_json: alone.as_ptr(),
+        ..request
+    };
+    let mut nothing = TsBlob::empty();
+    // SAFETY: as above.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const refused, &raw mut nothing) };
+    assert_eq!(status, Status::InvalidArg);
+    let record = ctx.last_error();
+    assert_eq!(
+        record.2.as_deref(),
+        Some("interpret_json.readings"),
+        "{record:?}"
+    );
+
+    // And a composer that is not one is refused beside the ones that are.
+    let typo = CString::new(r#"{"readigns": true}"#).unwrap();
+    let wrong = TsChartRequest {
+        interpret_json: typo.as_ptr(),
+        ..request
+    };
+    let mut never = TsBlob::empty();
+    // SAFETY: as above.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const wrong, &raw mut never) };
+    assert_eq!(status, Status::InvalidArg);
+    let record = ctx.last_error();
+    assert_eq!(record.2.as_deref(), Some("interpret_json"), "{record:?}");
+    assert!(
+        record.1.contains("placements") && record.1.contains("readings"),
         "{record:?}"
     );
 }

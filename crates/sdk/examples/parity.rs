@@ -126,6 +126,55 @@ fn the_rules(report: &mut Report, by_rule: &[teistro::RulesReading<'_>]) {
     }
 }
 
+/// What every chart *says*, as the report prints it: both composers' plans,
+/// every item rendered through the same locale engine the other three
+/// bindings render it with (`03-design/plans-at-the-boundary.md`).
+///
+/// This is the only section compared on text rather than on numbers, so it
+/// exercises the composers, the params shape and the locale engine in one
+/// comparison. Rust composes through the façade exactly as the boundary
+/// does, which is what makes the four comparable at all.
+fn the_plans(
+    report: &mut Report,
+    sdk: &teistro::Context,
+    documents: &[teistro::Document],
+    by_rule: &[teistro::RulesReading<'_>],
+) {
+    for (index, document) in documents.iter().enumerate() {
+        let composed = [
+            (
+                "placements",
+                sdk.interpret()
+                    .placements(document)
+                    .expect("the placements"),
+            ),
+            (
+                "readings",
+                by_rule
+                    .get(index)
+                    .map_or_else(teistro::Plan::default, |reading| {
+                        sdk.interpret().readings(reading)
+                    }),
+            ),
+        ];
+        for (composer, plan) in composed {
+            put(
+                report,
+                &format!("chart-{index}-plan-{composer}-count"),
+                plan.items.len().to_string(),
+            );
+            for (at, item) in plan.items.iter().enumerate() {
+                let said = sdk.intl().render(&item.key, &item.params).text;
+                put(
+                    report,
+                    &format!("chart-{index}-plan-{composer}-{at}"),
+                    format!("{}: {said}", item.key),
+                );
+            }
+        }
+    }
+}
+
 /// The report, as a map so the keys come out sorted whatever order the
 /// sections are written in.
 type Report = BTreeMap<String, String>;
@@ -818,6 +867,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
             .map_or_else(String::new, |a| a.table().to_owned()),
     );
     the_rules(report, &by_rule);
+    the_plans(report, &geo, &read.value, &by_rule);
     for (index, document) in read.value.iter().enumerate() {
         the_drawings(report, &geo, index, document);
         one_varga_chart(report, index, document);

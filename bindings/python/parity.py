@@ -30,6 +30,7 @@ from teistro import (
     Latitude,
     Longitude,
     Observer,
+    PlanItem,
     Scale,
     Teistro,
     TeistroError,
@@ -281,6 +282,10 @@ def main() -> None:
             ],
             theme="dark",
             rules={"shipped": ["nabhasas"], "longevity": True},
+            # Both composers, so the four agree on what every chart *says*
+            # and not only on what it computes
+            # (`03-design/plans-at-the-boundary.md`).
+            interpret={"placements": True, "readings": True},
             aspects=True,
             points=True,
             houses=True,
@@ -403,6 +408,20 @@ def main() -> None:
             assert answered is not None
             put(f"chart-{i}-rules-present", ",".join(held["rule"] for held in answered["present"]))
             put(f"chart-{i}-rules-pindayu", answered["longevity"]["ayurdaya"]["pindayu"]["years"])
+            # **Every item said**, not merely counted: the only place the
+            # four bindings are compared on text, which exercises the
+            # composers, the params shape and the locale engine at once.
+            plans = chart.plans
+            assert plans is not None
+            composed: list[tuple[str, list[PlanItem]]] = [
+                ("placements", plans["placements"]),
+                ("readings", plans["readings"]),
+            ]
+            for composer, items in composed:
+                put(f"chart-{i}-plan-{composer}-count", len(items))
+                for n, item in enumerate(items):
+                    said = ctx.intl.render(item["key"], item["params"]).text
+                    put(f"chart-{i}-plan-{composer}-{n}", f"{item['key']}: {said}")
             for d, drawing in enumerate(chart.drawings):
                 key = f"chart-{i}-drawing-{d}"
                 put(key, drawing.layout_key)

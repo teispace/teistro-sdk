@@ -52,6 +52,7 @@ pub use area::{
     AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea, IntlArea, KeysArea,
     TimeArea,
 };
+mod plan_request;
 mod rule_request;
 mod rules_bridge;
 
@@ -115,6 +116,7 @@ pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
 pub use teistro_render_svg as render_svg;
 // Dashas: a system as a row, the balance at birth, and the period tree read
 // without building it (`03-design/dasha-kernels.md`).
+pub use crate::plan_request::PlanRequest;
 pub use crate::rule_request::{
     Longevity, Present, RuleReadings, RuleRequest, RuleSet, RulesReading, ShippedRules,
 };

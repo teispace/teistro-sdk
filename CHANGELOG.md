@@ -1355,6 +1355,51 @@ the astronomical numbers do not move. Nothing else computes yet.
   the other way: `ts_intl_render` reaches two crates where it reached three,
   because reading a parameter no longer needs the calendar.
 
+- A narrative plan crosses the C boundary
+  (`03-design/plans-at-the-boundary.md`, building), so what a chart has to
+  say is no longer Rust's alone. It rides on `ts_chart_found` as the rules
+  and the SVGs do: a nullable `interpret_json` naming the composers to run,
+  `{"placements": true, "readings": true}`, and section 34 of the charts
+  blob carrying one entry a chart. The composers run over the charts that
+  crossing founded and the rules it just answered, so a plan is a rename of
+  work already done and never an evaluation repeated.
+
+  **An item's slots are the renderer's own**, which is the whole point and
+  was not true until the params shape was unified: a binding says an item by
+  handing `item.params` straight to `ts_intl_render`, with nothing in
+  between, in any locale and in as many as it likes — a plan carries no
+  locale at all, so two readers of one blob can read it in two languages.
+  The ABI test holds exactly that, saying every item of both plans of two
+  charts through the renderer rather than merely parsing the section.
+
+  `sdk.interpret().readings(&RulesReading)` joins the façade beside
+  `placements`, and `PlanRequest` is the record both the boundary and Rust
+  read. A reading asked for without rules is refused as
+  `interpret_json.readings` rather than answered with an empty plan, because
+  an empty plan and an unasked question look alike and only one of them is
+  the consumer's mistake; a composer that is not one is refused beside the
+  composers there are.
+
+  Each binding gains a worked example beside its nine, the same record said
+  in English and in Nepali, and each is run by that binding's gate.
+
+  **Fixed on the way**: the Dart message accessors did not parse.
+  `sdk.reading.lifeClass` selects on a slot called `class`, and the emitter
+  wrote `required String class`; Python renamed it to `class_` and
+  JavaScript needed no rename, so one generator was right in two targets and
+  wrong in the third. The Dart parameter is `class$` now, the slot keeps its
+  own name, and `check-intl` reads the identifiers back out of the Dart it
+  generates and fails on a keyword among them — because a generated file
+  being **up to date** says nothing about its compiling, and the gate that
+  compiles Dart runs in the verify matrix rather than in fast-check.
+
+  **Numbers:** none move, and one is new. A plan written down costs 12 573
+  bytes a chart over the corpus's 93, 17 425 for the widest and 140 an item
+  — and the verses' own cited words, which were expected to be the weight,
+  are 9% of it. What a plan costs is its items, each naming its message and
+  its rule again. Small enough to cross whole, so nothing is packed or
+  paged.
+
 - Every rule renders to prose (`03-design/rule-doc.md`, built). A condition is
   one sentence and a rule a short passage carrying what it holds beside its
   conditions — its groups and their labels, its cancellations and their

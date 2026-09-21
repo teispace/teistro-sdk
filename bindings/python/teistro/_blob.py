@@ -1357,6 +1357,9 @@ class Charts:
     rules: str
     """UTF-8 JSON, canonical: an array with one entry per chart, each the rules the request's `rules_json` named that held on it — `present`, each `{rule, result}` with the rule by key — with `houses` and `longevity` when asked, and `unreadable` naming an input a rule named that the chart could not have (`03-design/rules-at-the-boundary.md`). Empty when no rules were asked for."""
 
+    plans: str
+    """UTF-8 JSON, canonical: an array with one entry per chart, each an object carrying the narrative plans the request's `interpret_json` asked for — `placements`, `readings` — and only those. A plan is the array of its items, each `{key, params}`, and its params are the very JSON `ts_intl_render` takes, so a binding says an item by handing it straight back (`03-design/plans-at-the-boundary.md`). Empty when no composer was asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1399,6 +1402,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_vaiseshikamsa = blob.section(31, "vaiseshikamsa")
     at_dasha_phala = blob.section(32, "dasha_phala")
     at_rules = blob.section(33, "rules")
+    at_plans = blob.section(34, "plans")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1951,6 +1955,7 @@ def decode_charts(raw: bytes) -> Charts:
             length=at_dasha_phala.count,
         ),
         rules=blob.text(at_rules),
+        plans=blob.text(at_plans),
     )
 
 

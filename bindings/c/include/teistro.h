@@ -5961,6 +5961,19 @@ struct ts_chart_request {
      * Example: {"shipped":["nabhasas"]}. May be null.
      */
     const char * rules_json;
+    /**
+     * Narrative plans to compose over every chart, as JSON: an object
+     * naming the composers to run, `placements` and `readings`, each
+     * false by default. The plans come back in the blob's `plans`
+     * section, holding no words at all — an item's params are the JSON
+     * `ts_intl_render` takes, so a binding says one by handing it
+     * straight back, in any locale and in as many as it likes
+     * (`03-design/plans-at-the-boundary.md`). `readings` says what the
+     * rules answered, so it needs `rules_json` beside it. Null for none,
+     * which costs nothing.
+     * Example: {"placements":true}. May be null.
+     */
+    const char * interpret_json;
 };
 
 /**
@@ -6836,7 +6849,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 128, "ts_chart_request is 128 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 136, "ts_chart_request is 136 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

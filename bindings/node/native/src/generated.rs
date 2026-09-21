@@ -1852,6 +1852,17 @@ pub struct ChartRequest {
     /// nothing.
     /// Example: {"shipped":["nabhasas"]}. May be null.
     pub rules_json: Option<String>,
+    /// Narrative plans to compose over every chart, as JSON: an object
+    /// naming the composers to run, `placements` and `readings`, each
+    /// false by default. The plans come back in the blob's `plans`
+    /// section, holding no words at all — an item's params are the JSON
+    /// `ts_intl_render` takes, so a binding says one by handing it
+    /// straight back, in any locale and in as many as it likes
+    /// (`03-design/plans-at-the-boundary.md`). `readings` says what the
+    /// rules answered, so it needs `rules_json` beside it. Null for none,
+    /// which costs nothing.
+    /// Example: {"placements":true}. May be null.
+    pub interpret_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1869,6 +1880,7 @@ pub struct HeldChartRequest {
     dashas: Vec<u16>,
     theme_json: Option<std::ffi::CString>,
     rules_json: Option<std::ffi::CString>,
+    interpret_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -1895,6 +1907,10 @@ impl HeldChartRequest {
             dasha_count: self.dashas.len(),
             theme_json: self.theme_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
             rules_json: self.rules_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
+            interpret_json: self
+                .interpret_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -1924,6 +1940,11 @@ impl ChartRequest {
                 .transpose()?,
             rules_json: self
                 .rules_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
+            interpret_json: self
+                .interpret_json
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
@@ -1962,6 +1983,7 @@ impl ChartRequest {
                 .collect(),
             theme_json: unsafe { lent_text(raw.theme_json) },
             rules_json: unsafe { lent_text(raw.rules_json) },
+            interpret_json: unsafe { lent_text(raw.interpret_json) },
         }
     }
 }

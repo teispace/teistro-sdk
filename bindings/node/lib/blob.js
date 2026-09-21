@@ -600,6 +600,10 @@ export function decodeCharts(bytes) {
     const at = section(blob, 33, 'rules');
     out.rules = text(blob, at);
   }
+  {
+    const at = section(blob, 34, 'plans');
+    out.plans = text(blob, at);
+  }
   return out;
 }
 

@@ -1,10 +1,11 @@
 //! `sdk.interpret`: what a reading says, as a narrative plan.
 
 use teistro_core::error::Error;
-use teistro_interpret::{Plan, placements};
+use teistro_interpret::{Plan, placements, readings};
 use teistro_serial::document::Document;
 
 use crate::context::Context;
+use crate::rule_request::RulesReading;
 use crate::rules_bridge::RuleInputs;
 
 /// `sdk.interpret`: a chart's answers turned into a plan of message keys
@@ -51,5 +52,22 @@ impl<'a> InterpretArea<'a> {
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn placements(self, document: &Document) -> Result<Plan, Error> {
         Ok(placements(&RuleInputs::of(document)?.chart))
+    }
+
+    /// What each rule the chart held says: its verse's statement, who took
+    /// part, whether a cancellation moved it and how grave it is.
+    ///
+    /// It takes a reading rather than a document, because a reading is what
+    /// carries the rules' answers — `sdk.chart().readings_with_rules` gives
+    /// one — and composing from the answers rather than evaluating again is
+    /// what keeps this a rename of work already done.
+    #[must_use]
+    pub fn readings(self, reading: &RulesReading<'_>) -> Plan {
+        readings(
+            reading
+                .present
+                .iter()
+                .map(|present| (present.rule, &present.result)),
+        )
     }
 }

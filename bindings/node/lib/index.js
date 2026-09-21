@@ -693,6 +693,19 @@ export class Chart {
   }
 
   /**
+   * What this chart has to say, as the composers wrote it: `placements` and
+   * `readings`, each an array of `{ key, params }` holding no words at all.
+   * An item's `params` are the record `intl.render` takes, so
+   * `sdk.intl.render(item.key, item.params)` says it in the context's
+   * locale — and the same plan says it in any other
+   * (`03-design/plans-at-the-boundary.md`). `null` unless the request named
+   * a composer.
+   */
+  get plans() {
+    return plansOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
    * The drishti this chart casts, strongest first among those a body
    * casts; empty unless `aspects: true` asked for them.
    *
@@ -1810,6 +1823,7 @@ class ChartArea extends Area {
         drawings: drawingBits(request.drawings, this.#registered),
         themeJson: themeJson(request.theme),
         rulesJson: rulesJson(request.rules),
+        interpretJson: interpretJson(request.interpret),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -2145,11 +2159,40 @@ const RULES = new WeakMap();
  * @returns {object[]}
  */
 function rulesOf(batch) {
-  let parsed = RULES.get(batch);
+  return sectionOf(RULES, batch, 'rules');
+}
+
+/** Each batch's plans, parsed once however many charts read them. */
+const PLANS = new WeakMap();
+
+/**
+ * Every chart's narrative plans in a batch: the `plans` section's JSON, one
+ * entry a chart, frozen as it was written
+ * (`03-design/plans-at-the-boundary.md`).
+ *
+ * @param {Charts} batch
+ * @returns {object[]}
+ */
+function plansOf(batch) {
+  return sectionOf(PLANS, batch, 'plans');
+}
+
+/**
+ * A batch's JSON section, parsed once however many charts read it and frozen
+ * to its leaves, so a reading handed out is a reading kept. Empty when the
+ * request did not ask for the section.
+ *
+ * @param {WeakMap<Charts, object[]>} cache
+ * @param {Charts} batch
+ * @param {string} name
+ * @returns {object[]}
+ */
+function sectionOf(cache, batch, name) {
+  let parsed = cache.get(batch);
   if (parsed === undefined) {
-    const { rules } = batch.decoded;
-    parsed = rules ? JSON.parse(rules).map((chart) => deepFreeze(chart)) : [];
-    RULES.set(batch, parsed);
+    const json = batch.decoded[name];
+    parsed = json ? JSON.parse(json).map((chart) => deepFreeze(chart)) : [];
+    cache.set(batch, parsed);
   }
   return parsed;
 }
@@ -2178,9 +2221,36 @@ function deepFreeze(value) {
  * @returns {string|undefined}
  */
 function rulesJson(rules) {
-  if (rules === undefined || rules === null) return undefined;
-  if (typeof rules === 'object' && !Array.isArray(rules)) return JSON.stringify(rules);
-  throw new TypeError('rules: expected a rule request record, e.g. { shipped: ["nabhasas"] }');
+  return recordJson(rules, 'rules', 'a rule request record, e.g. { shipped: ["nabhasas"] }');
+}
+
+/**
+ * The plans a request asks a chart for, as the JSON the boundary reads
+ * (`03-design/plans-at-the-boundary.md`). The SDK refuses what it cannot
+ * read, naming the field from `interpret_json`.
+ *
+ * @param {object|undefined} interpret
+ * @returns {string|undefined}
+ */
+function interpretJson(interpret) {
+  return recordJson(interpret, 'interpret', 'a plan request record, e.g. { placements: true }');
+}
+
+/**
+ * A request option that crosses as a JSON record: the record written down,
+ * or nothing where it was not given. Anything else is this layer's own
+ * `TypeError`, named and shown, rather than a refusal from across the
+ * boundary.
+ *
+ * @param {object|undefined} value
+ * @param {string} field
+ * @param {string} example
+ * @returns {string|undefined}
+ */
+function recordJson(value, field, example) {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === 'object' && !Array.isArray(value)) return JSON.stringify(value);
+  throw new TypeError(`${field}: expected ${example}`);
 }
 
 /** Each batch's drawings, parsed once however many charts read them. */

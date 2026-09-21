@@ -84,6 +84,10 @@ name = "rules"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "plans"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "bhava_bala"
 required-features = ["builtin-ephemeris"]
 

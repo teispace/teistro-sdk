@@ -30,7 +30,7 @@ use core::ffi::c_char;
 
 use teistro::dasha::DashaName;
 use teistro::render_svg::Theme;
-use teistro::{ChartRequest, RuleRequest, RuleSet};
+use teistro::{ChartRequest, Plan, PlanRequest, RuleRequest, RuleSet, RulesReading};
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
@@ -552,6 +552,17 @@ pub struct TsChartRequest {
     /// nothing.
     /// `api: nullable example={"shipped":["nabhasas"]}`
     pub rules_json: *const c_char,
+    /// Narrative plans to compose over every chart, as JSON: an object
+    /// naming the composers to run, `placements` and `readings`, each
+    /// false by default. The plans come back in the blob's `plans`
+    /// section, holding no words at all — an item's params are the JSON
+    /// `ts_intl_render` takes, so a binding says one by handing it
+    /// straight back, in any locale and in as many as it likes
+    /// (`03-design/plans-at-the-boundary.md`). `readings` says what the
+    /// rules answered, so it needs `rules_json` beside it. Null for none,
+    /// which costs nothing.
+    /// `api: nullable example={"placements":true}`
+    pub interpret_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -2036,6 +2047,22 @@ impl BatchOnce {
 ///
 /// Every per-chart section runs charts outermost, so a batch of one is
 /// the same blob a one-chart entry point would have written, with the
+/// The blob's three JSON sections, each written once per chart and each
+/// empty where the request did not ask for it.
+///
+/// They travel together because they are the same kind of thing — what a
+/// chart was asked to say beyond its numbers — and because a fourth of them
+/// is likelier than a fourth positional argument is welcome.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct Composed<'a> {
+    /// Every chart's drawings as SVG strings (`render-svg.md`).
+    pub svgs: &'a str,
+    /// What every chart answered by rule (`rules-at-the-boundary.md`).
+    pub rules: &'a str,
+    /// What every chart has to say (`plans-at-the-boundary.md`).
+    pub plans: &'a str,
+}
+
 /// counts saying so.
 ///
 /// The sections that describe the batch rather than a chart — the place,
@@ -2059,10 +2086,10 @@ pub fn encode(
     place: &Place,
     kind: ChartKind,
     provenance: &Provenance,
-    svgs: &str,
-    rules: &str,
+    composed: Composed<'_>,
     registered: &teistro::dasha::DashaSystems,
 ) -> Result<Vec<u8>, Error> {
+    let Composed { svgs, rules, plans } = composed;
     let charts: Vec<&ChartFoundation> = documents.iter().map(|d| &d.foundation).collect();
     let charts = charts.as_slice();
     let schema = crate::schemas::charts();
@@ -2147,6 +2174,7 @@ pub fn encode(
         writer.bytes("drawings", drawings_json(documents).as_bytes())?;
         writer.bytes("svgs", svgs.as_bytes())?;
         writer.bytes("rules", rules.as_bytes())?;
+        writer.bytes("plans", plans.as_bytes())?;
         dashas.write(&mut writer)?;
         ashtakavarga.write(&mut writer)?;
         vimshopaka.write(&mut writer)?;
@@ -2242,6 +2270,31 @@ pub unsafe extern "C" fn ts_chart_layout_row(
     })
 }
 
+/// A refusal a record made from its own root, named from the request's
+/// instead: `readings` becomes `interpret_json.readings`, and a record that
+/// named no field names the whole one.
+fn field_under(root: &str, error: &Error) -> Error {
+    let field = error
+        .field()
+        .map_or_else(|| String::from(root), |inner| format!("{root}.{inner}"));
+    error.clone().with_field(field)
+}
+
+/// The plans a request's `interpret_json` asks for, none of them for null; a
+/// refusal is named from the request's root, `interpret_json.readings`.
+///
+/// # Safety
+///
+/// `interpret_json` null or a NUL-terminated string.
+unsafe fn plan_request_of(interpret_json: *const c_char) -> Result<PlanRequest, Error> {
+    // SAFETY: the caller's contract.
+    let text = unsafe { optional_text(interpret_json, "interpret_json") }?;
+    let Some(text) = text else {
+        return Ok(PlanRequest::default());
+    };
+    PlanRequest::from_json(text).map_err(|error| field_under("interpret_json", &error))
+}
+
 /// The rule set a request's `rules_json` names, or none for null; a refusal is
 /// named from the request's root, `rules_json.rules[0]`.
 ///
@@ -2264,21 +2317,77 @@ unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Erro
         })
 }
 
-/// The charts a request asks for, and the canonical JSON of what they answer
-/// by rule — empty when the request named no rules.
+/// The narrative plans one chart was asked for, and only those: a composer
+/// not asked for is absent rather than empty, and one asked for that has
+/// nothing to say is present and empty, which is an answer
+/// (`03-design/plans-at-the-boundary.md` §4).
+#[derive(serde::Serialize)]
+struct Plans {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    placements: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    readings: Option<Plan>,
+}
+
+/// The charts a request asks for, the canonical JSON of what they answer by
+/// rule, and the canonical JSON of the plans they were asked to say — each
+/// empty when the request asked for none.
 fn read_charts(
     sdk: &teistro::Context,
     instants: &[JulianDay<Utc>],
     request: &ChartRequest,
     rules: Option<&RuleSet>,
-) -> Result<(Envelope<Vec<Document>>, String), Error> {
+    asked: PlanRequest,
+) -> Result<(Envelope<Vec<Document>>, String, String), Error> {
     let Some(set) = rules else {
-        return Ok((sdk.chart().readings(instants, request)?, String::new()));
+        // The placements read the graha states through `RuleInputs`, so a
+        // request asking for them computes the states whether or not
+        // `sections` named them — the rule `rules_json` already follows for
+        // what its rules read.
+        let wanted = if asked.placements {
+            request.clone().with_state()
+        } else {
+            request.clone()
+        };
+        let read = sdk.chart().readings(instants, &wanted)?;
+        let plans = compose(sdk, &read.value, None, asked)?;
+        return Ok((read, String::new(), plans));
     };
     let read = sdk.chart().readings_with_rules(instants, request, set)?;
-    let (documents, readings): (Vec<Document>, Vec<_>) = read.value.into_iter().unzip();
+    let (documents, readings): (Vec<Document>, Vec<RulesReading<'_>>) =
+        read.value.into_iter().unzip();
     let json = teistro_core::envelope::canonical_json(&readings);
-    Ok((Envelope::new(documents, read.provenance), json))
+    let plans = compose(sdk, &documents, Some(&readings), asked)?;
+    Ok((Envelope::new(documents, read.provenance), json, plans))
+}
+
+/// Every chart's plans as canonical JSON, empty when no composer was asked
+/// for. The readings are the ones the same charts just answered: a plan
+/// says what the rules found and never evaluates them again.
+fn compose(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    readings: Option<&[RulesReading<'_>]>,
+    asked: PlanRequest,
+) -> Result<String, Error> {
+    if !asked.asks_for_something() {
+        return Ok(String::new());
+    }
+    let mut plans = Vec::with_capacity(documents.len());
+    for (at, document) in documents.iter().enumerate() {
+        plans.push(Plans {
+            placements: asked
+                .placements
+                .then(|| sdk.interpret().placements(document))
+                .transpose()?,
+            readings: asked.readings.then(|| {
+                readings
+                    .and_then(|readings| readings.get(at))
+                    .map_or_else(Plan::default, |reading| sdk.interpret().readings(reading))
+            }),
+        });
+    }
+    Ok(teistro_core::envelope::canonical_json(&plans))
 }
 
 /// Founds a chart at an instant and a place and answers with its blob:
@@ -2404,7 +2513,13 @@ pub unsafe extern "C" fn ts_chart_found(
             })?;
         // SAFETY: the entry point's contract.
         let rules = unsafe { rule_set_of(asked.rules_json) }?;
-        let (founded, rules_json) = read_charts(ctx.sdk(), &instants, &request, rules.as_ref())?;
+        // SAFETY: the entry point's contract.
+        let plans = unsafe { plan_request_of(asked.interpret_json) }?;
+        plans
+            .check(rules.is_some())
+            .map_err(|error| field_under("interpret_json", &error))?;
+        let (founded, rules_json, plans_json) =
+            read_charts(ctx.sdk(), &instants, &request, rules.as_ref(), plans)?;
         let svgs = match &theme {
             Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
             None => String::new(),
@@ -2414,8 +2529,11 @@ pub unsafe extern "C" fn ts_chart_found(
             &place,
             kind,
             &founded.provenance,
-            &svgs,
-            &rules_json,
+            Composed {
+                svgs: &svgs,
+                rules: &rules_json,
+                plans: &plans_json,
+            },
             ctx.sdk().dashas(),
         )?;
         // SAFETY: the entry point's contract.
@@ -2466,8 +2584,7 @@ mod tests {
             place,
             ChartKind::Natal,
             provenance,
-            "",
-            "",
+            super::Composed::default(),
             &teistro::dasha::DashaSystems::new(),
         )
     }

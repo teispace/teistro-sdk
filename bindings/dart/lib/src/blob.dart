@@ -1557,6 +1557,7 @@ final class Charts {
     required this.vaiseshikamsa,
     required this.dashaPhala,
     required this.rules,
+    required this.plans,
   });
 
   /// What kind of chart these are.
@@ -1702,6 +1703,9 @@ final class Charts {
   /// UTF-8 JSON, canonical: an array with one entry per chart, each the rules the request's `rules_json` named that held on it — `present`, each `{rule, result}` with the rule by key — with `houses` and `longevity` when asked, and `unreadable` naming an input a rule named that the chart could not have (`03-design/rules-at-the-boundary.md`). Empty when no rules were asked for.
   final String rules;
 
+  /// UTF-8 JSON, canonical: an array with one entry per chart, each an object carrying the narrative plans the request's `interpret_json` asked for — `placements`, `readings` — and only those. A plan is the array of its items, each `{key, params}`, and its params are the very JSON `ts_intl_render` takes, so a binding says an item by handing it straight back (`03-design/plans-at-the-boundary.md`). Empty when no composer was asked for.
+  final String plans;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1742,6 +1746,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atVaiseshikamsa = blob.section(31, 'vaiseshikamsa');
   final atDashaPhala = blob.section(32, 'dasha_phala');
   final atRules = blob.section(33, 'rules');
+  final atPlans = blob.section(34, 'plans');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2904,6 +2909,7 @@ Charts decodeCharts(Uint8List bytes) {
       length: atDashaPhala.count,
     ),
     rules: blob.text(atRules),
+    plans: blob.text(atPlans),
   );
 }
 

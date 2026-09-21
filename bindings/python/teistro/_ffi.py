@@ -157,7 +157,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 128,
+    "ts_chart_request": 136,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -187,7 +187,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 88,
+    "ts_chart_request": 96,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -583,6 +583,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("dasha_count", ctypes.c_size_t),
         ("theme_json", ctypes.c_char_p),
         ("rules_json", ctypes.c_char_p),
+        ("interpret_json", ctypes.c_char_p),
     ]
 
 
@@ -2155,6 +2156,19 @@ class ChartRequest:
     Example: {"shipped":["nabhasas"]}. May be null.
     """
 
+    interpret_json: Optional[str] = None
+    """Narrative plans to compose over every chart, as JSON: an object
+    naming the composers to run, `placements` and `readings`, each
+    false by default. The plans come back in the blob's `plans`
+    section, holding no words at all — an item's params are the JSON
+    `ts_intl_render` takes, so a binding says one by handing it
+    straight back, in any locale and in as many as it likes
+    (`03-design/plans-at-the-boundary.md`). `readings` says what the
+    rules answered, so it needs `rules_json` beside it. Null for none,
+    which costs nothing.
+    Example: {"placements":true}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2199,6 +2213,9 @@ class ChartRequest:
         _rules_json = None if self.rules_json is None else self.rules_json.encode("utf-8")
         owned.append(_rules_json)
         raw.rules_json = _rules_json
+        _interpret_json = None if self.interpret_json is None else self.interpret_json.encode("utf-8")
+        owned.append(_interpret_json)
+        raw.interpret_json = _interpret_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2237,6 +2254,7 @@ class ChartRequest:
             else [],
             theme_json=_text(raw.theme_json),
             rules_json=_text(raw.rules_json),
+            interpret_json=_text(raw.interpret_json),
         )
 
 

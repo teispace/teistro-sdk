@@ -302,6 +302,9 @@ void main() {
     ],
     theme: ChartTheme.dark,
     rules: const RuleRequest(shipped: [ShippedRules.nabhasas], longevity: true),
+    // Both composers, so the four agree on what every chart *says* and not
+    // only on what it computes (`03-design/plans-at-the-boundary.md`).
+    interpret: const PlanRequest(placements: true, readings: true),
     aspects: true,
     points: true,
     houses: true,
@@ -433,6 +436,22 @@ void main() {
       'chart-$i-rules-pindayu',
       (ayurdaya['pindayu']! as Map<String, Object?>)['years'],
     );
+    // **Every item said**, not merely counted: the only place the four
+    // bindings are compared on text, which exercises the composers, the
+    // params shape and the locale engine at once.
+    for (final composed in chart.plans!.entries) {
+      final items =
+          (composed.value! as List<Object?>).cast<Map<String, Object?>>();
+      put('chart-$i-plan-${composed.key}-count', items.length);
+      for (var n = 0; n < items.length; n += 1) {
+        final key = items[n]['key']! as String;
+        final said =
+            ctx.intl
+                .render(key, items[n]['params']! as Map<String, Object?>)
+                .text;
+        put('chart-$i-plan-${composed.key}-$n', '$key: $said');
+      }
+    }
     final drawings = chart.drawings;
     for (var d = 0; d < drawings.length; d += 1) {
       final drawing = drawings[d];
