@@ -1279,6 +1279,38 @@
       "phalaProse": "Vishakha, ruled by Indra and Agni, is a mishra (mixed, ordinary) nakshatra. Fulfilling resolves, competition, pursuing goals and financial work are favoured; slow at the outset, it grants accomplishment at the end."
     }
   },
+  "state": {
+    "COMBUST": {
+      "phala": "A combust planet, overpowered by the Sun’s intense rays, has its strength eclipsed.",
+      "phalaProse": "A planet too close to the Sun enters the combust (asta or dagdha) state. Eclipsed and overpowered by the Sun’s brilliant rays, it loses its independent operational capacity, causing its natural and house-specific significations to manifest in a highly weakened, obscured, or frustrated form."
+    },
+    "RETROGRADE": {
+      "phala": "A retrograde planet, endowed with cheshta bala, gives highly intensified and karmic results.",
+      "phalaProse": "A retrograde (vakri) planet appears to move backward from our geocentric perspective. Possessing immense cheshta bala (motion strength), it intensifies and internalizes its significations. It often delivers results in an unexpected, delayed, or repeating manner, strongly tied to deep-seated karmic or past-life themes."
+    },
+    "VARGOTTAMA": {
+      "phala": "A vargottama planet is exceptionally fortified, yielding stable and highly auspicious results.",
+      "phalaProse": "A planet that occupies the same zodiacal sign in both the D1 Rasi chart and the D9 Navamsa chart is vargottama. This configuration bestows a dignity equivalent to its own-sign or exaltation, making its results extraordinarily stable, resilient to transits, and deeply supportive of the native's life path."
+    }
+  },
+  "dignity": {
+    "DEBILITATED": {
+      "phala": "A debilitated planet is structurally weakened, giving diminished or challenging results.",
+      "phalaProse": "A planet in its sign of fall (neecha) is structurally depleted of dignity. Its significations are weakened, delayed, or expressed in a compromised or frustrated manner, unless rescued by a robust Neecha-bhanga (cancellation of debilitation) which can transmute this weakness into eventual triumph."
+    },
+    "EXALTED": {
+      "phala": "An exalted planet attains its highest dignity, yielding supreme and powerful results.",
+      "phalaProse": "A planet in its sign of exaltation (uccha) operates at its peak evolutionary and material potential. Blessed with outstanding strength and confidence, it bestows administrative power, immense public honor, clarity of purpose, and highly auspicious material and spiritual outcomes."
+    },
+    "MOOLTRIKONA": {
+      "phala": "A mooltrikona planet is highly energized and dynamic, yielding excellent results.",
+      "phalaProse": "A planet in its moolatrikona portion is highly focused, dynamic, and full of purpose, holding a dignity close to exaltation. It infuses its significations with vitality and positive drive, helping the native achieve outstanding success and career fulfillment."
+    },
+    "OWN_SIGN": {
+      "phala": "A planet in its own sign is secure and comfortable, giving stable and strong results.",
+      "phalaProse": "A planet occupying its own sign (swakshetra) is comfortable, self-assured, and structurally sound. Operating like a lord in their own estate, it delivers stable, natural, and harmonious results, ensuring the preservation and steady growth of the houses it rules and occupies."
+    }
+  },
   "point": {
     "GHATI_LAGNA": {
       "phala": "Ghati Lagna signifies power, administrative authority, status, and rise to high office.",

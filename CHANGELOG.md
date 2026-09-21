@@ -1369,6 +1369,35 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A state category may name more than one catalogue kind, and a key with
+  no subject is refused by name.** `planet-condition` is the case that
+  asked for it: a graha's condition is a `dignity` where the sign gives it
+  (`EXALTED`, `OWN_SIGN`) and a `state` where the sky does (`COMBUST`,
+  `RETROGRADE`), and the engine keeps both in one table. A category now
+  carries the kinds its keys may name and a key must name **exactly one**
+  member of them — none means the SDK has no subject for the reading, and
+  two would be an ambiguity the table has to settle rather than something
+  to pick between. `shadbala-strength` and `muhurta-factor` will want the
+  same widening when something says them.
+
+  Its eighth key, `COMBUST_CANCELLED`, names nothing: the SDK computes
+  combustion but not its cancellation. `migrate::STATE_REFUSALS` carries it
+  with that reason and the gate holds the list **both ways** — a key there
+  that names a member now fails, and a key that names none and is not there
+  fails. Without it a corpus with one known gap would fail its migration on
+  every run, and the pressure would be to widen the check rather than to
+  record the gap. 25 categories now map, 422 readings into 347 records a
+  locale.
+
+  **Two shortfalls this corpus creates rather than closes are now
+  measured.** 26 readings land on a record the base locale does not
+  **name** — five special lagnas, three `state` members and the 18 rules
+  that had no reading — because `entity-names.md` §4 refuses a translated
+  stub and those kinds have no vetted table: the reading answers and the
+  subject's own name does not. And 211 of the 422 readings have no composer
+  that says them. Both can only shrink, and both are counted on the page
+  rather than described.
+
 - **A ninth composer, `phala`: the first that says what a *corpus* carries
   rather than what the SDK computed.** It says the reading a loaded pack
   holds for this chart's subjects — a graha in a bhava, the lagna's sign,

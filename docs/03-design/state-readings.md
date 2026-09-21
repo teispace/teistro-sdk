@@ -1,6 +1,6 @@
 # The state readings: a reading for what a chart *is*, not only for what it triggers
 
-Status: `design`, 2026-09-21. The measurements in §2 were taken from the
+Status: `design`, 2026-09-22. The measurements in §2 were taken from the
 baseline engine's built corpus, this repository's catalogue and its shipped
 rule packs on that date; §6 says which of them become a generated page so
 they cannot go stale here.
@@ -59,7 +59,8 @@ the spellings would differ and named `ASHWINI` against a catalogue
 | name a shipped rule | 1 | 62 | nothing |
 | key an existing kind by prefix | 1 | 12 | twelve written aliases |
 | a graha and a house together | 1 | 108 | one open kind |
-| no subject in the SDK yet | 14 | 139 | a decision each |
+| key **two** existing kinds | 1 | 7 | two candidate kinds, and one refusal |
+| no subject in the SDK yet | 13 | 131 | a decision each |
 
 The 21 are `avastha-baladi`, `avastha-jagradadi`, `avastha-deeptadi`,
 `avastha-lajjitadi`, `gana`, `nadi`, `yoni`, `varna`, `tatwa`,
@@ -150,10 +151,30 @@ refused both ways by the gate.
 
 | the engine's category | this catalogue | the form |
 |---|---|---|
+| `planet-condition` | `dignity.<KEY>` or `state.<KEY>`, whichever names it | `phala` |
 | the 21 above | the kind of the same subject | a written word: `phala` for most, `namakarana`, `ishtaDevata`, `direction`, `colour`, `mantra`, `dashaPhala`, `dashaActivation` |
 | `dosha-timing` | `rule.<KEY>`, the open kind | `timing` |
 | `lagna-rashi` | `rashi.<SIGN>`, by twelve written aliases | `lagnaPhala` |
 | `graha-bhava` | `graha_bhava.<GRAHA>_IN_<house>` | a record of its own: `name`, `prose`, facets |
+
+**A category may name more than one kind, and a key must name exactly
+one member.** `planet-condition` is the case that asked for it: a graha's
+condition is a `dignity` where the sign gives it (`EXALTED`, `OWN_SIGN`)
+and a `state` where the sky does (`COMBUST`, `RETROGRADE`), and the engine
+keeps both in one table. The kinds are written beside the category and the
+rule is *exactly one*: none means this SDK has no subject for the reading,
+and **two would be an ambiguity the table has to settle** rather than
+something to pick between. `shadbala-strength` and `muhurta-factor` will
+want the same widening when something says them.
+
+**A key with no subject is refused by name, not dropped.**
+`planet-condition`'s eighth key is `COMBUST_CANCELLED`, and the SDK
+computes combustion but not its cancellation, so no member names it.
+`migrate::STATE_REFUSALS` carries it with the reason, and the gate holds
+the list both ways: a key there that names a member now fails, and a key
+that names none and is not there fails. Without it a corpus with one known
+gap would fail the migration on every run, and the pressure would be to
+widen the check rather than to record the gap.
 
 **The form is written beside the category and not derived from it**, for
 the same reason the keys are. A reading's passage and its facets take the
@@ -237,9 +258,9 @@ before — *every shipped rule carries a reading* — becomes one it can.
    (`export-state-readings.mjs`): 38 categories, 554 records, 5 facets.
 3. **`teistro-intl migrate states`**, with the category table of §4, the
    twelve lagna aliases and the nine graha abbreviations, reporting every
-   category it did not map. **Built**: 24 categories, 415 readings into
-   340 records in each of four locales, 0 unknown keys, 14 categories
-   reported unmapped.
+   category it did not map. **Built**: 25 categories, 422 readings into
+   347 records in each of four locales, 0 unknown keys, 1 refused by name,
+   13 categories reported unmapped.
 
    Migrating an **overlay** root found three things the loader and the
    validator had only ever seen complete roots do. A record was
@@ -269,19 +290,36 @@ before — *every shipped rule carries a reading* — becomes one it can.
 
 ## 8. What this design does not settle
 
-- **The 14 categories with no subject here yet**, 139 records: the eight
+- **The 13 categories with no subject here yet**, 131 records: the eight
   `ayurdaya-*` families (41), `muhurta-factor` (47),
-  `shadbala-strength` (28), `planet-condition` (8), `sade-sati-phala` (5),
-  `auspicious-kaal` (5) and `inauspicious-kaal` (5). Three shapes among
-  them, and each is a decision rather than a task. `shadbala-strength` and
-  `muhurta-factor` are composite keys like `graha-bhava`, so they would
-  take the same treatment once something says them. `planet-condition`
-  splits across two kinds this catalogue already has — three of its eight
-  keys are `state` members, four are `dignity` members, and
-  `COMBUST_CANCELLED` is neither. The `ayurdaya-*` and `-kaal` families key
-  onto subjects the SDK has not modelled at all. None of them blocks the
-  other 24, and the gate lists them by name so the list cannot rot into
-  prose.
+  `shadbala-strength` (28), `sade-sati-phala` (5), `auspicious-kaal` (5)
+  and `inauspicious-kaal` (5). Three shapes among them, and each is a
+  decision rather than a task.
+
+  `shadbala-strength` and `muhurta-factor` are **composite keys** like
+  `graha-bhava` — a graha and a strength band, a factor and a verdict — so
+  they would take the same treatment once something says them. Neither is
+  only a key question: a band is a threshold over rupas that the corpus
+  does not record, and inventing four would be making up a rule rather
+  than migrating one, so the records would arrive at a key space nothing
+  can produce. That is why they wait on the module and not on this page.
+
+  `sade-sati-phala` waits on Phase 7's `gochar`, and the `-kaal` families
+  on its muhurta search. The `ayurdaya-*` families key onto a longevity
+  model the SDK has not built.
+
+  None of them blocks the other 25, and the gate lists them by name so the
+  list cannot rot into prose.
+- **Two shortfalls this corpus creates rather than closes**, both
+  measured. 26 readings land on a record the base locale does **not
+  name** — five special lagnas, three `state` members and the 18 rules
+  that had no reading — because `entity-names.md` §4 refuses a translated
+  stub and those kinds have no vetted table. The reading answers; the
+  subject's own name does not. And 211 of the 422 readings have **no
+  composer that says them**: they are loaded and a consumer reads them
+  directly, which is not nothing, but a reading nothing says has not
+  reached a reader. Both are counted on the measured page rather than
+  described here, and both can only shrink.
 - **Native review.** The corpus is the baseline engine's own Nepali,
   Sanskrit and Hindi, not a machine translation, and it has not been
   reviewed here. It joins the roadmap's `ne`/`hi` sign-off.

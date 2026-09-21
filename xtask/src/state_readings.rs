@@ -20,7 +20,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 use std::path::Path;
 
-use teistro_intl::migrate::{STATE_CATEGORIES, StateCategory};
+use teistro_intl::migrate::{STATE_CATEGORIES, STATE_REFUSALS, StateCategory};
 use teistro_intl::source::{BASE_LOCALE, Completeness, ENTITY_NAMESPACE, Entry, Tree};
 use teistro_rules::Rule;
 
@@ -94,14 +94,14 @@ fn where_it_landed(out: &mut String, base: &Records, mapped: &BTreeMap<String, u
          SDK has, and they become {} under {} kinds. The mapping is a \
          written table and not a resemblance: a category with no subject \
          here is skipped and named below rather than guessed at.\n\n\
-         | category | kind | form | records |\n|---|---|---|---:|\n",
+         | category | kinds | form | records |\n|---|---|---|---:|\n",
         count(mapped.len()),
         plural(base.len(), "record"),
         count(keys.len()),
     );
     for StateCategory {
         category,
-        kind,
+        kinds,
         form,
     } in STATE_CATEGORIES
     {
@@ -113,9 +113,11 @@ fn where_it_landed(out: &mut String, base: &Records, mapped: &BTreeMap<String, u
         } else {
             format!("`{form}`")
         };
+        let kinds: Vec<String> = kinds.iter().map(|kind| format!("`{kind}`")).collect();
         let _ = writeln!(
             out,
-            "| `{category}` | `{kind}` | {form} | {} |",
+            "| `{category}` | {} | {form} | {} |",
+            kinds.join(", "),
             count(*records)
         );
     }
@@ -151,9 +153,9 @@ fn categories_of(key: &str, forms: &BTreeSet<String>) -> Vec<&'static str> {
     STATE_CATEGORIES
         .iter()
         .filter(|state| {
-            kind_of(key) == state.kind
+            state.kinds.contains(&kind_of(key))
                 && forms.contains(if state.form.is_empty() {
-                    "name"
+                    NAME_FORM
                 } else {
                     state.form
                 })
@@ -493,6 +495,84 @@ const SAID_BY: [(&str, &str, &str, &str); 6] = [
 /// emits, and the rendering must answer from the locale's own record, warn
 /// about nothing, and print the record's own form rather than the
 /// subject's name — which is what a missing form would fall back to.
+/// The readings a key was refused for, and the readings on a record no
+/// locale names — the two shortfalls this corpus creates rather than
+/// closes.
+fn what_it_leaves_open(
+    out: &mut String,
+    intl: &teistro_intl::Intl,
+    base: &Records,
+    packs: &BTreeMap<String, Records>,
+) {
+    out.push_str("## What it leaves open\n\n");
+    let _ = write!(
+        out,
+        "**{} refused.** A key of a mapped category that names no member of \
+         any of its kinds is a reading this SDK has no subject for. It is \
+         written down with the reason rather than reported afresh each run, \
+         and the list fails both ways: a key here that names a member now \
+         fails, and one that names none and is not here fails.\n\n\
+         | category | key | why |\n|---|---|---|\n",
+        plural(STATE_REFUSALS.len(), "reading"),
+    );
+    let mut still_absent = 0usize;
+    for (category, key, why) in STATE_REFUSALS {
+        let _ = writeln!(out, "| `{category}` | `{key}` | {why} |");
+        if base.keys().any(|full| full.ends_with(&format!(".{key}"))) {
+            still_absent += 1;
+        }
+    }
+    // A record whose subject no locale names: the reading is carried and a
+    // renderer asking for the record's name would answer with nothing.
+    let mut nameless: BTreeMap<&str, Vec<&String>> = BTreeMap::new();
+    for key in base.keys() {
+        let named = intl
+            .entity_from(BASE_LOCALE, key)
+            .is_some_and(|record| !record.name().is_empty());
+        if !named {
+            nameless.entry(kind_of(key)).or_default().push(key);
+        }
+    }
+    let total: usize = nameless.values().map(Vec::len).sum();
+    if total == 0 {
+        out.push_str("\nEvery record a reading lands on is named by the base locale.\n\n");
+    } else {
+        let _ = write!(
+            out,
+            "\n**{} land on a record the base locale does not name.** The \
+             reading is there and answers; the subject's own name is not, \
+             because `03-design/entity-names.md` §4 refuses a translated \
+             stub and these kinds have no vetted table. A renderer asking \
+             for the name gets nothing, so the count is here.\n\n\
+             | kind | records with a reading and no name |\n|---|---:|\n",
+            plural(total, "reading"),
+        );
+        for (kind, keys) in &nameless {
+            let _ = writeln!(out, "| `{kind}` | {} |", count(keys.len()));
+        }
+        out.push('\n');
+    }
+    let carried: usize = packs.values().map(BTreeMap::len).sum();
+    out.push_str(&table(&[
+        Claim::counted(
+            "every refused key is absent from the packs",
+            still_absent,
+            STATE_REFUSALS.len(),
+        ),
+        Claim::counted(
+            "every record carried is one the base locale can resolve or an open kind's own",
+            base.keys()
+                .filter(|key| {
+                    !teistro_intl::source::is_open_kind_key(key)
+                        && teistro_core::key::resolve(key).is_err()
+                })
+                .count(),
+            carried,
+        ),
+    ]));
+    out.push('\n');
+}
+
 /// An engine carrying every locale of `i18n/` with both corpora loaded
 /// over it, which is the consumer that wants the words and the readings.
 fn engine_with_both(root: &Path) -> Result<(teistro_intl::Intl, Vec<String>), String> {
@@ -531,11 +611,11 @@ fn slots_for(message: &str, slot: &str, key: &str) -> teistro_intl::Params {
 
 fn what_a_composer_can_say(
     out: &mut String,
-    root: &Path,
+    intl: &mut teistro_intl::Intl,
+    strict: &[String],
     per_locale: &BTreeMap<String, Records>,
     base: &Records,
 ) -> Result<(), String> {
-    let (mut intl, strict) = engine_with_both(root)?;
     let mut said = 0usize;
     let mut wrong = 0usize;
     let mut unsaid: BTreeMap<&str, usize> = BTreeMap::new();
@@ -563,7 +643,7 @@ fn what_a_composer_can_say(
                 continue;
             };
             let slots = slots_for(message, slot, key);
-            for tag in &strict {
+            for tag in strict {
                 intl.set_locale(tag).map_err(|why| why.to_string())?;
                 let rendered = intl.render(message, &slots);
                 said += 1;
@@ -661,7 +741,7 @@ fn mapped_and_unmapped(base: &Records) -> (BTreeMap<String, usize>, BTreeMap<Str
 /// held to the migration's own table by a claim below — every category
 /// named here must be one `STATE_CATEGORIES` does not map — so it cannot
 /// quietly disagree with the code (`03-design/state-readings.md` §8).
-const UNMAPPED: [(&str, usize); 14] = [
+const UNMAPPED: [(&str, usize); 13] = [
     ("auspicious-kaal", 5),
     ("ayurdaya-balarishta", 4),
     ("ayurdaya-classical-rule", 5),
@@ -673,7 +753,6 @@ const UNMAPPED: [(&str, usize); 14] = [
     ("ayurdaya-vulnerability", 9),
     ("inauspicious-kaal", 5),
     ("muhurta-factor", 47),
-    ("planet-condition", 8),
     ("sade-sati-phala", 5),
     ("shadbala-strength", 28),
 ];
@@ -698,7 +777,7 @@ fn main_page(root: &Path) -> Result<String, String> {
     let _ = write!(
         out,
         "Status: `generated` by `cargo xtask state-readings` over `{ROOT}`, \
-         `{READINGS}` and the shipped rule packs, 2026-09-21. Do not edit: \
+         `{READINGS}` and the shipped rule packs, 2026-09-22. Do not edit: \
          `check-state-readings` regenerates this page and fails on any difference. \
          The design it measures is \
          [`state-readings.md`](state-readings.md).\n\n",
@@ -708,7 +787,9 @@ fn main_page(root: &Path) -> Result<String, String> {
     what_it_did_not_map(&mut out, &unmapped);
     where_two_corpora_meet(&mut out, base);
     what_it_adds_to_the_readings(&mut out, &rules, base_readings, base);
-    what_a_composer_can_say(&mut out, root, &per_locale, base)?;
+    let (mut intl, strict) = engine_with_both(root)?;
+    what_a_composer_can_say(&mut out, &mut intl, &strict, &per_locale, base)?;
+    what_it_leaves_open(&mut out, &intl, base, &per_locale);
     let built = what_it_costs(&mut out, root, &tree, &readings_tree)?;
     what_the_packs_decide(&mut out, &per_locale, base, base_readings, &built)?;
     Ok(fill(&out))
@@ -761,5 +842,13 @@ mod tests {
             38,
             "the corpus has 38 categories and every one is mapped or named"
         );
+        for (category, _, _) in teistro_intl::migrate::STATE_REFUSALS {
+            assert!(
+                STATE_CATEGORIES
+                    .iter()
+                    .any(|state| state.category == category),
+                "`{category}` refuses a key of a category nothing maps"
+            );
+        }
     }
 }

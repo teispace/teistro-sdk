@@ -1,16 +1,16 @@
 # The state readings, measured
 
 Status: `generated` by `cargo xtask state-readings` over `packs/states`,
-`packs/readings` and the shipped rule packs, 2026-09-21. Do not edit:
+`packs/readings` and the shipped rule packs, 2026-09-22. Do not edit:
 `check-state-readings` regenerates this page and fails on any
 difference. The design it measures is
 [`state-readings.md`](state-readings.md).
 
 ## Where the corpus landed
 
-24 of the engine's 38 state categories map onto a subject this SDK has, and they become 340 records under 18 kinds. The mapping is a written table and not a resemblance: a category with no subject here is skipped and named below rather than guessed at.
+25 of the engine's 38 state categories map onto a subject this SDK has, and they become 347 records under 20 kinds. The mapping is a written table and not a resemblance: a category with no subject here is skipped and named below rather than guessed at.
 
-| category | kind | form | records |
+| category | kinds | form | records |
 |---|---|---|---:|
 | `avastha-baladi` | `avastha_baladi` | `phala` | 5 |
 | `avastha-deeptadi` | `avastha_deeptadi` | `phala` | 9 |
@@ -29,6 +29,7 @@ difference. The design it measures is
 | `nadi` | `nadi` | `phala` | 3 |
 | `nakshatra-phala` | `nakshatra` | `phala` | 27 |
 | `namakarana-nakshatra` | `nakshatra` | `namakarana` | 27 |
+| `planet-condition` | `dignity`, `state` | `phala` | 7 |
 | `special-lagna` | `point` | `phala` | 5 |
 | `tatwa` | `tatwa` | `phala` | 5 |
 | `tithi-phala` | `tithi` | `phala` | 30 |
@@ -39,7 +40,7 @@ difference. The design it measures is
 
 ## What it did not map
 
-14 categories, 139 records. The list is exhaustive rather than counted, because a category that gains a subject and a corpus that gains a category both have to change this page. Each is a decision rather than a task, and `state-readings.md` §8 says which kind of one.
+13 categories, 131 records. The list is exhaustive rather than counted, because a category that gains a subject and a corpus that gains a category both have to change this page. Each is a decision rather than a task, and `state-readings.md` §8 says which kind of one.
 
 | category | records |
 |---|---:|
@@ -54,7 +55,6 @@ difference. The design it measures is
 | `ayurdaya-vulnerability` | 9 |
 | `inauspicious-kaal` | 5 |
 | `muhurta-factor` | 47 |
-| `planet-condition` | 8 |
 | `sade-sati-phala` | 5 |
 | `shadbala-strength` | 28 |
 
@@ -106,7 +106,7 @@ rendered here through that message, in each strict locale, and must
 answer from the locale's own record without a fallback and without a
 warning: 422 renderings.
 
-**204 readings have no composer that says them yet**, by the category
+**211 readings have no composer that says them yet**, by the category
 they came from. They are not errors — the records load and a consumer
 reads them directly — but a reading nothing says is work that has not
 reached a reader, so the list is here rather than in a sentence.
@@ -127,6 +127,7 @@ reached a reader, so the list is here rather than in a sentence.
 | `mantra-ritual` | 9 |
 | `nadi` | 3 |
 | `namakarana-nakshatra` | 27 |
+| `planet-condition` | 7 |
 | `special-lagna` | 5 |
 | `tatwa` | 5 |
 | `varna` | 5 |
@@ -135,6 +136,35 @@ reached a reader, so the list is here rather than in a sentence.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every reading a composer says renders from the locale's own record, with no fallback and no warning | **holds** | 0 of 422 disagree |
+
+## What it leaves open
+
+**1 reading refused.** A key of a mapped category that names no member
+of any of its kinds is a reading this SDK has no subject for. It is
+written down with the reason rather than reported afresh each run, and
+the list fails both ways: a key here that names a member now fails, and
+one that names none and is not here fails.
+
+| category | key | why |
+|---|---|---|
+| `planet-condition` | `COMBUST_CANCELLED` | the SDK computes combustion but not its cancellation, and no `state` member names one |
+
+**26 readings land on a record the base locale does not name.** The
+reading is there and answers; the subject's own name is not, because
+`03-design/entity-names.md` §4 refuses a translated stub and these
+kinds have no vetted table. A renderer asking for the name gets nothing,
+so the count is here.
+
+| kind | records with a reading and no name |
+|---|---:|
+| `point` | 5 |
+| `rule` | 18 |
+| `state` | 3 |
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| every refused key is absent from the packs | **holds** | 0 of 1 disagree |
+| every record carried is one the base locale can resolve or an open kind's own | **holds** | 0 of 1388 disagree |
 
 ## What the state readings cost
 
@@ -146,24 +176,24 @@ it. A consumer loads one pack a locale from each root it wants.
 
 | locale | source | pack |
 |---|---:|---:|
-| `en-Latn` | 199 KB | 192 KB |
-| `hi-Deva-IN` | 377 KB | 371 KB |
-| `ne-Deva-NP` | 356 KB | 350 KB |
-| `sa-Deva` | 350 KB | 344 KB |
-| **all** | **1283 KB** | **1258 KB** |
+| `en-Latn` | 202 KB | 195 KB |
+| `hi-Deva-IN` | 384 KB | 377 KB |
+| `ne-Deva-NP` | 362 KB | 356 KB |
+| `sa-Deva` | 354 KB | 348 KB |
+| **all** | **1304 KB** | **1278 KB** |
 
 Beside the rule readings' 2581 KB, which is the other pack a consumer
-that wants both would load: 3840 KB in all for four languages, and 1087
+that wants both would load: 3860 KB in all for four languages, and 1093
 KB for one.
 
 ## What the packs decide
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every record names a catalogue member, or a well-formed key of an open kind | **holds** | 0 of 340 disagree |
-| every locale carries every record the base locale carries | **holds** | 0 of 1360 disagree |
-| every record carries a form to be read by | **holds** | 0 of 1360 disagree |
+| every record names a catalogue member, or a well-formed key of an open kind | **holds** | 0 of 347 disagree |
+| every locale carries every record the base locale carries | **holds** | 0 of 1388 disagree |
+| every record carries a form to be read by | **holds** | 0 of 1388 disagree |
 | every locale's state readings build into a pack an engine can load | **holds** | 0 of 4 disagree |
-| every form answers from the loaded packs, with no source tree behind them | **holds** | 0 of 3800 disagree |
+| every form answers from the loaded packs, with no source tree behind them | **holds** | 0 of 3856 disagree |
 | a rule's reading still answers after the state readings are loaded over it | **holds** | 0 of 528 disagree |
 

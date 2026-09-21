@@ -160,6 +160,10 @@ pub struct MigrationReport {
     pub unmapped: BTreeMap<String, usize>,
     /// Keys of mapped types the catalogue does not have, as `type: key`.
     pub unknown_keys: Vec<String>,
+    /// Keys the design has decided this SDK has no subject for, with the
+    /// reason ([`STATE_REFUSALS`]). A refusal is a decision recorded, not
+    /// a failure, so it does not stop a migration.
+    pub refused: Vec<String>,
     /// Records written per locale.
     pub written: BTreeMap<String, usize>,
     /// Records kept as they were per locale (present, not overwritten).
@@ -173,12 +177,17 @@ impl MigrationReport {
         let mut out = String::new();
         let _ = writeln!(
             out,
-            "mapped {} types ({} records), {} types without a catalogue kind, {} unknown keys\n",
+            "mapped {} types ({} records), {} types without a catalogue kind, {} unknown keys, \
+             {} refused\n",
             self.mapped.len(),
             self.mapped.values().sum::<usize>(),
             self.unmapped.len(),
-            self.unknown_keys.len()
+            self.unknown_keys.len(),
+            self.refused.len()
         );
+        for refusal in &self.refused {
+            let _ = writeln!(out, "refused {refusal}");
+        }
         out.push_str("| locale | written | kept |\n|---|---:|---:|\n");
         for (locale, written) in &self.written {
             let _ = writeln!(
@@ -822,8 +831,14 @@ pub const STATE_SCHEMA: &str = "teistro-conformance/baseline-state-readings/1";
 pub struct StateCategory {
     /// The engine's own name for the category.
     pub category: &'static str,
-    /// The catalogue kind its keys name.
-    pub kind: &'static str,
+    /// The catalogue kinds its keys may name.
+    ///
+    /// Usually one. `planet-condition` needs two, because a graha's
+    /// condition is a `dignity` when the sign gives it and a `state` when
+    /// the sky does, and the engine keeps them in one table. A key must
+    /// name a member of **exactly one** of them: two would be an
+    /// ambiguity, and picking between them is the inference §4 forbids.
+    pub kinds: &'static [&'static str],
     /// The form a reading becomes on the record, or `""` where the reading
     /// **is** the record and takes `name`, `prose` and its facets.
     ///
@@ -834,10 +849,14 @@ pub struct StateCategory {
     pub form: &'static str,
 }
 
-const fn state(category: &'static str, kind: &'static str, form: &'static str) -> StateCategory {
+const fn state(
+    category: &'static str,
+    kinds: &'static [&'static str],
+    form: &'static str,
+) -> StateCategory {
     StateCategory {
         category,
-        kind,
+        kinds,
         form,
     }
 }
@@ -848,31 +867,32 @@ const fn state(category: &'static str, kind: &'static str, form: &'static str) -
 /// subject for is reported and skipped rather than guessed at, and the
 /// fourteen that are missing from this list are named in
 /// `03-design/state-readings.md` §8.
-pub const STATE_CATEGORIES: [StateCategory; 24] = [
-    state("avastha-baladi", "avastha_baladi", "phala"),
-    state("avastha-deeptadi", "avastha_deeptadi", "phala"),
-    state("avastha-jagradadi", "avastha_jagradadi", "phala"),
-    state("avastha-lajjitadi", "avastha_lajjitadi", "phala"),
-    state("dasha-lord-activation", "graha", "dashaActivation"),
-    state("dasha-lord-effect", "graha", "dashaPhala"),
-    state("dosha-timing", RULE_KIND, "timing"),
-    state("gana", "gana", "phala"),
-    state("graha-bhava", GRAHA_BHAVA_KIND, ""),
-    state("graha-color", "graha", "colour"),
-    state("graha-direction", "graha", "direction"),
-    state("ishta-devata", "rashi", "ishtaDevata"),
-    state("lagna-rashi", "rashi", "lagnaPhala"),
-    state("mantra-ritual", "graha", "mantra"),
-    state("nadi", "nadi", "phala"),
-    state("nakshatra-phala", "nakshatra", "phala"),
-    state("namakarana-nakshatra", "nakshatra", "namakarana"),
-    state("special-lagna", "point", "phala"),
-    state("tatwa", "tatwa", "phala"),
-    state("tithi-phala", "tithi", "phala"),
-    state("vara-phala", "vara", "phala"),
-    state("varna", "varna", "phala"),
-    state("yoga-phala", "yoga", "phala"),
-    state("yoni", "yoni", "phala"),
+pub const STATE_CATEGORIES: [StateCategory; 25] = [
+    state("avastha-baladi", &["avastha_baladi"], "phala"),
+    state("avastha-deeptadi", &["avastha_deeptadi"], "phala"),
+    state("avastha-jagradadi", &["avastha_jagradadi"], "phala"),
+    state("avastha-lajjitadi", &["avastha_lajjitadi"], "phala"),
+    state("dasha-lord-activation", &["graha"], "dashaActivation"),
+    state("dasha-lord-effect", &["graha"], "dashaPhala"),
+    state("dosha-timing", &[RULE_KIND], "timing"),
+    state("gana", &["gana"], "phala"),
+    state("graha-bhava", &[GRAHA_BHAVA_KIND], ""),
+    state("graha-color", &["graha"], "colour"),
+    state("graha-direction", &["graha"], "direction"),
+    state("ishta-devata", &["rashi"], "ishtaDevata"),
+    state("lagna-rashi", &["rashi"], "lagnaPhala"),
+    state("mantra-ritual", &["graha"], "mantra"),
+    state("nadi", &["nadi"], "phala"),
+    state("nakshatra-phala", &["nakshatra"], "phala"),
+    state("namakarana-nakshatra", &["nakshatra"], "namakarana"),
+    state("planet-condition", &["dignity", "state"], "phala"),
+    state("special-lagna", &["point"], "phala"),
+    state("tatwa", &["tatwa"], "phala"),
+    state("tithi-phala", &["tithi"], "phala"),
+    state("vara-phala", &["vara"], "phala"),
+    state("varna", &["varna"], "phala"),
+    state("yoga-phala", &["yoga"], "phala"),
+    state("yoni", &["yoni"], "phala"),
 ];
 
 /// The engine's graha abbreviations, written out because four of the nine
@@ -948,8 +968,8 @@ pub struct StateRow {
 /// A key no catalogue member and no written alias answers to, a
 /// `graha-bhava` key that is not a graha and a house from 1 to 12, or a
 /// reading of an open kind whose key no pack could name.
-pub fn state_key(category: &str, kind: &str, key: &str) -> Result<String, String> {
-    if kind == GRAHA_BHAVA_KIND {
+pub fn state_key(category: &str, kinds: &[&str], key: &str) -> Result<String, String> {
+    if kinds == [GRAHA_BHAVA_KIND] {
         let (abbreviation, house) = key
             .split_once(IN_BHAVA)
             .ok_or_else(|| format!("`{key}` is not a graha and a house"))?;
@@ -966,22 +986,53 @@ pub fn state_key(category: &str, kind: &str, key: &str) -> Result<String, String
         }
         return Ok(crate::source::graha_bhava_key(graha, bhava));
     }
-    if category == "lagna-rashi" {
-        let sign = LAGNA_RASHIS
+    let key = if category == "lagna-rashi" {
+        LAGNA_RASHIS
             .iter()
             .find(|(lagna, _)| *lagna == key)
             .ok_or_else(|| format!("`{key}` is no lagna of the engine's twelve"))?
-            .1;
-        return Ok(format!("{kind}.{sign}"));
+            .1
+    } else {
+        key
+    };
+    // Exactly one candidate kind must own the key. Two would be an
+    // ambiguity the table has to settle, and none means the SDK has no
+    // subject for this reading (`03-design/state-readings.md` §4).
+    let mut found: Vec<String> = Vec::new();
+    for kind in kinds {
+        let full = format!("{kind}.{key}");
+        if crate::source::is_open_kind_key(&full) {
+            found.push(full);
+        } else if let Ok(id) = resolve(&full) {
+            found.push(id.to_string());
+        }
     }
-    let full = format!("{kind}.{key}");
-    if crate::source::is_open_kind_key(&full) {
-        return Ok(full);
+    match found.len() {
+        1 => found.pop().ok_or_else(|| String::from("unreachable")),
+        0 => Err(format!(
+            "`{key}` names no member of {}",
+            kinds
+                .iter()
+                .map(|kind| format!("`{kind}`"))
+                .collect::<Vec<_>>()
+                .join(" or ")
+        )),
+        _ => Err(format!("`{key}` names a member of {}", found.join(" and "))),
     }
-    resolve(&full)
-        .map(|id| id.to_string())
-        .map_err(|unknown| unknown.to_string())
 }
+
+/// Keys of a mapped category that this SDK has **no subject for**, with the
+/// reason, refused here rather than reported as an error each run.
+///
+/// The list fails both ways: a key here that does resolve fails, and a key
+/// that resolves nowhere and is not here fails. So it can only shrink, and
+/// it cannot quietly become a way of dropping records
+/// (`03-design/state-readings.md` §4).
+pub const STATE_REFUSALS: [(&str, &str, &str); 1] = [(
+    "planet-condition",
+    "COMBUST_CANCELLED",
+    "the SDK computes combustion but not its cancellation, and no `state` member names one",
+)];
 
 /// The form a reading's summary, passage and facets take on a record.
 ///
@@ -1051,9 +1102,25 @@ pub fn plan_states(dump: &StatesDump) -> Migration {
             continue;
         };
         for (key, row) in rows {
-            let full = match state_key(category, mapping.kind, key) {
-                Ok(full) => full,
-                Err(why) => {
+            let refused = STATE_REFUSALS
+                .iter()
+                .find(|(refused, member, _)| refused == category && member == key);
+            let full = match (state_key(category, mapping.kinds, key), refused) {
+                (Ok(full), None) => full,
+                (Ok(_), Some((_, _, why))) => {
+                    migration.report.unknown_keys.push(format!(
+                        "{category}: {key}: refused as `{why}`, but it names a member now"
+                    ));
+                    continue;
+                }
+                (Err(_), Some((_, _, why))) => {
+                    migration
+                        .report
+                        .refused
+                        .push(format!("{category}: {key}: {why}"));
+                    continue;
+                }
+                (Err(why), None) => {
                     migration
                         .report
                         .unknown_keys

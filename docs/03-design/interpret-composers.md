@@ -356,7 +356,7 @@ rule is now the `name` form of a `rule` record, which is what `has_reading`
 spells.
 
 **What it cannot say yet is counted rather than hidden.** The corpus
-carries 415 readings and this composer has a message for 211 of them; the
+carries 422 readings and this composer has a message for 211 of them; the
 rest are listed by the category they came from on
 `state-readings-measured.md`, which also renders every one it *can* say in
 each strict locale and holds that none falls back or warns. Four of its six

@@ -103,6 +103,20 @@ fn main() -> Result<(), Error> {
             println!("  {form:<12} {}", shortened(text));
         }
     }
+
+    // ── A reading no composer says ─────────────────────────────────────
+    // Half the corpus is glossary rather than narrative: what it means for
+    // a graha to be exalted is true of every exalted graha, so no composer
+    // says it per chart. It is a record like any other, and any catalogue
+    // key you can name you can ask for — which is how a consumer builds a
+    // legend beside the plan.
+    println!("\ndignity.EXALTED");
+    let record = sdk.intl().entity("dignity.EXALTED")?;
+    for form in ["name", "phala"] {
+        if let Some(text) = record.form(form) {
+            println!("  {form:<12} {}", shortened(text));
+        }
+    }
     Ok(())
 }
 
