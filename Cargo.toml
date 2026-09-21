@@ -84,3 +84,36 @@ dbg_macro = "warn"
 print_stdout = "warn"
 print_stderr = "warn"
 indexing_slicing = "warn"
+
+# Dev builds are what fills a disk, and almost none of what they write is
+# read here. The tests fail by panicking and the gates read the panic, so a
+# backtrace wants a file and a line and nothing else; nobody steps through
+# `icu` or `serde` in a debugger.
+#
+# **Incremental stays on, and that is the expensive half rather than the
+# debug info.** Measured on this workspace, 2026-09-21, one
+# `cargo clippy --workspace --all-targets` and then a re-check after
+# touching one file:
+#
+# |                   | incremental on | incremental off |
+# |-------------------|----------------|-----------------|
+# | `target/`         | 4.4 GB         | 1.5 GB          |
+# | one-file re-check | 4.4 s          | 18.2 s          |
+#
+# So the cache buys a four-times-faster edit loop for 2.9 GB, and on a
+# machine building with two jobs (`CARGO_BUILD_JOBS=2`) that loop is what a
+# session is made of. It is kept — but it is a **choice**, so: add
+# `incremental = false` below to trade the other way, and
+# `rm -rf target/debug/incremental` reclaims the 2.9 GB at the cost of one
+# slow pass. The adapters, excluded from this workspace (ADR-0019) and
+# edited rarely, turn it off in their own manifests, where the same cache
+# was 2.2 GB of a 3.4 GB tree and bought nothing.
+[profile.dev]
+debug = "line-tables-only"
+
+# A dependency carries no debug information at all: `*` is every package
+# that is not a member of this workspace, so the SDK's own crates keep their
+# file and line and the graph beneath them stops paying for DWARF nobody
+# reads.
+[profile.dev.package."*"]
+debug = false

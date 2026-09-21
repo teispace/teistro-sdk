@@ -53,3 +53,16 @@ dbg_macro = "warn"
 print_stdout = "warn"
 print_stderr = "warn"
 indexing_slicing = "warn"
+
+# See the SDK workspace's own `[profile.dev]` for the reasoning. This root
+# is excluded from that workspace (ADR-0019) and has its own target
+# directory, so it needs the settings again — and it turns **incremental
+# off** besides, which the workspace does not: an adapter is edited rarely,
+# its dependencies stay cached in `deps/` either way, and its incremental
+# directory was 2.2 GB of the 3.4 GB this tree held.
+[profile.dev]
+debug = "line-tables-only"
+incremental = false
+
+[profile.dev.package."*"]
+debug = false
