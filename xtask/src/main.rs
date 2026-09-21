@@ -503,8 +503,11 @@ fn check_docs() -> i32 {
 /// must obey the naming rule.
 fn markdown_files(root: &Path) -> Vec<PathBuf> {
     let mut files = Vec::new();
+    // `packs` holds two reading corpora and their README, which is the
+    // only place a consumer is told how to build one; a README the gates
+    // cannot see is a README that rots.
     for dir in [
-        "docs", "rfcs", ".github", "fixtures", "spikes", "adapters", "crates",
+        "docs", "rfcs", ".github", "fixtures", "spikes", "adapters", "crates", "packs",
     ] {
         collect_markdown(&root.join(dir), &mut files);
     }

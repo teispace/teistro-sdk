@@ -1369,6 +1369,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **The reading corpora tell a consumer how to use them.** Two roots of
+  649 and 350 records a locale sat in `packs/` with nothing but the design
+  pages to explain them: no README, and the top-level one never mentioned
+  them. `packs/README.md` says what they are, why they are not in `i18n/`,
+  the one command that builds their packs, how each of the four bindings
+  loads the bytes, and that a record **merges** rather than replaces.
+
+  The documentation gate could not have seen such a file: `markdown_files`
+  walked `docs`, `rfcs`, `.github`, `fixtures`, `spikes`, `adapters` and
+  `crates`, and `packs` was not among them — so a README there would have
+  rotted unread, which is the trap this project has hit before. The gate
+  walks `packs` now, and 326 files pass instead of 325.
+
 - **A fifth locale for both reading corpora, derived rather than
   translated — and the defect deriving it found.** `sa-Latn` is `sa-Deva`
   in Latin script, as it already is in `i18n/`. Transliterating a corpus of
