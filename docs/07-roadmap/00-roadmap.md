@@ -597,8 +597,20 @@ here all along. 649 readings, complete in Sanskrit, Nepali, English and
 Hindi, cover 639 of the 657 shipped rules and are migrated, gated and
 measured (`03-design/interpretation-records-measured.md`); `hi-Deva-IN`
 and `sa-Deva` carry a reading for almost every rule where they carried no
-message at all. What is left of the list below is still a sourcing
-question.
+message at all.
+
+**And the rest of that corpus was here too.** The same package exports one
+`STATE_INTERPRETATIONS` of 38 categories and 554 records, in the same four
+languages: what a graha in a bhava, a nakshatra, a tithi, a lagna or a
+dosha's timing means. 24 of the categories key onto subjects this SDK
+already has — 216 of their 217 keys are the catalogue's own spelling,
+character for character — and they are migrated, gated and measured
+(`03-design/state-readings.md`,
+`03-design/state-readings-measured.md`). Every shipped rule now carries
+text in four languages: 639 a reading, and the 18 that had none a
+`timing`. The 14 categories with no subject here are named on the measured
+page rather than described in prose. What is left of the list below is
+still a sourcing question.
 
 **What is left of it needs the source translations to hand, and is
 therefore a sourcing question rather than a coding one.** The rest of the
@@ -623,9 +635,10 @@ back (eight so far, and `interpret-measured.md` counts what is left); `render-sv
 renderer above the core, turning Phase 4's geometry plus a theme record
 into a deterministic SVG string in every binding (ADR-0026);
 `teistro-intl migrate baseline` bringing the four-language name tables
-into `i18n/`, and `migrate readings` the interpretation records, which go
-into a root of their own and are **loaded rather than embedded** because
-`i18n/` is compiled into every artefact (`03-design/interpretation-records.md`);
+into `i18n/`, and `migrate readings` and `migrate states` the
+interpretation records, which go into roots of their own and are **loaded
+rather than embedded** because `i18n/` is compiled into every artefact
+(`03-design/interpretation-records.md`, `03-design/state-readings.md`);
 Rust crates published.
 
 Exit: 624 rules evaluate identically to the baseline engine on the regression set with

@@ -128,6 +128,8 @@ jobs:
         run: cargo xtask check-interpret
       - name: Rule readings page (every shipped rule's four-language reading, and both shortfalls listed by name rather than counted)
         run: cargo xtask check-interpretations
+      - name: State readings page (what a chart is rather than what it triggers, and the two corpora that meet on one record)
+        run: cargo xtask check-state-readings
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read and every gate run)
         run: cargo xtask check-lints
       - name: Version gate (one version across the workspace, both package manifests and the API description)

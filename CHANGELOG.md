@@ -1369,6 +1369,52 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **The state readings: a reading for what a chart *is*, not only for what
+  it triggers.** The baseline engine exports one `STATE_INTERPRETATIONS` of
+  38 categories and 554 records — a graha in a bhava, a nakshatra, a tithi,
+  a lagna, a dosha's timing — in the same four languages and the same
+  shape the rule readings use. **24 of the categories key onto subjects
+  this SDK already has**, and 216 of their 217 keys are the catalogue's own
+  spelling character for character; the one exception is an alias the
+  catalogue already carried. They are migrated into `packs/states/`,
+  **loaded rather than embedded** for the reason the rule readings are, and
+  measured by `check-state-readings`. Only two mappings are written by
+  hand, and each is a list rather than a rule: twelve lagna signs, because
+  stripping a prefix would work for all twelve and mis-file the thirteenth
+  silently, and nine graha abbreviations for the one composite key.
+
+  Every shipped rule now carries text in all four languages: 639 a reading,
+  and the 18 that had none a `timing`. The measured page prints those apart
+  because a timing says when a dosha acts and not what it means.
+
+  **`Intl::load_pack` lays an entity record over the one standing rather
+  than replacing it.** This is a behaviour change and a fix: a pack
+  carrying one form meant to add that form, and replacing left the record
+  with that form **and nothing else** — no name, no transliteration, no
+  glyph. A form the file carries is now the file's, a form only the
+  standing record carries is kept, and the gender and glyph are the file's
+  where it has one; a message entry still replaces, because a message is
+  one string and has nothing to merge. It matters because a consumer's own
+  pack is the supported way to change what the SDK says, and because two
+  corpora now describe one subject: 48 of the states corpus's subjects are
+  described by more than one category. `IntlLoaded` reports `merged` beside
+  `replaced` in Rust and in all three bindings; the field took the
+  `reserved` word `ts_intl_loaded` already held, so the ABI did not grow.
+
+  An **overlay** root — one whose records add a form to records another
+  root names — also relaxed three rules that had only ever seen complete
+  roots: an entity is recognised by its shape (an object whose values are
+  all text) rather than by carrying a `name`, a `name` is owed by a locale
+  that declares `strict` completeness rather than by every record, and a
+  form name is a `camelCase` word rather than lowercase letters, so
+  `phalaProse` and `ishtaDevata` are names a form may have.
+
+  The catalogue gained its **second open kind**, `graha_bhava`, for the one
+  genuinely composite key, and open kinds moved from a `const` inside the
+  generator into `catalogue/*.yaml` beside every closed kind's file. A kind
+  costs the bindings nothing: only a closed kind's members become an enum
+  at the boundary.
+
 - **A seventh and an eighth composer, `conditions` and `karakas`: every
   fact a placement carries is now said.** A `Placement` is nine facts.
   `placements` said the sign and the house and `positions` the longitude;

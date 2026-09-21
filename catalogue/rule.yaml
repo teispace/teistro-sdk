@@ -1,0 +1,5 @@
+kind: rule
+number: 32
+version: 1
+open: true
+doc: "Rule keys, which rule packs register at runtime; the catalogue holds the kind only."

@@ -371,7 +371,8 @@ What a loaded pack or bundle carried.
 | field | type | what it carries |
 |---|---|---|
 | `entries` | `uint32_t` | The entries the file carried. |
-| `replaced` | `uint32_t` | The entries that replaced ones already loaded. |
+| `replaced` | `uint32_t` | The entries that stood where one already stood and kept nothing of it. |
+| `merged` | `uint32_t` | The entity records that stood where one already stood and kept a form, a gender or a glyph the file did not carry. |
 | `locale` | `const char *` | The locale; lent until the next call on the context. |
 | `sha256` | `const char *` | The file's SHA-256 as sixty-four hex digits; lent until the next call on the context. |
 

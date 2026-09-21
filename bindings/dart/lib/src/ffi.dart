@@ -1204,13 +1204,15 @@ final class IntlLoadedStruct extends ffi.Struct {
   @ffi.Uint32()
   external int entries;
 
-  /// The entries that replaced ones already loaded.
+  /// The entries that stood where one already stood and kept nothing of
+  /// it.
   @ffi.Uint32()
   external int replaced;
 
-  /// Reserved, zero.
+  /// The entity records that stood where one already stood and kept a
+  /// form, a gender or a glyph the file did not carry.
   @ffi.Uint32()
-  external int reserved;
+  external int merged;
 
   /// The locale; lent until the next call on the context.
   external ffi.Pointer<ffi.Char> locale;
@@ -1619,9 +1621,11 @@ final class TeistroLibrary {
   /// what produced it and its uncertainty where the source has one.
   final TsTimeDeltaTDart ts_time_delta_t;
 
-  /// Loads a `.tpack` or `.tbundle` file: a locale it brings is added, a
-  /// namespace it brings replaces what was loaded under the same keys. A
-  /// file that does not verify is `PACK`.
+  /// Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
+  /// namespace it brings is laid over what was loaded under the same keys —
+  /// a message replaces, and two entity records merge their forms, so a pack
+  /// giving every nakshatra a `phala` leaves its `name` standing. A file that
+  /// does not verify is `PACK`.
   final TsIntlLoadPackDart ts_intl_load_pack;
 
   /// Selects the locale every render resolves from; an unknown one is
@@ -3343,13 +3347,18 @@ final class DeltaT {
 /// What a loaded pack or bundle carried.
 final class IntlLoaded {
   /// A IntlLoaded with every field named.
-  const IntlLoaded({required this.entries, required this.replaced, required this.locale, required this.sha256});
+  const IntlLoaded({required this.entries, required this.replaced, required this.merged, required this.locale, required this.sha256});
 
   /// The entries the file carried.
   final int entries;
 
-  /// The entries that replaced ones already loaded.
+  /// The entries that stood where one already stood and kept nothing of
+  /// it.
   final int replaced;
+
+  /// The entity records that stood where one already stood and kept a
+  /// form, a gender or a glyph the file did not carry.
+  final int merged;
 
   /// The locale; lent until the next call on the context.
   final String locale;
@@ -3369,6 +3378,7 @@ final class IntlLoaded {
     raw.structSize = ffi.sizeOf<IntlLoadedStruct>();
     raw.entries = entries;
     raw.replaced = replaced;
+    raw.merged = merged;
     raw.locale = locale.toNativeUtf8(allocator: arena).cast<ffi.Char>();
     raw.sha256 = sha256.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
@@ -3380,6 +3390,7 @@ final class IntlLoaded {
   static IntlLoaded readFrom(IntlLoadedStruct raw) => IntlLoaded(
         entries: raw.entries,
         replaced: raw.replaced,
+        merged: raw.merged,
         locale: (raw.locale == ffi.nullptr
             ? null
             : raw.locale.cast<pkg_ffi.Utf8>().toDartString()) ??
@@ -3815,9 +3826,11 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
-  /// Loads a `.tpack` or `.tbundle` file: a locale it brings is added, a
-  /// namespace it brings replaces what was loaded under the same keys. A
-  /// file that does not verify is `PACK`.
+  /// Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
+  /// namespace it brings is laid over what was loaded under the same keys —
+  /// a message replaces, and two entity records merge their forms, so a pack
+  /// giving every nakshatra a `phala` leaves its `name` standing. A file that
+  /// does not verify is `PACK`.
   IntlLoaded intlLoadPack(Uint8List bytes) {
     _alive();
     return pkg_ffi.using((arena) {

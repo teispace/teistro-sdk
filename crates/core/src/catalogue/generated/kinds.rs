@@ -134,9 +134,11 @@ pub enum Kind {
     Vaiseshikamsa = 63,
     /// The three sub-states of a Sayanadi state, a remainder of three.
     AvasthaCheshta = 64,
+    /// A graha and a bhava together, as `JUPITER_IN_1`; the readings that name one arrive in a loaded pack.
+    GrahaBhava = 65,
 }
 
-const BY_NAME: [(&str, Kind); 63] = [
+const BY_NAME: [(&str, Kind); 64] = [
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
     ("avastha_cheshta", Kind::AvasthaCheshta),
@@ -164,6 +166,7 @@ const BY_NAME: [(&str, Kind); 63] = [
     ("gana", Kind::Gana),
     ("gender", Kind::Gender),
     ("graha", Kind::Graha),
+    ("graha_bhava", Kind::GrahaBhava),
     ("guna", Kind::Guna),
     ("house_system", Kind::HouseSystem),
     ("kaala", Kind::Kaala),
@@ -204,7 +207,7 @@ const BY_NAME: [(&str, Kind); 63] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 63] = [
+    pub const ALL: [Kind; 64] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -268,6 +271,7 @@ impl Kind {
         Kind::ChartLayout,
         Kind::Vaiseshikamsa,
         Kind::AvasthaCheshta,
+        Kind::GrahaBhava,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -337,6 +341,7 @@ impl Kind {
             Kind::ChartLayout => "chart_layout",
             Kind::Vaiseshikamsa => "vaiseshikamsa",
             Kind::AvasthaCheshta => "avastha_cheshta",
+            Kind::GrahaBhava => "graha_bhava",
         }
     }
 
@@ -413,6 +418,7 @@ impl Kind {
             Kind::ChartLayout => 6,
             Kind::Vaiseshikamsa => 30,
             Kind::AvasthaCheshta => 3,
+            Kind::GrahaBhava => 0,
         }
     }
 
@@ -489,6 +495,7 @@ impl Kind {
             62 => Some(Kind::ChartLayout),
             63 => Some(Kind::Vaiseshikamsa),
             64 => Some(Kind::AvasthaCheshta),
+            65 => Some(Kind::GrahaBhava),
             _ => None,
         }
     }

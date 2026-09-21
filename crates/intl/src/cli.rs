@@ -220,6 +220,24 @@ pub enum MigrateSource {
         #[arg(long)]
         overwrite: bool,
     },
+    /// The baseline engine's reading for what a chart *is* — a graha in a
+    /// bhava, a nakshatra, a tithi, a lagna, a dosha's timing — from its
+    /// state readings exporter's document, into a root of its own.
+    ///
+    /// A category the SDK has no subject for is reported and skipped, and
+    /// a reading joins the record its subject already has rather than
+    /// replacing it (`03-design/state-readings.md`).
+    States {
+        /// The exporter's document.
+        #[arg(long)]
+        dump: PathBuf,
+        /// The root to write the readings into.
+        #[arg(long)]
+        out: PathBuf,
+        /// Replace records the locales already have.
+        #[arg(long)]
+        overwrite: bool,
+    },
 }
 
 /// A generator target.
@@ -256,6 +274,46 @@ fn apply_migration(
         report.diagnostics.len() - report.errors()
     );
     Ok(report.passed() && migration.report.unknown_keys.is_empty())
+}
+
+/// Reads a migration's source, plans it and applies it to its root.
+///
+/// The three sources differ in what they read and where they write and in
+/// nothing else, so the reading is here and the rest is
+/// [`apply_migration`].
+fn run_migrate(tree: &Tree, source: MigrateSource) -> Result<bool, Box<dyn std::error::Error>> {
+    match source {
+        MigrateSource::Baseline {
+            dump,
+            skeleton,
+            overwrite,
+        } => {
+            let dump = crate::migrate::read_dump(&dump)?;
+            let skeleton = skeleton
+                .or_else(|| Some(tree.root.join("../catalogue/entity-skeleton.json")))
+                .and_then(|path| crate::migrate::read_skeleton(&path));
+            let mut migration = crate::migrate::plan(&dump, skeleton.as_ref());
+            apply_migration(&mut migration, &tree.root, overwrite)
+        }
+        MigrateSource::Readings {
+            dump,
+            out,
+            overwrite,
+        } => {
+            let dump = crate::migrate::read_readings_dump(&dump)?;
+            let mut migration = crate::migrate::plan_readings(&dump);
+            apply_migration(&mut migration, &out, overwrite)
+        }
+        MigrateSource::States {
+            dump,
+            out,
+            overwrite,
+        } => {
+            let dump = crate::migrate::read_states_dump(&dump)?;
+            let mut migration = crate::migrate::plan_states(&dump);
+            apply_migration(&mut migration, &out, overwrite)
+        }
+    }
 }
 
 /// Writes a locale derived from another, and reports what it took.
@@ -448,33 +506,7 @@ pub fn run(cli: Cli) -> Result<bool, Box<dyn std::error::Error>> {
             }
             Ok(true)
         }
-        Command::Migrate {
-            source:
-                MigrateSource::Baseline {
-                    dump,
-                    skeleton,
-                    overwrite,
-                },
-        } => {
-            let dump = crate::migrate::read_dump(&dump)?;
-            let skeleton = skeleton
-                .or_else(|| Some(tree.root.join("../catalogue/entity-skeleton.json")))
-                .and_then(|path| crate::migrate::read_skeleton(&path));
-            let mut migration = crate::migrate::plan(&dump, skeleton.as_ref());
-            apply_migration(&mut migration, &tree.root, overwrite)
-        }
-        Command::Migrate {
-            source:
-                MigrateSource::Readings {
-                    dump,
-                    out,
-                    overwrite,
-                },
-        } => {
-            let dump = crate::migrate::read_readings_dump(&dump)?;
-            let mut migration = crate::migrate::plan_readings(&dump);
-            apply_migration(&mut migration, &out, overwrite)
-        }
+        Command::Migrate { source } => run_migrate(&tree, source),
         Command::Export {
             format: ExportFormat::Xliff { locale, out },
         } => run_export(&tree, &locale, out),

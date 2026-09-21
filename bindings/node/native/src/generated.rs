@@ -2520,8 +2520,12 @@ impl DeltaT {
 pub struct IntlLoaded {
     /// The entries the file carried.
     pub entries: u32,
-    /// The entries that replaced ones already loaded.
+    /// The entries that stood where one already stood and kept nothing of
+    /// it.
     pub replaced: u32,
+    /// The entity records that stood where one already stood and kept a
+    /// form, a gender or a glyph the file did not carry.
+    pub merged: u32,
     /// The locale; lent until the next call on the context.
     pub locale: String,
     /// The file's SHA-256 as sixty-four hex digits; lent until the next
@@ -2534,6 +2538,7 @@ pub struct IntlLoaded {
 pub struct HeldIntlLoaded {
     entries: u32,
     replaced: u32,
+    merged: u32,
     locale: Option<std::ffi::CString>,
     sha256: Option<std::ffi::CString>,
 }
@@ -2545,7 +2550,7 @@ impl HeldIntlLoaded {
             struct_size: core::mem::size_of::<ffi::intl::TsIntlLoaded>() as u32,
             entries: self.entries,
             replaced: self.replaced,
-            reserved: Default::default(),
+            merged: self.merged,
             locale: self.locale.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
             sha256: self.sha256.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -2558,6 +2563,7 @@ impl IntlLoaded {
         Ok(HeldIntlLoaded {
             entries: self.entries as u32,
             replaced: self.replaced as u32,
+            merged: self.merged as u32,
             locale: Some(self.locale.as_str())
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
@@ -2577,6 +2583,7 @@ impl IntlLoaded {
         IntlLoaded {
             entries: raw.entries as _,
             replaced: raw.replaced as _,
+            merged: raw.merged as _,
             locale: unsafe { lent_text(raw.locale) }.unwrap_or_default(),
             sha256: unsafe { lent_text(raw.sha256) }.unwrap_or_default(),
         }
@@ -3335,9 +3342,11 @@ impl Context {
         Ok(unsafe { DeltaT::write(&out_delta_t) })
     }
 
-    /// Loads a `.tpack` or `.tbundle` file: a locale it brings is added, a
-    /// namespace it brings replaces what was loaded under the same keys. A
-    /// file that does not verify is `PACK`.
+    /// Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
+    /// namespace it brings is laid over what was loaded under the same keys —
+    /// a message replaces, and two entity records merge their forms, so a pack
+    /// giving every nakshatra a `phala` leaves its `name` standing. A file that
+    /// does not verify is `PACK`.
     #[napi]
     pub fn intl_load_pack(&self, env: Env, bytes: Buffer) -> Result<IntlLoaded> {
         // SAFETY: every field is a plain integer, float or pointer, so

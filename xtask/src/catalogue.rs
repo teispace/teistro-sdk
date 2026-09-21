@@ -11,12 +11,17 @@ use std::path::{Path, PathBuf};
 use serde::Deserialize;
 use serde_yaml_ng::{Mapping, Value};
 
-/// Kinds that have no source file because their members arrive at runtime.
-const OPEN_KINDS: [(&str, u8, &str); 1] = [(
-    "rule",
-    32,
-    "Rule keys, which rule packs register at runtime; the catalogue holds the kind only.",
-)];
+/// An **open** kind: `catalogue/<kind>.yaml` with `open: true` and no
+/// members, beside every closed kind's file.
+///
+/// They were a list inside this generator until a second one was needed,
+/// which put a kind where nobody reading `catalogue/` would look
+/// (`03-design/state-readings.md` §4).
+struct OpenKind {
+    name: String,
+    number: u8,
+    doc: String,
+}
 
 const RESERVED_FIELDS: [&str; 6] = ["type", "ref", "move", "self", "super", "crate"];
 
@@ -30,6 +35,14 @@ struct KindFile {
     types: Mapping,
     #[serde(default)]
     attributes: Mapping,
+    /// Whether the members arrive at runtime rather than from this file.
+    /// An open kind carries the kind and nothing else; the catalogue
+    /// cannot enumerate a consumer's rule keys, and would buy nothing by
+    /// enumerating a graha and a bhava together
+    /// (`03-design/state-readings.md` §4).
+    #[serde(default)]
+    open: bool,
+    #[serde(default)]
     members: Vec<Member>,
 }
 
@@ -174,6 +187,7 @@ struct Kind {
 /// Everything loaded and validated.
 pub(crate) struct Catalogue {
     kinds: Vec<Kind>,
+    open: Vec<OpenKind>,
 }
 
 fn mapping_str(m: &Mapping, what: &str) -> Result<Vec<(String, String)>, String> {
@@ -191,6 +205,7 @@ impl Catalogue {
         let dir = root.join("catalogue");
         let mut errors = Vec::new();
         let mut kinds: Vec<Kind> = Vec::new();
+        let mut open: Vec<OpenKind> = Vec::new();
         let mut files: Vec<PathBuf> = std::fs::read_dir(&dir)
             .map_err(|e| vec![format!("{}: {e}", dir.display())])?
             .filter_map(Result::ok)
@@ -224,23 +239,28 @@ impl Catalogue {
                     file.kind
                 ));
             }
+            if file.open {
+                if !file.members.is_empty() {
+                    errors.push(format!(
+                        "{}: an open kind carries no members; its members arrive at runtime",
+                        path.display()
+                    ));
+                }
+                open.push(OpenKind {
+                    name: file.kind,
+                    number: file.number,
+                    doc: file.doc,
+                });
+                continue;
+            }
             match Kind::new(file) {
                 Ok(kind) => kinds.push(kind),
                 Err(mut e) => errors.append(&mut e),
             }
         }
-        for (name, number, _) in OPEN_KINDS {
-            if kinds
-                .iter()
-                .any(|k| k.file.kind == name || k.file.number == number)
-            {
-                errors.push(format!(
-                    "open kind `{name}` ({number}) collides with a file"
-                ));
-            }
-        }
         kinds.sort_by_key(|k| k.file.number);
-        let catalogue = Catalogue { kinds };
+        open.sort_by_key(|k| k.number);
+        let catalogue = Catalogue { kinds, open };
         errors.extend(catalogue.validate_whole());
         if errors.is_empty() {
             Ok(catalogue)
@@ -256,6 +276,14 @@ impl Catalogue {
     fn validate_whole(&self) -> Vec<String> {
         let mut errors = Vec::new();
         let mut numbers = BTreeMap::new();
+        for open in &self.open {
+            if let Some(other) = numbers.insert(open.number, open.name.clone()) {
+                errors.push(format!(
+                    "kind number {} is used by {other} and {}",
+                    open.number, open.name
+                ));
+            }
+        }
         for kind in &self.kinds {
             if let Some(other) = numbers.insert(kind.file.number, kind.file.kind.clone()) {
                 errors.push(format!(
@@ -491,8 +519,8 @@ impl Catalogue {
                 )
             })
             .collect();
-        for (name, number, doc) in OPEN_KINDS {
-            all.push((name.to_string(), number, doc.to_string(), 0));
+        for open in &self.open {
+            all.push((open.name.clone(), open.number, open.doc.clone(), 0));
         }
         all.sort_by_key(|k| k.1);
         let mut s = String::from(
@@ -898,11 +926,12 @@ impl Catalogue {
                 })
             })
             .collect();
-        let open: Vec<serde_json::Value> = OPEN_KINDS
+        let open: Vec<serde_json::Value> = self
+            .open
             .iter()
-            .map(
-                |(n, num, d)| serde_json::json!({"kind": n, "number": num, "doc": d, "open": true}),
-            )
+            .map(|k| {
+                serde_json::json!({"kind": k.name, "number": k.number, "doc": k.doc, "open": true})
+            })
             .collect();
         let doc = serde_json::json!({ "schema": "teistro-catalogue/1", "kinds": kinds, "open_kinds": open });
         format!(

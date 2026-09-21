@@ -456,6 +456,7 @@ fn check_entity(
     key: &str,
     entity: &crate::source::Entity,
 ) {
+    let complete = locale.meta.completeness == Completeness::Strict;
     let tag = &locale.tag;
     if let Some(gender) = &entity.gender {
         let allowed = locale.meta.contexts.get("gender");
@@ -467,8 +468,15 @@ fn check_entity(
             );
         }
     }
-    if entity.name().is_empty() {
+    // A locale that declares itself complete owes every record a name to
+    // be printed by. An **overlay** root does not: its records add a form
+    // to one another root names, and requiring a name there would make
+    // every overlay carry a second copy of the name it means to leave
+    // alone (`03-design/state-readings.md` §3).
+    if complete && entity.name().is_empty() {
         findings.error(tag, key, "an entity needs a non-empty `name`");
+    } else if entity.forms.is_empty() && entity.glyph.is_none() {
+        findings.error(tag, key, "a record with no form says nothing");
     }
     // The full key is the namespace and the catalogue key; the catalogue
     // knows the latter.

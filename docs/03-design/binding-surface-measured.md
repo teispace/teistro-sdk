@@ -69,18 +69,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1379 | 1 | 0 | 0 | 0 |
-| TypeScript | 366 | 0 | 0 | 1 | 0 |
-| Python | 1379 | 0 | 1 | 2 | 0 |
+| Dart | 1380 | 1 | 0 | 0 | 0 |
+| TypeScript | 367 | 0 | 0 | 1 | 0 |
+| Python | 1380 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1379 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 366 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1379 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1379 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 366 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1379 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1380 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 367 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1380 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1380 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 367 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1380 disagree |
 
 What Dart renames:
 
@@ -196,7 +196,7 @@ the class of mistake a generated binding exists to make impossible.
 ADR-0023 puts the units, ranges, examples and enum links on the `api:`
 line of the Rust field, so that one sentence written once reaches every
 binding's documentation and every binding's type. What follows is how
-much of that there is to reach for: 195 of 195 visible struct fields
+much of that there is to reach for: 196 of 196 visible struct fields
 carry a doc comment.
 
 | `api:` tag | fields |
@@ -214,8 +214,8 @@ carry a doc comment.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every visible field carries a doc comment | **holds** | 0 of 195 disagree |
-| every floating-point field carries a unit | **holds** | 0 of 195 disagree |
+| every visible field carries a doc comment | **holds** | 0 of 196 disagree |
+| every floating-point field carries a unit | **holds** | 0 of 196 disagree |
 
 Every number that crosses the boundary says what it is measured in, so
 no binding has to document one as a bare `float`.

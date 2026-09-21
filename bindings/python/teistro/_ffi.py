@@ -707,7 +707,7 @@ class _IntlLoadedStruct(ctypes.Structure):
         ("struct_size", ctypes.c_uint32),
         ("entries", ctypes.c_uint32),
         ("replaced", ctypes.c_uint32),
-        ("reserved", ctypes.c_uint32),
+        ("merged", ctypes.c_uint32),
         ("locale", ctypes.c_char_p),
         ("sha256", ctypes.c_char_p),
     ]
@@ -2720,7 +2720,14 @@ class IntlLoaded:
     """The entries the file carried."""
 
     replaced: int
-    """The entries that replaced ones already loaded."""
+    """The entries that stood where one already stood and kept nothing of
+    it.
+    """
+
+    merged: int
+    """The entity records that stood where one already stood and kept a
+    form, a gender or a glyph the file did not carry.
+    """
 
     locale: str
     """The locale; lent until the next call on the context."""
@@ -2740,6 +2747,7 @@ class IntlLoaded:
         raw.struct_size = ctypes.sizeof(_IntlLoadedStruct)
         raw.entries = _c_value(self.entries)
         raw.replaced = _c_value(self.replaced)
+        raw.merged = _c_value(self.merged)
         _locale = None if self.locale is None else self.locale.encode("utf-8")
         owned.append(_locale)
         raw.locale = _locale
@@ -2764,6 +2772,7 @@ class IntlLoaded:
         return cls(
             entries=raw.entries,
             replaced=raw.replaced,
+            merged=raw.merged,
             locale=_text(raw.locale),
             sha256=_text(raw.sha256),
         )
@@ -3665,9 +3674,11 @@ class TeistroContext:
         return delta_t
 
     def intl_load_pack(self, bytes: bytes) -> IntlLoaded:
-        """Loads a `.tpack` or `.tbundle` file: a locale it brings is added, a
-        namespace it brings replaces what was loaded under the same keys. A
-        file that does not verify is `PACK`.
+        """Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
+        namespace it brings is laid over what was loaded under the same keys —
+        a message replaces, and two entity records merge their forms, so a pack
+        giving every nakshatra a `phala` leaves its `name` standing. A file that
+        does not verify is `PACK`.
         """
         owned: list[Any] = []
         _bytes = (ctypes.c_uint8 * len(bytes)).from_buffer_copy(bytes)

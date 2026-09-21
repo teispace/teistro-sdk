@@ -1043,9 +1043,15 @@ export interface IntlLoaded {
    */
   readonly entries: number;
   /**
-   * The entries that replaced ones already loaded.
+   * The entries that stood where one already stood and kept nothing of
+   * it.
    */
   readonly replaced: number;
+  /**
+   * The entity records that stood where one already stood and kept a
+   * form, a gender or a glyph the file did not carry.
+   */
+  readonly merged: number;
   /**
    * The locale; lent until the next call on the context.
    */

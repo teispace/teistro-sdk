@@ -31,10 +31,12 @@ pub struct TsIntlLoaded {
     pub struct_size: u32,
     /// The entries the file carried.
     pub entries: u32,
-    /// The entries that replaced ones already loaded.
+    /// The entries that stood where one already stood and kept nothing of
+    /// it.
     pub replaced: u32,
-    /// Reserved, zero.
-    pub reserved: u32,
+    /// The entity records that stood where one already stood and kept a
+    /// form, a gender or a glyph the file did not carry.
+    pub merged: u32,
     /// The locale; lent until the next call on the context.
     pub locale: *const c_char,
     /// The file's SHA-256 as sixty-four hex digits; lent until the next
@@ -44,9 +46,11 @@ pub struct TsIntlLoaded {
 
 c_struct!(TsIntlLoaded);
 
-/// Loads a `.tpack` or `.tbundle` file: a locale it brings is added, a
-/// namespace it brings replaces what was loaded under the same keys. A
-/// file that does not verify is `PACK`.
+/// Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
+/// namespace it brings is laid over what was loaded under the same keys —
+/// a message replaces, and two entity records merge their forms, so a pack
+/// giving every nakshatra a `phala` leaves its `name` standing. A file that
+/// does not verify is `PACK`.
 ///
 /// # Safety
 ///
@@ -70,7 +74,7 @@ pub unsafe extern "C" fn ts_intl_load_pack(
             struct_size: 0,
             entries: u32::try_from(loaded.entries).unwrap_or(u32::MAX),
             replaced: u32::try_from(loaded.replaced).unwrap_or(u32::MAX),
-            reserved: 0,
+            merged: u32::try_from(loaded.merged).unwrap_or(u32::MAX),
             locale: ctx.lend(&loaded.locale).data,
             sha256: ctx.lend(&loaded.sha256).data,
         };

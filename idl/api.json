@@ -10133,16 +10133,16 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "The entries that replaced ones already loaded.",
+          "doc": "The entries that stood where one already stood and kept nothing of\nit.",
           "meta": {}
         },
         {
-          "name": "reserved",
+          "name": "merged",
           "ty": {
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "Reserved, zero.",
+          "doc": "The entity records that stood where one already stood and kept a\nform, a gender or a glyph the file did not carry.",
           "meta": {}
         },
         {
@@ -11749,7 +11749,7 @@
     },
     {
       "name": "ts_intl_load_pack",
-      "doc": "Loads a `.tpack` or `.tbundle` file: a locale it brings is added, a\nnamespace it brings replaces what was loaded under the same keys. A\nfile that does not verify is `PACK`.",
+      "doc": "Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a\nnamespace it brings is laid over what was loaded under the same keys —\na message replaces, and two entity records merge their forms, so a pack\ngiving every nakshatra a `phala` leaves its `name` standing. A file that\ndoes not verify is `PACK`.",
       "safety": "`context` must be a live handle; `bytes` valid for `bytes_len` reads;\n`out_loaded` valid for a read of its `struct_size` and a write.",
       "params": [
         {

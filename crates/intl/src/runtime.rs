@@ -13,7 +13,7 @@ use serde::Serialize;
 use crate::mf2::parse;
 use crate::pack::{BUNDLE_MAGIC, Bundle, Pack, PackError};
 use crate::render::{Intl, IntlError, plurals_for};
-use crate::source::{BASE_LOCALE, Entry, LocaleSource, Meta, Namespace};
+use crate::source::{BASE_LOCALE, Entry, Landed, LocaleSource, Meta, Namespace};
 
 /// A pack or bundle loaded at runtime: what the provenance envelope
 /// records (ADR-0020).
@@ -25,8 +25,13 @@ pub struct Loaded {
     pub namespaces: Vec<String>,
     /// The entries it carried.
     pub entries: usize,
-    /// The entries that replaced ones already loaded.
+    /// The entries that stood where one already stood and kept nothing
+    /// of it.
     pub replaced: usize,
+    /// The entity records that stood where one already stood and kept a
+    /// form, a gender or a glyph the file did not carry
+    /// ([`Entity::overlaid`](crate::source::Entity::overlaid)).
+    pub merged: usize,
     /// The file's SHA-256, lower-case hex.
     pub sha256: String,
 }
@@ -85,15 +90,16 @@ impl RuntimeReport {
             );
         }
         if !self.loaded.is_empty() {
-            out.push_str("\n| loaded | namespaces | entries | replaced | sha256 |\n|---|---|---:|---:|---|\n");
+            out.push_str("\n| loaded | namespaces | entries | replaced | merged | sha256 |\n|---|---|---:|---:|---:|---|\n");
             for file in &self.loaded {
                 let _ = writeln!(
                     out,
-                    "| {} | {} | {} | {} | {} |",
+                    "| {} | {} | {} | {} | {} | {} |",
                     file.locale,
                     file.namespaces.join(", "),
                     file.entries,
                     file.replaced,
+                    file.merged,
                     file.sha256
                 );
             }
@@ -146,9 +152,19 @@ fn read_file(bytes: &[u8]) -> Result<FileContent, IntlError> {
 impl Intl {
     /// Loads a `.tpack` or a `.tbundle` after construction: a new locale
     /// is added (its metadata from the file, its plural rules from ICU4X),
-    /// a known locale gains the namespaces and every entry the file
-    /// carries, replacing what was loaded before under the same key. The
-    /// file is verified as on any read; its hash goes to the record
+    /// and a known locale gains the namespaces and every entry the file
+    /// carries.
+    ///
+    /// An entry is **laid over** whatever stands under its key rather than
+    /// replacing it blind ([`Namespace::overlay`]): a message replaces,
+    /// because it is one string, and two entity records merge their forms,
+    /// because a record's forms are an open set and a file carrying one
+    /// form means to add that form. So a pack that gives every nakshatra a
+    /// `phala` leaves its `name` and its `iast` standing, and the record
+    /// returned counts both what was kept (`merged`) and what was not
+    /// (`replaced`).
+    ///
+    /// The file is verified as on any read; its hash goes to the record
     /// returned and to [`Intl::report`].
     ///
     /// # Errors
@@ -181,15 +197,17 @@ impl Intl {
             .ok_or_else(|| IntlError(format!("no locale {}", file.tag)))?;
         let mut entries = 0;
         let mut replaced = 0;
+        let mut merged = 0;
         let mut names = Vec::with_capacity(file.namespaces.len());
         for (name, namespace) in file.namespaces {
             let target = locale.namespaces.entry(name.clone()).or_default();
             for (key, entry) in namespace.entries {
                 entries += 1;
-                if target.entries.contains_key(&key) {
-                    replaced += 1;
+                match target.overlay(key, entry) {
+                    Landed::Added => {}
+                    Landed::Replaced => replaced += 1,
+                    Landed::Merged => merged += 1,
                 }
-                target.insert(key, entry);
             }
             names.push(name);
         }
@@ -199,6 +217,7 @@ impl Intl {
             namespaces: names,
             entries,
             replaced,
+            merged,
             sha256: file.sha256,
         };
         self.loaded.push(loaded.clone());
@@ -335,7 +354,7 @@ mod tests {
     use super::*;
     use crate::pack;
     use crate::render::{Value, params};
-    use crate::source::{Tree, sdk_root};
+    use crate::source::{ENTITY_NAMESPACE, Entity, Tree, sdk_root};
 
     fn engine(locale: &str) -> Intl {
         let tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
@@ -390,6 +409,66 @@ mod tests {
         intl.clear_overrides(None);
         assert_eq!(intl.override_count(), 0);
         assert!(!intl.has("sdk.ui.title"));
+    }
+
+    /// A record's forms are an open set, so a pack carrying one form adds
+    /// that form: the alternative loses every form the file did not carry,
+    /// and two corpora could then never describe the same subject
+    /// (`03-design/state-readings.md` §3).
+    #[test]
+    fn a_pack_lays_an_entity_record_over_the_one_standing() {
+        let mut intl = engine("ne-Deva-NP");
+        let nepali = intl.locales.get("ne-Deva-NP").unwrap().clone();
+        let standing = intl
+            .entity_from("ne-Deva-NP", "nakshatra.ASHWINI")
+            .unwrap()
+            .clone();
+        assert_eq!(standing.form("iast"), Some("Aśvinī"));
+        assert_eq!(standing.form("phala"), None);
+
+        let mut phala = Entity::default();
+        phala
+            .forms
+            .insert(String::from("phala"), String::from("शीघ्र, आरोग्य"));
+        let mut overlay = nepali.clone();
+        let mut namespace = Namespace::default();
+        namespace.insert(String::from("nakshatra.ASHWINI"), Entry::Entity(phala));
+        overlay.namespaces = [(String::from(ENTITY_NAMESPACE), namespace)]
+            .into_iter()
+            .collect();
+
+        let loaded = intl
+            .load_pack(&pack::build(&overlay, ENTITY_NAMESPACE).unwrap())
+            .unwrap();
+        assert_eq!(
+            (loaded.entries, loaded.replaced, loaded.merged),
+            (1, 0, 1),
+            "the record kept forms the file did not carry"
+        );
+        let after = intl.entity_from("ne-Deva-NP", "nakshatra.ASHWINI").unwrap();
+        assert_eq!(after.form("phala"), Some("शीघ्र, आरोग्य"));
+        assert_eq!(after.form("iast"), Some("Aśvinī"), "the rest still stands");
+        assert_eq!(after.name(), standing.name());
+
+        // A file carrying every form the record has keeps nothing of it,
+        // and says so.
+        let mut whole = nepali.clone();
+        let mut namespace = Namespace::default();
+        namespace.insert(
+            String::from("nakshatra.ASHWINI"),
+            Entry::Entity(
+                intl.entity_from("ne-Deva-NP", "nakshatra.ASHWINI")
+                    .unwrap()
+                    .clone(),
+            ),
+        );
+        whole.namespaces = [(String::from(ENTITY_NAMESPACE), namespace)]
+            .into_iter()
+            .collect();
+        let loaded = intl
+            .load_pack(&pack::build(&whole, ENTITY_NAMESPACE).unwrap())
+            .unwrap();
+        assert_eq!((loaded.replaced, loaded.merged), (1, 0));
     }
 
     #[test]

@@ -209,6 +209,14 @@ pub struct Migration {
     /// the record, in the engine's order (type by type, index by index),
     /// which the sources keep and the generators follow.
     pub records: BTreeMap<String, Vec<(String, Entity)>>,
+    /// Whether these records **add forms** to records another root names,
+    /// rather than naming their subjects themselves.
+    ///
+    /// A locale created for an overlay root declares `base` completeness,
+    /// including the base locale: nothing here is complete, and a record
+    /// here has no name of its own on purpose
+    /// (`03-design/state-readings.md` §3).
+    pub overlay: bool,
     /// What was mapped and what was not.
     pub report: MigrationReport,
 }
@@ -223,9 +231,16 @@ pub fn record<'r>(records: &'r [(String, Entity)], key: &str) -> Option<&'r Enti
 }
 
 /// Adds a record, replacing one already planned under the same key.
+/// Adds a record, laying it over one already planned for the same key
+/// rather than replacing it ([`Entity::overlaid`]).
+///
+/// Two of the engine's own corpora describe the same subject under
+/// different names — `nakshatra-phala` and `namakarana-nakshatra` both key
+/// onto `nakshatra.ASHWINI` — so a migration that replaced would keep
+/// whichever it read last (`03-design/state-readings.md` §3).
 fn push_record(records: &mut Vec<(String, Entity)>, full: String, entity: Entity) {
     if let Some(slot) = records.iter_mut().find(|(k, _)| *k == full) {
-        slot.1 = entity;
+        slot.1 = slot.1.overlaid(&entity);
     } else {
         records.push((full, entity));
     }
@@ -316,8 +331,9 @@ pub fn plan(dump: &Dump, skeleton: Option<&Json>) -> Migration {
 /// for the others; a root created from scratch gave the base a fallback to
 /// itself, which the validator refuses and rightly. A base locale falls
 /// back to nothing and is complete by definition.
-fn new_locale_meta(tag: &str) -> Json {
+fn new_locale_meta(tag: &str, overlay: bool) -> Json {
     let base = tag == BASE_LOCALE;
+    let complete = base && !overlay;
     let (and, or) = match tag {
         "hi-Deva-IN" => ("{0} और {1}", "{0} या {1}"),
         "sa-Deva" => ("{0} तथा {1}", "{0} वा {1}"),
@@ -331,7 +347,7 @@ fn new_locale_meta(tag: &str) -> Json {
         "decimal": ".",
         "group": ",",
         "fallback": if base { Vec::new() } else { vec![BASE_LOCALE] },
-        "completeness": if base { "strict" } else { "base" },
+        "completeness": if complete { "strict" } else { "base" },
         "contexts": { "gender": ["m", "f", "n"] },
         "termStyle": "vernacular",
         "listPatterns": {
@@ -384,7 +400,10 @@ pub fn apply(
         if !meta_path.exists() {
             std::fs::write(
                 &meta_path,
-                format!("{}\n", serde_json::to_string_pretty(&new_locale_meta(tag))?),
+                format!(
+                    "{}\n",
+                    serde_json::to_string_pretty(&new_locale_meta(tag, migration.overlay))?
+                ),
             )?;
             written_files.push(meta_path);
         }
@@ -780,6 +799,323 @@ pub fn read_readings_dump(path: &Path) -> Result<ReadingsDump, String> {
     if dump.schema != "teistro-conformance/baseline-readings/1" {
         return Err(format!(
             "{}: schema `{}` is not the readings exporter's",
+            path.display(),
+            dump.schema
+        ));
+    }
+    Ok(dump)
+}
+
+// ---------------------------------------------------------------------------
+// The state readings (`03-design/state-readings.md`): a reading for what a
+// chart *is* rather than for a rule it triggers. The same document shape as
+// the rule readings, pointed at 38 subjects instead of one.
+// ---------------------------------------------------------------------------
+
+/// The state readings exporter's schema.
+pub const STATE_SCHEMA: &str = "teistro-conformance/baseline-state-readings/1";
+
+/// One of the engine's state categories, and where its readings land.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct StateCategory {
+    /// The engine's own name for the category.
+    pub category: &'static str,
+    /// The catalogue kind its keys name.
+    pub kind: &'static str,
+    /// The form a reading becomes on the record, or `""` where the reading
+    /// **is** the record and takes `name`, `prose` and its facets.
+    ///
+    /// A form rather than a record because 38 of the corpus's keys are
+    /// shared between categories: `nakshatra-phala` and
+    /// `namakarana-nakshatra` both key onto `nakshatra.ASHWINI` and mean
+    /// different things by it (`03-design/state-readings.md` §3).
+    pub form: &'static str,
+}
+
+const fn state(category: &'static str, kind: &'static str, form: &'static str) -> StateCategory {
+    StateCategory {
+        category,
+        kind,
+        form,
+    }
+}
+
+/// Every state category this migration maps, with the kind and the form.
+///
+/// Nothing here is inferred from resemblance: a category the SDK has no
+/// subject for is reported and skipped rather than guessed at, and the
+/// fourteen that are missing from this list are named in
+/// `03-design/state-readings.md` §8.
+pub const STATE_CATEGORIES: [StateCategory; 24] = [
+    state("avastha-baladi", "avastha_baladi", "phala"),
+    state("avastha-deeptadi", "avastha_deeptadi", "phala"),
+    state("avastha-jagradadi", "avastha_jagradadi", "phala"),
+    state("avastha-lajjitadi", "avastha_lajjitadi", "phala"),
+    state("dasha-lord-activation", "graha", "dashaActivation"),
+    state("dasha-lord-effect", "graha", "dashaPhala"),
+    state("dosha-timing", RULE_KIND, "timing"),
+    state("gana", "gana", "phala"),
+    state("graha-bhava", GRAHA_BHAVA_KIND, ""),
+    state("graha-color", "graha", "colour"),
+    state("graha-direction", "graha", "direction"),
+    state("ishta-devata", "rashi", "ishtaDevata"),
+    state("lagna-rashi", "rashi", "lagnaPhala"),
+    state("mantra-ritual", "graha", "mantra"),
+    state("nadi", "nadi", "phala"),
+    state("nakshatra-phala", "nakshatra", "phala"),
+    state("namakarana-nakshatra", "nakshatra", "namakarana"),
+    state("special-lagna", "point", "phala"),
+    state("tatwa", "tatwa", "phala"),
+    state("tithi-phala", "tithi", "phala"),
+    state("vara-phala", "vara", "phala"),
+    state("varna", "varna", "phala"),
+    state("yoga-phala", "yoga", "phala"),
+    state("yoni", "yoni", "phala"),
+];
+
+/// The catalogue's second **open** kind: a graha and a bhava together.
+///
+/// Open for the same reason `rule` is — the catalogue holds the kind and
+/// not the members — but for a different cause: these members are the
+/// product of two closed kinds, and 108 rows of generated table would buy
+/// a `resolve` the migration's own grammar already performs
+/// (`03-design/state-readings.md` §4).
+pub const GRAHA_BHAVA_KIND: &str = "graha_bhava";
+
+/// What separates the graha from the house in a `graha-bhava` key.
+const IN_BHAVA: &str = "_IN_";
+
+/// The engine's graha abbreviations, written out because four of the nine
+/// differ from the catalogue's spelling and a prefix rule cannot tell which.
+pub const GRAHA_ABBREVIATIONS: [(&str, &str); 9] = [
+    ("JUP", "JUPITER"),
+    ("KETU", "KETU"),
+    ("MARS", "MARS"),
+    ("MER", "MERCURY"),
+    ("MOON", "MOON"),
+    ("RAHU", "RAHU"),
+    ("SAT", "SATURN"),
+    ("SUN", "SUN"),
+    ("VEN", "VENUS"),
+];
+
+/// The engine's twelve lagna keys and the sign each names.
+///
+/// Written out rather than stripped of a prefix: a rule that took
+/// `LAGNA_` off the front would work for all twelve and mis-file the
+/// thirteenth silently, which is the inference
+/// `03-design/interpretation-records.md` §4 forbids.
+pub const LAGNA_RASHIS: [(&str, &str); 12] = [
+    ("LAGNA_AQUARIUS", "AQUARIUS"),
+    ("LAGNA_ARIES", "ARIES"),
+    ("LAGNA_CANCER", "CANCER"),
+    ("LAGNA_CAPRICORN", "CAPRICORN"),
+    ("LAGNA_GEMINI", "GEMINI"),
+    ("LAGNA_LEO", "LEO"),
+    ("LAGNA_LIBRA", "LIBRA"),
+    ("LAGNA_PISCES", "PISCES"),
+    ("LAGNA_SAGITTARIUS", "SAGITTARIUS"),
+    ("LAGNA_SCORPIO", "SCORPIO"),
+    ("LAGNA_TAURUS", "TAURUS"),
+    ("LAGNA_VIRGO", "VIRGO"),
+];
+
+/// The state readings exporter's document.
+#[derive(Clone, Debug, Deserialize)]
+pub struct StatesDump {
+    /// `teistro-conformance/baseline-state-readings/1`.
+    pub schema: String,
+    /// The engine and its version.
+    pub tool: String,
+    /// The export date.
+    #[serde(default)]
+    pub exported: String,
+    /// The engine's language codes, in the document's order.
+    pub languages: Vec<String>,
+    /// Every effect facet the document uses, sorted.
+    #[serde(default)]
+    pub facets: Vec<String>,
+    /// The readings, by category and then by the engine's key.
+    pub categories: BTreeMap<String, BTreeMap<String, StateRow>>,
+}
+
+/// One subject's reading in every language the document carries.
+#[derive(Clone, Debug, Deserialize)]
+pub struct StateRow {
+    /// The classical text the reading cites. **Not migrated**: a citation
+    /// beside the prose would be the one-fact-in-two-places shape.
+    #[serde(default)]
+    pub source: Option<String>,
+    /// The reading per language code.
+    #[serde(flatten)]
+    pub languages: BTreeMap<String, Reading>,
+}
+
+/// The catalogue key a category's key names, or why it names none.
+///
+/// # Errors
+///
+/// A key no catalogue member and no written alias answers to, a
+/// `graha-bhava` key that is not a graha and a house from 1 to 12, or a
+/// reading of an open kind whose key no pack could name.
+pub fn state_key(category: &str, kind: &str, key: &str) -> Result<String, String> {
+    if kind == GRAHA_BHAVA_KIND {
+        let (abbreviation, house) = key
+            .split_once(IN_BHAVA)
+            .ok_or_else(|| format!("`{key}` is not a graha and a house"))?;
+        let graha = GRAHA_ABBREVIATIONS
+            .iter()
+            .find(|(short, _)| *short == abbreviation)
+            .ok_or_else(|| format!("`{abbreviation}` is no graha of the engine's nine"))?
+            .1;
+        let bhava: u8 = house
+            .parse()
+            .map_err(|_| format!("`{house}` is not a house number"))?;
+        if !(1..=12).contains(&bhava) {
+            return Err(format!("house {bhava} is not one of twelve"));
+        }
+        return Ok(format!("{GRAHA_BHAVA_KIND}.{graha}{IN_BHAVA}{bhava}"));
+    }
+    if category == "lagna-rashi" {
+        let sign = LAGNA_RASHIS
+            .iter()
+            .find(|(lagna, _)| *lagna == key)
+            .ok_or_else(|| format!("`{key}` is no lagna of the engine's twelve"))?
+            .1;
+        return Ok(format!("{kind}.{sign}"));
+    }
+    let full = format!("{kind}.{key}");
+    if crate::source::is_open_kind_key(&full) {
+        return Ok(full);
+    }
+    resolve(&full)
+        .map(|id| id.to_string())
+        .map_err(|unknown| unknown.to_string())
+}
+
+/// The form a reading's summary, passage and facets take on a record.
+///
+/// An empty prefix means the reading **is** the record — `name`, `prose`
+/// and the facet's own name, as a rule reading is. A prefix means it is a
+/// form on a record that stands already, and every form it brings carries
+/// the prefix so two categories on one subject cannot collide.
+fn prefixed_form(prefix: &str, form: &str) -> String {
+    if prefix.is_empty() {
+        return String::from(form);
+    }
+    let mut out = String::from(prefix);
+    let mut letters = form.chars();
+    if let Some(first) = letters.next() {
+        out.extend(first.to_uppercase());
+        out.push_str(letters.as_str());
+    }
+    out
+}
+
+/// The forms one language's reading becomes under a prefix.
+fn state_forms(reading: &Reading, prefix: &str) -> BTreeMap<String, String> {
+    let mut forms = BTreeMap::new();
+    let summary_form = if prefix.is_empty() {
+        String::from("name")
+    } else {
+        String::from(prefix)
+    };
+    if let Some(summary) = reading.summary.as_ref().filter(|s| !s.trim().is_empty()) {
+        forms.insert(summary_form, summary.clone());
+    }
+    if let Some(passage) = reading.full.as_ref().filter(|s| !s.trim().is_empty()) {
+        forms.insert(prefixed_form(prefix, "prose"), passage.clone());
+    }
+    for (facet, text) in &reading.effects {
+        if !text.trim().is_empty() {
+            forms.insert(prefixed_form(prefix, facet), text.clone());
+        }
+    }
+    forms
+}
+
+/// Plans the migration of a state readings dump: every category of
+/// [`STATE_CATEGORIES`] becomes entity records, and every category that is
+/// not in that list is reported unmapped with the records it would have
+/// given.
+///
+/// The report reads: `mapped` counts the records each category gave,
+/// `unmapped` names the categories the SDK has no subject for, and
+/// `unknown_keys` lists every key that named no member and why.
+#[must_use]
+pub fn plan_states(dump: &StatesDump) -> Migration {
+    let mut migration = Migration {
+        overlay: true,
+        ..Migration::default()
+    };
+    let tags: BTreeMap<&str, &str> = LOCALES.iter().copied().collect();
+    for (category, rows) in &dump.categories {
+        let Some(mapping) = STATE_CATEGORIES
+            .iter()
+            .find(|state| state.category == category)
+        else {
+            migration
+                .report
+                .unmapped
+                .insert(category.clone(), rows.len());
+            continue;
+        };
+        for (key, row) in rows {
+            let full = match state_key(category, mapping.kind, key) {
+                Ok(full) => full,
+                Err(why) => {
+                    migration
+                        .report
+                        .unknown_keys
+                        .push(format!("{category}: {key}: {why}"));
+                    continue;
+                }
+            };
+            let mut written_any = false;
+            for (code, reading) in &row.languages {
+                let Some(tag) = tags.get(code.as_str()) else {
+                    continue;
+                };
+                let forms = state_forms(reading, mapping.form);
+                if forms.is_empty() {
+                    migration
+                        .report
+                        .unknown_keys
+                        .push(format!("{category}: {key} ({code}): nothing to say"));
+                    continue;
+                }
+                push_record(
+                    migration.records.entry((*tag).to_string()).or_default(),
+                    full.clone(),
+                    Entity {
+                        forms,
+                        gender: None,
+                        glyph: None,
+                    },
+                );
+                written_any = true;
+            }
+            if written_any {
+                *migration.report.mapped.entry(category.clone()).or_default() += 1;
+            }
+        }
+    }
+    migration
+}
+
+/// Reads a state readings dump.
+///
+/// # Errors
+///
+/// A file that cannot be read or is not the state readings exporter's
+/// document.
+pub fn read_states_dump(path: &Path) -> Result<StatesDump, String> {
+    let text = std::fs::read_to_string(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let dump: StatesDump =
+        serde_json::from_str(&text).map_err(|e| format!("{}: {e}", path.display()))?;
+    if dump.schema != STATE_SCHEMA {
+        return Err(format!(
+            "{}: schema `{}` is not the state readings exporter's",
             path.display(),
             dump.schema
         ));

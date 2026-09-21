@@ -206,6 +206,64 @@ impl Entity {
     pub fn name(&self) -> &str {
         self.forms.get(NAME_FORM).map_or("", String::as_str)
     }
+
+    /// This record with `overlay` laid over it: every form the overlay
+    /// carries is the overlay's, every form only this record carries is
+    /// kept, and the gender and the glyph are the overlay's where it has
+    /// one.
+    ///
+    /// A record's forms are an **open** set — `name`, `prose`, `iast` and
+    /// whatever a corpus adds — so a file carrying one form means to add
+    /// that form and not to be the whole record. Two corpora may therefore
+    /// describe the same subject without either erasing the other: the
+    /// baseline engine's `dosha-timing` gives `rule.MANGAL_DOSHA` a
+    /// `timing` beside the reading it already has
+    /// (`03-design/state-readings.md` §3).
+    ///
+    /// A consumer that does mean to be the whole record ships every form
+    /// it wants, which is what building a pack from a source tree of its
+    /// own already does.
+    ///
+    /// ```
+    /// use teistro_intl::source::Entity;
+    ///
+    /// let mut shipped = Entity::default();
+    /// shipped.forms.insert(String::from("name"), String::from("Ashwini"));
+    /// shipped.forms.insert(String::from("iast"), String::from("aśvinī"));
+    ///
+    /// let mut overlay = Entity::default();
+    /// overlay.forms.insert(String::from("phala"), String::from("swift, healing"));
+    ///
+    /// let both = shipped.overlaid(&overlay);
+    /// assert_eq!(both.form("iast"), Some("aśvinī"));
+    /// assert_eq!(both.form("phala"), Some("swift, healing"));
+    /// ```
+    #[must_use]
+    pub fn overlaid(&self, overlay: &Entity) -> Entity {
+        let mut forms = self.forms.clone();
+        forms.extend(
+            overlay
+                .forms
+                .iter()
+                .map(|(name, text)| (name.clone(), text.clone())),
+        );
+        Entity {
+            forms,
+            gender: overlay.gender.clone().or_else(|| self.gender.clone()),
+            glyph: overlay.glyph.clone().or_else(|| self.glyph.clone()),
+        }
+    }
+
+    /// Whether `overlay` laid over this record would keep anything of it:
+    /// a form, a gender or a glyph the overlay does not carry.
+    #[must_use]
+    pub fn kept_under(&self, overlay: &Entity) -> bool {
+        self.forms
+            .keys()
+            .any(|form| !overlay.forms.contains_key(form))
+            || (self.gender.is_some() && overlay.gender.is_none())
+            || (self.glyph.is_some() && overlay.glyph.is_none())
+    }
 }
 
 /// A leaf of a namespace.
@@ -228,13 +286,51 @@ pub struct Namespace {
     pub order: Vec<String>,
 }
 
+/// How an entry laid over a namespace landed ([`Namespace::overlay`]).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Landed {
+    /// No entry stood under the key.
+    Added,
+    /// One stood, and nothing of it was kept.
+    Replaced,
+    /// An entity record stood, and the two records' forms are now one
+    /// ([`Entity::overlaid`]).
+    Merged,
+}
+
 impl Namespace {
-    /// Adds an entry, keeping source order.
+    /// Adds an entry, keeping source order. An entry under the same key is
+    /// replaced whole; [`Namespace::overlay`] is what lays one record over
+    /// another.
     pub fn insert(&mut self, key: String, entry: Entry) {
         if !self.entries.contains_key(&key) {
             self.order.push(key.clone());
         }
         self.entries.insert(key, entry);
+    }
+
+    /// Lays an entry over whatever stands under the key: two **entity**
+    /// records merge their forms ([`Entity::overlaid`]), and anything else
+    /// replaces, because a message is one string and has nothing to merge.
+    ///
+    /// This is what loading a pack at runtime does, so a consumer's pack
+    /// adding one form to a record does not erase the rest of it
+    /// (`03-design/state-readings.md` §3).
+    pub fn overlay(&mut self, key: String, entry: Entry) -> Landed {
+        let (landed, entry) = match (self.entries.get(&key), entry) {
+            (None, entry) => (Landed::Added, entry),
+            (Some(Entry::Entity(standing)), Entry::Entity(overlay)) => {
+                let landed = if standing.kept_under(&overlay) {
+                    Landed::Merged
+                } else {
+                    Landed::Replaced
+                };
+                (landed, Entry::Entity(standing.overlaid(&overlay)))
+            }
+            (Some(_), entry) => (Landed::Replaced, entry),
+        };
+        self.insert(key, entry);
+        landed
     }
 
     /// The entries in source order, then any without a recorded order.
@@ -449,6 +545,13 @@ pub fn is_open_kind_key(full: &str) -> bool {
     })
 }
 
+/// Whether `s` names a form of an entity record: a `camelCase` word.
+#[must_use]
+pub fn is_form_name(s: &str) -> bool {
+    s.bytes().next().is_some_and(|b| b.is_ascii_lowercase())
+        && s.bytes().all(|b| b.is_ascii_alphanumeric())
+}
+
 /// Whether `s` is a key a catalogue member or a rule pack could carry.
 ///
 /// **Not "screaming snake case"**, and the corpus said so rather than this
@@ -543,10 +646,15 @@ fn flatten(
             format!("`{prefix}` must be an object of keys"),
         ));
     };
+    // A record's fields are text and a group's children are objects, so
+    // the shape decides which this is. It is not the `name` field that
+    // decides, because an **overlay** root carries records that add a form
+    // to one another root already names — a nakshatra's `phala` beside its
+    // name — and those have no name of their own
+    // (`03-design/state-readings.md` §3).
     if namespace == ENTITY_NAMESPACE
-        && object
-            .get(NAME_FORM)
-            .is_some_and(serde_json::Value::is_string)
+        && !object.is_empty()
+        && object.values().all(serde_json::Value::is_string)
     {
         out.insert(
             prefix.to_string(),
@@ -607,10 +715,16 @@ fn entity(
             "gender" => entity.gender = Some(text.clone()),
             "glyph" => entity.glyph = Some(text.clone()),
             _ => {
-                if !field.bytes().all(|b| b.is_ascii_lowercase()) {
+                // A `camelCase` identifier, as a message key's segments
+                // are: a form whose name carries the category it came from
+                // needs two words (`phalaProse`, `ishtaDevata`), and a
+                // separator that is not a letter would collide with the
+                // dots that already separate a key
+                // (`03-design/state-readings.md` §3).
+                if !is_form_name(field) {
                     return Err(SourceError::new(
                         file,
-                        format!("`{key}.{field}`: a form name is lowercase letters"),
+                        format!("`{key}.{field}`: a form name is a camelCase word"),
                     ));
                 }
                 entity.forms.insert(field.clone(), text.clone());

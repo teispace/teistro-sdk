@@ -208,6 +208,7 @@ mod serial;
 mod shadbala;
 mod site;
 mod state;
+mod state_readings;
 mod surface;
 mod time;
 mod topocentric;
@@ -314,6 +315,11 @@ const PASSES: &[Pass] = &[
         "interpretations",
         interpretations::generate,
         interpretations::check_generated,
+    ),
+    (
+        "state-readings",
+        state_readings::generate,
+        state_readings::check_generated,
     ),
 ];
 

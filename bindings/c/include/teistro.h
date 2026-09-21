@@ -6264,13 +6264,15 @@ struct ts_intl_loaded {
      */
     uint32_t entries;
     /**
-     * The entries that replaced ones already loaded.
+     * The entries that stood where one already stood and kept nothing of
+     * it.
      */
     uint32_t replaced;
     /**
-     * Reserved, zero.
+     * The entity records that stood where one already stood and kept a
+     * form, a gender or a glyph the file did not carry.
      */
-    uint32_t reserved;
+    uint32_t merged;
     /**
      * The locale; lent until the next call on the context.
      */
@@ -6646,9 +6648,11 @@ ts_status ts_time_convert(const ts_context * context, double jd, uint32_t from, 
 ts_status ts_time_delta_t(const ts_context * context, double jd_ut1, ts_delta_t * out_delta_t);
 
 /**
- * Loads a `.tpack` or `.tbundle` file: a locale it brings is added, a
- * namespace it brings replaces what was loaded under the same keys. A
- * file that does not verify is `PACK`.
+ * Loads a `.tpack` or `.tbundle` file: a locale it brings is added, and a
+ * namespace it brings is laid over what was loaded under the same keys —
+ * a message replaces, and two entity records merge their forms, so a pack
+ * giving every nakshatra a `phala` leaves its `name` standing. A file that
+ * does not verify is `PACK`.
  * Safety: `context` must be a live handle; `bytes` valid for `bytes_len` reads;
  * `out_loaded` valid for a read of its `struct_size` and a write.
  */

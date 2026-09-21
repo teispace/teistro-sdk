@@ -20226,6 +20226,12 @@
       "number": 32,
       "doc": "Rule keys, which rule packs register at runtime; the catalogue holds the kind only.",
       "open": true
+    },
+    {
+      "kind": "graha_bhava",
+      "number": 65,
+      "doc": "A graha and a bhava together, as `JUPITER_IN_1`; the readings that name one arrive in a loaded pack.",
+      "open": true
     }
   ]
 }
