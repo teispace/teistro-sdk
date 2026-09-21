@@ -55,6 +55,7 @@ from teistro import (
     when_unknown,
 )
 from teistro._ffi import Longitude
+from teistro.catalogue import DayPart
 from tests.support import LOCALE, PROFILE, WithLibrary, fixture
 
 
@@ -84,6 +85,19 @@ class TheLibrary(WithLibrary):
         self.assertEqual(again.centre, frame.centre)
         self.assertEqual(again.coordinates, frame.coordinates)
         self.assertEqual(self.teistro.pack_frame(again), bits)
+
+    def test_the_frame_area_answers_as_the_free_functions_do(self) -> None:
+        # The same three answers through the area a consumer with a
+        # context reaches for, which is a different path to them.
+        ctx = self.teistro.context(test_provider=True)
+        try:
+            frame = ctx.frame.canonical
+            self.assertEqual(frame.centre, self.teistro.canonical_frame.centre)
+            bits = ctx.frame.pack(frame)
+            self.assertEqual(bits, self.teistro.pack_frame(frame))
+            self.assertEqual(ctx.frame.unpack(bits).coordinates, frame.coordinates)
+        finally:
+            ctx.close()
 
     def test_a_fixed_day_and_a_julian_day_convert_both_ways(self) -> None:
         jd = self.teistro.julian_day_of_fixed(735702)
@@ -610,6 +624,40 @@ class AnEngine(WithLibrary):
                 )
             self.assertEqual(caught.exception.field, "drawings[1]")
 
+    def test_a_chart_carries_the_day_it_belongs_to_and_both_house_readings(self) -> None:
+        """A founded chart knows more than where the grahas are: which arc
+        of its day it fell in and how far through, the lagna at the sunrise
+        that opened it, the ayanamsha applied, and the twelve bhavas under
+        the chalit beside the ones under the placement system. None of it
+        had been read from Python
+        (`03-design/binding-exercise-measured.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172),
+            longitude_deg=Longitude(85.324),
+            altitude_m=Altitude(1400),
+        )
+        chart = self.ctx.chart.found(
+            instant=2451545.0, place=observer, utc_offset_seconds=20700, houses=True
+        )
+
+        self.assertIn(chart.day_part, (DayPart.DAYLIGHT, DayPart.NIGHT))
+        self.assertGreaterEqual(chart.day_elapsed, 0.0)
+        self.assertLessEqual(chart.day_elapsed, 1.0)
+        self.assertGreaterEqual(chart.day_lagna_deg, 0.0)
+        self.assertLess(chart.day_lagna_deg, 360.0)
+        # The context is sidereal, so an ayanamsha was applied.
+        self.assertNotEqual(chart.ayanamsha_offset_deg, 0.0)
+
+        # Both house readings are kept; the chalit is the other twelve,
+        # each with its own centre and opening cusp.
+        chalit = chart.chalit
+        self.assertEqual(len(chalit), 12)
+        for bhava in chalit:
+            self.assertGreaterEqual(bhava.madhya_deg, 0.0)
+            self.assertLess(bhava.madhya_deg, 360.0)
+            self.assertGreaterEqual(bhava.sandhi_deg, 0.0)
+            self.assertLess(bhava.sandhi_deg, 360.0)
+
     def test_a_theme_writes_each_drawing_as_svg_and_a_wrong_one_is_refused(self) -> None:
         """A theme writes every drawing as SVG in the context's locale, and
         a wrong one is refused by its path (`03-design/render-svg.md`)."""
@@ -1041,3 +1089,60 @@ class AnEngine(WithLibrary):
         self.assertEqual(refused([kerala, row]), "options.layouts_json[1].key")
         misspelt = {**kerala, "shape": {**kerala["shape"], "heading": "clockwise"}}
         self.assertEqual(refused([misspelt]), "options.layouts_json[0].shape.heading")  # type: ignore[list-item]
+
+
+class AnAlmanacDay(WithLibrary):
+    """The day's own columns, read through the accessors that decode them.
+
+    Every one of these had never run from Python: the Node and Dart
+    bindings exercise their own decoders and this one's examples print
+    the limbs and the periods, leaving the rest of a day — its ayana, its
+    Brahma muhurta, the arcs and the signs the luminaries stood in —
+    decoded by nothing (`03-design/binding-exercise-measured.md`).
+    """
+
+    def setUp(self) -> None:
+        self.ctx = self.teistro.context(
+            profile=PROFILE, locale=LOCALE, test_provider=True
+        )
+        self.week = self.ctx.almanac.of(
+            from_date=date(Calendar.GREGORIAN, 2024, 6, 17),
+            to_date=date(Calendar.GREGORIAN, 2024, 6, 19),
+            place=Observer(
+                latitude_deg=Latitude(27.7172),
+                longitude_deg=Longitude(85.324),
+                altitude_m=Altitude(1400),
+            ),
+            utc_offset_seconds=20_700,
+        )
+
+    def tearDown(self) -> None:
+        self.ctx.close()
+
+    def test_a_batch_carries_the_place_and_each_day_its_window(self) -> None:
+        self.assertAlmostEqual(float(self.week.place.latitude_deg), 27.7172, places=4)
+        # The window is the day's, not the batch's: it is what that day's
+        # spans are clipped to.
+        window = self.week.at(0).window
+        self.assertLess(window.from_jd, window.to_jd)
+        # A per-day list's rows are found by the range the batch keeps.
+        start, end = self.week.range("kaalas", 0)
+        self.assertLessEqual(start, end)
+
+    def test_every_day_decodes_the_columns_nothing_else_reads(self) -> None:
+        for day in self.week:
+            # Which half of the year, and where not to travel.
+            self.assertTrue(day.ayana.full_key.startswith("ayana."))
+            self.assertTrue(day.disha_shool.full_key.startswith("direction."))
+            # The signs the luminaries stood in: two only on a sankranti.
+            self.assertGreaterEqual(len(day.moon_signs), 1)
+            self.assertGreaterEqual(len(day.sun_signs), 1)
+            # Lists that are empty on most days and must still decode.
+            self.assertIsInstance(day.panchaka, list)
+            self.assertIsInstance(day.muhurta_yogas, list)
+            # Brahma muhurta is absent only when the night before is not
+            # known, which is the polar case and not this one.
+            brahma = day.brahma
+            self.assertIsNotNone(brahma)
+            assert brahma is not None
+            self.assertLess(brahma.from_jd, brahma.to_jd)

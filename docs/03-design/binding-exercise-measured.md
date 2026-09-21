@@ -22,15 +22,15 @@ therefore one nothing touches.
 |---|---:|---:|---:|
 | Node | 32 | 30 | 2 |
 | Dart | 22 | 21 | 1 |
-| Python | 117 | 95 | 22 |
+| Python | 117 | 113 | 4 |
 
-**25 members nothing names**, of 171 members the three layers declare.
+**7 members nothing names**, of 171 members the three layers declare.
 They are listed rather than counted, because a member that stops being
 exercised has to change this page and one that starts has to as well.
 
 - **Node**: `dashaName`, `range`
 - **Dart**: `callJson`
-- **Python**: `ayana`, `ayanamsha_offset_deg`, `brahma`, `call_json`, `canonical`, `chalit`, `day_elapsed`, `day_lagna_deg`, `day_part`, `disha_shool`, `keeps_its_sign`, `last_error`, `manifest_json`, `moon_signs`, `muhurta_yogas`, `pack`, `panchaka`, `place`, `range`, `sun_signs`, `unpack`, `window`
+- **Python**: `call_json`, `keeps_its_sign`, `last_error`, `manifest_json`
 
 | proposed rule | verdict | measured |
 |---|---|---|

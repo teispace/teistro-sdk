@@ -1369,6 +1369,30 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **Eighteen of the twenty-five untouched members are untouched no
+  longer**, and the tests that reached them are real coverage rather than
+  a number being chased.
+
+  Python had never read an **almanac day** beyond the limbs its example
+  prints: its ayana, the direction not to travel in, the signs the
+  luminaries stood in, Brahma muhurta, panchaka, the muhurta yogas, the
+  window a day's spans are clipped to and the range a per-day list
+  occupies were decoded by nothing. It had never read a **founded chart's
+  own day** either — which arc of it the instant fell in, how far through,
+  the lagna at the sunrise that opened it, the ayanamsha applied — nor the
+  twelve bhavas of the **chalit** beside the ones under the placement
+  system. Two tests now do, and Python drops from 22 untouched to 4.
+
+  Node and Python's `FrameArea` had never been used: both tests
+  round-tripped a frame through the free functions and never through the
+  area a consumer with a context reaches for. Both assert it now, and that
+  the two paths agree.
+
+  What is left is seven of 171: `dashaName` and `range` in Node,
+  `callJson` in Dart, and `call_json`, `keeps_its_sign`, `last_error` and
+  `manifest_json` in Python. Three of those are the engine passthrough's
+  JSON forms, which need an engine the workspace does not carry.
+
 - **A page measuring what each binding's own surface has ever been used
   for.** `entry-point-is-reachable` holds that every boundary function is
   *placed* in a binding — exposed, declared, callable — and says nothing
