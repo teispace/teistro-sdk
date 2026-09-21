@@ -15,6 +15,7 @@ publish = false
 teistro-core = { path = "../core" }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-rules = { path = "../rules" }
+teistro-strength = { path = "../strength" }
 serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]

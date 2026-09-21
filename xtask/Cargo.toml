@@ -21,6 +21,7 @@ teistro = { path = "../crates/sdk" }
 teistro-astro = { path = "../crates/astro" }
 teistro-calendar = { path = "../crates/calendar" }
 teistro-core = { path = "../crates/core" }
+teistro-strength = { path = "../crates/strength" }
 teistro-ffi = { path = "../crates/ffi" }
 teistro-idl = { path = "../crates/idl" }
 teistro-interpret = { path = "../crates/interpret" }

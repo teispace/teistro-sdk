@@ -32,6 +32,9 @@ pub struct PlanRequest {
     /// What each rule the chart held says — which needs rules to have been
     /// asked for, since a reading composes what rules answered.
     pub readings: bool,
+    /// Each graha's Shadbala in rupas, the strongest first. It reads the
+    /// Shadbala section, which the request computes for it.
+    pub strength: bool,
 }
 
 impl PlanRequest {
@@ -49,11 +52,18 @@ impl PlanRequest {
         self
     }
 
+    /// A request for the strengths.
+    #[must_use]
+    pub const fn with_strength(mut self) -> PlanRequest {
+        self.strength = true;
+        self
+    }
+
     /// Whether any composer was asked for, so a caller can skip the work
     /// rather than compose an empty answer.
     #[must_use]
     pub const fn asks_for_something(self) -> bool {
-        self.placements || self.readings
+        self.placements || self.readings || self.strength
     }
 
     /// A request read from JSON.
@@ -67,7 +77,7 @@ impl PlanRequest {
     pub fn from_json(text: &str) -> Result<PlanRequest, Error> {
         serde_json::from_str(text).map_err(|err| {
             Error::invalid_arg(format!("the plan request does not read: {err}"))
-                .with_hint("an object of `placements` and `readings`")
+                .with_hint("an object of `placements`, `readings` and `strength`")
         })
     }
 

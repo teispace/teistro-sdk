@@ -753,13 +753,15 @@ export interface RulesReading {
  * The narrative plans a request asks a chart for
  * (`03-design/plans-at-the-boundary.md`). Each composer is off by default,
  * and `readings` needs `rules` beside it, since it says what the rules a
- * chart held answered.
+ * chart held answered; the sections the others read are computed for them.
  */
 export interface PlanRequest {
   /** Where each of the nine grahas stands and who shares a sign. */
   readonly placements?: boolean;
   /** What each rule the chart held says. */
   readonly readings?: boolean;
+  /** Each graha's Shadbala in rupas, the strongest first. */
+  readonly strength?: boolean;
 }
 
 /**
@@ -780,6 +782,8 @@ export interface Plans {
   readonly placements?: readonly PlanItem[];
   /** What the rules answered; absent unless `readings` asked for it. */
   readonly readings?: readonly PlanItem[];
+  /** What each graha weighs; absent unless `strength` asked for it. */
+  readonly strength?: readonly PlanItem[];
 }
 
 /**

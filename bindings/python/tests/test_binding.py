@@ -669,13 +669,19 @@ class AnEngine(WithLibrary):
             ).plans
 
         self.assertIsNone(found(None), "no composer, no plans")
-        plans = found({"placements": True, "readings": True}, {"shipped": ["nabhasas"]})
+        plans = found(
+            {"placements": True, "readings": True, "strength": True},
+            {"shipped": ["nabhasas"]},
+        )
         assert plans is not None
         self.assertTrue(plans["placements"], "every chart places its grahas")
         self.assertIsInstance(plans["readings"], list)
+        # The strengths read the Shadbala, which this request never asked
+        # for: a composer's own section is computed for it.
+        self.assertEqual(len(plans["strength"]), 7, "the seven grahas")
 
         said = 0
-        for item in [*plans["placements"], *plans["readings"]]:
+        for item in [*plans["placements"], *plans["readings"], *plans["strength"]]:
             self.assertTrue(item["key"].startswith("sdk."))
             rendered = self.ctx.intl.render(item["key"], item["params"])
             self.assertTrue(rendered.text, f"{item['key']} said nothing")

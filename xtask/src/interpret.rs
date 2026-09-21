@@ -17,7 +17,8 @@ use std::collections::BTreeMap;
 use std::fmt::Write as _;
 use std::path::Path;
 
-use teistro_interpret::{KEYS, Plan, placements, readings};
+use teistro_core::catalogue::Graha;
+use teistro_interpret::{KEYS, Plan, placements, readings, strength};
 use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::{Intl, Rendered};
 use teistro_rules::{Evaluator, Readings as RuleReadings, Rule, RuleChart, shipped};
@@ -28,6 +29,11 @@ use crate::rules_corpus::{chart, read_json};
 
 const PAGE: &str = "docs/03-design/interpret-measured.md";
 const ROOT: &str = "fixtures/baseline/yogas";
+/// The recorded Shadbalas the strength composer is measured over. They are
+/// the corpus's **own** numbers, not the SDK's: a composer is measured on
+/// whether it can say what it is given, and `check-shadbala` is where the
+/// numbers themselves are held.
+const WEIGHTS: &str = "fixtures/baseline/shadbala";
 /// The chart the page ends with, rendered whole: the corpus's first.
 const SNAPSHOT: &str = "c001-kathmandu-1990-04-14";
 
@@ -35,6 +41,75 @@ const SNAPSHOT: &str = "c001-kathmandu-1990-04-14";
 struct Composed {
     name: String,
     plan: Plan,
+}
+
+/// What the corpus records of a chart's Shadbala, as the strength composer
+/// needs it: each graha's total in rupas, and whether it reached the rupas
+/// its text requires — which is the part **no locale can say**, counted on
+/// the page rather than guessed at in a message.
+struct Weighed {
+    reading: teistro_strength::shadbala::ShadbalaReading,
+    sufficient: usize,
+}
+
+/// Every chart the Shadbala corpus records, by its file stem.
+fn weights(root: &Path) -> BTreeMap<String, Weighed> {
+    let mut out = BTreeMap::new();
+    for dir in ["charts", "variants"] {
+        let directory = root.join(WEIGHTS).join(dir);
+        let Ok(entries) = std::fs::read_dir(&directory) else {
+            continue;
+        };
+        for path in entries.flatten().map(|entry| entry.path()) {
+            if path.extension().is_none_or(|ext| ext != "json") {
+                continue;
+            }
+            let Ok(file) = read_json(&path) else { continue };
+            let Some(name) = path.file_stem().map(|s| s.to_string_lossy().into_owned()) else {
+                continue;
+            };
+            let recorded = &file["shadbala"];
+            let mut grahas = Vec::new();
+            let mut sufficient = 0;
+            for graha in Graha::ALL.into_iter().take(7) {
+                let at = &recorded[graha.key()];
+                let Some(rupas) = at["total_rupas"].as_f64() else {
+                    continue;
+                };
+                sufficient += usize::from(at["is_sufficient"].as_bool().unwrap_or(false));
+                grahas.push(teistro_strength::shadbala::GrahaShadbala {
+                    graha,
+                    sthana: teistro_strength::shadbala::SthanaBala::default(),
+                    dig: 0.0,
+                    kaala: teistro_strength::shadbala::KaalaBala::default(),
+                    cheshta: 0.0,
+                    naisargika: 0.0,
+                    drik: 0.0,
+                    virupas: at["total_shashtiamshas"].as_f64().unwrap_or_default(),
+                    rupas,
+                    required_rupas: at["minimum_rupas"].as_f64().unwrap_or_default(),
+                    strong: at["is_sufficient"].as_bool().unwrap_or(false),
+                    ishta: 0.0,
+                    kashta: 0.0,
+                    subha_rashmi: 0.0,
+                    ashubha_rashmi: 0.0,
+                });
+            }
+            if !grahas.is_empty() {
+                out.insert(
+                    name,
+                    Weighed {
+                        reading: teistro_strength::shadbala::ShadbalaReading {
+                            rules: teistro_strength::shadbala::ShadbalaRules::BPHS,
+                            grahas,
+                        },
+                        sufficient,
+                    },
+                );
+            }
+        }
+    }
+    out
 }
 
 /// The rules the readings composer is measured over: every set the kernel
@@ -55,6 +130,7 @@ fn rules() -> Vec<Rule> {
 }
 
 fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
+    let weighed = weights(root);
     let mut out = Vec::new();
     for dir in ["charts", "variants"] {
         let directory = root.join(ROOT).join(dir);
@@ -85,6 +161,9 @@ fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
             let mut plan = placements(&chart);
             plan.items
                 .extend(readings(held.iter().map(|(rule, result)| (*rule, result))));
+            if let Some(weighed) = weighed.get(&name) {
+                plan.items.extend(strength(&weighed.reading));
+            }
             out.push(Composed { name, plan });
         }
     }
@@ -206,6 +285,32 @@ fn costs(out: &mut String, plans: &[Composed], items: usize) {
         plural(bytes.checked_div(items).unwrap_or(0), "byte"),
         plural(cited, "byte"),
         cited.saturating_mul(100).checked_div(bytes).unwrap_or(0),
+    );
+}
+
+/// What the strengths do **not** say, counted from the corpus's own
+/// recordings rather than asserted (`03-design/interpret-composers.md` §4).
+fn unsaid_strength(out: &mut String, root: &Path) {
+    let weighed = weights(root);
+    let charts = weighed.len();
+    let grahas: usize = weighed
+        .values()
+        .map(|weighed| weighed.reading.grahas.len())
+        .sum();
+    let sufficient: usize = weighed.values().map(|weighed| weighed.sufficient).sum();
+    let _ = write!(
+        out,
+        "And the **strengths** say what a graha weighs and not whether it is \
+         strong enough. The corpus records a Shadbala for {} of these charts, \
+         {} in all, and for each of them whether it reaches the rupas its \
+         text requires — {} of {} do. The plan says none of that: no locale \
+         carries a message for it, and a machine-translated \"strong\" would \
+         be the stub the project refuses. What it says instead is the \
+         ordering, strongest first, which needs no word at all.\n\n",
+        count(charts),
+        plural(grahas, "graha"),
+        count(sufficient),
+        count(grahas),
     );
 }
 
@@ -340,6 +445,8 @@ fn page(root: &Path) -> Result<String, String> {
          message names no kind and the lagna is the point it is.\n\n",
         plural(plans.len(), "item")
     );
+
+    unsaid_strength(&mut out, root);
 
     let snapshot = plans
         .iter()

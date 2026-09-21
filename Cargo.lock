@@ -1656,6 +1656,7 @@ dependencies = [
  "teistro-core",
  "teistro-intl",
  "teistro-rules",
+ "teistro-strength",
 ]
 
 [[package]]
@@ -2226,6 +2227,7 @@ dependencies = [
  "teistro-scenario",
  "teistro-serial",
  "teistro-siddhanta",
+ "teistro-strength",
  "teistro-time",
  "teistro-vargas",
 ]

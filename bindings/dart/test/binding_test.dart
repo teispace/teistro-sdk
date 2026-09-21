@@ -733,12 +733,16 @@ void _engineTests() {
     expect(found(null), isNull, reason: 'no composer, no plans');
     final plans =
         found(
-          const PlanRequest(placements: true, readings: true),
+          const PlanRequest(placements: true, readings: true, strength: true),
           rules: const RuleRequest(shipped: [ShippedRules.nabhasas]),
         )!;
     final placements = plans['placements']! as List<Object?>;
     expect(placements, isNotEmpty, reason: 'every chart places its grahas');
     expect(plans['readings'], isA<List<Object?>>());
+    // The strengths read the Shadbala, which this request never asked for:
+    // a composer's own section is computed for it.
+    final weighed = plans['strength']! as List<Object?>;
+    expect(weighed, hasLength(7), reason: 'the seven grahas, Sun to Saturn');
 
     // Each item said by handing its params straight to the renderer, which
     // is the property the crossing exists for.
@@ -747,6 +751,7 @@ void _engineTests() {
         in [
           ...placements,
           ...plans['readings']! as List<Object?>,
+          ...weighed,
         ].cast<Map<String, Object?>>()) {
       final key = item['key']! as String;
       expect(key, startsWith('sdk.'));

@@ -553,14 +553,15 @@ pub struct TsChartRequest {
     /// `api: nullable example={"shipped":["nabhasas"]}`
     pub rules_json: *const c_char,
     /// Narrative plans to compose over every chart, as JSON: an object
-    /// naming the composers to run, `placements` and `readings`, each
-    /// false by default. The plans come back in the blob's `plans`
+    /// naming the composers to run, `placements`, `readings` and
+    /// `strength`, each false by default. The plans come back in the blob's `plans`
     /// section, holding no words at all — an item's params are the JSON
     /// `ts_intl_render` takes, so a binding says one by handing it
     /// straight back, in any locale and in as many as it likes
     /// (`03-design/plans-at-the-boundary.md`). `readings` says what the
-    /// rules answered, so it needs `rules_json` beside it. Null for none,
-    /// which costs nothing.
+    /// rules answered, so it needs `rules_json` beside it; the sections
+    /// the other composers read are computed for them, as the rules' are.
+    /// Null for none, which costs nothing.
     /// `api: nullable example={"placements":true}`
     pub interpret_json: *const c_char,
 }
@@ -2327,6 +2328,8 @@ struct Plans {
     placements: Option<Plan>,
     #[serde(skip_serializing_if = "Option::is_none")]
     readings: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    strength: Option<Plan>,
 }
 
 /// The charts a request asks for, the canonical JSON of what they answer by
@@ -2344,21 +2347,38 @@ fn read_charts(
         // request asking for them computes the states whether or not
         // `sections` named them — the rule `rules_json` already follows for
         // what its rules read.
-        let wanted = if asked.placements {
-            request.clone().with_state()
-        } else {
-            request.clone()
-        };
+        let wanted = sections_for(request.clone(), asked);
         let read = sdk.chart().readings(instants, &wanted)?;
         let plans = compose(sdk, &read.value, None, asked)?;
         return Ok((read, String::new(), plans));
     };
-    let read = sdk.chart().readings_with_rules(instants, request, set)?;
+    let read =
+        sdk.chart()
+            .readings_with_rules(instants, &sections_for(request.clone(), asked), set)?;
     let (documents, readings): (Vec<Document>, Vec<RulesReading<'_>>) =
         read.value.into_iter().unzip();
     let json = teistro_core::envelope::canonical_json(&readings);
     let plans = compose(sdk, &documents, Some(&readings), asked)?;
     Ok((Envelope::new(documents, read.provenance), json, plans))
+}
+
+/// The request with the sections the composers read, whether or not
+/// `sections` named them — the rule `rules_json` already follows for what
+/// its rules read (`03-design/plans-at-the-boundary.md` §2).
+///
+/// A composer asking for a section it was not given would be a dead end: the
+/// consumer asked for the plan, not for the knob underneath it.
+fn sections_for(request: ChartRequest, asked: PlanRequest) -> ChartRequest {
+    let request = if asked.placements {
+        request.with_state()
+    } else {
+        request
+    };
+    if asked.strength {
+        request.with_shadbala()
+    } else {
+        request
+    }
 }
 
 /// Every chart's plans as canonical JSON, empty when no composer was asked
@@ -2385,6 +2405,10 @@ fn compose(
                     .and_then(|readings| readings.get(at))
                     .map_or_else(Plan::default, |reading| sdk.interpret().readings(reading))
             }),
+            strength: asked
+                .strength
+                .then(|| sdk.interpret().strength(document))
+                .transpose()?,
         });
     }
     Ok(teistro_core::envelope::canonical_json(&plans))

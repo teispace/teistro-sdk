@@ -75,6 +75,13 @@ fn a_plan_through_the_facade_is_the_plan_the_composers_write() {
         .placements(document)
         .expect("the placements");
     assert_eq!(placements, teistro::interpret::placements(&inputs.chart));
+
+    // And the strengths, which this request has without asking: a rule of
+    // the set reads strength, so `with_rule_inputs` asked for the Shadbala
+    // on its behalf — which is the same rule the boundary follows for a
+    // composer's own section.
+    let weighed = sdk.interpret().strength(document).expect("the strengths");
+    assert_eq!(weighed.len(), 7);
 }
 
 /// A request that asks for a reading without rules is refused by name, and
@@ -96,6 +103,45 @@ fn a_reading_without_rules_is_refused_and_so_is_a_composer_that_is_not_one() {
 
     // Nothing asked for is not an error; it is nothing to do.
     assert!(!PlanRequest::from_json("{}").unwrap().asks_for_something());
+}
+
+/// The strengths are the third kind of composer: over a section rather than
+/// over the chart's placements or a rule's answer. It says what each graha
+/// weighs, strongest first, and says nothing of whether it is strong enough,
+/// because no locale carries a message for that.
+#[test]
+fn the_strengths_are_said_strongest_first_and_claim_nothing_more() {
+    let (sdk, document) = common::reading("{}", |request| {
+        request
+            .with_rule_inputs(shipped::nabhasas())
+            .with_shadbala()
+    });
+    let plan = sdk.interpret().strength(&document).expect("the strengths");
+    assert_eq!(plan.len(), 7, "the seven grahas, Sun to Saturn");
+
+    let shadbala = document.shadbala.as_ref().expect("the Shadbala asked for");
+    let mut weights: Vec<f64> = shadbala.grahas.iter().map(|graha| graha.rupas).collect();
+    weights.sort_by(|a, b| b.total_cmp(a));
+    let said: Vec<f64> = plan
+        .items
+        .iter()
+        .filter_map(|item| match item.params.get("score") {
+            Some(teistro::Value::Num(score)) => Some(*score),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(said, weights, "strongest first");
+
+    // The document carries `strong` and `required_rupas`; the plan does not.
+    let written = serde_json::to_string(&plan).expect("a plan writes");
+    assert!(!written.contains("strong"), "{written}");
+    assert!(!written.contains("required"), "{written}");
+
+    // A document without the section is refused by the knob's name, not
+    // answered with an empty plan.
+    let (without, unweighed) = common::reading("{}", |request| request);
+    let refused = without.interpret().strength(&unweighed).unwrap_err();
+    assert_eq!(refused.field(), Some("shadbala"));
 }
 
 /// A plan crosses as its own JSON, and what comes back is what went out:

@@ -285,7 +285,7 @@ def main() -> None:
             # Both composers, so the four agree on what every chart *says*
             # and not only on what it computes
             # (`03-design/plans-at-the-boundary.md`).
-            interpret={"placements": True, "readings": True},
+            interpret={"placements": True, "readings": True, "strength": True},
             aspects=True,
             points=True,
             houses=True,
@@ -416,6 +416,7 @@ def main() -> None:
             composed: list[tuple[str, list[PlanItem]]] = [
                 ("placements", plans["placements"]),
                 ("readings", plans["readings"]),
+                ("strength", plans["strength"]),
             ]
             for composer, items in composed:
                 put(f"chart-{i}-plan-{composer}-count", len(items))

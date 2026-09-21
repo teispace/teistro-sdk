@@ -2512,6 +2512,7 @@ class PlanRequest(TypedDict, total=False):
 
     placements: bool
     readings: bool
+    strength: bool
 
 
 class PlanItem(TypedDict):
@@ -2529,6 +2530,7 @@ class Plans(TypedDict, total=False):
 
     placements: List[PlanItem]
     readings: List[PlanItem]
+    strength: List[PlanItem]
 
 
 def _rules_json(rules: Optional[RuleRequest]) -> Optional[str]:

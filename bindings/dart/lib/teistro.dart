@@ -3417,7 +3417,11 @@ final class RuleRequest {
 /// rules a chart held answered.
 final class PlanRequest {
   /// A request for the composers named.
-  const PlanRequest({this.placements = false, this.readings = false});
+  const PlanRequest({
+    this.placements = false,
+    this.readings = false,
+    this.strength = false,
+  });
 
   /// Where each of the nine grahas stands and who shares a sign.
   final bool placements;
@@ -3425,9 +3429,13 @@ final class PlanRequest {
   /// What each rule the chart held says.
   final bool readings;
 
+  /// Each graha's Shadbala in rupas, the strongest first.
+  final bool strength;
+
   String get _json => jsonEncode(<String, Object?>{
     'placements': placements,
     'readings': readings,
+    'strength': strength,
   });
 }
 

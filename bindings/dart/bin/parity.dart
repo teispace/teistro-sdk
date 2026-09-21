@@ -304,7 +304,11 @@ void main() {
     rules: const RuleRequest(shipped: [ShippedRules.nabhasas], longevity: true),
     // Both composers, so the four agree on what every chart *says* and not
     // only on what it computes (`03-design/plans-at-the-boundary.md`).
-    interpret: const PlanRequest(placements: true, readings: true),
+    interpret: const PlanRequest(
+      placements: true,
+      readings: true,
+      strength: true,
+    ),
     aspects: true,
     points: true,
     houses: true,

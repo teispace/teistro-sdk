@@ -62,7 +62,11 @@ void main() {
     rules: const RuleRequest(
       shipped: [ShippedRules.nabhasas, ShippedRules.arishtas],
     ),
-    interpret: const PlanRequest(placements: true, readings: true),
+    interpret: const PlanRequest(
+      placements: true,
+      readings: true,
+      strength: true,
+    ),
   );
 
   final plans = chart.plans!;
@@ -70,14 +74,17 @@ void main() {
       (plans['placements']! as List<Object?>).cast<Map<String, Object?>>();
   final readings =
       (plans['readings']! as List<Object?>).cast<Map<String, Object?>>();
+  final weights =
+      (plans['strength']! as List<Object?>).cast<Map<String, Object?>>();
 
   print('BS 2042-09-17  00:20  Kathmandu');
   print(
     'plan     ${placements.length} placement items, '
-    '${readings.length} reading items',
+    '${readings.length} reading items, ${weights.length} strengths',
   );
   final keys = <String>{
-    for (final item in [...placements, ...readings]) item['key']! as String,
+    for (final item in [...placements, ...readings, ...weights])
+      item['key']! as String,
   };
   print('keys     ${keys.join(', ')}');
 
@@ -87,7 +94,7 @@ void main() {
   for (final locale in ['en-Latn', 'ne-Deva-NP']) {
     ctx.intl.locale = locale;
     print('\n$locale');
-    for (final item in placements) {
+    for (final item in [...placements, ...weights]) {
       final said = ctx.intl.render(
         item['key']! as String,
         item['params']! as Map<String, Object?>,
@@ -108,6 +115,12 @@ void main() {
     (item) => jsonEncode(item['params']).contains('LAGNA'),
   );
   print('\nthe lagna is in the placements: $lagna');
+  // The Shadbala says whether a graha reaches its required rupas; no locale
+  // says it, so the plan does not either.
+  final strong = weights.any(
+    (item) => jsonEncode(item['params']).contains('strong'),
+  );
+  print('a strength item claims "strong": $strong');
 
   try {
     ctx.chart.found(

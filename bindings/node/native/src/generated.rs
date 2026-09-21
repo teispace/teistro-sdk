@@ -1853,14 +1853,15 @@ pub struct ChartRequest {
     /// Example: {"shipped":["nabhasas"]}. May be null.
     pub rules_json: Option<String>,
     /// Narrative plans to compose over every chart, as JSON: an object
-    /// naming the composers to run, `placements` and `readings`, each
-    /// false by default. The plans come back in the blob's `plans`
+    /// naming the composers to run, `placements`, `readings` and
+    /// `strength`, each false by default. The plans come back in the blob's `plans`
     /// section, holding no words at all — an item's params are the JSON
     /// `ts_intl_render` takes, so a binding says one by handing it
     /// straight back, in any locale and in as many as it likes
     /// (`03-design/plans-at-the-boundary.md`). `readings` says what the
-    /// rules answered, so it needs `rules_json` beside it. Null for none,
-    /// which costs nothing.
+    /// rules answered, so it needs `rules_json` beside it; the sections
+    /// the other composers read are computed for them, as the rules' are.
+    /// Null for none, which costs nothing.
     /// Example: {"placements":true}. May be null.
     pub interpret_json: Option<String>,
 }

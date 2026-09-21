@@ -56,11 +56,16 @@ fn main() -> Result<(), Error> {
     // `with_state` is what makes it interpretable: a rule and a composer
     // read what a graha *is*, and a document without it is refused rather
     // than read as neutral.
-    let request = ChartRequest::at(place, resolved.zone.offset).with_state();
+    let request = ChartRequest::at(place, resolved.zone.offset)
+        .with_state()
+        .with_shadbala();
     let document = sdk.chart().reading(resolved.instant, &request)?.value;
 
     // ── The plan ───────────────────────────────────────────────────────
-    let plan: Plan = sdk.interpret().placements(&document)?;
+    // Two composers, one plan: a report concatenates what it wants to say
+    // in the order it wants to say it, which is what a flat plan is for.
+    let mut plan: Plan = sdk.interpret().placements(&document)?;
+    plan.items.extend(sdk.interpret().strength(&document)?);
     println!("plan  {} items, {} keys", plan.len(), plan.keys().len());
     for key in plan.keys() {
         println!("  {key}");

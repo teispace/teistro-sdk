@@ -1369,6 +1369,32 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A third composer, `strength`**, and the first over a *section*: each
+  graha's Shadbala in rupas, the strongest first
+  (`03-design/interpret-composers.md` §4). Like `placements` it adds no
+  message — `sdk.reason.strength.score` was already carried by both strict
+  locales and used by nothing — so it ships with no translation debt, which
+  is why it is the composer that follows the crossing. It reads
+  `Document.shadbala`, and the boundary computes that section for it exactly
+  as it computes what a rule set reads, so `interpret_json` gains
+  `"strength": true` and asking for a plan never means also knowing which
+  knob it needs.
+
+  **What it does not say is the point.** The Shadbala carries
+  `required_rupas` and `strong`, and no locale carries a message for either,
+  so the plan claims neither and the measured page counts the silence: the
+  corpus records a Shadbala for 71 of the 93 charts, 497 grahas, of which
+  341 reach the rupas their text requires. What the plan says instead is the
+  **ordering**, which needs no word at all. It also does not emit
+  `sdk.reason.strength.rank`, which renders an ordinal alone — `1st`,
+  `१लो` — because that is a fragment a consumer formats with and not a
+  sentence a plan says; a message in the pack is not automatically a plan
+  item.
+
+  **Numbers:** none move. 93 charts now compose to 8844 items, up from 8347,
+  and all 17 688 renderings still answer from the strict locale's own
+  message with no fallback and nothing to warn about.
+
 - A narrative plan crosses the C boundary
   (`03-design/plans-at-the-boundary.md`, building), so what a chart has to
   say is no longer Rust's alone. It rides on `ts_chart_found` as the rules

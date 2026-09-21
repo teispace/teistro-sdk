@@ -112,6 +112,28 @@ everything but the verse's sentence in Nepali. A machine translation there
 would be worse than the visible seam, and the seam closes when a locale
 carries a reading of that rule written by someone who reads the text.
 
+**`strength`** — what the chart weighs: each graha's Shadbala in rupas,
+the strongest first. **Built**, and it adds no message either:
+`sdk.reason.strength.score` was already carried by both strict locales and
+used by nothing, so the third composer ships with no translation debt for
+the same reason the first did.
+
+It is the first composer over a **section** rather than over the chart's
+placements or a rule's answer — it reads `Document.shadbala`, which a
+request asks for by name and which the boundary now computes for it, as it
+computes what a rule set reads. That is the shape the remaining composers
+take, so it is worth having one of them built.
+
+Two things it deliberately does not do. It does not say whether a graha
+**reaches** the rupas its text requires: the Shadbala carries
+`required_rupas` and `strong`, and no locale carries a message for either,
+so the plan is silent and the measured page counts the silence. And it does
+not emit `sdk.reason.strength.rank`, which renders an ordinal alone — `1st`,
+`१लो`. That is a **fragment a consumer formats with, not a sentence a plan
+says**, and the distinction is worth stating: a message in the pack is not
+automatically a plan item, and `KEYS` lists what the composers emit rather
+than everything the locale has.
+
 Every item names its rule in a `rule` slot the base messages declare and do
 not print, so a consumer can group a plan by rule and a locale that wants the
 key in its prose has it. The measured page's snapshot prints it as a prefix,
@@ -170,6 +192,13 @@ a test that a plan round-trips through JSON.
    The Nepali of `sdk.reading` awaits the native review the roadmap's exit
    criterion already requires for `ne` and `hi`; the terms are the texts'
    own (अल्पायु, मध्यायु, पूर्णायु), not invented prose.
+5. The plan at the boundary, so a composer added reaches four languages
+   rather than one. **Built**: `03-design/plans-at-the-boundary.md`.
+6. `strength`, the first composer over a section. **Built**: it adds no
+   message, reads `Document.shadbala`, and is measured over the corpus's
+   **recorded** Shadbalas rather than the SDK's computed ones — the numbers
+   themselves are `check-shadbala`'s business, and what this pass decides is
+   whether a plan made of them can be said.
 
 ## 8. What this design does not settle
 

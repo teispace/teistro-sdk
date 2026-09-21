@@ -260,7 +260,7 @@ impl ShadbalaRules {
 }
 
 /// A graha's Sthana bala by component, virupas.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct SthanaBala {
     /// From its distance to its debilitation point, 0 to 60.
@@ -284,7 +284,7 @@ impl SthanaBala {
 }
 
 /// A graha's Kaala bala by component, virupas.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct KaalaBala {
     /// From the hour's distance to midnight or noon, 0 to 60.

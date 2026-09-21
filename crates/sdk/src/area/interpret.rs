@@ -1,7 +1,7 @@
 //! `sdk.interpret`: what a reading says, as a narrative plan.
 
 use teistro_core::error::Error;
-use teistro_interpret::{Plan, placements, readings};
+use teistro_interpret::{Plan, placements, readings, strength};
 use teistro_serial::document::Document;
 
 use crate::context::Context;
@@ -52,6 +52,23 @@ impl<'a> InterpretArea<'a> {
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn placements(self, document: &Document) -> Result<Plan, Error> {
         Ok(placements(&RuleInputs::of(document)?.chart))
+    }
+
+    /// Each graha's Shadbala in rupas, the strongest first.
+    ///
+    /// # Errors
+    ///
+    /// A document without its Shadbala, naming the section to ask for: the
+    /// six strengths are computed only when a request asks, so a composer
+    /// says which knob was not turned rather than answering an empty plan.
+    pub fn strength(self, document: &Document) -> Result<Plan, Error> {
+        document.shadbala.as_ref().map(strength).ok_or_else(|| {
+            Error::invalid_arg(
+                "the document carries no Shadbala, which the strength composer says; ask for it \
+                 with `ChartRequest::with_shadbala`",
+            )
+            .with_field("shadbala")
+        })
     }
 
     /// What each rule the chart held says: its verse's statement, who took

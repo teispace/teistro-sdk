@@ -8,11 +8,11 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 8347 items, 89 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 8844 items, 95 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 1 169 365 bytes of JSON over the 93 charts, 12 573 bytes a
-chart, 17 425 bytes for the widest and 140 bytes an item. The verses'
+golden file: 1 222 617 bytes of JSON over the 93 charts, 13 146 bytes a
+chart, 18 176 bytes for the widest and 138 bytes an item. The verses'
 own cited words are **not** what weighs it — 112 962 bytes, 9% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
@@ -22,13 +22,13 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 18 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 8347 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 8347 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 8347 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 8347 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 20 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 8844 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 8844 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 8844 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 8844 disagree |
 
-Every one of the 16 694 renderings — 8347 in each of 2 strict locales
+Every one of the 17 688 renderings — 8844 in each of 2 strict locales
 — answered from the locale's own message with nothing to warn about.
 
 ## What the composers say
@@ -44,8 +44,9 @@ Every one of the 16 694 renderings — 8347 in each of 2 strict locales
 | `sdk.reason.grahaInBhava` | 837 |
 | `sdk.reason.grahaInRashi` | 837 |
 | `sdk.reason.occupants` | 204 |
+| `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 8347 items
+**The verse's own statement is not translated.** 2449 of the 8844 items
 — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -59,6 +60,14 @@ of these charts and is in none of the placement items, because those
 messages read a graha and the lagna is `point.LAGNA` — 93 items it
 does not say, one a chart. It does take part in a reading, where the
 message names no kind and the lagna is the point it is.
+
+And the **strengths** say what a graha weighs and not whether it is
+strong enough. The corpus records a Shadbala for 71 of these charts, 497
+grahas in all, and for each of them whether it reaches the rupas its
+text requires — 341 of 497 do. The plan says none of that: no locale
+carries a message for it, and a machine-translated "strong" would be the
+stub the project refuses. What it says instead is the ordering,
+strongest first, which needs no word at all.
 
 ## One chart, said
 
@@ -146,6 +155,13 @@ SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON: Jupiter takes part
 NEECHA_BHANGA_RAJA: Moon takes part
 NEECHA_BHANGA_DEBIL_LORD_KENDRA: Moon takes part
 NEECHA_BHANGA_EXALT_LORD_KENDRA: Moon takes part
+Sun scores 8.846 rupas
+Jupiter scores 7.887 rupas
+Venus scores 7.067 rupas
+Mars scores 6.848 rupas
+Moon scores 6.779 rupas
+Mercury scores 6.379 rupas
+Saturn scores 6.267 rupas
 ```
 
 **ne-Deva-NP**
@@ -228,4 +244,11 @@ SARAVALI_BHANGA_BENEFIC_IN_SIXTH_SEVENTH_OR_EIGHTH_FROM_MOON: गुरु स�
 NEECHA_BHANGA_RAJA: चन्द्र संलग्न छ
 NEECHA_BHANGA_DEBIL_LORD_KENDRA: चन्द्र संलग्न छ
 NEECHA_BHANGA_EXALT_LORD_KENDRA: चन्द्र संलग्न छ
+सूर्यले ८.८४६ रूपा पाउँछ
+गुरुले ७.८८७ रूपा पाउँछ
+शुक्रले ७.०६७ रूपा पाउँछ
+मंगलले ६.८४८ रूपा पाउँछ
+चन्द्रले ६.७७९ रूपा पाउँछ
+बुधले ६.३७९ रूपा पाउँछ
+शनिले ६.२६७ रूपा पाउँछ
 ```

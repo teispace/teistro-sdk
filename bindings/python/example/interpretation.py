@@ -66,15 +66,19 @@ def main() -> None:
             # sections they read are computed whether or not they are
             # asked for here.
             rules={"shipped": ["nabhasas", "arishtas"]},
-            interpret={"placements": True, "readings": True},
+            interpret={"placements": True, "readings": True, "strength": True},
         )
         plans = chart.plans
         assert plans is not None
         placements, readings = plans["placements"], plans["readings"]
+        weights = plans["strength"]
 
         print("BS 2042-09-17  00:20  Kathmandu")
-        print(f"plan     {len(placements)} placement items, {len(readings)} reading items")
-        keys = dict.fromkeys(item["key"] for item in [*placements, *readings])
+        print(
+            f"plan     {len(placements)} placement items, "
+            f"{len(readings)} reading items, {len(weights)} strengths"
+        )
+        keys = dict.fromkeys(item["key"] for item in [*placements, *readings, *weights])
         print(f"keys     {', '.join(keys)}")
 
         # ── The same plan, said twice ──────────────────────────────────
@@ -83,7 +87,7 @@ def main() -> None:
         for locale in ("en-Latn", "ne-Deva-NP"):
             ctx.intl.locale = locale
             print(f"\n{locale}")
-            for item in placements:
+            for item in [*placements, *weights]:
                 said = ctx.intl.render(item["key"], item["params"])
                 print(f"  {said.text}{'  (fallback)' if said.is_fallback else ''}")
             # A reading names its rule in a slot the message does not
@@ -95,6 +99,10 @@ def main() -> None:
         # ── What it does not say, and what it refuses ──────────────────
         lagna = any("LAGNA" in json.dumps(item["params"]) for item in placements)
         print(f"\nthe lagna is in the placements: {lagna}")
+        # The Shadbala says whether a graha reaches its required rupas; no
+        # locale says it, so the plan does not either.
+        strong = any("strong" in json.dumps(item["params"]) for item in weights)
+        print(f'a strength item claims "strong": {strong}')
 
         try:
             ctx.chart.found(

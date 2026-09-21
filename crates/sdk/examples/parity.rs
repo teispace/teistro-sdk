@@ -156,6 +156,12 @@ fn the_plans(
                         sdk.interpret().readings(reading)
                     }),
             ),
+            (
+                "strength",
+                sdk.interpret()
+                    .strength(document)
+                    .unwrap_or_else(|_| teistro::Plan::default()),
+            ),
         ];
         for (composer, plan) in composed {
             put(

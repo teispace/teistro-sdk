@@ -1771,7 +1771,8 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     .unwrap();
     let instants = [2_447_995.489_583_333_5, 2_451_545.0];
     let rules = CString::new(r#"{"shipped": ["nabhasas"]}"#).unwrap();
-    let plans = CString::new(r#"{"placements": true, "readings": true}"#).unwrap();
+    let plans =
+        CString::new(r#"{"placements": true, "readings": true, "strength": true}"#).unwrap();
     let request = sized(
         TsChartRequest {
             struct_size: 0,
@@ -1822,9 +1823,14 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         let placements = chart["placements"].as_array().unwrap();
         assert!(!placements.is_empty(), "every chart places its grahas");
         assert!(chart["readings"].is_array(), "asked for, so present");
+        // The strengths read the Shadbala, and `sections` never asked for
+        // it: a composer's own section is computed for it, as a rule's is.
+        let weighed = chart["strength"].as_array().unwrap();
+        assert_eq!(weighed.len(), 7, "the seven grahas, Sun to Saturn");
         for item in placements
             .iter()
             .chain(chart["readings"].as_array().unwrap())
+            .chain(weighed)
         {
             // A plan holds keys and slots, never a rendered word.
             let key = item["key"].as_str().unwrap();
@@ -1918,7 +1924,9 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     let record = ctx.last_error();
     assert_eq!(record.2.as_deref(), Some("interpret_json"), "{record:?}");
     assert!(
-        record.1.contains("placements") && record.1.contains("readings"),
+        record.1.contains("placements")
+            && record.1.contains("readings")
+            && record.1.contains("strength"),
         "{record:?}"
     );
 }
