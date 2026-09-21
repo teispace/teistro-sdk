@@ -175,6 +175,7 @@ mod document_schema;
 mod doshas;
 mod engine;
 mod ephemgen;
+mod exercised;
 mod facade;
 mod ffi;
 mod generated;
@@ -316,6 +317,7 @@ const PASSES: &[Pass] = &[
         interpretations::generate,
         interpretations::check_generated,
     ),
+    ("exercised", exercised::generate, exercised::check_generated),
     (
         "state-readings",
         state_readings::generate,

@@ -128,6 +128,8 @@ jobs:
         run: cargo xtask check-interpret
       - name: Rule readings page (every shipped rule's four-language reading, and both shortfalls listed by name rather than counted)
         run: cargo xtask check-interpretations
+      - name: Binding exercise page (which of each binding's own surface its tests and examples ever touch)
+        run: cargo xtask check-exercised
       - name: State readings page (what a chart is rather than what it triggers, and the two corpora that meet on one record)
         run: cargo xtask check-state-readings
       - name: Determinism lints (unordered iteration, ambient input, the unsafe inventory, exact classification, every knob read, every gate run and every composer reaching every binding)

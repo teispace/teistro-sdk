@@ -1369,6 +1369,28 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A page measuring what each binding's own surface has ever been used
+  for.** `entry-point-is-reachable` holds that every boundary function is
+  *placed* in a binding — exposed, declared, callable — and says nothing
+  about whether anyone has called it. That difference cost a whole corpus,
+  so `cargo xtask exercised` asks the other question of the layer no
+  generator owns: of the members each hand-written binding declares, how
+  many does anything in that binding's own tests or examples name?
+
+  **29 of 173 are named by nothing**, and they are listed rather than
+  counted: `dashaName`, `pack`, `range` and `unpack` in Node; `callJson`,
+  `standing` and `twelve` in Dart; twenty-two in Python. A member that
+  stops being exercised changes the page, and one that starts changes it
+  too.
+
+  A member counts as exercised when its name appears after a dot anywhere
+  in the tests or examples, so a property read counts as much as a call
+  and the count errs towards *exercised* — a member the page names is
+  therefore one nothing touches. Getting the three extractors honest took
+  three passes: a Dart getter's body, a local helper inside a method and a
+  multi-line call all read as declarations until the rule required a
+  member's own indent and a return type.
+
 - **Every binding can read a reading now. None could before.** No binding
   test or example had ever called `loadPack` — the function was generated
   into all three and executed from none — so nothing had shown that the
