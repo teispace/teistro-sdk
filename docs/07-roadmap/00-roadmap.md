@@ -590,6 +590,16 @@ order of work of which **most is now built**, checked item by item on
   (`03-design/rules-at-the-boundary.md`), and a narrative plan crosses
   beside them (`03-design/plans-at-the-boundary.md`).
 
+**The rule readings were on this list as a sourcing question and are
+not one.** They were filed with the arishta corpus as waiting on
+translations not on this machine; the baseline engine's own corpus was
+here all along. 649 readings, complete in Sanskrit, Nepali, English and
+Hindi, cover 639 of the 657 shipped rules and are migrated, gated and
+measured (`03-design/interpretation-records-measured.md`); `hi-Deva-IN`
+and `sa-Deva` carry a reading for almost every rule where they carried no
+message at all. What is left of the list below is still a sourcing
+question.
+
 **What is left of it needs the source translations to hand, and is
 therefore a sourcing question rather than a coding one.** The rest of the
 arishta corpus is thirty-six of about 120 rules built, over BPHS chs. 9
@@ -613,7 +623,10 @@ back (eight so far, and `interpret-measured.md` counts what is left); `render-sv
 renderer above the core, turning Phase 4's geometry plus a theme record
 into a deterministic SVG string in every binding (ADR-0026);
 `teistro-intl migrate baseline` bringing the four-language name tables
-and interpretation records into `i18n/`; Rust crates published.
+into `i18n/`, and `migrate readings` the interpretation records, which go
+into a root of their own and are **loaded rather than embedded** because
+`i18n/` is compiled into every artefact (`03-design/interpretation-records.md`);
+Rust crates published.
 
 Exit: 624 rules evaluate identically to the baseline engine on the regression set with
 positive and negative charts per rule; composed text matches the baseline engine byte
