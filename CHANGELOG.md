@@ -1377,19 +1377,28 @@ the astronomical numbers do not move. Nothing else computes yet.
   generator owns: of the members each hand-written binding declares, how
   many does anything in that binding's own tests or examples name?
 
-  **29 of 173 are named by nothing**, and they are listed rather than
-  counted: `dashaName`, `pack`, `range` and `unpack` in Node; `callJson`,
-  `standing` and `twelve` in Dart; twenty-two in Python. A member that
-  stops being exercised changes the page, and one that starts changes it
-  too.
+  **25 of 171 are named by nothing**, and they are listed rather than
+  counted: `dashaName` and `range` in Node, `callJson` in Dart, and
+  twenty-two in Python. A member that stops being exercised changes the
+  page, and one that starts changes it too — the Node frame area's `pack`
+  and `unpack` came off the list in this change, because the test that
+  round-trips a frame through the free functions now does it through the
+  area a consumer with a context actually reaches for.
 
   A member counts as exercised when its name appears after a dot anywhere
   in the tests or examples, so a property read counts as much as a call
   and the count errs towards *exercised* — a member the page names is
-  therefore one nothing touches. Getting the three extractors honest took
-  three passes: a Dart getter's body, a local helper inside a method and a
-  multi-line call all read as declarations until the rule required a
-  member's own indent and a return type.
+  therefore one nothing touches.
+
+  Getting the three extractors honest took five passes, and each correction
+  is in the code: a Dart getter's body (`Foo get x => jsonDecode(y)`), a
+  local helper inside a method, and a multi-line call all read as
+  declarations until the rule required a **member's own indent** and a
+  **return type**; a local function inside a *top-level* function needed
+  the enclosing **class** tracked; and tracking it by column zero shut
+  every class at its first blank line, which the page's own claim caught by
+  reporting a layer with no members at all. A measurement with noise in it
+  is worse than none, because the list is the thing a reader acts on.
 
 - **Every binding can read a reading now. None could before.** No binding
   test or example had ever called `loadPack` — the function was generated

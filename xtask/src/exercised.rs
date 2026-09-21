@@ -43,8 +43,9 @@ struct Layer {
     binding: &'static str,
     /// The hand-written surface: the file a generator does not write.
     surface: &'static str,
-    /// How a member is declared there.
-    declares: fn(&str) -> Option<&str>,
+    /// Every member the surface declares, read from the whole file
+    /// because a language may need to know what encloses a line.
+    declares: fn(&str) -> BTreeSet<String>,
     /// The directories whose files may name a member, and their extension.
     callers: [&'static str; 2],
     /// The extension a caller's file has.
@@ -62,10 +63,51 @@ fn at_member_indent(line: &str) -> Option<&str> {
     (!rest.starts_with(' ')).then_some(rest)
 }
 
-/// A TypeScript declaration: two spaces, the member, an open bracket.
-fn typescript_member(line: &str) -> Option<&str> {
-    let (name, _) = at_member_indent(line)?.split_once('(')?;
-    identifier(name)
+/// Every member a TypeScript declaration file declares: two spaces, the
+/// member, an open bracket. Everything at that indent in a `.d.ts` is
+/// inside a class or an interface, so no enclosing scope is tracked.
+fn typescript_members(text: &str) -> BTreeSet<String> {
+    text.lines()
+        .filter_map(|line| {
+            let (name, _) = at_member_indent(line)?.split_once('(')?;
+            identifier(name).map(str::to_owned)
+        })
+        .collect()
+}
+
+/// Every member the Dart layer declares.
+///
+/// A member's indent is two spaces, but so is a **local function inside a
+/// top-level function** — `List<int> twelve(...)` is declared that way
+/// inside `_decodeAshtakavargas` and is nobody's member. So this follows
+/// the enclosing scope: a class opens at column zero and closes at a `}`
+/// there, and only what falls between counts.
+fn dart_members(text: &str) -> BTreeSet<String> {
+    let mut found = BTreeSet::new();
+    let mut in_class = false;
+    for line in text.lines() {
+        // A blank line is inside whatever it is inside: it opens nothing
+        // and closes nothing, and treating it as column zero shut every
+        // class the moment its first paragraph break arrived.
+        if line.trim().is_empty() {
+            continue;
+        }
+        if !line.starts_with(char::is_whitespace) {
+            in_class = line.contains("class ");
+            continue;
+        }
+        if in_class && let Some(member) = dart_member(line) {
+            found.insert(member.to_owned());
+        }
+    }
+    found
+}
+
+/// Every method the Python layer declares.
+fn python_members(text: &str) -> BTreeSet<String> {
+    text.lines()
+        .filter_map(|line| python_member(line).map(str::to_owned))
+        .collect()
 }
 
 /// A Dart declaration: two spaces, a return type, the member, and a body
@@ -131,21 +173,21 @@ const LAYERS: [Layer; 3] = [
     Layer {
         binding: "Node",
         surface: "bindings/node/lib/index.d.ts",
-        declares: typescript_member,
+        declares: typescript_members,
         callers: ["bindings/node/test", "bindings/node/example"],
         extension: "mjs",
     },
     Layer {
         binding: "Dart",
         surface: "bindings/dart/lib/teistro.dart",
-        declares: dart_member,
+        declares: dart_members,
         callers: ["bindings/dart/test", "bindings/dart/example"],
         extension: "dart",
     },
     Layer {
         binding: "Python",
         surface: "bindings/python/teistro/__init__.py",
-        declares: python_member,
+        declares: python_members,
         callers: ["bindings/python/tests", "bindings/python/example"],
         extension: "py",
     },
@@ -155,10 +197,7 @@ const LAYERS: [Layer; 3] = [
 fn declared(root: &Path, layer: &Layer) -> Result<BTreeSet<String>, String> {
     let text = std::fs::read_to_string(root.join(layer.surface))
         .map_err(|why| format!("{}: {why}", layer.surface))?;
-    Ok(text
-        .lines()
-        .filter_map(|line| (layer.declares)(line).map(str::to_owned))
-        .collect())
+    Ok((layer.declares)(&text))
 }
 
 /// Everything the binding's tests and examples say, as one text.

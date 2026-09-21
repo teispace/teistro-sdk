@@ -223,6 +223,10 @@ test('positions come back in the frame asked for, decoded on first use', () => {
   assert.equal(frame.sidereal, false);
   assert.equal(frame.ayanamsha, undefined, 'a tropical frame carries none');
   assert.deepEqual(unpackFrame(packFrame(frame)), frame, 'the packing round-trips');
+  // And through the area a consumer with a context reaches for, which is
+  // a different path to the same answer.
+  assert.equal(ctx.frame.pack(frame), packFrame(frame));
+  assert.deepEqual(ctx.frame.unpack(ctx.frame.pack(frame)), frame);
 
   const positions = ctx.positions({
     instants: [2451545.0, 2451546.0],

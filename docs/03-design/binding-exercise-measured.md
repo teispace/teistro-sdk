@@ -20,16 +20,16 @@ therefore one nothing touches.
 
 | binding | declares | exercised | untouched |
 |---|---:|---:|---:|
-| Node | 32 | 28 | 4 |
-| Dart | 24 | 21 | 3 |
+| Node | 32 | 30 | 2 |
+| Dart | 22 | 21 | 1 |
 | Python | 117 | 95 | 22 |
 
-**29 members nothing names**, of 173 members the three layers declare.
+**25 members nothing names**, of 171 members the three layers declare.
 They are listed rather than counted, because a member that stops being
 exercised has to change this page and one that starts has to as well.
 
-- **Node**: `dashaName`, `pack`, `range`, `unpack`
-- **Dart**: `callJson`, `standing`, `twelve`
+- **Node**: `dashaName`, `range`
+- **Dart**: `callJson`
 - **Python**: `ayana`, `ayanamsha_offset_deg`, `brahma`, `call_json`, `canonical`, `chalit`, `day_elapsed`, `day_lagna_deg`, `day_part`, `disha_shool`, `keeps_its_sign`, `last_error`, `manifest_json`, `moon_signs`, `muhurta_yogas`, `pack`, `panchaka`, `place`, `range`, `sun_signs`, `unpack`, `window`
 
 | proposed rule | verdict | measured |
