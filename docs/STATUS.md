@@ -4,16 +4,22 @@ The living tracker. Read this first in any session; update it before ending
 one. It answers four questions: what is done, what is being done now, what
 comes next, and what happened in each session.
 
-**Project phase:** Phase 1, Foundation, met its exit criteria on
-2026-09-06, and Phase 2, the astronomy layer, met its own on 2026-09-05.
+**Project phase:** the work is in **Phase 6**, rules and interpretation.
+Phase 0 exited 2026-09-05, Phase 1, Foundation, on 2026-09-06 and Phase 2,
+the astronomy layer, on 2026-09-05; Phase 3, the built-in ephemeris, has
+nothing left in it (item 3 below); Phase 4's chart core and Phase 5's
+strength and dashas are built and gated, module by module, each against
+the corpus. **This line said "the next phases are 3 and 4" until
+2026-09-22**, some six weeks after both were built, which is what a
+sentence written once and believed after looks like — and why every number
+under it is a generated page's rather than a claim's.
+
 Phase 1's every criterion is held by a gate rather than by a claim
 (`07-roadmap/00-roadmap.md`): one scenario through every binding value by
 value, 100,236 values identical across two architectures, the conformance
 kit against the Teimeris adapter, a swapped latitude and longitude
 refused in all three languages, and all four packages installed into
-throwaway projects and run before they can be published. The next phases
-are 3, the built-in ephemeris, and 4, the chart layer, which may run
-beside each other.
+throwaway projects and run before they can be published.
 
 Phase 2 met its exit criteria
 on 2026-09-05: the accuracy document (`05-testing/ACCURACY.md`,
@@ -2326,7 +2332,12 @@ provider's DUT1).
    questions into certain answers by finding a necessary condition where
    no sufficient one exists.
 
-4. What is built, and what runs it:
+4. What is built, and what runs it. **Eight crates were missing from this
+   table until 2026-09-22** — `rules`, `interpret`, `dasha`, `strength`,
+   `sdk`, `geometry`, `render-svg` and `ephemeris-builtin`, which is most
+   of what Phases 4 to 6 produced. A hand-kept list beside a workspace
+   that grows is the same rot as the gate list above it; `ls crates/` is
+   the authority.
 
    | crate | what it is |
    |---|---|
@@ -2346,6 +2357,14 @@ provider's DUT1).
    | `chart` | **the chart foundation** (`day`, `bhava`, `zodiac`, `foundation`), 37 tests |
    | `intl` | the locale engine, the CLI, the packs |
    | `idl`, `ffi` | the API description and the one C ABI |
+   | `ephemeris-builtin` | the built-in analytic ephemeris at three tiers: the published planetary and lunar series, so a chart computes with no data files and no network |
+   | `geometry` | layouts as cited data rows, and a chart placed in one |
+   | `render-svg` | the optional first-party renderer: a placed chart, its labels and a theme to a byte-stable SVG |
+   | `strength` | the Ashtakavarga, the Vimshopaka and the Shadbala |
+   | `dasha` | systems as rows over a kernel, the balance at birth, and the period tree read without materialising it |
+   | `rules` | the rules kernel: a condition language over a chart, evaluated to presences with their participants, with cancellation, severity and the longevity readings |
+   | `interpret` | **the composers**: a chart's answers as a narrative plan of message keys and slots, ten of them |
+   | `sdk` | **the Rust consumer surface**: one context over the areas, with a reason attached to every number |
    | `ephemeris-kit` | the provider conformance kit |
    | `scenario` | the fixed scenario the hash matrix and the benchmarks share |
    | `test-allocator` | the counting allocator |
