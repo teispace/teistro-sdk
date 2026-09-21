@@ -150,10 +150,17 @@ refused both ways by the gate.
 
 | the engine's category | this catalogue | the form |
 |---|---|---|
-| the 21 above | the kind of the same subject | the category's own name, camel-cased |
+| the 21 above | the kind of the same subject | a written word: `phala` for most, `namakarana`, `ishtaDevata`, `direction`, `colour`, `mantra`, `dashaPhala`, `dashaActivation` |
 | `dosha-timing` | `rule.<KEY>`, the open kind | `timing` |
 | `lagna-rashi` | `rashi.<SIGN>`, by twelve written aliases | `lagnaPhala` |
-| `graha-bhava` | `graha_bhava.<GRAHA>_IN_<house>` | `name`, `prose`, facets |
+| `graha-bhava` | `graha_bhava.<GRAHA>_IN_<house>` | a record of its own: `name`, `prose`, facets |
+
+**The form is written beside the category and not derived from it**, for
+the same reason the keys are. A reading's passage and its facets take the
+same word with a suffix (`phala`, `phalaProse`, `phalaGeneral`), so a
+category's whole contribution carries its name and two of them cannot
+collide on one record; and an empty form means the reading **is** the
+record, which is what a subject the SDK does not otherwise name needs.
 
 `graha_bhava` is the catalogue's **second open kind**. It is open for the
 same reason `rule` is — the catalogue holds the kind and not the members —
@@ -205,6 +212,11 @@ engine:
   to be exhaustive and must fail in both directions;
 - the keys that met a record already standing, and what each kept, which
   is the overlay in §3 measured rather than asserted;
+- **every reading a composer can say, rendered through the message that
+  says it**, in each strict locale, holding that none falls back and none
+  warns — which is the half a pack that merely loads cannot prove; and the
+  readings no composer says yet, by the category they came from, because a
+  reading nothing says is work that has not reached a reader;
 - the bytes each locale's source and pack take, beside the rule readings',
   because the two are loaded together;
 - that every locale's pack loads into an engine that never read the source
