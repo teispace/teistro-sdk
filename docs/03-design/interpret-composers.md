@@ -134,6 +134,40 @@ says**, and the distinction is worth stating: a message in the pack is not
 automatically a plan item, and `KEYS` lists what the composers emit rather
 than everything the locale has.
 
+**`houses`** — whose each of the twelve bhavas is: for each house, the lord
+of the sign its **middle** falls in (`sdk.reason.lordship`). **Built**, the
+second composer over a section — it reads `Document.houses`, which
+`ChartRequest::with_houses` asks for — and the third in a row that adds no
+message: `sdk.reason.lordship` was already carried by both strict locales,
+hand-translated, and read by nothing.
+
+Lordship is the relation the rest of the tradition is written in — a house is
+read through its lord, and no other composer says who that is. `placements`
+says where a graha *stands*; nothing until now said what it *rules*, and the
+two are different facts about the same graha.
+
+It says the lord and nothing else, which is a larger silence than the other
+composers carry and is counted rather than hidden. The bhava's own sign has
+no message (`grahaInRashi` takes a graha, not a house); its class — kendra,
+trikona, dusthana, upachaya — has none; the **chalit shift**, a body that
+falls in one house under the placement system and another under the chalit,
+has none, though `Houses` records it body by body; and neither the house
+system nor a degenerate chart's `Outcome` has one. Each is a sentence a
+locale would have to be given before a composer could say it.
+
+One thing the corpus cannot check here, and the checking of it was a guess
+the corpus corrected. `Bhava::sign` is the sign the house's **middle** falls
+in, because under an unequal division a house may begin in one sign and be
+centred in another. This page first claimed the corpus had no unequal
+division to try that on; it has twenty systems' cusps for every chart and
+**eight charts selected under Placidus**, two of them degenerate. What is
+true is narrower and worth stating as such: none of those eight is in the
+yogas corpus this composer is measured over, so all 75 charts the pass
+reaches are whole-sign, where cusp and middle coincide. The distinction is
+the houses service's to hold — deriving a madhya from a recorded cusp would
+be this pass re-implementing the rule it is measuring — and the measured
+page says how many charts it was measured on rather than implying more.
+
 Every item names its rule in a `rule` slot the base messages declare and do
 not print, so a consumer can group a plan by rule and a locale that wants the
 key in its prose has it. The measured page's snapshot prints it as a prefix,
@@ -198,6 +232,13 @@ a test that a plan round-trips through JSON.
    message, reads `Document.shadbala`, and is measured over the corpus's
    **recorded** Shadbalas rather than the SDK's computed ones — the numbers
    themselves are `check-shadbala`'s business, and what this pass decides is
+   whether a plan made of them can be said.
+7. `houses`, the second composer over a section and the first to say what a
+   graha **rules** rather than where it stands. **Built**: it adds no message
+   either, and is measured over the corpus's **recorded** cusp signs
+   (`baseline/charts`' `houses.selected.cusp_sign_index`) for the same reason
+   `strength` is measured over its recorded rupas — whether those signs are
+   right is the houses service's business, and what this pass decides is
    whether a plan made of them can be said.
 
 ## 8. What this design does not settle

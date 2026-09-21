@@ -14,7 +14,7 @@ not that they agree with a literal written here.
 from __future__ import annotations
 
 import sys
-from typing import Any
+from typing import Any, cast
 
 import json
 
@@ -282,10 +282,15 @@ def main() -> None:
             ],
             theme="dark",
             rules={"shipped": ["nabhasas"], "longevity": True},
-            # Both composers, so the four agree on what every chart *says*
+            # Every composer, so the four agree on what every chart *says*
             # and not only on what it computes
             # (`03-design/plans-at-the-boundary.md`).
-            interpret={"placements": True, "readings": True, "strength": True},
+            interpret={
+                "placements": True,
+                "readings": True,
+                "strength": True,
+                "houses": True,
+            },
             aspects=True,
             points=True,
             houses=True,
@@ -413,10 +418,15 @@ def main() -> None:
             # composers, the params shape and the locale engine at once.
             plans = chart.plans
             assert plans is not None
+            # Over whatever the request asked for, not a list written
+            # here: a composer added is a key in `plans`, and a runner
+            # naming them itself goes quietly out of step with the other
+            # three — which is what this one did when `houses` landed.
+            # `Plans` is a TypedDict, so `.items()` hands back `object`
+            # and the runtime shape is restored here rather than guessed.
             composed: list[tuple[str, list[PlanItem]]] = [
-                ("placements", plans["placements"]),
-                ("readings", plans["readings"]),
-                ("strength", plans["strength"]),
+                (composer, cast("list[PlanItem]", items))
+                for composer, items in plans.items()
             ]
             for composer, items in composed:
                 put(f"chart-{i}-plan-{composer}-count", len(items))

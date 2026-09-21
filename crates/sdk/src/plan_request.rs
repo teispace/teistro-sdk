@@ -26,6 +26,17 @@ use teistro_core::error::Error;
 /// ```
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
+// **Why four bools rather than a bit set.** `struct_excessive_bools` asks
+// whether a bit set was meant; this design answered that before the fourth
+// composer arrived. A composer will want options of its own — which rules to
+// read, which house — and a bit set has nowhere to put them, while `sections`
+// is a bit set because its members never will
+// (`03-design/plans-at-the-boundary.md` §3). The members are also the JSON
+// the boundary reads, one name a composer, so they are named in two senses.
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "a named member per composer, decided in plans-at-the-boundary.md §3"
+)]
 pub struct PlanRequest {
     /// Where each of the nine grahas stands and who shares a sign.
     pub placements: bool,
@@ -35,6 +46,9 @@ pub struct PlanRequest {
     /// Each graha's Shadbala in rupas, the strongest first. It reads the
     /// Shadbala section, which the request computes for it.
     pub strength: bool,
+    /// The lord of each of the twelve bhavas. It reads the houses section,
+    /// which the request computes for it.
+    pub houses: bool,
 }
 
 impl PlanRequest {
@@ -59,11 +73,18 @@ impl PlanRequest {
         self
     }
 
+    /// A request for the houses' lords.
+    #[must_use]
+    pub const fn with_houses(mut self) -> PlanRequest {
+        self.houses = true;
+        self
+    }
+
     /// Whether any composer was asked for, so a caller can skip the work
     /// rather than compose an empty answer.
     #[must_use]
     pub const fn asks_for_something(self) -> bool {
-        self.placements || self.readings || self.strength
+        self.placements || self.readings || self.strength || self.houses
     }
 
     /// A request read from JSON.
@@ -77,7 +98,7 @@ impl PlanRequest {
     pub fn from_json(text: &str) -> Result<PlanRequest, Error> {
         serde_json::from_str(text).map_err(|err| {
             Error::invalid_arg(format!("the plan request does not read: {err}"))
-                .with_hint("an object of `placements`, `readings` and `strength`")
+                .with_hint("an object of `placements`, `readings`, `strength` and `houses`")
         })
     }
 

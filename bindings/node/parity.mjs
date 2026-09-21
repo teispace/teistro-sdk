@@ -261,9 +261,9 @@ const charts = geo.chart.foundMany({
   // The text-written rules and the longevity readings, so the four agree on
   // what every chart answers by rule.
   rules: { shipped: ['nabhasas'], longevity: true },
-  // Both composers, so the four agree on what every chart *says* and not
+  // Every composer, so the four agree on what every chart *says* and not
   // only on what it computes (`03-design/plans-at-the-boundary.md`).
-  interpret: { placements: true, readings: true, strength: true },
+  interpret: { placements: true, readings: true, strength: true, houses: true },
   aspects: true,
   points: true,
   houses: true,

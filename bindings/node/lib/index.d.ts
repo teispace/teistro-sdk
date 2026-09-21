@@ -762,6 +762,8 @@ export interface PlanRequest {
   readonly readings?: boolean;
   /** Each graha's Shadbala in rupas, the strongest first. */
   readonly strength?: boolean;
+  /** The lord of each of the twelve bhavas, first house first. */
+  readonly houses?: boolean;
 }
 
 /**
@@ -784,6 +786,8 @@ export interface Plans {
   readonly readings?: readonly PlanItem[];
   /** What each graha weighs; absent unless `strength` asked for it. */
   readonly strength?: readonly PlanItem[];
+  /** Who rules each bhava; absent unless `houses` asked for it. */
+  readonly houses?: readonly PlanItem[];
 }
 
 /**

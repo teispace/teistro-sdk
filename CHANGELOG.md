@@ -1369,6 +1369,39 @@ the astronomical numbers do not move. Nothing else computes yet.
   manifest together, so only a crate that gates on the feature is held to
   it and one that starts gating cannot forward without it.
 
+- **A fourth composer, `houses`**, and the first to say what a graha
+  *rules* rather than where it stands: the lord of each of the twelve
+  bhavas, the first house first (`03-design/interpret-composers.md` §4).
+  Lordship is the relation the rest of the tradition is read through, and no
+  other composer said it — `placements` says where a graha stands, and the
+  two are different facts about the same graha. Like `placements` and
+  `strength` it adds **no message**: `sdk.reason.lordship` was already
+  carried by both strict locales, translated by hand, and read by nothing.
+  It reads `Document.houses`, which the boundary computes for it, so
+  `interpret_json` gains `"houses": true` and `sdk.interpret().houses(…)`
+  answers in Rust.
+
+  **It carries the largest silence of the four, and the page counts it.** A
+  bhava also knows the sign it falls in, which third of the wheel it stands
+  in and whether it is a trine, a house of difficulty or one that grows
+  better with time; a chart knows which bodies fall in a different house
+  under the chalit, and whether the division came back degenerate. No locale
+  carries a message for any of it, so the plan claims none of it: the corpus
+  records a division for 75 of the 93 charts and, for those, 135 of 675
+  placings shift under the chalit — and the plan says not one of them.
+
+  It also corrected this design's own page. The page claimed the corpus had
+  no unequal division to try the "the bhava's sign is its *middle*'s sign"
+  branch on; the conformance repository records twenty systems' cusps per
+  chart and eight charts selected under Placidus, two of them degenerate.
+  What is true is narrower: none of those eight is in the yogas corpus the
+  composer is measured over, so all 75 charts it reaches are whole-sign,
+  where cusp and middle coincide. The page now says that instead.
+
+  **Numbers:** none move. 93 charts now compose to 9744 items, up from 8844,
+  and all 19 488 renderings still answer from the strict locale's own
+  message with no fallback and nothing to warn about.
+
 - **A third composer, `strength`**, and the first over a *section*: each
   graha's Shadbala in rupas, the strongest first
   (`03-design/interpret-composers.md` §4). Like `placements` it adds no

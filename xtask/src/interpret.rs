@@ -17,8 +17,10 @@ use std::collections::BTreeMap;
 use std::fmt::Write as _;
 use std::path::Path;
 
-use teistro_core::catalogue::Graha;
-use teistro_interpret::{KEYS, Plan, placements, readings, strength};
+use teistro_core::catalogue::{Graha, Rashi};
+use teistro_houses::chart::Bhava;
+use teistro_houses::classify::{Quadrant, lord_of};
+use teistro_interpret::{KEYS, Plan, houses, placements, readings, strength};
 use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::{Intl, Rendered};
 use teistro_rules::{Evaluator, Readings as RuleReadings, Rule, RuleChart, shipped};
@@ -34,6 +36,11 @@ const ROOT: &str = "fixtures/baseline/yogas";
 /// whether it can say what it is given, and `check-shadbala` is where the
 /// numbers themselves are held.
 const WEIGHTS: &str = "fixtures/baseline/shadbala";
+/// The recorded charts the houses composer is measured over. Their
+/// `houses.selected` section records which sign each of the twelve cusps
+/// falls in; the lord of a sign is the SDK's own table, as the lord on a
+/// `Bhava` always is.
+const DIVISIONS: &str = "fixtures/baseline";
 /// The chart the page ends with, rendered whole: the corpus's first.
 const SNAPSHOT: &str = "c001-kathmandu-1990-04-14";
 
@@ -112,6 +119,84 @@ fn weights(root: &Path) -> BTreeMap<String, Weighed> {
     out
 }
 
+/// What the corpus records of a chart's division, as the houses composer
+/// needs it and as the page needs to say what it left out: the twelve
+/// bhavas, the system they were divided under, whether the division came
+/// back degenerate, and how many bodies fall in a different house under the
+/// chalit — the last three being what **no locale can say**.
+struct Divided {
+    bhavas: [Bhava; 12],
+    system: String,
+    degenerate: bool,
+    placed: usize,
+    shifted: usize,
+}
+
+/// Every chart whose division the corpus records, by its file stem.
+///
+/// The bhavas are built from the recorded `cusp_sign_index` and nothing
+/// else: the sign is the corpus's, the lord is the SDK's table, and the
+/// fields the composer does not read keep the record's own zeroes, so a
+/// field added to `Bhava` does not reach this pass with a number it would
+/// have to invent.
+fn divisions(root: &Path) -> BTreeMap<String, Divided> {
+    let mut out = BTreeMap::new();
+    for dir in ["charts", "variants"] {
+        let directory = root.join(DIVISIONS).join(dir);
+        let Ok(entries) = std::fs::read_dir(&directory) else {
+            continue;
+        };
+        for path in entries.flatten().map(|entry| entry.path()) {
+            if path.extension().is_none_or(|ext| ext != "json") {
+                continue;
+            }
+            let Ok(file) = read_json(&path) else { continue };
+            let Some(name) = path.file_stem().map(|s| s.to_string_lossy().into_owned()) else {
+                continue;
+            };
+            let selected = &file["houses"]["selected"];
+            let Some(signs) = selected["cusp_sign_index"].as_array() else {
+                continue;
+            };
+            let mut bhavas = Vec::with_capacity(12);
+            for (index, sign) in signs.iter().enumerate() {
+                let Some(sign) = sign
+                    .as_u64()
+                    .and_then(|at| usize::try_from(at).ok())
+                    .and_then(|at| Rashi::ALL.get(at).copied())
+                else {
+                    break;
+                };
+                bhavas.push(Bhava {
+                    number: u8::try_from(index + 1).unwrap_or(1),
+                    sign,
+                    lord: lord_of(sign),
+                    madhya_deg: 0.0,
+                    sandhi_deg: 0.0,
+                    quadrant: Quadrant::Kendra,
+                });
+            }
+            let Ok(bhavas): Result<[Bhava; 12], _> = bhavas.try_into() else {
+                continue;
+            };
+            let chalit = &file["houses"]["bhava_chalit"];
+            out.insert(
+                name,
+                Divided {
+                    bhavas,
+                    system: selected["system"].as_str().unwrap_or("unknown").to_owned(),
+                    degenerate: selected["is_degenerate"].as_bool().unwrap_or(false),
+                    placed: chalit["planet_houses"]
+                        .as_object()
+                        .map_or(0, serde_json::Map::len),
+                    shifted: chalit["shifted"].as_array().map_or(0, Vec::len),
+                },
+            );
+        }
+    }
+    out
+}
+
 /// The rules the readings composer is measured over: every set the kernel
 /// ships whose rules say something in words, a span, a class, a severity or
 /// a cancellation.
@@ -131,6 +216,7 @@ fn rules() -> Vec<Rule> {
 
 fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
     let weighed = weights(root);
+    let divided = divisions(root);
     let mut out = Vec::new();
     for dir in ["charts", "variants"] {
         let directory = root.join(ROOT).join(dir);
@@ -163,6 +249,9 @@ fn composed(root: &Path, rules: &[Rule]) -> Result<Vec<Composed>, String> {
                 .extend(readings(held.iter().map(|(rule, result)| (*rule, result))));
             if let Some(weighed) = weighed.get(&name) {
                 plan.items.extend(strength(&weighed.reading));
+            }
+            if let Some(divided) = divided.get(&name) {
+                plan.items.extend(houses(&divided.bhavas));
             }
             out.push(Composed { name, plan });
         }
@@ -210,8 +299,8 @@ struct Said {
 }
 
 /// Renders every item in one locale, keeping what went wrong rather than a
-/// count alone, so the page names it ([[count-then-list]]: the lists are
-/// short or the gate is red).
+/// count alone, so the page names it: either the lists are short enough to
+/// print or the gate is red, and a bare count would hide which.
 fn say(intl: &mut Intl, tag: &str, plans: &[Composed]) -> Result<Said, String> {
     intl.set_locale(tag).map_err(|err| err.to_string())?;
     let mut said = Said::default();
@@ -288,6 +377,43 @@ fn costs(out: &mut String, plans: &[Composed], items: usize) {
     );
 }
 
+/// The key table, and the two silences that belong to no section: the verse
+/// a reading cites untranslated, and the lagna no placement message names.
+fn what_they_say(out: &mut String, by_key: &BTreeMap<&str, usize>, items: usize, charts: usize) {
+    out.push_str("## What the composers say\n\n");
+    out.push_str("| key | items |\n|---|---|\n");
+    for (key, at) in by_key {
+        let _ = writeln!(out, "| `{key}` | {} |", count(*at));
+    }
+    out.push('\n');
+    let effects = by_key
+        .get(<teistro_intl::messages::sdk::reading::Effect as teistro_intl::TypedMessage>::KEY)
+        .copied()
+        .unwrap_or_default();
+    let _ = write!(
+        out,
+        "**The verse's own statement is not translated.** {} of the {} — every \
+         `sdk.reading.effect` — carry the words the rule itself cites, in the \
+         language the rule was written in, and the message prints them as they \
+         are. So a Nepali reading says the placements, who took part, the span, \
+         the class and the cancellation in Nepali, and the verse's sentence in \
+         the translator's English, until a locale carries a reading of that \
+         rule written by someone who reads the text. A machine translation \
+         there would be worse than the visible seam.\n\n",
+        count(effects),
+        plural(items, "item")
+    );
+    let _ = write!(
+        out,
+        "What they cannot say is counted too: the **lagna** stands in every \
+         one of these charts and is in none of the placement items, because \
+         those messages read a graha and the lagna is `point.LAGNA` — {} it \
+         does not say, one a chart. It does take part in a reading, where the \
+         message names no kind and the lagna is the point it is.\n\n",
+        plural(charts, "item")
+    );
+}
+
 /// What the strengths do **not** say, counted from the corpus's own
 /// recordings rather than asserted (`03-design/interpret-composers.md` §4).
 fn unsaid_strength(out: &mut String, root: &Path) {
@@ -311,6 +437,68 @@ fn unsaid_strength(out: &mut String, root: &Path) {
         plural(grahas, "graha"),
         count(sufficient),
         count(grahas),
+    );
+}
+
+/// What the **houses** do not say, counted from the corpus's own recordings
+/// rather than asserted (`03-design/interpret-composers.md` §4).
+///
+/// It is the largest silence any composer carries, so it is the one worth
+/// counting: the composer says a lord and the corpus records, for the same
+/// charts, three further facts no locale has a sentence for.
+///
+/// The counts are over the charts this pass actually **reached** and not
+/// over every division the corpus holds, because a page that counted the
+/// second would imply the composer had been measured on it. The difference
+/// between the two is itself worth a sentence: the corpus records eight
+/// charts under Placidus, and none of them is in this corpus.
+fn unsaid_houses(out: &mut String, root: &Path, plans: &[Composed]) {
+    let divided = divisions(root);
+    let reached: Vec<&Divided> = plans
+        .iter()
+        .filter_map(|composed| divided.get(&composed.name))
+        .collect();
+    let systems: std::collections::BTreeSet<&str> =
+        reached.iter().map(|read| read.system.as_str()).collect();
+    let degenerate = reached.iter().filter(|read| read.degenerate).count();
+    let placed: usize = reached.iter().map(|read| read.placed).sum();
+    let shifted: usize = reached.iter().map(|read| read.shifted).sum();
+    let named: Vec<String> = systems.iter().map(|name| format!("`{name}`")).collect();
+    let _ = write!(
+        out,
+        "And the **houses** say who rules each bhava and nothing else, which \
+         is the largest silence a composer here carries. The corpus records a \
+         division for {} of these charts, every one of them under {}, of which \
+         {} came back degenerate — and records for each which bodies fall in \
+         a different house under the chalit: {} of {} placings do. A bhava also knows the sign it falls in, which third of the \
+         wheel it stands in and whether it is a trine, a house of difficulty \
+         or one that grows better with time. **No locale carries a message \
+         for any of it**, so the plan claims none of it. Each is a sentence a \
+         locale would have to be given before a composer could say it, which \
+         is a translator's decision and not a composer's.\n\n",
+        count(reached.len()),
+        named.join(" and "),
+        count(degenerate),
+        count(shifted),
+        count(placed),
+    );
+    let all = divided.len();
+    let unequal = divided
+        .values()
+        .filter(|read| read.system != "whole-sign")
+        .count();
+    let _ = write!(
+        out,
+        "That every one of them is whole-sign is a fact about **this** corpus \
+         and not about the recordings: the conformance repository holds {} \
+         divisions in all, {} of them under an unequal system, and the \
+         composer reaches none of those. It matters because a bhava's sign is \
+         the sign its *middle* falls in, which is the same as its cusp's only \
+         where the division is equal — so the branch that tells the two apart \
+         is the houses service's to hold, and this page does not claim to \
+         have tried it.\n\n",
+        count(all),
+        count(unequal),
     );
 }
 
@@ -413,40 +601,11 @@ fn page(root: &Path) -> Result<String, String> {
 
     decided(&mut out, &said, items, strict.len());
 
-    out.push_str("## What the composers say\n\n");
-    out.push_str("| key | items |\n|---|---|\n");
-    for (key, at) in &by_key {
-        let _ = writeln!(out, "| `{key}` | {} |", count(*at));
-    }
-    out.push('\n');
-    let effects = by_key
-        .get(<teistro_intl::messages::sdk::reading::Effect as teistro_intl::TypedMessage>::KEY)
-        .copied()
-        .unwrap_or_default();
-    let _ = write!(
-        out,
-        "**The verse's own statement is not translated.** {} of the {} — every \
-         `sdk.reading.effect` — carry the words the rule itself cites, in the \
-         language the rule was written in, and the message prints them as they \
-         are. So a Nepali reading says the placements, who took part, the span, \
-         the class and the cancellation in Nepali, and the verse's sentence in \
-         the translator's English, until a locale carries a reading of that \
-         rule written by someone who reads the text. A machine translation \
-         there would be worse than the visible seam.\n\n",
-        count(effects),
-        plural(items, "item")
-    );
-    let _ = write!(
-        out,
-        "What they cannot say is counted too: the **lagna** stands in every \
-         one of these charts and is in none of the placement items, because \
-         those messages read a graha and the lagna is `point.LAGNA` — {} it \
-         does not say, one a chart. It does take part in a reading, where the \
-         message names no kind and the lagna is the point it is.\n\n",
-        plural(plans.len(), "item")
-    );
+    what_they_say(&mut out, &by_key, items, plans.len());
 
     unsaid_strength(&mut out, root);
+
+    unsaid_houses(&mut out, root, &plans);
 
     let snapshot = plans
         .iter()

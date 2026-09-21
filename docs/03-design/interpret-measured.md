@@ -8,12 +8,12 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 8844 items, 95 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 9744 items, 104 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 1 222 617 bytes of JSON over the 93 charts, 13 146 bytes a
-chart, 18 176 bytes for the widest and 138 bytes an item. The verses'
-own cited words are **not** what weighs it — 112 962 bytes, 9% — so
+golden file: 1 299 717 bytes of JSON over the 93 charts, 13 975 bytes a
+chart, 19 204 bytes for the widest and 133 bytes an item. The verses'
+own cited words are **not** what weighs it — 112 962 bytes, 8% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
 packed.
@@ -22,13 +22,13 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 20 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 8844 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 8844 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 8844 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 8844 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 22 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 9744 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 9744 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 9744 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 9744 disagree |
 
-Every one of the 17 688 renderings — 8844 in each of 2 strict locales
+Every one of the 19 488 renderings — 9744 in each of 2 strict locales
 — answered from the locale's own message with nothing to warn about.
 
 ## What the composers say
@@ -43,10 +43,11 @@ Every one of the 17 688 renderings — 8844 in each of 2 strict locales
 | `sdk.reading.status` | 348 |
 | `sdk.reason.grahaInBhava` | 837 |
 | `sdk.reason.grahaInRashi` | 837 |
+| `sdk.reason.lordship` | 900 |
 | `sdk.reason.occupants` | 204 |
 | `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 8844 items
+**The verse's own statement is not translated.** 2449 of the 9744 items
 — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -68,6 +69,26 @@ text requires — 341 of 497 do. The plan says none of that: no locale
 carries a message for it, and a machine-translated "strong" would be the
 stub the project refuses. What it says instead is the ordering,
 strongest first, which needs no word at all.
+
+And the **houses** say who rules each bhava and nothing else, which is
+the largest silence a composer here carries. The corpus records a
+division for 75 of these charts, every one of them under `whole-sign`,
+of which 0 came back degenerate — and records for each which bodies
+fall in a different house under the chalit: 135 of 675 placings do. A
+bhava also knows the sign it falls in, which third of the wheel it
+stands in and whether it is a trine, a house of difficulty or one that
+grows better with time. **No locale carries a message for any of it**,
+so the plan claims none of it. Each is a sentence a locale would have to
+be given before a composer could say it, which is a translator's
+decision and not a composer's.
+
+That every one of them is whole-sign is a fact about **this** corpus and
+not about the recordings: the conformance repository holds 83 divisions
+in all, 8 of them under an unequal system, and the composer reaches none
+of those. It matters because a bhava's sign is the sign its *middle*
+falls in, which is the same as its cusp's only where the division is
+equal — so the branch that tells the two apart is the houses service's
+to hold, and this page does not claim to have tried it.
 
 ## One chart, said
 
@@ -162,6 +183,18 @@ Mars scores 6.848 rupas
 Moon scores 6.779 rupas
 Mercury scores 6.379 rupas
 Saturn scores 6.267 rupas
+Jupiter rules house 1
+Mars rules house 2
+Venus rules house 3
+Mercury rules house 4
+Moon rules house 5
+Sun rules house 6
+Mercury rules house 7
+Venus rules house 8
+Mars rules house 9
+Jupiter rules house 10
+Saturn rules house 11
+Saturn rules house 12
 ```
 
 **ne-Deva-NP**
@@ -251,4 +284,16 @@ NEECHA_BHANGA_EXALT_LORD_KENDRA: चन्द्र संलग्न छ
 चन्द्रले ६.७७९ रूपा पाउँछ
 बुधले ६.३७९ रूपा पाउँछ
 शनिले ६.२६७ रूपा पाउँछ
+गुरु १ भावको स्वामी हो
+मंगल २ भावको स्वामी हो
+शुक्र ३ भावको स्वामी हो
+बुध ४ भावको स्वामी हो
+चन्द्र ५ भावको स्वामी हो
+सूर्य ६ भावको स्वामी हो
+बुध ७ भावको स्वामी हो
+शुक्र ८ भावको स्वामी हो
+मंगल ९ भावको स्वामी हो
+गुरु १० भावको स्वामी हो
+शनि ११ भावको स्वामी हो
+शनि १२ भावको स्वामी हो
 ```

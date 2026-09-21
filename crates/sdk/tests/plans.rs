@@ -144,6 +144,52 @@ fn the_strengths_are_said_strongest_first_and_claim_nothing_more() {
     assert_eq!(refused.field(), Some("shadbala"));
 }
 
+/// The houses are the fourth composer and the second over a section. It
+/// says who rules each bhava — the relation the rest of the tradition is
+/// read through, and the one no other composer says — and nothing else,
+/// because nothing else a bhava knows has a message in any locale.
+#[test]
+fn the_houses_are_said_by_their_lords_and_claim_nothing_more() {
+    let (sdk, document) = common::reading("{}", ChartRequest::with_houses);
+    let plan = sdk.interpret().houses(&document).expect("the houses");
+    assert_eq!(plan.len(), 12, "the twelve bhavas, the first house first");
+
+    // Every item is the lord the document's own bhava carries, in the
+    // houses' own order: the façade adapts and does not re-derive.
+    let read = document.houses.as_ref().expect("the houses asked for");
+    let lords: Vec<teistro::Value> = read
+        .all()
+        .iter()
+        .map(|bhava| teistro::Value::catalogued(bhava.lord))
+        .collect();
+    let said: Vec<teistro::Value> = plan
+        .items
+        .iter()
+        .filter_map(|item| item.params.get("graha").cloned())
+        .collect();
+    assert_eq!(said, lords);
+    let numbers: Vec<teistro::Value> = plan
+        .items
+        .iter()
+        .filter_map(|item| item.params.get("bhava").cloned())
+        .collect();
+    assert_eq!(numbers[0], teistro::Value::Int(1));
+    assert_eq!(numbers[11], teistro::Value::Int(12));
+
+    // The bhava carries its sign, its cusps and its quadrant; the plan
+    // claims none of them, because no locale can say them.
+    let written = serde_json::to_string(&plan).expect("a plan writes");
+    for claim in ["rashi", "madhya", "sandhi", "quadrant"] {
+        assert!(!written.contains(claim), "`{claim}` is in {written}");
+    }
+
+    // A document without the section is refused by the knob's name, not
+    // answered with an empty plan.
+    let (without, undivided) = common::reading("{}", |request| request);
+    let refused = without.interpret().houses(&undivided).unwrap_err();
+    assert_eq!(refused.field(), Some("houses"));
+}
+
 /// A plan crosses as its own JSON, and what comes back is what went out:
 /// the shape a golden file holds and the boundary's `plans` section carries
 /// are one shape, which is what lets a fixture move between them. A plan is

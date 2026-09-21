@@ -9485,7 +9485,7 @@
             },
             "mutable": false
           },
-          "doc": "Narrative plans to compose over every chart, as JSON: an object\nnaming the composers to run, `placements`, `readings` and\n`strength`, each false by default. The plans come back in the blob's `plans`\nsection, holding no words at all — an item's params are the JSON\n`ts_intl_render` takes, so a binding says one by handing it\nstraight back, in any locale and in as many as it likes\n(`03-design/plans-at-the-boundary.md`). `readings` says what the\nrules answered, so it needs `rules_json` beside it; the sections\nthe other composers read are computed for them, as the rules' are.\nNull for none, which costs nothing.",
+          "doc": "Narrative plans to compose over every chart, as JSON: an object\nnaming the composers to run, `placements`, `readings`, `strength`\nand `houses`, each false by default. The plans come back in the blob's `plans`\nsection, holding no words at all — an item's params are the JSON\n`ts_intl_render` takes, so a binding says one by handing it\nstraight back, in any locale and in as many as it likes\n(`03-design/plans-at-the-boundary.md`). `readings` says what the\nrules answered, so it needs `rules_json` beside it; the sections\nthe other composers read are computed for them, as the rules' are.\nNull for none, which costs nothing.",
           "meta": {
             "example": "{\"placements\":true}",
             "nullable": true
@@ -14170,7 +14170,7 @@
         {
           "id": 34,
           "name": "plans",
-          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each an object carrying the narrative plans the request's `interpret_json` asked for — `placements`, `readings`, `strength` — and only those. A plan is the array of its items, each `{key, params}`, and its params are the very JSON `ts_intl_render` takes, so a binding says an item by handing it straight back (`03-design/plans-at-the-boundary.md`). Empty when no composer was asked for.",
+          "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each an object carrying the narrative plans the request's `interpret_json` asked for — `placements`, `readings`, `strength`, `houses` — and only those. A plan is the array of its items, each `{key, params}`, and its params are the very JSON `ts_intl_render` takes, so a binding says an item by handing it straight back (`03-design/plans-at-the-boundary.md`). Empty when no composer was asked for.",
           "kind": "bytes",
           "fields": []
         }

@@ -47,14 +47,14 @@ const chart = ctx.chart.found({
   // The rules whose answers the readings composer will say. The sections
   // they read are computed whether or not they are asked for here.
   rules: { shipped: ['nabhasas', 'arishtas'] },
-  interpret: { placements: true, readings: true, strength: true },
+  interpret: { placements: true, readings: true, strength: true, houses: true },
 });
 
-const { placements, readings, strength } = chart.plans;
+const { placements, readings, strength, houses } = chart.plans;
 console.log('BS 2042-09-17  00:20  Kathmandu');
 console.log(
   `plan     ${placements.length} placement items, ${readings.length} reading items, ` +
-    `${strength.length} strengths`,
+    `${strength.length} strengths, ${houses.length} lordships`,
 );
 console.log(`keys     ${[...new Set(placements.concat(readings).map((item) => item.key))].join(', ')}`);
 
@@ -64,7 +64,7 @@ console.log(`keys     ${[...new Set(placements.concat(readings).map((item) => it
 for (const locale of ['en-Latn', 'ne-Deva-NP']) {
   ctx.intl.locale = locale;
   console.log(`\n${locale}`);
-  for (const item of [...placements, ...strength]) {
+  for (const item of [...placements, ...strength, ...houses]) {
     const said = ctx.intl.render(item.key, item.params);
     console.log(`  ${said.text}${said.isFallback ? '  (fallback)' : ''}`);
   }
@@ -82,6 +82,10 @@ const lagna = placements.some((item) => JSON.stringify(item.params).includes('LA
 // says it, so the plan does not either.
 const strong = strength.some((item) => JSON.stringify(item.params).includes('strong'));
 console.log(`a strength item claims "strong": ${strong}`);
+// A bhava knows its sign, its cusps and its class; no locale says any of
+// them, so the houses plan says the lord and stops there.
+const classed = houses.some((item) => JSON.stringify(item.params).includes('rashi'));
+console.log(`a houses item claims a sign: ${classed}`);
 console.log(`\nthe lagna is in the placements: ${lagna}`);
 
 try {

@@ -2090,6 +2090,10 @@ mod tests {
         let p = params([("graha", graha("JUPITER")), ("bhava", Value::Int(9))]);
         let rendered = en.render("sdk.reason.lordship", &p);
         assert_eq!(rendered.text, "Jupiter rules house 9");
+        // Markup is a *part*, not a complaint: a message that wraps a slot in
+        // `{#b}` must render clean, or no composer could emit it without
+        // tripping the interpret pass's "no warnings" gate.
+        assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
         assert!(matches!(
             rendered.parts.first(),
             Some(OutPart::Markup { kind: MarkupKind::Open, name, .. }) if name == "b"

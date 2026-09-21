@@ -1,7 +1,7 @@
 //! `sdk.interpret`: what a reading says, as a narrative plan.
 
 use teistro_core::error::Error;
-use teistro_interpret::{Plan, placements, readings, strength};
+use teistro_interpret::{Plan, houses, placements, readings, strength};
 use teistro_serial::document::Document;
 
 use crate::context::Context;
@@ -69,6 +69,30 @@ impl<'a> InterpretArea<'a> {
             )
             .with_field("shadbala")
         })
+    }
+
+    /// The lord of each of the twelve bhavas, first house first.
+    ///
+    /// The relation the rest of the tradition is read through: `placements`
+    /// says where a graha stands, and this says what it rules.
+    ///
+    /// # Errors
+    ///
+    /// A document without its houses, naming the section to ask for: the
+    /// twelve bhavas are computed only when a request asks, so a composer
+    /// says which knob was not turned rather than answering an empty plan.
+    pub fn houses(self, document: &Document) -> Result<Plan, Error> {
+        document
+            .houses
+            .as_ref()
+            .map(|read| houses(read.all()))
+            .ok_or_else(|| {
+                Error::invalid_arg(
+                    "the document carries no houses, whose lords the houses composer says; ask \
+                     for them with `ChartRequest::with_houses`",
+                )
+                .with_field("houses")
+            })
     }
 
     /// What each rule the chart held says: its verse's statement, who took

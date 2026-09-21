@@ -733,7 +733,12 @@ void _engineTests() {
     expect(found(null), isNull, reason: 'no composer, no plans');
     final plans =
         found(
-          const PlanRequest(placements: true, readings: true, strength: true),
+          const PlanRequest(
+            placements: true,
+            readings: true,
+            strength: true,
+            houses: true,
+          ),
           rules: const RuleRequest(shipped: [ShippedRules.nabhasas]),
         )!;
     final placements = plans['placements']! as List<Object?>;
@@ -743,6 +748,9 @@ void _engineTests() {
     // a composer's own section is computed for it.
     final weighed = plans['strength']! as List<Object?>;
     expect(weighed, hasLength(7), reason: 'the seven grahas, Sun to Saturn');
+    // And the houses read the bhavas, which it never asked for either.
+    final ruled = plans['houses']! as List<Object?>;
+    expect(ruled, hasLength(12), reason: 'the twelve bhavas, the first first');
 
     // Each item said by handing its params straight to the renderer, which
     // is the property the crossing exists for.
@@ -752,6 +760,7 @@ void _engineTests() {
           ...placements,
           ...plans['readings']! as List<Object?>,
           ...weighed,
+          ...ruled,
         ].cast<Map<String, Object?>>()) {
       final key = item['key']! as String;
       expect(key, startsWith('sdk.'));

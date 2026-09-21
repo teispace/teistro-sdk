@@ -3421,6 +3421,7 @@ final class PlanRequest {
     this.placements = false,
     this.readings = false,
     this.strength = false,
+    this.houses = false,
   });
 
   /// Where each of the nine grahas stands and who shares a sign.
@@ -3432,10 +3433,14 @@ final class PlanRequest {
   /// Each graha's Shadbala in rupas, the strongest first.
   final bool strength;
 
+  /// The lord of each of the twelve bhavas, first house first.
+  final bool houses;
+
   String get _json => jsonEncode(<String, Object?>{
     'placements': placements,
     'readings': readings,
     'strength': strength,
+    'houses': houses,
   });
 }
 
@@ -3840,8 +3845,9 @@ final class Chart {
     return index < all.length ? all[index] : null;
   }
 
-  /// What this chart has to say, as the composers wrote it: `placements` and
-  /// `readings`, each a list of `{key, params}` holding no words at all. An
+  /// What this chart has to say, as the composers wrote it: a key per
+  /// composer the request asked for, each a list of `{key, params}` holding
+  /// no words at all — and only those the request named. An
   /// item's `params` are the very map [IntlArea.render] takes, so it says
   /// itself in the context's locale — and the same plan says it in any
   /// other. Null unless the request named a composer

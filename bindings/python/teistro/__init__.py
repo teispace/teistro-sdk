@@ -2513,6 +2513,7 @@ class PlanRequest(TypedDict, total=False):
     placements: bool
     readings: bool
     strength: bool
+    houses: bool
 
 
 class PlanItem(TypedDict):
@@ -2531,6 +2532,7 @@ class Plans(TypedDict, total=False):
     placements: List[PlanItem]
     readings: List[PlanItem]
     strength: List[PlanItem]
+    houses: List[PlanItem]
 
 
 def _rules_json(rules: Optional[RuleRequest]) -> Optional[str]:
@@ -2991,9 +2993,10 @@ class Chart:
 
     @property
     def plans(self) -> Optional[Plans]:
-        """What this chart has to say, as the composers wrote it:
-        `placements` and `readings`, each a list of `{key, params}` holding
-        no words at all. An item's `params` are the mapping `intl.render`
+        """What this chart has to say, as the composers wrote it: a key per
+        composer the request asked for, each a list of `{key, params}`
+        holding no words at all — and only those the request named. An
+        item's `params` are the mapping `intl.render`
         takes, so it says itself in the context's locale — and the same plan
         says it in any other (`03-design/plans-at-the-boundary.md`). `None`
         unless the request named a composer."""

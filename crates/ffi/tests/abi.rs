@@ -1772,7 +1772,8 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     let instants = [2_447_995.489_583_333_5, 2_451_545.0];
     let rules = CString::new(r#"{"shipped": ["nabhasas"]}"#).unwrap();
     let plans =
-        CString::new(r#"{"placements": true, "readings": true, "strength": true}"#).unwrap();
+        CString::new(r#"{"placements": true, "readings": true, "strength": true, "houses": true}"#)
+            .unwrap();
     let request = sized(
         TsChartRequest {
             struct_size: 0,
@@ -1827,10 +1828,15 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         // it: a composer's own section is computed for it, as a rule's is.
         let weighed = chart["strength"].as_array().unwrap();
         assert_eq!(weighed.len(), 7, "the seven grahas, Sun to Saturn");
+        // And the houses read the bhavas, which `sections` never asked for
+        // either.
+        let lords = chart["houses"].as_array().unwrap();
+        assert_eq!(lords.len(), 12, "the twelve bhavas, the first house first");
         for item in placements
             .iter()
             .chain(chart["readings"].as_array().unwrap())
             .chain(weighed)
+            .chain(lords)
         {
             // A plan holds keys and slots, never a rendered word.
             let key = item["key"].as_str().unwrap();
@@ -1926,7 +1932,8 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     assert!(
         record.1.contains("placements")
             && record.1.contains("readings")
-            && record.1.contains("strength"),
+            && record.1.contains("strength")
+            && record.1.contains("houses"),
         "{record:?}"
     );
 }

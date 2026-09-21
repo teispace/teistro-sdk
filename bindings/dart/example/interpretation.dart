@@ -66,6 +66,7 @@ void main() {
       placements: true,
       readings: true,
       strength: true,
+      houses: true,
     ),
   );
 
@@ -76,14 +77,17 @@ void main() {
       (plans['readings']! as List<Object?>).cast<Map<String, Object?>>();
   final weights =
       (plans['strength']! as List<Object?>).cast<Map<String, Object?>>();
+  final ruled =
+      (plans['houses']! as List<Object?>).cast<Map<String, Object?>>();
 
   print('BS 2042-09-17  00:20  Kathmandu');
   print(
     'plan     ${placements.length} placement items, '
-    '${readings.length} reading items, ${weights.length} strengths',
+    '${readings.length} reading items, ${weights.length} strengths, '
+    '${ruled.length} lordships',
   );
   final keys = <String>{
-    for (final item in [...placements, ...readings, ...weights])
+    for (final item in [...placements, ...readings, ...weights, ...ruled])
       item['key']! as String,
   };
   print('keys     ${keys.join(', ')}');
@@ -94,7 +98,7 @@ void main() {
   for (final locale in ['en-Latn', 'ne-Deva-NP']) {
     ctx.intl.locale = locale;
     print('\n$locale');
-    for (final item in [...placements, ...weights]) {
+    for (final item in [...placements, ...weights, ...ruled]) {
       final said = ctx.intl.render(
         item['key']! as String,
         item['params']! as Map<String, Object?>,
@@ -121,6 +125,12 @@ void main() {
     (item) => jsonEncode(item['params']).contains('strong'),
   );
   print('a strength item claims "strong": $strong');
+  // A bhava knows its sign, its cusps and its class; no locale says any of
+  // them, so the houses plan says the lord and stops there.
+  final signed = ruled.any(
+    (item) => jsonEncode(item['params']).contains('rashi'),
+  );
+  print('a houses item claims a sign: $signed');
 
   try {
     ctx.chart.found(

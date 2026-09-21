@@ -693,8 +693,9 @@ export class Chart {
   }
 
   /**
-   * What this chart has to say, as the composers wrote it: `placements` and
-   * `readings`, each an array of `{ key, params }` holding no words at all.
+   * What this chart has to say, as the composers wrote it: a key per
+   * composer the request asked for, each an array of `{ key, params }`
+   * holding no words at all — and only those the request named.
    * An item's `params` are the record `intl.render` takes, so
    * `sdk.intl.render(item.key, item.params)` says it in the context's
    * locale — and the same plan says it in any other

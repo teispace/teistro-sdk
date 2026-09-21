@@ -141,6 +141,11 @@ fn the_plans(
     by_rule: &[teistro::RulesReading<'_>],
 ) {
     for (index, document) in documents.iter().enumerate() {
+        // The one runner that must name the composers: the other three read
+        // a `plans` mapping the boundary filled and iterate whatever is in
+        // it, while Rust composes. So this list is where a composer is
+        // forgotten, and the parity gate is what says so — a key Node prints
+        // and Rust does not is an unaccounted absence, not a silence.
         let composed = [
             (
                 "placements",
@@ -160,6 +165,12 @@ fn the_plans(
                 "strength",
                 sdk.interpret()
                     .strength(document)
+                    .unwrap_or_else(|_| teistro::Plan::default()),
+            ),
+            (
+                "houses",
+                sdk.interpret()
+                    .houses(document)
                     .unwrap_or_else(|_| teistro::Plan::default()),
             ),
         ];

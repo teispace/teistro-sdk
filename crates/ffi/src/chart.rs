@@ -553,8 +553,8 @@ pub struct TsChartRequest {
     /// `api: nullable example={"shipped":["nabhasas"]}`
     pub rules_json: *const c_char,
     /// Narrative plans to compose over every chart, as JSON: an object
-    /// naming the composers to run, `placements`, `readings` and
-    /// `strength`, each false by default. The plans come back in the blob's `plans`
+    /// naming the composers to run, `placements`, `readings`, `strength`
+    /// and `houses`, each false by default. The plans come back in the blob's `plans`
     /// section, holding no words at all — an item's params are the JSON
     /// `ts_intl_render` takes, so a binding says one by handing it
     /// straight back, in any locale and in as many as it likes
@@ -2330,6 +2330,8 @@ struct Plans {
     readings: Option<Plan>,
     #[serde(skip_serializing_if = "Option::is_none")]
     strength: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    houses: Option<Plan>,
 }
 
 /// The charts a request asks for, the canonical JSON of what they answer by
@@ -2374,8 +2376,13 @@ fn sections_for(request: ChartRequest, asked: PlanRequest) -> ChartRequest {
     } else {
         request
     };
-    if asked.strength {
+    let request = if asked.strength {
         request.with_shadbala()
+    } else {
+        request
+    };
+    if asked.houses {
+        request.with_houses()
     } else {
         request
     }
@@ -2408,6 +2415,10 @@ fn compose(
             strength: asked
                 .strength
                 .then(|| sdk.interpret().strength(document))
+                .transpose()?,
+            houses: asked
+                .houses
+                .then(|| sdk.interpret().houses(document))
                 .transpose()?,
         });
     }

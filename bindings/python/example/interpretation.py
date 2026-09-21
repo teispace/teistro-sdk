@@ -66,19 +66,27 @@ def main() -> None:
             # sections they read are computed whether or not they are
             # asked for here.
             rules={"shipped": ["nabhasas", "arishtas"]},
-            interpret={"placements": True, "readings": True, "strength": True},
+            interpret={
+                "placements": True,
+                "readings": True,
+                "strength": True,
+                "houses": True,
+            },
         )
         plans = chart.plans
         assert plans is not None
         placements, readings = plans["placements"], plans["readings"]
-        weights = plans["strength"]
+        weights, ruled = plans["strength"], plans["houses"]
 
         print("BS 2042-09-17  00:20  Kathmandu")
         print(
             f"plan     {len(placements)} placement items, "
-            f"{len(readings)} reading items, {len(weights)} strengths"
+            f"{len(readings)} reading items, {len(weights)} strengths, "
+            f"{len(ruled)} lordships"
         )
-        keys = dict.fromkeys(item["key"] for item in [*placements, *readings, *weights])
+        keys = dict.fromkeys(
+            item["key"] for item in [*placements, *readings, *weights, *ruled]
+        )
         print(f"keys     {', '.join(keys)}")
 
         # ── The same plan, said twice ──────────────────────────────────
@@ -87,7 +95,7 @@ def main() -> None:
         for locale in ("en-Latn", "ne-Deva-NP"):
             ctx.intl.locale = locale
             print(f"\n{locale}")
-            for item in [*placements, *weights]:
+            for item in [*placements, *weights, *ruled]:
                 said = ctx.intl.render(item["key"], item["params"])
                 print(f"  {said.text}{'  (fallback)' if said.is_fallback else ''}")
             # A reading names its rule in a slot the message does not
@@ -103,6 +111,10 @@ def main() -> None:
         # locale says it, so the plan does not either.
         strong = any("strong" in json.dumps(item["params"]) for item in weights)
         print(f'a strength item claims "strong": {strong}')
+        # A bhava knows its sign, its cusps and its class; no locale says
+        # any of them, so the houses plan says the lord and stops there.
+        signed = any("rashi" in json.dumps(item["params"]) for item in ruled)
+        print(f"a houses item claims a sign: {signed}")
 
         try:
             ctx.chart.found(
