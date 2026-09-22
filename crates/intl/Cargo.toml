@@ -18,7 +18,11 @@ publish = false
 [features]
 # The command line; a binding that embeds the engine turns it off.
 default = ["cli"]
-cli = ["dep:clap", "dep:quick-xml"]
+cli = ["dep:clap", "xliff"]
+# The XLIFF round trip on its own, without the command line: a tool that
+# reports how much of a locale is left to translate needs the exporter
+# and not `clap`.
+xliff = ["dep:quick-xml"]
 
 [[bin]]
 name = "teistro-intl"

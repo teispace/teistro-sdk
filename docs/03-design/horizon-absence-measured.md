@@ -19,8 +19,10 @@ An altitude is `sin h = sin φ sin δ + cos φ cos δ cos H`, and over a
 rotation `cos H` sweeps −1 to 1, so for a fixed declination the
 altitude is bounded by its two transits:
 
-```text h ≤ 90° − |φ − δ| upper transit, cos H = 1 h ≥ |φ +
-δ| − 90° lower transit, cos H = −1 ```
+```text
+h ≤ 90° − |φ − δ|      upper transit, cos H = 1
+h ≥ |φ + δ| − 90°      lower transit, cos H = −1
+```
 
 If the upper bound is under the event's target the body never reaches
 it; if the lower bound is over it the body never falls to it. Either way

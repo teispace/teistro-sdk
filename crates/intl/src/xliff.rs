@@ -401,6 +401,54 @@ mod tests {
         }
     }
 
+    /// The round trip on the locale that has the **most** to translate,
+    /// which is the one a maintainer is about to hand to a translator.
+    ///
+    /// [`what_was_exported_imports_back_unchanged`] walks `ne-Deva-NP`,
+    /// which is complete: every target is full and the empty-target path
+    /// is never taken. `hi-Deva-IN` carries `sdk.entity` and no `sdk.*`
+    /// message at all, so its export is mostly **empty targets** — and
+    /// an import that wrote them would replace a locale's records with
+    /// blanks, which is the shape of the bug `load_pack` already had
+    /// once (`03-design/state-readings.md`). This is that path at full
+    /// size rather than in a four-unit miniature.
+    #[test]
+    fn a_locale_with_everything_left_to_do_round_trips_untouched() {
+        let tree = tree();
+        let exported = export(&tree, "hi-Deva-IN").unwrap_or_else(|e| panic!("{e}"));
+        assert!(
+            exported.untranslated > 100,
+            "the locale to translate should have work in it: {} of {}",
+            exported.untranslated,
+            exported.units
+        );
+        let imported = import(&tree, &exported.text).unwrap_or_else(|e| panic!("{e}"));
+        assert_eq!(imported.locale, "hi-Deva-IN");
+        assert_eq!(imported.empty, exported.untranslated);
+        assert!(imported.unknown.is_empty(), "{:?}", imported.unknown);
+
+        // Nothing moved. Not the records it carries, and not the
+        // messages it does not: an empty target is a unit nobody has
+        // reached yet, never an instruction to blank one.
+        let locale = tree
+            .locales
+            .get("hi-Deva-IN")
+            .unwrap_or_else(|| panic!("locale"));
+        let applied = apply(&imported, locale);
+        for (name, namespace) in &locale.namespaces {
+            let back = applied
+                .get(name)
+                .unwrap_or_else(|| panic!("{name} came back"));
+            assert_eq!(&back.entries, &namespace.entries, "{name} moved");
+        }
+        for name in applied.keys() {
+            assert!(
+                locale.namespaces.contains_key(name),
+                "{name} was invented by the round trip"
+            );
+        }
+    }
+
     #[test]
     fn a_translation_replaces_what_it_names_and_nothing_else() {
         let tree = tree();

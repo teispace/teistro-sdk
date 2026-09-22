@@ -56,7 +56,7 @@ pub mod source;
 pub mod translit;
 pub mod validate;
 pub mod wire;
-#[cfg(feature = "cli")]
+#[cfg(feature = "xliff")]
 pub mod xliff;
 
 /// The SDK's own namespaces as typed accessors, generated from

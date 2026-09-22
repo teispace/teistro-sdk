@@ -221,13 +221,22 @@ pub(crate) const FILL: usize = 72;
 pub(crate) fn fill(page: &str) -> String {
     page.split("\n\n")
         .map(|block| {
-            let prose = block.lines().all(|line| {
-                let line = line.trim_start();
-                !line.starts_with('|')
-                    && !line.starts_with('#')
-                    && !line.starts_with("- ")
-                    && !line.starts_with(|c: char| c.is_ascii_digit())
-            });
+            // A fenced block is verbatim: wrapping one would run its
+            // lines together and break the very command it prints. The
+            // fence is checked first because every other test here asks
+            // what a line *looks* like, and inside a fence that is not a
+            // question worth asking.
+            let fenced = block
+                .lines()
+                .any(|line| line.trim_start().starts_with("```"));
+            let prose = !fenced
+                && block.lines().all(|line| {
+                    let line = line.trim_start();
+                    !line.starts_with('|')
+                        && !line.starts_with('#')
+                        && !line.starts_with("- ")
+                        && !line.starts_with(|c: char| c.is_ascii_digit())
+                });
             if prose {
                 wrapped(
                     &block

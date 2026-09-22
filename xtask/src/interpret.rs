@@ -1829,6 +1829,58 @@ fn what_a_reviewer_reads(out: &mut String, tree: &Tree, strict: &[String]) {
             quiet.join(", "),
         );
     }
+    the_translation_job(out, tree, &base);
+}
+
+/// What it would take to **make** an unreviewable locale reviewable,
+/// read from the exporter rather than counted here.
+///
+/// A sign-off with nothing to sign is a task disguised as a gap, and
+/// the task is one command. The figures come from
+/// [`teistro_intl::xliff::export`] itself, so a message added to the
+/// base locale moves them without anyone remembering to.
+fn the_translation_job(out: &mut String, tree: &Tree, base: &str) {
+    let mut jobs: Vec<(String, usize, usize)> = Vec::new();
+    for tag in tree.locales.keys() {
+        if *tag == base {
+            continue;
+        }
+        if let Ok(exported) = teistro_intl::xliff::export(tree, tag) {
+            jobs.push((tag.clone(), exported.units, exported.untranslated));
+        }
+    }
+    if !jobs.is_empty() {
+        out.push_str(
+            "### The job itself, and it is one command\n\n\
+             A locale is not translated **here**: `teistro-intl export \
+             xliff` writes it as XLIFF 2.1 with the base locale as the \
+             source and a note naming every parameter, a translator works \
+             in whatever tool they already use, and `import` brings it \
+             back. An empty target is a unit nobody has reached and is \
+             **left alone**, never written as a blank — held on the \
+             locale with the most of them, at full size rather than in a \
+             miniature, by `a_locale_with_everything_left_to_do_round_\
+             trips_untouched`. So the column below is the work, and \
+             nothing in it has to be typed into this repository by hand.\n\n\
+             | locale | units | left to translate |\n|---|---:|---:|\n",
+        );
+        for (tag, units, untranslated) in &jobs {
+            let _ = writeln!(
+                out,
+                "| `{tag}` | {} | {} |",
+                count(*units),
+                count(*untranslated)
+            );
+        }
+        let _ = write!(
+            out,
+            "\n```console\n$ teistro-intl export xliff --locale \
+             hi-Deva-IN --out hi-Deva-IN.xlf\n# …the translator works, in \
+             their own tool…\n$ teistro-intl import xliff \
+             hi-Deva-IN.xlf --dry-run\n$ teistro-intl import xliff \
+             hi-Deva-IN.xlf\n```\n\n"
+        );
+    }
 }
 
 /// Every message the base locale carries, and which composer reads it.

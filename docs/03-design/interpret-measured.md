@@ -419,6 +419,32 @@ vetted source. `hi-Deva-IN` is one of them, which is worth saying
 plainly: the roadmap asks for `hi` sign-off and there is not a sentence
 in it to sign off.
 
+### The job itself, and it is one command
+
+A locale is not translated **here**: `teistro-intl export xliff` writes
+it as XLIFF 2.1 with the base locale as the source and a note naming
+every parameter, a translator works in whatever tool they already use,
+and `import` brings it back. An empty target is a unit nobody has
+reached and is **left alone**, never written as a blank — held on the
+locale with the most of them, at full size rather than in a miniature,
+by `a_locale_with_everything_left_to_do_round_trips_untouched`. So the
+column below is the work, and nothing in it has to be typed into this
+repository by hand.
+
+| locale | units | left to translate |
+|---|---:|---:|
+| `hi-Deva-IN` | 1512 | 162 |
+| `ne-Deva-NP` | 1512 | 8 |
+| `sa-Deva` | 1512 | 162 |
+| `sa-Latn` | 1512 | 162 |
+
+```console
+$ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf
+# …the translator works, in their own tool…
+$ teistro-intl import xliff hi-Deva-IN.xlf --dry-run
+$ teistro-intl import xliff hi-Deva-IN.xlf
+```
+
 ## One chart, said
 
 `c001-kathmandu-1990-04-14`, every item of its plan, in each strict
