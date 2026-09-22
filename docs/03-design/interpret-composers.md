@@ -273,7 +273,8 @@ and the fifth exhausted them. The drishti was the largest thing the SDK
 computes and cannot say, so it is where the debt is first spent. The
 precedent is `sdk.reading`'s six: written from the texts' own vocabulary
 rather than invented prose, and **flagged for the native review the roadmap
-already requires for `ne` and `hi`**. The terms are the tradition's own —
+already requires for `ne` and `hi`** — which is now a measured set rather
+than a flag, on `interpret-measured.md`. The terms are the tradition's own —
 पाद, अर्ध, त्रिपाद and पूर्ण दृष्टि for the quarters a drishti is counted
 in, and परस्पर दृष्टि for a mutual one — so a reviewer is checking grammar
 and register, not a translator's guess at a technical term.
@@ -622,7 +623,12 @@ a test that a plan round-trips through JSON.
    compose to 8347 items, 16 694 renderings, no fallback and no warning.
    The Nepali of `sdk.reading` awaits the native review the roadmap's exit
    criterion already requires for `ne` and `hi`; the terms are the texts'
-   own (अल्पायु, मध्यायु, पूर्णायु), not invented prose.
+   own (अल्पायु, मध्यायु, पूर्णायु), not invented prose. **What that review
+   covers is measured** on `interpret-measured.md` rather than flagged in
+   sentences like this one: every message whose Nepali says words of its
+   own, by namespace, with the ones that only render a catalogue value
+   left out. The sentences here named two namespaces and the measurement
+   names six.
 5. The plan at the boundary, so a composer added reaches four languages
    rather than one. **Built**: `03-design/plans-at-the-boundary.md`.
 6. `strength`, the first composer over a section. **Built**: it adds no

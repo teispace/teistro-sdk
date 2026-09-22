@@ -286,6 +286,36 @@ the others are waiting on a decision about *which* number deserves a
 sentence, or on a knob, or on nothing but the work. They are enumerated
 above with a reason each, which is where a claim of that shape belongs.
 
+## What a native reviewer has to read
+
+The roadmap's exit criterion asks for **`ne` and `hi` sign-off**, and
+this is what that covers. A message that only renders a catalogue value
+— `{$graha :entity kind=graha}` — carries no prose of its own, and a
+reviewer reading it is reading `sdk.entity`; a message with words in it
+is what someone has to read. The parser decides which, so a message
+rewritten from one into the other moves this list by itself. `en-Latn`
+is left out: it is the base and its words are the source.
+
+**`ne-Deva-NP`** — 69 messages to read, 36 that render a value and
+need no reading.
+
+| namespace | messages with words of their own |
+|---|---:|
+| `sdk.aspect` | 2 |
+| `sdk.calendar` | 28 |
+| `sdk.condition` | 11 |
+| `sdk.karaka` | 2 |
+| `sdk.reading` | 5 |
+| `sdk.reason` | 21 |
+
+`hi-Deva-IN`, `sa-Deva`, `sa-Latn` carry no `sdk.*` message at all —
+`base` completeness is the entity names and the packs' own records —
+so their share of the sign-off is the **names**, held by
+[`entity-names.md`](entity-names.md) §4 and its list of members with no
+vetted source. `hi-Deva-IN` is one of them, which is worth saying
+plainly: the roadmap asks for `hi` sign-off and there is not a sentence
+in it to sign off.
+
 ## One chart, said
 
 `c001-kathmandu-1990-04-14`, every item of its plan, in each strict

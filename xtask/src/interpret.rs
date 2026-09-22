@@ -1194,6 +1194,136 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
     Ok(())
 }
 
+/// Whether a message says any words of its own, as against rendering a
+/// value some other table names.
+///
+/// This is the whole of the native-review question. `{$graha :entity
+/// kind=graha}` carries no prose: it prints whatever `sdk.entity` holds,
+/// so a reviewer looking at it is looking at the entity table. `{$graha}
+/// is burnt by the Sun` carries four words that someone wrote, and those
+/// are what a native speaker has to read.
+///
+/// The parser answers it rather than a regular expression: literal text is
+/// `Part::Text`, and a pattern's other parts are expressions and markup.
+fn says_words_of_its_own(source: &str) -> bool {
+    fn in_pattern(pattern: &teistro_intl::mf2::ast::Pattern) -> bool {
+        pattern.0.iter().any(|part| match part {
+            teistro_intl::mf2::ast::Part::Text(text) => !text.trim().is_empty(),
+            teistro_intl::mf2::ast::Part::Expression(_)
+            | teistro_intl::mf2::ast::Part::Markup(_) => false,
+        })
+    }
+    let Ok(message) = teistro_intl::mf2::parser::parse(source) else {
+        // An unparseable message fails `check-intl` long before this page
+        // runs; counting it as prose is the cautious reading.
+        return true;
+    };
+    match message {
+        teistro_intl::mf2::ast::Message::Simple(pattern) => in_pattern(&pattern),
+        teistro_intl::mf2::ast::Message::Complex(complex) => match complex.body {
+            teistro_intl::mf2::ast::Body::Pattern(pattern) => in_pattern(&pattern),
+            teistro_intl::mf2::ast::Body::Matcher(matcher) => matcher
+                .variants
+                .iter()
+                .any(|variant| in_pattern(&variant.pattern)),
+        },
+    }
+}
+
+/// What a native reviewer has to read, in each strict locale that is not
+/// the base.
+///
+/// **The flag was prose, and prose is what rots.** The roadmap's exit
+/// criterion asks for `ne` and `hi` sign-off, and which messages that
+/// covers was recorded in two design-page sentences — "flagged for the
+/// native review", "the Nepali of `sdk.reading` awaits it" — written when
+/// two namespaces existed. Ten messages were written on 2026-09-22 alone.
+/// So the set is measured here instead: every message whose translation
+/// says words of its own, by namespace, with the ones that only render a
+/// catalogue value left out because a reviewer reading those is reading
+/// `sdk.entity`.
+fn what_a_reviewer_reads(out: &mut String, tree: &Tree, strict: &[String]) {
+    out.push_str("## What a native reviewer has to read\n\n");
+    let base = tree.base().map(|base| base.tag.clone()).unwrap_or_default();
+    let _ = write!(
+        out,
+        "The roadmap's exit criterion asks for **`ne` and `hi` sign-off**, \
+         and this is what that covers. A message that only renders a \
+         catalogue value — `{{$graha :entity kind=graha}}` — carries no \
+         prose of its own, and a reviewer reading it is reading \
+         `sdk.entity`; a message with words in it is what someone has to \
+         read. The parser decides which, so a message rewritten from one \
+         into the other moves this list by itself. `{base}` is left out: \
+         it is the base and its words are the source.\n\n",
+    );
+    let mut any = false;
+    for tag in strict {
+        if *tag == base {
+            continue;
+        }
+        let Some(locale) = tree.locales.get(tag) else {
+            continue;
+        };
+        let mut per_namespace: BTreeMap<&str, usize> = BTreeMap::new();
+        let mut prose = 0usize;
+        let mut rendered = 0usize;
+        for (name, namespace) in &locale.namespaces {
+            if !name.starts_with("sdk.") || name == "sdk.entity" {
+                continue;
+            }
+            for entry in namespace.entries.values() {
+                if let teistro_intl::source::Entry::Message(source) = entry {
+                    if says_words_of_its_own(source) {
+                        *per_namespace.entry(name.as_str()).or_default() += 1;
+                        prose += 1;
+                    } else {
+                        rendered += 1;
+                    }
+                }
+            }
+        }
+        any = true;
+        let _ = write!(
+            out,
+            "**`{tag}`** — {} to read, {} that render a value and need no \
+             reading.\n\n| namespace | messages with words of their own |\
+             \n|---|---:|\n",
+            plural(prose, "message"),
+            count(rendered),
+        );
+        for (name, carried) in &per_namespace {
+            let _ = writeln!(out, "| `{name}` | {} |", count(*carried));
+        }
+        out.push('\n');
+    }
+    if !any {
+        out.push_str("No strict locale but the base carries a message.\n\n");
+    }
+    // The other locales carry `sdk.entity` and no messages at all, which
+    // is what `base` completeness means, so their share of the review is
+    // the names and not the sentences. Naming them here rather than
+    // leaving the omission to be read as "nothing to review".
+    let quiet: Vec<String> = tree
+        .locales
+        .keys()
+        .filter(|tag| !strict.contains(tag))
+        .map(|tag| format!("`{tag}`"))
+        .collect();
+    if !quiet.is_empty() {
+        let _ = write!(
+            out,
+            "{} carry no `sdk.*` message at all — `base` completeness is \
+             the entity names and the packs' own records — so their share \
+             of the sign-off is the **names**, held by \
+             [`entity-names.md`](entity-names.md) §4 and its list of \
+             members with no vetted source. `hi-Deva-IN` is one of them, \
+             which is worth saying plainly: the roadmap asks for `hi` \
+             sign-off and there is not a sentence in it to sign off.\n\n",
+            quiet.join(", "),
+        );
+    }
+}
+
 /// Every message the base locale carries, and which composer reads it.
 ///
 /// This is where the composers' coverage of the packs is decided rather
@@ -1440,6 +1570,8 @@ fn page(root: &Path) -> Result<String, String> {
     every_section(&mut out, root)?;
 
     coverage(&mut out, &tree);
+
+    what_a_reviewer_reads(&mut out, &tree, &strict);
 
     let snapshot = plans
         .iter()
