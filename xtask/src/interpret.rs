@@ -926,6 +926,12 @@ const SECTIONS_SOURCE: &str = "crates/sdk/src/reading.rs";
 /// and a section this list does not name fails, so the queue cannot rot
 /// into a sentence again.
 ///
+/// A row may carry **both**, and three do: a section can have a composer
+/// and still not be finished. `STATE` is the case that forced the third
+/// column to mean *what is left* rather than *why nobody says it* — a
+/// `GrahaState` carries a dozen facts and `conditions` says the four that
+/// reach it through a `Placement`, so the row was reading as answered.
+///
 /// The composer named must be a member of `PlanRequest`, which is the
 /// other half: a composer renamed would otherwise leave a section looking
 /// answered.
@@ -939,8 +945,36 @@ const SECTIONS_SOURCE: &str = "crates/sdk/src/reading.rs";
 /// gains a vetted table now fails here, so the reason cannot outlive the
 /// blocker.
 const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
-    ("PANCHANGA", "phala", "", &[]),
-    ("STATE", "conditions", "", &[]),
+    (
+        "PANCHANGA",
+        "phala",
+        "\
+        said only where a **corpus** carries a reading. `phala` renders a \
+        loaded record for the tithi, vara, nakshatra and yoga and says \
+        nothing of its own, so a consumer with no pack gets no item from \
+        this section at all. The limbs themselves are computed and named \
+        in all five locales and said by nothing — including the \
+        **karana**, which no composer mentions — as are the paksha and \
+        the ghatikas each limb had used and had left",
+        &[],
+    ),
+    (
+        "STATE",
+        "conditions",
+        "\
+        said, and not finished. `conditions` reads a `Placement`, which \
+        carries nine facts and is fully said; the section's own \
+        `GrahaState` carries a dozen, and the other half is not said at \
+        all — the **three friendships**, the motion in more than a \
+        direction, the **four avasthas** (`age`, `wakefulness`, \
+        `deeptadi`, `lajjitadi`), the war a graha is in, the Sayanadi and \
+        how near a graha stands to a classification boundary. The four \
+        avastha kinds are **already named in all five locales**, so the \
+        frame is the whole cost there, and 23 of the state corpus's \
+        readings key onto them. The Sayanadi and the Cheshta are the \
+        exceptions and are cited: the vetted tables stop at the four",
+        &["avastha_sayanadi", "avastha_cheshta"],
+    ),
     ("ASPECTS", "aspects", "", &[]),
     (
         "POINTS",
@@ -979,7 +1013,19 @@ const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
         Every name is vetted; only the choice is missing",
         &[],
     ),
-    ("SHADBALA", "strength", "", &[]),
+    (
+        "SHADBALA",
+        "strength",
+        "\
+        the **total** and the requirement. A `GrahaShadbala` carries the \
+        six strengths it is the sum of — sthana, dig, kaala, cheshta, \
+        naisargika and drik — and none of the six is an item, so a \
+        consumer reading a plan learns what a graha weighs and not what \
+        makes it weigh that. The `dig` and `naisargika` figures are bare \
+        numbers; the sthana and kaala are records of their own parts, so \
+        how deep a composer should go is the decision here",
+        &[],
+    ),
     (
         "BHAVA_BALA",
         "",
@@ -1056,20 +1102,14 @@ fn sections_agree(declared: &BTreeSet<&str>) -> Result<(), String> {
                 "SECTION_SAYS names `{name}` and {SECTIONS_SOURCE} declares no such section"
             ));
         }
-        if composer.is_empty() == why.is_empty() {
+        if composer.is_empty() && why.is_empty() {
             return Err(format!(
-                "`{name}` needs a composer or a reason there is none, and has {}",
-                if why.is_empty() { "neither" } else { "both" }
+                "`{name}` names neither a composer nor what is left to say of it"
             ));
         }
         if !composer.is_empty() && !teistro::PlanRequest::MEMBERS.contains(&composer) {
             return Err(format!(
                 "`{name}` is said by `{composer}`, which is not a member of PlanRequest"
-            ));
-        }
-        if !composer.is_empty() && !kinds.is_empty() {
-            return Err(format!(
-                "`{name}` is said by `{composer}` and still cites an unnamed kind"
             ));
         }
         for kind in kinds {
@@ -1093,6 +1133,10 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
         .iter()
         .filter(|(_, composer, ..)| !composer.is_empty())
         .count();
+    let partly = SECTION_SAYS
+        .iter()
+        .filter(|(_, composer, why, _)| !composer.is_empty() && !why.is_empty())
+        .count();
     let sourcing = SECTION_SAYS
         .iter()
         .filter(|(_, _, _, kinds)| !kinds.is_empty())
@@ -1102,23 +1146,28 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
         out,
         "A composer says a **section** or it says a placement, and the \
          sections are what a chart request asks for by name. {} of the {} \
-         a document can carry have a composer; the rest carry the reason \
-         they do not, because \"the silences left are all of one kind\" is \
-         exactly the sentence this page had and exactly the sentence that \
-         was not true. The list is read from the source that declares the \
+         a document can carry have a composer, with {} of those \
+         unfinished, and the rest carrying the reason nobody says them — \
+         because \"the silences left are all of one kind\" is exactly the \
+         sentence this page had and exactly the sentence that was not \
+         true. The third column means *what is left*, which `STATE` is \
+         why: a `GrahaState` carries a dozen facts and `conditions` says \
+         the four that reach it through a `Placement`, so the row read as \
+         answered. The list is read from the source that declares the \
          sections, so a twelfth fails here rather than being forgotten, \
          and a composer named must be a member of `PlanRequest`. Of the \
-         {} left, two share one blocker rather than having one each — \
-         `VIMSHOPAKA` and `VAISESHIKAMSA` both name a graha under four \
-         schemes at once — so the queue is grouped by the blocker and not \
-         by the row; and {} are short a **name** rather than a sentence, \
-         because being a catalogue member is not being named. The kinds \
-         those rows cite are on `intl`'s own list of members no strict \
-         locale names, checked here so a reason cannot outlive its \
+         {} nothing says, two share one blocker rather than having one \
+         each — `VIMSHOPAKA` and `VAISESHIKAMSA` both name a graha under \
+         four schemes at once — so the queue is grouped by the blocker and \
+         not by the row; and {} rows are short a **name** rather than a \
+         sentence, because being a catalogue member is not being named. \
+         The kinds those rows cite are on `intl`'s own list of members no \
+         strict locale names, checked here so a reason cannot outlive its \
          blocker.\n\n\
-         | section | said by | why not |\n|---|---|---|\n",
+         | section | said by | what is left |\n|---|---|---|\n",
         count(said),
         count(SECTION_SAYS.len()),
+        count(partly),
         count(SECTION_SAYS.len() - said),
         count(sourcing),
     );

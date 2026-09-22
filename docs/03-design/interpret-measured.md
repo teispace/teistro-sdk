@@ -202,29 +202,33 @@ but `sdk.entity` renders each one's own word.
 
 A composer says a **section** or it says a placement, and the sections
 are what a chart request asks for by name. 6 of the 11 a document can
-carry have a composer; the rest carry the reason they do not, because
-"the silences left are all of one kind" is exactly the sentence this
-page had and exactly the sentence that was not true. The list is read
-from the source that declares the sections, so a twelfth fails here
-rather than being forgotten, and a composer named must be a member of
-`PlanRequest`. Of the 5 left, two share one blocker rather than having
-one each — `VIMSHOPAKA` and `VAISESHIKAMSA` both name a graha under
-four schemes at once — so the queue is grouped by the blocker and not
-by the row; and 2 are short a **name** rather than a sentence, because
-being a catalogue member is not being named. The kinds those rows cite
-are on `intl`'s own list of members no strict locale names, checked here
-so a reason cannot outlive its blocker.
+carry have a composer, with 3 of those unfinished, and the rest carrying
+the reason nobody says them — because "the silences left are all of
+one kind" is exactly the sentence this page had and exactly the sentence
+that was not true. The third column means *what is left*, which `STATE`
+is why: a `GrahaState` carries a dozen facts and `conditions` says the
+four that reach it through a `Placement`, so the row read as answered.
+The list is read from the source that declares the sections, so a
+twelfth fails here rather than being forgotten, and a composer named
+must be a member of `PlanRequest`. Of the 5 nothing says, two share one
+blocker rather than having one each — `VIMSHOPAKA` and `VAISESHIKAMSA`
+both name a graha under four schemes at once — so the queue is grouped
+by the blocker and not by the row; and 3 rows are short a **name**
+rather than a sentence, because being a catalogue member is not being
+named. The kinds those rows cite are on `intl`'s own list of members no
+strict locale names, checked here so a reason cannot outlive its
+blocker.
 
-| section | said by | why not |
+| section | said by | what is left |
 |---|---|---|
-| `PANCHANGA` | `phala` | — |
-| `STATE` | `conditions` | — |
+| `PANCHANGA` | `phala` | said only where a **corpus** carries a reading. `phala` renders a loaded record for the tithi, vara, nakshatra and yoga and says nothing of its own, so a consumer with no pack gets no item from this section at all. The limbs themselves are computed and named in all five locales and said by nothing — including the **karana**, which no composer mentions — as are the paksha and the ghatikas each limb had used and had left |
+| `STATE` | `conditions` | said, and not finished. `conditions` reads a `Placement`, which carries nine facts and is fully said; the section's own `GrahaState` carries a dozen, and the other half is not said at all — the **three friendships**, the motion in more than a direction, the **four avasthas** (`age`, `wakefulness`, `deeptadi`, `lajjitadi`), the war a graha is in, the Sayanadi and how near a graha stands to a classification boundary. The four avastha kinds are **already named in all five locales**, so the frame is the whole cost there, and 23 of the state corpus's readings key onto them. The Sayanadi and the Cheshta are the exceptions and are cited: the vetted tables stop at the four |
 | `ASPECTS` | `aspects` | — |
 | `POINTS` | — | the five upagrahas and the special lagnas are points with longitudes, and `positions` says a **graha's** degree in the same sentence a point's would need — but the vetted table names the upagrahas only, so a special lagna has no name for the sentence to put in. The name comes before the sentence, and five of the state corpus's `special-lagna` readings are waiting on the same table |
 | `HOUSES` | `houses` | — |
 | `ASHTAKAVARGA` | — | a bindu count is twelve numbers a graha and one more row for their sum: a **table** rather than a sentence, and the sentence a consumer would want (`the Sun has five bindus in Aries`) is a fragment of the `exactLongitude` kind this page already declines. Which of its numbers deserves a sentence — a sign's sarva, a graha's pinda — is undecided rather than missing, and every name it would need is already vetted |
 | `VIMSHOPAKA` | — | the same shape as the Shadbala, and `sdk.reason.strength.score` would say it unchanged — but under **four schemes at once**, and which scheme a plan says is a knob nobody has asked for. One composer saying all four would say the same graha four times. Every name is vetted; only the choice is missing |
-| `SHADBALA` | `strength` | — |
+| `SHADBALA` | `strength` | the **total** and the requirement. A `GrahaShadbala` carries the six strengths it is the sum of — sthana, dig, kaala, cheshta, naisargika and drik — and none of the six is an item, so a consumer reading a plan learns what a graha weighs and not what makes it weigh that. The `dig` and `naisargika` figures are bare numbers; the sthana and kaala are records of their own parts, so how deep a composer should go is the decision here |
 | `BHAVA_BALA` | — | a bhava's strength in **virupas**, which is `strength`'s `score` with a bhava where the graha is — `score` takes a `graha` slot, so a bhava needs its own. Its second message has nothing to read: a `BhavaStrength` carries the four parts and their total and **no requirement at all**, where a `GrahaShadbala` carries `required_rupas` beside `strong`. What a bhava must reach is the decision, and it is not the graha rule the texts state |
 | `VAISESHIKAMSA` | — | **no strict locale names its designations.** Kimshuka, Parijata, Gopura and the rest are catalogue members, and being a catalogue member is not being named: `vaiseshikamsa` is on the unnamed list with no vetted source, exactly as the special lagnas are, so a composer saying them would print nothing a locale carries. This row called it the cheapest of the six on the strength of *being catalogued*, which is the conflation this page had been making in prose. It also names a graha under four schemes at once, which is `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides whether the name it earned is auspicious |
 | `DASHA_PHALA` | `dashaPhala` | — |
