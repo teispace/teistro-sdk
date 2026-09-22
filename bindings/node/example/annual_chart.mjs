@@ -69,6 +69,17 @@ const b = cast.annual.officeBearers;
 const five = [b.muntha, b.janmaLagna, b.varshaLagna, b.triRashi, b.dinaRatri].map(short).join(' ');
 console.log(`muntha in ${short(cast.muntha.sign)}; office-bearers ${five}, ${cast.annual.byDay ? 'by day' : 'by night'}`);
 
+// And the lord of that year, with the reason it holds it: the answer
+// carries every claim it was chosen over.
+const lord = cast.annual.yearLord;
+console.log(`year lord ${short(lord.graha)} at ${lord.vishwa}, chosen ${lord.chosen}`);
+for (const claim of lord.claims) {
+  console.log(
+    `  ${short(claim.graha).padEnd(8)} ${claim.vishwa}  ${claim.portfolios} portfolio(s)` +
+      `  ${claim.aspectsLagna ? 'aspects' : 'does not aspect'} the lagna`,
+  );
+}
+
 // ── The readings are named, and they are not each other ────────────────
 for (const reading of ['sidereal', 'tropical', 'mean']) {
   const one = ctx.chart.found({

@@ -100,6 +100,16 @@ def main() -> None:
         part = "by day" if cast.annual.by_day else "by night"
         print(f"muntha in {cast.muntha.sign.key}; office-bearers {five}, {part}")
 
+        # ── And the lord of that year, with the reason ─────────────────
+        lord = cast.annual.year_lord
+        print(f"year lord {lord.graha.key} at {lord.vishwa}, chosen {lord.chosen.key}")
+        for claim in lord.claims:
+            aspects = "aspects" if claim.aspects_lagna else "does not aspect"
+            print(
+                f"  {claim.graha.key:<8} {claim.vishwa}  "
+                f"{claim.portfolios} portfolio(s)  {aspects} the lagna"
+            )
+
         # ── The readings are named, and they are not each other ──────
         for reading in ("sidereal", "tropical", "mean"):
             one = ctx.chart.found(

@@ -588,6 +588,7 @@ pub fn charts() -> BlobSchema {
             chart_plans_section(34),
             chart_praveshas_section(35),
             chart_annual_charts_section(36),
+            chart_year_claims_section(37),
         ],
     }
 }
@@ -648,6 +649,59 @@ fn chart_annual_charts_section(id: u32) -> SectionSchema {
                 "dina_ratri_lord",
                 Scalar::U16,
                 "The lord of the Sun's sign by day or the Moon's by night, a `graha` id: the Dina-Ratri Pati.",
+            ),
+            ColumnDef::new(
+                "year_lord",
+                Scalar::U16,
+                "The **Varshesha**, lord of the year, a `graha` id: the strongest office-bearer that aspects the annual lagna, with the source's fallbacks (`03-design/varshesha.md`).",
+            ),
+            ColumnDef::new(
+                "year_lord_chosen",
+                Scalar::U8,
+                "Which step of the chain decided the year's lord. A year lord reached by a fallback is a different statement about the year from one chosen on strength, and the planet alone cannot say so.",
+            )
+            .of_enum("TsVarsheshaChosen"),
+            ColumnDef::new(
+                "year_lord_vishwa",
+                Scalar::I32,
+                "The year lord's five-fold strength, exact, in **sub-sub units** of which a unit holds 3600 — an integer because two office-bearers a sub-sub unit apart decide a year between them.",
+            ),
+            ColumnDef::new(
+                "moon_passed_over",
+                Scalar::U8,
+                "1 when the Moon led on strength and stepped aside, being \"unable to govern\"; 0 otherwise.",
+            ),
+            ColumnDef::new(
+                "claim_count",
+                Scalar::U8,
+                "How many rows of the `year_claims` section belong to this year: one to five, the distinct office-bearers.",
+            ),
+        ],
+    )
+}
+
+/// Every year's claimants on the lordship, and what each was judged on.
+fn chart_year_claims_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "year_claims",
+        "Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`).",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "The claimant, a `graha` id."),
+            ColumnDef::new(
+                "vishwa",
+                Scalar::I32,
+                "Its five-fold strength, exact, in sub-sub units of which a unit holds 3600.",
+            ),
+            ColumnDef::new(
+                "portfolios",
+                Scalar::U8,
+                "How many of the five offices it holds, 1 to 5: the tie-break when two are level on strength.",
+            ),
+            ColumnDef::new(
+                "aspects_lagna",
+                Scalar::U8,
+                "1 when it gives the Tajika aspect to the annual lagna, which it must to hold the year; 0 when it stands in a neutral house — 2, 6, 8 or 12 — and is disqualified however strong.",
             ),
         ],
     )

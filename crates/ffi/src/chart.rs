@@ -1761,6 +1761,38 @@ struct AnnualColumns {
     varsha_lagna: Vec<u16>,
     tri_rashi: Vec<u16>,
     dina_ratri: Vec<u16>,
+    year_lord: Vec<u16>,
+    chosen: Vec<u8>,
+    year_lord_vishwa: Vec<i32>,
+    moon_passed_over: Vec<u8>,
+    claim_counts: Vec<u8>,
+    /// The `year_claims` section: every year's claimants concatenated, in
+    /// the order each year ranks them, ragged by `claim_count`.
+    claims: ClaimColumns,
+}
+
+/// Every year's claimants on the lordship, flat and ragged.
+#[derive(Default)]
+struct ClaimColumns {
+    graha: Vec<u16>,
+    vishwa: Vec<i32>,
+    portfolios: Vec<u8>,
+    aspects_lagna: Vec<u8>,
+}
+
+impl ClaimColumns {
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "year_claims",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::I32(&self.vishwa),
+                ColumnData::U8(&self.portfolios),
+                ColumnData::U8(&self.aspects_lagna),
+            ],
+        )
+    }
 }
 
 impl AnnualColumns {
@@ -1772,6 +1804,21 @@ impl AnnualColumns {
         self.varsha_lagna.push(bearers.varsha_lagna.id());
         self.tri_rashi.push(bearers.tri_rashi.id());
         self.dina_ratri.push(bearers.dina_ratri.id());
+        let lord = &year.year_lord;
+        self.year_lord.push(lord.graha.id());
+        self.chosen.push(TsVarsheshaChosen::from(lord.chosen) as u8);
+        self.year_lord_vishwa.push(sub_sub(lord.vishwa));
+        self.moon_passed_over.push(u8::from(lord.moon_passed_over));
+        self.claim_counts
+            .push(u8::try_from(lord.claims.len()).unwrap_or(u8::MAX));
+        for claim in &lord.claims {
+            self.claims.graha.push(claim.graha.id());
+            self.claims.vishwa.push(sub_sub(claim.vishwa));
+            self.claims.portfolios.push(claim.portfolios);
+            self.claims
+                .aspects_lagna
+                .push(u8::from(claim.aspects_lagna));
+        }
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
@@ -1785,9 +1832,24 @@ impl AnnualColumns {
                 ColumnData::U16(&self.varsha_lagna),
                 ColumnData::U16(&self.tri_rashi),
                 ColumnData::U16(&self.dina_ratri),
+                ColumnData::U16(&self.year_lord),
+                ColumnData::U8(&self.chosen),
+                ColumnData::I32(&self.year_lord_vishwa),
+                ColumnData::U8(&self.moon_passed_over),
+                ColumnData::U8(&self.claim_counts),
             ],
-        )
+        )?;
+        self.claims.write(writer)
     }
+}
+
+/// A strength as the boundary carries it: exact, in sub-sub units, of
+/// which a unit holds 3600.
+///
+/// An integer and not a float, because the source works to sub-sub units
+/// and two office-bearers a sub-sub unit apart decide a year between them.
+fn sub_sub(bala: teistro::Bala) -> i32 {
+    i32::try_from(bala.as_sub_sub()).unwrap_or(i32::MAX)
 }
 
 impl PraveshaColumns {
@@ -2429,6 +2491,54 @@ pub(crate) struct VarshaRequest {
     /// the answer is the instants and the Muntha, as it always was.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub(crate) place: Option<AnnualPlace>,
+    /// The readings the year lord's chain parts on, where authorities
+    /// differ; the source's own by default (crux C106).
+    #[serde(default)]
+    pub(crate) varshesha: teistro::VarsheshaRules,
+}
+
+/// Which step of the year lord's chain decided it
+/// (`03-design/varshesha.md`).
+///
+/// Mirrors `teistro::Chosen` through an **exhaustive** match, which is
+/// what stops the two drifting: a step added stops this crate compiling
+/// rather than silently crossing as whatever was first.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsVarsheshaChosen {
+    /// The strongest office-bearer that aspects the annual lagna: the
+    /// ordinary answer.
+    Strongest = 0,
+    /// Tied on strength, and this one holds more portfolios.
+    MostPortfolios = 1,
+    /// The Muntha's lord, because no office-bearer aspects the lagna.
+    MunthaLordUnaspected = 2,
+    /// The Muntha's lord, because every office-bearer is under five units.
+    MunthaLordAllWeak = 3,
+    /// The Muntha's lord, on an outright tie of strength, aspect and
+    /// portfolios.
+    MunthaLordTied = 4,
+    /// The Dina-Ratri Pati, on that same tie, under the other reading.
+    DinaRatriTied = 5,
+    /// The annual lagna's lord, because nobody aspects and the rules ask
+    /// for that reading.
+    AnnualLagnaLordUnaspected = 6,
+}
+
+impl From<teistro::Chosen> for TsVarsheshaChosen {
+    fn from(chosen: teistro::Chosen) -> TsVarsheshaChosen {
+        match chosen {
+            teistro::Chosen::Strongest => TsVarsheshaChosen::Strongest,
+            teistro::Chosen::MostPortfolios => TsVarsheshaChosen::MostPortfolios,
+            teistro::Chosen::MunthaLordUnaspected => TsVarsheshaChosen::MunthaLordUnaspected,
+            teistro::Chosen::MunthaLordAllWeak => TsVarsheshaChosen::MunthaLordAllWeak,
+            teistro::Chosen::MunthaLordTied => TsVarsheshaChosen::MunthaLordTied,
+            teistro::Chosen::DinaRatriTied => TsVarsheshaChosen::DinaRatriTied,
+            teistro::Chosen::AnnualLagnaLordUnaspected => {
+                TsVarsheshaChosen::AnnualLagnaLordUnaspected
+            }
+        }
+    }
 }
 
 /// Where a year's chart is cast (`03-design/muntha.md`, "Where a year's
@@ -2535,7 +2645,7 @@ impl<'de> serde::Deserialize<'de> for AnnualPlace {
 /// the office-bearers are read from the birth and the chart founded at
 /// that instant, so a second pass to fetch either would be a second chance
 /// to disagree about which year it is (`03-design/muntha.md`).
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct Year {
     /// The instant, and which year of the birth it opens.
     pub pravesha: teistro::Pravesha,
@@ -2548,12 +2658,14 @@ pub struct Year {
 
 /// What a year's own chart says, for the office-bearers and whoever reads
 /// the chart after them.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub struct AnnualYear {
     /// The annual chart's lagna, sidereal degrees.
     pub lagna_deg: f64,
     /// The five office-bearers, and whether the year opened by day.
     pub bearers: teistro::OfficeBearers,
+    /// The lord of the year, with every claim it was chosen over.
+    pub year_lord: teistro::Varshesha,
 }
 
 /// The annual charts a request's `varsha_json` asks for, none for null; a
@@ -2718,7 +2830,14 @@ fn praveshas_of(
                             let annual = asked
                                 .place
                                 .map(|place| {
-                                    annual_year(sdk, document, birth_clock, place, pravesha)
+                                    annual_year(
+                                        sdk,
+                                        document,
+                                        birth_clock,
+                                        place,
+                                        asked.varshesha,
+                                        pravesha,
+                                    )
                                 })
                                 .transpose()?;
                             Ok(Year {
@@ -2750,6 +2869,7 @@ fn annual_year(
     birth: &Document,
     birth_clock: teistro::UtcOffset,
     place: AnnualPlace,
+    varshesha: teistro::VarsheshaRules,
     pravesha: teistro::Pravesha,
 ) -> Result<AnnualYear, Error> {
     let request = match place {
@@ -2758,9 +2878,13 @@ fn annual_year(
     };
     let annual = sdk.chart().reading(pravesha.at, &request)?.value;
     let bearers = sdk.chart().office_bearers(birth, &annual, pravesha.year)?;
+    let year_lord = sdk
+        .chart()
+        .varshesha(birth, &annual, pravesha.year, varshesha)?;
     Ok(AnnualYear {
         lagna_deg: annual.foundation.lagna_deg,
         bearers,
+        year_lord,
     })
 }
 

@@ -1204,6 +1204,45 @@ class ChartsAnnualCharts:
     dina_ratri_lord: memoryview[int]
     """The lord of the Sun's sign by day or the Moon's by night, a `graha` id: the Dina-Ratri Pati."""
 
+    year_lord: memoryview[int]
+    """The **Varshesha**, lord of the year, a `graha` id: the strongest office-bearer that aspects the annual lagna, with the source's fallbacks (`03-design/varshesha.md`)."""
+
+    year_lord_chosen: memoryview[int]
+    """Which step of the chain decided the year's lord. A year lord reached by a fallback is a different statement about the year from one chosen on strength, and the planet alone cannot say so."""
+
+    year_lord_vishwa: memoryview[int]
+    """The year lord's five-fold strength, exact, in **sub-sub units** of which a unit holds 3600 — an integer because two office-bearers a sub-sub unit apart decide a year between them."""
+
+    moon_passed_over: memoryview[int]
+    """1 when the Moon led on strength and stepped aside, being "unable to govern"; 0 otherwise."""
+
+    claim_count: memoryview[int]
+    """How many rows of the `year_claims` section belong to this year: one to five, the distinct office-bearers."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsYearClaims:
+    """The `year_claims` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`).
+    """
+
+    graha: memoryview[int]
+    """The claimant, a `graha` id."""
+
+    vishwa: memoryview[int]
+    """Its five-fold strength, exact, in sub-sub units of which a unit holds 3600."""
+
+    portfolios: memoryview[int]
+    """How many of the five offices it holds, 1 to 5: the tie-break when two are level on strength."""
+
+    aspects_lagna: memoryview[int]
+    """1 when it gives the Tajika aspect to the annual lagna, which it must to hold the year; 0 when it stands in a neutral house — 2, 6, 8 or 12 — and is disqualified however strong."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -1434,6 +1473,9 @@ class Charts:
     annual_charts: ChartsAnnualCharts
     """Each return's own chart, founded where `varsha_json.place` said — `"birth"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`)."""
 
+    year_claims: ChartsYearClaims
+    """Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`)."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1479,6 +1521,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_plans = blob.section(34, "plans")
     at_praveshas = blob.section(35, "praveshas")
     at_annual_charts = blob.section(36, "annual_charts")
+    at_year_claims = blob.section(37, "year_claims")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -2066,7 +2109,37 @@ def decode_charts(raw: bytes) -> Charts:
             dina_ratri_lord=blob.column(
                 at_annual_charts, 5, 2, at_annual_charts.count
             ).cast("H"),
+            year_lord=blob.column(
+                at_annual_charts, 6, 2, at_annual_charts.count
+            ).cast("H"),
+            year_lord_chosen=blob.column(
+                at_annual_charts, 7, 1, at_annual_charts.count
+            ).cast("B"),
+            year_lord_vishwa=blob.column(
+                at_annual_charts, 8, 4, at_annual_charts.count
+            ).cast("i"),
+            moon_passed_over=blob.column(
+                at_annual_charts, 9, 1, at_annual_charts.count
+            ).cast("B"),
+            claim_count=blob.column(
+                at_annual_charts, 10, 1, at_annual_charts.count
+            ).cast("B"),
             length=at_annual_charts.count,
+        ),
+        year_claims=ChartsYearClaims(
+            graha=blob.column(
+                at_year_claims, 0, 2, at_year_claims.count
+            ).cast("H"),
+            vishwa=blob.column(
+                at_year_claims, 1, 4, at_year_claims.count
+            ).cast("i"),
+            portfolios=blob.column(
+                at_year_claims, 2, 1, at_year_claims.count
+            ).cast("B"),
+            aspects_lagna=blob.column(
+                at_year_claims, 3, 1, at_year_claims.count
+            ).cast("B"),
+            length=at_year_claims.count,
         ),
     )
 

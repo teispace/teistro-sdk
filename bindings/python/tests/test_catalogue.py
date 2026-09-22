@@ -38,9 +38,13 @@ class TheCatalogue(unittest.TestCase):
         # 101 since the vaiseshikamsa kind, thirty names and its UNKNOWN;
         # 102 since the avastha_cheshta kind, three sub-states and its UNKNOWN,
         # each kind with its own member of `Kind`; 103 since the dasha phala's
-        # `DashaPhase`, three phases.
-        self.assertEqual(len(every_enum()), 103)
-        self.assertEqual(sum(len(list(found)) for found in every_enum()), 946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3)
+        # `DashaPhase`, three phases; 104 since the year lord's
+        # `VarsheshaChosen`, the seven steps of its chain.
+        self.assertEqual(len(every_enum()), 104)
+        self.assertEqual(
+            sum(len(list(found)) for found in every_enum()),
+            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7,
+        )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:
         for found in every_enum():

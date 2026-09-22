@@ -1370,69 +1370,140 @@ fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &te
         let key = |what: &str| format!("chart-{index}-varsha-{name}{what}");
         put(report, &key("-count"), years.len().to_string());
         for one in &years {
-            put(
-                report,
-                &key(&format!("-{}", one.year)),
-                number(one.at.get()),
-            );
-            // The Muntha is progressed by the year's own count and by
-            // nothing the reading decides, so recording it under each of
-            // the three holds that independence across all four runners
-            // as well as holding the bindings to one another.
-            let Ok(muntha) =
-                sdk.chart()
-                    .muntha(document, one.year, teistro::MunthaDegree::default())
-            else {
-                continue;
-            };
-            put(
-                report,
-                &key(&format!("-{}-muntha", one.year)),
-                muntha.sign.full_key().to_owned(),
-            );
-            put(
-                report,
-                &key(&format!("-{}-muntha-lord", one.year)),
-                muntha.lord.full_key().to_owned(),
-            );
-            put(
-                report,
-                &key(&format!("-{}-muntha-deg", one.year)),
-                number(muntha.longitude_deg),
-            );
-            // The year's own chart at the birthplace, as `"place":"birth"`
-            // founds it at the boundary, and its office-bearers.
-            let at_birth = ChartRequest::at(
-                document.foundation.place,
-                UtcOffset::try_from_seconds(20700).expect("+05:45"),
-            );
-            let Ok(annual) = sdk.chart().reading(one.at, &at_birth) else {
-                continue;
-            };
-            let Ok(bearers) = sdk
-                .chart()
-                .office_bearers(document, &annual.value, one.year)
-            else {
-                continue;
-            };
-            put(
-                report,
-                &key(&format!("-{}-annual-lagna", one.year)),
-                number(annual.value.foundation.lagna_deg),
-            );
-            put(
-                report,
-                &key(&format!("-{}-annual-by-day", one.year)),
-                bearers.by_day.to_string(),
-            );
-            put(
-                report,
-                &key(&format!("-{}-annual-bearers", one.year)),
-                teistro::Office::ALL
-                    .map(|office| bearers.holder(office).full_key())
-                    .join(" "),
-            );
+            the_year(report, sdk, document, &key, one);
         }
+    }
+}
+
+/// One year of one reading: its instant, its Muntha, its own chart at the
+/// birthplace, that chart's office-bearers and the lord of the year with
+/// every claim it was chosen over.
+fn the_year(
+    report: &mut Report,
+    sdk: &Context,
+    document: &teistro::Document,
+    key: &dyn Fn(&str) -> String,
+    one: &teistro::Pravesha,
+) {
+    put(
+        report,
+        &key(&format!("-{}", one.year)),
+        number(one.at.get()),
+    );
+    // The Muntha is progressed by the year's own count and by
+    // nothing the reading decides, so recording it under each of
+    // the three holds that independence across all four runners
+    // as well as holding the bindings to one another.
+    let Ok(muntha) = sdk
+        .chart()
+        .muntha(document, one.year, teistro::MunthaDegree::default())
+    else {
+        return;
+    };
+    put(
+        report,
+        &key(&format!("-{}-muntha", one.year)),
+        muntha.sign.full_key().to_owned(),
+    );
+    put(
+        report,
+        &key(&format!("-{}-muntha-lord", one.year)),
+        muntha.lord.full_key().to_owned(),
+    );
+    put(
+        report,
+        &key(&format!("-{}-muntha-deg", one.year)),
+        number(muntha.longitude_deg),
+    );
+    // The year's own chart at the birthplace, as `"place":"birth"`
+    // founds it at the boundary, and its office-bearers.
+    let at_birth = ChartRequest::at(
+        document.foundation.place,
+        UtcOffset::try_from_seconds(20700).expect("+05:45"),
+    );
+    let Ok(annual) = sdk.chart().reading(one.at, &at_birth) else {
+        return;
+    };
+    let Ok(bearers) = sdk
+        .chart()
+        .office_bearers(document, &annual.value, one.year)
+    else {
+        return;
+    };
+    put(
+        report,
+        &key(&format!("-{}-annual-lagna", one.year)),
+        number(annual.value.foundation.lagna_deg),
+    );
+    put(
+        report,
+        &key(&format!("-{}-annual-by-day", one.year)),
+        bearers.by_day.to_string(),
+    );
+    put(
+        report,
+        &key(&format!("-{}-annual-bearers", one.year)),
+        teistro::Office::ALL
+            .map(|office| bearers.holder(office).full_key())
+            .join(" "),
+    );
+    // The lord of that year, and the reckoning it came out of.
+    let Ok(lord) = sdk.chart().varshesha(
+        document,
+        &annual.value,
+        one.year,
+        teistro::VarsheshaRules::default(),
+    ) else {
+        return;
+    };
+    put(
+        report,
+        &key(&format!("-{}-year-lord", one.year)),
+        lord.graha.full_key().to_owned(),
+    );
+    put(
+        report,
+        &key(&format!("-{}-year-lord-chosen", one.year)),
+        chosen_key(lord.chosen).to_owned(),
+    );
+    put(
+        report,
+        &key(&format!("-{}-year-lord-bala", one.year)),
+        lord.vishwa.to_string(),
+    );
+    put(
+        report,
+        &key(&format!("-{}-year-claims", one.year)),
+        lord.claims
+            .iter()
+            .map(|claim| {
+                format!(
+                    "{}:{}:{}:{}",
+                    claim.graha.full_key(),
+                    claim.vishwa,
+                    claim.portfolios,
+                    claim.aspects_lagna
+                )
+            })
+            .collect::<Vec<String>>()
+            .join(" "),
+    );
+}
+
+/// The year lord's step, spelled as the **boundary** spells it, so the
+/// Rust runner and the bindings compare as themselves.
+///
+/// An exhaustive match: a step added to the chain stops this compiling
+/// rather than printing a name no binding has.
+fn chosen_key(chosen: teistro::Chosen) -> &'static str {
+    match chosen {
+        teistro::Chosen::Strongest => "strongest",
+        teistro::Chosen::MostPortfolios => "most-portfolios",
+        teistro::Chosen::MunthaLordUnaspected => "muntha-lord-unaspected",
+        teistro::Chosen::MunthaLordAllWeak => "muntha-lord-all-weak",
+        teistro::Chosen::MunthaLordTied => "muntha-lord-tied",
+        teistro::Chosen::DinaRatriTied => "dina-ratri-tied",
+        teistro::Chosen::AnnualLagnaLordUnaspected => "annual-lagna-lord-unaspected",
     }
 }
 

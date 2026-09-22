@@ -81,7 +81,7 @@ part inside the year, so a Tajika aspect taken to the Muntha does.
 | **not decided** | the Muntha's longitude inside its sign between the two readings (crux C107), which waits on a text that gives a longitude rather than a sign |
 | **across the boundary** | `varsha_json.muntha` names the reading; `muntha_sign`, `muntha_lord` and `muntha_deg` ride in the `praveshas` section beside the return they stand at, so no second call can disagree about which year it is. Node, Dart and Python each read `pravesha.muntha`, each binding's test asserts the rule, and all four parity runners print it under all three return readings — which also holds the Muntha's independence of the reading |
 | **built** | `teistro_tajika::muntha` and `Muntha::during`, the progression a fraction through the year; `sdk.chart().muntha`, which needs **no ephemeris**, being the founded chart's own lagna and a count |
-| **not built** | the Tajika aspects and the year lord — below |
+| **not built** | the Tajika aspects with their deeptamsha orbs, which the sixteen yogas and the sahamas need. The year lord is built and crosses ([`varshesha.md`](varshesha.md)) |
 
 ## The office-bearers
 

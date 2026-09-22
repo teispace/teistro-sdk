@@ -50,6 +50,7 @@ import {
   PointById,
   QuadrantById,
   RashiById,
+  VarsheshaChosenById,
   StrengthById,
   BalanceById,
   EkadhipatyaById,
@@ -2372,6 +2373,12 @@ function annualOf(d, row) {
     );
   }
   const lord = (column) => GrahaById.get(column[row]) ?? 'unknown';
+  // The claims are ragged by `claimCount`, as the returns are by
+  // `praveshaCount`: walk to this year's block and take its own count.
+  let from = 0;
+  for (let i = 0; i < row; i += 1) from += charts.claimCount[i];
+  const count = charts.claimCount[row] ?? 0;
+  const claims = d.yearClaims;
   return {
     lagnaDeg: charts.lagnaDeg[row],
     byDay: charts.daylight[row] === 1,
@@ -2382,6 +2389,43 @@ function annualOf(d, row) {
       triRashi: lord(charts.triRashiLord),
       dinaRatri: lord(charts.dinaRatriLord),
     },
+    yearLord: {
+      graha: lord(charts.yearLord),
+      chosen: VarsheshaChosenById.get(charts.yearLordChosen[row]) ?? 'unknown',
+      vishwa: bala(charts.yearLordVishwa[row]),
+      moonPassedOver: charts.moonPassedOver[row] === 1,
+      claims: Array.from({ length: count }, (_, k) => ({
+        graha: GrahaById.get(claims.graha[from + k]) ?? 'unknown',
+        vishwa: bala(claims.vishwa[from + k]),
+        portfolios: claims.portfolios[from + k],
+        aspectsLagna: claims.aspectsLagna[from + k] === 1,
+      })),
+    },
+  };
+}
+
+/**
+ * A Tajika strength, which the boundary carries exactly as an integer
+ * count of sub-sub units — 3600 to a unit — because two office-bearers a
+ * sub-sub unit apart decide a year between them. `units` is the figure a
+ * reader compares; `toString()` is how the sources write one.
+ *
+ * @param {number} subSub
+ * @returns {object}
+ */
+function bala(subSub) {
+  const units = Math.trunc(subSub / 3600);
+  const rest = subSub - units * 3600;
+  const parts = {
+    units,
+    subUnits: Math.trunc(rest / 60),
+    subSub: rest % 60,
+    total: subSub,
+  };
+  const pad = (n) => String(n).padStart(2, '0');
+  return {
+    ...parts,
+    toString: () => `${pad(parts.units)}:${pad(parts.subUnits)}:${pad(parts.subSub)}`,
   };
 }
 

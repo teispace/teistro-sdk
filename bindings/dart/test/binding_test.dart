@@ -1493,6 +1493,18 @@ void _engineTests() {
     );
     expect(again.lagnaDeg, cast[3].annual!.lagnaDeg);
 
+    // Each year names a lord, chosen among its own claimants.
+    for (final one in cast) {
+      final lord = one.annual!.yearLord;
+      expect(lord.claims.length, inInclusiveRange(1, 5));
+      expect(lord.claims.map((claim) => claim.graha), contains(lord.graha));
+      final ranked = [for (final claim in lord.claims) claim.vishwa.total];
+      final sorted = [...ranked]..sort((int a, int b) => b - a);
+      expect(ranked, orderedEquals(sorted));
+      expect(lord.vishwa.toString(), matches(r'^\d\d:\d\d:\d\d$'));
+      expect(lord.vishwa.units, lord.vishwa.total ~/ 3600);
+    }
+
     // At a residence, in the parts `found` takes, the lagnas move.
     final delhi =
         ctx.chart

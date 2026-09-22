@@ -606,8 +606,9 @@ test('every catalogue enum has a complete id table', () => {
   // 975 since the Vimshopaka's `TsVimshopakaScoring`, two;
   // 1006 since the vaiseshikamsa catalogue kind: thirty names and its UNKNOWN;
   // 1010 since the avastha_cheshta catalogue kind: three and its UNKNOWN;
-  // 1013 since the dasha phala's `TsDashaPhase`, three.
-  assert.equal(entries, 1013, 'every member of every enum is in a table');
+  // 1013 since the dasha phala's `TsDashaPhase`, three;
+  // 1020 since the year lord's `TsVarsheshaChosen`, seven steps of its chain.
+  assert.equal(entries, 1020, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1275,6 +1276,21 @@ test('a chart carries the annual charts its birth opens', () => {
   // Founding the same instant here gives the same lagna the batch read.
   const again = ctx.chart.found({ instant: cast[3].instant, place, utcOffsetSeconds: 20700 });
   assert.equal(again.lagnaDeg, cast[3].annual.lagnaDeg);
+
+  // Each year names a lord, chosen among its own claimants and for a
+  // reason the answer carries.
+  for (const one of cast) {
+    const lord = one.annual.yearLord;
+    assert.ok(lord.claims.length >= 1 && lord.claims.length <= 5);
+    assert.ok(lord.claims.some((claim) => claim.graha === lord.graha));
+    // Ranked strongest first, and the strength reads as the sources write it.
+    const ranked = lord.claims.map((claim) => claim.vishwa.total);
+    assert.deepEqual(ranked, [...ranked].sort((a, b) => b - a));
+    assert.match(lord.vishwa.toString(), /^\d\d:\d\d:\d\d$/);
+    assert.equal(lord.vishwa.units, Math.trunc(lord.vishwa.total / 3600));
+    assert.ok(typeof lord.chosen === 'string' && lord.chosen !== 'unknown');
+    assert.equal(typeof lord.moonPassedOver, 'boolean');
+  }
 
   // At a residence, in the place shape `found` takes, the lagnas move.
   const delhi = ctx.chart.found({

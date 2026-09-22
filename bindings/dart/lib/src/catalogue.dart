@@ -5227,6 +5227,58 @@ enum PolarDayPolicy {
   }
 }
 
+/// Which step of the year lord's chain decided it
+/// (`03-design/varshesha.md`).
+///
+/// Mirrors `teistro::Chosen` through an **exhaustive** match, which is
+/// what stops the two drifting: a step added stops this crate compiling
+/// rather than silently crossing as whatever was first.
+enum VarsheshaChosen {
+  /// The strongest office-bearer that aspects the annual lagna: the
+  /// ordinary answer.
+  strongest(0, 'strongest'),
+  /// Tied on strength, and this one holds more portfolios.
+  mostPortfolios(1, 'most-portfolios'),
+  /// The Muntha's lord, because no office-bearer aspects the lagna.
+  munthaLordUnaspected(2, 'muntha-lord-unaspected'),
+  /// The Muntha's lord, because every office-bearer is under five units.
+  munthaLordAllWeak(3, 'muntha-lord-all-weak'),
+  /// The Muntha's lord, on an outright tie of strength, aspect and
+  /// portfolios.
+  munthaLordTied(4, 'muntha-lord-tied'),
+  /// The Dina-Ratri Pati, on that same tie, under the other reading.
+  dinaRatriTied(5, 'dina-ratri-tied'),
+  /// The annual lagna's lord, because nobody aspects and the rules ask
+  /// for that reading.
+  annualLagnaLordUnaspected(6, 'annual-lagna-lord-unaspected');
+
+  const VarsheshaChosen(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static VarsheshaChosen byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a VarsheshaChosen'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static VarsheshaChosen? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// A time scale of the conversions; the first two ids are the port's.
 enum Scale {
   /// Universal Time (UT1).

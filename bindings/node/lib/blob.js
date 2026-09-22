@@ -629,6 +629,21 @@ export function decodeCharts(bytes) {
       varshaLagnaLord: column(blob, at, 3, 'u16', at.count),
       triRashiLord: column(blob, at, 4, 'u16', at.count),
       dinaRatriLord: column(blob, at, 5, 'u16', at.count),
+      yearLord: column(blob, at, 6, 'u16', at.count),
+      yearLordChosen: column(blob, at, 7, 'u8', at.count),
+      yearLordVishwa: column(blob, at, 8, 'i32', at.count),
+      moonPassedOver: column(blob, at, 9, 'u8', at.count),
+      claimCount: column(blob, at, 10, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 37, 'year_claims');
+    out.yearClaims = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      vishwa: column(blob, at, 1, 'i32', at.count),
+      portfolios: column(blob, at, 2, 'u8', at.count),
+      aspectsLagna: column(blob, at, 3, 'u8', at.count),
       length: at.count,
     };
   }

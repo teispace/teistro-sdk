@@ -4674,6 +4674,48 @@ typedef enum ts_polar_day_policy {
 } ts_polar_day_policy;
 
 /**
+ * Which step of the year lord's chain decided it
+ * (`03-design/varshesha.md`).
+ *
+ * Mirrors `teistro::Chosen` through an **exhaustive** match, which is
+ * what stops the two drifting: a step added stops this crate compiling
+ * rather than silently crossing as whatever was first.
+ */
+typedef enum ts_varshesha_chosen {
+    /**
+     * The strongest office-bearer that aspects the annual lagna: the
+     * ordinary answer.
+     */
+    TS_VARSHESHA_CHOSEN_STRONGEST = 0,
+    /**
+     * Tied on strength, and this one holds more portfolios.
+     */
+    TS_VARSHESHA_CHOSEN_MOST_PORTFOLIOS = 1,
+    /**
+     * The Muntha's lord, because no office-bearer aspects the lagna.
+     */
+    TS_VARSHESHA_CHOSEN_MUNTHA_LORD_UNASPECTED = 2,
+    /**
+     * The Muntha's lord, because every office-bearer is under five units.
+     */
+    TS_VARSHESHA_CHOSEN_MUNTHA_LORD_ALL_WEAK = 3,
+    /**
+     * The Muntha's lord, on an outright tie of strength, aspect and
+     * portfolios.
+     */
+    TS_VARSHESHA_CHOSEN_MUNTHA_LORD_TIED = 4,
+    /**
+     * The Dina-Ratri Pati, on that same tie, under the other reading.
+     */
+    TS_VARSHESHA_CHOSEN_DINA_RATRI_TIED = 5,
+    /**
+     * The annual lagna's lord, because nobody aspects and the rules ask
+     * for that reading.
+     */
+    TS_VARSHESHA_CHOSEN_ANNUAL_LAGNA_LORD_UNASPECTED = 6,
+} ts_varshesha_chosen;
+
+/**
  * A time scale of the conversions; the first two ids are the port's.
  */
 typedef enum ts_scale {

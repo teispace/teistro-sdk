@@ -83,8 +83,26 @@ Not a planet. A planet **and why**:
 | **decided** | the chain and its order; the Tajika aspect as the house relation, the neutral houses giving none; five units as the floor; the Moon passed over by default |
 | **a setting** | `VarsheshaRules` — the three readings above |
 | **not decided** | the "special circumstances" in which the source says the aspect is not required, which it never names; and whether a Moon is "extraordinarily strong", which it leaves to the reader (crux C106) |
+| **across the boundary** | `varsha_json.varshesha` names the three readings; each year's chart answers its lord in the `annual_charts` section — `year_lord`, `year_lord_chosen` (a `TsVarsheshaChosen`), `year_lord_vishwa` and `moon_passed_over` — and its claimants in the **ragged** `year_claims` section, counted by `claim_count`. Node, Dart and Python read it as `pravesha.annual.yearLord`, each binding's test holds the ranking and the lord's membership of its own claims, and all four parity runners print the lord, its step, its strength and every claim: **4 bindings agree on 8 018 values** |
 | **built** | `teistro_tajika::varshesha`; `sdk.chart().varshesha`, which composes the office-bearers and the strengths and needs **no ephemeris** |
-| **not built** | the crossing, which comes next and carries the year lord rather than the table it is computed from; the sixteen yogas, which need the Tajika aspects with their deeptamsha orbs — a different thing from the aspect this rule uses |
+| **not built** | the sixteen yogas, which need the Tajika aspects with their deeptamsha orbs — a different thing from the aspect this rule uses |
+
+## The strength crosses as an integer
+
+A `Bala` crosses as **sub-sub units**, 3600 to a unit, in an `i32` — not
+as a float. Two office-bearers a sub-sub unit apart decide a year between
+them, and the source's own worked chart separates its first two claimants
+by 25 sub-units. Each binding turns that integer back into
+`{units, subUnits, subSub, total}` with a `toString()` that writes it the
+way the sources do, `14:20:15`, so a reader compares `units` and a
+machine compares `total`.
+
+The seven-planet strength table itself does **not** cross. A consumer at
+the boundary wants the year and its reckoning, which the claims carry; the
+full five-parts-by-seven-planets table is what that reckoning was computed
+from, and `sdk.chart().panchavargiya` gives it to a Rust caller who wants
+it. Crossing it would be five more columns per planet per year for a
+reader nobody has yet.
 
 ## The aspect here is not the aspect the yogas want
 

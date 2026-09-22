@@ -1477,6 +1477,11 @@ final class ChartsAnnualCharts {
     required this.varshaLagnaLord,
     required this.triRashiLord,
     required this.dinaRatriLord,
+    required this.yearLord,
+    required this.yearLordChosen,
+    required this.yearLordVishwa,
+    required this.moonPassedOver,
+    required this.claimCount,
     required this.length,
   });
 
@@ -1497,6 +1502,50 @@ final class ChartsAnnualCharts {
 
   /// The lord of the Sun's sign by day or the Moon's by night, a `graha` id: the Dina-Ratri Pati.
   final Uint16List dinaRatriLord;
+
+  /// The **Varshesha**, lord of the year, a `graha` id: the strongest office-bearer that aspects the annual lagna, with the source's fallbacks (`03-design/varshesha.md`).
+  final Uint16List yearLord;
+
+  /// Which step of the chain decided the year's lord. A year lord reached by a fallback is a different statement about the year from one chosen on strength, and the planet alone cannot say so.
+  final Uint8List yearLordChosen;
+
+  /// The year lord's five-fold strength, exact, in **sub-sub units** of which a unit holds 3600 — an integer because two office-bearers a sub-sub unit apart decide a year between them.
+  final Int32List yearLordVishwa;
+
+  /// 1 when the Moon led on strength and stepped aside, being "unable to govern"; 0 otherwise.
+  final Uint8List moonPassedOver;
+
+  /// How many rows of the `year_claims` section belong to this year: one to five, the distinct office-bearers.
+  final Uint8List claimCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `year_claims` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`).
+final class ChartsYearClaims {
+  const ChartsYearClaims({
+    required this.graha,
+    required this.vishwa,
+    required this.portfolios,
+    required this.aspectsLagna,
+    required this.length,
+  });
+
+  /// The claimant, a `graha` id.
+  final Uint16List graha;
+
+  /// Its five-fold strength, exact, in sub-sub units of which a unit holds 3600.
+  final Int32List vishwa;
+
+  /// How many of the five offices it holds, 1 to 5: the tie-break when two are level on strength.
+  final Uint8List portfolios;
+
+  /// 1 when it gives the Tajika aspect to the annual lagna, which it must to hold the year; 0 when it stands in a neutral house — 2, 6, 8 or 12 — and is disqualified however strong.
+  final Uint8List aspectsLagna;
 
   /// The number of rows every column holds.
   final int length;
@@ -1642,6 +1691,7 @@ final class Charts {
     required this.plans,
     required this.praveshas,
     required this.annualCharts,
+    required this.yearClaims,
   });
 
   /// What kind of chart these are.
@@ -1796,6 +1846,9 @@ final class Charts {
   /// Each return's own chart, founded where `varsha_json.place` said — `"birth"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`).
   final ChartsAnnualCharts annualCharts;
 
+  /// Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`).
+  final ChartsYearClaims yearClaims;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1839,6 +1892,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atPlans = blob.section(34, 'plans');
   final atPraveshas = blob.section(35, 'praveshas');
   final atAnnualCharts = blob.section(36, 'annual_charts');
+  final atYearClaims = blob.section(37, 'year_claims');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -3066,7 +3120,55 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atAnnualCharts, 5),
         blob.columnOffset(atAnnualCharts, 5) + atAnnualCharts.count * 2,
       ),
+      yearLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 6),
+        blob.columnOffset(atAnnualCharts, 6) + atAnnualCharts.count * 2,
+      ),
+      yearLordChosen: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 7),
+        blob.columnOffset(atAnnualCharts, 7) + atAnnualCharts.count * 1,
+      ),
+      yearLordVishwa: Int32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 8),
+        blob.columnOffset(atAnnualCharts, 8) + atAnnualCharts.count * 4,
+      ),
+      moonPassedOver: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 9),
+        blob.columnOffset(atAnnualCharts, 9) + atAnnualCharts.count * 1,
+      ),
+      claimCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 10),
+        blob.columnOffset(atAnnualCharts, 10) + atAnnualCharts.count * 1,
+      ),
       length: atAnnualCharts.count,
+    ),
+    yearClaims: ChartsYearClaims(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearClaims, 0),
+        blob.columnOffset(atYearClaims, 0) + atYearClaims.count * 2,
+      ),
+      vishwa: Int32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearClaims, 1),
+        blob.columnOffset(atYearClaims, 1) + atYearClaims.count * 4,
+      ),
+      portfolios: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearClaims, 2),
+        blob.columnOffset(atYearClaims, 2) + atYearClaims.count * 1,
+      ),
+      aspectsLagna: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearClaims, 3),
+        blob.columnOffset(atYearClaims, 3) + atYearClaims.count * 1,
+      ),
+      length: atYearClaims.count,
     ),
   );
 }

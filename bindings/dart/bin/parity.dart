@@ -718,6 +718,19 @@ void main() {
             b.dinaRatri,
           ].map((lord) => lord.fullKey).join(' '),
         );
+        final yearLord = annual.yearLord;
+        put('$stem-year-lord', yearLord.graha.fullKey);
+        put('$stem-year-lord-chosen', yearLord.chosen.key);
+        put('$stem-year-lord-bala', yearLord.vishwa.toString());
+        put(
+          '$stem-year-claims',
+          yearLord.claims
+              .map(
+                (c) =>
+                    '${c.graha.fullKey}:${c.vishwa}:${c.portfolios}:${c.aspectsLagna}',
+              )
+              .join(' '),
+        );
       }
       i += 1;
     }

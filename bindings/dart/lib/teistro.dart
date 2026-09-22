@@ -3603,6 +3603,7 @@ final class VarshaRequest {
     this.reading = VarshaReading.sidereal,
     this.muntha = MunthaDegree.signStart,
     this.place,
+    this.varshesha = const VarsheshaRules(),
   });
 
   /// The last year of life wanted, 1 to 200.
@@ -3620,11 +3621,16 @@ final class VarshaRequest {
   /// schools differ.
   final AnnualPlace? place;
 
+  /// The readings the year lord's chain parts on, where authorities
+  /// differ; the source's own by default.
+  final VarsheshaRules varshesha;
+
   String get _json => jsonEncode(<String, Object?>{
     'reading': reading.key,
     'through': through,
     'muntha': muntha.key,
     if (place case final place?) 'place': place._json,
+    'varshesha': varshesha._json,
   });
 }
 
@@ -3694,12 +3700,123 @@ final class OfficeBearers {
   final Graha dinaRatri;
 }
 
+/// Where the sources differ on the lord of the year, each a named reading
+/// (`03-design/varshesha.md`).
+final class VarsheshaRules {
+  const VarsheshaRules({
+    this.noneAspects = 'muntha_lord',
+    this.tied = 'muntha_lord',
+    this.moon = 'passed_over',
+  });
+
+  /// Who takes the year when nobody aspects the lagna: `muntha_lord` or
+  /// `annual_lagna_lord`.
+  final String noneAspects;
+
+  /// Who takes it on an outright tie: `muntha_lord` or `dina_ratri_pati`.
+  final String tied;
+
+  /// Whether the Moon may hold it: `passed_over` or `like_any_other`.
+  final String moon;
+
+  Map<String, Object?> get _json => <String, Object?>{
+    'none_aspects': noneAspects,
+    'tied': tied,
+    'moon': moon,
+  };
+}
+
+/// A Tajika strength, exact. The boundary carries it as an integer count
+/// of **sub-sub units**, 3600 to a unit, because two office-bearers a
+/// sub-sub unit apart decide a year between them.
+final class Bala {
+  /// A strength from the sub-sub units the boundary carries.
+  factory Bala(int subSub) {
+    final units = subSub ~/ 3600;
+    final rest = subSub - units * 3600;
+    return Bala._(units, rest ~/ 60, rest % 60, subSub);
+  }
+
+  const Bala._(this.units, this.subUnits, this.subSub, this.total);
+
+  /// Whole units, at most twenty: the figure a reader compares.
+  final int units;
+
+  /// The sub-units after those, 0 to 59.
+  final int subUnits;
+
+  /// The sub-sub units after those, 0 to 59.
+  final int subSub;
+
+  /// The whole of it in sub-sub units: what to compare and sum.
+  final int total;
+
+  /// `14:20:15`, as the sources write one.
+  @override
+  String toString() =>
+      '${units.toString().padLeft(2, '0')}:'
+      '${subUnits.toString().padLeft(2, '0')}:'
+      '${subSub.toString().padLeft(2, '0')}';
+}
+
+/// One office-bearer's claim on the year's lordship.
+final class YearClaim {
+  const YearClaim({
+    required this.graha,
+    required this.vishwa,
+    required this.portfolios,
+    required this.aspectsLagna,
+  });
+
+  /// Whose claim it is.
+  final Graha graha;
+
+  /// Its five-fold strength.
+  final Bala vishwa;
+
+  /// How many of the five offices it holds, 1 to 5: the tie-break.
+  final int portfolios;
+
+  /// Whether it gives the Tajika aspect to the annual lagna, which it must
+  /// to hold the year.
+  final bool aspectsLagna;
+}
+
+/// The lord of the year, and the reckoning it came out of.
+final class YearLord {
+  const YearLord({
+    required this.graha,
+    required this.chosen,
+    required this.vishwa,
+    required this.moonPassedOver,
+    required this.claims,
+  });
+
+  /// The lord of the year.
+  final Graha graha;
+
+  /// Which step of the chain decided it.
+  final VarsheshaChosen chosen;
+
+  /// Its five-fold strength.
+  final Bala vishwa;
+
+  /// Whether the Moon led on strength and stepped aside, being "unable to
+  /// govern".
+  final bool moonPassedOver;
+
+  /// Every claimant, strongest first, so the decision can be read rather
+  /// than trusted.
+  final List<YearClaim> claims;
+}
+
 /// A return's own chart, read down to what Tajika reads from it.
 final class AnnualChart {
   const AnnualChart({
     required this.lagnaDeg,
     required this.byDay,
     required this.officeBearers,
+    required this.yearLord,
   });
 
   /// The annual chart's lagna, sidereal degrees, at the place it was cast
@@ -3711,6 +3828,9 @@ final class AnnualChart {
 
   /// The five office-bearers.
   final OfficeBearers officeBearers;
+
+  /// The lord of the year, chosen among them.
+  final YearLord yearLord;
 }
 
 /// Where the Muntha stands inside the sign it has reached (crux C107).
@@ -4221,6 +4341,14 @@ final class Chart {
         '${returns.year.length} returns; it is all of them or none',
       );
     }
+    // The claims are ragged by `claimCount`, as the returns are by
+    // `praveshaCount`: walk to this year's block and take its own count.
+    var from = 0;
+    for (var i = 0; i < row; i += 1) {
+      from += charts.claimCount[i];
+    }
+    final count = charts.claimCount[row];
+    final claims = batch.yearClaims;
     return AnnualChart(
       lagnaDeg: charts.lagnaDeg[row],
       byDay: charts.daylight[row] == 1,
@@ -4230,6 +4358,21 @@ final class Chart {
         varshaLagna: Graha.byId(charts.varshaLagnaLord[row]),
         triRashi: Graha.byId(charts.triRashiLord[row]),
         dinaRatri: Graha.byId(charts.dinaRatriLord[row]),
+      ),
+      yearLord: YearLord(
+        graha: Graha.byId(charts.yearLord[row]),
+        chosen: VarsheshaChosen.byId(charts.yearLordChosen[row]),
+        vishwa: Bala(charts.yearLordVishwa[row]),
+        moonPassedOver: charts.moonPassedOver[row] == 1,
+        claims: List<YearClaim>.generate(
+          count,
+          (k) => YearClaim(
+            graha: Graha.byId(claims.graha[from + k]),
+            vishwa: Bala(claims.vishwa[from + k]),
+            portfolios: claims.portfolios[from + k],
+            aspectsLagna: claims.aspectsLagna[from + k] == 1,
+          ),
+        ),
       ),
     );
   }

@@ -1960,6 +1960,127 @@ fn a_chart_request_founds_each_years_chart_where_it_is_told() {
     }
 }
 
+/// A year's chart carries the **lord of that year** and the reckoning it
+/// came out of: every claimant, ragged by `claim_count`, with the strength
+/// and the aspect each was judged on (`03-design/varshesha.md`).
+#[test]
+fn a_years_chart_carries_the_lord_of_that_year() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let instants = [2_447_995.489_583_333_5, 2_451_545.0];
+    let varsha = CString::new(r#"{"through":4,"place":"birth"}"#).unwrap();
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+            varsha_json: varsha.as_ptr(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let ints = |section: &str, name: &str| {
+        reader
+            .column(section, name)
+            .unwrap()
+            .iter()
+            .map(|cell| cell.as_i64())
+            .collect::<Vec<i64>>()
+    };
+
+    let lords = ints("annual_charts", "year_lord");
+    let counts = ints("annual_charts", "claim_count");
+    assert_eq!(lords.len(), 8, "two charts of four years");
+    assert_eq!(counts.len(), lords.len());
+    // Every year names a lord and ranks between one and five claimants.
+    assert!(counts.iter().all(|count| (1..=5).contains(count)));
+    // The chain's step is one this ABI knows.
+    assert!(
+        ints("annual_charts", "year_lord_chosen")
+            .iter()
+            .all(|step| (0..=6).contains(step))
+    );
+    // A strength is exact, in sub-sub units, and inside its own bound of
+    // twenty units.
+    let vishwa = ints("annual_charts", "year_lord_vishwa");
+    assert!(vishwa.iter().all(|bala| (0..=20 * 3600).contains(bala)));
+
+    // The claims section is ragged by the count, exactly.
+    let claim_graha = ints("year_claims", "graha");
+    let total: i64 = counts.iter().sum();
+    assert_eq!(i64::try_from(claim_graha.len()).unwrap(), total);
+    let claim_vishwa = ints("year_claims", "vishwa");
+    let aspects = ints("year_claims", "aspects_lagna");
+    let portfolios = ints("year_claims", "portfolios");
+    assert!(portfolios.iter().all(|held| (1..=5).contains(held)));
+    assert!(aspects.iter().all(|flag| *flag == 0 || *flag == 1));
+
+    // Each year's claimants are ranked strongest first, and the lord is
+    // one of them — the strongest that aspects, or a named fallback.
+    let mut from = 0usize;
+    for (year, count) in counts.iter().enumerate() {
+        let take = usize::try_from(*count).unwrap();
+        let block = &claim_vishwa[from..from + take];
+        assert!(
+            block.windows(2).all(|pair| pair[0] >= pair[1]),
+            "year {year} is not ranked"
+        );
+        assert!(
+            claim_graha[from..from + take].contains(&lords[year]),
+            "the lord of year {year} is not among its claimants"
+        );
+        from += take;
+    }
+
+    // Not asked for is empty, not zeroes.
+    let none = TsChartRequest {
+        varsha_json: ptr::null(),
+        ..request
+    };
+    let mut bare = TsBlob::empty();
+    // SAFETY: as above.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const none, &raw mut bare) },
+        Status::Ok
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let empty = unsafe { core::slice::from_raw_parts(bare.data, bare.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut bare) };
+    let reader = Reader::parse(&empty, &schema).unwrap();
+    assert!(reader.column("year_claims", "graha").unwrap().is_empty());
+}
+
 /// A consumer's **sign-based** system crosses the same way: registered
 /// through `options.dashas_json` under `"kernel":"rashi"`, asked for by the
 /// id `ts_key_parse` gives, and answered in the `dashas` section with the

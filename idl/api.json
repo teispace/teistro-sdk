@@ -6614,6 +6614,49 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsVarsheshaChosen",
+      "doc": "Which step of the year lord's chain decided it\n(`03-design/varshesha.md`).\n\nMirrors `teistro::Chosen` through an **exhaustive** match, which is\nwhat stops the two drifting: a step added stops this crate compiling\nrather than silently crossing as whatever was first.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Strongest",
+          "value": 0,
+          "doc": "The strongest office-bearer that aspects the annual lagna: the\nordinary answer."
+        },
+        {
+          "name": "MostPortfolios",
+          "value": 1,
+          "doc": "Tied on strength, and this one holds more portfolios."
+        },
+        {
+          "name": "MunthaLordUnaspected",
+          "value": 2,
+          "doc": "The Muntha's lord, because no office-bearer aspects the lagna."
+        },
+        {
+          "name": "MunthaLordAllWeak",
+          "value": 3,
+          "doc": "The Muntha's lord, because every office-bearer is under five units."
+        },
+        {
+          "name": "MunthaLordTied",
+          "value": 4,
+          "doc": "The Muntha's lord, on an outright tie of strength, aspect and\nportfolios."
+        },
+        {
+          "name": "DinaRatriTied",
+          "value": 5,
+          "doc": "The Dina-Ratri Pati, on that same tie, under the other reading."
+        },
+        {
+          "name": "AnnualLagnaLordUnaspected",
+          "value": 6,
+          "doc": "The annual lagna's lord, because nobody aspects and the rules ask\nfor that reading."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsScale",
       "doc": "A time scale of the conversions; the first two ids are the port's.",
       "repr": "u32",
@@ -14268,6 +14311,60 @@
               "name": "dina_ratri_lord",
               "scalar": "u16",
               "doc": "The lord of the Sun's sign by day or the Moon's by night, a `graha` id: the Dina-Ratri Pati."
+            },
+            {
+              "name": "year_lord",
+              "scalar": "u16",
+              "doc": "The **Varshesha**, lord of the year, a `graha` id: the strongest office-bearer that aspects the annual lagna, with the source's fallbacks (`03-design/varshesha.md`)."
+            },
+            {
+              "name": "year_lord_chosen",
+              "scalar": "u8",
+              "doc": "Which step of the chain decided the year's lord. A year lord reached by a fallback is a different statement about the year from one chosen on strength, and the planet alone cannot say so.",
+              "enum": "TsVarsheshaChosen"
+            },
+            {
+              "name": "year_lord_vishwa",
+              "scalar": "i32",
+              "doc": "The year lord's five-fold strength, exact, in **sub-sub units** of which a unit holds 3600 — an integer because two office-bearers a sub-sub unit apart decide a year between them."
+            },
+            {
+              "name": "moon_passed_over",
+              "scalar": "u8",
+              "doc": "1 when the Moon led on strength and stepped aside, being \"unable to govern\"; 0 otherwise."
+            },
+            {
+              "name": "claim_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `year_claims` section belong to this year: one to five, the distinct office-bearers."
+            }
+          ]
+        },
+        {
+          "id": 37,
+          "name": "year_claims",
+          "doc": "Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "The claimant, a `graha` id."
+            },
+            {
+              "name": "vishwa",
+              "scalar": "i32",
+              "doc": "Its five-fold strength, exact, in sub-sub units of which a unit holds 3600."
+            },
+            {
+              "name": "portfolios",
+              "scalar": "u8",
+              "doc": "How many of the five offices it holds, 1 to 5: the tie-break when two are level on strength."
+            },
+            {
+              "name": "aspects_lagna",
+              "scalar": "u8",
+              "doc": "1 when it gives the Tajika aspect to the annual lagna, which it must to hold the year; 0 when it stands in a neutral house — 2, 6, 8 or 12 — and is disqualified however strong."
             }
           ]
         }

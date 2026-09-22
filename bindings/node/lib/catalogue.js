@@ -3006,6 +3006,31 @@ export const PolarDayPolicyById = new Map([
   [2, 'civil-midnight'],
 ]);
 
+/** Every VarsheshaChosen by name. */
+export const VarsheshaChosen = Object.freeze({
+  Strongest: 'strongest',
+  MostPortfolios: 'most-portfolios',
+  MunthaLordUnaspected: 'muntha-lord-unaspected',
+  MunthaLordAllWeak: 'muntha-lord-all-weak',
+  MunthaLordTied: 'muntha-lord-tied',
+  DinaRatriTied: 'dina-ratri-tied',
+  AnnualLagnaLordUnaspected: 'annual-lagna-lord-unaspected',
+});
+
+/**
+ * Every VarsheshaChosen by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VarsheshaChosenById = new Map([
+  [0, 'strongest'],
+  [1, 'most-portfolios'],
+  [2, 'muntha-lord-unaspected'],
+  [3, 'muntha-lord-all-weak'],
+  [4, 'muntha-lord-tied'],
+  [5, 'dina-ratri-tied'],
+  [6, 'annual-lagna-lord-unaspected'],
+]);
+
 /** Every Scale by name. */
 export const Scale = Object.freeze({
   Ut1: 'ut1',
