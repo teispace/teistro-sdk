@@ -643,8 +643,8 @@ impl<'a> ChartArea<'a> {
         if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
             longitudes = longitudes.with_observer(foundation.place);
         }
-        let zodiac = LimbZodiac::of_chart(
-            &foundation.zodiac,
+        let zodiac = LimbZodiac::of(
+            foundation.zodiac.ayanamsha,
             settings.frame.ayanamsha_basis,
             PrecessionModel::default(),
             self.context.delta_t(),

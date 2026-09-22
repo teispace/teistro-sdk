@@ -27,18 +27,12 @@
 //! kernel says so rather than hoping.
 
 use serde::{Deserialize, Serialize};
-use teistro_astro::ayanamsha::Basis;
-use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::events::{Longitudes, Search};
-use teistro_astro::precession::PrecessionModel;
-use teistro_astro::scale::tt_of;
-use teistro_chart::zodiac::ChartZodiac;
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Karana, Masa, Nakshatra, Rashi, Tithi, Yoga};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Ut1, Utc};
-use teistro_core::settings::{AyanamshaBasis, AyanamshaChoice};
 use teistro_port_ephemeris::{Body, Lattice, Quantity};
 
 use crate::span::Span;
@@ -131,164 +125,11 @@ pub fn karana_of(half_tithi: u32) -> Karana {
     }
 }
 
-/// A source of longitudes in the chart's own zodiac.
-///
-/// The provider is asked for tropical positions and shifted here, because
-/// a chart holds one ayanamsha and the provider's may not be it
-/// (`03-design/chart-foundation.md` §4). The shift is evaluated at every
-/// instant rather than once for the window: the ayanamsha moves about
-/// 0.00014 degrees a day, which over a four-day search is two seconds of
-/// the Moon's time — wider than the tolerance the corpus declares.
-struct Sidereal<'a, S: Longitudes + ?Sized> {
-    tropical: &'a S,
-    ayanamsha: Option<AyanamshaChoice>,
-    basis: Basis,
-    precession: PrecessionModel,
-    delta_t: DeltaTModel,
-}
-
-impl<S: Longitudes + ?Sized> Sidereal<'_, S> {
-    /// The ayanamsha at an instant, degrees, and its rate, degrees a day.
-    fn offset(&self, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
-        let Some(choice) = self.ayanamsha else {
-            return Ok((0.0, 0.0));
-        };
-        let (tt, _) = tt_of(ut1, self.delta_t)?;
-        let value = teistro_astro::ayanamsha::value_deg(
-            &choice,
-            tt,
-            self.basis,
-            self.precession,
-            self.delta_t,
-        )?;
-        // A day on either side gives the rate by a central difference;
-        // the ayanamsha is a smooth function of the instant and the rate
-        // only corrects a speed nothing classifies with.
-        let step = 1.0;
-        let ahead = teistro_astro::ayanamsha::value_deg(
-            &choice,
-            JulianDay::literal(tt.get() + step),
-            self.basis,
-            self.precession,
-            self.delta_t,
-        )?;
-        let behind = teistro_astro::ayanamsha::value_deg(
-            &choice,
-            JulianDay::literal(tt.get() - step),
-            self.basis,
-            self.precession,
-            self.delta_t,
-        )?;
-        Ok((value, (ahead - behind) / (2.0 * step)))
-    }
-}
-
-impl<S: Longitudes + ?Sized> Sidereal<'_, S> {
-    /// Shifts a grid of tropical readings into the zodiac, instant by
-    /// instant.
-    ///
-    /// The ayanamsha is read **at each instant** rather than once for
-    /// the window (the module's third rule), so the shift is a walk
-    /// however the readings arrived; what the grid saved is the
-    /// ephemeris calls under them, which is the expensive half.
-    fn shift<T: Copy>(
-        &self,
-        ut1: &[JulianDay<Ut1>],
-        out: &mut [T],
-        apply: impl Fn(T, f64, f64) -> T,
-    ) -> Result<(), Error> {
-        for (value, at) in out.iter_mut().zip(ut1) {
-            let (offset, rate) = self.offset(*at)?;
-            *value = apply(*value, offset, rate);
-        }
-        Ok(())
-    }
-}
-
-impl<S: Longitudes + ?Sized> Longitudes for Sidereal<'_, S> {
-    fn longitude_and_speed(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
-        let (longitude, speed) = self.tropical.longitude_and_speed(body, ut1)?;
-        let (offset, rate) = self.offset(ut1)?;
-        Ok(((longitude - offset).rem_euclid(360.0), speed - rate))
-    }
-
-    fn longitude_and_speed_pair(
-        &self,
-        bodies: [Body; 2],
-        ut1: JulianDay<Ut1>,
-    ) -> Result<[(f64, f64); 2], Error> {
-        let pair = self.tropical.longitude_and_speed_pair(bodies, ut1)?;
-        let (offset, rate) = self.offset(ut1)?;
-        Ok(pair.map(|(longitude, speed)| ((longitude - offset).rem_euclid(360.0), speed - rate)))
-    }
-
-    fn longitudes_and_speeds(
-        &self,
-        body: Body,
-        ut1: &[JulianDay<Ut1>],
-        out: &mut Vec<(f64, f64)>,
-    ) -> Result<(), Error> {
-        self.tropical.longitudes_and_speeds(body, ut1, out)?;
-        self.shift(ut1, out, |value, offset, rate| {
-            ((value.0 - offset).rem_euclid(360.0), value.1 - rate)
-        })
-    }
-
-    fn longitudes_and_speeds_pair(
-        &self,
-        bodies: [Body; 2],
-        ut1: &[JulianDay<Ut1>],
-        out: &mut Vec<[(f64, f64); 2]>,
-    ) -> Result<(), Error> {
-        self.tropical.longitudes_and_speeds_pair(bodies, ut1, out)?;
-        self.shift(ut1, out, |pair, offset, rate| {
-            pair.map(|(longitude, speed)| ((longitude - offset).rem_euclid(360.0), speed - rate))
-        })
-    }
-
-    fn describe(&self) -> String {
-        match self.ayanamsha {
-            Some(choice) => format!("{} shifted by {choice:?}", self.tropical.describe()),
-            None => self.tropical.describe(),
-        }
-    }
-}
-
-/// Everything the kernel needs beyond a source of longitudes.
-#[derive(Clone, Copy, Debug)]
-pub struct Zodiac {
-    /// The ayanamsha the day's limbs are measured from, or `None` for a
-    /// tropical reading.
-    pub ayanamsha: Option<AyanamshaChoice>,
-    /// Whether that ayanamsha carries the nutation.
-    pub basis: Basis,
-    /// The precession model behind it.
-    pub precession: PrecessionModel,
-    /// The Delta T model.
-    pub delta_t: DeltaTModel,
-}
-
-impl Zodiac {
-    /// The zodiac a chart's own limbs are measured in: the chart's
-    /// ayanamsha under the profile's basis.
-    #[must_use]
-    pub const fn of_chart(
-        chart: &ChartZodiac,
-        basis: AyanamshaBasis,
-        precession: PrecessionModel,
-        delta_t: DeltaTModel,
-    ) -> Zodiac {
-        Zodiac {
-            ayanamsha: chart.ayanamsha,
-            basis: match basis {
-                AyanamshaBasis::True => Basis::True,
-                _ => Basis::Mean,
-            },
-            precession,
-            delta_t,
-        }
-    }
-}
+// The sidereal source and the zodiac it reads in live in `teistro-astro`,
+// where the annual chart's solar return needs the same shift for the same
+// reason (`03-design/annual-chart-measured.md`). Re-exported here because
+// this module's own signatures name them.
+pub use teistro_astro::sidereal::{Sidereal, Zodiac};
 
 /// The nakshatra the Moon stands in at an instant, with the whole of its
 /// stay there: what a temporal dasha balance reads.

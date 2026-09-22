@@ -229,8 +229,9 @@ const NOT_BUILT: [(&str, Blocker, &str); 22] = [
         "MUDDA",
         Blocker::Module,
         "Vimshottari scaled to the year, which needs the **annual chart** — the \
-         Varsha Pravesha solar return. The scale decorator it would use is built \
-         and Tribhagi uses it",
+         Varsha Pravesha solar return, whose instant is measured in \
+         `annual-chart-measured.md` and whose design is `annual-chart.md`. The \
+         scale decorator it would use is built and Tribhagi uses it",
     ),
     (
         "VARSHA_NARAYANA",

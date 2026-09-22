@@ -81,6 +81,11 @@
 //! - `dashas` and `check-dashas`: the falsification pass over the
 //!   Vimshottari dasha, which the dasha module is designed from — the
 //!   seed, the balance, the tree and its arithmetic, and the cycle's end.
+//! - `varshaphala` and `check-varshaphala`: the annual chart's one
+//!   instant — the Sun's return to where it stood at birth — measured over
+//!   every recorded birth against its two rivals, the tropical return and
+//!   the mean one, with what each costs the lagna —
+//!   `annual-chart-measured.md`.
 //! - `dasha-coverage` and `check-dasha-coverage`: the catalogue's forty
 //!   dasha systems against the eighteen this build computes, with each of
 //!   the twenty-two left listed with the blocker that keeps it out and its
@@ -219,6 +224,7 @@ mod surface;
 mod time;
 mod topocentric;
 mod vargas;
+mod varshaphala;
 mod vimshopaka;
 mod vsop;
 mod yogas;
@@ -285,6 +291,11 @@ const PASSES: &[Pass] = &[
         "dasha-coverage",
         dasha_coverage::generate,
         dasha_coverage::check_generated,
+    ),
+    (
+        "varshaphala",
+        varshaphala::generate,
+        varshaphala::check_generated,
     ),
     (
         "dasha-systems",

@@ -58,6 +58,7 @@ pub mod phenomena;
 pub mod precession;
 pub mod rise_set;
 pub mod scale;
+pub mod sidereal;
 pub mod sky;
 pub mod solve;
 pub mod stars;

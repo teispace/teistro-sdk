@@ -110,6 +110,8 @@ jobs:
         run: cargo xtask check-rashi-dashas
       - name: Dasha coverage page (the catalogue against the build, every system it does not compute listed with its blocker and its refusal measured)
         run: cargo xtask check-dasha-coverage
+      - name: Annual chart page (the Sun's return to where it stood at birth, over every recorded birth, against the tropical and the mean rival)
+        run: cargo xtask check-varshaphala
       - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
         run: cargo xtask check-arudhas
       - name: Kalachakra page (the Kalachakra dasha decided over the corpus, beside the sources' readings)
