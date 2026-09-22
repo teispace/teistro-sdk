@@ -691,12 +691,21 @@ const REGISTER: (&str, &str) = ("docs/QUESTIONS.md", "docs/STATUS.md");
 /// a longer list would report one occurrence twice.
 const COUNTED_IN_PROSE: [&str; 3] = ["none is open", "question is open", "questions are open"];
 
+/// The heading of the step a reader is told to start from.
+const RESUME: &str = "## How to resume";
+
 /// That the tracker names every question the register still has open, and
 /// counts none of them.
 ///
 /// Both halves matter. A question opened and not mentioned leaves a reader
 /// resuming from a document that does not know about it; a **count** is
 /// right on the day it is written and wrong on the next.
+///
+/// The name has to be in **"How to resume"** and not merely somewhere in
+/// the file, which the first draft of this lint allowed: the session log
+/// records every question as it opens, so a row there would have
+/// satisfied the check while the step a reader actually starts from had
+/// gone quiet again.
 fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
     const RULE: &str = "open-question-is-named";
     let (register, tracker) = REGISTER;
@@ -706,6 +715,21 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
     ) else {
         return;
     };
+    // The step itself, to the next heading: a log row naming a question
+    // is a record of the past and not an orientation for a reader.
+    let resume = status
+        .split_once(RESUME)
+        .map(|(_, rest)| rest.split("\n## ").next().unwrap_or(rest))
+        .unwrap_or_default();
+    if resume.is_empty() {
+        outcome.failures.push(Finding {
+            file: tracker.to_owned(),
+            line: 1,
+            text: format!("`{RESUME}` is not in the tracker any more"),
+            rule: RULE,
+        });
+        return;
+    }
     for (at, line) in questions.lines().enumerate() {
         let Some(rest) = line.strip_prefix("## ") else {
             continue;
@@ -716,11 +740,13 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
         let Some(number) = rest.split('.').next() else {
             continue;
         };
-        if !status.contains(number) {
+        if !resume.contains(number) {
             outcome.failures.push(Finding {
                 file: register.to_owned(),
                 line: at + 1,
-                text: format!("`{number}` is open and {tracker} never names it"),
+                text: format!(
+                    "`{number}` is open and {tracker}'s \"How to resume\" does not name it"
+                ),
                 rule: RULE,
             });
         }
