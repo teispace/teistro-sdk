@@ -615,6 +615,7 @@ export function messages(r) {
         says: (p) => r.render('sdk.reading.says', { reading: { '$entity': p.reading }, rule: p.rule }),
         severity: (p) => r.render('sdk.reading.severity', { rule: p.rule, severity: p.severity }),
         status: (p) => r.render('sdk.reading.status', { rule: p.rule, status: p.status }),
+        timing: (p) => r.render('sdk.reading.timing', { reading: { '$entity': p.reading }, rule: p.rule }),
       },
       reason: {
         appName: () => r.render('sdk.reason.appName'),

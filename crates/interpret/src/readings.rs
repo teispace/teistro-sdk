@@ -20,6 +20,16 @@ use teistro_rules::{Body, NetStatus, Outcome, Rule, RuleResult, Unit};
 
 use crate::{Plan, Vocabulary};
 
+/// The form a rule's **timing** is carried under, where a corpus says when
+/// a dosha acts rather than what it means.
+///
+/// Its own form and not the reading, because the two are different claims
+/// about the same rule and 34 rules carry both: a corpus that put them
+/// under one name would have to choose, and 18 of the rules with a timing
+/// have no reading at all — every computed dosha, which said nothing in
+/// words until now (`03-design/state-readings.md` §4).
+const TIMING_FORM: &str = "timing";
+
 /// The unit a span is counted in, as its message selects on it.
 const fn unit(unit: Unit) -> &'static str {
     match unit {
@@ -60,10 +70,11 @@ fn body(body: Body) -> Value {
 /// What each rule a chart held says.
 ///
 /// One rule's items are in this order: what its verse says, in as many
-/// statements as it makes; who took part; whether a cancellation moved it;
-/// and how grave it is. A rule whose verse states nothing and
-/// whose result says nothing else contributes nothing — a composer that
-/// filled the gap would be inventing.
+/// statements as it makes; when it acts, where a corpus says so; who took
+/// part; whether a cancellation moved it; and how grave it is. A rule
+/// whose verse states nothing and whose result says nothing else
+/// contributes nothing — a composer that filled the gap would be
+/// inventing.
 ///
 /// **What its verse says has two forms, and the vocabulary chooses.** Where
 /// the base locale carries a reading of the rule, the item is
@@ -77,6 +88,12 @@ fn body(body: Body) -> Value {
 /// where it has one: the reading is of the rule, not of a statement, and
 /// saying the same passage three times would be a defect. Its cited
 /// statements are what it has instead when no reading was written.
+///
+/// **A timing is a third thing, and neither of those two.** A corpus that
+/// says *when* a dosha acts is not saying what it means, so the item is
+/// `sdk.reading.timing` and the form it renders is `timing`: 34 rules
+/// carry both a reading and a timing, 18 carry a timing and no reading at
+/// all, and asking for them together would lose one of the two.
 ///
 /// The question goes to the **base** locale, so a plan is the same whoever
 /// reads it ([`Vocabulary`]).
@@ -122,6 +139,16 @@ where
                     class: String::from(class.key()),
                 }),
             }
+        }
+        // When it acts, where a corpus says so. After what it says and
+        // before who took part, because it qualifies the statement rather
+        // than the participants — and it is asked for independently of the
+        // reading, since a rule can carry either, both or neither.
+        if vocabulary.has_form(&crate::reading_key(&rule.key), TIMING_FORM) {
+            plan.say(&reading::Timing {
+                rule: named(),
+                reading: crate::reading_key(&rule.key),
+            });
         }
         let grahas: Vec<Value> = result.participants.iter().map(body).collect();
         if !grahas.is_empty() {
@@ -388,6 +415,82 @@ mod tests {
             plan.items.iter().all(|item| item.key != "sdk.reading.says"),
             "{plan:?}"
         );
+    }
+
+    /// A vocabulary carrying exactly the keys and forms it was given,
+    /// which is what a pack merged over another gives a composer.
+    struct Forms(&'static [(&'static str, &'static str)]);
+
+    impl Vocabulary for Forms {
+        fn has_form(&self, key: &str, form: &str) -> bool {
+            self.0.iter().any(|(k, f)| *k == key && *f == form)
+        }
+    }
+
+    /// A timing is asked for independently of the reading, because a rule
+    /// can carry either, both or neither: 34 of the shipped rules carry
+    /// both and 18 carry a timing and nothing else.
+    #[test]
+    fn a_timing_and_a_reading_are_separate_claims() {
+        let (rule, result) = present();
+        let items = |vocabulary: &dyn Vocabulary| {
+            readings([(&rule, &result)], vocabulary)
+                .items
+                .iter()
+                .map(|item| item.key.clone())
+                .collect::<Vec<_>>()
+        };
+
+        let timing_only = Forms(&[("rule.AN_EXAMPLE", "timing")]);
+        let said = items(&timing_only);
+        assert!(
+            said.contains(&String::from("sdk.reading.timing")),
+            "the timing is said with no reading: {said:?}"
+        );
+        assert!(
+            !said.contains(&String::from("sdk.reading.says")),
+            "and no reading is invented: {said:?}"
+        );
+        assert!(
+            said.contains(&String::from("sdk.reading.effect")),
+            "the verse still cites its own words: {said:?}"
+        );
+
+        let both = Forms(&[
+            ("rule.AN_EXAMPLE", "timing"),
+            ("rule.AN_EXAMPLE", crate::NAME_FORM),
+        ]);
+        let said = items(&both);
+        assert!(said.contains(&String::from("sdk.reading.says")));
+        assert!(said.contains(&String::from("sdk.reading.timing")));
+        assert!(
+            !said.contains(&String::from("sdk.reading.effect")),
+            "the reading replaced the cited words: {said:?}"
+        );
+
+        assert!(
+            !items(&NoReadings).contains(&String::from("sdk.reading.timing")),
+            "and nothing is said without a corpus"
+        );
+        for key in items(&both) {
+            assert!(KEYS.contains(&key.as_str()), "`{key}` is not in KEYS");
+        }
+    }
+
+    /// The timing qualifies the statement rather than the participants, so
+    /// it is said before them and after whatever the verse said.
+    #[test]
+    fn a_timing_is_said_after_the_statement_and_before_who_took_part() {
+        let (rule, result) = present();
+        let plan = readings([(&rule, &result)], &Forms(&[("rule.AN_EXAMPLE", "timing")]));
+        let at = |key: &str| {
+            plan.items
+                .iter()
+                .position(|item| item.key == key)
+                .unwrap_or_else(|| panic!("`{key}` is not in {plan:?}"))
+        };
+        assert!(at("sdk.reading.effect") < at("sdk.reading.timing"));
+        assert!(at("sdk.reading.timing") < at("sdk.reading.participants"));
     }
 
     #[test]

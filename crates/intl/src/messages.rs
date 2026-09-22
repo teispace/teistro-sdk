@@ -1334,6 +1334,25 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.reading.timing`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Timing {
+            /// The `reading` parameter.
+            pub reading: String,
+            /// The `rule` parameter.
+            pub rule: String,
+        }
+
+        impl crate::TypedMessage for Timing {
+            const KEY: &'static str = "sdk.reading.timing";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("reading", crate::Value::entity(&self.reading)),
+                    ("rule", crate::Value::Str(self.rule.clone())),
+                ])
+            }
+        }
+
     }
 
     /// The `reason` group.

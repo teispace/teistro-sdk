@@ -101,12 +101,13 @@ rules, waiting on Phase 8's `matching` rather than on anything here.
 ## What a composer can say
 
 A pack that loads is half of it; the other half is that a record reaches
-a reader. Every reading the `phala` composer has a message for is
-rendered here through that message, in each strict locale, and must
-answer from the locale's own record without a fallback and without a
-warning: 422 renderings.
+a reader. Every reading a composer has a message for — `phala` for the
+chart's subjects, `readings` for a rule's timing — is rendered here
+through that message, in each strict locale, and must answer from the
+locale's own record without a fallback and without a warning: 546
+renderings.
 
-**214 readings have no composer that says them yet**, by the category
+**152 readings have no composer that says them yet**, by the category
 they came from. They are not errors — the records load and a consumer
 reads them directly — but a reading nothing says is work that has not
 reached a reader, so the list is here rather than in a sentence.
@@ -119,7 +120,6 @@ reached a reader, so the list is here rather than in a sentence.
 | `avastha-lajjitadi` | 6 |
 | `dasha-lord-activation` | 9 |
 | `dasha-lord-effect` | 9 |
-| `dosha-timing` | 62 |
 | `gana` | 3 |
 | `graha-color` | 9 |
 | `graha-direction` | 9 |
@@ -136,7 +136,7 @@ reached a reader, so the list is here rather than in a sentence.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every reading a composer says renders from the locale's own record, with no fallback and no warning | **holds** | 0 of 422 disagree |
+| every reading a composer says renders from the locale's own record, with no fallback and no warning | **holds** | 0 of 546 disagree |
 
 ## What it leaves open
 

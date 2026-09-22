@@ -369,11 +369,27 @@ before — *every shipped rule carries a reading* — becomes one it can.
   name** — five special lagnas, three `state` members and the 18 rules
   that had no reading — because `entity-names.md` §4 refuses a translated
   stub and those kinds have no vetted table. The reading answers; the
-  subject's own name does not. And 214 of the 425 readings have **no
+  subject's own name does not. And most of the readings still have **no
   composer that says them**: they are loaded and a consumer reads them
   directly, which is not nothing, but a reading nothing says has not
   reached a reader. Both are counted on the measured page rather than
-  described here, and both can only shrink.
+  described here — the count is deliberately not repeated in this
+  sentence, which carried `214` after the figure had become `152` — and
+  both can only shrink.
+
+  The **timings** were the first of them to close, and they show the
+  shape the rest have. `dosha-timing` keys onto rules the `readings`
+  composer already walks, so nothing new had to be computed and no
+  catalogue kind had to be decided: the reading of a rule and the timing
+  of a rule are two forms on one record, `sdk.reading.timing` renders the
+  second exactly as `sdk.reading.says` renders the first, and the
+  composer asks for them **independently** because 34 rules carry both
+  and 18 carry a timing and no reading at all. Those 18 are every
+  computed dosha, which said nothing in words at all until this — the
+  rules whose verse states no effect, listed on the measured page as
+  rules with no reading. A category whose subject the SDK already
+  computes and already names can be said without a decision; the ones
+  left are the ones where that is not true.
 - **Native review.** The corpus is the baseline engine's own Nepali,
   Sanskrit and Hindi, not a machine translation, and it has not been
   reviewed here. It joins the roadmap's `ne`/`hi` sign-off.

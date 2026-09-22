@@ -113,12 +113,25 @@ against, and by its **sign alone**: the lagna's bhava is the first by
 definition, and an item saying so would say nothing.
 
 **`readings`** — what the rules answered: for each rule a chart held, what
-its verse says, who took part, whether a cancellation moved it and how grave
-it is. **Built** over a namespace of its own, `sdk.reading`, six messages in
-both strict locales.
+its verse says, when it acts, who took part, whether a cancellation moved
+it and how grave it is. **Built** over a namespace of its own,
+`sdk.reading`, in both strict locales.
 
-Its messages are deliberately **mechanical** — a span, a class of life, a
-list of grahas with a verb that agrees with it, a status, a severity —
+**When it acts is a third claim, and neither of the other two.** A corpus
+of state readings carries a `timing` for a rule — when the dosha bites,
+not what it means — and `sdk.reading.timing` says it the way
+`sdk.reading.says` says the reading: as a form on the same `rule.<KEY>`
+record, rendered by the locale from its own words. The composer asks for
+the two **independently**, because 34 of the shipped rules carry both and
+18 carry a timing and no reading at all. Those 18 are the computed
+doshas, whose verses state no effect: they said nothing in words at all
+before this. The message has **no prose of its own in any locale** — it
+is the entity render and nothing else — so unlike the six below it adds
+nothing to the native review.
+
+Its other messages are deliberately **mechanical** — a span, a class of
+life, a list of grahas with a verb that agrees with it, a status, a
+severity —
 because those are the parts a locale can say for itself. **The verse's own
 statement is not translated**: it crosses as a `text` slot in the words the
 rule cites, and the message prints them as they are, so a Nepali reading says

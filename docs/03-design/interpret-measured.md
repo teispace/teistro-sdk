@@ -8,11 +8,11 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 21 938 items, 235 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 21 967 items, 236 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 2 694 260 bytes of JSON over the 93 charts, 28 970 bytes a
-chart, 34 978 bytes for the widest and 122 bytes an item. The verses'
+golden file: 2 697 324 bytes of JSON over the 93 charts, 29 003 bytes a
+chart, 35 084 bytes for the widest and 122 bytes an item. The verses'
 own cited words are **not** what weighs it — 112 962 bytes, 4% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
@@ -22,13 +22,13 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 66 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 21938 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 21938 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 21938 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 21938 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 68 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 21967 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 21967 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 21967 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 21967 disagree |
 
-Every one of the 43 876 renderings — 21 938 in each of 2 strict
+Every one of the 43 934 renderings — 21 967 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -58,6 +58,7 @@ about.
 | `sdk.reading.says` | 229 |
 | `sdk.reading.severity` | 29 |
 | `sdk.reading.status` | 348 |
+| `sdk.reading.timing` | 29 |
 | `sdk.reason.bhavaInRashi` | 900 |
 | `sdk.reason.chalitShift` | 135 |
 | `sdk.reason.grahaAt` | 837 |
@@ -70,7 +71,7 @@ about.
 | `sdk.reason.strength.meets` | 497 |
 | `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 21 938
+**The verse's own statement is not translated.** 2449 of the 21 967
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -187,7 +188,7 @@ but `sdk.entity` renders each one's own word.
 
 ## What the packs carry, and what reads it
 
-33 of the 40 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+34 of the 41 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|

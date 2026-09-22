@@ -1769,6 +1769,8 @@ final class MessagesSdkReading {
       _r.render('sdk.reading.severity', {'rule': rule, 'severity': severity});
   String status({required String rule, required String status}) =>
       _r.render('sdk.reading.status', {'rule': rule, 'status': status});
+  String timing({required String reading, required String rule}) =>
+      _r.render('sdk.reading.timing', {'reading': {r'$entity': reading}, 'rule': rule});
 }
 
 final class MessagesSdkReasonStrength {

@@ -472,20 +472,31 @@ const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
 /// The message a composer says a subject with, and the slot the record's
 /// key fills, by the kind the key names and the form the reading is under.
 ///
-/// It is the composer's own table read backwards: `phala` says a graha in
-/// a bhava, the lagna's sign and each limb of the panchanga, and this asks
-/// whether the corpus's every such record can be **said**. A subject the
-/// composer has no message for is not in this list and is counted apart,
+/// It is the composers' own table read backwards: `phala` says a graha in
+/// a bhava, the lagna's sign and each limb of the panchanga, `readings`
+/// says a rule's timing beside the rule it belongs to, and this asks
+/// whether the corpus's every such record can be **said**. A subject no
+/// composer has a message for is not in this list and is counted apart,
 /// because a reading nothing can say is work that does not reach a reader
 /// (`03-design/state-readings.md` §5).
-const SAID_BY: [(&str, &str, &str, &str); 6] = [
+///
+/// A row whose message no composer emits is caught by
+/// [`every_message_is_a_composer_key`], so this list cannot name a message
+/// that has been renamed or withdrawn.
+const SAID_BY: [(&str, &str, &str, &str); 7] = [
     ("graha_bhava", NAME_FORM, GRAHA_IN_BHAVA, "phala"),
     ("rashi", "lagnaPhala", "sdk.phala.lagnaRashi", "rashi"),
     ("tithi", "phala", "sdk.phala.tithi", "tithi"),
     ("vara", "phala", "sdk.phala.vara", "vara"),
     ("nakshatra", "phala", "sdk.phala.nakshatra", "nakshatra"),
     ("yoga", "phala", "sdk.phala.yoga", "yoga"),
+    ("rule", "timing", TIMING, "reading"),
 ];
+
+/// The message that says when a rule acts, which is the one of the seven
+/// that names its subject twice: once as the entity whose `timing` form it
+/// prints, and once as the rule key a consumer groups a plan by.
+const TIMING: &str = "sdk.reading.timing";
 
 /// Every reading a composer can say, rendered in every strict locale from
 /// the record the pack carries.
@@ -606,7 +617,32 @@ fn slots_for(message: &str, slot: &str, key: &str) -> teistro_intl::Params {
         );
         slots.insert(String::from("bhava"), teistro_intl::Value::Int(1));
     }
+    if message == TIMING {
+        // The rule key the composer attaches to every item, which the base
+        // messages do not print but a consumer groups by.
+        slots.insert(
+            String::from("rule"),
+            teistro_intl::Value::Str(key.strip_prefix("rule.").unwrap_or(key).to_string()),
+        );
+    }
     slots
+}
+
+/// That every message [`SAID_BY`] names is one a composer actually emits.
+///
+/// The table is the composers' read backwards and nothing generates it, so
+/// a message renamed on one side would leave a row here matching no
+/// reading and the page would quietly count those readings as *said* while
+/// rendering a key no locale carries.
+fn every_message_is_a_composer_key() -> Result<(), String> {
+    for (_, _, message, _) in SAID_BY {
+        if !teistro_interpret::KEYS.contains(&message) {
+            return Err(format!(
+                "`{message}` is in SAID_BY and no composer emits it;                  teistro_interpret::KEYS is the authority"
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn what_a_composer_can_say(
@@ -616,6 +652,7 @@ fn what_a_composer_can_say(
     per_locale: &BTreeMap<String, Records>,
     base: &Records,
 ) -> Result<(), String> {
+    every_message_is_a_composer_key()?;
     let mut said = 0usize;
     let mut wrong = 0usize;
     let mut unsaid: BTreeMap<&str, usize> = BTreeMap::new();
@@ -665,8 +702,9 @@ fn what_a_composer_can_say(
     let _ = write!(
         out,
         "A pack that loads is half of it; the other half is that a record \
-         reaches a reader. Every reading the `phala` composer has a message \
-         for is rendered here through that message, in each strict locale, \
+         reaches a reader. Every reading a composer has a message for — \
+         `phala` for the chart's subjects, `readings` for a rule's timing \
+         — is rendered here through that message, in each strict locale, \
          and must answer from the locale's own record without a fallback \
          and without a warning: {}.\n\n",
         plural(said, "rendering"),

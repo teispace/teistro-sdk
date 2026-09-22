@@ -977,6 +977,13 @@ class MessagesSdkReading:
             {"rule": rule, "status": status},
         )
 
+    def timing(self, *, reading: str, rule: str) -> str:
+        """`sdk.reading.timing`"""
+        return self._r.render(
+            "sdk.reading.timing",
+            {"reading": {"$entity": reading}, "rule": rule},
+        )
+
 
 class MessagesSdkPhala:
     """The messages under `MessagesSdkPhala`, each rendered by its own key."""
