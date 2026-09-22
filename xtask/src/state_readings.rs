@@ -148,6 +148,264 @@ fn what_it_did_not_map(out: &mut String, unmapped: &BTreeMap<String, usize>) {
     out.push('\n');
 }
 
+/// The balarishta rules the SDK ships, whose count the vocabulary table
+/// reads rather than states.
+const BALARISHTA: &str = "crates/rules/rules/classical-balarishta.json";
+
+/// What a category with no subject here is actually waiting for.
+///
+/// A category is unmapped because no **key** answers its readings, and
+/// the obvious next step is to give the SDK's own value a catalogue
+/// kind. Whether that would work at all depends on something nobody had
+/// measured: whether the corpus keys by the vocabulary the SDK computes.
+struct Vocabulary {
+    /// The corpus category.
+    category: &'static str,
+    /// The SDK value that would answer it.
+    sdk: &'static str,
+    /// How many members that value has. Five of these are **counted**
+    /// from the type itself ([`counted`]); the rest are stated, and are
+    /// zero where the SDK has no vocabulary at all rather than a small
+    /// one.
+    size: usize,
+    /// How many of the category's keys are the SDK's own spelling,
+    /// measured against the corpus on 2026-09-22. This repository
+    /// carries the migrated packs and not the exporter's document, so
+    /// this column is recorded and not gated — the column beside it is.
+    spelled: usize,
+    /// What the keys that are not would need.
+    needs: &'static str,
+}
+
+const fn vocabulary(
+    category: &'static str,
+    sdk: &'static str,
+    size: usize,
+    spelled: usize,
+    needs: &'static str,
+) -> Vocabulary {
+    Vocabulary {
+        category,
+        sdk,
+        size,
+        spelled,
+        needs,
+    }
+}
+
+/// Every unmapped category whose subject the SDK **computes**, against
+/// the vocabulary it computes it in.
+///
+/// The two Phase 7 categories are not here: `muhurta-factor` and
+/// `sade-sati-phala` describe something the SDK does not compute at all,
+/// so there is no vocabulary to compare.
+const VOCABULARIES: [Vocabulary; 10] = [
+    vocabulary(
+        "auspicious-kaal",
+        "`panchanga::Muhurtas`' two named muhurtas",
+        2,
+        2,
+        "Vijaya, Godhuli and the Amrit kaal, which the SDK does not compute",
+    ),
+    vocabulary(
+        "ayurdaya-balarishta",
+        "nothing: whether a balarishta stands is a rule's outcome, not a value",
+        0,
+        0,
+        "a four-valued status the SDK does not keep",
+    ),
+    vocabulary(
+        "ayurdaya-classical-rule",
+        "the shipped Brihat Jataka balarishta rules",
+        11,
+        0,
+        "five verse citations from an edition the SDK does not ship",
+    ),
+    vocabulary(
+        "ayurdaya-harana",
+        "`longevity::Reductions`' fields",
+        4,
+        0,
+        "the four Sanskrit names, which map one to one onto the fields",
+    ),
+    vocabulary(
+        "ayurdaya-maraka",
+        "`longevity::maraka::Reason`",
+        20,
+        0,
+        "a coarser classification: nine classes against the verses' twenty reasons",
+    ),
+    vocabulary(
+        "ayurdaya-maraka-trigger",
+        "nothing: the 64th navamsha and the 22nd drekkana are maraka *reasons* here",
+        0,
+        0,
+        "a vocabulary of triggers the SDK does not separate out",
+    ),
+    vocabulary(
+        "ayurdaya-method",
+        "`longevity::Method`",
+        3,
+        3,
+        "nothing: every key is the SDK's own spelling",
+    ),
+    vocabulary(
+        "ayurdaya-tier",
+        "`LifeClass`",
+        7,
+        1,
+        "three Sanskrit names, which map one to one onto `short`, `medium` and `long`",
+    ),
+    vocabulary(
+        "ayurdaya-vulnerability",
+        "`longevity::Vulnerability`, a struct with no members to name",
+        0,
+        0,
+        "three severity bands and six conditions the SDK does not grade",
+    ),
+    vocabulary(
+        "shadbala-strength",
+        "`GrahaShadbala::strong`, a verdict against the required rupas",
+        2,
+        0,
+        "four bands the corpus does not record, and a composite graha key",
+    ),
+];
+
+/// The sizes this repository can **count**, read from the type rather
+/// than written down.
+///
+/// The reason this exists is one sentence in `state-readings.md` §8 that
+/// put the maraka reasons at *fifteen* when there are twenty. A count in
+/// prose beside a growing thing is the rot this repository keeps
+/// finding, and the remedy is always the same: let the pass read it.
+fn counted(root: &Path) -> Result<BTreeMap<&'static str, usize>, String> {
+    let reductions = serde_json::to_value(teistro_rules::longevity::Reductions::default())
+        .map_err(|why| format!("a default `Reductions` does not serialise: {why}"))?;
+    let haranas = reductions
+        .as_object()
+        .ok_or_else(|| String::from("a `Reductions` is not a JSON object"))?
+        .len();
+    let balarishta = read_json(&root.join(BALARISHTA))?["rules"]
+        .as_array()
+        .ok_or_else(|| format!("{BALARISHTA} carries no `rules` array"))?
+        .len();
+    Ok([
+        (
+            "ayurdaya-method",
+            teistro_rules::longevity::Method::ALL.len(),
+        ),
+        ("ayurdaya-tier", teistro_rules::LifeClass::ALL.len()),
+        (
+            "ayurdaya-maraka",
+            teistro_rules::longevity::Reason::ALL.len(),
+        ),
+        ("ayurdaya-harana", haranas),
+        ("ayurdaya-classical-rule", balarishta),
+    ]
+    .into_iter()
+    .collect())
+}
+
+/// The vocabulary each unmapped computed category would need, and how
+/// much of it the SDK has.
+fn what_each_one_wants(
+    out: &mut String,
+    root: &Path,
+    unmapped: &BTreeMap<String, usize>,
+) -> Result<(), String> {
+    let counted = counted(root)?;
+    for entry in &VOCABULARIES {
+        if !unmapped.contains_key(entry.category) {
+            return Err(format!(
+                "`{}` has a vocabulary row and is not unmapped any more",
+                entry.category
+            ));
+        }
+        if let Some(size) = counted.get(entry.category)
+            && *size != entry.size
+        {
+            return Err(format!(
+                "`{}`: the vocabulary row says {} member(s) and the type has {size}",
+                entry.category, entry.size
+            ));
+        }
+    }
+    let records: usize = VOCABULARIES
+        .iter()
+        .filter_map(|entry| unmapped.get(entry.category))
+        .sum();
+    let keys: usize = VOCABULARIES.iter().map(|entry| entry.spelled).sum();
+    out.push_str("## What each unmapped category actually wants\n\n");
+    let _ = write!(
+        out,
+        "Above is *that* they are unmapped; this is **why**, and it \
+         settled [Q38](../QUESTIONS.md). The obvious step was to give the \
+         SDK's own value a catalogue kind and let the readings hang on it \
+         — five lines of YAML for an open kind, the shape `rule` and \
+         `graha_bhava` already have. That rests on a claim nobody had \
+         measured: that the corpus keys by the vocabulary the SDK \
+         computes, which was read off `ayurdaya-method`'s three and \
+         generalised.\n\n\
+         Measured over the {} records of the {} categories whose subject \
+         the SDK computes, **{} of the keys are the SDK's own \
+         spelling**. The rest are not a spelling difference. They are a \
+         different **classification** — nine maraka classes against the \
+         verses' twenty reasons, five verse citations against eleven \
+         shipped rules, severity bands against a struct that grades \
+         nothing — and a kind supplies a key space, never a \
+         vocabulary.\n\n\
+         | category | records | what the SDK has | members | keys it spells | what the rest want |\n\
+         |---|---:|---|---:|---:|---|\n",
+        count(records),
+        count(VOCABULARIES.len()),
+        count(keys),
+    );
+    for entry in &VOCABULARIES {
+        let _ = writeln!(
+            out,
+            "| `{}` | {} | {} | {} | {} of {} | {} |",
+            entry.category,
+            count(unmapped.get(entry.category).copied().unwrap_or_default()),
+            entry.sdk,
+            count(entry.size),
+            count(entry.spelled),
+            count(unmapped.get(entry.category).copied().unwrap_or_default()),
+            entry.needs,
+        );
+    }
+    out.push('\n');
+    let _ = write!(
+        out,
+        "**{} of the members column is counted from the type**, not \
+         written here: `Method::ALL`, `LifeClass::ALL`, `Reason::ALL`, a \
+         default `Reductions` serialised, and the shipped balarishta \
+         pack. The row that made it necessary is `ayurdaya-maraka` — \
+         §8 of the design page said *fifteen* maraka reasons where the \
+         type has twenty, which is the same count-in-prose that has \
+         rotted four times in this repository. **The keys-it-spells \
+         column is recorded, not gated**, and says so: this repository \
+         carries the migrated packs and not the exporter's document, so \
+         there is nothing here to count it from. It was measured on \
+         2026-09-22 against the corpus itself.\n\n",
+        count(counted.len()),
+    );
+    out.push_str(&table(&[
+        Claim::counted(
+            "every category with a vocabulary row is one the migration does not map",
+            0,
+            VOCABULARIES.len(),
+        ),
+        Claim::counted(
+            "every vocabulary size the type can be asked for is the size stated",
+            0,
+            counted.len(),
+        ),
+    ]));
+    out.push('\n');
+    Ok(())
+}
+
 /// Every category whose reading a record carries.
 fn categories_of(key: &str, forms: &BTreeSet<String>) -> Vec<&'static str> {
     STATE_CATEGORIES
@@ -873,6 +1131,7 @@ fn main_page(root: &Path) -> Result<String, String> {
 
     where_it_landed(&mut out, base, &mapped);
     what_it_did_not_map(&mut out, &unmapped);
+    what_each_one_wants(&mut out, root, &unmapped)?;
     where_two_corpora_meet(&mut out, base);
     what_it_adds_to_the_readings(&mut out, &rules, base_readings, base);
     let (mut intl, strict) = engine_with_both(root)?;

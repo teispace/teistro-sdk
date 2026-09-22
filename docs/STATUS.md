@@ -382,12 +382,12 @@ that followed: a composer emits a **plan** of keys and slots holding no
 words, and the sentences are this SDK's own. Where the engine's words
 *are* said they are said verbatim, which is the half worth keeping; the
 other half is now what the design promises and what `interpret-measured`
-holds on every run. And **`QUESTIONS.md` has an open question again** —
-Q38, whether a value the SDK computes but does not catalogue should become
-a kind, which is what 74 of the 126 unmigrated state readings wait on,
-with three options, their trade-offs and a recommendation. The resume
-step that claimed an empty register claimed it truly when it was written
-and does not now. Before it, **eighteen of the twenty-five untouched
+holds on every run. It also opened Q38 — whether a value the
+SDK computes but does not catalogue should become a kind — which the
+maintainer then delegated and which **measuring it decided**: of the 74
+records said to be waiting on a key space, 6 of the keys are the SDK's
+own spelling, so what they wait on is a vocabulary and the kinds wait
+for the phase that reads the sources. Before it, **eighteen of the twenty-five untouched
 binding members are untouched no longer**, and the tests that reached them
 are real coverage rather than a number being chased: Python had never read
 an almanac day beyond the limbs its example prints, never read a founded
@@ -479,18 +479,22 @@ instead, and it cost two sentences a locale because both strict locales
 already name eight members of that kind. It is said first, because it is
 what the rest is read against, and by its sign alone: its bhava is the
 first by definition. Before it, **what is left of the state corpus wants a
-catalogue decision, not a module** — the opposite of what this page said
-an hour earlier, and the corpus settled it. `rules::longevity` computes
-the *whole* ayurdaya family (three methods, four haranas, fifteen maraka
+vocabulary and not a key space**, which is [Q38](QUESTIONS.md)'s answer
+and took two corrections to reach. `rules::longevity` computes the
+*whole* ayurdaya family (three methods, four haranas, **twenty** maraka
 reasons, the vulnerability over a dasha's levels) and serialises it in
-kebab-case, which is the very spelling the corpus keys by; `LifeClass` is
-what `sdk.reading.lifeClass` already says in two languages. They are Rust
-enums and not catalogue kinds, so a reading has nothing to hang on. 74 of
-the 126 remaining records are that shape — the eight `ayurdaya-*`
-families, `auspicious-kaal`, `shadbala-strength` — and only 52 wait on a
-module (`muhurta-factor`, `sade-sati-phala`, both Phase 7's). Giving those
-enums kinds is the maintainer's call: a kind number is permanent at the C
-boundary and every member needs a vetted source. Before it, **the three
+kebab-case; `LifeClass` is what `sdk.reading.lifeClass` already says in
+two languages. The first correction was that these are Rust enums and
+not catalogue kinds, so a reading has nothing to hang on — true, and it
+made a kind per family look like five lines of YAML away. The second was
+the measurement that claim asked for and never got: of the 74 records
+whose subject the SDK computes, **6 of the keys are the SDK's own
+spelling**, and the rest key by a different *classification* — nine
+maraka classes against the verses' twenty. A kind supplies a key space
+and never a vocabulary, so the families wait for the phase that reads
+the sources, and the whole table is measured on
+[`03-design/state-readings-measured.md`](03-design/state-readings-measured.md)
+with five of its six vocabulary sizes counted from the type. Before it, **the three
 inauspicious kaalas, found by
 checking a claim I had just written**. The entry below says the `-kaal`
 families key onto subjects the SDK has not modelled; `kaala` is a
@@ -976,23 +980,26 @@ provider's DUT1).
 1. Read this file, then [`QUESTIONS.md`](QUESTIONS.md), which is the
    authority on what is open — this step names the open questions and
    never counts them, because the count was wrong twice in one day and
-   `open-question-is-named` now refuses both mistakes. **Q38**: whether a
-   value the SDK computes but does not catalogue should become a kind,
-   which is what 74 of the 126 unmigrated state readings are waiting on.
-   Q35, the MCP server,
-   is deferred by the maintainer to the end of the plan. A question that
-   is **decided** may not be named in this step or in `## Next` — the
-   same lint refuses it — because a settled question on a list of what
-   remains is work someone will go looking for.
+   `open-question-is-named` now refuses both mistakes. Q35, the MCP
+   server, is deferred by the maintainer to the end of the plan. A
+   question that is **decided** may not be named in this step or in
+   `## Next` — the same lint refuses it — because a settled question on
+   a list of what remains is work someone will go looking for.
 1a. **Two gate sweeps, not one.** `fast-check.yml`'s gates are the first;
    they are derived from the workflow rather than listed, and run under
    **bash**, because zsh does not word-split `$(...)` and the loop then
    iterates once and cannot fail:
 
+   Detect a failure by the gate's **exit code**, never by grepping its
+   output for a prefix: `check-catalogue` prints `<path>: differs from
+   its sources` with no `FAIL` on it, and a sweep that looked for `^FAIL`
+   read sixty generated files as ungated. A detector that cannot see the
+   failure reports success.
+
    ```bash
-   bash -c 'gates=$(grep -oE "cargo xtask check-[a-z-]+" .github/workflows/fast-check.yml | sed "s/cargo xtask //" | sort -u)
-   for g in $gates; do out=$(CARGO_BUILD_JOBS=2 cargo run -q -p xtask -- $g 2>&1)
-     echo "$out" | grep -qE "^(FAIL|error)" && { echo "== $g"; echo "$out" | grep -E "^(FAIL|error)" | head -3; }; done'
+   bash -c 'gates=$(grep -oE "cargo xtask check-[a-z-]+" .github/workflows/fast-check.yml | sed "s/cargo xtask //" | sort -u | grep -v check-dco)
+   for g in $gates; do out=$(CARGO_BUILD_JOBS=2 cargo run -q -p xtask -- $g 2>&1) \
+     || { echo "== $g"; echo "$out" | tail -5; }; done; echo swept'
    ```
 
    The second is `verify.yml`'s, and **seven of its nine run on this
@@ -3564,6 +3571,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-22 | **Q38 is decided, and what decided it was measuring the claim the question was built on.** The maintainer delegated the choice. The recommendation on the register was Option D — an open kind per family, five lines of YAML each, `rule` and `graha_bhava`'s shape — resting on a sentence this tracker, the design page's §8 and the question itself all repeat: that `rules::longevity` *"serialises them in kebab-case, which is the very spelling the corpus keys by"*, and that **74 records** were therefore waiting on a key space. Nobody had checked it. Read key by key against the corpus: **6 of the 74 are the SDK's own spelling.** The sentence was read off `ayurdaya-method`, where it is exactly true — `pindayu`, `nisargayu`, `amsayu`, three for three — and generalised from three keys to forty-six. The rest are not a spelling difference but a different **classification**: the corpus keys nine maraka classes (`lord-2`, `occupant-7`, `associate`) where `maraka::Reason` has the verses' twenty (`lord-of-second`, `malefic-with-second-lord`); five verse citations of an edition the SDK does not ship, against eleven shipped Brihat Jataka balarishta rules; three severity bands against a `Vulnerability` that grades nothing. **A kind supplies a key space and never a vocabulary**, so D would have spent eight permanent numbers and thirty-four permanent member keys to land three readings outright and eleven with alias lists, leaving thirty-five blocked on exactly what blocked them before. Decided **C**: each family waits for the phase that reads its sources, because that is the phase that can choose between the verse's name and the class's — and between `short` and `alpayu`, which is the same choice in miniature. The rule that generalises is the useful half: **a computed value earns a kind when a consumer must be able to *name* it**; where a consumer only selects on it, the key it already crosses as is enough and `.match` on that key is the pattern, which `sdk.reading.lifeClass` has used for all seven classes of life in two languages since the readings landed, `vimshopaka` for its four schemes, and `bhava_bala` for nothing at all. None of these values was ever unreachable: every one crosses `rules_json` as its own kebab key today. What is bought instead is the measurement, on `state-readings-measured.md` and gated as far as this repository can gate it — **five of the six vocabulary sizes are counted from the type** (`Method::ALL`, `LifeClass::ALL`, `Reason::ALL`, a default `Reductions` serialised, the shipped balarishta pack), and `Method` gained the `ALL` its siblings had. The row that forced it: §8 said **fifteen** maraka reasons where the type has twenty. The keys-it-spells column is **recorded and not gated**, and the page says so in as many words, because this repository carries the migrated packs and not the exporter's document. Also fixed while in there: the resume step's own gate sweep detected failures by grepping `^FAIL`, which is the blind detector this session's audit had already caught and written up — it now reads the exit code. |
 | 2026-09-22 | **A message could say "this part is a name" and no consumer outside Rust could hear it.** MF2 markup exists so a message marks emphasis, a name or a link **without saying what that looks like** — the renderer decides. `Rendered` has carried `parts` since the spike, `ts_intl_render` sent the text, where it resolved from and the warnings, and the markup died at the C boundary; the architecture page said "renderers per binding" and the module catalogue listed them as *to come*, which read like a missing feature and was a missing **two lines of blob**. Two shipped messages already used `{#b}`, one of them `sdk.reason.lordship`, the corpus's most-said reason at 900 items. Beside it sat `MessageModel.rich`, computed from every message's signature and read by **nothing in the tree** — a dead flag next to a dead capability, and the capability was the one worth reviving; the flag is deleted. The parts now cross as JSON tagged by `type`, with three rules that make them cheap: adjacent text is one part, so a part boundary is always a markup boundary and the shape does not depend on how a message was written; the text parts joined **are** the plain text, so a renderer that knows none of the tags loses no words; and a message with no markup sends none, each binding making the one text part for itself rather than having the text written twice in every blob. `Rendered` is built in one place now, so its text is always its parts. Node, Dart and Python each expose a `MessagePart`, and **all four parity runners print the same shape** — Rust from the value, the other three from the blob — which is the thing that says the two paths agree. The gate that was missing is the other half of an old one: `check_parity` refused a translation that **adds** markup the base does not have and said nothing about one that **drops** it, though it has checked parameters in both directions all along. A dropped tag reads perfectly as text and tells a renderer nothing, so the loss is invisible in exactly the place a reviewer looks. Both halves are there, proved red, and the measured page checks the same rule a second way — 21 of 433 items of a founded chart's plan carry markup, the strict locales must agree on which, and 0 of 866 renderings disagree with the joined-text property. |
 | 2026-09-22 | **The audit widened to all 99 "do not edit" files: the generated surface is held, and the two false alarms cost more thought than the result.** The first sweep detected failures by grepping `^FAIL`; `check-catalogue` prints `<path>: differs from its sources` with no prefix, so 60-odd generated catalogue files read as ungated. **A detector that cannot see the failure reports success** — the same shape as the zsh loop that iterated once — so detect by a gate's **exit code**, or by searching its whole output for the path. The second corrupted `teimeris.idl`, the *input* `cargo xtask engine` reads, alongside the five façades it generates: the gate failed early on "does not parse" and never reached the comparison, so all five read as ungated. **Corrupt outputs only**, and check what a gate reads before adding it to the set. Both were caught by testing a single file directly instead of believing the sweep. What survives is one real gap and it is already fixed; `crates/ephemeris-builtin/src/tables/*.rs` are byte-ungated but behaviourally gated, a wrong coefficient moving `check-accuracy` and `check-pluto` where an appended comment moves nothing, and the page declares that byte-gate pending. |
 | 2026-09-22 | **Two generated pages were held by nothing, and the audit that found them is the interesting part.** The discipline everywhere here is that a measured number is regenerated and compared, so it cannot rot. That holds for as long as something regenerates it — and nothing checked that anything did. Rather than reason about it, all 36 `*-measured.md` pages were **corrupted at once** and the whole fast check run to see which ones nobody noticed: two. `builtin-ephemeris-measured.md` says on its first line that there is no `check-vsop` yet and why the gate waits for the truncated tables, which is an inventory rather than a silence. `lunar-accuracy-measured.md` said only *"Do not edit"*, which is a request and not a check, and regenerates in **0.07 seconds** from catalogued tables and two recorded JSON files — an oversight, not a decision. `check-moon` now holds it and fast-check runs 50 gates. The class is held by `generated-page-is-gated`: a page must **name** the gate that holds it, and that gate must exist in `xtask`, or the page must say in as many words that it has none. Proved red both ways. Two bugs of my own on its first run are worth recording — it could not see a gate whose passes row `rustfmt` had wrapped, and it read the honest page's *"there is no `check-vsop`"* as a claim that one exists. A lint that parses prose has to be able to read a negation. |

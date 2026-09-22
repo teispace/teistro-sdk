@@ -113,17 +113,19 @@ generator lands early — because a generated surface grows itself as the
 SDK grows — with only the packaged, signed, install-checked server in
 Phase 9.
 
-## Q38. Whether a computed value that is not a catalogue member should become one: `open`
+## Q38. Whether a computed value that is not a catalogue member should become one: `decided`
 
 Raised 2026-09-22 by migrating the baseline engine's state readings.
 **74 of the 126 records still unmigrated describe something the SDK
 already computes and gives no key to.**
 
 `rules::longevity` computes all three ayurdaya methods, the four haranas,
-fifteen maraka reasons and the vulnerability over a dasha's running
-levels, and serialises every one of them in **kebab-case** — which is the
-very spelling the corpus keys by (`pindayu`, `shatrukshetra`,
-`saturn-ayushkaraka`). `rules::LifeClass` is what `sdk.reading.lifeClass`
+twenty maraka reasons and the vulnerability over a dasha's running
+levels, and serialises every one of them in **kebab-case**. *(As raised,
+this sentence went on: "which is the very spelling the corpus keys by".
+It is kept here as it was written because the decision below is what
+measuring it produced — it is true of `pindayu` and of five other keys,
+and false of the other forty.)* `rules::LifeClass` is what `sdk.reading.lifeClass`
 has said in two languages since the readings landed.
 `houses::Quadrant` is which third of the wheel a bhava stands in, and
 trikona, dusthana and upachaya are predicates on a `Bhava`.
@@ -222,6 +224,86 @@ What is **not** waiting on this: 26 of the 38 categories are migrated,
 gated and said. The rest are named on
 `03-design/state-readings-measured.md`, so the list cannot rot while the
 question is open.
+
+**Decided: C**, on 2026-09-22, the maintainer having delegated the
+choice — and **D is refuted**, by the measurement its own recommendation
+asked for and did not make.
+
+**The rule, which is the part that generalises.** A computed value earns
+a catalogue kind when a consumer must be able to **name** it. Where a
+consumer only needs to *select* on it, the key it already crosses as is
+enough, and `.match` on that key is the pattern: `sdk.reading.lifeClass`
+has selected on all seven classes of life in two languages since the
+readings landed, `vimshopaka` says its four schemes the same way — "four
+words" — and `bhava_bala` needed no vocabulary at all. None of these
+values is unreachable today: every one of them crosses `rules_json` as
+its own kebab key, so a consumer can read it and switch on it now.
+
+**And a corpus reading is blocked by a key space only when the corpus
+keys by the vocabulary the SDK computes.** That was the claim under
+Option D, and under this question's opening sentence, and under
+`state-readings.md` §8, and it was never checked. It is now, on
+[`03-design/state-readings-measured.md`](03-design/state-readings-measured.md):
+over the 74 records of the ten categories whose subject the SDK
+computes, **6 of the keys are the SDK's own spelling**. Not 74.
+
+The claim was read off `ayurdaya-method`, where it is perfectly true —
+`pindayu`, `nisargayu` and `amsayu` are three for three — and
+generalised. What the rest of the family has is not a spelling
+difference:
+
+- `ayurdaya-maraka` keys by **nine classes** (`lord-2`, `occupant-7`,
+  `associate`) where `maraka::Reason` has the verses' **twenty**
+  (`lord-of-second`, `malefic-in-seventh`, `malefic-with-second-lord`).
+  Mapping twenty onto nine is a judgement about which reasons are one
+  class, which is a reading of the tradition and not an alias list.
+- `ayurdaya-classical-rule` keys by five verse citations of an edition
+  the SDK does not ship; the SDK ships eleven Brihat Jataka balarishta
+  rules with their own keys.
+- `ayurdaya-vulnerability` wants three severity bands and six
+  conditions; `Vulnerability` is a struct that grades nothing.
+- `shadbala-strength` wants four bands where `GrahaShadbala::strong` is
+  a verdict against the required rupas — and §8 had this one right all
+  along: the bands are a threshold the corpus does not record, and
+  inventing four would be making up a rule.
+- Only `ayurdaya-harana` (4) and `ayurdaya-tier` (3 of 4) are genuine
+  alias lists, the shape `kaala` closed with.
+
+**A kind supplies a key space. It cannot supply a vocabulary.** Option D
+would have spent eight permanent numbers and some thirty-four permanent
+member keys to land three readings outright and eleven with alias lists,
+and left thirty-five blocked on exactly what they were blocked on
+before. That is the whole of the refutation.
+
+**Why C and not B.** B is "leave them and let the readings wait", which
+is true of what happens and wrong about why. The readings were never
+waiting on the catalogue. They are waiting on a **classification**, and
+the phase that reads the sources is the one that can choose it — which
+is what C said. Phase 5's longevity work has the texts open; it decides
+whether a maraka is named by the verse or by the class, and whether the
+tier is `short` or `alpayu`. Spending the number now means choosing that
+spelling now, from this desk, with no source in front of it.
+
+**What is bought instead, now.** The measurement is on the page and
+gated as far as this repository can gate it: five of the six vocabulary
+sizes are **counted from the type** — `Method::ALL`, `LifeClass::ALL`,
+`Reason::ALL`, a default `Reductions` serialised, and the shipped
+balarishta pack — and the pass fails when a stated size disagrees.
+`Method` gained an `ALL` for it, the one sibling that lacked one. The
+row that forced it is `ayurdaya-maraka`: §8 said **fifteen** maraka
+reasons where the type has twenty, which is the count-in-prose this
+repository keeps finding. The keys-it-spells column is **recorded and
+not gated**, and the page says so in as many words: this repository
+carries the migrated packs and not the exporter's document, so there is
+nothing here to count it from.
+
+**What would reopen it.** A vetted source that names one of these
+families — which is a new RFC with new evidence, as every reopening is.
+The one family whose shape is already settled is `shadbala-strength`:
+its keys are a graha and a band, so when a banding rule exists it is a
+**composite open kind**, `graha_bhava`'s shape exactly, and that part
+needs no deciding again.
+
 
 ## Q39. Whether a plan should say the almanac's own limbs: `decided`
 

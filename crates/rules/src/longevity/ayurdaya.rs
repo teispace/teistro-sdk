@@ -52,6 +52,16 @@ pub enum Method {
     Amsayu,
 }
 
+impl Method {
+    /// Every method, in the chapter's order.
+    ///
+    /// Here so the three can be **counted** rather than described:
+    /// `state-readings-measured.md` reads the size of this vocabulary from
+    /// the type, after a prose sentence put the maraka reasons at fifteen
+    /// when [`super::Reason::ALL`] has twenty.
+    pub const ALL: [Method; 3] = [Method::Pindayu, Method::Nisargayu, Method::Amsayu];
+}
+
 /// How several reductions on one graha combine.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]

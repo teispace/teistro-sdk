@@ -58,6 +58,52 @@ difference. The design it measures is
 | `sade-sati-phala` | 5 |
 | `shadbala-strength` | 28 |
 
+## What each unmapped category actually wants
+
+Above is *that* they are unmapped; this is **why**, and it settled
+[Q38](../QUESTIONS.md). The obvious step was to give the SDK's own value
+a catalogue kind and let the readings hang on it — five lines of YAML
+for an open kind, the shape `rule` and `graha_bhava` already have. That
+rests on a claim nobody had measured: that the corpus keys by the
+vocabulary the SDK computes, which was read off `ayurdaya-method`'s
+three and generalised.
+
+Measured over the 74 records of the 10 categories whose subject the SDK
+computes, **6 of the keys are the SDK's own spelling**. The rest are not
+a spelling difference. They are a different **classification** — nine
+maraka classes against the verses' twenty reasons, five verse citations
+against eleven shipped rules, severity bands against a struct that
+grades nothing — and a kind supplies a key space, never a vocabulary.
+
+| category | records | what the SDK has | members | keys it spells | what the rest want |
+|---|---:|---|---:|---:|---|
+| `auspicious-kaal` | 5 | `panchanga::Muhurtas`' two named muhurtas | 2 | 2 of 5 | Vijaya, Godhuli and the Amrit kaal, which the SDK does not compute |
+| `ayurdaya-balarishta` | 4 | nothing: whether a balarishta stands is a rule's outcome, not a value | 0 | 0 of 4 | a four-valued status the SDK does not keep |
+| `ayurdaya-classical-rule` | 5 | the shipped Brihat Jataka balarishta rules | 11 | 0 of 5 | five verse citations from an edition the SDK does not ship |
+| `ayurdaya-harana` | 4 | `longevity::Reductions`' fields | 4 | 0 of 4 | the four Sanskrit names, which map one to one onto the fields |
+| `ayurdaya-maraka` | 9 | `longevity::maraka::Reason` | 20 | 0 of 9 | a coarser classification: nine classes against the verses' twenty reasons |
+| `ayurdaya-maraka-trigger` | 3 | nothing: the 64th navamsha and the 22nd drekkana are maraka *reasons* here | 0 | 0 of 3 | a vocabulary of triggers the SDK does not separate out |
+| `ayurdaya-method` | 3 | `longevity::Method` | 3 | 3 of 3 | nothing: every key is the SDK's own spelling |
+| `ayurdaya-tier` | 4 | `LifeClass` | 7 | 1 of 4 | three Sanskrit names, which map one to one onto `short`, `medium` and `long` |
+| `ayurdaya-vulnerability` | 9 | `longevity::Vulnerability`, a struct with no members to name | 0 | 0 of 9 | three severity bands and six conditions the SDK does not grade |
+| `shadbala-strength` | 28 | `GrahaShadbala::strong`, a verdict against the required rupas | 2 | 0 of 28 | four bands the corpus does not record, and a composite graha key |
+
+**5 of the members column is counted from the type**, not written here:
+`Method::ALL`, `LifeClass::ALL`, `Reason::ALL`, a default `Reductions`
+serialised, and the shipped balarishta pack. The row that made it
+necessary is `ayurdaya-maraka` — §8 of the design page said *fifteen*
+maraka reasons where the type has twenty, which is the same
+count-in-prose that has rotted four times in this repository. **The
+keys-it-spells column is recorded, not gated**, and says so: this
+repository carries the migrated packs and not the exporter's document,
+so there is nothing here to count it from. It was measured on 2026-09-22
+against the corpus itself.
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| every category with a vocabulary row is one the migration does not map | **holds** | 0 of 10 disagree |
+| every vocabulary size the type can be asked for is the size stated | **holds** | 0 of 5 disagree |
+
 ## Where two corpora meet
 
 48 subjects carry forms from more than one category. They are why a reading is a form on a record rather than a record of its own: a migration that replaced would keep whichever category it read last, and the subject would lose the other reading silently.

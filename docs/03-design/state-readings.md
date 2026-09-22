@@ -332,10 +332,10 @@ before — *every shipped rule carries a reading* — becomes one it can.
   are the largest: `rules::longevity` computes all three methods
   (`Method::{Pindayu, Nisargayu, Amsayu}`), all four haranas
   (`Reductions`: combustion, enemy sign, visible half, rising), every
-  maraka reason (`maraka::Reason`, fifteen of them) and the vulnerability
-  over a dasha's running levels — and it **serialises them in kebab-case**,
-  which is the very spelling the corpus keys by (`pindayu`,
-  `shatrukshetra`, `saturn-ayushkaraka`). `ayurdaya-tier`'s four are
+  maraka reason (`maraka::Reason`, **twenty** of them, a number this
+  sentence had as fifteen until the measured page began counting it from
+  the type) and the vulnerability over a dasha's running levels — and it
+  **serialises them in kebab-case**. `ayurdaya-tier`'s four are
   `rules::LifeClass`, which `sdk.reading.lifeClass` already says in two
   languages. They are Rust enums and not catalogue kinds, so a reading has
   nothing to hang on. `auspicious-kaal` (5) is the same shape smaller:
@@ -345,11 +345,22 @@ before — *every shipped rule carries a reading* — becomes one it can.
   threshold the corpus does not record, and inventing four would be making
   up a rule rather than migrating one.
 
-  Giving those enums catalogue kinds is a **catalogue decision** and not a
-  step in a migration: a kind's number is permanent at the C boundary, and
-  every member needs a mark and a vetted source under
-  [`entity-names.md`](entity-names.md) §4. It wants the maintainer, which
-  is why it is here and not done.
+  **What they are waiting for is a vocabulary, not a key space**, and
+  that is [Q38](../QUESTIONS.md)'s answer. This paragraph used to end
+  *"which is the very spelling the corpus keys by"*, and the obvious next
+  step was an open kind per family — five lines of YAML each, the shape
+  `rule` and `graha_bhava` already have. Measured, **6 of the 74 records'
+  keys are the SDK's own spelling**: `ayurdaya-method`'s three, the two
+  computed muhurtas, and `balarishta`. The rest key by a different
+  *classification* — nine maraka classes against the verses' twenty, five
+  verse citations against eleven shipped rules, severity bands against a
+  struct that grades nothing — and a kind supplies a key space and never
+  a vocabulary. The table is on
+  [`state-readings-measured.md`](state-readings-measured.md), with five
+  of its six vocabulary sizes **counted from the type** so the sentence
+  above cannot go stale again. Each family now waits for the phase that
+  reads its sources, which is the one that can choose between the verse's
+  name and the class's.
 
   **Fifty-two describe something the SDK does not compute yet**:
   `muhurta-factor` (47) and `sade-sati-phala` (5), both Phase 7's, and
