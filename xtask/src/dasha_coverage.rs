@@ -251,6 +251,60 @@ const NOT_BUILT: [(&str, Blocker, &str); 22] = [
     ),
 ];
 
+/// The unbuilt systems a **consumer** can supply today, which is what turns
+/// "not built" into "not built *here*".
+///
+/// `DashaSystems::register` takes a `UduDefinition`: lords, years and a
+/// **nakshatra** reference. So a system is registrable exactly when its row
+/// is that shape and the only thing missing is the numbers in it — which is
+/// three of the twenty-two. The rest are not withheld from a consumer on
+/// purpose; there is no definition that expresses them, and that asymmetry
+/// is measured below rather than described.
+const REGISTRABLE: [&str; 3] = ["SHODASHOTTARI", "SHATTRIMSHA_SAMA", "SHASHTIHAYANI"];
+
+/// Whether the registry path actually works for one of them, proved by
+/// walking it rather than by citing the API.
+///
+/// The row is the one [`dasha-kernels.md`] states for Shodashottari, whose
+/// verse numbers are exactly what is unconfirmed — so it is registered
+/// under a **demonstration key** the catalogue does not have. Nothing here
+/// ships as the system, and the numbers are the design page's, not this
+/// pass's invention.
+///
+/// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
+fn a_consumer_supplies_one() -> Result<String, String> {
+    use teistro::dasha::{DashaSystems, Lord, UduDefinition};
+    use teistro_core::catalogue::{Graha, Nakshatra};
+
+    let lords = [
+        (Graha::Sun, 11),
+        (Graha::Mars, 12),
+        (Graha::Jupiter, 13),
+        (Graha::Saturn, 14),
+        (Graha::Ketu, 15),
+        (Graha::Moon, 16),
+        (Graha::Mercury, 17),
+        (Graha::Venus, 18),
+    ];
+    let definition = UduDefinition {
+        sources: vec![String::from("03-design/dasha-kernels.md, K-udu rows")],
+        lords: lords
+            .into_iter()
+            .map(|(graha, years)| Lord { graha, years })
+            .collect(),
+        ..UduDefinition::of("DEMO_SHODASHOTTARI", Nakshatra::Pushya)
+    };
+    let total: u16 = lords.iter().map(|(_, years)| u16::from(*years)).sum();
+    let mut systems = DashaSystems::default();
+    systems
+        .register(definition)
+        .map_err(|why| format!("registering the stated row: {why}"))?;
+    Ok(format!(
+        "`DEMO_SHODASHOTTARI`, {} lords and {total} years, registered and accepted, with the total the design page states for it falling out of the lords rather than copied beside them",
+        lords.len()
+    ))
+}
+
 /// What one refusal looked like, so that "declared" is measured rather
 /// than asserted.
 struct Refused {
@@ -374,6 +428,9 @@ fn page(_root: &Path) -> Result<String, String> {
 
     asking_for_one(&mut out, &refused);
 
+    let supplied = a_consumer_supplies_one()?;
+    who_can_supply_one(&mut out, &supplied);
+
     what_the_types_decide(
         &mut out,
         &Sets {
@@ -459,6 +516,36 @@ fn asking_for_one(out: &mut String, refused: &[Refused]) {
     }
 }
 
+/// What a consumer can supply that this build does not, and what nobody
+/// can supply because no definition expresses it.
+fn who_can_supply_one(out: &mut String, supplied: &str) {
+    let registrable: Vec<String> = REGISTRABLE.iter().map(|key| format!("`{key}`")).collect();
+    out.push_str("## Who can supply one\n\n");
+    let _ = write!(
+        out,
+        "\"Not built\" is not \"not available\". `DashaSystems::register` takes a \
+         `UduDefinition` — lords, years and a **nakshatra** reference, checked by \
+         the same `UduRow::validate` a shipped row passes — so a consumer holding \
+         the text can register the system on their context and ask for it by key, \
+         today, with no change here. That covers {} of the {} systems left: {}, \
+         each of which is a stated row waiting only on its citation.\n\n\
+         The path is walked rather than cited: {}.\n\n\
+         **The other {} cannot be supplied by anyone, and that is the finding.** \
+         The registry takes nakshatra-seeded rows and nothing else, so a sign-based \
+         system a consumer has the text for — `STHIRA`, `VARNADA` — has no \
+         definition to arrive as, and neither has a tithi, yoga or karana seed. \
+         Under the no-dead-ends mandate that is a gap in the SDK and not in the \
+         sources: the text being unsettled blocks *this* build, while a missing \
+         definition blocks *everyone*. A `RashiDefinition` beside `UduDefinition` \
+         is what would close it.\n\n",
+        count(REGISTRABLE.len()),
+        count(NOT_BUILT.len()),
+        listed(&registrable),
+        supplied,
+        count(NOT_BUILT.len() - REGISTRABLE.len()),
+    );
+}
+
 /// The three directions the list is refused in, and the two counts the
 /// page rests on.
 fn what_the_types_decide(
@@ -483,6 +570,14 @@ fn what_the_types_decide(
             "every reason names a system the catalogue names",
             falsified.unknown.len(),
             NOT_BUILT.len(),
+        ),
+        Claim::counted(
+            "every system said to be registrable is one this build does not compute",
+            REGISTRABLE
+                .iter()
+                .filter(|key| !NOT_BUILT.iter().any(|(one, _, _)| one == *key))
+                .count(),
+            REGISTRABLE.len(),
         ),
         Claim::counted(
             "asking for an unbuilt system is refused and never answered",
