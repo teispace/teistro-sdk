@@ -620,6 +620,18 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 36, 'annual_charts');
+    out.annualCharts = {
+      lagnaDeg: column(blob, at, 0, 'f64', at.count),
+      daylight: column(blob, at, 1, 'u8', at.count),
+      janmaLagnaLord: column(blob, at, 2, 'u16', at.count),
+      varshaLagnaLord: column(blob, at, 3, 'u16', at.count),
+      triRashiLord: column(blob, at, 4, 'u16', at.count),
+      dinaRatriLord: column(blob, at, 5, 'u16', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

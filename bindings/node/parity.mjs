@@ -521,7 +521,7 @@ for (const reading of ['sidereal', 'tropical', 'mean']) {
     instants: [2460482.5, 2460600.25],
     place,
     utcOffsetSeconds: 20700,
-    varsha: { reading, through: 12 },
+    varsha: { reading, through: 12, place: 'birth' },
   });
   let i = 0;
   for (const chart of years) {
@@ -531,6 +531,13 @@ for (const reading of ['sidereal', 'tropical', 'mean']) {
       put(`chart-${i}-varsha-${reading}-${one.year}-muntha`, one.muntha.sign);
       put(`chart-${i}-varsha-${reading}-${one.year}-muntha-lord`, one.muntha.lord);
       put(`chart-${i}-varsha-${reading}-${one.year}-muntha-deg`, one.muntha.longitudeDeg);
+      put(`chart-${i}-varsha-${reading}-${one.year}-annual-lagna`, one.annual.lagnaDeg);
+      put(`chart-${i}-varsha-${reading}-${one.year}-annual-by-day`, one.annual.byDay);
+      const b = one.annual.officeBearers;
+      put(
+        `chart-${i}-varsha-${reading}-${one.year}-annual-bearers`,
+        [b.muntha, b.janmaLagna, b.varshaLagna, b.triRashi, b.dinaRatri].join(' '),
+      );
     }
     i += 1;
   }

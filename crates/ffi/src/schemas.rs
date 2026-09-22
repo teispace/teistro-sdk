@@ -587,6 +587,7 @@ pub fn charts() -> BlobSchema {
             chart_rules_section(33),
             chart_plans_section(34),
             chart_praveshas_section(35),
+            chart_annual_charts_section(36),
         ],
     }
 }
@@ -611,6 +612,47 @@ fn chart_plans_section(id: u32) -> SectionSchema {
 
 /// Every chart's annual charts: the instants the Sun returns to where it
 /// stood at birth.
+/// Each year's own chart, when `varsha_json.place` asked for them.
+fn chart_annual_charts_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "annual_charts",
+        "Each return's own chart, founded where `varsha_json.place` said — `\"birth\"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`).",
+        vec![
+            ColumnDef::new(
+                "lagna_deg",
+                Scalar::F64,
+                "The annual chart's lagna, sidereal degrees, at the place it was cast for.",
+            ),
+            ColumnDef::new(
+                "daylight",
+                Scalar::U8,
+                "1 when the return falls between sunrise and sunset at that place, 0 when by night: what chooses the Tri-Rashi and Dina-Ratri lords.",
+            ),
+            ColumnDef::new(
+                "janma_lagna_lord",
+                Scalar::U16,
+                "The birth lagna's lord, a `graha` id: the Janmesha.",
+            ),
+            ColumnDef::new(
+                "varsha_lagna_lord",
+                Scalar::U16,
+                "The annual lagna's lord, a `graha` id: the Varsha Lagnesha.",
+            ),
+            ColumnDef::new(
+                "tri_rashi_lord",
+                Scalar::U16,
+                "The annual lagna's Tri-Rashi lord for the part of the day, a `graha` id: the Dorothean triplicity lords under the source's positional rule (crux C108).",
+            ),
+            ColumnDef::new(
+                "dina_ratri_lord",
+                Scalar::U16,
+                "The lord of the Sun's sign by day or the Moon's by night, a `graha` id: the Dina-Ratri Pati.",
+            ),
+        ],
+    )
+}
+
 fn chart_praveshas_section(id: u32) -> SectionSchema {
     SectionSchema::columns(
         id,

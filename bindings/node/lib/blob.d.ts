@@ -1289,6 +1289,41 @@ export interface ChartsPraveshas {
 }
 
 /**
+ * The `annual_charts` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each return's own chart, founded where `varsha_json.place` said — `"birth"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`).
+ */
+export interface ChartsAnnualCharts {
+  /**
+   * The annual chart's lagna, sidereal degrees, at the place it was cast for.
+   */
+  readonly lagnaDeg: Float64Array;
+  /**
+   * 1 when the return falls between sunrise and sunset at that place, 0 when by night: what chooses the Tri-Rashi and Dina-Ratri lords.
+   */
+  readonly daylight: Uint8Array;
+  /**
+   * The birth lagna's lord, a `graha` id: the Janmesha.
+   */
+  readonly janmaLagnaLord: Uint16Array;
+  /**
+   * The annual lagna's lord, a `graha` id: the Varsha Lagnesha.
+   */
+  readonly varshaLagnaLord: Uint16Array;
+  /**
+   * The annual lagna's Tri-Rashi lord for the part of the day, a `graha` id: the Dorothean triplicity lords under the source's positional rule (crux C108).
+   */
+  readonly triRashiLord: Uint16Array;
+  /**
+   * The lord of the Sun's sign by day or the Moon's by night, a `graha` id: the Dina-Ratri Pati.
+   */
+  readonly dinaRatriLord: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -1588,6 +1623,10 @@ export interface Charts {
    * Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for.
    */
   readonly praveshas: ChartsPraveshas;
+  /**
+   * Each return's own chart, founded where `varsha_json.place` said — `"birth"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`).
+   */
+  readonly annualCharts: ChartsAnnualCharts;
 }
 
 /**

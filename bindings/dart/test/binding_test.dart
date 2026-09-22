@@ -1460,6 +1460,66 @@ void _engineTests() {
       );
     }
 
+    // No place, no chart founded: the instants alone, as before.
+    expect(years.every((one) => one.annual == null), isTrue);
+
+    // At the birthplace each year's chart comes back with its five
+    // office-bearers; the birth lagna's lord is shared by every year and the
+    // Muntha's lord is the one already on the return.
+    final cast =
+        ctx.chart
+            .found(
+              instant: 2447995.4895833335,
+              place: place,
+              utcOffsetSeconds: 20700,
+              varsha: const VarshaRequest(
+                through: 12,
+                place: AnnualPlace.birth,
+              ),
+            )
+            .praveshas;
+    for (final one in cast) {
+      expect(one.annual, isNotNull);
+      expect(
+        one.annual!.officeBearers.janmaLagna,
+        cast.first.annual!.officeBearers.janmaLagna,
+      );
+      expect(one.annual!.officeBearers.muntha, one.muntha.lord);
+    }
+    final again = ctx.chart.found(
+      instant: cast[3].instant,
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    expect(again.lagnaDeg, cast[3].annual!.lagnaDeg);
+
+    // At a residence, in the parts `found` takes, the lagnas move.
+    final delhi =
+        ctx.chart
+            .found(
+              instant: 2447995.4895833335,
+              place: place,
+              utcOffsetSeconds: 20700,
+              varsha: VarshaRequest(
+                through: 12,
+                place: AnnualPlace.at(
+                  Observer(
+                    latitudeDeg: Latitude(28.6139),
+                    longitudeDeg: Longitude(77.209),
+                    altitudeM: Altitude(216),
+                  ),
+                  utcOffsetSeconds: 19800,
+                ),
+              ),
+            )
+            .praveshas;
+    for (var i = 0; i < delhi.length; i += 1) {
+      expect(
+        (delhi[i].annual!.lagnaDeg - cast[i].annual!.lagnaDeg).abs(),
+        greaterThan(0.1),
+      );
+    }
+
     // The instant founds as a chart of its own; the place is the caller's.
     final annual = ctx.chart.found(
       instant: years.last.instant,

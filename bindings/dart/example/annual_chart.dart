@@ -79,6 +79,29 @@ void main() {
     'annual lagna ${annual.lagnaDeg.toStringAsFixed(3)}°',
   );
 
+  // ── Its five office-bearers, cast where you say ───────────────────
+  // Here the birthplace, the one Tajika text read casts every chart for;
+  // a residence is `AnnualPlace.at(Observer(...), utcOffsetSeconds: ...)`.
+  final cast =
+      ctx.chart
+          .found(
+            instant: when.instantJdUtc,
+            place: place,
+            utcOffsetSeconds: when.offsetSeconds,
+            varsha: const VarshaRequest(through: 30, place: AnnualPlace.birth),
+          )
+          .praveshas[29];
+  final b = cast.annual!.officeBearers;
+  final five = [
+    b.muntha,
+    b.janmaLagna,
+    b.varshaLagna,
+    b.triRashi,
+    b.dinaRatri,
+  ].map((lord) => lord.key).join(' ');
+  final part = cast.annual!.byDay ? 'by day' : 'by night';
+  print('muntha in ${cast.muntha.sign.key}; office-bearers $five, $part');
+
   // ── The readings are named, and they are not each other ───────────
   for (final reading in VarshaReading.values) {
     final one =

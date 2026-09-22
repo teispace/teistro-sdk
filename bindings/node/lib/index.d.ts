@@ -584,6 +584,49 @@ export interface VarshaRequest {
   readonly through: number;
   /** Where the Muntha stands inside its sign; `sign_start` by default. */
   readonly muntha?: MunthaDegree;
+  /**
+   * Where each year's own chart is cast, when you want the charts and not
+   * only their instants: `'birth'`, or a residence in the shape `found`
+   * takes. **Absent, none is founded** — the SDK does not choose between
+   * the birthplace and a residence for you, because the schools differ.
+   */
+  readonly place?: 'birth' | AnnualPlace;
+}
+
+/** A residence to cast each year's chart for, in `found`'s own place shape. */
+export interface AnnualPlace {
+  /** Degrees north. */
+  readonly latitude: number;
+  /** Degrees east. */
+  readonly longitude: number;
+  /** Metres; 0 when absent. */
+  readonly altitude?: number;
+  /** The clock kept there, seconds east of UTC. */
+  readonly utcOffsetSeconds: number;
+}
+
+/** The annual chart's five office-bearers, one of whom becomes the year's lord. */
+export interface OfficeBearers {
+  /** The lord of the Muntha's sign. */
+  readonly muntha: Graha | 'unknown';
+  /** The lord of the birth lagna. */
+  readonly janmaLagna: Graha | 'unknown';
+  /** The lord of the annual lagna. */
+  readonly varshaLagna: Graha | 'unknown';
+  /** The annual lagna's triplicity lord for the part of the day. */
+  readonly triRashi: Graha | 'unknown';
+  /** The lord of the Sun's sign by day, of the Moon's by night. */
+  readonly dinaRatri: Graha | 'unknown';
+}
+
+/** A return's own chart, read down to what Tajika reads from it. */
+export interface AnnualChart {
+  /** The annual chart's lagna, sidereal degrees, at the place it was cast for. */
+  readonly lagnaDeg: number;
+  /** Whether the return fell between sunrise and sunset there. */
+  readonly byDay: boolean;
+  /** The five office-bearers. */
+  readonly officeBearers: OfficeBearers;
 }
 
 /**
@@ -612,6 +655,8 @@ export interface Pravesha {
   readonly instant: number;
   /** The Muntha standing at it, progressed by this year's own count. */
   readonly muntha: Muntha;
+  /** The year's own chart, or `null` unless `varsha.place` asked for it. */
+  readonly annual: AnnualChart | null;
 }
 
 /** A registered dasha system's full key, as the context that registered it resolves it. */

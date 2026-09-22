@@ -3602,6 +3602,7 @@ final class VarshaRequest {
     required this.through,
     this.reading = VarshaReading.sidereal,
     this.muntha = MunthaDegree.signStart,
+    this.place,
   });
 
   /// The last year of life wanted, 1 to 200.
@@ -3613,11 +3614,103 @@ final class VarshaRequest {
   /// Where the Muntha stands inside the sign it has reached.
   final MunthaDegree muntha;
 
+  /// Where each year's own chart is cast, when you want the charts and not
+  /// only their instants. **Null, none is founded** — the SDK does not
+  /// choose between the birthplace and a residence for you, because the
+  /// schools differ.
+  final AnnualPlace? place;
+
   String get _json => jsonEncode(<String, Object?>{
     'reading': reading.key,
     'through': through,
     'muntha': muntha.key,
+    if (place case final place?) 'place': place._json,
   });
+}
+
+/// Where a year's own chart is cast: the birthplace, or a residence in the
+/// parts `found` itself takes.
+sealed class AnnualPlace {
+  const AnnualPlace._();
+
+  /// The birth chart's own place and clock.
+  static const AnnualPlace birth = _Birthplace();
+
+  /// A residence, under the clock kept there.
+  const factory AnnualPlace.at(
+    Observer observer, {
+    required int utcOffsetSeconds,
+  }) = _Residence;
+
+  Object get _json;
+}
+
+final class _Birthplace extends AnnualPlace {
+  const _Birthplace() : super._();
+
+  @override
+  Object get _json => 'birth';
+}
+
+final class _Residence extends AnnualPlace {
+  const _Residence(this.observer, {required this.utcOffsetSeconds}) : super._();
+
+  final Observer observer;
+  final int utcOffsetSeconds;
+
+  @override
+  Object get _json => <String, Object>{
+    'latitudeDeg': observer.latitudeDeg,
+    'longitudeDeg': observer.longitudeDeg,
+    'altitudeM': observer.altitudeM,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+}
+
+/// The annual chart's five office-bearers, one of whom becomes the lord of
+/// the year.
+final class OfficeBearers {
+  const OfficeBearers({
+    required this.muntha,
+    required this.janmaLagna,
+    required this.varshaLagna,
+    required this.triRashi,
+    required this.dinaRatri,
+  });
+
+  /// The lord of the Muntha's sign.
+  final Graha muntha;
+
+  /// The lord of the birth lagna.
+  final Graha janmaLagna;
+
+  /// The lord of the annual lagna.
+  final Graha varshaLagna;
+
+  /// The annual lagna's triplicity lord for the part of the day.
+  final Graha triRashi;
+
+  /// The lord of the Sun's sign by day, of the Moon's by night.
+  final Graha dinaRatri;
+}
+
+/// A return's own chart, read down to what Tajika reads from it.
+final class AnnualChart {
+  const AnnualChart({
+    required this.lagnaDeg,
+    required this.byDay,
+    required this.officeBearers,
+  });
+
+  /// The annual chart's lagna, sidereal degrees, at the place it was cast
+  /// for.
+  final double lagnaDeg;
+
+  /// Whether the return fell between sunrise and sunset there.
+  final bool byDay;
+
+  /// The five office-bearers.
+  final OfficeBearers officeBearers;
 }
 
 /// Where the Muntha stands inside the sign it has reached (crux C107).
@@ -3666,10 +3759,14 @@ final class Pravesha {
     required this.year,
     required this.instant,
     required this.muntha,
+    this.annual,
   });
 
   /// The Muntha standing at it, progressed by this year's own count.
   final Muntha muntha;
+
+  /// The year's own chart, or null unless `varsha:` named a `place`.
+  final AnnualChart? annual;
 
   /// How many years the native has completed at this instant: 1 is the
   /// first return, a year after birth. Counted in returns and not in
@@ -4111,6 +4208,32 @@ final class Chart {
   /// The place is yours. A return is an instant, and whether the annual
   /// chart is cast for the birthplace or for a residence is a choice the
   /// schools differ on, so pass the instant to `found` yourself.
+  /// Row [row] of `annual_charts`, which runs beside `praveshas` row for
+  /// row or is empty; anything between is a layout this layer cannot pair,
+  /// and it says so rather than giving a year another year's chart.
+  AnnualChart? _annualOf(int row) {
+    final charts = batch.annualCharts;
+    final returns = batch.praveshas;
+    if (charts.lagnaDeg.isEmpty) return null;
+    if (charts.lagnaDeg.length != returns.year.length) {
+      throw StateError(
+        'annual_charts has ${charts.lagnaDeg.length} rows beside '
+        '${returns.year.length} returns; it is all of them or none',
+      );
+    }
+    return AnnualChart(
+      lagnaDeg: charts.lagnaDeg[row],
+      byDay: charts.daylight[row] == 1,
+      officeBearers: OfficeBearers(
+        muntha: Graha.byId(returns.munthaLord[row]),
+        janmaLagna: Graha.byId(charts.janmaLagnaLord[row]),
+        varshaLagna: Graha.byId(charts.varshaLagnaLord[row]),
+        triRashi: Graha.byId(charts.triRashiLord[row]),
+        dinaRatri: Graha.byId(charts.dinaRatriLord[row]),
+      ),
+    );
+  }
+
   List<Pravesha> get praveshas {
     final counts = batch.cast.praveshaCount;
     var from = 0;
@@ -4128,6 +4251,7 @@ final class Chart {
           lord: Graha.byId(p.munthaLord[from + k]),
           longitudeDeg: p.munthaDeg[from + k],
         ),
+        annual: _annualOf(from + k),
       ),
     );
   }

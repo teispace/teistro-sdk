@@ -1400,6 +1400,38 @@ fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &te
                 &key(&format!("-{}-muntha-deg", one.year)),
                 number(muntha.longitude_deg),
             );
+            // The year's own chart at the birthplace, as `"place":"birth"`
+            // founds it at the boundary, and its office-bearers.
+            let at_birth = ChartRequest::at(
+                document.foundation.place,
+                UtcOffset::try_from_seconds(20700).expect("+05:45"),
+            );
+            let Ok(annual) = sdk.chart().reading(one.at, &at_birth) else {
+                continue;
+            };
+            let Ok(bearers) = sdk
+                .chart()
+                .office_bearers(document, &annual.value, one.year)
+            else {
+                continue;
+            };
+            put(
+                report,
+                &key(&format!("-{}-annual-lagna", one.year)),
+                number(annual.value.foundation.lagna_deg),
+            );
+            put(
+                report,
+                &key(&format!("-{}-annual-by-day", one.year)),
+                bearers.by_day.to_string(),
+            );
+            put(
+                report,
+                &key(&format!("-{}-annual-bearers", one.year)),
+                teistro::Office::ALL
+                    .map(|office| bearers.holder(office).full_key())
+                    .join(" "),
+            );
         }
     }
 }

@@ -1256,6 +1256,47 @@ test('a chart carries the annual charts its birth opens', () => {
     'the natal degree is carried forward, never backward',
   );
 
+  // No place, no chart founded: the instants alone, as before.
+  assert.ok(years.every((one) => one.annual === null));
+
+  // At the birthplace each year's chart comes back with its five
+  // office-bearers; the birth lagna's lord is the one every year shares,
+  // and the Muntha's lord is the one already on the return.
+  const cast = ctx.chart.found({
+    instant: 2447995.4895833335,
+    place,
+    utcOffsetSeconds: 20700,
+    varsha: { through: 12, place: 'birth' },
+  }).praveshas;
+  assert.ok(cast.every((one) => one.annual !== null));
+  assert.ok(cast.every((one) => one.annual.officeBearers.janmaLagna === cast[0].annual.officeBearers.janmaLagna));
+  assert.ok(cast.every((one) => one.annual.officeBearers.muntha === one.muntha.lord));
+  assert.ok(cast.every((one) => typeof one.annual.byDay === 'boolean'));
+  // Founding the same instant here gives the same lagna the batch read.
+  const again = ctx.chart.found({ instant: cast[3].instant, place, utcOffsetSeconds: 20700 });
+  assert.equal(again.lagnaDeg, cast[3].annual.lagnaDeg);
+
+  // At a residence, in the place shape `found` takes, the lagnas move.
+  const delhi = ctx.chart.found({
+    instant: 2447995.4895833335,
+    place,
+    utcOffsetSeconds: 20700,
+    varsha: {
+      through: 12,
+      place: { latitude: 28.6139, longitude: 77.209, altitude: 216, utcOffsetSeconds: 19800 },
+    },
+  }).praveshas;
+  assert.ok(delhi.every((one, i) => Math.abs(one.annual.lagnaDeg - cast[i].annual.lagnaDeg) > 0.1));
+  assert.throws(
+    () => ctx.chart.found({
+      instant: 2447995.4895833335,
+      place,
+      utcOffsetSeconds: 20700,
+      varsha: { through: 12, place: 'home' },
+    }),
+    (error) => error.field === 'varsha_json.place' && /"birth"/.test(error.message),
+  );
+
   // The instant founds as a chart of its own; the place is the caller's.
   const annual = ctx.chart.found({ instant: years[11].instant, place, utcOffsetSeconds: 20700 });
   assert.equal(annual.instant, years[11].instant);

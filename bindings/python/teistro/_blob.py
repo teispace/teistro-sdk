@@ -1179,6 +1179,36 @@ class ChartsPraveshas:
 
 
 @dataclass(frozen=True)
+class ChartsAnnualCharts:
+    """The `annual_charts` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each return's own chart, founded where `varsha_json.place` said — `"birth"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`).
+    """
+
+    lagna_deg: memoryview[float]
+    """The annual chart's lagna, sidereal degrees, at the place it was cast for."""
+
+    daylight: memoryview[int]
+    """1 when the return falls between sunrise and sunset at that place, 0 when by night: what chooses the Tri-Rashi and Dina-Ratri lords."""
+
+    janma_lagna_lord: memoryview[int]
+    """The birth lagna's lord, a `graha` id: the Janmesha."""
+
+    varsha_lagna_lord: memoryview[int]
+    """The annual lagna's lord, a `graha` id: the Varsha Lagnesha."""
+
+    tri_rashi_lord: memoryview[int]
+    """The annual lagna's Tri-Rashi lord for the part of the day, a `graha` id: the Dorothean triplicity lords under the source's positional rule (crux C108)."""
+
+    dina_ratri_lord: memoryview[int]
+    """The lord of the Sun's sign by day or the Moon's by night, a `graha` id: the Dina-Ratri Pati."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -1401,6 +1431,9 @@ class Charts:
     praveshas: ChartsPraveshas
     """Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for."""
 
+    annual_charts: ChartsAnnualCharts
+    """Each return's own chart, founded where `varsha_json.place` said — `"birth"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`)."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1445,6 +1478,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_rules = blob.section(33, "rules")
     at_plans = blob.section(34, "plans")
     at_praveshas = blob.section(35, "praveshas")
+    at_annual_charts = blob.section(36, "annual_charts")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -2012,6 +2046,27 @@ def decode_charts(raw: bytes) -> Charts:
                 at_praveshas, 4, 8, at_praveshas.count
             ).cast("d"),
             length=at_praveshas.count,
+        ),
+        annual_charts=ChartsAnnualCharts(
+            lagna_deg=blob.column(
+                at_annual_charts, 0, 8, at_annual_charts.count
+            ).cast("d"),
+            daylight=blob.column(
+                at_annual_charts, 1, 1, at_annual_charts.count
+            ).cast("B"),
+            janma_lagna_lord=blob.column(
+                at_annual_charts, 2, 2, at_annual_charts.count
+            ).cast("H"),
+            varsha_lagna_lord=blob.column(
+                at_annual_charts, 3, 2, at_annual_charts.count
+            ).cast("H"),
+            tri_rashi_lord=blob.column(
+                at_annual_charts, 4, 2, at_annual_charts.count
+            ).cast("H"),
+            dina_ratri_lord=blob.column(
+                at_annual_charts, 5, 2, at_annual_charts.count
+            ).cast("H"),
+            length=at_annual_charts.count,
         ),
     )
 
