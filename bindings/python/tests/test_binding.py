@@ -1201,6 +1201,18 @@ class AnEngine(WithLibrary):
         assert third is not None
         self.assertEqual(again.lagna_deg, third.lagna_deg)
 
+        # Each year names a lord, chosen among its own claimants.
+        for one in cast:
+            assert one.annual is not None
+            lord = one.annual.year_lord
+            self.assertTrue(1 <= len(lord.claims) <= 5)
+            self.assertIn(lord.graha, [claim.graha for claim in lord.claims])
+            ranked = [claim.vishwa.total for claim in lord.claims]
+            self.assertEqual(ranked, sorted(ranked, reverse=True))
+            self.assertRegex(str(lord.vishwa), r"^\d\d:\d\d:\d\d$")
+            self.assertEqual(lord.vishwa.units, lord.vishwa.total // 3600)
+            self.assertIsInstance(lord.moon_passed_over, bool)
+
         # At a residence, in the parts `found` takes, the lagnas move.
         delhi = self.ctx.chart.found(
             instant=birth,

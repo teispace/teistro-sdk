@@ -115,6 +115,7 @@ from .catalogue import (
     Vara,
     Varga,
     Varna,
+    VarsheshaChosen,
     VimshopakaScoring,
     Yoga,
     YogaCause,

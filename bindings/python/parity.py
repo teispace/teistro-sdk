@@ -644,6 +644,17 @@ def main() -> None:
                             for lord in (b.muntha, b.janma_lagna, b.varsha_lagna, b.tri_rashi, b.dina_ratri)
                         ),
                     )
+                    year_lord = annual.year_lord
+                    put(f"{stem}-year-lord", year_lord.graha.full_key)
+                    put(f"{stem}-year-lord-chosen", year_lord.chosen.key)
+                    put(f"{stem}-year-lord-bala", str(year_lord.vishwa))
+                    put(
+                        f"{stem}-year-claims",
+                        " ".join(
+                            f"{c.graha.full_key}:{c.vishwa}:{c.portfolios}:{str(c.aspects_lagna).lower()}"
+                            for c in year_lord.claims
+                        ),
+                    )
 
         single = geo.chart.found(
             instant=2460482.5, place=place, utc_offset_seconds=20700

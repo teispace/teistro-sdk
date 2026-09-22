@@ -1319,6 +1319,54 @@ export interface ChartsAnnualCharts {
    * The lord of the Sun's sign by day or the Moon's by night, a `graha` id: the Dina-Ratri Pati.
    */
   readonly dinaRatriLord: Uint16Array;
+  /**
+   * The **Varshesha**, lord of the year, a `graha` id: the strongest office-bearer that aspects the annual lagna, with the source's fallbacks (`03-design/varshesha.md`).
+   */
+  readonly yearLord: Uint16Array;
+  /**
+   * Which step of the chain decided the year's lord. A year lord reached by a fallback is a different statement about the year from one chosen on strength, and the planet alone cannot say so.
+   * The values are `VarsheshaChosen` ids.
+   */
+  readonly yearLordChosen: Uint8Array;
+  /**
+   * The year lord's five-fold strength, exact, in **sub-sub units** of which a unit holds 3600 — an integer because two office-bearers a sub-sub unit apart decide a year between them.
+   */
+  readonly yearLordVishwa: Int32Array;
+  /**
+   * 1 when the Moon led on strength and stepped aside, being "unable to govern"; 0 otherwise.
+   */
+  readonly moonPassedOver: Uint8Array;
+  /**
+   * How many rows of the `year_claims` section belong to this year: one to five, the distinct office-bearers.
+   */
+  readonly claimCount: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `year_claims` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`).
+ */
+export interface ChartsYearClaims {
+  /**
+   * The claimant, a `graha` id.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its five-fold strength, exact, in sub-sub units of which a unit holds 3600.
+   */
+  readonly vishwa: Int32Array;
+  /**
+   * How many of the five offices it holds, 1 to 5: the tie-break when two are level on strength.
+   */
+  readonly portfolios: Uint8Array;
+  /**
+   * 1 when it gives the Tajika aspect to the annual lagna, which it must to hold the year; 0 when it stands in a neutral house — 2, 6, 8 or 12 — and is disqualified however strong.
+   */
+  readonly aspectsLagna: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -1627,6 +1675,10 @@ export interface Charts {
    * Each return's own chart, founded where `varsha_json.place` said — `"birth"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`).
    */
   readonly annualCharts: ChartsAnnualCharts;
+  /**
+   * Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`).
+   */
+  readonly yearClaims: ChartsYearClaims;
 }
 
 /**

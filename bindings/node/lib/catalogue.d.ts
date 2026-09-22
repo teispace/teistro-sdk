@@ -6237,6 +6237,64 @@ export declare const PolarDayPolicy: {
 export declare const PolarDayPolicyById: ReadonlyMap<number, PolarDayPolicy>;
 
 /**
+ * Which step of the year lord's chain decided it
+ * (`03-design/varshesha.md`).
+ *
+ * Mirrors `teistro::Chosen` through an **exhaustive** match, which is
+ * what stops the two drifting: a step added stops this crate compiling
+ * rather than silently crossing as whatever was first.
+ */
+export type VarsheshaChosen =
+  | 'strongest'
+  | 'most-portfolios'
+  | 'muntha-lord-unaspected'
+  | 'muntha-lord-all-weak'
+  | 'muntha-lord-tied'
+  | 'dina-ratri-tied'
+  | 'annual-lagna-lord-unaspected';
+
+/** Every VarsheshaChosen by name; the values are the strings the union accepts. */
+export declare const VarsheshaChosen: {
+  /**
+   * The strongest office-bearer that aspects the annual lagna: the
+   * ordinary answer.
+   */
+  readonly Strongest: 'strongest';
+  /**
+   * Tied on strength, and this one holds more portfolios.
+   */
+  readonly MostPortfolios: 'most-portfolios';
+  /**
+   * The Muntha's lord, because no office-bearer aspects the lagna.
+   */
+  readonly MunthaLordUnaspected: 'muntha-lord-unaspected';
+  /**
+   * The Muntha's lord, because every office-bearer is under five units.
+   */
+  readonly MunthaLordAllWeak: 'muntha-lord-all-weak';
+  /**
+   * The Muntha's lord, on an outright tie of strength, aspect and
+   * portfolios.
+   */
+  readonly MunthaLordTied: 'muntha-lord-tied';
+  /**
+   * The Dina-Ratri Pati, on that same tie, under the other reading.
+   */
+  readonly DinaRatriTied: 'dina-ratri-tied';
+  /**
+   * The annual lagna's lord, because nobody aspects and the rules ask
+   * for that reading.
+   */
+  readonly AnnualLagnaLordUnaspected: 'annual-lagna-lord-unaspected';
+};
+
+/**
+ * Every VarsheshaChosen by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VarsheshaChosenById: ReadonlyMap<number, VarsheshaChosen>;
+
+/**
  * A time scale of the conversions; the first two ids are the port's.
  */
 export type Scale = 'ut1' | 'tt' | 'utc';

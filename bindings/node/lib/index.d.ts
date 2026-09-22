@@ -591,6 +591,18 @@ export interface VarshaRequest {
    * the birthplace and a residence for you, because the schools differ.
    */
   readonly place?: 'birth' | AnnualPlace;
+  /** The readings the year lord's chain parts on, where authorities differ. */
+  readonly varshesha?: VarsheshaRules;
+}
+
+/** Where the sources differ on the lord of the year, each a named reading. */
+export interface VarsheshaRules {
+  /** Who takes the year when nobody aspects the lagna; the Muntha's lord by default. */
+  readonly noneAspects?: 'muntha_lord' | 'annual_lagna_lord';
+  /** Who takes it on an outright tie; the Muntha's lord by default. */
+  readonly tied?: 'muntha_lord' | 'dina_ratri_pati';
+  /** Whether the Moon may hold it; passed over by default, as the source has it. */
+  readonly moon?: 'passed_over' | 'like_any_other';
 }
 
 /** A residence to cast each year's chart for, in `found`'s own place shape. */

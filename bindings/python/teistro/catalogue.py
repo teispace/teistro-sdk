@@ -3760,6 +3760,43 @@ class PolarDayPolicy(Member):
     """Civil midnight stands in for it."""
 
 
+class VarsheshaChosen(Member):
+    """Which step of the year lord's chain decided it
+    (`03-design/varshesha.md`).
+
+    Mirrors `teistro::Chosen` through an **exhaustive** match, which is
+    what stops the two drifting: a step added stops this crate compiling
+    rather than silently crossing as whatever was first.
+    """
+
+    STRONGEST = 0
+    """The strongest office-bearer that aspects the annual lagna: the
+    ordinary answer.
+    """
+
+    MOST_PORTFOLIOS = 1
+    """Tied on strength, and this one holds more portfolios."""
+
+    MUNTHA_LORD_UNASPECTED = 2
+    """The Muntha's lord, because no office-bearer aspects the lagna."""
+
+    MUNTHA_LORD_ALL_WEAK = 3
+    """The Muntha's lord, because every office-bearer is under five units."""
+
+    MUNTHA_LORD_TIED = 4
+    """The Muntha's lord, on an outright tie of strength, aspect and
+    portfolios.
+    """
+
+    DINA_RATRI_TIED = 5
+    """The Dina-Ratri Pati, on that same tie, under the other reading."""
+
+    ANNUAL_LAGNA_LORD_UNASPECTED = 6
+    """The annual lagna's lord, because nobody aspects and the rules ask
+    for that reading.
+    """
+
+
 class Scale(Member):
     """A time scale of the conversions; the first two ids are the port's."""
 
@@ -5162,6 +5199,15 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "undefined",
         1: "nearest-event",
         2: "civil-midnight",
+    },
+    "VarsheshaChosen": {
+        0: "strongest",
+        1: "most-portfolios",
+        2: "muntha-lord-unaspected",
+        3: "muntha-lord-all-weak",
+        4: "muntha-lord-tied",
+        5: "dina-ratri-tied",
+        6: "annual-lagna-lord-unaspected",
     },
     "Scale": {
         0: "ut1",

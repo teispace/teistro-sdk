@@ -538,6 +538,16 @@ for (const reading of ['sidereal', 'tropical', 'mean']) {
         `chart-${i}-varsha-${reading}-${one.year}-annual-bearers`,
         [b.muntha, b.janmaLagna, b.varshaLagna, b.triRashi, b.dinaRatri].join(' '),
       );
+      const lord = one.annual.yearLord;
+      put(`chart-${i}-varsha-${reading}-${one.year}-year-lord`, lord.graha);
+      put(`chart-${i}-varsha-${reading}-${one.year}-year-lord-chosen`, lord.chosen);
+      put(`chart-${i}-varsha-${reading}-${one.year}-year-lord-bala`, lord.vishwa.toString());
+      put(
+        `chart-${i}-varsha-${reading}-${one.year}-year-claims`,
+        lord.claims
+          .map((c) => `${c.graha}:${c.vishwa}:${c.portfolios}:${c.aspectsLagna}`)
+          .join(' '),
+      );
     }
     i += 1;
   }

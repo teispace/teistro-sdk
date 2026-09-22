@@ -102,6 +102,19 @@ void main() {
   final part = cast.annual!.byDay ? 'by day' : 'by night';
   print('muntha in ${cast.muntha.sign.key}; office-bearers $five, $part');
 
+  // ── And the lord of that year, with the reason ────────────────────
+  final lord = cast.annual!.yearLord;
+  print(
+    'year lord ${lord.graha.key} at ${lord.vishwa}, chosen ${lord.chosen.key}',
+  );
+  for (final claim in lord.claims) {
+    final aspects = claim.aspectsLagna ? 'aspects' : 'does not aspect';
+    print(
+      '  ${claim.graha.key.padRight(8)} ${claim.vishwa}  '
+      '${claim.portfolios} portfolio(s)  $aspects the lagna',
+    );
+  }
+
   // ── The readings are named, and they are not each other ───────────
   for (final reading in VarshaReading.values) {
     final one =

@@ -106,6 +106,7 @@ from .catalogue import (
     Vaiseshikamsa,
     DashaPhase,
     Nature,
+    VarsheshaChosen,
     VimshopakaScoring,
     Body,
     Calendar,
@@ -300,10 +301,15 @@ __all__ = [
     "GrahaState",
     "DashaDefinition",
     "AnnualChart",
+    "Bala",
     "Muntha",
     "OfficeBearers",
     "Pravesha",
     "VarshaPlace",
+    "VarsheshaChosen",
+    "VarsheshaRules",
+    "YearClaim",
+    "YearLord",
     "VarshaRequest",
     "RashiDashaDefinition",
     "UduDashaDefinition",
@@ -2471,6 +2477,27 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
     takes. **Absent, none is founded** — the SDK does not choose between the
     birthplace and a residence for you, because the schools differ."""
 
+    varshesha: "VarsheshaRules"
+    """The readings the year lord's chain parts on, where authorities
+    differ; the source's own by default."""
+
+
+class VarsheshaRules(TypedDict, total=False):
+    """Where the sources differ on the lord of the year, each a named
+    reading (`03-design/varshesha.md`).
+
+    >>> rules: VarsheshaRules = {"moon": "like_any_other"}
+    """
+
+    none_aspects: Literal["muntha_lord", "annual_lagna_lord"]
+    """Who takes the year when nobody aspects the lagna."""
+
+    tied: Literal["muntha_lord", "dina_ratri_pati"]
+    """Who takes it on an outright tie."""
+
+    moon: Literal["passed_over", "like_any_other"]
+    """Whether the Moon may hold it; passed over by default."""
+
 
 class VarshaPlace(TypedDict):
     """A residence to cast each year's chart for: the observer and clock
@@ -2507,6 +2534,69 @@ class OfficeBearers:
 
 
 @dataclass(frozen=True)
+class Bala:
+    """A Tajika strength, exact. The boundary carries it as an integer
+    count of **sub-sub units**, 3600 to a unit, because two office-bearers
+    a sub-sub unit apart decide a year between them."""
+
+    units: int
+    """Whole units, at most twenty: the figure a reader compares."""
+
+    sub_units: int
+    """The sub-units after those, 0 to 59."""
+
+    sub_sub: int
+    """The sub-sub units after those, 0 to 59."""
+
+    total: int
+    """The whole of it in sub-sub units: what to compare and sum."""
+
+    def __str__(self) -> str:
+        """`14:20:15`, as the sources write one."""
+        return f"{self.units:02}:{self.sub_units:02}:{self.sub_sub:02}"
+
+
+@dataclass(frozen=True)
+class YearClaim:
+    """One office-bearer's claim on the year's lordship."""
+
+    graha: Graha
+    """Whose claim it is."""
+
+    vishwa: Bala
+    """Its five-fold strength."""
+
+    portfolios: int
+    """How many of the five offices it holds, 1 to 5: the tie-break."""
+
+    aspects_lagna: bool
+    """Whether it gives the Tajika aspect to the annual lagna, which it must
+    to hold the year."""
+
+
+@dataclass(frozen=True)
+class YearLord:
+    """The lord of the year, and the reckoning it came out of."""
+
+    graha: Graha
+    """The lord of the year."""
+
+    chosen: VarsheshaChosen
+    """Which step of the chain decided it."""
+
+    vishwa: Bala
+    """Its five-fold strength."""
+
+    moon_passed_over: bool
+    """Whether the Moon led on strength and stepped aside, being "unable to
+    govern"."""
+
+    claims: List[YearClaim]
+    """Every claimant, strongest first, so the decision can be read rather
+    than trusted."""
+
+
+@dataclass(frozen=True)
 class AnnualChart:
     """A return's own chart, read down to what Tajika reads from it."""
 
@@ -2519,6 +2609,9 @@ class AnnualChart:
 
     office_bearers: OfficeBearers
     """The five office-bearers."""
+
+    year_lord: YearLord
+    """The lord of the year, chosen among them."""
 
 
 @dataclass(frozen=True)
@@ -2842,6 +2935,11 @@ def _annual_chart(decoded: Any, row: int) -> Optional[AnnualChart]:
             f"annual_charts has {len(charts.lagna_deg)} rows beside "
             f"{len(decoded.praveshas.year)} returns; it is all of them or none"
         )
+    # The claims are ragged by `claim_count`, as the returns are by
+    # `pravesha_count`: walk to this year's block and take its own count.
+    start = sum(charts.claim_count[i] for i in range(row))
+    count = charts.claim_count[row]
+    claims = decoded.year_claims
     return AnnualChart(
         lagna_deg=charts.lagna_deg[row],
         by_day=charts.daylight[row] == 1,
@@ -2852,7 +2950,28 @@ def _annual_chart(decoded: Any, row: int) -> Optional[AnnualChart]:
             tri_rashi=Graha(charts.tri_rashi_lord[row]),
             dina_ratri=Graha(charts.dina_ratri_lord[row]),
         ),
+        year_lord=YearLord(
+            graha=Graha(charts.year_lord[row]),
+            chosen=VarsheshaChosen(charts.year_lord_chosen[row]),
+            vishwa=_bala(charts.year_lord_vishwa[row]),
+            moon_passed_over=charts.moon_passed_over[row] == 1,
+            claims=[
+                YearClaim(
+                    graha=Graha(claims.graha[i]),
+                    vishwa=_bala(claims.vishwa[i]),
+                    portfolios=claims.portfolios[i],
+                    aspects_lagna=claims.aspects_lagna[i] == 1,
+                )
+                for i in range(start, start + count)
+            ],
+        ),
     )
+
+
+def _bala(sub_sub: int) -> Bala:
+    """A strength from the integer sub-sub units the boundary carries."""
+    units, rest = divmod(sub_sub, 3600)
+    return Bala(units=units, sub_units=rest // 60, sub_sub=rest % 60, total=sub_sub)
 
 
 def _record_json(value: Optional[Mapping[str, Any]], field: str, example: str) -> Optional[str]:

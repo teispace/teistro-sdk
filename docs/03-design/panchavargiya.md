@@ -89,7 +89,7 @@ which is the figure the year lord is actually chosen by — is Jupiter at
 | **decided** | the five parts and their maxima; positional friendship read off the annual chart; the Tajika decanate as a rule; the Hudda as printed; exact integer arithmetic in sub-sub units; the Uchcha truncation, because the source states it |
 | **not decided** | whether the Hudda's three transpositions are the tradition's or a printing fault (crux C109), which wants a second printing |
 | **built** | `teistro_tajika::panchavargiya` over an `AnnualSky` of seven named longitudes — named, because every one of them is a longitude and an array would let a caller swap two and still get an answer; `sdk.chart().panchavargiya`, which needs **no ephemeris** |
-| **not built** | the **Harsha** bala and the **Dwadasha-vargiya** bala, the source's two other strengths, which nothing yet asks for; and the crossing, which waits for the year lord so that the boundary carries an answer rather than the seven-by-five table it is computed from |
+| **not built** | the **Harsha** bala and the **Dwadasha-vargiya** bala, the source's two other strengths, which nothing yet asks for. The table itself does not cross: the boundary carries the **year lord and its claimants**, which is what the strength was computed for ([`varshesha.md`](varshesha.md)), and a Rust caller who wants the whole table has `sdk.chart().panchavargiya` |
 
 ## What it unblocks, and what it still waits on
 
