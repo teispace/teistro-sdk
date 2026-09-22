@@ -1578,7 +1578,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
 /// definition the row's checks refuse is named by its place and field.
 #[test]
 fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
-    let saptaka = r#"{"key":"ACME_SAPTAKA","lords":[
+    let saptaka = r#"{"kernel":"udu","key":"ACME_SAPTAKA","lords":[
         {"graha":"SUN","years":10},{"graha":"MOON","years":10},{"graha":"MARS","years":10},
         {"graha":"MERCURY","years":10},{"graha":"JUPITER","years":10},{"graha":"VENUS","years":10},
         {"graha":"SATURN","years":10}],"reference":"KRITTIKA"}"#;
@@ -1701,6 +1701,104 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
     assert!(
         typo.1.contains("reference") || typo.1.contains("refrence"),
         "{typo:?}"
+    );
+
+    // The kernel is stated, so a row that names none is refused by that
+    // field rather than by one the caller never wrote.
+    let unstated = refused(format!(
+        "[{}]",
+        saptaka.replacen("\"kernel\":\"udu\",", "", 1)
+    ));
+    assert!(unstated.1.contains("kernel"), "{unstated:?}");
+}
+
+/// A consumer's **sign-based** system crosses the same way: registered
+/// through `options.dashas_json` under `"kernel":"rashi"`, asked for by the
+/// id `ts_key_parse` gives, and answered in the `dashas` section with the
+/// periods the catalogued row it copies would give
+/// (`03-design/dasha-coverage-measured.md`).
+#[test]
+fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
+    let chara = r#"{"kernel":"rashi","key":"ACME_CHARA","start":"lagna","order":"consecutive","length":"count_to_lord","namedLord":"stronger"}"#;
+    let ctx = Ctx::with_dashas(&format!("[{chara}]")).expect("a sign-based system registers");
+    let full = CString::new("dasha_system.ACME_CHARA").unwrap();
+    let mut id = 0u32;
+    // SAFETY: a live handle and valid slots.
+    assert_eq!(
+        unsafe { ts_key_parse(ctx.handle, full.as_ptr(), &raw mut id) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+
+    let instants = [2_451_545.0];
+    let dashas = [u16::try_from(id & 0xFFFF).unwrap(), DashaSystem::Chara.id()];
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: dashas.as_ptr(),
+            dasha_count: dashas.len(),
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let systems = reader.column("dashas", "system").unwrap();
+    assert_eq!(
+        (systems[0].as_i64(), systems[1].as_i64()),
+        (0x8000, i64::from(DashaSystem::Chara.id()))
+    );
+    // The consumer's row is Chara's, so the two agree period for period.
+    let counts = reader.column("dashas", "period_count").unwrap();
+    assert_eq!(counts[0].as_i64(), counts[1].as_i64());
+
+    // A sign-based row is refused by its own field, as a seeded one is.
+    let refused = |rows: String| match Ctx::with_dashas(&rows) {
+        Ok(_) => panic!("{rows} registered"),
+        Err(record) => record,
+    };
+    let thirteenth = refused(format!(
+        "[{}]",
+        chara.replacen(
+            "\"namedLord\":\"stronger\"",
+            "\"namedLord\":\"stronger\",\"strongerOf\":[1,13]",
+            1
+        )
+    ));
+    assert_eq!(
+        thirteenth.2.as_deref(),
+        Some("options.dashas_json[0].stronger_of[1]"),
+        "{thirteenth:?}"
     );
 }
 

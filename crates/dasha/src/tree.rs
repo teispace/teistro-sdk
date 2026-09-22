@@ -98,11 +98,11 @@ impl Rules {
     #[must_use]
     pub fn of_definition(
         settings: &teistro_core::settings::Dasha,
-        definition: &crate::row::UduDefinition,
+        definition: &crate::definition::DashaDefinition,
     ) -> Rules {
         Rules {
             balance: settings.balance,
-            year_length: definition.year_length,
+            year_length: definition.year_length(),
             birth_period: settings.birth_period,
             after_cycle: settings.after_cycle,
             seed_overflow: settings.seed_overflow,

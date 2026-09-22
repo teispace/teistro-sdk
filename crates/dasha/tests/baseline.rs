@@ -218,7 +218,7 @@ fn a_registered_row_with_vimshottari_s_table_is_vimshottari() {
     let mut systems = DashaSystems::new();
     let id = systems.register(definition).unwrap();
     systems.seal();
-    let registered = systems.by_id(id).unwrap().row();
+    let registered = systems.by_id(id).unwrap().udu().unwrap().row();
     assert_eq!(
         registered.system,
         DashaName::Registered(String::from("ACME_VIMSHOTTARI"))

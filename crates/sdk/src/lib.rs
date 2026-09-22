@@ -124,7 +124,9 @@ pub use crate::rules_bridge::{
     MarakaWindow, RuleInputs, maraka_windows, rule_chart, rule_periods, rule_vargas,
 };
 pub use teistro_dasha as dasha;
-pub use teistro_dasha::{DashaCursor, DashaReading, PeriodRow, Timeline};
+pub use teistro_dasha::{
+    DashaCursor, DashaDefinition, DashaReading, PeriodRow, RashiDefinition, Timeline, UduDefinition,
+};
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
 pub use teistro_rules as rules;

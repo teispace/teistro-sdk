@@ -84,25 +84,35 @@ unsupported: SHODASHOTTARI is a dasha the catalogue names and this build does no
 ## Who can supply one
 
 "Not built" is not "not available". `DashaSystems::register` takes a
-`UduDefinition` — lords, years and a **nakshatra** reference, checked
-by the same `UduRow::validate` a shipped row passes — so a consumer
-holding the text can register the system on their context and ask for it
-by key, today, with no change here. That covers 3 of the 22 systems
-left: `SHODASHOTTARI`, `SHATTRIMSHA_SAMA` and `SHASHTIHAYANI`, each of
-which is a stated row waiting only on its citation.
+`DashaDefinition` of either kernel — lords, years and a nakshatra
+reference, or where a system starts, the order it visits the signs in
+and how long a sign runs — each checked by the same row validation a
+shipped system passes. So a consumer holding the text registers the
+system on their context and asks for it by key, today, with no change
+here. That covers 5 of the 22 systems left.
 
-The path is walked rather than cited: `DEMO_SHODASHOTTARI`, 8 lords and
-116 years, registered and accepted, with the total the design page
-states for it falling out of the lords rather than copied beside them.
+| system | the kernel it arrives as | what is still missing |
+|---|---|---|
+| `SHODASHOTTARI` | nakshatra-seeded | the row is stated — from Pushya, eight lords, 116 years — and its verse numbers in BPHS ch. 46 are to be confirmed before it ships |
+| `SHATTRIMSHA_SAMA` | nakshatra-seeded | the same verse numbers to confirm. Its table is Yogini's, lord for lord and year for year, differing only in the reference nakshatra and the offset — so shipping it on a guess would ship Yogini twice |
+| `SHASHTIHAYANI` | nakshatra-seeded | the received text gives Jupiter 13, Sun 13, Mars 13 and then six each, which sums to 69 and not to the 60 the name states. A row cannot be written from a text that disagrees with itself |
+| `STHIRA` | sign-based | the row is stated — from the lagna, consecutive, seven, eight or nine years by modality — and nothing here verifies it. It is one boolean from Mandooka's row, which is exactly why a guess would go unnoticed |
+| `VARNADA` | sign-based | the Varnada lagna it starts from **is** built (`teistro_points`), so what is missing is not the point but which of five school variants of it the dasha counts from |
 
-**The other 19 cannot be supplied by anyone, and that is the finding.**
-The registry takes nakshatra-seeded rows and nothing else, so a
-sign-based system a consumer has the text for — `STHIRA`, `VARNADA`
-— has no definition to arrive as, and neither has a tithi, yoga or
-karana seed. Under the no-dead-ends mandate that is a gap in the SDK and
-not in the sources: the text being unsettled blocks *this* build, while
-a missing definition blocks *everyone*. A `RashiDefinition` beside
-`UduDefinition` is what would close it.
+The path is walked once per kernel rather than cited:
+`DEMO_SHODASHOTTARI`, 8 lords and 116 years from Pushya, the
+nakshatra-seeded kernel and `DEMO_STHIRA`, every sign from the lagna for
+seven, eight or nine years by modality, the sign-based kernel.
+
+**The other 17 cannot be supplied by anyone**, and each for a reason in
+its own row rather than for want of an arm: `SUDASA` starts from the
+karakamsha, which is a place `Start` does not name; the tithi, yoga and
+karana seeds want a reference that is not a nakshatra; `TARA`, `KARAKA`
+and `ASHTAKAVARGA` ask the chart for their periods; `YOGARDHA` and
+`SUDARSHANA_CHAKRA` are compositions of systems rather than systems.
+Those are rows the kernels do not express, which is a different thing
+from a row nobody has written down — and the difference is what this
+section exists to keep visible.
 
 ## What the types decide
 
@@ -111,7 +121,7 @@ a missing definition blocks *everyone*. A `RashiDefinition` beside
 | every catalogued system this build does not compute is listed here with a reason | **holds** | 0 of 22 disagree |
 | no reason here outlives its blocker: nothing listed is already computed | **holds** | 0 of 22 disagree |
 | every reason names a system the catalogue names | **holds** | 0 of 22 disagree |
-| every system said to be registrable is one this build does not compute | **holds** | 0 of 3 disagree |
+| every system said to be registrable is one this build does not compute | **holds** | 0 of 5 disagree |
 | asking for an unbuilt system is refused and never answered | **holds** | 0 of 22 disagree |
 | the refusal names the system asked for | **holds** | 0 of 22 disagree |
 | the refusal names every system this build does compute | **holds** | 0 of 22 disagree |

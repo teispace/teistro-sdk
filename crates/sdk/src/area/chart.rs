@@ -429,16 +429,26 @@ impl<'a> ChartArea<'a> {
         let settings = self.context.settings();
         if let Some(definition) = self.context.dashas().by_id(id) {
             let rules = DashaRules::of_definition(&settings.dasha, definition);
+            // Which kernel runs a consumer's system is the definition's to
+            // say, never guessed from the fields it carries.
+            if let Some(rashi) = definition.rashi() {
+                let dasha = self.rashi_dasha_of_row(
+                    foundation,
+                    &rashi.row(),
+                    rules,
+                    RashiRules::of(settings),
+                )?;
+                return Ok(DashaReading::of_registered_rashi(&dasha, rashi, rules));
+            }
+            let Some(udu) = definition.udu() else {
+                return Err(Error::internal("a definition names one of the two kernels"));
+            };
             let moon_span = match rules.balance {
                 Balance::Temporal => Some(self.moon_span(foundation)?),
                 _ => None,
             };
-            let dasha = Dasha::new(
-                &definition.row(),
-                &Self::birth_of(foundation, moon_span)?,
-                rules,
-            )?;
-            return Ok(DashaReading::of_registered(&dasha, definition, moon_span));
+            let dasha = Dasha::new(&udu.row(), &Self::birth_of(foundation, moon_span)?, rules)?;
+            return Ok(DashaReading::of_registered(&dasha, udu, moon_span));
         }
         let system = DashaSystem::try_from(id).map_err(|_| self.not_registered(id))?;
         let rules = DashaRules::of(&settings.dasha, system);
@@ -487,7 +497,7 @@ impl<'a> ChartArea<'a> {
                 self.context
                     .dashas()
                     .iter()
-                    .map(|(_, definition)| definition.key.clone()),
+                    .map(|(_, definition)| definition.key().to_owned()),
             )
             .collect()
     }
@@ -547,6 +557,23 @@ impl<'a> ChartArea<'a> {
         rashi: RashiRules,
     ) -> Result<RashiDasha, Error> {
         let row = teistro_dasha::rashi_row(system).ok_or_else(|| Self::not_built(system))?;
+        self.rashi_dasha_of_row(foundation, row, rules, rashi)
+    }
+
+    /// The sign-based dasha of a founded chart under a row, shipped or a
+    /// consumer's.
+    ///
+    /// The chart a rashi dasha reads is the same either way — the lagna's
+    /// sign, the grahas' signs and dignities under the settings, the navamsa
+    /// lagna and the arudha lagna — so it is assembled once here and the
+    /// row is the only thing that differs.
+    fn rashi_dasha_of_row(
+        self,
+        foundation: &ChartFoundation,
+        row: &teistro_dasha::RashiRow,
+        rules: DashaRules,
+        rashi: RashiRules,
+    ) -> Result<RashiDasha, Error> {
         let states = state(foundation, self.context.settings())?;
         let grahas = [
             Graha::Sun,
@@ -654,9 +681,21 @@ impl<'a> ChartArea<'a> {
             })?;
         if let Some(definition) = &reading.definition {
             // A consumer's system rebuilds from the definition the document
-            // carries, whatever this context has registered.
+            // carries, whatever this context has registered — and from the
+            // kernel that definition names, so a sign-based one is not run
+            // through the nakshatra-seeded kernel and refused for having no
+            // lords.
+            if let Some(rashi) = definition.rashi() {
+                let rules = reading.rashi.unwrap_or(RashiRules::RECORDING_ENGINE);
+                return self
+                    .rashi_dasha_of_row(&document.foundation, &rashi.row(), reading.rules, rules)
+                    .map(DashaCursor::Rashi);
+            }
+            let Some(udu) = definition.udu() else {
+                return Err(Error::internal("a definition names one of the two kernels"));
+            };
             return Dasha::new(
-                &definition.row(),
+                &udu.row(),
                 &Self::birth_of(&document.foundation, reading.moon_span)?,
                 reading.rules,
             )

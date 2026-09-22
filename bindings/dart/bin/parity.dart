@@ -268,7 +268,7 @@ void main() {
   shipped.dispose();
   // A dasha system of the consumer's own, the same definition every runner
   // registers (`03-design/dasha-kernels.md`).
-  const parityDasha = DashaDefinition(
+  const parityDasha = UduDashaDefinition(
     key: 'ACME_PARITY',
     sources: ['the parity scenario'],
     lords: [

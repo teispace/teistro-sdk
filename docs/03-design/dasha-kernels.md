@@ -227,7 +227,7 @@ reads the chart a sign-based dasha needs from the foundation: the grahas'
 signs and dignities under the settings, the navamsa lagna, and the arudha
 lagna `teistro-points` computes.
 
-## A consumer's own system (2026-09-15)
+## A consumer's own system (2026-09-15; both kernels 2026-09-22)
 
 Phase 5's exit asks for "a consumer-registered dasha system (a row in a
 consumer pack)". A K-udu system is already data, so the SDK takes one the
@@ -235,13 +235,48 @@ way it takes a consumer's chart layout (ADR-0026 §1): a definition checked
 by the rules a shipped row passes, registered on the context before it is
 built, sealed after, and asked for by key.
 
-- **The definition** is `teistro_dasha::UduDefinition`, serde and a JSON
-  Schema: `key`, `sources`, `lords` (`{graha, years}` in order),
+**A K-rashi system is data too, and for eight months it could not be
+registered.** That asymmetry was invisible until
+[`dasha-coverage-measured.md`](dasha-coverage-measured.md) counted what
+this build computes against what the catalogue names: of the twenty-two
+systems left, three could be supplied by a consumer holding the text and
+nineteen by nobody — and `Sthira` and `Varnada` were in the second group
+only because there was no definition for them to arrive as. **The text
+being unsettled blocks this build; a missing definition blocks everyone**,
+and only the second is the SDK's to fix. `RashiDefinition` closes it, and
+the count on that page moved from three and nineteen to five and
+seventeen.
+
+- **The kernel is stated, not guessed.** A definition crosses as a
+  `DashaDefinition`, internally tagged by `kernel` — `udu` or `rashi`. The
+  two rows are structurally disjoint, so a reader *could* tell them apart
+  by which fields are present; it would then read a row with a typo in
+  `lords` as sign-based and refuse it by a field the caller never wrote,
+  which is the error message a consumer cannot act on. One tag buys the
+  refusal that names what they did write.
+- **One registry, not two.** A consumer registers *a dasha system*; which
+  kernel the SDK files it under is the SDK's business. Two registries
+  would be two things that can disagree about whether a key is taken, and
+  a catalogued key must be refused whichever kernel asks.
+- **The nakshatra-seeded definition** is `teistro_dasha::UduDefinition`,
+  serde and a JSON Schema: `key`, `sources`, `lords` (`{graha, years}` in order),
   `reference` (a nakshatra, not an index), and `count`, `span`, `offset`,
   `repeats` and `scale`, each defaulting to Vimshottari's shape, plus its
   own `year_length` and `depth`, since the settings' per-system tables are
   keyed by the catalogue. `UduRow::validate` is its validation, so a
   registered row is refused by the same field a shipped one would be.
+- **The sign-based definition** is `teistro_dasha::RashiDefinition`, the
+  same shape for the other kernel: `key`, `sources`, `start`, `order`,
+  `length`, `named_lord` and `stronger_of`, plus its own `year_length` and
+  `depth`. Everything unsaid is Chara's, which is the family's ordinary
+  row, so the smallest useful definition is a key. `RashiRow::validate` is
+  its validation, and a sign-based row has no lords and no seed to get
+  wrong, so what it checks is the two places a number can be: a length of
+  no years, and a house outside one to twelve — or one house alone, whose
+  strongest is itself, or one named twice. `RashiRow` gained a
+  `Cow<'static, [u8]>` and a `DashaName` to be both shipped and owned, and
+  a shipped row still clones without allocating, which the allocation
+  tests hold.
 - **Identity.** A row is named by a `DashaName`: a catalogued
   `DashaSystem`, or a registered key. It serialises as the bare key either
   way, so a document spells `VIMSHOTTARI` exactly as before and a
@@ -576,16 +611,14 @@ period levels as an ordinal message with the profile's level names.
   savana 360 against 365.25 compounds to about 21 months over a 120-year
   cycle. Resolved before any dasha conformance run (cruxes page).
 - **Applicability rules** live in the rules engine, not here.
-- **A consumer can register a nakshatra-seeded system and nothing else.**
-  `DashaSystems::register` takes a `UduDefinition`, so the three rows
-  above that wait only on a citation can be supplied by whoever holds the
-  text, today. A **sign-based** system cannot: there is no
-  `RashiDefinition`, so `Sthira` and `Varnada` are closed to a consumer
-  who has the text as firmly as they are to this build, and so is any
-  seed that is not a nakshatra. The text being unsettled blocks this
-  build; a missing definition blocks everyone, which is the difference
-  the no-dead-ends mandate turns on
-  ([`dasha-coverage-measured.md`](dasha-coverage-measured.md)).
+- **What a consumer still cannot register**, now that both kernels take a
+  definition, is a row neither kernel expresses rather than one nobody has
+  written down: a start that is the karakamsha (`Sudasa`), a seed that is
+  not a nakshatra (the tithi, yoga and karana variants), periods the chart
+  supplies (`Tara`, `Karaka`, `Ashtakavarga`), and compositions of systems
+  (`Yogardha`, `Sudarshana Chakra`). Seventeen of the twenty-two, each
+  named with its reason on
+  [`dasha-coverage-measured.md`](dasha-coverage-measured.md).
 
 ## Open questions
 

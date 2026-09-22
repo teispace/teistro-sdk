@@ -221,7 +221,7 @@ fn a_reading_carries_every_sign_based_system_and_each_agrees_with_the_corpus() {
     let recorded = fixture("rashi-dashas/charts/c001-kathmandu-1990-04-14.json");
     let systems: Vec<DashaSystem> = teistro::dasha::RASHI_ROWS
         .iter()
-        .map(|row| row.system)
+        .filter_map(|row| row.system.catalogued())
         .collect();
     let (sdk, document) = reading("{}", &systems);
     for dasha in &document.dashas {

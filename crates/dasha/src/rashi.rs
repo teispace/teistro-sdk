@@ -26,13 +26,16 @@
 //! carries both, and its [`RashiRules::RECORDING_ENGINE`] is the corpus's
 //! reading.
 
+use std::borrow::Cow;
+
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{DashaSystem, Dignity, Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
-use teistro_core::quantity::{JulianDay, Utc};
+use teistro_core::quantity::{Depth, JulianDay, Utc};
 use teistro_core::settings::{AfterCycle, DualLord, RashiStart, YearLength};
 
+use crate::row::{DashaName, julian, three};
 use crate::tree::{Path, Period, Timeline};
 
 /// The signs, in the zodiac's order.
@@ -339,7 +342,9 @@ pub fn counted_years(chart: &RashiChart, sign: Rashi, lord: Graha) -> u8 {
 }
 
 /// Where a system starts.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
 pub enum Start {
     /// The lagna.
     Lagna,
@@ -350,7 +355,9 @@ pub enum Start {
 }
 
 /// The order a system visits the signs in.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
 pub enum Order {
     /// Every sign in turn from the start, forward from an odd start and back
     /// from an even one.
@@ -368,7 +375,9 @@ pub enum Order {
 }
 
 /// How long a sign's period runs.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
 pub enum Length {
     /// The count to the sign's stronger lord.
     CountToLord,
@@ -389,7 +398,9 @@ pub enum Length {
 }
 
 /// Which lord a mahadasha names.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
 pub enum NamedLord {
     /// The stronger of a dual-lorded sign's two.
     Stronger,
@@ -398,10 +409,16 @@ pub enum NamedLord {
 }
 
 /// A sign-based system.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+///
+/// Borrowed where it is shipped and owned where a consumer registered it,
+/// exactly as [`UduRow`](crate::UduRow) is: a shipped row clones without
+/// allocating, which the allocation tests hold, and a registered one owns
+/// its key and its houses.
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct RashiRow {
-    /// Which system the row is.
-    pub system: DashaSystem,
+    /// Which system the row is: a catalogued one, or a consumer's by the
+    /// key it was registered under.
+    pub system: DashaName,
     /// Where it starts.
     pub start: Start,
     /// The order it visits the signs in.
@@ -412,7 +429,7 @@ pub struct RashiRow {
     pub named_lord: NamedLord,
     /// The houses from the lagna BPHS starts the system from the strongest of,
     /// under [`RashiStart::Stronger`]; empty when it names no such start.
-    pub stronger_of: &'static [u8],
+    pub stronger_of: Cow<'static, [u8]>,
 }
 
 impl RashiRow {
@@ -533,6 +550,75 @@ impl RashiRow {
     }
 }
 
+impl RashiRow {
+    /// Whether this row is a catalogued system's.
+    #[must_use]
+    pub fn is(&self, system: DashaSystem) -> bool {
+        self.system.catalogued() == Some(system)
+    }
+
+    /// The whole-table invariants a row must meet, shipped or registered.
+    ///
+    /// A sign-based row has no lords and no seed to get wrong, so what is
+    /// left is the two places a number can be: the years a fixed or
+    /// modality length gives, and the houses a stronger start counts from.
+    /// Both are refused by field, exactly as `UduRow::validate` does, so a
+    /// registered row is refused by the same field a shipped one would be.
+    ///
+    /// # Errors
+    ///
+    /// A length of no years, naming `length`; a house outside one to
+    /// twelve, or fewer than two to be strongest of, naming `stronger_of`.
+    pub fn validate(&self) -> Result<(), Error> {
+        let refuse = |field: &str, message: String| {
+            Err(Error::invalid_arg(message).with_field(field.to_owned()))
+        };
+        match self.length {
+            Length::Fixed(0) => {
+                return refuse("length", String::from("a sign of no years"));
+            }
+            Length::ByModality {
+                movable,
+                fixed,
+                dual,
+            } if movable == 0 || fixed == 0 || dual == 0 => {
+                return refuse(
+                    "length",
+                    String::from("a movable, fixed or dual sign of no years"),
+                );
+            }
+            _ => {}
+        }
+        if let Some((at, house)) = self
+            .stronger_of
+            .iter()
+            .enumerate()
+            .find(|(_, house)| **house == 0 || **house > 12)
+        {
+            return refuse(
+                &format!("stronger_of[{at}]"),
+                format!("house {house} is not one of the twelve"),
+            );
+        }
+        if self.stronger_of.len() == 1 {
+            return refuse(
+                "stronger_of",
+                String::from("the strongest of one house is that house; name two or none"),
+            );
+        }
+        let mut seen = self.stronger_of.to_vec();
+        seen.sort_unstable();
+        seen.dedup();
+        if seen.len() < self.stronger_of.len() {
+            return refuse(
+                "stronger_of",
+                String::from("a house named twice is no stronger for it"),
+            );
+        }
+        Ok(())
+    }
+}
+
 /// The signs a sign aspects by rashi drishti, in the zodiac's order: a
 /// movable sign the fixed signs but the one after it, a fixed sign the
 /// movable signs but the one before it, a dual sign the other duals.
@@ -560,14 +646,15 @@ const fn row(
     order: Order,
     length: Length,
     named_lord: NamedLord,
+    stronger_of: &'static [u8],
 ) -> RashiRow {
     RashiRow {
-        system,
+        system: DashaName::Catalogued(system),
         start,
         order,
         length,
         named_lord,
-        stronger_of: &[],
+        stronger_of: Cow::Borrowed(stronger_of),
     }
 }
 
@@ -578,6 +665,7 @@ pub const CHARA: RashiRow = row(
     Order::Consecutive,
     Length::CountToLord,
     NamedLord::Stronger,
+    &[],
 );
 /// Narayana: Chara with the lord's exaltation and debilitation.
 pub const NARAYANA: RashiRow = row(
@@ -586,6 +674,7 @@ pub const NARAYANA: RashiRow = row(
     Order::Consecutive,
     Length::CountToLordByDignity,
     NamedLord::Stronger,
+    &[],
 );
 /// Padanadhamsa: Chara from the arudha lagna.
 pub const PADANADHAMSA: RashiRow = row(
@@ -594,19 +683,18 @@ pub const PADANADHAMSA: RashiRow = row(
     Order::Consecutive,
     Length::CountToLord,
     NamedLord::Stronger,
+    &[],
 );
 /// Trikona: the trine groups from the lagna's, or under BPHS from the
 /// strongest trine's (ch. 46 vv. 183 and 184).
-pub const TRIKONA: RashiRow = RashiRow {
-    stronger_of: &[1, 5, 9],
-    ..row(
-        DashaSystem::Trikona,
-        Start::Lagna,
-        Order::TrineGroups,
-        Length::CountToLord,
-        NamedLord::Stronger,
-    )
-};
+pub const TRIKONA: RashiRow = row(
+    DashaSystem::Trikona,
+    Start::Lagna,
+    Order::TrineGroups,
+    Length::CountToLord,
+    NamedLord::Stronger,
+    &[1, 5, 9],
+);
 /// Drig: the ninth, tenth and eleventh houses and what each aspects.
 pub const DRIG: RashiRow = row(
     DashaSystem::Drig,
@@ -614,19 +702,18 @@ pub const DRIG: RashiRow = row(
     Order::DrishtiChain,
     Length::CountToLord,
     NamedLord::Stronger,
+    &[],
 );
 /// Shoola: nine years a sign from the lagna, or under BPHS from the stronger
 /// of the second and the eighth (ch. 46 vv. 181 and 182).
-pub const SHOOLA: RashiRow = RashiRow {
-    stronger_of: &[2, 8],
-    ..row(
-        DashaSystem::Shoola,
-        Start::Lagna,
-        Order::Consecutive,
-        Length::Fixed(9),
-        NamedLord::First,
-    )
-};
+pub const SHOOLA: RashiRow = row(
+    DashaSystem::Shoola,
+    Start::Lagna,
+    Order::Consecutive,
+    Length::Fixed(9),
+    NamedLord::First,
+    &[2, 8],
+);
 /// Niryana Shoola: Shoola from the navamsa lagna.
 pub const NIRYANA_SHOOLA: RashiRow = row(
     DashaSystem::NiryanaShoola,
@@ -634,24 +721,148 @@ pub const NIRYANA_SHOOLA: RashiRow = row(
     Order::Consecutive,
     Length::Fixed(9),
     NamedLord::First,
+    &[],
 );
 /// Mandooka: leaping back two signs, seven, eight or nine years by modality,
 /// from the lagna, or under BPHS from the stronger of the lagna and the
 /// seventh (ch. 46 vv. 179 and 180).
-pub const MANDOOKA: RashiRow = RashiRow {
-    stronger_of: &[1, 7],
-    ..row(
-        DashaSystem::Mandooka,
-        Start::Lagna,
-        Order::Leap,
-        Length::ByModality {
-            movable: 7,
-            fixed: 8,
-            dual: 9,
-        },
-        NamedLord::Stronger,
-    )
-};
+pub const MANDOOKA: RashiRow = row(
+    DashaSystem::Mandooka,
+    Start::Lagna,
+    Order::Leap,
+    Length::ByModality {
+        movable: 7,
+        fixed: 8,
+        dual: 9,
+    },
+    NamedLord::Stronger,
+    &[1, 7],
+);
+
+/// A consumer's own sign-based system, the shape [`UduDefinition`] has for
+/// the nakshatra-seeded kernel.
+///
+/// A sign-based system is four choices and a list of houses — where it
+/// starts, the order it visits the signs in, how long a sign runs, which
+/// lord a mahadasha names — so a consumer holding a text that states them
+/// registers the row and asks for it by key, with no change to this crate.
+/// That is the whole point of it: without one, a school's Sthira or
+/// Varnada is shut to a consumer who **has** the text as firmly as it is
+/// to this build, which is a dead end in the SDK rather than a gap in the
+/// sources (`03-design/dasha-coverage-measured.md`).
+///
+/// [`UduDefinition`]: crate::UduDefinition
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_dasha::{Length, NamedLord, Order, RashiDefinition, Start};
+///
+/// // Sthira as the sources state it: from the lagna, every sign in turn,
+/// // seven, eight or nine years by the sign's modality.
+/// let sthira = RashiDefinition {
+///     length: Length::ByModality { movable: 7, fixed: 8, dual: 9 },
+///     ..RashiDefinition::of("ACME_STHIRA")
+/// };
+/// assert_eq!(sthira.row().start, Start::Lagna);
+/// assert_eq!(sthira.row().order, Order::Consecutive);
+/// assert_eq!(sthira.row().named_lord, NamedLord::Stronger);
+/// assert_eq!(Rashi::ALL.len(), 12);
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct RashiDefinition {
+    /// The key it is registered under, in the key grammar and not one the
+    /// catalogue has.
+    pub key: String,
+    /// Where the row comes from.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sources: Vec<String>,
+    /// Where it starts; the lagna by default.
+    #[serde(default = "lagna")]
+    pub start: Start,
+    /// The order it visits the signs in; every sign in turn by default.
+    #[serde(default = "consecutive")]
+    pub order: Order,
+    /// How long a sign's period runs; the count to its stronger lord by
+    /// default, which is what most of the family does.
+    #[serde(default = "count_to_lord")]
+    pub length: Length,
+    /// Which lord a mahadasha names; the stronger of a dual-lorded sign's
+    /// two by default.
+    #[serde(default = "stronger")]
+    pub named_lord: NamedLord,
+    /// The houses from the lagna to start from the strongest of, under
+    /// [`RashiStart::Stronger`]; none by default, which starts from
+    /// [`RashiDefinition::start`] itself.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub stronger_of: Vec<u8>,
+    /// The length of its year; the Julian year by default, as every
+    /// catalogued system takes unless the settings say otherwise.
+    #[serde(default = "julian")]
+    pub year_length: YearLength,
+    /// How many levels of periods a reading carries; three by default.
+    #[serde(default = "three")]
+    pub depth: Depth,
+}
+
+const fn lagna() -> Start {
+    Start::Lagna
+}
+
+const fn consecutive() -> Order {
+    Order::Consecutive
+}
+
+const fn count_to_lord() -> Length {
+    Length::CountToLord
+}
+
+const fn stronger() -> NamedLord {
+    NamedLord::Stronger
+}
+
+impl RashiDefinition {
+    /// A definition with a key and every other field its default: Chara's
+    /// row under another name, which a caller then changes.
+    #[must_use]
+    pub fn of(key: impl Into<String>) -> RashiDefinition {
+        RashiDefinition {
+            key: key.into(),
+            sources: Vec::new(),
+            start: lagna(),
+            order: consecutive(),
+            length: count_to_lord(),
+            named_lord: stronger(),
+            stronger_of: Vec::new(),
+            year_length: julian(),
+            depth: three(),
+        }
+    }
+
+    /// The row the kernel runs, its houses owned.
+    #[must_use]
+    pub fn row(&self) -> RashiRow {
+        RashiRow {
+            system: DashaName::Registered(self.key.clone()),
+            start: self.start,
+            order: self.order,
+            length: self.length,
+            named_lord: self.named_lord,
+            stronger_of: Cow::Owned(self.stronger_of.clone()),
+        }
+    }
+}
+
+impl teistro_core::registry::Definition for RashiDefinition {
+    fn key(&self) -> &str {
+        &self.key
+    }
+
+    fn validate(&self) -> Result<(), Error> {
+        self.row().validate()
+    }
+}
 
 /// Every sign-based row this build implements.
 pub const RASHI_ROWS: &[RashiRow] = &[
@@ -668,13 +879,13 @@ pub const RASHI_ROWS: &[RashiRow] = &[
 /// The sign-based row of a system, when this build implements one.
 #[must_use]
 pub fn rashi_row(system: DashaSystem) -> Option<&'static RashiRow> {
-    RASHI_ROWS.iter().find(|row| row.system == system)
+    RASHI_ROWS.iter().find(|row| row.is(system))
 }
 
 /// A sign-based dasha of one chart.
 #[derive(Clone, Debug, PartialEq)]
 pub struct RashiDasha {
-    row: &'static RashiRow,
+    row: RashiRow,
     chart: RashiChart,
     birth: JulianDay<Utc>,
     after_cycle: AfterCycle,
@@ -692,7 +903,7 @@ impl RashiDasha {
     ///
     /// A year length of no days, named `year_length`.
     pub fn new(
-        row: &'static RashiRow,
+        row: &RashiRow,
         chart: &RashiChart,
         birth: JulianDay<Utc>,
         year_length: YearLength,
@@ -713,7 +924,7 @@ impl RashiDasha {
             *end = total;
         }
         Ok(RashiDasha {
-            row,
+            row: row.clone(),
             chart: *chart,
             birth,
             after_cycle,
@@ -726,8 +937,8 @@ impl RashiDasha {
 
     /// The row the dasha runs.
     #[must_use]
-    pub const fn row(&self) -> &'static RashiRow {
-        self.row
+    pub const fn row(&self) -> &RashiRow {
+        &self.row
     }
 
     /// The readings it was built under.

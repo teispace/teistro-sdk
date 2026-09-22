@@ -641,11 +641,11 @@ const fn yes() -> bool {
     true
 }
 
-const fn julian() -> YearLength {
+pub(crate) const fn julian() -> YearLength {
     YearLength::Julian36525
 }
 
-fn three() -> Depth {
+pub(crate) fn three() -> Depth {
     Depth::try_new(3).unwrap_or(Depth::MIN)
 }
 

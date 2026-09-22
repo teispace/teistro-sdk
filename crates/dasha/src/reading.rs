@@ -12,8 +12,9 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::Depth;
 
 use crate::balance::BalanceAtBirth;
+use crate::definition::DashaDefinition;
 use crate::kalachakra::{KalachakraDasha, KalachakraRules};
-use crate::rashi::{RashiDasha, RashiRules};
+use crate::rashi::{RashiDasha, RashiDefinition, RashiRules};
 use crate::row::{DashaName, UduDefinition};
 use crate::tree::{Dasha, Period, Rules, Timeline};
 
@@ -28,11 +29,11 @@ pub struct DashaReading {
     /// Which system: a catalogued one, or a consumer's by the key it was
     /// registered under.
     pub system: DashaName,
-    /// A consumer's system's definition, carried so a stored document
-    /// rebuilds its periods whatever its context has registered since;
-    /// nothing for a catalogued system.
+    /// A consumer's system's definition, of whichever kernel runs it,
+    /// carried so a stored document rebuilds its periods whatever its
+    /// context has registered since; nothing for a catalogued system.
     #[serde(skip_serializing_if = "Option::is_none", default)]
-    pub definition: Option<UduDefinition>,
+    pub definition: Option<DashaDefinition>,
     /// The choices it was computed under. A sign-based dasha reads only the
     /// year length and what follows the cycle.
     pub rules: Rules,
@@ -132,8 +133,24 @@ impl DashaReading {
         moon_span: Option<Interval>,
     ) -> DashaReading {
         DashaReading {
-            definition: Some(definition.clone()),
+            definition: Some(DashaDefinition::Udu(definition.clone())),
             ..DashaReading::of(dasha, definition.depth, moon_span)
+        }
+    }
+
+    /// A reading of a consumer's own sign-based system, carrying the
+    /// definition it was built from, as a registered nakshatra-seeded one
+    /// does: a stored document rebuilds its periods from what it was
+    /// computed under and not from what a context has registered since.
+    #[must_use]
+    pub fn of_registered_rashi(
+        dasha: &RashiDasha,
+        definition: &RashiDefinition,
+        rules: Rules,
+    ) -> DashaReading {
+        DashaReading {
+            definition: Some(DashaDefinition::Rashi(definition.clone())),
+            ..DashaReading::of_rashi(dasha, rules, definition.depth)
         }
     }
 
@@ -143,7 +160,7 @@ impl DashaReading {
     pub fn of_rashi(dasha: &RashiDasha, rules: Rules, depth: Depth) -> DashaReading {
         let periods = rows(dasha, depth);
         DashaReading {
-            system: DashaName::Catalogued(dasha.row().system),
+            system: dasha.row().system.clone(),
             definition: None,
             rules,
             kalachakra: None,

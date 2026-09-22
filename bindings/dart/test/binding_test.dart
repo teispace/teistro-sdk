@@ -1295,7 +1295,7 @@ void _engineTests() {
   /// catalogued twin's; a definition the checks refuse is named by its place
   /// and field.
   test('a consumer dasha system registers and reads as its twin', () {
-    final twin = DashaDefinition(
+    final twin = UduDashaDefinition(
       key: 'ACME_VIMSHOTTARI',
       lords: [
         const DashaLord(Graha.ketu, 7),
@@ -1310,7 +1310,11 @@ void _engineTests() {
       ],
       reference: Nakshatra.ashwini,
     );
-    final ctx = teistro.context(testProvider: true, dashaSystems: [twin]);
+    const signTwin = RashiDashaDefinition(key: 'ACME_CHARA');
+    final ctx = teistro.context(
+      testProvider: true,
+      dashaSystems: [twin, signTwin],
+    );
     final place = Observer(
       latitudeDeg: Latitude(27.7172),
       longitudeDeg: Longitude(85.324),
@@ -1333,6 +1337,22 @@ void _engineTests() {
       final (a, b) = (consumer.periods[i], shipped.periods[i]);
       expect((a.path, a.lord, a.from, a.to), (b.path, b.lord, b.from, b.to));
     }
+    // The other kernel, the same way: a sign-based system of one's own
+    // answers as the catalogued row it copies.
+    final signs = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      dashas: [DashaSystem.registered('ACME_CHARA'), DashaSystem.chara],
+    );
+    final [own, chara] = signs.dashas;
+    expect(own.system, DashaSystem.registered('ACME_CHARA'));
+    expect(chara.system, DashaSystem.chara);
+    expect(own.periods.length, chara.periods.length);
+    for (var i = 0; i < chara.periods.length; i++) {
+      final (a, b) = (own.periods[i], chara.periods[i]);
+      expect((a.path, a.lord, a.from, a.to), (b.path, b.lord, b.from, b.to));
+    }
     expect(
       () => ctx.chart.found(
         instant: 2451545.0,
@@ -1347,7 +1367,22 @@ void _engineTests() {
       () => teistro.context(
         testProvider: true,
         dashaSystems: [
-          DashaDefinition(
+          const RashiDashaDefinition(key: 'ACME_THIRTEEN', strongerOf: [1, 13]),
+        ],
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'options.dashas_json[0].stronger_of[1]',
+        ),
+      ),
+    );
+    expect(
+      () => teistro.context(
+        testProvider: true,
+        dashaSystems: [
+          UduDashaDefinition(
             key: twin.key,
             lords: twin.lords,
             reference: twin.reference,

@@ -1046,7 +1046,7 @@ fn the_geo_context() -> Context {
 /// backward count, a two-nakshatra window, an offset, a savana year and a
 /// depth of two, so each field a definition may set crosses
 /// (`03-design/dasha-kernels.md`).
-const PARITY_DASHA: &str = r#"{"key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}"#;
+const PARITY_DASHA: &str = r#"{"kernel":"udu","key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}"#;
 
 fn parity_dasha() -> teistro::dasha::UduDefinition {
     serde_json::from_str(PARITY_DASHA).expect("the parity definition")

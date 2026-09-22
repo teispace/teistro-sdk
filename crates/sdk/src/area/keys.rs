@@ -87,7 +87,7 @@ impl<'a> KeysArea<'a> {
                 .context
                 .dashas()
                 .by_id(id)
-                .map(|definition| format!("{}.{}", Kind::DashaSystem.name(), definition.key)),
+                .map(|definition| format!("{}.{}", Kind::DashaSystem.name(), definition.key())),
             _ => None,
         }
     }

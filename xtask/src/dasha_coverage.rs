@@ -251,30 +251,67 @@ const NOT_BUILT: [(&str, Blocker, &str); 22] = [
     ),
 ];
 
-/// The unbuilt systems a **consumer** can supply today, which is what turns
-/// "not built" into "not built *here*".
+/// The unbuilt systems a **consumer** can supply today, and the kernel each
+/// would arrive as.
 ///
-/// `DashaSystems::register` takes a `UduDefinition`: lords, years and a
-/// **nakshatra** reference. So a system is registrable exactly when its row
-/// is that shape and the only thing missing is the numbers in it — which is
-/// three of the twenty-two. The rest are not withheld from a consumer on
-/// purpose; there is no definition that expresses them, and that asymmetry
-/// is measured below rather than described.
-const REGISTRABLE: [&str; 3] = ["SHODASHOTTARI", "SHATTRIMSHA_SAMA", "SHASHTIHAYANI"];
+/// `DashaSystems::register` takes a `DashaDefinition`: a `UduDefinition` of
+/// lords, years and a nakshatra reference, or a `RashiDefinition` of where a
+/// system starts, the order it visits the signs in and how long a sign runs.
+/// A system is registrable exactly when its row is one of those two shapes
+/// and the only thing missing is the numbers in it.
+///
+/// **It was three until the sign-based half was built.** `STHIRA` and
+/// `VARNADA` are rows a source states and nothing here verifies, so a
+/// consumer holding that source was shut out as firmly as this build was —
+/// a dead end in the SDK rather than a gap in the sources, which is what
+/// this page found and what closing it looked like.
+///
+/// What is still unregistrable is unregistrable for a reason in its row and
+/// not for want of an arm: `SUDASA` starts from the karakamsha, which is a
+/// place `Start` does not name; the tithi, yoga and karana seeds want a
+/// reference that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA`
+/// ask the chart for their periods; `YOGARDHA` and `SUDARSHANA_CHAKRA` are
+/// compositions of systems rather than systems.
+const REGISTRABLE: [(&str, Kernel); 5] = [
+    ("SHODASHOTTARI", Kernel::Udu),
+    ("SHATTRIMSHA_SAMA", Kernel::Udu),
+    ("SHASHTIHAYANI", Kernel::Udu),
+    ("STHIRA", Kernel::Rashi),
+    ("VARNADA", Kernel::Rashi),
+];
 
-/// Whether the registry path actually works for one of them, proved by
-/// walking it rather than by citing the API.
+/// Which kernel a definition names.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Kernel {
+    Udu,
+    Rashi,
+}
+
+impl Kernel {
+    const fn title(self) -> &'static str {
+        match self {
+            Kernel::Udu => "nakshatra-seeded",
+            Kernel::Rashi => "sign-based",
+        }
+    }
+}
+
+/// Whether the registry path actually works, proved by walking it once per
+/// kernel rather than by citing the API.
 ///
-/// The row is the one [`dasha-kernels.md`] states for Shodashottari, whose
-/// verse numbers are exactly what is unconfirmed — so it is registered
-/// under a **demonstration key** the catalogue does not have. Nothing here
-/// ships as the system, and the numbers are the design page's, not this
-/// pass's invention.
+/// The rows are the ones [`dasha-kernels.md`] states for Shodashottari and
+/// for Sthira, whose citations are exactly what is unconfirmed — so each is
+/// registered under a **demonstration key** the catalogue does not have.
+/// Nothing here ships as the system, and the numbers are the design page's,
+/// not this pass's invention.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-fn a_consumer_supplies_one() -> Result<String, String> {
-    use teistro::dasha::{DashaSystems, Lord, UduDefinition};
+fn a_consumer_supplies_one() -> Result<Vec<String>, String> {
+    use teistro::dasha::{DashaSystems, Length, Lord, RashiDefinition, UduDefinition};
     use teistro_core::catalogue::{Graha, Nakshatra};
+
+    let mut systems = DashaSystems::default();
+    let mut walked = Vec::new();
 
     let lords = [
         (Graha::Sun, 11),
@@ -286,23 +323,40 @@ fn a_consumer_supplies_one() -> Result<String, String> {
         (Graha::Mercury, 17),
         (Graha::Venus, 18),
     ];
-    let definition = UduDefinition {
-        sources: vec![String::from("03-design/dasha-kernels.md, K-udu rows")],
-        lords: lords
-            .into_iter()
-            .map(|(graha, years)| Lord { graha, years })
-            .collect(),
-        ..UduDefinition::of("DEMO_SHODASHOTTARI", Nakshatra::Pushya)
-    };
     let total: u16 = lords.iter().map(|(_, years)| u16::from(*years)).sum();
-    let mut systems = DashaSystems::default();
     systems
-        .register(definition)
-        .map_err(|why| format!("registering the stated row: {why}"))?;
-    Ok(format!(
-        "`DEMO_SHODASHOTTARI`, {} lords and {total} years, registered and accepted, with the total the design page states for it falling out of the lords rather than copied beside them",
-        lords.len()
-    ))
+        .register(UduDefinition {
+            sources: vec![String::from("03-design/dasha-kernels.md, K-udu rows")],
+            lords: lords
+                .into_iter()
+                .map(|(graha, years)| Lord { graha, years })
+                .collect(),
+            ..UduDefinition::of("DEMO_SHODASHOTTARI", Nakshatra::Pushya)
+        })
+        .map_err(|why| format!("registering the stated Shodashottari row: {why}"))?;
+    walked.push(format!(
+        "`DEMO_SHODASHOTTARI`, {} lords and {total} years from Pushya, the          {} kernel",
+        lords.len(),
+        Kernel::Udu.title()
+    ));
+
+    let modality = Length::ByModality {
+        movable: 7,
+        fixed: 8,
+        dual: 9,
+    };
+    systems
+        .register(RashiDefinition {
+            sources: vec![String::from("03-design/dasha-kernels.md, K-rashi rows")],
+            length: modality,
+            ..RashiDefinition::of("DEMO_STHIRA")
+        })
+        .map_err(|why| format!("registering the stated Sthira row: {why}"))?;
+    walked.push(String::from(
+        "`DEMO_STHIRA`, every sign from the lagna for seven, eight or nine          years by modality, the sign-based kernel",
+    ));
+
+    Ok(walked)
 }
 
 /// What one refusal looked like, so that "declared" is measured rather
@@ -428,8 +482,8 @@ fn page(_root: &Path) -> Result<String, String> {
 
     asking_for_one(&mut out, &refused);
 
-    let supplied = a_consumer_supplies_one()?;
-    who_can_supply_one(&mut out, &supplied);
+    let walked = a_consumer_supplies_one()?;
+    who_can_supply_one(&mut out, &walked);
 
     what_the_types_decide(
         &mut out,
@@ -518,30 +572,45 @@ fn asking_for_one(out: &mut String, refused: &[Refused]) {
 
 /// What a consumer can supply that this build does not, and what nobody
 /// can supply because no definition expresses it.
-fn who_can_supply_one(out: &mut String, supplied: &str) {
-    let registrable: Vec<String> = REGISTRABLE.iter().map(|key| format!("`{key}`")).collect();
+fn who_can_supply_one(out: &mut String, walked: &[String]) {
     out.push_str("## Who can supply one\n\n");
     let _ = write!(
         out,
         "\"Not built\" is not \"not available\". `DashaSystems::register` takes a \
-         `UduDefinition` — lords, years and a **nakshatra** reference, checked by \
-         the same `UduRow::validate` a shipped row passes — so a consumer holding \
-         the text can register the system on their context and ask for it by key, \
-         today, with no change here. That covers {} of the {} systems left: {}, \
-         each of which is a stated row waiting only on its citation.\n\n\
-         The path is walked rather than cited: {}.\n\n\
-         **The other {} cannot be supplied by anyone, and that is the finding.** \
-         The registry takes nakshatra-seeded rows and nothing else, so a sign-based \
-         system a consumer has the text for — `STHIRA`, `VARNADA` — has no \
-         definition to arrive as, and neither has a tithi, yoga or karana seed. \
-         Under the no-dead-ends mandate that is a gap in the SDK and not in the \
-         sources: the text being unsettled blocks *this* build, while a missing \
-         definition blocks *everyone*. A `RashiDefinition` beside `UduDefinition` \
-         is what would close it.\n\n",
+         `DashaDefinition` of either kernel — lords, years and a nakshatra \
+         reference, or where a system starts, the order it visits the signs in \
+         and how long a sign runs — each checked by the same row validation a \
+         shipped system passes. So a consumer holding the text registers the \
+         system on their context and asks for it by key, today, with no change \
+         here. That covers {} of the {} systems left.\n\n",
         count(REGISTRABLE.len()),
         count(NOT_BUILT.len()),
-        listed(&registrable),
-        supplied,
+    );
+    out.push_str("| system | the kernel it arrives as | what is still missing |\n|---|---|---|\n");
+    for (key, kernel) in REGISTRABLE {
+        let why = NOT_BUILT
+            .iter()
+            .find(|(one, _, _)| *one == key)
+            .map_or("—", |(_, _, why)| why);
+        let _ = writeln!(out, "| `{key}` | {} | {why} |", kernel.title());
+    }
+    out.push('\n');
+    let _ = write!(
+        out,
+        "The path is walked once per kernel rather than cited: {}.\n\n",
+        listed(walked)
+    );
+    let _ = write!(
+        out,
+        "**The other {} cannot be supplied by anyone**, and each for a reason \
+         in its own row rather than for want of an arm: `SUDASA` starts from \
+         the karakamsha, which is a place `Start` does not name; the tithi, \
+         yoga and karana seeds want a reference that is not a nakshatra; \
+         `TARA`, `KARAKA` and `ASHTAKAVARGA` ask the chart for their periods; \
+         `YOGARDHA` and `SUDARSHANA_CHAKRA` are compositions of systems rather \
+         than systems. Those are rows the kernels do not express, which is a \
+         different thing from a row nobody has written down — and the \
+         difference is what this section exists to keep visible.\n\n",
         count(NOT_BUILT.len() - REGISTRABLE.len()),
     );
 }
@@ -575,7 +644,7 @@ fn what_the_types_decide(
             "every system said to be registrable is one this build does not compute",
             REGISTRABLE
                 .iter()
-                .filter(|key| !NOT_BUILT.iter().any(|(one, _, _)| one == *key))
+                .filter(|(key, _)| !NOT_BUILT.iter().any(|(one, _, _)| one == key))
                 .count(),
             REGISTRABLE.len(),
         ),
