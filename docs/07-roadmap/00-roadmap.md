@@ -670,6 +670,25 @@ locale's message.
 
 ## Phase 7: Techniques and traditions
 
+**Started 2026-09-22 with the measurement**, as every module since Phase 4
+has — and with the one step the rest of `tajika` cannot be built before.
+The annual chart's instant is measured over all 55 recorded births against
+its two rivals ([`annual-chart-measured.md`](../03-design/annual-chart-measured.md),
+`check-varshaphala`), and the design it settles is
+[`annual-chart.md`](../03-design/annual-chart.md). The corpus records no
+annual chart of any kind, so the pass measures the rule over the births
+rather than against a recording, and says so on its own first line.
+
+**Much of `jaimini` turned out to be built already**, checked item by item
+on 2026-09-22 rather than assumed: the chara karakas under both schemes,
+the arudhas, rashi drishti and argala, the nakshatra references, the
+strength ranking and the three pairs of longevity are all in `rules`; the
+Chara, Narayana, Padanadhamsa, Trikona, Drig, Shoola, Niryana Shoola and
+Mandooka dashas are in `dasha`; and the Varnada and Sree lagnas are in
+`points`. What is left of it is the karakamsha and swamsa, the graha
+arudhas, the sthira karakas, Brahma, Rudra and Maheshwara, and the Jaimini
+yogas.
+
 `jaimini`, `kp`, `tajika`, `gochar` with hit lists and Sade Sati, `muhurta`
 search with blackouts and event rules, festival rule-pack hooks.
 

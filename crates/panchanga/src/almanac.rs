@@ -486,8 +486,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             },
             ..chart.request
         };
-        let zodiac = Zodiac::of_chart(
-            &chart,
+        let zodiac = Zodiac::of(
+            chart.ayanamsha,
             self.settings().frame.ayanamsha_basis,
             self.precession,
             self.delta_t,

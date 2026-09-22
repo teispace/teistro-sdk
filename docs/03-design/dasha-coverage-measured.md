@@ -63,7 +63,7 @@ so scheduling the dasha separately would schedule the module twice.
 |---|---|
 | `AAYU` | the longevity module decides the span this divides, and that span is three methods with a reconciliation between them (`crates/rules` `longevity`). The dasha is what the module ends with |
 | `SUDASA` | it starts from the karakamsha, which is the navamsha of the Atmakaraka and is not built — the Sree lagna beside it in the sources is. Karakamsha belongs to the Jaimini module and this follows it |
-| `MUDDA` | Vimshottari scaled to the year, which needs the **annual chart** — the Varsha Pravesha solar return. The scale decorator it would use is built and Tribhagi uses it |
+| `MUDDA` | Vimshottari scaled to the year, which needs the **annual chart** — the Varsha Pravesha solar return, whose instant is measured in `annual-chart-measured.md` and whose design is `annual-chart.md`. The scale decorator it would use is built and Tribhagi uses it |
 | `VARSHA_NARAYANA` | Narayana over the annual chart, blocked on the same solar return |
 | `VARSHA_YOGINI` | Yogini over the annual chart, blocked on the same solar return |
 | `PATYAYINI` | periods from the grahas' strengths **in the annual chart**, so it needs a kernel of its own as well. Filed under the module because finishing the kernel would not unblock it |
