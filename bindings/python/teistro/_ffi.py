@@ -157,7 +157,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 136,
+    "ts_chart_request": 144,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -584,6 +584,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("theme_json", ctypes.c_char_p),
         ("rules_json", ctypes.c_char_p),
         ("interpret_json", ctypes.c_char_p),
+        ("varsha_json", ctypes.c_char_p),
     ]
 
 
@@ -2178,6 +2179,18 @@ class ChartRequest:
     Example: {"placements":true}. May be null.
     """
 
+    varsha_json: Optional[str] = None
+    """The annual charts to answer for every chart in the batch, as a JSON
+    object: `reading` — `"sidereal"` (the tradition's), `"tropical"`
+    (the Western solar return) or `"mean"` (a whole sidereal year each
+    time) — and `through`, the last year of life wanted, 1 to 200. The
+    instants come back in the `praveshas` section, ragged by
+    `cast.pravesha_count`; an ephemeris that ends first answers fewer
+    than asked for rather than refusing. Null for none
+    (`03-design/annual-chart.md`). Refusals are named from this root,
+    as `varsha_json.through`. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2225,6 +2238,9 @@ class ChartRequest:
         _interpret_json = None if self.interpret_json is None else self.interpret_json.encode("utf-8")
         owned.append(_interpret_json)
         raw.interpret_json = _interpret_json
+        _varsha_json = None if self.varsha_json is None else self.varsha_json.encode("utf-8")
+        owned.append(_varsha_json)
+        raw.varsha_json = _varsha_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2264,6 +2280,7 @@ class ChartRequest:
             theme_json=_text(raw.theme_json),
             rules_json=_text(raw.rules_json),
             interpret_json=_text(raw.interpret_json),
+            varsha_json=_text(raw.varsha_json),
         )
 
 

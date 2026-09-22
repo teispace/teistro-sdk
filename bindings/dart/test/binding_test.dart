@@ -1400,6 +1400,86 @@ void _engineTests() {
     );
   });
 
+  /// The annual charts cross: a request's `varsha` answers each chart's
+  /// returns in year order, ragged per chart, and the instant founds as a
+  /// chart of its own.
+  test('a chart carries the annual charts its birth opens', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2447995.4895833335,
+      place: place,
+      utcOffsetSeconds: 20700,
+      varsha: const VarshaRequest(through: 12),
+    );
+    final years = chart.praveshas;
+    expect(years.length, 12);
+    expect(
+      [for (final one in years) one.year],
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    );
+    expect(years.first.instant, greaterThan(2447995.4895833335));
+    // Eleven sidereal years between the first and the twelfth, to a day.
+    final span = years.last.instant - years.first.instant;
+    expect((span - 11 * 365.2564).abs(), lessThan(1));
+
+    // The instant founds as a chart of its own; the place is the caller's.
+    final annual = ctx.chart.found(
+      instant: years.last.instant,
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    expect(annual.instant, years.last.instant);
+
+    // Not asked for is empty, not zeroes.
+    expect(
+      ctx.chart
+          .found(
+            instant: 2447995.4895833335,
+            place: place,
+            utcOffsetSeconds: 20700,
+          )
+          .praveshas,
+      isEmpty,
+    );
+
+    // The rivals are asked for by name and are not the same instant.
+    final tropical =
+        ctx.chart
+            .found(
+              instant: 2447995.4895833335,
+              place: place,
+              utcOffsetSeconds: 20700,
+              varsha: const VarshaRequest(
+                through: 12,
+                reading: VarshaReading.tropical,
+              ),
+            )
+            .praveshas;
+    expect(tropical.last.instant, isNot(years.last.instant));
+
+    expect(
+      () => ctx.chart.found(
+        instant: 2447995.4895833335,
+        place: place,
+        utcOffsetSeconds: 20700,
+        varsha: const VarshaRequest(through: 0),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'varsha_json.through',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its dashas, their periods and the chain', () {
     final ctx = context();
     final place = Observer(

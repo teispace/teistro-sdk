@@ -5983,6 +5983,18 @@ struct ts_chart_request {
      * Example: {"placements":true}. May be null.
      */
     const char * interpret_json;
+    /**
+     * The annual charts to answer for every chart in the batch, as a JSON
+     * object: `reading` — `"sidereal"` (the tradition's), `"tropical"`
+     * (the Western solar return) or `"mean"` (a whole sidereal year each
+     * time) — and `through`, the last year of life wanted, 1 to 200. The
+     * instants come back in the `praveshas` section, ragged by
+     * `cast.pravesha_count`; an ephemeris that ends first answers fewer
+     * than asked for rather than refusing. Null for none
+     * (`03-design/annual-chart.md`). Refusals are named from this root,
+     * as `varsha_json.through`. May be null.
+     */
+    const char * varsha_json;
 };
 
 /**
@@ -6862,7 +6874,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 136, "ts_chart_request is 136 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 144, "ts_chart_request is 144 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

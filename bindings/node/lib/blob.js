@@ -222,6 +222,7 @@ export function decodeCharts(bytes) {
       dayElapsed: column(blob, at, 5, 'f64', at.count),
       pointCount: column(blob, at, 6, 'u32', at.count),
       aspectCount: column(blob, at, 7, 'u32', at.count),
+      praveshaCount: column(blob, at, 8, 'u32', at.count),
       length: at.count,
     };
   }
@@ -607,6 +608,14 @@ export function decodeCharts(bytes) {
   {
     const at = section(blob, 34, 'plans');
     out.plans = text(blob, at);
+  }
+  {
+    const at = section(blob, 35, 'praveshas');
+    out.praveshas = {
+      year: column(blob, at, 0, 'u16', at.count),
+      jd: column(blob, at, 1, 'f64', at.count),
+      length: at.count,
+    };
   }
   return out;
 }

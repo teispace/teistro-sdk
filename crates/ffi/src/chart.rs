@@ -565,6 +565,17 @@ pub struct TsChartRequest {
     /// Null for none, which costs nothing.
     /// `api: nullable example={"placements":true}`
     pub interpret_json: *const c_char,
+    /// The annual charts to answer for every chart in the batch, as a JSON
+    /// object: `reading` — `"sidereal"` (the tradition's), `"tropical"`
+    /// (the Western solar return) or `"mean"` (a whole sidereal year each
+    /// time) — and `through`, the last year of life wanted, 1 to 200. The
+    /// instants come back in the `praveshas` section, ragged by
+    /// `cast.pravesha_count`; an ephemeris that ends first answers fewer
+    /// than asked for rather than refusing. Null for none
+    /// (`03-design/annual-chart.md`). Refusals are named from this root,
+    /// as `varsha_json.through`.
+    /// `api: nullable`
+    pub varsha_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -1719,12 +1730,49 @@ impl VargaColumns {
     }
 }
 
+/// Every chart's annual-chart instants, concatenated and ragged.
+///
+/// The count is per chart and not per batch for a reason the pass
+/// measured: the request settles how many returns are *wanted* and the
+/// ephemeris settles how many there *are*
+/// (`03-design/annual-chart-measured.md`).
+struct PraveshaColumns {
+    counts: Vec<u32>,
+    years: Vec<u16>,
+    jds: Vec<f64>,
+}
+
+impl PraveshaColumns {
+    fn of(praveshas: &[Vec<teistro::Pravesha>]) -> PraveshaColumns {
+        let mut counts = Vec::with_capacity(praveshas.len());
+        let mut years = Vec::new();
+        let mut jds = Vec::new();
+        for found in praveshas {
+            counts.push(u32::try_from(found.len()).unwrap_or(u32::MAX));
+            for one in found {
+                years.push(one.year);
+                jds.push(one.at.get());
+            }
+        }
+        PraveshaColumns { counts, years, jds }
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "praveshas",
+            self.years.len(),
+            &[ColumnData::U16(&self.years), ColumnData::F64(&self.jds)],
+        )
+    }
+}
+
 /// One row per chart, in the order `cast` declares its columns.
 #[must_use]
 fn chart_rows(
     charts: &[&ChartFoundation],
     point_counts: &[u32],
     aspect_counts: &[u32],
+    pravesha_counts: &[u32],
 ) -> Vec<Vec<FixedValue>> {
     charts
         .iter()
@@ -1739,6 +1787,7 @@ fn chart_rows(
                 chart.day.elapsed.into(),
                 u64::from(point_counts.get(at).copied().unwrap_or(0)).into(),
                 u64::from(aspect_counts.get(at).copied().unwrap_or(0)).into(),
+                u64::from(pravesha_counts.get(at).copied().unwrap_or(0)).into(),
             ]
         })
         .collect()
@@ -2063,6 +2112,9 @@ pub struct Composed<'a> {
     pub rules: &'a str,
     /// What every chart has to say (`plans-at-the-boundary.md`).
     pub plans: &'a str,
+    /// Every chart's annual-chart instants, in the batch's order
+    /// (`annual-chart.md`); empty when none were asked for.
+    pub praveshas: &'a [Vec<teistro::Pravesha>],
 }
 
 /// counts saying so.
@@ -2091,7 +2143,12 @@ pub fn encode(
     composed: Composed<'_>,
     registered: &teistro::dasha::DashaSystems,
 ) -> Result<Vec<u8>, Error> {
-    let Composed { svgs, rules, plans } = composed;
+    let Composed {
+        svgs,
+        rules,
+        plans,
+        praveshas,
+    } = composed;
     let charts: Vec<&ChartFoundation> = documents.iter().map(|d| &d.foundation).collect();
     let charts = charts.as_slice();
     let schema = crate::schemas::charts();
@@ -2103,18 +2160,7 @@ pub fn encode(
     let timing_rows: Vec<Vec<FixedValue>> =
         charts.iter().map(|c| timing_values(&c.timing)).collect();
     let once = BatchOnce::of(charts.first().copied());
-    let vargas = VargaColumns::of(documents, graha_count)?;
-    let aspects = AspectColumns::of(documents);
-    let points = PointColumns::of(documents);
-    let bhavas = BhavaColumns::of(documents);
-    let states = StateColumns::of(documents);
-    let dashas = DashaColumns::of(documents, registered)?;
-    let ashtakavarga = AshtakavargaColumns::of(documents);
-    let vimshopaka = VimshopakaColumns::of(documents);
-    let shadbala = ShadbalaColumns::of(documents);
-    let bhava_bala = BhavaBalaColumns::of(documents);
-    let vaiseshikamsa = VaiseshikamsaColumns::of(documents);
-    let dasha_phala = DashaPhalaColumns::of(documents);
+    let by = Sections::of(documents, graha_count, registered, praveshas)?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -2124,31 +2170,20 @@ pub fn encode(
                 kind,
                 chart_count,
                 u32::try_from(graha_count).unwrap_or(u32::MAX),
-                vargas.count,
-                dashas.count,
+                by.vargas.count,
+                by.dashas.count,
             ),
         )?;
-        writer.rows("cast", &chart_rows(charts, &points.counts, &aspects.counts))?;
-        writer.columns(
-            "grahas",
-            charts.len() * graha_count,
-            &[
-                ColumnData::U16(&columns.ids),
-                ColumnData::F64(&columns.longitudes),
-                ColumnData::F64(&columns.tropicals),
-                ColumnData::F64(&columns.latitudes),
-                ColumnData::F64(&columns.distances),
-                ColumnData::F64(&columns.speeds),
-                ColumnData::U8(&columns.house_bhava),
-                ColumnData::U16(&columns.house_method),
-                ColumnData::F64(&columns.house_through),
-                ColumnData::F64(&columns.house_from),
-                ColumnData::U8(&columns.placed_bhava),
-                ColumnData::U16(&columns.placed_method),
-                ColumnData::F64(&columns.placed_through),
-                ColumnData::F64(&columns.placed_from),
-            ],
+        writer.rows(
+            "cast",
+            &chart_rows(
+                charts,
+                &by.points.counts,
+                &by.aspects.counts,
+                &by.years.counts,
+            ),
         )?;
+        columns.write(&mut writer, charts.len() * graha_count)?;
         writer.fixed("readings", &once.readings)?;
         write_bhavas(&mut writer, "houses", charts, |c| &c.houses)?;
         write_bhavas(&mut writer, "chalit", charts, |c| &c.chalit)?;
@@ -2168,22 +2203,23 @@ pub fn encode(
             "provenance",
             teistro_core::envelope::canonical_json(provenance).as_bytes(),
         )?;
-        vargas.write(&mut writer)?;
-        aspects.write(&mut writer)?;
-        points.write(&mut writer)?;
-        bhavas.write(&mut writer)?;
-        states.write(&mut writer)?;
+        by.vargas.write(&mut writer)?;
+        by.aspects.write(&mut writer)?;
+        by.points.write(&mut writer)?;
+        by.bhavas.write(&mut writer)?;
+        by.states.write(&mut writer)?;
         writer.bytes("drawings", drawings_json(documents).as_bytes())?;
         writer.bytes("svgs", svgs.as_bytes())?;
         writer.bytes("rules", rules.as_bytes())?;
         writer.bytes("plans", plans.as_bytes())?;
-        dashas.write(&mut writer)?;
-        ashtakavarga.write(&mut writer)?;
-        vimshopaka.write(&mut writer)?;
-        shadbala.write(&mut writer)?;
-        bhava_bala.write(&mut writer)?;
-        vaiseshikamsa.write(&mut writer)?;
-        dasha_phala.write(&mut writer)?;
+        by.years.write(&mut writer)?;
+        by.dashas.write(&mut writer)?;
+        by.ashtakavarga.write(&mut writer)?;
+        by.vimshopaka.write(&mut writer)?;
+        by.shadbala.write(&mut writer)?;
+        by.bhava_bala.write(&mut writer)?;
+        by.vaiseshikamsa.write(&mut writer)?;
+        by.dasha_phala.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -2295,6 +2331,170 @@ unsafe fn plan_request_of(interpret_json: *const c_char) -> Result<PlanRequest, 
         return Ok(PlanRequest::default());
     };
     PlanRequest::from_json(text).map_err(|error| field_under("interpret_json", &error))
+}
+
+/// What a request's `varsha_json` asks for, or none for null.
+///
+/// A record rather than two scalar fields on the request, because the
+/// annual chart grows: the month and sixty-hour charts are the same search
+/// with a step, and a field added to an object is not a field added to a
+/// C struct.
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+pub(crate) struct VarshaRequest {
+    /// Which longitude the Sun returns to; the tradition's by default.
+    #[serde(default)]
+    pub(crate) reading: teistro::tajika::Reading,
+    /// The last year of life wanted, 1 to 200.
+    pub(crate) through: u16,
+}
+
+/// The annual charts a request's `varsha_json` asks for, none for null; a
+/// refusal is named from the request's root, `varsha_json.through`.
+///
+/// # Safety
+///
+/// `varsha_json` null or a NUL-terminated string.
+unsafe fn varsha_request_of(varsha_json: *const c_char) -> Result<Option<VarshaRequest>, Error> {
+    // SAFETY: the caller's contract.
+    let text = unsafe { optional_text(varsha_json, "varsha_json") }?;
+    let Some(text) = text else {
+        return Ok(None);
+    };
+    let asked: VarshaRequest = teistro_core::strict::read(text, "varsha_json")?;
+    // The year is checked here as well as inside, so a caller learns it
+    // from the field they wrote rather than from a later refusal naming
+    // `through` with no path to it.
+    teistro::tajika::years(asked.through).map_err(|error| field_under("varsha_json", &error))?;
+    Ok(Some(asked))
+}
+
+impl GrahaColumns {
+    /// The grahas, charts outermost, in the order `grahas` declares them.
+    fn write(
+        &self,
+        writer: &mut Writer<'_>,
+        rows: usize,
+    ) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "grahas",
+            rows,
+            &[
+                ColumnData::U16(&self.ids),
+                ColumnData::F64(&self.longitudes),
+                ColumnData::F64(&self.tropicals),
+                ColumnData::F64(&self.latitudes),
+                ColumnData::F64(&self.distances),
+                ColumnData::F64(&self.speeds),
+                ColumnData::U8(&self.house_bhava),
+                ColumnData::U16(&self.house_method),
+                ColumnData::F64(&self.house_through),
+                ColumnData::F64(&self.house_from),
+                ColumnData::U8(&self.placed_bhava),
+                ColumnData::U16(&self.placed_method),
+                ColumnData::F64(&self.placed_through),
+                ColumnData::F64(&self.placed_from),
+            ],
+        )
+    }
+}
+
+/// Every section's columns, built from the documents in one place.
+///
+/// Thirteen `XColumns::of(documents)` lines in a row said nothing that
+/// their own names did not, and pushed the writer past the length a
+/// reader can hold. The **writes** stay together and in the schema's
+/// declared order, because that order is the blob's layout and scattering
+/// it would hide the one thing a reader of `encode` needs to see.
+struct Sections {
+    vargas: VargaColumns,
+    aspects: AspectColumns,
+    points: PointColumns,
+    bhavas: BhavaColumns,
+    states: StateColumns,
+    dashas: DashaColumns,
+    ashtakavarga: AshtakavargaColumns,
+    vimshopaka: VimshopakaColumns,
+    shadbala: ShadbalaColumns,
+    bhava_bala: BhavaBalaColumns,
+    vaiseshikamsa: VaiseshikamsaColumns,
+    dasha_phala: DashaPhalaColumns,
+    years: PraveshaColumns,
+}
+
+impl Sections {
+    fn of(
+        documents: &[Document],
+        graha_count: usize,
+        registered: &teistro::dasha::DashaSystems,
+        praveshas: &[Vec<teistro::Pravesha>],
+    ) -> Result<Sections, Error> {
+        Ok(Sections {
+            vargas: VargaColumns::of(documents, graha_count)?,
+            aspects: AspectColumns::of(documents),
+            points: PointColumns::of(documents),
+            bhavas: BhavaColumns::of(documents),
+            states: StateColumns::of(documents),
+            dashas: DashaColumns::of(documents, registered)?,
+            ashtakavarga: AshtakavargaColumns::of(documents),
+            vimshopaka: VimshopakaColumns::of(documents),
+            shadbala: ShadbalaColumns::of(documents),
+            bhava_bala: BhavaBalaColumns::of(documents),
+            vaiseshikamsa: VaiseshikamsaColumns::of(documents),
+            dasha_phala: DashaPhalaColumns::of(documents),
+            years: PraveshaColumns::of(praveshas),
+        })
+    }
+}
+
+/// Where a request casts its charts, of what kind, and against which
+/// clock — each refused by the field the caller wrote.
+fn where_and_when(asked: &TsChartRequest) -> Result<(Place, ChartKind, UtcOffset), Error> {
+    let place = Place::new(
+        Latitude::try_new(asked.latitude_deg)
+            .map_err(|e| Error::from(e).with_field("latitude_deg"))?,
+        Longitude::try_new(asked.longitude_deg)
+            .map_err(|e| Error::from(e).with_field("longitude_deg"))?,
+        Altitude::try_new(asked.altitude_m).map_err(|e| Error::from(e).with_field("altitude_m"))?,
+    );
+    let kind = ChartKind::from_id(asked.kind).ok_or_else(|| {
+        Error::new(
+            Status::InvalidArg,
+            format!("no chart kind with id {}", asked.kind),
+        )
+        .with_field("kind")
+    })?;
+    let clock = UtcOffset::try_from_seconds(asked.utc_offset_seconds)
+        .map_err(|e| Error::from(e).with_field("utc_offset_seconds"))?;
+    Ok((place, kind, clock))
+}
+
+/// Every chart's annual-chart instants, empty when none were asked for.
+///
+/// Computed here rather than in `encode` because it needs the context: a
+/// return is a search over the provider, and `encode` has only the
+/// documents.
+fn praveshas_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&VarshaRequest>,
+) -> Result<Vec<Vec<teistro::Pravesha>>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    documents
+        .iter()
+        .enumerate()
+        .map(|(at, document)| {
+            sdk.chart()
+                .praveshas(document, asked.reading, asked.through)
+                // A refusal names the request field the caller wrote and
+                // the chart it was refused for, so a batch says which one.
+                .map_err(|error| {
+                    field_under("varsha_json", &error).with_hint(format!("chart {at}"))
+                })
+        })
+        .collect()
 }
 
 /// The rule set a request's `rules_json` names, or none for null; a refusal is
@@ -2572,23 +2772,7 @@ pub unsafe extern "C" fn ts_chart_found(
         // SAFETY: the caller promises a readable request; `read_in`
         // checks the handshake before anything else reads a field.
         let asked = *unsafe { read_in(request, "request") }?;
-        let place = Place::new(
-            Latitude::try_new(asked.latitude_deg)
-                .map_err(|e| Error::from(e).with_field("latitude_deg"))?,
-            Longitude::try_new(asked.longitude_deg)
-                .map_err(|e| Error::from(e).with_field("longitude_deg"))?,
-            Altitude::try_new(asked.altitude_m)
-                .map_err(|e| Error::from(e).with_field("altitude_m"))?,
-        );
-        let kind = ChartKind::from_id(asked.kind).ok_or_else(|| {
-            Error::new(
-                Status::InvalidArg,
-                format!("no chart kind with id {}", asked.kind),
-            )
-            .with_field("kind")
-        })?;
-        let clock = UtcOffset::try_from_seconds(asked.utc_offset_seconds)
-            .map_err(|e| Error::from(e).with_field("utc_offset_seconds"))?;
+        let (place, kind, clock) = where_and_when(&asked)?;
         // SAFETY: the entry point's contract — the caller promises
         // `instant_count` readable doubles at `instants`, or null and zero.
         let instants: Vec<JulianDay<Utc>> =
@@ -2669,6 +2853,8 @@ pub unsafe extern "C" fn ts_chart_found(
         let rules = unsafe { rule_set_of(asked.rules_json) }?;
         // SAFETY: the entry point's contract.
         let plans = unsafe { plan_request_of(asked.interpret_json) }?;
+        // SAFETY: the entry point's contract.
+        let varsha = unsafe { varsha_request_of(asked.varsha_json) }?;
         plans
             .check(rules.is_some())
             .map_err(|error| field_under("interpret_json", &error))?;
@@ -2678,6 +2864,7 @@ pub unsafe extern "C" fn ts_chart_found(
             Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
             None => String::new(),
         };
+        let praveshas = praveshas_of(ctx.sdk(), &founded.value, varsha.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -2687,6 +2874,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 svgs: &svgs,
                 rules: &rules_json,
                 plans: &plans_json,
+                praveshas: &praveshas,
             },
             ctx.sdk().dashas(),
         )?;

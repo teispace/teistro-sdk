@@ -43,6 +43,7 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::binding::{build, library, library_artefact, present};
+use crate::measure::plural;
 
 const NODE: &str = "bindings/node/parity.mjs";
 const DART: &str = "bindings/dart/bin/parity.dart";
@@ -240,6 +241,85 @@ fn run(
     }
 }
 
+/// Every runner this machine can try, run, with how many were tried.
+///
+/// The count is the point: a runner there is no toolchain for is skipped
+/// and never counted, and a runner that was tried and **failed** is
+/// counted and missing, which is what the verdict turns on.
+fn collect(
+    root: &Path,
+    has_node: bool,
+    has_dart: bool,
+    python: &str,
+    has_python: bool,
+) -> Option<(Vec<Report>, usize)> {
+    let mut reports = Vec::new();
+    let mut attempted = 0usize;
+    if has_node {
+        if build(root, "teistro-node", "the Node addon").is_err() {
+            return None;
+        }
+        let built = root
+            .join("target/release")
+            .join(super::node_binding::addon_artefact());
+        if std::fs::copy(&built, root.join(super::node_binding::ADDON)).is_err() {
+            println!("FAIL  the Node addon could not be copied into the package");
+            return None;
+        }
+        attempted += 1;
+        reports.extend(run(
+            "Node",
+            Command::new("node").arg(NODE).current_dir(root),
+            &[],
+        ));
+    } else {
+        println!("skip  {NODE}: no `node` on this machine");
+    }
+    if has_dart {
+        let library = root.join("target/release").join(library_artefact());
+        attempted += 1;
+        reports.extend(run(
+            "Dart",
+            Command::new("dart")
+                .args(["run", "bin/parity.dart"])
+                .env("TEISTRO_LIBRARY", &library)
+                .current_dir(root.join("bindings/dart")),
+            &[],
+        ));
+    } else {
+        println!("skip  {DART}: no `dart` on this machine");
+    }
+    if has_python {
+        let library = root.join("target/release").join(library_artefact());
+        attempted += 1;
+        reports.extend(run(
+            "Python",
+            crate::binding::python_command(python)
+                .arg("parity.py")
+                .env("TEISTRO_LIBRARY", &library)
+                .env("PYTHONPATH", root.join("bindings/python"))
+                .current_dir(root.join("bindings/python")),
+            &[],
+        ));
+    } else {
+        println!("skip  {PYTHON}: no `{python}` on this machine");
+    }
+    // The Rust surface's own runner. No `present` check: it is an
+    // example of a workspace crate, so a machine that can run this gate
+    // can run it.
+    println!("run   {RUST}");
+    attempted += 1;
+    reports.extend(run(
+        "Rust",
+        Command::new(crate::binding::cargo())
+            .args(["run", "--quiet", "-p", "teistro", "--example", "parity"])
+            .current_dir(root),
+        &RUST_ABSENCES,
+    ));
+
+    Some((reports, attempted))
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let has_node = present("node", "--version");
     let has_dart = present("dart", "--version");
@@ -255,65 +335,24 @@ pub(crate) fn check(root: &Path) -> i32 {
     if library(root).is_err() {
         return 1;
     }
-    let mut reports = Vec::new();
-    if has_node {
-        if build(root, "teistro-node", "the Node addon").is_err() {
-            return 1;
-        }
-        let built = root
-            .join("target/release")
-            .join(super::node_binding::addon_artefact());
-        if std::fs::copy(&built, root.join(super::node_binding::ADDON)).is_err() {
-            println!("FAIL  the Node addon could not be copied into the package");
-            return 1;
-        }
-        reports.extend(run(
-            "Node",
-            Command::new("node").arg(NODE).current_dir(root),
-            &[],
-        ));
-    } else {
-        println!("skip  {NODE}: no `node` on this machine");
+    let Some((reports, attempted)) = collect(root, has_node, has_dart, &python, has_python) else {
+        return 1;
+    };
+    // **A runner that was tried and failed is a failure, not a skip.**
+    // `run` printed the reason and returned nothing, and for a while the
+    // verdict below counted only the reports that arrived: a crashed
+    // runner left "3 bindings agree" and an exit code of zero, which is a
+    // gate reporting success about a third of its subjects that never
+    // ran. A runner this machine has no toolchain for is skipped above
+    // and never counted here, which is the difference that matters.
+    let lost = attempted.saturating_sub(reports.len());
+    if lost > 0 {
+        println!(
+            "FAIL  {lost} of the {} this machine can run produced no report",
+            plural(attempted, "runner")
+        );
+        return 1;
     }
-    if has_dart {
-        let library = root.join("target/release").join(library_artefact());
-        reports.extend(run(
-            "Dart",
-            Command::new("dart")
-                .args(["run", "bin/parity.dart"])
-                .env("TEISTRO_LIBRARY", &library)
-                .current_dir(root.join("bindings/dart")),
-            &[],
-        ));
-    } else {
-        println!("skip  {DART}: no `dart` on this machine");
-    }
-    if has_python {
-        let library = root.join("target/release").join(library_artefact());
-        reports.extend(run(
-            "Python",
-            crate::binding::python_command(&python)
-                .arg("parity.py")
-                .env("TEISTRO_LIBRARY", &library)
-                .env("PYTHONPATH", root.join("bindings/python"))
-                .current_dir(root.join("bindings/python")),
-            &[],
-        ));
-    } else {
-        println!("skip  {PYTHON}: no `{python}` on this machine");
-    }
-    // The Rust surface's own runner. No `present` check: it is an
-    // example of a workspace crate, so a machine that can run this gate
-    // can run it.
-    println!("run   {RUST}");
-    reports.extend(run(
-        "Rust",
-        Command::new(crate::binding::cargo())
-            .args(["run", "--quiet", "-p", "teistro", "--example", "parity"])
-            .current_dir(root),
-        &RUST_ABSENCES,
-    ));
-
     if reports.len() < 2 {
         println!("skip  nothing to compare: {} report(s)", reports.len());
         return i32::from(reports.is_empty() && ran);

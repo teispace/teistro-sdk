@@ -1208,6 +1208,59 @@ test('a consumer dasha system registers, is asked for by its key and reads as it
 });
 
 /**
+ * The annual charts cross: a request's `varsha` answers each chart's
+ * returns in year order, ragged per chart, and the instant founds as a
+ * chart of its own (`03-design/annual-chart.md`).
+ */
+test('a chart carries the annual charts its birth opens', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const chart = ctx.chart.found({
+    instant: 2447995.4895833335,
+    place,
+    utcOffsetSeconds: 20700,
+    varsha: { reading: 'sidereal', through: 12 },
+  });
+  const years = chart.praveshas;
+  assert.equal(years.length, 12);
+  assert.deepEqual(years.map((one) => one.year), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  assert.ok(years[0].instant > 2447995.4895833335, 'a return is after its birth');
+  // Eleven sidereal years between the first and the twelfth, to a day.
+  const span = years[11].instant - years[0].instant;
+  assert.ok(Math.abs(span - 11 * 365.2564) < 1, `${span} days`);
+
+  // The instant founds as a chart of its own; the place is the caller's.
+  const annual = ctx.chart.found({ instant: years[11].instant, place, utcOffsetSeconds: 20700 });
+  assert.equal(annual.instant, years[11].instant);
+
+  // Not asked for is empty, not zeroes.
+  assert.deepEqual(
+    ctx.chart.found({ instant: 2447995.4895833335, place, utcOffsetSeconds: 20700 }).praveshas,
+    [],
+  );
+
+  // The rivals are asked for by name and are not the same instant.
+  const tropical = ctx.chart.found({
+    instant: 2447995.4895833335,
+    place,
+    utcOffsetSeconds: 20700,
+    varsha: { reading: 'tropical', through: 12 },
+  }).praveshas;
+  assert.notEqual(tropical[11].instant, years[11].instant);
+
+  assert.throws(
+    () => ctx.chart.found({
+      instant: 2447995.4895833335,
+      place,
+      utcOffsetSeconds: 20700,
+      varsha: { reading: 'sidereal', through: 0 },
+    }),
+    (error) => error instanceof TeistroError && error.field === 'varsha_json.through',
+  );
+  ctx.dispose();
+});
+
+/**
  * A chart's dasha phala crosses whole: the nine grahas' Subhankas within
  * each varga's share and complementary in total, a nature and a phase each;
  * `null` unless asked, and the Shadbala's rays beside the phalas.

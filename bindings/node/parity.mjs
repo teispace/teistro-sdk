@@ -511,6 +511,28 @@ for (const chart of charts) {
   });
 }
 // `found` is the batch of one unwrapped, and must agree with the batch.
+// **The annual charts, under all three readings.** One crossing each,
+// because `varsha_json` names one reading per request — and all three,
+// because the point of naming a reading is that a consumer can ask for
+// the one they mean, and a reading that crossed as another would be
+// invisible in a report that only printed the default.
+for (const reading of ['sidereal', 'tropical', 'mean']) {
+  const years = geo.chart.foundMany({
+    instants: [2460482.5, 2460600.25],
+    place,
+    utcOffsetSeconds: 20700,
+    varsha: { reading, through: 12 },
+  });
+  let i = 0;
+  for (const chart of years) {
+    put(`chart-${i}-varsha-${reading}-count`, chart.praveshas.length);
+    for (const one of chart.praveshas) {
+      put(`chart-${i}-varsha-${reading}-${one.year}`, one.instant);
+    }
+    i += 1;
+  }
+}
+
 const single = geo.chart.found({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
 put('chart-single-lagna', single.lagnaDeg);
 put('chart-single-agrees', single.lagnaDeg === charts.at(0).lagnaDeg);

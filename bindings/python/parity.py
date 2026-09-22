@@ -612,6 +612,26 @@ def main() -> None:
                 put(f"chart-{i}-chalit-{k}-madhya", bhava.madhya_deg)
 
         # `found` is the batch of one unwrapped, and must agree with it.
+        # **The annual charts, under all three readings.** One crossing
+        # each, because `varsha_json` names one reading per request — and
+        # all three, because a reading that crossed as another would be
+        # invisible in a report that only printed the default.
+        for reading in ("sidereal", "tropical", "mean"):
+            years = geo.chart.found_many(
+                instants=[2460482.5, 2460600.25],
+                place=place,
+                utc_offset_seconds=20700,
+                varsha={"reading": reading, "through": 12},
+            )
+            for i, chart in enumerate(years):
+                returns = chart.praveshas
+                put(f"chart-{i}-varsha-{reading}-count", len(returns))
+                for pravesha in returns:
+                    put(
+                        f"chart-{i}-varsha-{reading}-{pravesha.year}",
+                        pravesha.instant,
+                    )
+
         single = geo.chart.found(
             instant=2460482.5, place=place, utc_offset_seconds=20700
         )

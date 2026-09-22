@@ -215,6 +215,12 @@ export interface ChartsCast {
    * A **per-chart count and not one for the batch**, because a chart's drishti are a function of where the bodies stand rather than of how many there are: two charts of the same nine grahas at one place hold 47 relations and 40. The rows are concatenated charts outermost and a reader prefix-sums these counts, which is the panchanga blob's own rule for a ragged list.
    */
   readonly aspectCount: Uint32Array;
+  /**
+   * How many rows of the `praveshas` section belong to this chart. Zero when no annual charts were asked for.
+   *
+   * Ragged for a reason of its own: the request settles how many returns are wanted, and an ephemeris that ends first settles how many there are (`03-design/annual-chart.md`). Fewer than asked for is the answer, so a reader takes this count and never the number it requested.
+   */
+  readonly praveshaCount: Uint32Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -1252,6 +1258,25 @@ export interface ChartsDashaPhala {
 }
 
 /**
+ * The `praveshas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for.
+ */
+export interface ChartsPraveshas {
+  /**
+   * Which year of life it opens: 1 is the first birthday, so a reader's age through that year is one less.
+   */
+  readonly year: Uint16Array;
+  /**
+   * The instant, a Julian day (UTC). A chart cast for it is the annual chart; the place is the caller's, which is why the boundary answers the instant and not the chart.
+   */
+  readonly jd: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -1547,6 +1572,10 @@ export interface Charts {
    * UTF-8 JSON, canonical: an array with one entry per chart, each an object carrying the narrative plans the request's `interpret_json` asked for — `placements`, `readings`, `strength`, `houses`, `positions`, `aspects` — and only those. A plan is the array of its items, each `{key, params}`, and its params are the very JSON `ts_intl_render` takes, so a binding says an item by handing it straight back (`03-design/plans-at-the-boundary.md`). Empty when no composer was asked for.
    */
   readonly plans: string;
+  /**
+   * Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for.
+   */
+  readonly praveshas: ChartsPraveshas;
 }
 
 /**

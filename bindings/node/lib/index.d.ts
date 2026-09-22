@@ -555,6 +555,31 @@ export interface Vimshopaka {
 /** A registered layout's full key, as the context that registered it resolves it. */
 export type LayoutKey = `chart_layout.${string}`;
 
+/** Which longitude an annual chart's Sun returns to (`03-design/annual-chart.md`). */
+export type VarshaReading =
+  /** The natal sidereal longitude, read on the chart's own ayanamsha basis: the tradition's. */
+  | 'sidereal'
+  /** The natal tropical longitude: the Western solar return. Forty years on it is most of a circle of lagna from the sidereal one, so it is a choice and never a fallback. */
+  | 'tropical'
+  /** A whole sidereal year for each year of life, from birth: the older arithmetic, and the only reading that needs no ephemeris. */
+  | 'mean';
+
+/** The annual charts a request asks for. */
+export interface VarshaRequest {
+  /** Which longitude the Sun returns to; `sidereal` by default. */
+  readonly reading?: VarshaReading;
+  /** The last year of life wanted, 1 to 200. */
+  readonly through: number;
+}
+
+/** One annual chart's instant. */
+export interface Pravesha {
+  /** Which year of life it opens: 1 is the first birthday, so the age through that year is one less. */
+  readonly year: number;
+  /** The instant, a Julian day (UTC), to pass to `found`. */
+  readonly instant: number;
+}
+
 /** A registered dasha system's full key, as the context that registered it resolves it. */
 export type DashaKey = `dasha_system.${string}`;
 
@@ -1193,6 +1218,16 @@ export declare class Chart {
    * the grahas stand.
    */
   readonly aspects: readonly Drishti[];
+  /**
+   * The annual charts' instants, in year order; empty unless `varsha`
+   * asked. Fewer than asked for is the answer when the ephemeris ends
+   * first, so read the length rather than the number you requested.
+   *
+   * The place is yours: a return is an instant, and whether the annual
+   * chart is cast for the birthplace or for a residence is a choice the
+   * schools differ on, so pass the instant to `found` yourself.
+   */
+  readonly praveshas: readonly Pravesha[];
   /** The upagrahas and special lagnas; empty unless `points` asked. */
   readonly points: readonly DerivedPoint[];
   /** The twelve bhavas as the houses service reads them; empty unless `houses` asked. */
@@ -1454,6 +1489,12 @@ export interface ChartRequest {
    * any locale. None by default.
    */
   readonly interpret?: PlanRequest;
+  /**
+   * The annual charts to answer for every chart, read back as each
+   * chart's `praveshas`: the instants the Sun returns to where it stood
+   * at birth. None by default (`03-design/annual-chart.md`).
+   */
+  readonly varsha?: VarshaRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

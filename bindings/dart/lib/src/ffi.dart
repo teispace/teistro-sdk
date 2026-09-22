@@ -952,6 +952,17 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"placements":true}. May be null.
   external ffi.Pointer<ffi.Char> interpretJson;
 
+  /// The annual charts to answer for every chart in the batch, as a JSON
+  /// object: `reading` — `"sidereal"` (the tradition's), `"tropical"`
+  /// (the Western solar return) or `"mean"` (a whole sidereal year each
+  /// time) — and `through`, the last year of life wanted, 1 to 200. The
+  /// instants come back in the `praveshas` section, ragged by
+  /// `cast.pravesha_count`; an ephemeris that ends first answers fewer
+  /// than asked for rather than refusing. Null for none
+  /// (`03-design/annual-chart.md`). Refusals are named from this root,
+  /// as `varsha_json.through`. May be null.
+  external ffi.Pointer<ffi.Char> varshaJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2778,7 +2789,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -2890,6 +2901,17 @@ final class ChartRequest {
   /// Example: {"placements":true}. May be null.
   final String? interpretJson;
 
+  /// The annual charts to answer for every chart in the batch, as a JSON
+  /// object: `reading` — `"sidereal"` (the tradition's), `"tropical"`
+  /// (the Western solar return) or `"mean"` (a whole sidereal year each
+  /// time) — and `through`, the last year of life wanted, 1 to 200. The
+  /// instants come back in the `praveshas` section, ragged by
+  /// `cast.pravesha_count`; an ephemeris that ends first answers fewer
+  /// than asked for rather than refusing. Null for none
+  /// (`03-design/annual-chart.md`). Refusals are named from this root,
+  /// as `varsha_json.through`. May be null.
+  final String? varshaJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -2938,6 +2960,9 @@ final class ChartRequest {
     raw.interpretJson = interpretJson == null
         ? ffi.nullptr
         : interpretJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.varshaJson = varshaJson == null
+        ? ffi.nullptr
+        : varshaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -2972,6 +2997,9 @@ final class ChartRequest {
         interpretJson: raw.interpretJson == ffi.nullptr
             ? null
             : raw.interpretJson.cast<pkg_ffi.Utf8>().toDartString(),
+        varshaJson: raw.varshaJson == ffi.nullptr
+            ? null
+            : raw.varshaJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

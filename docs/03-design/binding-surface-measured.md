@@ -69,18 +69,18 @@ call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1380 | 1 | 0 | 0 | 0 |
-| TypeScript | 367 | 0 | 0 | 1 | 0 |
-| Python | 1380 | 0 | 1 | 2 | 0 |
+| Dart | 1381 | 1 | 0 | 0 | 0 |
+| TypeScript | 368 | 0 | 0 | 1 | 0 |
+| Python | 1381 | 0 | 1 | 2 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1380 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 367 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1380 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1380 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 367 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1380 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1381 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 368 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 3 caught and renamed, 0 left; 1381 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1381 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 368 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1381 disagree |
 
 What Dart renames:
 
@@ -139,7 +139,7 @@ against them on the machine the library was actually built for.
 | `ts_error` | 56 | 8 | 36 | yes |
 | `ts_frame` | 16 | 4 | same | no |
 | `ts_calendar_date` | 24 | 4 | same | no |
-| `ts_chart_request` | 136 | 8 | 96 | yes |
+| `ts_chart_request` | 144 | 8 | 96 | yes |
 | `ts_civil_time` | 12 | 4 | same | no |
 | `ts_civil_date_time` | 44 | 4 | same | no |
 | `ts_zone_spec` | 32 | 8 | same | yes |
@@ -172,15 +172,15 @@ the class of mistake a generated binding exists to make impossible.
 | scalar | `ctypes` | format | at the boundary | in a column |
 |---|---|---|---|---|
 | `u8` | `c_uint8` | `B` | 67 | 81 |
-| `u16` | `c_uint16` | `H` | 20 | 88 |
-| `u32` | `c_uint32` | `I` | 49 | 35 |
+| `u16` | `c_uint16` | `H` | 20 | 89 |
+| `u32` | `c_uint32` | `I` | 49 | 36 |
 | `u64` | `c_uint64` | `Q` | 1 | 0 |
 | `i8` | `c_int8` | `b` | 0 | 0 |
 | `i16` | `c_int16` | `h` | 0 | 0 |
 | `i32` | `c_int32` | `i` | 17 | 5 |
 | `i64` | `c_int64` | `q` | 4 | 0 |
 | `f32` | `c_float` | `f` | 0 | 0 |
-| `f64` | `c_double` | `d` | 49 | 155 |
+| `f64` | `c_double` | `d` | 49 | 156 |
 | `usize` | `c_size_t` | `n` | 16 | 0 |
 | `isize` | `c_ssize_t` | `N` | 0 | 0 |
 | `bool` | `c_bool` | `?` | 0 | 0 |
@@ -189,14 +189,14 @@ the class of mistake a generated binding exists to make impossible.
 |---|---|---|
 | every scalar has a fixed-width `ctypes` type and a format code | **holds** | 0 of 13 disagree |
 | every scalar the boundary uses is one of the thirteen | **holds** | 8 of 13 appear |
-| every blob column's scalar has a format code | **holds** | 0 of 364 disagree |
+| every blob column's scalar has a format code | **holds** | 0 of 367 disagree |
 
 ## 5. What a binding can say about a value
 
 ADR-0023 puts the units, ranges, examples and enum links on the `api:`
 line of the Rust field, so that one sentence written once reaches every
 binding's documentation and every binding's type. What follows is how
-much of that there is to reach for: 196 of 196 visible struct fields
+much of that there is to reach for: 197 of 197 visible struct fields
 carry a doc comment.
 
 | `api:` tag | fields |
@@ -207,15 +207,15 @@ carry a doc comment.
 | `example` | 91 |
 | `flag` | 15 |
 | `len` | 17 |
-| `nullable` | 16 |
+| `nullable` | 17 |
 | `present_if` | 1 |
 | `range` | 33 |
 | `unit` | 46 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every visible field carries a doc comment | **holds** | 0 of 196 disagree |
-| every floating-point field carries a unit | **holds** | 0 of 196 disagree |
+| every visible field carries a doc comment | **holds** | 0 of 197 disagree |
+| every floating-point field carries a unit | **holds** | 0 of 197 disagree |
 
 Every number that crosses the boundary says what it is measured in, so
 no binding has to document one as a bare `float`.
