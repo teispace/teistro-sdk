@@ -1,7 +1,8 @@
-# The Muntha, and what the lord of the year waits on
+# The Muntha, the office-bearers, and what the lord of the year waits on
 
-Status: `built`, 2026-09-22, for the Muntha; **designed, not built**, for
-the other four office-bearers and the year lord. Measured in
+Status: `built`, 2026-09-22, for the Muntha and **all five
+office-bearers**; **designed, not built**, for the year lord chosen among
+them. Measured in
 [`muntha-measured.md`](muntha-measured.md) (`check-muntha`), and built on
 the annual chart's instant ([`annual-chart.md`](annual-chart.md)).
 
@@ -80,7 +81,44 @@ part inside the year, so a Tajika aspect taken to the Muntha does.
 | **not decided** | the Muntha's longitude inside its sign between the two readings (crux C107), which waits on a text that gives a longitude rather than a sign |
 | **across the boundary** | `varsha_json.muntha` names the reading; `muntha_sign`, `muntha_lord` and `muntha_deg` ride in the `praveshas` section beside the return they stand at, so no second call can disagree about which year it is. Node, Dart and Python each read `pravesha.muntha`, each binding's test asserts the rule, and all four parity runners print it under all three return readings — which also holds the Muntha's independence of the reading |
 | **built** | `teistro_tajika::muntha` and `Muntha::during`, the progression a fraction through the year; `sdk.chart().muntha`, which needs **no ephemeris**, being the founded chart's own lagna and a count |
-| **not built** | the other four office-bearers, the Panchavargiya bala, the Tajika aspects and the year lord — below |
+| **not built** | the Panchavargiya bala, the Tajika aspects and the year lord — below; and the office-bearers' crossing |
+
+## The office-bearers
+
+`teistro_tajika::office_bearers` reads the five from a `YearCharts` — the
+six numbers the rules touch, a struct so that no two longitudes can be
+swapped by position — and `sdk.chart().office_bearers(&natal, &annual,
+completed_years)` fills it from the birth chart and an annual chart the
+caller founded. "By day" is the founded chart's own `day.part`, sunrise to
+sunset at the annual chart's place, which is the source's definition and
+one the corpus already held the foundation to. It needs no ephemeris.
+
+The **Tri-Rashi** lord ships as the rule and not the table (crux C108),
+with the 24 printed cells as its test; a second test holds that every sign
+has an element with a triplicity, three signs to each, which is what keeps
+the rule's one fallback dead. The answer carries each planet's
+**portfolios** and the distinct **claimants**, one to five of them, because
+the year lord's own tie-break is the number of portfolios held.
+
+**The source's worked year reproduces end to end** through the façade —
+birth, the return to the second, the annual chart to the arcminute, and
+all five office-bearers — and the page publishes it
+([`muntha-measured.md`](muntha-measured.md) §5). Two things came out of
+reading it back. The source's return is the **mean** one, its Dhruvanka
+being forty mean sidereal years modulo a week, so the SDK's
+`Reading::Mean` is what lands on its 13:17:29 IST; the true return is the
+"few minutes" it sets aside. And its positions are **geocentric**: under
+the topocentric profile its Moon is 58′ out, the Moon's parallax, and under
+the default it is 3′. Neither moves an office-bearer here, but a Moon near
+a sign boundary by night would move the Dina-Ratri lord, which is why the
+profile's centre is reported and not assumed.
+
+**They do not cross the boundary yet.** Three of the five need an annual
+chart founded at a place, and the boundary answers the return's instant
+precisely so that it does not choose that place. Crossing them means a
+function over two founded charts, or a `varsha_json` place that is the
+residence knob the annual chart's page names — a decision of its own, and
+the next one to make.
 
 ## Why only the Muntha crosses in the `praveshas` section
 
@@ -111,10 +149,8 @@ with named fallbacks down to the Muntha's lord. That needs three things
 this build does not have, and the reading found that two of the three
 tables they need are rules rather than tables.
 
-1. **The office-bearers**, over a founded annual chart. Four of five are a
-   lord lookup. The **Tri-Rashi** table's 24 cells are the Dorothean
-   triplicities under a positional rule, with none disagreeing (crux
-   C108), so the rule ships and the printed table is its test.
+1. ~~**The office-bearers**, over a founded annual chart~~ — **built**
+   (above); their crossing is the decision still open.
 2. **The Panchavargiya bala** — Griha 30, Uchcha 20, Hudda 15, Drekkana 10,
    Navamsha 5, divided by four — with Tajika's own **positional**
    friendship. Its **Drekkana** lords are one expression,

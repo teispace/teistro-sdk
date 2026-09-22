@@ -117,3 +117,26 @@ three**, so nothing in the book can tell a transposition from a printing
 fault (crux C109). Two invariants do hold over all sixty and belong in a
 test: every sign's five widths sum to thirty, and every sign carries
 Mars, Mercury, Jupiter, Venus and Saturn exactly once each.
+
+### The worked year, read back through the SDK
+
+The source works one birth through to its forty-first year's chart —
+Bombay, 20 August 1944, 07:11 IST, Chart III-1 — and the SDK reproduces
+all of it (`03-design/muntha-measured.md` §5). Two things the text does
+not say outright came out of the reading back.
+
+**Its return is the mean one.** It casts the year by adding a
+**Dhruvanka** to the birth — 1d 6h 6m 29s for forty years, 1d 6h 9m 10s
+for one — and both are whole mean sidereal years modulo a week, to the
+second. So its 13:17:29 IST is `Reading::Mean`, which the SDK lands on to
+1.5 s. It names the true return as the reference and the difference as "a
+few minutes … due to the disturbance of the Sun's longitude by the
+planets", which is 0.83 minutes here on a mean ayanamsha. That supports
+the SDK's default rather than moving it: the text uses the mean year as an
+approximation to the true one, and says so.
+
+**Its positions are geocentric.** Under a topocentric frame its Moon is
+58′ out, which is the Moon's parallax at Bombay; under the geocentric
+default it is 3′. A consumer comparing against a Tajika text should found
+the chart geocentrically, and the profile's centre is reported on every
+answer so that this is a thing one can check.

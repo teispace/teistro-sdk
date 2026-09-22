@@ -21,9 +21,10 @@
 use std::fmt::Write as _;
 use std::path::Path;
 
-use teistro::catalogue::Rashi;
-use teistro::tajika::{MOST_YEARS, MunthaDegree};
-use teistro::{Context, Ephemeris};
+use teistro::catalogue::{Graha, Rashi};
+use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro::tajika::{MOST_YEARS, MunthaDegree, Reading};
+use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
 
 use crate::births::{Birth, CHARTS, births};
 use crate::generated::{Output, check, write};
@@ -173,6 +174,7 @@ fn page(root: &Path) -> Result<String, String> {
     the_margin(&mut out, &births);
     the_rival(&mut out, &sdk, &births)?;
     the_degree(&mut out, &sdk, &births)?;
+    the_worked_year(&mut out)?;
     Ok(fill(&out))
 }
 
@@ -363,6 +365,155 @@ fn the_degree(out: &mut String, sdk: &Context, births: &[Birth]) -> Result<(), S
          The cap is {MOST_YEARS} years, shared with the returns.\n",
         plural(births.len(), "birth"),
         plural(crossing, "birth"),
+    );
+    Ok(())
+}
+
+/// The source's worked birth: Bombay, 20 August 1944, 07:11 IST (K.S.
+/// Charak, *A Textbook of Varshaphala*, Chart III-1).
+const WORKED_BIRTH_JD_UTC: f64 = 2_431_322.570_138_889;
+
+/// What the source prints for its forty-first year's chart, as
+/// (sign index, degrees, minutes).
+const PRINTED_LAGNA: (f64, f64, f64) = (7.0, 9.0, 26.0);
+const PRINTED_SUN: (f64, f64, f64) = (4.0, 3.0, 50.0);
+const PRINTED_MOON: (f64, f64, f64) = (1.0, 9.0, 40.0);
+/// 13:17:29 IST, hours.
+const PRINTED_RETURN_IST_H: f64 = 13.0 + 17.0 / 60.0 + 29.0 / 3600.0;
+const PRINTED_FIVE: [Graha; 5] = [
+    Graha::Jupiter,
+    Graha::Sun,
+    Graha::Mars,
+    Graha::Mars,
+    Graha::Sun,
+];
+
+/// One profile's answer to the source's worked year.
+struct Worked {
+    return_seconds: f64,
+    lagna_arcmin: f64,
+    sun_arcmin: f64,
+    moon_arcmin: f64,
+    five: [Graha; 5],
+    true_minus_mean_min: f64,
+}
+
+fn worked_under(profile: &str) -> Result<Worked, String> {
+    let sdk = Context::builder()
+        .profile(profile)
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .map_err(|why| format!("{profile}: {why}"))?;
+    let place = Place::new(
+        Latitude::try_new(18.0 + 58.0 / 60.0).map_err(|why| why.to_string())?,
+        Longitude::try_new(72.0 + 50.0 / 60.0).map_err(|why| why.to_string())?,
+        Altitude::try_new(11.0).map_err(|why| why.to_string())?,
+    );
+    let offset = UtcOffset::try_from_seconds(19_800).map_err(|why| why.to_string())?;
+    let bombay = ChartRequest::at(place, offset);
+    let found = |at: JulianDay<Utc>| {
+        sdk.chart()
+            .reading(at, &bombay)
+            .map(|envelope| envelope.value)
+            .map_err(|why| format!("{profile}: founding: {why}"))
+    };
+    let birth = found(JulianDay::<Utc>::literal(WORKED_BIRTH_JD_UTC))?;
+    let fortieth = |reading| {
+        sdk.chart()
+            .praveshas(&birth, reading, 40)
+            .map_err(|why| format!("{profile}: {why}"))?
+            .into_iter()
+            .find(|one| one.year == 40)
+            .ok_or_else(|| format!("{profile}: no fortieth return"))
+    };
+    let mean = fortieth(Reading::Mean)?;
+    let true_return = fortieth(Reading::Sidereal)?;
+    let annual = found(mean.at)?;
+    let year = &annual.foundation;
+    let at = |graha| {
+        year.graha(graha)
+            .map(|placed| placed.longitude_deg)
+            .ok_or_else(|| format!("{profile}: no {graha:?}"))
+    };
+    let off = |deg: f64, (sign, degrees, minutes): (f64, f64, f64)| {
+        (deg - (sign * 30.0 + degrees + minutes / 60.0)) * 60.0
+    };
+    let bearers = sdk
+        .chart()
+        .office_bearers(&birth, &annual, 40)
+        .map_err(|why| format!("{profile}: {why}"))?;
+    let ist = (mean.at.get() + 0.5 + 5.5 / 24.0).fract() * 24.0;
+    Ok(Worked {
+        return_seconds: (ist - PRINTED_RETURN_IST_H) * 3600.0,
+        lagna_arcmin: off(year.lagna_deg, PRINTED_LAGNA),
+        sun_arcmin: off(at(Graha::Sun)?, PRINTED_SUN),
+        moon_arcmin: off(at(Graha::Moon)?, PRINTED_MOON),
+        five: [
+            bearers.muntha,
+            bearers.janma_lagna,
+            bearers.varsha_lagna,
+            bearers.tri_rashi,
+            bearers.dina_ratri,
+        ],
+        true_minus_mean_min: (true_return.at.get() - mean.at.get()) * 1440.0,
+    })
+}
+
+fn the_worked_year(out: &mut String) -> Result<(), String> {
+    let geo = worked_under("parashari-classical")?;
+    let topo = worked_under("conformance-baseline")?;
+    let five = |one: &Worked| {
+        if one.five == PRINTED_FIVE {
+            String::from("all five as printed")
+        } else {
+            format!("{:?}", one.five)
+        }
+    };
+    let _ = write!(
+        out,
+        "\n## 5. The source's worked year, end to end\n\n\
+         The source works one birth all the way through — Bombay, 20 August \
+         1944, 07:11 IST — to its forty-first year's chart and that chart's \
+         five office-bearers (Chart III-1). It is the only rank-2 value in \
+         reach that checks the whole pipeline at once: the return, the chart \
+         it founds, and the lords read from both. Its return is the **mean** \
+         one — its Dhruvanka of 1d 6h 6m 29s for forty years is forty mean \
+         sidereal years modulo a week — so that is the reading held here.\n\n\
+         | against what the source prints | the default profile (geocentric, mean ayanamsha) | the conformance profile (topocentric, nutated) |\n\
+         |---|---|---|\n\
+         | the return, 13:17:29 IST | {:+.1} s | {:+.1} s |\n\
+         | the annual lagna, Scorpio 9°26′ | {:+.1}′ | {:+.1}′ |\n\
+         | the Sun, Leo 3°50′ | {:+.1}′ | {:+.1}′ |\n\
+         | the Moon, Taurus 9°40′ | {:+.1}′ | **{:+.1}′** |\n\
+         | the office-bearers, Jupiter, Sun, Mars, Mars, Sun | {} | {} |\n\
+         | the true return, after the mean one | {:+.2} min | {:+.2} min |\n\n\
+         The source prints whole arcminutes and seconds. On the default \
+         profile the worst of its three positions is {:.1}′ out and its return \
+         {:.1} s, which is an ephemeris a generation apart agreeing to \
+         arcminutes and not a rounding. **Its positions are geocentric**: under \
+         the topocentric profile its Moon is almost a degree out, which is \
+         the Moon's parallax at Bombay and not an error. And the \"few \
+         minutes\" it sets aside between the true return and the mean one are \
+         the Sun's own perturbations on a mean ayanamsha; on a nutated one \
+         nutation adds several more, which the source does not apply. Neither \
+         moves an office-bearer.\n",
+        geo.return_seconds,
+        topo.return_seconds,
+        geo.lagna_arcmin,
+        topo.lagna_arcmin,
+        geo.sun_arcmin,
+        topo.sun_arcmin,
+        geo.moon_arcmin,
+        topo.moon_arcmin,
+        five(&geo),
+        five(&topo),
+        geo.true_minus_mean_min,
+        topo.true_minus_mean_min,
+        [geo.lagna_arcmin, geo.sun_arcmin, geo.moon_arcmin]
+            .into_iter()
+            .map(f64::abs)
+            .fold(0.0, f64::max),
+        geo.return_seconds.abs(),
     );
     Ok(())
 }

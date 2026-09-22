@@ -37,7 +37,7 @@ use teistro_strength::{
     ShadbalaReading, ShadbalaRules, VaiseshikamsaChart, VaiseshikamsaReading, VimshopakaChart,
     VimshopakaReading,
 };
-use teistro_tajika::{Muntha, MunthaDegree, Natal, Pravesha, Reading};
+use teistro_tajika::{Muntha, MunthaDegree, Natal, OfficeBearers, Pravesha, Reading, YearCharts};
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
 use crate::area::system_of;
@@ -792,6 +792,43 @@ impl<'a> ChartArea<'a> {
         degree: MunthaDegree,
     ) -> Result<Muntha, Error> {
         teistro_tajika::muntha(document.foundation.lagna_deg, completed_years, degree)
+    }
+
+    /// The annual chart's five **office-bearers**, read from the birth
+    /// chart and an annual chart **you founded** — for the birthplace or
+    /// for a residence, which is your choice and not the SDK's.
+    ///
+    /// `completed_years` is the [`Pravesha::year`] the annual chart was
+    /// founded for. Three of the five depend on the annual chart's place
+    /// (its lagna, and whether the return fell between sunrise and sunset
+    /// there), which is why this takes the chart rather than an instant.
+    ///
+    /// It needs **no ephemeris**: both charts are already founded.
+    ///
+    /// # Errors
+    ///
+    /// A `completed_years` past two hundred, named `completed_years`; an
+    /// annual chart that places no Sun or no Moon.
+    pub fn office_bearers(
+        self,
+        natal: &Document,
+        annual: &Document,
+        completed_years: u16,
+    ) -> Result<OfficeBearers, Error> {
+        let year = &annual.foundation;
+        let at = |graha: Graha| {
+            year.graha(graha)
+                .map(|placed| placed.longitude_deg)
+                .ok_or_else(|| Error::internal(format!("a founded chart places {graha:?}")))
+        };
+        teistro_tajika::office_bearers(&YearCharts {
+            natal_lagna_deg: natal.foundation.lagna_deg,
+            completed_years,
+            annual_lagna_deg: year.lagna_deg,
+            annual_sun_deg: at(Graha::Sun)?,
+            annual_moon_deg: at(Graha::Moon)?,
+            by_day: year.day.part.is_daylight(),
+        })
     }
 
     /// The Sun where it stood at birth, in both zodiacs, as a return needs

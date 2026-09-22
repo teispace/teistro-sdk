@@ -30,9 +30,11 @@
 #![doc(html_no_source)]
 
 mod muntha;
+mod office;
 mod varsha;
 
 pub use muntha::{DAILY_DEG, MONTHLY_DEG, Muntha, MunthaDegree, muntha};
+pub use office::{Office, OfficeBearers, YearCharts, office_bearers, tri_rashi_lord};
 pub use varsha::{
     MOST_YEARS, Natal, Pravesha, Reading, SIDEREAL_YEAR_DAYS, STEP_DAYS, mean_praveshas, praveshas,
     years,

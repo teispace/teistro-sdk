@@ -218,3 +218,111 @@ fn a_year_that_cannot_be_reached_is_refused_by_name() {
         "{refused:?}"
     );
 }
+
+/// The source's own worked year, end to end through the façade: birth,
+/// return, annual chart and its five office-bearers (K.S. Charak, *A
+/// Textbook of Varshaphala*, Chart III-1, a birth at Bombay on 20 August
+/// 1944 at 07:11 IST, and its annual chart for the forty-first year).
+///
+/// The source steps the years by the **mean** sidereal year — its
+/// Dhruvanka of 1d 6h 6m 29s for forty years is forty mean years modulo
+/// a week — so it is [`Reading::Mean`] that must land on its 13:17:29
+/// IST, and the true return is the one it says "may differ by a few
+/// minutes". Its positions are **geocentric**: under the topocentric
+/// conformance profile its Moon is 58′ out, which is the Moon's
+/// parallax, and under the text-cited default it is 3′. The bounds are
+/// what it prints — whole arcminutes and seconds — with that margin.
+#[test]
+fn the_sources_worked_year_reproduces_end_to_end() {
+    let sdk = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("the default profile, which is geocentric as the source is");
+    let bombay = ChartRequest::at(
+        Place::new(
+            Latitude::try_new(18.0 + 58.0 / 60.0).unwrap(),
+            Longitude::try_new(72.0 + 50.0 / 60.0).unwrap(),
+            Altitude::try_new(11.0).unwrap(),
+        ),
+        UtcOffset::try_from_seconds(19_800).unwrap(),
+    );
+    let arcmin = |deg: f64, sign: f64, degrees: f64, minutes: f64| {
+        (deg - (sign * 30.0 + degrees + minutes / 60.0)) * 60.0
+    };
+    // 07:11 IST is 01:41 UTC.
+    let birth = sdk
+        .chart()
+        .reading(JulianDay::<Utc>::literal(2_431_322.570_138_889), &bombay)
+        .unwrap()
+        .value;
+    assert!(
+        arcmin(birth.foundation.lagna_deg, 4.0, 14.0, 36.0).abs() < 2.0,
+        "Leo 14°36′"
+    );
+
+    let mean = sdk.chart().praveshas(&birth, Reading::Mean, 40).unwrap()[39];
+    let ist_hours = (mean.at.get() + 0.5 + 5.5 / 24.0).fract() * 24.0;
+    let printed = 13.0 + 17.0 / 60.0 + 29.0 / 3600.0;
+    assert!(
+        (ist_hours - printed).abs() * 3600.0 < 3.0,
+        "13:17:29 IST, got {ist_hours}h"
+    );
+
+    let annual = sdk.chart().reading(mean.at, &bombay).unwrap().value;
+    let year = &annual.foundation;
+    let placed = |graha| year.graha(graha).unwrap().longitude_deg;
+    assert!(
+        arcmin(year.lagna_deg, 7.0, 9.0, 26.0).abs() < 3.0,
+        "Scorpio 9°26′"
+    );
+    assert!(
+        arcmin(placed(Graha::Sun), 4.0, 3.0, 50.0).abs() < 2.0,
+        "Leo 3°50′"
+    );
+    assert!(
+        arcmin(placed(Graha::Moon), 1.0, 9.0, 40.0).abs() < 5.0,
+        "Taurus 9°40′"
+    );
+    assert!(year.day.part.is_daylight());
+
+    let five = sdk.chart().office_bearers(&birth, &annual, 40).unwrap();
+    assert_eq!(
+        [
+            five.muntha,
+            five.janma_lagna,
+            five.varsha_lagna,
+            five.tri_rashi,
+            five.dina_ratri
+        ],
+        [
+            Graha::Jupiter,
+            Graha::Sun,
+            Graha::Mars,
+            Graha::Mars,
+            Graha::Sun
+        ],
+        "the source's five: Muntha, Janma Lagna, Varsha Lagna, Tri-Rashi, Dina-Ratri"
+    );
+
+    // The true return is the "few minutes" the source sets aside — the
+    // Sun's own perturbations, which it names — and here it moves none of
+    // the five. Measured: 0.83 minutes on this profile's **mean**
+    // ayanamsha; about 4.8 on the conformance profile's **nutated** one,
+    // the difference being nutation, which the source does not apply. So
+    // the bound is the source's claim, a nonzero gap of minutes, and not
+    // a figure of its own.
+    let true_return = sdk
+        .chart()
+        .praveshas(&birth, Reading::Sidereal, 40)
+        .unwrap()[39];
+    let minutes = (true_return.at.get() - mean.at.get()) * 1440.0;
+    assert!(
+        minutes.abs() > 0.0 && minutes.abs() < 15.0,
+        "{minutes} minutes"
+    );
+    let annual = sdk.chart().reading(true_return.at, &bombay).unwrap().value;
+    assert_eq!(
+        sdk.chart().office_bearers(&birth, &annual, 40).unwrap(),
+        five
+    );
+}
