@@ -374,16 +374,20 @@ are the whole cost: a bhava's quadrant, a longevity tier, a strength
 band are computed and are not catalogue members, so a message would have
 to name each in words no locale here has been given (`state-readings.md`
 §8). The question a new composer asks is often not whether the SDK
-knows the fact but whether the model reached the catalogue.
+knows the fact but whether the model reached the catalogue — and
+[Q38](../QUESTIONS.md) sharpened even that: a kind is a **key space**,
+so where a corpus is what would supply the words, the question is
+whether it keys by the vocabulary the SDK computes.
 
 **It is not the only question, and this page used to say it was.** The
 sentence here read "the silences that remain are all of that kind",
 which was a claim about a set the repository owns, written once and
-believed after. Six of the eleven sections a chart document can carry
-have no composer at all, and only two of the six are waiting on a name:
-the others are waiting on a decision about *which* number deserves a
-sentence, or on a knob, or on nothing but the work. They are enumerated
-above with a reason each, which is where a claim of that shape belongs.
+believed after. The sections with no composer are named in the table
+above with a reason each — `POINTS` and `VAISESHIKAMSA` — and they
+are not of one kind: a name, a decision about *which* number deserves a
+sentence, a knob, or nothing but the work. Naming them rather than
+counting them is the point, because the sentence that counted them said
+**six** for as long as it took to build four of them.
 
 ## What a native reviewer has to read
 

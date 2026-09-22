@@ -1607,6 +1607,29 @@ fn sections_agree(declared: &BTreeSet<&str>) -> Result<(), String> {
     Ok(())
 }
 
+/// The sections `SECTION_SAYS` gives no composer, named.
+///
+/// **Named and not counted**, and read from the table rather than
+/// written beside it: two paragraphs of this page each counted them in
+/// prose, and each said a number that a composer built the same week
+/// made wrong.
+fn sections_with_no_composer() -> Vec<String> {
+    SECTION_SAYS
+        .iter()
+        .filter(|(_, composers, _, _)| composers.is_empty())
+        .map(|(name, _, _, _)| format!("`{name}`"))
+        .collect()
+}
+
+/// A list of names as a sentence reads them, or a phrase for none.
+fn named_or_none(names: &[String], none: &str) -> String {
+    if names.is_empty() {
+        String::from(none)
+    } else {
+        names.join(" and ")
+    }
+}
+
 fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
     let text = std::fs::read_to_string(root.join(SECTIONS_SOURCE))
         .map_err(|why| format!("{SECTIONS_SOURCE}: {why}"))?;
@@ -1624,13 +1647,7 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
         .iter()
         .filter(|(_, _, _, kinds)| !kinds.is_empty())
         .count();
-    // Named, not counted: a list of what is left cannot name a row that
-    // has since been built, and a count cannot be checked by a reader.
-    let unsaid: Vec<String> = SECTION_SAYS
-        .iter()
-        .filter(|(_, composers, _, _)| composers.is_empty())
-        .map(|(name, _, _, _)| format!("`{name}`"))
-        .collect();
+    let unsaid = sections_with_no_composer();
     out.push_str("## Every section, and what says it\n\n");
     let _ = write!(
         out,
@@ -1658,11 +1675,7 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
         count(said),
         count(SECTION_SAYS.len()),
         count(partly),
-        if unsaid.is_empty() {
-            String::from("there are none")
-        } else {
-            unsaid.join(" and ")
-        },
+        named_or_none(&unsaid, "there are none"),
         count(sourcing),
     );
     for (name, composers, why, _) in SECTION_SAYS {
@@ -1875,7 +1888,8 @@ fn coverage(out: &mut String, tree: &Tree) {
     }
     out.push('\n');
     if unaccounted.is_empty() {
-        out.push_str(
+        let _ = write!(
+            out,
             "No message is unaccounted for: every one either has a composer \
              or has a reason. **So a further composer needs a key that does \
              not exist yet**, as every one since the fifth has: the drishti, \
@@ -1890,19 +1904,24 @@ fn coverage(out: &mut String, tree: &Tree) {
              a bhava's quadrant, a longevity tier, a strength band are \
              computed and are not catalogue members, so a message would \
              have to name each in words no locale here has been given \
-             (`state-readings.md` §8). The question a new composer asks is \
-             often not whether the SDK knows the fact but whether the \
-             model reached the catalogue.\n\n\
+             (`state-readings.md` §8). The question a new composer asks \
+             is often not whether the SDK knows the fact but whether the \
+             model reached the catalogue — and [Q38](../QUESTIONS.md) \
+             sharpened even that: a kind is a **key space**, so where a \
+             corpus is what would supply the words, the question is \
+             whether it keys by the vocabulary the SDK computes.\n\n\
              **It is not the only question, and this page used to say it \
              was.** The sentence here read \"the silences that remain are \
              all of that kind\", which was a claim about a set the \
-             repository owns, written once and believed after. Six of the \
-             eleven sections a chart document can carry have no composer \
-             at all, and only two of the six are waiting on a name: the \
-             others are waiting on a decision about *which* number \
-             deserves a sentence, or on a knob, or on nothing but the \
-             work. They are enumerated above with a reason each, which is \
-             where a claim of that shape belongs.\n\n",
+             repository owns, written once and believed after. The \
+             sections with no composer are named in the table above with \
+             a reason each — {} — and they are not of one kind: a name, \
+             a decision about *which* number deserves a sentence, a knob, \
+             or nothing but the work. Naming them rather than counting \
+             them is the point, because the sentence that counted them \
+             said **six** for as long as it took to build four of \
+             them.\n\n",
+            named_or_none(&sections_with_no_composer(), "there are none left"),
         );
     } else {
         for key in unaccounted {
