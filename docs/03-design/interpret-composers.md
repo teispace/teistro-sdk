@@ -59,6 +59,19 @@ worth deciding once there is more than one composer to carry.
   measured over the corpus is **coverage**: run the composers over every
   recorded chart and count what they say, what they cannot say, and what
   would fall back.
+- **And what nothing says at all.** A composer says a *section* or it says
+  a placement, and the sections are what a chart request asks for by name.
+  Six of the eleven a document can carry have **no composer** —
+  `POINTS`, `ASHTAKAVARGA`, `VIMSHOPAKA`, `BHAVA_BALA`, `VAISESHIKAMSA`
+  and `DASHA_PHALA` — and the measured page enumerates them with the
+  reason for each, read from the source that declares the sections so a
+  twelfth cannot be forgotten. That table is this design's remaining
+  queue, and it replaces the sentence the page used to carry: *"the
+  silences that remain are all of that kind"*, which was true of the
+  messages it was counting and not of the sections nobody had counted.
+  Only two of the six are waiting on a **name**; the others wait on a
+  decision about which number deserves a sentence, on a knob, or on
+  nothing but the work.
 - **The façade's reading types are the façade's.** `RulesReading` and
   `Present` live in `crates/sdk`, so a composer taking them would put
   `interpret` above the façade and invert the crate graph. Composers take the

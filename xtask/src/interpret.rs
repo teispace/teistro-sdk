@@ -909,6 +909,184 @@ const SPARE: [(&str, &str); 7] = [
     ),
 ];
 
+/// Where the chart document's own list of sections is declared, which this
+/// page reads rather than restates.
+const SECTIONS_SOURCE: &str = "crates/sdk/src/reading.rs";
+
+/// Every section a chart document can carry, and either the composer that
+/// says it or the reason none does.
+///
+/// **This is the queue the composers work through, and it was prose
+/// before.** The page used to say that the silences left were all of one
+/// kind — a computed value with no catalogue member — and that was a claim
+/// written once and believed after. It is not the whole truth: five of the
+/// eleven sections a document can carry have **no composer at all**, and
+/// the reason differs for each. A section here with no composer and no
+/// reason fails, a reason for a section that has gained a composer fails,
+/// and a section this list does not name fails, so the queue cannot rot
+/// into a sentence again.
+///
+/// The composer named must be a member of `PlanRequest`, which is the
+/// other half: a composer renamed would otherwise leave a section looking
+/// answered.
+const SECTION_SAYS: [(&str, &str, &str); 11] = [
+    ("PANCHANGA", "phala", ""),
+    ("STATE", "conditions", ""),
+    ("ASPECTS", "aspects", ""),
+    (
+        "POINTS",
+        "",
+        "\
+        the five upagrahas and the special lagnas are points with \
+        longitudes, and `positions` says a **graha's** degree in the same \
+        sentence a point's would need — but five of the state corpus's \
+        `special-lagna` readings land on records the base locale does not \
+        name, because `entity-names.md` §4 refuses a translated stub and \
+        those kinds have no vetted table. The name comes before the \
+        sentence",
+    ),
+    ("HOUSES", "houses", ""),
+    (
+        "ASHTAKAVARGA",
+        "",
+        "\
+        a bindu count is twelve numbers a graha and one more row for their \
+        sum: a **table** rather than a sentence, and the sentence a \
+        consumer would want (`the Sun has five bindus in Aries`) is a \
+        fragment of the `exactLongitude` kind this page already declines. \
+        Which of its numbers deserves a sentence — a sign's sarva, a \
+        graha's pinda — is undecided rather than missing",
+    ),
+    (
+        "VIMSHOPAKA",
+        "",
+        "\
+        the same shape as the Shadbala, and `sdk.reason.strength.score` \
+        would say it unchanged — but under **four schemes at once**, and \
+        which scheme a plan says is a knob nobody has asked for. One \
+        composer saying all four would say the same graha four times",
+    ),
+    ("SHADBALA", "strength", ""),
+    (
+        "BHAVA_BALA",
+        "",
+        "\
+        a bhava's strength in rupas, which is `strength`'s own pair of \
+        messages with a bhava where the graha is. `score` and `meets` both \
+        take a `graha` slot, so a bhava needs its own two, and a bhava's \
+        *requirement* is not the graha rule the texts state — that is the \
+        decision, not the message",
+    ),
+    (
+        "VAISESHIKAMSA",
+        "",
+        "\
+        the **cheapest of the five**: the names a graha earns by its good \
+        vargas are catalogue members (`Kind::Vaiseshikamsa`, 63), so \
+        `sdk.entity` already says them in all five locales and the frame \
+        is the whole cost",
+    ),
+    (
+        "DASHA_PHALA",
+        "",
+        "\
+        what a placement says of that graha's dasha. Its `nature` is a \
+        catalogue member and free; its phase — at the dasha's \
+        commencement, in its middle, at its end — and whether the \
+        placement makes the dasha favourable are **not**, so the words are \
+        the cost. It is the section the state corpus is waiting on: \
+        `dasha-lord-effect` and `dasha-lord-activation`, 18 readings, key \
+        onto a graha as a dasha lord and have no composer to attach to",
+    ),
+];
+
+/// Every section the document declares, and what says it.
+///
+/// The list of sections is read from the source that declares them, so a
+/// twelfth added to `Sections` and left out of [`SECTION_SAYS`] fails here
+/// rather than going unnoticed.
+fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
+    let text = std::fs::read_to_string(root.join(SECTIONS_SOURCE))
+        .map_err(|why| format!("{SECTIONS_SOURCE}: {why}"))?;
+    let declared: BTreeSet<&str> = text
+        .lines()
+        .filter_map(|line| line.trim().strip_prefix("pub(crate) const "))
+        .filter_map(|rest| rest.split_once(": Sections"))
+        .map(|(name, _)| name)
+        // `const fn has(self, one: Sections)` splits the same way, so a
+        // section is recognised by its name's own shape.
+        .filter(|name| {
+            !name.is_empty()
+                && name
+                    .bytes()
+                    .all(|byte| byte.is_ascii_uppercase() || byte == b'_')
+        })
+        .collect();
+    let listed: BTreeSet<&str> = SECTION_SAYS.iter().map(|(name, _, _)| *name).collect();
+    for name in &declared {
+        if !listed.contains(name) {
+            return Err(format!(
+                "`Sections::{name}` is declared in {SECTIONS_SOURCE} and SECTION_SAYS does not name it"
+            ));
+        }
+    }
+    for (name, composer, why) in SECTION_SAYS {
+        if !declared.contains(name) {
+            return Err(format!(
+                "SECTION_SAYS names `{name}` and {SECTIONS_SOURCE} declares no such section"
+            ));
+        }
+        if composer.is_empty() == why.is_empty() {
+            return Err(format!(
+                "`{name}` needs a composer or a reason there is none, and has {}",
+                if why.is_empty() { "neither" } else { "both" }
+            ));
+        }
+        if !composer.is_empty() && !teistro::PlanRequest::MEMBERS.contains(&composer) {
+            return Err(format!(
+                "`{name}` is said by `{composer}`, which is not a member of PlanRequest"
+            ));
+        }
+    }
+
+    let said = SECTION_SAYS
+        .iter()
+        .filter(|(_, composer, _)| !composer.is_empty())
+        .count();
+    out.push_str("## Every section, and what says it\n\n");
+    let _ = write!(
+        out,
+        "A composer says a **section** or it says a placement, and the \
+         sections are what a chart request asks for by name. {} of the {} \
+         a document can carry have a composer; the rest carry the reason \
+         they do not, because \"the silences left are all of one kind\" is \
+         exactly the sentence this page had and exactly the sentence that \
+         was not true. The list is read from the source that declares the \
+         sections, so a twelfth fails here rather than being forgotten, \
+         and a composer named must be a member of `PlanRequest`.\n\n\
+         | section | said by | why not |\n|---|---|---|\n",
+        count(said),
+        count(SECTION_SAYS.len()),
+    );
+    for (name, composer, why) in SECTION_SAYS {
+        let by = if composer.is_empty() {
+            String::from("—")
+        } else {
+            format!("`{composer}`")
+        };
+        let reason = if why.is_empty() { "—" } else { why };
+        let _ = writeln!(out, "| `{name}` | {by} | {reason} |");
+    }
+    out.push('\n');
+    out.push_str(&table(&[Claim::counted(
+        "every section a chart document can carry has a composer, or a reason here that it has none",
+        0,
+        SECTION_SAYS.len(),
+    )]));
+    out.push('\n');
+    Ok(())
+}
+
 /// Every message the base locale carries, and which composer reads it.
 ///
 /// This is where the composers' coverage of the packs is decided rather
@@ -977,14 +1155,23 @@ fn coverage(out: &mut String, tree: &Tree) {
              sentence.** Where the thing being said is a catalogue member, \
              `sdk.entity` already names it in all five locales and only the \
              frame had to be written — a dignity, a rashi, a point, two \
-             chara karakas. Where it is not, the words are the whole cost, \
-             and the silences that remain are all of that kind: a bhava's \
-             quadrant, a longevity tier, a strength band are computed and \
-             are not catalogue members, so a message would have to name each \
-             in words no locale here has been given \
+             chara karakas. Where it is not, the words are the whole cost: \
+             a bhava's quadrant, a longevity tier, a strength band are \
+             computed and are not catalogue members, so a message would \
+             have to name each in words no locale here has been given \
              (`state-readings.md` §8). The question a new composer asks is \
-             not whether the SDK knows the fact but whether the model \
-             reached the catalogue.\n\n",
+             often not whether the SDK knows the fact but whether the \
+             model reached the catalogue.\n\n\
+             **It is not the only question, and this page used to say it \
+             was.** The sentence here read \"the silences that remain are \
+             all of that kind\", which was a claim about a set the \
+             repository owns, written once and believed after. Six of the \
+             eleven sections a chart document can carry have no composer \
+             at all, and only two of the six are waiting on a name: the \
+             others are waiting on a decision about *which* number \
+             deserves a sentence, or on a knob, or on nothing but the \
+             work. They are enumerated above with a reason each, which is \
+             where a claim of that shape belongs.\n\n",
         );
     } else {
         for key in unaccounted {
@@ -1142,6 +1329,8 @@ fn page(root: &Path) -> Result<String, String> {
     unsaid_houses(&mut out, root, &plans);
 
     the_rest_of_a_placement(&mut out, &plans);
+
+    every_section(&mut out, root)?;
 
     coverage(&mut out, &tree);
 

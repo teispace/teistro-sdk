@@ -192,6 +192,35 @@ arms to go stale: 10 of the catalogue's 11 dignities occur in these
 charts (no chart records DEEP_EXALTED), and a locale carrying nothing
 but `sdk.entity` renders each one's own word.
 
+## Every section, and what says it
+
+A composer says a **section** or it says a placement, and the sections
+are what a chart request asks for by name. 5 of the 11 a document can
+carry have a composer; the rest carry the reason they do not, because
+"the silences left are all of one kind" is exactly the sentence this
+page had and exactly the sentence that was not true. The list is read
+from the source that declares the sections, so a twelfth fails here
+rather than being forgotten, and a composer named must be a member of
+`PlanRequest`.
+
+| section | said by | why not |
+|---|---|---|
+| `PANCHANGA` | `phala` | — |
+| `STATE` | `conditions` | — |
+| `ASPECTS` | `aspects` | — |
+| `POINTS` | — | the five upagrahas and the special lagnas are points with longitudes, and `positions` says a **graha's** degree in the same sentence a point's would need — but five of the state corpus's `special-lagna` readings land on records the base locale does not name, because `entity-names.md` §4 refuses a translated stub and those kinds have no vetted table. The name comes before the sentence |
+| `HOUSES` | `houses` | — |
+| `ASHTAKAVARGA` | — | a bindu count is twelve numbers a graha and one more row for their sum: a **table** rather than a sentence, and the sentence a consumer would want (`the Sun has five bindus in Aries`) is a fragment of the `exactLongitude` kind this page already declines. Which of its numbers deserves a sentence — a sign's sarva, a graha's pinda — is undecided rather than missing |
+| `VIMSHOPAKA` | — | the same shape as the Shadbala, and `sdk.reason.strength.score` would say it unchanged — but under **four schemes at once**, and which scheme a plan says is a knob nobody has asked for. One composer saying all four would say the same graha four times |
+| `SHADBALA` | `strength` | — |
+| `BHAVA_BALA` | — | a bhava's strength in rupas, which is `strength`'s own pair of messages with a bhava where the graha is. `score` and `meets` both take a `graha` slot, so a bhava needs its own two, and a bhava's *requirement* is not the graha rule the texts state — that is the decision, not the message |
+| `VAISESHIKAMSA` | — | the **cheapest of the five**: the names a graha earns by its good vargas are catalogue members (`Kind::Vaiseshikamsa`, 63), so `sdk.entity` already says them in all five locales and the frame is the whole cost |
+| `DASHA_PHALA` | — | what a placement says of that graha's dasha. Its `nature` is a catalogue member and free; its phase — at the dasha's commencement, in its middle, at its end — and whether the placement makes the dasha favourable are **not**, so the words are the cost. It is the section the state corpus is waiting on: `dasha-lord-effect` and `dasha-lord-activation`, 18 readings, key onto a graha as a dasha lord and have no composer to attach to |
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| every section a chart document can carry has a composer, or a reason here that it has none | **holds** | 0 of 11 disagree |
+
 ## What the packs carry, and what reads it
 
 40 of the 47 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
@@ -216,12 +245,20 @@ a bhava's sign, the chalit's disagreement.
 Where the thing being said is a catalogue member, `sdk.entity` already
 names it in all five locales and only the frame had to be written — a
 dignity, a rashi, a point, two chara karakas. Where it is not, the words
-are the whole cost, and the silences that remain are all of that kind: a
-bhava's quadrant, a longevity tier, a strength band are computed and are
-not catalogue members, so a message would have to name each in words no
-locale here has been given (`state-readings.md` §8). The question a new
-composer asks is not whether the SDK knows the fact but whether the
-model reached the catalogue.
+are the whole cost: a bhava's quadrant, a longevity tier, a strength
+band are computed and are not catalogue members, so a message would have
+to name each in words no locale here has been given (`state-readings.md`
+§8). The question a new composer asks is often not whether the SDK
+knows the fact but whether the model reached the catalogue.
+
+**It is not the only question, and this page used to say it was.** The
+sentence here read "the silences that remain are all of that kind",
+which was a claim about a set the repository owns, written once and
+believed after. Six of the eleven sections a chart document can carry
+have no composer at all, and only two of the six are waiting on a name:
+the others are waiting on a decision about *which* number deserves a
+sentence, or on a knob, or on nothing but the work. They are enumerated
+above with a reason each, which is where a claim of that shape belongs.
 
 ## One chart, said
 
