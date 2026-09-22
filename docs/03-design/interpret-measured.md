@@ -217,6 +217,24 @@ arms to go stale: 10 of the catalogue's 11 dignities occur in these
 charts (no chart records DEEP_EXALTED), and a locale carrying nothing
 but `sdk.entity` renders each one's own word.
 
+## What a reader of each locale gets
+
+Of the founded chart's plan, how many items each shipped locale answers
+**from its own messages** rather than falling back. The roster puts
+three locales at `base` until their messages are translated, which is a
+flag; this is what the flag costs a reader. It is not all-or-nothing: an
+item is a frame around **entity slots**, and those are named in every
+shipped locale, so a reader at `base` gets the grahas, rashis and
+nakshatras in their own script inside an English sentence.
+
+| locale | completeness | items from its own messages |
+|---|---|---:|
+| `en-Latn` | `strict` | 393 of 393 |
+| `hi-Deva-IN` | `base` | 0 of 393 |
+| `ne-Deva-NP` | `strict` | 393 of 393 |
+| `sa-Deva` | `base` | 0 of 393 |
+| `sa-Latn` | `base` | 0 of 393 |
+
 ## Every key, emitted at least once
 
 The table above counts what the **recorded corpus** exercises, and it

@@ -53,7 +53,12 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   namespace holds messages. The SDK ships five locales: `en-Latn` (the
   base) and `ne-Deva-NP` at `strict` completeness, `hi-Deva-IN`,
   `sa-Deva` and `sa-Latn` at `base` completeness until their messages are
-  translated; `hi-Deva-IN` and `sa-Deva` came whole from the baseline
+  translated — **what that costs a reader is measured** rather than left
+  as a flag, on `interpret-measured.md`: of one founded chart's plan the
+  two strict locales answer every item from their own messages and the
+  other three answer none, though the **entity slots inside** those items
+  are named in all five, so a Hindi reader gets the grahas, rashis and
+  nakshatras in Devanagari inside an English sentence; `hi-Deva-IN` and `sa-Deva` came whole from the baseline
   engine's name tables (`teistro-intl migrate baseline`, below),
   `en-Latn` and `ne-Deva-NP` gained the same tables under their
   hand-shaped records, and `sa-Latn` is derived from `sa-Deva` by

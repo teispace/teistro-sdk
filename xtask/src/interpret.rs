@@ -1180,6 +1180,69 @@ fn the_founded_plan(sdk: &teistro::Context) -> Result<Plan, String> {
     Ok(plan)
 }
 
+/// What a reader of **each shipped locale** gets of one composed plan.
+///
+/// `strict` completeness is gated and the other locales are not, which is
+/// a fact the roster states — `hi-Deva-IN`, `sa-Deva` and `sa-Latn` are at
+/// `base` "until their messages are translated" — but until now it was
+/// only a flag. What it *costs a reader* is measurable, and it is not
+/// all-or-nothing: an item is a message frame around **entity slots**, and
+/// those slots are named in every shipped locale, so a reader at `base`
+/// gets the grahas, the rashis and the nakshatras in their own script
+/// inside an English sentence.
+///
+/// This table is what a consumer would want before choosing a locale, and
+/// what the translation work would be measured against.
+fn what_each_reader_gets(
+    out: &mut String,
+    sdk: &teistro::Context,
+    plan: &Plan,
+    root: &Path,
+) -> Result<(), String> {
+    let tree = Tree::load(&root.join("i18n")).map_err(|err| err.to_string())?;
+    let mut rows: Vec<(String, &'static str, usize, usize)> = Vec::new();
+    for locale in tree.locales.values() {
+        let completeness = if locale.meta.completeness == Completeness::Strict {
+            "strict"
+        } else {
+            "base"
+        };
+        sdk.intl()
+            .set_locale(&locale.tag)
+            .map_err(|why| format!("{}: {why}", locale.tag))?;
+        let mut own = 0usize;
+        for item in &plan.items {
+            let said = sdk.intl().render(&item.key, &item.params);
+            if said.resolved_from.as_deref() == Some(locale.tag.as_str()) {
+                own += 1;
+            }
+        }
+        rows.push((locale.tag.clone(), completeness, own, plan.items.len()));
+    }
+    out.push_str("## What a reader of each locale gets\n\n");
+    out.push_str(
+        "Of the founded chart's plan, how many items each shipped locale \
+         answers **from its own messages** rather than falling back. The \
+         roster puts three locales at `base` until their messages are \
+         translated, which is a flag; this is what the flag costs a \
+         reader. It is not all-or-nothing: an item is a frame around \
+         **entity slots**, and those are named in every shipped locale, \
+         so a reader at `base` gets the grahas, rashis and nakshatras in \
+         their own script inside an English sentence.\n\n\
+         | locale | completeness | items from its own messages |\n|---|---|---:|\n",
+    );
+    for (tag, completeness, own, total) in &rows {
+        let _ = writeln!(
+            out,
+            "| `{tag}` | `{completeness}` | {} of {} |",
+            count(*own),
+            count(*total)
+        );
+    }
+    out.push('\n');
+    Ok(())
+}
+
 /// That every key a composer can emit is emitted by that one chart, and
 /// that every item of it is said in each strict locale.
 fn every_key_is_emitted(out: &mut String, root: &Path, strict: &[String]) -> Result<(), String> {
@@ -1237,6 +1300,8 @@ fn every_key_is_emitted(out: &mut String, root: &Path, strict: &[String]) -> Res
             rendered += 1;
         }
     }
+
+    what_each_reader_gets(out, &sdk, &plan, root)?;
 
     out.push_str("## Every key, emitted at least once\n\n");
     let _ = write!(
