@@ -1,9 +1,10 @@
 # How accurate the Moon has to be, measured
 
-Status: `generated` by `cargo xtask moon`. Do not edit. The rates are
-the SDK's own catalogued extremes (`astro::events::quantity_least_rate`,
-the table the search grid is sized from) and the arithmetic over them is
-exact; the Sun's error is measured and recorded in
+Status: `generated` by `cargo xtask moon`, held by `check-moon`. Do not
+edit. The rates are the SDK's own catalogued extremes
+(`astro::events::quantity_least_rate`, the table the search grid is
+sized from) and the arithmetic over them is exact; the Sun's error is
+measured and recorded in
 `crates/ephemeris-builtin/data/vsop87-floor.json`.
 
 Phase 3 must choose a lunar theory, and the research page says the tiers

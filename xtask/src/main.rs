@@ -381,6 +381,7 @@ fn main() {
         ),
         Some("chebyshev") => chebyshev::generate(&repo_root(), args.get(1).map(String::as_str)),
         Some("moon") => moon::generate(&repo_root()),
+        Some("check-moon") => moon::check_generated(&repo_root()),
         Some("vsop") => vsop::generate(&repo_root(), args.get(1).map(String::as_str)),
         Some("check-versions") => release::check(&repo_root()),
         Some("check-package") => consumer::check(&repo_root()),

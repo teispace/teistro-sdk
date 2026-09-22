@@ -45,7 +45,25 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-22 (**the no-dead-ends rule is a check now**:
+**Last updated:** 2026-09-22 (**two generated pages were held by
+nothing, and the audit that found them is the interesting part**. The
+repository's discipline is that a measured number is regenerated and
+compared, so it cannot rot — which holds for as long as something
+regenerates it, and *nothing checked that anything did*. So all 36
+`*-measured.md` pages were corrupted at once and the whole fast check
+run to see which nobody noticed: **two**.
+`builtin-ephemeris-measured.md` says on its own first line that there is
+no `check-vsop` yet and why, which is an inventory rather than a
+silence. `lunar-accuracy-measured.md` said only *"Do not edit"* — a
+request, not a check — and is **0.07 seconds** to regenerate from
+catalogued tables, so its absence was an oversight. It has `check-moon`
+now, wired into the fast check, which is 50 gates. And the class is
+held: `generated-page-is-gated` requires every page to **name** the gate
+that holds it, which must exist in `xtask`, or to say in as many words
+that it has none — both ways proved red. Its first run reported the one
+page that was already being honest, because it read *"there is no
+`check-vsop`"* as a claim; the lint learned to read a negation. Before
+it, **the no-dead-ends rule is a check now**:
 every composer asked for **alone** must answer, or be listed with the
 reason it cannot. A `PlanRequest` member is a promise that asking for it
 gets you something and that the section it reads is computed for it, and
@@ -3529,6 +3547,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-22 | **Two generated pages were held by nothing, and the audit that found them is the interesting part.** The discipline everywhere here is that a measured number is regenerated and compared, so it cannot rot. That holds for as long as something regenerates it — and nothing checked that anything did. Rather than reason about it, all 36 `*-measured.md` pages were **corrupted at once** and the whole fast check run to see which ones nobody noticed: two. `builtin-ephemeris-measured.md` says on its first line that there is no `check-vsop` yet and why the gate waits for the truncated tables, which is an inventory rather than a silence. `lunar-accuracy-measured.md` said only *"Do not edit"*, which is a request and not a check, and regenerates in **0.07 seconds** from catalogued tables and two recorded JSON files — an oversight, not a decision. `check-moon` now holds it and fast-check runs 50 gates. The class is held by `generated-page-is-gated`: a page must **name** the gate that holds it, and that gate must exist in `xtask`, or the page must say in as many words that it has none. Proved red both ways. Two bugs of my own on its first run are worth recording — it could not see a gate whose passes row `rustfmt` had wrapped, and it read the honest page's *"there is no `check-vsop`"* as a claim that one exists. A lint that parses prose has to be able to read a negation. |
 | 2026-09-22 | **The maintainer's no-dead-ends rule is a check now.** Every composer asked for **alone** must answer, or be listed with the reason it cannot. A `PlanRequest` member is a promise that asking for it gets you something and that the section it reads is computed for it; `sections_for` is the one place that mapping lives and nothing held it. **Alone and one at a time**, because asking for several together hides a missing section behind a sibling's — `strength` and `houses` each bring the states four other composers read, so a member whose own section was forgotten still answers in company. Only `phala` is listed, for saying what a *loaded* corpus carries where that context loads none, and the list fails both ways: it refused my guess that `chalit` would be silent, the fourth exception I guessed wrong today. **What it does not catch is written beside it**, because a new gate is tempting to believe covers the bug that prompted it — the almanac dead end had its section asked for and the document's panchanga never turned into the birth's limbs, so `phala` returned an empty plan this very test excuses; the every-key pass is what catches that. *Can it be asked for* and *does it ever say anything* are two questions. Also: `ASHTAKAVARGA`, the last row called a decision, **stayed one** when its sources were read — the design page measures its arithmetic against BPHS chs. 66 to 69 and says nothing about which of eighty-four numbers a reading quotes — where the other three rows all dissolved. Checking beat believing in both directions today. |
 | 2026-09-22 | **A settled question sat on the list of what remains, and so did a repository that has existed for weeks.** Q24's mailboxes were chosen long ago and the item stayed under `## Next`; the same list asked the maintainer to *create* `teispace/teistro-conformance`, which has been a submodule at `fixtures/` pinned to `v0.11.0` for several releases. `open-question-is-named` grew a second direction: a question marked **decided** may not be named in `## How to resume` or in `## Next`, as well as an open one having to be named in the first. It caught a third instance the moment it ran — **Q39, which I had put in the resume step myself while it was open and which this session then decided**. Both directions belong in one rule, because the rule that puts a question on the list is the one that has to take it off. Proved red both ways, and my own explanatory mention of Q39 tripped it: reworded rather than exempted, because an exemption is where a lint starts to rot. |
 | 2026-09-22 | **The example a consumer reads first said there are seven composers. There are fifteen.** Same rot as the crate table, the corpus size and the open-question count, and this time in `crates/sdk/examples/interpretation.rs` — the first thing a consumer reads — with `crates/interpret/README.md` saying *"the plan and eight composers"* and the module catalogue saying the same. A fourth, in the ABI test, claimed one section serves four composers where it now serves six. Fixed the way the lesson says: the count is **removed** rather than updated, and the prose points at `PlanRequest::MEMBERS`, which is the authority and cannot go stale. The module catalogue keeps its description of the first eight and says so — that entry is a record of where the shape was decided, not a list of what exists. |

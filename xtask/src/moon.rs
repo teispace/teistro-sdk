@@ -41,7 +41,7 @@ use std::path::Path;
 use teistro_astro::events::{Quantity, quantity_least_rate};
 use teistro_port_ephemeris::Body;
 
-use crate::generated::{Output, write};
+use crate::generated::{Output, check, write};
 use crate::measure::{Claim, count, fill, table, verdict_of};
 
 /// A byte count as kilobytes. The cast is exact: a coefficient table is
@@ -194,21 +194,36 @@ struct FitRecord {
 /// Where the Chebyshev sizing study is recorded.
 const FIT: &str = "crates/ephemeris-builtin/data/moon-chebyshev.json";
 
-/// Writes the page.
-pub(crate) fn generate(root: &Path) -> i32 {
+/// The page, as the generator would write it now.
+fn outputs(root: &Path) -> Vec<Output> {
     let moon = std::fs::read_to_string(root.join(MOON_FLOOR))
         .ok()
         .and_then(|text| serde_json::from_str::<MoonFloor>(&text).ok());
     let fitted = std::fs::read_to_string(root.join(FIT))
         .ok()
         .and_then(|text| serde_json::from_str::<FitRecord>(&text).ok());
-    write(
-        root,
-        &[Output::new(
-            PAGE,
-            page(solar_error_arcsec(root), moon.as_ref(), fitted.as_ref()),
-        )],
-    )
+    vec![Output::new(
+        PAGE,
+        page(solar_error_arcsec(root), moon.as_ref(), fitted.as_ref()),
+    )]
+}
+
+/// Writes the page.
+pub(crate) fn generate(root: &Path) -> i32 {
+    write(root, &outputs(root))
+}
+
+/// Regenerates in memory and fails on any difference.
+///
+/// This page went without a gate until an audit corrupted every
+/// `*-measured.md` and ran the whole fast check to see which ones nobody
+/// noticed. Two did not, and the other says on its own first line that it
+/// has no gate and why — this one said only "do not edit", which is a
+/// request rather than a check. The page is **0.07 seconds** to
+/// regenerate and reads nothing but catalogued tables and two recorded
+/// JSON files, so its absence was an oversight rather than a decision.
+pub(crate) fn check_generated(root: &Path) -> i32 {
+    i32::from(check(root, &outputs(root), "cargo xtask moon") != 0)
 }
 
 /// The page, as the sections it is made of.
@@ -295,7 +310,7 @@ fn opening() -> String {
     let _ = writeln!(out, "# How accurate the Moon has to be, measured\n");
     let _ = writeln!(
         out,
-        "Status: `generated` by `cargo xtask moon`. Do not edit. The rates are the SDK's own catalogued extremes (`astro::events::quantity_least_rate`, the table the search grid is sized from) and the arithmetic over them is exact; the Sun's error is measured and recorded in `{FLOOR}`.\n"
+        "Status: `generated` by `cargo xtask moon`, held by `check-moon`. Do not edit. The rates are the SDK's own catalogued extremes (`astro::events::quantity_least_rate`, the table the search grid is sized from) and the arithmetic over them is exact; the Sun's error is measured and recorded in `{FLOOR}`.\n"
     );
     let _ = writeln!(
         out,

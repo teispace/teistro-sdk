@@ -676,6 +676,108 @@ fn composers_reach_every_binding(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// Where the generated pages live, and the suffix that marks one.
+const MEASURED: (&str, &str) = ("docs/03-design", "-measured.md");
+
+/// That every generated page **names the gate that holds it**, or says it
+/// has none.
+///
+/// The repository's whole discipline is that a measured number is
+/// regenerated and compared, so it cannot rot. That holds for as long as
+/// something regenerates it, and nothing checked that anything did. An
+/// audit corrupted all 36 pages at once and ran the whole fast check to
+/// see which nobody noticed: **two**. One,
+/// `builtin-ephemeris-measured.md`, says on its own first line that there
+/// is no `check-vsop` yet and why — an inventory rather than a silence.
+/// The other said only "Do not edit", which is a request and not a check,
+/// and was 0.07 seconds to regenerate.
+///
+/// So a page's own header is the declaration: it names `check-<gate>`,
+/// which must exist in `xtask`, or it says in as many words that it has
+/// none. Both ways fail — a page naming a gate that does not exist, and a
+/// page claiming neither.
+fn generated_pages_are_gated(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "generated-page-is-gated";
+    let (dir, suffix) = MEASURED;
+    let Ok(entries) = std::fs::read_dir(root.join(dir)) else {
+        return;
+    };
+    let Ok(xtask) = std::fs::read_to_string(root.join("xtask/src/main.rs")) else {
+        return;
+    };
+    let mut pages: Vec<(String, String)> = Vec::new();
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().into_owned();
+        if !name.ends_with(suffix) {
+            continue;
+        }
+        if let Ok(text) = std::fs::read_to_string(entry.path()) {
+            pages.push((name, text));
+        }
+    }
+    pages.sort();
+    for (name, text) in pages {
+        // The header is the first paragraph: a page says what holds it
+        // where it says what wrote it.
+        let header = text.split("\n\n").take(2).collect::<String>();
+        // A header may name a gate in order to say it has **none**, as
+        // the built-in ephemeris page does: "There is no `check-vsop`
+        // yet, and the reason is recorded below". Reading that as a claim
+        // is how this lint first reported the one page that was already
+        // being honest.
+        let declares_none = header.contains("no `check-");
+        let named: Vec<&str> = if declares_none {
+            Vec::new()
+        } else {
+            header
+                .split('`')
+                .filter(|piece| piece.starts_with("check-"))
+                .collect()
+        };
+        if named.is_empty() {
+            // No gate named: the page must say so, as the ephemeris one
+            // does, rather than leaving a reader to assume there is one.
+            if !declares_none {
+                outcome.failures.push(Finding {
+                    file: format!("{dir}/{name}"),
+                    line: 3,
+                    text: String::from(
+                        "names no `check-` gate and does not say it has none; a generated page \
+                         that nothing regenerates is a measurement that can rot",
+                    ),
+                    rule: RULE,
+                });
+            }
+            continue;
+        }
+        for gate in named {
+            if !xtask.contains(&format!("Some(\"{gate}\")")) && !gate_in_passes(&xtask, gate) {
+                outcome.failures.push(Finding {
+                    file: format!("{dir}/{name}"),
+                    line: 3,
+                    text: format!("names `{gate}`, which `xtask` does not declare"),
+                    rule: RULE,
+                });
+            }
+        }
+    }
+}
+
+/// Whether a `check-<name>` gate comes from a row of the passes table,
+/// which declares its gate by the row's own name rather than by an arm.
+fn gate_in_passes(xtask: &str, gate: &str) -> bool {
+    let Some(pass) = gate.strip_prefix("check-") else {
+        return false;
+    };
+    // `rustfmt` wraps a long row, so the name is either the head of a
+    // one-line tuple or a line of its own.
+    let quoted = format!("\"{pass}\"");
+    xtask.contains(&format!("({quoted}, "))
+        || xtask
+            .lines()
+            .any(|line| line.trim() == format!("{quoted},"))
+}
+
 /// The register of questions, and the tracker that must name the open ones.
 const REGISTER: (&str, &str) = ("docs/QUESTIONS.md", "docs/STATUS.md");
 
@@ -1541,6 +1643,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     composers_reach_every_binding(root, &mut outcome);
     crates_are_listed(root, &mut outcome);
     open_questions_are_named(root, &mut outcome);
+    generated_pages_are_gated(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -1562,6 +1665,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "composer-reaches-every-binding",
         "crate-is-listed",
         "open-question-is-named",
+        "generated-page-is-gated",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();
