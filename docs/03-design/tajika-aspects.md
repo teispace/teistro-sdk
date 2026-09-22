@@ -66,7 +66,7 @@ documentation so nobody looks for a speed in it.
 | **not decided** | whether a retrograde planet reverses the applying direction, which the research page's closing checklist has asked since 2026-09-04 and this text does not answer; the fourteen other yogas |
 | **across the boundary** | the pairs that **make** a yoga ride in the ragged `year_yogas` section, counted by `annual_charts.yoga_count`, with the aspect, the yoga, the orb and the signed separation. Each binding reads them as `pravesha.annual.yogas`; all four parity runners print every one of them and **4 bindings agree on 8 090 values** |
 | **built** | `teistro_tajika::between` and `drishtis`; `sdk.chart().drishtis`, which needs **no ephemeris** |
-| **not built** | the fourteen yogas above Ithasala and Ishrafa — Kamboola, Nakta, Yamaya, Manau, Khallasara, Radda and the rest — and the 36 sahamas. They are compositions over what is here, and this page is what they were waiting for |
+| **not built** | the fourteen yogas above Ithasala and Ishrafa, now designed in [`tajika-yogas.md`](tajika-yogas.md); the 36 sahamas. Two things here are also **to be corrected** against the source's Table X-3, read after this shipped: Ishrafa wants the faster planet a whole degree or more ahead (crux C110), the sign's-end kind is the table's **Bhavishyat** rather than the prose's Rashyanta (crux C111), and a third kind, **Poorna** — an Ithasala within one degree — is missing |
 
 ## Why only the yoga-making pairs cross
 
