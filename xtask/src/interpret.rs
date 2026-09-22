@@ -1015,13 +1015,18 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 11] = [
         "SHADBALA",
         &["strength"],
         "\
-        the **total** and the requirement. A `GrahaShadbala` carries the \
-        six strengths it is the sum of — sthana, dig, kaala, cheshta, \
-        naisargika and drik — and none of the six is an item, so a \
-        consumer reading a plan learns what a graha weighs and not what \
-        makes it weigh that. The `dig` and `naisargika` figures are bare \
-        numbers; the sthana and kaala are records of their own parts, so \
-        how deep a composer should go is the decision here",
+        the **total** and the requirement, which is the whole of it: a \
+        `GrahaShadbala` carries the six strengths it is the sum of and \
+        none of the six is an item, so a consumer reading a plan learns \
+        what a graha weighs and not what makes it weigh that. Four of the \
+        six — `dig`, `cheshta`, `naisargika`, `drik` — are **bare \
+        numbers** and would say themselves exactly as the Vimshopaka \
+        does, a message matching on the component's key. The other two \
+        are not: `SthanaBala` is five parts and `KaalaBala` is seven, so \
+        the question is how deep to go, and adding 42 items to a composer \
+        a consumer already asks for by name is a change to something that \
+        works rather than an addition. **That** is the decision — where \
+        the breakdown belongs, not whether the words exist",
         &[],
     ),
     ("BHAVA_BALA", &["bhavaBala"], "", &[]),
