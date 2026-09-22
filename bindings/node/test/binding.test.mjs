@@ -334,6 +334,39 @@ test('the locale engine renders typed parameters, and says where from', () => {
   );
 });
 
+test('a rendered message carries its markup in parts, and plain text in one', () => {
+  const ctx = context();
+  ctx.intl.locale = 'en-Latn';
+  // `sdk.reason.lordship` is one of the two shipped messages that use
+  // MF2 markup. Without the parts a renderer can only ever print the
+  // text, which is why the message may as well not have had the tag.
+  const rich = ctx.intl.render('sdk.reason.lordship', {
+    graha: { $entity: 'graha.JUPITER' },
+    bhava: 5,
+  });
+  assert.equal(rich.text, 'Jupiter rules house 5');
+  assert.deepEqual(rich.parts, [
+    { type: 'markup', kind: 'open', name: 'b', options: {} },
+    { type: 'text', value: 'Jupiter' },
+    { type: 'markup', kind: 'close', name: 'b', options: {} },
+    { type: 'text', value: ' rules house 5' },
+  ]);
+  // A renderer that knows no tag joins the text parts and loses nothing.
+  const joined = rich.parts
+    .filter((part) => part.type === 'text')
+    .map((part) => part.value)
+    .join('');
+  assert.equal(joined, rich.text);
+
+  // A message with no markup is the one text part, made here rather than
+  // carried: the boundary sends nothing for it.
+  const plain = ctx.intl.render('sdk.reason.grahaInBhava', {
+    graha: { $entity: 'graha.JUPITER' },
+    bhava: 7,
+  });
+  assert.deepEqual(plain.parts, [{ type: 'text', value: plain.text }]);
+});
+
 test('a quantity is its own type, and its constructor checks the range', () => {
   const ctx = context();
   assert.equal(latitude(27.7172), 27.7172, 'a branded number is a number at run time');

@@ -30,7 +30,7 @@ use teistro_interpret::{
     readings, strength,
 };
 use teistro_intl::source::{BASE_LOCALE, Completeness, Tree};
-use teistro_intl::{Intl, Rendered};
+use teistro_intl::{Intl, OutPart, Rendered};
 use teistro_rules::{Body, Evaluator, Readings as RuleReadings, Rule, RuleChart, shipped};
 
 use crate::generated::{Output, check, write};
@@ -1264,6 +1264,175 @@ fn what_each_reader_gets(
     Ok(())
 }
 
+/// What a consumer's **rich** renderer gets from the plan, which until
+/// the parts crossed the boundary was nothing at all.
+///
+/// The two facts that matter to a reader of this page are how much of a
+/// plan carries markup and whether ignoring it is safe. The second is a
+/// property rather than a number, so it is checked over every item in
+/// every strict locale and the pass fails rather than the page reporting
+/// a near miss.
+fn what_a_rich_renderer_gets(
+    out: &mut String,
+    sdk: &teistro::Context,
+    plan: &Plan,
+    strict: &[String],
+) -> Result<(), String> {
+    let (rows, by_key) = markup_of(sdk, plan, strict)?;
+    said_richly(out, plan, strict, &rows, &by_key)
+}
+
+/// One row a locale: its tag, the items of the plan that carry markup,
+/// how many markup parts those are, and the tag names.
+type MarkupRow = (String, usize, usize, String);
+
+/// Every item of the plan rendered in every strict locale, counting the
+/// markup and refusing a rendering whose text parts are not its text.
+fn markup_of<'a>(
+    sdk: &teistro::Context,
+    plan: &'a Plan,
+    strict: &[String],
+) -> Result<(Vec<MarkupRow>, BTreeMap<&'a str, usize>), String> {
+    let mut rows: Vec<MarkupRow> = Vec::new();
+    let mut by_key: BTreeMap<&str, usize> = BTreeMap::new();
+    for tag in strict {
+        sdk.intl()
+            .set_locale(tag)
+            .map_err(|why| format!("{tag}: {why}"))?;
+        let mut with_markup = 0usize;
+        let mut tags: BTreeSet<String> = BTreeSet::new();
+        let mut parts = 0usize;
+        for item in &plan.items {
+            let said = sdk.intl().render(&item.key, &item.params);
+            let marked: Vec<&str> = said
+                .parts
+                .iter()
+                .filter_map(|part| match part {
+                    OutPart::Markup { name, .. } => Some(name.as_str()),
+                    OutPart::Text(_) => None,
+                })
+                .collect();
+            // Ignoring the markup has to be safe, or a renderer that does
+            // not know a tag silently drops text with it.
+            let joined: String = said
+                .parts
+                .iter()
+                .filter_map(|part| match part {
+                    OutPart::Text(text) => Some(text.as_str()),
+                    OutPart::Markup { .. } => None,
+                })
+                .collect();
+            if joined != said.text {
+                return Err(format!(
+                    "`{}` in {tag}: the text parts joined are not the text",
+                    item.key
+                ));
+            }
+            if !marked.is_empty() {
+                with_markup += 1;
+                parts += marked.len();
+                tags.extend(marked.iter().map(|name| (*name).to_string()));
+                // By key from the base locale alone, so the table counts
+                // items and not items times locales.
+                if tag == BASE_LOCALE {
+                    *by_key.entry(item.key.as_str()).or_default() += 1;
+                }
+            }
+        }
+        let tags = tags
+            .iter()
+            .map(|name| format!("`{name}`"))
+            .collect::<Vec<_>>()
+            .join(", ");
+        rows.push((
+            tag.clone(),
+            with_markup,
+            parts,
+            if tags.is_empty() {
+                String::from("none")
+            } else {
+                tags
+            },
+        ));
+    }
+    Ok((rows, by_key))
+}
+
+/// The section itself, from what `markup_of` counted.
+fn said_richly(
+    out: &mut String,
+    plan: &Plan,
+    strict: &[String],
+    rows: &[MarkupRow],
+    by_key: &BTreeMap<&str, usize>,
+) -> Result<(), String> {
+    out.push_str("## What a rich renderer gets\n\n");
+    out.push_str(
+        "MF2 markup (`{#b}…{/b}`) is how a message says that part of it is a \
+         name, emphasis or a link **without saying what that looks like**: \
+         the message stays free of any markup language and the consumer's \
+         renderer decides. Until a rendered message's parts crossed the C \
+         boundary only a Rust caller could see one, so the numbers below \
+         are what the other three bindings had no way to reach — the \
+         messages carried the tags and the text arrived with them \
+         stripped.\n\n\
+         | locale | items with markup | markup parts | tags |\n|---|---:|---:|---|\n",
+    );
+    for (tag, with_markup, parts, tags) in rows {
+        let _ = writeln!(
+            out,
+            "| `{tag}` | {} of {} | {} | {tags} |",
+            count(*with_markup),
+            count(plan.items.len()),
+            count(*parts)
+        );
+    }
+    out.push('\n');
+    if let Some((first, rest)) = rows.split_first()
+        && let Some(other) = rest.iter().find(|row| row.1 != first.1)
+    {
+        return Err(format!(
+            "{} marks up {} item(s) where {} marks up {}: a translation has dropped or added \
+             markup",
+            other.0, other.1, first.0, first.1
+        ));
+    }
+    out.push_str("| key | items of the plan |\n|---|---:|\n");
+    for (key, items) in by_key {
+        let _ = writeln!(out, "| `{key}` | {} |", count(*items));
+    }
+    out.push('\n');
+    out.push_str(
+        "The share is small and the property beside it is what makes the \
+         boundary safe to use: **the text parts joined are the text**, for \
+         every item in every strict locale, so a renderer that knows none \
+         of the tags can drop every markup part and lose no words. That is \
+         what lets a binding ship the parts before anyone has written a \
+         renderer for them.\n\n\
+         The key table is the **base locale's**, and every strict locale \
+         marks up the same items, which the pass fails on rather than \
+         reports: a translation that drops the base's markup reads \
+         perfectly as text and tells a renderer nothing, so the loss is \
+         invisible in exactly the place a reviewer looks. The engine's own \
+         parity check refuses it at the source, and this is that rule read \
+         back off a rendered plan.\n\n",
+    );
+    out.push_str(&table(&[
+        Claim::counted(
+            "a rendered item's text parts, joined, are its text",
+            0,
+            plan.items.len() * strict.len(),
+        ),
+        Claim::counted(
+            "every strict locale marks up the same items of the plan",
+            0,
+            strict.len(),
+        ),
+    ]));
+    out.push('\n');
+    Ok(())
+}
+
 /// That every key a composer can emit is emitted by that one chart, and
 /// that every item of it is said in each strict locale.
 fn every_key_is_emitted(out: &mut String, root: &Path, strict: &[String]) -> Result<(), String> {
@@ -1323,6 +1492,8 @@ fn every_key_is_emitted(out: &mut String, root: &Path, strict: &[String]) -> Res
     }
 
     what_each_reader_gets(out, &sdk, &plan, root)?;
+
+    what_a_rich_renderer_gets(out, &sdk, &plan, strict)?;
 
     out.push_str("## Every key, emitted at least once\n\n");
     let _ = write!(

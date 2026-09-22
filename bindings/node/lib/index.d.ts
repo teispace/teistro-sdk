@@ -1421,6 +1421,32 @@ export interface ChartBatchRequest extends Omit<ChartRequest, 'instant'> {
   readonly instants: ArrayLike<number>;
 }
 
+/**
+ * One part of a rendered message: its text, or a markup tag standing in
+ * the text.
+ *
+ * MF2 markup (`{#b}…{/b}`) is how a message says that part of it is a
+ * link, a name or emphasis, **without saying what that looks like** —
+ * the message stays free of HTML and the renderer decides. A renderer
+ * walks the parts, writes the text ones and opens or closes whatever a
+ * tag means in its own world.
+ */
+export type MessagePart =
+  | {
+      readonly type: 'text';
+      /** The text, already formatted and localised. */
+      readonly value: string;
+    }
+  | {
+      readonly type: 'markup';
+      /** Whether the tag opens, closes, or stands alone. */
+      readonly kind: 'open' | 'close' | 'standalone';
+      /** The tag's name, as the message wrote it: `b`, `link`, … */
+      readonly name: string;
+      /** Its options, each already resolved to a string. */
+      readonly options: Readonly<Record<string, string>>;
+    };
+
 /** A rendered message. */
 export declare class Rendered extends Decoded<IntlRender> {
   /** The plain text, markup stripped. */
@@ -1431,6 +1457,14 @@ export declare class Rendered extends Decoded<IntlRender> {
   readonly isFallback: boolean;
   /** Whether a runtime override answered. */
   readonly isOverride: boolean;
+  /**
+   * The message in parts, its markup kept: what a rich renderer walks.
+   *
+   * Joining the `text` parts gives exactly `text`, so a renderer that
+   * does not know a tag can ignore it and lose nothing. A message with
+   * no markup is one text part holding the whole of `text`.
+   */
+  readonly parts: readonly MessagePart[];
   /** Every problem met; rendering continues past each. */
   readonly warnings: readonly string[];
   /** The text, so a rendered message reads where a string is expected. */

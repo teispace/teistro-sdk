@@ -1207,7 +1207,18 @@ fn a_nepali_birth_time_resolves_with_replay_metadata_and_converts_between_scales
     );
 }
 
-fn render(ctx: &Ctx, key: &str, params: Option<&str>) -> (String, String, Vec<String>, bool) {
+/// What one crossing of `ts_intl_render` carried back.
+struct Render {
+    text: String,
+    from: String,
+    warnings: Vec<String>,
+    fallback: bool,
+    /// The `parts` section as it crossed: `[]` when the message has no
+    /// markup, which is the boundary's own rule.
+    parts: String,
+}
+
+fn render(ctx: &Ctx, key: &str, params: Option<&str>) -> Render {
     let key = CString::new(key).unwrap();
     let params = params.map(|p| CString::new(p).unwrap());
     let mut blob = TsBlob::empty();
@@ -1230,30 +1241,80 @@ fn render(ctx: &Ctx, key: &str, params: Option<&str>) -> (String, String, Vec<St
     let flags = reader.fixed("flags").unwrap();
     let warnings: Vec<String> = serde_json::from_str(reader.text("warnings").unwrap()).unwrap();
     assert_eq!(flags[2].as_i64() as usize, warnings.len());
-    (
-        reader.text("text").unwrap().to_string(),
-        reader.text("resolved_from").unwrap().to_string(),
+    Render {
+        text: reader.text("text").unwrap().to_string(),
+        from: reader.text("resolved_from").unwrap().to_string(),
         warnings,
-        flags[0].as_i64() == 1,
-    )
+        fallback: flags[0].as_i64() == 1,
+        parts: reader.text("parts").unwrap().to_string(),
+    }
+}
+
+/// A message's **markup** crosses, or a rich renderer cannot exist.
+///
+/// `sdk.reason.lordship` is the corpus's most-said reason and one of the
+/// two shipped messages that carry `{#b}`. Every binding builds its
+/// renderer on these bytes, so the shape is asserted whole rather than
+/// probed: a reader in another language has nothing else to go on.
+#[test]
+fn a_rich_message_carries_its_parts_across_and_a_plain_one_carries_none() {
+    let ctx = Ctx::new(0, None, None, Some("en-Latn")).unwrap();
+    let rich = render(
+        &ctx,
+        "sdk.reason.lordship",
+        Some(r#"{"graha": {"$entity": "graha.JUPITER"}, "bhava": 5}"#),
+    );
+    assert!(rich.warnings.is_empty(), "{:?}", rich.warnings);
+    assert_eq!(rich.text, "Jupiter rules house 5");
+    assert_eq!(
+        rich.parts,
+        r#"[{"type":"markup","kind":"open","name":"b","options":{}},{"type":"text","value":"Jupiter"},{"type":"markup","kind":"close","name":"b","options":{}},{"type":"text","value":" rules house 5"}]"#
+    );
+    // The text parts joined are the text, so a renderer that knows no
+    // tag can drop every markup part and lose nothing.
+    let parts: Vec<serde_json::Value> = serde_json::from_str(&rich.parts).unwrap();
+    let joined: String = parts
+        .iter()
+        .filter(|part| part["type"] == "text")
+        .map(|part| part["value"].as_str().unwrap())
+        .collect();
+    assert_eq!(joined, rich.text);
+
+    // A message with no markup sends none: the parts would be the text
+    // written a second time, and every binding makes the one text part
+    // for itself.
+    let plain = render(
+        &ctx,
+        "sdk.reason.grahaInBhava",
+        Some(r#"{"graha": {"$entity": "graha.JUPITER"}, "bhava": 7}"#),
+    );
+    assert_eq!(plain.parts, "[]");
+    assert!(!plain.text.is_empty());
 }
 
 #[test]
 fn the_locale_engine_renders_typed_parameters_in_nepali() {
     let ctx = Ctx::new(0, None, None, Some("ne-Deva-NP")).unwrap();
-    let (text, from, warnings, fallback) = render(
+    let said = render(
         &ctx,
         "sdk.reason.grahaInBhava",
         Some(r#"{"graha": {"$entity": "graha.JUPITER"}, "bhava": 7}"#),
     );
-    assert!(warnings.is_empty(), "{warnings:?}");
-    assert_eq!(from, "ne-Deva-NP");
-    assert!(text.contains('७'), "{text}");
-    assert!(!fallback);
-    let (_, _, warnings, _) = render(&ctx, "sdk.reason.grahaInBhava", None);
-    assert!(!warnings.is_empty());
-    let (text, from, warnings, _) = render(&ctx, "sdk.nope.missing", None);
-    assert!(from.is_empty() && !warnings.is_empty(), "{text}");
+    assert!(said.warnings.is_empty(), "{:?}", said.warnings);
+    assert_eq!(said.from, "ne-Deva-NP");
+    assert!(said.text.contains('७'), "{}", said.text);
+    assert!(!said.fallback);
+    assert!(
+        !render(&ctx, "sdk.reason.grahaInBhava", None)
+            .warnings
+            .is_empty()
+    );
+    let said = render(&ctx, "sdk.nope.missing", None);
+    assert!(
+        said.from.is_empty() && !said.warnings.is_empty(),
+        "{}",
+        said.text
+    );
 
     let mut has = 9u8;
     let key = CString::new("sdk.reason.grahaInBhava").unwrap();
@@ -1269,13 +1330,13 @@ fn the_locale_engine_renders_typed_parameters_in_nepali() {
         unsafe { ts_intl_set_locale(ctx.handle, en.as_ptr()) },
         Status::Ok
     );
-    let (text, from, _, _) = render(
+    let said = render(
         &ctx,
         "sdk.reason.grahaInBhava",
         Some(r#"{"graha": {"$entity": "graha.JUPITER"}, "bhava": 7}"#),
     );
-    assert_eq!(from, "en-Latn");
-    assert!(text.contains("Jupiter"), "{text}");
+    assert_eq!(said.from, "en-Latn");
+    assert!(said.text.contains("Jupiter"), "{}", said.text);
     let bad = CString::new("fr-Latn").unwrap();
     // SAFETY: as above.
     assert_eq!(

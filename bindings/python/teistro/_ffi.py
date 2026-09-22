@@ -3803,9 +3803,9 @@ class TeistroContext:
         "minute": 15, "second": 0}}`; a date and time `{"$datetime": {"date":
         {...}, "time": {...}}}`; a ghati count `{"$ghati": {"ghati": 12,
         "pala": 30, "vipala": 0}}`. A null `params_json` renders with none.
-        The result blob carries the text, where it resolved from and the
-        warnings; a missing message renders as its key with a warning, never
-        an error.
+        The result blob carries the text, its parts, where it resolved from
+        and the warnings; a missing message renders as its key with a
+        warning, never an error.
         """
         owned: list[Any] = []
         _key = key.encode("utf-8")

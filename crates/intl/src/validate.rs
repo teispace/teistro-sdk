@@ -676,6 +676,21 @@ fn check_parity(findings: &mut Findings, tag: &str, key: &str, this: &Signature,
                 findings.warning(tag, key, format!("does not use `${name}`"));
             }
         }
+        // Markup is a pair of rules for the same reason a parameter is,
+        // and only one half of it was written. A translation that
+        // **drops** the base's markup reads perfectly as text and tells a
+        // rich renderer nothing, so the loss is invisible in exactly the
+        // place a reviewer looks. The link guard is the params rule's:
+        // what `:msg` forwards, it forwards whole.
+        for markup in &base.markup {
+            if !this.markup.contains(markup) {
+                findings.warning(
+                    tag,
+                    key,
+                    format!("does not use markup `{markup}` the base message has"),
+                );
+            }
+        }
     }
     for markup in &this.markup {
         if !base.markup.contains(markup) {
@@ -883,6 +898,62 @@ mod tests {
                     }),
                 );
         }
+    }
+
+    /// The whole of a translation's markup is a pair of rules, because
+    /// each half is invisible in the other's direction.
+    #[test]
+    fn a_translation_may_neither_add_nor_drop_the_bases_markup() {
+        fn said(locale: &str, namespace: &str, key: &str, source: &str) -> Vec<String> {
+            let mut tree = tree();
+            set(&mut tree, locale, namespace, key, source);
+            let whole = format!("{namespace}.{key}");
+            validate(&tree)
+                .diagnostics
+                .iter()
+                .filter(|d| d.severity == Severity::Warning && d.key == whole)
+                .map(|d| d.message.clone())
+                .collect()
+        }
+        // Dropped. `sdk.reason.lordship` is the base's `{#b}` message and
+        // the corpus's most-said reason; a translation without the tag
+        // reads correctly and tells a rich renderer nothing.
+        let dropped = said(
+            "ne-Deva-NP",
+            "sdk.reason",
+            "lordship",
+            "{$graha :entity kind=graha} {$bhava :integer} भावको स्वामी हो",
+        );
+        assert!(
+            dropped
+                .iter()
+                .any(|w| w == "does not use markup `b` the base message has"),
+            "{dropped:?}"
+        );
+        // Added. The base does not use the tag, so no renderer has been
+        // told what it means and only this locale would carry it.
+        let added = said(
+            "ne-Deva-NP",
+            "sdk.reason",
+            "grahaAt",
+            "{#i}{$graha :entity kind=graha}{/i} {$rashi :entity kind=rashi} {$degree :dms}",
+        );
+        assert!(
+            added
+                .iter()
+                .any(|w| w == "uses markup `i` the base message does not"),
+            "{added:?}"
+        );
+        // And the shipped sources say neither, which is the state the
+        // pair exists to keep: both locales carry `{#b}` on both keys.
+        let shipped = validate(&tree());
+        assert!(
+            !shipped
+                .diagnostics
+                .iter()
+                .any(|d| d.message.contains("markup")),
+            "the shipped sources should say nothing about markup"
+        );
     }
 
     #[test]

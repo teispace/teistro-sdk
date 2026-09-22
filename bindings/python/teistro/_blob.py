@@ -269,6 +269,9 @@ class IntlRender:
     warnings: str
     """UTF-8 JSON: an array of strings, one per problem met."""
 
+    parts: str
+    """UTF-8 JSON: the message's parts, for a rich renderer — `{"type": "text", "value": ...}` or `{"type": "markup", "kind": "open"|"close"|"standalone", "name": ..., "options": {...}}`, adjacent text in one part. **Empty when the message has no markup**, the whole of it being `text`; a reader turns that into the one text part rather than asking for it twice."""
+
 
 def decode_intl_render(raw: bytes) -> IntlRender:
     """Decodes a IntlRender blob.
@@ -282,6 +285,7 @@ def decode_intl_render(raw: bytes) -> IntlRender:
     at_text = blob.section(2, "text")
     at_resolved_from = blob.section(3, "resolved_from")
     at_warnings = blob.section(4, "warnings")
+    at_parts = blob.section(5, "parts")
     return IntlRender(
         is_fallback=int(blob.fixed(at_flags, 0, "B")),
         is_override=int(blob.fixed(at_flags, 1, "B")),
@@ -289,6 +293,7 @@ def decode_intl_render(raw: bytes) -> IntlRender:
         text=blob.text(at_text),
         resolved_from=blob.text(at_resolved_from),
         warnings=blob.text(at_warnings),
+        parts=blob.text(at_parts),
     )
 
 

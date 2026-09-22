@@ -1,5 +1,6 @@
-//! How a parameter value is written down: the JSON the boundary has always
-//! taken, and now the one shape a narrative plan crosses in.
+//! How a value is written down at the boundary: the JSON the boundary has
+//! always taken for a parameter, the one shape a narrative plan crosses in,
+//! and the parts a rendered message crosses back out as.
 //!
 //! Text, a number and a list are themselves; everything the language has that
 //! JSON does not is a single `$`-tagged object:
@@ -26,6 +27,7 @@
 //! ```
 
 use core::fmt;
+use std::collections::BTreeMap;
 
 use serde::de::{self, MapAccess, SeqAccess, Visitor};
 use serde::ser::SerializeMap;
@@ -33,7 +35,8 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use teistro_calendar::CalendarDate;
 use teistro_core::catalogue::Calendar;
 
-use crate::render::{ClockTime, Value};
+use crate::mf2::ast::MarkupKind;
+use crate::render::{ClockTime, OutPart, Rendered, Value};
 
 /// The tags an object may carry, for the sentence a refusal ends with.
 const TAGS: &str = "$entity, $date, $time, $datetime, $ghati";
@@ -202,6 +205,85 @@ impl<'de> Deserialize<'de> for Value {
     }
 }
 
+/// How a rendered message's **parts** are written down, which is the one
+/// thing that crosses the boundary outwards through this module.
+///
+/// A part is a tagged object, `type` saying which:
+///
+/// ```json
+/// [ {"type": "text", "value": "Jupiter"},
+///   {"type": "markup", "kind": "open", "name": "b", "options": {}},
+///   {"type": "markup", "kind": "close", "name": "b", "options": {}} ]
+/// ```
+///
+/// `kind` is `open`, `close` or `standalone`. `options` is always
+/// present, empty when the tag carries none, so a reader in any language
+/// walks one shape rather than two.
+///
+/// Adjacent text is one part ([`Rendered::parts`]), so a renderer that
+/// knows nothing about a tag can join the text parts and get exactly
+/// [`Rendered::text`].
+impl Serialize for OutPart {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            OutPart::Text(text) => {
+                let mut map = serializer.serialize_map(Some(2))?;
+                map.serialize_entry("type", "text")?;
+                map.serialize_entry("value", text)?;
+                map.end()
+            }
+            OutPart::Markup {
+                kind,
+                name,
+                options,
+            } => {
+                let mut map = serializer.serialize_map(Some(4))?;
+                map.serialize_entry("type", "markup")?;
+                map.serialize_entry("kind", markup_kind(*kind))?;
+                map.serialize_entry("name", name)?;
+                map.serialize_entry(
+                    "options",
+                    &options
+                        .iter()
+                        .map(|(name, value)| (name.as_str(), value.as_str()))
+                        .collect::<BTreeMap<&str, &str>>(),
+                )?;
+                map.end()
+            }
+        }
+    }
+}
+
+/// The three markup forms, as the wire names them.
+fn markup_kind(kind: MarkupKind) -> &'static str {
+    match kind {
+        MarkupKind::Open => "open",
+        MarkupKind::Close => "close",
+        MarkupKind::Standalone => "standalone",
+    }
+}
+
+/// A rendered message's parts as the JSON above, for a boundary that
+/// carries text and not types.
+///
+/// Empty when the message has no markup at all: the whole of it is then
+/// the render's own `text`, and a boundary that repeats the text beside
+/// itself would double every plain message for the two that are not.
+/// **A reader turns an empty array back into the one text part** that
+/// [`Rendered::parts`] holds; every binding does, and
+/// `every_binding_reads_the_parts_of_a_rich_message` holds them to it.
+#[must_use]
+pub fn parts_json(rendered: &Rendered) -> String {
+    if rendered
+        .parts
+        .iter()
+        .all(|part| matches!(part, OutPart::Text(_)))
+    {
+        return String::from("[]");
+    }
+    serde_json::to_string(&rendered.parts).unwrap_or_else(|_| String::from("[]"))
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(
@@ -217,6 +299,51 @@ mod tests {
     fn round(value: &Value) -> Value {
         let written = serde_json::to_string(value).unwrap();
         serde_json::from_str(&written).unwrap_or_else(|err| panic!("{written}: {err}"))
+    }
+
+    #[test]
+    fn a_rich_message_writes_its_parts_and_a_plain_one_writes_none() {
+        let intl = crate::Intl::from_tree(&crate::source::Tree::load(&crate::sdk_root()).unwrap())
+            .unwrap();
+        let rich = intl
+            .render_source(
+                "{#b}{$graha :entity kind=graha}{/b} rules house {$bhava :integer}",
+                &crate::params([
+                    ("graha", Value::catalogued(Graha::Jupiter)),
+                    ("bhava", Value::Int(5)),
+                ]),
+            )
+            .unwrap();
+        assert_eq!(rich.text, "Jupiter rules house 5");
+        assert_eq!(
+            parts_json(&rich),
+            r#"[{"type":"markup","kind":"open","name":"b","options":{}},{"type":"text","value":"Jupiter"},{"type":"markup","kind":"close","name":"b","options":{}},{"type":"text","value":" rules house 5"}]"#
+        );
+        // Adjacent text is one part: the literal and the integer beside
+        // it arrive separately and leave together.
+        assert_eq!(rich.parts.len(), 4);
+        let plain = intl
+            .render_source(
+                "{$graha :entity kind=graha} rules",
+                &crate::params([("graha", Value::catalogued(Graha::Jupiter))]),
+            )
+            .unwrap();
+        assert_eq!(plain.parts.len(), 1);
+        assert_eq!(parts_json(&plain), "[]");
+    }
+
+    #[test]
+    fn a_standalone_tag_carries_its_options() {
+        let intl = crate::Intl::from_tree(&crate::source::Tree::load(&crate::sdk_root()).unwrap())
+            .unwrap();
+        let said = intl
+            .render_source("a{#img alt=|a chart| src=|c.png| /}b", &crate::params([]))
+            .unwrap();
+        assert_eq!(said.text, "ab");
+        assert_eq!(
+            parts_json(&said),
+            r#"[{"type":"text","value":"a"},{"type":"markup","kind":"standalone","name":"img","options":{"alt":"a chart","src":"c.png"}},{"type":"text","value":"b"}]"#
+        );
     }
 
     #[test]

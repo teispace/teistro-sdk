@@ -316,6 +316,7 @@ final class IntlRender {
     required this.text,
     required this.resolvedFrom,
     required this.warnings,
+    required this.parts,
   });
 
   /// Non-zero when a fallback locale answered.
@@ -336,6 +337,9 @@ final class IntlRender {
   /// UTF-8 JSON: an array of strings, one per problem met.
   final String warnings;
 
+  /// UTF-8 JSON: the message's parts, for a rich renderer — `{"type": "text", "value": ...}` or `{"type": "markup", "kind": "open"|"close"|"standalone", "name": ..., "options": {...}}`, adjacent text in one part. **Empty when the message has no markup**, the whole of it being `text`; a reader turns that into the one text part rather than asking for it twice.
+  final String parts;
+
 }
 
 /// Decodes a IntlRender blob. The columns are views over `bytes`, so the
@@ -347,6 +351,7 @@ IntlRender decodeIntlRender(Uint8List bytes) {
   final atText = blob.section(2, 'text');
   final atResolvedFrom = blob.section(3, 'resolved_from');
   final atWarnings = blob.section(4, 'warnings');
+  final atParts = blob.section(5, 'parts');
   return IntlRender(
     isFallback: blob.data.getUint8(atFlags.offset + 0),
     isOverride: blob.data.getUint8(atFlags.offset + 8),
@@ -354,6 +359,7 @@ IntlRender decodeIntlRender(Uint8List bytes) {
     text: blob.text(atText),
     resolvedFrom: blob.text(atResolvedFrom),
     warnings: blob.text(atWarnings),
+    parts: blob.text(atParts),
   );
 }
 

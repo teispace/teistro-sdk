@@ -319,6 +319,50 @@ and the overrides in force. A render says when an override answered
 forgets what the runtime API replaces, so a replaced or overridden
 message renders anew at once.
 
+### Parts at the boundary
+
+`Rendered` has carried `parts` since the spike and nothing but Rust
+could see them: `ts_intl_render` sent the text, where it resolved from
+and the warnings, so a message's markup died at the C boundary and MF2's
+whole point — that a message says *this part is emphasised* without
+saying what that looks like — reached no consumer of the three bindings.
+Two shipped messages already used `{#b}`, one of them the corpus's
+most-said reason.
+
+The parts now cross as JSON beside the warnings, tagged by `type`:
+`{"type": "text", "value": ...}` and `{"type": "markup", "kind":
+"open"|"close"|"standalone", "name": ..., "options": {...}}`. Three rules
+make them cheap and safe to walk:
+
+- **Adjacent text is one part.** The evaluator pushes a part per element
+  of the pattern, so a literal and the value beside it arrive separately;
+  nothing downstream can tell them apart, because an expression's result
+  is already text by the time it is a part. Coalescing them means a part
+  boundary is always a markup boundary, and the shape does not depend on
+  how the message happened to be written.
+- **The text parts joined are the plain text.** A renderer that knows
+  none of the tags drops every markup part and loses no words. This is
+  measured over every item of a founded chart's plan in every strict
+  locale (`interpret-measured.md`).
+- **A message with no markup sends none.** The parts would be the text
+  written a second time, which would double the blob of every plain
+  message for the sake of the two that are not; each binding makes the
+  one text part for itself, and the ABI test holds all of them to it.
+
+`Rendered` is built in one place so its `text` is always its `parts`,
+and the two cannot drift. Every binding exposes the parts typed —
+`MessagePart` in Node, Dart and Python — and all four parity runners
+print the same shape, Rust reading them from the value and the other
+three from the blob, which is what says the two paths agree.
+
+A translation's markup is a **pair** of rules and only one half was
+written: `check_parity` refused a translation that used markup the base
+does not, and said nothing about one that drops the base's. A dropped
+tag reads perfectly as text and tells a renderer nothing, so the loss is
+invisible in exactly the place a reviewer looks. Both halves are there
+now, and the measured page checks the same rule a second way, off a
+rendered plan rather than off the sources.
+
 ## 7. Validation
 
 The gates, in one report with a coverage table and diagnostics sorted

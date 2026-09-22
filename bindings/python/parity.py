@@ -21,6 +21,7 @@ import json
 from teistro import (
     DashaDefinition,
     Altitude,
+    MessagePart,
     Body,
     Calendar,
     ChartLayout,
@@ -39,6 +40,7 @@ from teistro import (
     date,
     iana_zone,
     intl,
+    message_parts,
 )
 
 report: dict[str, str] = {}
@@ -164,6 +166,27 @@ def main() -> None:
     put("render-length", len(rendered.text))
     put("render-resolved-from", rendered.resolved_from)
     put("render-fallback", bool(rendered.is_fallback))
+    # A rendered message's parts, which is what a rich renderer walks.
+    # `sdk.reason.lordship` is one of the two shipped messages carrying
+    # `{#b}`; the plain one beside it holds every binding to the rule that
+    # no markup means the one text part, made rather than carried.
+
+    def part_shape(parts: "list[MessagePart]") -> str:
+        return "|".join(
+            f"text:{part.value}"
+            if part.is_text
+            else f"{part.kind}:{part.name}("
+            + ",".join(f"{name}={value}" for name, value in sorted(part.options.items()))
+            + ")"
+            for part in parts
+        )
+
+    rich = ctx.intl.render(
+        "sdk.reason.lordship",
+        {"graha": {"$entity": "graha.JUPITER"}, "bhava": 5},
+    )
+    put("render-rich-parts", part_shape(message_parts(rich)))
+    put("render-plain-parts", part_shape(message_parts(rendered)))
     put("has-message", ctx.intl.has("sdk.reason.grahaInBhava"))
     put("has-missing-message", ctx.intl.has("sdk.nope.missing"))
     put("transliterated", ctx.intl.transliterate("सूर्य बृहस्पति"))

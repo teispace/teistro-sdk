@@ -6713,9 +6713,9 @@ ts_status ts_intl_entity(const ts_context * context, const char * key, ts_str * 
  * "minute": 15, "second": 0}}`; a date and time `{"$datetime": {"date":
  * {...}, "time": {...}}}`; a ghati count `{"$ghati": {"ghati": 12,
  * "pala": 30, "vipala": 0}}`. A null `params_json` renders with none.
- * The result blob carries the text, where it resolved from and the
- * warnings; a missing message renders as its key with a warning, never
- * an error.
+ * The result blob carries the text, its parts, where it resolved from
+ * and the warnings; a missing message renders as its key with a
+ * warning, never an error.
  * The blob follows the `intl_render` schema of idl/api.json.
  * Safety: `context` must be a live handle; `key` a NUL-terminated string;
  * `params_json` null or one; `out_blob` valid for a write.

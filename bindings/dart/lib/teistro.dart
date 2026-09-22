@@ -1328,6 +1328,57 @@ extension PositionsResult on Positions {
   }
 }
 
+/// One part of a rendered message: its text, or a markup tag standing in
+/// the text.
+///
+/// MF2 markup (`{#b}…{/b}`) is how a message says that part of it is a
+/// link, a name or emphasis, **without saying what that looks like** —
+/// the message stays free of markup languages and the renderer decides.
+/// A Flutter renderer walks the parts and builds a `TextSpan` per tag.
+final class MessagePart {
+  const MessagePart.text(this.value)
+    : isText = true,
+      kind = '',
+      name = '',
+      options = const {};
+
+  const MessagePart.markup({
+    required this.kind,
+    required this.name,
+    required this.options,
+  }) : isText = false,
+       value = '';
+
+  /// Whether this is text rather than a tag.
+  final bool isText;
+
+  /// The text, already formatted and localised; empty for a tag.
+  final String value;
+
+  /// `open`, `close` or `standalone`; empty for text.
+  final String kind;
+
+  /// The tag's name, as the message wrote it: `b`, `link`, …
+  final String name;
+
+  /// Its options, each already resolved to a string.
+  final Map<String, String> options;
+
+  static MessagePart _of(Map<String, Object?> written) =>
+      written['type'] == 'text'
+          ? MessagePart.text(written['value']! as String)
+          : MessagePart.markup(
+            kind: written['kind']! as String,
+            name: written['name']! as String,
+            options: (written['options']! as Map<String, Object?>).map(
+              (name, value) => MapEntry(name, value! as String),
+            ),
+          );
+
+  @override
+  String toString() => isText ? value : '<$kind $name>';
+}
+
 /// What a rendered message means, beyond its text.
 extension RenderedMessage on IntlRender {
   /// Whether a fallback locale answered.
@@ -1342,6 +1393,22 @@ extension RenderedMessage on IntlRender {
   /// Every problem met; rendering continues past each.
   List<String> get warningList =>
       (jsonDecode(warnings) as List<Object?>).cast<String>();
+
+  /// The message in parts, its markup kept: what a rich renderer walks.
+  ///
+  /// Joining the text parts gives exactly [text], so a renderer that does
+  /// not know a tag can ignore it and lose nothing. The boundary sends
+  /// nothing when the message has no markup, because the parts would then
+  /// be the text written twice; the one part is made here rather than
+  /// carried.
+  List<MessagePart> get partList {
+    final written =
+        (jsonDecode(parts.isEmpty ? '[]' : parts) as List<Object?>)
+            .cast<Map<String, Object?>>();
+    return written.isEmpty
+        ? [MessagePart.text(text)]
+        : written.map(MessagePart._of).toList();
+  }
 }
 
 /// A digest as the hex every binding prints.

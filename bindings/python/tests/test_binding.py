@@ -52,6 +52,7 @@ from teistro import (
     iana_zone,
     intl,
     local_mean_zone,
+    message_parts,
     when_unknown,
 )
 from teistro._ffi import Longitude
@@ -328,6 +329,41 @@ class TheLocaleEngine(WithLibrary):
             {"graha": {"$entity": "graha.JUPITER"}, "bhava": 7},
         ).text
         self.assertEqual(typed, loose)
+
+    def test_a_rendered_message_carries_its_markup_in_parts(self) -> None:
+        self.ctx.intl.locale = "en-Latn"
+        # `sdk.reason.lordship` is one of the two shipped messages that
+        # use MF2 markup. Without the parts a renderer can only ever
+        # print the text, which is why the message may as well not have
+        # had the tag.
+        rich = self.ctx.intl.render(
+            "sdk.reason.lordship",
+            {"graha": {"$entity": "graha.JUPITER"}, "bhava": 5},
+        )
+        self.assertEqual(rich.text, "Jupiter rules house 5")
+        parts = message_parts(rich)
+        self.assertEqual(
+            [str(part) for part in parts],
+            ["<open b>", "Jupiter", "<close b>", " rules house 5"],
+        )
+        self.assertEqual(dict(parts[0].options), {})
+        # A renderer that knows no tag joins the text parts and loses
+        # nothing.
+        self.assertEqual(
+            "".join(part.value for part in parts if part.is_text), rich.text
+        )
+
+    def test_a_message_without_markup_is_the_one_text_part(self) -> None:
+        plain = self.ctx.intl.render(
+            "sdk.reason.grahaInBhava",
+            {"graha": {"$entity": "graha.JUPITER"}, "bhava": 7},
+        )
+        # The boundary sends nothing for it; the part is made here rather
+        # than carried, so the text is never written twice.
+        self.assertEqual(plain.parts, "[]")
+        made = message_parts(plain)
+        self.assertEqual([part.value for part in made], [plain.text])
+        self.assertTrue(made[0].is_text)
 
     def test_a_message_the_locale_lacks_is_reported_rather_than_invented(self) -> None:
         self.assertTrue(self.ctx.intl.has("sdk.reason.grahaInBhava"))

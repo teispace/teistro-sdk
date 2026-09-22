@@ -465,6 +465,30 @@ fn positions(report: &mut Report, sdk: &Context) {
     );
 }
 
+/// A rendered message's parts as every binding's runner spells them.
+fn part_shape(parts: &[teistro_intl::OutPart]) -> String {
+    parts
+        .iter()
+        .map(|part| match part {
+            teistro_intl::OutPart::Text(value) => format!("text:{value}"),
+            teistro_intl::OutPart::Markup {
+                kind,
+                name,
+                options,
+            } => {
+                let mut options: Vec<String> = options
+                    .iter()
+                    .map(|(name, value)| format!("{name}={value}"))
+                    .collect();
+                options.sort();
+                let kind = format!("{kind:?}").to_lowercase();
+                format!("{kind}:{name}({})", options.join(","))
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("|")
+}
+
 /// The locale engine, as the report prints it.
 fn the_locale(report: &mut Report, sdk: &Context) {
     let rendered = sdk
@@ -488,6 +512,20 @@ fn the_locale(report: &mut Report, sdk: &Context) {
             .unwrap_or_else(|| String::from("none")),
     );
     put(report, "render-fallback", rendered.is_fallback.to_string());
+    // A rendered message's parts, which is what a rich renderer walks.
+    // `sdk.reason.lordship` is one of the two shipped messages carrying
+    // `{#b}`; the plain one beside it holds every binding to the rule
+    // that no markup means the one text part. Rust reads the parts from
+    // the value rather than from a blob, which is exactly why it belongs
+    // in the comparison: the two paths must agree.
+    let rich = sdk
+        .intl()
+        .render_typed(&teistro::messages::sdk::reason::Lordship {
+            graha: Graha::Jupiter,
+            bhava: 5,
+        });
+    put(report, "render-rich-parts", part_shape(&rich.parts));
+    put(report, "render-plain-parts", part_shape(&rendered.parts));
     put(
         report,
         "has-message",

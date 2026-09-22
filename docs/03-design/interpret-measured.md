@@ -238,6 +238,44 @@ a frame around **slots**, and a slot is named in every shipped locale
 | `sa-Deva` | `base` | 0 of 433 | 374 of 433 |
 | `sa-Latn` | `base` | 0 of 433 | 367 of 433 |
 
+## What a rich renderer gets
+
+MF2 markup (`{#b}…{/b}`) is how a message says that part of it is a
+name, emphasis or a link **without saying what that looks like**: the
+message stays free of any markup language and the consumer's renderer
+decides. Until a rendered message's parts crossed the C boundary only a
+Rust caller could see one, so the numbers below are what the other three
+bindings had no way to reach — the messages carried the tags and the
+text arrived with them stripped.
+
+| locale | items with markup | markup parts | tags |
+|---|---:|---:|---|
+| `en-Latn` | 21 of 433 | 42 | `b` |
+| `ne-Deva-NP` | 21 of 433 | 42 | `b` |
+
+| key | items of the plan |
+|---|---:|
+| `sdk.condition.friendship` | 9 |
+| `sdk.reason.lordship` | 12 |
+
+The share is small and the property beside it is what makes the boundary
+safe to use: **the text parts joined are the text**, for every item in
+every strict locale, so a renderer that knows none of the tags can drop
+every markup part and lose no words. That is what lets a binding ship
+the parts before anyone has written a renderer for them.
+
+The key table is the **base locale's**, and every strict locale marks up
+the same items, which the pass fails on rather than reports: a
+translation that drops the base's markup reads perfectly as text and
+tells a renderer nothing, so the loss is invisible in exactly the place
+a reviewer looks. The engine's own parity check refuses it at the
+source, and this is that rule read back off a rendered plan.
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| a rendered item's text parts, joined, are its text | **holds** | 0 of 866 disagree |
+| every strict locale marks up the same items of the plan | **holds** | 0 of 2 disagree |
+
 ## Every key, emitted at least once
 
 The table above counts what the **recorded corpus** exercises, and it

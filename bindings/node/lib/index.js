@@ -1417,6 +1417,18 @@ export class Rendered extends Decoded {
     return this.decoded.isOverride === 1;
   }
 
+  /**
+   * The message in parts, its markup kept: what a rich renderer walks.
+   *
+   * The boundary sends nothing when the message has no markup, because
+   * the parts would then be the text written twice; the one part is
+   * made here rather than carried.
+   */
+  get parts() {
+    const written = JSON.parse(this.decoded.parts || '[]');
+    return written.length ? written : [{ type: 'text', value: this.text }];
+  }
+
   /** Every problem met; rendering continues past each. */
   get warnings() {
     return JSON.parse(this.decoded.warnings);

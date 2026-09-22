@@ -185,6 +185,10 @@ export function decodeIntlRender(bytes) {
     const at = section(blob, 4, 'warnings');
     out.warnings = text(blob, at);
   }
+  {
+    const at = section(blob, 5, 'parts');
+    out.parts = text(blob, at);
+  }
   return out;
 }
 

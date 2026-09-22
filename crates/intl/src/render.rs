@@ -213,7 +213,10 @@ pub enum OutPart {
 pub struct Rendered {
     /// The plain text: the text parts joined, markup stripped.
     pub text: String,
-    /// The parts, for rich renderers.
+    /// The parts, for rich renderers: the same text as `text`, with the
+    /// markup kept rather than stripped. Adjacent text is one part, so a
+    /// part boundary is always a markup boundary, and a message with no
+    /// markup is a single [`OutPart::Text`] holding the whole of `text`.
     pub parts: Vec<OutPart>,
     /// The locale whose message answered, `None` when no locale had it.
     pub resolved_from: Option<String>,
@@ -848,14 +851,13 @@ impl Intl {
         })?;
         let mut eval = Eval::new(self, locale, &self.current, params, 0);
         let parts = eval.message(&message);
-        Ok(Rendered {
-            text: plain_text(&parts),
+        Ok(rendered(
             parts,
-            resolved_from: Some(locale.tag.clone()),
-            is_fallback: false,
-            is_override: false,
-            warnings: eval.warnings,
-        })
+            Some(locale.tag.clone()),
+            false,
+            false,
+            eval.warnings,
+        ))
     }
 
     fn render_from(&self, tag: &str, key: &str, params: &Params, depth: u8) -> Rendered {
@@ -865,16 +867,15 @@ impl Intl {
             is_override,
         }) = self.resolution_from(tag, key)
         else {
-            return Rendered {
-                text: key.to_string(),
-                parts: vec![OutPart::Text(key.to_string())],
-                resolved_from: None,
-                is_fallback: false,
-                is_override: false,
-                warnings: vec![format!(
+            return rendered(
+                vec![OutPart::Text(key.to_string())],
+                None,
+                false,
+                false,
+                vec![format!(
                     "missing message `{key}` in {tag} and its fallbacks"
                 )],
-            };
+            );
         };
         let is_fallback = locale.tag != tag;
         let mut warnings = Vec::new();
@@ -893,14 +894,13 @@ impl Intl {
                 }
             },
         };
-        Rendered {
-            text: plain_text(&parts),
+        rendered(
             parts,
-            resolved_from: Some(locale.tag.clone()),
+            Some(locale.tag.clone()),
             is_fallback,
             is_override,
             warnings,
-        }
+        )
     }
 
     /// The plural categories a locale's rules can produce.
@@ -964,6 +964,47 @@ pub fn plain_text(parts: &[OutPart]) -> String {
             OutPart::Markup { .. } => None,
         })
         .collect()
+}
+
+/// Adjacent text as one part, which is the shape [`Rendered::parts`]
+/// promises and the one a renderer walks.
+///
+/// The evaluator pushes a part per element of the pattern, so a literal
+/// and the value beside it arrive separately — `" rules house "` and
+/// `"5"` for `{#b}{$graha}{/b} rules house {$bhava :integer}`. Nothing
+/// downstream can tell the two apart, because an expression's result is
+/// already `Text` by the time it is a part, so keeping them separate
+/// would only make the shape depend on how the message was written. A
+/// part boundary is therefore always a **markup** boundary.
+fn coalesced(parts: Vec<OutPart>) -> Vec<OutPart> {
+    let mut out: Vec<OutPart> = Vec::with_capacity(parts.len());
+    for part in parts {
+        match (out.last_mut(), part) {
+            (Some(OutPart::Text(standing)), OutPart::Text(next)) => standing.push_str(&next),
+            (_, part) => out.push(part),
+        }
+    }
+    out
+}
+
+/// The one place a [`Rendered`] is built, so its `text` is always its
+/// `parts` and its parts are always coalesced.
+fn rendered(
+    parts: Vec<OutPart>,
+    resolved_from: Option<String>,
+    is_fallback: bool,
+    is_override: bool,
+    warnings: Vec<String>,
+) -> Rendered {
+    let parts = coalesced(parts);
+    Rendered {
+        text: plain_text(&parts),
+        parts,
+        resolved_from,
+        is_fallback,
+        is_override,
+        warnings,
+    }
 }
 
 /// A value inside an evaluation.

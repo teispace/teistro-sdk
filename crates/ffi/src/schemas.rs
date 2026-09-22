@@ -184,7 +184,8 @@ pub fn positions() -> BlobSchema {
     }
 }
 
-/// A rendered message: the text, where it resolved from, and the warnings.
+/// A rendered message: the text, its parts, where it resolved from, and the
+/// warnings.
 #[must_use]
 pub fn intl_render() -> BlobSchema {
     BlobSchema {
@@ -220,6 +221,11 @@ pub fn intl_render() -> BlobSchema {
                 4,
                 "warnings",
                 "UTF-8 JSON: an array of strings, one per problem met.",
+            ),
+            SectionSchema::bytes(
+                5,
+                "parts",
+                "UTF-8 JSON: the message's parts, for a rich renderer \u{2014} `{\"type\": \"text\", \"value\": ...}` or `{\"type\": \"markup\", \"kind\": \"open\"|\"close\"|\"standalone\", \"name\": ..., \"options\": {...}}`, adjacent text in one part. **Empty when the message has no markup**, the whole of it being `text`; a reader turns that into the one text part rather than asking for it twice.",
             ),
         ],
     }

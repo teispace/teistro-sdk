@@ -28,7 +28,7 @@ import sys
 from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
-from types import TracebackType
+from types import MappingProxyType, TracebackType
 from typing import Any, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Sequence, Tuple, TypedDict, TypeVar, Union
 
 from . import messages as intl
@@ -184,6 +184,7 @@ __all__ = [
     "InstallError",
     "IntlLoaded",
     "IntlRender",
+    "MessagePart",
     "Latitude",
     "Longitude",
     "ChoghadiyaPeriod",
@@ -223,6 +224,7 @@ __all__ = [
     "intl",
     "library_file_name",
     "local_mean_zone",
+    "message_parts",
     "when_unknown",
     # The divisional charts: the catalogue member a caller names and the
     # three shapes a chart's `vargas` answers with.
@@ -908,6 +910,68 @@ class TimeArea(_Area):
     def delta_t(self, jd_ut1: float) -> DeltaT:
         """TT less UT1 at an instant, and where the value came from."""
         return self._context.inner.time_delta_t(jd_ut1)
+
+
+@dataclass(frozen=True)
+class MessagePart:
+    """One part of a rendered message: its text, or a markup tag standing
+    in the text.
+
+    MF2 markup (`{#b}...{/b}`) is how a message says that part of it is a
+    link, a name or emphasis, **without saying what that looks like** —
+    the message stays free of markup languages and the renderer decides.
+    A renderer walks the parts, writes the text ones and opens or closes
+    whatever a tag means in its own world.
+    """
+
+    is_text: bool
+    """Whether this is text rather than a tag."""
+
+    value: str = ""
+    """The text, already formatted and localised; empty for a tag."""
+
+    kind: str = ""
+    """`open`, `close` or `standalone`; empty for text."""
+
+    name: str = ""
+    """The tag's name, as the message wrote it: `b`, `link`, ..."""
+
+    options: Mapping[str, str] = MappingProxyType({})
+    """Its options, each already resolved to a string."""
+
+    def __str__(self) -> str:
+        return self.value if self.is_text else f"<{self.kind} {self.name}>"
+
+
+def message_parts(rendered: IntlRender) -> List[MessagePart]:
+    """A rendered message in parts, its markup kept: what a rich renderer
+    walks.
+
+    Joining the text parts gives exactly `rendered.text`, so a renderer
+    that does not know a tag can ignore it and lose nothing. The boundary
+    sends nothing when the message has no markup, because the parts would
+    then be the text written twice; the one part is made here rather than
+    carried.
+
+    ```python
+    for part in message_parts(ctx.intl.render("sdk.reason.lordship", ...)):
+        print(part.value if part.is_text else part.name)
+    ```
+    """
+    written = json.loads(rendered.parts or "[]")
+    if not written:
+        return [MessagePart(is_text=True, value=rendered.text)]
+    return [
+        MessagePart(is_text=True, value=part["value"])
+        if part["type"] == "text"
+        else MessagePart(
+            is_text=False,
+            kind=part["kind"],
+            name=part["name"],
+            options=MappingProxyType(dict(part["options"])),
+        )
+        for part in written
+    ]
 
 
 class IntlArea(_Area):

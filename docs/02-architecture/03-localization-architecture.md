@@ -48,7 +48,7 @@ No computation crate depends on `intl`.
 | parameters | declared inline by MF2 usage; the type follows from the function (`{$count :integer}`, `{$graha :entity kind=graha}`) or from a context (`:string` on a variable named like a context, or selected with its values); a bare `{$name}` is text; no sidecar |
 | plural and ordinal | `.input {$count :integer} .match $count one {{...}} * {{...}}` with CLDR categories and exact numeric keys (`1 2 3 4 *` for Nepali ordinals); ordinal via `:integer select=ordinal` |
 | select and contexts | `.input {$gender :string} .match $gender m {{...}} f {{...}} * {{...}}`; a context declared in `_meta.json` (`contexts.gender: [m, f, n]`) becomes a typed enum in the generated accessors; an entity selects on its own gender and key (`.input {$rashi :entity kind=rashi} .match $rashi f {{...}} * {{...}}`) |
-| rich text | MF2 markup `{#link href=$url}...{/link}`; renderers per binding; plain-text rendering strips markup |
+| rich text | MF2 markup `{#link href=$url}...{/link}`; a render carries both, the plain text with the markup stripped and the **parts** with it kept, and the parts cross the boundary so a renderer per binding is a consumer's to write rather than the SDK's to permit; adjacent text is one part, and the text parts joined are the plain text, so ignoring a tag loses no words |
 | linked messages | the `:msg` function (`{sdk.ui.appName :msg}`) resolves another message; an SDK extension to MF2, documented as such |
 | escaping | MF2 rules (`{{`, `}}` and `\{`) only; no other syntax |
 | fallback | `_meta.json` `fallback: ["ne-Deva-NP", "en-Latn"]`; SDK-shipped locales must be complete (`strict`, gated); consumer packs may be partial (`base`) |

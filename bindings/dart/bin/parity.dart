@@ -140,6 +140,25 @@ void main() {
   put('render-length', rendered.text.runes.length);
   put('render-resolved-from', rendered.resolvedFrom);
   put('render-fallback', rendered.fallback);
+  // A rendered message's parts, which is what a rich renderer walks.
+  // `sdk.reason.lordship` is one of the two shipped messages carrying
+  // `{#b}`; the plain one beside it holds every binding to the rule that
+  // no markup means the one text part, made rather than carried.
+  String partShape(List<MessagePart> parts) => parts
+      .map(
+        (part) =>
+            part.isText
+                ? 'text:${part.value}'
+                : '${part.kind}:${part.name}('
+                    '${(part.options.entries.toList()..sort((a, b) => a.key.compareTo(b.key))).map((o) => '${o.key}=${o.value}').join(',')})',
+      )
+      .join('|');
+  final rich = ctx.intl.render('sdk.reason.lordship', {
+    'graha': {r'$entity': 'graha.JUPITER'},
+    'bhava': 5,
+  });
+  put('render-rich-parts', partShape(rich.partList));
+  put('render-plain-parts', partShape(rendered.partList));
   put('has-message', ctx.intl.has('sdk.reason.grahaInBhava'));
   put('has-missing-message', ctx.intl.has('sdk.nope.missing'));
   put('transliterated', ctx.intl.transliterate('सूर्य बृहस्पति'));

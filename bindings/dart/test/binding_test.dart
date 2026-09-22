@@ -352,6 +352,39 @@ void main() {
     );
   });
 
+  test('a rendered message carries its markup in parts, and plain text '
+      'in one', () {
+    final ctx = context();
+    ctx.intl.locale = 'en-Latn';
+    // `sdk.reason.lordship` is one of the two shipped messages that use
+    // MF2 markup. Without the parts a renderer can only ever print the
+    // text, which is why the message may as well not have had the tag.
+    final rich = ctx.intl.render('sdk.reason.lordship', {
+      'graha': {r'$entity': 'graha.JUPITER'},
+      'bhava': 5,
+    });
+    expect(rich.text, 'Jupiter rules house 5');
+    final parts = rich.partList;
+    expect(parts.map((p) => p.toString()).toList(), [
+      '<open b>',
+      'Jupiter',
+      '<close b>',
+      ' rules house 5',
+    ]);
+    expect(parts.first.options, isEmpty);
+    // A renderer that knows no tag joins the text parts and loses nothing.
+    expect(parts.where((p) => p.isText).map((p) => p.value).join(), rich.text);
+
+    // A message with no markup is the one text part, made here rather
+    // than carried: the boundary sends nothing for it.
+    final plain = ctx.intl.render('sdk.reason.grahaInBhava', {
+      'graha': {r'$entity': 'graha.JUPITER'},
+      'bhava': 7,
+    });
+    expect(plain.parts, '[]', reason: 'the boundary sent none');
+    expect(plain.partList.single.value, plain.text);
+  });
+
   test('a quantity is its own type, and its constructor checks the '
       'range', () {
     final ctx = context();

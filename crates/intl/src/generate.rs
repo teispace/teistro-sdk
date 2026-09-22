@@ -39,8 +39,6 @@ pub struct MessageModel {
     pub key: String,
     /// Parameters in name order.
     pub params: Vec<(String, ParamType)>,
-    /// Whether the message uses markup.
-    pub rich: bool,
 }
 
 /// The forms a binding types as always present: a record that lacks one
@@ -99,7 +97,6 @@ impl Model {
                         Node::Message(MessageModel {
                             key: full.clone(),
                             params: sig.params.into_iter().collect(),
-                            rich: !sig.markup.is_empty(),
                         })
                     }
                     Entry::Entity(entity) => {

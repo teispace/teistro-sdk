@@ -274,9 +274,9 @@ fn json_string(text: &str) -> String {
 /// "minute": 15, "second": 0}}`; a date and time `{"$datetime": {"date":
 /// {...}, "time": {...}}}`; a ghati count `{"$ghati": {"ghati": 12,
 /// "pala": 30, "vipala": 0}}`. A null `params_json` renders with none.
-/// The result blob carries the text, where it resolved from and the
-/// warnings; a missing message renders as its key with a warning, never
-/// an error.
+/// The result blob carries the text, its parts, where it resolved from
+/// and the warnings; a missing message renders as its key with a
+/// warning, never an error.
 ///
 /// `api: blob=intl_render`
 /// `api: params_json: nullable`
@@ -325,6 +325,10 @@ pub unsafe extern "C" fn ts_intl_render(
             let warnings =
                 serde_json::to_string(&rendered.warnings).unwrap_or_else(|_| String::from("[]"));
             writer.bytes("warnings", warnings.as_bytes())?;
+            writer.bytes(
+                "parts",
+                teistro_intl::wire::parts_json(&rendered).as_bytes(),
+            )?;
             writer.finish()
         })()
         .map_err(|e| Error::internal(format!("the render blob did not encode: {e}")))?;
