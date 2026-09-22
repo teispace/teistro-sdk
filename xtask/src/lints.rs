@@ -694,6 +694,13 @@ const COUNTED_IN_PROSE: [&str; 3] = ["none is open", "question is open", "questi
 /// The heading of the step a reader is told to start from.
 const RESUME: &str = "## How to resume";
 
+/// The other list a settled question must not be left in: what remains.
+///
+/// `Q24`'s mailboxes were chosen and the item stayed here, so anyone
+/// resuming had a decided question on their list of work. It is a
+/// different heading from [`RESUME`] and the same rot.
+const NEXT: &str = "## Next";
+
 /// That the tracker names every question the register still has open, and
 /// counts none of them.
 ///
@@ -730,17 +737,27 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
         });
         return;
     }
+    // Both lists of what is left to do: a decided question belongs in
+    // neither, and an open one must be named in the first.
+    let next = status
+        .split_once(NEXT)
+        .map(|(_, rest)| rest.split("\n## ").next().unwrap_or(rest))
+        .unwrap_or_default();
     for (at, line) in questions.lines().enumerate() {
         let Some(rest) = line.strip_prefix("## ") else {
             continue;
         };
-        if !line.ends_with(": `open`") {
-            continue;
-        }
         let Some(number) = rest.split('.').next() else {
             continue;
         };
-        if !resume.contains(number) {
+        // Open: the step a reader starts from must name it. Decided: it
+        // must **not**, because a settled question left in a list of what
+        // remains is work someone will go looking for. `Q24` sat there
+        // after its mailboxes were chosen, and `Q39` after this session
+        // decided it — the second put there by the very step that
+        // requires an open one to be named, which is why both directions
+        // belong in one rule.
+        if line.ends_with(": `open`") && !resume.contains(number) {
             outcome.failures.push(Finding {
                 file: register.to_owned(),
                 line: at + 1,
@@ -749,6 +766,18 @@ fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
                 ),
                 rule: RULE,
             });
+        }
+        for (list, heading) in [(resume, RESUME), (next, NEXT)] {
+            if line.ends_with(": `decided`") && list.contains(number) {
+                outcome.failures.push(Finding {
+                    file: register.to_owned(),
+                    line: at + 1,
+                    text: format!(
+                        "`{number}` is decided and {tracker}'s `{heading}` still names it"
+                    ),
+                    rule: RULE,
+                });
+            }
         }
     }
     for phrase in COUNTED_IN_PROSE {

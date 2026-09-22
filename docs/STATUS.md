@@ -45,7 +45,18 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-22 (**the consumer-facing example told a
+**Last updated:** 2026-09-22 (**a settled question sat on the list of
+what remains, and so did a repository that has existed for weeks**. The
+mailboxes of Q24 were chosen long ago and the item stayed under `##
+Next`; `teispace/teistro-conformance` was to be *created by the
+maintainer* there, and `fixtures/` has been a submodule of it pinned to
+`v0.11.0` for several releases. `open-question-is-named` now refuses a
+**decided** question in either list — the step a reader starts from or
+what remains — as well as requiring an open one to be named, and it
+caught a third instance immediately: **Q39, which I had put there myself
+while it was open**. Both directions belong in one rule, because the rule
+that puts a question on the list is the one that has to take it off.
+Before it, **the consumer-facing example told a
 reader there are seven composers; there are fifteen**. That is the
 count-beside-a-growing-list rot again, and this time in the worst place
 for it — `examples/interpretation.rs`, which is the first thing a
@@ -917,10 +928,11 @@ provider's DUT1).
    `open-question-is-named` now refuses both mistakes. **Q38**: whether a
    value the SDK computes but does not catalogue should become a kind,
    which is what 74 of the 126 unmigrated state readings are waiting on.
-   **Q39**: whether a plan should say the almanac's own limbs, which the
-   section table on `03-design/interpret-measured.md` raised and which is
-   a third `PlanRequest` member either way it goes. Q35, the MCP server,
-   is deferred by the maintainer to the end of the plan.
+   Q35, the MCP server,
+   is deferred by the maintainer to the end of the plan. A question that
+   is **decided** may not be named in this step or in `## Next` — the
+   same lint refuses it — because a settled question on a list of what
+   remains is work someone will go looking for.
 1a. **Two gate sweeps, not one.** `fast-check.yml`'s gates are the first;
    they are derived from the workflow rather than listed, and run under
    **bash**, because zsh does not word-split `$(...)` and the loop then
@@ -3479,10 +3491,10 @@ on pub.dev (checked 2026-09-07).
    everywhere today), the `zone` option on the date functions (it waits
    on zoned instants crossing the port), and the composite provider's
    precedence once a binding loads packs from several places.
-5. Q24: conduct and security mailboxes on the Teispace domain.
-6. Before Phase 1 exits: create `teispace/teistro-conformance` (CC0-1.0)
-   and move `fixtures/` into it as a submodule (ADR-0022); the
-   maintainer creates the repository.
+5. ~~Before Phase 1 exits: create `teispace/teistro-conformance`~~ —
+   **done**. The repository exists under CC0-1.0 and `fixtures/` is a
+   submodule of it, pinned to `v0.11.0` (ADR-0022). This item outlived
+   the work by several releases.
 7. Close the cruxes that block Phase 5 (C6 year length per system, C1,
    C2, C3, C8) by reading the texts; tradition reviewers as they appear.
 8. The rest of Phase 1's test-only infrastructure: instruction-count
@@ -3499,6 +3511,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-22 | **A settled question sat on the list of what remains, and so did a repository that has existed for weeks.** Q24's mailboxes were chosen long ago and the item stayed under `## Next`; the same list asked the maintainer to *create* `teispace/teistro-conformance`, which has been a submodule at `fixtures/` pinned to `v0.11.0` for several releases. `open-question-is-named` grew a second direction: a question marked **decided** may not be named in `## How to resume` or in `## Next`, as well as an open one having to be named in the first. It caught a third instance the moment it ran — **Q39, which I had put in the resume step myself while it was open and which this session then decided**. Both directions belong in one rule, because the rule that puts a question on the list is the one that has to take it off. Proved red both ways, and my own explanatory mention of Q39 tripped it: reworded rather than exempted, because an exemption is where a lint starts to rot. |
 | 2026-09-22 | **The example a consumer reads first said there are seven composers. There are fifteen.** Same rot as the crate table, the corpus size and the open-question count, and this time in `crates/sdk/examples/interpretation.rs` — the first thing a consumer reads — with `crates/interpret/README.md` saying *"the plan and eight composers"* and the module catalogue saying the same. A fourth, in the ABI test, claimed one section serves four composers where it now serves six. Fixed the way the lesson says: the count is **removed** rather than updated, and the prose points at `PlanRequest::MEMBERS`, which is the authority and cannot go stale. The module catalogue keeps its description of the first eight and says so — that entry is a record of where the shape was decided, not a list of what exists. |
 | 2026-09-22 | **Two of the three remaining "decisions" were not decisions.** `BHAVA_BALA` was recorded as wanting *what a bhava must reach*. It wants nothing of the kind: a `BhavaStrength` carries the four parts and their total and **no requirement at all**, where a `GrahaShadbala` carries `required_rupas` beside `strong`. There is no verdict to decline and no threshold to invent, so the composer says the weight and stops — and it needed no new vocabulary, an ordinal frame and a number both already in use. `VIMSHOPAKA` was recorded as wanting a knob, because one composer saying four schemes *would say the same graha four times*. It does, and so does every per-graha composer; what would make that **repetition** is a message that did not say which scheme it meant. The four are struct fields rather than a catalogue kind, so the scheme crosses as its key and the message matches on it as `lifeClass` does: four words. Both built, the fourteenth and fifteenth composers, declared and exercised in all three bindings. A bhava is said in the **wheel's order** where a graha is **ranked**, which looks inconsistent and is not: a graha's weight is read against the others and a bhava's is read in place. This is the third time in one day that a row's stated blocker did not survive its own code — after `VAISESHIKAMSA`, which turned out to be unnamed rather than merely multi-scheme, and `DASHA_PHALA`, which turned out to be the cheapest rather than blocked. **A reason written down without reading the source is a guess with a citation.** `ASHTAKAVARGA` is the one that stayed a decision, and honestly so: which of eighty-four numbers deserves a sentence is a reading question. `MEMBERS` 15, `KEYS` 67, 8 of 11 sections said. |
 | 2026-09-22 | **A Hindi reader gets 0 of 393 items in Hindi. That was a flag and is now a number.** The locale roster puts `hi-Deva-IN`, `sa-Deva` and `sa-Latn` at `base` completeness *until their messages are translated*, which says nothing about what a reader loses. Measured against the founded chart's plan: `en-Latn` and `ne-Deva-NP` answer **393 of 393** from their own messages, and the other three answer **0**. The table says the other half too, because the gap is not all-or-nothing — an item is a frame around **entity slots**, and those are named in every shipped locale, so a Hindi reader gets the grahas, rashis and nakshatras in Devanagari inside an English sentence. What would close it is already measured on the same page: **69 messages over six namespaces**, the largest `sdk.calendar` at 28, which is the same list a native reviewer reads. A completeness flag is a fact about a file; this is a fact about a reader, and only one of the two belongs in a decision about whether to translate. |
