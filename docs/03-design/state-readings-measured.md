@@ -104,11 +104,12 @@ A pack that loads is half of it; the other half is that a record reaches
 a reader. Every reading a composer has a message for — `phala` for the
 chart's subjects and what its nakshatra is, `readings` for a rule's
 timing, `dasha_phala` for a graha as a dasha lord, `states` for each
-avastha a graha is in — is rendered here through that message, in each
-strict locale, and must answer from the locale's own record without a
-fallback and without a warning: 742 renderings.
+avastha a graha is in, `conditions` for a dignity and a condition — is
+rendered here through that message, in each strict locale, and must
+answer from the locale's own record without a fallback and without a
+warning: 756 renderings.
 
-**54 readings have no composer that says them yet**, by the category
+**47 readings have no composer that says them yet**, by the category
 they came from. They are not errors — the records load and a consumer
 reads them directly — but a reading nothing says is work that has not
 reached a reader, so the list is here rather than in a sentence.
@@ -120,12 +121,11 @@ reached a reader, so the list is here rather than in a sentence.
 | `inauspicious-kaal` | 3 |
 | `ishta-devata` | 12 |
 | `mantra-ritual` | 9 |
-| `planet-condition` | 7 |
 | `special-lagna` | 5 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every reading a composer says renders from the locale's own record, with no fallback and no warning | **holds** | 0 of 742 disagree |
+| every reading a composer says renders from the locale's own record, with no fallback and no warning | **holds** | 0 of 756 disagree |
 
 ## What it leaves open
 

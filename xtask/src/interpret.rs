@@ -373,7 +373,7 @@ fn composed(
                 .collect();
             let mut plan = placements(&chart);
             plan.items.extend(positions(&chart));
-            plan.items.extend(conditions(&chart));
+            plan.items.extend(conditions(&chart, vocabulary));
             plan.items.extend(karakas(&chart));
             plan.items.extend(phala(&chart, vocabulary));
             plan.items.extend(aspects(&relations(&chart)?));

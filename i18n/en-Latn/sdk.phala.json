@@ -16,5 +16,7 @@
   "avasthaBaladi": "{$avastha :entity kind=avastha_baladi form=phala}",
   "avasthaJagradadi": "{$avastha :entity kind=avastha_jagradadi form=phala}",
   "avasthaDeeptadi": "{$avastha :entity kind=avastha_deeptadi form=phala}",
-  "avasthaLajjitadi": "{$avastha :entity kind=avastha_lajjitadi form=phala}"
+  "avasthaLajjitadi": "{$avastha :entity kind=avastha_lajjitadi form=phala}",
+  "dignity": "{$dignity :entity kind=dignity form=phala}",
+  "state": "{$state :entity kind=state form=phala}"
 }

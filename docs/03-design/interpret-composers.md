@@ -548,6 +548,18 @@ reader this way, more than any other step, and the reason they were cheap
 is the test for the ones that are left — a category whose subject the SDK
 already computes *and already names* can be said without a decision.
 
+**`conditions` says a corpus's reading beside its own.** Seven of the
+state corpus's readings key onto `dignity.EXALTED` and its three
+neighbours and onto `state.{RETROGRADE, COMBUST, VARGOTTAMA}`, which are
+exactly the conditions that composer already names — so it gained the
+vocabulary parameter and says the reading **beside** the fact rather than
+instead of it. The fact is the SDK's and the reading is the corpus's, and
+a graha that is not burnt says nothing of burning however much a pack
+carries. `state`'s own members have no name in any locale and that does
+not block it: the message renders the `phala` form and never asks for the
+name — an unnamed kind blocks a composer that would print its *name*, not
+one that prints a form on its record.
+
 **It asks the same trait `readings` asks**, of the same base locale and for
 the same reason. `Vocabulary` was spelled for one subject
 (`has_reading(rule)`); a second subject made it the general question it

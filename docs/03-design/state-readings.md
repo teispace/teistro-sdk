@@ -388,6 +388,25 @@ before — *every shipped rule carries a reading* — becomes one it can.
   exactly as `lagnaPhala` is on a rashi. Nothing computed, nothing chosen,
   no kind decided.
 
+  **`planet-condition` closed last, and it was the last cheap one.** Its
+  seven readings key onto two kinds the SDK computes for every graha:
+  `dignity.{EXALTED, MOOLTRIKONA, OWN_SIGN, DEBILITATED}` — four — and
+  `state.{RETROGRADE, COMBUST, VARGOTTAMA}` — three. `conditions` already
+  said all four facts in words of its own, so what was missing was a
+  *second* item beside each: what a corpus says of that condition. It
+  could not go in `states`, because a `GrahaState` carries no navamsha
+  and so cannot tell whether a graha is vargottama; it went into
+  `conditions`, which reads the `RuleChart` that does, and that composer
+  gained the vocabulary parameter every corpus-reading composer takes.
+  `state`'s own members are **unnamed** and that did not block it: the
+  message renders the `phala` form and never asks for the name, which is
+  the distinction worth keeping — an unnamed kind blocks a composer that
+  would print its *name*, not one that prints a form on its record.
+
+  A reading of a condition is said **beside** the fact, not instead of
+  it: the fact is the SDK's and the reading is the corpus's, and a graha
+  that is not burnt says nothing of burning however much a pack carries.
+
   The **avasthas** closed with the twelfth, `states`, and they are the
   cheapest case of all: `avastha_baladi`, `avastha_jagradadi`,
   `avastha_deeptadi` and `avastha_lajjitadi` are catalogue kinds whose
@@ -422,7 +441,12 @@ before — *every shipped rule carries a reading* — becomes one it can.
   rules whose verse states no effect, listed on the measured page as
   rules with no reading. A category whose subject the SDK already
   computes and already names can be said without a decision; the ones
-  left are the ones where that is not true. That is the test, and it
+  left are the ones where that is not true. **Nothing cheap is left**:
+  the 47 remaining are 39 in four remedy families that want Phase 8's
+  `remedies` to decide which graha or rashi a remedy is *for*, 5
+  `special-lagna` waiting on a vetted name table, and 3
+  `inauspicious-kaal` waiting on something that reads a **time** rather
+  than a chart. That is the test, and it
   sorts what remains: `graha-color`, `graha-direction`, `mantra-ritual`
   and `ishta-devata` name subjects the SDK computes and catalogues, but
   *which* graha or rashi a remedy is for is a rule this corpus does not

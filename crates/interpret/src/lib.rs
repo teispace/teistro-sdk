@@ -83,7 +83,7 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 56] = [
+pub const KEYS: [&str; 58] = [
     <reason::PointInRashi as TypedMessage>::KEY,
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
@@ -136,6 +136,8 @@ pub const KEYS: [&str; 56] = [
     <phala_messages::AvasthaJagradadi as TypedMessage>::KEY,
     <phala_messages::AvasthaDeeptadi as TypedMessage>::KEY,
     <phala_messages::AvasthaLajjitadi as TypedMessage>::KEY,
+    <phala_messages::Dignity as TypedMessage>::KEY,
+    <phala_messages::State as TypedMessage>::KEY,
     <dasha::Phase as TypedMessage>::KEY,
     <dasha::Place as TypedMessage>::KEY,
     <dasha::Points as TypedMessage>::KEY,

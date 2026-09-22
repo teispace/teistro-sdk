@@ -84,7 +84,8 @@ impl<'a> InterpretArea<'a> {
     /// A document a rule cannot read: one without its graha states, naming
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn conditions(self, document: &Document) -> Result<Plan, Error> {
-        Ok(conditions(&RuleInputs::of(document)?.chart))
+        let engine = self.context.locale_engine();
+        Ok(conditions(&RuleInputs::of(document)?.chart, &*engine))
     }
 
     /// Which chara karaka each of the nine grahas holds, under the

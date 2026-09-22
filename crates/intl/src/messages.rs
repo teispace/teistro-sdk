@@ -1311,6 +1311,22 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.phala.dignity`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Dignity {
+            /// The `dignity` parameter.
+            pub dignity: teistro_core::catalogue::Dignity,
+        }
+
+        impl crate::TypedMessage for Dignity {
+            const KEY: &'static str = "sdk.phala.dignity";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("dignity", crate::Value::catalogued(self.dignity)),
+                ])
+            }
+        }
+
         /// The message `sdk.phala.gana`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct Gana {
@@ -1409,6 +1425,22 @@ pub mod sdk {
             fn params(&self) -> crate::Params {
                 crate::params([
                     ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.state`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct State {
+            /// The `state` parameter.
+            pub state: teistro_core::catalogue::State,
+        }
+
+        impl crate::TypedMessage for State {
+            const KEY: &'static str = "sdk.phala.state";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("state", crate::Value::catalogued(self.state)),
                 ])
             }
         }

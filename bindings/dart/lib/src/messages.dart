@@ -1760,6 +1760,8 @@ final class MessagesSdkPhala {
       _r.render('sdk.phala.dashaActivation', {'graha': {r'$entity': graha.key}});
   String dashaLord({required GrahaKey graha}) =>
       _r.render('sdk.phala.dashaLord', {'graha': {r'$entity': graha.key}});
+  String dignity({required DignityKey dignity}) =>
+      _r.render('sdk.phala.dignity', {'dignity': {r'$entity': dignity.key}});
   String gana({required GanaKey gana}) =>
       _r.render('sdk.phala.gana', {'gana': {r'$entity': gana.key}});
   String grahaInBhava({required int bhava, required GrahaKey graha, required String phala}) =>
@@ -1772,6 +1774,8 @@ final class MessagesSdkPhala {
       _r.render('sdk.phala.nakshatra', {'nakshatra': {r'$entity': nakshatra.key}});
   String namakarana({required NakshatraKey nakshatra}) =>
       _r.render('sdk.phala.namakarana', {'nakshatra': {r'$entity': nakshatra.key}});
+  String state({required StateKey state}) =>
+      _r.render('sdk.phala.state', {'state': {r'$entity': state.key}});
   String tatwa({required TatwaKey tatwa}) =>
       _r.render('sdk.phala.tatwa', {'tatwa': {r'$entity': tatwa.key}});
   String tithi({required TithiKey tithi}) =>

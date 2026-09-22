@@ -477,8 +477,9 @@ const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
 /// things the birth nakshatra *is*, `readings` says a rule's timing
 /// beside the rule it belongs to, `dasha_phala` says what a corpus
 /// carries of a graha as a dasha lord, `states` says what it carries of
-/// each avastha a graha is in, and this asks whether the corpus's every
-/// such record can be **said**. A subject no
+/// each avastha a graha is in, `conditions` says what it carries of a
+/// dignity or a condition a graha is in, and this asks whether the
+/// corpus's every such record can be **said**. A subject no
 /// composer has a message for is not in this list and is counted apart,
 /// because a reading nothing can say is work that does not reach a reader
 /// (`03-design/state-readings.md` §5).
@@ -486,7 +487,7 @@ const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
 /// A row whose message no composer emits is caught by
 /// [`every_message_is_a_composer_key`], so this list cannot name a message
 /// that has been renamed or withdrawn.
-const SAID_BY: [(&str, &str, &str, &str); 19] = [
+const SAID_BY: [(&str, &str, &str, &str); 21] = [
     ("graha_bhava", NAME_FORM, GRAHA_IN_BHAVA, "phala"),
     ("rashi", "lagnaPhala", "sdk.phala.lagnaRashi", "rashi"),
     ("tithi", "phala", "sdk.phala.tithi", "tithi"),
@@ -536,6 +537,8 @@ const SAID_BY: [(&str, &str, &str, &str); 19] = [
         "sdk.phala.avasthaLajjitadi",
         "avastha",
     ),
+    ("dignity", "phala", "sdk.phala.dignity", "dignity"),
+    ("state", "phala", "sdk.phala.state", "state"),
 ];
 
 /// The message that says when a rule acts, which is the one of the seven
@@ -750,8 +753,9 @@ fn what_a_composer_can_say(
          reaches a reader. Every reading a composer has a message for — \
          `phala` for the chart's subjects and what its nakshatra is, \
          `readings` for a rule's timing, `dasha_phala` for a graha as a \
-         dasha lord, `states` for each avastha a graha is in — is \
-         rendered here through that message, in each strict locale, \
+         dasha lord, `states` for each avastha a graha is in, \
+         `conditions` for a dignity and a condition — is rendered here \
+         through that message, in each strict locale, \
          and must answer from the locale's own record without a fallback \
          and without a warning: {}.\n\n",
         plural(said, "rendering"),

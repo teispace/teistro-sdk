@@ -29,11 +29,16 @@
 //! conditions that **are** absences — not retrograde, not burnt, not
 //! vargottama — are said only where they hold.
 
-use teistro_core::catalogue::Graha;
+use teistro_core::catalogue::{Graha, State};
 use teistro_intl::messages::sdk::condition;
+use teistro_intl::messages::sdk::phala as phala_messages;
 use teistro_rules::{Body, RuleChart};
 
-use crate::Plan;
+use crate::{Plan, Vocabulary};
+
+/// The form a corpus carries a condition's own reading under, the same on
+/// the dignity kind and on the state kind.
+const PHALA_FORM: &str = "phala";
 
 /// What each of the nine grahas is where it stands.
 ///
@@ -59,7 +64,7 @@ use crate::Plan;
 /// };
 /// let chart = RuleChart { placements: [placement; 10], panchanga: None, strengths: None };
 ///
-/// let plan = teistro_interpret::conditions(&chart);
+/// let plan = teistro_interpret::conditions(&chart, &teistro_interpret::NoReadings);
 /// // Each graha: its dignity, its navamsha, vargottama because the two
 /// // signs agree, and retrograde. Nothing is burnt.
 /// assert_eq!(plan.len(), 9 * 4);
@@ -67,7 +72,7 @@ use crate::Plan;
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[must_use]
-pub fn conditions(chart: &RuleChart) -> Plan {
+pub fn conditions(chart: &RuleChart, vocabulary: &dyn Vocabulary) -> Plan {
     let mut plan = Plan::default();
     for graha in Graha::ALL.into_iter().take(9) {
         let Some(at) = chart.placements.get(Body::Graha(graha).index()) else {
@@ -77,6 +82,11 @@ pub fn conditions(chart: &RuleChart) -> Plan {
             graha,
             dignity: at.dignity,
         });
+        if vocabulary.has_form(at.dignity.full_key(), PHALA_FORM) {
+            plan.say(&phala_messages::Dignity {
+                dignity: at.dignity,
+            });
+        }
         plan.say(&condition::Navamsha {
             graha,
             rashi: at.navamsha,
@@ -86,15 +96,31 @@ pub fn conditions(chart: &RuleChart) -> Plan {
         // of: the fact is already said, and the name is what the texts read.
         if at.navamsha == at.sign {
             plan.say(&condition::Vargottama { graha });
+            say_state(&mut plan, State::Vargottama, vocabulary);
         }
         if at.retrograde {
             plan.say(&condition::Retrograde { graha });
+            say_state(&mut plan, State::Retrograde, vocabulary);
         }
         if at.combust {
             plan.say(&condition::Combust { graha });
+            say_state(&mut plan, State::Combust, vocabulary);
         }
     }
     plan
+}
+
+/// What a corpus says of one condition, where it says anything.
+///
+/// The subject is the **condition** and not the graha, which is how the
+/// corpus keys it: `state.COMBUST` carries the reading of *being burnt*,
+/// and it is this graha's because this graha is burnt. So the item stands
+/// beside the one that named the fact rather than replacing it — the fact
+/// is the SDK's and the reading is the corpus's.
+fn say_state(plan: &mut Plan, state: State, vocabulary: &dyn Vocabulary) {
+    if vocabulary.has_form(state.full_key(), PHALA_FORM) {
+        plan.say(&phala_messages::State { state });
+    }
 }
 
 #[cfg(test)]
@@ -110,6 +136,7 @@ mod tests {
     use teistro_rules::{House, Placement};
 
     use super::*;
+    use crate::NoReadings;
     use crate::{Item, KEYS};
 
     /// Ten bodies, each in the next sign, none of them vargottama,
@@ -136,7 +163,7 @@ mod tests {
 
     #[test]
     fn a_dignity_and_a_navamsha_are_said_of_every_graha() {
-        let plan = conditions(&quiet());
+        let plan = conditions(&quiet(), &NoReadings);
         assert_eq!(plan.len(), 9 * 2, "nine grahas, two facts each");
         assert_eq!(
             plan.items[0],
@@ -158,7 +185,7 @@ mod tests {
     /// `Strength::None`, which `aspects` skips because it is an absence.
     #[test]
     fn a_neutral_dignity_is_a_dignity_and_is_said() {
-        let plan = conditions(&quiet());
+        let plan = conditions(&quiet(), &NoReadings);
         let neutral = plan
             .items
             .iter()
@@ -170,7 +197,7 @@ mod tests {
     /// The three conditions that are absences are said only where they hold.
     #[test]
     fn an_absence_is_not_said() {
-        let written = serde_json::to_string(&conditions(&quiet())).unwrap();
+        let written = serde_json::to_string(&conditions(&quiet(), &NoReadings)).unwrap();
         for absent in ["vargottama", "retrograde", "combust"] {
             assert!(!written.contains(absent), "{absent} in {written}");
         }
@@ -183,7 +210,7 @@ mod tests {
         sun.navamsha = sun.sign;
         sun.retrograde = true;
         sun.combust = true;
-        let plan = conditions(&chart);
+        let plan = conditions(&chart, &NoReadings);
         assert_eq!(plan.len(), 9 * 2 + 3, "the Sun gains three");
         assert_eq!(
             plan.items[2],
@@ -207,7 +234,7 @@ mod tests {
         for placement in &mut chart.placements {
             placement.navamsha = placement.sign;
         }
-        let plan = conditions(&chart);
+        let plan = conditions(&chart, &NoReadings);
         let named = plan
             .items
             .iter()
@@ -226,8 +253,74 @@ mod tests {
     /// composer leaves it out exactly as `placements` does.
     #[test]
     fn the_lagna_is_left_out_as_it_is_everywhere_else() {
-        let written = serde_json::to_string(&conditions(&quiet())).unwrap();
+        let written = serde_json::to_string(&conditions(&quiet(), &NoReadings)).unwrap();
         assert!(!written.contains("LAGNA"), "{written}");
+    }
+
+    /// A vocabulary carrying exactly the keys and forms it was given.
+    struct Carries(&'static [(&'static str, &'static str)]);
+
+    impl Vocabulary for Carries {
+        fn has_form(&self, key: &str, form: &str) -> bool {
+            self.0.iter().any(|(k, f)| *k == key && *f == form)
+        }
+    }
+
+    /// A corpus's reading of a condition stands **beside** the item that
+    /// named the fact, and its subject is the condition and not the graha:
+    /// `dignity.EXALTED` carries the reading of exaltation, and it is this
+    /// graha's because this graha is exalted.
+    #[test]
+    fn a_corpus_reading_of_a_condition_stands_beside_the_fact() {
+        let mut chart = quiet();
+        let sun = &mut chart.placements[Body::Graha(Graha::Sun).index()];
+        sun.dignity = Dignity::Exalted;
+        sun.navamsha = sun.sign;
+        sun.retrograde = true;
+        let carried = Carries(&[
+            ("dignity.EXALTED", "phala"),
+            ("state.RETROGRADE", "phala"),
+            ("state.VARGOTTAMA", "phala"),
+        ]);
+        let plan = conditions(&chart, &carried);
+        let said: Vec<&str> = plan
+            .items
+            .iter()
+            .take(6)
+            .map(|item| item.key.as_str())
+            .collect();
+        assert_eq!(
+            said,
+            [
+                "sdk.condition.dignity",
+                "sdk.phala.dignity",
+                "sdk.condition.navamsha",
+                "sdk.condition.vargottama",
+                "sdk.phala.state",
+                "sdk.condition.retrograde",
+            ],
+            "the reading follows the fact it reads"
+        );
+        for key in plan.keys() {
+            assert!(KEYS.contains(&key), "`{key}` is not in KEYS");
+        }
+        // Nothing is said of a condition the chart does not hold, however
+        // much a pack carries: no graha here is burnt.
+        let burnt = Carries(&[("state.COMBUST", "phala")]);
+        assert!(
+            conditions(&chart, &burnt)
+                .items
+                .iter()
+                .all(|item| item.key != "sdk.phala.state"),
+            "nothing is burnt"
+        );
+        // And a consumer with no pack gets the plan it had before.
+        assert!(
+            conditions(&chart, &NoReadings)
+                .items
+                .iter()
+                .all(|item| !item.key.starts_with("sdk.phala.")),
+        );
     }
 
     #[test]
@@ -238,17 +331,17 @@ mod tests {
             placement.retrograde = true;
             placement.combust = true;
         }
-        for key in conditions(&chart).keys() {
+        for key in conditions(&chart, &NoReadings).keys() {
             assert!(KEYS.contains(&key), "`{key}` is not in KEYS");
         }
     }
 
     #[test]
     fn a_plan_is_the_same_bytes_every_time() {
-        let once = serde_json::to_string(&conditions(&quiet())).unwrap();
-        let twice = serde_json::to_string(&conditions(&quiet())).unwrap();
+        let once = serde_json::to_string(&conditions(&quiet(), &NoReadings)).unwrap();
+        let twice = serde_json::to_string(&conditions(&quiet(), &NoReadings)).unwrap();
         assert_eq!(once, twice);
         let read: Plan = serde_json::from_str(&once).unwrap();
-        assert_eq!(read, conditions(&quiet()));
+        assert_eq!(read, conditions(&quiet(), &NoReadings));
     }
 }

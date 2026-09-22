@@ -1075,6 +1075,13 @@ class MessagesSdkPhala:
             {"graha": {"$entity": graha.value}},
         )
 
+    def dignity(self, *, dignity: DignityKey) -> str:
+        """`sdk.phala.dignity`"""
+        return self._r.render(
+            "sdk.phala.dignity",
+            {"dignity": {"$entity": dignity.value}},
+        )
+
     def gana(self, *, gana: GanaKey) -> str:
         """`sdk.phala.gana`"""
         return self._r.render(
@@ -1115,6 +1122,13 @@ class MessagesSdkPhala:
         return self._r.render(
             "sdk.phala.namakarana",
             {"nakshatra": {"$entity": nakshatra.value}},
+        )
+
+    def state(self, *, state: StateKey) -> str:
+        """`sdk.phala.state`"""
+        return self._r.render(
+            "sdk.phala.state",
+            {"state": {"$entity": state.value}},
         )
 
     def tatwa(self, *, tatwa: TatwaKey) -> str:

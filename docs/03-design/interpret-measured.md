@@ -8,11 +8,11 @@ difference. The design it measures is
 
 ## What was composed
 
-93 recorded charts composed to 21 967 items, 236 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
+93 recorded charts composed to 22 609 items, 243 items a chart. The corpus records no interpretation text of any kind, so nothing here is compared against a recording: what is measured is whether a plan can be **said** in every locale that must carry it.
 
 Written down, a plan is what it costs to cross a boundary or fill a
-golden file: 2 697 324 bytes of JSON over the 93 charts, 29 003 bytes a
-chart, 35 084 bytes for the widest and 122 bytes an item. The verses'
+golden file: 2 747 020 bytes of JSON over the 93 charts, 29 537 bytes a
+chart, 35 634 bytes for the widest and 121 bytes an item. The verses'
 own cited words are **not** what weighs it — 112 962 bytes, 4% — so
 what a plan costs is the items themselves, each naming its message and
 its rule again. Small enough to cross whole: nothing here asks to be
@@ -22,13 +22,13 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 112 disagree |
-| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 21967 disagree |
-| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 21967 disagree |
-| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 21967 disagree |
-| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 21967 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 116 disagree |
+| every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 22609 disagree |
+| every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 22609 disagree |
+| every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 22609 disagree |
+| every item renders in `ne-Deva-NP` with nothing to warn about | **holds** | 0 of 22609 disagree |
 
-Every one of the 43 934 renderings — 21 967 in each of 2 strict
+Every one of the 45 218 renderings — 22 609 in each of 2 strict
 locales — answered from the locale's own message with nothing to warn
 about.
 
@@ -57,12 +57,14 @@ about.
 | `sdk.phala.avasthaLajjitadi` | 0 |
 | `sdk.phala.dashaActivation` | 0 |
 | `sdk.phala.dashaLord` | 0 |
+| `sdk.phala.dignity` | 227 |
 | `sdk.phala.gana` | 0 |
 | `sdk.phala.grahaInBhava` | 837 |
 | `sdk.phala.lagnaRashi` | 93 |
 | `sdk.phala.nadi` | 0 |
 | `sdk.phala.nakshatra` | 0 |
 | `sdk.phala.namakarana` | 0 |
+| `sdk.phala.state` | 415 |
 | `sdk.phala.tatwa` | 0 |
 | `sdk.phala.tithi` | 0 |
 | `sdk.phala.vara` | 0 |
@@ -93,7 +95,7 @@ about.
 | `sdk.reason.strength.meets` | 497 |
 | `sdk.reason.strength.score` | 497 |
 
-**The verse's own statement is not translated.** 2449 of the 21 967
+**The verse's own statement is not translated.** 2449 of the 22 609
 items — every `sdk.reading.effect` — carry the words the rule itself
 cites, in the language the rule was written in, and the message prints
 them as they are. So a Nepali reading says the placements, who took
@@ -249,7 +251,7 @@ blocker.
 
 ## What the packs carry, and what reads it
 
-56 of the 63 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+58 of the 65 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -296,7 +298,7 @@ is what someone has to read. The parser decides which, so a message
 rewritten from one into the other moves this list by itself. `en-Latn`
 is left out: it is the base and its words are the source.
 
-**`ne-Deva-NP`** — 69 messages to read, 36 that render a value and
+**`ne-Deva-NP`** — 69 messages to read, 38 that render a value and
 need no reading.
 
 | namespace | messages with words of their own |
@@ -358,9 +360,12 @@ Saturn at 1°15′ Capricorn
 Rahu at 19°17′ Capricorn
 Ketu at 19°17′ Cancer
 the Sun has Exalted dignity
+An exalted planet attains its highest dignity, yielding supreme and powerful results.
 Sun in Aries in the navamsha
 the Sun is vargottama
+A vargottama planet is exceptionally fortified, yielding stable and highly auspicious results.
 the Moon has Debilitated dignity
+A debilitated planet is structurally weakened, giving diminished or challenging results.
 Moon in Libra in the navamsha
 Mars has Friend dignity
 Mars in Libra in the navamsha
@@ -371,15 +376,20 @@ Jupiter in Capricorn in the navamsha
 Venus has Great Friend dignity
 Venus in Aquarius in the navamsha
 Venus is vargottama
+A vargottama planet is exceptionally fortified, yielding stable and highly auspicious results.
 Saturn has Own Sign dignity
+A planet in its own sign is secure and comfortable, giving stable and strong results.
 Saturn in Capricorn in the navamsha
 Saturn is vargottama
+A vargottama planet is exceptionally fortified, yielding stable and highly auspicious results.
 Rahu has Neutral dignity
 Rahu in Gemini in the navamsha
 Rahu is retrograde
+A retrograde planet, endowed with cheshta bala, gives highly intensified and karmic results.
 Ketu has Neutral dignity
 Ketu in Sagittarius in the navamsha
 Ketu is retrograde
+A retrograde planet, endowed with cheshta bala, gives highly intensified and karmic results.
 the Sun is the Darakaraka of the seven
 the Sun is the Pitrikaraka of the eight
 the Moon is the Bhratrikaraka of the seven
@@ -597,9 +607,12 @@ Saturn in house 11 by sign and house 10 by chalit
 राहु १९°१७′ मकरमा
 केतु १९°१७′ कर्कटमा
 सूर्य उच्चमा छ
+उच्चको ग्रहले आफ्नो सर्वोच्च गरिमा प्राप्त गरी सर्वश्रेष्ठ, राजसी र प्रबल फल दिन्छ।
 नवांशमा सूर्य मेषमा
 सूर्य वर्गोत्तम छ
+वर्गोत्तम ग्रहले उच्च ग्रह सरह अत्यन्त बलियो, शुभ र स्थिर फल प्रदान गर्दछ।
 चन्द्र नीचमा छ
+नीच राशिमा रहेको ग्रह कमजोर भई ह्रास, बाधा र विकृत फल दिन्छ।
 नवांशमा चन्द्र तुलामा
 मंगल मित्रमा छ
 नवांशमा मंगल तुलामा
@@ -610,15 +623,20 @@ Saturn in house 11 by sign and house 10 by chalit
 शुक्र अधिमित्रमा छ
 नवांशमा शुक्र कुम्भमा
 शुक्र वर्गोत्तम छ
+वर्गोत्तम ग्रहले उच्च ग्रह सरह अत्यन्त बलियो, शुभ र स्थिर फल प्रदान गर्दछ।
 शनि स्वक्षेत्रमा छ
+स्वगृही ग्रहले आफ्नो घरमा सहज भई दीर्घकालीन स्थिर र शुभ फल दिन्छ।
 नवांशमा शनि मकरमा
 शनि वर्गोत्तम छ
+वर्गोत्तम ग्रहले उच्च ग्रह सरह अत्यन्त बलियो, शुभ र स्थिर फल प्रदान गर्दछ।
 राहु सममा छ
 नवांशमा राहु मिथुनमा
 राहु वक्री छ
+वक्री ग्रहले चेष्टाबल प्राप्त गरी असाधारण, तीव्र र कर्म-सम्बन्धित फल दिन्छ।
 केतु सममा छ
 नवांशमा केतु धनुमा
 केतु वक्री छ
+वक्री ग्रहले चेष्टाबल प्राप्त गरी असाधारण, तीव्र र कर्म-सम्बन्धित फल दिन्छ।
 सात कारकमध्ये सूर्य दारकारक हो
 आठ कारकमध्ये सूर्य पितृकारक हो
 सात कारकमध्ये चन्द्र भ्रातृकारक हो
