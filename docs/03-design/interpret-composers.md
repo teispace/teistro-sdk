@@ -70,7 +70,8 @@ worth deciding once there is more than one composer to carry.
   silences that remain are all of that kind"*, which was true of the
   messages it was counting and not of the sections nobody had counted.
   `DASHA_PHALA` was the cheapest of them and is built: `dasha_phala`, the
-  eleventh composer. **Three** of the six were waiting on a **name**, not
+  eleventh composer. `STATE`, which the table had read as answered, is
+  what the twelfth was for. **Three** of the six were waiting on a **name**, not
   two, and that is the
   correction worth keeping: *being a catalogue member is not being named.*
   `vaiseshikamsa` and `nature` are both catalogued and neither is named by
@@ -457,6 +458,36 @@ the chart carries. That is worth knowing when reading the measured page: it
 composes the corpus's **recorded** karakas, as `strength` composes recorded
 rupas and `houses` recorded cusp signs, so its numbers are the recording
 engine's ranking and the SDK's own answer for the same chart can differ.
+
+**`states`** — the other half of a graha's state: how it stands to its
+dispositor under all three friendships, and the four avasthas — the fifth
+of its sign, its wakefulness, its brightness where the chart decides one,
+and the lajjitadi that hold beside the ones nothing decides. **Built** over
+six more of `sdk.condition` and four of `sdk.phala`, the twelfth composer.
+
+**The section table asked for it, which is what the table is for.**
+`STATE` had read as answered because `conditions` says every fact a
+`Placement` carries — nine of them, all said — while the section's own
+`GrahaState` carries a dozen, and the other half reached no reader at all.
+That is why the table's third column means *what is left* rather than *why
+nobody says it*.
+
+**Almost every word of it was already bought**, which is the opposite of
+`dasha_phala` and why it follows rather than leads. `Relationship` and the
+four avastha kinds are catalogue members that all five locales name, so the
+frame is the whole cost: six messages and not one new term, with nothing
+for the native review that it has not already seen. What is *not* said is
+not said by name — the Sayanadi and the Cheshta are catalogued and
+**unnamed**, the vetted tables stopping at the four — and the row cites
+them rather than leaving them to be noticed.
+
+**The undecided lajjitadi are said, and that is the point of them.**
+`Lajjitadi` names three lists — holding, ruled out, and the ones nothing in
+the chart decides, because the tradition's necessary condition holds and
+what narrows it further is not on the page. A plan that printed only what
+held would turn *we cannot tell* into *no*, which is the silent default
+this project refuses; so the undecided are an item of their own, with a
+message that says so.
 
 **`dasha_phala`** — what each graha's placement says of its dasha: when
 in the dasha its effects come, whether its place is auspicious, the points

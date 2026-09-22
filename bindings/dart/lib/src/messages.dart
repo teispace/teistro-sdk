@@ -994,16 +994,28 @@ final class MessagesSdkCondition {
 
   final Renderer _r;
 
+  String age({required AvasthaBaladiKey age, required GrahaKey graha}) =>
+      _r.render('sdk.condition.age', {'age': {r'$entity': age.key}, 'graha': {r'$entity': graha.key}});
+  String brightness({required AvasthaDeeptadiKey deeptadi, required GrahaKey graha}) =>
+      _r.render('sdk.condition.brightness', {'deeptadi': {r'$entity': deeptadi.key}, 'graha': {r'$entity': graha.key}});
   String combust({required GrahaKey graha}) =>
       _r.render('sdk.condition.combust', {'graha': {r'$entity': graha.key}});
   String dignity({required DignityKey dignity, required GrahaKey graha}) =>
       _r.render('sdk.condition.dignity', {'dignity': {r'$entity': dignity.key}, 'graha': {r'$entity': graha.key}});
+  String friendship({required RelationshipKey compound, required GrahaKey dispositor, required GrahaKey graha, required RelationshipKey natural, required RelationshipKey temporary}) =>
+      _r.render('sdk.condition.friendship', {'compound': {r'$entity': compound.key}, 'dispositor': {r'$entity': dispositor.key}, 'graha': {r'$entity': graha.key}, 'natural': {r'$entity': natural.key}, 'temporary': {r'$entity': temporary.key}});
+  String lajjitadi({required GrahaKey graha, required List<Object> states}) =>
+      _r.render('sdk.condition.lajjitadi', {'graha': {r'$entity': graha.key}, 'states': states});
   String navamsha({required GrahaKey graha, required RashiKey rashi}) =>
       _r.render('sdk.condition.navamsha', {'graha': {r'$entity': graha.key}, 'rashi': {r'$entity': rashi.key}});
   String retrograde({required GrahaKey graha}) =>
       _r.render('sdk.condition.retrograde', {'graha': {r'$entity': graha.key}});
+  String undecided({required int count, required GrahaKey graha, required List<Object> states}) =>
+      _r.render('sdk.condition.undecided', {'count': count, 'graha': {r'$entity': graha.key}, 'states': states});
   String vargottama({required GrahaKey graha}) =>
       _r.render('sdk.condition.vargottama', {'graha': {r'$entity': graha.key}});
+  String wakefulness({required GrahaKey graha, required AvasthaJagradadiKey wakefulness}) =>
+      _r.render('sdk.condition.wakefulness', {'graha': {r'$entity': graha.key}, 'wakefulness': {r'$entity': wakefulness.key}});
 }
 
 final class MessagesSdkEntityAvasthaBaladi {
@@ -1736,6 +1748,14 @@ final class MessagesSdkPhala {
 
   final Renderer _r;
 
+  String avasthaBaladi({required AvasthaBaladiKey avastha}) =>
+      _r.render('sdk.phala.avasthaBaladi', {'avastha': {r'$entity': avastha.key}});
+  String avasthaDeeptadi({required AvasthaDeeptadiKey avastha}) =>
+      _r.render('sdk.phala.avasthaDeeptadi', {'avastha': {r'$entity': avastha.key}});
+  String avasthaJagradadi({required AvasthaJagradadiKey avastha}) =>
+      _r.render('sdk.phala.avasthaJagradadi', {'avastha': {r'$entity': avastha.key}});
+  String avasthaLajjitadi({required AvasthaLajjitadiKey avastha}) =>
+      _r.render('sdk.phala.avasthaLajjitadi', {'avastha': {r'$entity': avastha.key}});
   String dashaActivation({required GrahaKey graha}) =>
       _r.render('sdk.phala.dashaActivation', {'graha': {r'$entity': graha.key}});
   String dashaLord({required GrahaKey graha}) =>

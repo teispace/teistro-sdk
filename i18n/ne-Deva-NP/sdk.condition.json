@@ -3,5 +3,11 @@
   "navamsha": "नवांशमा {$graha :entity kind=graha} {$rashi :entity kind=rashi}मा",
   "vargottama": "{$graha :entity kind=graha form=prose} वर्गोत्तम छ",
   "retrograde": "{$graha :entity kind=graha form=prose} वक्री छ",
-  "combust": "{$graha :entity kind=graha form=prose} अस्तंगत छ"
+  "combust": "{$graha :entity kind=graha form=prose} अस्तंगत छ",
+  "friendship": "{#b}{$graha :entity kind=graha}{/b} आफ्नो राशीश {$dispositor :entity kind=graha}सँग {$compound :entity kind=relationship} छ: तालिकाले {$natural :entity kind=relationship}, राशीशको स्थानले {$temporary :entity kind=relationship}",
+  "age": "{$graha :entity kind=graha} आफ्नो राशिको {$age :entity kind=avastha_baladi} अंशमा छ",
+  "wakefulness": "{$graha :entity kind=graha} {$wakefulness :entity kind=avastha_jagradadi} छ",
+  "brightness": "{$graha :entity kind=graha} {$deeptadi :entity kind=avastha_deeptadi} छ",
+  "lajjitadi": "{$graha :entity kind=graha} {$states :list type=and} छ",
+  "undecided": ".input {$graha :entity kind=graha} .input {$count :integer} .match $count one {{{$graha} {$states :list type=or} हो कि होइन, कुण्डलीले भन्दैन}} * {{{$graha}का यी अवस्थाहरू कुण्डलीले निर्णय गर्दैन: {$states :list type=or}}}"
 }

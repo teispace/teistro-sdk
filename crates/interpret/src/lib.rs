@@ -59,6 +59,7 @@ mod phala;
 mod placements;
 mod positions;
 mod readings;
+mod states;
 mod strength;
 
 pub use aspects::aspects;
@@ -71,6 +72,7 @@ pub use phala::phala;
 pub use placements::placements;
 pub use positions::positions;
 pub use readings::readings;
+pub use states::states;
 pub use strength::strength;
 
 /// Every message key a composer of this module can emit.
@@ -81,7 +83,7 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 46] = [
+pub const KEYS: [&str; 56] = [
     <reason::PointInRashi as TypedMessage>::KEY,
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
@@ -106,6 +108,12 @@ pub const KEYS: [&str; 46] = [
     <condition::Dignity as TypedMessage>::KEY,
     <condition::Navamsha as TypedMessage>::KEY,
     <condition::Vargottama as TypedMessage>::KEY,
+    <condition::Friendship as TypedMessage>::KEY,
+    <condition::Age as TypedMessage>::KEY,
+    <condition::Wakefulness as TypedMessage>::KEY,
+    <condition::Brightness as TypedMessage>::KEY,
+    <condition::Lajjitadi as TypedMessage>::KEY,
+    <condition::Undecided as TypedMessage>::KEY,
     <condition::Retrograde as TypedMessage>::KEY,
     <condition::Combust as TypedMessage>::KEY,
     <karaka::OfSeven as TypedMessage>::KEY,
@@ -124,6 +132,10 @@ pub const KEYS: [&str; 46] = [
     <phala_messages::Tatwa as TypedMessage>::KEY,
     <phala_messages::DashaLord as TypedMessage>::KEY,
     <phala_messages::DashaActivation as TypedMessage>::KEY,
+    <phala_messages::AvasthaBaladi as TypedMessage>::KEY,
+    <phala_messages::AvasthaJagradadi as TypedMessage>::KEY,
+    <phala_messages::AvasthaDeeptadi as TypedMessage>::KEY,
+    <phala_messages::AvasthaLajjitadi as TypedMessage>::KEY,
     <dasha::Phase as TypedMessage>::KEY,
     <dasha::Place as TypedMessage>::KEY,
     <dasha::Points as TypedMessage>::KEY,

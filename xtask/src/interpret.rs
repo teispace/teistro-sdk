@@ -944,10 +944,10 @@ const SECTIONS_SOURCE: &str = "crates/sdk/src/reading.rs";
 /// `nature` are both catalogued and neither is named anywhere. A kind that
 /// gains a vetted table now fails here, so the reason cannot outlive the
 /// blocker.
-const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
+const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 11] = [
     (
         "PANCHANGA",
-        "phala",
+        &["phala"],
         "\
         said only where a **corpus** carries a reading. `phala` renders a \
         loaded record for the tithi, vara, nakshatra and yoga and says \
@@ -960,25 +960,23 @@ const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
     ),
     (
         "STATE",
-        "conditions",
+        &["conditions", "states"],
         "\
-        said, and not finished. `conditions` reads a `Placement`, which \
-        carries nine facts and is fully said; the section's own \
-        `GrahaState` carries a dozen, and the other half is not said at \
-        all — the **three friendships**, the motion in more than a \
-        direction, the **four avasthas** (`age`, `wakefulness`, \
-        `deeptadi`, `lajjitadi`), the war a graha is in, the Sayanadi and \
-        how near a graha stands to a classification boundary. The four \
-        avastha kinds are **already named in all five locales**, so the \
-        frame is the whole cost there, and 23 of the state corpus's \
-        readings key onto them. The Sayanadi and the Cheshta are the \
-        exceptions and are cited: the vetted tables stop at the four",
+        the three friendships and the four avasthas are said now, which \
+        is what this row asked for: `conditions` says every fact a \
+        `Placement` carries and the section's own `GrahaState` carries a \
+        dozen. What is still unsaid is the **Sayanadi**, whose members no \
+        strict locale names because the vetted tables stop at the four \
+        avasthas, the Cheshta for the same reason, the war a graha is in \
+        and how near it stands to a classification boundary — the last \
+        two being records whose own shape is undecided rather than \
+        unnamed",
         &["avastha_sayanadi", "avastha_cheshta"],
     ),
-    ("ASPECTS", "aspects", "", &[]),
+    ("ASPECTS", &["aspects"], "", &[]),
     (
         "POINTS",
-        "",
+        &[],
         "\
         the five upagrahas and the special lagnas are points with \
         longitudes, and `positions` says a **graha's** degree in the same \
@@ -988,10 +986,10 @@ const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
         corpus's `special-lagna` readings are waiting on the same table",
         &["point"],
     ),
-    ("HOUSES", "houses", "", &[]),
+    ("HOUSES", &["houses"], "", &[]),
     (
         "ASHTAKAVARGA",
-        "",
+        &[],
         "\
         a bindu count is twelve numbers a graha and one more row for their \
         sum: a **table** rather than a sentence, and the sentence a \
@@ -1004,7 +1002,7 @@ const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
     ),
     (
         "VIMSHOPAKA",
-        "",
+        &[],
         "\
         the same shape as the Shadbala, and `sdk.reason.strength.score` \
         would say it unchanged — but under **four schemes at once**, and \
@@ -1015,7 +1013,7 @@ const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
     ),
     (
         "SHADBALA",
-        "strength",
+        &["strength"],
         "\
         the **total** and the requirement. A `GrahaShadbala` carries the \
         six strengths it is the sum of — sthana, dig, kaala, cheshta, \
@@ -1028,7 +1026,7 @@ const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
     ),
     (
         "BHAVA_BALA",
-        "",
+        &[],
         "\
         a bhava's strength in **virupas**, which is `strength`'s `score` \
         with a bhava where the graha is — `score` takes a `graha` slot, so \
@@ -1041,7 +1039,7 @@ const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
     ),
     (
         "VAISESHIKAMSA",
-        "",
+        &[],
         "\
         **no strict locale names its designations.** Kimshuka, Parijata, \
         Gopura and the rest are catalogue members, and being a catalogue \
@@ -1055,7 +1053,7 @@ const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
         whether the name it earned is auspicious",
         &["vaiseshikamsa"],
     ),
-    ("DASHA_PHALA", "dashaPhala", "", &[]),
+    ("DASHA_PHALA", &["dashaPhala"], "", &[]),
 ];
 
 /// Every section the document declares, and what says it.
@@ -1096,21 +1094,23 @@ fn sections_agree(declared: &BTreeSet<&str>) -> Result<(), String> {
             ));
         }
     }
-    for (name, composer, why, kinds) in SECTION_SAYS {
+    for (name, composers, why, kinds) in SECTION_SAYS {
         if !declared.contains(name) {
             return Err(format!(
                 "SECTION_SAYS names `{name}` and {SECTIONS_SOURCE} declares no such section"
             ));
         }
-        if composer.is_empty() && why.is_empty() {
+        if composers.is_empty() && why.is_empty() {
             return Err(format!(
                 "`{name}` names neither a composer nor what is left to say of it"
             ));
         }
-        if !composer.is_empty() && !teistro::PlanRequest::MEMBERS.contains(&composer) {
-            return Err(format!(
-                "`{name}` is said by `{composer}`, which is not a member of PlanRequest"
-            ));
+        for composer in composers {
+            if !teistro::PlanRequest::MEMBERS.contains(composer) {
+                return Err(format!(
+                    "`{name}` is said by `{composer}`, which is not a member of PlanRequest"
+                ));
+            }
         }
         for kind in kinds {
             if !unnamed.contains(kind) {
@@ -1131,11 +1131,11 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
 
     let said = SECTION_SAYS
         .iter()
-        .filter(|(_, composer, ..)| !composer.is_empty())
+        .filter(|(_, composers, ..)| !composers.is_empty())
         .count();
     let partly = SECTION_SAYS
         .iter()
-        .filter(|(_, composer, why, _)| !composer.is_empty() && !why.is_empty())
+        .filter(|(_, composers, why, _)| !composers.is_empty() && !why.is_empty())
         .count();
     let sourcing = SECTION_SAYS
         .iter()
@@ -1171,11 +1171,15 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
         count(SECTION_SAYS.len() - said),
         count(sourcing),
     );
-    for (name, composer, why, _) in SECTION_SAYS {
-        let by = if composer.is_empty() {
+    for (name, composers, why, _) in SECTION_SAYS {
+        let by = if composers.is_empty() {
             String::from("—")
         } else {
-            format!("`{composer}`")
+            composers
+                .iter()
+                .map(|composer| format!("`{composer}`"))
+                .collect::<Vec<_>>()
+                .join(" and ")
         };
         let reason = if why.is_empty() { "—" } else { why };
         let _ = writeln!(out, "| `{name}` | {by} | {reason} |");

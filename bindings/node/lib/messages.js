@@ -84,11 +84,17 @@ export function messages(r) {
         weekdayShort: (p) => r.render('sdk.calendar.weekdayShort', { weekday: p.weekday }),
       },
       condition: {
+        age: (p) => r.render('sdk.condition.age', { age: { '$entity': p.age }, graha: { '$entity': p.graha } }),
+        brightness: (p) => r.render('sdk.condition.brightness', { deeptadi: { '$entity': p.deeptadi }, graha: { '$entity': p.graha } }),
         combust: (p) => r.render('sdk.condition.combust', { graha: { '$entity': p.graha } }),
         dignity: (p) => r.render('sdk.condition.dignity', { dignity: { '$entity': p.dignity }, graha: { '$entity': p.graha } }),
+        friendship: (p) => r.render('sdk.condition.friendship', { compound: { '$entity': p.compound }, dispositor: { '$entity': p.dispositor }, graha: { '$entity': p.graha }, natural: { '$entity': p.natural }, temporary: { '$entity': p.temporary } }),
+        lajjitadi: (p) => r.render('sdk.condition.lajjitadi', { graha: { '$entity': p.graha }, states: p.states }),
         navamsha: (p) => r.render('sdk.condition.navamsha', { graha: { '$entity': p.graha }, rashi: { '$entity': p.rashi } }),
         retrograde: (p) => r.render('sdk.condition.retrograde', { graha: { '$entity': p.graha } }),
+        undecided: (p) => r.render('sdk.condition.undecided', { count: p.count, graha: { '$entity': p.graha }, states: p.states }),
         vargottama: (p) => r.render('sdk.condition.vargottama', { graha: { '$entity': p.graha } }),
+        wakefulness: (p) => r.render('sdk.condition.wakefulness', { graha: { '$entity': p.graha }, wakefulness: { '$entity': p.wakefulness } }),
       },
       entity: {
         avasthaBaladi: {
@@ -600,6 +606,10 @@ export function messages(r) {
         ofSeven: (p) => r.render('sdk.karaka.ofSeven', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
       },
       phala: {
+        avasthaBaladi: (p) => r.render('sdk.phala.avasthaBaladi', { avastha: { '$entity': p.avastha } }),
+        avasthaDeeptadi: (p) => r.render('sdk.phala.avasthaDeeptadi', { avastha: { '$entity': p.avastha } }),
+        avasthaJagradadi: (p) => r.render('sdk.phala.avasthaJagradadi', { avastha: { '$entity': p.avastha } }),
+        avasthaLajjitadi: (p) => r.render('sdk.phala.avasthaLajjitadi', { avastha: { '$entity': p.avastha } }),
         dashaActivation: (p) => r.render('sdk.phala.dashaActivation', { graha: { '$entity': p.graha } }),
         dashaLord: (p) => r.render('sdk.phala.dashaLord', { graha: { '$entity': p.graha } }),
         gana: (p) => r.render('sdk.phala.gana', { gana: { '$entity': p.gana } }),

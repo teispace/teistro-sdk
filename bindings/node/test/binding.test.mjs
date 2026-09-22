@@ -866,6 +866,7 @@ test('plans compose in the same crossing, and render with nothing in between', (
       conditions: true,
       karakas: true,
       chalit: true,
+      states: true,
       dashaPhala: true,
     },
   }).plans;
@@ -897,6 +898,10 @@ test('plans compose in the same crossing, and render with nothing in between', (
   // tilts the dasha one way or the other.
   assert.ok(plans.dashaPhala.length >= 9 * 3, 'three a graha at least');
   assert.ok(plans.dashaPhala.length <= 9 * 4, 'and four at most');
+  // The states read the same section the conditions do, and say the half
+  // of it a `Placement` never carried: three items a graha at least, the
+  // friendships and the two avasthas every chart decides.
+  assert.ok(plans.states.length >= 9 * 3, 'three a graha at least');
   assert.ok(Object.isFrozen(plans.placements[0]), 'a plan handed out is a plan kept');
 
   let said = 0;
@@ -910,6 +915,7 @@ test('plans compose in the same crossing, and render with nothing in between', (
     ...plans.conditions,
     ...plans.karakas,
     ...plans.dashaPhala,
+    ...plans.states,
   ]) {
     assert.match(item.key, /^sdk\./u);
     const rendered = ctx.intl.render(item.key, item.params);

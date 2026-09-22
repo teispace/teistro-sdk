@@ -1033,6 +1033,34 @@ class MessagesSdkPhala:
         self._r = renderer
 
 
+    def avastha_baladi(self, *, avastha: AvasthaBaladiKey) -> str:
+        """`sdk.phala.avasthaBaladi`"""
+        return self._r.render(
+            "sdk.phala.avasthaBaladi",
+            {"avastha": {"$entity": avastha.value}},
+        )
+
+    def avastha_deeptadi(self, *, avastha: AvasthaDeeptadiKey) -> str:
+        """`sdk.phala.avasthaDeeptadi`"""
+        return self._r.render(
+            "sdk.phala.avasthaDeeptadi",
+            {"avastha": {"$entity": avastha.value}},
+        )
+
+    def avastha_jagradadi(self, *, avastha: AvasthaJagradadiKey) -> str:
+        """`sdk.phala.avasthaJagradadi`"""
+        return self._r.render(
+            "sdk.phala.avasthaJagradadi",
+            {"avastha": {"$entity": avastha.value}},
+        )
+
+    def avastha_lajjitadi(self, *, avastha: AvasthaLajjitadiKey) -> str:
+        """`sdk.phala.avasthaLajjitadi`"""
+        return self._r.render(
+            "sdk.phala.avasthaLajjitadi",
+            {"avastha": {"$entity": avastha.value}},
+        )
+
     def dasha_activation(self, *, graha: GrahaKey) -> str:
         """`sdk.phala.dashaActivation`"""
         return self._r.render(
@@ -3786,6 +3814,20 @@ class MessagesSdkCondition:
         self._r = renderer
 
 
+    def age(self, *, age: AvasthaBaladiKey, graha: GrahaKey) -> str:
+        """`sdk.condition.age`"""
+        return self._r.render(
+            "sdk.condition.age",
+            {"age": {"$entity": age.value}, "graha": {"$entity": graha.value}},
+        )
+
+    def brightness(self, *, deeptadi: AvasthaDeeptadiKey, graha: GrahaKey) -> str:
+        """`sdk.condition.brightness`"""
+        return self._r.render(
+            "sdk.condition.brightness",
+            {"deeptadi": {"$entity": deeptadi.value}, "graha": {"$entity": graha.value}},
+        )
+
     def combust(self, *, graha: GrahaKey) -> str:
         """`sdk.condition.combust`"""
         return self._r.render(
@@ -3798,6 +3840,20 @@ class MessagesSdkCondition:
         return self._r.render(
             "sdk.condition.dignity",
             {"dignity": {"$entity": dignity.value}, "graha": {"$entity": graha.value}},
+        )
+
+    def friendship(self, *, compound: RelationshipKey, dispositor: GrahaKey, graha: GrahaKey, natural: RelationshipKey, temporary: RelationshipKey) -> str:
+        """`sdk.condition.friendship`"""
+        return self._r.render(
+            "sdk.condition.friendship",
+            {"compound": {"$entity": compound.value}, "dispositor": {"$entity": dispositor.value}, "graha": {"$entity": graha.value}, "natural": {"$entity": natural.value}, "temporary": {"$entity": temporary.value}},
+        )
+
+    def lajjitadi(self, *, graha: GrahaKey, states: Sequence[object]) -> str:
+        """`sdk.condition.lajjitadi`"""
+        return self._r.render(
+            "sdk.condition.lajjitadi",
+            {"graha": {"$entity": graha.value}, "states": states},
         )
 
     def navamsha(self, *, graha: GrahaKey, rashi: RashiKey) -> str:
@@ -3814,11 +3870,25 @@ class MessagesSdkCondition:
             {"graha": {"$entity": graha.value}},
         )
 
+    def undecided(self, *, count: int, graha: GrahaKey, states: Sequence[object]) -> str:
+        """`sdk.condition.undecided`"""
+        return self._r.render(
+            "sdk.condition.undecided",
+            {"count": count, "graha": {"$entity": graha.value}, "states": states},
+        )
+
     def vargottama(self, *, graha: GrahaKey) -> str:
         """`sdk.condition.vargottama`"""
         return self._r.render(
             "sdk.condition.vargottama",
             {"graha": {"$entity": graha.value}},
+        )
+
+    def wakefulness(self, *, graha: GrahaKey, wakefulness: AvasthaJagradadiKey) -> str:
+        """`sdk.condition.wakefulness`"""
+        return self._r.render(
+            "sdk.condition.wakefulness",
+            {"graha": {"$entity": graha.value}, "wakefulness": {"$entity": wakefulness.value}},
         )
 
 

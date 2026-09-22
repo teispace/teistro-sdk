@@ -593,3 +593,54 @@ fn a_placement_says_what_its_dasha_will_be_like() {
     let refused = without.interpret().dasha_phala(&bare).unwrap_err();
     assert_eq!(refused.field(), Some("dashaPhala"));
 }
+
+/// The states are the twelfth composer, and the one the section table
+/// asked for: `conditions` says every fact a `Placement` carries and the
+/// section's own `GrahaState` carries a dozen, so this says the other
+/// half — the three friendships and the four avasthas.
+#[test]
+fn a_graha_says_what_it_is_and_not_only_where_it_stands() {
+    let (sdk, document) = common::reading("{}", |request| {
+        request.with_rule_inputs(shipped::nabhasas())
+    });
+    let plan = sdk.interpret().states(&document).expect("the states");
+    let carried = document.state.as_ref().expect("the states asked for");
+    assert!(!carried.is_empty(), "a founded chart has states");
+
+    // Three items a graha at least: the friendships and the two avasthas
+    // every chart decides. The brightness and the two lajjitadi lists are
+    // said only where the chart settles them.
+    assert!(plan.len() >= carried.len() * 3, "{} items", plan.len());
+    let of = |key: &str| plan.items.iter().filter(|item| item.key == key).count();
+    assert_eq!(of("sdk.condition.age"), carried.len(), "one a graha");
+    assert_eq!(of("sdk.condition.wakefulness"), carried.len());
+    assert_eq!(
+        of("sdk.condition.friendship"),
+        carried
+            .iter()
+            .filter(|state| state.friendship.dispositor.is_some())
+            .count(),
+        "and none for a body the catalogue gives no sign"
+    );
+    assert_eq!(
+        of("sdk.condition.brightness"),
+        carried
+            .iter()
+            .filter(|state| state.deeptadi.is_some())
+            .count(),
+        "said only where the chart decides one"
+    );
+    assert_eq!(
+        of("sdk.condition.undecided"),
+        carried
+            .iter()
+            .filter(|state| !state.lajjitadi.undecided.is_empty())
+            .count(),
+        "what nothing decides is its own item"
+    );
+
+    // A document without the section is refused by the knob's name.
+    let (without, bare) = common::reading("{}", |request| request);
+    let refused = without.interpret().states(&bare).unwrap_err();
+    assert_eq!(refused.field(), Some("state"));
+}

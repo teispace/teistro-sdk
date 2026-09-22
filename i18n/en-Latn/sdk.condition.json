@@ -3,5 +3,11 @@
   "navamsha": "{$graha :entity kind=graha} in {$rashi :entity kind=rashi} in the navamsha",
   "vargottama": "{$graha :entity kind=graha form=prose} is vargottama",
   "retrograde": "{$graha :entity kind=graha form=prose} is retrograde",
-  "combust": "{$graha :entity kind=graha form=prose} is burnt by the Sun"
+  "combust": "{$graha :entity kind=graha form=prose} is burnt by the Sun",
+  "friendship": "{#b}{$graha :entity kind=graha}{/b} is {$compound :entity kind=relationship} to {$dispositor :entity kind=graha}, its dispositor: {$natural :entity kind=relationship} by the table and {$temporary :entity kind=relationship} by where that lord stands",
+  "age": "{$graha :entity kind=graha} stands in the {$age :entity kind=avastha_baladi} fifth of its sign",
+  "wakefulness": "{$graha :entity kind=graha} is {$wakefulness :entity kind=avastha_jagradadi}",
+  "brightness": "{$graha :entity kind=graha} is {$deeptadi :entity kind=avastha_deeptadi}",
+  "lajjitadi": "{$graha :entity kind=graha} is {$states :list type=and}",
+  "undecided": ".input {$graha :entity kind=graha} .input {$count :integer} .match $count one {{the chart does not decide whether {$graha} is {$states :list type=or}}} * {{the chart decides none of these for {$graha}: {$states :list type=or}}}"
 }

@@ -793,6 +793,7 @@ class AnEngine(WithLibrary):
                 "conditions": True,
                 "karakas": True,
                 "chalit": True,
+                "states": True,
                 "dashaPhala": True,
             },
             {"shipped": ["nabhasas"]},
@@ -824,6 +825,8 @@ class AnEngine(WithLibrary):
         # placement tilts the dasha one way or the other.
         self.assertGreaterEqual(len(plans["dashaPhala"]), 9 * 3, "three each")
         self.assertLessEqual(len(plans["dashaPhala"]), 9 * 4, "four at most")
+        # The states say the half of that section a placement never carried.
+        self.assertGreaterEqual(len(plans["states"]), 9 * 3, "three a graha")
 
         said = 0
         for item in [
@@ -836,6 +839,7 @@ class AnEngine(WithLibrary):
             *plans["conditions"],
             *plans["karakas"],
             *plans["dashaPhala"],
+            *plans["states"],
         ]:
             self.assertTrue(item["key"].startswith("sdk."))
             rendered = self.ctx.intl.render(item["key"], item["params"])

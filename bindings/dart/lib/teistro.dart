@@ -3428,6 +3428,7 @@ final class PlanRequest {
     this.karakas = false,
     this.chalit = false,
     this.phala = false,
+    this.states = false,
     this.dashaPhala = false,
   });
 
@@ -3466,6 +3467,12 @@ final class PlanRequest {
   /// those readings is loaded.
   final bool phala;
 
+  /// The other half of a graha's state: how it stands to its dispositor
+  /// under all three friendships, and the four avasthas — the fifth of its
+  /// sign, its wakefulness, its brightness where the chart decides one,
+  /// and the lajjitadi that hold beside the ones nothing decides.
+  final bool states;
+
   /// What each graha's placement says of its dasha: when in the dasha its
   /// effects come, whether its place is auspicious, the points its dignity
   /// earns and whether the placement makes the dasha favourable — with the
@@ -3484,6 +3491,7 @@ final class PlanRequest {
     'karakas': karakas,
     'chalit': chalit,
     'phala': phala,
+    'states': states,
     'dashaPhala': dashaPhala,
   });
 }

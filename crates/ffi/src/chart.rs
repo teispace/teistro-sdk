@@ -2346,6 +2346,8 @@ struct Plans {
     #[serde(skip_serializing_if = "Option::is_none")]
     phala: Option<Plan>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    states: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "dashaPhala")]
     dasha_phala: Option<Plan>,
 }
@@ -2391,12 +2393,14 @@ fn sections_for(request: ChartRequest, asked: PlanRequest) -> ChartRequest {
     // chart's own grahas, which every founded chart carries.
     //
     // `placements`, `positions`, `conditions`, `karakas` and `phala` all
-    // read the graha states through `RuleInputs`, so any one asks for them.
+    // read the graha states through `RuleInputs`, so any one asks for
+    // them; `states` reads the section itself, which is the same section.
     let request = if asked.placements
         || asked.positions
         || asked.conditions
         || asked.karakas
         || asked.phala
+        || asked.states
     {
         request.with_state()
     } else {
@@ -2479,6 +2483,10 @@ fn compose(
             phala: asked
                 .phala
                 .then(|| sdk.interpret().phala(document))
+                .transpose()?,
+            states: asked
+                .states
+                .then(|| sdk.interpret().states(document))
                 .transpose()?,
             dasha_phala: asked
                 .dasha_phala

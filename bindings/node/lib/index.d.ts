@@ -785,6 +785,13 @@ export interface PlanRequest {
    */
   readonly phala?: boolean;
   /**
+   * The other half of a graha's state: how it stands to its dispositor
+   * under all three friendships, and the four avasthas — the fifth of its
+   * sign, its wakefulness, its brightness where the chart decides one,
+   * and the lajjitadi that hold beside the ones nothing decides.
+   */
+  readonly states?: boolean;
+  /**
    * What each graha's placement says of its dasha: when in the dasha its
    * effects come, whether its place is auspicious, the points its dignity
    * earns and whether the placement makes the dasha favourable — with the
@@ -828,6 +835,8 @@ export interface Plans {
   readonly chalit?: readonly PlanItem[];
   /** What a loaded corpus says of the chart's subjects; absent unless `phala` asked. */
   readonly phala?: readonly PlanItem[];
+  /** A graha's friendships and avasthas; absent unless `states` asked. */
+  readonly states?: readonly PlanItem[];
   /** What a placement says of its dasha; absent unless `dashaPhala` asked. */
   readonly dashaPhala?: readonly PlanItem[];
 }

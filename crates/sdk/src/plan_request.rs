@@ -74,6 +74,12 @@ pub struct PlanRequest {
     /// and it says **nothing** until a pack carrying those readings is
     /// loaded (`03-design/state-readings.md`).
     pub phala: bool,
+    /// The other half of a graha's state: how it stands to its dispositor
+    /// under all three friendships, and the four avasthas — the fifth of
+    /// its sign, its wakefulness, its brightness where the chart decides
+    /// one, and the lajjitadi that hold beside the ones nothing decides.
+    /// It reads what `conditions` reads, so it costs no section beyond it.
+    pub states: bool,
     /// What each graha's placement says of its dasha: when in the dasha
     /// its effects come, whether its place is auspicious, the points its
     /// dignity earns and whether the placement makes the dasha
@@ -91,7 +97,7 @@ impl PlanRequest {
     /// holds the list against the record's own serialisation, both ways, so
     /// a composer added without a name here fails rather than going
     /// unmentioned in the refusal a typo earns.
-    pub const MEMBERS: [&'static str; 11] = [
+    pub const MEMBERS: [&'static str; 12] = [
         "placements",
         "readings",
         "strength",
@@ -102,8 +108,16 @@ impl PlanRequest {
         "karakas",
         "chalit",
         "phala",
+        "states",
         "dashaPhala",
     ];
+
+    /// A request for the other half of each graha's state.
+    #[must_use]
+    pub const fn with_states(mut self) -> PlanRequest {
+        self.states = true;
+        self
+    }
 
     /// A request for what a placement says of its dasha. It needs the
     /// dasha phala section beside it.
@@ -197,6 +211,7 @@ impl PlanRequest {
             || self.karakas
             || self.chalit
             || self.phala
+            || self.states
             || self.dasha_phala
     }
 

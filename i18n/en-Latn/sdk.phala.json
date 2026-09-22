@@ -12,5 +12,9 @@
   "varna": "{$varna :entity kind=varna form=phala}",
   "tatwa": "{$tatwa :entity kind=tatwa form=phala}",
   "dashaLord": "{$graha :entity kind=graha form=dashaPhala}",
-  "dashaActivation": "{$graha :entity kind=graha form=dashaActivation}"
+  "dashaActivation": "{$graha :entity kind=graha form=dashaActivation}",
+  "avasthaBaladi": "{$avastha :entity kind=avastha_baladi form=phala}",
+  "avasthaJagradadi": "{$avastha :entity kind=avastha_jagradadi form=phala}",
+  "avasthaDeeptadi": "{$avastha :entity kind=avastha_deeptadi form=phala}",
+  "avasthaLajjitadi": "{$avastha :entity kind=avastha_lajjitadi form=phala}"
 }

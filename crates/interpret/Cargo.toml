@@ -18,6 +18,7 @@ teistro-core = { path = "../core" }
 teistro-houses = { path = "../houses" }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-rules = { path = "../rules" }
+teistro-state = { path = "../state" }
 teistro-strength = { path = "../strength" }
 serde = { version = "1", features = ["derive"] }
 

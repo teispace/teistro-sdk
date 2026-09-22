@@ -388,6 +388,18 @@ before — *every shipped rule carries a reading* — becomes one it can.
   exactly as `lagnaPhala` is on a rashi. Nothing computed, nothing chosen,
   no kind decided.
 
+  The **avasthas** closed with the twelfth, `states`, and they are the
+  cheapest case of all: `avastha_baladi`, `avastha_jagradadi`,
+  `avastha_deeptadi` and `avastha_lajjitadi` are catalogue kinds whose
+  members **all five locales already name**, and the SDK has computed
+  every one of them since Phase 2 — the fifth of its sign a graha stands
+  in, its wakefulness, its brightness and the lajjitadi that hold. The
+  reading is of the avastha and not of the graha, which is how the corpus
+  keys it: `avastha_baladi.BALA` carries the reading of *infancy*, and it
+  is this graha's because this graha is in it. Nothing was named, nothing
+  was decided and nothing was computed; what was missing was a composer
+  over the half of `GrahaState` that a `Placement` never carried.
+
   The **dasha lords** closed with the eleventh composer, `dasha_phala`,
   and they are the case where the reading had to wait for a *section*
   rather than for a name or a decision: `dasha-lord-effect` and

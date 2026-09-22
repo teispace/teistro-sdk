@@ -1659,6 +1659,7 @@ dependencies = [
  "teistro-houses",
  "teistro-intl",
  "teistro-rules",
+ "teistro-state",
  "teistro-strength",
 ]
 

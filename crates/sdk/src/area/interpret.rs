@@ -3,7 +3,7 @@
 use teistro_core::error::Error;
 use teistro_interpret::{
     Plan, aspects, chalit as say_chalit, conditions, dasha_phala, houses, karakas, phala,
-    placements, positions, readings, strength,
+    placements, positions, readings, states as say_states, strength,
 };
 use teistro_serial::document::Document;
 
@@ -135,6 +135,24 @@ impl<'a> InterpretArea<'a> {
     pub fn phala(self, document: &Document) -> Result<Plan, Error> {
         let engine = self.context.locale_engine();
         Ok(phala(&RuleInputs::of(document)?.chart, &*engine))
+    }
+
+    /// The other half of each graha's state: its three friendships and
+    /// its four avasthas, with what a loaded corpus says of each avastha.
+    ///
+    /// # Errors
+    ///
+    /// A document without its graha states, naming the section to ask for.
+    pub fn states(self, document: &Document) -> Result<Plan, Error> {
+        let carried = document.state.as_ref().ok_or_else(|| {
+            Error::invalid_arg(
+                "the document carries no graha states, which the states composer says; ask for \
+                 them with `ChartRequest::with_state`",
+            )
+            .with_field("state")
+        })?;
+        let engine = self.context.locale_engine();
+        Ok(say_states(carried, &*engine))
     }
 
     /// What each graha's placement says of its dasha, with the reading a

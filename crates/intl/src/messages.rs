@@ -817,6 +817,44 @@ pub mod sdk {
 
     /// The `condition` group.
     pub mod condition {
+        /// The message `sdk.condition.age`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Age {
+            /// The `age` parameter.
+            pub age: teistro_core::catalogue::AvasthaBaladi,
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for Age {
+            const KEY: &'static str = "sdk.condition.age";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("age", crate::Value::catalogued(self.age)),
+                    ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
+        /// The message `sdk.condition.brightness`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Brightness {
+            /// The `deeptadi` parameter.
+            pub deeptadi: teistro_core::catalogue::AvasthaDeeptadi,
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for Brightness {
+            const KEY: &'static str = "sdk.condition.brightness";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("deeptadi", crate::Value::catalogued(self.deeptadi)),
+                    ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
         /// The message `sdk.condition.combust`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct Combust {
@@ -848,6 +886,53 @@ pub mod sdk {
                 crate::params([
                     ("dignity", crate::Value::catalogued(self.dignity)),
                     ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
+        /// The message `sdk.condition.friendship`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Friendship {
+            /// The `compound` parameter.
+            pub compound: teistro_core::catalogue::Relationship,
+            /// The `dispositor` parameter.
+            pub dispositor: teistro_core::catalogue::Graha,
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `natural` parameter.
+            pub natural: teistro_core::catalogue::Relationship,
+            /// The `temporary` parameter.
+            pub temporary: teistro_core::catalogue::Relationship,
+        }
+
+        impl crate::TypedMessage for Friendship {
+            const KEY: &'static str = "sdk.condition.friendship";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("compound", crate::Value::catalogued(self.compound)),
+                    ("dispositor", crate::Value::catalogued(self.dispositor)),
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("natural", crate::Value::catalogued(self.natural)),
+                    ("temporary", crate::Value::catalogued(self.temporary)),
+                ])
+            }
+        }
+
+        /// The message `sdk.condition.lajjitadi`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Lajjitadi {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `states` parameter.
+            pub states: Vec<crate::Value>,
+        }
+
+        impl crate::TypedMessage for Lajjitadi {
+            const KEY: &'static str = "sdk.condition.lajjitadi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("states", crate::Value::List(self.states.clone())),
                 ])
             }
         }
@@ -887,6 +972,28 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.condition.undecided`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Undecided {
+            /// The `count` parameter.
+            pub count: i64,
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `states` parameter.
+            pub states: Vec<crate::Value>,
+        }
+
+        impl crate::TypedMessage for Undecided {
+            const KEY: &'static str = "sdk.condition.undecided";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("count", crate::Value::Int(self.count)),
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("states", crate::Value::List(self.states.clone())),
+                ])
+            }
+        }
+
         /// The message `sdk.condition.vargottama`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct Vargottama {
@@ -899,6 +1006,25 @@ pub mod sdk {
             fn params(&self) -> crate::Params {
                 crate::params([
                     ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
+        /// The message `sdk.condition.wakefulness`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Wakefulness {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `wakefulness` parameter.
+            pub wakefulness: teistro_core::catalogue::AvasthaJagradadi,
+        }
+
+        impl crate::TypedMessage for Wakefulness {
+            const KEY: &'static str = "sdk.condition.wakefulness";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("wakefulness", crate::Value::catalogued(self.wakefulness)),
                 ])
             }
         }
@@ -1089,6 +1215,70 @@ pub mod sdk {
 
     /// The `phala` group.
     pub mod phala {
+        /// The message `sdk.phala.avasthaBaladi`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct AvasthaBaladi {
+            /// The `avastha` parameter.
+            pub avastha: teistro_core::catalogue::AvasthaBaladi,
+        }
+
+        impl crate::TypedMessage for AvasthaBaladi {
+            const KEY: &'static str = "sdk.phala.avasthaBaladi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("avastha", crate::Value::catalogued(self.avastha)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.avasthaDeeptadi`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct AvasthaDeeptadi {
+            /// The `avastha` parameter.
+            pub avastha: teistro_core::catalogue::AvasthaDeeptadi,
+        }
+
+        impl crate::TypedMessage for AvasthaDeeptadi {
+            const KEY: &'static str = "sdk.phala.avasthaDeeptadi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("avastha", crate::Value::catalogued(self.avastha)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.avasthaJagradadi`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct AvasthaJagradadi {
+            /// The `avastha` parameter.
+            pub avastha: teistro_core::catalogue::AvasthaJagradadi,
+        }
+
+        impl crate::TypedMessage for AvasthaJagradadi {
+            const KEY: &'static str = "sdk.phala.avasthaJagradadi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("avastha", crate::Value::catalogued(self.avastha)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.avasthaLajjitadi`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct AvasthaLajjitadi {
+            /// The `avastha` parameter.
+            pub avastha: teistro_core::catalogue::AvasthaLajjitadi,
+        }
+
+        impl crate::TypedMessage for AvasthaLajjitadi {
+            const KEY: &'static str = "sdk.phala.avasthaLajjitadi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("avastha", crate::Value::catalogued(self.avastha)),
+                ])
+            }
+        }
+
         /// The message `sdk.phala.dashaActivation`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct DashaActivation {
