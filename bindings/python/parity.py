@@ -627,10 +627,11 @@ def main() -> None:
                 returns = chart.praveshas
                 put(f"chart-{i}-varsha-{reading}-count", len(returns))
                 for pravesha in returns:
-                    put(
-                        f"chart-{i}-varsha-{reading}-{pravesha.year}",
-                        pravesha.instant,
-                    )
+                    stem = f"chart-{i}-varsha-{reading}-{pravesha.year}"
+                    put(stem, pravesha.instant)
+                    put(f"{stem}-muntha", pravesha.muntha.sign.full_key)
+                    put(f"{stem}-muntha-lord", pravesha.muntha.lord.full_key)
+                    put(f"{stem}-muntha-deg", pravesha.muntha.longitude_deg)
 
         single = geo.chart.found(
             instant=2460482.5, place=place, utc_offset_seconds=20700

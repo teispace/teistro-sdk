@@ -1272,6 +1272,18 @@ export interface ChartsPraveshas {
    * The instant, a Julian day (UTC). A chart cast for it is the annual chart; the place is the caller's, which is why the boundary answers the instant and not the chart.
    */
   readonly jd: Float64Array;
+  /**
+   * The Muntha's sign at this return, a `rashi` id: the birth lagna's sign advanced one sign for each completed year. Both readings of the Muntha's degree give this same sign.
+   */
+  readonly munthaSign: Uint16Array;
+  /**
+   * The lord of the Muntha's sign, a `graha` id: the Munthesha, first of the annual chart's five office-bearers and the one that takes the year's lordship when no other qualifies.
+   */
+  readonly munthaLord: Uint16Array;
+  /**
+   * The Muntha's longitude at this return, degrees, under the `muntha` reading the request asked for. It advances 30 degrees over the year, so a caller timing within the year interpolates from here.
+   */
+  readonly munthaDeg: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }

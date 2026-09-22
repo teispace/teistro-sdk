@@ -1144,6 +1144,34 @@ class AnEngine(WithLibrary):
         span = years[11].instant - years[0].instant
         self.assertLess(abs(span - 11 * 365.2564), 1)
 
+        # The Muntha advances one sign a year from the birth lagna and comes
+        # home after twelve, which is the whole of its rule.
+        natal = self.ctx.chart.found(
+            instant=birth, place=observer, utc_offset_seconds=20700
+        )
+        lagna = int(natal.lagna_deg // 30)
+        self.assertEqual(
+            [one.muntha.sign for one in years],
+            [Rashi((lagna + one.year) % 12) for one in years],
+        )
+        self.assertEqual(years[11].muntha.sign, Rashi(lagna % 12))
+        self.assertTrue(all(one.muntha.lord is not None for one in years))
+
+        # Both readings of the degree give the same sign and part inside it.
+        carried = self.ctx.chart.found(
+            instant=birth,
+            place=observer,
+            utc_offset_seconds=20700,
+            varsha={"through": 12, "muntha": "natal_degree"},
+        ).praveshas
+        self.assertEqual(
+            [one.muntha.sign for one in carried], [one.muntha.sign for one in years]
+        )
+        for carried_year, opened in zip(carried, years):
+            self.assertGreaterEqual(
+                carried_year.muntha.longitude_deg, opened.muntha.longitude_deg
+            )
+
         # The instant founds as a chart of its own; the place is the caller's.
         annual = self.ctx.chart.found(
             instant=years[11].instant, place=observer, utc_offset_seconds=20700

@@ -12,6 +12,7 @@ import { test } from 'node:test';
 import {
   Body,
   Calendar,
+  RashiById,
   ChartLayout,
   DashaSystem,
   Varga,
@@ -1228,6 +1229,32 @@ test('a chart carries the annual charts its birth opens', () => {
   // Eleven sidereal years between the first and the twelfth, to a day.
   const span = years[11].instant - years[0].instant;
   assert.ok(Math.abs(span - 11 * 365.2564) < 1, `${span} days`);
+
+  // The Muntha advances one sign a year from the birth lagna, and comes
+  // home after twelve — the whole of its rule, asserted against the rule
+  // and not against a recorded answer.
+  const natal = ctx.chart.found({ instant: 2447995.4895833335, place, utcOffsetSeconds: 20700 });
+  const lagna = Math.floor(natal.lagnaDeg / 30);
+  const signs = years.map((one) => one.muntha.sign);
+  assert.deepEqual(
+    signs,
+    years.map((one) => RashiById.get((lagna + one.year) % 12)),
+  );
+  assert.equal(signs[11], RashiById.get(lagna % 12));
+  assert.ok(years.every((one) => one.muntha.lord !== 'unknown'));
+
+  // Both readings of the degree give the same sign and part inside it.
+  const carried = ctx.chart.found({
+    instant: 2447995.4895833335,
+    place,
+    utcOffsetSeconds: 20700,
+    varsha: { through: 12, muntha: 'natal_degree' },
+  }).praveshas;
+  assert.deepEqual(carried.map((one) => one.muntha.sign), signs);
+  assert.ok(
+    carried.every((one, i) => one.muntha.longitudeDeg >= years[i].muntha.longitudeDeg),
+    'the natal degree is carried forward, never backward',
+  );
 
   // The instant founds as a chart of its own; the place is the caller's.
   const annual = ctx.chart.found({ instant: years[11].instant, place, utcOffsetSeconds: 20700 });

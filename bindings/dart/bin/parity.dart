@@ -695,7 +695,11 @@ void main() {
       final found = chart.praveshas;
       put('chart-$i-varsha-${reading.key}-count', found.length);
       for (final one in found) {
-        put('chart-$i-varsha-${reading.key}-${one.year}', one.instant);
+        final stem = 'chart-$i-varsha-${reading.key}-${one.year}';
+        put(stem, one.instant);
+        put('$stem-muntha', one.muntha.sign.fullKey);
+        put('$stem-muntha-lord', one.muntha.lord.fullKey);
+        put('$stem-muntha-deg', one.muntha.longitudeDeg);
       }
       i += 1;
     }

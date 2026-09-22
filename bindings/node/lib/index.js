@@ -744,6 +744,11 @@ export class Chart {
     return Array.from({ length: count }, (_, k) => ({
       year: d.praveshas.year[from + k],
       instant: d.praveshas.jd[from + k],
+      muntha: {
+        sign: RashiById.get(d.praveshas.munthaSign[from + k]) ?? 'unknown',
+        lord: GrahaById.get(d.praveshas.munthaLord[from + k]) ?? 'unknown',
+        longitudeDeg: d.praveshas.munthaDeg[from + k],
+      },
     }));
   }
 

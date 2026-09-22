@@ -3601,6 +3601,7 @@ final class VarshaRequest {
   const VarshaRequest({
     required this.through,
     this.reading = VarshaReading.sidereal,
+    this.muntha = MunthaDegree.signStart,
   });
 
   /// The last year of life wanted, 1 to 200.
@@ -3609,13 +3610,66 @@ final class VarshaRequest {
   /// Which longitude the Sun returns to.
   final VarshaReading reading;
 
-  String get _json =>
-      jsonEncode(<String, Object?>{'reading': reading.key, 'through': through});
+  /// Where the Muntha stands inside the sign it has reached.
+  final MunthaDegree muntha;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'reading': reading.key,
+    'through': through,
+    'muntha': muntha.key,
+  });
+}
+
+/// Where the Muntha stands inside the sign it has reached (crux C107).
+///
+/// Both readings give the same sign at the return and part over the
+/// course of the year, so they differ for a Tajika aspect taken to the
+/// Muntha and for nothing else.
+enum MunthaDegree {
+  /// It enters each year at its sign's first degree and crosses the whole
+  /// sign during the year: the source's own reading.
+  signStart('sign_start'),
+
+  /// It carries the natal lagna's degree into each new sign.
+  natalDegree('natal_degree');
+
+  const MunthaDegree(this.key);
+
+  /// The key the boundary takes.
+  final String key;
+}
+
+/// The Muntha at one return: the birth lagna's sign advanced one sign for
+/// each completed year, and that sign's lord.
+final class Muntha {
+  const Muntha({
+    required this.sign,
+    required this.lord,
+    required this.longitudeDeg,
+  });
+
+  /// The sign it has reached; the same under either reading.
+  final Rashi sign;
+
+  /// The lord of that sign: the Munthesha, first of the annual chart's
+  /// five office-bearers and the one that takes the year's lordship when
+  /// no other qualifies.
+  final Graha lord;
+
+  /// Its longitude at the return, degrees, under the reading asked for.
+  final double longitudeDeg;
 }
 
 /// One annual chart's instant.
 final class Pravesha {
-  const Pravesha({required this.year, required this.instant});
+  const Pravesha({
+    required this.year,
+    required this.instant,
+    required this.muntha,
+  });
+
+  /// The Muntha standing at it, progressed by this year's own count.
+  final Muntha muntha;
 
   /// How many years the native has completed at this instant: 1 is the
   /// first return, a year after birth. Counted in returns and not in
@@ -4066,7 +4120,15 @@ final class Chart {
     final p = batch.praveshas;
     return List<Pravesha>.generate(
       counts[index],
-      (k) => Pravesha(year: p.year[from + k], instant: p.jd[from + k]),
+      (k) => Pravesha(
+        year: p.year[from + k],
+        instant: p.jd[from + k],
+        muntha: Muntha(
+          sign: Rashi.byId(p.munthaSign[from + k]),
+          lord: Graha.byId(p.munthaLord[from + k]),
+          longitudeDeg: p.munthaDeg[from + k],
+        ),
+      ),
     );
   }
 

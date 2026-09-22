@@ -1375,6 +1375,31 @@ fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &te
                 &key(&format!("-{}", one.year)),
                 number(one.at.get()),
             );
+            // The Muntha is progressed by the year's own count and by
+            // nothing the reading decides, so recording it under each of
+            // the three holds that independence across all four runners
+            // as well as holding the bindings to one another.
+            let Ok(muntha) =
+                sdk.chart()
+                    .muntha(document, one.year, teistro::MunthaDegree::default())
+            else {
+                continue;
+            };
+            put(
+                report,
+                &key(&format!("-{}-muntha", one.year)),
+                muntha.sign.full_key().to_owned(),
+            );
+            put(
+                report,
+                &key(&format!("-{}-muntha-lord", one.year)),
+                muntha.lord.full_key().to_owned(),
+            );
+            put(
+                report,
+                &key(&format!("-{}-muntha-deg", one.year)),
+                number(muntha.longitude_deg),
+            );
         }
     }
 }

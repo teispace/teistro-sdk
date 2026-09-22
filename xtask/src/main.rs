@@ -86,6 +86,11 @@
 //!   every recorded birth against its two rivals, the tropical return and
 //!   the mean one, with what each costs the lagna —
 //!   `annual-chart-measured.md`.
+//! - `muntha` and `check-muntha`: the birth lagna progressed one sign for
+//!   each completed year, held over every recorded birth against the
+//!   **recording's** lagna — its only input — with the margin each lagna
+//!   has to a sign boundary, the rival that counts the year of life it
+//!   opens, and the two readings of its degree — `muntha-measured.md`.
 //! - `dasha-coverage` and `check-dasha-coverage`: the catalogue's forty
 //!   dasha systems against the eighteen this build computes, with each of
 //!   the twenty-two left listed with the blocker that keeps it out and its
@@ -170,6 +175,7 @@ mod batching;
 mod bench;
 mod bhava_bala;
 mod binding;
+mod births;
 mod c_binding;
 mod calendars;
 mod catalogue;
@@ -199,6 +205,7 @@ mod lints;
 mod lunisolar;
 mod measure;
 mod moon;
+mod muntha;
 mod node_binding;
 mod package;
 mod panchanga;
@@ -297,6 +304,7 @@ const PASSES: &[Pass] = &[
         varshaphala::generate,
         varshaphala::check_generated,
     ),
+    ("muntha", muntha::generate, muntha::check_generated),
     (
         "dasha-systems",
         dasha_systems::generate,

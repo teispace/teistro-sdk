@@ -528,6 +528,9 @@ for (const reading of ['sidereal', 'tropical', 'mean']) {
     put(`chart-${i}-varsha-${reading}-count`, chart.praveshas.length);
     for (const one of chart.praveshas) {
       put(`chart-${i}-varsha-${reading}-${one.year}`, one.instant);
+      put(`chart-${i}-varsha-${reading}-${one.year}-muntha`, one.muntha.sign);
+      put(`chart-${i}-varsha-${reading}-${one.year}-muntha-lord`, one.muntha.lord);
+      put(`chart-${i}-varsha-${reading}-${one.year}-muntha-deg`, one.muntha.longitudeDeg);
     }
     i += 1;
   }

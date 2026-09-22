@@ -40,7 +40,10 @@ pub const STEP_DAYS: f64 = 10.0;
 ///
 /// A cap rather than a silent truncation: a caller asking for a thousand
 /// years is refused by name rather than waiting for a search nobody wants.
-const MOST_YEARS: u16 = 200;
+///
+/// Public because the Muntha is progressed over the same span and refuses
+/// by the same bound: one cap, one place.
+pub const MOST_YEARS: u16 = 200;
 
 /// Which longitude a return returns to.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]

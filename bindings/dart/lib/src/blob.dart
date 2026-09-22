@@ -1440,6 +1440,9 @@ final class ChartsPraveshas {
   const ChartsPraveshas({
     required this.year,
     required this.jd,
+    required this.munthaSign,
+    required this.munthaLord,
+    required this.munthaDeg,
     required this.length,
   });
 
@@ -1448,6 +1451,15 @@ final class ChartsPraveshas {
 
   /// The instant, a Julian day (UTC). A chart cast for it is the annual chart; the place is the caller's, which is why the boundary answers the instant and not the chart.
   final Float64List jd;
+
+  /// The Muntha's sign at this return, a `rashi` id: the birth lagna's sign advanced one sign for each completed year. Both readings of the Muntha's degree give this same sign.
+  final Uint16List munthaSign;
+
+  /// The lord of the Muntha's sign, a `graha` id: the Munthesha, first of the annual chart's five office-bearers and the one that takes the year's lordship when no other qualifies.
+  final Uint16List munthaLord;
+
+  /// The Muntha's longitude at this return, degrees, under the `muntha` reading the request asked for. It advances 30 degrees over the year, so a caller timing within the year interpolates from here.
+  final Float64List munthaDeg;
 
   /// The number of rows every column holds.
   final int length;
@@ -2963,6 +2975,21 @@ Charts decodeCharts(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atPraveshas, 1),
         blob.columnOffset(atPraveshas, 1) + atPraveshas.count * 8,
+      ),
+      munthaSign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPraveshas, 2),
+        blob.columnOffset(atPraveshas, 2) + atPraveshas.count * 2,
+      ),
+      munthaLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPraveshas, 3),
+        blob.columnOffset(atPraveshas, 3) + atPraveshas.count * 2,
+      ),
+      munthaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPraveshas, 4),
+        blob.columnOffset(atPraveshas, 4) + atPraveshas.count * 8,
       ),
       length: atPraveshas.count,
     ),
