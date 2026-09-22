@@ -167,6 +167,60 @@ gated and said. The rest are named on
 `03-design/state-readings-measured.md`, so the list cannot rot while the
 question is open.
 
+## Q39. Whether a plan should say the almanac's own limbs: `open`
+
+Raised 2026-09-22 by the section table on
+[`03-design/interpret-measured.md`](03-design/interpret-measured.md),
+which enumerates every section a chart document can carry and what says
+it. `PANCHANGA` is **said only where a corpus carries a reading**:
+`phala` renders a loaded record for the tithi, vara, nakshatra and yoga
+and says nothing of its own, so a consumer with no pack gets no item
+from that section at all. The limbs themselves — and the **karana**,
+which no composer mentions in any form — are computed, named in all five
+locales, and said by nothing.
+
+Everything a composer would need is already bought: `tithi`, `vara`,
+`nakshatra`, `yoga` and `karana` are catalogue kinds whose members every
+strict locale names, and the tithi carries its paksha. The cost is a
+frame a message, as `states` was, and nothing for the native review.
+
+The question is whether a **plan** should recite them, and it is a
+design call rather than a task, because the page has twice declined a
+message for being the wrong *kind* of thing to say:
+`sdk.reason.exactLongitude` renders a longitude alone (`222°34′35″`) and
+is a fragment a consumer formats with, not a sentence a plan says; and
+`sdk.reason.rashiNature` is a fact about the zodiac rather than about a
+chart, where every chart would say the same twelve sentences.
+
+**Option A — a composer over the panchanga section.** A thirteenth
+member of `PlanRequest`, six items a chart, and a reading that opens the
+way every panchangam opens. Neither declined precedent applies: "the
+tithi is Shukla Pratipada" is a sentence rather than a fragment, and it
+differs chart by chart. Against it: a `PlanRequest` member is permanent
+API, and two were added on 2026-09-22 already.
+
+**Option B — leave it to the consumer.** The section crosses to every
+binding and a consumer reads it directly; `sdk.entity` names every limb,
+so a page can say it in one line without a composer. Against it: the
+karana is then said by nothing anywhere, and "a plan is what a chart has
+to say" reads oddly when the chart's own day is missing from it.
+
+**Option C — fold the limbs into `phala`**, which already reads this
+section, rather than adding a member. Costs no API. Against it: `phala`
+is the composer that says what a **corpus** carries and is silent
+without a pack, by design and by its own documentation; putting computed
+facts in it would make "off until a pack is loaded" untrue of it.
+
+**Recommended: A.** The two precedents that declined a message declined
+it for reasons that do not hold here, and C would break a promise `phala`
+makes in its first paragraph. B is defensible and is the cheaper answer
+if the maintainer would rather not spend another permanent member this
+week — which is exactly why this is recorded rather than decided.
+
+What is **not** waiting on this: nothing. The section's readings are
+said, the limbs cross to every binding, and the queue table names the
+gap so it cannot rot while the question is open.
+
 ## Decisions log
 
 Decisions are recorded in the table above with the date; the reasoning is

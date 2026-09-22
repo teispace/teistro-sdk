@@ -676,6 +676,70 @@ fn composers_reach_every_binding(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// The register of questions, and the tracker that must name the open ones.
+const REGISTER: (&str, &str) = ("docs/QUESTIONS.md", "docs/STATUS.md");
+
+/// The phrases that count the open questions in prose, which is the one
+/// thing about them that has gone stale twice.
+///
+/// A count beside a register that grows is the rot this repository keeps
+/// finding, and this instance is worse than most: the sentence sits in the
+/// **first numbered step of "How to resume"**, which is the first thing a
+/// reader is told to trust. It said "none is open" with one open, then
+/// "one question is open" with two.
+/// Three and not more: the last two subsume every counted phrasing, and
+/// a longer list would report one occurrence twice.
+const COUNTED_IN_PROSE: [&str; 3] = ["none is open", "question is open", "questions are open"];
+
+/// That the tracker names every question the register still has open, and
+/// counts none of them.
+///
+/// Both halves matter. A question opened and not mentioned leaves a reader
+/// resuming from a document that does not know about it; a **count** is
+/// right on the day it is written and wrong on the next.
+fn open_questions_are_named(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "open-question-is-named";
+    let (register, tracker) = REGISTER;
+    let (Ok(questions), Ok(status)) = (
+        std::fs::read_to_string(root.join(register)),
+        std::fs::read_to_string(root.join(tracker)),
+    ) else {
+        return;
+    };
+    for (at, line) in questions.lines().enumerate() {
+        let Some(rest) = line.strip_prefix("## ") else {
+            continue;
+        };
+        if !line.ends_with(": `open`") {
+            continue;
+        }
+        let Some(number) = rest.split('.').next() else {
+            continue;
+        };
+        if !status.contains(number) {
+            outcome.failures.push(Finding {
+                file: register.to_owned(),
+                line: at + 1,
+                text: format!("`{number}` is open and {tracker} never names it"),
+                rule: RULE,
+            });
+        }
+    }
+    for phrase in COUNTED_IN_PROSE {
+        if status.contains(phrase) {
+            outcome.failures.push(Finding {
+                file: tracker.to_owned(),
+                line: line_of(&status, phrase),
+                text: format!(
+                    "`{phrase}` counts the open questions in prose, and a count is right for one \
+                     day; name them instead and let {register} be the authority"
+                ),
+                rule: RULE,
+            });
+        }
+    }
+}
+
 /// The tracker's table of what is built, and where its rows come from.
 const CRATE_TABLE: (&str, &str) = ("docs/STATUS.md", "| crate | what it is |");
 
@@ -1421,6 +1485,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     predicates_are_listed(root, &mut outcome);
     composers_reach_every_binding(root, &mut outcome);
     crates_are_listed(root, &mut outcome);
+    open_questions_are_named(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -1441,6 +1506,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "every-predicate-is-listed",
         "composer-reaches-every-binding",
         "crate-is-listed",
+        "open-question-is-named",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();
