@@ -299,6 +299,7 @@ __all__ = [
     "Friendship",
     "GrahaState",
     "DashaDefinition",
+    "Muntha",
     "Pravesha",
     "VarshaRequest",
     "RashiDashaDefinition",
@@ -2455,6 +2456,30 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
 
     reading: Literal["sidereal", "tropical", "mean"]
 
+    muntha: Literal["sign_start", "natal_degree"]
+    """Where the Muntha stands inside the sign it has reached (crux C107).
+    `"sign_start"` (the default, and the source's own reading) enters each
+    year at the sign's first degree; `"natal_degree"` carries the natal
+    lagna's degree across. Both give the same sign."""
+
+
+@dataclass(frozen=True)
+class Muntha:
+    """The Muntha at one return: the birth lagna's sign advanced one sign
+    for each completed year, and that sign's lord."""
+
+    sign: Rashi
+    """The sign it has reached; the same under either reading."""
+
+    lord: Graha
+    """The lord of that sign: the Munthesha, first of the annual chart's
+    five office-bearers and the one that takes the year's lordship when no
+    other qualifies."""
+
+    longitude_deg: float
+    """Its longitude at the return, degrees, under the reading asked for.
+    It advances thirty degrees over the year."""
+
 
 @dataclass(frozen=True)
 class Pravesha:
@@ -2467,6 +2492,9 @@ class Pravesha:
 
     instant: float
     """The instant, a Julian day (UTC), to pass to `found`."""
+
+    muntha: Muntha
+    """The Muntha standing at it, progressed by this year's own count."""
 
 
 class DashaLord(TypedDict):
@@ -3097,7 +3125,15 @@ class Chart:
         start = sum(counts[i] for i in range(self.index))
         columns = decoded.praveshas
         return [
-            Pravesha(year=columns.year[i], instant=columns.jd[i])
+            Pravesha(
+                year=columns.year[i],
+                instant=columns.jd[i],
+                muntha=Muntha(
+                    sign=Rashi(columns.muntha_sign[i]),
+                    lord=Graha(columns.muntha_lord[i]),
+                    longitude_deg=columns.muntha_deg[i],
+                ),
+            )
             for i in range(start, start + counts[self.index])
         ]
 

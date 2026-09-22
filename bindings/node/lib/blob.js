@@ -614,6 +614,9 @@ export function decodeCharts(bytes) {
     out.praveshas = {
       year: column(blob, at, 0, 'u16', at.count),
       jd: column(blob, at, 1, 'f64', at.count),
+      munthaSign: column(blob, at, 2, 'u16', at.count),
+      munthaLord: column(blob, at, 3, 'u16', at.count),
+      munthaDeg: column(blob, at, 4, 'f64', at.count),
       length: at.count,
     };
   }

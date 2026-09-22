@@ -564,12 +564,40 @@ export type VarshaReading =
   /** A whole sidereal year for each year of life, from birth: the older arithmetic, and the only reading that needs no ephemeris. */
   | 'mean';
 
+/**
+ * Where the Muntha stands inside the sign it has reached (crux C107).
+ *
+ * Both readings give the same sign at the return and part over the year,
+ * so they differ for a Tajika aspect taken to the Muntha and nothing else.
+ */
+export type MunthaDegree =
+  /** It enters each year at its sign's first degree and crosses the sign during the year: the source's own reading. */
+  | 'sign_start'
+  /** It carries the natal lagna's degree into each new sign. */
+  | 'natal_degree';
+
 /** The annual charts a request asks for. */
 export interface VarshaRequest {
   /** Which longitude the Sun returns to; `sidereal` by default. */
   readonly reading?: VarshaReading;
   /** The last year of life wanted, 1 to 200. */
   readonly through: number;
+  /** Where the Muntha stands inside its sign; `sign_start` by default. */
+  readonly muntha?: MunthaDegree;
+}
+
+/**
+ * The Muntha at one return: the birth lagna's sign advanced one sign for
+ * each completed year, and that sign's lord — the Munthesha, first of the
+ * annual chart's five office-bearers.
+ */
+export interface Muntha {
+  /** The sign it has reached; the same under either `MunthaDegree`. */
+  readonly sign: Rashi | 'unknown';
+  /** The lord of that sign. */
+  readonly lord: Graha | 'unknown';
+  /** Its longitude at the return, degrees, under the reading asked for. */
+  readonly longitudeDeg: number;
 }
 
 /** One annual chart's instant. */
@@ -582,6 +610,8 @@ export interface Pravesha {
   readonly year: number;
   /** The instant, a Julian day (UTC), to pass to `found`. */
   readonly instant: number;
+  /** The Muntha standing at it, progressed by this year's own count. */
+  readonly muntha: Muntha;
 }
 
 /** A registered dasha system's full key, as the context that registered it resolves it. */

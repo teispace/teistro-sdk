@@ -37,7 +37,7 @@ use teistro_strength::{
     ShadbalaReading, ShadbalaRules, VaiseshikamsaChart, VaiseshikamsaReading, VimshopakaChart,
     VimshopakaReading,
 };
-use teistro_tajika::{Natal, Pravesha, Reading};
+use teistro_tajika::{Muntha, MunthaDegree, Natal, Pravesha, Reading};
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
 use crate::area::system_of;
@@ -767,6 +767,31 @@ impl<'a> ChartArea<'a> {
             })?
             .at;
         self.reading(at, request)
+    }
+
+    /// The **Muntha** at one of a birth's returns: the lagna's sign
+    /// progressed one sign for each completed year, and that sign's lord.
+    ///
+    /// `completed_years` is exactly a [`Pravesha::year`], which counts
+    /// returns — pass that field in unchanged. Zero is the birth, where
+    /// the Muntha sits on the lagna.
+    ///
+    /// **It needs no ephemeris.** The whole progression is the founded
+    /// chart's own lagna and a count of years, so a context with no
+    /// provider attached answers it, exactly as [`Reading::Mean`] does
+    /// for the returns themselves.
+    ///
+    /// # Errors
+    ///
+    /// A `completed_years` past two hundred, named `completed_years`; a
+    /// lagna that is not a number, named `lagna`.
+    pub fn muntha(
+        self,
+        document: &Document,
+        completed_years: u16,
+        degree: MunthaDegree,
+    ) -> Result<Muntha, Error> {
+        teistro_tajika::muntha(document.foundation.lagna_deg, completed_years, degree)
     }
 
     /// The Sun where it stood at birth, in both zodiacs, as a return needs

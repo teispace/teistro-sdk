@@ -1740,28 +1740,50 @@ struct PraveshaColumns {
     counts: Vec<u32>,
     years: Vec<u16>,
     jds: Vec<f64>,
+    muntha_signs: Vec<u16>,
+    muntha_lords: Vec<u16>,
+    muntha_degs: Vec<f64>,
 }
 
 impl PraveshaColumns {
-    fn of(praveshas: &[Vec<teistro::Pravesha>]) -> PraveshaColumns {
+    fn of(praveshas: &[Vec<Year>]) -> PraveshaColumns {
         let mut counts = Vec::with_capacity(praveshas.len());
         let mut years = Vec::new();
         let mut jds = Vec::new();
+        let mut muntha_signs = Vec::new();
+        let mut muntha_lords = Vec::new();
+        let mut muntha_degs = Vec::new();
         for found in praveshas {
             counts.push(u32::try_from(found.len()).unwrap_or(u32::MAX));
             for one in found {
-                years.push(one.year);
-                jds.push(one.at.get());
+                years.push(one.pravesha.year);
+                jds.push(one.pravesha.at.get());
+                muntha_signs.push(one.muntha.sign.id());
+                muntha_lords.push(one.muntha.lord.id());
+                muntha_degs.push(one.muntha.longitude_deg);
             }
         }
-        PraveshaColumns { counts, years, jds }
+        PraveshaColumns {
+            counts,
+            years,
+            jds,
+            muntha_signs,
+            muntha_lords,
+            muntha_degs,
+        }
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
         writer.columns(
             "praveshas",
             self.years.len(),
-            &[ColumnData::U16(&self.years), ColumnData::F64(&self.jds)],
+            &[
+                ColumnData::U16(&self.years),
+                ColumnData::F64(&self.jds),
+                ColumnData::U16(&self.muntha_signs),
+                ColumnData::U16(&self.muntha_lords),
+                ColumnData::F64(&self.muntha_degs),
+            ],
         )
     }
 }
@@ -2114,7 +2136,7 @@ pub struct Composed<'a> {
     pub plans: &'a str,
     /// Every chart's annual-chart instants, in the batch's order
     /// (`annual-chart.md`); empty when none were asked for.
-    pub praveshas: &'a [Vec<teistro::Pravesha>],
+    pub praveshas: &'a [Vec<Year>],
 }
 
 /// counts saying so.
@@ -2347,6 +2369,24 @@ pub(crate) struct VarshaRequest {
     pub(crate) reading: teistro::tajika::Reading,
     /// The last year of life wanted, 1 to 200.
     pub(crate) through: u16,
+    /// Where the Muntha stands inside the sign it has reached; the
+    /// source's own reading by default (crux C107).
+    #[serde(default)]
+    pub(crate) muntha: teistro::MunthaDegree,
+}
+
+/// One annual chart's instant and the Muntha standing at it.
+///
+/// The two travel together because they are answered together: the Muntha
+/// is the return's own year count progressed over the birth's lagna, so a
+/// second pass to fetch it would be a second chance to disagree about
+/// which year it is (`03-design/muntha.md`).
+#[derive(Clone, Copy, Debug)]
+pub struct Year {
+    /// The instant, and which year of the birth it opens.
+    pub pravesha: teistro::Pravesha,
+    /// The Muntha standing at it, progressed by that year's own count.
+    pub muntha: teistro::Muntha,
 }
 
 /// The annual charts a request's `varsha_json` asks for, none for null; a
@@ -2427,7 +2467,7 @@ impl Sections {
         documents: &[Document],
         graha_count: usize,
         registered: &teistro::dasha::DashaSystems,
-        praveshas: &[Vec<teistro::Pravesha>],
+        praveshas: &[Vec<Year>],
     ) -> Result<Sections, Error> {
         Ok(Sections {
             vargas: VargaColumns::of(documents, graha_count)?,
@@ -2478,7 +2518,7 @@ fn praveshas_of(
     sdk: &teistro::Context,
     documents: &[Document],
     asked: Option<&VarshaRequest>,
-) -> Result<Vec<Vec<teistro::Pravesha>>, Error> {
+) -> Result<Vec<Vec<Year>>, Error> {
     let Some(asked) = asked else {
         return Ok(Vec::new());
     };
@@ -2488,6 +2528,19 @@ fn praveshas_of(
         .map(|(at, document)| {
             sdk.chart()
                 .praveshas(document, asked.reading, asked.through)
+                .and_then(|found| {
+                    found
+                        .into_iter()
+                        .map(|pravesha| {
+                            // The Muntha is progressed by the years the
+                            // return *completes*, which is exactly what
+                            // this field counts.
+                            let muntha =
+                                sdk.chart().muntha(document, pravesha.year, asked.muntha)?;
+                            Ok(Year { pravesha, muntha })
+                        })
+                        .collect::<Result<Vec<Year>, Error>>()
+                })
                 // A refusal names the request field the caller wrote and
                 // the chart it was refused for, so a batch says which one.
                 .map_err(|error| {

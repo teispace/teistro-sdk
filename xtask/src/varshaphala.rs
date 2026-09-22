@@ -29,16 +29,15 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use teistro::catalogue::Graha;
-use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+use teistro::quantity::{JulianDay, Utc};
 use teistro::tajika::Reading;
-use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
+use teistro::{Context, Ephemeris};
 
+use crate::births::{Birth, CHARTS, births};
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, Verdict, count, fill, plural, seconds, table, worst};
-use crate::rules_corpus::read_json;
 
 const PAGE: &str = "docs/03-design/annual-chart-measured.md";
-const CHARTS: &str = "fixtures/baseline/charts";
 
 /// How many returns each recorded birth is followed for.
 ///
@@ -55,28 +54,6 @@ const SIDEREAL_YEAR_DAYS: f64 = 365.256_363_004;
 
 /// The tropical year, days: the rival's interval, for the same reason.
 const TROPICAL_YEAR_DAYS: f64 = 365.242_190_402;
-
-/// One recorded birth, founded.
-struct Birth {
-    name: String,
-    document: Document,
-    /// The zone the birth was recorded in, which the return is cast in too.
-    offset: UtcOffset,
-    /// The Sun's sidereal longitude at birth, which every return returns to.
-    natal_sun_deg: f64,
-}
-
-impl Birth {
-    /// The birth's own instant.
-    fn at(&self) -> f64 {
-        self.document.foundation.instant.get()
-    }
-
-    /// Where it was born, for founding a return there.
-    fn request(&self) -> ChartRequest {
-        ChartRequest::at(self.document.foundation.place, self.offset)
-    }
-}
 
 /// What one reading of the return gives for one birth.
 struct Returns {
@@ -102,65 +79,6 @@ impl Returns {
             })
             .collect()
     }
-}
-
-/// Every recorded birth, founded by the SDK under the conformance profile.
-fn births(root: &Path, sdk: &Context) -> Result<Vec<Birth>, String> {
-    let directory = root.join(CHARTS);
-    let entries = std::fs::read_dir(&directory).map_err(|why| format!("{CHARTS}: {why}"))?;
-    let mut paths: Vec<_> = entries
-        .flatten()
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|ext| ext == "json"))
-        .collect();
-    paths.sort();
-    let mut out = Vec::new();
-    for path in paths {
-        let file = read_json(&path)?;
-        let name = path
-            .file_stem()
-            .map(|stem| stem.to_string_lossy().into_owned())
-            .unwrap_or_default();
-        let at = file["input"]["place"].clone();
-        let (Some(latitude), Some(longitude)) = (at["latitude"].as_f64(), at["longitude"].as_f64())
-        else {
-            return Err(format!("{name}: a place without a latitude or a longitude"));
-        };
-        let altitude = at["altitude_m"].as_f64().unwrap_or(0.0);
-        let Some(jd) = file["input"]["resolved"]["jd_ut"].as_f64() else {
-            return Err(format!("{name}: no resolved instant"));
-        };
-        let offset_minutes = file["input"]["resolved"]["tz_offset_min"]
-            .as_i64()
-            .unwrap_or(0);
-        let place = Place::new(
-            Latitude::try_new(latitude).map_err(|why| format!("{name}: {why}"))?,
-            Longitude::try_new(longitude).map_err(|why| format!("{name}: {why}"))?,
-            Altitude::try_new(altitude).map_err(|why| format!("{name}: {why}"))?,
-        );
-        let offset = UtcOffset::try_from_seconds(
-            i32::try_from(offset_minutes * 60).map_err(|why| format!("{name}: {why}"))?,
-        )
-        .map_err(|why| format!("{name}: {why}"))?;
-        let request = ChartRequest::at(place, offset);
-        let document = sdk
-            .chart()
-            .reading(JulianDay::<Utc>::literal(jd), &request)
-            .map_err(|why| format!("{name}: founding it: {why}"))?
-            .value;
-        let sun = document
-            .foundation
-            .graha(Graha::Sun)
-            .ok_or_else(|| format!("{name}: a founded chart places the Sun"))?;
-        let natal_sun_deg = sun.longitude_deg;
-        out.push(Birth {
-            name,
-            document,
-            offset,
-            natal_sun_deg,
-        });
-    }
-    Ok(out)
 }
 
 /// The returns of one birth under one reading, **through the façade**.

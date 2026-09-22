@@ -1427,6 +1427,39 @@ void _engineTests() {
     final span = years.last.instant - years.first.instant;
     expect((span - 11 * 365.2564).abs(), lessThan(1));
 
+    // The Muntha advances one sign a year from the birth lagna, which is
+    // the whole of its rule; its lord is that sign's.
+    final natal = ctx.chart.found(
+      instant: 2447995.4895833335,
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    final lagna = natal.lagnaDeg ~/ 30;
+    for (final one in years) {
+      expect(one.muntha.sign.id, (lagna + one.year) % 12);
+      expect(one.muntha.lord, isNot(Graha.unknown));
+    }
+    // Twelve years is a whole circle back to the lagna's own sign.
+    expect(years.last.muntha.sign, Rashi.byId(lagna % 12));
+
+    // The two readings of the degree agree on the sign and part inside it.
+    final carried = ctx.chart.found(
+      instant: 2447995.4895833335,
+      place: place,
+      utcOffsetSeconds: 20700,
+      varsha: const VarshaRequest(
+        through: 12,
+        muntha: MunthaDegree.natalDegree,
+      ),
+    );
+    for (var i = 0; i < years.length; i += 1) {
+      expect(carried.praveshas[i].muntha.sign, years[i].muntha.sign);
+      expect(
+        carried.praveshas[i].muntha.longitudeDeg,
+        greaterThanOrEqualTo(years[i].muntha.longitudeDeg),
+      );
+    }
+
     // The instant founds as a chart of its own; the place is the caller's.
     final annual = ctx.chart.found(
       instant: years.last.instant,

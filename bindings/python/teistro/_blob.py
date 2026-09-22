@@ -1165,6 +1165,15 @@ class ChartsPraveshas:
     jd: memoryview[float]
     """The instant, a Julian day (UTC). A chart cast for it is the annual chart; the place is the caller's, which is why the boundary answers the instant and not the chart."""
 
+    muntha_sign: memoryview[int]
+    """The Muntha's sign at this return, a `rashi` id: the birth lagna's sign advanced one sign for each completed year. Both readings of the Muntha's degree give this same sign."""
+
+    muntha_lord: memoryview[int]
+    """The lord of the Muntha's sign, a `graha` id: the Munthesha, first of the annual chart's five office-bearers and the one that takes the year's lordship when no other qualifies."""
+
+    muntha_deg: memoryview[float]
+    """The Muntha's longitude at this return, degrees, under the `muntha` reading the request asked for. It advances 30 degrees over the year, so a caller timing within the year interpolates from here."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -1993,6 +2002,15 @@ def decode_charts(raw: bytes) -> Charts:
         praveshas=ChartsPraveshas(
             year=blob.column(at_praveshas, 0, 2, at_praveshas.count).cast("H"),
             jd=blob.column(at_praveshas, 1, 8, at_praveshas.count).cast("d"),
+            muntha_sign=blob.column(
+                at_praveshas, 2, 2, at_praveshas.count
+            ).cast("H"),
+            muntha_lord=blob.column(
+                at_praveshas, 3, 2, at_praveshas.count
+            ).cast("H"),
+            muntha_deg=blob.column(
+                at_praveshas, 4, 8, at_praveshas.count
+            ).cast("d"),
             length=at_praveshas.count,
         ),
     )
