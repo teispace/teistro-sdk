@@ -133,7 +133,8 @@ pub use teistro_rules as rules;
 pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths};
 pub use teistro_tajika as tajika;
 pub use teistro_tajika::{
-    Muntha, MunthaDegree, Natal, Office, OfficeBearers, Pravesha, Reading as VarshaReading,
+    Bala, Chosen, Claim, Muntha, MunthaDegree, Natal, Office, OfficeBearers, Panchavargiya,
+    Pravesha, Reading as VarshaReading, Relation as TajikaRelation, Varshesha, VarsheshaRules,
 };
 // Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
 // with the rules it was read under (`03-design/strength-schemes.md`).

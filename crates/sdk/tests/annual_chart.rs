@@ -219,6 +219,42 @@ fn a_year_that_cannot_be_reached_is_refused_by_name() {
     );
 }
 
+/// The source works its chart on a **geocentric** frame, which the default
+/// profile is and the conformance one is not: under the latter its Moon is
+/// 58 arcminutes out, which is the Moon's parallax at Bombay.
+fn source_context() -> Context {
+    Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("the default profile, which is geocentric as the source is")
+}
+
+/// Bombay, where the source's example was born and casts its years.
+fn source_place() -> ChartRequest {
+    ChartRequest::at(
+        Place::new(
+            Latitude::try_new(18.0 + 58.0 / 60.0).unwrap(),
+            Longitude::try_new(72.0 + 50.0 / 60.0).unwrap(),
+            Altitude::try_new(11.0).unwrap(),
+        ),
+        UtcOffset::try_from_seconds(19_800).unwrap(),
+    )
+}
+
+/// The source's birth chart and the annual chart of its forty-first year,
+/// under the **mean** return its Dhruvanka computes. 07:11 IST is 01:41 UTC.
+fn source_birth_and_year(sdk: &Context) -> (Document, Document) {
+    let bombay = source_place();
+    let birth = sdk
+        .chart()
+        .reading(JulianDay::<Utc>::literal(2_431_322.570_138_889), &bombay)
+        .unwrap()
+        .value;
+    let mean = sdk.chart().praveshas(&birth, Reading::Mean, 40).unwrap()[39];
+    let annual = sdk.chart().reading(mean.at, &bombay).unwrap().value;
+    (birth, annual)
+}
+
 /// The source's own worked year, end to end through the façade: birth,
 /// return, annual chart and its five office-bearers (K.S. Charak, *A
 /// Textbook of Varshaphala*, Chart III-1, a birth at Bombay on 20 August
@@ -234,18 +270,8 @@ fn a_year_that_cannot_be_reached_is_refused_by_name() {
 /// what it prints — whole arcminutes and seconds — with that margin.
 #[test]
 fn the_sources_worked_year_reproduces_end_to_end() {
-    let sdk = Context::builder()
-        .ephemeris([Ephemeris::Builtin])
-        .build()
-        .expect("the default profile, which is geocentric as the source is");
-    let bombay = ChartRequest::at(
-        Place::new(
-            Latitude::try_new(18.0 + 58.0 / 60.0).unwrap(),
-            Longitude::try_new(72.0 + 50.0 / 60.0).unwrap(),
-            Altitude::try_new(11.0).unwrap(),
-        ),
-        UtcOffset::try_from_seconds(19_800).unwrap(),
-    );
+    let sdk = source_context();
+    let bombay = source_place();
     let arcmin = |deg: f64, sign: f64, degrees: f64, minutes: f64| {
         (deg - (sign * 30.0 + degrees + minutes / 60.0)) * 60.0
     };
@@ -285,6 +311,40 @@ fn the_sources_worked_year_reproduces_end_to_end() {
     );
     assert!(year.day.part.is_daylight());
 
+    // The true return is the "few minutes" the source sets aside — the
+    // Sun's own perturbations, which it names — and here it moves none of
+    // the five. Measured: 0.83 minutes on this profile's **mean**
+    // ayanamsha; about 4.8 on the conformance profile's **nutated** one,
+    // the difference being nutation, which the source does not apply. So
+    // the bound is the source's claim, a nonzero gap of minutes, and not
+    // a figure of its own.
+    let true_return = sdk
+        .chart()
+        .praveshas(&birth, Reading::Sidereal, 40)
+        .unwrap()[39];
+    let minutes = (true_return.at.get() - mean.at.get()) * 1440.0;
+    assert!(
+        minutes.abs() > 0.0 && minutes.abs() < 15.0,
+        "{minutes} minutes"
+    );
+    let on_the_true = sdk.chart().reading(true_return.at, &bombay).unwrap().value;
+    assert_eq!(
+        sdk.chart()
+            .office_bearers(&birth, &on_the_true, 40)
+            .unwrap(),
+        sdk.chart().office_bearers(&birth, &annual, 40).unwrap(),
+        "the few minutes move none of the five"
+    );
+}
+
+/// What the source reads **from** that year's chart: its five
+/// office-bearers, the five-fold strength of its seven (Table VI-10), and
+/// the lord of the year — every figure as the source prints it.
+#[test]
+fn the_sources_worked_year_is_read_as_the_source_reads_it() {
+    let sdk = source_context();
+    let (birth, annual) = source_birth_and_year(&sdk);
+
     let five = sdk.chart().office_bearers(&birth, &annual, 40).unwrap();
     assert_eq!(
         [
@@ -304,25 +364,33 @@ fn the_sources_worked_year_reproduces_end_to_end() {
         "the source's five: Muntha, Janma Lagna, Varsha Lagna, Tri-Rashi, Dina-Ratri"
     );
 
-    // The true return is the "few minutes" the source sets aside — the
-    // Sun's own perturbations, which it names — and here it moves none of
-    // the five. Measured: 0.83 minutes on this profile's **mean**
-    // ayanamsha; about 4.8 on the conformance profile's **nutated** one,
-    // the difference being nutation, which the source does not apply. So
-    // the bound is the source's claim, a nonzero gap of minutes, and not
-    // a figure of its own.
-    let true_return = sdk
+    // The five-fold strength of its seven, through the façade and on the
+    // chart the façade founded.
+    let bala = sdk.chart().panchavargiya(&annual).unwrap();
+    let of = |graha| {
+        bala.iter()
+            .find(|one| one.graha == graha)
+            .expect("one of the seven")
+    };
+    assert_eq!(of(Graha::Jupiter).vishwa.to_string(), "14:46:00");
+    assert_eq!(of(Graha::Saturn).vishwa.to_string(), "16:47:45");
+    assert_eq!(of(Graha::Sun).total.to_string(), "57:21:00");
+    let strongest = bala.iter().max_by_key(|one| one.vishwa).unwrap();
+    assert_eq!(strongest.graha, Graha::Saturn, "of all seven");
+
+    // And the lord of the year the source names: **the Sun**, not the
+    // strongest office-bearer. Jupiter leads on strength and stands in the
+    // second from the lagna, which gives no Tajika aspect, so the source
+    // disqualifies it in as many words and the Sun takes the year.
+    let year = sdk
         .chart()
-        .praveshas(&birth, Reading::Sidereal, 40)
-        .unwrap()[39];
-    let minutes = (true_return.at.get() - mean.at.get()) * 1440.0;
+        .varshesha(&birth, &annual, 40, teistro::VarsheshaRules::default())
+        .unwrap();
+    assert_eq!(year.graha, Graha::Sun);
+    assert_eq!(year.vishwa.to_string(), "14:20:15");
+    assert_eq!(year.claims[0].graha, Graha::Jupiter);
     assert!(
-        minutes.abs() > 0.0 && minutes.abs() < 15.0,
-        "{minutes} minutes"
-    );
-    let annual = sdk.chart().reading(true_return.at, &bombay).unwrap().value;
-    assert_eq!(
-        sdk.chart().office_bearers(&birth, &annual, 40).unwrap(),
-        five
+        !year.claims[0].aspects_lagna,
+        "the second house aspects nothing"
     );
 }

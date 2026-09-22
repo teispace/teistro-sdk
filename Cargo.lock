@@ -1922,6 +1922,7 @@ dependencies = [
  "teistro-astro",
  "teistro-core",
  "teistro-port-ephemeris",
+ "teistro-vargas",
 ]
 
 [[package]]

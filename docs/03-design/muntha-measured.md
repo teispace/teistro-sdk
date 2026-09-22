@@ -125,3 +125,43 @@ Bombay and not an error. And the "few minutes" it sets aside between the
 true return and the mean one are the Sun's own perturbations on a mean
 ayanamsha; on a nutated one nutation adds several more, which the source
 does not apply. Neither moves an office-bearer.
+
+## 6. The five-fold strength, against the source's own table
+
+The source tabulates the **Panchavargiya bala** of all seven planets of
+that chart (Table VI-10) — five parts each, their total, and the
+Vishwa bala the year lord is chosen by. Every one of those figures is
+reproduced from the chart **the SDK founded**, not from the source's own
+longitudes, and the arithmetic is exact: a unit holds 3600 sub-sub units
+and nothing rounds. Every figure below equals the one the source prints;
+all 49 of its cells — five parts, a total and a Vishwa bala for each
+of the seven — are compared one by one in `crates/tajika`'s own tests,
+which is where a wrong relation, table cell, truncation or division
+would land.
+
+| | Sun | Moon | Mars | Mercury | Jupiter | Venus | Saturn |
+|---|---|---|---|---|---|---|---|
+| the Vishwa bala | 14:20:15 | 08:52:30 | 14:01:00 | 13:00:30 | 14:46:00 | 05:40:00 | 16:47:45 |
+
+The strongest is **Saturn**, as the source has it. The year lord is not
+the strongest of the seven but the strongest of the five office-bearers.
+
+## 7. The lord of that year
+
+The year lord is **not** the strongest planet, nor even the strongest
+office-bearer: it is the strongest office-bearer that **aspects the
+annual lagna**. The source's own chart is the case that shows why the
+rule needs all three parts, and the SDK reproduces its reckoning
+claimant by claimant.
+
+| claimant | Vishwa bala | portfolios | aspects the lagna |
+|---|---|---|---|
+| Jupiter | 14:46:00 | 1 | **no** |
+| Sun | 14:20:15 | 2 | yes |
+| Mars | 14:01:00 | 2 | yes |
+
+Jupiter leads on strength and stands in the **second** from the lagna, a
+neutral house that gives no Tajika aspect, so the source disqualifies it
+in as many words. The lord of the year is **Sun** at 14:20:15, chosen as
+`Strongest`. Saturn is stronger than any of them at 16:47:45 and holds
+no portfolio, so it never enters the reckoning at all.
