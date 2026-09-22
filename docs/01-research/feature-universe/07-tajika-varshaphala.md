@@ -163,3 +163,43 @@ here an implementer would naturally get backwards.
 
 The speed order is fixed by the tradition — Moon, Mercury, Venus, Sun,
 Mars, Jupiter, Saturn — and is a ranking rather than a measurement.
+
+### The sixteen yogas, read (2026-09-23)
+
+Table X-3 of the source gives all sixteen, read off the rendered pages.
+**They are not chart facts.** Every one but the first two is a judgement
+about a *pair* — the **lagnesha**, the annual lagna's lord, and the
+**karyesha**, the significator of the matter asked about — so the module
+that computes them takes a question and not only a chart. That is the
+single largest thing this reading settled.
+
+| # | yoga | what it says |
+|---|---|---|
+| 1 | Ikabala | every planet in a kendra or panaphara |
+| 2 | Induvara | every planet in an apoklima |
+| 3 | Ithasala | **three kinds**: *Vartamana* (mutual aspect, faster behind, within the orb), *Poorna* (as Vartamana but within **one degree**), *Bhavishyat* (faster at a sign's end, slower at the next sign's beginning, within the orb) |
+| 4 | Ishrafa | the faster **one degree or more** ahead, in mutual aspect |
+| 5 | Nakta | no mutual aspect, and a **faster** planet between them aspects both from within **its own** deeptamsha |
+| 6 | Yamaya | as Nakta, with an intervening **slower** planet |
+| 7 | Manau | an Ithasala, with a malefic (Mars or Saturn) conjunct or inimically aspecting the faster — which destroys it |
+| 8 | Kamboola | an Ithasala the **Moon** joins by Ithasala with either or both |
+| 9 | Gairi-Kamboola | an Ithasala, an **unqualified** Moon at a sign's last degree, which on entering the next forms Ithasala with the pair and with a powerful planet |
+| 10 | Khallasara | an Ithasala with an unqualified Moon neither conjunct with nor aspecting either: its negation |
+| 11 | Rudda | an Ithasala where either is retrograde, combust, debilitated, in the 6th, 8th or 12th, or under malefic influence |
+| 12 | Duhphali-kuttha | an Ithasala where the slower is exalted, in its own house or otherwise strong, and the faster is weak but neither retrograde nor combust |
+| 13 | Dutthottha-Davira | both weak, and one in Ithasala with another strong planet, exalted or in its own house |
+| 14 | Tambira | no mutual aspect and no Ithasala; the karyesha at a sign's end, forming Ithasala with the lagnesha and a strong planet on entering the next |
+| 15 | Kuttha | both powerful and in kendras or panapharas, under benefic influence and no malefic |
+| 16 | Durapha | both weak, in the trika houses, combust or retrograde |
+
+**"Unqualified" is defined**, and every part of it is computable with what
+is built: "a planet is unqualified when it is neither exalted nor
+debilitated, nor aspected/associated, nor in its own Hudda, Drekkana or
+Navamsha".
+
+**Two of them correct code already shipped** (cruxes C110 and C111): the
+table requires Ishrafa to be a **whole degree** or more ahead, where the
+chapter's prose says only "ahead"; and it names the sign's-end Ithasala
+**Bhavishyat**, where the prose calls the same configuration a *Rashyanta*
+Ithasala and a kind of Vartamana. `crates/tajika` ships the prose's
+reading of both and is to be corrected to the table's.
