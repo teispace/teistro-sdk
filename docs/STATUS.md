@@ -291,8 +291,10 @@ one**. The exporter, `teistro-intl migrate readings` and
 0 errors, and both shortfalls listed by name rather than counted — the 18
 doshas with no reading, and the 10 readings naming no shipped rule, every
 one of them marriage-compatibility waiting on Phase 8's `matching`. **The
-size decided the architecture rather than a preference**: 2.66 MB against
-an `i18n/` of 360 KB, and `crates/sdk`'s build script compiles `i18n/` into
+size decided the architecture rather than a preference**: the corpus is
+several times the `i18n/` root, both halves measured on
+`03-design/interpretation-records-measured.md` rather than written down
+here, and `crates/sdk`'s build script compiles `i18n/` into
 every artefact, so the records live in `packs/readings/` and are **loaded,
 not embedded** — a consumer computing a Julian day should not carry every
 Nepali yoga reading to do it. A record is an **entity** of the catalogue's

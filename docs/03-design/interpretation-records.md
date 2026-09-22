@@ -80,7 +80,8 @@ Phase 8's `matching`, not readings pointing at nothing.
 no others, so the shape is a map and not a struct, and a schema that fixed
 the nine would be wrong on the next corpus.
 
-**And it is large.** As JSON in the pack's own shape:
+**And it is large.** Measured before any of this was built, as JSON in
+the pack's own shape:
 
 | locale | records |
 |---|---|
@@ -90,15 +91,22 @@ the nine would be wrong on the next corpus.
 | `hi` | 788 KB |
 | **four** | **2.54 MB** |
 
-Against `i18n/` today, which is **360 KB for all five locales together**.
-The corpus is seven times the entire pack set.
+That table is the **design-time estimate** and is kept as one. What the
+corpus actually costs, now that it is built, is measured on every run in
+[`interpretation-records-measured.md`](interpretation-records-measured.md)
+— against a fifth locale this page did not anticipate, and against a
+figure for `i18n/` that is measured there rather than written down here.
+The estimate was low, the decision it forced is the same one, and the
+number is not repeated in prose again: it was written into three
+documents as three different values, none of them current, which is the
+whole reason it now lives on a generated page.
 
 ## 3. The decision the size forces: a loadable pack, not a bundle
 
 `crates/sdk/build.rs` compiles every locale in `i18n/` into the binary, so
 a consumer needs no files to render a message (ADR-0010). That is right for
 the engine's own messages — a few hundred short strings — and **wrong for
-an interpretation corpus**. Putting 2.54 MB there would spend it on every
+an interpretation corpus**. Putting a corpus that size there would spend it on every
 artefact the SDK produces: the Rust library, the C dynamic library, the
 Node, Dart and Python packages, and wasm, where the quality bar allows a
 pull request to grow a profile's gzipped module by 2% without a note

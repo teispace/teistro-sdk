@@ -214,6 +214,33 @@ fn facet_gaps(out: &mut String, per_locale: &BTreeMap<String, Readings>, base: &
 /// Both are printed because they are different questions, and the pack is
 /// built here rather than trusted: an artefact nothing exercises is one
 /// that has already stopped working (`unbuilt-configuration-is-broken`).
+/// The bytes of every message file the build script embeds, which is the
+/// other half of the comparison the decision rests on.
+///
+/// Measured rather than written down: the figure appeared in three
+/// documents as three different numbers, none of them current, because a
+/// size is a measurement and prose is where a measurement goes stale.
+fn embedded_bytes(root: &Path) -> usize {
+    fn under(dir: &Path, total: &mut usize) {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                under(&path, total);
+            } else if path.extension().is_some_and(|it| it == "json")
+                && let Ok(meta) = std::fs::metadata(&path)
+            {
+                *total += usize::try_from(meta.len()).unwrap_or(0);
+            }
+        }
+    }
+    let mut total = 0;
+    under(&root.join("i18n"), &mut total);
+    total
+}
+
 fn what_it_costs(out: &mut String, root: &Path, tree: &Tree) -> Result<Built, String> {
     let mut built = Built::default();
     for (tag, locale) in &tree.locales {
@@ -266,6 +293,20 @@ fn what_it_costs(out: &mut String, root: &Path, tree: &Tree) -> Result<Built, St
         ),
         count(packed / 1024),
     );
+    let embedded = embedded_bytes(root);
+    let times = (source + embedded / 2).checked_div(embedded).unwrap_or(0);
+    let _ = write!(
+        out,
+        "Against the root the build script *does* embed: `i18n/` is **{} \
+         KB** of messages across every locale and namespace, so the corpus \
+         is about **{} times** it. Both halves of that comparison are \
+         measured here, because the figure was written into three \
+         documents as three different numbers and none of them was \
+         current.\n\n",
+        count(embedded / 1024),
+        times,
+    );
+
     Ok(built)
 }
 
