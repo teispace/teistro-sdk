@@ -144,7 +144,10 @@ fn dart_parses(written: &[Output]) -> i32 {
 /// The list fails both ways. A member missing a name that is not here
 /// fails, and so does one here that has since been named, so it can only
 /// shrink.
-const UNNAMED: &[(&str, &str, &[&str])] = &[
+/// Readable from [`crate::interpret`], where the composers' queue cites a
+/// kind as the reason a section cannot be said: a reason that names a kind
+/// no longer on this list fails there, so the two cannot drift.
+pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
     (
         "dasha_system",
         "the baseline engine vets names for the 18 systems it implements, and none for these",

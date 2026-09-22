@@ -204,21 +204,24 @@ rather than being forgotten, and a composer named must be a member of
 `PlanRequest`. Two of the six share one blocker rather than having one
 each — `VIMSHOPAKA` and `VAISESHIKAMSA` both name a graha under four
 schemes at once — so the queue is grouped by the blocker and not by
-the row.
+the row, and 3 of them are short a **name** rather than a sentence:
+being a catalogue member is not being named, and the kinds those rows
+cite are on `intl`'s own list of members no strict locale names, checked
+here so a reason cannot outlive its blocker.
 
 | section | said by | why not |
 |---|---|---|
 | `PANCHANGA` | `phala` | — |
 | `STATE` | `conditions` | — |
 | `ASPECTS` | `aspects` | — |
-| `POINTS` | — | the five upagrahas and the special lagnas are points with longitudes, and `positions` says a **graha's** degree in the same sentence a point's would need — but five of the state corpus's `special-lagna` readings land on records the base locale does not name, because `entity-names.md` §4 refuses a translated stub and those kinds have no vetted table. The name comes before the sentence |
+| `POINTS` | — | the five upagrahas and the special lagnas are points with longitudes, and `positions` says a **graha's** degree in the same sentence a point's would need — but the vetted table names the upagrahas only, so a special lagna has no name for the sentence to put in. The name comes before the sentence, and five of the state corpus's `special-lagna` readings are waiting on the same table |
 | `HOUSES` | `houses` | — |
-| `ASHTAKAVARGA` | — | a bindu count is twelve numbers a graha and one more row for their sum: a **table** rather than a sentence, and the sentence a consumer would want (`the Sun has five bindus in Aries`) is a fragment of the `exactLongitude` kind this page already declines. Which of its numbers deserves a sentence — a sign's sarva, a graha's pinda — is undecided rather than missing |
-| `VIMSHOPAKA` | — | the same shape as the Shadbala, and `sdk.reason.strength.score` would say it unchanged — but under **four schemes at once**, and which scheme a plan says is a knob nobody has asked for. One composer saying all four would say the same graha four times |
+| `ASHTAKAVARGA` | — | a bindu count is twelve numbers a graha and one more row for their sum: a **table** rather than a sentence, and the sentence a consumer would want (`the Sun has five bindus in Aries`) is a fragment of the `exactLongitude` kind this page already declines. Which of its numbers deserves a sentence — a sign's sarva, a graha's pinda — is undecided rather than missing, and every name it would need is already vetted |
+| `VIMSHOPAKA` | — | the same shape as the Shadbala, and `sdk.reason.strength.score` would say it unchanged — but under **four schemes at once**, and which scheme a plan says is a knob nobody has asked for. One composer saying all four would say the same graha four times. Every name is vetted; only the choice is missing |
 | `SHADBALA` | `strength` | — |
 | `BHAVA_BALA` | — | a bhava's strength in **virupas**, which is `strength`'s `score` with a bhava where the graha is — `score` takes a `graha` slot, so a bhava needs its own. Its second message has nothing to read: a `BhavaStrength` carries the four parts and their total and **no requirement at all**, where a `GrahaShadbala` carries `required_rupas` beside `strong`. What a bhava must reach is the decision, and it is not the graha rule the texts state |
-| `VAISESHIKAMSA` | — | the names a graha earns by its good vargas are catalogue members (`Kind::Vaiseshikamsa`, 63), so `sdk.entity` already says them in all five locales and no words have to be written — but it names a graha under **four schemes at once**, the six vargas to the sixteen, and a graha can be Parijata in one and Gopura in another. This row called it the cheapest of the six until the source was read: it shares `VIMSHOPAKA`'s knob exactly, and carries an `impaired` flag besides, which decides whether the name it earned is auspicious and is a second fact rather than a qualifier |
-| `DASHA_PHALA` | — | what a placement says of that graha's dasha. Its `nature` is a catalogue member and free; its phase — at the dasha's commencement, in its middle, at its end — and whether the placement makes the dasha favourable are **not**, so the words are the cost. It is the section the state corpus is waiting on: `dasha-lord-effect` and `dasha-lord-activation`, 18 readings, key onto a graha as a dasha lord and have no composer to attach to. With `VAISESHIKAMSA`'s scheme knob read, this is the **cheapest of the six**: one fact a graha, no scheme to choose and no decision to take |
+| `VAISESHIKAMSA` | — | **no strict locale names its designations.** Kimshuka, Parijata, Gopura and the rest are catalogue members, and being a catalogue member is not being named: `vaiseshikamsa` is on the unnamed list with no vetted source, exactly as the special lagnas are, so a composer saying them would print nothing a locale carries. This row called it the cheapest of the six on the strength of *being catalogued*, which is the conflation this page had been making in prose. It also names a graha under four schemes at once, which is `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides whether the name it earned is auspicious |
+| `DASHA_PHALA` | — | what a placement says of that graha's dasha, and the **cheapest of the six** — one fact a graha, no scheme to choose and no sourcing question. Its cost is words and only words: the phase (at the dasha's commencement, in its middle, at its end), whether the placement makes the dasha favourable, the benefic and malefic points, and the nature of its rasi place, which is on the unnamed list and so is said the way `sdk.reading.lifeClass` says a class of life — matched on its key, with the words written in each locale. It is also the section the state corpus is waiting on: `dasha-lord-effect` and `dasha-lord-activation`, 18 readings, key onto a graha as a dasha lord and have no composer to attach to |
 
 | proposed rule | verdict | measured |
 |---|---|---|

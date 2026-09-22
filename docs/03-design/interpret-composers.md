@@ -69,16 +69,25 @@ worth deciding once there is more than one composer to carry.
   queue, and it replaces the sentence the page used to carry: *"the
   silences that remain are all of that kind"*, which was true of the
   messages it was counting and not of the sections nobody had counted.
-  Only two of the six are waiting on a **name**; the others wait on a
-  decision about which number deserves a sentence, or on a knob. Two of
-  them share that knob rather than having one each — `VIMSHOPAKA` and
-  `VAISESHIKAMSA` both name or score a graha under four schemes at once —
-  so the queue is grouped by the blocker and not by the row. The row for
-  `VAISESHIKAMSA` said it was the cheapest of the six until its source was
-  read, which is the pattern this project keeps earning: a design page's
-  own account of an unbuilt step is a hypothesis, and reading the source
-  falsified this one before a line of the composer was written. The
-  cheapest is `DASHA_PHALA` — one fact a graha, no scheme to choose.
+  **Three** of the six are waiting on a **name**, not two, and that is the
+  correction worth keeping: *being a catalogue member is not being named.*
+  `vaiseshikamsa` and `nature` are both catalogued and neither is named by
+  any strict locale — both sit on `intl.rs`'s list of members with no
+  vetted source, exactly where the special lagnas sit — so a composer
+  saying them would print nothing a locale carries. The measured page
+  checks each kind a row cites against that list, so a reason cannot
+  outlive its blocker. The others wait on a decision about which number
+  deserves a sentence, or on a knob, and two share that knob rather than
+  having one each: `VIMSHOPAKA` and `VAISESHIKAMSA` both name or score a
+  graha under four schemes at once, so the queue is grouped by the blocker
+  and not by the row. The row for `VAISESHIKAMSA` called itself the
+  cheapest of the six until its sources were read, which is the pattern
+  this project keeps earning — a design page's own account of an unbuilt
+  step is a hypothesis, and this one was falsified twice before a line of
+  the composer was written. The cheapest is `DASHA_PHALA`: one fact a
+  graha, no scheme to choose, and its unnamed `nature` said the way
+  `sdk.reading.lifeClass` says a class of life, matched on its key with
+  the words written in each locale.
 - **The façade's reading types are the façade's.** `RulesReading` and
   `Present` live in `crates/sdk`, so a composer taking them would put
   `interpret` above the façade and invert the crate graph. Composers take the

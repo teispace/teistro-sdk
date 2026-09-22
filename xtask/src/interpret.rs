@@ -929,23 +929,32 @@ const SECTIONS_SOURCE: &str = "crates/sdk/src/reading.rs";
 /// The composer named must be a member of `PlanRequest`, which is the
 /// other half: a composer renamed would otherwise leave a section looking
 /// answered.
-const SECTION_SAYS: [(&str, &str, &str); 11] = [
-    ("PANCHANGA", "phala", ""),
-    ("STATE", "conditions", ""),
-    ("ASPECTS", "aspects", ""),
+///
+/// The fourth element names the kinds a row's reason cites as **unnamed**,
+/// and each must still be on `intl`'s own list of members no strict locale
+/// names. That is the check this list needed most: two of these reasons
+/// said a section was cheap *because its values are catalogue members*,
+/// and being a catalogue member is not being named — `vaiseshikamsa` and
+/// `nature` are both catalogued and neither is named anywhere. A kind that
+/// gains a vetted table now fails here, so the reason cannot outlive the
+/// blocker.
+const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
+    ("PANCHANGA", "phala", "", &[]),
+    ("STATE", "conditions", "", &[]),
+    ("ASPECTS", "aspects", "", &[]),
     (
         "POINTS",
         "",
         "\
         the five upagrahas and the special lagnas are points with \
         longitudes, and `positions` says a **graha's** degree in the same \
-        sentence a point's would need — but five of the state corpus's \
-        `special-lagna` readings land on records the base locale does not \
-        name, because `entity-names.md` §4 refuses a translated stub and \
-        those kinds have no vetted table. The name comes before the \
-        sentence",
+        sentence a point's would need — but the vetted table names the \
+        upagrahas only, so a special lagna has no name for the sentence to \
+        put in. The name comes before the sentence, and five of the state \
+        corpus's `special-lagna` readings are waiting on the same table",
+        &["point"],
     ),
-    ("HOUSES", "houses", ""),
+    ("HOUSES", "houses", "", &[]),
     (
         "ASHTAKAVARGA",
         "",
@@ -955,7 +964,9 @@ const SECTION_SAYS: [(&str, &str, &str); 11] = [
         consumer would want (`the Sun has five bindus in Aries`) is a \
         fragment of the `exactLongitude` kind this page already declines. \
         Which of its numbers deserves a sentence — a sign's sarva, a \
-        graha's pinda — is undecided rather than missing",
+        graha's pinda — is undecided rather than missing, and every name \
+        it would need is already vetted",
+        &[],
     ),
     (
         "VIMSHOPAKA",
@@ -964,9 +975,11 @@ const SECTION_SAYS: [(&str, &str, &str); 11] = [
         the same shape as the Shadbala, and `sdk.reason.strength.score` \
         would say it unchanged — but under **four schemes at once**, and \
         which scheme a plan says is a knob nobody has asked for. One \
-        composer saying all four would say the same graha four times",
+        composer saying all four would say the same graha four times. \
+        Every name is vetted; only the choice is missing",
+        &[],
     ),
-    ("SHADBALA", "strength", ""),
+    ("SHADBALA", "strength", "", &[]),
     (
         "BHAVA_BALA",
         "",
@@ -978,36 +991,40 @@ const SECTION_SAYS: [(&str, &str, &str); 11] = [
         requirement at all**, where a `GrahaShadbala` carries \
         `required_rupas` beside `strong`. What a bhava must reach is the \
         decision, and it is not the graha rule the texts state",
+        &[],
     ),
     (
         "VAISESHIKAMSA",
         "",
         "\
-        the names a graha earns by its good vargas are catalogue members \
-        (`Kind::Vaiseshikamsa`, 63), so `sdk.entity` already says them in \
-        all five locales and no words have to be written — but it names a \
-        graha under **four schemes at once**, the six vargas to the \
-        sixteen, and a graha can be Parijata in one and Gopura in \
-        another. This row called it the cheapest of the six until the \
-        source was read: it shares `VIMSHOPAKA`'s knob exactly, and \
-        carries an `impaired` flag besides, which decides whether the \
-        name it earned is auspicious and is a second fact rather than a \
-        qualifier",
+        **no strict locale names its designations.** Kimshuka, Parijata, \
+        Gopura and the rest are catalogue members, and being a catalogue \
+        member is not being named: `vaiseshikamsa` is on the unnamed list \
+        with no vetted source, exactly as the special lagnas are, so a \
+        composer saying them would print nothing a locale carries. This \
+        row called it the cheapest of the six on the strength of *being \
+        catalogued*, which is the conflation this page had been making in \
+        prose. It also names a graha under four schemes at once, which is \
+        `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides \
+        whether the name it earned is auspicious",
+        &["vaiseshikamsa"],
     ),
     (
         "DASHA_PHALA",
         "",
         "\
-        what a placement says of that graha's dasha. Its `nature` is a \
-        catalogue member and free; its phase — at the dasha's \
-        commencement, in its middle, at its end — and whether the \
-        placement makes the dasha favourable are **not**, so the words are \
-        the cost. It is the section the state corpus is waiting on: \
+        what a placement says of that graha's dasha, and the **cheapest of \
+        the six** — one fact a graha, no scheme to choose and no sourcing \
+        question. Its cost is words and only words: the phase (at the \
+        dasha's commencement, in its middle, at its end), whether the \
+        placement makes the dasha favourable, the benefic and malefic \
+        points, and the nature of its rasi place, which is on the unnamed \
+        list and so is said the way `sdk.reading.lifeClass` says a class \
+        of life — matched on its key, with the words written in each \
+        locale. It is also the section the state corpus is waiting on: \
         `dasha-lord-effect` and `dasha-lord-activation`, 18 readings, key \
-        onto a graha as a dasha lord and have no composer to attach to. \
-        With `VAISESHIKAMSA`'s scheme knob read, this is the **cheapest \
-        of the six**: one fact a graha, no scheme to choose and no \
-        decision to take",
+        onto a graha as a dasha lord and have no composer to attach to",
+        &["nature"],
     ),
 ];
 
@@ -1016,32 +1033,40 @@ const SECTION_SAYS: [(&str, &str, &str); 11] = [
 /// The list of sections is read from the source that declares them, so a
 /// twelfth added to `Sections` and left out of [`SECTION_SAYS`] fails here
 /// rather than going unnoticed.
-fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
-    let text = std::fs::read_to_string(root.join(SECTIONS_SOURCE))
-        .map_err(|why| format!("{SECTIONS_SOURCE}: {why}"))?;
-    let declared: BTreeSet<&str> = text
-        .lines()
+/// The section names `Sections` declares, read from its own source.
+///
+/// `const fn has(self, one: Sections)` splits the same way a constant
+/// does, so a section is recognised by its name's own shape.
+fn sections_declared(text: &str) -> BTreeSet<&str> {
+    text.lines()
         .filter_map(|line| line.trim().strip_prefix("pub(crate) const "))
         .filter_map(|rest| rest.split_once(": Sections"))
         .map(|(name, _)| name)
-        // `const fn has(self, one: Sections)` splits the same way, so a
-        // section is recognised by its name's own shape.
         .filter(|name| {
             !name.is_empty()
                 && name
                     .bytes()
                     .all(|byte| byte.is_ascii_uppercase() || byte == b'_')
         })
+        .collect()
+}
+
+/// That [`SECTION_SAYS`] and `Sections` agree, and that every row says
+/// either who says it or why nobody does.
+fn sections_agree(declared: &BTreeSet<&str>) -> Result<(), String> {
+    let listed: BTreeSet<&str> = SECTION_SAYS.iter().map(|(name, ..)| *name).collect();
+    let unnamed: BTreeSet<&str> = crate::intl::UNNAMED
+        .iter()
+        .map(|(kind, ..)| *kind)
         .collect();
-    let listed: BTreeSet<&str> = SECTION_SAYS.iter().map(|(name, _, _)| *name).collect();
-    for name in &declared {
+    for name in declared {
         if !listed.contains(name) {
             return Err(format!(
                 "`Sections::{name}` is declared in {SECTIONS_SOURCE} and SECTION_SAYS does not name it"
             ));
         }
     }
-    for (name, composer, why) in SECTION_SAYS {
+    for (name, composer, why, kinds) in SECTION_SAYS {
         if !declared.contains(name) {
             return Err(format!(
                 "SECTION_SAYS names `{name}` and {SECTIONS_SOURCE} declares no such section"
@@ -1058,11 +1083,35 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
                 "`{name}` is said by `{composer}`, which is not a member of PlanRequest"
             ));
         }
+        if !composer.is_empty() && !kinds.is_empty() {
+            return Err(format!(
+                "`{name}` is said by `{composer}` and still cites an unnamed kind"
+            ));
+        }
+        for kind in kinds {
+            if !unnamed.contains(kind) {
+                return Err(format!(
+                    "`{name}` gives `{kind}` as a reason it cannot be said, and no strict \
+                     locale is short of a name for that kind any more"
+                ));
+            }
+        }
     }
+    Ok(())
+}
+
+fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
+    let text = std::fs::read_to_string(root.join(SECTIONS_SOURCE))
+        .map_err(|why| format!("{SECTIONS_SOURCE}: {why}"))?;
+    sections_agree(&sections_declared(&text))?;
 
     let said = SECTION_SAYS
         .iter()
-        .filter(|(_, composer, _)| !composer.is_empty())
+        .filter(|(_, composer, ..)| !composer.is_empty())
+        .count();
+    let sourcing = SECTION_SAYS
+        .iter()
+        .filter(|(_, _, _, kinds)| !kinds.is_empty())
         .count();
     out.push_str("## Every section, and what says it\n\n");
     let _ = write!(
@@ -1078,12 +1127,17 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
          the six share one blocker rather than having one each — \
          `VIMSHOPAKA` and `VAISESHIKAMSA` both name a graha under four \
          schemes at once — so the queue is grouped by the blocker and not \
-         by the row.\n\n\
+         by the row, and {} of them are short a **name** rather than a \
+         sentence: being a catalogue member is not being named, and the \
+         kinds those rows cite are on `intl`'s own list of members no \
+         strict locale names, checked here so a reason cannot outlive its \
+         blocker.\n\n\
          | section | said by | why not |\n|---|---|---|\n",
         count(said),
         count(SECTION_SAYS.len()),
+        count(sourcing),
     );
-    for (name, composer, why) in SECTION_SAYS {
+    for (name, composer, why, _) in SECTION_SAYS {
         let by = if composer.is_empty() {
             String::from("—")
         } else {

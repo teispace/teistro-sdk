@@ -56,15 +56,22 @@ and `DASHA_PHALA` are computed, crossed to every binding, and said by
 nothing. Only two of the six wait on a *name*: `ASHTAKAVARGA` waits on which of its numbers
 deserves a sentence rather than a table; `VIMSHOPAKA` and
 `VAISESHIKAMSA` share one blocker rather than having one each, both
-naming or scoring a graha under **four schemes at once**; `BHAVA_BALA`
+naming or scoring a graha under **four schemes at once** — and
+`VAISESHIKAMSA` has a larger one, because **being a catalogue member is
+not being named**: its designations and `DASHA_PHALA`'s `nature` are both
+catalogued and neither is named by any strict locale, sitting on
+`intl.rs`'s list of members with no vetted source exactly where the
+special lagnas sit. The queue's rows now cite those kinds and the pass
+checks each against that list, so a reason cannot outlive its blocker.
+`BHAVA_BALA`
 waits on what a *bhava* must reach, which a `BhavaStrength` does not
 carry at all where a `GrahaShadbala` carries `required_rupas`; and
 `DASHA_PHALA` is both what the state corpus's last 18 readings are
-waiting for and the **cheapest of the six** — one fact a graha, no
-scheme to choose. I had written `VAISESHIKAMSA` down as the cheapest,
-and reading its source falsified that before a line of the composer was
-written: it names a graha under all four schemes and carries an
-`impaired` flag besides. The table is read from the source that declares the sections, so a
+waiting for and the **cheapest of the six** — one fact a graha, no scheme
+to choose, and its unnamed `nature` said the way `sdk.reading.lifeClass`
+says a class of life, matched on its key with the words written in each
+locale. I had written `VAISESHIKAMSA` down as the cheapest, and its own
+sources falsified that twice before a line of the composer was written. The table is read from the source that declares the sections, so a
 twelfth fails rather than being forgotten, a composer it names must be a
 `PlanRequest` member, and a section with both a composer and an excuse
 fails too — all three proved red before the table was believed. Before
