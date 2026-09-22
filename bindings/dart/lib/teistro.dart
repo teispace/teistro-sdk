@@ -3428,6 +3428,8 @@ final class PlanRequest {
     this.karakas = false,
     this.chalit = false,
     this.phala = false,
+    this.bhavaBala = false,
+    this.vimshopaka = false,
     this.panchanga = false,
     this.states = false,
     this.dashaPhala = false,
@@ -3468,6 +3470,14 @@ final class PlanRequest {
   /// those readings is loaded.
   final bool phala;
 
+  /// Each bhava's strength in virupas, the first house first. It says the
+  /// weight and never a verdict: a bhava carries no requirement.
+  final bool bhavaBala;
+
+  /// Each graha's Vimshopaka under all four schemes, each item naming the
+  /// scheme it belongs to.
+  final bool vimshopaka;
+
   /// The almanac of the chart's day: the tithi with its paksha, the vara,
   /// the nakshatra and the Moon's pada in it, the yoga and the karana, and
   /// whether the birth fell by day where the chart says.
@@ -3497,6 +3507,8 @@ final class PlanRequest {
     'karakas': karakas,
     'chalit': chalit,
     'phala': phala,
+    'bhavaBala': bhavaBala,
+    'vimshopaka': vimshopaka,
     'panchanga': panchanga,
     'states': states,
     'dashaPhala': dashaPhala,

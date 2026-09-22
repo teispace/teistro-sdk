@@ -2346,6 +2346,11 @@ struct Plans {
     #[serde(skip_serializing_if = "Option::is_none")]
     phala: Option<Plan>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "bhavaBala")]
+    bhava_bala: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    vimshopaka: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     panchanga: Option<Plan>,
     #[serde(skip_serializing_if = "Option::is_none")]
     states: Option<Plan>,
@@ -2433,8 +2438,18 @@ fn sections_for(request: ChartRequest, asked: PlanRequest) -> ChartRequest {
     };
     // The almanac is the one section a composer shares with the rules
     // rather than owning: a rule reading the panchanga asks for it too.
-    if asked.panchanga {
+    let request = if asked.panchanga {
         request.with_panchanga()
+    } else {
+        request
+    };
+    let request = if asked.bhava_bala {
+        request.with_bhava_bala()
+    } else {
+        request
+    };
+    if asked.vimshopaka {
+        request.with_vimshopaka()
     } else {
         request
     }
@@ -2492,6 +2507,14 @@ fn compose(
             phala: asked
                 .phala
                 .then(|| sdk.interpret().phala(document))
+                .transpose()?,
+            bhava_bala: asked
+                .bhava_bala
+                .then(|| sdk.interpret().bhava_bala(document))
+                .transpose()?,
+            vimshopaka: asked
+                .vimshopaka
+                .then(|| sdk.interpret().vimshopaka(document))
                 .transpose()?,
             panchanga: asked
                 .panchanga

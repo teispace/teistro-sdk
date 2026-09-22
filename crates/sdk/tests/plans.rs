@@ -822,3 +822,73 @@ fn the_limb_reading_rules_are_answered_rather_than_excused() {
         );
     }
 }
+
+/// The two the section table had recorded as decisions and were not. A
+/// bhava is weighed and never judged, because a `BhavaStrength` carries no
+/// requirement; and the Vimshopaka says all four schemes, each item naming
+/// the one it belongs to, so four items about a graha are four facts.
+#[test]
+fn the_other_two_weights_are_said() {
+    let (sdk, document) = common::reading("{}", |request| {
+        request
+            .with_rule_inputs(shipped::nabhasas())
+            .with_bhava_bala()
+            .with_vimshopaka()
+    });
+
+    let houses = sdk.interpret().bhava_bala(&document).expect("the bhavas");
+    assert_eq!(houses.len(), 12, "one a bhava, in the wheel's order");
+    let said: Vec<i64> = houses
+        .items
+        .iter()
+        .filter_map(|item| match item.params.get("bhava") {
+            Some(teistro::Value::Int(bhava)) => Some(*bhava),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(said, (1..=12).collect::<Vec<i64>>(), "not ranked");
+    let written = serde_json::to_string(&houses).expect("a plan writes");
+    for verdict in ["strong", "required", "reaches"] {
+        assert!(!written.contains(verdict), "{verdict} in {written}");
+    }
+
+    let scored = sdk.interpret().vimshopaka(&document).expect("the scores");
+    assert_eq!(scored.len(), 7 * 4, "seven grahas under four schemes");
+    let schemes: Vec<&str> = scored
+        .items
+        .iter()
+        .filter_map(|item| match item.params.get("scheme") {
+            Some(teistro::Value::Str(scheme)) => Some(scheme.as_str()),
+            _ => None,
+        })
+        .take(4)
+        .collect();
+    assert_eq!(
+        schemes,
+        ["shadvarga", "saptavarga", "dashavarga", "shodashavarga"],
+        "each item names the scheme it belongs to"
+    );
+
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        sdk.intl().set_locale(locale).expect("a strict locale");
+        for item in houses.items.iter().chain(&scored.items) {
+            let said = sdk.intl().render(&item.key, &item.params);
+            assert_eq!(said.resolved_from.as_deref(), Some(locale), "{}", item.key);
+            assert!(!said.is_fallback, "{} fell back in {locale}", item.key);
+            assert!(said.warnings.is_empty(), "{:?}", said.warnings);
+        }
+    }
+
+    // Each is refused by its own knob's name.
+    let (without, bare) = common::reading("{}", |request| {
+        request.with_rule_inputs(shipped::nabhasas())
+    });
+    assert_eq!(
+        without.interpret().bhava_bala(&bare).unwrap_err().field(),
+        Some("bhavaBala")
+    );
+    assert_eq!(
+        without.interpret().vimshopaka(&bare).unwrap_err().field(),
+        Some("vimshopaka")
+    );
+}

@@ -639,6 +639,7 @@ export function messages(r) {
       },
       reason: {
         appName: () => r.render('sdk.reason.appName'),
+        bhavaBala: (p) => r.render('sdk.reason.bhavaBala', { bhava: p.bhava, virupas: p.virupas }),
         bhavaInRashi: (p) => r.render('sdk.reason.bhavaInRashi', { bhava: p.bhava, rashi: { '$entity': p.rashi } }),
         chalitShift: (p) => r.render('sdk.reason.chalitShift', { bhava: p.bhava, chalit: p.chalit, graha: { '$entity': p.graha } }),
         conjunction: (p) => r.render('sdk.reason.conjunction', { count: p.count, graha: { '$entity': p.graha } }),
@@ -672,6 +673,7 @@ export function messages(r) {
           rank: (p) => r.render('sdk.reason.strength.rank', { rank: p.rank }),
           score: (p) => r.render('sdk.reason.strength.score', { graha: { '$entity': p.graha }, score: p.score }),
         },
+        vimshopaka: (p) => r.render('sdk.reason.vimshopaka', { graha: { '$entity': p.graha }, scheme: p.scheme, score: p.score }),
         welcome: () => r.render('sdk.reason.welcome'),
       },
     },

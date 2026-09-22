@@ -2520,6 +2520,8 @@ class PlanRequest(TypedDict, total=False):
     karakas: bool
     chalit: bool
     phala: bool
+    bhavaBala: bool
+    vimshopaka: bool
     panchanga: bool
     states: bool
     dashaPhala: bool
@@ -2548,6 +2550,8 @@ class Plans(TypedDict, total=False):
     karakas: List[PlanItem]
     chalit: List[PlanItem]
     phala: List[PlanItem]
+    bhavaBala: List[PlanItem]
+    vimshopaka: List[PlanItem]
     panchanga: List[PlanItem]
     states: List[PlanItem]
     dashaPhala: List[PlanItem]

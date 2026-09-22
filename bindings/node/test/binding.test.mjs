@@ -867,6 +867,8 @@ test('plans compose in the same crossing, and render with nothing in between', (
       karakas: true,
       chalit: true,
       states: true,
+      bhavaBala: true,
+      vimshopaka: true,
       panchanga: true,
       dashaPhala: true,
     },
@@ -905,6 +907,8 @@ test('plans compose in the same crossing, and render with nothing in between', (
   assert.ok(plans.states.length >= 9 * 3, 'three a graha at least');
   // The almanac says the five limbs and the Moon's pada; whether the birth
   // fell by day is said only where the chart says it.
+  assert.equal(plans.bhavaBala.length, 12, 'one a bhava, in the wheel order');
+  assert.equal(plans.vimshopaka.length, 7 * 4, 'seven grahas, four schemes each');
   assert.ok(plans.panchanga.length >= 6, 'five limbs and a pada');
   assert.ok(plans.panchanga.length <= 7, 'and the day at most');
   assert.ok(Object.isFrozen(plans.placements[0]), 'a plan handed out is a plan kept');
@@ -922,6 +926,8 @@ test('plans compose in the same crossing, and render with nothing in between', (
     ...plans.dashaPhala,
     ...plans.states,
     ...plans.panchanga,
+    ...plans.bhavaBala,
+    ...plans.vimshopaka,
   ]) {
     assert.match(item.key, /^sdk\./u);
     const rendered = ctx.intl.render(item.key, item.params);

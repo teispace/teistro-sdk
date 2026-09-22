@@ -776,6 +776,8 @@ void _engineTests() {
             karakas: true,
             chalit: true,
             states: true,
+            bhavaBala: true,
+            vimshopaka: true,
             panchanga: true,
             dashaPhala: true,
           ),
@@ -824,6 +826,10 @@ void _engineTests() {
       reason: 'three a graha at least',
     );
     // The almanac says the five limbs and the Moon's pada.
+    final weighed = plans['bhavaBala']! as List<Object?>;
+    expect(weighed, hasLength(12), reason: 'one a bhava');
+    final scored = plans['vimshopaka']! as List<Object?>;
+    expect(scored, hasLength(7 * 4), reason: 'seven grahas, four schemes');
     final almanac = plans['panchanga']! as List<Object?>;
     expect(almanac.length, greaterThanOrEqualTo(6), reason: 'limbs and pada');
     expect(almanac.length, lessThanOrEqualTo(7), reason: 'and the day');
@@ -844,6 +850,8 @@ void _engineTests() {
           ...dashas,
           ...carried,
           ...almanac,
+          ...weighed,
+          ...scored,
         ].cast<Map<String, Object?>>()) {
       final key = item['key']! as String;
       expect(key, startsWith('sdk.'));

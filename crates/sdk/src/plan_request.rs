@@ -74,6 +74,15 @@ pub struct PlanRequest {
     /// and it says **nothing** until a pack carrying those readings is
     /// loaded (`03-design/state-readings.md`).
     pub phala: bool,
+    /// Each bhava's strength in virupas, the first house first. It reads
+    /// `Document.bhava_bala`, so it costs that section, and it says the
+    /// weight and never a verdict: a `BhavaStrength` carries no
+    /// requirement, so there is nothing to be short of.
+    pub bhava_bala: bool,
+    /// Each graha's Vimshopaka under all four schemes, each item naming
+    /// the scheme it belongs to. It reads `Document.vimshopaka`, so it
+    /// costs that section.
+    pub vimshopaka: bool,
     /// The almanac of the chart's day: the tithi with its paksha, the
     /// vara, the nakshatra and the Moon's pada in it, the yoga and the
     /// karana, and whether the birth fell by day where the chart says.
@@ -103,7 +112,7 @@ impl PlanRequest {
     /// holds the list against the record's own serialisation, both ways, so
     /// a composer added without a name here fails rather than going
     /// unmentioned in the refusal a typo earns.
-    pub const MEMBERS: [&'static str; 13] = [
+    pub const MEMBERS: [&'static str; 15] = [
         "placements",
         "readings",
         "strength",
@@ -114,10 +123,26 @@ impl PlanRequest {
         "karakas",
         "chalit",
         "phala",
+        "bhavaBala",
+        "vimshopaka",
         "panchanga",
         "states",
         "dashaPhala",
     ];
+
+    /// A request for each bhava's strength.
+    #[must_use]
+    pub const fn with_bhava_bala(mut self) -> PlanRequest {
+        self.bhava_bala = true;
+        self
+    }
+
+    /// A request for each graha's Vimshopaka.
+    #[must_use]
+    pub const fn with_vimshopaka(mut self) -> PlanRequest {
+        self.vimshopaka = true;
+        self
+    }
 
     /// A request for the almanac of the chart's day.
     #[must_use]
@@ -225,6 +250,8 @@ impl PlanRequest {
             || self.karakas
             || self.chalit
             || self.phala
+            || self.bhava_bala
+            || self.vimshopaka
             || self.panchanga
             || self.states
             || self.dasha_phala

@@ -1887,6 +1887,8 @@ final class MessagesSdkReason {
   final Renderer _r;
 
   String appName() => _r.render('sdk.reason.appName');
+  String bhavaBala({required int bhava, required num virupas}) =>
+      _r.render('sdk.reason.bhavaBala', {'bhava': bhava, 'virupas': virupas});
   String bhavaInRashi({required int bhava, required RashiKey rashi}) =>
       _r.render('sdk.reason.bhavaInRashi', {'bhava': bhava, 'rashi': {r'$entity': rashi.key}});
   String chalitShift({required int bhava, required int chalit, required GrahaKey graha}) =>
@@ -1916,6 +1918,8 @@ final class MessagesSdkReason {
   String rashiNature({required RashiKey rashi}) =>
       _r.render('sdk.reason.rashiNature', {'rashi': {r'$entity': rashi.key}});
   MessagesSdkReasonStrength get strength => MessagesSdkReasonStrength(_r);
+  String vimshopaka({required GrahaKey graha, required String scheme, required num score}) =>
+      _r.render('sdk.reason.vimshopaka', {'graha': {r'$entity': graha.key}, 'scheme': scheme, 'score': score});
   String welcome() => _r.render('sdk.reason.welcome');
 }
 

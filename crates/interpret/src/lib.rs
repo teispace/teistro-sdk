@@ -63,6 +63,7 @@ mod positions;
 mod readings;
 mod states;
 mod strength;
+mod weights;
 
 pub use aspects::aspects;
 pub use chalit::chalit;
@@ -77,6 +78,7 @@ pub use positions::positions;
 pub use readings::readings;
 pub use states::states;
 pub use strength::strength;
+pub use weights::{bhava_bala, vimshopaka};
 
 /// Every message key a composer of this module can emit.
 ///
@@ -86,7 +88,7 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 65] = [
+pub const KEYS: [&str; 67] = [
     <reason::PointInRashi as TypedMessage>::KEY,
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
@@ -152,6 +154,8 @@ pub const KEYS: [&str; 65] = [
     <panchanga_messages::Yoga as TypedMessage>::KEY,
     <panchanga_messages::Karana as TypedMessage>::KEY,
     <panchanga_messages::ByDay as TypedMessage>::KEY,
+    <reason::BhavaBala as TypedMessage>::KEY,
+    <reason::Vimshopaka as TypedMessage>::KEY,
 ];
 
 /// One thing to say: a message key and the slots it is said with.

@@ -1718,6 +1718,25 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.reason.bhavaBala`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct BhavaBala {
+            /// The `bhava` parameter.
+            pub bhava: i64,
+            /// The `virupas` parameter.
+            pub virupas: f64,
+        }
+
+        impl crate::TypedMessage for BhavaBala {
+            const KEY: &'static str = "sdk.reason.bhavaBala";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("bhava", crate::Value::Int(self.bhava)),
+                    ("virupas", crate::Value::Num(self.virupas)),
+                ])
+            }
+        }
+
         /// The message `sdk.reason.bhavaInRashi`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct BhavaInRashi {
@@ -2226,6 +2245,28 @@ pub mod sdk {
                 }
             }
 
+        }
+
+        /// The message `sdk.reason.vimshopaka`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Vimshopaka {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `scheme` parameter.
+            pub scheme: String,
+            /// The `score` parameter.
+            pub score: f64,
+        }
+
+        impl crate::TypedMessage for Vimshopaka {
+            const KEY: &'static str = "sdk.reason.vimshopaka";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("scheme", crate::Value::Str(self.scheme.clone())),
+                    ("score", crate::Value::Num(self.score)),
+                ])
+            }
         }
 
         /// The message `sdk.reason.welcome`.

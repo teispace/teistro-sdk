@@ -999,21 +999,18 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 11] = [
         consumer would want (`the Sun has five bindus in Aries`) is a \
         fragment of the `exactLongitude` kind this page already declines. \
         Which of its numbers deserves a sentence — a sign's sarva, a \
-        graha's pinda — is undecided rather than missing, and every name \
-        it would need is already vetted",
+        graha's pinda — is a **reading** decision rather than a \
+        mechanical one, which is why this row is the last of the three \
+        that were called decisions and the only one that stayed one. \
+        `VIMSHOPAKA` wanted four words and `BHAVA_BALA` wanted nothing at \
+        all; this one wants someone to say which of eighty-four numbers a \
+        sentence is worth. The likely answer is the two a text quotes — \
+        each graha's bindus in the sign it stands in, and that sign's \
+        sarva — which needs the placements beside the section and so is a \
+        composer over two inputs. Every name it would need is vetted",
         &[],
     ),
-    (
-        "VIMSHOPAKA",
-        &[],
-        "\
-        the same shape as the Shadbala, and `sdk.reason.strength.score` \
-        would say it unchanged — but under **four schemes at once**, and \
-        which scheme a plan says is a knob nobody has asked for. One \
-        composer saying all four would say the same graha four times. \
-        Every name is vetted; only the choice is missing",
-        &[],
-    ),
+    ("VIMSHOPAKA", &["vimshopaka"], "", &[]),
     (
         "SHADBALA",
         &["strength"],
@@ -1027,19 +1024,7 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 11] = [
         how deep a composer should go is the decision here",
         &[],
     ),
-    (
-        "BHAVA_BALA",
-        &[],
-        "\
-        a bhava's strength in **virupas**, which is `strength`'s `score` \
-        with a bhava where the graha is — `score` takes a `graha` slot, so \
-        a bhava needs its own. Its second message has nothing to read: a \
-        `BhavaStrength` carries the four parts and their total and **no \
-        requirement at all**, where a `GrahaShadbala` carries \
-        `required_rupas` beside `strong`. What a bhava must reach is the \
-        decision, and it is not the graha rule the texts state",
-        &[],
-    ),
+    ("BHAVA_BALA", &["bhavaBala"], "", &[]),
     (
         "VAISESHIKAMSA",
         &[],
@@ -1135,6 +1120,8 @@ fn the_founded_plan(sdk: &teistro::Context) -> Result<Plan, String> {
         .with_houses()
         .with_shadbala()
         .with_dasha_phala()
+        .with_bhava_bala()
+        .with_vimshopaka()
         .with_points();
     let instant =
         teistro::quantity::JulianDay::try_new(2_448_000.5).map_err(|why| why.to_string())?;
@@ -1161,6 +1148,8 @@ fn the_founded_plan(sdk: &teistro::Context) -> Result<Plan, String> {
         interpret().houses(document),
         interpret().aspects(document),
         interpret().strength(document),
+        interpret().bhava_bala(document),
+        interpret().vimshopaka(document),
     ] {
         plan.items.extend(said.map_err(|why| why.to_string())?);
     }

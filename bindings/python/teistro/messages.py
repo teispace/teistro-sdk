@@ -808,6 +808,13 @@ class MessagesSdkReason:
         """`sdk.reason.appName`"""
         return self._r.render("sdk.reason.appName")
 
+    def bhava_bala(self, *, bhava: int, virupas: float) -> str:
+        """`sdk.reason.bhavaBala`"""
+        return self._r.render(
+            "sdk.reason.bhavaBala",
+            {"bhava": bhava, "virupas": virupas},
+        )
+
     def bhava_in_rashi(self, *, bhava: int, rashi: RashiKey) -> str:
         """`sdk.reason.bhavaInRashi`"""
         return self._r.render(
@@ -913,6 +920,13 @@ class MessagesSdkReason:
     def strength(self) -> MessagesSdkReasonStrength:
         """The messages under `strength`."""
         return MessagesSdkReasonStrength(self._r)
+
+    def vimshopaka(self, *, graha: GrahaKey, scheme: str, score: float) -> str:
+        """`sdk.reason.vimshopaka`"""
+        return self._r.render(
+            "sdk.reason.vimshopaka",
+            {"graha": {"$entity": graha.value}, "scheme": scheme, "score": score},
+        )
 
     def welcome(self) -> str:
         """`sdk.reason.welcome`"""

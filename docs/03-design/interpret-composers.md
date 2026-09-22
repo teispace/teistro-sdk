@@ -460,6 +460,31 @@ composes the corpus's **recorded** karakas, as `strength` composes recorded
 rupas and `houses` recorded cusp signs, so its numbers are the recording
 engine's ranking and the SDK's own answer for the same chart can differ.
 
+**`bhava_bala`** and **`vimshopaka`** — what the chart weighs besides the
+Shadbala: each bhava's strength in virupas, and each graha's Vimshopaka
+under all four schemes. **Built** over two messages of `sdk.reason`, the
+fourteenth and fifteenth composers.
+
+**Both were recorded as *decisions* and neither was one**, which is the
+third time in a day that a queue row's stated blocker did not survive its
+own code. `BHAVA_BALA` was said to want "what a bhava must reach": it
+wants nothing of the kind, because a `BhavaStrength` carries the four
+parts and their total and **no requirement at all**, where a
+`GrahaShadbala` carries `required_rupas` beside `strong`. There is no
+verdict to decline and no threshold to invent — the composer says the
+weight and stops, and it needed **no new vocabulary**, an ordinal frame
+and a number both already in use. `VIMSHOPAKA` was said to want a knob,
+because one composer saying four schemes "would say the same graha four
+times". It does, and so does every per-graha composer; what would make
+that *repetition* is a message that did not say **which** scheme it
+meant. The four are fields rather than a catalogue kind, so the scheme
+crosses as its key and the message matches on it, as `lifeClass` does.
+Four words, and the knob was never the blocker.
+
+**A bhava is said in the wheel's order and a graha is ranked**, which
+looks inconsistent and is the point: `strength` sorts because a graha's
+weight is read *against the others*, and a bhava's is read in place.
+
 **`panchanga`** — the almanac of the chart's day: the tithi with its
 paksha, the vara, the nakshatra and the Moon's pada in it, the yoga and the
 karana, and whether the birth fell by day where the chart says. **Built**

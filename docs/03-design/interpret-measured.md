@@ -22,7 +22,7 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 130 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 134 disagree |
 | every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 22609 disagree |
 | every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 22609 disagree |
 | every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 22609 disagree |
@@ -79,6 +79,7 @@ about.
 | `sdk.reading.severity` | 29 |
 | `sdk.reading.status` | 348 |
 | `sdk.reading.timing` | 29 |
+| `sdk.reason.bhavaBala` | 0 |
 | `sdk.reason.bhavaInRashi` | 900 |
 | `sdk.reason.chalitShift` | 135 |
 | `sdk.reason.dasha.favour` | 0 |
@@ -101,6 +102,7 @@ about.
 | `sdk.reason.pointInRashi` | 93 |
 | `sdk.reason.strength.meets` | 497 |
 | `sdk.reason.strength.score` | 497 |
+| `sdk.reason.vimshopaka` | 0 |
 
 **The verse's own statement is not translated.** 2449 of the 22 609
 items — every `sdk.reading.effect` — carry the words the rule itself
@@ -229,11 +231,11 @@ nakshatras in their own script inside an English sentence.
 
 | locale | completeness | items from its own messages |
 |---|---|---:|
-| `en-Latn` | `strict` | 393 of 393 |
-| `hi-Deva-IN` | `base` | 0 of 393 |
-| `ne-Deva-NP` | `strict` | 393 of 393 |
-| `sa-Deva` | `base` | 0 of 393 |
-| `sa-Latn` | `base` | 0 of 393 |
+| `en-Latn` | `strict` | 433 of 433 |
+| `hi-Deva-IN` | `base` | 0 of 433 |
+| `ne-Deva-NP` | `strict` | 433 of 433 |
+| `sa-Deva` | `base` | 0 of 433 |
+| `sa-Latn` | `base` | 0 of 433 |
 
 ## Every key, emitted at least once
 
@@ -247,9 +249,9 @@ never gave a chart its limbs, which also kept **11 shipped rules** from
 ever holding.
 
 So every key is emitted here by **one chart the SDK founds itself**,
-with every section asked for and both corpora loaded — 64 of 65 —
+with every section asked for and both corpora loaded — 66 of 67 —
 and every item of it renders in each strict locale from that locale's
-own message, with no fallback and nothing to warn about: 786 renderings.
+own message, with no fallback and nothing to warn about: 866 renderings.
 What this chart cannot reach is named below, with the reason it needs
 another. A key missing from both fails, and so does a key excused that
 this chart emits — which is not a hypothetical: **three of the four
@@ -262,12 +264,12 @@ time.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is emitted by one founded chart, or listed with the reason it needs another | **holds** | 0 of 65 disagree |
+| every key a composer can emit is emitted by one founded chart, or listed with the reason it needs another | **holds** | 0 of 67 disagree |
 
 ## Every section, and what says it
 
 A composer says a **section** or it says a placement, and the sections
-are what a chart request asks for by name. 6 of the 11 a document can
+are what a chart request asks for by name. 8 of the 11 a document can
 carry have a composer, with 3 of those unfinished, and the rest carrying
 the reason nobody says them — because "the silences left are all of
 one kind" is exactly the sentence this page had and exactly the sentence
@@ -276,7 +278,7 @@ is why: a `GrahaState` carries a dozen facts and `conditions` says the
 four that reach it through a `Placement`, so the row read as answered.
 The list is read from the source that declares the sections, so a
 twelfth fails here rather than being forgotten, and a composer named
-must be a member of `PlanRequest`. Of the 5 nothing says, two share one
+must be a member of `PlanRequest`. Of the 3 nothing says, two share one
 blocker rather than having one each — `VIMSHOPAKA` and `VAISESHIKAMSA`
 both name a graha under four schemes at once — so the queue is grouped
 by the blocker and not by the row; and 3 rows are short a **name**
@@ -292,10 +294,10 @@ blocker.
 | `ASPECTS` | `aspects` | — |
 | `POINTS` | — | the five upagrahas and the special lagnas are points with longitudes, and `positions` says a **graha's** degree in the same sentence a point's would need — but the vetted table names the upagrahas only, so a special lagna has no name for the sentence to put in. The name comes before the sentence, and five of the state corpus's `special-lagna` readings are waiting on the same table |
 | `HOUSES` | `houses` | — |
-| `ASHTAKAVARGA` | — | a bindu count is twelve numbers a graha and one more row for their sum: a **table** rather than a sentence, and the sentence a consumer would want (`the Sun has five bindus in Aries`) is a fragment of the `exactLongitude` kind this page already declines. Which of its numbers deserves a sentence — a sign's sarva, a graha's pinda — is undecided rather than missing, and every name it would need is already vetted |
-| `VIMSHOPAKA` | — | the same shape as the Shadbala, and `sdk.reason.strength.score` would say it unchanged — but under **four schemes at once**, and which scheme a plan says is a knob nobody has asked for. One composer saying all four would say the same graha four times. Every name is vetted; only the choice is missing |
+| `ASHTAKAVARGA` | — | a bindu count is twelve numbers a graha and one more row for their sum: a **table** rather than a sentence, and the sentence a consumer would want (`the Sun has five bindus in Aries`) is a fragment of the `exactLongitude` kind this page already declines. Which of its numbers deserves a sentence — a sign's sarva, a graha's pinda — is a **reading** decision rather than a mechanical one, which is why this row is the last of the three that were called decisions and the only one that stayed one. `VIMSHOPAKA` wanted four words and `BHAVA_BALA` wanted nothing at all; this one wants someone to say which of eighty-four numbers a sentence is worth. The likely answer is the two a text quotes — each graha's bindus in the sign it stands in, and that sign's sarva — which needs the placements beside the section and so is a composer over two inputs. Every name it would need is vetted |
+| `VIMSHOPAKA` | `vimshopaka` | — |
 | `SHADBALA` | `strength` | the **total** and the requirement. A `GrahaShadbala` carries the six strengths it is the sum of — sthana, dig, kaala, cheshta, naisargika and drik — and none of the six is an item, so a consumer reading a plan learns what a graha weighs and not what makes it weigh that. The `dig` and `naisargika` figures are bare numbers; the sthana and kaala are records of their own parts, so how deep a composer should go is the decision here |
-| `BHAVA_BALA` | — | a bhava's strength in **virupas**, which is `strength`'s `score` with a bhava where the graha is — `score` takes a `graha` slot, so a bhava needs its own. Its second message has nothing to read: a `BhavaStrength` carries the four parts and their total and **no requirement at all**, where a `GrahaShadbala` carries `required_rupas` beside `strong`. What a bhava must reach is the decision, and it is not the graha rule the texts state |
+| `BHAVA_BALA` | `bhavaBala` | — |
 | `VAISESHIKAMSA` | — | **no strict locale names its designations.** Kimshuka, Parijata, Gopura and the rest are catalogue members, and being a catalogue member is not being named: `vaiseshikamsa` is on the unnamed list with no vetted source, exactly as the special lagnas are, so a composer saying them would print nothing a locale carries. This row called it the cheapest of the six on the strength of *being catalogued*, which is the conflation this page had been making in prose. It also names a graha under four schemes at once, which is `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides whether the name it earned is auspicious |
 | `DASHA_PHALA` | `dashaPhala` | — |
 
@@ -305,7 +307,7 @@ blocker.
 
 ## What the packs carry, and what reads it
 
-65 of the 72 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+67 of the 74 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -352,7 +354,7 @@ is what someone has to read. The parser decides which, so a message
 rewritten from one into the other moves this list by itself. `en-Latn`
 is left out: it is the base and its words are the source.
 
-**`ne-Deva-NP`** — 76 messages to read, 38 that render a value and
+**`ne-Deva-NP`** — 78 messages to read, 38 that render a value and
 need no reading.
 
 | namespace | messages with words of their own |
@@ -362,7 +364,7 @@ need no reading.
 | `sdk.condition` | 11 |
 | `sdk.karaka` | 2 |
 | `sdk.reading` | 5 |
-| `sdk.reason` | 28 |
+| `sdk.reason` | 30 |
 
 `hi-Deva-IN`, `sa-Deva`, `sa-Latn` carry no `sdk.*` message at all —
 `base` completeness is the entity names and the packs' own records —

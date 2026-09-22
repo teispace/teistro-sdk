@@ -794,6 +794,8 @@ class AnEngine(WithLibrary):
                 "karakas": True,
                 "chalit": True,
                 "states": True,
+                "bhavaBala": True,
+                "vimshopaka": True,
                 "panchanga": True,
                 "dashaPhala": True,
             },
@@ -829,6 +831,8 @@ class AnEngine(WithLibrary):
         # The states say the half of that section a placement never carried.
         self.assertGreaterEqual(len(plans["states"]), 9 * 3, "three a graha")
         # The almanac says the five limbs and the Moon's pada.
+        self.assertEqual(len(plans["bhavaBala"]), 12, "one a bhava")
+        self.assertEqual(len(plans["vimshopaka"]), 7 * 4, "seven by four")
         self.assertGreaterEqual(len(plans["panchanga"]), 6, "limbs and pada")
         self.assertLessEqual(len(plans["panchanga"]), 7, "and the day")
 
@@ -845,6 +849,8 @@ class AnEngine(WithLibrary):
             *plans["dashaPhala"],
             *plans["states"],
             *plans["panchanga"],
+            *plans["bhavaBala"],
+            *plans["vimshopaka"],
         ]:
             self.assertTrue(item["key"].startswith("sdk."))
             rendered = self.ctx.intl.render(item["key"], item["params"])

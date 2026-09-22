@@ -795,6 +795,13 @@ export interface PlanRequest {
    * the nakshatra and the Moon's pada in it, the yoga and the karana, and
    * whether the birth fell by day where the chart says.
    */
+  /**
+   * Each bhava's strength in virupas, the first house first. It says the
+   * weight and never a verdict: a bhava carries no requirement.
+   */
+  readonly bhavaBala?: boolean;
+  /** Each graha's Vimshopaka under all four schemes, each naming its own. */
+  readonly vimshopaka?: boolean;
   readonly panchanga?: boolean;
   readonly states?: boolean;
   /**
@@ -841,6 +848,10 @@ export interface Plans {
   readonly chalit?: readonly PlanItem[];
   /** What a loaded corpus says of the chart's subjects; absent unless `phala` asked. */
   readonly phala?: readonly PlanItem[];
+  /** Each bhava's strength; absent unless `bhavaBala` asked for it. */
+  readonly bhavaBala?: readonly PlanItem[];
+  /** Each graha's Vimshopaka; absent unless `vimshopaka` asked for it. */
+  readonly vimshopaka?: readonly PlanItem[];
   /** The almanac of the day; absent unless `panchanga` asked for it. */
   readonly panchanga?: readonly PlanItem[];
   /** A graha's friendships and avasthas; absent unless `states` asked. */

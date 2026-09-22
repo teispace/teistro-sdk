@@ -2,9 +2,9 @@
 
 use teistro_core::error::Error;
 use teistro_interpret::{
-    Plan, aspects, chalit as say_chalit, conditions, dasha_phala, houses, karakas,
-    panchanga as say_panchanga, phala, placements, positions, readings, states as say_states,
-    strength,
+    Plan, aspects, bhava_bala as say_bhava_bala, chalit as say_chalit, conditions, dasha_phala,
+    houses, karakas, panchanga as say_panchanga, phala, placements, positions, readings,
+    states as say_states, strength, vimshopaka as say_vimshopaka,
 };
 use teistro_serial::document::Document;
 
@@ -137,6 +137,44 @@ impl<'a> InterpretArea<'a> {
     pub fn phala(self, document: &Document) -> Result<Plan, Error> {
         let engine = self.context.locale_engine();
         Ok(phala(&RuleInputs::of(document)?.chart, &*engine))
+    }
+
+    /// Each bhava's strength in virupas, the first house first.
+    ///
+    /// # Errors
+    ///
+    /// A document without its Bhava bala, naming the section to ask for.
+    pub fn bhava_bala(self, document: &Document) -> Result<Plan, Error> {
+        document
+            .bhava_bala
+            .as_ref()
+            .map(say_bhava_bala)
+            .ok_or_else(|| {
+                Error::invalid_arg(
+                "the document carries no Bhava bala, which the bhava bala composer says; ask for \
+                 it with `ChartRequest::with_bhava_bala`",
+            )
+            .with_field("bhavaBala")
+            })
+    }
+
+    /// Each graha's Vimshopaka under all four schemes.
+    ///
+    /// # Errors
+    ///
+    /// A document without its Vimshopaka, naming the section to ask for.
+    pub fn vimshopaka(self, document: &Document) -> Result<Plan, Error> {
+        document
+            .vimshopaka
+            .as_ref()
+            .map(say_vimshopaka)
+            .ok_or_else(|| {
+                Error::invalid_arg(
+                "the document carries no Vimshopaka, which the vimshopaka composer says; ask for \
+                 it with `ChartRequest::with_vimshopaka`",
+            )
+            .with_field("vimshopaka")
+            })
     }
 
     /// The almanac of the chart's day: its five limbs, the Moon's pada
