@@ -24,5 +24,14 @@
     "place": ".input {$graha :entity kind=graha} .input {$nature :string} .match $nature BENEFIC {{{$graha} शुभ स्थानमा छ}} MALEFIC {{{$graha} अशुभ स्थानमा छ}} * {{{$graha} सम स्थानमा छ}}",
     "points": "{$graha :entity kind=graha}को शुभाङ्क {$subhanka :number minimumFractionDigits=0} र अशुभाङ्क {$asubhanka :number minimumFractionDigits=0}",
     "favour": ".input {$graha :entity kind=graha} .input {$favour :string} .match $favour favourable {{{$graha}को स्थानले दशालाई शुभ बनाउँछ}} unfavourable {{{$graha}को स्थानले दशालाई अशुभ बनाउँछ}} * {{{$graha}को स्थानले दशालाई शुभ र अशुभ दुवै बनाउँछ}}"
+  },
+  "panchanga": {
+    "tithi": "तिथि {$paksha :entity kind=paksha} पक्षको {$tithi :entity kind=tithi} छ",
+    "vara": "वार {$vara :entity kind=vara} छ",
+    "nakshatra": "नक्षत्र {$nakshatra :entity kind=nakshatra} छ",
+    "pada": ".input {$pada :integer select=ordinal} .input {$nakshatra :entity kind=nakshatra} .match $pada 1 {{चन्द्रमा {$nakshatra}को पहिलो पादमा छ}} 2 {{चन्द्रमा {$nakshatra}को दोस्रो पादमा छ}} 3 {{चन्द्रमा {$nakshatra}को तेस्रो पादमा छ}} 4 {{चन्द्रमा {$nakshatra}को चौथो पादमा छ}} * {{चन्द्रमा {$nakshatra}को {$pada}औं पादमा छ}}",
+    "yoga": "योग {$yoga :entity kind=yoga} छ",
+    "karana": "करण {$karana :entity kind=karana} छ",
+    "byDay": ".input {$byDay :string} .match $byDay yes {{जन्म दिनमा भएको}} * {{जन्म रातमा भएको}}"
   }
 }

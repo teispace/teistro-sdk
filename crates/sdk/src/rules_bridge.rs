@@ -39,6 +39,83 @@ use teistro_state::GrahaState;
 use teistro_strength::ShadbalaReading;
 use teistro_vargas::{Scheme, sign};
 
+/// Ghatikas in a day: sixty, which is what a limb's elapsed and remaining
+/// are counted in (BPHS ch. 92 measures a gandanta this way).
+const GHATIKAS_PER_DAY: f64 = 60.0;
+
+/// The limbs **at the birth**, from the almanac of the birth's day.
+///
+/// The document's panchanga is the day's almanac — every limb that touches
+/// the day, as spans — and a rule asks about the one limb that was running.
+/// The two are a query apart, and for a while nothing made it: `RuleChart`
+/// carried `panchanga: None` from every document, so the **11 shipped
+/// rules that read a limb could never hold**, six arishtas, all four
+/// gandantas and one computed dosha. They said so rather than failing
+/// silently — "`DAGDHA_RASHI` needs a tithi, and the chart has none" — but a
+/// consumer had no way to give them one, which is the dead end the
+/// maintainer's rule forbids.
+///
+/// `None` when the almanac carries no tithi at the instant, which is the
+/// one limb every panchanga-reading rule needs.
+fn birth_limbs(
+    day: &teistro_panchanga::almanac::Panchanga,
+    instant: JulianDay<Utc>,
+    pada: teistro_rules::Pada,
+) -> Option<Panchanga> {
+    let tithi = day.tithi_at(instant)?;
+    let nakshatra = day.nakshatra_at(instant)?;
+    Some(Panchanga {
+        tithi: tithi.member,
+        vara: day.vara(),
+        nakshatra: nakshatra.member,
+        // The pada a rule reads is the **Moon's**, which is its
+        // longitude's and not the nakshatra span's, so the caller works it
+        // out rather than this function guessing from what it has.
+        pada,
+        yoga: day.yoga_at(instant).map(|span| span.member)?,
+        karana: day.karana_at(instant).map(|span| span.member)?,
+        spans: teistro_rules::Spans {
+            tithi: ghatikas(tithi.whole, instant),
+            nakshatra: ghatikas(nakshatra.whole, instant),
+            // The rising sign's span is the chart's and not the almanac's:
+            // the lagna moves at its own rate and no limb list holds it.
+            lagna: None,
+        },
+        by_day: Some(
+            instant.get() >= day.day.sunrise.get() && instant.get() < day.day.sunset.get(),
+        ),
+        // Whether a birth "falls on a sankranti" is a window the chart's
+        // maker reads, not a fact the almanac settles: `SunDay::sankranti`
+        // says the day had one and says nothing about how near is near.
+        on_sankranti: false,
+        eclipse: None,
+    })
+}
+
+/// The pada of the nakshatra the Moon stands in, one to four.
+///
+/// `None` for a foundation that places no Moon, which is a chart the rest
+/// of this module refuses by name anyway.
+fn moons_pada(foundation: &ChartFoundation) -> Option<teistro_rules::Pada> {
+    let moon = foundation
+        .grahas
+        .iter()
+        .find(|position| position.graha == Graha::Moon)?;
+    let longitude = Nas::from_degrees(Degrees::try_new(moon.longitude_deg).ok()?);
+    // `Nas::pada` counts from zero and a rule's `Pada` from one.
+    teistro_rules::Pada::try_new(longitude.pada().get() + 1).ok()
+}
+
+/// How much of a limb had passed at an instant and how much was left, in
+/// ghatikas, or nothing when the instant falls outside it.
+fn ghatikas(whole: Interval, instant: JulianDay<Utc>) -> Option<teistro_rules::Span> {
+    let (from, to, at) = (whole.from.get(), whole.to.get(), instant.get());
+    (at >= from && at <= to).then_some(teistro_rules::Span {
+        elapsed: (at - from) * GHATIKAS_PER_DAY,
+        remaining: (to - at) * GHATIKAS_PER_DAY,
+    })
+}
+
 /// The chart the rules read, assembled from what the SDK computed.
 ///
 /// `states` are the graha states of the same foundation — the SDK's
@@ -110,9 +187,13 @@ pub struct RuleInputs {
 impl RuleInputs {
     /// The rules' reading of a chart document.
     ///
-    /// The document's panchanga is the day's almanac, not the limbs at the
-    /// birth a rule asks about, so the chart carries none; a caller with the
-    /// birth's limbs sets `chart.panchanga`.
+    /// The document's panchanga is the day's almanac and a rule asks about
+    /// the one limb that was **running**, so the limbs at the birth are
+    /// read out of it at the chart's own instant
+    /// ([`birth_limbs`]). A document without that section carries no
+    /// limbs, and the 11 shipped rules that read one say so by name rather
+    /// than failing: ask for it with `ChartRequest::with_panchanga`, which
+    /// `with_rule_inputs` does.
     ///
     /// # Errors
     ///
@@ -129,7 +210,14 @@ impl RuleInputs {
             .with_field("state")
         })?;
         let strengths = document.shadbala.as_ref().map(shadbala_strengths);
-        let chart = rule_chart(&document.foundation, states, None, strengths)?;
+        let limbs = document.panchanga.as_ref().and_then(|day| {
+            birth_limbs(
+                day,
+                document.foundation.instant,
+                moons_pada(&document.foundation)?,
+            )
+        });
+        let chart = rule_chart(&document.foundation, states, limbs, strengths)?;
         let points = document.points.as_ref().map_or_else(Vec::new, |points| {
             points
                 .all()

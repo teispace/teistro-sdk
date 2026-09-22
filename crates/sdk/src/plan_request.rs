@@ -74,6 +74,12 @@ pub struct PlanRequest {
     /// and it says **nothing** until a pack carrying those readings is
     /// loaded (`03-design/state-readings.md`).
     pub phala: bool,
+    /// The almanac of the chart's day: the tithi with its paksha, the
+    /// vara, the nakshatra and the Moon's pada in it, the yoga and the
+    /// karana, and whether the birth fell by day where the chart says.
+    /// It reads the panchanga the rules read, so it costs the same
+    /// section they do.
+    pub panchanga: bool,
     /// The other half of a graha's state: how it stands to its dispositor
     /// under all three friendships, and the four avasthas — the fifth of
     /// its sign, its wakefulness, its brightness where the chart decides
@@ -97,7 +103,7 @@ impl PlanRequest {
     /// holds the list against the record's own serialisation, both ways, so
     /// a composer added without a name here fails rather than going
     /// unmentioned in the refusal a typo earns.
-    pub const MEMBERS: [&'static str; 12] = [
+    pub const MEMBERS: [&'static str; 13] = [
         "placements",
         "readings",
         "strength",
@@ -108,9 +114,17 @@ impl PlanRequest {
         "karakas",
         "chalit",
         "phala",
+        "panchanga",
         "states",
         "dashaPhala",
     ];
+
+    /// A request for the almanac of the chart's day.
+    #[must_use]
+    pub const fn with_panchanga(mut self) -> PlanRequest {
+        self.panchanga = true;
+        self
+    }
 
     /// A request for the other half of each graha's state.
     #[must_use]
@@ -211,6 +225,7 @@ impl PlanRequest {
             || self.karakas
             || self.chalit
             || self.phala
+            || self.panchanga
             || self.states
             || self.dasha_phala
     }

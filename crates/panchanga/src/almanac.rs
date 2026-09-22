@@ -89,6 +89,12 @@ impl Panchanga {
     }
 
     /// The tithi running at an instant.
+    ///
+    /// One of **four**, one a moving limb, and for a while there were two:
+    /// the tithi and the nakshatra could be asked for at an instant and
+    /// the yoga and the karana could not, though the data and `span::at`
+    /// were both already here. A caller wanting the limbs at a birth had
+    /// to reach into `limbs` for half of them.
     #[must_use]
     pub fn tithi_at(
         &self,
@@ -104,6 +110,21 @@ impl Panchanga {
         instant: JulianDay<Utc>,
     ) -> Option<&Span<teistro_core::catalogue::Nakshatra>> {
         span::at(&self.limbs.nakshatra, instant)
+    }
+
+    /// The nitya yoga running at an instant.
+    #[must_use]
+    pub fn yoga_at(&self, instant: JulianDay<Utc>) -> Option<&Span<teistro_core::catalogue::Yoga>> {
+        span::at(&self.limbs.yoga, instant)
+    }
+
+    /// The karana running at an instant.
+    #[must_use]
+    pub fn karana_at(
+        &self,
+        instant: JulianDay<Utc>,
+    ) -> Option<&Span<teistro_core::catalogue::Karana>> {
+        span::at(&self.limbs.karana, instant)
     }
 
     /// The hora running at an instant.

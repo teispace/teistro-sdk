@@ -156,18 +156,74 @@ all at once: `life_class` with Phase 5's longevity work, the muhurta
 kinds with Phase 7's muhurta search. Spreads the permanent decisions over
 the phases that have the sources to name them.
 
-**Recommended: C.** A is right about the destination and wrong about the
-timing — `entity-names.md` §4 exists because naming without a source is
-how a catalogue goes bad, and the phases that build these modules are the
-ones that will have the texts open. B is only tenable if nobody minds the
-readings staying unread, which the measured pages now count out loud.
+**Option D — an *open* kind per family, added now.** This option did not
+exist when the question was written, because the evidence for it was
+produced afterwards. An open kind is **five lines of YAML** and a
+permanent number, and it enumerates **no members at all**:
+
+```yaml
+kind: rule
+number: 32
+version: 1
+open: true
+doc: "Rule keys, which rule packs register at runtime; the catalogue holds the kind only."
+```
+
+`rule` (32) and `graha_bhava` (65) are both this shape, and both carry
+readings today. The composer builds the key from what the SDK already
+computes — `graha_bhava_key(graha, bhava)` is the precedent — and the
+reading renders from the pack.
+
+**What closed `planet-condition` on 2026-09-22 is the proof.** Its seven
+readings key onto `dignity.*` and `state.*`, and `state` is **named by no
+locale at all**: it is not among the 34 kinds `sdk.entity` holds. The
+readings are said anyway, because `{$state :entity kind=state form=phala}`
+asks for the `phala` **form** and never for the name. So the sentence in
+Option A — "every member needs a name from a vetted source before any
+locale can print it" — is **false of a reading**. It is true only of a
+composer that would print a member's *name*.
+
+The gate cost is smaller too. `check-intl` scopes itself to the kinds the
+**document schema** carries, so a kind that only a readings pack keys onto
+never enters it: no `UNNAMED` listing, no vetted table, nothing to
+maintain. `rule` and `graha_bhava` are outside that scope for exactly this
+reason.
+
+What D still costs, and it is the whole cost: **one permanent number and
+one permanent name per family**, eight of each. A number is never reused
+and a kind's name is what every locale, pack and binding will spell
+forever.
+
+D also wants a gate of its own, in this repository's usual shape: for each
+family, every variant of the Rust enum has a record in the pack and every
+record names a variant, failing both ways. Without it, the composer
+builds a key by `format!` and a typo is silent — which is the one safety
+an open kind gives up against a closed one.
+
+**Recommended: D, and it is one commit of YAML away.** A is right about
+the destination; its objection about names was measured and is false for
+readings. C is right that the phases with the texts open should choose the
+*names*, but wrong that the readings must wait for them — a reading needs
+a key space, not a vocabulary, and D gives it one for five lines. B is
+only tenable if nobody minds the readings staying unread, which the
+measured pages now count out loud: **74 records, translated into five
+languages, reachable by nothing.**
+
+This stays `open` rather than decided because a kind's number is permanent
+at the C ABI and its name is permanent everywhere, and that is the one
+class of change worth a maintainer's yes even under a broad delegation.
+The eight names D would spend are the decision: `ayurdaya_method`,
+`ayurdaya_harana`, `ayurdaya_maraka`, `ayurdaya_maraka_trigger`,
+`ayurdaya_tier`, `ayurdaya_vulnerability`, `ayurdaya_classical_rule`,
+`ayurdaya_balarishta` — or better names, which is exactly what a
+maintainer is for.
 
 What is **not** waiting on this: 26 of the 38 categories are migrated,
 gated and said. The rest are named on
 `03-design/state-readings-measured.md`, so the list cannot rot while the
 question is open.
 
-## Q39. Whether a plan should say the almanac's own limbs: `open`
+## Q39. Whether a plan should say the almanac's own limbs: `decided`
 
 Raised 2026-09-22 by the section table on
 [`03-design/interpret-measured.md`](03-design/interpret-measured.md),
@@ -211,15 +267,28 @@ is the composer that says what a **corpus** carries and is silent
 without a pack, by design and by its own documentation; putting computed
 facts in it would make "off until a pack is loaded" untrue of it.
 
-**Recommended: A.** The two precedents that declined a message declined
-it for reasons that do not hold here, and C would break a promise `phala`
-makes in its first paragraph. B is defensible and is the cheaper answer
-if the maintainer would rather not spend another permanent member this
-week — which is exactly why this is recorded rather than decided.
+**Decided: A**, on 2026-09-22, the maintainer having delegated the choice
+("you can research, analyse and find what is best to do"). The two
+precedents that declined a message declined it for reasons that do not
+hold here — a limb is a sentence rather than a fragment, and it differs
+chart by chart — and C would break a promise `phala` makes in its first
+paragraph. B was the cheaper answer and it leaves the **karana** said by
+nothing at all, in a library whose whole subject is the almanac.
 
-What is **not** waiting on this: nothing. The section's readings are
-said, the limbs cross to every binding, and the queue table names the
-gap so it cannot rot while the question is open.
+Built as `panchanga`, the thirteenth composer, over
+`sdk.reason.panchanga`: the five limbs, the Moon's pada in its nakshatra,
+and whether the birth fell between sunrise and sunset. Every slot is a
+catalogue member every locale already names, so the frame was the whole
+cost and the native review sees nothing it has not seen
+(`03-design/interpret-composers.md` §4).
+
+The scope was drawn where the *shape* changes rather than where interest
+runs out: `spans`, `on_sankranti` and the eclipse are on the same record
+and are **not** said, because a span is a pair of ghatikas a consumer
+formats with — the `exactLongitude` line — and a sankranti and an eclipse
+are conditions of the day rather than limbs of it. The section table on
+`03-design/interpret-measured.md` carries that as what is left, so the
+line is measured rather than remembered.
 
 ## Decisions log
 

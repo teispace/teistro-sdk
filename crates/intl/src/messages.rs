@@ -1991,6 +1991,128 @@ pub mod sdk {
             }
         }
 
+        /// The `panchanga` group.
+        pub mod panchanga {
+            /// The message `sdk.reason.panchanga.byDay`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct ByDay {
+                /// The `byDay` parameter.
+                pub by_day: String,
+            }
+
+            impl crate::TypedMessage for ByDay {
+                const KEY: &'static str = "sdk.reason.panchanga.byDay";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("byDay", crate::Value::Str(self.by_day.clone())),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.panchanga.karana`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Karana {
+                /// The `karana` parameter.
+                pub karana: teistro_core::catalogue::Karana,
+            }
+
+            impl crate::TypedMessage for Karana {
+                const KEY: &'static str = "sdk.reason.panchanga.karana";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("karana", crate::Value::catalogued(self.karana)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.panchanga.nakshatra`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Nakshatra {
+                /// The `nakshatra` parameter.
+                pub nakshatra: teistro_core::catalogue::Nakshatra,
+            }
+
+            impl crate::TypedMessage for Nakshatra {
+                const KEY: &'static str = "sdk.reason.panchanga.nakshatra";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.panchanga.pada`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Pada {
+                /// The `nakshatra` parameter.
+                pub nakshatra: teistro_core::catalogue::Nakshatra,
+                /// The `pada` parameter.
+                pub pada: i64,
+            }
+
+            impl crate::TypedMessage for Pada {
+                const KEY: &'static str = "sdk.reason.panchanga.pada";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                        ("pada", crate::Value::Int(self.pada)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.panchanga.tithi`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Tithi {
+                /// The `paksha` parameter.
+                pub paksha: teistro_core::catalogue::Paksha,
+                /// The `tithi` parameter.
+                pub tithi: teistro_core::catalogue::Tithi,
+            }
+
+            impl crate::TypedMessage for Tithi {
+                const KEY: &'static str = "sdk.reason.panchanga.tithi";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("paksha", crate::Value::catalogued(self.paksha)),
+                        ("tithi", crate::Value::catalogued(self.tithi)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.panchanga.vara`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Vara {
+                /// The `vara` parameter.
+                pub vara: teistro_core::catalogue::Vara,
+            }
+
+            impl crate::TypedMessage for Vara {
+                const KEY: &'static str = "sdk.reason.panchanga.vara";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("vara", crate::Value::catalogued(self.vara)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.panchanga.yoga`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Yoga {
+                /// The `yoga` parameter.
+                pub yoga: teistro_core::catalogue::Yoga,
+            }
+
+            impl crate::TypedMessage for Yoga {
+                const KEY: &'static str = "sdk.reason.panchanga.yoga";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("yoga", crate::Value::catalogued(self.yoga)),
+                    ])
+                }
+            }
+
+        }
+
         /// The message `sdk.reason.pointAt`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct PointAt {

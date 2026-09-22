@@ -109,6 +109,30 @@ per chart in the order asked for.
 - A rule that does not read strictly is `INVALID_ARG`, the field named from
   the root as `theme_json` names its own: `rules_json.rules[3].conditions[0].type`.
 - An unknown shipped set is `INVALID_ARG` naming the ones there are.
+- **A rule whose section was never asked for is the dead end this design
+  nearly shipped.** `RuleInputs::of` built the chart with `panchanga:
+  None` from every document, and `with_rule_inputs` — which asks for
+  exactly what the rules read — never asked for the almanac, though
+  `Rule::reads_panchanga` had always been there to ask with. So the **11
+  shipped rules that read a limb** (six arishtas, all four gandantas, one
+  computed dosha) resolved to *"needs a tithi, and the chart has none"* on
+  every chart, honestly and permanently: nothing in the public surface
+  could give them one. Two lines were missing and they are the whole fix —
+  `with_rule_inputs` asks for the section when a rule reads a limb, and
+  `RuleInputs::of` reads **the limb running at the chart's instant** out of
+  the day's almanac (`rules_bridge::birth_limbs`), which is the query the
+  two records are apart: a document's panchanga is every limb that touches
+  the day, and a rule asks about the one that was running.
+
+  What that helper can and cannot answer is stated where it lives rather
+  than left to a reader: the tithi's and the nakshatra's **ghatikas**
+  elapsed and remaining come from the limb's own interval, the rising
+  sign's span does not, because the lagna moves at its own rate and no
+  limb list holds it; whether the birth fell **by day** is the day's arc;
+  and `on_sankranti` stays false, because "falls on a sankranti" is a
+  window the chart's maker reads and `SunDay::sankranti` only says the day
+  had one.
+
 - **A chart that cannot be read for a rule's inputs is not refused for the
   rules alone.** Where a rule set names a point and the birth has no sunrise,
   the chart is read without points, every rule naming one answers false as

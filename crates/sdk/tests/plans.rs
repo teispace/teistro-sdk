@@ -676,3 +676,149 @@ fn a_graha_says_what_it_is_and_not_only_where_it_stands() {
     let refused = without.interpret().states(&bare).unwrap_err();
     assert_eq!(refused.field(), Some("state"));
 }
+
+/// The almanac is the thirteenth composer and the answer to Q39: the only
+/// section a composer read and said nothing of its own, because `phala`
+/// renders a loaded pack's reading of the limbs and is silent without one.
+/// The karana was said by nothing anywhere.
+#[test]
+fn the_chart_says_the_almanac_of_its_own_day() {
+    let (sdk, document) = common::reading("{}", |request| {
+        request
+            .with_rule_inputs(shipped::nabhasas())
+            .with_panchanga()
+    });
+    let plan = sdk.interpret().panchanga(&document).expect("the almanac");
+    let said: Vec<&str> = plan.items.iter().map(|item| item.key.as_str()).collect();
+    assert_eq!(
+        &said[..6],
+        [
+            "sdk.reason.panchanga.tithi",
+            "sdk.reason.panchanga.vara",
+            "sdk.reason.panchanga.nakshatra",
+            "sdk.reason.panchanga.pada",
+            "sdk.reason.panchanga.yoga",
+            "sdk.reason.panchanga.karana",
+        ],
+        "the five limbs, with the pada beside the nakshatra it divides"
+    );
+
+    // The tithi says its paksha, because the entity names split what the
+    // key joins: `SHUKLA_PRATIPADA` is named `Pratipada` alone, so a
+    // message printing the tithi by itself loses the fortnight.
+    let tithi = &plan.items[0];
+    assert!(tithi.params.contains_key("paksha"), "{tithi:?}");
+    assert!(tithi.params.contains_key("tithi"), "{tithi:?}");
+
+    // Every item said in each strict locale, from that locale's own
+    // message and with nothing to warn about.
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        sdk.intl().set_locale(locale).expect("a strict locale");
+        for item in &plan {
+            let said = sdk.intl().render(&item.key, &item.params);
+            assert_eq!(said.resolved_from.as_deref(), Some(locale), "{}", item.key);
+            assert!(!said.is_fallback, "{} fell back in {locale}", item.key);
+            assert!(said.warnings.is_empty(), "{:?}", said.warnings);
+            assert!(!said.text.is_empty(), "{} said nothing", item.key);
+        }
+    }
+
+    // A document with the states but no almanac is refused by the knob's
+    // name. The states come first because `RuleInputs` needs them for
+    // every chart, so a bare document is refused for those instead — which
+    // is why this asks for a rule pack that reads no limb.
+    let (without, unread) = common::reading("{}", |request| {
+        request.with_rule_inputs(shipped::nabhasas())
+    });
+    assert!(unread.panchanga.is_none(), "the nabhasas read no limb");
+    let refused = without.interpret().panchanga(&unread).unwrap_err();
+    assert_eq!(refused.field(), Some("panchanga"));
+}
+
+/// The 11 shipped rules that read a limb can hold now. They could not
+/// before: `RuleChart` carried `panchanga: None` from every document, and
+/// `with_rule_inputs` never asked for the section, so the rules said "the
+/// chart has none" and a consumer had no way to give them one.
+#[test]
+fn a_rule_that_reads_a_limb_is_given_one() {
+    let gandantas = shipped::gandantas();
+    assert!(
+        gandantas.iter().all(teistro_rules::Rule::reads_panchanga),
+        "every gandanta reads a limb"
+    );
+    let (_, document) = common::reading("{}", |request| request.with_rule_inputs(gandantas));
+    let day = document
+        .panchanga
+        .as_ref()
+        .expect("with_rule_inputs asks for the almanac a rule reads");
+
+    let inputs = teistro::RuleInputs::of(&document).expect("the rules read it");
+    let limbs = inputs
+        .chart
+        .panchanga
+        .expect("the limbs at the birth, from the day's almanac");
+
+    // The limb said is the one running at the chart's own instant, not the
+    // day's first: the two differ whenever a limb turned over in the day.
+    let at = document.foundation.instant;
+    assert_eq!(
+        limbs.tithi,
+        day.tithi_at(at).expect("a tithi at the instant").member
+    );
+    assert_eq!(
+        limbs.nakshatra,
+        day.nakshatra_at(at).expect("a nakshatra").member
+    );
+    assert_eq!(limbs.yoga, day.yoga_at(at).expect("a yoga").member);
+    assert_eq!(limbs.karana, day.karana_at(at).expect("a karana").member);
+    assert_eq!(limbs.vara, day.vara());
+
+    // The ghatikas elapsed and remaining are the limb's own, so they sum
+    // to its whole length and neither is negative.
+    let span = limbs.spans.tithi.expect("the tithi's ghatikas");
+    assert!(span.elapsed >= 0.0 && span.remaining >= 0.0, "{span:?}");
+    let whole = day.tithi_at(at).expect("a tithi").whole;
+    let length = (whole.to.get() - whole.from.get()) * 60.0;
+    assert!((span.elapsed + span.remaining - length).abs() < 1e-6);
+
+    // And whether the birth fell by day is answered rather than left open.
+    assert_eq!(
+        limbs.by_day,
+        Some(at.get() >= day.day.sunrise.get() && at.get() < day.day.sunset.get())
+    );
+}
+
+/// How many of the limb-reading rules a real chart holds, which is the
+/// measurement the fix is worth: before it the answer was **none, on every
+/// chart**, because the section they read was never asked for.
+#[test]
+fn the_limb_reading_rules_are_answered_rather_than_excused() {
+    let every: Vec<teistro_rules::Rule> = shipped::gandantas()
+        .iter()
+        .chain(shipped::arishtas())
+        .chain(shipped::computed_doshas())
+        .filter(|rule| rule.reads_panchanga())
+        .cloned()
+        .collect();
+    assert_eq!(every.len(), 11, "the shipped rules that read a limb");
+
+    let (_, document) = common::reading("{}", |request| request.with_rule_inputs(&every));
+    let inputs = teistro::RuleInputs::of(&document).expect("the rules read it");
+    assert!(
+        inputs.chart.panchanga.is_some(),
+        "the limbs a rule reads are there now"
+    );
+
+    // Every one of them is *answered* — it holds or it does not — where
+    // before every one of them was excused for want of a tithi.
+    let evaluator = inputs.evaluator(teistro_rules::Readings::TEXTS);
+    for rule in &every {
+        let explained = evaluator.explain(rule);
+        let said = format!("{explained:?}");
+        assert!(
+            !said.contains("and the chart has none"),
+            "{} is still excused: {said}",
+            rule.key
+        );
+    }
+}

@@ -24,5 +24,14 @@
     "place": ".input {$graha :entity kind=graha} .input {$nature :string} .match $nature BENEFIC {{{$graha} stands in an auspicious place}} MALEFIC {{{$graha} stands in an inauspicious place}} * {{{$graha} stands in a neutral place}}",
     "points": "{$graha :entity kind=graha} earns {$subhanka :number minimumFractionDigits=0} benefic and {$asubhanka :number minimumFractionDigits=0} malefic points",
     "favour": ".input {$graha :entity kind=graha} .input {$favour :string} .match $favour favourable {{{$graha}'s placement makes its dasha favourable}} unfavourable {{{$graha}'s placement makes its dasha unfavourable}} * {{{$graha}'s placement makes its dasha favourable and unfavourable at once}}"
+  },
+  "panchanga": {
+    "tithi": "the tithi is {$tithi :entity kind=tithi} of {$paksha :entity kind=paksha}",
+    "vara": "the vara is {$vara :entity kind=vara}",
+    "nakshatra": "the nakshatra is {$nakshatra :entity kind=nakshatra}",
+    "pada": ".input {$pada :integer select=ordinal} .input {$nakshatra :entity kind=nakshatra} .match $pada one {{the Moon stands in the {$pada}st pada of {$nakshatra}}} two {{the Moon stands in the {$pada}nd pada of {$nakshatra}}} few {{the Moon stands in the {$pada}rd pada of {$nakshatra}}} * {{the Moon stands in the {$pada}th pada of {$nakshatra}}}",
+    "yoga": "the yoga is {$yoga :entity kind=yoga}",
+    "karana": "the karana is {$karana :entity kind=karana}",
+    "byDay": ".input {$byDay :string} .match $byDay yes {{the birth fell by day}} * {{the birth fell by night}}"
   }
 }

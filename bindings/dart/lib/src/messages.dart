@@ -1847,6 +1847,27 @@ final class MessagesSdkReasonDasha {
       _r.render('sdk.reason.dasha.points', {'asubhanka': asubhanka, 'graha': {r'$entity': graha.key}, 'subhanka': subhanka});
 }
 
+final class MessagesSdkReasonPanchanga {
+  const MessagesSdkReasonPanchanga(this._r);
+
+  final Renderer _r;
+
+  String byDay({required String byDay}) =>
+      _r.render('sdk.reason.panchanga.byDay', {'byDay': byDay});
+  String karana({required KaranaKey karana}) =>
+      _r.render('sdk.reason.panchanga.karana', {'karana': {r'$entity': karana.key}});
+  String nakshatra({required NakshatraKey nakshatra}) =>
+      _r.render('sdk.reason.panchanga.nakshatra', {'nakshatra': {r'$entity': nakshatra.key}});
+  String pada({required NakshatraKey nakshatra, required int pada}) =>
+      _r.render('sdk.reason.panchanga.pada', {'nakshatra': {r'$entity': nakshatra.key}, 'pada': pada});
+  String tithi({required PakshaKey paksha, required TithiKey tithi}) =>
+      _r.render('sdk.reason.panchanga.tithi', {'paksha': {r'$entity': paksha.key}, 'tithi': {r'$entity': tithi.key}});
+  String vara({required VaraKey vara}) =>
+      _r.render('sdk.reason.panchanga.vara', {'vara': {r'$entity': vara.key}});
+  String yoga({required YogaKey yoga}) =>
+      _r.render('sdk.reason.panchanga.yoga', {'yoga': {r'$entity': yoga.key}});
+}
+
 final class MessagesSdkReasonStrength {
   const MessagesSdkReasonStrength(this._r);
 
@@ -1887,6 +1908,7 @@ final class MessagesSdkReason {
       _r.render('sdk.reason.lordship', {'bhava': bhava, 'graha': {r'$entity': graha.key}});
   String occupants({required List<Object> grahas, required RashiKey rashi}) =>
       _r.render('sdk.reason.occupants', {'grahas': grahas, 'rashi': {r'$entity': rashi.key}});
+  MessagesSdkReasonPanchanga get panchanga => MessagesSdkReasonPanchanga(_r);
   String pointAt({required num longitude, required PointKey point}) =>
       _r.render('sdk.reason.pointAt', {'longitude': longitude, 'point': {r'$entity': point.key}});
   String pointInRashi({required PointKey point, required RashiKey rashi}) =>

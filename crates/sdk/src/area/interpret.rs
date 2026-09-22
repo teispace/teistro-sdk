@@ -2,8 +2,9 @@
 
 use teistro_core::error::Error;
 use teistro_interpret::{
-    Plan, aspects, chalit as say_chalit, conditions, dasha_phala, houses, karakas, phala,
-    placements, positions, readings, states as say_states, strength,
+    Plan, aspects, chalit as say_chalit, conditions, dasha_phala, houses, karakas,
+    panchanga as say_panchanga, phala, placements, positions, readings, states as say_states,
+    strength,
 };
 use teistro_serial::document::Document;
 
@@ -136,6 +137,24 @@ impl<'a> InterpretArea<'a> {
     pub fn phala(self, document: &Document) -> Result<Plan, Error> {
         let engine = self.context.locale_engine();
         Ok(phala(&RuleInputs::of(document)?.chart, &*engine))
+    }
+
+    /// The almanac of the chart's day: its five limbs, the Moon's pada
+    /// and whether the birth fell by day.
+    ///
+    /// # Errors
+    ///
+    /// A document without its panchanga, naming the section to ask for.
+    pub fn panchanga(self, document: &Document) -> Result<Plan, Error> {
+        let chart = RuleInputs::of(document)?.chart;
+        if chart.panchanga.is_none() {
+            return Err(Error::invalid_arg(
+                "the document carries no panchanga, which the panchanga composer says; ask for \
+                 it with `ChartRequest::with_panchanga`",
+            )
+            .with_field("panchanga"));
+        }
+        Ok(say_panchanga(&chart))
     }
 
     /// The other half of each graha's state: its three friendships and

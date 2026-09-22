@@ -43,6 +43,7 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_intl::messages::sdk::reason::dasha;
+use teistro_intl::messages::sdk::reason::panchanga as panchanga_messages;
 use teistro_intl::messages::sdk::{aspect, condition, karaka, reading, reason};
 // The composer below is `phala` too, so the message module is named in
 // full where its keys are listed.
@@ -55,6 +56,7 @@ mod conditions;
 mod dasha_phala;
 mod houses;
 mod karakas;
+mod panchanga;
 mod phala;
 mod placements;
 mod positions;
@@ -68,6 +70,7 @@ pub use conditions::conditions;
 pub use dasha_phala::dasha_phala;
 pub use houses::houses;
 pub use karakas::karakas;
+pub use panchanga::panchanga;
 pub use phala::phala;
 pub use placements::placements;
 pub use positions::positions;
@@ -83,7 +86,7 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 58] = [
+pub const KEYS: [&str; 65] = [
     <reason::PointInRashi as TypedMessage>::KEY,
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
@@ -142,6 +145,13 @@ pub const KEYS: [&str; 58] = [
     <dasha::Place as TypedMessage>::KEY,
     <dasha::Points as TypedMessage>::KEY,
     <dasha::Favour as TypedMessage>::KEY,
+    <panchanga_messages::Tithi as TypedMessage>::KEY,
+    <panchanga_messages::Vara as TypedMessage>::KEY,
+    <panchanga_messages::Nakshatra as TypedMessage>::KEY,
+    <panchanga_messages::Pada as TypedMessage>::KEY,
+    <panchanga_messages::Yoga as TypedMessage>::KEY,
+    <panchanga_messages::Karana as TypedMessage>::KEY,
+    <panchanga_messages::ByDay as TypedMessage>::KEY,
 ];
 
 /// One thing to say: a message key and the slots it is said with.

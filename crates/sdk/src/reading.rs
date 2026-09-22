@@ -217,11 +217,12 @@ impl ChartRequest {
         rules: impl IntoIterator<Item = &'r teistro_rules::Rule>,
         points: bool,
     ) -> ChartRequest {
-        let (mut named_points, mut strength) = (false, false);
+        let (mut named_points, mut strength, mut limbs) = (false, false, false);
         let mut asked = self.vargas.clone();
         for rule in rules {
             named_points |= rule.reads_points();
             strength |= rule.reads_strength();
+            limbs |= rule.reads_panchanga();
             for varga in rule.vargas() {
                 if !asked.contains(&varga) {
                     asked.push(varga);
@@ -234,6 +235,14 @@ impl ChartRequest {
         }
         if strength {
             request = request.with_shadbala();
+        }
+        // The limb a rule reads is the one running at the birth, which the
+        // day's almanac answers at the instant: without this section the
+        // 11 shipped rules that read a limb say "the chart has none" and a
+        // consumer asking for exactly what the rules read has no way to
+        // give them one (`rules_bridge::birth_limbs`).
+        if limbs {
+            request = request.with_panchanga();
         }
         request
     }

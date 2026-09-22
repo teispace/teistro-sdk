@@ -794,6 +794,7 @@ class AnEngine(WithLibrary):
                 "karakas": True,
                 "chalit": True,
                 "states": True,
+                "panchanga": True,
                 "dashaPhala": True,
             },
             {"shipped": ["nabhasas"]},
@@ -827,6 +828,9 @@ class AnEngine(WithLibrary):
         self.assertLessEqual(len(plans["dashaPhala"]), 9 * 4, "four at most")
         # The states say the half of that section a placement never carried.
         self.assertGreaterEqual(len(plans["states"]), 9 * 3, "three a graha")
+        # The almanac says the five limbs and the Moon's pada.
+        self.assertGreaterEqual(len(plans["panchanga"]), 6, "limbs and pada")
+        self.assertLessEqual(len(plans["panchanga"]), 7, "and the day")
 
         said = 0
         for item in [
@@ -840,6 +844,7 @@ class AnEngine(WithLibrary):
             *plans["karakas"],
             *plans["dashaPhala"],
             *plans["states"],
+            *plans["panchanga"],
         ]:
             self.assertTrue(item["key"].startswith("sdk."))
             rendered = self.ctx.intl.render(item["key"], item["params"])

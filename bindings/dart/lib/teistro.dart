@@ -3428,6 +3428,7 @@ final class PlanRequest {
     this.karakas = false,
     this.chalit = false,
     this.phala = false,
+    this.panchanga = false,
     this.states = false,
     this.dashaPhala = false,
   });
@@ -3467,6 +3468,11 @@ final class PlanRequest {
   /// those readings is loaded.
   final bool phala;
 
+  /// The almanac of the chart's day: the tithi with its paksha, the vara,
+  /// the nakshatra and the Moon's pada in it, the yoga and the karana, and
+  /// whether the birth fell by day where the chart says.
+  final bool panchanga;
+
   /// The other half of a graha's state: how it stands to its dispositor
   /// under all three friendships, and the four avasthas — the fifth of its
   /// sign, its wakefulness, its brightness where the chart decides one,
@@ -3491,6 +3497,7 @@ final class PlanRequest {
     'karakas': karakas,
     'chalit': chalit,
     'phala': phala,
+    'panchanga': panchanga,
     'states': states,
     'dashaPhala': dashaPhala,
   });

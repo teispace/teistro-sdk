@@ -460,6 +460,40 @@ composes the corpus's **recorded** karakas, as `strength` composes recorded
 rupas and `houses` recorded cusp signs, so its numbers are the recording
 engine's ranking and the SDK's own answer for the same chart can differ.
 
+**`panchanga`** — the almanac of the chart's day: the tithi with its
+paksha, the vara, the nakshatra and the Moon's pada in it, the yoga and the
+karana, and whether the birth fell by day where the chart says. **Built**
+over `sdk.reason.panchanga`, the thirteenth composer and the answer to
+Q39.
+
+**It says the limb that was *running*, and that is what made it more than
+a frame.** The document's panchanga is the day's almanac — every limb that
+touches the day, as spans — and a chart wants the one limb that held at
+its own instant. Asking for it turned up a **dead end**: `RuleInputs::of`
+built its chart with `panchanga: None` from every document, and
+`with_rule_inputs` never asked for the section, so the 11 shipped rules
+that read a limb resolved to *"needs a tithi, and the chart has none"* on
+every chart and no consumer could give them one. `phala`'s four limb
+readings were unreachable for the same reason, which is why the measured
+page counted them at zero and nobody had asked why. Both are fixed in the
+bridge (`03-design/rules-at-the-boundary.md` §5), and the almanac gained
+`yoga_at` and `karana_at` besides: two of its four moving limbs could be
+asked for at an instant and two could not, though `span::at` was already
+there for both.
+
+**The tithi says its paksha**, because the two are one fact and the entity
+names split them: `tithi.SHUKLA_PRATIPADA` is named *Pratipada*, so a
+message printing the tithi alone loses the fortnight.
+
+**Where the scope stops is stated rather than left to run out.** The same
+record carries the ghatikas each limb covered, the sankranti, the eclipse,
+the kaalas, the choghadiya, the horas and the thirty muhurtas, and none is
+said: a span is a pair of ghatikas a consumer formats with, the line
+`exactLongitude` is already on; a sankranti and an eclipse are conditions
+of the day rather than limbs of it; and the periods belong to a reader of
+**times** rather than of a chart. The section table carries all of that as
+what is left.
+
 **`states`** — the other half of a graha's state: how it stands to its
 dispositor under all three friendships, and the four avasthas — the fifth
 of its sign, its wakefulness, its brightness where the chart decides one,

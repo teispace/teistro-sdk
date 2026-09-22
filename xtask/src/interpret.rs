@@ -947,15 +947,18 @@ const SECTIONS_SOURCE: &str = "crates/sdk/src/reading.rs";
 const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 11] = [
     (
         "PANCHANGA",
-        &["phala"],
+        &["panchanga", "phala"],
         "\
-        said only where a **corpus** carries a reading. `phala` renders a \
-        loaded record for the tithi, vara, nakshatra and yoga and says \
-        nothing of its own, so a consumer with no pack gets no item from \
-        this section at all. The limbs themselves are computed and named \
-        in all five locales and said by nothing — including the \
-        **karana**, which no composer mentions — as are the paksha and \
-        the ghatikas each limb had used and had left",
+        the four **spans** each limb covered, the sankranti and the \
+        eclipse. `panchanga` says the five limbs running at the chart's \
+        instant, the Moon's pada and whether the birth fell by day; \
+        `phala` says what a loaded pack reads of them. A span is a pair of \
+        ghatikas a consumer formats with, which is the line \
+        `sdk.reason.exactLongitude` is already on, and a sankranti and an \
+        eclipse are **conditions** of the day rather than limbs of it. The \
+        kaalas, the choghadiya, the horas and the thirty muhurtas are on \
+        the same record and belong to a reader of **times** rather than of \
+        a chart",
         &[],
     ),
     (

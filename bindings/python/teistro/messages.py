@@ -883,6 +883,11 @@ class MessagesSdkReason:
             {"grahas": grahas, "rashi": {"$entity": rashi.value}},
         )
 
+    @property
+    def panchanga(self) -> MessagesSdkReasonPanchanga:
+        """The messages under `panchanga`."""
+        return MessagesSdkReasonPanchanga(self._r)
+
     def point_at(self, *, longitude: float, point: PointKey) -> str:
         """`sdk.reason.pointAt`"""
         return self._r.render(
@@ -940,6 +945,63 @@ class MessagesSdkReasonStrength:
         return self._r.render(
             "sdk.reason.strength.score",
             {"graha": {"$entity": graha.value}, "score": score},
+        )
+
+
+class MessagesSdkReasonPanchanga:
+    """The messages under `MessagesSdkReasonPanchanga`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def by_day(self, *, by_day: str) -> str:
+        """`sdk.reason.panchanga.byDay`"""
+        return self._r.render(
+            "sdk.reason.panchanga.byDay",
+            {"byDay": by_day},
+        )
+
+    def karana(self, *, karana: KaranaKey) -> str:
+        """`sdk.reason.panchanga.karana`"""
+        return self._r.render(
+            "sdk.reason.panchanga.karana",
+            {"karana": {"$entity": karana.value}},
+        )
+
+    def nakshatra(self, *, nakshatra: NakshatraKey) -> str:
+        """`sdk.reason.panchanga.nakshatra`"""
+        return self._r.render(
+            "sdk.reason.panchanga.nakshatra",
+            {"nakshatra": {"$entity": nakshatra.value}},
+        )
+
+    def pada(self, *, nakshatra: NakshatraKey, pada: int) -> str:
+        """`sdk.reason.panchanga.pada`"""
+        return self._r.render(
+            "sdk.reason.panchanga.pada",
+            {"nakshatra": {"$entity": nakshatra.value}, "pada": pada},
+        )
+
+    def tithi(self, *, paksha: PakshaKey, tithi: TithiKey) -> str:
+        """`sdk.reason.panchanga.tithi`"""
+        return self._r.render(
+            "sdk.reason.panchanga.tithi",
+            {"paksha": {"$entity": paksha.value}, "tithi": {"$entity": tithi.value}},
+        )
+
+    def vara(self, *, vara: VaraKey) -> str:
+        """`sdk.reason.panchanga.vara`"""
+        return self._r.render(
+            "sdk.reason.panchanga.vara",
+            {"vara": {"$entity": vara.value}},
+        )
+
+    def yoga(self, *, yoga: YogaKey) -> str:
+        """`sdk.reason.panchanga.yoga`"""
+        return self._r.render(
+            "sdk.reason.panchanga.yoga",
+            {"yoga": {"$entity": yoga.value}},
         )
 
 

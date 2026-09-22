@@ -790,6 +790,12 @@ export interface PlanRequest {
    * sign, its wakefulness, its brightness where the chart decides one,
    * and the lajjitadi that hold beside the ones nothing decides.
    */
+  /**
+   * The almanac of the chart's day: the tithi with its paksha, the vara,
+   * the nakshatra and the Moon's pada in it, the yoga and the karana, and
+   * whether the birth fell by day where the chart says.
+   */
+  readonly panchanga?: boolean;
   readonly states?: boolean;
   /**
    * What each graha's placement says of its dasha: when in the dasha its
@@ -835,6 +841,8 @@ export interface Plans {
   readonly chalit?: readonly PlanItem[];
   /** What a loaded corpus says of the chart's subjects; absent unless `phala` asked. */
   readonly phala?: readonly PlanItem[];
+  /** The almanac of the day; absent unless `panchanga` asked for it. */
+  readonly panchanga?: readonly PlanItem[];
   /** A graha's friendships and avasthas; absent unless `states` asked. */
   readonly states?: readonly PlanItem[];
   /** What a placement says of its dasha; absent unless `dashaPhala` asked. */

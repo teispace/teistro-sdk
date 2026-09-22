@@ -776,6 +776,7 @@ void _engineTests() {
             karakas: true,
             chalit: true,
             states: true,
+            panchanga: true,
             dashaPhala: true,
           ),
           rules: const RuleRequest(shipped: [ShippedRules.nabhasas]),
@@ -822,6 +823,10 @@ void _engineTests() {
       greaterThanOrEqualTo(9 * 3),
       reason: 'three a graha at least',
     );
+    // The almanac says the five limbs and the Moon's pada.
+    final almanac = plans['panchanga']! as List<Object?>;
+    expect(almanac.length, greaterThanOrEqualTo(6), reason: 'limbs and pada');
+    expect(almanac.length, lessThanOrEqualTo(7), reason: 'and the day');
 
     // Each item said by handing its params straight to the renderer, which
     // is the property the crossing exists for.
@@ -838,6 +843,7 @@ void _engineTests() {
           ...karakas,
           ...dashas,
           ...carried,
+          ...almanac,
         ].cast<Map<String, Object?>>()) {
       final key = item['key']! as String;
       expect(key, startsWith('sdk.'));

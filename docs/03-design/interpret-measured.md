@@ -22,7 +22,7 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 116 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 130 disagree |
 | every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 22609 disagree |
 | every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 22609 disagree |
 | every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 22609 disagree |
@@ -90,6 +90,13 @@ about.
 | `sdk.reason.grahaInRashi` | 837 |
 | `sdk.reason.lordship` | 900 |
 | `sdk.reason.occupants` | 204 |
+| `sdk.reason.panchanga.byDay` | 0 |
+| `sdk.reason.panchanga.karana` | 0 |
+| `sdk.reason.panchanga.nakshatra` | 0 |
+| `sdk.reason.panchanga.pada` | 0 |
+| `sdk.reason.panchanga.tithi` | 0 |
+| `sdk.reason.panchanga.vara` | 0 |
+| `sdk.reason.panchanga.yoga` | 0 |
 | `sdk.reason.pointAt` | 93 |
 | `sdk.reason.pointInRashi` | 93 |
 | `sdk.reason.strength.meets` | 497 |
@@ -233,7 +240,7 @@ blocker.
 
 | section | said by | what is left |
 |---|---|---|
-| `PANCHANGA` | `phala` | said only where a **corpus** carries a reading. `phala` renders a loaded record for the tithi, vara, nakshatra and yoga and says nothing of its own, so a consumer with no pack gets no item from this section at all. The limbs themselves are computed and named in all five locales and said by nothing — including the **karana**, which no composer mentions — as are the paksha and the ghatikas each limb had used and had left |
+| `PANCHANGA` | `panchanga` and `phala` | the four **spans** each limb covered, the sankranti and the eclipse. `panchanga` says the five limbs running at the chart's instant, the Moon's pada and whether the birth fell by day; `phala` says what a loaded pack reads of them. A span is a pair of ghatikas a consumer formats with, which is the line `sdk.reason.exactLongitude` is already on, and a sankranti and an eclipse are **conditions** of the day rather than limbs of it. The kaalas, the choghadiya, the horas and the thirty muhurtas are on the same record and belong to a reader of **times** rather than of a chart |
 | `STATE` | `conditions` and `states` | the three friendships and the four avasthas are said now, which is what this row asked for: `conditions` says every fact a `Placement` carries and the section's own `GrahaState` carries a dozen. What is still unsaid is the **Sayanadi**, whose members no strict locale names because the vetted tables stop at the four avasthas, the Cheshta for the same reason, the war a graha is in and how near it stands to a classification boundary — the last two being records whose own shape is undecided rather than unnamed |
 | `ASPECTS` | `aspects` | — |
 | `POINTS` | — | the five upagrahas and the special lagnas are points with longitudes, and `positions` says a **graha's** degree in the same sentence a point's would need — but the vetted table names the upagrahas only, so a special lagna has no name for the sentence to put in. The name comes before the sentence, and five of the state corpus's `special-lagna` readings are waiting on the same table |
@@ -251,7 +258,7 @@ blocker.
 
 ## What the packs carry, and what reads it
 
-58 of the 65 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+65 of the 72 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|
@@ -298,7 +305,7 @@ is what someone has to read. The parser decides which, so a message
 rewritten from one into the other moves this list by itself. `en-Latn`
 is left out: it is the base and its words are the source.
 
-**`ne-Deva-NP`** — 69 messages to read, 38 that render a value and
+**`ne-Deva-NP`** — 76 messages to read, 38 that render a value and
 need no reading.
 
 | namespace | messages with words of their own |
@@ -308,7 +315,7 @@ need no reading.
 | `sdk.condition` | 11 |
 | `sdk.karaka` | 2 |
 | `sdk.reading` | 5 |
-| `sdk.reason` | 21 |
+| `sdk.reason` | 28 |
 
 `hi-Deva-IN`, `sa-Deva`, `sa-Latn` carry no `sdk.*` message at all —
 `base` completeness is the entity names and the packs' own records —
