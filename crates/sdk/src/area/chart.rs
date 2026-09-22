@@ -37,7 +37,10 @@ use teistro_strength::{
     ShadbalaReading, ShadbalaRules, VaiseshikamsaChart, VaiseshikamsaReading, VimshopakaChart,
     VimshopakaReading,
 };
-use teistro_tajika::{Muntha, MunthaDegree, Natal, OfficeBearers, Pravesha, Reading, YearCharts};
+use teistro_tajika::{
+    AnnualSky, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Reading,
+    Varshesha, VarsheshaRules, YearCharts,
+};
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
 use crate::area::system_of;
@@ -829,6 +832,66 @@ impl<'a> ChartArea<'a> {
             annual_moon_deg: at(Graha::Moon)?,
             by_day: year.day.part.is_daylight(),
         })
+    }
+
+    /// The **Panchavargiya bala** of the seven, read from an annual chart
+    /// you founded: the five-fold strength the lord of the year is chosen
+    /// by.
+    ///
+    /// Exact, in sub-sub units — the source's own unit, and its worked
+    /// chart's last figure — so nothing here rounds and two answers can be
+    /// compared as integers.
+    ///
+    /// It needs **no ephemeris**: the chart is already founded.
+    ///
+    /// # Errors
+    ///
+    /// An annual chart that does not place one of the seven.
+    pub fn panchavargiya(self, annual: &Document) -> Result<[Panchavargiya; 7], Error> {
+        let year = &annual.foundation;
+        let at = |graha: Graha| {
+            year.graha(graha)
+                .map(|placed| placed.longitude_deg)
+                .ok_or_else(|| Error::internal(format!("a founded chart places {graha:?}")))
+        };
+        teistro_tajika::panchavargiya(&AnnualSky {
+            sun_deg: at(Graha::Sun)?,
+            moon_deg: at(Graha::Moon)?,
+            mars_deg: at(Graha::Mars)?,
+            mercury_deg: at(Graha::Mercury)?,
+            jupiter_deg: at(Graha::Jupiter)?,
+            venus_deg: at(Graha::Venus)?,
+            saturn_deg: at(Graha::Saturn)?,
+        })
+    }
+
+    /// The **Varshesha**, the lord of the year, from a birth chart and an
+    /// annual chart you founded.
+    ///
+    /// One call for the whole chain: the five office-bearers, their
+    /// five-fold strengths, and the rule that picks among them — the
+    /// strongest that **aspects the annual lagna**, with the source's
+    /// fallbacks each a named step. The answer carries every claimant and
+    /// which step decided it, because a year lord chosen on strength and
+    /// one chosen by a fallback are different statements about the year.
+    ///
+    /// It needs **no ephemeris**: both charts are already founded.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::office_bearers`] and
+    /// [`ChartArea::panchavargiya`]; an annual chart whose lagna is not a
+    /// number.
+    pub fn varshesha(
+        self,
+        natal: &Document,
+        annual: &Document,
+        completed_years: u16,
+        rules: VarsheshaRules,
+    ) -> Result<Varshesha, Error> {
+        let bearers = self.office_bearers(natal, annual, completed_years)?;
+        let strengths = self.panchavargiya(annual)?;
+        teistro_tajika::varshesha(&bearers, &strengths, annual.foundation.lagna_deg, rules)
     }
 
     /// The Sun where it stood at birth, in both zodiacs, as a return needs

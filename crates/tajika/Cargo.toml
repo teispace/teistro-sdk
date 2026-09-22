@@ -21,6 +21,7 @@ schema = ["dep:schemars", "teistro-core/schema"]
 teistro-astro = { path = "../astro" }
 teistro-core = { path = "../core" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
+teistro-vargas = { path = "../vargas" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 

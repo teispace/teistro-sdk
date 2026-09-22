@@ -81,7 +81,7 @@ part inside the year, so a Tajika aspect taken to the Muntha does.
 | **not decided** | the Muntha's longitude inside its sign between the two readings (crux C107), which waits on a text that gives a longitude rather than a sign |
 | **across the boundary** | `varsha_json.muntha` names the reading; `muntha_sign`, `muntha_lord` and `muntha_deg` ride in the `praveshas` section beside the return they stand at, so no second call can disagree about which year it is. Node, Dart and Python each read `pravesha.muntha`, each binding's test asserts the rule, and all four parity runners print it under all three return readings — which also holds the Muntha's independence of the reading |
 | **built** | `teistro_tajika::muntha` and `Muntha::during`, the progression a fraction through the year; `sdk.chart().muntha`, which needs **no ephemeris**, being the founded chart's own lagna and a count |
-| **not built** | the Panchavargiya bala, the Tajika aspects and the year lord — below |
+| **not built** | the Tajika aspects and the year lord — below |
 
 ## The office-bearers
 
@@ -182,15 +182,13 @@ tables they need are rules rather than tables.
 
 1. ~~**The office-bearers**, over a founded annual chart~~ — **built and
    crossed** (above), with the place decided.
-2. **The Panchavargiya bala** — Griha 30, Uchcha 20, Hudda 15, Drekkana 10,
-   Navamsha 5, divided by four — with Tajika's own **positional**
-   friendship. Its **Drekkana** lords are one expression,
-   `(sign + 5 × decanate) mod 7` over Mars, Mercury, Jupiter, Venus,
-   Saturn, Sun and Moon, reproducing all 36 printed cells. Its **Hudda**
-   table has no rule: it is the Egyptian terms with three signs
-   transposing two lords (crux C109), shipped as printed and held by two
-   invariants a test asserts over all 60 cells. The Uchcha and Navamsha
-   parts already exist in `strength` and `vargas`.
+2. ~~**The Panchavargiya bala**~~ — **built**
+   ([`panchavargiya.md`](panchavargiya.md)), exact in integer sub-sub
+   units, and reproducing all 49 figures of the source's own tabulated
+   chart. Its Drekkana ships as the rule `(sign + 5 × decanate) mod 7`,
+   its Hudda as printed with the three transpositions named (crux C109),
+   and its friendship is Tajika's positional one — in which a planet
+   sharing a sign with that sign's lord is its **enemy**.
 3. **The Tajika aspects**, with their orbs, for "aspects the annual
    lagna" — which the research page's own closing checklist still asks to
    be confirmed.

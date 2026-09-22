@@ -396,6 +396,11 @@ struct Worked {
     moon_arcmin: f64,
     five: [Graha; 5],
     true_minus_mean_min: f64,
+    /// Every planet's Vishwa bala, in the catalogue's order.
+    vishwa: Vec<(Graha, String)>,
+    strongest: Graha,
+    /// The year lord, with every claimant's strength, aspect and count.
+    year_lord: teistro::Varshesha,
 }
 
 fn worked_under(profile: &str) -> Result<Worked, String> {
@@ -442,6 +447,23 @@ fn worked_under(profile: &str) -> Result<Worked, String> {
         .chart()
         .office_bearers(&birth, &annual, 40)
         .map_err(|why| format!("{profile}: {why}"))?;
+    let bala = sdk
+        .chart()
+        .panchavargiya(&annual)
+        .map_err(|why| format!("{profile}: {why}"))?;
+    let strongest = bala
+        .iter()
+        .max_by_key(|one| one.vishwa)
+        .ok_or_else(|| String::from("seven strengths"))?
+        .graha;
+    let vishwa = bala
+        .iter()
+        .map(|one| (one.graha, one.vishwa.to_string()))
+        .collect();
+    let year_lord = sdk
+        .chart()
+        .varshesha(&birth, &annual, 40, teistro::VarsheshaRules::default())
+        .map_err(|why| format!("{profile}: {why}"))?;
     let ist = (mean.at.get() + 0.5 + 5.5 / 24.0).fract() * 24.0;
     Ok(Worked {
         return_seconds: (ist - PRINTED_RETURN_IST_H) * 3600.0,
@@ -456,6 +478,9 @@ fn worked_under(profile: &str) -> Result<Worked, String> {
             bearers.dina_ratri,
         ],
         true_minus_mean_min: (true_return.at.get() - mean.at.get()) * 1440.0,
+        vishwa,
+        strongest,
+        year_lord,
     })
 }
 
@@ -496,7 +521,24 @@ fn the_worked_year(out: &mut String) -> Result<(), String> {
          minutes\" it sets aside between the true return and the mean one are \
          the Sun's own perturbations on a mean ayanamsha; on a nutated one \
          nutation adds several more, which the source does not apply. Neither \
-         moves an office-bearer.\n",
+         moves an office-bearer.\n\n\
+         ## 6. The five-fold strength, against the source's own table\n\n\
+         The source tabulates the **Panchavargiya bala** of all seven planets \
+         of that chart (Table VI-10) — five parts each, their total, and the \
+         Vishwa bala the year lord is chosen by. Every one of those figures is \
+         reproduced from the chart **the SDK founded**, not from the source's \
+         own longitudes, and the arithmetic is exact: a unit holds 3600 \
+         sub-sub units and nothing rounds. Every figure below equals the one \
+         the source prints; all 49 of its cells — five parts, a total and a \
+         Vishwa bala for each of the seven — are compared one by one in \
+         `crates/tajika`'s own tests, which is where a wrong relation, table \
+         cell, truncation or division would land.\n\n\
+         | | {} |\n\
+         |---|{}\n\
+         | the Vishwa bala | {} |\n\n\
+         The strongest is **{:?}**, as the source has it. The year lord is not \
+         the strongest of the seven but the strongest of the five \
+         office-bearers.\n\n",
         geo.return_seconds,
         topo.return_seconds,
         geo.lagna_arcmin,
@@ -514,8 +556,62 @@ fn the_worked_year(out: &mut String) -> Result<(), String> {
             .map(f64::abs)
             .fold(0.0, f64::max),
         geo.return_seconds.abs(),
+        geo.vishwa
+            .iter()
+            .map(|(graha, _)| format!("{graha:?}"))
+            .collect::<Vec<String>>()
+            .join(" | "),
+        "---|".repeat(geo.vishwa.len()),
+        geo.vishwa
+            .iter()
+            .map(|(_, bala)| bala.clone())
+            .collect::<Vec<String>>()
+            .join(" | "),
+        geo.strongest,
     );
+    the_year_lord(out, &geo);
     Ok(())
+}
+
+/// The year lord of the source's worked chart, and the whole reckoning it
+/// comes out of.
+fn the_year_lord(out: &mut String, geo: &Worked) {
+    let _ = write!(
+        out,
+        "## 7. The lord of that year\n\n\
+         The year lord is **not** the strongest planet, nor even the strongest \
+         office-bearer: it is the strongest office-bearer that **aspects the \
+         annual lagna**. The source's own chart is the case that shows why the \
+         rule needs all three parts, and the SDK reproduces its reckoning \
+         claimant by claimant.\n\n\
+         | claimant | Vishwa bala | portfolios | aspects the lagna |\n\
+         |---|---|---|---|\n",
+    );
+    for claim in &geo.year_lord.claims {
+        let _ = writeln!(
+            out,
+            "| {:?} | {} | {} | {} |",
+            claim.graha,
+            claim.vishwa,
+            claim.portfolios,
+            if claim.aspects_lagna { "yes" } else { "**no**" }
+        );
+    }
+    let _ = write!(
+        out,
+        "\nJupiter leads on strength and stands in the **second** from the \
+         lagna, a neutral house that gives no Tajika aspect, so the source \
+         disqualifies it in as many words. The lord of the year is **{:?}** at \
+         {}, chosen as `{:?}`. Saturn is stronger than any of them at {} and \
+         holds no portfolio, so it never enters the reckoning at all.\n",
+        geo.year_lord.graha,
+        geo.year_lord.vishwa,
+        geo.year_lord.chosen,
+        geo.vishwa
+            .iter()
+            .find(|(graha, _)| *graha == teistro::catalogue::Graha::Saturn)
+            .map_or_else(|| String::from("—"), |(_, bala)| bala.clone()),
+    );
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {
