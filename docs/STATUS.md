@@ -158,8 +158,10 @@ unmeasured, and a zero is a question**. The page that measures the
 composers counted **33 of its 65 keys at zero**, and every one of them
 had a reason nobody had written down — the recorded corpus keeps bodies
 and chara karakas and no graha states, no almanac and no strengths, so
-nine of the thirteen composers run over it and four do not. Reading that
-as nothing-to-see is exactly how the dead end below hid for a week. So
+several composers never run over it at all — which ones the page now
+**names**, read off the calls the pass makes, because this sentence said
+"nine of the thirteen" from the ninth composer to the sixteenth. Reading
+that as nothing-to-see is exactly how the dead end below hid for a week. So
 every key is now emitted by **one chart the SDK founds itself**, with
 every section asked for and both corpora loaded: **64 of 65**, and every
 item of it renders in each strict locale from that locale's own message —

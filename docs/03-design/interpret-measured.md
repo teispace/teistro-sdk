@@ -282,12 +282,13 @@ source, and this is that rule read back off a rendered plan.
 
 The table above counts what the **recorded corpus** exercises, and it
 records bodies and chara karakas: no graha states, no almanac, no
-strengths. So nine of the thirteen composers run over it and four do
-not, and the zeros that leaves are a fact about the fixtures rather than
-about the composers. Reading them as nothing-to-see is how a dead end
-hid for a week — `sdk.phala.tithi` read zero because `RuleInputs::of`
-never gave a chart its limbs, which also kept **11 shipped rules** from
-ever holding.
+strengths. So 10 of the 16 composers run over it and 6 do not —
+`bhavaBala`, `vimshopaka`, `panchanga`, `states`, `dashaPhala` and
+`ashtakavarga` — and the zeros that leaves are a fact about the
+fixtures rather than about the composers. Reading them as nothing-to-see
+is how a dead end hid for a week — `sdk.phala.tithi` read zero because
+`RuleInputs::of` never gave a chart its limbs, which also kept **11
+shipped rules** from ever holding.
 
 So every key is emitted here by **one chart the SDK founds itself**,
 with every section asked for and both corpora loaded — 68 of 69 —

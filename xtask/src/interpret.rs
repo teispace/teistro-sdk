@@ -34,7 +34,7 @@ use teistro_intl::{Intl, OutPart, Rendered};
 use teistro_rules::{Body, Evaluator, Readings as RuleReadings, Rule, RuleChart, shipped};
 
 use crate::generated::{Output, check, write};
-use crate::measure::{Claim, count, fill, plural, table};
+use crate::measure::{Claim, count, fill, listed, plural, table};
 use crate::rules_corpus::{chart, read_json};
 
 const PAGE: &str = "docs/03-design/interpret-measured.md";
@@ -62,6 +62,35 @@ struct Composed {
     name: String,
     plan: Plan,
     chart: RuleChart,
+}
+
+/// The whole corpus pass: every chart's plan, and which composers wrote
+/// them.
+///
+/// The second half is what keeps a count out of this page's prose. The
+/// fixtures record bodies and chara karakas and no almanac, no graha
+/// states and no strengths, so several composers never run here at all —
+/// and the sentence saying how many said **nine of thirteen** for as long
+/// as it took to write the fourteenth, fifteenth and sixteenth. It is
+/// read off the calls now, against `PlanRequest::MEMBERS`, so a composer
+/// added moves the page by itself.
+struct Corpus {
+    plans: Vec<Composed>,
+    /// Each composer this pass called, by the name `PlanRequest` gives it,
+    /// and the items it contributed over every chart together. A composer
+    /// called on no chart is **absent**; one called and silent is present
+    /// with a zero — a distinction a list written beside the calls cannot
+    /// make, and the one the page turns on.
+    ran: BTreeMap<&'static str, usize>,
+}
+
+/// One composer's items, added to a chart's plan and attributed to it.
+///
+/// Every composer of the pass goes through here, so the set of names is
+/// the set of calls rather than a list kept beside them.
+fn also(plan: &mut Plan, ran: &mut BTreeMap<&'static str, usize>, who: &'static str, said: Plan) {
+    *ran.entry(who).or_default() += said.items.len();
+    plan.items.extend(said.items);
 }
 
 /// What the corpus records of a chart's Shadbala, as the strength composer
@@ -341,10 +370,11 @@ fn composed(
     root: &Path,
     rules: &[Rule],
     vocabulary: &dyn teistro_interpret::Vocabulary,
-) -> Result<Vec<Composed>, String> {
+) -> Result<Corpus, String> {
     let weighed = weights(root);
     let divided = divisions(root);
     let mut out = Vec::new();
+    let mut ran: BTreeMap<&'static str, usize> = BTreeMap::new();
     for dir in ["charts", "variants"] {
         let directory = root.join(ROOT).join(dir);
         let Ok(entries) = std::fs::read_dir(&directory) else {
@@ -371,27 +401,48 @@ fn composed(
                     result.present.then_some((rule, result))
                 })
                 .collect();
-            let mut plan = placements(&chart);
-            plan.items.extend(positions(&chart));
-            plan.items.extend(conditions(&chart, vocabulary));
-            plan.items.extend(karakas(&chart));
-            plan.items.extend(phala(&chart, vocabulary));
-            plan.items.extend(aspects(&relations(&chart)?));
-            plan.items.extend(readings(
-                held.iter().map(|(rule, result)| (*rule, result)),
-                vocabulary,
-            ));
+            let mut plan = Plan::default();
+            also(&mut plan, &mut ran, "placements", placements(&chart));
+            also(&mut plan, &mut ran, "positions", positions(&chart));
+            also(
+                &mut plan,
+                &mut ran,
+                "conditions",
+                conditions(&chart, vocabulary),
+            );
+            also(&mut plan, &mut ran, "karakas", karakas(&chart));
+            also(&mut plan, &mut ran, "phala", phala(&chart, vocabulary));
+            also(&mut plan, &mut ran, "aspects", aspects(&relations(&chart)?));
+            also(
+                &mut plan,
+                &mut ran,
+                "readings",
+                readings(
+                    held.iter().map(|(rule, result)| (*rule, result)),
+                    vocabulary,
+                ),
+            );
             if let Some(weighed) = weighed.get(&name) {
-                plan.items.extend(strength(&weighed.reading));
+                also(&mut plan, &mut ran, "strength", strength(&weighed.reading));
             }
             if let Some(divided) = divided.get(&name) {
-                plan.items.extend(houses(&divided.bhavas));
-                plan.items.extend(chalit(&divided.positions));
+                also(&mut plan, &mut ran, "houses", houses(&divided.bhavas));
+                also(&mut plan, &mut ran, "chalit", chalit(&divided.positions));
             }
             out.push(Composed { name, plan, chart });
         }
     }
-    Ok(out)
+    // A name this pass attributes items to must be a name a consumer can
+    // ask for, or the page would count composers that do not exist and
+    // name absences that are typos.
+    for who in ran.keys() {
+        if !teistro::PlanRequest::MEMBERS.contains(who) {
+            return Err(format!(
+                "this pass attributes items to `{who}`, which is not a member of `PlanRequest`"
+            ));
+        }
+    }
+    Ok(Corpus { plans: out, ran })
 }
 
 /// What a plan costs written down, which is what it costs to cross a
@@ -1091,10 +1142,11 @@ const UNREACHED: [(&str, &str); 1] = [(
 /// so that every key a composer can emit is emitted somewhere.
 ///
 /// The recorded corpus cannot do this: it records bodies and chara karakas
-/// and no graha states, no almanac and no strengths, so nine of the
-/// thirteen composers run over it and four do not. That is a fact about
-/// the fixtures rather than about the composers, and reading it off the
-/// table above as thirty-three zeros is how a dead end hid in plain sight.
+/// and no graha states, no almanac and no strengths, so several composers
+/// never run over it at all — which ones is read off the pass and written
+/// into the page, never counted here. That is a fact about the fixtures
+/// rather than about the composers, and reading it off the table above as
+/// a column of zeros is how a dead end hid in plain sight.
 /// One context with both corpora loaded, as a consumer's would be.
 fn context_with_the_corpora(root: &Path) -> Result<teistro::Context, String> {
     let sdk = teistro::Context::builder()
@@ -1444,7 +1496,12 @@ fn said_richly(
 
 /// That every key a composer can emit is emitted by that one chart, and
 /// that every item of it is said in each strict locale.
-fn every_key_is_emitted(out: &mut String, root: &Path, strict: &[String]) -> Result<(), String> {
+fn every_key_is_emitted(
+    out: &mut String,
+    root: &Path,
+    strict: &[String],
+    ran: &BTreeMap<&'static str, usize>,
+) -> Result<(), String> {
     let sdk = context_with_the_corpora(root)?;
     let plan = the_founded_plan(&sdk)?;
     let emitted: BTreeSet<&str> = plan
@@ -1478,8 +1535,8 @@ fn every_key_is_emitted(out: &mut String, root: &Path, strict: &[String]) -> Res
     }
 
     // The other half: a key emitted is not a key said. Every item of the
-    // founded plan is rendered in each strict locale, which is what the
-    // recorded corpus can only do for nine composers' worth.
+    // founded plan is rendered in each strict locale, which the recorded
+    // corpus can only do for the composers its fixtures reach.
     let mut rendered = 0usize;
     for tag in strict {
         sdk.intl()
@@ -1504,18 +1561,25 @@ fn every_key_is_emitted(out: &mut String, root: &Path, strict: &[String]) -> Res
 
     what_a_rich_renderer_gets(out, &sdk, &plan, strict)?;
 
+    // Named rather than counted, and read off the calls this pass made:
+    // the sentence that counted them said "nine of the thirteen" from the
+    // ninth composer to the sixteenth.
+    let unrun: Vec<String> = teistro::PlanRequest::MEMBERS
+        .iter()
+        .filter(|member| !ran.contains_key(*member))
+        .map(|member| format!("`{member}`"))
+        .collect();
     out.push_str("## Every key, emitted at least once\n\n");
     let _ = write!(
         out,
         "The table above counts what the **recorded corpus** exercises, and \
          it records bodies and chara karakas: no graha states, no almanac, \
-         no strengths. So nine of the thirteen composers run over it and \
-         four do not, and the zeros that leaves are a fact about the \
-         fixtures rather than about the composers. Reading them as \
-         nothing-to-see is how a dead end hid for a week — \
-         `sdk.phala.tithi` read zero because `RuleInputs::of` never gave a \
-         chart its limbs, which also kept **11 shipped rules** from ever \
-         holding.\n\n\
+         no strengths. So {} of the {} composers run over it and {} do not \
+         — {} — and the zeros that leaves are a fact about the fixtures \
+         rather than about the composers. Reading them as nothing-to-see \
+         is how a dead end hid for a week — `sdk.phala.tithi` read zero \
+         because `RuleInputs::of` never gave a chart its limbs, which also \
+         kept **11 shipped rules** from ever holding.\n\n\
          So every key is emitted here by **one chart the SDK founds \
          itself**, with every section asked for and both corpora loaded — \
          {} of {} — and every item of it renders in each strict locale \
@@ -1526,6 +1590,10 @@ fn every_key_is_emitted(out: &mut String, root: &Path, strict: &[String]) -> Res
          hypothetical: **three of the four excuses first written here were \
          wrong**, and the check said so one at a time.\n\n\
          | key | why this chart cannot reach it |\n|---|---|\n",
+        count(ran.len()),
+        count(teistro::PlanRequest::MEMBERS.len()),
+        count(unrun.len()),
+        named_or_none(&unrun, "none of them"),
         count(emitted.len()),
         count(KEYS.len()),
         plural(rendered, "rendering"),
@@ -1626,7 +1694,7 @@ fn named_or_none(names: &[String], none: &str) -> String {
     if names.is_empty() {
         String::from(none)
     } else {
-        names.join(" and ")
+        listed(names)
     }
 }
 
@@ -2076,7 +2144,7 @@ fn page(root: &Path) -> Result<String, String> {
         .iter()
         .filter(|rule| teistro_interpret::Vocabulary::has_reading(&intl, &rule.key))
         .count();
-    let plans = composed(root, &shipped, &intl)?;
+    let Corpus { plans, ran } = composed(root, &shipped, &intl)?;
     let mut by_key: BTreeMap<&str, usize> = KEYS.iter().map(|key| (*key, 0)).collect();
     for composed in &plans {
         for item in &composed.plan {
@@ -2132,7 +2200,7 @@ fn page(root: &Path) -> Result<String, String> {
 
     the_rest_of_a_placement(&mut out, &plans);
 
-    every_key_is_emitted(&mut out, root, &strict)?;
+    every_key_is_emitted(&mut out, root, &strict, &ran)?;
 
     every_section(&mut out, root)?;
 

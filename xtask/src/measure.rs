@@ -273,9 +273,25 @@ pub(crate) fn wrapped(items: &[String], width: usize, separator: &str) -> String
     lines.join("\n")
 }
 
+/// A list of names as an English sentence reads it: `a`, `a` and `b`, or
+/// `a`, `b` and `c`.
+///
+/// The separator is not a plain `", "` throughout, because a list of three
+/// read that way is a list of two and a fragment; and it is not `" and "`
+/// throughout either, which is the shape this replaced and which reads as
+/// a chain the moment a third name joins. Empty gives the empty string,
+/// which a caller with a phrase for none puts in its place.
+pub(crate) fn listed(names: &[String]) -> String {
+    match names {
+        [] => String::new(),
+        [one] => one.clone(),
+        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{Claim, Verdict, count, fill, seconds, table, worst, wrapped};
+    use super::{Claim, Verdict, count, fill, listed, seconds, table, worst, wrapped};
 
     #[test]
     fn a_verdict_says_what_it_is() {
@@ -361,5 +377,19 @@ mod tests {
             filled.contains("1. a list item\n   and its continuation"),
             "{filled}"
         );
+    }
+
+    #[test]
+    fn a_list_reads_as_a_sentence_at_every_length() {
+        let names = |count: usize| -> Vec<String> {
+            ["`a`", "`b`", "`c`"][..count]
+                .iter()
+                .map(|name| (*name).to_string())
+                .collect()
+        };
+        assert_eq!(listed(&names(0)), "");
+        assert_eq!(listed(&names(1)), "`a`");
+        assert_eq!(listed(&names(2)), "`a` and `b`");
+        assert_eq!(listed(&names(3)), "`a`, `b` and `c`");
     }
 }
