@@ -1872,6 +1872,16 @@ pub struct ChartRequest {
     /// Null for none, which costs nothing.
     /// Example: {"placements":true}. May be null.
     pub interpret_json: Option<String>,
+    /// The annual charts to answer for every chart in the batch, as a JSON
+    /// object: `reading` — `"sidereal"` (the tradition's), `"tropical"`
+    /// (the Western solar return) or `"mean"` (a whole sidereal year each
+    /// time) — and `through`, the last year of life wanted, 1 to 200. The
+    /// instants come back in the `praveshas` section, ragged by
+    /// `cast.pravesha_count`; an ephemeris that ends first answers fewer
+    /// than asked for rather than refusing. Null for none
+    /// (`03-design/annual-chart.md`). Refusals are named from this root,
+    /// as `varsha_json.through`. May be null.
+    pub varsha_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1890,6 +1900,7 @@ pub struct HeldChartRequest {
     theme_json: Option<std::ffi::CString>,
     rules_json: Option<std::ffi::CString>,
     interpret_json: Option<std::ffi::CString>,
+    varsha_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -1918,6 +1929,10 @@ impl HeldChartRequest {
             rules_json: self.rules_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
             interpret_json: self
                 .interpret_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            varsha_json: self
+                .varsha_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -1957,6 +1972,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            varsha_json: self
+                .varsha_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -1993,6 +2013,7 @@ impl ChartRequest {
             theme_json: unsafe { lent_text(raw.theme_json) },
             rules_json: unsafe { lent_text(raw.rules_json) },
             interpret_json: unsafe { lent_text(raw.interpret_json) },
+            varsha_json: unsafe { lent_text(raw.varsha_json) },
         }
     }
 }

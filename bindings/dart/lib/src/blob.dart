@@ -377,6 +377,7 @@ final class ChartsCast {
     required this.dayElapsed,
     required this.pointCount,
     required this.aspectCount,
+    required this.praveshaCount,
     required this.length,
   });
 
@@ -407,6 +408,11 @@ final class ChartsCast {
   ///
   /// A **per-chart count and not one for the batch**, because a chart's drishti are a function of where the bodies stand rather than of how many there are: two charts of the same nine grahas at one place hold 47 relations and 40. The rows are concatenated charts outermost and a reader prefix-sums these counts, which is the panchanga blob's own rule for a ragged list.
   final Uint32List aspectCount;
+
+  /// How many rows of the `praveshas` section belong to this chart. Zero when no annual charts were asked for.
+  ///
+  /// Ragged for a reason of its own: the request settles how many returns are wanted, and an ephemeris that ends first settles how many there are (`03-design/annual-chart.md`). Fewer than asked for is the answer, so a reader takes this count and never the number it requested.
+  final Uint32List praveshaCount;
 
   /// The number of rows every column holds.
   final int length;
@@ -1426,6 +1432,27 @@ final class ChartsDashaPhala {
   final int length;
 }
 
+/// The `praveshas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for.
+final class ChartsPraveshas {
+  const ChartsPraveshas({
+    required this.year,
+    required this.jd,
+    required this.length,
+  });
+
+  /// Which year of life it opens: 1 is the first birthday, so a reader's age through that year is one less.
+  final Uint16List year;
+
+  /// The instant, a Julian day (UTC). A chart cast for it is the annual chart; the place is the caller's, which is why the boundary answers the instant and not the chart.
+  final Float64List jd;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -1564,6 +1591,7 @@ final class Charts {
     required this.dashaPhala,
     required this.rules,
     required this.plans,
+    required this.praveshas,
   });
 
   /// What kind of chart these are.
@@ -1712,6 +1740,9 @@ final class Charts {
   /// UTF-8 JSON, canonical: an array with one entry per chart, each an object carrying the narrative plans the request's `interpret_json` asked for — `placements`, `readings`, `strength`, `houses`, `positions`, `aspects` — and only those. A plan is the array of its items, each `{key, params}`, and its params are the very JSON `ts_intl_render` takes, so a binding says an item by handing it straight back (`03-design/plans-at-the-boundary.md`). Empty when no composer was asked for.
   final String plans;
 
+  /// Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for.
+  final ChartsPraveshas praveshas;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1753,6 +1784,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atDashaPhala = blob.section(32, 'dasha_phala');
   final atRules = blob.section(33, 'rules');
   final atPlans = blob.section(34, 'plans');
+  final atPraveshas = blob.section(35, 'praveshas');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -1802,6 +1834,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atCast, 7),
         blob.columnOffset(atCast, 7) + atCast.count * 4,
+      ),
+      praveshaCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 8),
+        blob.columnOffset(atCast, 8) + atCast.count * 4,
       ),
       length: atCast.count,
     ),
@@ -2916,6 +2953,19 @@ Charts decodeCharts(Uint8List bytes) {
     ),
     rules: blob.text(atRules),
     plans: blob.text(atPlans),
+    praveshas: ChartsPraveshas(
+      year: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPraveshas, 0),
+        blob.columnOffset(atPraveshas, 0) + atPraveshas.count * 2,
+      ),
+      jd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atPraveshas, 1),
+        blob.columnOffset(atPraveshas, 1) + atPraveshas.count * 8,
+      ),
+      length: atPraveshas.count,
+    ),
   );
 }
 

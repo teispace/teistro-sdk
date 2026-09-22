@@ -9490,6 +9490,20 @@
             "example": "{\"placements\":true}",
             "nullable": true
           }
+        },
+        {
+          "name": "varsha_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "The annual charts to answer for every chart in the batch, as a JSON\nobject: `reading` — `\"sidereal\"` (the tradition's), `\"tropical\"`\n(the Western solar return) or `\"mean\"` (a whole sidereal year each\ntime) — and `through`, the last year of life wanted, 1 to 200. The\ninstants come back in the `praveshas` section, ragged by\n`cast.pravesha_count`; an ephemeris that ends first answers fewer\nthan asked for rather than refusing. Null for none\n(`03-design/annual-chart.md`). Refusals are named from this root,\nas `varsha_json.through`.",
+          "meta": {
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -12782,6 +12796,11 @@
               "name": "aspect_count",
               "scalar": "u32",
               "doc": "How many rows of the `aspects` section belong to this chart. Zero when the aspects were not asked for.\n\nA **per-chart count and not one for the batch**, because a chart's drishti are a function of where the bodies stand rather than of how many there are: two charts of the same nine grahas at one place hold 47 relations and 40. The rows are concatenated charts outermost and a reader prefix-sums these counts, which is the panchanga blob's own rule for a ragged list."
+            },
+            {
+              "name": "pravesha_count",
+              "scalar": "u32",
+              "doc": "How many rows of the `praveshas` section belong to this chart. Zero when no annual charts were asked for.\n\nRagged for a reason of its own: the request settles how many returns are wanted, and an ephemeris that ends first settles how many there are (`03-design/annual-chart.md`). Fewer than asked for is the answer, so a reader takes this count and never the number it requested."
             }
           ]
         },
@@ -14180,6 +14199,24 @@
           "doc": "UTF-8 JSON, canonical: an array with one entry per chart, each an object carrying the narrative plans the request's `interpret_json` asked for — `placements`, `readings`, `strength`, `houses`, `positions`, `aspects` — and only those. A plan is the array of its items, each `{key, params}`, and its params are the very JSON `ts_intl_render` takes, so a binding says an item by handing it straight back (`03-design/plans-at-the-boundary.md`). Empty when no composer was asked for.",
           "kind": "bytes",
           "fields": []
+        },
+        {
+          "id": 35,
+          "name": "praveshas",
+          "doc": "Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "year",
+              "scalar": "u16",
+              "doc": "Which year of life it opens: 1 is the first birthday, so a reader's age through that year is one less."
+            },
+            {
+              "name": "jd",
+              "scalar": "f64",
+              "doc": "The instant, a Julian day (UTC). A chart cast for it is the annual chart; the place is the caller's, which is why the boundary answers the instant and not the chart."
+            }
+          ]
         }
       ]
     },

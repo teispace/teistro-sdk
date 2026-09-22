@@ -299,6 +299,8 @@ __all__ = [
     "Friendship",
     "GrahaState",
     "DashaDefinition",
+    "Pravesha",
+    "VarshaRequest",
     "RashiDashaDefinition",
     "UduDashaDefinition",
     "DashaLord",
@@ -1085,6 +1087,7 @@ class ChartArea(_Area):
         theme: Optional[Theme] = None,
         rules: Optional[RuleRequest] = None,
         interpret: Optional[PlanRequest] = None,
+        varsha: Optional[VarshaRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1120,6 +1123,7 @@ class ChartArea(_Area):
             theme=theme,
             rules=rules,
             interpret=interpret,
+            varsha=varsha,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1145,6 +1149,7 @@ class ChartArea(_Area):
         theme: Optional[Theme] = None,
         rules: Optional[RuleRequest] = None,
         interpret: Optional[PlanRequest] = None,
+        varsha: Optional[VarshaRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1200,6 +1205,7 @@ class ChartArea(_Area):
             theme_json=_theme_json(theme),
             rules_json=_rules_json(rules),
             interpret_json=_interpret_json(interpret),
+            varsha_json=_varsha_json(varsha),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -2431,6 +2437,37 @@ class LayoutShapeRow(TypedDict, total=False):
     direction: Literal["clockwise", "anticlockwise"]
 
 
+class _VarshaRequestRequired(TypedDict):
+    through: int
+
+
+class VarshaRequest(_VarshaRequestRequired, total=False):
+    """The annual charts a request asks for: how many years, and which
+    longitude the Sun returns to (`03-design/annual-chart.md`).
+
+    `reading` is `"sidereal"` (the tradition's, and the default),
+    `"tropical"` (the Western solar return, most of a circle of lagna away
+    at forty years, so a choice and never a fallback) or `"mean"` (a whole
+    sidereal year each time, the older arithmetic).
+
+    >>> asked: VarshaRequest = {"reading": "sidereal", "through": 40}
+    """
+
+    reading: Literal["sidereal", "tropical", "mean"]
+
+
+@dataclass(frozen=True)
+class Pravesha:
+    """One annual chart's instant."""
+
+    year: int
+    """Which year of life it opens: 1 is the first birthday, so the age
+    through that year is one less."""
+
+    instant: float
+    """The instant, a Julian day (UTC), to pass to `found`."""
+
+
 class DashaLord(TypedDict):
     """One lord of a dasha system and its whole years."""
 
@@ -2670,6 +2707,11 @@ def _rules_json(rules: Optional[RuleRequest]) -> Optional[str]:
 def _interpret_json(interpret: Optional[PlanRequest]) -> Optional[str]:
     """The plans as the JSON the boundary reads, or nothing for none."""
     return _record_json(interpret, "interpret", "{'placements': True}")
+
+
+def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
+    """The annual charts as the JSON the boundary reads, or nothing for none."""
+    return _record_json(varsha, "varsha", "{'reading': 'sidereal', 'through': 40}")
 
 
 def _record_json(value: Optional[Mapping[str, Any]], field: str, example: str) -> Optional[str]:
@@ -3031,6 +3073,30 @@ class Chart:
                     pada_deg=columns.pada_deg[i],
                 ),
             )
+            for i in range(start, start + counts[self.index])
+        ]
+
+    @property
+    def praveshas(self) -> List[Pravesha]:
+        """The annual charts' instants: the Sun's returns to where it stood
+        at birth, in year order; empty unless `varsha=` asked for them
+        (`03-design/annual-chart.md`).
+
+        The section is **ragged** for a reason of its own: the request
+        settles how many returns are *wanted* and the ephemeris settles how
+        many there *are*, so read the length rather than the number you
+        asked for.
+
+        The place is yours. A return is an instant, and whether the annual
+        chart is cast for the birthplace or for a residence is a choice the
+        schools differ on, so pass the instant to `found` yourself.
+        """
+        decoded = self.batch.decoded
+        counts = decoded.cast.pravesha_count
+        start = sum(counts[i] for i in range(self.index))
+        columns = decoded.praveshas
+        return [
+            Pravesha(year=columns.year[i], instant=columns.jd[i])
             for i in range(start, start + counts[self.index])
         ]
 

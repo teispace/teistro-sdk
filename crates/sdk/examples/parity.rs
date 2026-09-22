@@ -956,6 +956,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_drishti(report, index, document);
         the_strength(report, index, document);
         the_dashas(report, &geo, index, document);
+        the_praveshas(report, &geo, index, document);
     }
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
@@ -1046,6 +1047,11 @@ fn the_geo_context() -> Context {
 /// backward count, a two-nakshatra window, an offset, a savana year and a
 /// depth of two, so each field a definition may set crosses
 /// (`03-design/dasha-kernels.md`).
+/// How many annual charts the parity report prints for each chart.
+/// Twelve is enough for the three readings to separate visibly and short
+/// enough to keep the report a report.
+const PARITY_YEARS: u16 = 12;
+
 const PARITY_DASHA: &str = r#"{"kernel":"udu","key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}"#;
 
 fn parity_dasha() -> teistro::dasha::UduDefinition {
@@ -1346,6 +1352,33 @@ fn the_bhavas(report: &mut Report, index: usize, document: &teistro::Document) {
 }
 
 /// One chart's derived points, as the report prints them.
+/// The annual charts a birth opens: the Sun's returns to where it stood,
+/// under all three readings, as the other three runners print them.
+///
+/// All three, because the point of naming a reading is that a consumer can
+/// ask for the one they mean — and a reading that crossed as another would
+/// be invisible in a report that only ever printed the default.
+fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    for (name, reading) in [
+        ("sidereal", teistro::VarshaReading::Sidereal),
+        ("tropical", teistro::VarshaReading::Tropical),
+        ("mean", teistro::VarshaReading::Mean),
+    ] {
+        let Ok(years) = sdk.chart().praveshas(document, reading, PARITY_YEARS) else {
+            continue;
+        };
+        let key = |what: &str| format!("chart-{index}-varsha-{name}{what}");
+        put(report, &key("-count"), years.len().to_string());
+        for one in &years {
+            put(
+                report,
+                &key(&format!("-{}", one.year)),
+                number(one.at.get()),
+            );
+        }
+    }
+}
+
 fn the_points(report: &mut Report, index: usize, document: &teistro::Document) {
     let Some(points) = document.points.as_ref() else {
         return;

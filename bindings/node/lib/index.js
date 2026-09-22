@@ -719,6 +719,34 @@ export class Chart {
    * bodies stand rather than on how many there are, so two charts of the
    * same nine grahas hold different numbers of them.
    */
+  /**
+   * The annual charts' instants: the Sun's returns to where it stood at
+   * birth, `1` opening the first year of life
+   * (`03-design/annual-chart.md`). Empty unless the request asked with
+   * `varsha`.
+   *
+   * The section is **ragged** for a reason of its own: the request
+   * settles how many returns are *wanted* and the ephemeris settles how
+   * many there *are*, so a chart late enough to run past it answers
+   * fewer rather than refusing.
+   *
+   * The place is yours: a return is an instant, and casting it for a
+   * birthplace or for a residence is a choice the schools differ on, so
+   * the boundary answers the instant and `found` is how you make the
+   * chart.
+   */
+  get praveshas() {
+    const d = this.#batch.decoded;
+    const counts = d.cast.praveshaCount;
+    let from = 0;
+    for (let i = 0; i < this.#index; i += 1) from += counts[i];
+    const count = counts[this.#index] ?? 0;
+    return Array.from({ length: count }, (_, k) => ({
+      year: d.praveshas.year[from + k],
+      instant: d.praveshas.jd[from + k],
+    }));
+  }
+
   get aspects() {
     const d = this.#batch.decoded;
     const counts = d.cast.aspectCount;
@@ -1837,6 +1865,7 @@ class ChartArea extends Area {
         themeJson: themeJson(request.theme),
         rulesJson: rulesJson(request.rules),
         interpretJson: interpretJson(request.interpret),
+        varshaJson: varshaJson(request.varsha),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -2247,6 +2276,22 @@ function rulesJson(rules) {
  */
 function interpretJson(interpret) {
   return recordJson(interpret, 'interpret', 'a plan request record, e.g. { placements: true }');
+}
+
+/**
+ * The annual charts a request asks for, as the JSON the boundary reads
+ * (`03-design/annual-chart.md`). The SDK refuses what it cannot read,
+ * naming the field from `varsha_json`.
+ *
+ * @param {object|undefined} varsha
+ * @returns {string|undefined}
+ */
+function varshaJson(varsha) {
+  return recordJson(
+    varsha,
+    'varsha',
+    'an annual-chart request record, e.g. { reading: "sidereal", through: 40 }',
+  );
 }
 
 /**

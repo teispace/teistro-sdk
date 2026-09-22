@@ -701,6 +701,7 @@ final class ChartArea extends _Area {
     ChartTheme? theme,
     RuleRequest? rules,
     PlanRequest? interpret,
+    VarshaRequest? varsha,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -722,6 +723,7 @@ final class ChartArea extends _Area {
     theme: theme,
     rules: rules,
     interpret: interpret,
+    varsha: varsha,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -763,6 +765,7 @@ final class ChartArea extends _Area {
     ChartTheme? theme,
     RuleRequest? rules,
     PlanRequest? interpret,
+    VarshaRequest? varsha,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -805,6 +808,7 @@ final class ChartArea extends _Area {
             themeJson: theme?._json,
             rulesJson: rules?._json,
             interpretJson: interpret?._json,
+            varshaJson: varsha?._json,
           ),
         ),
       ),
@@ -3562,6 +3566,65 @@ final class RuleRequest {
 /// (`03-design/plans-at-the-boundary.md`). Each composer is off by default,
 /// and [readings] needs a [RuleRequest] beside it, since it says what the
 /// rules a chart held answered.
+/// Which longitude an annual chart's Sun returns to
+/// (`03-design/annual-chart.md`).
+enum VarshaReading {
+  /// The natal sidereal longitude, read on the chart's own ayanamsha
+  /// basis: the tradition's, and the default.
+  sidereal('sidereal'),
+
+  /// The natal tropical longitude: the Western solar return. Forty years
+  /// on it is most of a circle of lagna from the sidereal one, so it is a
+  /// choice and never a fallback.
+  tropical('tropical'),
+
+  /// A whole sidereal year for each year of life, from birth: the older
+  /// arithmetic, and the only reading that needs no ephemeris.
+  mean('mean');
+
+  const VarshaReading(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// The annual charts a request asks for: how many years, and which
+/// longitude the Sun returns to.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ varsha: const VarshaRequest(through: 40),
+/// );
+/// final thirtieth = chart.praveshas.firstWhere((one) => one.year == 30);
+/// ```
+final class VarshaRequest {
+  const VarshaRequest({
+    required this.through,
+    this.reading = VarshaReading.sidereal,
+  });
+
+  /// The last year of life wanted, 1 to 200.
+  final int through;
+
+  /// Which longitude the Sun returns to.
+  final VarshaReading reading;
+
+  String get _json =>
+      jsonEncode(<String, Object?>{'reading': reading.key, 'through': through});
+}
+
+/// One annual chart's instant.
+final class Pravesha {
+  const Pravesha({required this.year, required this.instant});
+
+  /// Which year of life it opens: 1 is the first birthday, so the age
+  /// through that year is one less.
+  final int year;
+
+  /// The instant, a Julian day (UTC), to pass to `found`.
+  final double instant;
+}
+
 final class PlanRequest {
   /// A request for the composers named.
   const PlanRequest({
@@ -3980,6 +4043,31 @@ final class Chart {
   /// bodies stand rather than on how many there are, so two charts of
   /// the same nine grahas hold different numbers of them, and
   /// `cast.aspect_count` is what says where each chart's begin.
+  /// The annual charts' instants: the Sun's returns to where it stood at
+  /// birth, in year order; empty unless `varsha:` asked for them
+  /// (`03-design/annual-chart.md`).
+  ///
+  /// The section is **ragged** for a reason of its own: the request
+  /// settles how many returns are *wanted* and the ephemeris settles how
+  /// many there *are*, so read the length rather than the number you
+  /// asked for.
+  ///
+  /// The place is yours. A return is an instant, and whether the annual
+  /// chart is cast for the birthplace or for a residence is a choice the
+  /// schools differ on, so pass the instant to `found` yourself.
+  List<Pravesha> get praveshas {
+    final counts = batch.cast.praveshaCount;
+    var from = 0;
+    for (var i = 0; i < index; i += 1) {
+      from += counts[i];
+    }
+    final p = batch.praveshas;
+    return List<Pravesha>.generate(
+      counts[index],
+      (k) => Pravesha(year: p.year[from + k], instant: p.jd[from + k]),
+    );
+  }
+
   List<Drishti> get aspects {
     final counts = batch.cast.aspectCount;
     var from = 0;

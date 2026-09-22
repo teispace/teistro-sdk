@@ -427,6 +427,11 @@ fn chart_cast_section(id: u32) -> SectionSchema {
                 Scalar::U32,
                 "How many rows of the `aspects` section belong to this chart. Zero when the aspects were not asked for.\n\nA **per-chart count and not one for the batch**, because a chart's drishti are a function of where the bodies stand rather than of how many there are: two charts of the same nine grahas at one place hold 47 relations and 40. The rows are concatenated charts outermost and a reader prefix-sums these counts, which is the panchanga blob's own rule for a ragged list.",
             ),
+            ColumnDef::new(
+                "pravesha_count",
+                Scalar::U32,
+                "How many rows of the `praveshas` section belong to this chart. Zero when no annual charts were asked for.\n\nRagged for a reason of its own: the request settles how many returns are wanted, and an ephemeris that ends first settles how many there are (`03-design/annual-chart.md`). Fewer than asked for is the answer, so a reader takes this count and never the number it requested.",
+            ),
         ],
     )
 }
@@ -581,6 +586,7 @@ pub fn charts() -> BlobSchema {
             chart_dasha_phala_section(32),
             chart_rules_section(33),
             chart_plans_section(34),
+            chart_praveshas_section(35),
         ],
     }
 }
@@ -600,6 +606,28 @@ fn chart_plans_section(id: u32) -> SectionSchema {
         id,
         "plans",
         "UTF-8 JSON, canonical: an array with one entry per chart, each an object carrying the narrative plans the request's `interpret_json` asked for — `placements`, `readings`, `strength`, `houses`, `positions`, `aspects` — and only those. A plan is the array of its items, each `{key, params}`, and its params are the very JSON `ts_intl_render` takes, so a binding says an item by handing it straight back (`03-design/plans-at-the-boundary.md`). Empty when no composer was asked for.",
+    )
+}
+
+/// Every chart's annual charts: the instants the Sun returns to where it
+/// stood at birth.
+fn chart_praveshas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "praveshas",
+        "Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for.",
+        vec![
+            ColumnDef::new(
+                "year",
+                Scalar::U16,
+                "Which year of life it opens: 1 is the first birthday, so a reader's age through that year is one less.",
+            ),
+            ColumnDef::new(
+                "jd",
+                Scalar::F64,
+                "The instant, a Julian day (UTC). A chart cast for it is the annual chart; the place is the caller's, which is why the boundary answers the instant and not the chart.",
+            ),
+        ],
     )
 }
 

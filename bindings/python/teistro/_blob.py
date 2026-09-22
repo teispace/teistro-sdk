@@ -335,6 +335,12 @@ class ChartsCast:
     A **per-chart count and not one for the batch**, because a chart's drishti are a function of where the bodies stand rather than of how many there are: two charts of the same nine grahas at one place hold 47 relations and 40. The rows are concatenated charts outermost and a reader prefix-sums these counts, which is the panchanga blob's own rule for a ragged list.
     """
 
+    pravesha_count: memoryview[int]
+    """How many rows of the `praveshas` section belong to this chart. Zero when no annual charts were asked for.
+
+    Ragged for a reason of its own: the request settles how many returns are wanted, and an ephemeris that ends first settles how many there are (`03-design/annual-chart.md`). Fewer than asked for is the answer, so a reader takes this count and never the number it requested.
+    """
+
     length: int
     """The number of rows every column holds."""
 
@@ -1146,6 +1152,24 @@ class ChartsDashaPhala:
 
 
 @dataclass(frozen=True)
+class ChartsPraveshas:
+    """The `praveshas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for.
+    """
+
+    year: memoryview[int]
+    """Which year of life it opens: 1 is the first birthday, so a reader's age through that year is one less."""
+
+    jd: memoryview[float]
+    """The instant, a Julian day (UTC). A chart cast for it is the annual chart; the place is the caller's, which is why the boundary answers the instant and not the chart."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -1365,6 +1389,9 @@ class Charts:
     plans: str
     """UTF-8 JSON, canonical: an array with one entry per chart, each an object carrying the narrative plans the request's `interpret_json` asked for — `placements`, `readings`, `strength`, `houses`, `positions`, `aspects` — and only those. A plan is the array of its items, each `{key, params}`, and its params are the very JSON `ts_intl_render` takes, so a binding says an item by handing it straight back (`03-design/plans-at-the-boundary.md`). Empty when no composer was asked for."""
 
+    praveshas: ChartsPraveshas
+    """Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1408,6 +1435,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_dasha_phala = blob.section(32, "dasha_phala")
     at_rules = blob.section(33, "rules")
     at_plans = blob.section(34, "plans")
+    at_praveshas = blob.section(35, "praveshas")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1428,6 +1456,7 @@ def decode_charts(raw: bytes) -> Charts:
             day_elapsed=blob.column(at_cast, 5, 8, at_cast.count).cast("d"),
             point_count=blob.column(at_cast, 6, 4, at_cast.count).cast("I"),
             aspect_count=blob.column(at_cast, 7, 4, at_cast.count).cast("I"),
+            pravesha_count=blob.column(at_cast, 8, 4, at_cast.count).cast("I"),
             length=at_cast.count,
         ),
         grahas=ChartsGrahas(
@@ -1961,6 +1990,11 @@ def decode_charts(raw: bytes) -> Charts:
         ),
         rules=blob.text(at_rules),
         plans=blob.text(at_plans),
+        praveshas=ChartsPraveshas(
+            year=blob.column(at_praveshas, 0, 2, at_praveshas.count).cast("H"),
+            jd=blob.column(at_praveshas, 1, 8, at_praveshas.count).cast("d"),
+            length=at_praveshas.count,
+        ),
     )
 
 

@@ -679,6 +679,28 @@ void main() {
     }
   }
   // `found` is the batch of one unwrapped, and must agree with the batch.
+  // **The annual charts, under all three readings.** One crossing each,
+  // because `varshaJson` names one reading per request — and all three,
+  // because a reading that crossed as another would be invisible in a
+  // report that only printed the default.
+  for (final reading in VarshaReading.values) {
+    final years = geo.chart.foundMany(
+      instants: <double>[2460482.5, 2460600.25],
+      place: place,
+      utcOffsetSeconds: 20700,
+      varsha: VarshaRequest(through: 12, reading: reading),
+    );
+    var i = 0;
+    for (final chart in years.each) {
+      final found = chart.praveshas;
+      put('chart-$i-varsha-${reading.key}-count', found.length);
+      for (final one in found) {
+        put('chart-$i-varsha-${reading.key}-${one.year}', one.instant);
+      }
+      i += 1;
+    }
+  }
+
   final single = geo.chart.found(
     instant: 2460482.5,
     place: place,

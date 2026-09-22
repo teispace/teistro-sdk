@@ -1123,6 +1123,59 @@ class AnEngine(WithLibrary):
             self.teistro.context(test_provider=True, dasha_systems=[thirteenth])
         self.assertEqual(houses.exception.field, "options.dashas_json[0].stronger_of[1]")
 
+    def test_a_chart_carries_the_annual_charts_its_birth_opens(self) -> None:
+        """The annual charts cross: a request's `varsha=` answers each chart's
+        returns in year order, ragged per chart, and the instant founds as a
+        chart of its own (`03-design/annual-chart.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        birth = 2447995.4895833335
+        chart = self.ctx.chart.found(
+            instant=birth,
+            place=observer,
+            utc_offset_seconds=20700,
+            varsha={"reading": "sidereal", "through": 12},
+        )
+        years = chart.praveshas
+        self.assertEqual([one.year for one in years], list(range(1, 13)))
+        self.assertGreater(years[0].instant, birth)
+        # Eleven sidereal years between the first and the twelfth, to a day.
+        span = years[11].instant - years[0].instant
+        self.assertLess(abs(span - 11 * 365.2564), 1)
+
+        # The instant founds as a chart of its own; the place is the caller's.
+        annual = self.ctx.chart.found(
+            instant=years[11].instant, place=observer, utc_offset_seconds=20700
+        )
+        self.assertEqual(annual.instant, years[11].instant)
+
+        # Not asked for is empty, not zeroes.
+        self.assertEqual(
+            self.ctx.chart.found(
+                instant=birth, place=observer, utc_offset_seconds=20700
+            ).praveshas,
+            [],
+        )
+
+        # The rivals are asked for by name and are not the same instant.
+        tropical = self.ctx.chart.found(
+            instant=birth,
+            place=observer,
+            utc_offset_seconds=20700,
+            varsha={"reading": "tropical", "through": 12},
+        ).praveshas
+        self.assertNotEqual(tropical[11].instant, years[11].instant)
+
+        with self.assertRaises(TeistroError) as wide:
+            self.ctx.chart.found(
+                instant=birth,
+                place=observer,
+                utc_offset_seconds=20700,
+                varsha={"reading": "sidereal", "through": 0},
+            )
+        self.assertEqual(wide.exception.field, "varsha_json.through")
+
     def test_a_chart_carries_its_dashas_their_periods_and_the_chain_at_an_instant(self) -> None:
         """A chart's dashas cross whole: the balance, the periods to the
         settings' depth with their paths, and the chain at an instant read

@@ -1489,6 +1489,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             theme_json: ptr::null(),
             rules_json: ptr::null(),
             interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1622,6 +1623,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             theme_json: ptr::null(),
             rules_json: ptr::null(),
             interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1712,6 +1714,135 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
     assert!(unstated.1.contains("kernel"), "{unstated:?}");
 }
 
+/// The annual charts cross: a request's `varsha_json` answers every chart's
+/// returns in the `praveshas` section, ragged by `cast.pravesha_count`, and
+/// the Sun at a return stands where it stood at birth
+/// (`03-design/annual-chart.md`).
+#[test]
+fn a_chart_request_answers_the_annual_charts_instants() {
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_447_995.489_583_333_5, 2_451_545.0];
+    let varsha = CString::new(r#"{"reading":"sidereal","through":12}"#).unwrap();
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+            varsha_json: varsha.as_ptr(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    // Ragged by the per-chart count, which is how a reader walks it.
+    let counts = reader.column("cast", "pravesha_count").unwrap();
+    assert_eq!(counts.len(), 2);
+    assert!(counts.iter().all(|count| count.as_i64() == 12));
+    let years = reader.column("praveshas", "year").unwrap();
+    let jds = reader.column("praveshas", "jd").unwrap();
+    assert_eq!(years.len(), 24, "two charts of twelve years");
+    assert_eq!(jds.len(), years.len());
+    // Each chart's years run 1 to 12 in order, and its returns run forward.
+    for (chart, birth) in instants.iter().enumerate() {
+        let at = chart * 12;
+        for (year, row) in years[at..at + 12].iter().enumerate() {
+            assert_eq!(row.as_i64(), i64::try_from(year).unwrap() + 1);
+        }
+        let first = jds[at].as_f64();
+        let last = jds[at + 11].as_f64();
+        assert!(first > *birth, "a return is after its birth");
+        assert!(last > first, "the years run forward");
+        // Eleven sidereal years between the first and the twelfth, to a
+        // day: a tropical reading would be a quarter of a day short.
+        let span = last - first;
+        assert!((span - 11.0 * 365.2564).abs() < 1.0, "{span} days");
+    }
+
+    // Nothing asked for is nothing answered, not zeroes.
+    let none = TsChartRequest {
+        varsha_json: ptr::null(),
+        ..request
+    };
+    let mut bare = TsBlob::empty();
+    // SAFETY: as above.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const none, &raw mut bare) },
+        Status::Ok
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let empty = unsafe { core::slice::from_raw_parts(bare.data, bare.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut bare) };
+    let reader = Reader::parse(&empty, &schema).unwrap();
+    assert!(reader.column("praveshas", "year").unwrap().is_empty());
+    assert!(
+        reader
+            .column("cast", "pravesha_count")
+            .unwrap()
+            .iter()
+            .all(|count| count.as_i64() == 0)
+    );
+
+    // A year outside the cap is refused from the field the caller wrote.
+    let refused = |json: &str| {
+        let text = CString::new(json).unwrap();
+        let asked = TsChartRequest {
+            varsha_json: text.as_ptr(),
+            ..request
+        };
+        let mut out = TsBlob::empty();
+        // SAFETY: as above.
+        let status = unsafe { ts_chart_found(ctx.handle, &raw const asked, &raw mut out) };
+        assert_eq!(status, Status::InvalidArg, "{json}");
+        ctx.last_error()
+    };
+    let wide = refused(r#"{"reading":"sidereal","through":0}"#);
+    assert_eq!(wide.2.as_deref(), Some("varsha_json.through"), "{wide:?}");
+    let typo = refused(r#"{"readng":"sidereal","through":4}"#);
+    assert!(
+        typo.1.contains("readng") || typo.1.contains("reading"),
+        "{typo:?}"
+    );
+}
+
 /// A consumer's **sign-based** system crosses the same way: registered
 /// through `options.dashas_json` under `"kernel":"rashi"`, asked for by the
 /// id `ts_key_parse` gives, and answered in the `dashas` section with the
@@ -1756,6 +1887,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             theme_json: ptr::null(),
             rules_json: ptr::null(),
             interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1841,6 +1973,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             theme_json: ptr::null(),
             rules_json: rules.as_ptr(),
             interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1877,6 +2010,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
     let plain = TsChartRequest {
         rules_json: ptr::null(),
         interpret_json: ptr::null(),
+        varsha_json: ptr::null(),
         ..request
     };
     let mut none = TsBlob::empty();
@@ -1897,6 +2031,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
     let refused = TsChartRequest {
         rules_json: broken.as_ptr(),
         interpret_json: ptr::null(),
+        varsha_json: ptr::null(),
         ..request
     };
     let mut nothing = TsBlob::empty();
@@ -1959,6 +2094,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             theme_json: ptr::null(),
             rules_json: rules.as_ptr(),
             interpret_json: plans.as_ptr(),
+            varsha_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2072,6 +2208,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     // The same request without a composer carries an empty section.
     let plain = TsChartRequest {
         interpret_json: ptr::null(),
+        varsha_json: ptr::null(),
         ..request
     };
     let mut none = TsBlob::empty();
@@ -2097,6 +2234,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     let refused = TsChartRequest {
         rules_json: ptr::null(),
         interpret_json: alone.as_ptr(),
+        varsha_json: ptr::null(),
         ..request
     };
     let mut nothing = TsBlob::empty();
@@ -2114,6 +2252,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     let typo = CString::new(r#"{"readigns": true}"#).unwrap();
     let wrong = TsChartRequest {
         interpret_json: typo.as_ptr(),
+        varsha_json: ptr::null(),
         ..request
     };
     let mut never = TsBlob::empty();
@@ -2210,6 +2349,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 theme_json: ptr::null(),
                 rules_json: rules.as_ptr(),
                 interpret_json: plans.as_ptr(),
+                varsha_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
