@@ -1265,7 +1265,7 @@ export interface ChartsDashaPhala {
  */
 export interface ChartsPraveshas {
   /**
-   * Which year of life it opens: 1 is the first birthday, so a reader's age through that year is one less.
+   * How many years the native has completed at this instant: 1 is the first return, a year after birth. Counted in returns and not in years of life, because the two namings differ by one and both are in use.
    */
   readonly year: Uint16Array;
   /**

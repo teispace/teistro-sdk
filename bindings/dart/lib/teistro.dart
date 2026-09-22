@@ -3617,8 +3617,10 @@ final class VarshaRequest {
 final class Pravesha {
   const Pravesha({required this.year, required this.instant});
 
-  /// Which year of life it opens: 1 is the first birthday, so the age
-  /// through that year is one less.
+  /// How many years the native has completed at this instant: 1 is the
+  /// first return, a year after birth. Counted in returns and not in
+  /// years of life, because the two namings differ by one and both are
+  /// in use.
   final int year;
 
   /// The instant, a Julian day (UTC), to pass to `found`.

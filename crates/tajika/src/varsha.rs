@@ -96,8 +96,15 @@ impl Natal {
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Pravesha {
-    /// Which year of life it opens: `1` is the first birthday, so a
-    /// reader's age during that year is `year - 1`.
+    /// How many years the native has completed at this instant: `1` is
+    /// the first return, a year after birth.
+    ///
+    /// Counted in **returns** and not in years of life, because the two
+    /// namings differ by one and both are in use — the instant that
+    /// completes a native's first year is the one that opens their
+    /// second. Everything Tajika progresses by this number, so a reader
+    /// that takes it for an age off by one is off by a whole sign in
+    /// every judgement made from the chart.
     pub year: u16,
     /// The instant, UTC.
     pub at: JulianDay<Utc>,
@@ -210,7 +217,7 @@ pub fn mean_praveshas(natal: &Natal, through: u16) -> Result<Vec<Pravesha>, Erro
 pub fn years(through: u16) -> Result<u16, Error> {
     if through == 0 || through > MOST_YEARS {
         return Err(Error::invalid_arg(format!(
-            "a return is asked for by the year of life it opens, 1 to {MOST_YEARS}, not {through}"
+            "a return is asked for by the years it completes, 1 to {MOST_YEARS}, not {through}"
         ))
         .with_field("through"));
     }
@@ -263,6 +270,30 @@ mod tests {
         // The first is a year after birth, not a year after nothing.
         let first = found[0].at.get() - natal().instant.get();
         assert!((first - SIDEREAL_YEAR_DAYS).abs() < 1e-9, "{first}");
+    }
+
+    /// `year` counts **returns**, so year `n` stands `n` years after the
+    /// birth and the native is aged exactly `n` there.
+    ///
+    /// The rival reading — that year `n` opens the native's `n`-th year
+    /// of life, and so falls at age `n - 1` — is the off-by-one every
+    /// Tajika progression inherits, and it is a whole sign of Muntha.
+    /// Nothing but this test says which of the two this module means.
+    #[test]
+    fn a_year_counts_returns_and_not_years_of_life() {
+        let natal = natal();
+        let found = mean_praveshas(&natal, 40).unwrap();
+        for one in &found {
+            let stood = one.at.get() - natal.instant.get();
+            let completed = f64::from(one.year) * SIDEREAL_YEAR_DAYS;
+            assert!(
+                (stood - completed).abs() < 1e-9,
+                "year {} stood {stood} days out, not {completed}",
+                one.year
+            );
+            // And not the rival: a year short of that.
+            assert!((stood - (completed - SIDEREAL_YEAR_DAYS)).abs() > 1.0);
+        }
     }
 
     #[test]
