@@ -1443,7 +1443,7 @@ final class ChartsPraveshas {
     required this.length,
   });
 
-  /// Which year of life it opens: 1 is the first birthday, so a reader's age through that year is one less.
+  /// How many years the native has completed at this instant: 1 is the first return, a year after birth. Counted in returns and not in years of life, because the two namings differ by one and both are in use.
   final Uint16List year;
 
   /// The instant, a Julian day (UTC). A chart cast for it is the annual chart; the place is the caller's, which is why the boundary answers the instant and not the chart.
