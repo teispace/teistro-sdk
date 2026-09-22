@@ -1736,18 +1736,30 @@ final class MessagesSdkPhala {
 
   final Renderer _r;
 
+  String gana({required GanaKey gana}) =>
+      _r.render('sdk.phala.gana', {'gana': {r'$entity': gana.key}});
   String grahaInBhava({required int bhava, required GrahaKey graha, required String phala}) =>
       _r.render('sdk.phala.grahaInBhava', {'bhava': bhava, 'graha': {r'$entity': graha.key}, 'phala': {r'$entity': phala}});
   String lagnaRashi({required RashiKey rashi}) =>
       _r.render('sdk.phala.lagnaRashi', {'rashi': {r'$entity': rashi.key}});
+  String nadi({required NadiKey nadi}) =>
+      _r.render('sdk.phala.nadi', {'nadi': {r'$entity': nadi.key}});
   String nakshatra({required NakshatraKey nakshatra}) =>
       _r.render('sdk.phala.nakshatra', {'nakshatra': {r'$entity': nakshatra.key}});
+  String namakarana({required NakshatraKey nakshatra}) =>
+      _r.render('sdk.phala.namakarana', {'nakshatra': {r'$entity': nakshatra.key}});
+  String tatwa({required TatwaKey tatwa}) =>
+      _r.render('sdk.phala.tatwa', {'tatwa': {r'$entity': tatwa.key}});
   String tithi({required TithiKey tithi}) =>
       _r.render('sdk.phala.tithi', {'tithi': {r'$entity': tithi.key}});
   String vara({required VaraKey vara}) =>
       _r.render('sdk.phala.vara', {'vara': {r'$entity': vara.key}});
+  String varna({required VarnaKey varna}) =>
+      _r.render('sdk.phala.varna', {'varna': {r'$entity': varna.key}});
   String yoga({required YogaKey yoga}) =>
       _r.render('sdk.phala.yoga', {'yoga': {r'$entity': yoga.key}});
+  String yoni({required YoniKey yoni}) =>
+      _r.render('sdk.phala.yoni', {'yoni': {r'$entity': yoni.key}});
 }
 
 final class MessagesSdkReading {

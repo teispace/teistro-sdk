@@ -4,5 +4,11 @@
   "tithi": "{$tithi :entity kind=tithi form=phala}",
   "vara": "{$vara :entity kind=vara form=phala}",
   "nakshatra": "{$nakshatra :entity kind=nakshatra form=phala}",
-  "yoga": "{$yoga :entity kind=yoga form=phala}"
+  "yoga": "{$yoga :entity kind=yoga form=phala}",
+  "namakarana": "{$nakshatra :entity kind=nakshatra form=namakarana}",
+  "gana": "{$gana :entity kind=gana form=phala}",
+  "nadi": "{$nadi :entity kind=nadi form=phala}",
+  "yoni": "{$yoni :entity kind=yoni form=phala}",
+  "varna": "{$varna :entity kind=varna form=phala}",
+  "tatwa": "{$tatwa :entity kind=tatwa form=phala}"
 }

@@ -1089,6 +1089,22 @@ pub mod sdk {
 
     /// The `phala` group.
     pub mod phala {
+        /// The message `sdk.phala.gana`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Gana {
+            /// The `gana` parameter.
+            pub gana: teistro_core::catalogue::Gana,
+        }
+
+        impl crate::TypedMessage for Gana {
+            const KEY: &'static str = "sdk.phala.gana";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("gana", crate::Value::catalogued(self.gana)),
+                ])
+            }
+        }
+
         /// The message `sdk.phala.grahaInBhava`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct GrahaInBhava {
@@ -1127,6 +1143,22 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.phala.nadi`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Nadi {
+            /// The `nadi` parameter.
+            pub nadi: teistro_core::catalogue::Nadi,
+        }
+
+        impl crate::TypedMessage for Nadi {
+            const KEY: &'static str = "sdk.phala.nadi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("nadi", crate::Value::catalogued(self.nadi)),
+                ])
+            }
+        }
+
         /// The message `sdk.phala.nakshatra`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct Nakshatra {
@@ -1139,6 +1171,38 @@ pub mod sdk {
             fn params(&self) -> crate::Params {
                 crate::params([
                     ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.namakarana`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Namakarana {
+            /// The `nakshatra` parameter.
+            pub nakshatra: teistro_core::catalogue::Nakshatra,
+        }
+
+        impl crate::TypedMessage for Namakarana {
+            const KEY: &'static str = "sdk.phala.namakarana";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.tatwa`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Tatwa {
+            /// The `tatwa` parameter.
+            pub tatwa: teistro_core::catalogue::Tatwa,
+        }
+
+        impl crate::TypedMessage for Tatwa {
+            const KEY: &'static str = "sdk.phala.tatwa";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("tatwa", crate::Value::catalogued(self.tatwa)),
                 ])
             }
         }
@@ -1175,6 +1239,22 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.phala.varna`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Varna {
+            /// The `varna` parameter.
+            pub varna: teistro_core::catalogue::Varna,
+        }
+
+        impl crate::TypedMessage for Varna {
+            const KEY: &'static str = "sdk.phala.varna";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("varna", crate::Value::catalogued(self.varna)),
+                ])
+            }
+        }
+
         /// The message `sdk.phala.yoga`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct Yoga {
@@ -1187,6 +1267,22 @@ pub mod sdk {
             fn params(&self) -> crate::Params {
                 crate::params([
                     ("yoga", crate::Value::catalogued(self.yoga)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.yoni`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Yoni {
+            /// The `yoni` parameter.
+            pub yoni: teistro_core::catalogue::Yoni,
+        }
+
+        impl crate::TypedMessage for Yoni {
+            const KEY: &'static str = "sdk.phala.yoni";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("yoni", crate::Value::catalogued(self.yoni)),
                 ])
             }
         }

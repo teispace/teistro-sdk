@@ -1,6 +1,7 @@
 //! What the chart's subjects mean: the reading a loaded pack carries for
-//! a graha in a bhava, for the lagna's sign, and for each limb of the
-//! panchanga (`03-design/state-readings.md` §5).
+//! a graha in a bhava, for the lagna's sign, for each limb of the
+//! panchanga, and for the six things the birth nakshatra *is*
+//! (`03-design/state-readings.md` §5).
 //!
 //! Every other composer says what the SDK **computed**. This one says what
 //! a corpus **carries**, so it is silent unless a pack of state readings
@@ -30,12 +31,21 @@ const PHALA_FORM: &str = "phala";
 /// them under one name would have to choose.
 const LAGNA_FORM: &str = "lagnaPhala";
 
+/// The form a nakshatra's naming syllables are carried under.
+///
+/// Its own for the same reason as the lagna's: `nakshatra.ASHWINI` is read
+/// one way as the birth star and another as the source of a child's name,
+/// and the corpus keys both onto the one record.
+const NAMAKARANA_FORM: &str = "namakarana";
+
 /// What a loaded corpus says of this chart's subjects.
 ///
 /// The order is the chart's: the nine grahas in their houses, the lagna's
-/// sign, then the panchanga's tithi, vara, nakshatra and yoga. Nothing is
-/// said for a subject the base locale carries no reading of, so the plan
-/// grows with the packs a consumer loads and with nothing else.
+/// sign, the panchanga's tithi, vara, nakshatra and yoga, and then what
+/// the birth nakshatra is — its naming syllables, its gana, nadi, yoni,
+/// varna and element. Nothing is said for a subject the base locale
+/// carries no reading of, so the plan grows with the packs a consumer
+/// loads and with nothing else.
 #[must_use]
 pub fn phala(chart: &RuleChart, vocabulary: &dyn Vocabulary) -> Plan {
     let mut plan = Plan::default();
@@ -80,6 +90,45 @@ pub fn phala(chart: &RuleChart, vocabulary: &dyn Vocabulary) -> Plan {
             yoga: panchanga.yoga,
         });
     }
+    // What the birth nakshatra *is*, which the catalogue already answers.
+    //
+    // These are not a sixth limb and not a rule: every nakshatra carries
+    // its gana, nadi, yoni, varna and element as attributes, so the
+    // subject of each reading is settled by the same nakshatra the limb
+    // above names — the Moon's, which is the janma nakshatra every text
+    // reads these from. Nothing is chosen here and nothing is computed;
+    // the corpus keys its reading onto `gana.DEVA` and the catalogue says
+    // which gana this nakshatra has.
+    let star = panchanga.nakshatra;
+    if vocabulary.has_form(star.full_key(), NAMAKARANA_FORM) {
+        plan.say(&phala::Namakarana { nakshatra: star });
+    }
+    let attributes = star.attributes();
+    if vocabulary.has_form(attributes.gana.full_key(), PHALA_FORM) {
+        plan.say(&phala::Gana {
+            gana: attributes.gana,
+        });
+    }
+    if vocabulary.has_form(attributes.nadi.full_key(), PHALA_FORM) {
+        plan.say(&phala::Nadi {
+            nadi: attributes.nadi,
+        });
+    }
+    if vocabulary.has_form(attributes.yoni.full_key(), PHALA_FORM) {
+        plan.say(&phala::Yoni {
+            yoni: attributes.yoni,
+        });
+    }
+    if vocabulary.has_form(attributes.varna.full_key(), PHALA_FORM) {
+        plan.say(&phala::Varna {
+            varna: attributes.varna,
+        });
+    }
+    if vocabulary.has_form(attributes.element.full_key(), PHALA_FORM) {
+        plan.say(&phala::Tatwa {
+            tatwa: attributes.element,
+        });
+    }
     plan
 }
 
@@ -92,18 +141,42 @@ mod tests {
         reason = "tests fail by panicking"
     )]
 
-    use teistro_core::catalogue::{Dignity, Rashi};
-    use teistro_rules::{House, Placement, RuleChart};
+    use teistro_core::catalogue::{
+        Dignity, Gana, Karana, Nadi, Nakshatra, Rashi, Tatwa, Tithi, Vara, Varna, Yoga, Yoni,
+    };
+    use teistro_rules::{House, Pada, Panchanga, Placement, RuleChart, Spans};
 
     use super::phala;
     use crate::{NoReadings, Vocabulary};
 
     /// A vocabulary carrying exactly the keys and forms it was given.
-    struct Some(&'static [(&'static str, &'static str)]);
+    ///
+    /// Named for what it does rather than `Some`, which shadowed
+    /// `Option::Some` inside this module and made a panchanga unbuildable.
+    struct Carries(&'static [(&'static str, &'static str)]);
 
-    impl Vocabulary for Some {
+    impl Vocabulary for Carries {
         fn has_form(&self, key: &str, form: &str) -> bool {
             self.0.iter().any(|(k, f)| *k == key && *f == form)
+        }
+    }
+
+    /// A panchanga carrying the birth nakshatra the attribute readings
+    /// hang on. The other limbs are fixed: what is under test is that the
+    /// nakshatra's own gana, nadi, yoni, varna and element are the
+    /// subjects, and that is settled by this one field.
+    fn day(nakshatra: Nakshatra) -> Panchanga {
+        Panchanga {
+            tithi: Tithi::ShuklaPratipada,
+            vara: Vara::Ravivara,
+            nakshatra,
+            pada: Pada::try_new(1).unwrap(),
+            yoga: Yoga::Vishkambha,
+            karana: Karana::Bava,
+            spans: Spans::default(),
+            by_day: None,
+            on_sankranti: false,
+            eclipse: None,
         }
     }
 
@@ -136,7 +209,7 @@ mod tests {
     /// way the migration writes it.
     #[test]
     fn what_the_corpus_carries_is_what_is_said() {
-        let vocabulary = Some(&[
+        let vocabulary = Carries(&[
             ("graha_bhava.SUN_IN_1", "name"),
             ("graha_bhava.MOON_IN_1", "name"),
             ("rashi.ARIES", "lagnaPhala"),
@@ -150,5 +223,56 @@ mod tests {
                 .iter()
                 .all(|item| crate::KEYS.contains(&item.key.as_str()))
         );
+    }
+
+    /// The birth nakshatra settles six more subjects, and the catalogue
+    /// already answers which: nothing here is computed or chosen, so the
+    /// test states the catalogue's own answer for one star and asks the
+    /// composer for exactly those records.
+    #[test]
+    fn what_the_birth_nakshatra_is_is_said_of_that_nakshatra() {
+        let star = Nakshatra::Bharani;
+        let attributes = star.attributes();
+        // Bharani's, from the catalogue's generated table.
+        assert_eq!(attributes.gana, Gana::Manushya);
+        assert_eq!(attributes.nadi, Nadi::Madhya);
+        assert_eq!(attributes.yoni, Yoni::Elephant);
+        assert_eq!(attributes.varna, Varna::Mleccha);
+        assert_eq!(attributes.element, Tatwa::Prithvi);
+
+        let mut chart = chart();
+        chart.panchanga = Some(day(star));
+        let vocabulary = Carries(&[
+            ("nakshatra.BHARANI", "namakarana"),
+            ("gana.MANUSHYA", "phala"),
+            ("nadi.MADHYA", "phala"),
+            ("yoni.ELEPHANT", "phala"),
+            ("varna.MLECCHA", "phala"),
+            ("tatwa.PRITHVI", "phala"),
+        ]);
+        let plan = phala(&chart, &vocabulary);
+        let said: Vec<&str> = plan.items.iter().map(|item| item.key.as_str()).collect();
+        assert_eq!(
+            said,
+            [
+                "sdk.phala.namakarana",
+                "sdk.phala.gana",
+                "sdk.phala.nadi",
+                "sdk.phala.yoni",
+                "sdk.phala.varna",
+                "sdk.phala.tatwa",
+            ]
+        );
+    }
+
+    /// And a corpus carrying another star's attributes says nothing,
+    /// because the subject is this chart's nakshatra and not every one:
+    /// Ashwini is Deva gana where Bharani is Manushya.
+    #[test]
+    fn another_stars_attributes_are_not_this_charts() {
+        let mut chart = chart();
+        chart.panchanga = Some(day(Nakshatra::Bharani));
+        let vocabulary = Carries(&[("gana.DEVA", "phala"), ("nakshatra.ASHWINI", "namakarana")]);
+        assert!(phala(&chart, &vocabulary).is_empty());
     }
 }

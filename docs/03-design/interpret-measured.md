@@ -22,7 +22,7 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 68 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 80 disagree |
 | every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 21967 disagree |
 | every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 21967 disagree |
 | every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 21967 disagree |
@@ -45,12 +45,18 @@ about.
 | `sdk.condition.vargottama` | 106 |
 | `sdk.karaka.ofEight` | 744 |
 | `sdk.karaka.ofSeven` | 651 |
+| `sdk.phala.gana` | 0 |
 | `sdk.phala.grahaInBhava` | 837 |
 | `sdk.phala.lagnaRashi` | 93 |
+| `sdk.phala.nadi` | 0 |
 | `sdk.phala.nakshatra` | 0 |
+| `sdk.phala.namakarana` | 0 |
+| `sdk.phala.tatwa` | 0 |
 | `sdk.phala.tithi` | 0 |
 | `sdk.phala.vara` | 0 |
+| `sdk.phala.varna` | 0 |
 | `sdk.phala.yoga` | 0 |
+| `sdk.phala.yoni` | 0 |
 | `sdk.reading.effect` | 2449 |
 | `sdk.reading.lifeClass` | 214 |
 | `sdk.reading.lifeSpan` | 96 |
@@ -188,7 +194,7 @@ but `sdk.entity` renders each one's own word.
 
 ## What the packs carry, and what reads it
 
-34 of the 41 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+40 of the 47 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|

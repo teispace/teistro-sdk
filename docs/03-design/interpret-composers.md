@@ -428,9 +428,9 @@ rupas and `houses` recorded cusp signs, so its numbers are the recording
 engine's ranking and the SDK's own answer for the same chart can differ.
 
 **`phala`** — what a loaded corpus of **state readings** says of this
-chart's subjects: a graha in a bhava, the lagna's sign, and each limb of the
-panchanga. **Built** over `sdk.phala`, six messages
-(`03-design/state-readings.md`).
+chart's subjects: a graha in a bhava, the lagna's sign, each limb of the
+panchanga, and the six things the birth nakshatra **is**. **Built** over
+`sdk.phala` (`03-design/state-readings.md`).
 
 **It is the first composer that says what the SDK did not compute.** Every
 other one turns an answer into an item; this one turns a *record* into one,
@@ -440,6 +440,20 @@ words, which is why it is a member of `PlanRequest` and off by default: a
 plan that grew by a hundred items the moment a pack was loaded would change
 every consumer's page without being asked.
 
+**What the birth nakshatra is costs nothing to say, and that is the
+point.** Every nakshatra in the catalogue already carries its gana, nadi,
+yoni, varna and element as attributes, and the corpus keys its readings
+onto those kinds' own records — `gana.DEVA`, `yoni.ELEPHANT`,
+`tatwa.PRITHVI`. So the subject of each of those readings is *settled* by
+the nakshatra the panchanga limb above already names, which is the Moon's
+and therefore the janma nakshatra every text reads them from. Nothing is
+computed, nothing is chosen, and no catalogue kind had to be decided:
+`namakarana` is a second form on the nakshatra itself, exactly as
+`lagnaPhala` is a second form on a rashi. Fifty-seven readings reached a
+reader this way, more than any other step, and the reason they were cheap
+is the test for the ones that are left — a category whose subject the SDK
+already computes *and already names* can be said without a decision.
+
 **It asks the same trait `readings` asks**, of the same base locale and for
 the same reason. `Vocabulary` was spelled for one subject
 (`has_reading(rule)`); a second subject made it the general question it
@@ -447,14 +461,14 @@ always was — `has_form(key, form)` over a catalogue key — and a reading of a
 rule is now the `name` form of a `rule` record, which is what `has_reading`
 spells.
 
-**What it cannot say yet is counted rather than hidden.** The corpus
-carries 425 readings and this composer has a message for 211 of them; the
-rest are listed by the category they came from on
-`state-readings-measured.md`, which also renders every one it *can* say in
-each strict locale and holds that none falls back or warns. Four of its six
-messages emit nothing over the yoga corpus, because those charts record no
-panchanga — the dosha corpus does, and the reachability claim is what
-exercises them meanwhile.
+**What it cannot say yet is counted rather than hidden**, and the count
+is on `state-readings-measured.md` rather than in this sentence, which
+carried `211 of 425` through two steps that changed it. That page lists
+what is left by the category it came from, renders every reading a
+composer *can* say in each strict locale, and holds that none falls back
+or warns. Most of the panchanga messages emit nothing over the yoga
+corpus, because those charts record no panchanga — the dosha corpus does,
+and the reachability claim is what exercises them meanwhile.
 
 **Why it is not four more lines inside `conditions`.** A chara karaka is
 Jaimini's reading of a placement, not a Parashari condition of it, and a
@@ -555,8 +569,8 @@ a test that a plan round-trips through JSON.
     and class, the chalit shift, whether a graha reaches its required rupas.
 
 11. `phala`, the ninth, and the first that says what a **corpus** carries
-    rather than what the SDK computed. **Built**: `sdk.phala`, six
-    messages, each saying a record a loaded pack brings, and `Vocabulary`
+    rather than what the SDK computed. **Built**: `sdk.phala`, each
+    message saying a record a loaded pack brings, and `Vocabulary`
     generalised from one subject to any.
 12. The **chalit shift**, the last silence the measured page counted.
     **Built**: `chalit`, the tenth composer, over one message and the

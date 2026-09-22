@@ -473,9 +473,10 @@ const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
 /// key fills, by the kind the key names and the form the reading is under.
 ///
 /// It is the composers' own table read backwards: `phala` says a graha in
-/// a bhava, the lagna's sign and each limb of the panchanga, `readings`
-/// says a rule's timing beside the rule it belongs to, and this asks
-/// whether the corpus's every such record can be **said**. A subject no
+/// a bhava, the lagna's sign, each limb of the panchanga and the six
+/// things the birth nakshatra *is*, `readings` says a rule's timing
+/// beside the rule it belongs to, and this asks whether the corpus's
+/// every such record can be **said**. A subject no
 /// composer has a message for is not in this list and is counted apart,
 /// because a reading nothing can say is work that does not reach a reader
 /// (`03-design/state-readings.md` §5).
@@ -483,13 +484,24 @@ const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
 /// A row whose message no composer emits is caught by
 /// [`every_message_is_a_composer_key`], so this list cannot name a message
 /// that has been renamed or withdrawn.
-const SAID_BY: [(&str, &str, &str, &str); 7] = [
+const SAID_BY: [(&str, &str, &str, &str); 13] = [
     ("graha_bhava", NAME_FORM, GRAHA_IN_BHAVA, "phala"),
     ("rashi", "lagnaPhala", "sdk.phala.lagnaRashi", "rashi"),
     ("tithi", "phala", "sdk.phala.tithi", "tithi"),
     ("vara", "phala", "sdk.phala.vara", "vara"),
     ("nakshatra", "phala", "sdk.phala.nakshatra", "nakshatra"),
     ("yoga", "phala", "sdk.phala.yoga", "yoga"),
+    (
+        "nakshatra",
+        "namakarana",
+        "sdk.phala.namakarana",
+        "nakshatra",
+    ),
+    ("gana", "phala", "sdk.phala.gana", "gana"),
+    ("nadi", "phala", "sdk.phala.nadi", "nadi"),
+    ("yoni", "phala", "sdk.phala.yoni", "yoni"),
+    ("varna", "phala", "sdk.phala.varna", "varna"),
+    ("tatwa", "phala", "sdk.phala.tatwa", "tatwa"),
     ("rule", "timing", TIMING, "reading"),
 ];
 
@@ -703,8 +715,9 @@ fn what_a_composer_can_say(
         out,
         "A pack that loads is half of it; the other half is that a record \
          reaches a reader. Every reading a composer has a message for — \
-         `phala` for the chart's subjects, `readings` for a rule's timing \
-         — is rendered here through that message, in each strict locale, \
+         `phala` for the chart's subjects and what its nakshatra is, \
+         `readings` for a rule's timing — is rendered here through that \
+         message, in each strict locale, \
          and must answer from the locale's own record without a fallback \
          and without a warning: {}.\n\n",
         plural(said, "rendering"),

@@ -992,6 +992,13 @@ class MessagesSdkPhala:
         self._r = renderer
 
 
+    def gana(self, *, gana: GanaKey) -> str:
+        """`sdk.phala.gana`"""
+        return self._r.render(
+            "sdk.phala.gana",
+            {"gana": {"$entity": gana.value}},
+        )
+
     def graha_in_bhava(self, *, bhava: int, graha: GrahaKey, phala: str) -> str:
         """`sdk.phala.grahaInBhava`"""
         return self._r.render(
@@ -1006,11 +1013,32 @@ class MessagesSdkPhala:
             {"rashi": {"$entity": rashi.value}},
         )
 
+    def nadi(self, *, nadi: NadiKey) -> str:
+        """`sdk.phala.nadi`"""
+        return self._r.render(
+            "sdk.phala.nadi",
+            {"nadi": {"$entity": nadi.value}},
+        )
+
     def nakshatra(self, *, nakshatra: NakshatraKey) -> str:
         """`sdk.phala.nakshatra`"""
         return self._r.render(
             "sdk.phala.nakshatra",
             {"nakshatra": {"$entity": nakshatra.value}},
+        )
+
+    def namakarana(self, *, nakshatra: NakshatraKey) -> str:
+        """`sdk.phala.namakarana`"""
+        return self._r.render(
+            "sdk.phala.namakarana",
+            {"nakshatra": {"$entity": nakshatra.value}},
+        )
+
+    def tatwa(self, *, tatwa: TatwaKey) -> str:
+        """`sdk.phala.tatwa`"""
+        return self._r.render(
+            "sdk.phala.tatwa",
+            {"tatwa": {"$entity": tatwa.value}},
         )
 
     def tithi(self, *, tithi: TithiKey) -> str:
@@ -1027,11 +1055,25 @@ class MessagesSdkPhala:
             {"vara": {"$entity": vara.value}},
         )
 
+    def varna(self, *, varna: VarnaKey) -> str:
+        """`sdk.phala.varna`"""
+        return self._r.render(
+            "sdk.phala.varna",
+            {"varna": {"$entity": varna.value}},
+        )
+
     def yoga(self, *, yoga: YogaKey) -> str:
         """`sdk.phala.yoga`"""
         return self._r.render(
             "sdk.phala.yoga",
             {"yoga": {"$entity": yoga.value}},
+        )
+
+    def yoni(self, *, yoni: YoniKey) -> str:
+        """`sdk.phala.yoni`"""
+        return self._r.render(
+            "sdk.phala.yoni",
+            {"yoni": {"$entity": yoni.value}},
         )
 
 

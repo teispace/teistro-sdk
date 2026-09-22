@@ -600,12 +600,18 @@ export function messages(r) {
         ofSeven: (p) => r.render('sdk.karaka.ofSeven', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
       },
       phala: {
+        gana: (p) => r.render('sdk.phala.gana', { gana: { '$entity': p.gana } }),
         grahaInBhava: (p) => r.render('sdk.phala.grahaInBhava', { bhava: p.bhava, graha: { '$entity': p.graha }, phala: { '$entity': p.phala } }),
         lagnaRashi: (p) => r.render('sdk.phala.lagnaRashi', { rashi: { '$entity': p.rashi } }),
+        nadi: (p) => r.render('sdk.phala.nadi', { nadi: { '$entity': p.nadi } }),
         nakshatra: (p) => r.render('sdk.phala.nakshatra', { nakshatra: { '$entity': p.nakshatra } }),
+        namakarana: (p) => r.render('sdk.phala.namakarana', { nakshatra: { '$entity': p.nakshatra } }),
+        tatwa: (p) => r.render('sdk.phala.tatwa', { tatwa: { '$entity': p.tatwa } }),
         tithi: (p) => r.render('sdk.phala.tithi', { tithi: { '$entity': p.tithi } }),
         vara: (p) => r.render('sdk.phala.vara', { vara: { '$entity': p.vara } }),
+        varna: (p) => r.render('sdk.phala.varna', { varna: { '$entity': p.varna } }),
         yoga: (p) => r.render('sdk.phala.yoga', { yoga: { '$entity': p.yoga } }),
+        yoni: (p) => r.render('sdk.phala.yoni', { yoni: { '$entity': p.yoni } }),
       },
       reading: {
         effect: (p) => r.render('sdk.reading.effect', { rule: p.rule, text: p.text }),

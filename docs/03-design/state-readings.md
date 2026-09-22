@@ -377,6 +377,17 @@ before — *every shipped rule carries a reading* — becomes one it can.
   sentence, which carried `214` after the figure had become `152` — and
   both can only shrink.
 
+  **What the birth nakshatra is** closed next, and it was the largest:
+  57 readings, more than any other step. Every nakshatra in the catalogue
+  already carries its gana, nadi, yoni, varna and element as attributes,
+  and the corpus keys its readings onto those kinds' own records
+  (`gana.DEVA`, `yoni.ELEPHANT`, `tatwa.PRITHVI`), so the subject of each
+  is **settled** by the nakshatra the `phala` composer's panchanga limb
+  already names — the Moon's, which is the janma nakshatra every text
+  reads them from. `namakarana` is a second form on the nakshatra itself,
+  exactly as `lagnaPhala` is on a rashi. Nothing computed, nothing chosen,
+  no kind decided.
+
   The **timings** were the first of them to close, and they show the
   shape the rest have. `dosha-timing` keys onto rules the `readings`
   composer already walks, so nothing new had to be computed and no
@@ -389,7 +400,15 @@ before — *every shipped rule carries a reading* — becomes one it can.
   rules whose verse states no effect, listed on the measured page as
   rules with no reading. A category whose subject the SDK already
   computes and already names can be said without a decision; the ones
-  left are the ones where that is not true.
+  left are the ones where that is not true. That is the test, and it
+  sorts what remains: `graha-color`, `graha-direction`, `mantra-ritual`
+  and `ishta-devata` name subjects the SDK computes and catalogues, but
+  *which* graha or rashi a remedy is for is a rule this corpus does not
+  record — Phase 8's `remedies` decides it, and saying all nine would be
+  a table dump rather than a reading. `dasha-lord-activation` and
+  `dasha-lord-effect` want a composer over a dasha period, which is the
+  one piece of it that needs building rather than deciding. The rest are
+  §8's two groups above: a catalogue decision, or a Phase 7 module.
 - **Native review.** The corpus is the baseline engine's own Nepali,
   Sanskrit and Hindi, not a machine translation, and it has not been
   reviewed here. It joins the roadmap's `ne`/`hi` sign-off.
