@@ -74,7 +74,24 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   English when the sentence is — and only a **named value** follows the
   reader. Whether a declared numbering system should cross that line
   anyway is the maintainer's, and it is written here rather than left for
-  someone to discover in a rendering; `hi-Deva-IN` and `sa-Deva` came whole from the baseline
+  someone to discover in a rendering. What it looks like, one item in
+  each shipped locale:
+
+  ```text
+  en-Latn      the Sun has Exalted dignity
+  ne-Deva-NP   सूर्य उच्चमा छ
+  hi-Deva-IN   सूर्य has उच्च dignity
+  sa-Deva      सूर्य has उच्च dignity
+  sa-Latn      Sūrya has Ucca dignity
+  ```
+
+  The three at `base` are **code-switched**, and that is the honest shape
+  of a locale with every name and no sentence: the words carrying the
+  domain are the reader's and the frame is not. It is strictly more than
+  the pure English they gave before, `is_fallback` still says the frame
+  fell back so a consumer can render it another way, and the 69 messages
+  that would close it are counted by namespace on
+  `interpret-measured.md`. `hi-Deva-IN` and `sa-Deva` came whole from the baseline
   engine's name tables (`teistro-intl migrate baseline`, below),
   `en-Latn` and `ne-Deva-NP` gained the same tables under their
   hand-shaped records, and `sa-Latn` is derived from `sa-Deva` by
