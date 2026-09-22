@@ -7,7 +7,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write;
 
-use teistro_core::catalogue::Kind;
+use teistro_core::catalogue::{Kind, key_of};
+use teistro_core::key::KeyId;
 
 use crate::analysis::{ParamType, signature};
 use crate::mf2::parse;
@@ -118,6 +119,7 @@ impl Model {
                 insert(&mut model.root, &full, node);
             }
         }
+        model.seed_kinds_from_the_catalogue();
         let guaranteed: BTreeSet<String> =
             GUARANTEED_FORMS.iter().map(|f| (*f).to_owned()).collect();
         model.forms = (
@@ -125,6 +127,63 @@ impl Model {
             all.difference(&guaranteed).cloned().collect(),
         );
         Ok(model)
+    }
+    /// Fills in the key union of every **closed catalogue kind a message
+    /// names** that the locale does not itself name a member of.
+    ///
+    /// `kinds` is otherwise read from `sdk.entity`, which is the right
+    /// source for a *name* and the wrong one for a *key*: the members of a
+    /// closed kind are a fact of the catalogue, and a locale that names
+    /// none of them does not make the kind smaller. `sdk.phala.state`
+    /// renders the `phala` form of `state.COMBUST` — a kind no locale
+    /// names, because the vetted tables have no word for being burnt — and
+    /// the TypeScript emitter wrote `state: StateKey` against a type
+    /// nothing declared. `check-intl` was green on it, because the file
+    /// was **up to date**; the Node type-check in the verify matrix was
+    /// not, which is the same shape as the Dart keyword before it.
+    fn seed_kinds_from_the_catalogue(&mut self) {
+        let named: Vec<String> = self
+            .every_message_kind()
+            .into_iter()
+            .filter(|kind| !self.kinds.contains_key(kind))
+            .collect();
+        for name in named {
+            let Some(kind) = Kind::from_name(&name) else {
+                continue;
+            };
+            if kind.is_open() {
+                continue;
+            }
+            let members: Vec<String> = (0..u16::try_from(kind.count()).unwrap_or(u16::MAX))
+                .filter_map(|id| key_of(KeyId::new(kind, id)))
+                .map(str::to_owned)
+                .collect();
+            if !members.is_empty() {
+                self.kinds.insert(name, members);
+            }
+        }
+    }
+
+    /// Every entity kind a message's slot names, however it names it.
+    fn every_message_kind(&self) -> BTreeSet<String> {
+        fn walk(group: &Group, found: &mut BTreeSet<String>) {
+            for node in group.children.values() {
+                match node {
+                    Node::Message(message) => {
+                        for (_, kind) in &message.params {
+                            if let ParamType::Entity(Some(kind)) = kind {
+                                found.insert(kind.clone());
+                            }
+                        }
+                    }
+                    Node::Group(child) => walk(child, found),
+                    Node::Entity(_) => {}
+                }
+            }
+        }
+        let mut found = BTreeSet::new();
+        walk(&self.root, &mut found);
+        found
     }
 }
 

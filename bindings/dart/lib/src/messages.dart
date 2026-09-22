@@ -560,6 +560,25 @@ enum SamvatsaraKey {
   final String key;
 }
 
+enum StateKey {
+  retrograde('state.RETROGRADE'),
+  stationary('state.STATIONARY'),
+  combust('state.COMBUST'),
+  planetaryWar('state.PLANETARY_WAR'),
+  gandanta('state.GANDANTA'),
+  sandhi('state.SANDHI'),
+  vargottama('state.VARGOTTAMA'),
+  pushkaraNavamsa('state.PUSHKARA_NAVAMSA'),
+  pushkaraBhaga('state.PUSHKARA_BHAGA'),
+  mrityuBhaga('state.MRITYU_BHAGA'),
+  maranaKarakaSthana('state.MARANA_KARAKA_STHANA'),
+  eclipsed('state.ECLIPSED');
+
+  const StateKey(this.key);
+
+  final String key;
+}
+
 enum TatwaKey {
   agni('tatwa.AGNI'),
   prithvi('tatwa.PRITHVI'),

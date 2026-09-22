@@ -334,7 +334,26 @@ container with citation fields and a licence.
 
 One model from the base locale (namespaces as groups, messages with
 typed parameters in name order, entity kinds with their keys in source
-order, contexts, the forms every entity has), one emitter per target:
+order, contexts, the forms every entity has), one emitter per target.
+
+**A kind's key union comes from the catalogue, not from the locale.** The
+model reads its kinds from `sdk.entity`, which is the right source for a
+member's **name** and the wrong one for its **key**: a closed catalogue
+kind's members are a fact of the catalogue, and a locale that names none
+of them does not make the kind smaller. `sdk.phala.state` renders the
+`phala` form of `state.COMBUST` — a kind no locale names, because the
+vetted tables have no word for being burnt — and every emitter wrote
+`state: StateKey` against a type nothing declared. So the model now seeds
+a closed kind's members from the catalogue whenever a message names the
+kind and the locale names no member of it, and **`check-intl` reads the
+key types back out of what it just generated** and fails on a reference
+to an undeclared one. That is the second instance of one shape: a
+generated file being *up to date* says nothing about its being *right*,
+and the gate that would have caught it — the Node and Dart type-checks —
+runs in the verify matrix, forty minutes later, on five platforms at
+once.
+
+The emitters:
 
 - TypeScript: string unions for contexts and entity kinds
   (`GrahaKey = 'graha.SUN' | …`), `MessageKey`, an `EntityForms`

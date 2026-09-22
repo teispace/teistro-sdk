@@ -78,7 +78,8 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
     let unnamed = unnamed_members(&tree, &document_kinds());
     let naming = named_or_listed(&unnamed, UNNAMED);
     let keywords = dart_parses(&written);
-    i32::from(failures != 0 || naming != 0 || keywords != 0)
+    let declared = every_key_type_is_declared(&written);
+    i32::from(failures != 0 || naming != 0 || keywords != 0 || declared != 0)
 }
 
 /// Every Dart keyword, as the language lists them: a word from this list
@@ -134,6 +135,71 @@ fn dart_parses(written: &[Output]) -> i32 {
         println!("      {one}");
     }
     1
+}
+
+/// Every generated file, and how it declares a kind's key type.
+const KEY_TYPES: [(&str, &str); 3] = [
+    (NODE_MESSAGE_TYPES, "export type "),
+    (DART_MESSAGES, "enum "),
+    (PYTHON_MESSAGES, "class "),
+];
+
+/// That no generated file names a `<Kind>Key` type it does not declare.
+///
+/// The key types come from `sdk.entity`, which names a kind's **members**;
+/// the slot types come from a message's `kind=` option. Those two sets can
+/// differ, and on 2026-09-22 they did: `sdk.phala.state` renders the
+/// `phala` form of `state.COMBUST`, a closed catalogue kind no locale
+/// names, and the TypeScript emitter wrote `state: StateKey` against a
+/// type nothing declared. `check-intl` was green on it because the file
+/// was **up to date**, and the Node type-check that catches it runs in the
+/// verify matrix — 40 minutes later, on five platforms at once.
+///
+/// So the class is held where the file is written, as the Dart keyword is:
+/// the key types are read back out of what was just generated and a
+/// reference to an undeclared one fails. The generator's own fix was to
+/// seed a closed kind's members from the catalogue, which is where a
+/// member list belongs; this is what would have caught it in three
+/// seconds.
+fn every_key_type_is_declared(written: &[Output]) -> i32 {
+    let mut wrong = 0;
+    for (path, declares) in KEY_TYPES {
+        let Some(file) = written.iter().find(|out| out.path == path) else {
+            println!("FAIL  {path} was not generated");
+            wrong += 1;
+            continue;
+        };
+        let declared: BTreeSet<&str> = file
+            .text
+            .lines()
+            .filter_map(|line| line.trim().strip_prefix(declares))
+            .filter_map(|rest| {
+                rest.split(|c: char| !c.is_ascii_alphanumeric() && c != '_')
+                    .next()
+            })
+            .filter(|name| name.ends_with("Key"))
+            .collect();
+        // Every `<Pascal>Key` word the file uses, however it uses it.
+        let mut referenced: BTreeSet<&str> = BTreeSet::new();
+        for line in file.text.lines() {
+            for word in line.split(|c: char| !c.is_ascii_alphanumeric() && c != '_') {
+                if word.ends_with("Key")
+                    && word.len() > 3
+                    && word.starts_with(|c: char| c.is_ascii_uppercase())
+                {
+                    referenced.insert(word);
+                }
+            }
+        }
+        for name in referenced.difference(&declared) {
+            println!("FAIL  {path} names `{name}` and declares no such type");
+            wrong += 1;
+        }
+    }
+    if wrong == 0 {
+        println!("ok    every key type a generated file names is declared in it");
+    }
+    wrong
 }
 
 /// The members a chart document can carry that no strict locale names

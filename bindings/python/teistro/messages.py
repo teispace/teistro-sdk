@@ -506,6 +506,23 @@ class SamvatsaraKey(enum.StrEnum):
     AKSHAYA = "samvatsara.AKSHAYA"
 
 
+class StateKey(enum.StrEnum):
+    """A `state` as a message names it: the full catalogue key."""
+
+    RETROGRADE = "state.RETROGRADE"
+    STATIONARY = "state.STATIONARY"
+    COMBUST = "state.COMBUST"
+    PLANETARY_WAR = "state.PLANETARY_WAR"
+    GANDANTA = "state.GANDANTA"
+    SANDHI = "state.SANDHI"
+    VARGOTTAMA = "state.VARGOTTAMA"
+    PUSHKARA_NAVAMSA = "state.PUSHKARA_NAVAMSA"
+    PUSHKARA_BHAGA = "state.PUSHKARA_BHAGA"
+    MRITYU_BHAGA = "state.MRITYU_BHAGA"
+    MARANA_KARAKA_STHANA = "state.MARANA_KARAKA_STHANA"
+    ECLIPSED = "state.ECLIPSED"
+
+
 class TatwaKey(enum.StrEnum):
     """A `tatwa` as a message names it: the full catalogue key."""
 
