@@ -83,6 +83,23 @@ def main() -> None:
             f"annual lagna {annual.lagna_deg:.3f}°"
         )
 
+        # ── Its five office-bearers, cast where you say ───────────────
+        # Here the birthplace, the one Tajika text read casts every chart
+        # for; a residence is {"observer": Observer(...), ...} instead.
+        cast = ctx.chart.found(
+            instant=when.instant_jd_utc,
+            place=place,
+            utc_offset_seconds=when.offset_seconds,
+            varsha={"through": 30, "place": "birth"},
+        ).praveshas[29]
+        assert cast.annual is not None
+        b = cast.annual.office_bearers
+        five = " ".join(
+            lord.key for lord in (b.muntha, b.janma_lagna, b.varsha_lagna, b.tri_rashi, b.dina_ratri)
+        )
+        part = "by day" if cast.annual.by_day else "by night"
+        print(f"muntha in {cast.muntha.sign.key}; office-bearers {five}, {part}")
+
         # ── The readings are named, and they are not each other ──────
         for reading in ("sidereal", "tropical", "mean"):
             one = ctx.chart.found(
@@ -103,7 +120,7 @@ def main() -> None:
                 varsha={"reading": "sidereal", "through": 0},
             )
         except TeistroError as error:
-            print(f"refused  {error.field}: {error}")
+            print(f"refused  {error.field}: {error.message}")
 
 
 if __name__ == "__main__":

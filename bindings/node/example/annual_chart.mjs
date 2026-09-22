@@ -56,6 +56,19 @@ const annual = ctx.chart.found({
 });
 console.log(`natal lagna ${chart.lagnaDeg.toFixed(3)}°, annual lagna ${annual.lagnaDeg.toFixed(3)}°`);
 
+// The year's own chart and its five office-bearers, cast where you say:
+// here the birthplace, the one Tajika text read casts every chart for.
+const cast = ctx.chart.found({
+  instant: when.instantJdUtc,
+  place,
+  utcOffsetSeconds: when.offsetSeconds,
+  varsha: { through: 30, place: 'birth' },
+}).praveshas[29];
+const short = (key) => key.split('.').pop();
+const b = cast.annual.officeBearers;
+const five = [b.muntha, b.janmaLagna, b.varshaLagna, b.triRashi, b.dinaRatri].map(short).join(' ');
+console.log(`muntha in ${short(cast.muntha.sign)}; office-bearers ${five}, ${cast.annual.byDay ? 'by day' : 'by night'}`);
+
 // ── The readings are named, and they are not each other ────────────────
 for (const reading of ['sidereal', 'tropical', 'mean']) {
   const one = ctx.chart.found({

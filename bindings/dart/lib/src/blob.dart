@@ -1465,6 +1465,43 @@ final class ChartsPraveshas {
   final int length;
 }
 
+/// The `annual_charts` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each return's own chart, founded where `varsha_json.place` said — `"birth"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`).
+final class ChartsAnnualCharts {
+  const ChartsAnnualCharts({
+    required this.lagnaDeg,
+    required this.daylight,
+    required this.janmaLagnaLord,
+    required this.varshaLagnaLord,
+    required this.triRashiLord,
+    required this.dinaRatriLord,
+    required this.length,
+  });
+
+  /// The annual chart's lagna, sidereal degrees, at the place it was cast for.
+  final Float64List lagnaDeg;
+
+  /// 1 when the return falls between sunrise and sunset at that place, 0 when by night: what chooses the Tri-Rashi and Dina-Ratri lords.
+  final Uint8List daylight;
+
+  /// The birth lagna's lord, a `graha` id: the Janmesha.
+  final Uint16List janmaLagnaLord;
+
+  /// The annual lagna's lord, a `graha` id: the Varsha Lagnesha.
+  final Uint16List varshaLagnaLord;
+
+  /// The annual lagna's Tri-Rashi lord for the part of the day, a `graha` id: the Dorothean triplicity lords under the source's positional rule (crux C108).
+  final Uint16List triRashiLord;
+
+  /// The lord of the Sun's sign by day or the Moon's by night, a `graha` id: the Dina-Ratri Pati.
+  final Uint16List dinaRatriLord;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -1604,6 +1641,7 @@ final class Charts {
     required this.rules,
     required this.plans,
     required this.praveshas,
+    required this.annualCharts,
   });
 
   /// What kind of chart these are.
@@ -1755,6 +1793,9 @@ final class Charts {
   /// Every chart's annual-chart instants, concatenated in the `cast` section's order and **ragged** by its `pravesha_count`, each chart's in year order. The reading is the batch's, from the request's `varsha_json`, as the dashas asked for are (`03-design/annual-chart.md`). Empty when no annual charts were asked for.
   final ChartsPraveshas praveshas;
 
+  /// Each return's own chart, founded where `varsha_json.place` said — `"birth"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`).
+  final ChartsAnnualCharts annualCharts;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1797,6 +1838,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atRules = blob.section(33, 'rules');
   final atPlans = blob.section(34, 'plans');
   final atPraveshas = blob.section(35, 'praveshas');
+  final atAnnualCharts = blob.section(36, 'annual_charts');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2992,6 +3034,39 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atPraveshas, 4) + atPraveshas.count * 8,
       ),
       length: atPraveshas.count,
+    ),
+    annualCharts: ChartsAnnualCharts(
+      lagnaDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 0),
+        blob.columnOffset(atAnnualCharts, 0) + atAnnualCharts.count * 8,
+      ),
+      daylight: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 1),
+        blob.columnOffset(atAnnualCharts, 1) + atAnnualCharts.count * 1,
+      ),
+      janmaLagnaLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 2),
+        blob.columnOffset(atAnnualCharts, 2) + atAnnualCharts.count * 2,
+      ),
+      varshaLagnaLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 3),
+        blob.columnOffset(atAnnualCharts, 3) + atAnnualCharts.count * 2,
+      ),
+      triRashiLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 4),
+        blob.columnOffset(atAnnualCharts, 4) + atAnnualCharts.count * 2,
+      ),
+      dinaRatriLord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 5),
+        blob.columnOffset(atAnnualCharts, 5) + atAnnualCharts.count * 2,
+      ),
+      length: atAnnualCharts.count,
     ),
   );
 }

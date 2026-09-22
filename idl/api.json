@@ -14232,6 +14232,44 @@
               "doc": "The Muntha's longitude at this return, degrees, under the `muntha` reading the request asked for. It advances 30 degrees over the year, so a caller timing within the year interpolates from here."
             }
           ]
+        },
+        {
+          "id": 36,
+          "name": "annual_charts",
+          "doc": "Each return's own chart, founded where `varsha_json.place` said — `\"birth\"` or a residence — and read down to what Tajika reads from it: row for row beside the `praveshas` section when a place was asked for, and **empty** when none was, never partly filled. The Muntha's lord, the first office-bearer, is `praveshas.muntha_lord` and is not repeated here (`03-design/muntha.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "lagna_deg",
+              "scalar": "f64",
+              "doc": "The annual chart's lagna, sidereal degrees, at the place it was cast for."
+            },
+            {
+              "name": "daylight",
+              "scalar": "u8",
+              "doc": "1 when the return falls between sunrise and sunset at that place, 0 when by night: what chooses the Tri-Rashi and Dina-Ratri lords."
+            },
+            {
+              "name": "janma_lagna_lord",
+              "scalar": "u16",
+              "doc": "The birth lagna's lord, a `graha` id: the Janmesha."
+            },
+            {
+              "name": "varsha_lagna_lord",
+              "scalar": "u16",
+              "doc": "The annual lagna's lord, a `graha` id: the Varsha Lagnesha."
+            },
+            {
+              "name": "tri_rashi_lord",
+              "scalar": "u16",
+              "doc": "The annual lagna's Tri-Rashi lord for the part of the day, a `graha` id: the Dorothean triplicity lords under the source's positional rule (crux C108)."
+            },
+            {
+              "name": "dina_ratri_lord",
+              "scalar": "u16",
+              "doc": "The lord of the Sun's sign by day or the Moon's by night, a `graha` id: the Dina-Ratri Pati."
+            }
+          ]
         }
       ]
     },

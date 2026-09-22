@@ -688,7 +688,11 @@ void main() {
       instants: <double>[2460482.5, 2460600.25],
       place: place,
       utcOffsetSeconds: 20700,
-      varsha: VarshaRequest(through: 12, reading: reading),
+      varsha: VarshaRequest(
+        through: 12,
+        reading: reading,
+        place: AnnualPlace.birth,
+      ),
     );
     var i = 0;
     for (final chart in years.each) {
@@ -700,6 +704,20 @@ void main() {
         put('$stem-muntha', one.muntha.sign.fullKey);
         put('$stem-muntha-lord', one.muntha.lord.fullKey);
         put('$stem-muntha-deg', one.muntha.longitudeDeg);
+        final annual = one.annual!;
+        put('$stem-annual-lagna', annual.lagnaDeg);
+        put('$stem-annual-by-day', annual.byDay);
+        final b = annual.officeBearers;
+        put(
+          '$stem-annual-bearers',
+          [
+            b.muntha,
+            b.janmaLagna,
+            b.varshaLagna,
+            b.triRashi,
+            b.dinaRatri,
+          ].map((lord) => lord.fullKey).join(' '),
+        );
       }
       i += 1;
     }

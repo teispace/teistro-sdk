@@ -1172,6 +1172,64 @@ class AnEngine(WithLibrary):
                 carried_year.muntha.longitude_deg, opened.muntha.longitude_deg
             )
 
+        # No place, no chart founded: the instants alone, as before.
+        self.assertTrue(all(one.annual is None for one in years))
+
+        # At the birthplace each year's chart comes back with its five
+        # office-bearers; the birth lagna's lord is shared by every year and
+        # the Muntha's lord is the one already on the return.
+        cast = self.ctx.chart.found(
+            instant=birth,
+            place=observer,
+            utc_offset_seconds=20700,
+            varsha={"through": 12, "place": "birth"},
+        ).praveshas
+        charts = [one.annual for one in cast]
+        self.assertTrue(all(chart is not None for chart in charts))
+        first = charts[0]
+        assert first is not None
+        for one in cast:
+            assert one.annual is not None
+            self.assertEqual(
+                one.annual.office_bearers.janma_lagna, first.office_bearers.janma_lagna
+            )
+            self.assertEqual(one.annual.office_bearers.muntha, one.muntha.lord)
+        again = self.ctx.chart.found(
+            instant=cast[3].instant, place=observer, utc_offset_seconds=20700
+        )
+        third = cast[3].annual
+        assert third is not None
+        self.assertEqual(again.lagna_deg, third.lagna_deg)
+
+        # At a residence, in the parts `found` takes, the lagnas move.
+        delhi = self.ctx.chart.found(
+            instant=birth,
+            place=observer,
+            utc_offset_seconds=20700,
+            varsha={
+                "through": 12,
+                "place": {
+                    "observer": Observer(
+                        latitude_deg=Latitude(28.6139),
+                        longitude_deg=Longitude(77.209),
+                        altitude_m=Altitude(216),
+                    ),
+                    "utc_offset_seconds": 19800,
+                },
+            },
+        ).praveshas
+        for there, here in zip(delhi, cast):
+            assert there.annual is not None and here.annual is not None
+            self.assertGreater(abs(there.annual.lagna_deg - here.annual.lagna_deg), 0.1)
+        with self.assertRaises(TeistroError) as wrong:
+            self.ctx.chart.found(
+                instant=birth,
+                place=observer,
+                utc_offset_seconds=20700,
+                varsha={"through": 12, "place": "home"},  # type: ignore[arg-type]
+            )
+        self.assertEqual(wrong.exception.field, "varsha_json.place")
+
         # The instant founds as a chart of its own; the place is the caller's.
         annual = self.ctx.chart.found(
             instant=years[11].instant, place=observer, utc_offset_seconds=20700

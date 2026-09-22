@@ -749,6 +749,7 @@ export class Chart {
         lord: GrahaById.get(d.praveshas.munthaLord[from + k]) ?? 'unknown',
         longitudeDeg: d.praveshas.munthaDeg[from + k],
       },
+      annual: annualOf(d, from + k),
     }));
   }
 
@@ -2292,11 +2293,46 @@ function interpretJson(interpret) {
  * @returns {string|undefined}
  */
 function varshaJson(varsha) {
+  if (varsha && typeof varsha === 'object' && !Array.isArray(varsha) && varsha.place !== undefined) {
+    return recordJson(
+      { ...varsha, place: annualPlace(varsha.place) },
+      'varsha',
+      'an annual-chart request record',
+    );
+  }
   return recordJson(
     varsha,
     'varsha',
     'an annual-chart request record, e.g. { reading: "sidereal", through: 40 }',
   );
+}
+
+/**
+ * Where each year's chart is cast, in the place shape `found` itself takes
+ * — `'birth'`, or `{ latitude, longitude, altitude, utcOffsetSeconds }` —
+ * written in the boundary's words. A key this does not know is passed
+ * through rather than dropped, so the SDK refuses it by name.
+ *
+ * @param {'birth'|object} place
+ * @returns {'birth'|object}
+ */
+function annualPlace(place) {
+  // A word crosses as written, so a wrong one is refused by the SDK, by
+  // `varsha_json.place`, in the same words every binding gets.
+  if (typeof place === 'string') return place;
+  if (!place || typeof place !== 'object' || Array.isArray(place)) {
+    throw new TypeError(
+      "varsha.place: expected 'birth' or { latitude, longitude, altitude, utcOffsetSeconds }",
+    );
+  }
+  const { latitude, longitude, altitude, utcOffsetSeconds, ...rest } = place;
+  return {
+    ...rest,
+    latitudeDeg: finite(latitude, 'varsha.place.latitude'),
+    longitudeDeg: finite(longitude, 'varsha.place.longitude'),
+    altitudeM: finite(altitude ?? 0, 'varsha.place.altitude'),
+    utcOffsetSeconds: finite(utcOffsetSeconds, 'varsha.place.utcOffsetSeconds'),
+  };
 }
 
 /**
@@ -2314,6 +2350,39 @@ function recordJson(value, field, example) {
   if (value === undefined || value === null) return undefined;
   if (typeof value === 'object' && !Array.isArray(value)) return JSON.stringify(value);
   throw new TypeError(`${field}: expected ${example}`);
+}
+
+/**
+ * A return's own chart, when `varsha.place` asked for the charts: row
+ * `row` of `annual_charts`, which runs beside `praveshas` row for row or
+ * is empty. Anything between is a layout this layer does not know how to
+ * read, and it says so rather than pairing a year with another's chart.
+ *
+ * @param {object} d the decoded batch
+ * @param {number} row
+ * @returns {object|null}
+ */
+function annualOf(d, row) {
+  const charts = d.annualCharts;
+  if (charts.lagnaDeg.length === 0) return null;
+  if (charts.lagnaDeg.length !== d.praveshas.year.length) {
+    throw new Error(
+      `annual_charts has ${charts.lagnaDeg.length} rows beside ${d.praveshas.year.length} returns; ` +
+        'it is all of them or none',
+    );
+  }
+  const lord = (column) => GrahaById.get(column[row]) ?? 'unknown';
+  return {
+    lagnaDeg: charts.lagnaDeg[row],
+    byDay: charts.daylight[row] === 1,
+    officeBearers: {
+      muntha: lord(d.praveshas.munthaLord),
+      janmaLagna: lord(charts.janmaLagnaLord),
+      varshaLagna: lord(charts.varshaLagnaLord),
+      triRashi: lord(charts.triRashiLord),
+      dinaRatri: lord(charts.dinaRatriLord),
+    },
+  };
 }
 
 /** Each batch's drawings, parsed once however many charts read them. */

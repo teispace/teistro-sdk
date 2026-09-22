@@ -1843,6 +1843,123 @@ fn a_chart_request_answers_the_annual_charts_instants() {
     );
 }
 
+/// A year's own chart is founded only when `varsha_json.place` asks, at the
+/// place it names, and its office-bearers come back row for row beside the
+/// returns — all of them or none (`03-design/muntha.md`).
+#[test]
+fn a_chart_request_founds_each_years_chart_where_it_is_told() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let instants = [2_447_995.489_583_333_5, 2_451_545.0];
+    let base = TsChartRequest {
+        struct_size: 0,
+        kind: 0,
+        reserved: 0,
+        instants: instants.as_ptr(),
+        instant_count: instants.len(),
+        latitude_deg: 27.7172,
+        longitude_deg: 85.324,
+        altitude_m: 1400.0,
+        utc_offset_seconds: 20_700,
+        reserved_tail: 0,
+        sections: 0,
+        reserved_sections: 0,
+        vargas: ptr::null(),
+        varga_count: 0,
+        drawings: ptr::null(),
+        drawing_count: 0,
+        dashas: ptr::null(),
+        dasha_count: 0,
+        theme_json: ptr::null(),
+        rules_json: ptr::null(),
+        interpret_json: ptr::null(),
+        varsha_json: ptr::null(),
+    };
+    let schema = schemas::charts();
+    let ask = |json: &str| {
+        let text = CString::new(json).unwrap();
+        let request = sized(
+            TsChartRequest {
+                varsha_json: text.as_ptr(),
+                ..base
+            },
+            |r, s| r.struct_size = s,
+        );
+        let mut blob = TsBlob::empty();
+        // SAFETY: a live context, a valid request and a valid slot.
+        let status = unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) };
+        if status != Status::Ok {
+            return Err(ctx.last_error());
+        }
+        // SAFETY: the library wrote `len` bytes.
+        let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+        // SAFETY: a descriptor the library wrote.
+        unsafe { ts_blob_free(&raw mut blob) };
+        Ok(bytes)
+    };
+    let column = |bytes: &[u8], name: &str| {
+        Reader::parse(bytes, &schema)
+            .unwrap()
+            .column("annual_charts", name)
+            .unwrap()
+            .iter()
+            .map(|cell| cell.as_f64())
+            .collect::<Vec<f64>>()
+    };
+
+    // Not asked for, none founded: the instants and nothing else.
+    let unasked = ask(r#"{"through":6}"#).unwrap();
+    assert!(column(&unasked, "lagna_deg").is_empty());
+
+    // At the birthplace: one row per return, every one a real chart.
+    let birth = ask(r#"{"through":6,"place":"birth"}"#).unwrap();
+    let lagnas = column(&birth, "lagna_deg");
+    assert_eq!(lagnas.len(), 12, "two charts of six years, row for row");
+    assert!(lagnas.iter().all(|deg| (0.0..360.0).contains(deg)));
+    assert!(
+        column(&birth, "daylight")
+            .iter()
+            .all(|flag| *flag == 0.0 || *flag == 1.0)
+    );
+    // The birth lagna's lord is the one office-bearer every year shares.
+    let janma = column(&birth, "janma_lagna_lord");
+    assert!(janma[..6].iter().all(|lord| *lord == janma[0]));
+    assert!(janma[6..].iter().all(|lord| *lord == janma[6]));
+
+    // At a residence the years' lagnas move and the birth's lord does not.
+    let delhi = ask(
+        r#"{"through":6,"place":{"latitudeDeg":28.6139,"longitudeDeg":77.209,"altitudeM":216,"utcOffsetSeconds":19800}}"#,
+    )
+    .unwrap();
+    let moved = column(&delhi, "lagna_deg");
+    assert_eq!(moved.len(), lagnas.len());
+    assert!(
+        moved
+            .iter()
+            .zip(&lagnas)
+            .all(|(there, here)| (there - here).abs() > 0.1)
+    );
+    assert_eq!(column(&delhi, "janma_lagna_lord"), janma);
+
+    // Each refusal names the field and says what would have been read.
+    let refused = |json: &str| ask(json).expect_err(json);
+    let word = refused(r#"{"through":6,"place":"home"}"#);
+    assert!(
+        word.1.contains("\"birth\"") && word.1.contains("home"),
+        "{word:?}"
+    );
+    let far = refused(
+        r#"{"through":6,"place":{"latitudeDeg":95,"longitudeDeg":0,"utcOffsetSeconds":0}}"#,
+    );
+    assert!(far.1.contains("latitudeDeg"), "{far:?}");
+    let extra = refused(
+        r#"{"through":6,"place":{"latitudeDeg":1,"longitudeDeg":2,"utcOffsetSeconds":0,"zone":"x"}}"#,
+    );
+    assert!(extra.1.contains("zone"), "{extra:?}");
+    for error in [&word, &far, &extra] {
+        assert_eq!(error.2.as_deref(), Some("varsha_json.place"), "{error:?}");
+    }
+}
+
 /// A consumer's **sign-based** system crosses the same way: registered
 /// through `options.dashas_json` under `"kernel":"rashi"`, asked for by the
 /// id `ts_key_parse` gives, and answered in the `dashas` section with the

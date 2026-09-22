@@ -621,7 +621,7 @@ def main() -> None:
                 instants=[2460482.5, 2460600.25],
                 place=place,
                 utc_offset_seconds=20700,
-                varsha={"reading": reading, "through": 12},
+                varsha={"reading": reading, "through": 12, "place": "birth"},
             )
             for i, chart in enumerate(years):
                 returns = chart.praveshas
@@ -632,6 +632,18 @@ def main() -> None:
                     put(f"{stem}-muntha", pravesha.muntha.sign.full_key)
                     put(f"{stem}-muntha-lord", pravesha.muntha.lord.full_key)
                     put(f"{stem}-muntha-deg", pravesha.muntha.longitude_deg)
+                    annual = pravesha.annual
+                    assert annual is not None
+                    put(f"{stem}-annual-lagna", annual.lagna_deg)
+                    put(f"{stem}-annual-by-day", annual.by_day)
+                    b = annual.office_bearers
+                    put(
+                        f"{stem}-annual-bearers",
+                        " ".join(
+                            lord.full_key
+                            for lord in (b.muntha, b.janma_lagna, b.varsha_lagna, b.tri_rashi, b.dina_ratri)
+                        ),
+                    )
 
         single = geo.chart.found(
             instant=2460482.5, place=place, utc_offset_seconds=20700

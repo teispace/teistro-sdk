@@ -81,7 +81,7 @@ part inside the year, so a Tajika aspect taken to the Muntha does.
 | **not decided** | the Muntha's longitude inside its sign between the two readings (crux C107), which waits on a text that gives a longitude rather than a sign |
 | **across the boundary** | `varsha_json.muntha` names the reading; `muntha_sign`, `muntha_lord` and `muntha_deg` ride in the `praveshas` section beside the return they stand at, so no second call can disagree about which year it is. Node, Dart and Python each read `pravesha.muntha`, each binding's test asserts the rule, and all four parity runners print it under all three return readings — which also holds the Muntha's independence of the reading |
 | **built** | `teistro_tajika::muntha` and `Muntha::during`, the progression a fraction through the year; `sdk.chart().muntha`, which needs **no ephemeris**, being the founded chart's own lagna and a count |
-| **not built** | the Panchavargiya bala, the Tajika aspects and the year lord — below; and the office-bearers' crossing |
+| **not built** | the Panchavargiya bala, the Tajika aspects and the year lord — below |
 
 ## The office-bearers
 
@@ -113,12 +113,43 @@ the default it is 3′. Neither moves an office-bearer here, but a Moon near
 a sign boundary by night would move the Dina-Ratri lord, which is why the
 profile's centre is reported and not assumed.
 
-**They do not cross the boundary yet.** Three of the five need an annual
-chart founded at a place, and the boundary answers the return's instant
-precisely so that it does not choose that place. Crossing them means a
-function over two founded charts, or a `varsha_json` place that is the
-residence knob the annual chart's page names — a decision of its own, and
-the next one to make.
+## Where a year's chart is cast
+
+Three of the five need an annual chart founded **at a place**, and the
+boundary answered only the return's instant precisely so that it would not
+choose that place. The decision, taken 2026-09-22:
+
+- **`varsha_json.place` is optional, and absent means no chart is
+  founded** — the instants and the Muntha, exactly as before, at no extra
+  cost. A caller who wants the charts says where.
+- **`"birth"` is a word the caller writes, not a default the caller
+  receives.** The one Tajika text read casts every chart it works "for
+  Bombay (the place of birth of the native)" — including a year its native
+  lived in Delhi — without stating a rule, so the birthplace is well
+  attested and still not the SDK's to impose.
+- **A residence is written in the place shape each binding's own `found`
+  takes** — `{ latitude, longitude, altitude, utcOffsetSeconds }` in Node,
+  an `Observer` and an offset in Python and Dart — and each layer writes
+  it in the boundary's words. A word crosses as written, so a wrong one is
+  refused by the SDK in the same words everywhere.
+- **The place is read on its own**, under the root `varsha_json.place`,
+  so every refusal of it names that field — a word that is not `"birth"`,
+  a latitude out of range, a key it does not read — where the strict
+  reader handed the whole record could name only the record.
+
+Each year's chart comes back in its own section, `annual_charts`, **row
+for row beside `praveshas` or empty, never partly filled**: the annual
+lagna, `daylight`, and four lords, the Muntha's lord being
+`praveshas.muntha_lord` already. Each binding reads it as
+`pravesha.annual` — `null` when no place was asked for — and refuses a
+section of any other length rather than pairing a year with another
+year's chart. A year's chart is founded with a bare request, the
+foundation and nothing else, because the batch's own sections were asked
+of the births.
+
+All four parity runners ask for the charts at the birthplace under all
+three readings and print each year's lagna, its part of the day and its
+five lords: **4 bindings agree, value for value**, on 7 730 values.
 
 ## Why only the Muntha crosses in the `praveshas` section
 
@@ -149,8 +180,8 @@ with named fallbacks down to the Muntha's lord. That needs three things
 this build does not have, and the reading found that two of the three
 tables they need are rules rather than tables.
 
-1. ~~**The office-bearers**, over a founded annual chart~~ — **built**
-   (above); their crossing is the decision still open.
+1. ~~**The office-bearers**, over a founded annual chart~~ — **built and
+   crossed** (above), with the place decided.
 2. **The Panchavargiya bala** — Griha 30, Uchcha 20, Hudda 15, Drekkana 10,
    Navamsha 5, divided by four — with Tajika's own **positional**
    friendship. Its **Drekkana** lords are one expression,

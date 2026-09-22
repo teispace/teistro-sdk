@@ -299,8 +299,11 @@ __all__ = [
     "Friendship",
     "GrahaState",
     "DashaDefinition",
+    "AnnualChart",
     "Muntha",
+    "OfficeBearers",
     "Pravesha",
+    "VarshaPlace",
     "VarshaRequest",
     "RashiDashaDefinition",
     "UduDashaDefinition",
@@ -2462,6 +2465,61 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
     year at the sign's first degree; `"natal_degree"` carries the natal
     lagna's degree across. Both give the same sign."""
 
+    place: Union[Literal["birth"], "VarshaPlace"]
+    """Where each year's own chart is cast, when you want the charts and not
+    only their instants: `"birth"`, or a residence in the parts `found`
+    takes. **Absent, none is founded** — the SDK does not choose between the
+    birthplace and a residence for you, because the schools differ."""
+
+
+class VarshaPlace(TypedDict):
+    """A residence to cast each year's chart for: the observer and clock
+    `found` itself takes.
+
+    >>> home: VarshaPlace = {"observer": Observer(latitude_deg=Latitude(28.6139),
+    ...     longitude_deg=Longitude(77.209), altitude_m=Altitude(216)),
+    ...     "utc_offset_seconds": 19800}
+    """
+
+    observer: Observer
+    utc_offset_seconds: int
+
+
+@dataclass(frozen=True)
+class OfficeBearers:
+    """The annual chart's five office-bearers, one of whom becomes the lord
+    of the year."""
+
+    muntha: Graha
+    """The lord of the Muntha's sign."""
+
+    janma_lagna: Graha
+    """The lord of the birth lagna."""
+
+    varsha_lagna: Graha
+    """The lord of the annual lagna."""
+
+    tri_rashi: Graha
+    """The annual lagna's triplicity lord for the part of the day."""
+
+    dina_ratri: Graha
+    """The lord of the Sun's sign by day, of the Moon's by night."""
+
+
+@dataclass(frozen=True)
+class AnnualChart:
+    """A return's own chart, read down to what Tajika reads from it."""
+
+    lagna_deg: float
+    """The annual chart's lagna, sidereal degrees, at the place it was cast
+    for."""
+
+    by_day: bool
+    """Whether the return fell between sunrise and sunset there."""
+
+    office_bearers: OfficeBearers
+    """The five office-bearers."""
+
 
 @dataclass(frozen=True)
 class Muntha:
@@ -2495,6 +2553,9 @@ class Pravesha:
 
     muntha: Muntha
     """The Muntha standing at it, progressed by this year's own count."""
+
+    annual: Optional[AnnualChart]
+    """The year's own chart, or `None` unless `varsha=` named a `place`."""
 
 
 class DashaLord(TypedDict):
@@ -2739,8 +2800,59 @@ def _interpret_json(interpret: Optional[PlanRequest]) -> Optional[str]:
 
 
 def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
-    """The annual charts as the JSON the boundary reads, or nothing for none."""
+    """The annual charts as the JSON the boundary reads, or nothing for none.
+
+    A residence is taken in the parts `found` takes and written in the
+    boundary's words; a word crosses as written, so a wrong one is refused
+    by the SDK, by `varsha_json.place`, as in every binding."""
+    place = varsha.get("place") if isinstance(varsha, Mapping) else None
+    if isinstance(place, Mapping):
+        written: Dict[str, Any] = dict(varsha or {})
+        written["place"] = _annual_place(place)
+        return _record_json(written, "varsha", "{'through': 40, 'place': 'birth'}")
     return _record_json(varsha, "varsha", "{'reading': 'sidereal', 'through': 40}")
+
+
+def _annual_place(place: Mapping[str, Any]) -> Dict[str, Any]:
+    """A residence in the boundary's words. A key this does not know is
+    passed through rather than dropped, so the SDK refuses it by name."""
+    rest = {key: value for key, value in place.items()
+            if key not in ("observer", "utc_offset_seconds")}
+    observer = place.get("observer")
+    if not isinstance(observer, Observer):
+        raise TypeError("varsha['place']['observer']: expected an Observer")
+    return {
+        **rest,
+        "latitudeDeg": float(observer.latitude_deg),
+        "longitudeDeg": float(observer.longitude_deg),
+        "altitudeM": float(observer.altitude_m),
+        "utcOffsetSeconds": place.get("utc_offset_seconds"),
+    }
+
+
+def _annual_chart(decoded: Any, row: int) -> Optional[AnnualChart]:
+    """Row `row` of `annual_charts`, which runs beside `praveshas` row for
+    row or is empty; anything between is a layout this layer cannot pair,
+    and it says so rather than giving a year another year's chart."""
+    charts = decoded.annual_charts
+    if len(charts.lagna_deg) == 0:
+        return None
+    if len(charts.lagna_deg) != len(decoded.praveshas.year):
+        raise RuntimeError(
+            f"annual_charts has {len(charts.lagna_deg)} rows beside "
+            f"{len(decoded.praveshas.year)} returns; it is all of them or none"
+        )
+    return AnnualChart(
+        lagna_deg=charts.lagna_deg[row],
+        by_day=charts.daylight[row] == 1,
+        office_bearers=OfficeBearers(
+            muntha=Graha(decoded.praveshas.muntha_lord[row]),
+            janma_lagna=Graha(charts.janma_lagna_lord[row]),
+            varsha_lagna=Graha(charts.varsha_lagna_lord[row]),
+            tri_rashi=Graha(charts.tri_rashi_lord[row]),
+            dina_ratri=Graha(charts.dina_ratri_lord[row]),
+        ),
+    )
 
 
 def _record_json(value: Optional[Mapping[str, Any]], field: str, example: str) -> Optional[str]:
@@ -3133,6 +3245,7 @@ class Chart:
                     lord=Graha(columns.muntha_lord[i]),
                     longitude_deg=columns.muntha_deg[i],
                 ),
+                annual=_annual_chart(decoded, i),
             )
             for i in range(start, start + counts[self.index])
         ]

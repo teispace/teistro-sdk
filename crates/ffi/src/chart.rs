@@ -1743,6 +1743,51 @@ struct PraveshaColumns {
     muntha_signs: Vec<u16>,
     muntha_lords: Vec<u16>,
     muntha_degs: Vec<f64>,
+    /// The `annual_charts` section, one row per return or none at all.
+    annual: AnnualColumns,
+}
+
+/// The years' own charts, parallel to `praveshas` row for row when a place
+/// was asked for and empty when none was.
+///
+/// All or none, never some: every year of a batch is founded at the one
+/// place the request named, so a year with no chart is a year whose
+/// founding failed, and that is refused rather than written as a gap.
+#[derive(Default)]
+struct AnnualColumns {
+    lagnas: Vec<f64>,
+    daylight: Vec<u8>,
+    janma_lagna: Vec<u16>,
+    varsha_lagna: Vec<u16>,
+    tri_rashi: Vec<u16>,
+    dina_ratri: Vec<u16>,
+}
+
+impl AnnualColumns {
+    fn push(&mut self, year: &AnnualYear) {
+        let bearers = &year.bearers;
+        self.lagnas.push(year.lagna_deg);
+        self.daylight.push(u8::from(bearers.by_day));
+        self.janma_lagna.push(bearers.janma_lagna.id());
+        self.varsha_lagna.push(bearers.varsha_lagna.id());
+        self.tri_rashi.push(bearers.tri_rashi.id());
+        self.dina_ratri.push(bearers.dina_ratri.id());
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "annual_charts",
+            self.lagnas.len(),
+            &[
+                ColumnData::F64(&self.lagnas),
+                ColumnData::U8(&self.daylight),
+                ColumnData::U16(&self.janma_lagna),
+                ColumnData::U16(&self.varsha_lagna),
+                ColumnData::U16(&self.tri_rashi),
+                ColumnData::U16(&self.dina_ratri),
+            ],
+        )
+    }
 }
 
 impl PraveshaColumns {
@@ -1753,6 +1798,7 @@ impl PraveshaColumns {
         let mut muntha_signs = Vec::new();
         let mut muntha_lords = Vec::new();
         let mut muntha_degs = Vec::new();
+        let mut annual = AnnualColumns::default();
         for found in praveshas {
             counts.push(u32::try_from(found.len()).unwrap_or(u32::MAX));
             for one in found {
@@ -1761,6 +1807,9 @@ impl PraveshaColumns {
                 muntha_signs.push(one.muntha.sign.id());
                 muntha_lords.push(one.muntha.lord.id());
                 muntha_degs.push(one.muntha.longitude_deg);
+                if let Some(year) = &one.annual {
+                    annual.push(year);
+                }
             }
         }
         PraveshaColumns {
@@ -1770,6 +1819,7 @@ impl PraveshaColumns {
             muntha_signs,
             muntha_lords,
             muntha_degs,
+            annual,
         }
     }
 
@@ -1784,7 +1834,8 @@ impl PraveshaColumns {
                 ColumnData::U16(&self.muntha_lords),
                 ColumnData::F64(&self.muntha_degs),
             ],
-        )
+        )?;
+        self.annual.write(writer)
     }
 }
 
@@ -2373,20 +2424,136 @@ pub(crate) struct VarshaRequest {
     /// source's own reading by default (crux C107).
     #[serde(default)]
     pub(crate) muntha: teistro::MunthaDegree,
+    /// Where each year's own chart is cast, when the caller wants the
+    /// charts and not only their instants; absent, none is founded and
+    /// the answer is the instants and the Muntha, as it always was.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) place: Option<AnnualPlace>,
 }
 
-/// One annual chart's instant and the Muntha standing at it.
+/// Where a year's chart is cast (`03-design/muntha.md`, "Where a year's
+/// chart is cast").
 ///
-/// The two travel together because they are answered together: the Muntha
-/// is the return's own year count progressed over the birth's lagna, so a
-/// second pass to fetch it would be a second chance to disagree about
-/// which year it is (`03-design/muntha.md`).
+/// **The birthplace or a residence**, and the SDK decides neither for
+/// anyone: the schools differ, and the one Tajika text read casts every
+/// chart it works "for Bombay (the place of birth of the native)" without
+/// stating a rule. So `"birth"` is a word a caller writes, not a default
+/// a caller receives.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub(crate) enum AnnualPlace {
+    /// The birth chart's own place and clock.
+    Birth,
+    /// Somewhere else, under its own clock.
+    At {
+        /// Where.
+        place: teistro::quantity::Place,
+        /// The clock kept there.
+        offset: teistro::UtcOffset,
+    },
+}
+
+/// The words `varsha_json.place` is written in, other than `"birth"`.
+#[derive(serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+struct Residence {
+    latitude_deg: f64,
+    longitude_deg: f64,
+    #[serde(default)]
+    altitude_m: f64,
+    utc_offset_seconds: i32,
+}
+
+/// What a caller is told when `place` is neither of its two shapes.
+const PLACE_SHAPES: &str = "\"birth\", or {latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds}";
+
+impl serde::Serialize for AnnualPlace {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            AnnualPlace::Birth => serializer.serialize_str("birth"),
+            AnnualPlace::At { place, offset } => Residence {
+                latitude_deg: place.latitude.get(),
+                longitude_deg: place.longitude.get(),
+                altitude_m: place.altitude.get(),
+                utc_offset_seconds: offset.seconds(),
+            }
+            .serialize(serializer),
+        }
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for AnnualPlace {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct Shapes;
+        impl<'de> serde::de::Visitor<'de> for Shapes {
+            type Value = AnnualPlace;
+
+            fn expecting(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(out, "{PLACE_SHAPES}")
+            }
+
+            fn visit_str<E: serde::de::Error>(self, word: &str) -> Result<AnnualPlace, E> {
+                if word == "birth" {
+                    Ok(AnnualPlace::Birth)
+                } else {
+                    Err(E::custom(format!(
+                        "a place is {PLACE_SHAPES}, not \"{word}\""
+                    )))
+                }
+            }
+
+            fn visit_map<M: serde::de::MapAccess<'de>>(
+                self,
+                map: M,
+            ) -> Result<AnnualPlace, M::Error> {
+                use serde::de::Error as _;
+                let at: Residence = serde::Deserialize::deserialize(
+                    serde::de::value::MapAccessDeserializer::new(map),
+                )?;
+                let refused = |why: String| M::Error::custom(why);
+                let place = teistro::quantity::Place::new(
+                    teistro::quantity::Latitude::try_new(at.latitude_deg)
+                        .map_err(|why| refused(format!("latitudeDeg: {why}")))?,
+                    teistro::quantity::Longitude::try_new(at.longitude_deg)
+                        .map_err(|why| refused(format!("longitudeDeg: {why}")))?,
+                    teistro::quantity::Altitude::try_new(at.altitude_m)
+                        .map_err(|why| refused(format!("altitudeM: {why}")))?,
+                );
+                let offset = teistro::UtcOffset::try_from_seconds(at.utc_offset_seconds)
+                    .map_err(|why| refused(format!("utcOffsetSeconds: {why}")))?;
+                Ok(AnnualPlace::At { place, offset })
+            }
+        }
+        deserializer.deserialize_any(Shapes)
+    }
+}
+
+/// One annual chart's instant and the Muntha standing at it, with the
+/// year's own chart when a place was asked for.
+///
+/// They travel together because they are answered together: the Muntha
+/// is the return's own year count progressed over the birth's lagna, and
+/// the office-bearers are read from the birth and the chart founded at
+/// that instant, so a second pass to fetch either would be a second chance
+/// to disagree about which year it is (`03-design/muntha.md`).
 #[derive(Clone, Copy, Debug)]
 pub struct Year {
     /// The instant, and which year of the birth it opens.
     pub pravesha: teistro::Pravesha,
     /// The Muntha standing at it, progressed by that year's own count.
     pub muntha: teistro::Muntha,
+    /// The year's own chart, read down to what Tajika reads from it; none
+    /// unless `varsha_json.place` asked for the charts.
+    pub annual: Option<AnnualYear>,
+}
+
+/// What a year's own chart says, for the office-bearers and whoever reads
+/// the chart after them.
+#[derive(Clone, Copy, Debug)]
+pub struct AnnualYear {
+    /// The annual chart's lagna, sidereal degrees.
+    pub lagna_deg: f64,
+    /// The five office-bearers, and whether the year opened by day.
+    pub bearers: teistro::OfficeBearers,
 }
 
 /// The annual charts a request's `varsha_json` asks for, none for null; a
@@ -2401,7 +2568,17 @@ unsafe fn varsha_request_of(varsha_json: *const c_char) -> Result<Option<VarshaR
     let Some(text) = text else {
         return Ok(None);
     };
-    let asked: VarshaRequest = teistro_core::strict::read(text, "varsha_json")?;
+    // The place is read on its own, under its own path, so a refusal of it
+    // names `varsha_json.place` — the field the caller wrote — where the
+    // strict reader, handed the whole record, could only name the record.
+    let mut given: serde_json::Value = teistro_core::strict::read(text, "varsha_json")?;
+    let place = given
+        .as_object_mut()
+        .and_then(|fields| fields.remove("place"))
+        .map(|place| teistro_core::strict::read_value::<AnnualPlace>(&place, "varsha_json.place"))
+        .transpose()?;
+    let mut asked: VarshaRequest = teistro_core::strict::read_value(&given, "varsha_json")?;
+    asked.place = place;
     // The year is checked here as well as inside, so a caller learns it
     // from the field they wrote rather than from a later refusal naming
     // `through` with no path to it.
@@ -2517,6 +2694,7 @@ fn where_and_when(asked: &TsChartRequest) -> Result<(Place, ChartKind, UtcOffset
 fn praveshas_of(
     sdk: &teistro::Context,
     documents: &[Document],
+    birth_clock: teistro::UtcOffset,
     asked: Option<&VarshaRequest>,
 ) -> Result<Vec<Vec<Year>>, Error> {
     let Some(asked) = asked else {
@@ -2537,7 +2715,17 @@ fn praveshas_of(
                             // this field counts.
                             let muntha =
                                 sdk.chart().muntha(document, pravesha.year, asked.muntha)?;
-                            Ok(Year { pravesha, muntha })
+                            let annual = asked
+                                .place
+                                .map(|place| {
+                                    annual_year(sdk, document, birth_clock, place, pravesha)
+                                })
+                                .transpose()?;
+                            Ok(Year {
+                                pravesha,
+                                muntha,
+                                annual,
+                            })
                         })
                         .collect::<Result<Vec<Year>, Error>>()
                 })
@@ -2548,6 +2736,32 @@ fn praveshas_of(
                 })
         })
         .collect()
+}
+
+/// A year's own chart, founded where the caller said and read down to what
+/// Tajika reads from it.
+///
+/// Founded with a bare request — the foundation and nothing else — because
+/// the batch's own sections (vargas, dashas, drawings) were asked of the
+/// births, and a year's chart asked for them too would cost each year a
+/// whole reading nobody requested.
+fn annual_year(
+    sdk: &teistro::Context,
+    birth: &Document,
+    birth_clock: teistro::UtcOffset,
+    place: AnnualPlace,
+    pravesha: teistro::Pravesha,
+) -> Result<AnnualYear, Error> {
+    let request = match place {
+        AnnualPlace::Birth => ChartRequest::at(birth.foundation.place, birth_clock),
+        AnnualPlace::At { place, offset } => ChartRequest::at(place, offset),
+    };
+    let annual = sdk.chart().reading(pravesha.at, &request)?.value;
+    let bearers = sdk.chart().office_bearers(birth, &annual, pravesha.year)?;
+    Ok(AnnualYear {
+        lagna_deg: annual.foundation.lagna_deg,
+        bearers,
+    })
 }
 
 /// The rule set a request's `rules_json` names, or none for null; a refusal is
@@ -2917,7 +3131,7 @@ pub unsafe extern "C" fn ts_chart_found(
             Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
             None => String::new(),
         };
-        let praveshas = praveshas_of(ctx.sdk(), &founded.value, varsha.as_ref())?;
+        let praveshas = praveshas_of(ctx.sdk(), &founded.value, request.offset(), varsha.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
