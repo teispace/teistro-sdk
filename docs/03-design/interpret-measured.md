@@ -217,6 +217,35 @@ arms to go stale: 10 of the catalogue's 11 dignities occur in these
 charts (no chart records DEEP_EXALTED), and a locale carrying nothing
 but `sdk.entity` renders each one's own word.
 
+## Every key, emitted at least once
+
+The table above counts what the **recorded corpus** exercises, and it
+records bodies and chara karakas: no graha states, no almanac, no
+strengths. So nine of the thirteen composers run over it and four do
+not, and the zeros that leaves are a fact about the fixtures rather than
+about the composers. Reading them as nothing-to-see is how a dead end
+hid for a week — `sdk.phala.tithi` read zero because `RuleInputs::of`
+never gave a chart its limbs, which also kept **11 shipped rules** from
+ever holding.
+
+So every key is emitted here by **one chart the SDK founds itself**,
+with every section asked for and both corpora loaded — 64 of 65 —
+and every item of it renders in each strict locale from that locale's
+own message, with no fallback and nothing to warn about: 786 renderings.
+What this chart cannot reach is named below, with the reason it needs
+another. A key missing from both fails, and so does a key excused that
+this chart emits — which is not a hypothetical: **three of the four
+excuses first written here were wrong**, and the check said so one at a
+time.
+
+| key | why this chart cannot reach it |
+|---|---|
+| `sdk.condition.combust` | no graha of this chart is burnt; a chart with one is a different chart |
+
+| proposed rule | verdict | measured |
+|---|---|---|
+| every key a composer can emit is emitted by one founded chart, or listed with the reason it needs another | **holds** | 0 of 65 disagree |
+
 ## Every section, and what says it
 
 A composer says a **section** or it says a placement, and the sections

@@ -1064,6 +1064,220 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 11] = [
 /// The list of sections is read from the source that declares them, so a
 /// twelfth added to `Sections` and left out of [`SECTION_SAYS`] fails here
 /// rather than going unnoticed.
+/// Keys no single chart can emit, and why each needs a different one.
+///
+/// A **zero** on the table above is a question, and the day this list was
+/// written one of them had been sitting unasked for a week:
+/// `sdk.phala.tithi` read zero because `RuleInputs::of` never gave a
+/// chart its limbs, which also kept 11 shipped rules from ever holding.
+/// So every key a composer can emit is now emitted by **one founded
+/// chart** with every section asked for and both corpora loaded, and a
+/// key that chart cannot reach is listed here with the reason rather than
+/// printed as a zero for someone to wonder about.
+///
+/// The list fails **three** ways: a key this chart does not emit and is
+/// not here fails; a key here that the chart does emit fails; and an
+/// excuse naming something no composer emits at all fails, so a key
+/// renamed cannot leave a reason behind pointing at nothing.
+///
+/// It is not a hypothetical. **Three of the four excuses first written
+/// here were wrong** — the undecided lajjitadi, the dasha's favour and
+/// the birth by day were all guesses about what a chart would contain,
+/// and the check refused them one at a time until only the burnt graha
+/// was left.
+const UNREACHED: [(&str, &str); 1] = [(
+    "sdk.condition.combust",
+    "no graha of this chart is burnt; a chart with one is a different chart",
+)];
+
+/// One chart the SDK founds itself, with every section and both corpora,
+/// so that every key a composer can emit is emitted somewhere.
+///
+/// The recorded corpus cannot do this: it records bodies and chara karakas
+/// and no graha states, no almanac and no strengths, so nine of the
+/// thirteen composers run over it and four do not. That is a fact about
+/// the fixtures rather than about the composers, and reading it off the
+/// table above as thirty-three zeros is how a dead end hid in plain sight.
+/// One context with both corpora loaded, as a consumer's would be.
+fn context_with_the_corpora(root: &Path) -> Result<teistro::Context, String> {
+    let sdk = teistro::Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .map_err(|why| format!("the conformance profile: {why}"))?;
+    for corpus in [READINGS, STATES] {
+        let tree = Tree::load(&root.join(corpus)).map_err(|err| err.to_string())?;
+        for locale in tree.locales.values() {
+            let bytes = teistro_intl::pack::build(locale, teistro_intl::source::ENTITY_NAMESPACE)
+                .map_err(|err| format!("{corpus}/{}: {err}", locale.tag))?;
+            sdk.intl()
+                .load_pack(&bytes)
+                .map_err(|err| format!("{corpus}/{}: {err}", locale.tag))?;
+        }
+    }
+    Ok(sdk)
+}
+
+/// Every composer's plan for one chart the SDK founds itself, with every
+/// section asked for.
+fn the_founded_plan(sdk: &teistro::Context) -> Result<Plan, String> {
+    let place = teistro::quantity::Place::new(
+        teistro::quantity::Latitude::try_new(27.7172).map_err(|e| e.to_string())?,
+        teistro::quantity::Longitude::try_new(85.324).map_err(|e| e.to_string())?,
+        teistro::quantity::Altitude::try_new(1400.0).map_err(|e| e.to_string())?,
+    );
+    let offset = teistro::UtcOffset::try_from_seconds(20_700).map_err(|e| e.to_string())?;
+    let every = rules();
+    let request = teistro::ChartRequest::at(place, offset)
+        .with_rule_inputs(&every)
+        .with_panchanga()
+        .with_aspects()
+        .with_houses()
+        .with_shadbala()
+        .with_dasha_phala()
+        .with_points();
+    let instant =
+        teistro::quantity::JulianDay::try_new(2_448_000.5).map_err(|why| why.to_string())?;
+    let read = sdk
+        .chart()
+        .readings(&[instant], &request)
+        .map_err(|why| format!("founding one chart: {why}"))?;
+    let document = read
+        .value
+        .first()
+        .ok_or_else(|| String::from("one chart was asked for"))?;
+
+    let mut plan = Plan::default();
+    let interpret = || sdk.interpret();
+    for said in [
+        interpret().placements(document),
+        interpret().positions(document),
+        interpret().conditions(document),
+        interpret().karakas(document),
+        interpret().phala(document),
+        interpret().states(document),
+        interpret().panchanga(document),
+        interpret().dasha_phala(document),
+        interpret().houses(document),
+        interpret().aspects(document),
+        interpret().strength(document),
+    ] {
+        plan.items.extend(said.map_err(|why| why.to_string())?);
+    }
+    plan.items.extend(interpret().chalit(document));
+    let set = teistro::RuleRequest::shipped([])
+        .with_rules(every.clone())
+        .rule_set()
+        .map_err(|why| why.to_string())?;
+    let with_rules = sdk
+        .chart()
+        .readings_with_rules(&[instant], &request, &set)
+        .map_err(|why| format!("reading the rules: {why}"))?;
+    if let Some((_, reading)) = with_rules.value.first() {
+        plan.items.extend(interpret().readings(reading));
+    }
+
+    Ok(plan)
+}
+
+/// That every key a composer can emit is emitted by that one chart, and
+/// that every item of it is said in each strict locale.
+fn every_key_is_emitted(out: &mut String, root: &Path, strict: &[String]) -> Result<(), String> {
+    let sdk = context_with_the_corpora(root)?;
+    let plan = the_founded_plan(&sdk)?;
+    let emitted: BTreeSet<&str> = plan
+        .items
+        .iter()
+        .filter_map(|item| KEYS.iter().find(|key| **key == item.key).copied())
+        .collect();
+    let excused: BTreeMap<&str, &str> = UNREACHED.iter().copied().collect();
+    for key in excused.keys() {
+        if !KEYS.contains(key) {
+            return Err(format!(
+                "UNREACHED excuses `{key}`, which no composer can emit at all"
+            ));
+        }
+    }
+    for key in KEYS {
+        match (emitted.contains(key), excused.contains_key(key)) {
+            (false, false) => {
+                return Err(format!(
+                    "`{key}` is emitted by no composer over the founded chart and UNREACHED does \
+                     not say why"
+                ));
+            }
+            (true, true) => {
+                return Err(format!(
+                    "`{key}` is emitted over the founded chart and UNREACHED still excuses it"
+                ));
+            }
+            _ => {}
+        }
+    }
+
+    // The other half: a key emitted is not a key said. Every item of the
+    // founded plan is rendered in each strict locale, which is what the
+    // recorded corpus can only do for nine composers' worth.
+    let mut rendered = 0usize;
+    for tag in strict {
+        sdk.intl()
+            .set_locale(tag)
+            .map_err(|why| format!("{tag}: {why}"))?;
+        for item in &plan.items {
+            let said = sdk.intl().render(&item.key, &item.params);
+            if said.is_fallback || !said.warnings.is_empty() || said.text.is_empty() {
+                return Err(format!(
+                    "`{}` in {tag}: fallback {}, {} warning(s), {} characters",
+                    item.key,
+                    said.is_fallback,
+                    said.warnings.len(),
+                    said.text.len()
+                ));
+            }
+            rendered += 1;
+        }
+    }
+
+    out.push_str("## Every key, emitted at least once\n\n");
+    let _ = write!(
+        out,
+        "The table above counts what the **recorded corpus** exercises, and \
+         it records bodies and chara karakas: no graha states, no almanac, \
+         no strengths. So nine of the thirteen composers run over it and \
+         four do not, and the zeros that leaves are a fact about the \
+         fixtures rather than about the composers. Reading them as \
+         nothing-to-see is how a dead end hid for a week — \
+         `sdk.phala.tithi` read zero because `RuleInputs::of` never gave a \
+         chart its limbs, which also kept **11 shipped rules** from ever \
+         holding.\n\n\
+         So every key is emitted here by **one chart the SDK founds \
+         itself**, with every section asked for and both corpora loaded — \
+         {} of {} — and every item of it renders in each strict locale \
+         from that locale's own message, with no fallback and nothing to \
+         warn about: {}. What this chart cannot reach is named below, \
+         with the reason it needs another. A key missing from both fails, \
+         and so does a key excused that this chart emits — which is not a \
+         hypothetical: **three of the four excuses first written here were \
+         wrong**, and the check said so one at a time.\n\n\
+         | key | why this chart cannot reach it |\n|---|---|\n",
+        count(emitted.len()),
+        count(KEYS.len()),
+        plural(rendered, "rendering"),
+    );
+    for (key, why) in UNREACHED {
+        let _ = writeln!(out, "| `{key}` | {why} |");
+    }
+    out.push('\n');
+    out.push_str(&table(&[Claim::counted(
+        "every key a composer can emit is emitted by one founded chart, or listed with the reason \
+         it needs another",
+        0,
+        KEYS.len(),
+    )]));
+    out.push('\n');
+    Ok(())
+}
+
 /// The section names `Sections` declares, read from its own source.
 ///
 /// `const fn has(self, one: Sections)` splits the same way a constant
@@ -1569,6 +1783,8 @@ fn page(root: &Path) -> Result<String, String> {
     unsaid_houses(&mut out, root, &plans);
 
     the_rest_of_a_placement(&mut out, &plans);
+
+    every_key_is_emitted(&mut out, root, &strict)?;
 
     every_section(&mut out, root)?;
 
