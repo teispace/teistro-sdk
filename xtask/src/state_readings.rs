@@ -475,7 +475,8 @@ const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
 /// It is the composers' own table read backwards: `phala` says a graha in
 /// a bhava, the lagna's sign, each limb of the panchanga and the six
 /// things the birth nakshatra *is*, `readings` says a rule's timing
-/// beside the rule it belongs to, and this asks whether the corpus's
+/// beside the rule it belongs to, `dasha_phala` says what a corpus
+/// carries of a graha as a dasha lord, and this asks whether the corpus's
 /// every such record can be **said**. A subject no
 /// composer has a message for is not in this list and is counted apart,
 /// because a reading nothing can say is work that does not reach a reader
@@ -484,7 +485,7 @@ const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
 /// A row whose message no composer emits is caught by
 /// [`every_message_is_a_composer_key`], so this list cannot name a message
 /// that has been renamed or withdrawn.
-const SAID_BY: [(&str, &str, &str, &str); 13] = [
+const SAID_BY: [(&str, &str, &str, &str); 15] = [
     ("graha_bhava", NAME_FORM, GRAHA_IN_BHAVA, "phala"),
     ("rashi", "lagnaPhala", "sdk.phala.lagnaRashi", "rashi"),
     ("tithi", "phala", "sdk.phala.tithi", "tithi"),
@@ -503,6 +504,13 @@ const SAID_BY: [(&str, &str, &str, &str); 13] = [
     ("varna", "phala", "sdk.phala.varna", "varna"),
     ("tatwa", "phala", "sdk.phala.tatwa", "tatwa"),
     ("rule", "timing", TIMING, "reading"),
+    ("graha", "dashaPhala", "sdk.phala.dashaLord", "graha"),
+    (
+        "graha",
+        "dashaActivation",
+        "sdk.phala.dashaActivation",
+        "graha",
+    ),
 ];
 
 /// The message that says when a rule acts, which is the one of the seven
@@ -716,8 +724,9 @@ fn what_a_composer_can_say(
         "A pack that loads is half of it; the other half is that a record \
          reaches a reader. Every reading a composer has a message for — \
          `phala` for the chart's subjects and what its nakshatra is, \
-         `readings` for a rule's timing — is rendered here through that \
-         message, in each strict locale, \
+         `readings` for a rule's timing, `dasha_phala` for a graha as a \
+         dasha lord — is rendered here through that message, in each \
+         strict locale, \
          and must answer from the locale's own record without a fallback \
          and without a warning: {}.\n\n",
         plural(said, "rendering"),

@@ -388,6 +388,16 @@ before — *every shipped rule carries a reading* — becomes one it can.
   exactly as `lagnaPhala` is on a rashi. Nothing computed, nothing chosen,
   no kind decided.
 
+  The **dasha lords** closed with the eleventh composer, `dasha_phala`,
+  and they are the case where the reading had to wait for a *section*
+  rather than for a name or a decision: `dasha-lord-effect` and
+  `dasha-lord-activation` key onto a graha, which the SDK has always
+  computed and always named, but a reading of a graha *as a dasha lord*
+  has nowhere to hang until something says what that graha's dasha will
+  be like. Saying all nine unconditionally would have been a table dump —
+  the same objection that holds `graha-color` back — and the section is
+  what makes each item this chart's.
+
   The **timings** were the first of them to close, and they show the
   shape the rest have. `dosha-timing` keys onto rules the `readings`
   composer already walks, so nothing new had to be computed and no
@@ -406,9 +416,11 @@ before — *every shipped rule carries a reading* — becomes one it can.
   *which* graha or rashi a remedy is for is a rule this corpus does not
   record — Phase 8's `remedies` decides it, and saying all nine would be
   a table dump rather than a reading. `dasha-lord-activation` and
-  `dasha-lord-effect` want a composer over a dasha period, which is the
-  one piece of it that needs building rather than deciding. The rest are
-  §8's two groups above: a catalogue decision, or a Phase 7 module.
+  `dasha-lord-effect` are closed, and what closed them was not a dasha
+  period but the **dasha phala section**: what a placement says of that
+  graha's dasha, which makes the reading this chart's rather than the
+  zodiac's. The rest are §8's two groups above: a catalogue decision, or
+  a Phase 7 module.
 - **Native review.** The corpus is the baseline engine's own Nepali,
   Sanskrit and Hindi, not a machine translation, and it has not been
   reviewed here. It joins the roadmap's `ne`/`hi` sign-off.
