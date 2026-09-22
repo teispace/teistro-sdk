@@ -81,6 +81,29 @@ nothing but a call can tell the two apart.
 unsupported: SHODASHOTTARI is a dasha the catalogue names and this build does not compute yet (field `dashas[0]`); the dashas built are VIMSHOTTARI, ASHTOTTARI, DWADASHOTTARI, PANCHOTTARI, SHATABDIKA, CHATURASHITI_SAMA, DWISAPTATI_SAMA, YOGINI, TRIBHAGI, CHARA, NARAYANA, PADANADHAMSA, TRIKONA, DRIG, SHOOLA, NIRYANA_SHOOLA, MANDOOKA, KALACHAKRA
 ```
 
+## Who can supply one
+
+"Not built" is not "not available". `DashaSystems::register` takes a
+`UduDefinition` — lords, years and a **nakshatra** reference, checked
+by the same `UduRow::validate` a shipped row passes — so a consumer
+holding the text can register the system on their context and ask for it
+by key, today, with no change here. That covers 3 of the 22 systems
+left: `SHODASHOTTARI`, `SHATTRIMSHA_SAMA` and `SHASHTIHAYANI`, each of
+which is a stated row waiting only on its citation.
+
+The path is walked rather than cited: `DEMO_SHODASHOTTARI`, 8 lords and
+116 years, registered and accepted, with the total the design page
+states for it falling out of the lords rather than copied beside them.
+
+**The other 19 cannot be supplied by anyone, and that is the finding.**
+The registry takes nakshatra-seeded rows and nothing else, so a
+sign-based system a consumer has the text for — `STHIRA`, `VARNADA`
+— has no definition to arrive as, and neither has a tithi, yoga or
+karana seed. Under the no-dead-ends mandate that is a gap in the SDK and
+not in the sources: the text being unsettled blocks *this* build, while
+a missing definition blocks *everyone*. A `RashiDefinition` beside
+`UduDefinition` is what would close it.
+
 ## What the types decide
 
 | proposed rule | verdict | measured |
@@ -88,6 +111,7 @@ unsupported: SHODASHOTTARI is a dasha the catalogue names and this build does no
 | every catalogued system this build does not compute is listed here with a reason | **holds** | 0 of 22 disagree |
 | no reason here outlives its blocker: nothing listed is already computed | **holds** | 0 of 22 disagree |
 | every reason names a system the catalogue names | **holds** | 0 of 22 disagree |
+| every system said to be registrable is one this build does not compute | **holds** | 0 of 3 disagree |
 | asking for an unbuilt system is refused and never answered | **holds** | 0 of 22 disagree |
 | the refusal names the system asked for | **holds** | 0 of 22 disagree |
 | the refusal names every system this build does compute | **holds** | 0 of 22 disagree |

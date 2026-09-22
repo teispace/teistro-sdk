@@ -576,6 +576,16 @@ period levels as an ordinal message with the profile's level names.
   savana 360 against 365.25 compounds to about 21 months over a 120-year
   cycle. Resolved before any dasha conformance run (cruxes page).
 - **Applicability rules** live in the rules engine, not here.
+- **A consumer can register a nakshatra-seeded system and nothing else.**
+  `DashaSystems::register` takes a `UduDefinition`, so the three rows
+  above that wait only on a citation can be supplied by whoever holds the
+  text, today. A **sign-based** system cannot: there is no
+  `RashiDefinition`, so `Sthira` and `Varnada` are closed to a consumer
+  who has the text as firmly as they are to this build, and so is any
+  seed that is not a nakshatra. The text being unsettled blocks this
+  build; a missing definition blocks everyone, which is the difference
+  the no-dead-ends mandate turns on
+  ([`dasha-coverage-measured.md`](dasha-coverage-measured.md)).
 
 ## Open questions
 
