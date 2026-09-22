@@ -846,7 +846,7 @@ impl Intl {
             offset: None,
             message: String::from("no current locale"),
         })?;
-        let mut eval = Eval::new(self, locale, params, 0);
+        let mut eval = Eval::new(self, locale, &self.current, params, 0);
         let parts = eval.message(&message);
         Ok(Rendered {
             text: plain_text(&parts),
@@ -882,7 +882,7 @@ impl Intl {
             Entry::Entity(entity) => vec![OutPart::Text(entity.name().to_string())],
             Entry::Message(source) => match self.parsed_message(&locale.tag, key, source) {
                 Ok(message) => {
-                    let mut eval = Eval::new(self, locale, params, depth);
+                    let mut eval = Eval::new(self, locale, tag, params, depth);
                     let parts = eval.message(&message);
                     warnings.append(&mut eval.warnings);
                     parts
@@ -1002,6 +1002,20 @@ enum Keys {
 struct Eval<'a> {
     intl: &'a Intl,
     locale: &'a LocaleSource,
+    /// The locale the caller **asked for**, which is the locale an entity
+    /// is named in even when the message fell back to another.
+    ///
+    /// A message and a value are different things. The sentence is the
+    /// answering locale's, with its plurals, its lists and its numerals;
+    /// the Sun is the *reader's*, because `sdk.entity` is the one
+    /// namespace a locale at `base` completeness carries in full. Without
+    /// this, a locale with every name and no message rendered **identical
+    /// English** — measured at 0 of 433 items differing for `hi-Deva-IN`,
+    /// `sa-Deva` and `sa-Latn` — which is not what
+    /// `03-design/interpret-composers.md` promises of an entity slot:
+    /// that it renders "in a locale that carries `sdk.entity` and no
+    /// message at all".
+    asked: &'a str,
     params: &'a Params,
     depth: u8,
     style: NumberStyle,
@@ -1014,10 +1028,17 @@ fn text_parts(text: String) -> Vec<OutPart> {
 }
 
 impl<'a> Eval<'a> {
-    fn new(intl: &'a Intl, locale: &'a LocaleSource, params: &'a Params, depth: u8) -> Eval<'a> {
+    fn new(
+        intl: &'a Intl,
+        locale: &'a LocaleSource,
+        asked: &'a str,
+        params: &'a Params,
+        depth: u8,
+    ) -> Eval<'a> {
         Eval {
             intl,
             locale,
+            asked,
             params,
             depth,
             style: NumberStyle::of(&locale.meta),
@@ -1157,7 +1178,9 @@ impl<'a> Eval<'a> {
     }
 
     fn entity_form(&mut self, key: &str, form: &str) -> String {
-        let Some(entity) = self.intl.entity_from(&self.locale.tag, key) else {
+        // From the locale that was **asked for**, not the one that
+        // answered the message: a name is a value and a sentence is not.
+        let Some(entity) = self.intl.entity_from(self.asked, key) else {
             self.warn(format!("missing entity `{key}`"));
             return key.to_string();
         };

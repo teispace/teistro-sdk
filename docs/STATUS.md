@@ -921,6 +921,28 @@ provider's DUT1).
    section table on `03-design/interpret-measured.md` raised and which is
    a third `PlanRequest` member either way it goes. Q35, the MCP server,
    is deferred by the maintainer to the end of the plan.
+1a. **Two gate sweeps, not one.** `fast-check.yml`'s gates are the first;
+   they are derived from the workflow rather than listed, and run under
+   **bash**, because zsh does not word-split `$(...)` and the loop then
+   iterates once and cannot fail:
+
+   ```bash
+   bash -c 'gates=$(grep -oE "cargo xtask check-[a-z-]+" .github/workflows/fast-check.yml | sed "s/cargo xtask //" | sort -u)
+   for g in $gates; do out=$(CARGO_BUILD_JOBS=2 cargo run -q -p xtask -- $g 2>&1)
+     echo "$out" | grep -qE "^(FAIL|error)" && { echo "== $g"; echo "$out" | grep -E "^(FAIL|error)" | head -3; }; done'
+   ```
+
+   The second is `verify.yml`'s, and **seven of its nine run on this
+   machine**: `check-node`, `check-dart`, `check-python`, `check-rust`,
+   `check-parity`, `check-site` and `check-versions`. Dart needs its
+   toolchain on the path (`PATH="$HOME/Development/flutter/bin:$PATH"`).
+   Only `check-c` and `check-package` cannot, and they fail at link time
+   on a macOS SDK `tapi` error that is environmental — CI is the authority
+   for those two. Run the verify-runnable set before pushing anything that
+   touches a binding: both of 2026-09-22's red verify runs — a generated
+   `StateKey` nothing declared, and a duplicate `final weighed` in the
+   Dart test — were catchable here in seconds instead of forty minutes on
+   five platforms.
 2. The local checkout is the repository root; `cargo xtask check-docs`
    and `cargo deny check` must pass before any commit; commits are
    signed off (`git commit -s`) with Conventional Commits subjects; the

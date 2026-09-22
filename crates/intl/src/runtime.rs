@@ -371,6 +371,47 @@ mod tests {
         namespace
     }
 
+    /// A locale that carries every **name** and no message renders its
+    /// names, inside whatever sentence answered.
+    ///
+    /// A message and a value are different things: the sentence belongs to
+    /// the locale that answered it, and the Sun belongs to the reader.
+    /// Before this, a fallback dragged the entity slots to the answering
+    /// locale too, so `hi-Deva-IN` — which names every graha, rashi and
+    /// nakshatra — rendered **identical English**, measured at 0 of 433
+    /// items differing on `interpret-measured.md`. It is 374 now.
+    #[test]
+    fn a_locale_with_names_and_no_messages_still_says_its_names() {
+        let mut intl = engine("hi-Deva-IN");
+        let said = intl.render(
+            "sdk.condition.retrograde",
+            &params([("graha", Value::entity("graha.SUN"))]),
+        );
+        // The frame is English, and says so.
+        assert!(said.is_fallback, "hi-Deva-IN carries no sdk.condition");
+        assert_eq!(said.resolved_from.as_deref(), Some("en-Latn"));
+        // The name is not.
+        let Some(named) = intl.entity_from("hi-Deva-IN", "graha.SUN") else {
+            panic!("hi-Deva-IN names the Sun")
+        };
+        let hindi = named.name().to_string();
+        assert!(!hindi.is_ascii(), "the Hindi name is Devanagari: {hindi}");
+        assert!(
+            said.text.contains(&hindi),
+            "{} should carry {hindi}",
+            said.text
+        );
+
+        // And the base locale still reads as itself, with nothing borrowed.
+        intl.set_locale("en-Latn").unwrap_or_else(|e| panic!("{e}"));
+        let english = intl.render(
+            "sdk.condition.retrograde",
+            &params([("graha", Value::entity("graha.SUN"))]),
+        );
+        assert!(!english.is_fallback);
+        assert!(english.text.is_ascii(), "{}", english.text);
+    }
+
     #[test]
     fn an_override_stands_before_the_locales_own_entry_and_is_reported() {
         let mut intl = engine("ne-Deva-NP");

@@ -221,21 +221,22 @@ but `sdk.entity` renders each one's own word.
 
 ## What a reader of each locale gets
 
-Of the founded chart's plan, how many items each shipped locale answers
-**from its own messages** rather than falling back. The roster puts
-three locales at `base` until their messages are translated, which is a
-flag; this is what the flag costs a reader. It is not all-or-nothing: an
-item is a frame around **entity slots**, and those are named in every
-shipped locale, so a reader at `base` gets the grahas, rashis and
-nakshatras in their own script inside an English sentence.
+Of the founded chart's plan, two questions a consumer choosing a locale
+would ask. **Its own messages** is how many items the locale answers
+without falling back; **anything of its own** is how many render
+differently from the base locale, which is the one that says whether a
+reader sees their own language at all. The two differ because an item is
+a frame around **slots**, and a slot is named in every shipped locale
+— for a rule's reading the slot is the whole sentence, so a locale at
+`base` can carry the substance of an item whose frame is English.
 
-| locale | completeness | items from its own messages |
-|---|---|---:|
-| `en-Latn` | `strict` | 433 of 433 |
-| `hi-Deva-IN` | `base` | 0 of 433 |
-| `ne-Deva-NP` | `strict` | 433 of 433 |
-| `sa-Deva` | `base` | 0 of 433 |
-| `sa-Latn` | `base` | 0 of 433 |
+| locale | completeness | its own messages | anything of its own |
+|---|---|---:|---:|
+| `en-Latn` | `strict` | 433 of 433 | 0 of 433 |
+| `hi-Deva-IN` | `base` | 0 of 433 | 374 of 433 |
+| `ne-Deva-NP` | `strict` | 433 of 433 | 398 of 433 |
+| `sa-Deva` | `base` | 0 of 433 | 374 of 433 |
+| `sa-Latn` | `base` | 0 of 433 | 367 of 433 |
 
 ## Every key, emitted at least once
 

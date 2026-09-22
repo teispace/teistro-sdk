@@ -825,11 +825,13 @@ void _engineTests() {
       greaterThanOrEqualTo(9 * 3),
       reason: 'three a graha at least',
     );
-    // The almanac says the five limbs and the Moon's pada.
-    final weighed = plans['bhavaBala']! as List<Object?>;
-    expect(weighed, hasLength(12), reason: 'one a bhava');
+    // Each bhava is weighed and never judged, and the Vimshopaka says all
+    // four schemes.
+    final houses = plans['bhavaBala']! as List<Object?>;
+    expect(houses, hasLength(12), reason: 'one a bhava');
     final scored = plans['vimshopaka']! as List<Object?>;
     expect(scored, hasLength(7 * 4), reason: 'seven grahas, four schemes');
+    // The almanac says the five limbs and the Moon's pada.
     final almanac = plans['panchanga']! as List<Object?>;
     expect(almanac.length, greaterThanOrEqualTo(6), reason: 'limbs and pada');
     expect(almanac.length, lessThanOrEqualTo(7), reason: 'and the day');
@@ -850,7 +852,7 @@ void _engineTests() {
           ...dashas,
           ...carried,
           ...almanac,
-          ...weighed,
+          ...houses,
           ...scored,
         ].cast<Map<String, Object?>>()) {
       final key = item['key']! as String;

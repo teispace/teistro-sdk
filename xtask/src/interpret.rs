@@ -29,7 +29,7 @@ use teistro_interpret::{
     KEYS, Plan, aspects, chalit, conditions, houses, karakas, phala, placements, positions,
     readings, strength,
 };
-use teistro_intl::source::{Completeness, Tree};
+use teistro_intl::source::{BASE_LOCALE, Completeness, Tree};
 use teistro_intl::{Intl, Rendered};
 use teistro_rules::{Body, Evaluator, Readings as RuleReadings, Rule, RuleChart, shipped};
 
@@ -1194,7 +1194,16 @@ fn what_each_reader_gets(
     root: &Path,
 ) -> Result<(), String> {
     let tree = Tree::load(&root.join("i18n")).map_err(|err| err.to_string())?;
-    let mut rows: Vec<(String, &'static str, usize, usize)> = Vec::new();
+    let mut rows: Vec<(String, &'static str, usize, usize, usize)> = Vec::new();
+    // The base locale's rendering of each item, to compare the rest with.
+    sdk.intl()
+        .set_locale(BASE_LOCALE)
+        .map_err(|why| format!("{BASE_LOCALE}: {why}"))?;
+    let english: Vec<String> = plan
+        .items
+        .iter()
+        .map(|item| sdk.intl().render(&item.key, &item.params).text)
+        .collect();
     for locale in tree.locales.values() {
         let completeness = if locale.meta.completeness == Completeness::Strict {
             "strict"
@@ -1205,31 +1214,49 @@ fn what_each_reader_gets(
             .set_locale(&locale.tag)
             .map_err(|why| format!("{}: {why}", locale.tag))?;
         let mut own = 0usize;
-        for item in &plan.items {
+        let mut theirs = 0usize;
+        for (item, base) in plan.items.iter().zip(&english) {
             let said = sdk.intl().render(&item.key, &item.params);
             if said.resolved_from.as_deref() == Some(locale.tag.as_str()) {
                 own += 1;
             }
+            // What the reader actually sees: an item whose frame falls
+            // back can still carry its **slots** in the reader's own
+            // script, and for a rule's reading the slot is the whole
+            // sentence. Comparing the text against the base locale's is
+            // what says whether anything reached them.
+            if said.text != *base {
+                theirs += 1;
+            }
         }
-        rows.push((locale.tag.clone(), completeness, own, plan.items.len()));
+        rows.push((
+            locale.tag.clone(),
+            completeness,
+            own,
+            theirs,
+            plan.items.len(),
+        ));
     }
     out.push_str("## What a reader of each locale gets\n\n");
     out.push_str(
-        "Of the founded chart's plan, how many items each shipped locale \
-         answers **from its own messages** rather than falling back. The \
-         roster puts three locales at `base` until their messages are \
-         translated, which is a flag; this is what the flag costs a \
-         reader. It is not all-or-nothing: an item is a frame around \
-         **entity slots**, and those are named in every shipped locale, \
-         so a reader at `base` gets the grahas, rashis and nakshatras in \
-         their own script inside an English sentence.\n\n\
-         | locale | completeness | items from its own messages |\n|---|---|---:|\n",
+        "Of the founded chart's plan, two questions a consumer choosing a \
+         locale would ask. **Its own messages** is how many items the \
+         locale answers without falling back; **anything of its own** is \
+         how many render differently from the base locale, which is the \
+         one that says whether a reader sees their own language at all. \
+         The two differ because an item is a frame around **slots**, and a \
+         slot is named in every shipped locale — for a rule's reading the \
+         slot is the whole sentence, so a locale at `base` can carry the \
+         substance of an item whose frame is English.\n\n\
+         | locale | completeness | its own messages | anything of its own |\n|---|---|---:|---:|\n",
     );
-    for (tag, completeness, own, total) in &rows {
+    for (tag, completeness, own, theirs, total) in &rows {
         let _ = writeln!(
             out,
-            "| `{tag}` | `{completeness}` | {} of {} |",
+            "| `{tag}` | `{completeness}` | {} of {} | {} of {} |",
             count(*own),
+            count(*total),
+            count(*theirs),
             count(*total)
         );
     }

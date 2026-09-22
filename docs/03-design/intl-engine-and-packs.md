@@ -56,9 +56,16 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   translated — **what that costs a reader is measured** rather than left
   as a flag, on `interpret-measured.md`: of one founded chart's plan the
   two strict locales answer every item from their own messages and the
-  other three answer none, though the **entity slots inside** those items
-  are named in all five, so a Hindi reader gets the grahas, rashis and
-  nakshatras in Devanagari inside an English sentence; `hi-Deva-IN` and `sa-Deva` came whole from the baseline
+  other three answer none — but **374 of 433 come out different from
+  English anyway**, because the entity slots inside them are named in all
+  five locales, so a Hindi reader gets the grahas, rashis, nakshatras and
+  the rules' own readings in Devanagari inside an English sentence. That
+  is the design's intent and it was **not** what happened until the
+  measurement asked: a message falling back took its entity slots with
+  it, and the three locales at `base` rendered identical English, 0 of
+  433. **An entity is named in the locale that was asked for and a
+  sentence belongs to the locale that answered it** — a name is a value,
+  and a value is the reader's; `hi-Deva-IN` and `sa-Deva` came whole from the baseline
   engine's name tables (`teistro-intl migrate baseline`, below),
   `en-Latn` and `ne-Deva-NP` gained the same tables under their
   hand-shaped records, and `sa-Latn` is derived from `sa-Deva` by
