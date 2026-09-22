@@ -588,9 +588,14 @@ const PLAN_SURFACES: [(&str, [&str; 2]); 3] = [
 ];
 
 /// The line an anchor is on, one-based, for a finding to point at.
+///
+/// The newlines before it, and not the lines: an anchor that starts in the
+/// first column leaves a trailing newline that `lines` does not count and
+/// an indented one does not, so counting lines is right for the boundary
+/// declarations and one too many for a row inside a list.
 fn line_of(text: &str, anchor: &str) -> usize {
     text.find(anchor).map_or(1, |at| {
-        text.get(..at).unwrap_or_default().lines().count() + 1
+        text.get(..at).unwrap_or_default().matches('\n').count() + 1
     })
 }
 
@@ -667,6 +672,83 @@ fn composers_reach_every_binding(root: &Path, outcome: &mut Outcome) {
                     rule: RULE,
                 });
             }
+        }
+    }
+}
+
+/// The tracker's table of what is built, and where its rows come from.
+const CRATE_TABLE: (&str, &str) = ("docs/STATUS.md", "| crate | what it is |");
+
+/// That every crate in the workspace is named in the tracker's table, and
+/// that the table names no crate that is not there.
+///
+/// A hand-kept list beside a directory that grows is the rot this
+/// repository keeps finding in its own prose: the table was missing
+/// **eight** crates on 2026-09-22 — `rules`, `interpret`, `dasha`,
+/// `strength`, `sdk`, `geometry`, `render-svg` and `ephemeris-builtin`,
+/// which is most of what Phases 4 to 6 produced — and nothing noticed
+/// because nothing compared it to `crates/`. The gate list two items above
+/// it went stale the same way and became a pointer; this one is a table
+/// with a sentence a crate, so it is held instead.
+///
+/// A row may name more than one crate (`` `time`, `port-timezone` ``), so
+/// every backticked name in a row's **first** cell counts. Only the first:
+/// the `chart` row's description names `day`, `bhava`, `zodiac` and
+/// `foundation`, which are modules and not crates, and a looser read
+/// reports four crates that do not exist.
+fn crates_are_listed(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "crate-is-listed";
+    let (tracker, heading) = CRATE_TABLE;
+    let Ok(text) = std::fs::read_to_string(root.join(tracker)) else {
+        return;
+    };
+    if !text.contains(heading) {
+        outcome.failures.push(Finding {
+            file: tracker.to_owned(),
+            line: 1,
+            text: format!("`{heading}` is not in the tracker any more"),
+            rule: RULE,
+        });
+        return;
+    }
+    let listed: std::collections::BTreeSet<&str> = text
+        .lines()
+        .skip_while(|line| !line.contains(heading))
+        .map(str::trim_start)
+        .take_while(|line| line.starts_with('|'))
+        .filter_map(|row| row.split('|').nth(1))
+        .flat_map(|cell| cell.split('`').skip(1).step_by(2))
+        .collect();
+    let line = line_of(&text, heading);
+    let Ok(entries) = std::fs::read_dir(root.join("crates")) else {
+        return;
+    };
+    let mut present: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
+    for entry in entries.flatten() {
+        if entry.path().join("Cargo.toml").is_file()
+            && let Some(name) = entry.file_name().to_str()
+        {
+            present.insert(name.to_owned());
+        }
+    }
+    for name in &present {
+        if !listed.contains(name.as_str()) {
+            outcome.failures.push(Finding {
+                file: tracker.to_owned(),
+                line,
+                text: format!("`crates/{name}` is built and the tracker's table never names it"),
+                rule: RULE,
+            });
+        }
+    }
+    for name in &listed {
+        if !present.contains(*name) {
+            outcome.failures.push(Finding {
+                file: tracker.to_owned(),
+                line,
+                text: format!("the tracker's table names `{name}` and `crates/` has no such crate"),
+                rule: RULE,
+            });
         }
     }
 }
@@ -1338,6 +1420,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     serialised_types_describe_themselves(root, &mut outcome);
     predicates_are_listed(root, &mut outcome);
     composers_reach_every_binding(root, &mut outcome);
+    crates_are_listed(root, &mut outcome);
 
     let mut report = String::new();
     for rule in [
@@ -1357,6 +1440,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "serialised-type-describes-itself",
         "every-predicate-is-listed",
         "composer-reaches-every-binding",
+        "crate-is-listed",
     ] {
         let failures = outcome.failures.iter().filter(|f| f.rule == rule).count();
         let allowed: Vec<&Finding> = outcome.allowed.iter().filter(|f| f.rule == rule).collect();
