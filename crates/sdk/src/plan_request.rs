@@ -70,10 +70,18 @@ pub struct PlanRequest {
     pub chalit: bool,
     /// What a loaded corpus of state readings says of this chart's
     /// subjects: a graha in a bhava, the lagna's sign, each limb of the
-    /// panchanga. It costs no section, and it says **nothing** until a
-    /// pack carrying those readings is loaded
-    /// (`03-design/state-readings.md`).
+    /// panchanga, and what the birth nakshatra is. It costs no section,
+    /// and it says **nothing** until a pack carrying those readings is
+    /// loaded (`03-design/state-readings.md`).
     pub phala: bool,
+    /// What each graha's placement says of its dasha: when in the dasha
+    /// its effects come, whether its place is auspicious, the points its
+    /// dignity earns and whether the placement makes the dasha
+    /// favourable — with the reading a loaded corpus carries of that
+    /// graha as a dasha lord. It reads `Document.dasha_phala`, so it
+    /// **costs that section**: ask for it with
+    /// [`ChartRequest::with_dasha_phala`](crate::ChartRequest::with_dasha_phala).
+    pub dasha_phala: bool,
 }
 
 impl PlanRequest {
@@ -83,7 +91,7 @@ impl PlanRequest {
     /// holds the list against the record's own serialisation, both ways, so
     /// a composer added without a name here fails rather than going
     /// unmentioned in the refusal a typo earns.
-    pub const MEMBERS: [&'static str; 10] = [
+    pub const MEMBERS: [&'static str; 11] = [
         "placements",
         "readings",
         "strength",
@@ -94,7 +102,16 @@ impl PlanRequest {
         "karakas",
         "chalit",
         "phala",
+        "dashaPhala",
     ];
+
+    /// A request for what a placement says of its dasha. It needs the
+    /// dasha phala section beside it.
+    #[must_use]
+    pub const fn with_dasha_phala(mut self) -> PlanRequest {
+        self.dasha_phala = true;
+        self
+    }
 
     /// A request for the placements.
     #[must_use]
@@ -180,6 +197,7 @@ impl PlanRequest {
             || self.karakas
             || self.chalit
             || self.phala
+            || self.dasha_phala
     }
 
     /// A request read from JSON.

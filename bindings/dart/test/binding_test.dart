@@ -775,6 +775,7 @@ void _engineTests() {
             conditions: true,
             karakas: true,
             chalit: true,
+            dashaPhala: true,
           ),
           rules: const RuleRequest(shipped: [ShippedRules.nabhasas]),
         )!;
@@ -807,6 +808,12 @@ void _engineTests() {
     expect(states.length, greaterThanOrEqualTo(18), reason: 'nine of each');
     final karakas = plans['karakas']! as List<Object?>;
     expect(karakas, hasLength(15), reason: 'seven of seven, eight of eight');
+    // The dasha phala reads its own section, computed for it like the
+    // rest: three items a graha always, and a fourth only where the
+    // placement tilts the dasha one way or the other.
+    final dashas = plans['dashaPhala']! as List<Object?>;
+    expect(dashas.length, greaterThanOrEqualTo(9 * 3), reason: 'three each');
+    expect(dashas.length, lessThanOrEqualTo(9 * 4), reason: 'and four at most');
 
     // Each item said by handing its params straight to the renderer, which
     // is the property the crossing exists for.
@@ -821,6 +828,7 @@ void _engineTests() {
           ...looks,
           ...states,
           ...karakas,
+          ...dashas,
         ].cast<Map<String, Object?>>()) {
       final key = item['key']! as String;
       expect(key, startsWith('sdk.'));

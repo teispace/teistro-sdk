@@ -779,10 +779,19 @@ export interface PlanRequest {
   readonly chalit?: boolean;
   /**
    * What a loaded corpus of state readings says of this chart's subjects: a
-   * graha in a bhava, the lagna's sign, each limb of the panchanga. Says
-   * nothing until a pack carrying those readings is loaded.
+   * graha in a bhava, the lagna's sign, each limb of the panchanga, and
+   * what the birth nakshatra is. Says nothing until a pack carrying those
+   * readings is loaded.
    */
   readonly phala?: boolean;
+  /**
+   * What each graha's placement says of its dasha: when in the dasha its
+   * effects come, whether its place is auspicious, the points its dignity
+   * earns and whether the placement makes the dasha favourable — with the
+   * reading a loaded corpus carries of that graha as a dasha lord. Reads
+   * the dasha phala section, so it is computed for you when asked.
+   */
+  readonly dashaPhala?: boolean;
 }
 
 /**
@@ -819,6 +828,8 @@ export interface Plans {
   readonly chalit?: readonly PlanItem[];
   /** What a loaded corpus says of the chart's subjects; absent unless `phala` asked. */
   readonly phala?: readonly PlanItem[];
+  /** What a placement says of its dasha; absent unless `dashaPhala` asked. */
+  readonly dashaPhala?: readonly PlanItem[];
 }
 
 /**

@@ -1009,23 +1009,7 @@ const SECTION_SAYS: [(&str, &str, &str, &[&str]); 11] = [
         whether the name it earned is auspicious",
         &["vaiseshikamsa"],
     ),
-    (
-        "DASHA_PHALA",
-        "",
-        "\
-        what a placement says of that graha's dasha, and the **cheapest of \
-        the six** — one fact a graha, no scheme to choose and no sourcing \
-        question. Its cost is words and only words: the phase (at the \
-        dasha's commencement, in its middle, at its end), whether the \
-        placement makes the dasha favourable, the benefic and malefic \
-        points, and the nature of its rasi place, which is on the unnamed \
-        list and so is said the way `sdk.reading.lifeClass` says a class \
-        of life — matched on its key, with the words written in each \
-        locale. It is also the section the state corpus is waiting on: \
-        `dasha-lord-effect` and `dasha-lord-activation`, 18 readings, key \
-        onto a graha as a dasha lord and have no composer to attach to",
-        &["nature"],
-    ),
+    ("DASHA_PHALA", "dashaPhala", "", &[]),
 ];
 
 /// Every section the document declares, and what says it.
@@ -1123,18 +1107,19 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
          exactly the sentence this page had and exactly the sentence that \
          was not true. The list is read from the source that declares the \
          sections, so a twelfth fails here rather than being forgotten, \
-         and a composer named must be a member of `PlanRequest`. Two of \
-         the six share one blocker rather than having one each — \
+         and a composer named must be a member of `PlanRequest`. Of the \
+         {} left, two share one blocker rather than having one each — \
          `VIMSHOPAKA` and `VAISESHIKAMSA` both name a graha under four \
          schemes at once — so the queue is grouped by the blocker and not \
-         by the row, and {} of them are short a **name** rather than a \
-         sentence: being a catalogue member is not being named, and the \
-         kinds those rows cite are on `intl`'s own list of members no \
-         strict locale names, checked here so a reason cannot outlive its \
+         by the row; and {} are short a **name** rather than a sentence, \
+         because being a catalogue member is not being named. The kinds \
+         those rows cite are on `intl`'s own list of members no strict \
+         locale names, checked here so a reason cannot outlive its \
          blocker.\n\n\
          | section | said by | why not |\n|---|---|---|\n",
         count(said),
         count(SECTION_SAYS.len()),
+        count(SECTION_SAYS.len() - said),
         count(sourcing),
     );
     for (name, composer, why, _) in SECTION_SAYS {

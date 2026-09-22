@@ -18,5 +18,11 @@
     "score": "{$graha :entity kind=graha} scores {$score :number minimumFractionDigits=2} rupas",
     "meets": ".input {$graha :entity kind=graha} .input {$required :number minimumFractionDigits=2} .input {$reaches :string} .match $reaches yes {{{$graha} reaches the {$required} rupas its text requires}} * {{{$graha} falls short of the {$required} rupas its text requires}}",
     "rank": ".input {$rank :integer select=ordinal} .match $rank one {{{$rank}st}} two {{{$rank}nd}} few {{{$rank}rd}} * {{{$rank}th}}"
+  },
+  "dasha": {
+    "phase": ".input {$graha :entity kind=graha} .input {$phase :string} .match $phase commencement {{{$graha}'s dasha gives its effects at its commencement}} middle {{{$graha}'s dasha gives its effects in its middle}} * {{{$graha}'s dasha gives its effects at its end}}",
+    "place": ".input {$graha :entity kind=graha} .input {$nature :string} .match $nature BENEFIC {{{$graha} stands in an auspicious place}} MALEFIC {{{$graha} stands in an inauspicious place}} * {{{$graha} stands in a neutral place}}",
+    "points": "{$graha :entity kind=graha} earns {$subhanka :number minimumFractionDigits=0} benefic and {$asubhanka :number minimumFractionDigits=0} malefic points",
+    "favour": ".input {$graha :entity kind=graha} .input {$favour :string} .match $favour favourable {{{$graha}'s placement makes its dasha favourable}} unfavourable {{{$graha}'s placement makes its dasha unfavourable}} * {{{$graha}'s placement makes its dasha favourable and unfavourable at once}}"
   }
 }

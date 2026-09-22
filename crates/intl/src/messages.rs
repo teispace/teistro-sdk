@@ -1089,6 +1089,38 @@ pub mod sdk {
 
     /// The `phala` group.
     pub mod phala {
+        /// The message `sdk.phala.dashaActivation`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct DashaActivation {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for DashaActivation {
+            const KEY: &'static str = "sdk.phala.dashaActivation";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
+        /// The message `sdk.phala.dashaLord`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct DashaLord {
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+        }
+
+        impl crate::TypedMessage for DashaLord {
+            const KEY: &'static str = "sdk.phala.dashaLord";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("graha", crate::Value::catalogued(self.graha)),
+                ])
+            }
+        }
+
         /// The message `sdk.phala.gana`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct Gana {
@@ -1522,6 +1554,89 @@ pub mod sdk {
                     ("graha", crate::Value::catalogued(self.graha)),
                 ])
             }
+        }
+
+        /// The `dasha` group.
+        pub mod dasha {
+            /// The message `sdk.reason.dasha.favour`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Favour {
+                /// The `favour` parameter.
+                pub favour: String,
+                /// The `graha` parameter.
+                pub graha: teistro_core::catalogue::Graha,
+            }
+
+            impl crate::TypedMessage for Favour {
+                const KEY: &'static str = "sdk.reason.dasha.favour";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("favour", crate::Value::Str(self.favour.clone())),
+                        ("graha", crate::Value::catalogued(self.graha)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.dasha.phase`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Phase {
+                /// The `graha` parameter.
+                pub graha: teistro_core::catalogue::Graha,
+                /// The `phase` parameter.
+                pub phase: String,
+            }
+
+            impl crate::TypedMessage for Phase {
+                const KEY: &'static str = "sdk.reason.dasha.phase";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("graha", crate::Value::catalogued(self.graha)),
+                        ("phase", crate::Value::Str(self.phase.clone())),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.dasha.place`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Place {
+                /// The `graha` parameter.
+                pub graha: teistro_core::catalogue::Graha,
+                /// The `nature` parameter.
+                pub nature: String,
+            }
+
+            impl crate::TypedMessage for Place {
+                const KEY: &'static str = "sdk.reason.dasha.place";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("graha", crate::Value::catalogued(self.graha)),
+                        ("nature", crate::Value::Str(self.nature.clone())),
+                    ])
+                }
+            }
+
+            /// The message `sdk.reason.dasha.points`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Points {
+                /// The `asubhanka` parameter.
+                pub asubhanka: f64,
+                /// The `graha` parameter.
+                pub graha: teistro_core::catalogue::Graha,
+                /// The `subhanka` parameter.
+                pub subhanka: f64,
+            }
+
+            impl crate::TypedMessage for Points {
+                const KEY: &'static str = "sdk.reason.dasha.points";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("asubhanka", crate::Value::Num(self.asubhanka)),
+                        ("graha", crate::Value::catalogued(self.graha)),
+                        ("subhanka", crate::Value::Num(self.subhanka)),
+                    ])
+                }
+            }
+
         }
 
         /// The message `sdk.reason.exactLongitude`.

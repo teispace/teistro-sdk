@@ -3428,6 +3428,7 @@ final class PlanRequest {
     this.karakas = false,
     this.chalit = false,
     this.phala = false,
+    this.dashaPhala = false,
   });
 
   /// Where each of the nine grahas stands and who shares a sign.
@@ -3460,9 +3461,17 @@ final class PlanRequest {
   final bool chalit;
 
   /// What a loaded corpus of state readings says of this chart's subjects:
-  /// a graha in a bhava, the lagna's sign, each limb of the panchanga. It
-  /// says nothing until a pack carrying those readings is loaded.
+  /// a graha in a bhava, the lagna's sign, each limb of the panchanga, and
+  /// what the birth nakshatra is. It says nothing until a pack carrying
+  /// those readings is loaded.
   final bool phala;
+
+  /// What each graha's placement says of its dasha: when in the dasha its
+  /// effects come, whether its place is auspicious, the points its dignity
+  /// earns and whether the placement makes the dasha favourable — with the
+  /// reading a loaded corpus carries of that graha as a dasha lord. It
+  /// reads the dasha phala section, computed for you when asked.
+  final bool dashaPhala;
 
   String get _json => jsonEncode(<String, Object?>{
     'placements': placements,
@@ -3475,6 +3484,7 @@ final class PlanRequest {
     'karakas': karakas,
     'chalit': chalit,
     'phala': phala,
+    'dashaPhala': dashaPhala,
   });
 }
 

@@ -1736,6 +1736,10 @@ final class MessagesSdkPhala {
 
   final Renderer _r;
 
+  String dashaActivation({required GrahaKey graha}) =>
+      _r.render('sdk.phala.dashaActivation', {'graha': {r'$entity': graha.key}});
+  String dashaLord({required GrahaKey graha}) =>
+      _r.render('sdk.phala.dashaLord', {'graha': {r'$entity': graha.key}});
   String gana({required GanaKey gana}) =>
       _r.render('sdk.phala.gana', {'gana': {r'$entity': gana.key}});
   String grahaInBhava({required int bhava, required GrahaKey graha, required String phala}) =>
@@ -1785,6 +1789,21 @@ final class MessagesSdkReading {
       _r.render('sdk.reading.timing', {'reading': {r'$entity': reading}, 'rule': rule});
 }
 
+final class MessagesSdkReasonDasha {
+  const MessagesSdkReasonDasha(this._r);
+
+  final Renderer _r;
+
+  String favour({required String favour, required GrahaKey graha}) =>
+      _r.render('sdk.reason.dasha.favour', {'favour': favour, 'graha': {r'$entity': graha.key}});
+  String phase({required GrahaKey graha, required String phase}) =>
+      _r.render('sdk.reason.dasha.phase', {'graha': {r'$entity': graha.key}, 'phase': phase});
+  String place({required GrahaKey graha, required String nature}) =>
+      _r.render('sdk.reason.dasha.place', {'graha': {r'$entity': graha.key}, 'nature': nature});
+  String points({required num asubhanka, required GrahaKey graha, required num subhanka}) =>
+      _r.render('sdk.reason.dasha.points', {'asubhanka': asubhanka, 'graha': {r'$entity': graha.key}, 'subhanka': subhanka});
+}
+
 final class MessagesSdkReasonStrength {
   const MessagesSdkReasonStrength(this._r);
 
@@ -1810,6 +1829,7 @@ final class MessagesSdkReason {
       _r.render('sdk.reason.chalitShift', {'bhava': bhava, 'chalit': chalit, 'graha': {r'$entity': graha.key}});
   String conjunction({required int count, required GrahaKey graha}) =>
       _r.render('sdk.reason.conjunction', {'count': count, 'graha': {r'$entity': graha.key}});
+  MessagesSdkReasonDasha get dasha => MessagesSdkReasonDasha(_r);
   String exactLongitude({required num longitude}) =>
       _r.render('sdk.reason.exactLongitude', {'longitude': longitude});
   String grahaAt({required GrahaKey graha, required num longitude}) =>

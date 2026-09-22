@@ -44,6 +44,20 @@ pub enum DashaPhase {
 }
 
 impl DashaPhase {
+    /// The phase's key, as a message selects on it.
+    ///
+    /// Spelled in the house style — lower case, the words the verses use —
+    /// because a phase is not a catalogue member and a message matching on
+    /// it needs a string to match, exactly as `LifeClass` does.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            DashaPhase::Commencement => "commencement",
+            DashaPhase::Middle => "middle",
+            DashaPhase::End => "end",
+        }
+    }
+
     /// Every phase, in the dasha's order.
     pub const ALL: [DashaPhase; 3] = [
         DashaPhase::Commencement,

@@ -42,6 +42,7 @@
 //! ```
 
 use serde::{Deserialize, Serialize};
+use teistro_intl::messages::sdk::reason::dasha;
 use teistro_intl::messages::sdk::{aspect, condition, karaka, reading, reason};
 // The composer below is `phala` too, so the message module is named in
 // full where its keys are listed.
@@ -51,6 +52,7 @@ use teistro_intl::{Params, TypedMessage};
 mod aspects;
 mod chalit;
 mod conditions;
+mod dasha_phala;
 mod houses;
 mod karakas;
 mod phala;
@@ -62,6 +64,7 @@ mod strength;
 pub use aspects::aspects;
 pub use chalit::chalit;
 pub use conditions::conditions;
+pub use dasha_phala::dasha_phala;
 pub use houses::houses;
 pub use karakas::karakas;
 pub use phala::phala;
@@ -78,7 +81,7 @@ pub use strength::strength;
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 40] = [
+pub const KEYS: [&str; 46] = [
     <reason::PointInRashi as TypedMessage>::KEY,
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
@@ -119,6 +122,12 @@ pub const KEYS: [&str; 40] = [
     <phala_messages::Yoni as TypedMessage>::KEY,
     <phala_messages::Varna as TypedMessage>::KEY,
     <phala_messages::Tatwa as TypedMessage>::KEY,
+    <phala_messages::DashaLord as TypedMessage>::KEY,
+    <phala_messages::DashaActivation as TypedMessage>::KEY,
+    <dasha::Phase as TypedMessage>::KEY,
+    <dasha::Place as TypedMessage>::KEY,
+    <dasha::Points as TypedMessage>::KEY,
+    <dasha::Favour as TypedMessage>::KEY,
 ];
 
 /// One thing to say: a message key and the slots it is said with.

@@ -10,5 +10,7 @@
   "nadi": "{$nadi :entity kind=nadi form=phala}",
   "yoni": "{$yoni :entity kind=yoni form=phala}",
   "varna": "{$varna :entity kind=varna form=phala}",
-  "tatwa": "{$tatwa :entity kind=tatwa form=phala}"
+  "tatwa": "{$tatwa :entity kind=tatwa form=phala}",
+  "dashaLord": "{$graha :entity kind=graha form=dashaPhala}",
+  "dashaActivation": "{$graha :entity kind=graha form=dashaActivation}"
 }

@@ -69,7 +69,9 @@ worth deciding once there is more than one composer to carry.
   queue, and it replaces the sentence the page used to carry: *"the
   silences that remain are all of that kind"*, which was true of the
   messages it was counting and not of the sections nobody had counted.
-  **Three** of the six are waiting on a **name**, not two, and that is the
+  `DASHA_PHALA` was the cheapest of them and is built: `dasha_phala`, the
+  eleventh composer. **Three** of the six were waiting on a **name**, not
+  two, and that is the
   correction worth keeping: *being a catalogue member is not being named.*
   `vaiseshikamsa` and `nature` are both catalogued and neither is named by
   any strict locale — both sit on `intl.rs`'s list of members with no
@@ -84,10 +86,10 @@ worth deciding once there is more than one composer to carry.
   cheapest of the six until its sources were read, which is the pattern
   this project keeps earning — a design page's own account of an unbuilt
   step is a hypothesis, and this one was falsified twice before a line of
-  the composer was written. The cheapest is `DASHA_PHALA`: one fact a
-  graha, no scheme to choose, and its unnamed `nature` said the way
-  `sdk.reading.lifeClass` says a class of life, matched on its key with
-  the words written in each locale.
+  the composer was written. `DASHA_PHALA` was the cheapest — one fact a
+  graha, no scheme to choose — and it cost one workaround: its unnamed
+  `nature` is said the way `sdk.reading.lifeClass` says a class of life,
+  matched on its key with the words written in each locale. Five are left.
 - **The façade's reading types are the façade's.** `RulesReading` and
   `Present` live in `crates/sdk`, so a composer taking them would put
   `interpret` above the façade and invert the crate graph. Composers take the
@@ -455,6 +457,37 @@ the chart carries. That is worth knowing when reading the measured page: it
 composes the corpus's **recorded** karakas, as `strength` composes recorded
 rupas and `houses` recorded cusp signs, so its numbers are the recording
 engine's ranking and the SDK's own answer for the same chart can differ.
+
+**`dasha_phala`** — what each graha's placement says of its dasha: when
+in the dasha its effects come, whether its place is auspicious, the points
+its dignity earns and whether the placement makes the dasha favourable
+(BPHS ch. 28 vv. 7 to 10, ch. 47 vv. 3 to 6) — with the reading a loaded
+corpus carries of that graha as a dasha lord. **Built** over
+`sdk.reason.dasha` and two of `sdk.phala`, the second composer over a
+**section**.
+
+**It was the queue's own cheapest item, and it was still words.** The
+measured page's table of sections named it so: of the six a composer could
+not say, three were short a *name* rather than a sentence, and this one
+was short exactly one — `nature`, a catalogue member no strict locale
+names. So its place is said the way `sdk.reading.lifeClass` says a class
+of life: **matched on the key**, with the words written in each locale,
+rather than through an entity slot that would print nothing. Being a
+catalogue member is not being named, and this is where that distinction
+was first spent rather than merely recorded.
+
+**The tilt is one item and not two.** A placement can make a dasha
+favourable and unfavourable at once — vv. 5 and 6 allow it, and both flags
+then stand — so the message has a third arm for both rather than the
+composer saying it twice. A placement that tilts it neither way says
+nothing of the tilt, as a rule nothing cancelled says nothing of its
+cancellation.
+
+**And the corpus's own two are asked for separately.**
+`dasha-lord-effect` and `dasha-lord-activation` key onto a graha under the
+forms `dashaPhala` and `dashaActivation` — 18 readings that had no
+composer to attach to, which is why this section was the one the state
+corpus was waiting on.
 
 **`phala`** — what a loaded corpus of **state readings** says of this
 chart's subjects: a graha in a bhava, the lagna's sign, each limb of the

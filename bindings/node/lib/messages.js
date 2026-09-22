@@ -600,6 +600,8 @@ export function messages(r) {
         ofSeven: (p) => r.render('sdk.karaka.ofSeven', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
       },
       phala: {
+        dashaActivation: (p) => r.render('sdk.phala.dashaActivation', { graha: { '$entity': p.graha } }),
+        dashaLord: (p) => r.render('sdk.phala.dashaLord', { graha: { '$entity': p.graha } }),
         gana: (p) => r.render('sdk.phala.gana', { gana: { '$entity': p.gana } }),
         grahaInBhava: (p) => r.render('sdk.phala.grahaInBhava', { bhava: p.bhava, graha: { '$entity': p.graha }, phala: { '$entity': p.phala } }),
         lagnaRashi: (p) => r.render('sdk.phala.lagnaRashi', { rashi: { '$entity': p.rashi } }),
@@ -628,6 +630,12 @@ export function messages(r) {
         bhavaInRashi: (p) => r.render('sdk.reason.bhavaInRashi', { bhava: p.bhava, rashi: { '$entity': p.rashi } }),
         chalitShift: (p) => r.render('sdk.reason.chalitShift', { bhava: p.bhava, chalit: p.chalit, graha: { '$entity': p.graha } }),
         conjunction: (p) => r.render('sdk.reason.conjunction', { count: p.count, graha: { '$entity': p.graha } }),
+        dasha: {
+          favour: (p) => r.render('sdk.reason.dasha.favour', { favour: p.favour, graha: { '$entity': p.graha } }),
+          phase: (p) => r.render('sdk.reason.dasha.phase', { graha: { '$entity': p.graha }, phase: p.phase }),
+          place: (p) => r.render('sdk.reason.dasha.place', { graha: { '$entity': p.graha }, nature: p.nature }),
+          points: (p) => r.render('sdk.reason.dasha.points', { asubhanka: p.asubhanka, graha: { '$entity': p.graha }, subhanka: p.subhanka }),
+        },
         exactLongitude: (p) => r.render('sdk.reason.exactLongitude', { longitude: p.longitude }),
         grahaAt: (p) => r.render('sdk.reason.grahaAt', { graha: { '$entity': p.graha }, longitude: p.longitude }),
         grahaInBhava: (p) => r.render('sdk.reason.grahaInBhava', { bhava: p.bhava, graha: { '$entity': p.graha } }),

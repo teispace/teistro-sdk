@@ -535,3 +535,61 @@ fn a_plan_reads_back_from_its_own_json() {
     let read: teistro::Plan = serde_json::from_str(&json).expect("a plan reads");
     assert_eq!(read, plan);
 }
+
+/// The dasha phala is the eleventh composer and the second over a section.
+/// It says four things of every graha's placement — when in its dasha the
+/// effects come, whether its place is auspicious, the points its dignity
+/// earns and whether the placement tilts the dasha — and nothing of the
+/// tilt where the placement tilts it neither way.
+#[test]
+fn a_placement_says_what_its_dasha_will_be_like() {
+    let (sdk, document) = common::reading("{}", |request| {
+        request
+            .with_rule_inputs(shipped::nabhasas())
+            .with_dasha_phala()
+    });
+    let plan = sdk
+        .interpret()
+        .dasha_phala(&document)
+        .expect("the dasha phala");
+    let reading = document
+        .dasha_phala
+        .as_ref()
+        .expect("the dasha phala asked for");
+    assert_eq!(reading.grahas.len(), 9, "the nine, Sun to Ketu");
+
+    // Three items a graha always, and the fourth only where the placement
+    // tilts the dasha one way or the other or both.
+    let tilted = reading
+        .grahas
+        .iter()
+        .filter(|graha| graha.favourable || graha.unfavourable)
+        .count();
+    assert_eq!(plan.len(), reading.grahas.len() * 3 + tilted);
+
+    // Its nature crosses as the catalogue's own key and not as an entity,
+    // because `nature` is a kind no strict locale names: a message matches
+    // on the key and writes the words itself, as `lifeClass` does.
+    let written = serde_json::to_string(&plan).expect("a plan writes");
+    assert!(!written.contains(r#"{"$entity":"nature."#), "{written}");
+    let natures: Vec<&str> = plan
+        .items
+        .iter()
+        .filter_map(|item| match item.params.get("nature") {
+            Some(teistro::Value::Str(nature)) => Some(nature.as_str()),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(natures.len(), reading.grahas.len(), "one a graha");
+    assert!(
+        natures
+            .iter()
+            .all(|nature| matches!(*nature, "BENEFIC" | "MALEFIC" | "NEUTRAL")),
+        "{natures:?}"
+    );
+
+    // A document without the section is refused by the knob's name.
+    let (without, bare) = common::reading("{}", |request| request);
+    let refused = without.interpret().dasha_phala(&bare).unwrap_err();
+    assert_eq!(refused.field(), Some("dashaPhala"));
+}

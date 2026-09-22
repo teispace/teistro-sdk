@@ -2345,6 +2345,9 @@ struct Plans {
     chalit: Option<Plan>,
     #[serde(skip_serializing_if = "Option::is_none")]
     phala: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "dashaPhala")]
+    dasha_phala: Option<Plan>,
 }
 
 /// The charts a request asks for, the canonical JSON of what they answer by
@@ -2409,8 +2412,16 @@ fn sections_for(request: ChartRequest, asked: PlanRequest) -> ChartRequest {
     } else {
         request
     };
-    if asked.aspects {
+    let request = if asked.aspects {
         request.with_aspects()
+    } else {
+        request
+    };
+    // The only composer that needs a section of its own: the dasha phala
+    // is a pure function of the foundation and the states, and is computed
+    // only when a request asks.
+    if asked.dasha_phala {
+        request.with_dasha_phala()
     } else {
         request
     }
@@ -2468,6 +2479,10 @@ fn compose(
             phala: asked
                 .phala
                 .then(|| sdk.interpret().phala(document))
+                .transpose()?,
+            dasha_phala: asked
+                .dasha_phala
+                .then(|| sdk.interpret().dasha_phala(document))
                 .transpose()?,
         });
     }

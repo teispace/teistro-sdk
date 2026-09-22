@@ -812,6 +812,11 @@ class MessagesSdkReason:
             {"count": count, "graha": {"$entity": graha.value}},
         )
 
+    @property
+    def dasha(self) -> MessagesSdkReasonDasha:
+        """The messages under `dasha`."""
+        return MessagesSdkReasonDasha(self._r)
+
     def exact_longitude(self, *, longitude: float) -> str:
         """`sdk.reason.exactLongitude`"""
         return self._r.render(
@@ -921,6 +926,42 @@ class MessagesSdkReasonStrength:
         )
 
 
+class MessagesSdkReasonDasha:
+    """The messages under `MessagesSdkReasonDasha`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def favour(self, *, favour: str, graha: GrahaKey) -> str:
+        """`sdk.reason.dasha.favour`"""
+        return self._r.render(
+            "sdk.reason.dasha.favour",
+            {"favour": favour, "graha": {"$entity": graha.value}},
+        )
+
+    def phase(self, *, graha: GrahaKey, phase: str) -> str:
+        """`sdk.reason.dasha.phase`"""
+        return self._r.render(
+            "sdk.reason.dasha.phase",
+            {"graha": {"$entity": graha.value}, "phase": phase},
+        )
+
+    def place(self, *, graha: GrahaKey, nature: str) -> str:
+        """`sdk.reason.dasha.place`"""
+        return self._r.render(
+            "sdk.reason.dasha.place",
+            {"graha": {"$entity": graha.value}, "nature": nature},
+        )
+
+    def points(self, *, asubhanka: float, graha: GrahaKey, subhanka: float) -> str:
+        """`sdk.reason.dasha.points`"""
+        return self._r.render(
+            "sdk.reason.dasha.points",
+            {"asubhanka": asubhanka, "graha": {"$entity": graha.value}, "subhanka": subhanka},
+        )
+
+
 class MessagesSdkReading:
     """The messages under `MessagesSdkReading`, each rendered by its own key."""
 
@@ -991,6 +1032,20 @@ class MessagesSdkPhala:
     def __init__(self, renderer: Renderer) -> None:
         self._r = renderer
 
+
+    def dasha_activation(self, *, graha: GrahaKey) -> str:
+        """`sdk.phala.dashaActivation`"""
+        return self._r.render(
+            "sdk.phala.dashaActivation",
+            {"graha": {"$entity": graha.value}},
+        )
+
+    def dasha_lord(self, *, graha: GrahaKey) -> str:
+        """`sdk.phala.dashaLord`"""
+        return self._r.render(
+            "sdk.phala.dashaLord",
+            {"graha": {"$entity": graha.value}},
+        )
 
     def gana(self, *, gana: GanaKey) -> str:
         """`sdk.phala.gana`"""

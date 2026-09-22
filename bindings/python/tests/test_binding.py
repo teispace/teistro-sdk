@@ -792,7 +792,8 @@ class AnEngine(WithLibrary):
                 "aspects": True,
                 "conditions": True,
                 "karakas": True,
-                    "chalit": True,
+                "chalit": True,
+                "dashaPhala": True,
             },
             {"shipped": ["nabhasas"]},
         )
@@ -818,6 +819,11 @@ class AnEngine(WithLibrary):
             len(plans["conditions"]), 18, "a dignity and a navamsha each"
         )
         self.assertEqual(len(plans["karakas"]), 15, "seven and eight")
+        # The dasha phala reads its own section, computed for it like the
+        # rest: three items a graha always, and a fourth only where the
+        # placement tilts the dasha one way or the other.
+        self.assertGreaterEqual(len(plans["dashaPhala"]), 9 * 3, "three each")
+        self.assertLessEqual(len(plans["dashaPhala"]), 9 * 4, "four at most")
 
         said = 0
         for item in [
@@ -829,6 +835,7 @@ class AnEngine(WithLibrary):
             *plans["aspects"],
             *plans["conditions"],
             *plans["karakas"],
+            *plans["dashaPhala"],
         ]:
             self.assertTrue(item["key"].startswith("sdk."))
             rendered = self.ctx.intl.render(item["key"], item["params"])

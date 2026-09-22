@@ -22,7 +22,7 @@ packed.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every key a composer can emit is carried by every strict locale | **holds** | 0 of 80 disagree |
+| every key a composer can emit is carried by every strict locale | **holds** | 0 of 92 disagree |
 | every item renders from `en-Latn`'s own message, not a fallback | **holds** | 0 of 21967 disagree |
 | every item renders in `en-Latn` with nothing to warn about | **holds** | 0 of 21967 disagree |
 | every item renders from `ne-Deva-NP`'s own message, not a fallback | **holds** | 0 of 21967 disagree |
@@ -45,6 +45,8 @@ about.
 | `sdk.condition.vargottama` | 106 |
 | `sdk.karaka.ofEight` | 744 |
 | `sdk.karaka.ofSeven` | 651 |
+| `sdk.phala.dashaActivation` | 0 |
+| `sdk.phala.dashaLord` | 0 |
 | `sdk.phala.gana` | 0 |
 | `sdk.phala.grahaInBhava` | 837 |
 | `sdk.phala.lagnaRashi` | 93 |
@@ -67,6 +69,10 @@ about.
 | `sdk.reading.timing` | 29 |
 | `sdk.reason.bhavaInRashi` | 900 |
 | `sdk.reason.chalitShift` | 135 |
+| `sdk.reason.dasha.favour` | 0 |
+| `sdk.reason.dasha.phase` | 0 |
+| `sdk.reason.dasha.place` | 0 |
+| `sdk.reason.dasha.points` | 0 |
 | `sdk.reason.grahaAt` | 837 |
 | `sdk.reason.grahaInBhava` | 837 |
 | `sdk.reason.grahaInRashi` | 837 |
@@ -195,19 +201,19 @@ but `sdk.entity` renders each one's own word.
 ## Every section, and what says it
 
 A composer says a **section** or it says a placement, and the sections
-are what a chart request asks for by name. 5 of the 11 a document can
+are what a chart request asks for by name. 6 of the 11 a document can
 carry have a composer; the rest carry the reason they do not, because
 "the silences left are all of one kind" is exactly the sentence this
 page had and exactly the sentence that was not true. The list is read
 from the source that declares the sections, so a twelfth fails here
 rather than being forgotten, and a composer named must be a member of
-`PlanRequest`. Two of the six share one blocker rather than having one
-each — `VIMSHOPAKA` and `VAISESHIKAMSA` both name a graha under four
-schemes at once — so the queue is grouped by the blocker and not by
-the row, and 3 of them are short a **name** rather than a sentence:
-being a catalogue member is not being named, and the kinds those rows
-cite are on `intl`'s own list of members no strict locale names, checked
-here so a reason cannot outlive its blocker.
+`PlanRequest`. Of the 5 left, two share one blocker rather than having
+one each — `VIMSHOPAKA` and `VAISESHIKAMSA` both name a graha under
+four schemes at once — so the queue is grouped by the blocker and not
+by the row; and 2 are short a **name** rather than a sentence, because
+being a catalogue member is not being named. The kinds those rows cite
+are on `intl`'s own list of members no strict locale names, checked here
+so a reason cannot outlive its blocker.
 
 | section | said by | why not |
 |---|---|---|
@@ -221,7 +227,7 @@ here so a reason cannot outlive its blocker.
 | `SHADBALA` | `strength` | — |
 | `BHAVA_BALA` | — | a bhava's strength in **virupas**, which is `strength`'s `score` with a bhava where the graha is — `score` takes a `graha` slot, so a bhava needs its own. Its second message has nothing to read: a `BhavaStrength` carries the four parts and their total and **no requirement at all**, where a `GrahaShadbala` carries `required_rupas` beside `strong`. What a bhava must reach is the decision, and it is not the graha rule the texts state |
 | `VAISESHIKAMSA` | — | **no strict locale names its designations.** Kimshuka, Parijata, Gopura and the rest are catalogue members, and being a catalogue member is not being named: `vaiseshikamsa` is on the unnamed list with no vetted source, exactly as the special lagnas are, so a composer saying them would print nothing a locale carries. This row called it the cheapest of the six on the strength of *being catalogued*, which is the conflation this page had been making in prose. It also names a graha under four schemes at once, which is `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides whether the name it earned is auspicious |
-| `DASHA_PHALA` | — | what a placement says of that graha's dasha, and the **cheapest of the six** — one fact a graha, no scheme to choose and no sourcing question. Its cost is words and only words: the phase (at the dasha's commencement, in its middle, at its end), whether the placement makes the dasha favourable, the benefic and malefic points, and the nature of its rasi place, which is on the unnamed list and so is said the way `sdk.reading.lifeClass` says a class of life — matched on its key, with the words written in each locale. It is also the section the state corpus is waiting on: `dasha-lord-effect` and `dasha-lord-activation`, 18 readings, key onto a graha as a dasha lord and have no composer to attach to |
+| `DASHA_PHALA` | `dashaPhala` | — |
 
 | proposed rule | verdict | measured |
 |---|---|---|
@@ -229,7 +235,7 @@ here so a reason cannot outlive its blocker.
 
 ## What the packs carry, and what reads it
 
-40 of the 47 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
+46 of the 53 messages the base locale carries under `sdk.aspect`, `sdk.condition`, `sdk.karaka`, `sdk.phala`, `sdk.reading`, `sdk.reason` are emitted by a composer. The namespaces are the ones the composers already read, taken from `KEYS` rather than named here, so a composer over a new one widens this by itself. The rest are listed one by one with the reason no composer reads them, because "there is nothing left to compose" is a claim that goes stale the moment a message is written.
 
 | message | why no composer reads it |
 |---|---|

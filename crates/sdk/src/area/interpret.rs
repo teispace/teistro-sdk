@@ -2,8 +2,8 @@
 
 use teistro_core::error::Error;
 use teistro_interpret::{
-    Plan, aspects, chalit as say_chalit, conditions, houses, karakas, phala, placements, positions,
-    readings, strength,
+    Plan, aspects, chalit as say_chalit, conditions, dasha_phala, houses, karakas, phala,
+    placements, positions, readings, strength,
 };
 use teistro_serial::document::Document;
 
@@ -135,6 +135,24 @@ impl<'a> InterpretArea<'a> {
     pub fn phala(self, document: &Document) -> Result<Plan, Error> {
         let engine = self.context.locale_engine();
         Ok(phala(&RuleInputs::of(document)?.chart, &*engine))
+    }
+
+    /// What each graha's placement says of its dasha, with the reading a
+    /// loaded corpus carries of that graha as a dasha lord.
+    ///
+    /// # Errors
+    ///
+    /// A document without its dasha phala, naming the section to ask for.
+    pub fn dasha_phala(self, document: &Document) -> Result<Plan, Error> {
+        let reading = document.dasha_phala.as_ref().ok_or_else(|| {
+            Error::invalid_arg(
+                "the document carries no dasha phala, which the dasha phala composer says; ask \
+                 for it with `ChartRequest::with_dasha_phala`",
+            )
+            .with_field("dashaPhala")
+        })?;
+        let engine = self.context.locale_engine();
+        Ok(dasha_phala(reading, &*engine))
     }
 
     /// Each graha's Shadbala in rupas, the strongest first.
