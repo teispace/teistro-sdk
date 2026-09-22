@@ -1143,11 +1143,15 @@ test('a chart carries its Ashtakavarga, each graha\'s bindus and their reduction
 
 /** Vimshottari's table, under a consumer's key. */
 const VIMSHOTTARI_TWIN = {
+  kernel: 'udu',
   key: 'ACME_VIMSHOTTARI',
   lords: [['KETU', 7], ['VENUS', 20], ['SUN', 6], ['MOON', 10], ['MARS', 7], ['RAHU', 18], ['JUPITER', 16], ['SATURN', 19], ['MERCURY', 17]]
     .map(([graha, years]) => ({ graha, years })),
   reference: 'ASHWINI',
 };
+
+/** Chara's row under a consumer's key, the other kernel's twin. */
+const CHARA_TWIN = { kernel: 'rashi', key: 'ACME_CHARA' };
 
 /**
  * A consumer's own dasha system crosses: registered on the context, asked for
@@ -1155,7 +1159,7 @@ const VIMSHOTTARI_TWIN = {
  * twin's; a definition the checks refuse is named by its place and field.
  */
 test('a consumer dasha system registers, is asked for by its key and reads as its twin', () => {
-  const ctx = context({ dashaSystems: [VIMSHOTTARI_TWIN] });
+  const ctx = context({ dashaSystems: [VIMSHOTTARI_TWIN, CHARA_TWIN] });
   const chart = ctx.chart.found({
     instant: 2451545,
     place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
@@ -1175,6 +1179,19 @@ test('a consumer dasha system registers, is asked for by its key and reads as it
   const registered = ctx.keys.id('dasha_system.ACME_VIMSHOTTARI') & 0xffff;
   assert.equal(chart.batch.dashaName(registered), 'dasha_system.ACME_VIMSHOTTARI');
   assert.equal(chart.batch.dashaName(0xfffe), undefined, 'an id it never saw');
+  // The other kernel, the same way: a sign-based system of one's own answers
+  // as the catalogued row it copies (`03-design/dasha-coverage-measured.md`).
+  const signs = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    dashas: ['dasha_system.ACME_CHARA', DashaSystem.Chara],
+  });
+  const [own, chara] = signs.dashas;
+  assert.equal(own.system, 'dasha_system.ACME_CHARA');
+  assert.equal(chara.system, DashaSystem.Chara);
+  assert.deepEqual(own.periods, chara.periods);
+  assert.equal(own.seed, null, 'a sign-based dasha has no seed');
   assert.throws(
     () => ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, dashas: ['dasha_system.ACME_OTHER'] }),
     (error) => error instanceof TypeError && error.message.startsWith('dashas[0]'),
@@ -1183,6 +1200,10 @@ test('a consumer dasha system registers, is asked for by its key and reads as it
   assert.throws(
     () => context({ dashaSystems: [{ ...VIMSHOTTARI_TWIN, span: 0 }] }),
     (error) => error instanceof TeistroError && error.field === 'options.dashas_json[0].span',
+  );
+  assert.throws(
+    () => context({ dashaSystems: [{ ...CHARA_TWIN, strongerOf: [1, 13] }] }),
+    (error) => error instanceof TeistroError && error.field === 'options.dashas_json[0].stronger_of[1]',
   );
 });
 

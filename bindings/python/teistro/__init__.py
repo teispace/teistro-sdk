@@ -299,6 +299,8 @@ __all__ = [
     "Friendship",
     "GrahaState",
     "DashaDefinition",
+    "RashiDashaDefinition",
+    "UduDashaDefinition",
     "DashaLord",
     "Sayanadi",
     "Lajjitadi",
@@ -526,10 +528,10 @@ class Teistro:
         a key of its own, checked by the rules a shipped row passes
         (`03-design/chart-geometry.md` §7f).
 
-        `dasha_systems` are nakshatra-seeded dasha systems of your own, each a
-        `DashaDefinition`, asked for in a request's `dashas` by
-        `"dasha_system.<KEY>"` and checked by the rules a shipped row passes
-        (`03-design/dasha-kernels.md`).
+        `dasha_systems` are dasha systems of your own, of either kernel, each
+        a `DashaDefinition` naming its `kernel`, asked for in a request's
+        `dashas` by `"dasha_system.<KEY>"` and checked by the rules a shipped
+        row passes (`03-design/dasha-kernels.md`).
 
         `settings` is a patch over the profile, as a mapping — the shape
         the Node and Dart bindings take, so one example reads in all
@@ -2436,19 +2438,21 @@ class DashaLord(TypedDict):
     years: int
 
 
-class _DashaDefinitionRequired(TypedDict):
+class _UduDashaDefinitionRequired(TypedDict):
+    kernel: Literal["udu"]
     key: str
     lords: List[DashaLord]
     reference: str
 
 
-class DashaDefinition(_DashaDefinitionRequired, total=False):
+class UduDashaDefinition(_UduDashaDefinitionRequired, total=False):
     """A nakshatra-seeded dasha system of your own, as `dasha_systems` takes
     it: its key, its lords in order and the reference nakshatra, bare keys
     (`"SUN"`, `"KRITTIKA"`) as the document spells them; every other field
     defaults to Vimshottari's shape (`03-design/dasha-kernels.md`).
 
-    >>> saptaka: DashaDefinition = {
+    >>> saptaka: UduDashaDefinition = {
+    ...     "kernel": "udu",
     ...     "key": "ACME_SAPTAKA",
     ...     "lords": [{"graha": g, "years": 10} for g in ("SUN", "MOON", "MARS")],
     ...     "reference": "KRITTIKA",
@@ -2463,6 +2467,41 @@ class DashaDefinition(_DashaDefinitionRequired, total=False):
     scale: Dict[str, int]
     year_length: str
     depth: int
+
+
+class _RashiDashaDefinitionRequired(TypedDict):
+    kernel: Literal["rashi"]
+    key: str
+
+
+class RashiDashaDefinition(_RashiDashaDefinitionRequired, total=False):
+    """A sign-based (Jaimini) dasha system of your own: its key, and
+    optionally where it starts, the order it visits the signs in, how long a
+    sign runs, which lord a mahadasha names, and the houses to start from
+    the strongest of. Everything unsaid is Chara's
+    (`03-design/dasha-kernels.md`).
+
+    >>> sthira: RashiDashaDefinition = {
+    ...     "kernel": "rashi",
+    ...     "key": "ACME_STHIRA",
+    ...     "length": {"by_modality": {"movable": 7, "fixed": 8, "dual": 9}},
+    ... }
+    """
+
+    sources: List[str]
+    start: Literal["lagna", "arudha_lagna", "navamsa_lagna"]
+    order: Literal["consecutive", "trine_groups", "drishti_chain", "leap"]
+    length: Union[str, Dict[str, object]]
+    namedLord: Literal["stronger", "first"]
+    strongerOf: List[int]
+    year_length: str
+    depth: int
+
+
+DashaDefinition = Union[UduDashaDefinition, RashiDashaDefinition]
+"""A dasha system of your own, of either kernel. Which one runs it is
+**stated** in `kernel` and never guessed from the fields present, so a typo
+is refused by the field you wrote rather than by one you did not."""
 
 
 class _RowsJson(NamedTuple):

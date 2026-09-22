@@ -559,23 +559,38 @@ export type LayoutKey = `chart_layout.${string}`;
 export type DashaKey = `dasha_system.${string}`;
 
 /**
- * A nakshatra-seeded dasha system of your own, as `dashaSystems` takes it
- * (`03-design/dasha-kernels.md`, "A consumer's own system"). Keys are bare
- * (`SUN`, `KRITTIKA`), as the document spells them; every optional field
- * defaults to Vimshottari's shape.
+ * A dasha system of your own, of either kernel, as `dashaSystems` takes it
+ * (`03-design/dasha-kernels.md`, "A consumer's own system").
+ *
+ * The `kernel` is **stated** and never guessed from the fields present, so
+ * a typo is refused by the field you wrote rather than by one you did not.
  *
  * @example
  * const ctx = new Context({
  *   dashaSystems: [{
+ *     kernel: 'udu',
  *     key: 'ACME_SAPTAKA',
  *     lords: ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN']
  *       .map((graha) => ({ graha, years: 10 })),
  *     reference: 'KRITTIKA',
+ *   }, {
+ *     kernel: 'rashi',
+ *     key: 'ACME_STHIRA',
+ *     length: { by_modality: { movable: 7, fixed: 8, dual: 9 } },
  *   }],
  * });
  * ctx.chart.found({ instant, place, utcOffsetSeconds, dashas: ['dasha_system.ACME_SAPTAKA'] });
  */
-export interface DashaDefinition {
+export type DashaDefinition = UduDashaDefinition | RashiDashaDefinition;
+
+/**
+ * A nakshatra-seeded dasha system of your own. Keys are bare (`SUN`,
+ * `KRITTIKA`), as the document spells them; every optional field defaults
+ * to Vimshottari's shape.
+ */
+export interface UduDashaDefinition {
+  /** The kernel that runs it: lords for years, seeded by the Moon's nakshatra. */
+  readonly kernel: 'udu';
   /** Its key: `[A-Z][A-Z0-9_]`, at most 48 characters, and not one the catalogue has. */
   readonly key: string;
   /** Where the table comes from. */
@@ -594,6 +609,42 @@ export interface DashaDefinition {
   readonly repeats?: boolean;
   /** The factor on the mahadashas' years and the rounds in a cycle. */
   readonly scale?: { readonly numerator: number; readonly denominator: number; readonly rounds: number };
+  /** The length of its year; `JULIAN_365_25` by default. */
+  readonly year_length?: 'JULIAN_365_25' | 'SAVANA_360' | 'SIDEREAL' | 'TROPICAL' | 'LUNAR' | 'NAKSHATRA_324';
+  /** How many levels of periods a reading carries, 1 to 6; three by default. */
+  readonly depth?: number;
+}
+
+/** How long a sign's period runs, in a sign-based system. */
+export type RashiLength =
+  | 'count_to_lord'
+  | 'count_to_lord_by_dignity'
+  | { readonly fixed: number }
+  | { readonly by_modality: { readonly movable: number; readonly fixed: number; readonly dual: number } };
+
+/**
+ * A sign-based (Jaimini) dasha system of your own: its key, and optionally
+ * where it starts, the order it visits the signs in, how long a sign runs,
+ * which lord a mahadasha names, and the houses to start from the strongest
+ * of. Everything unsaid is Chara's.
+ */
+export interface RashiDashaDefinition {
+  /** The kernel that runs it: the twelve signs in an order, each for a number of years. */
+  readonly kernel: 'rashi';
+  /** Its key: `[A-Z][A-Z0-9_]`, at most 48 characters, and not one the catalogue has. */
+  readonly key: string;
+  /** Where the row comes from. */
+  readonly sources?: readonly string[];
+  /** Where it starts; the lagna by default. */
+  readonly start?: 'lagna' | 'arudha_lagna' | 'navamsa_lagna';
+  /** The order it visits the signs in; every sign in turn by default. */
+  readonly order?: 'consecutive' | 'trine_groups' | 'drishti_chain' | 'leap';
+  /** How long a sign's period runs; the count to its stronger lord by default. */
+  readonly length?: RashiLength;
+  /** Which lord a mahadasha names; the stronger of a dual-lorded sign's two by default. */
+  readonly namedLord?: 'stronger' | 'first';
+  /** The houses from the lagna to start from the strongest of; none by default. */
+  readonly strongerOf?: readonly number[];
   /** The length of its year; `JULIAN_365_25` by default. */
   readonly year_length?: 'JULIAN_365_25' | 'SAVANA_360' | 'SIDEREAL' | 'TROPICAL' | 'LUNAR' | 'NAKSHATRA_324';
   /** How many levels of periods a reading carries, 1 to 6; three by default. */
@@ -1588,9 +1639,10 @@ export interface ContextInit {
    */
   readonly layouts?: readonly LayoutRow[];
   /**
-   * Nakshatra-seeded dasha systems of your own, asked for by
-   * `dasha_system.<KEY>` in a request's `dashas`. Each is checked by the rules
-   * a shipped row passes, and a key the catalogue has is refused.
+   * Dasha systems of your own, of either kernel, asked for by
+   * `dasha_system.<KEY>` in a request's `dashas`. Each names its `kernel` and
+   * is checked by the rules a shipped row passes, and a key the catalogue has
+   * is refused whichever kernel asks for it.
    */
   readonly dashaSystems?: readonly DashaDefinition[];
   /** Use the SDK's analytic test provider; for examples and tests only. */

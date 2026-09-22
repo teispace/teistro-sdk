@@ -17,6 +17,8 @@ from teistro import (
     Altitude,
     AvasthaSayanadi,
     DashaDefinition,
+    RashiDashaDefinition,
+    UduDashaDefinition,
     DashaPhase,
     Nature,
     Balance,
@@ -1062,14 +1064,16 @@ class AnEngine(WithLibrary):
         years = (("KETU", 7), ("VENUS", 20), ("SUN", 6), ("MOON", 10), ("MARS", 7),
                  ("RAHU", 18), ("JUPITER", 16), ("SATURN", 19), ("MERCURY", 17))
         twin: DashaDefinition = {
+            "kernel": "udu",
             "key": "ACME_VIMSHOTTARI",
             "lords": [{"graha": graha, "years": count} for graha, count in years],
             "reference": "ASHWINI",
         }
+        sign_twin: DashaDefinition = {"kernel": "rashi", "key": "ACME_CHARA"}
         observer = Observer(
             latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
         )
-        with self.teistro.context(test_provider=True, dasha_systems=[twin]) as ctx:
+        with self.teistro.context(test_provider=True, dasha_systems=[twin, sign_twin]) as ctx:
             chart = ctx.chart.found(
                 instant=2451545.0,
                 place=observer,
@@ -1081,14 +1085,43 @@ class AnEngine(WithLibrary):
             self.assertIs(shipped.system, DashaSystem.VIMSHOTTARI)
             self.assertEqual(consumer.periods, shipped.periods)
             self.assertEqual(consumer.balance, shipped.balance)
+            # The other kernel, the same way: a sign-based system of one's
+            # own answers as the catalogued row it copies
+            # (`03-design/dasha-coverage-measured.md`).
+            signs = ctx.chart.found(
+                instant=2451545.0,
+                place=observer,
+                utc_offset_seconds=20700,
+                dashas=["dasha_system.ACME_CHARA", DashaSystem.CHARA],
+            )
+            own, chara = signs.dashas
+            self.assertEqual(own.system, "dasha_system.ACME_CHARA")
+            self.assertIs(chara.system, DashaSystem.CHARA)
+            self.assertEqual(own.periods, chara.periods)
+            self.assertIsNone(own.seed)
             with self.assertRaises(TeistroError) as stray:
                 ctx.chart.found(
                     instant=2451545.0, place=observer, utc_offset_seconds=20700, dashas=["dasha_system.ACME_OTHER"]
                 )
             self.assertEqual(stray.exception.field, "dashas[0]")
+        too_narrow: UduDashaDefinition = {
+            "kernel": "udu",
+            "key": "ACME_VIMSHOTTARI",
+            "lords": [{"graha": graha, "years": count} for graha, count in years],
+            "reference": "ASHWINI",
+            "span": 0,
+        }
         with self.assertRaises(TeistroError) as narrow:
-            self.teistro.context(test_provider=True, dasha_systems=[{**twin, "span": 0}])
+            self.teistro.context(test_provider=True, dasha_systems=[too_narrow])
         self.assertEqual(narrow.exception.field, "options.dashas_json[0].span")
+        thirteenth: RashiDashaDefinition = {
+            "kernel": "rashi",
+            "key": "ACME_THIRTEEN",
+            "strongerOf": [1, 13],
+        }
+        with self.assertRaises(TeistroError) as houses:
+            self.teistro.context(test_provider=True, dasha_systems=[thirteenth])
+        self.assertEqual(houses.exception.field, "options.dashas_json[0].stronger_of[1]")
 
     def test_a_chart_carries_its_dashas_their_periods_and_the_chain_at_an_instant(self) -> None:
         """A chart's dashas cross whole: the balance, the periods to the

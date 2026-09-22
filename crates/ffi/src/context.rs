@@ -100,13 +100,20 @@ pub struct TsContextOptions {
     /// (`03-design/chart-geometry.md` §7f).
     /// `api: nullable`
     pub layouts_json: *const c_char,
-    /// Nakshatra-seeded dasha systems of the consumer's own, as a JSON array
-    /// of definitions: each a key the catalogue does not have, its lords and
-    /// their years in order, the reference nakshatra, and optionally `count`,
-    /// `span`, `offset`, `repeats`, `scale`, `year_length`, `depth` and
-    /// `sources` (the document schema's `UduDefinition`). Every one is checked
-    /// by the rules a shipped row passes and refused by its place in the array
-    /// and its own field, as `options.dashas_json`, the index, then the field.
+    /// Dasha systems of the consumer's own, as a JSON array of definitions,
+    /// each naming the `kernel` that runs it. `"kernel": "udu"` is the
+    /// nakshatra-seeded kind: a key the catalogue does not have, its lords
+    /// and their years in order, the reference nakshatra, and optionally
+    /// `count`, `span`, `offset`, `repeats`, `scale`, `year_length`, `depth`
+    /// and `sources`. `"kernel": "rashi"` is the sign-based kind: a key, and
+    /// optionally `start`, `order`, `length`, `namedLord`, `strongerOf`,
+    /// `year_length`, `depth` and `sources` (the document schema's
+    /// `DashaDefinition`). The kernel is **stated** and never inferred from
+    /// which fields are present, so a typo is refused by the field the
+    /// caller wrote rather than by one they did not. Every one is checked
+    /// by the rules a shipped row passes and refused by its place in the
+    /// array and its own field, as `options.dashas_json`, the index, then
+    /// the field.
     /// A request asks for one by the id
     /// `ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in
     /// registration order. Null for none (`03-design/dasha-kernels.md`).
@@ -706,7 +713,7 @@ fn layouts_of(json: &str) -> Result<Vec<teistro::Layout>, Error> {
 /// A consumer's dasha system definitions, each read strictly; the context's
 /// registry checks each by the rules a shipped row passes and names it by
 /// its place.
-fn dashas_of(json: &str) -> Result<Vec<teistro::dasha::UduDefinition>, Error> {
+fn dashas_of(json: &str) -> Result<Vec<teistro::dasha::DashaDefinition>, Error> {
     const ROOT: &str = "options.dashas_json";
     let rows: Vec<serde_json::Value> = teistro_core::strict::read(json, ROOT)?;
     rows.into_iter()

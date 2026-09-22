@@ -46,6 +46,7 @@
 //! ```
 
 pub mod balance;
+pub mod definition;
 pub mod kalachakra;
 pub mod rashi;
 pub mod reading;
@@ -54,10 +55,11 @@ pub mod row;
 pub mod tree;
 
 pub use balance::{BalanceAtBirth, Written};
+pub use definition::DashaDefinition;
 pub use kalachakra::{KalachakraDasha, KalachakraRules, pada_row};
 pub use rashi::{
-    Footedness, Parity, RASHI_ROWS, RashiChart, RashiDasha, RashiRow, RashiRules, rashi_row,
-    stronger_sign,
+    Footedness, Length, NamedLord, Order, Parity, RASHI_ROWS, RashiChart, RashiDasha,
+    RashiDefinition, RashiRow, RashiRules, Start, rashi_row, stronger_sign,
 };
 pub use reading::{DashaCursor, DashaReading, PeriodRow};
 pub use registry::DashaSystems;
@@ -70,7 +72,7 @@ pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules, Timeline};
 pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
     ROWS.iter()
         .filter_map(|row| row.system.catalogued())
-        .chain(RASHI_ROWS.iter().map(|row| row.system))
+        .chain(RASHI_ROWS.iter().filter_map(|row| row.system.catalogued()))
         .chain(core::iter::once(
             teistro_core::catalogue::DashaSystem::Kalachakra,
         ))

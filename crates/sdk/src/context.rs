@@ -10,7 +10,7 @@ use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
     DEFAULT_PROFILE, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
 };
-use teistro_dasha::{DashaSystems, UduDefinition};
+use teistro_dasha::{DashaDefinition, DashaSystems};
 use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
@@ -283,7 +283,7 @@ pub struct ContextBuilder {
     locale: Option<String>,
     chain: Option<Vec<Ephemeris>>,
     layouts: Vec<Layout>,
-    dashas: Vec<UduDefinition>,
+    dashas: Vec<DashaDefinition>,
 }
 
 impl core::fmt::Debug for ContextBuilder {
@@ -318,8 +318,8 @@ impl ContextBuilder {
     /// catalogue has is refused, so a system is added and never replaced
     /// (`03-design/dasha-kernels.md`, "A consumer's own system").
     #[must_use]
-    pub fn dasha_system(mut self, definition: UduDefinition) -> ContextBuilder {
-        self.dashas.push(definition);
+    pub fn dasha_system(mut self, definition: impl Into<DashaDefinition>) -> ContextBuilder {
+        self.dashas.push(definition.into());
         self
     }
 

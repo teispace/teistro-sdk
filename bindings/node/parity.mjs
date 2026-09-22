@@ -243,7 +243,7 @@ shipped.dispose();
 // A dasha system of the consumer's own, the same definition every runner
 // registers: a backward count, a two-nakshatra window, an offset, a savana
 // year and a depth of two (`03-design/dasha-kernels.md`).
-const parityDasha = JSON.parse('{"key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}');
+const parityDasha = JSON.parse('{"kernel":"udu","key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}');
 const geo = new Context({
   profile: 'parashari-classical',
   locale: 'ne-Deva-NP',

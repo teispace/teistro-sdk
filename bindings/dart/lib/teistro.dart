@@ -2600,22 +2600,41 @@ final class DashaLord {
   Map<String, Object?> toJson() => {'graha': graha.key, 'years': years};
 }
 
-/// A nakshatra-seeded dasha system of your own, as `dashaSystems` takes it:
-/// its key, its lords in order and the reference nakshatra, every other
-/// field defaulting to Vimshottari's shape (`03-design/dasha-kernels.md`).
+/// A dasha system of your own, of either kernel, as `dashaSystems` takes
+/// it (`03-design/dasha-kernels.md`).
+///
+/// Which kernel runs it is **stated** and never guessed from the fields
+/// present, so a typo is refused by the field you wrote rather than by one
+/// you did not.
 ///
 /// ```dart
 /// final ctx = teistro.context(dashaSystems: [
-///   DashaDefinition(
+///   UduDashaDefinition(
 ///     key: 'ACME_SAPTAKA',
 ///     lords: [for (final g in [Graha.sun, Graha.moon, Graha.mars]) DashaLord(g, 10)],
 ///     reference: Nakshatra.krittika,
 ///   ),
+///   RashiDashaDefinition(key: 'ACME_STHIRA', length: {'by_modality': {'movable': 7, 'fixed': 8, 'dual': 9}}),
 /// ]);
 /// ctx.chart.found(/* … */ dashas: [DashaSystem.registered('ACME_SAPTAKA')]);
 /// ```
-final class DashaDefinition {
-  const DashaDefinition({
+sealed class DashaDefinition {
+  const DashaDefinition();
+
+  /// Its key: `[A-Z][A-Z0-9_]`, at most 48 characters, and not one the
+  /// catalogue has.
+  String get key;
+
+  /// The definition as the JSON a context's `dashaSystems` crosses as,
+  /// naming its kernel.
+  Map<String, Object?> toJson();
+}
+
+/// A nakshatra-seeded dasha system of your own: its key, its lords in order
+/// and the reference nakshatra, every other field defaulting to
+/// Vimshottari's shape.
+final class UduDashaDefinition extends DashaDefinition {
+  const UduDashaDefinition({
     required this.key,
     required this.lords,
     required this.reference,
@@ -2628,8 +2647,7 @@ final class DashaDefinition {
     this.depth,
   });
 
-  /// Its key: `[A-Z][A-Z0-9_]`, at most 48 characters, and not one the
-  /// catalogue has.
+  @override
   final String key;
 
   /// The lords, in the order they run.
@@ -2659,8 +2677,9 @@ final class DashaDefinition {
   /// How many levels of periods a reading carries, 1 to 6; three by default.
   final int? depth;
 
-  /// The definition as the JSON a context's `dashaSystems` crosses as.
+  @override
   Map<String, Object?> toJson() => {
+    'kernel': 'udu',
     'key': key,
     'lords': [for (final lord in lords) lord.toJson()],
     'reference': reference.key,
@@ -2669,6 +2688,67 @@ final class DashaDefinition {
     if (span != null) 'span': span,
     if (offset != null) 'offset': offset,
     if (repeats != null) 'repeats': repeats,
+    if (yearLength != null) 'year_length': yearLength,
+    if (depth != null) 'depth': depth,
+  };
+}
+
+/// A sign-based (Jaimini) dasha system of your own: its key, and optionally
+/// where it starts, the order it visits the signs in, how long a sign runs,
+/// which lord a mahadasha names, and the houses to start from the strongest
+/// of. Everything unsaid is Chara's.
+final class RashiDashaDefinition extends DashaDefinition {
+  const RashiDashaDefinition({
+    required this.key,
+    this.sources = const <String>[],
+    this.start,
+    this.order,
+    this.length,
+    this.namedLord,
+    this.strongerOf = const <int>[],
+    this.yearLength,
+    this.depth,
+  });
+
+  @override
+  final String key;
+
+  /// Where the table comes from.
+  final List<String> sources;
+
+  /// `lagna` (the default), `arudha_lagna` or `navamsa_lagna`.
+  final String? start;
+
+  /// `consecutive` (the default), `trine_groups`, `drishti_chain` or `leap`.
+  final String? order;
+
+  /// `count_to_lord` (the default), `count_to_lord_by_dignity`,
+  /// `{'fixed': 9}` or `{'by_modality': {'movable': 7, 'fixed': 8, 'dual': 9}}`.
+  final Object? length;
+
+  /// `stronger` (the default) or `first`.
+  final String? namedLord;
+
+  /// The houses from the lagna to start from the strongest of; none by
+  /// default, which starts from `start` itself.
+  final List<int> strongerOf;
+
+  /// The length of its year (`JULIAN_365_25` by default, `SAVANA_360`, …).
+  final String? yearLength;
+
+  /// How many levels of periods a reading carries, 1 to 6; three by default.
+  final int? depth;
+
+  @override
+  Map<String, Object?> toJson() => {
+    'kernel': 'rashi',
+    'key': key,
+    if (sources.isNotEmpty) 'sources': sources,
+    if (start != null) 'start': start,
+    if (order != null) 'order': order,
+    if (length != null) 'length': length,
+    if (namedLord != null) 'namedLord': namedLord,
+    if (strongerOf.isNotEmpty) 'strongerOf': strongerOf,
     if (yearLength != null) 'year_length': yearLength,
     if (depth != null) 'depth': depth,
   };

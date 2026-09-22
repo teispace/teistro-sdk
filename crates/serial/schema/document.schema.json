@@ -1319,6 +1319,39 @@
         }
       ]
     },
+    "DashaDefinition": {
+      "description": "A consumer's system, named by the kernel that runs it.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/UduDefinition",
+          "description": "The nakshatra-seeded kernel: lords for years, seeded by the Moon's nakshatra.",
+          "properties": {
+            "kernel": {
+              "const": "udu",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kernel"
+          ],
+          "type": "object"
+        },
+        {
+          "$ref": "#/$defs/RashiDefinition",
+          "description": "The sign-based kernel: the twelve signs in an order, each for a number of years.",
+          "properties": {
+            "kernel": {
+              "const": "rashi",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kernel"
+          ],
+          "type": "object"
+        }
+      ]
+    },
     "DashaName": {
       "anyOf": [
         {
@@ -1384,13 +1417,13 @@
         "definition": {
           "anyOf": [
             {
-              "$ref": "#/$defs/UduDefinition"
+              "$ref": "#/$defs/DashaDefinition"
             },
             {
               "type": "null"
             }
           ],
-          "description": "A consumer's system's definition, carried so a stored document rebuilds its periods whatever its context has registered since; nothing for a catalogued system."
+          "description": "A consumer's system's definition, of whichever kernel runs it, carried so a stored document rebuilds its periods whatever its context has registered since; nothing for a catalogued system."
         },
         "depth": {
           "$ref": "#/$defs/Depth",
@@ -3112,6 +3145,78 @@
       "format": "double",
       "type": "number"
     },
+    "Length": {
+      "description": "How long a sign's period runs.",
+      "oneOf": [
+        {
+          "const": "count_to_lord",
+          "description": "The count to the sign's stronger lord.",
+          "type": "string"
+        },
+        {
+          "const": "count_to_lord_by_dignity",
+          "description": "The same, a year more when that lord is exalted and a year less when debilitated, from one year to twelve.",
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "The same years for every sign.",
+          "properties": {
+            "fixed": {
+              "format": "uint8",
+              "maximum": 255,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "fixed"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "By the sign's modality.",
+          "properties": {
+            "by_modality": {
+              "properties": {
+                "dual": {
+                  "description": "A dual sign's years.",
+                  "format": "uint8",
+                  "maximum": 255,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "fixed": {
+                  "description": "A fixed sign's years.",
+                  "format": "uint8",
+                  "maximum": 255,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "movable": {
+                  "description": "A movable sign's years.",
+                  "format": "uint8",
+                  "maximum": 255,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "movable",
+                "fixed",
+                "dual"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "by_modality"
+          ],
+          "type": "object"
+        }
+      ]
+    },
     "Limbs": {
       "description": "The four moving limbs of one day.",
       "properties": {
@@ -3610,6 +3715,21 @@
       ],
       "type": "object"
     },
+    "NamedLord": {
+      "description": "Which lord a mahadasha names.",
+      "oneOf": [
+        {
+          "const": "stronger",
+          "description": "The stronger of a dual-lorded sign's two.",
+          "type": "string"
+        },
+        {
+          "const": "first",
+          "description": "The first, Ketu or Rahu.",
+          "type": "string"
+        }
+      ]
+    },
     "Nathonnatha": {
       "description": "How the Shadbala's Nathonnatha measures the hour (crux C65).",
       "oneOf": [
@@ -3663,6 +3783,31 @@
         "disha_shool"
       ],
       "type": "object"
+    },
+    "Order": {
+      "description": "The order a system visits the signs in.",
+      "oneOf": [
+        {
+          "const": "consecutive",
+          "description": "Every sign in turn from the start, forward from an odd start and back from an even one.",
+          "type": "string"
+        },
+        {
+          "const": "trine_groups",
+          "description": "The trine groups from the start's, forward, each group's three signs forward from an odd start and reversed from an even one.",
+          "type": "string"
+        },
+        {
+          "const": "drishti_chain",
+          "description": "The ninth, tenth and eleventh houses from the start, each followed by the signs it aspects in the zodiac's order, then any sign left out in the zodiac's order (crux C52).",
+          "type": "string"
+        },
+        {
+          "const": "leap",
+          "description": "Back two signs at a time from the start, six times, then the same from the sign before the start.",
+          "type": "string"
+        }
+      ]
     },
     "Outcome": {
       "description": "What happened to a system undefined at the place.",
@@ -4474,6 +4619,66 @@
       "type": "string",
       "x-teistro-kind": "rashi"
     },
+    "RashiDefinition": {
+      "description": "A consumer's own sign-based system, the shape `UduDefinition` has for the nakshatra-seeded kernel.",
+      "properties": {
+        "depth": {
+          "$ref": "#/$defs/Depth",
+          "default": 3,
+          "description": "How many levels of periods a reading carries; three by default."
+        },
+        "key": {
+          "description": "The key it is registered under, in the key grammar and not one the catalogue has.",
+          "type": "string"
+        },
+        "length": {
+          "$ref": "#/$defs/Length",
+          "default": "count_to_lord",
+          "description": "How long a sign's period runs; the count to its stronger lord by default, which is what most of the family does."
+        },
+        "namedLord": {
+          "$ref": "#/$defs/NamedLord",
+          "default": "stronger",
+          "description": "Which lord a mahadasha names; the stronger of a dual-lorded sign's two by default."
+        },
+        "order": {
+          "$ref": "#/$defs/Order",
+          "default": "consecutive",
+          "description": "The order it visits the signs in; every sign in turn by default."
+        },
+        "sources": {
+          "description": "Where the row comes from.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "start": {
+          "$ref": "#/$defs/Start",
+          "default": "lagna",
+          "description": "Where it starts; the lagna by default."
+        },
+        "strongerOf": {
+          "description": "The houses from the lagna to start from the strongest of, under `RashiStart::Stronger`; none by default, which starts from `RashiDefinition::start` itself.",
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "yearLength": {
+          "$ref": "#/$defs/YearLength",
+          "default": "JULIAN_365_25",
+          "description": "The length of its year; the Julian year by default, as every catalogued system takes unless the settings say otherwise."
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "type": "object"
+    },
     "RashiRules": {
       "description": "The rashi dashas' two readings BPHS and the recording engine part on.",
       "properties": {
@@ -5011,6 +5216,26 @@
         "good_vargas"
       ],
       "type": "object"
+    },
+    "Start": {
+      "description": "Where a system starts.",
+      "oneOf": [
+        {
+          "const": "lagna",
+          "description": "The lagna.",
+          "type": "string"
+        },
+        {
+          "const": "arudha_lagna",
+          "description": "The arudha lagna.",
+          "type": "string"
+        },
+        {
+          "const": "navamsa_lagna",
+          "description": "The navamsa lagna.",
+          "type": "string"
+        }
+      ]
     },
     "SthanaBala": {
       "description": "A graha's Sthana bala by component, virupas.",
