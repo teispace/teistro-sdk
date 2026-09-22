@@ -156,6 +156,27 @@ that were asked for.
   `intl.render`, asserting the text — no conversion step is allowed to
   appear between them: a gate that only proves the section parses would go
   green without the property the crossing exists for.
+- **Every composer asked for alone answers, or says why not.** A member
+  of `PlanRequest` is a promise that asking for it gets you something and
+  that the section it reads is computed for it; `sections_for` is the one
+  place that mapping lives and nothing held it. The ABI test asks for
+  each member **by itself**, because asking for several together hides a
+  missing section behind a sibling's — `strength` and `houses` each bring
+  the states four other composers read, so a member whose own section was
+  forgotten still answers in company. A member that refuses or says
+  nothing fails unless it is listed with a reason, and the list fails
+  both ways. Only `phala` is listed, because it says what a **loaded**
+  corpus carries and that context loads none, which is the composer
+  working rather than failing.
+
+  It is worth saying what this does *not* catch, since the temptation is
+  to believe a new gate covers the bug that prompted it. The almanac dead
+  end of 2026-09-22 had the section asked for and the **document's**
+  panchanga never turned into the birth's limbs, so `phala` returned an
+  empty plan this test excuses. The pass that catches that one founds a
+  chart with both corpora loaded and requires **every key** to be
+  emitted. *Can it be asked for* and *does it ever say anything* are two
+  questions, and each needs its own check.
 - **The four parity runners print each chart's rendered lines** in
   `en-Latn`, so `check-parity` holds Rust, Node, Dart and Python to the same
   sentences. This is the first parity over **text**, and it exercises the

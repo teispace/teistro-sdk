@@ -1975,3 +1975,115 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         "{record:?}"
     );
 }
+
+/// Every composer asked for **alone** answers, or says here why it cannot.
+///
+/// This is the maintainer's "no dead ends" rule as a check. A member of
+/// `PlanRequest` is a promise that asking for it gets you something, and
+/// the section it reads is computed for it: `sections_for` is the one
+/// place that mapping lives and nothing held it.
+///
+/// **Alone, and one at a time**, because asking for several together
+/// hides a missing section behind a sibling's — `strength` and `houses`
+/// both bring the states that four other composers read, so a member
+/// whose own section was forgotten still answers in company.
+///
+/// What it catches is a member that **refuses** or that **says nothing**.
+/// It would not have caught the almanac bug of 2026-09-22 in its own
+/// shape, and it is worth being exact about that: there the section was
+/// asked for and the *document's* was never turned into the birth's
+/// limbs, so `phala` returned an empty plan that this test excuses for a
+/// context with no pack loaded. The pass that catches that one is
+/// `cargo xtask interpret`'s "every key, emitted at least once", which
+/// founds a chart with both corpora and requires every key. The two are
+/// different questions — *can it be asked for* and *does it ever say
+/// anything* — and both are needed.
+///
+/// The two that are legitimately empty carry their reason, and the list
+/// fails both ways: a member that says nothing and is not here fails, and
+/// one here that says something fails too.
+#[test]
+fn every_composer_asked_for_alone_answers_or_says_why_not() {
+    /// A composer that answers nothing for this chart, and why.
+    const SILENT: [(&str, &str); 1] = [(
+        "phala",
+        "it says what a loaded corpus carries and this context has loaded none, which is the \
+         composer working rather than failing: a chart composes to the same plan it did before \
+         until a consumer asks for the words",
+    )];
+
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    let instants = [2_447_995.489_583_333_5];
+    let rules = CString::new(r#"{"shipped": ["nabhasas"]}"#).unwrap();
+    let silent: std::collections::BTreeMap<&str, &str> = SILENT.iter().copied().collect();
+
+    for member in teistro::PlanRequest::MEMBERS {
+        let plans = CString::new(format!(r#"{{"{member}": true}}"#)).unwrap();
+        let request = sized(
+            TsChartRequest {
+                struct_size: 0,
+                kind: 0,
+                reserved: 0,
+                instants: instants.as_ptr(),
+                instant_count: instants.len(),
+                latitude_deg: 27.7172,
+                longitude_deg: 85.324,
+                altitude_m: 1400.0,
+                utc_offset_seconds: 20_700,
+                reserved_tail: 0,
+                // Nothing asked for: a composer's own section is the
+                // library's job, which is the whole point of the check.
+                sections: 0,
+                reserved_sections: 0,
+                vargas: ptr::null(),
+                varga_count: 0,
+                drawings: ptr::null(),
+                drawing_count: 0,
+                dashas: ptr::null(),
+                dasha_count: 0,
+                theme_json: ptr::null(),
+                rules_json: rules.as_ptr(),
+                interpret_json: plans.as_ptr(),
+            },
+            |r, s| r.struct_size = s,
+        );
+        let mut blob = TsBlob::empty();
+        // SAFETY: a live context, a valid request and a valid slot.
+        assert_eq!(
+            unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+            Status::Ok,
+            "`{member}` alone: {:?}",
+            ctx.last_error()
+        );
+        // SAFETY: the library wrote `len` bytes.
+        let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+        // SAFETY: a descriptor the library wrote.
+        unsafe { ts_blob_free(&raw mut blob) };
+        let schema = schemas::charts();
+        let reader = Reader::parse(&bytes, &schema).unwrap();
+        let composed: serde_json::Value =
+            serde_json::from_slice(reader.bytes("plans").unwrap()).unwrap();
+        let chart = &composed.as_array().unwrap()[0];
+        let items = chart[member]
+            .as_array()
+            .unwrap_or_else(|| panic!("`{member}` was asked for, so it is present"));
+
+        match (items.is_empty(), silent.get(member)) {
+            (true, None) => panic!(
+                "`{member}` asked for alone says nothing, and SILENT does not say why — a member \
+                 is a promise that asking for it gets you something"
+            ),
+            (false, Some(why)) => {
+                panic!("`{member}` says something now, and SILENT still says: {why}")
+            }
+            _ => {}
+        }
+    }
+}
