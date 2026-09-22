@@ -485,6 +485,42 @@ Four words, and the knob was never the blocker.
 looks inconsistent and is the point: `strength` sorts because a graha's
 weight is read *against the others*, and a bhava's is read in place.
 
+**`ashtakavarga`** — what the Ashtakavarga says: each graha's bindus in
+the sign it stands in, and each sign's sarvashtakavarga. **Built** over
+two messages of `sdk.reason`, the sixteenth composer, and the last of the
+four queue rows called *decisions* — the only one that stayed one when
+its sources were read.
+
+**The decision was never whether the numbers cross.** They have crossed
+as `Document.ashtakavarga` since the module landed: eighty-four bindus, a
+twelve-place sarva, two reduced rows and three pindas a graha. It was
+*which of them a sentence is worth*, and the answer taken is the **two a
+text quotes**. That is nineteen items — seven and twelve — with the sarva
+said once rather than repeated inside every graha's sentence, and it is
+why this is the first composer to take **two inputs**: an
+`AshtakavargaReading` is indexed by sign and knows nothing of where the
+grahas are, so the chart has to stand beside it.
+
+**No band and no verdict**, which is `bhava_bala`'s rule rather than
+`strength`'s. A `GrahaShadbala` carries `required_rupas`, so `strength`
+can say a sufficiency; an `AshtakavargaReading` carries no threshold at
+all. Bindus run 0 to 8 and a sign's sarva is a part of a fixed 337 — both
+are scales a reader already has — so *weak*, *middling* and *strong*
+would be a rule **invented** rather than one said. That is the same
+objection that keeps `shadbala-strength`'s four bands out of the state
+corpus ([`state-readings-measured.md`](state-readings-measured.md)), and
+it is worth holding to in both places or in neither.
+
+**What it does not say is what the ruleset decides.** The trine and
+Ekadhipatya reductions and all three pindas are settings, not facts:
+[`ashtakavarga-measured.md`](ashtakavarga-measured.md) falsifies the
+text's reading of each of them against the corpus on every one of 77
+charts, so a sentence saying one would have to name the ruleset it was
+reduced under to mean anything — a different sentence, and a decision of
+its own. And the sarva is said **by sign**, which is what the reading is
+indexed by; saying it by bhava would fold in the house system, and which
+house a sign is belongs to `houses`.
+
 **`panchanga`** — the almanac of the chart's day: the tithi with its
 paksha, the vara, the nakshatra and the Moon's pada in it, the yoga and the
 karana, and whether the birth fell by day where the chart says. **Built**

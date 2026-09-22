@@ -2357,6 +2357,8 @@ struct Plans {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "dashaPhala")]
     dasha_phala: Option<Plan>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ashtakavarga: Option<Plan>,
 }
 
 /// The charts a request asks for, the canonical JSON of what they answer by
@@ -2448,8 +2450,13 @@ fn sections_for(request: ChartRequest, asked: PlanRequest) -> ChartRequest {
     } else {
         request
     };
-    if asked.vimshopaka {
+    let request = if asked.vimshopaka {
         request.with_vimshopaka()
+    } else {
+        request
+    };
+    if asked.ashtakavarga {
+        request.with_ashtakavarga()
     } else {
         request
     }
@@ -2527,6 +2534,10 @@ fn compose(
             dasha_phala: asked
                 .dasha_phala
                 .then(|| sdk.interpret().dasha_phala(document))
+                .transpose()?,
+            ashtakavarga: asked
+                .ashtakavarga
+                .then(|| sdk.interpret().ashtakavarga(document))
                 .transpose()?,
         });
     }

@@ -95,6 +95,13 @@ pub struct PlanRequest {
     /// one, and the lajjitadi that hold beside the ones nothing decides.
     /// It reads what `conditions` reads, so it costs no section beyond it.
     pub states: bool,
+    /// What the Ashtakavarga says: each graha's bindus in the sign it
+    /// stands in, and each sign's sarvashtakavarga. It reads
+    /// `Document.ashtakavarga` **and the chart's own placements**, so it
+    /// costs that section, and it says the two numbers a text quotes and
+    /// no verdict: an `AshtakavargaReading` carries no threshold, so
+    /// there is no band to fall into.
+    pub ashtakavarga: bool,
     /// What each graha's placement says of its dasha: when in the dasha
     /// its effects come, whether its place is auspicious, the points its
     /// dignity earns and whether the placement makes the dasha
@@ -112,7 +119,7 @@ impl PlanRequest {
     /// holds the list against the record's own serialisation, both ways, so
     /// a composer added without a name here fails rather than going
     /// unmentioned in the refusal a typo earns.
-    pub const MEMBERS: [&'static str; 15] = [
+    pub const MEMBERS: [&'static str; 16] = [
         "placements",
         "readings",
         "strength",
@@ -128,6 +135,7 @@ impl PlanRequest {
         "panchanga",
         "states",
         "dashaPhala",
+        "ashtakavarga",
     ];
 
     /// A request for each bhava's strength.
@@ -141,6 +149,13 @@ impl PlanRequest {
     #[must_use]
     pub const fn with_vimshopaka(mut self) -> PlanRequest {
         self.vimshopaka = true;
+        self
+    }
+
+    /// A request for what the Ashtakavarga says.
+    #[must_use]
+    pub const fn with_ashtakavarga(mut self) -> PlanRequest {
+        self.ashtakavarga = true;
         self
     }
 
@@ -252,6 +267,7 @@ impl PlanRequest {
             || self.phala
             || self.bhava_bala
             || self.vimshopaka
+            || self.ashtakavarga
             || self.panchanga
             || self.states
             || self.dasha_phala

@@ -1718,6 +1718,28 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.reason.ashtakavarga`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Ashtakavarga {
+            /// The `bindus` parameter.
+            pub bindus: i64,
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+        }
+
+        impl crate::TypedMessage for Ashtakavarga {
+            const KEY: &'static str = "sdk.reason.ashtakavarga";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("bindus", crate::Value::Int(self.bindus)),
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                ])
+            }
+        }
+
         /// The message `sdk.reason.bhavaBala`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct BhavaBala {
@@ -2181,6 +2203,25 @@ pub mod sdk {
             const KEY: &'static str = "sdk.reason.rashiNature";
             fn params(&self) -> crate::Params {
                 crate::params([
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                ])
+            }
+        }
+
+        /// The message `sdk.reason.sarvashtakavarga`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Sarvashtakavarga {
+            /// The `bindus` parameter.
+            pub bindus: i64,
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+        }
+
+        impl crate::TypedMessage for Sarvashtakavarga {
+            const KEY: &'static str = "sdk.reason.sarvashtakavarga";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("bindus", crate::Value::Int(self.bindus)),
                     ("rashi", crate::Value::catalogued(self.rashi)),
                 ])
             }

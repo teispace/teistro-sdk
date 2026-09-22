@@ -2589,6 +2589,7 @@ class PlanRequest(TypedDict, total=False):
     panchanga: bool
     states: bool
     dashaPhala: bool
+    ashtakavarga: bool
 
 
 class PlanItem(TypedDict):
@@ -2619,6 +2620,7 @@ class Plans(TypedDict, total=False):
     panchanga: List[PlanItem]
     states: List[PlanItem]
     dashaPhala: List[PlanItem]
+    ashtakavarga: List[PlanItem]
 
 
 def _rules_json(rules: Optional[RuleRequest]) -> Optional[str]:

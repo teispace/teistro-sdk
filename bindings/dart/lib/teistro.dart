@@ -3500,6 +3500,7 @@ final class PlanRequest {
     this.panchanga = false,
     this.states = false,
     this.dashaPhala = false,
+    this.ashtakavarga = false,
   });
 
   /// Where each of the nine grahas stands and who shares a sign.
@@ -3563,6 +3564,13 @@ final class PlanRequest {
   /// reads the dasha phala section, computed for you when asked.
   final bool dashaPhala;
 
+  /// What the Ashtakavarga says: each graha's bindus in the sign it
+  /// stands in, and each sign's sarvashtakavarga. The two numbers a text
+  /// quotes and no verdict, because the reading carries no threshold. It
+  /// reads the Ashtakavarga section and the chart's own placements, both
+  /// computed for you when asked.
+  final bool ashtakavarga;
+
   String get _json => jsonEncode(<String, Object?>{
     'placements': placements,
     'readings': readings,
@@ -3579,6 +3587,7 @@ final class PlanRequest {
     'panchanga': panchanga,
     'states': states,
     'dashaPhala': dashaPhala,
+    'ashtakavarga': ashtakavarga,
   });
 }
 

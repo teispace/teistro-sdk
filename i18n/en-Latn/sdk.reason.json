@@ -35,5 +35,7 @@
     "byDay": ".input {$byDay :string} .match $byDay yes {{the birth fell by day}} * {{the birth fell by night}}"
   },
   "bhavaBala": ".input {$bhava :integer select=ordinal} .input {$virupas :number minimumFractionDigits=2} .match $bhava one {{the {$bhava}st house weighs {$virupas} virupas}} two {{the {$bhava}nd house weighs {$virupas} virupas}} few {{the {$bhava}rd house weighs {$virupas} virupas}} * {{the {$bhava}th house weighs {$virupas} virupas}}",
-  "vimshopaka": ".input {$graha :entity kind=graha} .input {$score :number minimumFractionDigits=2} .input {$scheme :string} .match $scheme shadvarga {{{$graha} scores {$score} vimshopaka over the six vargas}} saptavarga {{{$graha} scores {$score} vimshopaka over the seven vargas}} dashavarga {{{$graha} scores {$score} vimshopaka over the ten vargas}} * {{{$graha} scores {$score} vimshopaka over the sixteen vargas}}"
+  "vimshopaka": ".input {$graha :entity kind=graha} .input {$score :number minimumFractionDigits=2} .input {$scheme :string} .match $scheme shadvarga {{{$graha} scores {$score} vimshopaka over the six vargas}} saptavarga {{{$graha} scores {$score} vimshopaka over the seven vargas}} dashavarga {{{$graha} scores {$score} vimshopaka over the ten vargas}} * {{{$graha} scores {$score} vimshopaka over the sixteen vargas}}",
+  "ashtakavarga": ".input {$graha :entity kind=graha} .input {$rashi :entity kind=rashi} .input {$bindus :integer} .match $bindus one {{{$graha} has {$bindus} bindu in {$rashi}}} * {{{$graha} has {$bindus} bindus in {$rashi}}}",
+  "sarvashtakavarga": ".input {$rashi :entity kind=rashi} .input {$bindus :integer} .match $bindus one {{{$rashi} holds {$bindus} bindu in the sarvashtakavarga}} * {{{$rashi} holds {$bindus} bindus in the sarvashtakavarga}}"
 }

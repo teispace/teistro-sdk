@@ -2,9 +2,10 @@
 
 use teistro_core::error::Error;
 use teistro_interpret::{
-    Plan, aspects, bhava_bala as say_bhava_bala, chalit as say_chalit, conditions, dasha_phala,
-    houses, karakas, panchanga as say_panchanga, phala, placements, positions, readings,
-    states as say_states, strength, vimshopaka as say_vimshopaka,
+    Plan, ashtakavarga as say_ashtakavarga, aspects, bhava_bala as say_bhava_bala,
+    chalit as say_chalit, conditions, dasha_phala, houses, karakas, panchanga as say_panchanga,
+    phala, placements, positions, readings, states as say_states, strength,
+    vimshopaka as say_vimshopaka,
 };
 use teistro_serial::document::Document;
 
@@ -175,6 +176,27 @@ impl<'a> InterpretArea<'a> {
             )
             .with_field("vimshopaka")
             })
+    }
+
+    /// What the Ashtakavarga says: each graha's bindus in the sign it
+    /// stands in, and each sign's sarvashtakavarga.
+    ///
+    /// # Errors
+    ///
+    /// A document without its Ashtakavarga, naming the section to ask
+    /// for; or one whose chart cannot be read, which the reading has to
+    /// stand beside because it is indexed by sign and knows nothing of
+    /// where the grahas are.
+    pub fn ashtakavarga(self, document: &Document) -> Result<Plan, Error> {
+        let Some(reading) = document.ashtakavarga.as_ref() else {
+            return Err(Error::invalid_arg(
+                "the document carries no Ashtakavarga, which the ashtakavarga composer says; ask \
+                 for it with `ChartRequest::with_ashtakavarga`",
+            )
+            .with_field("ashtakavarga"));
+        };
+        let chart = RuleInputs::of(document)?.chart;
+        Ok(say_ashtakavarga(reading, &chart))
     }
 
     /// The almanac of the chart's day: its five limbs, the Moon's pada

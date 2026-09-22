@@ -812,6 +812,14 @@ export interface PlanRequest {
    * the dasha phala section, so it is computed for you when asked.
    */
   readonly dashaPhala?: boolean;
+  /**
+   * What the Ashtakavarga says: each graha's bindus in the sign it stands
+   * in, and each sign's sarvashtakavarga. The two numbers a text quotes
+   * and no verdict, because the reading carries no threshold. Reads the
+   * Ashtakavarga section and the chart's own placements, so both are
+   * computed for you when asked.
+   */
+  readonly ashtakavarga?: boolean;
 }
 
 /**
@@ -858,6 +866,8 @@ export interface Plans {
   readonly states?: readonly PlanItem[];
   /** What a placement says of its dasha; absent unless `dashaPhala` asked. */
   readonly dashaPhala?: readonly PlanItem[];
+  /** What the Ashtakavarga says; absent unless `ashtakavarga` asked for it. */
+  readonly ashtakavarga?: readonly PlanItem[];
 }
 
 /**

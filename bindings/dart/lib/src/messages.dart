@@ -1887,6 +1887,8 @@ final class MessagesSdkReason {
   final Renderer _r;
 
   String appName() => _r.render('sdk.reason.appName');
+  String ashtakavarga({required int bindus, required GrahaKey graha, required RashiKey rashi}) =>
+      _r.render('sdk.reason.ashtakavarga', {'bindus': bindus, 'graha': {r'$entity': graha.key}, 'rashi': {r'$entity': rashi.key}});
   String bhavaBala({required int bhava, required num virupas}) =>
       _r.render('sdk.reason.bhavaBala', {'bhava': bhava, 'virupas': virupas});
   String bhavaInRashi({required int bhava, required RashiKey rashi}) =>
@@ -1917,6 +1919,8 @@ final class MessagesSdkReason {
       _r.render('sdk.reason.pointInRashi', {'point': {r'$entity': point.key}, 'rashi': {r'$entity': rashi.key}});
   String rashiNature({required RashiKey rashi}) =>
       _r.render('sdk.reason.rashiNature', {'rashi': {r'$entity': rashi.key}});
+  String sarvashtakavarga({required int bindus, required RashiKey rashi}) =>
+      _r.render('sdk.reason.sarvashtakavarga', {'bindus': bindus, 'rashi': {r'$entity': rashi.key}});
   MessagesSdkReasonStrength get strength => MessagesSdkReasonStrength(_r);
   String vimshopaka({required GrahaKey graha, required String scheme, required num score}) =>
       _r.render('sdk.reason.vimshopaka', {'graha': {r'$entity': graha.key}, 'scheme': scheme, 'score': score});

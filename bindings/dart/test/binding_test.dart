@@ -813,6 +813,7 @@ void _engineTests() {
             vimshopaka: true,
             panchanga: true,
             dashaPhala: true,
+            ashtakavarga: true,
           ),
           rules: const RuleRequest(shipped: [ShippedRules.nabhasas]),
         )!;
@@ -868,6 +869,10 @@ void _engineTests() {
     final almanac = plans['panchanga']! as List<Object?>;
     expect(almanac.length, greaterThanOrEqualTo(6), reason: 'limbs and pada');
     expect(almanac.length, lessThanOrEqualTo(7), reason: 'and the day');
+    // The Ashtakavarga reads its own section *and* the placements: a
+    // graha's bindus are the ones of the sign it stands in.
+    final bindus = plans['ashtakavarga']! as List<Object?>;
+    expect(bindus, hasLength(7 + 12), reason: 'a graha each, then a sign each');
 
     // Each item said by handing its params straight to the renderer, which
     // is the property the crossing exists for.

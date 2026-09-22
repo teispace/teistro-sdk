@@ -992,22 +992,29 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 11] = [
     ("HOUSES", &["houses"], "", &[]),
     (
         "ASHTAKAVARGA",
-        &[],
+        &["ashtakavarga"],
         "\
-        a bindu count is twelve numbers a graha and one more row for their \
-        sum: a **table** rather than a sentence, and the sentence a \
-        consumer would want (`the Sun has five bindus in Aries`) is a \
-        fragment of the `exactLongitude` kind this page already declines. \
-        Which of its numbers deserves a sentence — a sign's sarva, a \
-        graha's pinda — is a **reading** decision rather than a \
-        mechanical one, which is why this row is the last of the three \
-        that were called decisions and the only one that stayed one. \
-        `VIMSHOPAKA` wanted four words and `BHAVA_BALA` wanted nothing at \
-        all; this one wants someone to say which of eighty-four numbers a \
-        sentence is worth. The likely answer is the two a text quotes — \
-        each graha's bindus in the sign it stands in, and that sign's \
-        sarva — which needs the placements beside the section and so is a \
-        composer over two inputs. Every name it would need is vetted",
+        the reductions and the three pindas. This row was the last of the \
+        four called **decisions** and the only one that stayed one, and \
+        what it asked was never whether the numbers cross — they have \
+        crossed as `Document.ashtakavarga` since the module landed — but \
+        which of them a sentence is worth. The answer taken is the two a \
+        text quotes: each graha's bindus in the **sign it stands in**, \
+        which is why this composer takes the chart beside the section, \
+        and each sign's **sarvashtakavarga**, said once rather than \
+        repeated inside every graha's sentence. Nineteen items. No band \
+        and no verdict, which is `bhava_bala`'s rule and not \
+        `strength`'s: a `GrahaShadbala` carries `required_rupas` and an \
+        `AshtakavargaReading` carries no threshold, so *weak* and \
+        *strong* would be a rule invented rather than said — the \
+        objection that keeps `shadbala-strength`'s four bands out of the \
+        state corpus. What is left is left because it is \
+        **ruleset-dependent**: the measured page falsifies the text's \
+        reading of the trine reduction, the Ekadhipatya and all three \
+        pindas against the corpus on every chart, so a sentence saying \
+        one would have to name the ruleset it was reduced under. And the \
+        sarva is said by sign, which is what the reading is indexed by; \
+        by bhava would fold in the house system, which is `houses`'",
         &[],
     ),
     ("VIMSHOPAKA", &["vimshopaka"], "", &[]),
@@ -1127,6 +1134,7 @@ fn the_founded_plan(sdk: &teistro::Context) -> Result<Plan, String> {
         .with_dasha_phala()
         .with_bhava_bala()
         .with_vimshopaka()
+        .with_ashtakavarga()
         .with_points();
     let instant =
         teistro::quantity::JulianDay::try_new(2_448_000.5).map_err(|why| why.to_string())?;
@@ -1155,6 +1163,7 @@ fn the_founded_plan(sdk: &teistro::Context) -> Result<Plan, String> {
         interpret().strength(document),
         interpret().bhava_bala(document),
         interpret().vimshopaka(document),
+        interpret().ashtakavarga(document),
     ] {
         plan.items.extend(said.map_err(|why| why.to_string())?);
     }
@@ -1615,6 +1624,13 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
         .iter()
         .filter(|(_, _, _, kinds)| !kinds.is_empty())
         .count();
+    // Named, not counted: a list of what is left cannot name a row that
+    // has since been built, and a count cannot be checked by a reader.
+    let unsaid: Vec<String> = SECTION_SAYS
+        .iter()
+        .filter(|(_, composers, _, _)| composers.is_empty())
+        .map(|(name, _, _, _)| format!("`{name}`"))
+        .collect();
     out.push_str("## Every section, and what says it\n\n");
     let _ = write!(
         out,
@@ -1629,20 +1645,24 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
          the four that reach it through a `Placement`, so the row read as \
          answered. The list is read from the source that declares the \
          sections, so a twelfth fails here rather than being forgotten, \
-         and a composer named must be a member of `PlanRequest`. Of the \
-         {} nothing says, two share one blocker rather than having one \
-         each — `VIMSHOPAKA` and `VAISESHIKAMSA` both name a graha under \
-         four schemes at once — so the queue is grouped by the blocker and \
-         not by the row; and {} rows are short a **name** rather than a \
-         sentence, because being a catalogue member is not being named. \
-         The kinds those rows cite are on `intl`'s own list of members no \
-         strict locale names, checked here so a reason cannot outlive its \
-         blocker.\n\n\
+         and a composer named must be a member of `PlanRequest`. The rows \
+         nothing says are **named** rather than described — {} — because \
+         the sentence that described them named `VIMSHOPAKA` as one of \
+         them for as long as it took to build it, which is the rot this \
+         page keeps catching in its own prose. {} rows are short a \
+         **name** rather than a sentence, because being a catalogue \
+         member is not being named. The kinds those rows cite are on \
+         `intl`'s own list of members no strict locale names, checked \
+         here so a reason cannot outlive its blocker.\n\n\
          | section | said by | what is left |\n|---|---|---|\n",
         count(said),
         count(SECTION_SAYS.len()),
         count(partly),
-        count(SECTION_SAYS.len() - said),
+        if unsaid.is_empty() {
+            String::from("there are none")
+        } else {
+            unsaid.join(" and ")
+        },
         count(sourcing),
     );
     for (name, composers, why, _) in SECTION_SAYS {

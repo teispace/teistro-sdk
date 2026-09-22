@@ -35,5 +35,7 @@
     "byDay": ".input {$byDay :string} .match $byDay yes {{जन्म दिनमा भएको}} * {{जन्म रातमा भएको}}"
   },
   "bhavaBala": ".input {$bhava :integer select=ordinal} .input {$virupas :number minimumFractionDigits=2} .match $bhava 1 {{पहिलो भावको बल {$virupas} विरूपा}} 2 {{दोस्रो भावको बल {$virupas} विरूपा}} 3 {{तेस्रो भावको बल {$virupas} विरूपा}} 4 {{चौथो भावको बल {$virupas} विरूपा}} * {{{$bhava}औं भावको बल {$virupas} विरूपा}}",
-  "vimshopaka": ".input {$graha :entity kind=graha} .input {$score :number minimumFractionDigits=2} .input {$scheme :string} .match $scheme shadvarga {{{$graha}ले षड्वर्गमा {$score} विंशोपक पाउँछ}} saptavarga {{{$graha}ले सप्तवर्गमा {$score} विंशोपक पाउँछ}} dashavarga {{{$graha}ले दशवर्गमा {$score} विंशोपक पाउँछ}} * {{{$graha}ले षोडशवर्गमा {$score} विंशोपक पाउँछ}}"
+  "vimshopaka": ".input {$graha :entity kind=graha} .input {$score :number minimumFractionDigits=2} .input {$scheme :string} .match $scheme shadvarga {{{$graha}ले षड्वर्गमा {$score} विंशोपक पाउँछ}} saptavarga {{{$graha}ले सप्तवर्गमा {$score} विंशोपक पाउँछ}} dashavarga {{{$graha}ले दशवर्गमा {$score} विंशोपक पाउँछ}} * {{{$graha}ले षोडशवर्गमा {$score} विंशोपक पाउँछ}}",
+  "ashtakavarga": "{$graha :entity kind=graha}ले {$rashi :entity kind=rashi}मा {$bindus :integer} बिन्दु पाएको छ",
+  "sarvashtakavarga": "{$rashi :entity kind=rashi}को सर्वाष्टकवर्ग {$bindus :integer} बिन्दु"
 }

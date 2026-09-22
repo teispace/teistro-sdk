@@ -80,7 +80,7 @@ One pack a locale, because a Nepali application wants Nepali and its
 fallback rather than every language's worth of prose: 736 KB of the 2920
 KB, and the consumer chooses.
 
-Against the root the build script *does* embed: `i18n/` is **311 KB** of
+Against the root the build script *does* embed: `i18n/` is **312 KB** of
 messages across every locale and namespace, so the corpus is about **10
 times** it. Both halves of that comparison are measured here, because
 the figure was written into three documents as three different numbers

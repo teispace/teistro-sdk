@@ -904,6 +904,7 @@ test('plans compose in the same crossing, and render with nothing in between', (
       vimshopaka: true,
       panchanga: true,
       dashaPhala: true,
+      ashtakavarga: true,
     },
   }).plans;
   assert.ok(plans.placements.length > 0, 'every chart places its grahas');
@@ -944,6 +945,9 @@ test('plans compose in the same crossing, and render with nothing in between', (
   assert.equal(plans.vimshopaka.length, 7 * 4, 'seven grahas, four schemes each');
   assert.ok(plans.panchanga.length >= 6, 'five limbs and a pada');
   assert.ok(plans.panchanga.length <= 7, 'and the day at most');
+  // The Ashtakavarga reads its own section *and* the placements: a graha's
+  // bindus are the ones of the sign it stands in.
+  assert.equal(plans.ashtakavarga.length, 7 + 12, 'a graha each, then a sign each');
   assert.ok(Object.isFrozen(plans.placements[0]), 'a plan handed out is a plan kept');
 
   let said = 0;

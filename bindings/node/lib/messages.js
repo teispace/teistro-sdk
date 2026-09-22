@@ -639,6 +639,7 @@ export function messages(r) {
       },
       reason: {
         appName: () => r.render('sdk.reason.appName'),
+        ashtakavarga: (p) => r.render('sdk.reason.ashtakavarga', { bindus: p.bindus, graha: { '$entity': p.graha }, rashi: { '$entity': p.rashi } }),
         bhavaBala: (p) => r.render('sdk.reason.bhavaBala', { bhava: p.bhava, virupas: p.virupas }),
         bhavaInRashi: (p) => r.render('sdk.reason.bhavaInRashi', { bhava: p.bhava, rashi: { '$entity': p.rashi } }),
         chalitShift: (p) => r.render('sdk.reason.chalitShift', { bhava: p.bhava, chalit: p.chalit, graha: { '$entity': p.graha } }),
@@ -668,6 +669,7 @@ export function messages(r) {
         pointAt: (p) => r.render('sdk.reason.pointAt', { longitude: p.longitude, point: { '$entity': p.point } }),
         pointInRashi: (p) => r.render('sdk.reason.pointInRashi', { point: { '$entity': p.point }, rashi: { '$entity': p.rashi } }),
         rashiNature: (p) => r.render('sdk.reason.rashiNature', { rashi: { '$entity': p.rashi } }),
+        sarvashtakavarga: (p) => r.render('sdk.reason.sarvashtakavarga', { bindus: p.bindus, rashi: { '$entity': p.rashi } }),
         strength: {
           meets: (p) => r.render('sdk.reason.strength.meets', { graha: { '$entity': p.graha }, reaches: p.reaches, required: p.required }),
           rank: (p) => r.render('sdk.reason.strength.rank', { rank: p.rank }),

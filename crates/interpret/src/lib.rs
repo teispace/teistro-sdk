@@ -50,6 +50,7 @@ use teistro_intl::messages::sdk::{aspect, condition, karaka, reading, reason};
 use teistro_intl::messages::sdk::phala as phala_messages;
 use teistro_intl::{Params, TypedMessage};
 
+mod ashtakavarga;
 mod aspects;
 mod chalit;
 mod conditions;
@@ -65,6 +66,7 @@ mod states;
 mod strength;
 mod weights;
 
+pub use ashtakavarga::ashtakavarga;
 pub use aspects::aspects;
 pub use chalit::chalit;
 pub use conditions::conditions;
@@ -88,7 +90,7 @@ pub use weights::{bhava_bala, vimshopaka};
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
 /// reads.
-pub const KEYS: [&str; 67] = [
+pub const KEYS: [&str; 69] = [
     <reason::PointInRashi as TypedMessage>::KEY,
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
@@ -156,6 +158,8 @@ pub const KEYS: [&str; 67] = [
     <panchanga_messages::ByDay as TypedMessage>::KEY,
     <reason::BhavaBala as TypedMessage>::KEY,
     <reason::Vimshopaka as TypedMessage>::KEY,
+    <reason::Ashtakavarga as TypedMessage>::KEY,
+    <reason::Sarvashtakavarga as TypedMessage>::KEY,
 ];
 
 /// One thing to say: a message key and the slots it is said with.

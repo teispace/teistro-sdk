@@ -808,6 +808,13 @@ class MessagesSdkReason:
         """`sdk.reason.appName`"""
         return self._r.render("sdk.reason.appName")
 
+    def ashtakavarga(self, *, bindus: int, graha: GrahaKey, rashi: RashiKey) -> str:
+        """`sdk.reason.ashtakavarga`"""
+        return self._r.render(
+            "sdk.reason.ashtakavarga",
+            {"bindus": bindus, "graha": {"$entity": graha.value}, "rashi": {"$entity": rashi.value}},
+        )
+
     def bhava_bala(self, *, bhava: int, virupas: float) -> str:
         """`sdk.reason.bhavaBala`"""
         return self._r.render(
@@ -914,6 +921,13 @@ class MessagesSdkReason:
         return self._r.render(
             "sdk.reason.rashiNature",
             {"rashi": {"$entity": rashi.value}},
+        )
+
+    def sarvashtakavarga(self, *, bindus: int, rashi: RashiKey) -> str:
+        """`sdk.reason.sarvashtakavarga`"""
+        return self._r.render(
+            "sdk.reason.sarvashtakavarga",
+            {"bindus": bindus, "rashi": {"$entity": rashi.value}},
         )
 
     @property

@@ -834,6 +834,7 @@ class AnEngine(WithLibrary):
                 "vimshopaka": True,
                 "panchanga": True,
                 "dashaPhala": True,
+                "ashtakavarga": True,
             },
             {"shipped": ["nabhasas"]},
         )
@@ -871,6 +872,11 @@ class AnEngine(WithLibrary):
         self.assertEqual(len(plans["vimshopaka"]), 7 * 4, "seven by four")
         self.assertGreaterEqual(len(plans["panchanga"]), 6, "limbs and pada")
         self.assertLessEqual(len(plans["panchanga"]), 7, "and the day")
+        # The Ashtakavarga reads its own section *and* the placements: a
+        # graha's bindus are the ones of the sign it stands in.
+        self.assertEqual(
+            len(plans["ashtakavarga"]), 7 + 12, "a graha each, then a sign each"
+        )
 
         said = 0
         for item in [
@@ -887,6 +893,7 @@ class AnEngine(WithLibrary):
             *plans["panchanga"],
             *plans["bhavaBala"],
             *plans["vimshopaka"],
+            *plans["ashtakavarga"],
         ]:
             self.assertTrue(item["key"].startswith("sdk."))
             rendered = self.ctx.intl.render(item["key"], item["params"])
