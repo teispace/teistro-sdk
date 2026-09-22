@@ -5,6 +5,12 @@ corpus's recorded births. Do not edit: `check-varshaphala` regenerates
 this page and fails on any difference. The design it measures is
 [`annual-chart.md`](annual-chart.md).
 
+Every number below is read from `sdk.chart().praveshas`, the shipped
+path, and not from a copy of it kept here: a pass that computes what it
+measures measures itself. This page was written before the module and
+its numbers did not move when the module took over, which is the only
+evidence that the thing measured and the thing built are one thing.
+
 The corpus records **no annual chart of any kind**, so nothing here is
 compared against a recording. What it records is 55 births — their
 places, their instants and their settings — and a return is a property

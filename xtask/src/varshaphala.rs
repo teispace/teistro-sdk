@@ -30,14 +30,8 @@ use std::path::Path;
 
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
-use teistro_astro::ayanamsha::Basis;
-use teistro_astro::completion::Completion;
-use teistro_astro::events::{Lattice, Quantity, Search};
-use teistro_astro::precession::PrecessionModel;
-use teistro_astro::sidereal::Sidereal;
-use teistro_chart::foundation::ChartFoundation;
-use teistro_port_ephemeris::Body;
+use teistro::tajika::Reading;
+use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, Verdict, count, fill, plural, seconds, table, worst};
@@ -52,7 +46,7 @@ const CHARTS: &str = "fixtures/baseline/charts";
 /// reading and the sidereal one separate by about twenty minutes a year,
 /// and a reader wants the number at the age a consultation is actually
 /// about rather than at the first birthday.
-const YEARS: usize = 40;
+const YEARS: u16 = 40;
 
 /// The sidereal year, days (IERS 2010). The interval a return should keep
 /// if the search read a sidereal longitude, and **not** what it keeps if
@@ -65,16 +59,23 @@ const TROPICAL_YEAR_DAYS: f64 = 365.242_190_402;
 /// One recorded birth, founded.
 struct Birth {
     name: String,
-    foundation: ChartFoundation,
+    document: Document,
     /// The zone the birth was recorded in, which the return is cast in too.
     offset: UtcOffset,
     /// The Sun's sidereal longitude at birth, which every return returns to.
     natal_sun_deg: f64,
-    /// Its tropical longitude, which the rival reading returns to instead.
-    /// Taken from the position the chart already carries rather than
-    /// rebuilt from the ayanamsha, so the two readings differ by the
-    /// ephemeris and not by this pass's arithmetic.
-    natal_sun_tropical_deg: f64,
+}
+
+impl Birth {
+    /// The birth's own instant.
+    fn at(&self) -> f64 {
+        self.document.foundation.instant.get()
+    }
+
+    /// Where it was born, for founding a return there.
+    fn request(&self) -> ChartRequest {
+        ChartRequest::at(self.document.foundation.place, self.offset)
+    }
 }
 
 /// What one reading of the return gives for one birth.
@@ -151,134 +152,38 @@ fn births(root: &Path, sdk: &Context) -> Result<Vec<Birth>, String> {
             .foundation
             .graha(Graha::Sun)
             .ok_or_else(|| format!("{name}: a founded chart places the Sun"))?;
-        let (natal_sun_deg, natal_sun_tropical_deg) = (sun.longitude_deg, sun.tropical_deg);
+        let natal_sun_deg = sun.longitude_deg;
         out.push(Birth {
             name,
-            foundation: document.foundation,
+            document,
             offset,
             natal_sun_deg,
-            natal_sun_tropical_deg,
         });
     }
     Ok(out)
 }
 
-/// The returns of one birth under one zodiac, reading its own longitude in
-/// that zodiac.
+/// The returns of one birth under one reading, **through the façade**.
 ///
-/// The target is the birth's longitude **in the zodiac being searched**,
-/// which is what makes this two readings and not one rule measured twice:
-/// the sidereal reading returns to the sidereal longitude and the tropical
-/// one to the tropical, and they are different instants because the
-/// ayanamsha moves between them.
+/// This pass had its own copy of the search once, and a pass that
+/// computes what it measures measures itself. It calls
+/// `sdk.chart().praveshas` now, so a change to the module moves this page
+/// — which is the point of a page that no corpus can check.
 fn returns(sdk: &Context, birth: &Birth, reading: Reading) -> Result<Returns, String> {
-    let provider = sdk
-        .ephemeris()
-        .ok_or_else(|| String::from("a context with an ephemeris"))?;
-    let settings = sdk.settings();
-    let completion = Completion::new(provider, settings.provider.overrides, sdk.delta_t());
-    let frame = birth.foundation.zodiac.request;
-    let tropical = completion
-        .longitudes(frame)
-        .with_observer(birth.foundation.place);
-    // **The chart's own sidereal reading, not the frame's.** A frame's
-    // `Zodiac::Sidereal` applies the *mean* ayanamsha and a founded chart
-    // applies the nutated one, 18.46 arcseconds apart — which for the Sun
-    // is about seven minutes of time and about two degrees of lagna. The
-    // first shape of this pass searched the frame's and the read-back
-    // through a founded chart falsified it by exactly that, which is why
-    // the read-back goes through a chart and not through the source the
-    // search already used.
-    let sidereal = Sidereal {
-        tropical: &tropical,
-        ayanamsha: birth.foundation.zodiac.ayanamsha,
-        basis: Basis::True,
-        precession: PrecessionModel::default(),
-        delta_t: sdk.delta_t(),
-    };
-    let target = match reading {
-        Reading::Sidereal => birth.natal_sun_deg,
-        Reading::Tropical => birth.natal_sun_tropical_deg,
-    };
-    let at = birth.foundation.instant.get();
-    // The window is clamped to what the provider covers, because a birth
-    // late enough in the corpus runs past the built-in ephemeris before it
-    // reaches forty — and a search that asked anyway would fail the whole
-    // pass on a fact about the ephemeris rather than about the rule. What
-    // it costs is counted on the page rather than hidden here.
-    #[expect(clippy::cast_precision_loss, reason = "forty is exact as a float")]
-    let wanted = at + (YEARS as f64) * 366.0;
-    let covered = completion.capabilities().jd_range.1;
-    // The Sun never turns and moves about a degree a day, so a ten-day
-    // step cannot pass the one target twice between two samples — and the
-    // default of one day would sample forty years of every birth twice
-    // over, which is the whole of this pass's cost. That it changes no
-    // answer is the check below rather than the claim here: the page is
-    // byte-identical at one day and at ten.
-    let step_days = 10.0;
-    // The search brackets a crossing between two samples, so it can read a
-    // step below where it was told to start. A birth at the very edge of
-    // the ephemeris then fails on an instant the caller never asked about
-    // — which is what a ten-day step found and a one-day step had hidden.
-    // Starting a step in costs nothing: the first return is a year away.
-    let from = at + step_days + 1.0;
-    let to = wanted.min(covered);
-    if to <= from {
-        // A birth so late that the ephemeris ends before its first return.
-        // Nothing to search, and saying so is the answer: the page counts
-        // it as the ephemeris stopping rather than as a return lost.
-        return Ok(Returns {
-            instants: Vec::new(),
-            cut_short: true,
-        });
-    }
-    let events = match reading {
-        Reading::Sidereal => Search::new(
-            &sidereal,
-            Quantity::Longitude(Body::Sun),
-            Lattice {
-                origin_deg: target.rem_euclid(360.0),
-                step_deg: 0.0,
-            },
-        )
-        .with_step_days(step_days)
-        .between(JulianDay::literal(from), JulianDay::literal(to)),
-        Reading::Tropical => Search::new(
-            &tropical,
-            Quantity::Longitude(Body::Sun),
-            Lattice {
-                origin_deg: target.rem_euclid(360.0),
-                step_deg: 0.0,
-            },
-        )
-        .with_step_days(step_days)
-        .between(JulianDay::literal(from), JulianDay::literal(to)),
-    }
-    .map_err(|why| format!("{}: searching the returns: {why}", birth.name))?;
+    let found = sdk
+        .chart()
+        .praveshas(&birth.document, reading, YEARS)
+        .map_err(|why| format!("{}: its returns: {why}", birth.name))?;
     Ok(Returns {
-        instants: events
-            .into_iter()
-            .map(|event| event.instant.get())
-            .collect(),
-        cut_short: covered < wanted,
+        cut_short: found.len() < usize::from(YEARS),
+        instants: found.into_iter().map(|one| one.at.get()).collect(),
     })
-}
-
-/// Which longitude a return returns to.
-#[derive(Clone, Copy, PartialEq, Eq)]
-enum Reading {
-    /// The natal **sidereal** longitude, read as the chart reads it: the
-    /// tradition's, and this module's.
-    Sidereal,
-    /// The natal **tropical** longitude: the Western return, kept here as
-    /// the rival it is.
-    Tropical,
 }
 
 /// The lagna's degree at an instant, for the birth's own place: what a
 /// rival reading of the return actually costs a reader.
 fn lagna_at(sdk: &Context, birth: &Birth, at: f64) -> Result<f64, String> {
-    let request = ChartRequest::at(birth.foundation.place, birth.offset);
+    let request = birth.request();
     let document = sdk
         .chart()
         .reading(JulianDay::<Utc>::literal(at), &request)
@@ -315,7 +220,7 @@ fn rival(
     let mut worst_lagna_deg = 0.0_f64;
     let mut at = String::from("nothing measured");
     for (birth, mine) in births.iter().zip(sidereal) {
-        for year in [1_usize, YEARS] {
+        for year in [1_usize, usize::from(YEARS)] {
             let Some(theirs) = other(birth, mine, year) else {
                 continue;
             };
@@ -371,7 +276,7 @@ fn what_holds(sdk: &Context, births: &[Birth], sidereal: &[Returns]) -> Result<H
     let cut_short = sidereal.iter().filter(|found| found.cut_short).count();
     let lost = sidereal
         .iter()
-        .filter(|found| found.instants.len() < YEARS && !found.cut_short)
+        .filter(|found| found.instants.len() < usize::from(YEARS) && !found.cut_short)
         .count();
 
     // The Sun stands where it stood — read back through a **founded
@@ -387,7 +292,7 @@ fn what_holds(sdk: &Context, births: &[Birth], sidereal: &[Returns]) -> Result<H
             .into_iter()
             .flatten()
         {
-            let request = ChartRequest::at(birth.foundation.place, birth.offset);
+            let request = birth.request();
             let document = sdk
                 .chart()
                 .reading(JulianDay::<Utc>::literal(*at), &request)
@@ -407,7 +312,7 @@ fn what_holds(sdk: &Context, births: &[Birth], sidereal: &[Returns]) -> Result<H
     let gaps: Vec<f64> = births
         .iter()
         .zip(sidereal)
-        .flat_map(|(birth, found)| found.intervals(birth.foundation.instant.get()))
+        .flat_map(|(birth, found)| found.intervals(birth.at()))
         .collect();
     #[expect(
         clippy::cast_precision_loss,
@@ -555,7 +460,7 @@ fn page(root: &Path) -> Result<String, String> {
             reason = "a year index under a hundred is exact as a float"
         )]
         let years = year as f64;
-        Some(birth.foundation.instant.get() + years * SIDEREAL_YEAR_DAYS)
+        Some(birth.at() + years * SIDEREAL_YEAR_DAYS)
     })?;
 
     let mut out = String::new();
@@ -565,7 +470,13 @@ fn page(root: &Path) -> Result<String, String> {
         "Status: `generated` by `cargo xtask varshaphala` over the conformance \
          corpus's recorded births. Do not edit: `check-varshaphala` \
          regenerates this page and fails on any difference. The design it \
-         measures is [`annual-chart.md`](annual-chart.md).\n\n"
+         measures is [`annual-chart.md`](annual-chart.md).\n\n\
+         Every number below is read from `sdk.chart().praveshas`, the \
+         shipped path, and not from a copy of it kept here: a pass that \
+         computes what it measures measures itself. This page was written \
+         before the module and its numbers did not move when the module \
+         took over, which is the only evidence that the thing measured and \
+         the thing built are one thing.\n\n"
     );
     let _ = write!(
         out,
@@ -584,7 +495,7 @@ fn page(root: &Path) -> Result<String, String> {
          which is what a reader reads.\n\n",
         plural(births.len(), "birth"),
         count(held.gaps),
-        count(YEARS),
+        count(usize::from(YEARS)),
     );
 
     what_the_births_decide(&mut out, &held);

@@ -1,10 +1,16 @@
 # The annual chart (Varsha Pravesha)
 
-Status: `design`, 2026-09-22, written **after** the falsification pass and
-corrected by it ([`annual-chart-measured.md`](annual-chart-measured.md),
-`check-varshaphala`). Phase 7's Tajika module begins here, and four
-catalogued dashas wait on it
+Status: `built`, 2026-09-22 — written **after** the falsification pass,
+corrected by it, and then built ([`annual-chart-measured.md`](annual-chart-measured.md),
+`check-varshaphala`). Phase 7's Tajika module begins here, and the dashas
+over the annual chart wait on it
 ([`dasha-coverage-measured.md`](dasha-coverage-measured.md)).
+
+`crates/tajika` holds it and `sdk.chart().praveshas` and
+`sdk.chart().annual` reach it. **The measured page moved to the shipped
+module and its numbers did not change**, which is the only evidence that
+the thing measured and the thing built are one thing — a pass that keeps
+its own copy of what it measures measures itself.
 
 ## What it is
 
@@ -83,6 +89,7 @@ a step in.
 | **decided** | the Sun's return to the natal sidereal longitude, read on the chart's own ayanamsha basis; the tropical and mean returns as named rivals; the crossing search and its ten-day step |
 | **a setting** | which of the three readings; how many returns; the place the return is cast for |
 | **not decided** | whether the annual chart is cast for the birthplace or the current residence — the schools differ and the corpus is silent, so it is a knob with the birthplace as its default and a crux to be closed by a text rather than by a vote |
+| **built** | `teistro_tajika::praveshas` and `mean_praveshas`; `sdk.chart().praveshas(&document, reading, through)` for the instants and `sdk.chart().annual(&document, reading, year, &request)` for the chart a year opens. A year past what the provider covers comes back as **fewer instants**, not as the provider's own `OutOfRange` naming a day the caller never mentioned; a year outside one to two hundred is refused by `through` **before** any capping, because capping a nonsense year to zero would answer an empty list where the caller wanted to be told |
 | **not built** | the Muntha and its lord; the Varshesha by Pancha Vargeeya Bala; the Tajika aspects with their deeptamsha orbs; the sixteen yogas; the 36 sahamas; the Mudda and Patyayini dashas. Each is a step above this one and none of them can be built before it |
 
 ## What the corpus cannot settle

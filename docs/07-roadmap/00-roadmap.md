@@ -672,10 +672,13 @@ locale's message.
 
 **Started 2026-09-22 with the measurement**, as every module since Phase 4
 has — and with the one step the rest of `tajika` cannot be built before.
-The annual chart's instant is measured over all 55 recorded births against
+The annual chart's instant is measured over every recorded birth against
 its two rivals ([`annual-chart-measured.md`](../03-design/annual-chart-measured.md),
-`check-varshaphala`), and the design it settles is
-[`annual-chart.md`](../03-design/annual-chart.md). The corpus records no
+`check-varshaphala`), the design it settles is
+[`annual-chart.md`](../03-design/annual-chart.md), and **it is built**:
+`crates/tajika`, reached at `sdk.chart().praveshas` and
+`sdk.chart().annual`. The pass calls the shipped path, so a change to the
+module moves the page. The corpus records no
 annual chart of any kind, so the pass measures the rule over the births
 rather than against a recording, and says so on its own first line.
 
