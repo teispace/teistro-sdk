@@ -1471,6 +1471,7 @@ fn the_year(
         &key(&format!("-{}-year-lord-bala", one.year)),
         lord.vishwa.to_string(),
     );
+    the_yogas(report, sdk, &annual.value, key, one);
     put(
         report,
         &key(&format!("-{}-year-claims", one.year)),
@@ -1488,6 +1489,62 @@ fn the_year(
             .collect::<Vec<String>>()
             .join(" "),
     );
+}
+
+/// The pairs of one year's chart that make a yoga, in the order the seven
+/// are read, so a binding that ordered them otherwise shows here.
+fn the_yogas(
+    report: &mut Report,
+    sdk: &Context,
+    annual: &teistro::Document,
+    key: &dyn Fn(&str) -> String,
+    one: &teistro::Pravesha,
+) {
+    let Ok(pairs) = sdk.chart().drishtis(annual) else {
+        return;
+    };
+    let said: Vec<String> = pairs
+        .iter()
+        .filter_map(|pair| {
+            let yoga = pair.yoga?;
+            // Inside a string, so it is compared as text: the four runners
+            // must round the degrees the same way.
+            let apart = format!("{:.6}", pair.apart_deg);
+            Some(format!(
+                "{}>{}:{}:{}:{apart}",
+                pair.faster.full_key(),
+                pair.slower.full_key(),
+                drishti_key(pair.drishti),
+                yoga_key(yoga)
+            ))
+        })
+        .collect();
+    put(
+        report,
+        &key(&format!("-{}-yogas", one.year)),
+        said.join(" "),
+    );
+}
+
+/// A Tajika aspect and a yoga, spelled as the **boundary** spells them,
+/// for the same reason as [`chosen_key`]. Exhaustive, so a kind added
+/// stops this compiling.
+fn drishti_key(drishti: teistro::TajikaDrishti) -> &'static str {
+    match drishti {
+        teistro::TajikaDrishti::Friendly => "friendly",
+        teistro::TajikaDrishti::SecretlyFriendly => "secretly-friendly",
+        teistro::TajikaDrishti::Inimical => "inimical",
+        teistro::TajikaDrishti::SecretlyInimical => "secretly-inimical",
+        teistro::TajikaDrishti::None => "none",
+    }
+}
+
+fn yoga_key(yoga: teistro::TajikaYoga) -> &'static str {
+    match yoga {
+        teistro::TajikaYoga::Ithasala => "ithasala",
+        teistro::TajikaYoga::RashyantaIthasala => "rashyanta-ithasala",
+        teistro::TajikaYoga::Ishrafa => "ishrafa",
+    }
 }
 
 /// The year lord's step, spelled as the **boundary** spells it, so the

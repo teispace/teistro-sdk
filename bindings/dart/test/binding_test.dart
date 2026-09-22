@@ -1505,6 +1505,21 @@ void _engineTests() {
       expect(lord.vishwa.units, lord.vishwa.total ~/ 3600);
     }
 
+    // The pairs that make a yoga: never a neutral aspect, and the faster
+    // is behind exactly when they are coming together.
+    for (final one in cast) {
+      for (final pair in one.annual!.yogas) {
+        expect(pair.drishti, isNot(TajikaDrishti.none));
+        expect(pair.orbDeg, greaterThan(0));
+        if (pair.yoga == TajikaYoga.ithasala) {
+          expect(pair.apartDeg, greaterThanOrEqualTo(0));
+        }
+        if (pair.yoga == TajikaYoga.ishrafa) {
+          expect(pair.apartDeg, lessThan(0));
+        }
+      }
+    }
+
     // At a residence, in the parts `found` takes, the lagnas move.
     final delhi =
         ctx.chart

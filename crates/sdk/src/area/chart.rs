@@ -38,8 +38,8 @@ use teistro_strength::{
     VimshopakaReading,
 };
 use teistro_tajika::{
-    AnnualSky, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Reading,
-    Varshesha, VarsheshaRules, YearCharts,
+    AnnualSky, Between, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha,
+    Reading, Varshesha, VarsheshaRules, YearCharts,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -848,21 +848,7 @@ impl<'a> ChartArea<'a> {
     ///
     /// An annual chart that does not place one of the seven.
     pub fn panchavargiya(self, annual: &Document) -> Result<[Panchavargiya; 7], Error> {
-        let year = &annual.foundation;
-        let at = |graha: Graha| {
-            year.graha(graha)
-                .map(|placed| placed.longitude_deg)
-                .ok_or_else(|| Error::internal(format!("a founded chart places {graha:?}")))
-        };
-        teistro_tajika::panchavargiya(&AnnualSky {
-            sun_deg: at(Graha::Sun)?,
-            moon_deg: at(Graha::Moon)?,
-            mars_deg: at(Graha::Mars)?,
-            mercury_deg: at(Graha::Mercury)?,
-            jupiter_deg: at(Graha::Jupiter)?,
-            venus_deg: at(Graha::Venus)?,
-            saturn_deg: at(Graha::Saturn)?,
-        })
+        teistro_tajika::panchavargiya(&Self::sky_of(annual)?)
     }
 
     /// The **Varshesha**, the lord of the year, from a birth chart and an
@@ -892,6 +878,45 @@ impl<'a> ChartArea<'a> {
         let bearers = self.office_bearers(natal, annual, completed_years)?;
         let strengths = self.panchavargiya(annual)?;
         teistro_tajika::varshesha(&bearers, &strengths, annual.foundation.lagna_deg, rules)
+    }
+
+    /// The **Tajika aspects** of an annual chart you founded: every pair
+    /// of the seven, with the orb that governs it and whether the two are
+    /// coming together or drawing apart.
+    ///
+    /// Twenty-one pairs. Each carries the sign aspect (the kendras and
+    /// the 3, 5, 9, 11 houses; the rest is no aspect at all), the mean of
+    /// the two deeptamshas, how far apart they stand **within their
+    /// signs** — which is how this tradition counts behind from ahead —
+    /// and the **Ithasala** or **Ishrafa** that makes, if any.
+    ///
+    /// It needs **no ephemeris**: the chart is already founded.
+    ///
+    /// # Errors
+    ///
+    /// An annual chart that does not place one of the seven.
+    pub fn drishtis(self, annual: &Document) -> Result<Vec<Between>, Error> {
+        teistro_tajika::drishtis(&Self::sky_of(annual)?)
+    }
+
+    /// Where the seven stand in a founded chart, which both the strengths
+    /// and the aspects read.
+    fn sky_of(annual: &Document) -> Result<AnnualSky, Error> {
+        let year = &annual.foundation;
+        let at = |graha: Graha| {
+            year.graha(graha)
+                .map(|placed| placed.longitude_deg)
+                .ok_or_else(|| Error::internal(format!("a founded chart places {graha:?}")))
+        };
+        Ok(AnnualSky {
+            sun_deg: at(Graha::Sun)?,
+            moon_deg: at(Graha::Moon)?,
+            mars_deg: at(Graha::Mars)?,
+            mercury_deg: at(Graha::Mercury)?,
+            jupiter_deg: at(Graha::Jupiter)?,
+            venus_deg: at(Graha::Venus)?,
+            saturn_deg: at(Graha::Saturn)?,
+        })
     }
 
     /// The Sun where it stood at birth, in both zodiacs, as a return needs

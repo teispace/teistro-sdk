@@ -3810,6 +3810,37 @@ final class YearLord {
   final List<YearClaim> claims;
 }
 
+/// Two planets of an annual chart, and what they make.
+final class TajikaPair {
+  const TajikaPair({
+    required this.faster,
+    required this.slower,
+    required this.drishti,
+    required this.yoga,
+    required this.orbDeg,
+    required this.apartDeg,
+  });
+
+  /// The faster of the two by the tradition's ranking.
+  final Graha faster;
+
+  /// The slower.
+  final Graha slower;
+
+  /// The aspect between the signs they stand in.
+  final TajikaDrishti drishti;
+
+  /// What they are doing: coming together or drawing apart.
+  final TajikaYoga yoga;
+
+  /// The orb governing them, degrees: the mean of their deeptamshas.
+  final double orbDeg;
+
+  /// How far apart within their signs, degrees; positive when the faster
+  /// is behind the slower and coming to it.
+  final double apartDeg;
+}
+
 /// A return's own chart, read down to what Tajika reads from it.
 final class AnnualChart {
   const AnnualChart({
@@ -3817,6 +3848,7 @@ final class AnnualChart {
     required this.byDay,
     required this.officeBearers,
     required this.yearLord,
+    required this.yogas,
   });
 
   /// The annual chart's lagna, sidereal degrees, at the place it was cast
@@ -3831,6 +3863,11 @@ final class AnnualChart {
 
   /// The lord of the year, chosen among them.
   final YearLord yearLord;
+
+  /// The pairs of the seven that make a Tajika yoga in this chart. The
+  /// pairs that make none do not cross; Rust's `sdk.chart().drishtis` has
+  /// all twenty-one.
+  final List<TajikaPair> yogas;
 }
 
 /// Where the Muntha stands inside the sign it has reached (crux C107).
@@ -4349,6 +4386,11 @@ final class Chart {
     }
     final count = charts.claimCount[row];
     final claims = batch.yearClaims;
+    var fromYoga = 0;
+    for (var i = 0; i < row; i += 1) {
+      fromYoga += charts.yogaCount[i];
+    }
+    final pairs = batch.yearYogas;
     return AnnualChart(
       lagnaDeg: charts.lagnaDeg[row],
       byDay: charts.daylight[row] == 1,
@@ -4372,6 +4414,17 @@ final class Chart {
             portfolios: claims.portfolios[from + k],
             aspectsLagna: claims.aspectsLagna[from + k] == 1,
           ),
+        ),
+      ),
+      yogas: List<TajikaPair>.generate(
+        charts.yogaCount[row],
+        (k) => TajikaPair(
+          faster: Graha.byId(pairs.faster[fromYoga + k]),
+          slower: Graha.byId(pairs.slower[fromYoga + k]),
+          drishti: TajikaDrishti.byId(pairs.drishti[fromYoga + k]),
+          yoga: TajikaYoga.byId(pairs.yoga[fromYoga + k]),
+          orbDeg: pairs.orbDeg[fromYoga + k],
+          apartDeg: pairs.apartDeg[fromYoga + k],
         ),
       ),
     );

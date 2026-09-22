@@ -5279,6 +5279,87 @@ enum VarsheshaChosen {
   }
 }
 
+/// The Tajika aspect between two signs (`03-design/tajika-aspects.md`).
+///
+/// Not the Parashari drishti, which crosses elsewhere: this one is a
+/// relation between signs, and its neutral houses give no aspect at all.
+enum TajikaDrishti {
+  /// Pratyaksha Mitra, at houses 5 and 9: openly friendly.
+  friendly(0, 'friendly'),
+  /// Gupta Mitra, at houses 3 and 11: secretly friendly.
+  secretlyFriendly(1, 'secretly-friendly'),
+  /// Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an
+  /// aspect.
+  inimical(2, 'inimical'),
+  /// Gupta Shatru, at houses 4 and 10: secretly inimical.
+  secretlyInimical(3, 'secretly-inimical'),
+  /// Sama, at houses 2, 6, 8 and 12: no aspect at all.
+  none(4, 'none');
+
+  const TajikaDrishti(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static TajikaDrishti byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a TajikaDrishti'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static TajikaDrishti? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What two planets inside each other's orb are doing.
+enum TajikaYoga {
+  /// Ithasala: the faster is behind the slower and coming to it.
+  ithasala(0, 'ithasala'),
+  /// Ithasala from the sign's end: the faster is past but stands at 29°
+  /// or beyond, so it acts from the next sign, where it is behind again.
+  rashyantaIthasala(1, 'rashyanta-ithasala'),
+  /// Ishrafa: the faster is past the slower and drawing away.
+  ishrafa(2, 'ishrafa');
+
+  const TajikaYoga(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static TajikaYoga byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a TajikaYoga'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static TajikaYoga? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// A time scale of the conversions; the first two ids are the port's.
 enum Scale {
   /// Universal Time (UT1).

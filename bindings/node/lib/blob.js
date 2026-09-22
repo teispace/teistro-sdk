@@ -634,6 +634,7 @@ export function decodeCharts(bytes) {
       yearLordVishwa: column(blob, at, 8, 'i32', at.count),
       moonPassedOver: column(blob, at, 9, 'u8', at.count),
       claimCount: column(blob, at, 10, 'u8', at.count),
+      yogaCount: column(blob, at, 11, 'u8', at.count),
       length: at.count,
     };
   }
@@ -644,6 +645,18 @@ export function decodeCharts(bytes) {
       vishwa: column(blob, at, 1, 'i32', at.count),
       portfolios: column(blob, at, 2, 'u8', at.count),
       aspectsLagna: column(blob, at, 3, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 38, 'year_yogas');
+    out.yearYogas = {
+      faster: column(blob, at, 0, 'u16', at.count),
+      slower: column(blob, at, 1, 'u16', at.count),
+      drishti: column(blob, at, 2, 'u8', at.count),
+      yoga: column(blob, at, 3, 'u8', at.count),
+      orbDeg: column(blob, at, 4, 'f64', at.count),
+      apartDeg: column(blob, at, 5, 'f64', at.count),
       length: at.count,
     };
   }

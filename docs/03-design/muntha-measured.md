@@ -160,8 +160,26 @@ claimant by claimant.
 | Sun | 14:20:15 | 2 | yes |
 | Mars | 14:01:00 | 2 | yes |
 
-Jupiter leads on strength and stands in the **second** from the lagna, a
-neutral house that gives no Tajika aspect, so the source disqualifies it
-in as many words. The lord of the year is **Sun** at 14:20:15, chosen as
-`Strongest`. Saturn is stronger than any of them at 16:47:45 and holds
-no portfolio, so it never enters the reckoning at all.
+Jupiter leads on strength and stands in the **second** from the lagna, a neutral house that gives no Tajika aspect, so the source disqualifies it in as many words. The lord of the year is **Sun** at 14:20:15, chosen as `Strongest`. Saturn is stronger than any of them at 16:47:45 and holds no portfolio, so it never enters the reckoning at all.
+## 8. The aspects, and the source's worked Ithasala
+
+A pair of planets is governed by the **mean** of their two deeptamshas,
+and is coming together — **Ithasala** — when the faster of them is
+behind the slower. Behind is **degrees within the sign**, the completed
+signs deleted, which is the source's own instruction and the opposite of
+what a longitude would say.
+
+Its worked pair is the Sun at Leo 3°50′ and Mars at Scorpio 7°42′,
+three whole signs further on. Read from the chart the SDK founded:
+
+| | measured | the source |
+|---|---|---|
+| the faster of the two | Sun | the Sun |
+| their orb, the mean of 15° and 8° | 11.50° | 11°30′ |
+| apart, within their signs | 3.87° | 3°52′ |
+| what they make | Ithasala | Ithasala |
+
+Of that chart's twenty-one pairs, **9** make a yoga and the rest make
+none — most of them because they stand in the neutral houses, where no
+closeness is an aspect. Only the ones that make something cross the
+boundary.

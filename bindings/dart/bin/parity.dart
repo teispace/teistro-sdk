@@ -723,6 +723,16 @@ void main() {
         put('$stem-year-lord-chosen', yearLord.chosen.key);
         put('$stem-year-lord-bala', yearLord.vishwa.toString());
         put(
+          '$stem-yogas',
+          annual.yogas
+              .map(
+                (p) =>
+                    '${p.faster.fullKey}>${p.slower.fullKey}:'
+                    '${p.drishti.key}:${p.yoga.key}:${p.apartDeg.toStringAsFixed(6)}',
+              )
+              .join(' '),
+        );
+        put(
           '$stem-year-claims',
           yearLord.claims
               .map(

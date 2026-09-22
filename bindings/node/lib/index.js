@@ -51,6 +51,8 @@ import {
   QuadrantById,
   RashiById,
   VarsheshaChosenById,
+  TajikaDrishtiById,
+  TajikaYogaById,
   StrengthById,
   BalanceById,
   EkadhipatyaById,
@@ -2389,6 +2391,7 @@ function annualOf(d, row) {
       triRashi: lord(charts.triRashiLord),
       dinaRatri: lord(charts.dinaRatriLord),
     },
+    yogas: yogasOf(d, row),
     yearLord: {
       graha: lord(charts.yearLord),
       chosen: VarsheshaChosenById.get(charts.yearLordChosen[row]) ?? 'unknown',
@@ -2402,6 +2405,30 @@ function annualOf(d, row) {
       })),
     },
   };
+}
+
+/**
+ * The pairs of a year's chart that make a Tajika yoga, ragged by
+ * `yogaCount` as the claims are by `claimCount`.
+ *
+ * @param {object} d the decoded batch
+ * @param {number} row
+ * @returns {object[]}
+ */
+function yogasOf(d, row) {
+  const charts = d.annualCharts;
+  let from = 0;
+  for (let i = 0; i < row; i += 1) from += charts.yogaCount[i];
+  const count = charts.yogaCount[row] ?? 0;
+  const pairs = d.yearYogas;
+  return Array.from({ length: count }, (_, k) => ({
+    faster: GrahaById.get(pairs.faster[from + k]) ?? 'unknown',
+    slower: GrahaById.get(pairs.slower[from + k]) ?? 'unknown',
+    drishti: TajikaDrishtiById.get(pairs.drishti[from + k]) ?? 'unknown',
+    yoga: TajikaYogaById.get(pairs.yoga[from + k]) ?? 'unknown',
+    orbDeg: pairs.orbDeg[from + k],
+    apartDeg: pairs.apartDeg[from + k],
+  }));
 }
 
 /**

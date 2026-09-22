@@ -18,6 +18,8 @@ from teistro import (
     AvasthaSayanadi,
     DashaDefinition,
     RashiDashaDefinition,
+    TajikaDrishti,
+    TajikaYoga,
     UduDashaDefinition,
     DashaPhase,
     Nature,
@@ -1212,6 +1214,18 @@ class AnEngine(WithLibrary):
             self.assertRegex(str(lord.vishwa), r"^\d\d:\d\d:\d\d$")
             self.assertEqual(lord.vishwa.units, lord.vishwa.total // 3600)
             self.assertIsInstance(lord.moon_passed_over, bool)
+
+        # The pairs that make a yoga: never a neutral aspect, and the
+        # faster is behind exactly when they are coming together.
+        for one in cast:
+            assert one.annual is not None
+            for pair in one.annual.yogas:
+                self.assertNotEqual(pair.drishti, TajikaDrishti.NONE)
+                self.assertGreater(pair.orb_deg, 0)
+                if pair.yoga == TajikaYoga.ITHASALA:
+                    self.assertGreaterEqual(pair.apart_deg, 0)
+                if pair.yoga == TajikaYoga.ISHRAFA:
+                    self.assertLess(pair.apart_deg, 0)
 
         # At a residence, in the parts `found` takes, the lagnas move.
         delhi = self.ctx.chart.found(

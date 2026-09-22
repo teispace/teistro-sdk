@@ -107,6 +107,8 @@ from .catalogue import (
     Status,
     Strength,
     Sunrise,
+    TajikaDrishti,
+    TajikaYoga,
     Tatwa,
     TimeScale,
     Tithi,

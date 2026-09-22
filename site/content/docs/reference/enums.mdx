@@ -1670,6 +1670,30 @@ Mirrors `teistro::Chosen` through an **exhaustive** match, which is what stops t
 | `TS_VARSHESHA_CHOSEN_DINA_RATRI_TIED` | 5 | The Dina-Ratri Pati, on that same tie, under the other reading. |
 | `TS_VARSHESHA_CHOSEN_ANNUAL_LAGNA_LORD_UNASPECTED` | 6 | The annual lagna's lord, because nobody aspects and the rules ask for that reading. |
 
+## ts_tajika_drishti
+
+The Tajika aspect between two signs (`03-design/tajika-aspects.md`).
+
+Not the Parashari drishti, which crosses elsewhere: this one is a relation between signs, and its neutral houses give no aspect at all.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TAJIKA_DRISHTI_FRIENDLY` | 0 | Pratyaksha Mitra, at houses 5 and 9: openly friendly. |
+| `TS_TAJIKA_DRISHTI_SECRETLY_FRIENDLY` | 1 | Gupta Mitra, at houses 3 and 11: secretly friendly. |
+| `TS_TAJIKA_DRISHTI_INIMICAL` | 2 | Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an aspect. |
+| `TS_TAJIKA_DRISHTI_SECRETLY_INIMICAL` | 3 | Gupta Shatru, at houses 4 and 10: secretly inimical. |
+| `TS_TAJIKA_DRISHTI_NONE` | 4 | Sama, at houses 2, 6, 8 and 12: no aspect at all. |
+
+## ts_tajika_yoga
+
+What two planets inside each other's orb are doing.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TAJIKA_YOGA_ITHASALA` | 0 | Ithasala: the faster is behind the slower and coming to it. |
+| `TS_TAJIKA_YOGA_RASHYANTA_ITHASALA` | 1 | Ithasala from the sign's end: the faster is past but stands at 29° or beyond, so it acts from the next sign, where it is behind again. |
+| `TS_TAJIKA_YOGA_ISHRAFA` | 2 | Ishrafa: the faster is past the slower and drawing away. |
+
 ## ts_scale
 
 A time scale of the conversions; the first two ids are the port's.

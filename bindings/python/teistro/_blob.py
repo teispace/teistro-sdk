@@ -1219,6 +1219,9 @@ class ChartsAnnualCharts:
     claim_count: memoryview[int]
     """How many rows of the `year_claims` section belong to this year: one to five, the distinct office-bearers."""
 
+    yoga_count: memoryview[int]
+    """How many rows of the `year_yogas` section belong to this year: the pairs of the seven that make an Ithasala or an Ishrafa, 0 to 21."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -1242,6 +1245,36 @@ class ChartsYearClaims:
 
     aspects_lagna: memoryview[int]
     """1 when it gives the Tajika aspect to the annual lagna, which it must to hold the year; 0 when it stands in a neutral house — 2, 6, 8 or 12 — and is disqualified however strong."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsYearYogas:
+    """The `year_yogas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
+    """
+
+    faster: memoryview[int]
+    """The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id."""
+
+    slower: memoryview[int]
+    """The slower of the two, a `graha` id."""
+
+    drishti: memoryview[int]
+    """The Tajika aspect between the signs they stand in. A pair in the neutral houses makes no yoga however close, so this is never `NONE` here."""
+
+    yoga: memoryview[int]
+    """What they are doing: coming together or drawing apart."""
+
+    orb_deg: memoryview[float]
+    """The orb governing the pair, degrees: the **mean** of their two deeptamshas."""
+
+    apart_deg: memoryview[float]
+    """How far apart they stand **within their signs**, degrees, the completed signs deleted as the tradition counts them: positive when the faster is behind the slower and coming to it, negative when it is past."""
 
     length: int
     """The number of rows every column holds."""
@@ -1476,6 +1509,9 @@ class Charts:
     year_claims: ChartsYearClaims
     """Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`)."""
 
+    year_yogas: ChartsYearYogas
+    """Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`)."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1522,6 +1558,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_praveshas = blob.section(35, "praveshas")
     at_annual_charts = blob.section(36, "annual_charts")
     at_year_claims = blob.section(37, "year_claims")
+    at_year_yogas = blob.section(38, "year_yogas")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -2124,6 +2161,9 @@ def decode_charts(raw: bytes) -> Charts:
             claim_count=blob.column(
                 at_annual_charts, 10, 1, at_annual_charts.count
             ).cast("B"),
+            yoga_count=blob.column(
+                at_annual_charts, 11, 1, at_annual_charts.count
+            ).cast("B"),
             length=at_annual_charts.count,
         ),
         year_claims=ChartsYearClaims(
@@ -2140,6 +2180,27 @@ def decode_charts(raw: bytes) -> Charts:
                 at_year_claims, 3, 1, at_year_claims.count
             ).cast("B"),
             length=at_year_claims.count,
+        ),
+        year_yogas=ChartsYearYogas(
+            faster=blob.column(
+                at_year_yogas, 0, 2, at_year_yogas.count
+            ).cast("H"),
+            slower=blob.column(
+                at_year_yogas, 1, 2, at_year_yogas.count
+            ).cast("H"),
+            drishti=blob.column(
+                at_year_yogas, 2, 1, at_year_yogas.count
+            ).cast("B"),
+            yoga=blob.column(
+                at_year_yogas, 3, 1, at_year_yogas.count
+            ).cast("B"),
+            orb_deg=blob.column(
+                at_year_yogas, 4, 8, at_year_yogas.count
+            ).cast("d"),
+            apart_deg=blob.column(
+                at_year_yogas, 5, 8, at_year_yogas.count
+            ).cast("d"),
+            length=at_year_yogas.count,
         ),
     )
 

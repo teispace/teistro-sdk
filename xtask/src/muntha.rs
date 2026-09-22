@@ -401,6 +401,10 @@ struct Worked {
     strongest: Graha,
     /// The year lord, with every claimant's strength, aspect and count.
     year_lord: teistro::Varshesha,
+    /// The Sun and Mars of that chart, the source's own worked pair.
+    sun_and_mars: teistro::Between,
+    /// How many of the twenty-one pairs make a yoga.
+    yogas: usize,
 }
 
 fn worked_under(profile: &str) -> Result<Worked, String> {
@@ -464,6 +468,19 @@ fn worked_under(profile: &str) -> Result<Worked, String> {
         .chart()
         .varshesha(&birth, &annual, 40, teistro::VarsheshaRules::default())
         .map_err(|why| format!("{profile}: {why}"))?;
+    let pairs = sdk
+        .chart()
+        .drishtis(&annual)
+        .map_err(|why| format!("{profile}: {why}"))?;
+    let sun_and_mars = pairs
+        .iter()
+        .find(|pair| {
+            [pair.faster, pair.slower].contains(&Graha::Sun)
+                && [pair.faster, pair.slower].contains(&Graha::Mars)
+        })
+        .copied()
+        .ok_or_else(|| String::from("the Sun and Mars"))?;
+    let yogas = pairs.iter().filter(|pair| pair.yoga.is_some()).count();
     let ist = (mean.at.get() + 0.5 + 5.5 / 24.0).fract() * 24.0;
     Ok(Worked {
         return_seconds: (ist - PRINTED_RETURN_IST_H) * 3600.0,
@@ -481,6 +498,8 @@ fn worked_under(profile: &str) -> Result<Worked, String> {
         vishwa,
         strongest,
         year_lord,
+        sun_and_mars,
+        yogas,
     })
 }
 
@@ -570,6 +589,7 @@ fn the_worked_year(out: &mut String) -> Result<(), String> {
         geo.strongest,
     );
     the_year_lord(out, &geo);
+    the_aspects(out, &geo);
     Ok(())
 }
 
@@ -611,6 +631,39 @@ fn the_year_lord(out: &mut String, geo: &Worked) {
             .iter()
             .find(|(graha, _)| *graha == teistro::catalogue::Graha::Saturn)
             .map_or_else(|| String::from("—"), |(_, bala)| bala.clone()),
+    );
+}
+
+/// The source's worked Ithasala, and how much of a chart makes a yoga.
+fn the_aspects(out: &mut String, geo: &Worked) {
+    let pair = &geo.sun_and_mars;
+    let _ = write!(
+        out,
+        "## 8. The aspects, and the source's worked Ithasala\n\n\
+         A pair of planets is governed by the **mean** of their two \
+         deeptamshas, and is coming together — **Ithasala** — when the \
+         faster of them is behind the slower. Behind is **degrees within \
+         the sign**, the completed signs deleted, which is the source's own \
+         instruction and the opposite of what a longitude would say.\n\n\
+         Its worked pair is the Sun at Leo 3°50′ and Mars at Scorpio 7°42′, \
+         three whole signs further on. Read from the chart the SDK \
+         founded:\n\n\
+         | | measured | the source |\n\
+         |---|---|---|\n\
+         | the faster of the two | {:?} | the Sun |\n\
+         | their orb, the mean of 15° and 8° | {:.2}° | 11°30′ |\n\
+         | apart, within their signs | {:.2}° | 3°52′ |\n\
+         | what they make | {} | Ithasala |\n\n\
+         Of that chart's twenty-one pairs, **{}** make a yoga and the rest \
+         make none — most of them because they stand in the neutral houses, \
+         where no closeness is an aspect. Only the ones that make something \
+         cross the boundary.\n",
+        pair.faster,
+        pair.orb_deg,
+        pair.apart_deg,
+        pair.yoga
+            .map_or_else(|| String::from("none"), |yoga| format!("{yoga:?}")),
+        geo.yogas,
     );
 }
 

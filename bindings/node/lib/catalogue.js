@@ -3031,6 +3031,44 @@ export const VarsheshaChosenById = new Map([
   [6, 'annual-lagna-lord-unaspected'],
 ]);
 
+/** Every TajikaDrishti by name. */
+export const TajikaDrishti = Object.freeze({
+  Friendly: 'friendly',
+  SecretlyFriendly: 'secretly-friendly',
+  Inimical: 'inimical',
+  SecretlyInimical: 'secretly-inimical',
+  None: 'none',
+});
+
+/**
+ * Every TajikaDrishti by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TajikaDrishtiById = new Map([
+  [0, 'friendly'],
+  [1, 'secretly-friendly'],
+  [2, 'inimical'],
+  [3, 'secretly-inimical'],
+  [4, 'none'],
+]);
+
+/** Every TajikaYoga by name. */
+export const TajikaYoga = Object.freeze({
+  Ithasala: 'ithasala',
+  RashyantaIthasala: 'rashyanta-ithasala',
+  Ishrafa: 'ishrafa',
+});
+
+/**
+ * Every TajikaYoga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TajikaYogaById = new Map([
+  [0, 'ithasala'],
+  [1, 'rashyanta-ithasala'],
+  [2, 'ishrafa'],
+]);
+
 /** Every Scale by name. */
 export const Scale = Object.freeze({
   Ut1: 'ut1',

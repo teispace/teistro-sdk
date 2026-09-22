@@ -60,6 +60,17 @@ is left as a silence (crux C106):
 | an outright tie of strength, aspect and portfolios | the Muntha's lord | the Dina-Ratri Pati, which "still others" give |
 | the Moon as year lord | passed over | allowed like any other, for the extraordinarily strong Moon the source admits and leaves to the reader |
 
+Two further readings of the Moon's case are recorded and **not built**,
+because both turn on the Ithasala and are compositions over
+[`tajika-aspects.md`](tajika-aspects.md) rather than over strength: that
+the planet **in Ithasala with the Moon** takes the year instead (the
+strongest, where several are), and that if the Moon is in Ithasala with
+nothing, the **lord of the Moon's sign** takes it. The aspects are now
+built, so these are the next thing the chain can gain; until then the
+default passes the Moon over and takes the next claimant that aspects,
+which is what the source's second worked year does and what its test
+holds.
+
 ## What the answer carries
 
 Not a planet. A planet **and why**:

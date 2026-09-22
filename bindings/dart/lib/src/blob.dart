@@ -1482,6 +1482,7 @@ final class ChartsAnnualCharts {
     required this.yearLordVishwa,
     required this.moonPassedOver,
     required this.claimCount,
+    required this.yogaCount,
     required this.length,
   });
 
@@ -1518,6 +1519,9 @@ final class ChartsAnnualCharts {
   /// How many rows of the `year_claims` section belong to this year: one to five, the distinct office-bearers.
   final Uint8List claimCount;
 
+  /// How many rows of the `year_yogas` section belong to this year: the pairs of the seven that make an Ithasala or an Ishrafa, 0 to 21.
+  final Uint8List yogaCount;
+
   /// The number of rows every column holds.
   final int length;
 }
@@ -1546,6 +1550,43 @@ final class ChartsYearClaims {
 
   /// 1 when it gives the Tajika aspect to the annual lagna, which it must to hold the year; 0 when it stands in a neutral house — 2, 6, 8 or 12 — and is disqualified however strong.
   final Uint8List aspectsLagna;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `year_yogas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
+final class ChartsYearYogas {
+  const ChartsYearYogas({
+    required this.faster,
+    required this.slower,
+    required this.drishti,
+    required this.yoga,
+    required this.orbDeg,
+    required this.apartDeg,
+    required this.length,
+  });
+
+  /// The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id.
+  final Uint16List faster;
+
+  /// The slower of the two, a `graha` id.
+  final Uint16List slower;
+
+  /// The Tajika aspect between the signs they stand in. A pair in the neutral houses makes no yoga however close, so this is never `NONE` here.
+  final Uint8List drishti;
+
+  /// What they are doing: coming together or drawing apart.
+  final Uint8List yoga;
+
+  /// The orb governing the pair, degrees: the **mean** of their two deeptamshas.
+  final Float64List orbDeg;
+
+  /// How far apart they stand **within their signs**, degrees, the completed signs deleted as the tradition counts them: positive when the faster is behind the slower and coming to it, negative when it is past.
+  final Float64List apartDeg;
 
   /// The number of rows every column holds.
   final int length;
@@ -1692,6 +1733,7 @@ final class Charts {
     required this.praveshas,
     required this.annualCharts,
     required this.yearClaims,
+    required this.yearYogas,
   });
 
   /// What kind of chart these are.
@@ -1849,6 +1891,9 @@ final class Charts {
   /// Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`).
   final ChartsYearClaims yearClaims;
 
+  /// Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
+  final ChartsYearYogas yearYogas;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1893,6 +1938,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atPraveshas = blob.section(35, 'praveshas');
   final atAnnualCharts = blob.section(36, 'annual_charts');
   final atYearClaims = blob.section(37, 'year_claims');
+  final atYearYogas = blob.section(38, 'year_yogas');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -3145,6 +3191,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atAnnualCharts, 10),
         blob.columnOffset(atAnnualCharts, 10) + atAnnualCharts.count * 1,
       ),
+      yogaCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 11),
+        blob.columnOffset(atAnnualCharts, 11) + atAnnualCharts.count * 1,
+      ),
       length: atAnnualCharts.count,
     ),
     yearClaims: ChartsYearClaims(
@@ -3169,6 +3220,39 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atYearClaims, 3) + atYearClaims.count * 1,
       ),
       length: atYearClaims.count,
+    ),
+    yearYogas: ChartsYearYogas(
+      faster: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearYogas, 0),
+        blob.columnOffset(atYearYogas, 0) + atYearYogas.count * 2,
+      ),
+      slower: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearYogas, 1),
+        blob.columnOffset(atYearYogas, 1) + atYearYogas.count * 2,
+      ),
+      drishti: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearYogas, 2),
+        blob.columnOffset(atYearYogas, 2) + atYearYogas.count * 1,
+      ),
+      yoga: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearYogas, 3),
+        blob.columnOffset(atYearYogas, 3) + atYearYogas.count * 1,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearYogas, 4),
+        blob.columnOffset(atYearYogas, 4) + atYearYogas.count * 8,
+      ),
+      apartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearYogas, 5),
+        blob.columnOffset(atYearYogas, 5) + atYearYogas.count * 8,
+      ),
+      length: atYearYogas.count,
     ),
   );
 }
