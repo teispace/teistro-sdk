@@ -96,3 +96,32 @@ two readings differ for any Tajika aspect taken to the Muntha late in a
 year and for nothing else (crux C107).
 
 The cap is 200 years, shared with the returns.
+
+## 5. The source's worked year, end to end
+
+The source works one birth all the way through — Bombay, 20 August
+1944, 07:11 IST — to its forty-first year's chart and that chart's
+five office-bearers (Chart III-1). It is the only rank-2 value in reach
+that checks the whole pipeline at once: the return, the chart it founds,
+and the lords read from both. Its return is the **mean** one — its
+Dhruvanka of 1d 6h 6m 29s for forty years is forty mean sidereal years
+modulo a week — so that is the reading held here.
+
+| against what the source prints | the default profile (geocentric, mean ayanamsha) | the conformance profile (topocentric, nutated) |
+|---|---|---|
+| the return, 13:17:29 IST | +1.5 s | +1.5 s |
+| the annual lagna, Scorpio 9°26′ | +0.9′ | +1.1′ |
+| the Sun, Leo 3°50′ | -0.8′ | -0.6′ |
+| the Moon, Taurus 9°40′ | -2.7′ | **-57.6′** |
+| the office-bearers, Jupiter, Sun, Mars, Mars, Sun | all five as printed | all five as printed |
+| the true return, after the mean one | +0.83 min | +4.84 min |
+
+The source prints whole arcminutes and seconds. On the default profile
+the worst of its three positions is 2.7′ out and its return 1.5 s,
+which is an ephemeris a generation apart agreeing to arcminutes and not
+a rounding. **Its positions are geocentric**: under the topocentric
+profile its Moon is almost a degree out, which is the Moon's parallax at
+Bombay and not an error. And the "few minutes" it sets aside between the
+true return and the mean one are the Sun's own perturbations on a mean
+ayanamsha; on a nutated one nutation adds several more, which the source
+does not apply. Neither moves an office-bearer.
