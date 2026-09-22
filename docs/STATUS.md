@@ -53,15 +53,18 @@ computed value with no catalogue member — and it was true of the
 **messages** it was counting and never checked against the **sections**.
 `POINTS`, `ASHTAKAVARGA`, `VIMSHOPAKA`, `BHAVA_BALA`, `VAISESHIKAMSA`
 and `DASHA_PHALA` are computed, crossed to every binding, and said by
-nothing. Only two of the six wait on a *name*: `VAISESHIKAMSA` is the
-cheapest thing left in this phase, because the names a graha earns by its
-good vargas are already catalogue members; `ASHTAKAVARGA` waits on which
-of its numbers deserves a sentence rather than a table; `VIMSHOPAKA`
-waits on a knob, because one composer saying all four schemes would say
-the same graha four times; `BHAVA_BALA` waits on what a *bhava's*
-requirement is, which is not the graha rule the texts state; and
-`DASHA_PHALA` is what the state corpus's last 18 readings are waiting
-for. The table is read from the source that declares the sections, so a
+nothing. Only two of the six wait on a *name*: `ASHTAKAVARGA` waits on which of its numbers
+deserves a sentence rather than a table; `VIMSHOPAKA` and
+`VAISESHIKAMSA` share one blocker rather than having one each, both
+naming or scoring a graha under **four schemes at once**; `BHAVA_BALA`
+waits on what a *bhava* must reach, which a `BhavaStrength` does not
+carry at all where a `GrahaShadbala` carries `required_rupas`; and
+`DASHA_PHALA` is both what the state corpus's last 18 readings are
+waiting for and the **cheapest of the six** — one fact a graha, no
+scheme to choose. I had written `VAISESHIKAMSA` down as the cheapest,
+and reading its source falsified that before a line of the composer was
+written: it names a graha under all four schemes and carries an
+`impaired` flag besides. The table is read from the source that declares the sections, so a
 twelfth fails rather than being forgotten, a composer it names must be a
 `PlanRequest` member, and a section with both a composer and an excuse
 fails too — all three proved red before the table was believed. Before

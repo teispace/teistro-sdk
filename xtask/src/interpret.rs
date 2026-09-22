@@ -971,20 +971,28 @@ const SECTION_SAYS: [(&str, &str, &str); 11] = [
         "BHAVA_BALA",
         "",
         "\
-        a bhava's strength in rupas, which is `strength`'s own pair of \
-        messages with a bhava where the graha is. `score` and `meets` both \
-        take a `graha` slot, so a bhava needs its own two, and a bhava's \
-        *requirement* is not the graha rule the texts state — that is the \
-        decision, not the message",
+        a bhava's strength in **virupas**, which is `strength`'s `score` \
+        with a bhava where the graha is — `score` takes a `graha` slot, so \
+        a bhava needs its own. Its second message has nothing to read: a \
+        `BhavaStrength` carries the four parts and their total and **no \
+        requirement at all**, where a `GrahaShadbala` carries \
+        `required_rupas` beside `strong`. What a bhava must reach is the \
+        decision, and it is not the graha rule the texts state",
     ),
     (
         "VAISESHIKAMSA",
         "",
         "\
-        the **cheapest of the five**: the names a graha earns by its good \
-        vargas are catalogue members (`Kind::Vaiseshikamsa`, 63), so \
-        `sdk.entity` already says them in all five locales and the frame \
-        is the whole cost",
+        the names a graha earns by its good vargas are catalogue members \
+        (`Kind::Vaiseshikamsa`, 63), so `sdk.entity` already says them in \
+        all five locales and no words have to be written — but it names a \
+        graha under **four schemes at once**, the six vargas to the \
+        sixteen, and a graha can be Parijata in one and Gopura in \
+        another. This row called it the cheapest of the six until the \
+        source was read: it shares `VIMSHOPAKA`'s knob exactly, and \
+        carries an `impaired` flag besides, which decides whether the \
+        name it earned is auspicious and is a second fact rather than a \
+        qualifier",
     ),
     (
         "DASHA_PHALA",
@@ -996,7 +1004,10 @@ const SECTION_SAYS: [(&str, &str, &str); 11] = [
         placement makes the dasha favourable are **not**, so the words are \
         the cost. It is the section the state corpus is waiting on: \
         `dasha-lord-effect` and `dasha-lord-activation`, 18 readings, key \
-        onto a graha as a dasha lord and have no composer to attach to",
+        onto a graha as a dasha lord and have no composer to attach to. \
+        With `VAISESHIKAMSA`'s scheme knob read, this is the **cheapest \
+        of the six**: one fact a graha, no scheme to choose and no \
+        decision to take",
     ),
 ];
 
@@ -1063,7 +1074,11 @@ fn every_section(out: &mut String, root: &Path) -> Result<(), String> {
          exactly the sentence this page had and exactly the sentence that \
          was not true. The list is read from the source that declares the \
          sections, so a twelfth fails here rather than being forgotten, \
-         and a composer named must be a member of `PlanRequest`.\n\n\
+         and a composer named must be a member of `PlanRequest`. Two of \
+         the six share one blocker rather than having one each — \
+         `VIMSHOPAKA` and `VAISESHIKAMSA` both name a graha under four \
+         schemes at once — so the queue is grouped by the blocker and not \
+         by the row.\n\n\
          | section | said by | why not |\n|---|---|---|\n",
         count(said),
         count(SECTION_SAYS.len()),

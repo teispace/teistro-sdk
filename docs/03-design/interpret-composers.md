@@ -70,8 +70,15 @@ worth deciding once there is more than one composer to carry.
   silences that remain are all of that kind"*, which was true of the
   messages it was counting and not of the sections nobody had counted.
   Only two of the six are waiting on a **name**; the others wait on a
-  decision about which number deserves a sentence, on a knob, or on
-  nothing but the work.
+  decision about which number deserves a sentence, or on a knob. Two of
+  them share that knob rather than having one each — `VIMSHOPAKA` and
+  `VAISESHIKAMSA` both name or score a graha under four schemes at once —
+  so the queue is grouped by the blocker and not by the row. The row for
+  `VAISESHIKAMSA` said it was the cheapest of the six until its source was
+  read, which is the pattern this project keeps earning: a design page's
+  own account of an unbuilt step is a hypothesis, and reading the source
+  falsified this one before a line of the composer was written. The
+  cheapest is `DASHA_PHALA` — one fact a graha, no scheme to choose.
 - **The façade's reading types are the façade's.** `RulesReading` and
   `Present` live in `crates/sdk`, so a composer taking them would put
   `interpret` above the façade and invert the crate graph. Composers take the
