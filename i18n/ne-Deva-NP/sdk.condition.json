@@ -5,7 +5,7 @@
   "retrograde": "{$graha :entity kind=graha form=prose} वक्री छ",
   "combust": "{$graha :entity kind=graha form=prose} अस्तंगत छ",
   "friendship": "{#b}{$graha :entity kind=graha}{/b} आफ्नो राशीश {$dispositor :entity kind=graha}सँग {$compound :entity kind=relationship} छ: तालिकाले {$natural :entity kind=relationship}, राशीशको स्थानले {$temporary :entity kind=relationship}",
-  "age": "{$graha :entity kind=graha} आफ्नो राशिको {$age :entity kind=avastha_baladi} अंशमा छ",
+  "age": "{$graha :entity kind=graha} आफ्नो राशिमा {$age :entity kind=avastha_baladi} छ",
   "wakefulness": "{$graha :entity kind=graha} {$wakefulness :entity kind=avastha_jagradadi} छ",
   "brightness": "{$graha :entity kind=graha} {$deeptadi :entity kind=avastha_deeptadi} छ",
   "lajjitadi": "{$graha :entity kind=graha} {$states :list type=and} छ",

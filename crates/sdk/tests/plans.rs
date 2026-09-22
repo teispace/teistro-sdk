@@ -588,6 +588,22 @@ fn a_placement_says_what_its_dasha_will_be_like() {
         "{natures:?}"
     );
 
+    // Every item said in each strict locale, from that locale's own
+    // message: the composed page cannot do this for these composers,
+    // because the recorded corpus carries no section for them, so the
+    // rendering is proved here rather than only in the binding tests that
+    // run in the verify matrix.
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        sdk.intl().set_locale(locale).expect("a strict locale");
+        for item in &plan {
+            let said = sdk.intl().render(&item.key, &item.params);
+            assert_eq!(said.resolved_from.as_deref(), Some(locale), "{}", item.key);
+            assert!(!said.is_fallback, "{} fell back in {locale}", item.key);
+            assert!(said.warnings.is_empty(), "{:?}", said.warnings);
+            assert!(!said.text.is_empty(), "{} said nothing", item.key);
+        }
+    }
+
     // A document without the section is refused by the knob's name.
     let (without, bare) = common::reading("{}", |request| request);
     let refused = without.interpret().dasha_phala(&bare).unwrap_err();
@@ -638,6 +654,22 @@ fn a_graha_says_what_it_is_and_not_only_where_it_stands() {
             .count(),
         "what nothing decides is its own item"
     );
+
+    // Every item said in each strict locale, from that locale's own
+    // message: the composed page cannot do this for these composers,
+    // because the recorded corpus carries no section for them, so the
+    // rendering is proved here rather than only in the binding tests that
+    // run in the verify matrix.
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        sdk.intl().set_locale(locale).expect("a strict locale");
+        for item in &plan {
+            let said = sdk.intl().render(&item.key, &item.params);
+            assert_eq!(said.resolved_from.as_deref(), Some(locale), "{}", item.key);
+            assert!(!said.is_fallback, "{} fell back in {locale}", item.key);
+            assert!(said.warnings.is_empty(), "{:?}", said.warnings);
+            assert!(!said.text.is_empty(), "{} said nothing", item.key);
+        }
+    }
 
     // A document without the section is refused by the knob's name.
     let (without, bare) = common::reading("{}", |request| request);
