@@ -19,6 +19,15 @@ arithmetic (`exact-arithmetic.md`) are Phase 1 types.
 | genuinely resisted | Patyayini (periods from planetary strengths: its own small kernel); Panchaswara (shape not established) |
 | corrections forced on the first schema | four (seed-to-lord map, balance window from the span, derived totals, three direction rules) |
 
+**This table examines the systems; it does not say which are built.** The
+56 it counts are what the survey read, which is more than the catalogue
+names and far more than this build computes — three numbers, and prose
+is where they go out of step. Which catalogued system this build computes
+and what keeps each of the rest out is counted from the types in
+[`dasha-coverage-measured.md`](dasha-coverage-measured.md), which also
+asks for every unbuilt one on a real chart to check that the gap is a
+declared refusal rather than a dead end.
+
 The strongest evidence is in the baseline engine's own code: its
 Padanadhamsa engine differs from its Chara engine in one expression (the
 start sign is the arudha lagna), Niryana Shoola from Shoola in one

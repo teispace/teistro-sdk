@@ -81,6 +81,10 @@
 //! - `dashas` and `check-dashas`: the falsification pass over the
 //!   Vimshottari dasha, which the dasha module is designed from — the
 //!   seed, the balance, the tree and its arithmetic, and the cycle's end.
+//! - `dasha-coverage` and `check-dasha-coverage`: the catalogue's forty
+//!   dasha systems against the eighteen this build computes, with each of
+//!   the twenty-two left listed with the blocker that keeps it out and its
+//!   refusal measured at the call — `dasha-coverage-measured.md`.
 //! - `dasha-systems` and `check-dasha-systems`: the same over the eight
 //!   other nakshatra-seeded systems — each one's seat derived from its
 //!   recorded first lords, a temporal balance over a window, and Tribhagi's
@@ -169,6 +173,7 @@ mod chebyshev;
 mod classical;
 mod consumer;
 mod dart_binding;
+mod dasha_coverage;
 mod dasha_systems;
 mod dashas;
 mod document_schema;
@@ -276,6 +281,11 @@ const PASSES: &[Pass] = &[
     ),
     ("render", render::generate, render::check_generated),
     ("dashas", dashas::generate, dashas::check_generated),
+    (
+        "dasha-coverage",
+        dasha_coverage::generate,
+        dasha_coverage::check_generated,
+    ),
     (
         "dasha-systems",
         dasha_systems::generate,
