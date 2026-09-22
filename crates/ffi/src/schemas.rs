@@ -589,6 +589,7 @@ pub fn charts() -> BlobSchema {
             chart_praveshas_section(35),
             chart_annual_charts_section(36),
             chart_year_claims_section(37),
+            chart_year_yogas_section(38),
         ],
     }
 }
@@ -675,6 +676,50 @@ fn chart_annual_charts_section(id: u32) -> SectionSchema {
                 "claim_count",
                 Scalar::U8,
                 "How many rows of the `year_claims` section belong to this year: one to five, the distinct office-bearers.",
+            ),
+            ColumnDef::new(
+                "yoga_count",
+                Scalar::U8,
+                "How many rows of the `year_yogas` section belong to this year: the pairs of the seven that make an Ithasala or an Ishrafa, 0 to 21.",
+            ),
+        ],
+    )
+}
+
+/// Every annual chart's pairs that make a Tajika yoga.
+fn chart_year_yogas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "year_yogas",
+        "Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).",
+        vec![
+            ColumnDef::new(
+                "faster",
+                Scalar::U16,
+                "The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id.",
+            ),
+            ColumnDef::new("slower", Scalar::U16, "The slower of the two, a `graha` id."),
+            ColumnDef::new(
+                "drishti",
+                Scalar::U8,
+                "The Tajika aspect between the signs they stand in. A pair in the neutral houses makes no yoga however close, so this is never `NONE` here.",
+            )
+            .of_enum("TsTajikaDrishti"),
+            ColumnDef::new(
+                "yoga",
+                Scalar::U8,
+                "What they are doing: coming together or drawing apart.",
+            )
+            .of_enum("TsTajikaYoga"),
+            ColumnDef::new(
+                "orb_deg",
+                Scalar::F64,
+                "The orb governing the pair, degrees: the **mean** of their two deeptamshas.",
+            ),
+            ColumnDef::new(
+                "apart_deg",
+                Scalar::F64,
+                "How far apart they stand **within their signs**, degrees, the completed signs deleted as the tradition counts them: positive when the faster is behind the slower and coming to it, negative when it is past.",
             ),
         ],
     )

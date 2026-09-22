@@ -33,6 +33,7 @@ use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 
 use crate::bala::{Bala, Panchavargiya, sign_of_longitude};
+use crate::drishti::Drishti;
 use crate::office::{Office, OfficeBearers};
 
 /// The strength below which an office-bearer cannot hold the year.
@@ -170,8 +171,9 @@ pub struct Varshesha {
 /// source states in the same breath as the rule.
 #[must_use]
 pub fn aspects(graha_sign: Rashi, lagna_sign: Rashi) -> bool {
-    let house = (lagna_sign.id() + 12 - graha_sign.id()) % 12 + 1;
-    !matches!(house, 2 | 6 | 8 | 12)
+    // One definition of the aspect, in `drishti`, which the yogas read
+    // too; this rule only asks whether there is one at all.
+    Drishti::between_signs(graha_sign, lagna_sign).is_aspect()
 }
 
 /// The lord of the year.
@@ -432,6 +434,66 @@ mod tests {
         .unwrap();
         assert_eq!(allowed.graha, Graha::Moon);
         assert!(!allowed.moon_passed_over);
+    }
+
+    /// The source's **second** worked year (Chart VII-1), which exercises
+    /// the Moon rule and the "next lower that aspects" step together.
+    ///
+    /// Three planets hold the five portfolios. The Moon is the strongest
+    /// at 12:28:15 and is passed over; Mercury is next at 10:49:15 and
+    /// "does not aspect the lagna and therefore goes out of the
+    /// competition"; **Venus**, the weakest at 9:06:30, holds the year on
+    /// account of its aspect. The chain must skip two claimants for two
+    /// different reasons to reach it.
+    #[test]
+    fn the_sources_second_worked_year_skips_two_claimants() {
+        let bearers = OfficeBearers {
+            muntha: Graha::Moon,
+            janma_lagna: Graha::Mercury,
+            varsha_lagna: Graha::Venus,
+            tri_rashi: Graha::Moon,
+            dina_ratri: Graha::Mercury,
+            by_day: true,
+        };
+        // Aries rising. The Moon and Venus aspect it from the fifth;
+        // Mercury stands in the twelfth, which aspects nothing.
+        let lagna = 1.0;
+        let placed = |graha: Graha| match graha {
+            Graha::Moon | Graha::Venus => Rashi::Leo,
+            Graha::Mercury => Rashi::Pisces,
+            _ => Rashi::Aries,
+        };
+        let strengths: Vec<crate::bala::Panchavargiya> = crate::bala::SEVEN
+            .into_iter()
+            .map(|graha| crate::bala::Panchavargiya {
+                graha,
+                sign: placed(graha),
+                griha: Bala::default(),
+                uchcha: Bala::default(),
+                hudda: Bala::default(),
+                drekkana: Bala::default(),
+                navamsha: Bala::default(),
+                total: Bala::default(),
+                vishwa: match graha {
+                    Graha::Moon => Bala::new(12, 28, 15),
+                    Graha::Mercury => Bala::new(10, 49, 15),
+                    Graha::Venus => Bala::new(9, 6, 30),
+                    _ => Bala::new(1, 0, 0),
+                },
+            })
+            .collect();
+        let found = varshesha(&bearers, &strengths, lagna, VarsheshaRules::default()).unwrap();
+        assert_eq!(found.graha, Graha::Venus, "the source's answer");
+        assert_eq!(found.vishwa.to_string(), "09:06:30");
+        assert!(found.moon_passed_over, "the Moon led and stepped aside");
+        // Mercury was skipped for the other reason, which the claims show.
+        let mercury = found
+            .claims
+            .iter()
+            .find(|claim| claim.graha == Graha::Mercury)
+            .unwrap();
+        assert!(!mercury.aspects_lagna);
+        assert!(mercury.vishwa > found.vishwa, "stronger, and out of it");
     }
 
     /// The Tajika aspect is the houses 3, 5, 9, 11 and the kendras; the

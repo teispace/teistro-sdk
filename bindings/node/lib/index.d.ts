@@ -631,6 +631,60 @@ export interface OfficeBearers {
   readonly dinaRatri: Graha | 'unknown';
 }
 
+/**
+ * A Tajika strength, exact. The boundary carries it as an integer count of
+ * **sub-sub units**, 3600 to a unit, because two office-bearers a sub-sub
+ * unit apart decide a year between them.
+ */
+export interface Bala {
+  /** Whole units, at most twenty: the figure a reader compares. */
+  readonly units: number;
+  /** The sub-units after those, 0 to 59. */
+  readonly subUnits: number;
+  /** The sub-sub units after those, 0 to 59. */
+  readonly subSub: number;
+  /** The whole of it in sub-sub units: what to compare and sum. */
+  readonly total: number;
+  /** `14:20:15`, as the sources write one. */
+  toString(): string;
+}
+
+/** Which step of the chain decided the year's lord. */
+export type VarsheshaChosen =
+  | 'strongest'
+  | 'most-portfolios'
+  | 'muntha-lord-unaspected'
+  | 'muntha-lord-all-weak'
+  | 'muntha-lord-tied'
+  | 'dina-ratri-tied'
+  | 'annual-lagna-lord-unaspected';
+
+/** One office-bearer's claim on the year's lordship. */
+export interface YearClaim {
+  /** Whose claim it is. */
+  readonly graha: Graha | 'unknown';
+  /** Its five-fold strength. */
+  readonly vishwa: Bala;
+  /** How many of the five offices it holds, 1 to 5: the tie-break. */
+  readonly portfolios: number;
+  /** Whether it gives the Tajika aspect to the annual lagna, which it must to hold the year. */
+  readonly aspectsLagna: boolean;
+}
+
+/** The lord of the year, and the reckoning it came out of. */
+export interface YearLord {
+  /** The lord of the year. */
+  readonly graha: Graha | 'unknown';
+  /** Which step of the chain decided it. */
+  readonly chosen: VarsheshaChosen | 'unknown';
+  /** Its five-fold strength. */
+  readonly vishwa: Bala;
+  /** Whether the Moon led on strength and stepped aside, being "unable to govern". */
+  readonly moonPassedOver: boolean;
+  /** Every claimant, strongest first, so the decision can be read rather than trusted. */
+  readonly claims: readonly YearClaim[];
+}
+
 /** A return's own chart, read down to what Tajika reads from it. */
 export interface AnnualChart {
   /** The annual chart's lagna, sidereal degrees, at the place it was cast for. */
@@ -639,6 +693,47 @@ export interface AnnualChart {
   readonly byDay: boolean;
   /** The five office-bearers. */
   readonly officeBearers: OfficeBearers;
+  /** The lord of the year, chosen among them. */
+  readonly yearLord: YearLord;
+  /**
+   * The pairs of the seven that make a Tajika yoga in this chart. The
+   * pairs that make none do not cross; `sdk.chart().drishtis` in Rust has
+   * all twenty-one.
+   */
+  readonly yogas: readonly TajikaPair[];
+}
+
+/** The Tajika aspect between two signs; the neutral houses give none. */
+export type TajikaDrishti =
+  | 'friendly'
+  | 'secretly-friendly'
+  | 'inimical'
+  | 'secretly-inimical'
+  | 'none';
+
+/** What two planets inside each other's orb are doing. */
+export type TajikaYoga =
+  /** The faster is behind the slower and coming to it. */
+  | 'ithasala'
+  /** The faster is past but at the sign's end, so it acts from the next sign. */
+  | 'rashyanta-ithasala'
+  /** The faster is past the slower and drawing away. */
+  | 'ishrafa';
+
+/** Two planets of an annual chart, and what they make. */
+export interface TajikaPair {
+  /** The faster of the two by the tradition's ranking. */
+  readonly faster: Graha | 'unknown';
+  /** The slower. */
+  readonly slower: Graha | 'unknown';
+  /** The aspect between the signs they stand in. */
+  readonly drishti: TajikaDrishti | 'unknown';
+  /** What they are doing. */
+  readonly yoga: TajikaYoga | 'unknown';
+  /** The orb governing them, degrees: the mean of their deeptamshas. */
+  readonly orbDeg: number;
+  /** How far apart within their signs, degrees; positive when the faster is behind. */
+  readonly apartDeg: number;
 }
 
 /**

@@ -289,3 +289,29 @@ function ownLayout(): string {
 }
 
 void ownLayout;
+
+// A year's own chart, read all the way down. The declarations are
+// hand-written and the layer's plain records are not measured against a
+// real instance the way its classes are, so a field the layer returns and
+// these forget is invisible until someone reads it — which is what this
+// does. `yearLord` was missing here once for exactly that reason.
+function theYearsOwnChart(ctx: Context): string {
+  const year = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    varsha: { through: 2, place: 'birth', varshesha: { moon: 'passed_over' } },
+  }).praveshas[0]!;
+  const annual = year.annual!;
+  const lord: string = `${annual.yearLord.graha} ${annual.yearLord.chosen}`;
+  const bala: number = annual.yearLord.vishwa.units + annual.yearLord.vishwa.total;
+  const claim = annual.yearLord.claims[0]!;
+  const held: number = claim.portfolios;
+  const aspects: boolean = claim.aspectsLagna;
+  const pair = annual.yogas[0];
+  const orb: number = pair?.orbDeg ?? 0;
+  const muntha: string = `${year.muntha.sign} ${year.muntha.lord}`;
+  return `${lord} ${bala} ${held} ${aspects} ${orb} ${muntha} ${annual.byDay}`;
+}
+
+void theYearsOwnChart;

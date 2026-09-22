@@ -6295,6 +6295,73 @@ export declare const VarsheshaChosen: {
 export declare const VarsheshaChosenById: ReadonlyMap<number, VarsheshaChosen>;
 
 /**
+ * The Tajika aspect between two signs (`03-design/tajika-aspects.md`).
+ *
+ * Not the Parashari drishti, which crosses elsewhere: this one is a
+ * relation between signs, and its neutral houses give no aspect at all.
+ */
+export type TajikaDrishti = 'friendly' | 'secretly-friendly' | 'inimical' | 'secretly-inimical' | 'none';
+
+/** Every TajikaDrishti by name; the values are the strings the union accepts. */
+export declare const TajikaDrishti: {
+  /**
+   * Pratyaksha Mitra, at houses 5 and 9: openly friendly.
+   */
+  readonly Friendly: 'friendly';
+  /**
+   * Gupta Mitra, at houses 3 and 11: secretly friendly.
+   */
+  readonly SecretlyFriendly: 'secretly-friendly';
+  /**
+   * Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an
+   * aspect.
+   */
+  readonly Inimical: 'inimical';
+  /**
+   * Gupta Shatru, at houses 4 and 10: secretly inimical.
+   */
+  readonly SecretlyInimical: 'secretly-inimical';
+  /**
+   * Sama, at houses 2, 6, 8 and 12: no aspect at all.
+   */
+  readonly None: 'none';
+};
+
+/**
+ * Every TajikaDrishti by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TajikaDrishtiById: ReadonlyMap<number, TajikaDrishti>;
+
+/**
+ * What two planets inside each other's orb are doing.
+ */
+export type TajikaYoga = 'ithasala' | 'rashyanta-ithasala' | 'ishrafa';
+
+/** Every TajikaYoga by name; the values are the strings the union accepts. */
+export declare const TajikaYoga: {
+  /**
+   * Ithasala: the faster is behind the slower and coming to it.
+   */
+  readonly Ithasala: 'ithasala';
+  /**
+   * Ithasala from the sign's end: the faster is past but stands at 29°
+   * or beyond, so it acts from the next sign, where it is behind again.
+   */
+  readonly RashyantaIthasala: 'rashyanta-ithasala';
+  /**
+   * Ishrafa: the faster is past the slower and drawing away.
+   */
+  readonly Ishrafa: 'ishrafa';
+};
+
+/**
+ * Every TajikaYoga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TajikaYogaById: ReadonlyMap<number, TajikaYoga>;
+
+/**
  * A time scale of the conversions; the first two ids are the port's.
  */
 export type Scale = 'ut1' | 'tt' | 'utc';

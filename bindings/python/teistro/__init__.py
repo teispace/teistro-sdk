@@ -103,6 +103,8 @@ from .catalogue import (
     Balance,
     Ekadhipatya,
     Shodhana,
+    TajikaDrishti,
+    TajikaYoga,
     Vaiseshikamsa,
     DashaPhase,
     Nature,
@@ -306,6 +308,9 @@ __all__ = [
     "OfficeBearers",
     "Pravesha",
     "VarshaPlace",
+    "TajikaDrishti",
+    "TajikaPair",
+    "TajikaYoga",
     "VarsheshaChosen",
     "VarsheshaRules",
     "YearClaim",
@@ -2597,6 +2602,30 @@ class YearLord:
 
 
 @dataclass(frozen=True)
+class TajikaPair:
+    """Two planets of an annual chart, and what they make."""
+
+    faster: Graha
+    """The faster of the two by the tradition's ranking."""
+
+    slower: Graha
+    """The slower."""
+
+    drishti: TajikaDrishti
+    """The aspect between the signs they stand in."""
+
+    yoga: TajikaYoga
+    """What they are doing: coming together or drawing apart."""
+
+    orb_deg: float
+    """The orb governing them, degrees: the mean of their deeptamshas."""
+
+    apart_deg: float
+    """How far apart within their signs, degrees; positive when the faster
+    is behind the slower and coming to it."""
+
+
+@dataclass(frozen=True)
 class AnnualChart:
     """A return's own chart, read down to what Tajika reads from it."""
 
@@ -2612,6 +2641,11 @@ class AnnualChart:
 
     year_lord: YearLord
     """The lord of the year, chosen among them."""
+
+    yogas: List[TajikaPair]
+    """The pairs of the seven that make a Tajika yoga in this chart. The
+    pairs that make none do not cross; Rust's `sdk.chart().drishtis` has all
+    twenty-one."""
 
 
 @dataclass(frozen=True)
@@ -2940,6 +2974,8 @@ def _annual_chart(decoded: Any, row: int) -> Optional[AnnualChart]:
     start = sum(charts.claim_count[i] for i in range(row))
     count = charts.claim_count[row]
     claims = decoded.year_claims
+    yoga_start = sum(charts.yoga_count[i] for i in range(row))
+    pairs = decoded.year_yogas
     return AnnualChart(
         lagna_deg=charts.lagna_deg[row],
         by_day=charts.daylight[row] == 1,
@@ -2965,6 +3001,17 @@ def _annual_chart(decoded: Any, row: int) -> Optional[AnnualChart]:
                 for i in range(start, start + count)
             ],
         ),
+        yogas=[
+            TajikaPair(
+                faster=Graha(pairs.faster[i]),
+                slower=Graha(pairs.slower[i]),
+                drishti=TajikaDrishti(pairs.drishti[i]),
+                yoga=TajikaYoga(pairs.yoga[i]),
+                orb_deg=pairs.orb_deg[i],
+                apart_deg=pairs.apart_deg[i],
+            )
+            for i in range(yoga_start, yoga_start + charts.yoga_count[row])
+        ],
     )
 
 

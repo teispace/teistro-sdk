@@ -543,6 +543,12 @@ for (const reading of ['sidereal', 'tropical', 'mean']) {
       put(`chart-${i}-varsha-${reading}-${one.year}-year-lord-chosen`, lord.chosen);
       put(`chart-${i}-varsha-${reading}-${one.year}-year-lord-bala`, lord.vishwa.toString());
       put(
+        `chart-${i}-varsha-${reading}-${one.year}-yogas`,
+        one.annual.yogas
+          .map((p) => `${p.faster}>${p.slower}:${p.drishti}:${p.yoga}:${p.apartDeg.toFixed(6)}`)
+          .join(' '),
+      );
+      put(
         `chart-${i}-varsha-${reading}-${one.year}-year-claims`,
         lord.claims
           .map((c) => `${c.graha}:${c.vishwa}:${c.portfolios}:${c.aspectsLagna}`)

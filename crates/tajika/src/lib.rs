@@ -30,6 +30,7 @@
 #![doc(html_no_source)]
 
 mod bala;
+mod drishti;
 mod muntha;
 mod office;
 mod varsha;
@@ -38,6 +39,10 @@ mod varshesha;
 pub use bala::{
     AnnualSky, Bala, Panchavargiya, Relation, SEVEN, drekkana_lord, hudda_lord, navamsha_lord,
     panchavargiya,
+};
+pub use drishti::{
+    BY_SPEED, Between, Drishti, RASHYANTA_DEG, Yoga, all as drishtis, between, deeptamsha,
+    orb_between, speed_rank,
 };
 pub use muntha::{DAILY_DEG, MONTHLY_DEG, Muntha, MunthaDegree, muntha};
 pub use office::{Office, OfficeBearers, YearCharts, office_bearers, tri_rashi_lord};

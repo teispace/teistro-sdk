@@ -6657,6 +6657,62 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsTajikaDrishti",
+      "doc": "The Tajika aspect between two signs (`03-design/tajika-aspects.md`).\n\nNot the Parashari drishti, which crosses elsewhere: this one is a\nrelation between signs, and its neutral houses give no aspect at all.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Friendly",
+          "value": 0,
+          "doc": "Pratyaksha Mitra, at houses 5 and 9: openly friendly."
+        },
+        {
+          "name": "SecretlyFriendly",
+          "value": 1,
+          "doc": "Gupta Mitra, at houses 3 and 11: secretly friendly."
+        },
+        {
+          "name": "Inimical",
+          "value": 2,
+          "doc": "Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an\naspect."
+        },
+        {
+          "name": "SecretlyInimical",
+          "value": 3,
+          "doc": "Gupta Shatru, at houses 4 and 10: secretly inimical."
+        },
+        {
+          "name": "None",
+          "value": 4,
+          "doc": "Sama, at houses 2, 6, 8 and 12: no aspect at all."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsTajikaYoga",
+      "doc": "What two planets inside each other's orb are doing.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Ithasala",
+          "value": 0,
+          "doc": "Ithasala: the faster is behind the slower and coming to it."
+        },
+        {
+          "name": "RashyantaIthasala",
+          "value": 1,
+          "doc": "Ithasala from the sign's end: the faster is past but stands at 29°\nor beyond, so it acts from the next sign, where it is behind again."
+        },
+        {
+          "name": "Ishrafa",
+          "value": 2,
+          "doc": "Ishrafa: the faster is past the slower and drawing away."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsScale",
       "doc": "A time scale of the conversions; the first two ids are the port's.",
       "repr": "u32",
@@ -14337,6 +14393,11 @@
               "name": "claim_count",
               "scalar": "u8",
               "doc": "How many rows of the `year_claims` section belong to this year: one to five, the distinct office-bearers."
+            },
+            {
+              "name": "yoga_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `year_yogas` section belong to this year: the pairs of the seven that make an Ithasala or an Ishrafa, 0 to 21."
             }
           ]
         },
@@ -14365,6 +14426,46 @@
               "name": "aspects_lagna",
               "scalar": "u8",
               "doc": "1 when it gives the Tajika aspect to the annual lagna, which it must to hold the year; 0 when it stands in a neutral house — 2, 6, 8 or 12 — and is disqualified however strong."
+            }
+          ]
+        },
+        {
+          "id": 38,
+          "name": "year_yogas",
+          "doc": "Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "faster",
+              "scalar": "u16",
+              "doc": "The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id."
+            },
+            {
+              "name": "slower",
+              "scalar": "u16",
+              "doc": "The slower of the two, a `graha` id."
+            },
+            {
+              "name": "drishti",
+              "scalar": "u8",
+              "doc": "The Tajika aspect between the signs they stand in. A pair in the neutral houses makes no yoga however close, so this is never `NONE` here.",
+              "enum": "TsTajikaDrishti"
+            },
+            {
+              "name": "yoga",
+              "scalar": "u8",
+              "doc": "What they are doing: coming together or drawing apart.",
+              "enum": "TsTajikaYoga"
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb governing the pair, degrees: the **mean** of their two deeptamshas."
+            },
+            {
+              "name": "apart_deg",
+              "scalar": "f64",
+              "doc": "How far apart they stand **within their signs**, degrees, the completed signs deleted as the tradition counts them: positive when the faster is behind the slower and coming to it, negative when it is past."
             }
           ]
         }

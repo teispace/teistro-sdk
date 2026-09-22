@@ -378,6 +378,28 @@ fn the_sources_worked_year_is_read_as_the_source_reads_it() {
     let strongest = bala.iter().max_by_key(|one| one.vishwa).unwrap();
     assert_eq!(strongest.graha, Graha::Saturn, "of all seven");
 
+    // The Tajika aspects of that chart, and the source's own worked
+    // Ithasala in it: the Sun at Leo 3°50′ and Mars at Scorpio 7°42′,
+    // orb 11°30′ (the mean of 15 and 8), 3°52′ apart within their signs,
+    // the Sun faster and behind — so they are coming together.
+    let pairs = sdk.chart().drishtis(&annual).unwrap();
+    assert_eq!(pairs.len(), 21, "every pair of the seven");
+    let sun_mars = pairs
+        .iter()
+        .find(|pair| {
+            [pair.faster, pair.slower].contains(&Graha::Sun)
+                && [pair.faster, pair.slower].contains(&Graha::Mars)
+        })
+        .expect("the Sun and Mars");
+    assert_eq!(sun_mars.faster, Graha::Sun);
+    assert!((sun_mars.orb_deg - 11.5).abs() < 1e-12);
+    assert!(
+        (sun_mars.apart_deg - (3.0 + 52.0 / 60.0)).abs() < 2.0 / 60.0,
+        "3°52′, got {}",
+        sun_mars.apart_deg
+    );
+    assert_eq!(sun_mars.yoga, Some(teistro::TajikaYoga::Ithasala));
+
     // And the lord of the year the source names: **the Sun**, not the
     // strongest office-bearer. Jupiter leads on strength and stands in the
     // second from the lagna, which gives no Tajika aspect, so the source

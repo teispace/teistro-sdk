@@ -649,6 +649,14 @@ def main() -> None:
                     put(f"{stem}-year-lord-chosen", year_lord.chosen.key)
                     put(f"{stem}-year-lord-bala", str(year_lord.vishwa))
                     put(
+                        f"{stem}-yogas",
+                        " ".join(
+                            f"{p.faster.full_key}>{p.slower.full_key}:"
+                            f"{p.drishti.key}:{p.yoga.key}:{p.apart_deg:.6f}"
+                            for p in annual.yogas
+                        ),
+                    )
+                    put(
                         f"{stem}-year-claims",
                         " ".join(
                             f"{c.graha.full_key}:{c.vishwa}:{c.portfolios}:{str(c.aspects_lagna).lower()}"

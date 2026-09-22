@@ -607,8 +607,10 @@ test('every catalogue enum has a complete id table', () => {
   // 1006 since the vaiseshikamsa catalogue kind: thirty names and its UNKNOWN;
   // 1010 since the avastha_cheshta catalogue kind: three and its UNKNOWN;
   // 1013 since the dasha phala's `TsDashaPhase`, three;
-  // 1020 since the year lord's `TsVarsheshaChosen`, seven steps of its chain.
-  assert.equal(entries, 1020, 'every member of every enum is in a table');
+  // 1020 since the year lord's `TsVarsheshaChosen`, seven steps of its chain;
+  // 1028 since the Tajika aspects: `TsTajikaDrishti`'s five and
+  // `TsTajikaYoga`'s three.
+  assert.equal(entries, 1028, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1290,6 +1292,18 @@ test('a chart carries the annual charts its birth opens', () => {
     assert.equal(lord.vishwa.units, Math.trunc(lord.vishwa.total / 3600));
     assert.ok(typeof lord.chosen === 'string' && lord.chosen !== 'unknown');
     assert.equal(typeof lord.moonPassedOver, 'boolean');
+  }
+
+  // The pairs that make a yoga: never a neutral aspect, and the faster is
+  // behind the slower exactly when they are coming together.
+  for (const one of cast) {
+    for (const pair of one.annual.yogas) {
+      assert.notEqual(pair.drishti, 'none', 'a neutral pair makes no yoga');
+      assert.ok(pair.orbDeg > 0);
+      if (pair.yoga === 'ithasala') assert.ok(pair.apartDeg >= 0);
+      if (pair.yoga === 'ishrafa') assert.ok(pair.apartDeg < 0);
+      assert.ok(Math.abs(pair.apartDeg) <= pair.orbDeg || pair.yoga === 'rashyanta-ithasala');
+    }
   }
 
   // At a residence, in the place shape `found` takes, the lagnas move.

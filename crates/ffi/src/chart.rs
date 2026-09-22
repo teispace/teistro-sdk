@@ -1766,9 +1766,41 @@ struct AnnualColumns {
     year_lord_vishwa: Vec<i32>,
     moon_passed_over: Vec<u8>,
     claim_counts: Vec<u8>,
+    yoga_counts: Vec<u8>,
     /// The `year_claims` section: every year's claimants concatenated, in
     /// the order each year ranks them, ragged by `claim_count`.
     claims: ClaimColumns,
+    /// The `year_yogas` section: every year's yoga-making pairs, ragged by
+    /// `yoga_count`.
+    yogas: YogaColumns,
+}
+
+/// Every year's yoga-making pairs, flat and ragged.
+#[derive(Default)]
+struct YogaColumns {
+    faster: Vec<u16>,
+    slower: Vec<u16>,
+    drishti: Vec<u8>,
+    yoga: Vec<u8>,
+    orb_deg: Vec<f64>,
+    apart_deg: Vec<f64>,
+}
+
+impl YogaColumns {
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "year_yogas",
+            self.faster.len(),
+            &[
+                ColumnData::U16(&self.faster),
+                ColumnData::U16(&self.slower),
+                ColumnData::U8(&self.drishti),
+                ColumnData::U8(&self.yoga),
+                ColumnData::F64(&self.orb_deg),
+                ColumnData::F64(&self.apart_deg),
+            ],
+        )
+    }
 }
 
 /// Every year's claimants on the lordship, flat and ragged.
@@ -1811,6 +1843,22 @@ impl AnnualColumns {
         self.moon_passed_over.push(u8::from(lord.moon_passed_over));
         self.claim_counts
             .push(u8::try_from(lord.claims.len()).unwrap_or(u8::MAX));
+        self.yoga_counts
+            .push(u8::try_from(year.yogas.len()).unwrap_or(u8::MAX));
+        for pair in &year.yogas {
+            self.yogas.faster.push(pair.faster.id());
+            self.yogas.slower.push(pair.slower.id());
+            self.yogas
+                .drishti
+                .push(TsTajikaDrishti::from(pair.drishti) as u8);
+            // Only pairs that make one are here, so the fallback is dead.
+            self.yogas.yoga.push(
+                pair.yoga
+                    .map_or(u8::MAX, |yoga| TsTajikaYoga::from(yoga) as u8),
+            );
+            self.yogas.orb_deg.push(pair.orb_deg);
+            self.yogas.apart_deg.push(pair.apart_deg);
+        }
         for claim in &lord.claims {
             self.claims.graha.push(claim.graha.id());
             self.claims.vishwa.push(sub_sub(claim.vishwa));
@@ -1837,9 +1885,11 @@ impl AnnualColumns {
                 ColumnData::I32(&self.year_lord_vishwa),
                 ColumnData::U8(&self.moon_passed_over),
                 ColumnData::U8(&self.claim_counts),
+                ColumnData::U8(&self.yoga_counts),
             ],
         )?;
-        self.claims.write(writer)
+        self.claims.write(writer)?;
+        self.yogas.write(writer)
     }
 }
 
@@ -2525,6 +2575,61 @@ pub enum TsVarsheshaChosen {
     AnnualLagnaLordUnaspected = 6,
 }
 
+/// The Tajika aspect between two signs (`03-design/tajika-aspects.md`).
+///
+/// Not the Parashari drishti, which crosses elsewhere: this one is a
+/// relation between signs, and its neutral houses give no aspect at all.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsTajikaDrishti {
+    /// Pratyaksha Mitra, at houses 5 and 9: openly friendly.
+    Friendly = 0,
+    /// Gupta Mitra, at houses 3 and 11: secretly friendly.
+    SecretlyFriendly = 1,
+    /// Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an
+    /// aspect.
+    Inimical = 2,
+    /// Gupta Shatru, at houses 4 and 10: secretly inimical.
+    SecretlyInimical = 3,
+    /// Sama, at houses 2, 6, 8 and 12: no aspect at all.
+    None = 4,
+}
+
+impl From<teistro::TajikaDrishti> for TsTajikaDrishti {
+    fn from(drishti: teistro::TajikaDrishti) -> TsTajikaDrishti {
+        match drishti {
+            teistro::TajikaDrishti::Friendly => TsTajikaDrishti::Friendly,
+            teistro::TajikaDrishti::SecretlyFriendly => TsTajikaDrishti::SecretlyFriendly,
+            teistro::TajikaDrishti::Inimical => TsTajikaDrishti::Inimical,
+            teistro::TajikaDrishti::SecretlyInimical => TsTajikaDrishti::SecretlyInimical,
+            teistro::TajikaDrishti::None => TsTajikaDrishti::None,
+        }
+    }
+}
+
+/// What two planets inside each other's orb are doing.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsTajikaYoga {
+    /// Ithasala: the faster is behind the slower and coming to it.
+    Ithasala = 0,
+    /// Ithasala from the sign's end: the faster is past but stands at 29°
+    /// or beyond, so it acts from the next sign, where it is behind again.
+    RashyantaIthasala = 1,
+    /// Ishrafa: the faster is past the slower and drawing away.
+    Ishrafa = 2,
+}
+
+impl From<teistro::TajikaYoga> for TsTajikaYoga {
+    fn from(yoga: teistro::TajikaYoga) -> TsTajikaYoga {
+        match yoga {
+            teistro::TajikaYoga::Ithasala => TsTajikaYoga::Ithasala,
+            teistro::TajikaYoga::RashyantaIthasala => TsTajikaYoga::RashyantaIthasala,
+            teistro::TajikaYoga::Ishrafa => TsTajikaYoga::Ishrafa,
+        }
+    }
+}
+
 impl From<teistro::Chosen> for TsVarsheshaChosen {
     fn from(chosen: teistro::Chosen) -> TsVarsheshaChosen {
         match chosen {
@@ -2666,6 +2771,10 @@ pub struct AnnualYear {
     pub bearers: teistro::OfficeBearers,
     /// The lord of the year, with every claim it was chosen over.
     pub year_lord: teistro::Varshesha,
+    /// The pairs of that chart that make a yoga: an Ithasala or an
+    /// Ishrafa. The pairs that make none are the rest of the
+    /// twenty-one, and a Rust caller has `sdk.chart().drishtis` for them.
+    pub yogas: Vec<teistro::Between>,
 }
 
 /// The annual charts a request's `varsha_json` asks for, none for null; a
@@ -2881,10 +2990,17 @@ fn annual_year(
     let year_lord = sdk
         .chart()
         .varshesha(birth, &annual, pravesha.year, varshesha)?;
+    let yogas = sdk
+        .chart()
+        .drishtis(&annual)?
+        .into_iter()
+        .filter(|pair| pair.yoga.is_some())
+        .collect();
     Ok(AnnualYear {
         lagna_deg: annual.foundation.lagna_deg,
         bearers,
         year_lord,
+        yogas,
     })
 }
 

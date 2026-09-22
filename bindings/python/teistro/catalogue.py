@@ -3797,6 +3797,46 @@ class VarsheshaChosen(Member):
     """
 
 
+class TajikaDrishti(Member):
+    """The Tajika aspect between two signs (`03-design/tajika-aspects.md`).
+
+    Not the Parashari drishti, which crosses elsewhere: this one is a
+    relation between signs, and its neutral houses give no aspect at all.
+    """
+
+    FRIENDLY = 0
+    """Pratyaksha Mitra, at houses 5 and 9: openly friendly."""
+
+    SECRETLY_FRIENDLY = 1
+    """Gupta Mitra, at houses 3 and 11: secretly friendly."""
+
+    INIMICAL = 2
+    """Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an
+    aspect.
+    """
+
+    SECRETLY_INIMICAL = 3
+    """Gupta Shatru, at houses 4 and 10: secretly inimical."""
+
+    NONE = 4
+    """Sama, at houses 2, 6, 8 and 12: no aspect at all."""
+
+
+class TajikaYoga(Member):
+    """What two planets inside each other's orb are doing."""
+
+    ITHASALA = 0
+    """Ithasala: the faster is behind the slower and coming to it."""
+
+    RASHYANTA_ITHASALA = 1
+    """Ithasala from the sign's end: the faster is past but stands at 29°
+    or beyond, so it acts from the next sign, where it is behind again.
+    """
+
+    ISHRAFA = 2
+    """Ishrafa: the faster is past the slower and drawing away."""
+
+
 class Scale(Member):
     """A time scale of the conversions; the first two ids are the port's."""
 
@@ -5208,6 +5248,18 @@ _KEYS: dict[str, dict[int, str]] = {
         4: "muntha-lord-tied",
         5: "dina-ratri-tied",
         6: "annual-lagna-lord-unaspected",
+    },
+    "TajikaDrishti": {
+        0: "friendly",
+        1: "secretly-friendly",
+        2: "inimical",
+        3: "secretly-inimical",
+        4: "none",
+    },
+    "TajikaYoga": {
+        0: "ithasala",
+        1: "rashyanta-ithasala",
+        2: "ishrafa",
     },
     "Scale": {
         0: "ut1",

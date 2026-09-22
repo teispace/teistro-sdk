@@ -4716,6 +4716,55 @@ typedef enum ts_varshesha_chosen {
 } ts_varshesha_chosen;
 
 /**
+ * The Tajika aspect between two signs (`03-design/tajika-aspects.md`).
+ *
+ * Not the Parashari drishti, which crosses elsewhere: this one is a
+ * relation between signs, and its neutral houses give no aspect at all.
+ */
+typedef enum ts_tajika_drishti {
+    /**
+     * Pratyaksha Mitra, at houses 5 and 9: openly friendly.
+     */
+    TS_TAJIKA_DRISHTI_FRIENDLY = 0,
+    /**
+     * Gupta Mitra, at houses 3 and 11: secretly friendly.
+     */
+    TS_TAJIKA_DRISHTI_SECRETLY_FRIENDLY = 1,
+    /**
+     * Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an
+     * aspect.
+     */
+    TS_TAJIKA_DRISHTI_INIMICAL = 2,
+    /**
+     * Gupta Shatru, at houses 4 and 10: secretly inimical.
+     */
+    TS_TAJIKA_DRISHTI_SECRETLY_INIMICAL = 3,
+    /**
+     * Sama, at houses 2, 6, 8 and 12: no aspect at all.
+     */
+    TS_TAJIKA_DRISHTI_NONE = 4,
+} ts_tajika_drishti;
+
+/**
+ * What two planets inside each other's orb are doing.
+ */
+typedef enum ts_tajika_yoga {
+    /**
+     * Ithasala: the faster is behind the slower and coming to it.
+     */
+    TS_TAJIKA_YOGA_ITHASALA = 0,
+    /**
+     * Ithasala from the sign's end: the faster is past but stands at 29°
+     * or beyond, so it acts from the next sign, where it is behind again.
+     */
+    TS_TAJIKA_YOGA_RASHYANTA_ITHASALA = 1,
+    /**
+     * Ishrafa: the faster is past the slower and drawing away.
+     */
+    TS_TAJIKA_YOGA_ISHRAFA = 2,
+} ts_tajika_yoga;
+
+/**
  * A time scale of the conversions; the first two ids are the port's.
  */
 typedef enum ts_scale {

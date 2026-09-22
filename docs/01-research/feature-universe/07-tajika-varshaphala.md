@@ -12,7 +12,7 @@ Pravesha) and PyJHora (Muntha, balas, Ithasala family, Mudda, Patyayini).
 | Muntha (progressed lagna one sign per year) and its lord | natal lagna, age | | partial | all | P0 |
 | lord of the year (Varshesha) from the five candidates (Muntha lord, lagna lord of annual chart, natal lagna lord, Trirashi lord, Dinaratri lord) by Pancha Vargeeya Bala | | | partial | all | P0 |
 | Pancha Vargeeya, Dwadasha Vargeeya and Harsha balas | see strengths | | partial | JHora, PyJHora | P0 |
-| Tajika aspects: conjunction, sextile, square, trine, opposition with deeptamsha orbs per planet; applying versus separating by speed | annual chart | orb table (Sun 15, Moon 12, Mars 8, Mercury 7, Jupiter 9, Venus 7, Saturn 9) **verify** | partial | all | P0 |
+| Tajika aspects: conjunction, sextile, square, trine, opposition with deeptamsha orbs per planet; applying versus separating by speed | annual chart | orb table (Sun 15, Moon 12, Mars 8, Mercury 7, Jupiter 9, Venus 7, Saturn 9) — **verified 2026-09-23** from Charak's Table X-1, together with the rule that a pair takes the *mean* of its two | partial | all | P0 |
 | the sixteen Tajika yogas (Ikkavala, Induvara, Ithasala kinds, Ishrafa, Nakta, Yamaya, Manau, Kamboola, Gairi Kamboola, Khallasara, Radda, Duphali Kutta, Dutthotha Davira, Tambira, Kuttha, Durapha) | aspects, balas | | partial | JHora, PyJHora | P0 |
 | sahamas (36) with day and night formulas | annual chart | | no | JHora, PyJHora | P1 |
 | Mudda (Varsha Vimshottari) and Patyayini dashas | annual chart | | partial | all | P0 |
@@ -22,7 +22,11 @@ Pravesha) and PyJHora (Muntha, balas, Ithasala family, Mudda, Patyayini).
 
 ## Closing checklist
 
-- Confirm deeptamsha orbs and the applying rule for retrograde bodies.
+- ~~Confirm deeptamsha orbs~~ — **done** (2026-09-23): the table above is
+  the source's, and a pair is governed by the mean of its two. The
+  **applying rule for retrograde bodies** is still open: the source ranks
+  the seven by speed as a fixed order and never says whether retrogression
+  reverses it, so `BY_SPEED` is a ranking and says so.
 - The Varsha Pravesh instant depends on the ayanamsha and the natal Sun's
   exact longitude, so it is a good cross-provider conformance case.
 
@@ -140,3 +144,22 @@ approximation to the true one, and says so.
 default it is 3′. A consumer comparing against a Tajika text should found
 the chart geocentrically, and the profile's centre is reported on every
 answer so that this is a thing one can check.
+
+### The aspects, read (2026-09-23)
+
+The Tajika aspect is a relation between **signs** — friendly at 3, 5, 9
+and 11, inimical at the kendras, and nothing at 2, 6, 8 and 12, each
+aspecting kind halved into the open and the secret — while the deeptamsha
+is a distance between **planets**. Two planets inside the mean of their
+orbs are in **Ithasala** when the faster is behind the slower and
+**Ishrafa** when it is past; a planet at 29° or more acts from the next
+sign as well, which can make an Ithasala it would otherwise be too far
+advanced for.
+
+"Behind" is **degrees within the sign**, the completed signs deleted, and
+not longitude: the source's own worked pair has the Sun at Leo 3°50′
+behind Mars at Scorpio 7°42′, three signs further on. It is the one thing
+here an implementer would naturally get backwards.
+
+The speed order is fixed by the tradition — Moon, Mercury, Venus, Sun,
+Mars, Jupiter, Saturn — and is a ranking rather than a measurement.

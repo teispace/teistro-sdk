@@ -1340,6 +1340,10 @@ export interface ChartsAnnualCharts {
    * How many rows of the `year_claims` section belong to this year: one to five, the distinct office-bearers.
    */
   readonly claimCount: Uint8Array;
+  /**
+   * How many rows of the `year_yogas` section belong to this year: the pairs of the seven that make an Ithasala or an Ishrafa, 0 to 21.
+   */
+  readonly yogaCount: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -1367,6 +1371,43 @@ export interface ChartsYearClaims {
    * 1 when it gives the Tajika aspect to the annual lagna, which it must to hold the year; 0 when it stands in a neutral house — 2, 6, 8 or 12 — and is disqualified however strong.
    */
   readonly aspectsLagna: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `year_yogas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
+ */
+export interface ChartsYearYogas {
+  /**
+   * The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id.
+   */
+  readonly faster: Uint16Array;
+  /**
+   * The slower of the two, a `graha` id.
+   */
+  readonly slower: Uint16Array;
+  /**
+   * The Tajika aspect between the signs they stand in. A pair in the neutral houses makes no yoga however close, so this is never `NONE` here.
+   * The values are `TajikaDrishti` ids.
+   */
+  readonly drishti: Uint8Array;
+  /**
+   * What they are doing: coming together or drawing apart.
+   * The values are `TajikaYoga` ids.
+   */
+  readonly yoga: Uint8Array;
+  /**
+   * The orb governing the pair, degrees: the **mean** of their two deeptamshas.
+   */
+  readonly orbDeg: Float64Array;
+  /**
+   * How far apart they stand **within their signs**, degrees, the completed signs deleted as the tradition counts them: positive when the faster is behind the slower and coming to it, negative when it is past.
+   */
+  readonly apartDeg: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -1679,6 +1720,10 @@ export interface Charts {
    * Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`).
    */
   readonly yearClaims: ChartsYearClaims;
+  /**
+   * Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
+   */
+  readonly yearYogas: ChartsYearYogas;
 }
 
 /**
