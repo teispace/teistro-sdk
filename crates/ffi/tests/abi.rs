@@ -1848,8 +1848,9 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
         let looks = chart["aspects"].as_array().unwrap();
         assert!(!looks.is_empty(), "every chart holds a drishti");
         // The conditions and the karakas read the graha states through
-        // `RuleInputs`, as the placements do, so the same section serves
-        // four composers and `sections` asked for none of it.
+        // `RuleInputs`, as the placements do, so one section serves every
+        // composer that reads what a graha *is* — and `sections` asked for
+        // none of it.
         let conditions = chart["conditions"].as_array().unwrap();
         assert!(
             conditions.len() >= 9 * 2,

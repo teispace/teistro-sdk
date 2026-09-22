@@ -67,8 +67,11 @@ fn main() -> Result<(), Error> {
     let document = sdk.chart().reading(resolved.instant, &request)?.value;
 
     // ── The plan ───────────────────────────────────────────────────────
-    // Seven composers, one plan: a report concatenates what it wants to say
-    // in the order it wants to say it, which is what a flat plan is for.
+    // Several composers, one plan: a report concatenates what it wants to
+    // say in the order it wants to say it, which is what a flat plan is
+    // for. This example uses the ones the sections above pay for; the
+    // whole list is `PlanRequest::MEMBERS`, and it is not counted here
+    // because a count beside a growing list rots.
     // Where a graha *stands* and what it *rules* are different facts, and
     // it takes two composers to say both.
     let mut plan: Plan = sdk.interpret().placements(&document)?;

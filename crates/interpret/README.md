@@ -1,6 +1,9 @@
 # `teistro-interpret`
 
-Status: `building`, 2026-09-21: the plan and eight composers. The design
+Status: `building`, 2026-09-22: the plan and its composers, which are
+`teistro::PlanRequest::MEMBERS` and are deliberately not counted here —
+a count beside a list that grows is the one claim on a page like this
+certain to rot. The design
 is [`docs/03-design/interpret-composers.md`](../../docs/03-design/interpret-composers.md),
 measured in [`docs/03-design/interpret-measured.md`](../../docs/03-design/interpret-measured.md).
 
