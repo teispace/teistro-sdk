@@ -12,8 +12,12 @@ each binding its row.
 
 Node, Dart and Python read `sdk.<area>.<operation>` off a context. Rust —
 the language the whole SDK is written in — has no such thing: a consumer
-picks among twenty-two crates and assembles what the other three are
-handed. This page decides what Rust gets instead.
+picks among the workspace's crates and assembles what the other three
+are handed. (The count is deliberately not written here. It was
+`twenty-two` when this page was drafted and the workspace has grown by a
+third since; a count beside a directory that grows is the one claim on a
+page like this that is certain to rot, and `crate-is-listed` holds the
+one place that does carry the list.) This page decides what Rust gets instead.
 
 In scope: whether Rust has a context at all, what it is made of, how the
 areas are expressed, how an ephemeris is chosen, what the façade does
