@@ -65,7 +65,16 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   it, and the three locales at `base` rendered identical English, 0 of
   433. **An entity is named in the locale that was asked for and a
   sentence belongs to the locale that answered it** — a name is a value,
-  and a value is the reader's; `hi-Deva-IN` and `sa-Deva` came whole from the baseline
+  and a value is the reader's. **The numbers are not, and that is a
+  choice rather than an oversight**: `hi-Deva-IN` and `sa-Deva` declare
+  `numberingSystem: deva`, and a message that falls back formats its
+  numbers, separators and lists in the **answering** locale's style, so a
+  reader at `base` sees Latin digits. The line drawn is that *grammar*
+  follows the sentence — plurals, ordinals, list joiners, which are
+  English when the sentence is — and only a **named value** follows the
+  reader. Whether a declared numbering system should cross that line
+  anyway is the maintainer's, and it is written here rather than left for
+  someone to discover in a rendering; `hi-Deva-IN` and `sa-Deva` came whole from the baseline
   engine's name tables (`teistro-intl migrate baseline`, below),
   `en-Latn` and `ne-Deva-NP` gained the same tables under their
   hand-shaped records, and `sa-Latn` is derived from `sa-Deva` by
