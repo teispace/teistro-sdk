@@ -1,0 +1,36 @@
+//! Tajika: the annual chart and what is read from it
+//! (`03-design/annual-chart.md`).
+//!
+//! What is built is the one step everything else needs. The **Varsha
+//! Pravesha** is the instant the Sun returns to the longitude it held at
+//! birth, and every Tajika judgement is made from the chart cast for it,
+//! so an error here is an error in all of them.
+//!
+//! The rule, its two rivals and what each costs the lagna are measured
+//! over every recorded birth in `03-design/annual-chart-measured.md`.
+//!
+//! ```
+//! use teistro_tajika::{Natal, Reading};
+//! use teistro_core::quantity::{JulianDay, Utc};
+//!
+//! let natal = Natal {
+//!     instant: JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+//!     sidereal_sun_deg: 0.054_692,
+//!     tropical_sun_deg: 23.779_197,
+//! };
+//! // The mean reading needs no ephemeris at all: it is arithmetic.
+//! let mean = teistro_tajika::mean_praveshas(&natal, 3)?;
+//! assert_eq!(mean.len(), 3);
+//! assert_eq!(mean[0].year, 1);
+//! assert!(mean[0].at.get() > natal.instant.get());
+//! assert_eq!(Reading::default(), Reading::Sidereal);
+//! # Ok::<(), teistro_core::error::Error>(())
+//! ```
+
+#![doc(html_no_source)]
+
+mod varsha;
+
+pub use varsha::{
+    Natal, Pravesha, Reading, SIDEREAL_YEAR_DAYS, STEP_DAYS, mean_praveshas, praveshas, years,
+};

@@ -1475,6 +1475,7 @@ dependencies = [
  "teistro-serial",
  "teistro-state",
  "teistro-strength",
+ "teistro-tajika",
  "teistro-time",
  "teistro-vargas",
 ]
@@ -1909,6 +1910,18 @@ dependencies = [
  "teistro-core",
  "teistro-state",
  "teistro-vargas",
+]
+
+[[package]]
+name = "teistro-tajika"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-astro",
+ "teistro-core",
+ "teistro-port-ephemeris",
 ]
 
 [[package]]

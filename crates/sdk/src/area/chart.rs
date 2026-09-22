@@ -37,6 +37,7 @@ use teistro_strength::{
     ShadbalaReading, ShadbalaRules, VaiseshikamsaChart, VaiseshikamsaReading, VimshopakaChart,
     VimshopakaReading,
 };
+use teistro_tajika::{Natal, Pravesha, Reading};
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
 use crate::area::system_of;
@@ -624,6 +625,166 @@ impl<'a> ChartArea<'a> {
             rules.after_cycle,
             rashi,
         )
+    }
+
+    /// The annual charts' instants: the Sun's returns to where it stood at
+    /// birth, `1` opening the first year of life
+    /// (`03-design/annual-chart.md`).
+    ///
+    /// Read in the chart's **own** zodiac, on the ayanamsha basis the
+    /// settings name — not a frame's sidereal reading, which applies the
+    /// mean ayanamsha where a founded chart applies the nutated one and
+    /// lands about two degrees of lagna away
+    /// (`03-design/annual-chart-measured.md`).
+    ///
+    /// Fewer instants than asked for is the answer rather than an error:
+    /// an ephemeris that ends before a birth's fortieth year has said so.
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Document, Ephemeris};
+    /// # use teistro::tajika::Reading;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let document: Document = todo!();
+    /// let years = sdk.chart().praveshas(&document, Reading::Sidereal, 40)?;
+    /// let thirtieth = years.iter().find(|one| one.year == 30);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// No ephemeris; a `through` outside one to two hundred, named
+    /// `through`; whatever the provider refuses while searching.
+    pub fn praveshas(
+        self,
+        document: &Document,
+        reading: Reading,
+        through: u16,
+    ) -> Result<Vec<Pravesha>, Error> {
+        // The argument is refused before anything is looked up, so a
+        // nonsense year is reported as one whichever reading was asked
+        // for and whether or not a provider is attached.
+        let asked = teistro_tajika::years(through)?;
+        let foundation = &document.foundation;
+        let natal = Self::natal_of(foundation)?;
+        if reading == Reading::Mean {
+            return teistro_tajika::mean_praveshas(&natal, asked);
+        }
+        let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
+        let settings = self.context.settings();
+        let completion = Completion::new(
+            provider,
+            settings.provider.overrides,
+            self.context.delta_t(),
+        );
+        let frame = foundation.zodiac.request;
+        let mut longitudes = completion.longitudes(frame);
+        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            longitudes = longitudes.with_observer(foundation.place);
+        }
+        let zodiac = LimbZodiac::of(
+            foundation.zodiac.ayanamsha,
+            settings.frame.ayanamsha_basis,
+            PrecessionModel::default(),
+            self.context.delta_t(),
+        );
+        // Asked for more years than the provider covers, answer the ones
+        // it does. Without this the search runs off the end and the
+        // provider's own `OutOfRange` comes back naming an instant the
+        // caller never mentioned — true, and useless to act on. Fewer
+        // instants than asked for is the answer this method documents,
+        // and none of them is the answer when the coverage reaches none;
+        // the refusal for a nonsense year already happened above, before
+        // capping could turn it into an empty list.
+        let through = asked.min(Self::years_covered(&completion, foundation.instant.get()));
+        if through == 0 {
+            return Ok(Vec::new());
+        }
+        teistro_tajika::praveshas(&longitudes, zodiac, &natal, reading, through)
+    }
+
+    /// How many whole returns the provider's coverage holds after an
+    /// instant.
+    ///
+    /// A year short rather than a year long: the last return inside the
+    /// coverage is the last one that can be *searched for*, and the search
+    /// samples a step past where it expects to find it.
+    fn years_covered<P: teistro_port_ephemeris::EphemerisProvider + ?Sized>(
+        completion: &Completion<'_, P>,
+        birth: f64,
+    ) -> u16 {
+        let covered = completion.capabilities().jd_range.1;
+        let years = (covered - birth - teistro_tajika::STEP_DAYS * 2.0)
+            / teistro_tajika::SIDEREAL_YEAR_DAYS;
+        if years <= 0.0 {
+            return 0;
+        }
+        #[expect(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            reason = "a positive count of years is clamped to u16 below"
+        )]
+        let years = years.floor().min(f64::from(u16::MAX)) as u16;
+        years
+    }
+
+    /// One annual chart, founded: the document of the year a return opens.
+    ///
+    /// The place and the zone are the birth's, which is the default the
+    /// schools differ on rather than a rule
+    /// (`03-design/annual-chart.md`); a consumer casting for a residence
+    /// asks for the instant with [`ChartArea::praveshas`] and founds the
+    /// chart themselves, which is the same call this makes.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::praveshas`]; a year the ephemeris does not reach is
+    /// refused by `year` with the years it does reach.
+    pub fn annual(
+        self,
+        document: &Document,
+        reading: Reading,
+        year: u16,
+        request: &ChartRequest,
+    ) -> Result<Envelope<Document>, Error> {
+        let found = self.praveshas(document, reading, year)?;
+        let at = found
+            .iter()
+            .find(|one| one.year == year)
+            .ok_or_else(|| {
+                Error::invalid_arg(format!(
+                    "the ephemeris does not reach year {year} of this birth"
+                ))
+                .with_field("year")
+                .with_hint(format!(
+                    "it reaches {}",
+                    found.last().map_or_else(
+                        || String::from("none of its years"),
+                        |one| format!("year {}", one.year)
+                    )
+                ))
+            })?
+            .at;
+        self.reading(at, request)
+    }
+
+    /// The Sun where it stood at birth, in both zodiacs, as a return needs
+    /// it.
+    ///
+    /// Both are read off the founded chart rather than one being rebuilt
+    /// from the other through the ayanamsha: the chart already answered
+    /// that question and a second answer to it is a second thing to get
+    /// wrong.
+    fn natal_of(foundation: &ChartFoundation) -> Result<Natal, Error> {
+        let sun = foundation
+            .graha(Graha::Sun)
+            .ok_or_else(|| Error::internal("a founded chart places the Sun"))?;
+        Ok(Natal {
+            instant: foundation.instant,
+            sidereal_sun_deg: sun.longitude_deg,
+            tropical_sun_deg: sun.tropical_deg,
+        })
     }
 
     /// The Moon's stay in its nakshatra around the birth, searched in the

@@ -24,6 +24,7 @@ members = [
     "crates/dasha",
     "crates/rules",
     "crates/interpret",
+    "crates/tajika",
     "crates/render-svg",
     "crates/serial",
     "crates/ephemeris-builtin",
