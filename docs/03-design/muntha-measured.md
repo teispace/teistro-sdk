@@ -258,11 +258,14 @@ about a **pair** — the *lagnesha*, the lord of the annual lagna, and
 the *karyesha*, the lord of the house the matter asked about belongs to
 — so the same year answers differently for each of the twelve houses.
 Every chart above is asked all twelve, which is **25 908** questions.
+Ikabala and Induvara are the two exceptions: facts about a chart, so
+each holds in all twelve of a chart's matters or in none — **147**
+charts and **1**, a divisibility the pass checks.
 
 | yoga | | held | of the matters asked |
 |---|---|---:|---|
-| Ikabala | *awaiting* | -- | the whole-sign houses of the annual lagna, which the pair's own reckoning does not need |
-| Induvara | *awaiting* | -- | the whole-sign houses of the annual lagna, which the pair's own reckoning does not need |
+| **Ikabala** | built | 1764 | 6.8% |
+| **Induvara** | built | 12 | 0.0% |
 | **Ithasala** | built | 4250 | 16.4% |
 | **Ishrafa** | built | 3050 | 11.8% |
 | **Nakta** | built | 603 | 2.3% |
@@ -271,17 +274,17 @@ Every chart above is asked all twelve, which is **25 908** questions.
 | **Kamboola** | built | 1094 | 4.2% |
 | GairiKamboola | *awaiting* | -- | an unqualified Moon, and where it will stand in the next sign: the only one of the sixteen that asks what happens next |
 | **Khallasara** | built | 2 | 0.0% |
-| Rudda | *awaiting* | -- | retrograde and combustion, which an annual chart's longitudes alone cannot say |
-| DuhphaliKuttha | *awaiting* | -- | retrograde and combustion, which an annual chart's longitudes alone cannot say |
+| **Rudda** | built | 4014 | 15.5% |
+| **DuhphaliKuttha** | built | 36 | 0.1% |
 | **DutthotthaDavira** | built | 4 | 0.0% |
 | Tambira | *awaiting* | -- | the karyesha at a sign's end, completing an Ithasala from the next |
 | Kuttha | *awaiting* | -- | Tajika's own benefics, which Table X-3 does not enumerate as it enumerates the malefics (crux C117) |
-| Durapha | *awaiting* | -- | retrograde and combustion, which an annual chart's longitudes alone cannot say |
+| **Durapha** | built | 4 | 0.0% |
 
-**Eight of the sixteen are built** and the other eight are listed at
-every call rather than left out of the answer, because *did not hold*
-and *cannot be told* are different statements. `YearYogas::holds`
-answers `None` for those eight, never `false`.
+**13 of the sixteen are built** and the other three are listed at every
+call rather than left out of the answer, because *did not hold* and
+*cannot be told* are different statements. `YearYogas::holds` answers
+`None` for those three, never `false`.
 
 ### The first house is never a pair
 
@@ -334,17 +337,17 @@ corpus, and it is why C115 asks whether *aspected* here is narrower than
 
 ## 11. Strong and weak, and the floors between them
 
-Five of the six yogas still awaiting turn on whether a planet is
-**strong** or **weak** — Rudda alone does not — and Charak never
-says where either begins. He gives a figure once, for the office-bearers
-when he chooses the year lord: below five units of Vishwa bala, the
-Muntha lord takes the year instead. A second book grades the whole scale
-— under five *Nirbali*, strengthless; five to ten *Madhya*, middling;
-ten to fifteen *Poorna*, fully strong; above fifteen *Parakrami* — and
-the two meet at five. So the yogas' *weak* is read as *Nirbali* and
-their *strong* as *Poorna* or better, which leaves a **middling** band
-between that is neither. Both floors are `YogaRules` fields, and this
-section measures what each costs (crux C116).
+Five of the six strength yogas turn on whether a planet is **strong** or
+**weak** — Rudda alone does not — and Charak never says where either
+begins. He gives a figure once, for the office-bearers when he chooses
+the year lord: below five units of Vishwa bala, the Muntha lord takes
+the year instead. A second book grades the whole scale — under five
+*Nirbali*, strengthless; five to ten *Madhya*, middling; ten to fifteen
+*Poorna*, fully strong; above fifteen *Parakrami* — and the two meet
+at five. So the yogas' *weak* is read as *Nirbali* and their *strong* as
+*Poorna* or better, which leaves a **middling** band between that is
+neither. Both floors are `YogaRules` fields, and this section measures
+what each costs (crux C116).
 
 Strength is a disjunction — "exalted, in its own house or otherwise
 strong" — so a **dignified** planet is strong under any floor at all.
@@ -416,3 +419,52 @@ dignified readings; where the two floors are **equal** there is no
 middle, so the lower table's row at five and the upper table's meet
 exactly — the one check that ties the two tables to each other; and no
 yoga that needs a weak pair holds in more matters than had one.
+
+## 12. What spoils an Ithasala
+
+Rudda is the Ithasala spoilt: one where either of the pair is
+"retrograde, combust, debilitated, in the 6th, 8th or 12th, or under
+malefic influence". Retrograde and combustion are not in a chart's
+longitudes, so they are read from its graha states — over the corpus's
+15 113 readings, **2209** are retrograde and **2051** combust, under the
+`BPHS` combustion table the profile sets.
+
+Rudda held in **4014** of the 4250 matters in which an Ithasala stood
+(94.4%). Each clause, counted in the Ruddas where it held of either lord
+— so a Rudda with two afflictions is counted twice:
+
+| clause | Ruddas | of them |
+|---|---:|---|
+| under malefic influence | 3315 | 82.6% |
+| in the 6th, 8th or 12th | 1622 | 40.4% |
+| retrograde | 1201 | 29.9% |
+| combust | 1169 | 29.1% |
+| debilitated | 623 | 15.5% |
+
+### The reach of the two readings left open
+
+*Under malefic influence* is read as Manau reads it — joined, or
+aspected inimically, by Mars or Saturn — with the pair's own malefic
+counting against its partner (crux C118). **873** Ruddas (21.7%) held on
+that clause and nothing else. That bounds every **narrower** reading at
+once: excluding the partner, or any stricter sense of influence, can
+remove those and no other. A **wider** one — any aspect at all —
+could only add Ruddas, and at most the **236** Ithasalas not spoilt now.
+
+**Read literally, Rudda spoils almost every Ithasala**, and no reading
+of that one clause changes it: the narrowest would still leave **3141**
+of the 4250 spoilt (73.9%). The breadth is the list itself — any one
+of five common afflictions, on either of two planets — which is the
+mirror of *unqualified* (crux C115), read so strictly that Khallasara
+almost never holds. It is recorded rather than corrected, because no
+text in reach narrows the list; every Rudda carries both lords' clauses,
+so a reader who holds a narrower reading can apply it without the yoga
+being rewritten.
+
+Duhphali-kuttha held in **36**, and Durapha in **4**. Durapha's list is
+read as alternatives each lord must meet one of (crux C119); whatever
+the reading, it needs a weak pair first, and §11 puts that ceiling at
+**6**. `cargo xtask muntha` fails if either ceiling is ever exceeded:
+every judgement upon an Ithasala is held under the Ithasala's own count,
+and every yoga needing a weak pair under the weak pairs', each read from
+`YearYoga` itself.

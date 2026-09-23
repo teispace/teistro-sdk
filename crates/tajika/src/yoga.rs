@@ -19,15 +19,13 @@
 //!
 //! # What is built
 //!
-//! Eight of the sixteen — the four that need the pair's own aspects,
-//! the three that judge an Ithasala those aspects found, and
-//! Dutthottha-Davira, the first to turn on a planet's [`Strength`] —
-//! and the other eight say so rather than being silently absent:
-//! [`YearYogas::unanswered`] lists them at every call,
-//! because "Kamboola did not hold" and "this build cannot tell you about
-//! Kamboola" are different statements and a consumer that cannot tell
-//! them apart has been misled. [`YearYoga::awaiting`] carries the reason
-//! for each, and `check-muntha` counts both sets from the type.
+//! All but the few [`YearYoga::awaiting`] names, and those say so rather
+//! than being silently absent: [`YearYogas::unanswered`] lists them at
+//! every call, because "Kuttha did not hold" and "this build cannot tell
+//! you about Kuttha" are different statements and a consumer that cannot
+//! tell them apart has been misled. [`YearYogas::why`] carries the reason
+//! for each, and `check-muntha` counts both sets from the type — which is
+//! why no count is written here, where it would go stale.
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
@@ -41,6 +39,7 @@ use crate::bala::{
 use crate::drishti::{
     Between, Drishti, DrishtiRules, between_with_rules, between_within, deeptamsha, speed_rank,
 };
+use crate::states::AnnualStates;
 
 /// One of the sixteen yogas of Tajika's own reckoning (K.S. Charak, *A
 /// Textbook of Varshaphala*, Table X-3).
@@ -128,23 +127,70 @@ impl YearYoga {
             | YearYoga::Manau
             | YearYoga::Kamboola
             | YearYoga::Khallasara
-            | YearYoga::DutthotthaDavira => None,
-            YearYoga::Ikabala | YearYoga::Induvara => Some(
-                "the whole-sign houses of the annual lagna, which the pair's own reckoning does not need",
-            ),
+            | YearYoga::DutthotthaDavira
+            | YearYoga::Rudda
+            | YearYoga::DuhphaliKuttha
+            | YearYoga::Durapha
+            | YearYoga::Ikabala
+            | YearYoga::Induvara => None,
             YearYoga::GairiKamboola => Some(
                 "an unqualified Moon, and where it will stand in the next sign: the only one of the sixteen that asks what happens next",
             ),
             YearYoga::Tambira => {
                 Some("the karyesha at a sign's end, completing an Ithasala from the next")
             }
-            YearYoga::Rudda | YearYoga::DuhphaliKuttha | YearYoga::Durapha => Some(
-                "retrograde and combustion, which an annual chart's longitudes alone cannot say",
-            ),
             YearYoga::Kuttha => Some(
                 "Tajika's own benefics, which Table X-3 does not enumerate as it enumerates the malefics (crux C117)",
             ),
         }
+    }
+
+    /// Whether answering needs the chart's [`AnnualStates`] — which
+    /// planets are retrograde and which combust.
+    ///
+    /// A call that does not supply them lists these under
+    /// [`YearYogas::unanswered`], and [`YearYogas::why`] says so: the
+    /// build can answer, and this call gave it nothing to answer from.
+    #[must_use]
+    pub const fn needs_states(self) -> bool {
+        matches!(
+            self,
+            YearYoga::Rudda | YearYoga::DuhphaliKuttha | YearYoga::Durapha
+        )
+    }
+
+    /// Whether it is a judgement **about** an Ithasala the pair already
+    /// make — destroying, joining, negating or spoiling it — and so can
+    /// hold only in a matter where one stands.
+    ///
+    /// A fact about the definition and not the build, so it answers for
+    /// the unbuilt Gairi-Kamboola too; the measured page holds every
+    /// count of these under the Ithasala's own.
+    #[must_use]
+    pub const fn judges_an_ithasala(self) -> bool {
+        matches!(
+            self,
+            YearYoga::Manau
+                | YearYoga::Kamboola
+                | YearYoga::GairiKamboola
+                | YearYoga::Khallasara
+                | YearYoga::Rudda
+                | YearYoga::DuhphaliKuttha
+        )
+    }
+
+    /// Whether it is a fact about the **chart** rather than a judgement
+    /// about a pair, and so holds in every matter of a chart or in none.
+    #[must_use]
+    pub const fn is_chart_fact(self) -> bool {
+        matches!(self, YearYoga::Ikabala | YearYoga::Induvara)
+    }
+
+    /// Whether it needs **both** lords weak before asking anything else,
+    /// and so can hold only where they are.
+    #[must_use]
+    pub const fn needs_a_weak_pair(self) -> bool {
+        matches!(self, YearYoga::DutthotthaDavira | YearYoga::Durapha)
     }
 
     /// Whether this build answers for it.
@@ -384,6 +430,13 @@ impl YogaRules {
 /// clauses and both floors rather than a verdict is what lets a reader
 /// asking *why* be answered, and lets the floors move (crux C116)
 /// without the yogas that read them being rewritten.
+///
+/// Not to be confused with the rule kernel's `Strengths`, the Parashari
+/// figures of BPHS ch. 27 a rule compares against its requirement: this
+/// is Tajika's own verdict, on the Panchavargiya scale of twenty. The two
+/// traditions share a word and nothing else, and the SDK root exports
+/// both under their own names, because a type a signature names must be
+/// found by the name the signature gives it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Strength {
@@ -505,6 +558,132 @@ pub fn strength_with_rules(
         })
 }
 
+/// The house a planet stands in, counted by whole signs from the annual
+/// lagna — which Ikabala, Induvara and the *trika* clause of an
+/// affliction all read, so it is reckoned once.
+fn house_of(graha: Graha, lagna: Rashi, sky: &AnnualSky) -> House {
+    House::between(lagna, sign_of_longitude(sky.longitude_of(graha)))
+}
+
+/// Whether a malefic standing in `from` reaches a planet in `to`: joined
+/// with it, or aspecting it inimically.
+///
+/// One condition and not two, since in Tajika a shared sign is house 1
+/// and house 1 is inimical. This is Table X-3's own wording for Manau,
+/// the one place it says how a malefic reaches; Rudda's "under malefic
+/// influence" is read the same way rather than given a second
+/// definition (crux C118).
+fn malefic_reaches(from: Rashi, to: Rashi) -> bool {
+    matches!(
+        Drishti::between_signs(from, to),
+        Drishti::Inimical | Drishti::SecretlyInimical
+    )
+}
+
+/// How a planet of an annual chart stands to the source's afflictions,
+/// clause by clause.
+///
+/// Rudda's list — "retrograde, combust, debilitated, in the 6th, 8th or
+/// 12th, or under malefic influence" — of which Durapha reads three.
+/// Carried as clauses, as [`Qualification`] and [`Strength`] are, so a
+/// reader asking *why* a Rudda held gets the clause that made it.
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "five named clauses of one definition, each read on its own"
+)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Affliction {
+    /// Whose.
+    pub graha: Graha,
+    /// Going backwards through the zodiac.
+    pub retrograde: bool,
+    /// Burnt by the Sun.
+    pub combust: bool,
+    /// In its sign of debilitation.
+    pub debilitated: bool,
+    /// In the 6th, 8th or 12th house from the annual lagna.
+    pub trika: bool,
+    /// Joined, or aspected inimically, by Mars or Saturn other than
+    /// itself — the partner in the pair included, since the clause is a
+    /// condition of the planet and not a third party's act (crux C118).
+    pub under_malefic: bool,
+}
+
+impl Affliction {
+    /// The five clauses, each with the source's own words for it, in the
+    /// order it states them.
+    #[must_use]
+    pub const fn clauses(self) -> [(&'static str, bool); 5] {
+        [
+            ("retrograde", self.retrograde),
+            ("combust", self.combust),
+            ("debilitated", self.debilitated),
+            ("in the 6th, 8th or 12th", self.trika),
+            ("under malefic influence", self.under_malefic),
+        ]
+    }
+
+    /// Whether any clause holds.
+    #[must_use]
+    pub fn is_afflicted(self) -> bool {
+        self.clauses().iter().any(|(_, holds)| *holds)
+    }
+}
+
+/// How a planet of an annual chart stands to the source's afflictions.
+///
+/// # Errors
+///
+/// A body outside the seven, named `graha`; an annual lagna that is not a
+/// number, named `annual_lagna_deg`; states that no chart can hold,
+/// named by their field.
+pub fn affliction(
+    graha: Graha,
+    annual_lagna_deg: f64,
+    sky: &AnnualSky,
+    states: &AnnualStates,
+) -> Result<Affliction, Error> {
+    if speed_rank(graha).is_none() {
+        return Err(
+            Error::invalid_arg(format!("{graha:?} is not one of the seven"))
+                .with_field(String::from("graha")),
+        );
+    }
+    states.validate()?;
+    Ok(afflicted(graha, lagna_of(annual_lagna_deg)?, sky, states))
+}
+
+/// The annual lagna's sign, refusing a lagna that is not a number.
+fn lagna_of(annual_lagna_deg: f64) -> Result<Rashi, Error> {
+    if annual_lagna_deg.is_finite() {
+        Ok(sign_of_longitude(annual_lagna_deg))
+    } else {
+        Err(
+            Error::invalid_arg("the annual lagna must be a number of degrees")
+                .with_field(String::from("annual_lagna_deg")),
+        )
+    }
+}
+
+/// [`affliction`] once its inputs are known good.
+fn afflicted(graha: Graha, lagna: Rashi, sky: &AnnualSky, states: &AnnualStates) -> Affliction {
+    let sign = sign_of_longitude(sky.longitude_of(graha));
+    Affliction {
+        graha,
+        retrograde: states.is_retrograde(graha),
+        combust: states.is_combust(graha),
+        debilitated: graha
+            .attributes()
+            .debilitation
+            .is_some_and(|at| at.sign == sign),
+        trika: house_of(graha, lagna, sky).is_trika(),
+        under_malefic: MALEFICS.into_iter().any(|malefic| {
+            malefic != graha && malefic_reaches(sign_of_longitude(sky.longitude_of(malefic)), sign)
+        }),
+    }
+}
+
 /// One of the sixteen, found holding, with what made it hold.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -519,6 +698,9 @@ pub struct Held {
     pub through: Option<Graha>,
     /// How the intermediary stands to the lagnesha, and to the karyesha.
     pub legs: Option<[Between; 2]>,
+    /// How the lagnesha and the karyesha stand to the afflictions, where
+    /// those are what made it: Rudda and Durapha.
+    pub afflictions: Option<[Affliction; 2]>,
 }
 
 /// Every one of the sixteen this build can answer for, for one matter.
@@ -551,12 +733,18 @@ pub struct YearYogas {
     pub between: Option<Between>,
     /// Every one of the sixteen that holds.
     pub held: Vec<Held>,
-    /// The ones this build cannot yet answer for.
+    /// The ones this call cannot answer for: those the build does not
+    /// compute, and — where no [`AnnualStates`] were supplied — the three
+    /// that need them.
     ///
     /// Never empty today, and that is the point: an absent yoga in
     /// [`YearYogas::held`] means it did not hold **only** for the ones
-    /// not listed here.
+    /// not listed here. [`YearYogas::why`] says which reason applies.
     pub unanswered: Vec<YearYoga>,
+    /// The retrograde and combust planets the judgement read, where it
+    /// was given any — reported, so an answer can be read back without
+    /// the call that produced it.
+    pub states: Option<AnnualStates>,
 }
 
 impl YearYogas {
@@ -567,11 +755,29 @@ impl YearYogas {
     /// bool.
     #[must_use]
     pub fn holds(&self, yoga: YearYoga) -> Option<bool> {
-        if yoga.is_built() {
-            Some(self.held.iter().any(|one| one.yoga == yoga))
-        } else {
+        // Asked of this call's own list and not of the build: a yoga the
+        // build answers can still be one this call could not.
+        if self.unanswered.contains(&yoga) {
             None
+        } else {
+            Some(self.held.iter().any(|one| one.yoga == yoga))
         }
+    }
+
+    /// Why this call could not answer for `yoga`, or `None` where it did.
+    ///
+    /// Either what the build still needs ([`YearYoga::awaiting`]) or, for
+    /// the three that read retrograde and combustion, that this call was
+    /// not given them — two different remedies, so two different answers.
+    #[must_use]
+    pub fn why(&self, yoga: YearYoga) -> Option<&'static str> {
+        if !self.unanswered.contains(&yoga) {
+            return None;
+        }
+        yoga.awaiting().or(Some(
+            "retrograde and combustion, which this call was not given: pass `AnnualStates` to \
+             `year_yogas_with_states`, or ask the façade, which reads them from the founded chart",
+        ))
     }
 }
 
@@ -592,6 +798,10 @@ pub fn year_yogas(
 
 /// The sixteen yogas for one matter, under stated readings.
 ///
+/// Without [`AnnualStates`], so Rudda, Duhphali-kuttha and Durapha are
+/// listed under [`YearYogas::unanswered`]; [`year_yogas_with_states`]
+/// answers them too.
+///
 /// # Errors
 ///
 /// As [`year_yogas`]; and floors that would let a planet be strong and
@@ -603,14 +813,39 @@ pub fn year_yogas_with_rules(
     sky: &AnnualSky,
     rules: YogaRules,
 ) -> Result<YearYogas, Error> {
+    judge(annual_lagna_deg, house, sky, None, rules)
+}
+
+/// The sixteen yogas for one matter, with the chart's retrograde and
+/// combust planets, so every yoga the build computes is answered.
+///
+/// # Errors
+///
+/// As [`year_yogas_with_rules`]; and states that no chart can hold, named
+/// `retrograde` or `combust`.
+pub fn year_yogas_with_states(
+    annual_lagna_deg: f64,
+    house: House,
+    sky: &AnnualSky,
+    states: &AnnualStates,
+    rules: YogaRules,
+) -> Result<YearYogas, Error> {
+    judge(annual_lagna_deg, house, sky, Some(states), rules)
+}
+
+/// The one judgement every entry point makes, `states` or not.
+fn judge(
+    annual_lagna_deg: f64,
+    house: House,
+    sky: &AnnualSky,
+    states: Option<&AnnualStates>,
+    rules: YogaRules,
+) -> Result<YearYogas, Error> {
     let rules = rules.check()?;
-    if !annual_lagna_deg.is_finite() {
-        return Err(
-            Error::invalid_arg("the annual lagna must be a number of degrees")
-                .with_field(String::from("annual_lagna_deg")),
-        );
+    if let Some(states) = states {
+        states.validate()?;
     }
-    let lagna = sign_of_longitude(annual_lagna_deg);
+    let lagna = lagna_of(annual_lagna_deg)?;
     let sign = house.sign_from(lagna);
     let lagnesha = lagna.attributes().lord;
     let karyesha = sign.attributes().lord;
@@ -620,10 +855,16 @@ pub fn year_yogas_with_rules(
     } else {
         Some(between_with_rules(lagnesha, karyesha, sky, rules.drishti)?)
     };
-    let mut held = Vec::new();
+    // Ikabala and Induvara are facts about the chart, so they answer
+    // every matter alike -- the first house, which has no pair, included.
+    let mut held = chart_facts(lagna, sky);
     if let Some(pair) = between {
+        // Every pair judgement below that reads strength reads the same
+        // seven, so they are computed once for the matter.
+        let all = strengths(sky, rules)?;
         if let Some(yoga) = pair.yoga {
             held.push(Held {
+                afflictions: None,
                 yoga: if yoga.is_ithasala() {
                     YearYoga::Ithasala
                 } else {
@@ -634,14 +875,24 @@ pub fn year_yogas_with_rules(
                 legs: None,
             });
             if yoga.is_ithasala() {
-                // Three of the sixteen are judgements **about** an
-                // Ithasala rather than alternatives to it, so they are
-                // asked only where one stands -- and they hold beside it
-                // rather than instead of it. Manau and Khallasara say
-                // the Ithasala is destroyed; the Ithasala is still the
-                // configuration that was destroyed, and a consumer that
-                // saw only the verdict could not say what happened.
+                // The judgements **about** an Ithasala rather than
+                // alternatives to it, asked only where one stands -- and
+                // holding beside it rather than instead of it. Manau,
+                // Khallasara and Rudda say the Ithasala is destroyed or
+                // spoilt; the Ithasala is still the configuration that
+                // was, and a consumer that saw only the verdict could not
+                // say what happened.
                 held.extend(upon_the_ithasala(&pair, sky, rules.drishti)?);
+                if let Some(states) = states {
+                    held.extend(spoilt(
+                        &pair,
+                        [lagnesha, karyesha],
+                        lagna,
+                        &all,
+                        sky,
+                        states,
+                    )?);
+                }
             }
         } else if !pair.drishti.is_aspect() {
             // Only a pair that does not aspect at all can be reached by a
@@ -650,9 +901,12 @@ pub fn year_yogas_with_rules(
             held.extend(carried(lagnesha, karyesha, sky, rules.drishti)?);
         }
         // Asked whatever the pair do between themselves: the source
-        // conditions Dutthottha-Davira on their weakness and on a third
-        // planet's Ithasala, and on nothing they make together.
-        held.extend(dutthottha_davira(lagnesha, karyesha, sky, rules)?);
+        // conditions these on the pair's weakness, and on nothing they
+        // make together.
+        held.extend(dutthottha_davira(lagnesha, karyesha, &all, sky, rules)?);
+        if let Some(states) = states {
+            held.extend(durapha([lagnesha, karyesha], lagna, &all, sky, states)?);
+        }
     }
     Ok(YearYogas {
         house,
@@ -664,9 +918,123 @@ pub fn year_yogas_with_rules(
         held,
         unanswered: YearYoga::ALL
             .into_iter()
-            .filter(|yoga| !yoga.is_built())
+            .filter(|yoga| !yoga.is_built() || (states.is_none() && yoga.needs_states()))
             .collect(),
+        states: states.cloned(),
     })
+}
+
+/// One of the seven's strength from a set already computed.
+fn strength_in(all: &[Strength; 7], graha: Graha) -> Result<Strength, Error> {
+    all.iter()
+        .copied()
+        .find(|one| one.graha == graha)
+        .ok_or_else(|| {
+            Error::invalid_arg(format!("the annual chart does not place {graha:?}"))
+                .with_field(String::from("graha"))
+        })
+}
+
+/// **Ikabala** and **Induvara**: every one of the seven in a kendra or a
+/// panaphara, or every one in an apoklima, by whole signs from the
+/// annual lagna.
+///
+/// The only two of the sixteen that are facts about a chart rather than
+/// judgements about a pair, so they carry nothing but their name.
+fn chart_facts(lagna: Rashi, sky: &AnnualSky) -> Vec<Held> {
+    let houses = SEVEN.map(|graha| house_of(graha, lagna, sky));
+    let fact = |yoga| Held {
+        afflictions: None,
+        yoga,
+        between: None,
+        through: None,
+        legs: None,
+    };
+    let mut found = Vec::new();
+    if houses
+        .iter()
+        .all(|house| house.is_kendra() || house.is_panaphara())
+    {
+        found.push(fact(YearYoga::Ikabala));
+    }
+    if houses.iter().all(|house| house.is_apoklima()) {
+        found.push(fact(YearYoga::Induvara));
+    }
+    found
+}
+
+/// **Rudda** and **Duhphali-kuttha**: the two judgements upon an
+/// Ithasala that read retrograde and combustion.
+///
+/// Rudda holds where either of the pair is afflicted at all, and carries
+/// both afflictions so the clause that spoilt it can be read. Duhphali-
+/// kuttha wants the slower strong and the faster weak "but neither
+/// retrograde nor combust" — the one place the source asks for a planet
+/// to be **free** of those two, which is why it is judged here beside
+/// the yoga that asks for them.
+fn spoilt(
+    pair: &Between,
+    lords: [Graha; 2],
+    lagna: Rashi,
+    all: &[Strength; 7],
+    sky: &AnnualSky,
+    states: &AnnualStates,
+) -> Result<Vec<Held>, Error> {
+    let upon = |yoga, afflictions| Held {
+        afflictions,
+        yoga,
+        between: Some(*pair),
+        through: None,
+        legs: None,
+    };
+    let mut found = Vec::new();
+    let afflictions = lords.map(|graha| afflicted(graha, lagna, sky, states));
+    if afflictions.iter().any(|one| one.is_afflicted()) {
+        found.push(upon(YearYoga::Rudda, Some(afflictions)));
+    }
+    let (slower, faster) = (
+        strength_in(all, pair.slower)?,
+        strength_in(all, pair.faster)?,
+    );
+    let free = !states.is_retrograde(pair.faster) && !states.is_combust(pair.faster);
+    if slower.is_strong() && faster.is_weak() && free {
+        found.push(upon(YearYoga::DuhphaliKuttha, None));
+    }
+    Ok(found)
+}
+
+/// **Durapha**: both lords weak, and each "in the trika houses, combust
+/// or retrograde".
+///
+/// Read as a list of alternatives each planet must meet one of, as
+/// Rudda's longer list plainly is (crux C119). Whatever the reading, it
+/// can hold only where both lords are weak, which the corpus finds in a
+/// handful of matters in twenty-two thousand
+/// (`03-design/muntha-measured.md` §11) — so the crux is bounded by
+/// that ceiling, and the pass checks it.
+fn durapha(
+    lords: [Graha; 2],
+    lagna: Rashi,
+    all: &[Strength; 7],
+    sky: &AnnualSky,
+    states: &AnnualStates,
+) -> Result<Option<Held>, Error> {
+    for graha in lords {
+        if !strength_in(all, graha)?.is_weak() {
+            return Ok(None);
+        }
+    }
+    let afflictions = lords.map(|graha| afflicted(graha, lagna, sky, states));
+    let marked = afflictions
+        .iter()
+        .all(|one| one.trika || one.combust || one.retrograde);
+    Ok(marked.then_some(Held {
+        afflictions: Some(afflictions),
+        yoga: YearYoga::Durapha,
+        between: None,
+        through: None,
+        legs: None,
+    }))
 }
 
 /// The three yogas that judge an **Ithasala** the pair already makes:
@@ -693,13 +1061,11 @@ fn upon_the_ithasala(
         if malefic == fast || malefic == slow {
             continue;
         }
-        if !matches!(
-            Drishti::between_signs(sign_of(malefic), sign_of(fast)),
-            Drishti::Inimical | Drishti::SecretlyInimical
-        ) {
+        if !malefic_reaches(sign_of(malefic), sign_of(fast)) {
             continue;
         }
         found.push(Held {
+            afflictions: None,
             yoga: YearYoga::Manau,
             between: Some(*pair),
             through: Some(malefic),
@@ -723,6 +1089,7 @@ fn upon_the_ithasala(
             .any(|leg| leg.yoga.is_some_and(crate::Yoga::is_ithasala));
         if joins {
             found.push(Held {
+                afflictions: None,
                 yoga: YearYoga::Kamboola,
                 between: Some(*pair),
                 through: Some(Graha::Moon),
@@ -735,6 +1102,7 @@ fn upon_the_ithasala(
         let apart = legs.iter().all(|leg| !leg.drishti.is_aspect());
         if apart && qualification(Graha::Moon, sky)?.is_unqualified() {
             found.push(Held {
+                afflictions: None,
                 yoga: YearYoga::Khallasara,
                 between: Some(*pair),
                 through: Some(Graha::Moon),
@@ -797,6 +1165,7 @@ fn carried(
             YearYoga::Yamaya
         };
         found.push(Held {
+            afflictions: None,
             yoga,
             between: None,
             through: Some(third),
@@ -820,18 +1189,11 @@ fn carried(
 fn dutthottha_davira(
     lagnesha: Graha,
     karyesha: Graha,
+    all: &[Strength; 7],
     sky: &AnnualSky,
     rules: YogaRules,
 ) -> Result<Vec<Held>, Error> {
-    let all = strengths(sky, rules)?;
-    let of = |graha: Graha| {
-        all.into_iter()
-            .find(|one| one.graha == graha)
-            .ok_or_else(|| {
-                Error::invalid_arg(format!("the annual chart does not place {graha:?}"))
-                    .with_field(String::from("graha"))
-            })
-    };
+    let of = |graha: Graha| strength_in(all, graha);
     // Both lords **weak** is the gate -- not merely short of strong: a
     // middling pair is not the case the source is describing, whatever
     // a third planet does about it. Asked positively, because with a
@@ -840,7 +1202,7 @@ fn dutthottha_davira(
         return Ok(Vec::new());
     }
     let mut found = Vec::new();
-    for third in all {
+    for third in all.iter().copied() {
         if third.graha == lagnesha || third.graha == karyesha || !third.is_strong() {
             continue;
         }
@@ -853,6 +1215,7 @@ fn dutthottha_davira(
             .any(|leg| leg.yoga.is_some_and(crate::Yoga::is_ithasala))
         {
             found.push(Held {
+                afflictions: None,
                 yoga: YearYoga::DutthotthaDavira,
                 between: None,
                 through: Some(third.graha),
@@ -873,11 +1236,13 @@ mod tests {
     )]
 
     use super::{
-        Held, MALEFICS, Strength, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YearYoga, YearYogas,
-        YogaRules, qualification, strength, strength_with_rules, year_yogas, year_yogas_with_rules,
+        Affliction, Held, MALEFICS, Strength, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YearYoga,
+        YearYogas, YogaRules, affliction, qualification, strength, strength_with_rules, year_yogas,
+        year_yogas_with_rules, year_yogas_with_states,
     };
     use crate::bala::{AnnualSky, Bala};
     use crate::drishti::{DrishtiRules, SubDegree, Yoga};
+    use crate::states::AnnualStates;
     use teistro_core::catalogue::{Graha, Rashi};
     use teistro_core::house::House;
 
@@ -996,20 +1361,50 @@ mod tests {
         assert_eq!(held.through, None, "no third planet carried it");
     }
 
-    /// A yoga this build cannot answer for is **not** reported as absent:
-    /// `holds` says nothing, and every one of the eight is listed.
+    /// A yoga this call cannot answer for is **not** reported as absent:
+    /// `holds` says nothing, and `why` says which of two reasons applies.
     #[test]
-    fn an_unbuilt_yoga_says_so_rather_than_reading_as_absent() {
+    fn an_unanswered_yoga_says_why_rather_than_reading_as_absent() {
+        // Without states: the three the build does not compute, and the
+        // three it could answer had it been given retrograde and combust.
         let found = asked(7);
-        assert_eq!(found.holds(YearYoga::GairiKamboola), None);
-        assert_eq!(found.unanswered.len(), 8);
+        assert_eq!(found.states, None);
+        assert_eq!(found.unanswered.len(), 6);
         for yoga in &found.unanswered {
-            assert!(yoga.awaiting().is_some(), "{yoga:?} carries its reason");
             assert_eq!(found.holds(*yoga), None);
+            let why = found.why(*yoga).unwrap();
+            if yoga.needs_states() {
+                assert!(yoga.is_built(), "{yoga:?}");
+                assert_eq!(yoga.awaiting(), None);
+                assert!(why.contains("not given"), "{yoga:?}: {why}");
+            } else {
+                assert_eq!(Some(why), yoga.awaiting(), "{yoga:?}");
+            }
         }
-        // Eight are built, eight are not, and the two sets are the sixteen.
+        // An answered yoga has no reason to give.
+        assert_eq!(found.why(YearYoga::Ithasala), None);
+
+        // With states: only the build's own three remain, and the built
+        // and the unanswered are the sixteen.
+        let states = AnnualStates::default();
+        let full = year_yogas_with_states(
+            WORKED_LAGNA_DEG,
+            house(7),
+            &worked(),
+            &states,
+            YogaRules::default(),
+        )
+        .unwrap();
+        assert_eq!(full.states.as_ref(), Some(&states));
+        assert_eq!(full.unanswered.len(), 3);
         let built = YearYoga::ALL.into_iter().filter(|one| one.is_built());
-        assert_eq!(built.count() + found.unanswered.len(), YearYoga::ALL.len());
+        assert_eq!(built.count() + full.unanswered.len(), YearYoga::ALL.len());
+        for yoga in YearYoga::ALL.into_iter().filter(|one| one.needs_states()) {
+            assert!(
+                full.holds(yoga).is_some(),
+                "{yoga:?} is answered with states"
+            );
+        }
     }
 
     /// Nakta: the two do not aspect, and a planet faster than both is past
@@ -1603,5 +1998,371 @@ mod tests {
             );
         }
         assert_eq!(found.holds(YearYoga::DutthotthaDavira), Some(false));
+    }
+
+    /// A sky built so the Aries lagna's seventh-house pair -- Mars the
+    /// lagnesha in Leo, Venus the karyesha in Sagittarius -- make a clean
+    /// Ithasala: a friendly trine, Venus five degrees behind, neither
+    /// debilitated, neither in a trika house, and Saturn in Libra, which
+    /// reaches neither inimically. Only the states can afflict them.
+    const CLEAN_ITHASALA: AnnualSky = AnnualSky {
+        sun_deg: 10.0,
+        moon_deg: 100.0,
+        mars_deg: 130.0,
+        mercury_deg: 20.0,
+        jupiter_deg: 110.0,
+        venus_deg: 245.0,
+        saturn_deg: 190.0,
+    };
+    const CLEAN_LAGNA_DEG: f64 = 5.0;
+
+    /// A sky with a Duhphali-kuttha in its third house, found by the same
+    /// deterministic sweep as [`WEAK_PAIR`]: Venus, weak, coming to a
+    /// strong Jupiter.
+    ///
+    /// The sweep's first find had the **Sun** as the faster, and the Sun
+    /// can be neither retrograde nor combust, so the source's "but neither
+    /// retrograde nor combust" could not be asked of it. This one was
+    /// looked for with a faster that can be marked either way, on the
+    /// 109th sky.
+    const DUHPHALI: AnnualSky = AnnualSky {
+        sun_deg: 136.346_319,
+        moon_deg: 69.190_006,
+        mars_deg: 204.854_078,
+        mercury_deg: 117.352_653,
+        jupiter_deg: 49.821_024,
+        venus_deg: 135.096_967,
+        saturn_deg: 232.528_038,
+    };
+    const DUHPHALI_LAGNA_DEG: f64 = 196.453_314;
+
+    fn states(retrograde: &[Graha], combust: &[Graha]) -> AnnualStates {
+        AnnualStates {
+            retrograde: retrograde.to_vec(),
+            combust: combust.to_vec(),
+        }
+    }
+
+    fn with(sky: &AnnualSky, lagna: f64, number: u8, read: &AnnualStates) -> YearYogas {
+        year_yogas_with_states(lagna, house(number), sky, read, YogaRules::default()).unwrap()
+    }
+
+    /// Every clause of an affliction answers for somebody in the worked
+    /// chart or in the states given it, so none is dead.
+    #[test]
+    fn affliction_clauses_answer_for_the_worked_chart() {
+        let read = states(&[Graha::Saturn], &[Graha::Mercury]);
+        let of = |graha| affliction(graha, WORKED_LAGNA_DEG, &worked(), &read).unwrap();
+        // Mars in Scorpio casts the tenth on Leo and the seventh on
+        // Taurus, both inimical: the three in Leo and the Moon are under it.
+        for graha in [Graha::Sun, Graha::Moon, Graha::Mercury, Graha::Venus] {
+            assert!(of(graha).under_malefic, "{graha:?}");
+        }
+        // Saturn is in Libra, the twelfth from Scorpio, and turned back.
+        let saturn = of(Graha::Saturn);
+        assert!(saturn.trika && saturn.retrograde && !saturn.under_malefic);
+        assert!(of(Graha::Mercury).combust);
+        // Mars and Jupiter are clean, and nothing in this chart is
+        // debilitated -- so that clause is asked of a constructed one.
+        assert!(!of(Graha::Mars).is_afflicted());
+        assert!(!of(Graha::Jupiter).is_afflicted());
+        let debilitated = AnnualSky {
+            moon_deg: 7.0 * 30.0 + 3.0,
+            ..worked()
+        };
+        assert!(
+            affliction(Graha::Moon, WORKED_LAGNA_DEG, &debilitated, &read)
+                .unwrap()
+                .debilitated
+        );
+        // The clauses are named in the source's order.
+        let names: Vec<&str> = of(Graha::Mars)
+            .clauses()
+            .iter()
+            .map(|(name, _)| *name)
+            .collect();
+        assert_eq!(
+            names,
+            [
+                "retrograde",
+                "combust",
+                "debilitated",
+                "in the 6th, 8th or 12th",
+                "under malefic influence"
+            ]
+        );
+    }
+
+    /// Rudda: an Ithasala where either of the pair is afflicted. A clean
+    /// pair makes none, and the states alone can spoil it.
+    #[test]
+    fn rudda_needs_an_ithasala_and_an_affliction() {
+        let clean = with(
+            &CLEAN_ITHASALA,
+            CLEAN_LAGNA_DEG,
+            7,
+            &AnnualStates::default(),
+        );
+        assert_eq!(
+            (clean.lagnesha, clean.karyesha),
+            (Graha::Mars, Graha::Venus)
+        );
+        assert_eq!(clean.holds(YearYoga::Ithasala), Some(true));
+        assert_eq!(clean.holds(YearYoga::Rudda), Some(false));
+
+        for read in [states(&[Graha::Venus], &[]), states(&[], &[Graha::Mars])] {
+            let spoilt = with(&CLEAN_ITHASALA, CLEAN_LAGNA_DEG, 7, &read);
+            assert_eq!(spoilt.holds(YearYoga::Rudda), Some(true), "{read:?}");
+            // It stands beside the Ithasala it spoils, and says why.
+            assert_eq!(spoilt.holds(YearYoga::Ithasala), Some(true));
+            let rudda = spoilt
+                .held
+                .iter()
+                .find(|one| one.yoga == YearYoga::Rudda)
+                .unwrap();
+            let [lagnesha, karyesha]: [Affliction; 2] = rudda.afflictions.unwrap();
+            assert_eq!(
+                (lagnesha.graha, karyesha.graha),
+                (Graha::Mars, Graha::Venus)
+            );
+            assert_eq!(lagnesha.combust, read.is_combust(Graha::Mars));
+            assert_eq!(karyesha.retrograde, read.is_retrograde(Graha::Venus));
+        }
+    }
+
+    /// The worked chart's one Ithasala, in its tenth house, is a Rudda
+    /// **only** because the Sun's own partner, Mars, reaches it from the
+    /// tenth -- so whether a partner can afflict is load-bearing in the
+    /// source's own chart (crux C118). Recorded here so a change of
+    /// reading shows up as this test and not as a silent shift.
+    #[test]
+    fn the_worked_charts_rudda_turns_on_the_partner() {
+        let found = with(&worked(), WORKED_LAGNA_DEG, 10, &AnnualStates::default());
+        assert_eq!((found.lagnesha, found.karyesha), (Graha::Mars, Graha::Sun));
+        assert_eq!(found.holds(YearYoga::Rudda), Some(true));
+        let rudda = found
+            .held
+            .iter()
+            .find(|one| one.yoga == YearYoga::Rudda)
+            .unwrap();
+        let [mars, sun] = rudda.afflictions.unwrap();
+        assert!(!mars.is_afflicted());
+        let clauses: Vec<&str> = sun
+            .clauses()
+            .iter()
+            .filter(|(_, is)| *is)
+            .map(|(name, _)| *name)
+            .collect();
+        assert_eq!(clauses, ["under malefic influence"]);
+    }
+
+    /// Rudda judges an Ithasala and nothing else: the worked chart's
+    /// ninth-house pair is an Ishrafa with an afflicted Moon, and is not
+    /// a Rudda.
+    #[test]
+    fn rudda_is_not_asked_of_an_ishrafa() {
+        let found = with(&worked(), WORKED_LAGNA_DEG, 9, &AnnualStates::default());
+        assert_eq!(found.holds(YearYoga::Ishrafa), Some(true));
+        assert!(
+            affliction(
+                Graha::Moon,
+                WORKED_LAGNA_DEG,
+                &worked(),
+                &AnnualStates::default()
+            )
+            .unwrap()
+            .is_afflicted()
+        );
+        assert_eq!(found.holds(YearYoga::Rudda), Some(false));
+    }
+
+    /// Duhphali-kuttha: the slower strong, the faster weak and **free**
+    /// of retrograde and combustion -- the one place the source asks a
+    /// planet to be clear of the two.
+    #[test]
+    fn duhphali_kuttha_wants_a_free_weak_faster_under_a_strong_slower() {
+        let at = |read: &AnnualStates| with(&DUHPHALI, DUHPHALI_LAGNA_DEG, 3, read);
+        let found = at(&AnnualStates::default());
+        let pair = found.between.unwrap();
+        assert_eq!((pair.faster, pair.slower), (Graha::Venus, Graha::Jupiter));
+        assert!(strength(Graha::Venus, &DUHPHALI).unwrap().is_weak());
+        assert!(strength(Graha::Jupiter, &DUHPHALI).unwrap().is_strong());
+        assert_eq!(found.holds(YearYoga::DuhphaliKuttha), Some(true));
+        // "But neither retrograde nor combust": either mark on the faster
+        // spoils it, and the same mark on the slower does not.
+        for read in [states(&[Graha::Venus], &[]), states(&[], &[Graha::Venus])] {
+            assert_eq!(
+                at(&read).holds(YearYoga::DuhphaliKuttha),
+                Some(false),
+                "{read:?}"
+            );
+        }
+        assert_eq!(
+            at(&states(&[Graha::Jupiter], &[Graha::Jupiter])).holds(YearYoga::DuhphaliKuttha),
+            Some(true)
+        );
+        // Strengthen the faster past the floor and it goes.
+        let rules = YogaRules {
+            weak_below: Bala::new(1, 0, 0),
+            ..YogaRules::default()
+        };
+        let lifted = year_yogas_with_states(
+            DUHPHALI_LAGNA_DEG,
+            house(3),
+            &DUHPHALI,
+            &AnnualStates::default(),
+            rules,
+        )
+        .unwrap();
+        assert_eq!(lifted.holds(YearYoga::DuhphaliKuttha), Some(false));
+    }
+
+    /// Durapha: both lords weak, and each in a trika house, combust or
+    /// retrograde (crux C119). The weak pair from [`WEAK_PAIR`] stands in
+    /// houses one and seven, so only the states can mark it -- and both
+    /// must be marked.
+    #[test]
+    fn durapha_wants_both_weak_and_both_marked() {
+        let at = |read: &AnnualStates| with(&WEAK_PAIR, WEAK_PAIR_LAGNA_DEG, 2, read);
+        assert_eq!(
+            at(&AnnualStates::default()).holds(YearYoga::Durapha),
+            Some(false)
+        );
+        assert_eq!(
+            at(&states(&[Graha::Mercury], &[])).holds(YearYoga::Durapha),
+            Some(false)
+        );
+        let both = at(&states(&[Graha::Mercury], &[Graha::Venus]));
+        assert_eq!(both.holds(YearYoga::Durapha), Some(true));
+        let durapha = both
+            .held
+            .iter()
+            .find(|one| one.yoga == YearYoga::Durapha)
+            .unwrap();
+        let [mercury, venus] = durapha.afflictions.unwrap();
+        assert!(mercury.retrograde && venus.combust);
+        // A middling pair, however marked, is not the case.
+        let rules = YogaRules {
+            weak_below: Bala::new(1, 0, 0),
+            ..YogaRules::default()
+        };
+        let middling = year_yogas_with_states(
+            WEAK_PAIR_LAGNA_DEG,
+            house(2),
+            &WEAK_PAIR,
+            &states(&[Graha::Mercury], &[Graha::Venus]),
+            rules,
+        )
+        .unwrap();
+        assert_eq!(middling.holds(YearYoga::Durapha), Some(false));
+    }
+
+    /// Ikabala and Induvara are facts about the chart: they answer every
+    /// matter alike, the first house -- which has no pair -- included.
+    #[test]
+    fn ikabala_and_induvara_are_facts_about_the_chart() {
+        let all_in = |deg: f64| AnnualSky {
+            sun_deg: deg,
+            moon_deg: deg,
+            mars_deg: deg,
+            mercury_deg: deg,
+            jupiter_deg: deg,
+            venus_deg: deg,
+            saturn_deg: deg,
+        };
+        // Everything in Aries under an Aries lagna: the first house, a
+        // kendra.
+        let first = all_in(10.0);
+        for number in 1..=12u8 {
+            let found = year_yogas(5.0, house(number), &first).unwrap();
+            assert_eq!(found.holds(YearYoga::Ikabala), Some(true), "house {number}");
+            assert_eq!(
+                found.holds(YearYoga::Induvara),
+                Some(false),
+                "house {number}"
+            );
+        }
+        assert!(year_yogas(5.0, house(1), &first).unwrap().same_lord);
+        // Everything in Gemini: the third, an apoklima.
+        let third = all_in(70.0);
+        let found = year_yogas(5.0, house(1), &third).unwrap();
+        assert_eq!(found.holds(YearYoga::Induvara), Some(true));
+        assert_eq!(found.holds(YearYoga::Ikabala), Some(false));
+        // The worked chart has Saturn in the twelfth and the Moon in the
+        // seventh, so it is neither.
+        assert_eq!(asked(1).holds(YearYoga::Ikabala), Some(false));
+        assert_eq!(asked(1).holds(YearYoga::Induvara), Some(false));
+    }
+
+    /// States no chart can hold are refused by the judgement, on every
+    /// call -- the first house, which reads no state, included.
+    #[test]
+    fn the_judgement_refuses_states_no_chart_can_hold() {
+        let refused = year_yogas_with_states(
+            WORKED_LAGNA_DEG,
+            house(1),
+            &worked(),
+            &states(&[Graha::Moon], &[]),
+            YogaRules::default(),
+        )
+        .unwrap_err();
+        assert_eq!(refused.field(), Some("retrograde"));
+        let refused = affliction(
+            Graha::Mars,
+            WORKED_LAGNA_DEG,
+            &worked(),
+            &states(&[], &[Graha::Sun]),
+        )
+        .unwrap_err();
+        assert_eq!(refused.field(), Some("combust"));
+    }
+
+    /// The two groupings `YearYoga` describes itself by hold of every
+    /// sky these tests use, under every set of states: no judgement upon
+    /// an Ithasala without one, and no weak-pair yoga without a weak pair.
+    /// The measured page holds the corpus to the same two ceilings.
+    #[test]
+    fn the_groupings_the_type_declares_are_what_the_judgement_does() {
+        let skies = [
+            (worked(), WORKED_LAGNA_DEG),
+            (WEAK_PAIR, WEAK_PAIR_LAGNA_DEG),
+            (CLEAN_ITHASALA, CLEAN_LAGNA_DEG),
+            (DUHPHALI, DUHPHALI_LAGNA_DEG),
+        ];
+        let marked = states(
+            &[Graha::Mars, Graha::Mercury, Graha::Venus],
+            &[Graha::Mercury, Graha::Venus],
+        );
+        for (sky, lagna) in skies {
+            for read in [AnnualStates::default(), marked.clone()] {
+                for number in 1..=12u8 {
+                    let found = with(&sky, lagna, number, &read);
+                    let ithasala = found.holds(YearYoga::Ithasala) == Some(true);
+                    let weak_pair = !found.same_lord
+                        && strength(found.lagnesha, &sky).unwrap().is_weak()
+                        && strength(found.karyesha, &sky).unwrap().is_weak();
+                    for one in &found.held {
+                        if one.yoga.judges_an_ithasala() {
+                            assert!(ithasala, "{:?} without an Ithasala", one.yoga);
+                        }
+                        if one.yoga.needs_a_weak_pair() {
+                            assert!(weak_pair, "{:?} without a weak pair", one.yoga);
+                        }
+                    }
+                }
+            }
+        }
+        // And the declarations are the source's: six judge an Ithasala,
+        // two want a weak pair, none both.
+        let count =
+            |is: fn(YearYoga) -> bool| YearYoga::ALL.into_iter().filter(|one| is(*one)).count();
+        assert_eq!(count(YearYoga::judges_an_ithasala), 6);
+        assert_eq!(count(YearYoga::needs_a_weak_pair), 2);
+        assert_eq!(count(YearYoga::is_chart_fact), 2);
+        assert!(
+            YearYoga::ALL
+                .into_iter()
+                .all(|one| !(one.judges_an_ithasala() && one.needs_a_weak_pair()))
+        );
     }
 }

@@ -26,7 +26,7 @@ use teistro::catalogue::{Graha, Rashi};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::tajika::{
     Bala, MOST_YEARS, MunthaDegree, Qualification, Reading, SEVEN, Strength, YOGA_STRONG_FROM,
-    YOGA_WEAK_BELOW, YearYoga, Yoga, YogaRules,
+    YOGA_WEAK_BELOW, YearYoga, YearYogas, Yoga, YogaRules,
 };
 use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
@@ -183,6 +183,7 @@ fn page(root: &Path) -> Result<String, String> {
     the_kinds(&mut out, &swept);
     the_sixteen(&mut out, &swept);
     the_floors(&mut out, &swept)?;
+    what_spoils_an_ithasala(&mut out, &sdk, &swept);
     Ok(fill(&out))
 }
 
@@ -763,6 +764,19 @@ struct Kinds {
     /// Judged matters whose pair is neither both weak nor both strong
     /// under the default floors, counted the same way.
     mixed: usize,
+    /// Readings of a planet that are retrograde, and that are combust,
+    /// under the profile's combustion table: the ground Rudda stands on.
+    retrograde: usize,
+    /// See [`Kinds::retrograde`].
+    combust: usize,
+    /// For each clause of an affliction, in the order the source states
+    /// them, the Ruddas in which it held of either lord. Sized from the
+    /// clauses the module reports, not fixed here, so a clause it gains
+    /// is counted rather than dropped.
+    rudda_clauses: Vec<usize>,
+    /// Ruddas that held on *under malefic influence* and nothing else,
+    /// which bounds every narrower reading of that clause (crux C118).
+    rudda_malefic_alone: usize,
 }
 
 /// Every pair of every annual chart of every recorded birth, sorted into
@@ -823,36 +837,18 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
                 kinds.moon_unqualified += 1;
             }
             let chart_strengths = strengths_of(sdk, &annual, &birth.name, &mut kinds)?;
+            let states = sdk
+                .chart()
+                .annual_states(&annual)
+                .map_err(|why| format!("{}: its states: {why}", birth.name))?;
+            kinds.retrograde += states.retrograde.len();
+            kinds.combust += states.combust.len();
             let lagna = Rashi::from_id(sign_of(annual.foundation.lagna_deg))
                 .ok_or_else(|| format!("{}: a lagna in no sign", birth.name))?;
             if matches!(lagna.attributes().lord, Graha::Sun | Graha::Moon) {
                 kinds.luminary_lagna += 1;
             }
-            for number in 1..=12u8 {
-                let house = House::try_new(number)
-                    .map_err(|why| format!("{}: house {number}: {why}", birth.name))?;
-                let asked = sdk
-                    .chart()
-                    .tajika_yogas(&annual, house)
-                    .map_err(|why| format!("{}: its yogas: {why}", birth.name))?;
-                kinds.matters += 1;
-                if asked.same_lord {
-                    kinds.same_lord += 1;
-                } else {
-                    partition(&chart_strengths, asked.lagnesha, asked.karyesha, &mut kinds);
-                }
-                // Counted by **matter**, through `holds`: one matter can
-                // hold a yoga through several planets -- Manau through each
-                // malefic, Nakta and Yamaya through each intermediary,
-                // Dutthottha-Davira through each strong third -- and a
-                // column of shares of the matters asked must not count one
-                // matter twice.
-                for (slot, yoga) in kinds.yogas.iter_mut().zip(YearYoga::ALL) {
-                    if asked.holds(yoga) == Some(true) {
-                        *slot += 1;
-                    }
-                }
-            }
+            ask_every_house(sdk, &annual, &birth.name, &chart_strengths, &mut kinds)?;
             for pair in pairs {
                 if !pair.drishti.is_aspect() {
                     continue;
@@ -886,6 +882,43 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
     }
     floors_hold(&kinds)?;
     Ok(kinds)
+}
+
+/// Asks one annual chart all twelve of its matters, and counts what each
+/// answered.
+fn ask_every_house(
+    sdk: &Context,
+    annual: &Document,
+    name: &str,
+    chart_strengths: &ChartStrengths,
+    kinds: &mut Kinds,
+) -> Result<(), String> {
+    for number in 1..=12u8 {
+        let house =
+            House::try_new(number).map_err(|why| format!("{name}: house {number}: {why}"))?;
+        let asked = sdk
+            .chart()
+            .tajika_yogas(annual, house)
+            .map_err(|why| format!("{name}: its yogas: {why}"))?;
+        kinds.matters += 1;
+        if asked.same_lord {
+            kinds.same_lord += 1;
+        } else {
+            partition(chart_strengths, asked.lagnesha, asked.karyesha, kinds);
+        }
+        // Counted by **matter**, through `holds`: one matter can hold a
+        // yoga through several planets -- Manau through each malefic, Nakta
+        // and Yamaya through each intermediary, Dutthottha-Davira through
+        // each strong third -- and a column of shares of the matters asked
+        // must not count one matter twice.
+        for (slot, yoga) in kinds.yogas.iter_mut().zip(YearYoga::ALL) {
+            if asked.holds(yoga) == Some(true) {
+                *slot += 1;
+            }
+        }
+        what_spoiled(&asked, kinds);
+    }
+    Ok(())
 }
 
 /// Which of the seven stand on one side of each candidate floor, in
@@ -1115,21 +1148,80 @@ fn floors_hold(kinds: &Kinds) -> Result<(), String> {
                 .abs_diff(lower.readings + upper.readings),
         ));
     }
-    let needs_weak_pair = [YearYoga::DutthotthaDavira];
-    for yoga in needs_weak_pair {
-        let held = YearYoga::ALL
-            .iter()
-            .position(|one| *one == yoga)
-            .and_then(|at| kinds.yogas.get(at).copied())
-            .unwrap_or_default();
-        if held > weak.both {
+    ceilings_hold(kinds, weak.both)
+}
+
+/// How many matters a yoga held in.
+fn held_in(kinds: &Kinds, yoga: YearYoga) -> usize {
+    YearYoga::ALL
+        .iter()
+        .position(|one| *one == yoga)
+        .and_then(|at| kinds.yogas.get(at).copied())
+        .unwrap_or_default()
+}
+
+/// No yoga holds in more matters than its definition allows: a judgement
+/// **upon** an Ithasala no more often than an Ithasala stands, and one
+/// needing a **weak pair** no more often than there was one.
+///
+/// Both groupings are read from `YearYoga` itself rather than kept as a
+/// list here, so a yoga built later is held to its ceiling without this
+/// pass being edited.
+fn ceilings_hold(kinds: &Kinds, weak_pairs: usize) -> Result<(), String> {
+    let ithasalas = held_in(kinds, YearYoga::Ithasala);
+    for yoga in YearYoga::ALL {
+        let held = held_in(kinds, yoga);
+        if yoga.is_chart_fact() && held % 12 != 0 {
             return Err(format!(
-                "{yoga:?} held in {held} matters, and only {} had a weak pair for it to need",
-                weak.both,
+                "{yoga:?} is a fact about a chart and held in {held} matters, which is not \
+                 all twelve of some charts and none of the rest"
+            ));
+        }
+        if yoga.judges_an_ithasala() && held > ithasalas {
+            return Err(format!(
+                "{yoga:?} held in {held} matters, and an Ithasala stood in only {ithasalas}"
+            ));
+        }
+        if yoga.needs_a_weak_pair() && held > weak_pairs {
+            return Err(format!(
+                "{yoga:?} held in {held} matters, and only {weak_pairs} had a weak pair for it to need"
             ));
         }
     }
     Ok(())
+}
+
+/// Counts which affliction spoilt each Rudda of one matter, from the
+/// afflictions the module itself reported with it.
+fn what_spoiled(asked: &YearYogas, kinds: &mut Kinds) {
+    for rudda in asked.held.iter().filter(|one| one.yoga == YearYoga::Rudda) {
+        let Some(pair) = rudda.afflictions else {
+            continue;
+        };
+        let clauses = pair.map(teistro::tajika::Affliction::clauses);
+        let width = clauses.iter().map(|one| one.len()).max().unwrap_or(0);
+        if kinds.rudda_clauses.len() < width {
+            kinds.rudda_clauses.resize(width, 0);
+        }
+        for (at, slot) in kinds.rudda_clauses.iter_mut().enumerate() {
+            let held = clauses
+                .iter()
+                .any(|one| one.get(at).is_some_and(|(_, holds)| *holds));
+            if held {
+                *slot += 1;
+            }
+        }
+        // Counted against the clause list rather than by naming the other
+        // four, so a clause the module gains later is not silently read
+        // as absent.
+        let malefic_only = pair.iter().all(|one| {
+            let holding = one.clauses().iter().filter(|(_, holds)| *holds).count();
+            holding == usize::from(one.under_malefic)
+        });
+        if malefic_only {
+            kinds.rudda_malefic_alone += 1;
+        }
+    }
 }
 
 fn the_kinds(out: &mut String, kinds: &Kinds) {
@@ -1316,7 +1408,10 @@ fn the_sixteen(out: &mut String, kinds: &Kinds) {
          annual lagna, and the *karyesha*, the lord of the house the \
          matter asked about belongs to — so the same year answers \
          differently for each of the twelve houses. Every chart above is \
-         asked all twelve, which is **{}** questions.\n\n\
+         asked all twelve, which is **{}** questions. Ikabala and Induvara \
+         are the two exceptions: facts about a chart, so each holds in all \
+         twelve of a chart's matters or in none — **{}** charts and **{}**, \
+         a divisibility the pass checks.\n\n\
          | yoga | | held | of the matters asked |\n\
          |---|---|---:|---|\n\
          {}\n\n\
@@ -1343,6 +1438,8 @@ fn the_sixteen(out: &mut String, kinds: &Kinds) {
          since the Sun rules Leo alone and the Moon Cancer alone: {} + \
          ({} − {}) = **{}**.\n",
         count(kinds.matters),
+        count(held_in(kinds, YearYoga::Ikabala) / 12),
+        count(held_in(kinds, YearYoga::Induvara) / 12),
         rows.trim_end(),
         capitalised(&spelled(built.len())),
         spelled(YearYoga::ALL.len() - built.len()),
@@ -1411,6 +1508,106 @@ fn why_khallasara_is_rare(out: &mut String, kinds: &Kinds) {
     );
 }
 
+/// §12: what spoils an Ithasala, and what the corpus says the two
+/// readings the source leaves open (cruxes C118 and C119) can move.
+fn what_spoils_an_ithasala(out: &mut String, sdk: &Context, kinds: &Kinds) {
+    let ithasalas = held_in(kinds, YearYoga::Ithasala);
+    let ruddas = held_in(kinds, YearYoga::Rudda);
+    // The clause names are the type's own, read off an affliction with
+    // none, so a clause renamed or added there is renamed or added here.
+    let none = teistro::tajika::Affliction {
+        graha: Graha::Moon,
+        retrograde: false,
+        combust: false,
+        debilitated: false,
+        trika: false,
+        under_malefic: false,
+    };
+    let mut rows: Vec<(&str, usize)> = none
+        .clauses()
+        .into_iter()
+        .map(|(name, _)| name)
+        .zip(
+            kinds
+                .rudda_clauses
+                .iter()
+                .copied()
+                .chain(std::iter::repeat(0)),
+        )
+        .collect();
+    // Commonest first, the source's order among equals: which clause does
+    // the spoiling reads off the top.
+    rows.sort_by_key(|row| std::cmp::Reverse(row.1));
+    let rows = rows
+        .into_iter()
+        .map(|(name, held)| format!("| {name} | {} | {} |", count(held), share(held, ruddas)))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let _ = write!(
+        out,
+        "\n## 12. What spoils an Ithasala\n\n\
+         Rudda is the Ithasala spoilt: one where either of the pair is \
+         \"retrograde, combust, debilitated, in the 6th, 8th or 12th, or \
+         under malefic influence\". Retrograde and combustion are not in a \
+         chart's longitudes, so they are read from its graha states — over \
+         the corpus's {} readings, **{}** are retrograde and **{}** combust, \
+         under the `{}` combustion table the profile sets.\n\n\
+         Rudda held in **{}** of the {} matters in which an Ithasala stood \
+         ({}). Each clause, counted in the Ruddas where it held of either \
+         lord — so a Rudda with two afflictions is counted twice:\n\n\
+         | clause | Ruddas | of them |\n\
+         |---|---:|---|\n\
+         {rows}\n\n\
+         ### The reach of the two readings left open\n\n\
+         *Under malefic influence* is read as Manau reads it — joined, or \
+         aspected inimically, by Mars or Saturn — with the pair's own \
+         malefic counting against its partner (crux C118). **{}** Ruddas \
+         ({}) held on that clause and nothing else. That bounds every \
+         **narrower** reading at once: excluding the partner, or any \
+         stricter sense of influence, can remove those and no other. A \
+         **wider** one — any aspect at all — could only add Ruddas, and at \
+         most the **{}** Ithasalas not spoilt now.\n\n\
+         **Read literally, Rudda spoils almost every Ithasala**, and no \
+         reading of that one clause changes it: the narrowest would still \
+         leave **{}** of the {} spoilt ({}). The breadth is the list \
+         itself — any one of five common afflictions, on either of two \
+         planets — which is the mirror of *unqualified* (crux C115), read \
+         so strictly that Khallasara almost never holds. It is recorded \
+         rather than corrected, because no text in reach narrows the list; \
+         every Rudda carries both lords' clauses, so a reader who holds a \
+         narrower reading can apply it without the yoga being \
+         rewritten.\n\n\
+         Duhphali-kuttha held in **{}**, and Durapha in **{}**. Durapha's \
+         list is read as alternatives each lord must meet one of (crux \
+         C119); whatever the reading, it needs a weak pair first, and §11 \
+         puts that ceiling at **{}**. `cargo xtask muntha` fails if either \
+         ceiling is ever exceeded: every judgement upon an Ithasala is held \
+         under the Ithasala's own count, and every yoga needing a weak pair \
+         under the weak pairs', each read from `YearYoga` itself.\n",
+        count(kinds.strengths_read),
+        count(kinds.retrograde),
+        count(kinds.combust),
+        sdk.settings().state.combustion_orbs,
+        count(ruddas),
+        count(ithasalas),
+        share(ruddas, ithasalas),
+        count(kinds.rudda_malefic_alone),
+        share(kinds.rudda_malefic_alone, ruddas),
+        count(ithasalas.saturating_sub(ruddas)),
+        count(ruddas.saturating_sub(kinds.rudda_malefic_alone)),
+        count(ithasalas),
+        share(ruddas.saturating_sub(kinds.rudda_malefic_alone), ithasalas),
+        count(held_in(kinds, YearYoga::DuhphaliKuttha)),
+        count(held_in(kinds, YearYoga::Durapha)),
+        count(
+            position_of(&WEAK_FLOORS, YOGA_WEAK_BELOW, "lower")
+                .ok()
+                .and_then(|at| kinds.weak_side.get(at))
+                .map_or(0, |at| at.both)
+        ),
+    );
+}
+
 /// §11: where weak ends and strong begins, which the source says only
 /// for the year lord (crux C116).
 fn the_floors(out: &mut String, kinds: &Kinds) -> Result<(), String> {
@@ -1445,7 +1642,7 @@ fn the_floors(out: &mut String, kinds: &Kinds) -> Result<(), String> {
     let _ = write!(
         out,
         "\n## 11. Strong and weak, and the floors between them\n\n\
-         Five of the six yogas still awaiting turn on whether a planet is \
+         Five of the six strength yogas turn on whether a planet is \
          **strong** or **weak** — Rudda alone does not — and Charak never \
          says where either begins. He gives a figure once, for the \
          office-bearers when he chooses the year lord: below five units of \

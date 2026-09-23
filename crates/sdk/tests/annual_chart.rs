@@ -477,25 +477,25 @@ fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
         assert_eq!(found.lagnesha, lagna_sign.attributes().lord);
         assert_eq!(found.karyesha, found.sign.attributes().lord);
 
-        // Eight of the sixteen are not built, and each carries its
-        // reason. A consumer asking about one gets `None` -- not `false`,
-        // which would be a claim this build has no right to make.
-        assert_eq!(found.unanswered.len(), 8);
+        // The façade reads retrograde and combustion from the chart, so
+        // only what the build does not compute is left unanswered, and
+        // each carries its reason. A consumer asking about one gets
+        // `None` -- not `false`, which would be a claim this build has no
+        // right to make.
+        assert!(found.states.is_some(), "the façade supplies the states");
         for yoga in &found.unanswered {
-            assert!(yoga.awaiting().is_some(), "{yoga:?} says what it needs");
+            assert!(!yoga.is_built(), "{yoga:?} is built and was not answered");
+            assert_eq!(found.why(*yoga), yoga.awaiting());
+            assert!(found.why(*yoga).is_some(), "{yoga:?} says what it needs");
             assert_eq!(found.holds(*yoga), None);
         }
-        // The eight that are built always answer, true or false.
-        for yoga in [
-            teistro::YearYoga::Ithasala,
-            teistro::YearYoga::Ishrafa,
-            teistro::YearYoga::Nakta,
-            teistro::YearYoga::Yamaya,
-            teistro::YearYoga::Manau,
-            teistro::YearYoga::Kamboola,
-            teistro::YearYoga::Khallasara,
-            teistro::YearYoga::DutthotthaDavira,
-        ] {
+        // Every one the build computes answers, true or false: the list
+        // is taken from the type, so a newly built yoga is asked here
+        // without this test being edited.
+        for yoga in teistro::YearYoga::ALL
+            .into_iter()
+            .filter(|one| one.is_built())
+        {
             assert!(found.holds(yoga).is_some(), "{yoga:?} is built");
         }
         // Manau, Kamboola and Khallasara are judgements **about** an
@@ -512,12 +512,21 @@ fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
         // The first house is the lagna, so its lord is the lagnesha and
         // there is no pair to judge.
         assert_eq!(found.same_lord, found.karyesha == found.lagnesha);
+        // Only Ikabala and Induvara, which are facts about the chart, can
+        // hold where there is no pair to judge.
         if found.same_lord {
-            assert!(found.between.is_none() && found.held.is_empty());
+            assert!(found.between.is_none());
+            assert!(found.held.iter().all(|one| matches!(
+                one.yoga,
+                teistro::YearYoga::Ikabala | teistro::YearYoga::Induvara
+            )));
         }
-        // Nothing is ever carried across a pair that already aspects.
+        // Light is never carried across a pair that already aspects: Nakta
+        // and Yamaya are for pairs with no aspect to carry it.
         if found.between.is_some_and(|pair| pair.drishti.is_aspect()) {
-            assert!(found.held.iter().all(|one| one.through.is_none()));
+            for carried in [teistro::YearYoga::Nakta, teistro::YearYoga::Yamaya] {
+                assert_eq!(found.holds(carried), Some(false));
+            }
         }
     }
 
@@ -550,8 +559,42 @@ fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
             .tajika_yogas_with_rules(&annual, tenth, teistro::DrishtiRules { sub_degree }.into())
             .unwrap();
         assert_eq!(under.house, tenth);
-        assert_eq!(under.unanswered.len(), 8);
+        assert!(under.unanswered.iter().all(|yoga| !yoga.is_built()));
     }
+}
+
+/// Retrograde and combustion through the façade: read from the chart,
+/// validated, reported with every answer, and the same states every
+/// affliction reads.
+#[test]
+fn an_annual_charts_states_reach_every_yoga_that_reads_them() {
+    let sdk = source_context();
+    let (_birth, annual) = source_birth_and_year(&sdk);
+    let states = sdk.chart().annual_states(&annual).unwrap();
+    // What the façade reads is a set no chart could refuse.
+    assert_eq!(states.clone().check().unwrap(), states);
+    for graha in [Graha::Sun, Graha::Moon] {
+        assert!(!states.is_retrograde(graha), "{graha:?} never turns back");
+    }
+    assert!(!states.is_combust(Graha::Sun));
+
+    // Every answer reports the states it read.
+    let found = sdk
+        .chart()
+        .tajika_yogas(&annual, House::try_new(10).unwrap())
+        .unwrap();
+    assert_eq!(found.states.as_ref(), Some(&states));
+
+    // And every affliction reads the same ones.
+    for graha in teistro::tajika::SEVEN {
+        let how = sdk.chart().affliction(&annual, graha).unwrap();
+        assert_eq!(how.graha, graha);
+        assert_eq!(how.retrograde, states.is_retrograde(graha), "{graha:?}");
+        assert_eq!(how.combust, states.is_combust(graha), "{graha:?}");
+        assert_eq!(how.is_afflicted(), how.clauses().iter().any(|(_, is)| *is));
+    }
+    let refused = sdk.chart().affliction(&annual, Graha::Rahu).unwrap_err();
+    assert_eq!(refused.field(), Some("graha"));
 }
 
 /// *Strong* and *weak* through the façade: graded by default, both

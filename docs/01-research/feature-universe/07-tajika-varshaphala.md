@@ -215,6 +215,14 @@ and it is the only source read that says where *strong* begins. The
 yogas are read against it (C116): weak is *Nirbali*, strong is *Poorna*
 or better, and *Madhya* is neither.
 
+**Then yogas 1, 2, 11, 12 and 16.** Ikabala and Induvara, the two facts
+about a chart; and Rudda, Duhphali-kuttha and Durapha, which read
+retrograde and combustion from the founded chart's graha states. Read
+literally, Rudda spoils 94.4% of the corpus's Ithasalas (C118); Durapha's
+list is parsed as alternatives (C119). Left: Tambira and Gairi-Kamboola,
+which need a projection into the next sign, and Kuttha, which needs
+Tajika's benefics (C117).
+
 **Reading the pair rule against the chart found something the table does
 not state.** The **first** house's lord *is* the lagnesha, so a question
 about the native's own self is never one of the fourteen pair judgements
