@@ -576,3 +576,37 @@ column was zero. **Roga's second reading** stands in another sign in
 | 39 Jalapatha | 45.8% | 12.5% | no house past the first |
 | 40 Bandhana | 50.1% | 21.6% | no house past the first |
 | 41 Labha | 84.4% | 8.0% | 34.6% |
+
+## 15. The Harsha bala
+
+Four places a planet is "happy" in, five units each: its house of joy,
+its exaltation or own sign, a house of its own gender, and the year's
+own part of the day (`03-design/tajika-harsha.md`). Read in every chart
+through `sdk.chart().harsha`.
+
+**The source says fifteen is generally the most a planet reaches and
+twenty rather unusual.** Over 15 113 placements of the seven, 15 051
+hold fifteen or less and **62** hold all four (0.4%).
+
+**Venus's rival place moves Venus alone, and the pass fails if it moves
+anything else.** Read as a widely used program reads it, in the 12th
+rather than the verse's 5th, Venus holds another total in **347** of
+2159 charts (16.1%). The day part decomposes too: the Sun holds it in
+exactly the 1094 charts read by day, the Moon in exactly the 1065 read
+by night.
+
+**Sun, Venus and Saturn never hold all four, and the pass fails if one
+does or if any other never does.** Each one's house of joy is of the
+other gender — the Sun's 9th is feminine, Venus's 5th and Saturn's
+12th masculine — so the place and the gender parts exclude each other,
+and their twenties are zeros by the rule rather than by chance.
+
+| planet | Nirbala, 0 | Alpabali, 5 | Madhya Bali, 10 | Poorna Bali, 15 | twenty |
+|---|---:|---:|---:|---:|---:|
+| Sun | 19.8% | 40.7% | 33.4% | 6.1% | 0.0% |
+| Moon | 21.6% | 41.5% | 28.5% | 8.1% | 0.3% |
+| Mars | 19.0% | 41.1% | 29.5% | 9.5% | 0.9% |
+| Mercury | 21.1% | 44.5% | 26.7% | 7.4% | 0.3% |
+| Jupiter | 18.8% | 39.7% | 30.3% | 9.9% | 1.3% |
+| Venus | 18.6% | 38.7% | 34.0% | 8.7% | 0.0% |
+| Saturn | 15.4% | 42.8% | 34.7% | 7.1% | 0.0% |

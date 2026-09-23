@@ -149,6 +149,9 @@ pub use teistro_tajika::{
     AddSign, HousePoints, RogaReading, Saham, SahamFormula, SahamPlace, SahamPoint, SahamReading,
     SahamRules, SahamTerm, SahamTriple,
 };
+// The Harsha bala: four places a planet of the annual chart is happy in
+// (`03-design/tajika-harsha.md`).
+pub use teistro_tajika::{Harsha, HarshaGrade, HarshaRules, VenusPlace};
 // Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
 // with the rules it was read under (`03-design/strength-schemes.md`).
 pub use teistro_strength as strength;

@@ -39,10 +39,10 @@ use teistro_strength::{
     VimshopakaReading,
 };
 use teistro_tajika::{
-    Affliction, AnnualSky, AnnualStates, Between, DrishtiRules, Muntha, MunthaDegree, Natal,
-    OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN, Saham, SahamFormula,
-    SahamPlace, SahamReading, SahamRules, SahamSky, Strength, Varshesha, VarsheshaRules,
-    YearCharts, YearYogas, YogaRules,
+    Affliction, AnnualSky, AnnualStates, Between, DrishtiRules, Harsha, HarshaRules, Muntha,
+    MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN,
+    Saham, SahamFormula, SahamPlace, SahamReading, SahamRules, SahamSky, Strength, Varshesha,
+    VarsheshaRules, YearCharts, YearYogas, YogaRules,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -852,6 +852,42 @@ impl<'a> ChartArea<'a> {
     /// An annual chart that does not place one of the seven.
     pub fn panchavargiya(self, annual: &Document) -> Result<[Panchavargiya; 7], Error> {
         teistro_tajika::panchavargiya(&Self::sky_of(annual)?)
+    }
+
+    /// The **Harsha bala** of the seven, read from an annual chart you
+    /// founded under the source's readings: four places a planet is
+    /// "happy" in, five units each (`03-design/tajika-harsha.md`).
+    ///
+    /// The houses are whole signs from the chart's lagna, and the fourth
+    /// part is read from whether the year opened by day. It needs **no
+    /// ephemeris**: the chart is already founded.
+    ///
+    /// # Errors
+    ///
+    /// An annual chart that does not place one of the seven, or whose
+    /// lagna is not a number.
+    pub fn harsha(self, annual: &Document) -> Result<[Harsha; 7], Error> {
+        self.harsha_with_rules(annual, HarshaRules::default())
+    }
+
+    /// The **Harsha bala** under the readings you name: Venus's house of
+    /// joy the verse's 5th, or the 12th a widely used program reads.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::harsha`].
+    pub fn harsha_with_rules(
+        self,
+        annual: &Document,
+        rules: HarshaRules,
+    ) -> Result<[Harsha; 7], Error> {
+        let foundation = &annual.foundation;
+        teistro_tajika::harsha(
+            &Self::sky_of(annual)?,
+            foundation.lagna_deg,
+            foundation.day.part.is_daylight(),
+            rules,
+        )
     }
 
     /// The **Varshesha**, the lord of the year, from a birth chart and an

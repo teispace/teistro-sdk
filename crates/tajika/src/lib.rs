@@ -31,6 +31,7 @@
 
 mod bala;
 mod drishti;
+mod harsha;
 mod muntha;
 mod office;
 mod saham;
@@ -48,6 +49,7 @@ pub use drishti::{
     all as drishtis, all_with_rules as drishtis_with_rules, between, between_with_rules,
     deeptamsha, orb_between, speed_rank,
 };
+pub use harsha::{HARSHA_PART_UNITS, Harsha, HarshaGrade, HarshaRules, VenusPlace, harsha};
 pub use muntha::{DAILY_DEG, MONTHLY_DEG, Muntha, MunthaDegree, muntha};
 pub use office::{Office, OfficeBearers, YearCharts, office_bearers, tri_rashi_lord};
 pub use saham::{

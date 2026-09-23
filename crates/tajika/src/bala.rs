@@ -279,15 +279,22 @@ impl AnnualSky {
             ("venus_deg", self.venus_deg),
             ("saturn_deg", self.saturn_deg),
         ] {
-            if !value.is_finite() {
-                return Err(Error::invalid_arg(format!(
-                    "{field} is a longitude that is not a number"
-                ))
-                .with_field(field.to_owned()));
-            }
+            finite_longitude(field, value)?;
         }
         Ok(())
     }
+}
+
+/// A longitude a caller gave, refused by its field when it is not a
+/// number: the one refusal every Tajika reading makes of its inputs.
+pub(crate) fn finite_longitude(field: &str, value: f64) -> Result<(), Error> {
+    if value.is_finite() {
+        return Ok(());
+    }
+    Err(
+        Error::invalid_arg(format!("{field} is a longitude that is not a number"))
+            .with_field(field.to_owned()),
+    )
 }
 
 /// The sign a longitude stands in.

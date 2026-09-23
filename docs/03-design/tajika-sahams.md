@@ -184,13 +184,13 @@ saham strength, which needs it.
 | **decided by measurement** | that the rival "between" is a whole-sign rule (600 of 600 probes) and what it moves (§14); that the default must not read the chart's chalit, which is Vehlow's under two shipped profiles |
 | **a reading, not a decision** | Roga's two formulas, both the source's |
 | **built** | `Saham` with `ALL` and `formula`; `SahamFormula`, `SahamTriple`, `SahamTerm`; `sahams` and `saham_point`, memoised per chart; `SahamRules` with `AddSign`, `HousePoints` and `RogaReading`; `sripati_mid_points`; `teistro_chart::foundation::angles_of`; the façade's `sahams`, `sahams_with_rules` and `saham_point`, which need no ephemeris |
-| **not built** | a saham's **strength**, which the source judges by its lord's dignity, its associations and aspects, the Panchavargiya floor of five units, and the **Harsha bala** — which is not built, so strength waits on it; a caller's own formula and the birth chart's sahams across the boundary |
+| **not built** | a saham's **strength**, which the source judges by its lord's dignity, its associations and aspects, the Panchavargiya floor of five units, and the **Harsha bala** (built 2026-09-24, `tajika-harsha.md`); a caller's own formula and the birth chart's sahams across the boundary |
 
 ## The order of work
 
 1. **Done**: the arithmetic, the table, the three readings, the façade.
 2. **Done**: the crossing, `varsha_json.sahams` and `sahamRules`, into
    every binding with its parity keys.
-3. The Harsha bala (Charak ch. VI), then a saham's strength over it and
-   the Panchavargiya bala already built, crossing with the birth chart's
+3. **Done**: the Harsha bala (Charak ch. VI, `tajika-harsha.md`). Next a
+   saham's strength over it and the Panchavargiya bala, crossing with the birth chart's
    sahams.

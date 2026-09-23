@@ -33,7 +33,7 @@ use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::house::House;
 
-use crate::bala::{AnnualSky, sign_of_longitude};
+use crate::bala::{AnnualSky, finite_longitude, sign_of_longitude};
 
 /// One of the sahams the source gives, in its own order: the id of each
 /// is its number there less one.
@@ -539,12 +539,7 @@ impl SahamSky {
             ("lagna_deg", self.lagna_deg),
             ("midheaven_deg", self.midheaven_deg),
         ] {
-            if !value.is_finite() {
-                return Err(Error::invalid_arg(format!(
-                    "{field} is a longitude that is not a number"
-                ))
-                .with_field(field));
-            }
+            finite_longitude(field, value)?;
         }
         if let Some(house) = self
             .chalit_deg

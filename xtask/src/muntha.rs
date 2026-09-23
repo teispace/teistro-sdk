@@ -30,8 +30,8 @@ use teistro::tajika::{
     YogaRules,
 };
 use teistro::{
-    AddSign, ChartRequest, Context, Document, Ephemeris, HousePoints, RogaReading, Saham,
-    SahamReading, SahamRules, SahamTerm, UtcOffset,
+    AddSign, ChartRequest, Context, Document, Ephemeris, HarshaGrade, HarshaRules, HousePoints,
+    RogaReading, Saham, SahamReading, SahamRules, SahamTerm, UtcOffset, VenusPlace,
 };
 
 use crate::births::{Birth, CHARTS, births};
@@ -190,6 +190,7 @@ fn page(root: &Path) -> Result<String, String> {
     what_spoils_an_ithasala(&mut out, &sdk, &swept);
     what_happens_next(&mut out, &swept);
     the_sahams(&mut out, &swept);
+    the_harsha(&mut out, &swept);
     Ok(fill(&out))
 }
 
@@ -801,6 +802,24 @@ struct Kinds {
     moon_at_end_unqualified: usize,
     /// What each reading of the sahams makes of every chart.
     sahams: SahamCounts,
+    /// What the Harsha bala makes of every chart.
+    harsha: HarshaCounts,
+}
+
+/// The Harsha bala of every chart, under the verse's reading and the
+/// program's.
+#[derive(Default)]
+struct HarshaCounts {
+    /// How often each of the seven, in `SEVEN` order, holds each grade,
+    /// Nirbala to extraordinary.
+    grades: [[usize; 5]; 7],
+    /// Charts whose Venus holds another total with its joy in the 12th.
+    venus_moved: usize,
+    /// Charts whose Sun takes the day-and-night part: must be the charts
+    /// read by day, since the Sun is male.
+    sun_dina_ratri: usize,
+    /// Charts whose Moon takes it: must be the charts read by night.
+    moon_dina_ratri: usize,
 }
 
 /// The sahams of every chart, under the source's readings and each rival.
@@ -915,6 +934,7 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
             };
             ask_every_house(sdk, &chart, &mut kinds)?;
             count_sahams(sdk, &annual, &birth.name, &mut kinds.sahams)?;
+            count_harsha(sdk, &annual, &birth.name, &mut kinds.harsha)?;
             for pair in pairs {
                 if !pair.drishti.is_aspect() {
                     continue;
@@ -949,6 +969,7 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
     floors_hold(&kinds)?;
     projections_hold(&kinds)?;
     sahams_hold(&kinds.sahams)?;
+    harsha_holds(kinds.charts, kinds.sahams.by_day, &kinds.harsha)?;
     Ok(kinds)
 }
 
@@ -2299,5 +2320,139 @@ fn the_sahams(out: &mut String, kinds: &Kinds) {
         spelled(housed),
         count(counts.roga_moved),
         count(charts),
+    );
+}
+
+/// One chart's Harsha bala under both readings of Venus's place, refused
+/// if the rival moves anything but Venus.
+fn count_harsha(
+    sdk: &Context,
+    annual: &Document,
+    name: &str,
+    counts: &mut HarshaCounts,
+) -> Result<(), String> {
+    let verse = sdk
+        .chart()
+        .harsha(annual)
+        .map_err(|why| format!("{name}: its Harsha bala: {why}"))?;
+    let program = sdk
+        .chart()
+        .harsha_with_rules(
+            annual,
+            HarshaRules {
+                venus: VenusPlace::Twelfth,
+            },
+        )
+        .map_err(|why| format!("{name}: its Harsha bala, Venus in the 12th: {why}"))?;
+    for (at, (one, rival)) in verse.iter().zip(&program).enumerate() {
+        if let Some(slot) = counts
+            .grades
+            .get_mut(at)
+            .and_then(|row| row.get_mut(one.grade as usize))
+        {
+            *slot += 1;
+        }
+        if one.graha == Graha::Venus {
+            counts.venus_moved += usize::from(one.total != rival.total);
+        } else if one != rival {
+            return Err(format!(
+                "{name}: Venus's place moved {:?}'s Harsha bala",
+                one.graha
+            ));
+        }
+        match one.graha {
+            Graha::Sun => counts.sun_dina_ratri += usize::from(one.dina_ratri),
+            Graha::Moon => counts.moon_dina_ratri += usize::from(one.dina_ratri),
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+/// The planets that can never hold all four parts: each one's house of joy
+/// is of the other gender — the Sun's 9th feminine, Venus's 5th and
+/// Saturn's 12th masculine — so the first and third parts exclude each
+/// other. Listed so the pass fails both ways: one of these reaching twenty
+/// is a broken rule, and one of the others never reaching it is a sweep
+/// that did not reach the charts it counts.
+const NEVER_TWENTY: [Graha; 3] = [Graha::Sun, Graha::Venus, Graha::Saturn];
+
+/// The day-and-night part is the year's part of the day and nothing else:
+/// the male Sun holds it in every chart read by day, the female Moon in
+/// every chart read by night. And twenty is reached by exactly the four
+/// planets not in [`NEVER_TWENTY`].
+fn harsha_holds(charts: usize, by_day: usize, counts: &HarshaCounts) -> Result<(), String> {
+    for (graha, grades) in SEVEN.iter().zip(&counts.grades) {
+        let twenty = grades
+            .get(HarshaGrade::Extraordinary as usize)
+            .copied()
+            .unwrap_or(0);
+        if NEVER_TWENTY.contains(graha) == (twenty > 0) {
+            return Err(format!(
+                "{graha:?} holds all four parts in {twenty} charts, and the list \
+                 of planets that never can says the opposite"
+            ));
+        }
+    }
+    if counts.sun_dina_ratri != by_day || counts.moon_dina_ratri != charts - by_day {
+        return Err(format!(
+            "the Harsha bala's day part does not decompose: the Sun holds it \
+             in {} charts and the Moon in {}, where {by_day} of {charts} open by day",
+            counts.sun_dina_ratri, counts.moon_dina_ratri,
+        ));
+    }
+    Ok(())
+}
+
+fn the_harsha(out: &mut String, kinds: &Kinds) {
+    let counts = &kinds.harsha;
+    let charts = kinds.charts;
+    let mut rows = String::new();
+    for (graha, grades) in SEVEN.iter().zip(&counts.grades) {
+        let cells: Vec<String> = grades.iter().map(|n| share(*n, charts)).collect();
+        let _ = writeln!(rows, "| {graha:?} | {} |", cells.join(" | "));
+    }
+    let placed = charts * SEVEN.len();
+    let at_most = |grade: HarshaGrade| -> usize {
+        counts
+            .grades
+            .iter()
+            .map(|row| row.iter().take(grade as usize + 1).sum::<usize>())
+            .sum()
+    };
+    let twenty = placed - at_most(HarshaGrade::PoornaBali);
+    let _ = write!(
+        out,
+        "\n## 15. The Harsha bala\n\n\
+         Four places a planet is \"happy\" in, five units each: its house of \
+         joy, its exaltation or own sign, a house of its own gender, and the \
+         year's own part of the day (`03-design/tajika-harsha.md`). Read in \
+         every chart through `sdk.chart().harsha`.\n\n\
+         **The source says fifteen is generally the most a planet reaches \
+         and twenty rather unusual.** Over {} placements of the seven, \
+         {} hold fifteen or less and **{}** hold all four ({}).\n\n\
+         **Venus's rival place moves Venus alone, and the pass fails if it \
+         moves anything else.** Read as a widely used program reads it, in \
+         the 12th rather than the verse's 5th, Venus holds another total \
+         in **{}** of {} charts ({}). The day part decomposes too: the Sun \
+         holds it in exactly the {} charts read by day, the Moon in exactly \
+         the {} read by night.\n\n\
+         **{} never hold all four, and the pass fails if one does or if any \
+         other never does.** Each one's house of joy is of the other gender \
+         — the Sun's 9th is feminine, Venus's 5th and Saturn's 12th \
+         masculine — so the place and the gender parts exclude each other, \
+         and their twenties are zeros by the rule rather than by chance.\n\n\
+         | planet | Nirbala, 0 | Alpabali, 5 | Madhya Bali, 10 | Poorna Bali, 15 | twenty |\n\
+         |---|---:|---:|---:|---:|---:|\n{rows}",
+        count(placed),
+        count(at_most(HarshaGrade::PoornaBali)),
+        count(twenty),
+        share(twenty, placed),
+        count(counts.venus_moved),
+        count(charts),
+        share(counts.venus_moved, charts),
+        count(counts.sun_dina_ratri),
+        count(counts.moon_dina_ratri),
+        listed(&NEVER_TWENTY.map(|graha| format!("{graha:?}"))),
     );
 }
