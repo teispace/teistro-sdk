@@ -3823,18 +3823,31 @@ class TajikaDrishti(Member):
 
 
 class TajikaYoga(Member):
-    """What two planets inside each other's orb are doing."""
+    """What two planets inside each other's orb are doing.
 
-    ITHASALA = 0
-    """Ithasala: the faster is behind the slower and coming to it."""
-
-    RASHYANTA_ITHASALA = 1
-    """Ithasala from the sign's end: the faster is past but stands at 29°
-    or beyond, so it acts from the next sign, where it is behind again.
+    Three of the four are kinds of Ithasala, the coming-together, which is
+    how the source's Table X-3 enumerates them.
     """
 
-    ISHRAFA = 2
-    """Ishrafa: the faster is past the slower and drawing away."""
+    ITHASALA_VARTAMANA = 0
+    """Vartamana Ithasala: the faster is behind the slower by a degree or
+    more, inside the orb, and coming to it.
+    """
+
+    ITHASALA_POORNA = 1
+    """Poorna Ithasala: as Vartamana but within a single degree, which
+    the source marks as immediate fulfilment.
+    """
+
+    ITHASALA_BHAVISHYAT = 2
+    """Bhavishyat Ithasala: the faster is past but stands at 29° or
+    beyond, so it acts from the next sign, where it is behind again.
+    """
+
+    ISHRAFA = 3
+    """Ishrafa: the faster is a degree or more past the slower and
+    drawing away.
+    """
 
 
 class Scale(Member):
@@ -5257,9 +5270,10 @@ _KEYS: dict[str, dict[int, str]] = {
         4: "none",
     },
     "TajikaYoga": {
-        0: "ithasala",
-        1: "rashyanta-ithasala",
-        2: "ishrafa",
+        0: "ithasala-vartamana",
+        1: "ithasala-poorna",
+        2: "ithasala-bhavishyat",
+        3: "ishrafa",
     },
     "Scale": {
         0: "ut1",

@@ -6335,22 +6335,32 @@ export declare const TajikaDrishtiById: ReadonlyMap<number, TajikaDrishti>;
 
 /**
  * What two planets inside each other's orb are doing.
+ *
+ * Three of the four are kinds of Ithasala, the coming-together, which is
+ * how the source's Table X-3 enumerates them.
  */
-export type TajikaYoga = 'ithasala' | 'rashyanta-ithasala' | 'ishrafa';
+export type TajikaYoga = 'ithasala-vartamana' | 'ithasala-poorna' | 'ithasala-bhavishyat' | 'ishrafa';
 
 /** Every TajikaYoga by name; the values are the strings the union accepts. */
 export declare const TajikaYoga: {
   /**
-   * Ithasala: the faster is behind the slower and coming to it.
+   * Vartamana Ithasala: the faster is behind the slower by a degree or
+   * more, inside the orb, and coming to it.
    */
-  readonly Ithasala: 'ithasala';
+  readonly IthasalaVartamana: 'ithasala-vartamana';
   /**
-   * Ithasala from the sign's end: the faster is past but stands at 29°
-   * or beyond, so it acts from the next sign, where it is behind again.
+   * Poorna Ithasala: as Vartamana but within a single degree, which
+   * the source marks as immediate fulfilment.
    */
-  readonly RashyantaIthasala: 'rashyanta-ithasala';
+  readonly IthasalaPoorna: 'ithasala-poorna';
   /**
-   * Ishrafa: the faster is past the slower and drawing away.
+   * Bhavishyat Ithasala: the faster is past but stands at 29° or
+   * beyond, so it acts from the next sign, where it is behind again.
+   */
+  readonly IthasalaBhavishyat: 'ithasala-bhavishyat';
+  /**
+   * Ishrafa: the faster is a degree or more past the slower and
+   * drawing away.
    */
   readonly Ishrafa: 'ishrafa';
 };

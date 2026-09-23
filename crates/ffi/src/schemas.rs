@@ -691,7 +691,7 @@ fn chart_year_yogas_section(id: u32) -> SectionSchema {
     SectionSchema::columns(
         id,
         "year_yogas",
-        "Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).",
+        "Every annual chart's pairs of the seven that make a yoga — an Ithasala in one of its three kinds, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).",
         vec![
             ColumnDef::new(
                 "faster",
@@ -708,7 +708,7 @@ fn chart_year_yogas_section(id: u32) -> SectionSchema {
             ColumnDef::new(
                 "yoga",
                 Scalar::U8,
-                "What they are doing: coming together or drawing apart.",
+                "What they are doing: one of the Ithasala's three kinds, coming together, or an Ishrafa, drawing apart.",
             )
             .of_enum("TsTajikaYoga"),
             ColumnDef::new(

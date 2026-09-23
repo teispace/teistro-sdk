@@ -1255,7 +1255,7 @@ class ChartsYearYogas:
     """The `year_yogas` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
+    Every annual chart's pairs of the seven that make a yoga — an Ithasala in one of its three kinds, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
     """
 
     faster: memoryview[int]
@@ -1268,7 +1268,7 @@ class ChartsYearYogas:
     """The Tajika aspect between the signs they stand in. A pair in the neutral houses makes no yoga however close, so this is never `NONE` here."""
 
     yoga: memoryview[int]
-    """What they are doing: coming together or drawing apart."""
+    """What they are doing: one of the Ithasala's three kinds, coming together, or an Ishrafa, drawing apart."""
 
     orb_deg: memoryview[float]
     """The orb governing the pair, degrees: the **mean** of their two deeptamshas."""
@@ -1510,7 +1510,7 @@ class Charts:
     """Every annual chart's claimants on the year's lordship, concatenated in the `annual_charts` section's order and **ragged** by its `claim_count`, each year's ranked strongest first. Empty when no place was asked for. This is the reckoning the year lord came out of, so a reader can see the decision rather than take it on trust (`03-design/varshesha.md`)."""
 
     year_yogas: ChartsYearYogas
-    """Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`)."""
+    """Every annual chart's pairs of the seven that make a yoga — an Ithasala in one of its three kinds, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`)."""
 
 
 def decode_charts(raw: bytes) -> Charts:

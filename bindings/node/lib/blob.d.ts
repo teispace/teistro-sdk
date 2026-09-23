@@ -1379,7 +1379,7 @@ export interface ChartsYearClaims {
  * The `year_yogas` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
+ * Every annual chart's pairs of the seven that make a yoga — an Ithasala in one of its three kinds, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
  */
 export interface ChartsYearYogas {
   /**
@@ -1396,7 +1396,7 @@ export interface ChartsYearYogas {
    */
   readonly drishti: Uint8Array;
   /**
-   * What they are doing: coming together or drawing apart.
+   * What they are doing: one of the Ithasala's three kinds, coming together, or an Ishrafa, drawing apart.
    * The values are `TajikaYoga` ids.
    */
   readonly yoga: Uint8Array;
@@ -1721,7 +1721,7 @@ export interface Charts {
    */
   readonly yearClaims: ChartsYearClaims;
   /**
-   * Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
+   * Every annual chart's pairs of the seven that make a yoga — an Ithasala in one of its three kinds, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
    */
   readonly yearYogas: ChartsYearYogas;
 }

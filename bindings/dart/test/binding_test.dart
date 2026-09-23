@@ -1505,20 +1505,29 @@ void _engineTests() {
       expect(lord.vishwa.units, lord.vishwa.total ~/ 3600);
     }
 
-    // The pairs that make a yoga: never a neutral aspect, and the faster
-    // is behind exactly when they are coming together.
+    // The pairs that make a yoga: never a neutral aspect, and each of
+    // Table X-3's four kinds standing where its own degrees put it.
+    final kinds = <TajikaYoga>{};
     for (final one in cast) {
       for (final pair in one.annual!.yogas) {
         expect(pair.drishti, isNot(TajikaDrishti.none));
         expect(pair.orbDeg, greaterThan(0));
-        if (pair.yoga == TajikaYoga.ithasala) {
-          expect(pair.apartDeg, greaterThanOrEqualTo(0));
+        kinds.add(pair.yoga);
+        if (pair.yoga == TajikaYoga.ithasalaVartamana) {
+          expect(pair.apartDeg, greaterThanOrEqualTo(1));
+        }
+        if (pair.yoga == TajikaYoga.ithasalaPoorna) {
+          expect(pair.apartDeg.abs(), lessThan(1));
         }
         if (pair.yoga == TajikaYoga.ishrafa) {
-          expect(pair.apartDeg, lessThan(0));
+          expect(pair.apartDeg, lessThanOrEqualTo(-1));
         }
       }
     }
+    // The corpus's own years reach every kind the boundary can say, so a
+    // variant that stopped crossing would be caught here and not only in
+    // the enum's member count.
+    expect(kinds, hasLength(TajikaYoga.values.length));
 
     // At a residence, in the parts `found` takes, the lagnas move.
     final delhi =

@@ -38,8 +38,8 @@ use teistro_strength::{
     VimshopakaReading,
 };
 use teistro_tajika::{
-    AnnualSky, Between, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha,
-    Reading, Varshesha, VarsheshaRules, YearCharts,
+    AnnualSky, Between, DrishtiRules, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya,
+    Pravesha, Reading, Varshesha, VarsheshaRules, YearCharts,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -888,15 +888,50 @@ impl<'a> ChartArea<'a> {
     /// the 3, 5, 9, 11 houses; the rest is no aspect at all), the mean of
     /// the two deeptamshas, how far apart they stand **within their
     /// signs** — which is how this tradition counts behind from ahead —
-    /// and the **Ithasala** or **Ishrafa** that makes, if any.
+    /// and the **Ithasala** — in one of its three kinds — or **Ishrafa**
+    /// that makes, if any.
     ///
     /// It needs **no ephemeris**: the chart is already founded.
+    ///
+    /// [`ChartArea::drishtis_with_rules`] takes the readings the source
+    /// leaves open; this is that under [`DrishtiRules::default`].
     ///
     /// # Errors
     ///
     /// An annual chart that does not place one of the seven.
     pub fn drishtis(self, annual: &Document) -> Result<Vec<Between>, Error> {
-        teistro_tajika::drishtis(&Self::sky_of(annual)?)
+        self.drishtis_with_rules(annual, DrishtiRules::default())
+    }
+
+    /// The Tajika aspects under stated readings of the source.
+    ///
+    /// The source's chapter and its Table X-3 place a pair less than a
+    /// degree past differently, and 934 of the 29 166 aspecting pairs
+    /// over the corpus's recorded years fall there. [`crate::SubDegree`]
+    /// names
+    /// the three readings; the default is the table's.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, DrishtiRules, SubDegree};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().build()?;
+    /// # let annual: Document = todo!();
+    /// let rules = DrishtiRules { sub_degree: SubDegree::Ishrafa };
+    /// let pairs = sdk.chart().drishtis_with_rules(&annual, rules)?;
+    /// let contested = pairs.iter().filter(|pair| pair.disputed()).count();
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::drishtis`].
+    pub fn drishtis_with_rules(
+        self,
+        annual: &Document,
+        rules: DrishtiRules,
+    ) -> Result<Vec<Between>, Error> {
+        teistro_tajika::drishtis_with_rules(&Self::sky_of(annual)?, rules)
     }
 
     /// Where the seven stand in a founded chart, which both the strengths

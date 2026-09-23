@@ -201,5 +201,14 @@ Navamsha".
 table requires Ishrafa to be a **whole degree** or more ahead, where the
 chapter's prose says only "ahead"; and it names the sign's-end Ithasala
 **Bhavishyat**, where the prose calls the same configuration a *Rashyanta*
-Ithasala and a kind of Vartamana. `crates/tajika` ships the prose's
-reading of both and is to be corrected to the table's.
+Ithasala and a kind of Vartamana. **Corrected 2026-09-23**: `crates/tajika`
+ships the table's reading of both, and the `Poorna` kind the table adds.
+
+**And the two corrections do not meet.** Ishrafa begins a whole degree
+past; Poorna is given as a narrowing of Vartamana, which the table states
+only for a faster planet *behind*. Between them is a band the table bounds
+twice and places once — the faster less than a degree **past** — and the
+three defensible readings of it are Poorna, Ishrafa, and no yoga at all.
+It is **934 of the 29 166 aspecting pairs** over the corpus's recorded
+years (`03-design/muntha-measured.md` §9), so all three ship as
+`SubDegree` rather than one being chosen quietly. Registered as C112.

@@ -41,8 +41,9 @@ pub use bala::{
     panchavargiya,
 };
 pub use drishti::{
-    BY_SPEED, Between, Drishti, RASHYANTA_DEG, Yoga, all as drishtis, between, deeptamsha,
-    orb_between, speed_rank,
+    BY_SPEED, Between, Drishti, DrishtiRules, POORNA_DEG, RASHYANTA_DEG, SubDegree, Yoga,
+    all as drishtis, all_with_rules as drishtis_with_rules, between, between_with_rules,
+    deeptamsha, orb_between, speed_rank,
 };
 pub use muntha::{DAILY_DEG, MONTHLY_DEG, Muntha, MunthaDegree, muntha};
 pub use office::{Office, OfficeBearers, YearCharts, office_bearers, tri_rashi_lord};

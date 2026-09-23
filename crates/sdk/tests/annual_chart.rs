@@ -398,7 +398,35 @@ fn the_sources_worked_year_is_read_as_the_source_reads_it() {
         "3°52′, got {}",
         sun_mars.apart_deg
     );
-    assert_eq!(sun_mars.yoga, Some(teistro::TajikaYoga::Ithasala));
+    // Behind by more than a single degree, so of Table X-3's three kinds
+    // it is the **Vartamana**: coming, and not yet arrived.
+    assert_eq!(sun_mars.yoga, Some(teistro::TajikaYoga::IthasalaVartamana));
+    assert!(sun_mars.yoga.is_some_and(teistro::TajikaYoga::is_ithasala));
+    assert!(!sun_mars.disputed(), "well clear of the contested band");
+
+    // The readings the source leaves open reach this chart too, and
+    // change nothing in it: no pair of this sky stands in the band where
+    // its two accounts differ, so all three answer alike.
+    for sub_degree in [
+        teistro::SubDegree::Poorna,
+        teistro::SubDegree::Ishrafa,
+        teistro::SubDegree::None,
+    ] {
+        let under = sdk
+            .chart()
+            .drishtis_with_rules(&annual, teistro::DrishtiRules { sub_degree })
+            .unwrap();
+        assert_eq!(under.len(), 21);
+        assert!(
+            !under.iter().any(teistro::Between::disputed),
+            "no pair of this chart is contested"
+        );
+        assert_eq!(
+            under.iter().filter(|pair| pair.yoga.is_some()).count(),
+            pairs.iter().filter(|pair| pair.yoga.is_some()).count(),
+            "the reading moves nothing here"
+        );
+    }
 
     // And the lord of the year the source names: **the Sun**, not the
     // strongest office-bearer. Jupiter leads on strength and stands in the

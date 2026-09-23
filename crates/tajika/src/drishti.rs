@@ -19,6 +19,17 @@
 //! faster is already past, they are drawing apart: **Ishrafa**. Neither
 //! means anything without the sign aspect as well.
 //!
+//! The source's Table X-3 gives the Ithasala **three kinds**, which this
+//! module ships as three variants of one [`Yoga`]: *Vartamana*, the
+//! present, where the faster is behind by a degree or more; *Poorna*, the
+//! full, within a single degree and so already fulfilled; and
+//! *Bhavishyat*, the future, where the faster is past but stands at a
+//! sign's end and so acts from the next sign, where it is behind again.
+//! The chapter's prose names that last one *Rashyanta* instead and knows
+//! no Poorna at all; where the two accounts differ, [`SubDegree`] carries
+//! the readings and `03-design/tajika-yogas.md` counts what turns on
+//! them.
+//!
 //! "Behind" is **degrees within the sign**, not longitude along the
 //! zodiac. The source is explicit: delete the completed signs and compare
 //! what is left. So a planet at 3° of Leo is behind one at 7° of Scorpio,
@@ -147,22 +158,114 @@ pub fn speed_rank(graha: Graha) -> Option<usize> {
     BY_SPEED.iter().position(|who| *who == graha)
 }
 
+/// Where a pair is called complete, degrees apart within their signs.
+///
+/// The source's Table X-3 gives the Ithasala **three** kinds and marks
+/// the one within a single degree as immediate fulfilment; the same table
+/// puts the same degree on the far side of Ishrafa, which begins "one
+/// degree or more" past. One threshold, named once.
+pub const POORNA_DEG: f64 = 1.0;
+
 /// What two planets inside each other's orb are doing.
+///
+/// Three of these four are kinds of **Ithasala**, the coming-together:
+/// Table X-3 enumerates them and [`Yoga::is_ithasala`] asks the question
+/// the other fifteen yogas actually ask, which is whether a pair is in an
+/// Ithasala of any kind.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum Yoga {
-    /// **Ithasala**: the faster planet is behind the slower and coming to
-    /// it. Generally favourable.
-    Ithasala,
-    /// **Ithasala from the sign's end** (Rashyanta Muthsila): the faster
-    /// planet is past the slower, but stands at 29° or more and so acts
+    /// **Vartamana Ithasala**, the present one: the faster planet is
+    /// behind the slower by [`POORNA_DEG`] or more, inside the orb, and
+    /// coming to it. Generally favourable, and the commonest of the four.
+    IthasalaVartamana,
+    /// **Poorna Ithasala**, the full one: as Vartamana but within a
+    /// single degree, which the source marks as immediate fulfilment
+    /// rather than a promise.
+    ///
+    /// Whether a pair a fraction of a degree *past* is also Poorna is the
+    /// one thing the source's two accounts do not settle; see
+    /// [`SubDegree`], which decides it, and `03-design/tajika-yogas.md`,
+    /// which counts what turns on it.
+    IthasalaPoorna,
+    /// **Bhavishyat Ithasala**, the future one: the faster planet is past
+    /// the slower, but stands at [`RASHYANTA_DEG`] or more and so acts
     /// from the start of the next sign, where it is behind again.
-    RashyantaIthasala,
-    /// **Ishrafa**: the faster planet is already past the slower and
-    /// drawing away. Generally unfavourable, though the source says an
-    /// Ishrafa between two benefics is not.
+    ///
+    /// The chapter's prose calls this same configuration a *Rashyanta*
+    /// Ithasala. Table X-3's name ships, because the table is what
+    /// enumerates the kinds (crux C111).
+    IthasalaBhavishyat,
+    /// **Ishrafa**: the faster planet is past the slower by
+    /// [`POORNA_DEG`] or more and drawing away. Generally unfavourable,
+    /// though the source says an Ishrafa between two benefics is not.
+    ///
+    /// The degree is the table's; the chapter's prose asks only that the
+    /// faster be past (crux C110).
     Ishrafa,
+}
+
+impl Yoga {
+    /// Whether this is an Ithasala of any of its three kinds.
+    ///
+    /// Fourteen of the sixteen yogas are built on "an Ithasala", without
+    /// caring which; this is that question, asked once.
+    #[must_use]
+    pub const fn is_ithasala(self) -> bool {
+        matches!(
+            self,
+            Yoga::IthasalaVartamana | Yoga::IthasalaPoorna | Yoga::IthasalaBhavishyat
+        )
+    }
+}
+
+/// What a pair less than a degree **past** is doing — the one place the
+/// source's two accounts of a pair disagree.
+///
+/// Table X-3 says Ishrafa begins a whole degree past and gives Poorna as
+/// a narrowing of Vartamana, which is stated only for a faster planet
+/// *behind*. Between them sits a band the table names twice and places
+/// once. The chapter's prose knows no Poorna at all and calls everything
+/// past an Ishrafa.
+///
+/// Over the recorded births' first forty years this is **934 pairs of the
+/// 29 166 that aspect at all** — a twelfth of every Ishrafa — so the
+/// three readings are carried and named rather than one being chosen
+/// silently. `03-design/tajika-yogas.md` holds the count and the
+/// argument.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum SubDegree {
+    /// **Poorna**, the default: the table's two rows read so that they
+    /// interlock — a pair within a degree either way is complete, and
+    /// Ishrafa begins at exactly the degree the table names. The only
+    /// reading under which the table's own threshold does any work.
+    #[default]
+    Poorna,
+    /// **Ishrafa**: the chapter's prose, where anything past is drawing
+    /// away however near. What this module shipped before Table X-3 was
+    /// read.
+    Ishrafa,
+    /// **Nothing**: the table at its narrowest, where Poorna only ever
+    /// narrows Vartamana and the band belongs to no yoga. Carried because
+    /// it is a defensible reading of the printed words, though it leaves
+    /// those 934 pairs saying nothing at all.
+    None,
+}
+
+/// Which readings of the source this module applies.
+///
+/// One field today. It is a struct rather than a bare enum so that a
+/// later disagreement costs callers nothing, as [`crate::VarsheshaRules`]
+/// already does for the lord of the year.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", default)]
+pub struct DrishtiRules {
+    /// What a pair less than a degree past is doing.
+    pub sub_degree: SubDegree,
 }
 
 /// How two planets of an annual chart stand to each other.
@@ -190,13 +293,50 @@ pub struct Between {
     pub yoga: Option<Yoga>,
 }
 
-/// How two of the seven stand to each other in an annual chart.
+impl Between {
+    /// Whether this pair falls in the band the source's two accounts
+    /// place differently: aspecting, inside the orb, and the faster less
+    /// than [`POORNA_DEG`] past the slower.
+    ///
+    /// True here means [`Between::yoga`] is whatever
+    /// [`DrishtiRules::sub_degree`] said, and a reader who wants to show
+    /// the judgement as contested can ask rather than reconstructing the
+    /// range from [`Between::apart_deg`].
+    #[must_use]
+    pub fn disputed(&self) -> bool {
+        self.drishti.is_aspect()
+            && self.faster != self.slower
+            && self.within
+            && self.apart_deg < 0.0
+            && self.apart_deg > -POORNA_DEG
+    }
+}
+
+/// How two of the seven stand to each other in an annual chart, under the
+/// readings this module defaults to.
+///
+/// [`between_with_rules`] takes the readings; this is that with
+/// [`DrishtiRules::default`].
 ///
 /// # Errors
 ///
 /// A body outside the seven, named `graha`; a longitude that is not a
 /// number, named by its own field.
 pub fn between(a: Graha, b: Graha, sky: &AnnualSky) -> Result<Between, Error> {
+    between_with_rules(a, b, sky, DrishtiRules::default())
+}
+
+/// How two of the seven stand to each other, under stated readings.
+///
+/// # Errors
+///
+/// As [`between`].
+pub fn between_with_rules(
+    a: Graha,
+    b: Graha,
+    sky: &AnnualSky,
+    rules: DrishtiRules,
+) -> Result<Between, Error> {
     let outside = |graha: Graha| {
         Error::invalid_arg(format!("{graha:?} has no deeptamsha; the seven have"))
             .with_field(String::from("graha"))
@@ -229,14 +369,28 @@ pub fn between(a: Graha, b: Graha, sky: &AnnualSky) -> Result<Between, Error> {
     let rashyanta = fast_deg >= RASHYANTA_DEG;
     let yoga = if !drishti.is_aspect() || faster == slower {
         None
+    } else if within && apart_deg >= POORNA_DEG {
+        // Behind by a degree or more: coming to it, and not yet there.
+        Some(Yoga::IthasalaVartamana)
     } else if within && apart_deg >= 0.0 {
-        Some(Yoga::Ithasala)
+        // Behind by less than a degree. Poorna on every reading of the
+        // source: this is the side Table X-3 states it for.
+        Some(Yoga::IthasalaPoorna)
+    } else if within && apart_deg > -POORNA_DEG {
+        // Past by less than a degree: the one band the source's two
+        // accounts place differently, so the caller's reading decides.
+        match rules.sub_degree {
+            SubDegree::Poorna => Some(Yoga::IthasalaPoorna),
+            SubDegree::Ishrafa => Some(Yoga::Ishrafa),
+            SubDegree::None => None,
+        }
     } else if within {
+        // Past by a degree or more: Ishrafa on every reading.
         Some(Yoga::Ishrafa)
     } else if rashyanta && slow_deg <= orb_deg {
         // Past the slower and at the sign's end, so it acts from the next
         // sign's beginning, where it is behind again and inside the orb.
-        Some(Yoga::RashyantaIthasala)
+        Some(Yoga::IthasalaBhavishyat)
     } else {
         None
     };
@@ -258,10 +412,19 @@ pub fn between(a: Graha, b: Graha, sky: &AnnualSky) -> Result<Between, Error> {
 ///
 /// As [`between`].
 pub fn all(sky: &AnnualSky) -> Result<Vec<Between>, Error> {
+    all_with_rules(sky, DrishtiRules::default())
+}
+
+/// Every pair of the seven, under stated readings.
+///
+/// # Errors
+///
+/// As [`between`].
+pub fn all_with_rules(sky: &AnnualSky, rules: DrishtiRules) -> Result<Vec<Between>, Error> {
     let mut out = Vec::with_capacity(21);
     for (index, a) in SEVEN.into_iter().enumerate() {
         for b in SEVEN.into_iter().skip(index + 1) {
-            out.push(between(a, b, sky)?);
+            out.push(between_with_rules(a, b, sky, rules)?);
         }
     }
     Ok(out)
@@ -277,8 +440,8 @@ mod tests {
     )]
 
     use super::{
-        BY_SPEED, Between, Drishti, RASHYANTA_DEG, Yoga, all, between, deeptamsha, orb_between,
-        speed_rank,
+        BY_SPEED, Between, Drishti, DrishtiRules, POORNA_DEG, RASHYANTA_DEG, SubDegree, Yoga, all,
+        all_with_rules, between, between_with_rules, deeptamsha, orb_between, speed_rank,
     };
     use crate::bala::AnnualSky;
     use teistro_core::catalogue::{Graha, Rashi};
@@ -299,7 +462,8 @@ mod tests {
     /// The source's worked Ithasala: the Sun at Leo 3°50′ and Mars at
     /// Scorpio 7°42′, whose orb is the mean of 15° and 8° — **11°30′** —
     /// and which stand **3°52′** apart within their signs. The Sun is the
-    /// faster and behind, so they are in Ithasala.
+    /// faster and behind, so they are in Ithasala — and by more than a
+    /// degree, so it is the **Vartamana** kind of the three.
     #[test]
     fn the_sources_worked_ithasala_is_reproduced() {
         let found = between(Graha::Sun, Graha::Mars, &worked()).unwrap();
@@ -313,7 +477,7 @@ mod tests {
             found.apart_deg
         );
         assert!(found.within);
-        assert_eq!(found.yoga, Some(Yoga::Ithasala));
+        assert_eq!(found.yoga, Some(Yoga::IthasalaVartamana));
         // Leo and Scorpio are four houses apart: an aspect, and an
         // inimical one, which the source says counts the same here.
         assert_eq!(found.drishti, Drishti::SecretlyInimical);
@@ -413,11 +577,13 @@ mod tests {
     }
 
     /// A planet past the slower and at the end of its sign makes the
-    /// Ithasala anyway, from the next sign's beginning.
+    /// Ithasala anyway, from the next sign's beginning: the **Bhavishyat**
+    /// kind, which Table X-3 names and the chapter's prose calls
+    /// Rashyanta (crux C111).
     #[test]
     fn a_planet_at_the_signs_end_reaches_across_it() {
         // The Moon at Taurus 29°30′ and Venus at Leo 2°: the Moon is the
-        // faster and is past, so no plain Ithasala; being at Rashyanta it
+        // faster and is past, so no Vartamana; being at Rashyanta it
         // acts from Gemini 0°, where it is behind Venus and inside the
         // orb of 9°30′.
         let sky = AnnualSky {
@@ -429,7 +595,7 @@ mod tests {
         assert_eq!(found.faster, Graha::Moon);
         assert!(found.rashyanta);
         assert!(!found.within, "too far apart within their signs");
-        assert_eq!(found.yoga, Some(Yoga::RashyantaIthasala));
+        assert_eq!(found.yoga, Some(Yoga::IthasalaBhavishyat));
     }
 
     /// No aspect, no yoga, however close the two stand.
@@ -446,6 +612,116 @@ mod tests {
         assert_eq!(found.drishti, Drishti::None);
         assert!(found.within, "inside the orb and still nothing");
         assert_eq!(found.yoga, None);
+    }
+
+    /// A pair the Sun leads by a stated number of degrees within their
+    /// signs, in signs that aspect each other: Leo and Scorpio, the
+    /// fourth from the first.
+    ///
+    /// `behind` is how far the Sun stands **before** Mars; negative is
+    /// past it.
+    fn sun_behind_mars_by(behind: f64) -> AnnualSky {
+        AnnualSky {
+            sun_deg: 4.0 * 30.0 + 10.0,
+            mars_deg: 7.0 * 30.0 + 10.0 + behind,
+            ..worked()
+        }
+    }
+
+    /// Table X-3's three kinds of Ithasala, each at its own distance, and
+    /// [`Yoga::is_ithasala`] answering for all three.
+    #[test]
+    fn the_ithasala_has_three_kinds_and_a_degree_divides_two_of_them() {
+        let kind = |behind: f64| {
+            between(Graha::Sun, Graha::Mars, &sun_behind_mars_by(behind))
+                .unwrap()
+                .yoga
+        };
+        // A degree or more behind is the present kind; inside a degree it
+        // is already full. The boundary belongs to Vartamana.
+        assert_eq!(kind(5.0), Some(Yoga::IthasalaVartamana));
+        assert_eq!(kind(POORNA_DEG), Some(Yoga::IthasalaVartamana));
+        assert_eq!(kind(POORNA_DEG - 0.001), Some(Yoga::IthasalaPoorna));
+        assert_eq!(kind(0.0), Some(Yoga::IthasalaPoorna));
+        // Past by a degree or more is Ishrafa on every reading.
+        assert_eq!(kind(-POORNA_DEG), Some(Yoga::Ishrafa));
+        assert_eq!(kind(-5.0), Some(Yoga::Ishrafa));
+        // Outside the orb of 11°30′ is nothing at all.
+        assert_eq!(kind(12.0), None);
+        for yoga in [
+            Yoga::IthasalaVartamana,
+            Yoga::IthasalaPoorna,
+            Yoga::IthasalaBhavishyat,
+        ] {
+            assert!(yoga.is_ithasala(), "{yoga:?} is a kind of Ithasala");
+        }
+        assert!(!Yoga::Ishrafa.is_ithasala());
+    }
+
+    /// The one band the source's two accounts place differently: the
+    /// faster less than a degree past. All three readings are reachable
+    /// and the default is the table's.
+    #[test]
+    fn a_pair_less_than_a_degree_past_answers_to_the_reading_asked_for() {
+        let sky = sun_behind_mars_by(-0.5);
+        let under = |sub_degree| {
+            between_with_rules(Graha::Sun, Graha::Mars, &sky, DrishtiRules { sub_degree })
+                .unwrap()
+                .yoga
+        };
+        assert_eq!(under(SubDegree::Poorna), Some(Yoga::IthasalaPoorna));
+        assert_eq!(under(SubDegree::Ishrafa), Some(Yoga::Ishrafa));
+        assert_eq!(under(SubDegree::None), None);
+        // The default is the table read so that its two rows interlock.
+        assert_eq!(
+            between(Graha::Sun, Graha::Mars, &sky).unwrap().yoga,
+            Some(Yoga::IthasalaPoorna)
+        );
+        assert_eq!(DrishtiRules::default().sub_degree, SubDegree::Poorna);
+    }
+
+    /// `disputed` marks exactly the band the rules decide, and nothing
+    /// else: not the Poorna the table states outright, not an Ishrafa a
+    /// degree or more past, and not a close pair that does not aspect.
+    #[test]
+    fn disputed_marks_the_band_the_readings_differ_over() {
+        let at =
+            |behind: f64| between(Graha::Sun, Graha::Mars, &sun_behind_mars_by(behind)).unwrap();
+        assert!(at(-0.5).disputed());
+        assert!(at(-0.001).disputed());
+        assert!(!at(0.0).disputed(), "stated by the table, not disputed");
+        assert!(!at(0.5).disputed());
+        assert!(!at(-POORNA_DEG).disputed(), "Ishrafa on every reading");
+        assert!(!at(12.0).disputed(), "outside the orb");
+        // Mars and Jupiter stand in the neutral second house: close, past,
+        // and making nothing on any reading.
+        let neutral = AnnualSky {
+            mars_deg: 7.0 * 30.0 + 7.5,
+            jupiter_deg: 8.0 * 30.0 + 7.0,
+            ..worked()
+        };
+        let found = between(Graha::Mars, Graha::Jupiter, &neutral).unwrap();
+        assert_eq!(found.drishti, Drishti::None);
+        assert!(!found.disputed(), "no aspect, nothing to dispute");
+    }
+
+    /// The rules reach every pair, not only the one asked about: the
+    /// whole-sky reading takes them too.
+    #[test]
+    fn the_whole_sky_takes_the_reading_as_well() {
+        let sky = sun_behind_mars_by(-0.5);
+        let under = |sub_degree| {
+            all_with_rules(&sky, DrishtiRules { sub_degree })
+                .unwrap()
+                .into_iter()
+                .find(|pair| pair.faster == Graha::Sun && pair.slower == Graha::Mars)
+                .unwrap()
+                .yoga
+        };
+        assert_eq!(under(SubDegree::Poorna), Some(Yoga::IthasalaPoorna));
+        assert_eq!(under(SubDegree::Ishrafa), Some(Yoga::Ishrafa));
+        assert_eq!(under(SubDegree::None), None);
+        assert_eq!(all(&sky).unwrap().len(), 21);
     }
 
     /// Every pair of the seven, once each.

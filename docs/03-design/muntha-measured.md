@@ -169,6 +169,11 @@ behind the slower. Behind is **degrees within the sign**, the completed
 signs deleted, which is the source's own instruction and the opposite of
 what a longitude would say.
 
+The source's Table X-3 gives that coming-together **three kinds**, which
+§9 counts over the whole corpus; this pair is the **Vartamana**, the
+present one, because the Sun is behind Mars by more than the single
+degree that would make it already fulfilled.
+
 Its worked pair is the Sun at Leo 3°50′ and Mars at Scorpio 7°42′,
 three whole signs further on. Read from the chart the SDK founded:
 
@@ -177,9 +182,71 @@ three whole signs further on. Read from the chart the SDK founded:
 | the faster of the two | Sun | the Sun |
 | their orb, the mean of 15° and 8° | 11.50° | 11°30′ |
 | apart, within their signs | 3.87° | 3°52′ |
-| what they make | Ithasala | Ithasala |
+| what they make | IthasalaVartamana | Ithasala |
 
 Of that chart's twenty-one pairs, **9** make a yoga and the rest make
 none — most of them because they stand in the neutral houses, where no
 closeness is an aspect. Only the ones that make something cross the
 boundary.
+
+## 9. The four kinds, over the recorded years
+
+The source's Table X-3 gives the Ithasala **three** kinds and sets
+Ishrafa a degree away from them. This sorts every pair of every annual
+chart of every recorded birth into them — 2159 charts, 45 339 pairs,
+of which 29 166 stand in signs that aspect at all — through
+`sdk.chart().drishtis`, so what is counted is what the module answers.
+
+| kind | what puts a pair there | pairs | of those that aspect |
+|---|---|---|---|
+| **Vartamana** | behind by a degree or more, inside the orb | 6668 | 22.9% |
+| **Poorna** | behind by less than a degree | 940 | 3.2% |
+| **Bhavishyat** | outside the orb, reaching from a sign's end | 322 | 1.1% |
+| **Ishrafa** | past by a degree or more, inside the orb | 6565 | 22.5% |
+| *the contested band* | past by less than a degree | **934** | **3.2%** |
+
+### What turns on the last row
+
+The last row is the one thing the source's two accounts do not settle
+(crux C112), and the count is why it is carried as a reading rather than
+decided quietly. Under the chapter's prose those 934 pairs are
+**Ishrafa**, generally unfavourable and drawing apart. Under Table X-3
+read so that its rows interlock they are **Poorna**, the most fulfilled
+thing a pair can be. Under the table read at its narrowest they are
+nothing at all. One band, three answers, and the three are not near each
+other.
+
+Two things about the size of it. It is 3.2% of every pair that aspects
+— not a rounding margin, and about a twelfth of every Ishrafa. And it
+is almost exactly the size of the **Poorna the table states outright**
+beside it, 940 against 934: the two sit symmetrically either side of an
+exact aspect, which is the argument for reading Poorna as covering both.
+A reading on which one side of exactness is immediate fulfilment and the
+other side is nothing would have to explain the asymmetry, and the book
+does not.
+
+`SubDegree` carries all three and defaults to Poorna, which is the only
+reading under which the degree the table prints does any work at all.
+`Between::disputed` marks the pairs, so a reader can say which
+judgements are contested.
+
+### What the sweep could not reach
+
+Every recorded birth was asked for 40 years, which is **2200** years
+over the 55 of them, and 2159 charts were read. The whole of the
+difference is accounted for below, because a sweep that reported only
+what it managed would get greener as the corpus got harder.
+
+**40 years** never returned from the search at all, belonging to 1
+birth: `c048-kathmandu-2399-12-30`. The built-in ephemeris's span runs
+out before those births reach their fortieth year, and the SDK answers
+the years it covers rather than refusing the whole request. A further
+**1 year** returned but could not be **founded**, belonging to 1 birth:
+`c028-troms-1988-06-21`. The SDK refuses rather than inventing a day —
+*out of range: JD 2448064.4323329213 UTC is not in the local day from JD
+2448098.4552060068 UTC to JD 2448099.477145168 UTC (field `instant`)*
+— because a birth above the polar circle in its own summer has no
+sunrise to divide a day by, and the hora and ghati a chart is built on
+are measured from one. That is a documented bound of the corpus
+(`05-testing/01-golden-vectors.md`, note 13) and not a fault of the
+aspects.
