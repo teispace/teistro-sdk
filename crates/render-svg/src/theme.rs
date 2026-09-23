@@ -301,7 +301,11 @@ impl Theme {
         };
         let mut merged = serde_json::to_value(base).map_err(|err| not_one(&err))?;
         merge(&mut merged, serde_json::Value::Object(changes));
-        let theme: Theme = serde_json::from_value(merged).map_err(|err| not_one(&err))?;
+        // Named where the value failed, `theme.style.accent`, with the
+        // shape a theme takes.
+        let theme: Theme = teistro_core::strict::deserialize(&merged, "theme").map_err(|err| {
+            err.with_hint("an object of `style` and `content`, each naming only what it changes")
+        })?;
         // Every refusal is named from the theme's root, as the rest are.
         theme
             .style
@@ -409,8 +413,9 @@ mod tests {
     fn a_theme_that_cannot_be_drawn_is_refused_when_read() {
         let err = Theme::from_json(r#"{"style": {"ink": "red"}}"#).unwrap_err();
         assert_eq!(err.field(), Some("theme.style.ink"));
+        // An unknown key is named where it was written, not by the theme.
         let err = Theme::from_json(r#"{"content": {"body": "short"}}"#).unwrap_err();
-        assert_eq!(err.field(), Some("theme"));
+        assert_eq!(err.field(), Some("theme.content.body"));
         assert!(err.message.contains("body"), "{}", err.message);
         let err = Theme::from_json(r#"{"extends": "sepia"}"#).unwrap_err();
         assert_eq!(err.field(), Some("theme.extends"));

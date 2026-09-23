@@ -17,7 +17,12 @@ typed surfaces in every binding.
 3. Every array parameter carries its capacity; parallel outputs share the
    capacity of the array before them.
 4. Errors are structured (`ts_status` plus `ts_error` on the context);
-   a successful call never writes a message.
+   a successful call never writes a message. A refusal of JSON the caller
+   wrote names the path to the value that failed, down to the key or the
+   index — `varsha_json.sahamRules.houses`, `settings_json.frame.zodiacs`,
+   `varsha_json.sahams[0]` — and not only the record it sits in; inside an
+   internally tagged enum it names the enum, because serde reads a
+   buffered copy there and not the caller's keys (`teistro_core::strict`).
 5. Batch is the primary shape; scalar calls exist only in ergonomic layers.
 6. Results are named fields, never positional array offsets; large results
    are returned as columnar arrays or as a length-prefixed result blob

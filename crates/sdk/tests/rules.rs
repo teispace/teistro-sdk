@@ -614,7 +614,8 @@ fn a_rule_request_refuses_a_set_it_cannot_evaluate_by_name() {
             "conditions": [{"type": "no-such-condition"}]}]}"#,
     )
     .unwrap_err();
-    assert_eq!(broken.field(), Some("rules[1]"));
+    // Named down to the condition's own field, not only the rule.
+    assert_eq!(broken.field(), Some("rules[1].conditions[0].type"));
     // A consumer's rule may name a shipped rule, but not repeat one.
     let shipped = &ShippedRules::Nabhasas.rules()[0];
     let twice = RuleRequest::shipped([ShippedRules::Nabhasas])

@@ -375,10 +375,10 @@ impl ContextBuilder {
                 ))
         })?;
         let patch: SettingsPatch = match self.settings_json.as_deref() {
-            Some(json) => serde_json::from_str(json).map_err(|e| {
-                Error::invalid_arg(format!("the settings patch does not parse: {e}"))
-                    .with_field("settings_json")
-            })?,
+            // Named down to the knob, `settings_json.houses.chalit_system`,
+            // and not only the patch; the patch refuses an unknown key
+            // itself.
+            Some(json) => teistro_core::strict::deserialize_str(json, "settings_json")?,
             None => SettingsPatch::default(),
         };
         let settings = profile.resolve(&patch)?;

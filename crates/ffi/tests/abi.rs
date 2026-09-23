@@ -408,7 +408,7 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
         Ctx::new(0, None, Some(r#"{"frame": {"zodiacs": "TROPICAL"}}"#), None).unwrap_err();
     assert_eq!(
         (status, field.as_deref()),
-        (Status::InvalidArg, Some("settings_json"))
+        (Status::InvalidArg, Some("settings_json.frame.zodiacs"))
     );
     assert!(message.contains("unknown field `zodiacs`"), "{message}");
     let (status, _, field, hint, _) = Ctx::new(0, None, None, Some("xx-Latn")).unwrap_err();
@@ -1959,8 +1959,13 @@ fn a_chart_request_founds_each_years_chart_where_it_is_told() {
         r#"{"through":6,"place":{"latitudeDeg":1,"longitudeDeg":2,"utcOffsetSeconds":0,"zone":"x"}}"#,
     );
     assert!(extra.1.contains("zone"), "{extra:?}");
-    for error in [&word, &far, &extra] {
-        assert_eq!(error.2.as_deref(), Some("varsha_json.place"), "{error:?}");
+    // Each is named where it was written: the place, or the key in it.
+    for (error, field) in [
+        (&word, "varsha_json.place"),
+        (&far, "varsha_json.place"),
+        (&extra, "varsha_json.place.zone"),
+    ] {
+        assert_eq!(error.2.as_deref(), Some(field), "{error:?}");
     }
 }
 
@@ -2371,7 +2376,7 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
     );
     refused(
         r#"{"through":2,"place":"birth","sahams":["pnya"]}"#,
-        "varsha_json.sahams",
+        "varsha_json.sahams[0]",
         "pnya",
     );
     refused(
@@ -2386,7 +2391,7 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
     );
     refused(
         r#"{"through":2,"place":"birth","sahams":["punya"],"sahamRules":{"houses":"placidus"}}"#,
-        "varsha_json.sahamRules",
+        "varsha_json.sahamRules.houses",
         "placidus",
     );
 }

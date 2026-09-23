@@ -617,9 +617,12 @@ impl Settings {
     ///
     /// A document that does not parse, or one with coherence errors.
     pub fn from_json(json: &str) -> Result<Resolved, Diagnostics> {
-        let settings: Settings = serde_json::from_str(json).map_err(|e| Diagnostics {
-            items: vec![Diagnostic::error("json", e.to_string(), &[])],
-        })?;
+        // The message names the knob that failed, `houses.chalit_system`,
+        // since a diagnostic's fields are the static knob names.
+        let settings: Settings =
+            crate::strict::deserialize_str(json, "").map_err(|e| Diagnostics {
+                items: vec![Diagnostic::error("json", e.message, &[])],
+            })?;
         if settings.schema != SCHEMA {
             return Err(Diagnostics {
                 items: vec![Diagnostic {

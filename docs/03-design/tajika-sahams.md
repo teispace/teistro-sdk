@@ -168,7 +168,8 @@ equal member for member.
 
 `matters` and `sahams` are one reader, `Asked<T>`: `"all"` or these, none
 twice, each member read as its field reads it — a house by number, a
-saham by key.
+saham by key. A refusal names where it was written: a misspelt saham is
+`varsha_json.sahams[0]`, a rule word `varsha_json.sahamRules.houses`.
 
 **Not across**: a caller's own `SahamFormula`, which Rust has at
 `saham_point`, and the birth chart's sahams, which the source reads beside
