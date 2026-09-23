@@ -25,8 +25,9 @@ use teistro::House;
 use teistro::catalogue::{Graha, Rashi};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::tajika::{
-    Bala, MOST_YEARS, MunthaDegree, Qualification, Reading, SEVEN, Strength, YOGA_STRONG_FROM,
-    YOGA_WEAK_BELOW, YearYoga, YearYogas, Yoga, YogaRules,
+    AnnualStates, Bala, MOST_YEARS, MunthaDegree, Qualification, RASHYANTA_DEG, Reading, SEVEN,
+    Strength, TambiraMover, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YearYoga, YearYogas, Yoga,
+    YogaRules,
 };
 use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
@@ -184,6 +185,7 @@ fn page(root: &Path) -> Result<String, String> {
     the_sixteen(&mut out, &swept);
     the_floors(&mut out, &swept)?;
     what_spoils_an_ithasala(&mut out, &sdk, &swept);
+    what_happens_next(&mut out, &swept);
     Ok(fill(&out))
 }
 
@@ -777,6 +779,22 @@ struct Kinds {
     /// Ruddas that held on *under malefic influence* and nothing else,
     /// which bounds every narrower reading of that clause (crux C118).
     rudda_malefic_alone: usize,
+    /// Judged matters whose pair do not aspect: the most Nakta, Yamaya
+    /// and Tambira can hold in between them.
+    unaspecting: usize,
+    /// Of those, the ones whose karyesha stands at a sign's end.
+    karyesha_at_end: usize,
+    /// Of those, the ones whose karyesha is not retrograde, and so goes
+    /// on into the next sign: the most Tambira can hold in.
+    karyesha_moving_on: usize,
+    /// Matters in which Tambira holds when **either** lord may move.
+    tambira_either: usize,
+    /// Matters with an Ithasala and the Moon, not one of the pair, at a
+    /// sign's end: the most Gairi-Kamboola could hold in were every such
+    /// Moon unqualified.
+    moon_at_end: usize,
+    /// Of those, the ones whose Moon was unqualified.
+    moon_at_end_unqualified: usize,
 }
 
 /// Every pair of every annual chart of every recorded birth, sorted into
@@ -848,7 +866,14 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
             if matches!(lagna.attributes().lord, Graha::Sun | Graha::Moon) {
                 kinds.luminary_lagna += 1;
             }
-            ask_every_house(sdk, &annual, &birth.name, &chart_strengths, &mut kinds)?;
+            let chart = Asked {
+                annual: &annual,
+                name: &birth.name,
+                strengths: &chart_strengths,
+                states: &states,
+                moon_unqualified: how.is_unqualified(),
+            };
+            ask_every_house(sdk, &chart, &mut kinds)?;
             for pair in pairs {
                 if !pair.drishti.is_aspect() {
                     continue;
@@ -881,18 +906,23 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
         ));
     }
     floors_hold(&kinds)?;
+    projections_hold(&kinds)?;
     Ok(kinds)
+}
+
+/// One annual chart, with what the sweep already read of it.
+struct Asked<'a> {
+    annual: &'a Document,
+    name: &'a str,
+    strengths: &'a ChartStrengths,
+    states: &'a AnnualStates,
+    moon_unqualified: bool,
 }
 
 /// Asks one annual chart all twelve of its matters, and counts what each
 /// answered.
-fn ask_every_house(
-    sdk: &Context,
-    annual: &Document,
-    name: &str,
-    chart_strengths: &ChartStrengths,
-    kinds: &mut Kinds,
-) -> Result<(), String> {
+fn ask_every_house(sdk: &Context, chart: &Asked<'_>, kinds: &mut Kinds) -> Result<(), String> {
+    let (annual, name, chart_strengths) = (chart.annual, chart.name, chart.strengths);
     for number in 1..=12u8 {
         let house =
             House::try_new(number).map_err(|why| format!("{name}: house {number}: {why}"))?;
@@ -917,6 +947,116 @@ fn ask_every_house(
             }
         }
         what_spoiled(&asked, kinds);
+        what_enters(sdk, chart, house, &asked, kinds)?;
+    }
+    Ok(())
+}
+
+/// Counts the ground Gairi-Kamboola and Tambira stand on in one matter:
+/// the steps between "the pair can be reached from the next sign" and
+/// "it was", so that a count near zero says which step emptied it.
+fn what_enters(
+    sdk: &Context,
+    chart: &Asked<'_>,
+    house: House,
+    asked: &YearYogas,
+    kinds: &mut Kinds,
+) -> Result<(), String> {
+    let Some(pair) = asked.between else {
+        return Ok(());
+    };
+    let at_end = |graha: Graha| {
+        chart
+            .annual
+            .foundation
+            .graha(graha)
+            .is_some_and(|placed| placed.longitude_deg.rem_euclid(30.0) >= RASHYANTA_DEG)
+    };
+    let lords = [asked.lagnesha, asked.karyesha];
+    if asked.holds(YearYoga::Ithasala) == Some(true)
+        && !lords.contains(&Graha::Moon)
+        && at_end(Graha::Moon)
+    {
+        kinds.moon_at_end += 1;
+        if chart.moon_unqualified {
+            kinds.moon_at_end_unqualified += 1;
+        }
+    }
+    if pair.drishti.is_aspect() {
+        return Ok(());
+    }
+    kinds.unaspecting += 1;
+    if at_end(asked.karyesha) {
+        kinds.karyesha_at_end += 1;
+        if !chart.states.is_retrograde(asked.karyesha) {
+            kinds.karyesha_moving_on += 1;
+        }
+    }
+    // Asked again only where the wider reading could differ: with neither
+    // lord at a sign's end, neither reading has anything to move.
+    if lords.into_iter().any(at_end) {
+        let either = sdk
+            .chart()
+            .tajika_yogas_with_rules(
+                chart.annual,
+                house,
+                YogaRules {
+                    tambira: TambiraMover::EitherLord,
+                    ..YogaRules::default()
+                },
+            )
+            .map_err(|why| format!("{}: its yogas, either lord moving: {why}", chart.name))?;
+        if either.holds(YearYoga::Tambira) == Some(true) {
+            kinds.tambira_either += 1;
+        }
+    }
+    Ok(())
+}
+
+/// The two projected yogas sit under chains of ceilings, each a subset of
+/// the one before, and the wider Tambira under none of the narrower's
+/// counts. A run that breaks one is a module that projects something it
+/// should not, so it fails rather than printing.
+fn projections_hold(kinds: &Kinds) -> Result<(), String> {
+    let chain = [
+        (
+            "Tambira",
+            vec![
+                ("matters whose pair do not aspect", kinds.unaspecting),
+                ("with the karyesha at a sign's end", kinds.karyesha_at_end),
+                ("and not retrograde", kinds.karyesha_moving_on),
+                ("Tambira", held_in(kinds, YearYoga::Tambira)),
+            ],
+        ),
+        (
+            "Gairi-Kamboola",
+            vec![
+                (
+                    "matters with an Ithasala",
+                    held_in(kinds, YearYoga::Ithasala),
+                ),
+                ("with the Moon at a sign's end", kinds.moon_at_end),
+                ("and unqualified", kinds.moon_at_end_unqualified),
+                ("Gairi-Kamboola", held_in(kinds, YearYoga::GairiKamboola)),
+            ],
+        ),
+    ];
+    for (yoga, steps) in chain {
+        for pair in steps.windows(2) {
+            if let [(wider, above), (narrower, below)] = pair {
+                if below > above {
+                    return Err(format!(
+                        "{yoga}: {below} {narrower} is more than the {above} {wider} it narrows"
+                    ));
+                }
+            }
+        }
+    }
+    let (narrow, wide) = (held_in(kinds, YearYoga::Tambira), kinds.tambira_either);
+    if wide < narrow {
+        return Err(format!(
+            "Tambira held in {narrow} matters moving the karyesha and in only {wide} moving either"
+        ));
     }
     Ok(())
 }
@@ -1180,6 +1320,12 @@ fn ceilings_hold(kinds: &Kinds, weak_pairs: usize) -> Result<(), String> {
         if yoga.judges_an_ithasala() && held > ithasalas {
             return Err(format!(
                 "{yoga:?} held in {held} matters, and an Ithasala stood in only {ithasalas}"
+            ));
+        }
+        if yoga.needs_no_aspect() && held > kinds.unaspecting {
+            return Err(format!(
+                "{yoga:?} held in {held} matters, and only {} had a pair that did not aspect",
+                kinds.unaspecting
             ));
         }
         if yoga.needs_a_weak_pair() && held > weak_pairs {
@@ -1843,4 +1989,58 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
             1
         }
     }
+}
+
+/// §13: the two yogas that ask where a planet at a sign's end will stand
+/// in the next, and the steps between the ground they need and their
+/// holding (crux C120, C121).
+fn what_happens_next(out: &mut String, kinds: &Kinds) {
+    let tambira = held_in(kinds, YearYoga::Tambira);
+    let gairi = held_in(kinds, YearYoga::GairiKamboola);
+    let ithasalas = held_in(kinds, YearYoga::Ithasala);
+    let _ = write!(
+        out,
+        "\n## 13. What happens next: Gairi-Kamboola and Tambira\n\n\
+         Two of the sixteen ask where a planet at a sign's end will stand \
+         **on entering the next**. The module answers by moving that one \
+         planet to the next sign's first degree, the other six where they \
+         are, and asking the same Ithasala question of the sky that \
+         leaves (crux C120). The source's worked Gairi-Kamboola, Chart \
+         X-17, comes out as printed under it. Both counts sit under \
+         chains of ceilings, each step a subset of the one before, and \
+         `cargo xtask muntha` fails if any step exceeds the one above it.\n\n\
+         | step | Gairi-Kamboola | step | Tambira |\n\
+         |---|---:|---|---:|\n\
+         | an Ithasala | {} | the pair do not aspect | {} |\n\
+         | the Moon, not one of the pair, at a sign's end | {} | the karyesha at a sign's end | {} |\n\
+         | that Moon unqualified | {} | and not retrograde | {} |\n\
+         | **held** | **{}** | **held** | **{}** |\n\n\
+         **The step from the second row to the third is the source's \
+         *unqualified*,** which §10 found the Moon meeting in {} of {} \
+         charts. Whatever Gairi-Kamboola loses there is C115's to move, \
+         not this yoga's: narrowing that one reading is what would widen \
+         both it and Khallasara. Where it holds, Khallasara \
+         does not, though every printed clause of Khallasara may: the \
+         source's own comment excludes a Moon at a sign's end from it, \
+         because that Moon completes the Ithasala rather than standing \
+         apart (crux C121).\n\n\
+         **Tambira's own readings move it.** Letting either lord be the \
+         one at a sign's end (the source's \"some authorities\", \
+         `TambiraMover::EitherLord`) holds it in **{}** matters to the \
+         definition's {}. A retrograde karyesha is going back, not on, \
+         so it enters nothing, and a call without the chart's states \
+         cannot answer for Tambira at all.\n",
+        count(ithasalas),
+        count(kinds.unaspecting),
+        count(kinds.moon_at_end),
+        count(kinds.karyesha_at_end),
+        count(kinds.moon_at_end_unqualified),
+        count(kinds.karyesha_moving_on),
+        count(gairi),
+        count(tambira),
+        count(kinds.moon_unqualified),
+        count(kinds.charts),
+        count(kinds.tambira_either),
+        count(tambira),
+    );
 }

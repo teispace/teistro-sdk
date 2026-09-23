@@ -272,19 +272,19 @@ charts and **1**, a divisibility the pass checks.
 | **Yamaya** | built | 395 | 1.5% |
 | **Manau** | built | 1756 | 6.8% |
 | **Kamboola** | built | 1094 | 4.2% |
-| GairiKamboola | *awaiting* | -- | an unqualified Moon, and where it will stand in the next sign: the only one of the sixteen that asks what happens next |
+| **GairiKamboola** | built | 0 | 0.0% |
 | **Khallasara** | built | 2 | 0.0% |
 | **Rudda** | built | 4014 | 15.5% |
 | **DuhphaliKuttha** | built | 36 | 0.1% |
 | **DutthotthaDavira** | built | 4 | 0.0% |
-| Tambira | *awaiting* | -- | the karyesha at a sign's end, completing an Ithasala from the next |
+| **Tambira** | built | 20 | 0.1% |
 | Kuttha | *awaiting* | -- | Tajika's own benefics, which Table X-3 does not enumerate as it enumerates the malefics (crux C117) |
 | **Durapha** | built | 4 | 0.0% |
 
-**13 of the sixteen are built** and the other three are listed at every
+**15 of the sixteen are built** and the other one are listed at every
 call rather than left out of the answer, because *did not hold* and
 *cannot be told* are different statements. `YearYogas::holds` answers
-`None` for those three, never `false`.
+`None` for those one, never `false`.
 
 ### The first house is never a pair
 
@@ -468,3 +468,36 @@ the reading, it needs a weak pair first, and §11 puts that ceiling at
 every judgement upon an Ithasala is held under the Ithasala's own count,
 and every yoga needing a weak pair under the weak pairs', each read from
 `YearYoga` itself.
+
+## 13. What happens next: Gairi-Kamboola and Tambira
+
+Two of the sixteen ask where a planet at a sign's end will stand **on
+entering the next**. The module answers by moving that one planet to the
+next sign's first degree, the other six where they are, and asking the
+same Ithasala question of the sky that leaves (crux C120). The source's
+worked Gairi-Kamboola, Chart X-17, comes out as printed under it. Both
+counts sit under chains of ceilings, each step a subset of the one
+before, and `cargo xtask muntha` fails if any step exceeds the one above
+it.
+
+| step | Gairi-Kamboola | step | Tambira |
+|---|---:|---|---:|
+| an Ithasala | 4250 | the pair do not aspect | 7938 |
+| the Moon, not one of the pair, at a sign's end | 107 | the karyesha at a sign's end | 277 |
+| that Moon unqualified | 0 | and not retrograde | 215 |
+| **held** | **0** | **held** | **20** |
+
+**The step from the second row to the third is the source's
+*unqualified*,** which §10 found the Moon meeting in 1 of 2159 charts.
+Whatever Gairi-Kamboola loses there is C115's to move, not this yoga's:
+narrowing that one reading is what would widen both it and Khallasara.
+Where it holds, Khallasara does not, though every printed clause of
+Khallasara may: the source's own comment excludes a Moon at a sign's end
+from it, because that Moon completes the Ithasala rather than standing
+apart (crux C121).
+
+**Tambira's own readings move it.** Letting either lord be the one at a
+sign's end (the source's "some authorities", `TambiraMover::EitherLord`)
+holds it in **31** matters to the definition's 20. A retrograde karyesha
+is going back, not on, so it enters nothing, and a call without the
+chart's states cannot answer for Tambira at all.
