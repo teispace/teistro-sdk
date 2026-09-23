@@ -1,6 +1,7 @@
 # The sixteen Tajika yogas
 
-Status: `designed`, 2026-09-23 — **not built**. Written after reading the
+Status: `designed`, 2026-09-23 — **not built**, except its step 1, which
+landed the same day. Written after reading the
 source's Table X-3 off the page and before writing any of it, as every
 module since Phase 4 has been. The definitions are in
 [`01-research/feature-universe/07-tajika-varshaphala.md`](../01-research/feature-universe/07-tajika-varshaphala.md),
@@ -44,7 +45,7 @@ Everything below is already built unless marked.
 | need | where it is |
 |---|---|
 | the Tajika aspect and the deeptamsha orbs | `drishti` |
-| Ithasala, Ishrafa and the sign's-end kind | `drishti` |
+| Ithasala in all three kinds, and Ishrafa | `drishti`, since 2026-09-23; `Yoga::is_ithasala` is the question the fourteen actually ask |
 | "strong" and "weak" | the Vishwa bala, `bala` — the source's own floor of **five units** is stated for the year lord and **not** for the yogas (crux) |
 | own Hudda, Drekkana and Navamsha | `bala`'s lords, which "unqualified" needs |
 | exalted, debilitated, retrograde, combust | the founded chart's own graha rows |
@@ -54,29 +55,56 @@ Everything below is already built unless marked.
 Nothing here is missing. The module is a composition, which is why it was
 worth building the aspects and the strength first and separately.
 
-## Two corrections to make first
+## Two corrections, made — and a third question they opened
 
-The reading found the book disagreeing with itself twice, and
-`crates/tajika` currently ships the prose's reading of both:
+**Done, 2026-09-23.** The reading found the book disagreeing with itself
+twice; `crates/tajika` shipped the prose's reading of both, and now ships
+the table's.
 
 1. **Ishrafa's degree** (crux C110). The table requires the faster planet
-   to be **one degree or more** ahead; the prose says only "ahead", within
-   the orb. They differ for a pair less than a degree past. The finer test
-   goes in, with the pass counting how many pairs over the recorded years
-   the two readings disagree on — a number, not a guess.
-2. **The sign's-end Ithasala's name** (crux C111). The table calls it
-   **Bhavishyat** and lists it as one of three kinds beside Vartamana and
-   Poorna; the prose calls the same configuration a *Rashyanta* Ithasala.
-   The table's name ships, because the table is what enumerates the kinds.
+   **one degree or more** ahead; the prose says only "ahead", within the
+   orb. The table's degree is in. The prose's orb stayed, because a
+   summary table omitting the orb the whole system rests on is an
+   omission and not a rule.
+2. **The sign's-end Ithasala's name** (crux C111). `Yoga::Bhavishyat`
+   ships under the table's name, since the table is what enumerates the
+   kinds. The prose's *Rashyanta* survives in `RASHYANTA_DEG`, which
+   names the **position** at a sign's end rather than the yoga.
 
-And one thing the table adds that is not built at all: **Poorna**, the
+And the kind the table adds that was not built at all: **Poorna**, the
 Ithasala within a single degree, which the source marks as immediate
-fulfilment.
+fulfilment. It is in, and it opened the question the corrections could
+not close.
+
+### The band between them (crux C112)
+
+Table X-3 begins Ishrafa a degree past and gives Poorna as a narrowing of
+*Vartamana*, which it states only for a faster planet **behind**. Between
+them sits a band the table bounds twice and places once: the faster less
+than a degree **past**. Three readings are each defensible, and they are
+not near each other — **Poorna**, the most fulfilled thing a pair can be;
+**Ishrafa**, generally unfavourable; or nothing at all.
+
+The sweep in [`muntha-measured.md`](muntha-measured.md) §9 says how much
+turns on it: **934 of the 29 166 aspecting pairs** over the recorded
+births' first forty years, a twelfth of every Ishrafa. That is too large
+to settle by taste, so all three ship as `SubDegree` in a `DrishtiRules`,
+and `Between::disputed` marks the pairs so a reader can show a judgement
+as contested.
+
+The **default is Poorna**, on an argument from the table rather than from
+astrology: it is the only reading under which the degree the table prints
+on the Ishrafa row does any work at all. The measured sizes agree — 940
+pairs in the Poorna the table states outright against 934 in the band,
+sitting symmetrically either side of an exact aspect. A reading on which
+one side of exactness is immediate fulfilment and the other side is
+nothing would have to explain that asymmetry, and the book does not.
 
 ## The order of work
 
-1. The two corrections above, and `Poorna`, in `drishti` — small, and they
-   move a shipped enum, so they go first and alone.
+1. ~~The two corrections above, and `Poorna`, in `drishti`~~ — **done**,
+   2026-09-23, alone as planned, because they moved a shipped enum. They
+   opened C112, which ships as a reading rather than a decision.
 2. The **lagnesha and karyesha** pair, and the four yogas that need only
    the aspects: Ithasala's three kinds, Ishrafa, Nakta, Yamaya.
 3. The ones that need the strength and the chart's dignities: Manau,
@@ -95,7 +123,7 @@ fulfilment.
 |---|---|
 | **decided** | that the module takes a matter and answers for it, because the sources define fourteen of sixteen against a karyesha; that the two chart-level yogas answer regardless |
 | **not decided** | what "strong" and "weak" mean for a yoga, where the source gives a floor only for the year lord; whether "benefic influence" means Tajika's own benefics or the chart's readings; the two cruxes above |
-| **not built** | all of it |
+| **not built** | all sixteen. What they are built *on* — the three kinds of Ithasala, the Ishrafa, the strength and the dignities — is built |
 
 ## Why this page exists before the code
 

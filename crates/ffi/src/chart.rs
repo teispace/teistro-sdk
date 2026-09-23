@@ -2608,23 +2608,32 @@ impl From<teistro::TajikaDrishti> for TsTajikaDrishti {
 }
 
 /// What two planets inside each other's orb are doing.
+///
+/// Three of the four are kinds of Ithasala, the coming-together, which is
+/// how the source's Table X-3 enumerates them.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TsTajikaYoga {
-    /// Ithasala: the faster is behind the slower and coming to it.
-    Ithasala = 0,
-    /// Ithasala from the sign's end: the faster is past but stands at 29°
-    /// or beyond, so it acts from the next sign, where it is behind again.
-    RashyantaIthasala = 1,
-    /// Ishrafa: the faster is past the slower and drawing away.
-    Ishrafa = 2,
+    /// Vartamana Ithasala: the faster is behind the slower by a degree or
+    /// more, inside the orb, and coming to it.
+    IthasalaVartamana = 0,
+    /// Poorna Ithasala: as Vartamana but within a single degree, which
+    /// the source marks as immediate fulfilment.
+    IthasalaPoorna = 1,
+    /// Bhavishyat Ithasala: the faster is past but stands at 29° or
+    /// beyond, so it acts from the next sign, where it is behind again.
+    IthasalaBhavishyat = 2,
+    /// Ishrafa: the faster is a degree or more past the slower and
+    /// drawing away.
+    Ishrafa = 3,
 }
 
 impl From<teistro::TajikaYoga> for TsTajikaYoga {
     fn from(yoga: teistro::TajikaYoga) -> TsTajikaYoga {
         match yoga {
-            teistro::TajikaYoga::Ithasala => TsTajikaYoga::Ithasala,
-            teistro::TajikaYoga::RashyantaIthasala => TsTajikaYoga::RashyantaIthasala,
+            teistro::TajikaYoga::IthasalaVartamana => TsTajikaYoga::IthasalaVartamana,
+            teistro::TajikaYoga::IthasalaPoorna => TsTajikaYoga::IthasalaPoorna,
+            teistro::TajikaYoga::IthasalaBhavishyat => TsTajikaYoga::IthasalaBhavishyat,
             teistro::TajikaYoga::Ishrafa => TsTajikaYoga::Ishrafa,
         }
     }

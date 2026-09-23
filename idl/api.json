@@ -6691,23 +6691,28 @@
     },
     {
       "name": "TsTajikaYoga",
-      "doc": "What two planets inside each other's orb are doing.",
+      "doc": "What two planets inside each other's orb are doing.\n\nThree of the four are kinds of Ithasala, the coming-together, which is\nhow the source's Table X-3 enumerates them.",
       "repr": "u8",
       "values": [
         {
-          "name": "Ithasala",
+          "name": "IthasalaVartamana",
           "value": 0,
-          "doc": "Ithasala: the faster is behind the slower and coming to it."
+          "doc": "Vartamana Ithasala: the faster is behind the slower by a degree or\nmore, inside the orb, and coming to it."
         },
         {
-          "name": "RashyantaIthasala",
+          "name": "IthasalaPoorna",
           "value": 1,
-          "doc": "Ithasala from the sign's end: the faster is past but stands at 29°\nor beyond, so it acts from the next sign, where it is behind again."
+          "doc": "Poorna Ithasala: as Vartamana but within a single degree, which\nthe source marks as immediate fulfilment."
+        },
+        {
+          "name": "IthasalaBhavishyat",
+          "value": 2,
+          "doc": "Bhavishyat Ithasala: the faster is past but stands at 29° or\nbeyond, so it acts from the next sign, where it is behind again."
         },
         {
           "name": "Ishrafa",
-          "value": 2,
-          "doc": "Ishrafa: the faster is past the slower and drawing away."
+          "value": 3,
+          "doc": "Ishrafa: the faster is a degree or more past the slower and\ndrawing away."
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -14432,7 +14437,7 @@
         {
           "id": 38,
           "name": "year_yogas",
-          "doc": "Every annual chart's pairs of the seven that make a yoga — an Ithasala, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).",
+          "doc": "Every annual chart's pairs of the seven that make a yoga — an Ithasala in one of its three kinds, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).",
           "kind": "columns",
           "fields": [
             {
@@ -14454,7 +14459,7 @@
             {
               "name": "yoga",
               "scalar": "u8",
-              "doc": "What they are doing: coming together or drawing apart.",
+              "doc": "What they are doing: one of the Ithasala's three kinds, coming together, or an Ishrafa, drawing apart.",
               "enum": "TsTajikaYoga"
             },
             {

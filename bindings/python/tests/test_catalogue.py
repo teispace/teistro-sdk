@@ -41,11 +41,12 @@ class TheCatalogue(unittest.TestCase):
         # `DashaPhase`, three phases; 104 since the year lord's
         # `VarsheshaChosen`, the seven steps of its chain; 106 since the
         # Tajika aspects, `TajikaDrishti`'s five kinds and `TajikaYoga`'s
-        # three.
+        # three -- four since Table X-3 gave the Ithasala a third kind,
+        # `Poorna`, which adds a member and no new enum.
         self.assertEqual(len(every_enum()), 106)
         self.assertEqual(
             sum(len(list(found)) for found in every_enum()),
-            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 3,
+            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

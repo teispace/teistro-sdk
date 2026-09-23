@@ -4747,21 +4747,31 @@ typedef enum ts_tajika_drishti {
 
 /**
  * What two planets inside each other's orb are doing.
+ *
+ * Three of the four are kinds of Ithasala, the coming-together, which is
+ * how the source's Table X-3 enumerates them.
  */
 typedef enum ts_tajika_yoga {
     /**
-     * Ithasala: the faster is behind the slower and coming to it.
+     * Vartamana Ithasala: the faster is behind the slower by a degree or
+     * more, inside the orb, and coming to it.
      */
-    TS_TAJIKA_YOGA_ITHASALA = 0,
+    TS_TAJIKA_YOGA_ITHASALA_VARTAMANA = 0,
     /**
-     * Ithasala from the sign's end: the faster is past but stands at 29°
-     * or beyond, so it acts from the next sign, where it is behind again.
+     * Poorna Ithasala: as Vartamana but within a single degree, which
+     * the source marks as immediate fulfilment.
      */
-    TS_TAJIKA_YOGA_RASHYANTA_ITHASALA = 1,
+    TS_TAJIKA_YOGA_ITHASALA_POORNA = 1,
     /**
-     * Ishrafa: the faster is past the slower and drawing away.
+     * Bhavishyat Ithasala: the faster is past but stands at 29° or
+     * beyond, so it acts from the next sign, where it is behind again.
      */
-    TS_TAJIKA_YOGA_ISHRAFA = 2,
+    TS_TAJIKA_YOGA_ITHASALA_BHAVISHYAT = 2,
+    /**
+     * Ishrafa: the faster is a degree or more past the slower and
+     * drawing away.
+     */
+    TS_TAJIKA_YOGA_ISHRAFA = 3,
 } ts_tajika_yoga;
 
 /**

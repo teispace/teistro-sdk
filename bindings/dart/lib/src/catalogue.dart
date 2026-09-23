@@ -5324,14 +5324,22 @@ enum TajikaDrishti {
 }
 
 /// What two planets inside each other's orb are doing.
+///
+/// Three of the four are kinds of Ithasala, the coming-together, which is
+/// how the source's Table X-3 enumerates them.
 enum TajikaYoga {
-  /// Ithasala: the faster is behind the slower and coming to it.
-  ithasala(0, 'ithasala'),
-  /// Ithasala from the sign's end: the faster is past but stands at 29°
-  /// or beyond, so it acts from the next sign, where it is behind again.
-  rashyantaIthasala(1, 'rashyanta-ithasala'),
-  /// Ishrafa: the faster is past the slower and drawing away.
-  ishrafa(2, 'ishrafa');
+  /// Vartamana Ithasala: the faster is behind the slower by a degree or
+  /// more, inside the orb, and coming to it.
+  ithasalaVartamana(0, 'ithasala-vartamana'),
+  /// Poorna Ithasala: as Vartamana but within a single degree, which
+  /// the source marks as immediate fulfilment.
+  ithasalaPoorna(1, 'ithasala-poorna'),
+  /// Bhavishyat Ithasala: the faster is past but stands at 29° or
+  /// beyond, so it acts from the next sign, where it is behind again.
+  ithasalaBhavishyat(2, 'ithasala-bhavishyat'),
+  /// Ishrafa: the faster is a degree or more past the slower and
+  /// drawing away.
+  ishrafa(3, 'ishrafa');
 
   const TajikaYoga(this.id, this.key);
 

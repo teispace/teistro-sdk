@@ -1,6 +1,7 @@
 # The Tajika aspects, their orbs, and Ithasala
 
-Status: `built`, 2026-09-23. Measured against the source's own worked pair
+Status: `built`, 2026-09-23, corrected against Table X-3 the same day.
+Measured against the source's own worked pair
 in [`muntha-measured.md`](muntha-measured.md) §8 (`check-muntha`), and
 built on the annual chart ([`annual-chart.md`](annual-chart.md)).
 
@@ -45,13 +46,23 @@ natural reading of "behind" gives the opposite answer.
 
 | | |
 |---|---|
-| **Ithasala** | the faster planet is behind the slower and coming to it; generally favourable |
-| **Ishrafa** | the faster is already past and drawing away; generally not, though the source says an Ishrafa between two benefics is not bad |
-| **Rashyanta Ithasala** | the faster is past *but* stands at 29° or beyond, so it "extends its influence to the next house also" and acts from there, where it is behind again |
+| **Vartamana Ithasala** | the faster planet is behind the slower by a degree or more and coming to it; generally favourable, and much the commonest |
+| **Poorna Ithasala** | the same, within a single degree: the source marks it as immediate fulfilment rather than a promise |
+| **Bhavishyat Ithasala** | the faster is past *but* stands at 29° or beyond, so it "extends its influence to the next house also" and acts from there, where it is behind again. The chapter's prose calls this one *Rashyanta* (crux C111) |
+| **Ishrafa** | the faster is already a degree or more past and drawing away; generally not favourable, though the source says an Ishrafa between two benefics is not bad |
 
-Neither means anything without the sign aspect as well: a pair in the
+None of them means anything without the sign aspect as well: a pair in the
 neutral houses makes no yoga however close it stands, which a test asserts
 rather than leaving to be discovered.
+
+The three kinds and the Ishrafa come from the source's **Table X-3**, read
+after this module first shipped; the chapter's prose gives only two of
+them and sets no degree on the Ishrafa. Where the two accounts differ —
+a pair less than a degree *past* — the readings are carried as
+`SubDegree` rather than one being chosen silently, because **934 of the
+29 166 aspecting pairs** over the recorded years fall there.
+[`muntha-measured.md`](muntha-measured.md) §9 counts all four kinds and
+the contested band, and accounts for every year it could not reach.
 
 **Faster** is the tradition's ranking and not a measurement — Moon,
 Mercury, Venus, Sun, Mars, Jupiter, Saturn — so a retrograde Mars is still
@@ -62,11 +73,11 @@ documentation so nobody looks for a speed in it.
 
 | | |
 |---|---|
-| **decided** | the four aspecting sets and the neutral houses; the deeptamsha table and the mean of a pair; "behind" as degrees within the sign; the speed ranking; 29° as the sign's end |
-| **not decided** | whether a retrograde planet reverses the applying direction, which the research page's closing checklist has asked since 2026-09-04 and this text does not answer; the fourteen other yogas |
+| **decided** | the four aspecting sets and the neutral houses; the deeptamsha table and the mean of a pair; "behind" as degrees within the sign; the speed ranking; 29° as the sign's end; Table X-3's three kinds of Ithasala and its single degree, with the prose's *Rashyanta* kept only in `RASHYANTA_DEG`, which names a position and not a yoga |
+| **not decided** | whether a retrograde planet reverses the applying direction, which the research page's closing checklist has asked since 2026-09-04 and this text does not answer; what a pair less than a degree past is doing, where the source's two accounts do not join (crux C112) — all three readings ship as `SubDegree`, defaulting to the one under which the table's own degree does any work; the fourteen other yogas |
 | **across the boundary** | the pairs that **make** a yoga ride in the ragged `year_yogas` section, counted by `annual_charts.yoga_count`, with the aspect, the yoga, the orb and the signed separation. Each binding reads them as `pravesha.annual.yogas`; all four parity runners print every one of them and **4 bindings agree on 8 090 values** |
-| **built** | `teistro_tajika::between` and `drishtis`; `sdk.chart().drishtis`, which needs **no ephemeris** |
-| **not built** | the fourteen yogas above Ithasala and Ishrafa, now designed in [`tajika-yogas.md`](tajika-yogas.md); the 36 sahamas. Two things here are also **to be corrected** against the source's Table X-3, read after this shipped: Ishrafa wants the faster planet a whole degree or more ahead (crux C110), the sign's-end kind is the table's **Bhavishyat** rather than the prose's Rashyanta (crux C111), and a third kind, **Poorna** — an Ithasala within one degree — is missing |
+| **built** | `teistro_tajika::between` and `drishtis`, each with a `_with_rules` twin that takes a `DrishtiRules`; `sdk.chart().drishtis` and `drishtis_with_rules`, which need **no ephemeris**; `Between::disputed`, which marks a pair the readings differ over |
+| **not built** | the fourteen yogas above Ithasala and Ishrafa, now designed in [`tajika-yogas.md`](tajika-yogas.md); the 36 sahamas. The two corrections Table X-3 found — C110's degree on Ishrafa and C111's *Bhavishyat* — **are built**, together with the `Poorna` kind that was missing |
 
 ## Why only the yoga-making pairs cross
 

@@ -1541,8 +1541,9 @@ fn drishti_key(drishti: teistro::TajikaDrishti) -> &'static str {
 
 fn yoga_key(yoga: teistro::TajikaYoga) -> &'static str {
     match yoga {
-        teistro::TajikaYoga::Ithasala => "ithasala",
-        teistro::TajikaYoga::RashyantaIthasala => "rashyanta-ithasala",
+        teistro::TajikaYoga::IthasalaVartamana => "ithasala-vartamana",
+        teistro::TajikaYoga::IthasalaPoorna => "ithasala-poorna",
+        teistro::TajikaYoga::IthasalaBhavishyat => "ithasala-bhavishyat",
         teistro::TajikaYoga::Ishrafa => "ishrafa",
     }
 }

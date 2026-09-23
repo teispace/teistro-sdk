@@ -3054,8 +3054,9 @@ export const TajikaDrishtiById = new Map([
 
 /** Every TajikaYoga by name. */
 export const TajikaYoga = Object.freeze({
-  Ithasala: 'ithasala',
-  RashyantaIthasala: 'rashyanta-ithasala',
+  IthasalaVartamana: 'ithasala-vartamana',
+  IthasalaPoorna: 'ithasala-poorna',
+  IthasalaBhavishyat: 'ithasala-bhavishyat',
   Ishrafa: 'ishrafa',
 });
 
@@ -3064,9 +3065,10 @@ export const TajikaYoga = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const TajikaYogaById = new Map([
-  [0, 'ithasala'],
-  [1, 'rashyanta-ithasala'],
-  [2, 'ishrafa'],
+  [0, 'ithasala-vartamana'],
+  [1, 'ithasala-poorna'],
+  [2, 'ithasala-bhavishyat'],
+  [3, 'ishrafa'],
 ]);
 
 /** Every Scale by name. */

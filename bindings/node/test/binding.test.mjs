@@ -609,8 +609,9 @@ test('every catalogue enum has a complete id table', () => {
   // 1013 since the dasha phala's `TsDashaPhase`, three;
   // 1020 since the year lord's `TsVarsheshaChosen`, seven steps of its chain;
   // 1028 since the Tajika aspects: `TsTajikaDrishti`'s five and
-  // `TsTajikaYoga`'s three.
-  assert.equal(entries, 1028, 'every member of every enum is in a table');
+  // `TsTajikaYoga`'s three;
+  // 1029 since Table X-3 gave the Ithasala a third kind, `Poorna`.
+  assert.equal(entries, 1029, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1294,17 +1295,32 @@ test('a chart carries the annual charts its birth opens', () => {
     assert.equal(typeof lord.moonPassedOver, 'boolean');
   }
 
-  // The pairs that make a yoga: never a neutral aspect, and the faster is
-  // behind the slower exactly when they are coming together.
+  // The pairs that make a yoga: never a neutral aspect, and each of Table
+  // X-3's four kinds standing where its own degrees put it. Vartamana is
+  // a degree or more behind, Poorna inside that degree, Ishrafa a degree
+  // or more past, and only Bhavishyat may sit outside the orb -- it acts
+  // from the next sign, where the distance is a different one.
+  const kinds = new Set();
   for (const one of cast) {
     for (const pair of one.annual.yogas) {
       assert.notEqual(pair.drishti, 'none', 'a neutral pair makes no yoga');
       assert.ok(pair.orbDeg > 0);
-      if (pair.yoga === 'ithasala') assert.ok(pair.apartDeg >= 0);
-      if (pair.yoga === 'ishrafa') assert.ok(pair.apartDeg < 0);
-      assert.ok(Math.abs(pair.apartDeg) <= pair.orbDeg || pair.yoga === 'rashyanta-ithasala');
+      kinds.add(pair.yoga);
+      if (pair.yoga === 'ithasala-vartamana') assert.ok(pair.apartDeg >= 1);
+      if (pair.yoga === 'ithasala-poorna') assert.ok(Math.abs(pair.apartDeg) < 1);
+      if (pair.yoga === 'ishrafa') assert.ok(pair.apartDeg <= -1);
+      assert.ok(
+        Math.abs(pair.apartDeg) <= pair.orbDeg || pair.yoga === 'ithasala-bhavishyat',
+      );
     }
   }
+  // The corpus's own years reach every kind the boundary can say, so a
+  // variant that stopped crossing would be noticed here and not only in
+  // the enum's member count.
+  assert.deepEqual(
+    [...kinds].sort(),
+    ['ishrafa', 'ithasala-bhavishyat', 'ithasala-poorna', 'ithasala-vartamana'],
+  );
 
   // At a residence, in the place shape `found` takes, the lagnas move.
   const delhi = ctx.chart.found({

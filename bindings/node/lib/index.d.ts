@@ -711,13 +711,20 @@ export type TajikaDrishti =
   | 'secretly-inimical'
   | 'none';
 
-/** What two planets inside each other's orb are doing. */
+/**
+ * What two planets inside each other's orb are doing.
+ *
+ * Three of the four are kinds of Ithasala, the coming-together, as the
+ * source's Table X-3 enumerates them.
+ */
 export type TajikaYoga =
-  /** The faster is behind the slower and coming to it. */
-  | 'ithasala'
-  /** The faster is past but at the sign's end, so it acts from the next sign. */
-  | 'rashyanta-ithasala'
-  /** The faster is past the slower and drawing away. */
+  /** Vartamana: the faster is behind the slower by a degree or more, and coming to it. */
+  | 'ithasala-vartamana'
+  /** Poorna: as Vartamana but within a single degree, so already fulfilled. */
+  | 'ithasala-poorna'
+  /** Bhavishyat: the faster is past but at the sign's end, so it acts from the next sign. */
+  | 'ithasala-bhavishyat'
+  /** Ishrafa: the faster is a degree or more past the slower and drawing away. */
   | 'ishrafa';
 
 /** Two planets of an annual chart, and what they make. */

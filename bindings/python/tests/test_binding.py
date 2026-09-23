@@ -1215,17 +1215,25 @@ class AnEngine(WithLibrary):
             self.assertEqual(lord.vishwa.units, lord.vishwa.total // 3600)
             self.assertIsInstance(lord.moon_passed_over, bool)
 
-        # The pairs that make a yoga: never a neutral aspect, and the
-        # faster is behind exactly when they are coming together.
+        # The pairs that make a yoga: never a neutral aspect, and each of
+        # Table X-3's four kinds standing where its own degrees put it.
+        kinds = set()
         for one in cast:
             assert one.annual is not None
             for pair in one.annual.yogas:
                 self.assertNotEqual(pair.drishti, TajikaDrishti.NONE)
                 self.assertGreater(pair.orb_deg, 0)
-                if pair.yoga == TajikaYoga.ITHASALA:
-                    self.assertGreaterEqual(pair.apart_deg, 0)
+                kinds.add(pair.yoga)
+                if pair.yoga == TajikaYoga.ITHASALA_VARTAMANA:
+                    self.assertGreaterEqual(pair.apart_deg, 1)
+                if pair.yoga == TajikaYoga.ITHASALA_POORNA:
+                    self.assertLess(abs(pair.apart_deg), 1)
                 if pair.yoga == TajikaYoga.ISHRAFA:
-                    self.assertLess(pair.apart_deg, 0)
+                    self.assertLessEqual(pair.apart_deg, -1)
+        # The corpus's own years reach every kind the boundary can say,
+        # so a variant that stopped crossing would be caught here and not
+        # only in the enum's member count.
+        self.assertEqual(kinds, set(TajikaYoga))
 
         # At a residence, in the parts `found` takes, the lagnas move.
         delhi = self.ctx.chart.found(

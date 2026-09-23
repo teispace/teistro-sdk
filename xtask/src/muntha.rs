@@ -23,7 +23,7 @@ use std::path::Path;
 
 use teistro::catalogue::{Graha, Rashi};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::tajika::{MOST_YEARS, MunthaDegree, Reading};
+use teistro::tajika::{MOST_YEARS, MunthaDegree, Reading, Yoga};
 use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
 
 use crate::births::{Birth, CHARTS, births};
@@ -175,6 +175,7 @@ fn page(root: &Path) -> Result<String, String> {
     the_rival(&mut out, &sdk, &births)?;
     the_degree(&mut out, &sdk, &births)?;
     the_worked_year(&mut out)?;
+    the_kinds(&mut out, &sweep(&sdk, &births)?);
     Ok(fill(&out))
 }
 
@@ -635,6 +636,248 @@ fn the_year_lord(out: &mut String, geo: &Worked) {
 }
 
 /// The source's worked Ithasala, and how much of a chart makes a yoga.
+/// How many years of each recorded birth the yoga sweep follows.
+///
+/// Forty, not the Muntha's hundred and twenty: the sweep founds a chart
+/// per year rather than rotating a sign, and forty years of fifty-five
+/// births is already two thousand annual charts and twenty-one pairs
+/// each. It is the span a reader of a birth chart actually asks about.
+const SWEEP_YEARS: u16 = 40;
+
+/// Every kind of pair the sweep found, counted.
+#[derive(Default)]
+struct Kinds {
+    /// Years asked for: one birth's [`SWEEP_YEARS`] times the births.
+    asked: usize,
+    /// Returns the search actually produced. Short of `asked` where the
+    /// built-in ephemeris's span runs out before the fortieth year.
+    returned: usize,
+    /// Annual charts founded.
+    charts: usize,
+    /// Pairs read, twenty-one to a chart.
+    pairs: usize,
+    /// Pairs whose signs aspect each other at all.
+    aspecting: usize,
+    /// Vartamana: behind by a degree or more, inside the orb.
+    vartamana: usize,
+    /// Poorna stated by the table: behind by less than a degree.
+    poorna_stated: usize,
+    /// The contested band: past by less than a degree.
+    disputed: usize,
+    /// Ishrafa on every reading: past by a degree or more.
+    ishrafa: usize,
+    /// Bhavishyat: outside the orb, reaching from a sign's end.
+    bhavishyat: usize,
+    /// Years whose annual chart the SDK **refused** to found, and the
+    /// births they belong to.
+    ///
+    /// A refusal is not a skip. A sweep that swallowed one would report a
+    /// smaller corpus as a cleaner one, so every year asked for is
+    /// accounted for here and named on the page.
+    refused: usize,
+    /// Which births those years belong to, each named once.
+    refused_births: Vec<String>,
+    /// Births whose returns ran out before [`SWEEP_YEARS`] — a different
+    /// absence from a refusal, and counted apart from one.
+    cut_short: Vec<String>,
+    /// Why, in the SDK's own words, from the first refusal seen.
+    refusal: String,
+}
+
+/// Every pair of every annual chart of every recorded birth, sorted into
+/// Table X-3's four kinds and the one band the source does not place.
+///
+/// It reads through `sdk.chart().drishtis`, so the module it measures is
+/// the module that answers — a pass that kept its own copy of the rule
+/// would agree with itself and prove nothing.
+fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
+    let mut kinds = Kinds::default();
+    for birth in births {
+        let years = sdk
+            .chart()
+            .praveshas(&birth.document, Reading::Sidereal, SWEEP_YEARS)
+            .map_err(|why| format!("{}: its returns: {why}", birth.name))?;
+        kinds.asked += usize::from(SWEEP_YEARS);
+        kinds.returned += years.len();
+        if years.len() < usize::from(SWEEP_YEARS) {
+            kinds.cut_short.push(birth.name.clone());
+        }
+        for year in years {
+            // A high-latitude birth in its polar summer has no sunrise to
+            // divide a day by, and the SDK refuses rather than inventing
+            // one. Counted and named, never swallowed.
+            let annual = match sdk.chart().reading(year.at, &birth.request()) {
+                Ok(envelope) => envelope.value,
+                Err(why) => {
+                    kinds.refused += 1;
+                    if kinds.refusal.is_empty() {
+                        kinds.refusal = why.to_string();
+                    }
+                    if kinds.refused_births.last() != Some(&birth.name) {
+                        kinds.refused_births.push(birth.name.clone());
+                    }
+                    continue;
+                }
+            };
+            let pairs = sdk
+                .chart()
+                .drishtis(&annual)
+                .map_err(|why| format!("{}: its pairs: {why}", birth.name))?;
+            kinds.charts += 1;
+            kinds.pairs += pairs.len();
+            for pair in pairs {
+                if !pair.drishti.is_aspect() {
+                    continue;
+                }
+                kinds.aspecting += 1;
+                if pair.disputed() {
+                    kinds.disputed += 1;
+                }
+                match pair.yoga {
+                    Some(Yoga::IthasalaVartamana) => kinds.vartamana += 1,
+                    Some(Yoga::IthasalaPoorna) if !pair.disputed() => kinds.poorna_stated += 1,
+                    Some(Yoga::IthasalaBhavishyat) => kinds.bhavishyat += 1,
+                    Some(Yoga::Ishrafa) => kinds.ishrafa += 1,
+                    _ => {}
+                }
+            }
+        }
+    }
+    Ok(kinds)
+}
+
+fn the_kinds(out: &mut String, kinds: &Kinds) {
+    let share = |part: usize| {
+        if kinds.aspecting == 0 {
+            String::from("--")
+        } else {
+            #[expect(
+                clippy::cast_precision_loss,
+                reason = "counts of a few tens of thousands, printed to one place"
+            )]
+            let percent = part as f64 * 100.0 / kinds.aspecting as f64;
+            format!("{percent:.1}%")
+        }
+    };
+    let _ = write!(
+        out,
+        "\n## 9. The four kinds, over the recorded years\n\n\
+         The source's Table X-3 gives the Ithasala **three** kinds and sets \
+         Ishrafa a degree away from them. This sorts every pair of every \
+         annual chart of every recorded birth into them — {} charts, {} \
+         pairs, of which {} stand in signs that aspect at all — through \
+         `sdk.chart().drishtis`, so what is counted is what the module \
+         answers.\n\n\
+         | kind | what puts a pair there | pairs | of those that aspect |\n\
+         |---|---|---|---|\n\
+         | **Vartamana** | behind by a degree or more, inside the orb | {} | {} |\n\
+         | **Poorna** | behind by less than a degree | {} | {} |\n\
+         | **Bhavishyat** | outside the orb, reaching from a sign's end | {} | {} |\n\
+         | **Ishrafa** | past by a degree or more, inside the orb | {} | {} |\n\
+         | *the contested band* | past by less than a degree | **{}** | **{}** |\n\n\
+         ### What turns on the last row\n\n\
+         The last row is the one thing the source's two accounts do not \
+         settle (crux C112), and the count is why it is carried as a \
+         reading rather than decided quietly. Under the chapter's prose \
+         those {} pairs are **Ishrafa**, generally unfavourable and drawing \
+         apart. Under Table X-3 read so that its rows interlock they are \
+         **Poorna**, the most fulfilled thing a pair can be. Under the \
+         table read at its narrowest they are nothing at all. One band, \
+         three answers, and the three are not near each other.\n\n\
+         Two things about the size of it. It is {} of every pair that \
+         aspects — not a rounding margin, and about a twelfth of every \
+         Ishrafa. And it is almost exactly the size of the **Poorna the \
+         table states outright** beside it, {} against {}: the two sit \
+         symmetrically either side of an exact aspect, which is the \
+         argument for reading Poorna as covering both. A reading on which \
+         one side of exactness is immediate fulfilment and the other side \
+         is nothing would have to explain the asymmetry, and the book does \
+         not.\n\n\
+         `SubDegree` carries all three and defaults to Poorna, which is \
+         the only reading under which the degree the table prints does any \
+         work at all. `Between::disputed` marks the pairs, so a reader can \
+         say which judgements are contested.\n\n\
+         ### What the sweep could not reach\n\n\
+         {}\n",
+        count(kinds.charts),
+        count(kinds.pairs),
+        count(kinds.aspecting),
+        count(kinds.vartamana),
+        share(kinds.vartamana),
+        count(kinds.poorna_stated),
+        share(kinds.poorna_stated),
+        count(kinds.bhavishyat),
+        share(kinds.bhavishyat),
+        count(kinds.ishrafa),
+        share(kinds.ishrafa),
+        count(kinds.disputed),
+        share(kinds.disputed),
+        count(kinds.disputed),
+        share(kinds.disputed),
+        count(kinds.poorna_stated),
+        count(kinds.disputed),
+        refusals(kinds),
+    );
+}
+
+/// What the sweep asked for and did not get, named.
+///
+/// Fifty-five births times [`SWEEP_YEARS`] is a fixed number of years
+/// asked for; anything short of it is stated with the births it belongs
+/// to and the SDK's own words for why, because a pass that reported only
+/// what it managed would get greener as the corpus got harder.
+fn refusals(kinds: &Kinds) -> String {
+    let named = |names: &[String]| {
+        let quoted: Vec<String> = names.iter().map(|name| format!("`{name}`")).collect();
+        listed(&quoted)
+    };
+    let mut out = format!(
+        "Every recorded birth was asked for {} years, which is **{}** \
+         years over the {} of them, and {} charts were read. The whole \
+         of the difference is accounted for below, because a sweep that \
+         reported only what it managed would get greener as the corpus \
+         got harder.\n\n",
+        SWEEP_YEARS,
+        count(kinds.asked),
+        count(kinds.asked / usize::from(SWEEP_YEARS).max(1)),
+        count(kinds.charts),
+    );
+    if kinds.cut_short.is_empty() {
+        out.push_str("Every birth's search reached its fortieth year. ");
+    } else {
+        let _ = write!(
+            out,
+            "**{}** never returned from the search at all, belonging to \
+             {}: {}. The built-in ephemeris's span runs out before those \
+             births reach their fortieth year, and the SDK answers the \
+             years it covers rather than refusing the whole request. ",
+            plural(kinds.asked - kinds.returned, "year"),
+            plural(kinds.cut_short.len(), "birth"),
+            named(&kinds.cut_short),
+        );
+    }
+    if kinds.refused == 0 {
+        out.push_str("Every return the search did produce was founded and read.");
+    } else {
+        let _ = write!(
+            out,
+            "A further **{}** returned but could not be **founded**, \
+             belonging to {}: {}. The SDK refuses rather than inventing \
+             a day — *{}* — because a birth above the polar circle in \
+             its own summer has no sunrise to divide a day by, and the \
+             hora and ghati a chart is built on are measured from one. \
+             That is a documented bound of the corpus \
+             (`05-testing/01-golden-vectors.md`, note 13) and not a \
+             fault of the aspects.",
+            plural(kinds.refused, "year"),
+            plural(kinds.refused_births.len(), "birth"),
+            named(&kinds.refused_births),
+            kinds.refusal,
+        );
+    }
+    out
+}
+
 fn the_aspects(out: &mut String, geo: &Worked) {
     let pair = &geo.sun_and_mars;
     let _ = write!(
@@ -645,6 +888,11 @@ fn the_aspects(out: &mut String, geo: &Worked) {
          faster of them is behind the slower. Behind is **degrees within \
          the sign**, the completed signs deleted, which is the source's own \
          instruction and the opposite of what a longitude would say.\n\n\
+         The source's Table X-3 gives that coming-together **three \
+         kinds**, which §9 counts over the whole corpus; this pair is \
+         the **Vartamana**, the present one, because the Sun is behind \
+         Mars by more than the single degree that would make it already \
+         fulfilled.\n\n\
          Its worked pair is the Sun at Leo 3°50′ and Mars at Scorpio 7°42′, \
          three whole signs further on. Read from the chart the SDK \
          founded:\n\n\
