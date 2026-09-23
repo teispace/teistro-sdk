@@ -1,10 +1,11 @@
 # The sixteen Tajika yogas
 
-Status: built but for the three `YearYoga::awaiting` names —
-2026-09-23; those are designed and *named*, which is not the same as
+Status: built but for what `YearYoga::awaiting` names —
+2026-09-23; that is designed and *named*, which is not the same as
 absent. The count is deliberately not written here: it is generated in
-`muntha-measured.md` §10 from the type, where it cannot go stale. Steps
-1, 2, 3 and 5 landed the same day; step 4 remains. Written after reading the
+`muntha-measured.md` §10 from the type, where it cannot go stale. All
+five steps of the order of work landed the same day; what remains waits
+on a source (C117), not on building. Written after reading the
 source's Table X-3 off the page and before writing any of it, as every
 module since Phase 4 has been. The definitions are in
 [`01-research/feature-universe/07-tajika-varshaphala.md`](../01-research/feature-universe/07-tajika-varshaphala.md),
@@ -306,13 +307,27 @@ positively now, and tested with a middling pair.
      planets. Recorded, not corrected, as C115 was. Durapha's parse (C119)
      is bounded to six matters by the weak-pair ceiling.
    - **Kuttha** needs Tajika's benefics (C117), and nothing else now.
-   - **Tambira** needs a **projection**: the karyesha forming an
+   - **Tambira** needed a **projection**: the karyesha forming an
      Ithasala from the *next* sign with a lagnesha its present sign does
      not aspect. That is not the Bhavishyat Ithasala, which requires the
      signs to aspect already, so it moves to step 4.
-4. **The two that ask what happens next**: Tambira, and Gairi-Kamboola,
-   which needs the unqualified Moon *and* where it will stand in the next
-   sign. One projection serves both, so they are one unit and last.
+4. ~~**The two that ask what happens next**~~ — **done** (2026-09-23):
+   Tambira, and Gairi-Kamboola, which needs the unqualified Moon *and*
+   where it will stand in the next sign. One projection serves both:
+   the one planet moved to the next sign's first degree, the other six
+   held, and the same Ithasala question asked of that sky (C120), so
+   no second copy of the four bands was written. The source's worked
+   Gairi-Kamboola, Chart X-17, is the acceptance test and comes out as
+   printed. It also found **C121**: read literally, X-17 is a
+   Khallasara as well, and the source's own comment on Khallasara
+   excludes the case. Measured (`muntha-measured.md` §13), Gairi-Kamboola
+   holds nowhere in the corpus, and the step that empties it is C115's
+   *unqualified* Moon and not the projection. Tambira holds in a handful
+   of matters, and more under the source's "some authorities" reading,
+   which ships as `YogaRules::tambira`. Tambira needs `AnnualStates`,
+   because a retrograde karyesha at a sign's end is going back rather
+   than on. `YearYoga::needs_no_aspect` joins the groupings the pass
+   holds every count to.
 5. ~~Ikabala and Induvara~~ — **done** (2026-09-23), with the three above,
    since the *trika* clause needed the same house-of-a-planet reckoning.
    They are facts about the chart, so they answer every matter alike —
@@ -325,9 +340,10 @@ positively now, and tested with a middling pair.
 |---|---|
 | **decided** | that the module takes a matter and answers for it, because the sources define fourteen of sixteen against a karyesha; that the two chart-level yogas answer regardless |
 | **decided by measurement** | what "strong" and "weak" mean for a yoga (C116): graded, weak below five and strong from ten, a middling band between, both `YogaRules` fields |
-| **not decided** | whether "benefic influence" means Tajika's own benefics or the chart's (C117), which is all that stands between Kuttha and shipping; how *under malefic influence* and Durapha's list read (C118, C119), each shipped as one reading with every clause carried |
-| **built** | every one `YearYoga::awaiting` does not name, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**; `sdk.chart().qualification`, `strength` and `affliction` for the three clause-carrying verdicts, and `annual_states` for what the longitudes cannot say; `YearYoga::ALL` names all sixteen, `awaiting` says what each unbuilt one needs, matched exhaustively so a yoga cannot be added without a decision, and `judges_an_ithasala`, `needs_a_weak_pair` and `is_chart_fact` describe the structure the measured page holds every count to |
-| **not built** | Tambira and Gairi-Kamboola (one projection serves both) and Kuttha (C117), each naming its blocker at every call. They do **not** cross the boundary yet: the sixteen answer a *matter*, so crossing them means deciding which matters a caller asks for — the same shape as the residence decision `varsha_json.place`, and its own unit |
+| **decided by the source** | that a Moon completing a Gairi-Kamboola is not also a Khallasara (C121, the source's comment against its own table) |
+| **not decided** | whether "benefic influence" means Tajika's own benefics or the chart's (C117), which is all that stands between Kuttha and shipping; how *under malefic influence* and Durapha's list read (C118, C119), each shipped as one reading with every clause carried; what *on entering the next sign* means (C120), shipped as the instant projection with a retrograde lord entering nothing; which lord Tambira moves, shipped as the definition's karyesha with the source's "some authorities" a `YogaRules::tambira` away |
+| **built** | every one `YearYoga::awaiting` does not name, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**; `sdk.chart().qualification`, `strength` and `affliction` for the three clause-carrying verdicts, and `annual_states` for what the longitudes cannot say; `YearYoga::ALL` names all sixteen, `awaiting` says what each unbuilt one needs, matched exhaustively so a yoga cannot be added without a decision, and `judges_an_ithasala`, `needs_a_weak_pair`, `needs_no_aspect` and `is_chart_fact` describe the structure the measured page holds every count to |
+| **not built** | Kuttha (C117), naming its blocker at every call. The sixteen do **not** cross the boundary yet: the sixteen answer a *matter*, so crossing them means deciding which matters a caller asks for — the same shape as the residence decision `varsha_json.place`, and its own unit |
 
 ## Why this page exists before the code
 

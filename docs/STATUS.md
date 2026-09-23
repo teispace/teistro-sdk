@@ -3632,9 +3632,14 @@ on pub.dev (checked 2026-09-07).
    Ishrafa, **Nakta** and **Yamaya** — answer through
    `sdk.chart().tajika_yogas(&annual, house)`, which takes a **matter**
    because fourteen of the sixteen are judgements about that pair and not
-   facts about a chart. The other twelve are **named at every call** with
-   what each still needs, and `holds` answers `None` rather than `false`
-   for them. Left: those twelve (`03-design/tajika-yogas.md`); **crossing
+   facts about a chart. Steps 3 to 5 are **done** too (2026-09-23):
+   the strength floors (C116), retrograde and combustion
+   (`AnnualStates`), and the projection into the next sign (C120) built
+   every yoga but **Kuttha**, which waits on Tajika's own benefics
+   (C117) and is **named at every call** with what it needs, `holds`
+   answering `None` rather than `false`. The count is generated in
+   `muntha-measured.md` §10, not written here. Left: Kuttha
+   (`03-design/tajika-yogas.md`); **crossing
    the boundary**, which means deciding which matters a caller asks for,
    the same shape as `varsha_json.place`; the **36 sahamas**; the year
    lord's two Moon readings that turn on the Ithasala; and the four

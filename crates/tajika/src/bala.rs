@@ -245,6 +245,29 @@ impl AnnualSky {
         sign_of_longitude(self.longitude_of(graha))
     }
 
+    /// The same sky with one of the seven moved to `longitude_deg`, the
+    /// other six where they were.
+    ///
+    /// What a yoga that asks "on entering the next sign" judges: the
+    /// projection is one planet's move and nothing else's, so it is a
+    /// copy with one field changed rather than a second sky to fill.
+    #[must_use]
+    pub(crate) const fn with(mut self, graha: Graha, longitude_deg: f64) -> AnnualSky {
+        match graha {
+            Graha::Moon => self.moon_deg = longitude_deg,
+            Graha::Mars => self.mars_deg = longitude_deg,
+            Graha::Mercury => self.mercury_deg = longitude_deg,
+            Graha::Jupiter => self.jupiter_deg = longitude_deg,
+            Graha::Venus => self.venus_deg = longitude_deg,
+            Graha::Saturn => self.saturn_deg = longitude_deg,
+            // The Sun, as `longitude_of` reads it: a body outside the
+            // seven is never projected, since only the pair and the Moon
+            // are ever asked to move.
+            _ => self.sun_deg = longitude_deg,
+        }
+        self
+    }
+
     /// Every longitude is a number, refused by the field that is not.
     fn check(&self) -> Result<(), Error> {
         for (field, value) in [

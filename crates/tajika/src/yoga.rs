@@ -37,7 +37,8 @@ use crate::bala::{
     sign_of_longitude,
 };
 use crate::drishti::{
-    Between, Drishti, DrishtiRules, between_with_rules, between_within, deeptamsha, speed_rank,
+    Between, Drishti, DrishtiRules, RASHYANTA_DEG, between_with_rules, between_within, deeptamsha,
+    speed_rank,
 };
 use crate::states::AnnualStates;
 
@@ -132,13 +133,9 @@ impl YearYoga {
             | YearYoga::DuhphaliKuttha
             | YearYoga::Durapha
             | YearYoga::Ikabala
-            | YearYoga::Induvara => None,
-            YearYoga::GairiKamboola => Some(
-                "an unqualified Moon, and where it will stand in the next sign: the only one of the sixteen that asks what happens next",
-            ),
-            YearYoga::Tambira => {
-                Some("the karyesha at a sign's end, completing an Ithasala from the next")
-            }
+            | YearYoga::Induvara
+            | YearYoga::GairiKamboola
+            | YearYoga::Tambira => None,
             YearYoga::Kuttha => Some(
                 "Tajika's own benefics, which Table X-3 does not enumerate as it enumerates the malefics (crux C117)",
             ),
@@ -151,11 +148,16 @@ impl YearYoga {
     /// A call that does not supply them lists these under
     /// [`YearYogas::unanswered`], and [`YearYogas::why`] says so: the
     /// build can answer, and this call gave it nothing to answer from.
+    ///
+    /// Tambira is here for one clause the source leaves unstated: its
+    /// lord must go on **into** the next sign, and a retrograde one at a
+    /// sign's end is going back (crux C120). Gairi-Kamboola is not, since
+    /// the Moon it moves never turns.
     #[must_use]
     pub const fn needs_states(self) -> bool {
         matches!(
             self,
-            YearYoga::Rudda | YearYoga::DuhphaliKuttha | YearYoga::Durapha
+            YearYoga::Rudda | YearYoga::DuhphaliKuttha | YearYoga::Durapha | YearYoga::Tambira
         )
     }
 
@@ -177,6 +179,15 @@ impl YearYoga {
                 | YearYoga::Rudda
                 | YearYoga::DuhphaliKuttha
         )
+    }
+
+    /// Whether it can hold only where the pair do **not** aspect: the
+    /// light carried or gathered by a third (Nakta, Yamaya), or completed
+    /// from the next sign (Tambira) -- each the source's answer to a pair
+    /// that cannot meet on its own.
+    #[must_use]
+    pub const fn needs_no_aspect(self) -> bool {
+        matches!(self, YearYoga::Nakta | YearYoga::Yamaya | YearYoga::Tambira)
     }
 
     /// Whether it is a fact about the **chart** rather than a judgement
@@ -375,6 +386,8 @@ pub struct YogaRules {
     /// Defaults to [`YOGA_STRONG_FROM`]; never below `weak_below`, since
     /// no planet can be both.
     pub strong_from: Bala,
+    /// Which of the pair a Tambira lets reach the next sign.
+    pub tambira: TambiraMover,
 }
 
 impl Default for YogaRules {
@@ -383,8 +396,26 @@ impl Default for YogaRules {
             drishti: DrishtiRules::default(),
             weak_below: YOGA_WEAK_BELOW,
             strong_from: YOGA_STRONG_FROM,
+            tambira: TambiraMover::default(),
         }
     }
+}
+
+/// Which of the pair may be the one at a sign's end in a **Tambira**.
+///
+/// The source gives both readings on one page: its definition moves the
+/// karyesha, and its comment adds that "according to some authorities,
+/// either of the lagnesha and karyesha may be at the end of a sign" and
+/// complete the Ithasala from the next.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum TambiraMover {
+    /// **The karyesha**, the default: the definition and Table X-3.
+    #[default]
+    Karyesha,
+    /// **Either lord**: the "some authorities" of the source's comment.
+    EitherLord,
 }
 
 impl From<DrishtiRules> for YogaRules {
@@ -693,14 +724,35 @@ pub struct Held {
     /// The pair's own relation, where that is what made it: an Ithasala
     /// or an Ishrafa between the lagnesha and the karyesha.
     pub between: Option<Between>,
-    /// The third planet that carried or gathered the light, where one
-    /// did: Nakta's faster intermediary or Yamaya's slower one.
+    /// The third planet the yoga turns on, where one does: the one that
+    /// carried or gathered the light, the malefic, the Moon, or the
+    /// strong planet a lord is drawn to.
     pub through: Option<Graha>,
     /// How the intermediary stands to the lagnesha, and to the karyesha.
     pub legs: Option<[Between; 2]>,
     /// How the lagnesha and the karyesha stand to the afflictions, where
     /// those are what made it: Rudda and Durapha.
     pub afflictions: Option<[Affliction; 2]>,
+    /// The planet judged **on entering the next sign**, where one was:
+    /// Gairi-Kamboola's Moon, or Tambira's lord at a sign's end. The
+    /// [`Held::legs`] are then read from where it will stand, at the next
+    /// sign's first degree, and not from where it is.
+    pub entering: Option<Graha>,
+}
+
+impl Held {
+    /// A yoga holding with nothing yet said about what made it; each
+    /// judgement fills in the fields its yoga reads.
+    const fn of(yoga: YearYoga) -> Held {
+        Held {
+            yoga,
+            between: None,
+            through: None,
+            legs: None,
+            afflictions: None,
+            entering: None,
+        }
+    }
 }
 
 /// Every one of the sixteen this build can answer for, for one matter.
@@ -734,8 +786,8 @@ pub struct YearYogas {
     /// Every one of the sixteen that holds.
     pub held: Vec<Held>,
     /// The ones this call cannot answer for: those the build does not
-    /// compute, and — where no [`AnnualStates`] were supplied — the three
-    /// that need them.
+    /// compute, and — where no [`AnnualStates`] were supplied — those
+    /// that need them ([`YearYoga::needs_states`]).
     ///
     /// Never empty today, and that is the point: an absent yoga in
     /// [`YearYogas::held`] means it did not hold **only** for the ones
@@ -767,8 +819,9 @@ impl YearYogas {
     /// Why this call could not answer for `yoga`, or `None` where it did.
     ///
     /// Either what the build still needs ([`YearYoga::awaiting`]) or, for
-    /// the three that read retrograde and combustion, that this call was
-    /// not given them — two different remedies, so two different answers.
+    /// those that read retrograde and combustion
+    /// ([`YearYoga::needs_states`]), that this call was not given them —
+    /// two different remedies, so two different answers.
     #[must_use]
     pub fn why(&self, yoga: YearYoga) -> Option<&'static str> {
         if !self.unanswered.contains(&yoga) {
@@ -864,15 +917,12 @@ fn judge(
         let all = strengths(sky, rules)?;
         if let Some(yoga) = pair.yoga {
             held.push(Held {
-                afflictions: None,
-                yoga: if yoga.is_ithasala() {
+                between: Some(pair),
+                ..Held::of(if yoga.is_ithasala() {
                     YearYoga::Ithasala
                 } else {
                     YearYoga::Ishrafa
-                },
-                between: Some(pair),
-                through: None,
-                legs: None,
+                })
             });
             if yoga.is_ithasala() {
                 // The judgements **about** an Ithasala rather than
@@ -882,7 +932,7 @@ fn judge(
                 // spoilt; the Ithasala is still the configuration that
                 // was, and a consumer that saw only the verdict could not
                 // say what happened.
-                held.extend(upon_the_ithasala(&pair, sky, rules.drishti)?);
+                held.extend(upon_the_ithasala(&pair, &all, sky, rules.drishti)?);
                 if let Some(states) = states {
                     held.extend(spoilt(
                         &pair,
@@ -899,6 +949,9 @@ fn judge(
             // third planet: the source asks for the light to be carried
             // where there is no aspect to carry it.
             held.extend(carried(lagnesha, karyesha, sky, rules.drishti)?);
+            if let Some(states) = states {
+                held.extend(tambira([lagnesha, karyesha], &all, sky, states, rules)?);
+            }
         }
         // Asked whatever the pair do between themselves: the source
         // conditions these on the pair's weakness, and on nothing they
@@ -943,22 +996,15 @@ fn strength_in(all: &[Strength; 7], graha: Graha) -> Result<Strength, Error> {
 /// judgements about a pair, so they carry nothing but their name.
 fn chart_facts(lagna: Rashi, sky: &AnnualSky) -> Vec<Held> {
     let houses = SEVEN.map(|graha| house_of(graha, lagna, sky));
-    let fact = |yoga| Held {
-        afflictions: None,
-        yoga,
-        between: None,
-        through: None,
-        legs: None,
-    };
     let mut found = Vec::new();
     if houses
         .iter()
         .all(|house| house.is_kendra() || house.is_panaphara())
     {
-        found.push(fact(YearYoga::Ikabala));
+        found.push(Held::of(YearYoga::Ikabala));
     }
     if houses.iter().all(|house| house.is_apoklima()) {
-        found.push(fact(YearYoga::Induvara));
+        found.push(Held::of(YearYoga::Induvara));
     }
     found
 }
@@ -982,10 +1028,8 @@ fn spoilt(
 ) -> Result<Vec<Held>, Error> {
     let upon = |yoga, afflictions| Held {
         afflictions,
-        yoga,
         between: Some(*pair),
-        through: None,
-        legs: None,
+        ..Held::of(yoga)
     };
     let mut found = Vec::new();
     let afflictions = lords.map(|graha| afflicted(graha, lagna, sky, states));
@@ -1030,21 +1074,21 @@ fn durapha(
         .all(|one| one.trika || one.combust || one.retrograde);
     Ok(marked.then_some(Held {
         afflictions: Some(afflictions),
-        yoga: YearYoga::Durapha,
-        between: None,
-        through: None,
-        legs: None,
+        ..Held::of(YearYoga::Durapha)
     }))
 }
 
-/// The three yogas that judge an **Ithasala** the pair already makes:
-/// Manau, which a malefic destroys; Kamboola, which the Moon joins; and
-/// Khallasara, which an unqualified Moon negates by standing apart.
+/// The yogas that judge an **Ithasala** the pair already makes and read
+/// no retrograde or combustion: Manau, which a malefic destroys;
+/// Kamboola, which the Moon joins; Gairi-Kamboola, which an unqualified
+/// Moon completes from the next sign; and Khallasara, which an
+/// unqualified Moon negates by standing apart.
 ///
-/// All three are asked of the same Ithasala and none excludes another,
-/// so they are found in one pass over the third planets that matter.
+/// All are asked of the same Ithasala and found in one pass over the
+/// third planets that matter. Only the last two exclude each other.
 fn upon_the_ithasala(
     pair: &Between,
+    all: &[Strength; 7],
     sky: &AnnualSky,
     rules: DrishtiRules,
 ) -> Result<Vec<Held>, Error> {
@@ -1065,14 +1109,13 @@ fn upon_the_ithasala(
             continue;
         }
         found.push(Held {
-            afflictions: None,
-            yoga: YearYoga::Manau,
             between: Some(*pair),
             through: Some(malefic),
             legs: Some([
                 between_with_rules(malefic, fast, sky, rules)?,
                 between_with_rules(malefic, slow, sky, rules)?,
             ]),
+            ..Held::of(YearYoga::Manau)
         });
     }
 
@@ -1089,25 +1132,44 @@ fn upon_the_ithasala(
             .any(|leg| leg.yoga.is_some_and(crate::Yoga::is_ithasala));
         if joins {
             found.push(Held {
-                afflictions: None,
-                yoga: YearYoga::Kamboola,
                 between: Some(*pair),
                 through: Some(Graha::Moon),
                 legs: Some(legs),
+                ..Held::of(YearYoga::Kamboola)
             });
         }
-        // Khallasara wants the Moon neither aspecting nor sharing a sign
-        // with either -- one question in Tajika, where a shared sign is
-        // an aspect -- and unqualified besides.
-        let apart = legs.iter().all(|leg| !leg.drishti.is_aspect());
-        if apart && qualification(Graha::Moon, sky)?.is_unqualified() {
-            found.push(Held {
-                afflictions: None,
-                yoga: YearYoga::Khallasara,
+        // Gairi-Kamboola and Khallasara both want the Moon unqualified,
+        // and differ in what it does next: completes the Ithasala from
+        // the next sign, or stands wholly apart from it.
+        if qualification(Graha::Moon, sky)?.is_unqualified() {
+            let completed = completes_on_entering(
+                YearYoga::GairiKamboola,
+                Graha::Moon,
+                &[fast, slow],
+                [fast, slow],
+                all,
+                sky,
+                rules,
+            )?;
+            // Khallasara wants the Moon neither aspecting nor sharing a
+            // sign with either -- one question in Tajika, where a shared
+            // sign is an aspect. A Moon that completes a Gairi-Kamboola is
+            // not apart from the Ithasala, whatever its sign does now: the
+            // source's comment on Khallasara rules the other out because
+            // its Moon "is not even in Rashyanta" (crux C121).
+            let apart = legs.iter().all(|leg| !leg.drishti.is_aspect());
+            if apart && completed.is_empty() {
+                found.push(Held {
+                    between: Some(*pair),
+                    through: Some(Graha::Moon),
+                    legs: Some(legs),
+                    ..Held::of(YearYoga::Khallasara)
+                });
+            }
+            found.extend(completed.into_iter().map(|held| Held {
                 between: Some(*pair),
-                through: Some(Graha::Moon),
-                legs: Some(legs),
-            });
+                ..held
+            }));
         }
     }
     Ok(found)
@@ -1165,12 +1227,124 @@ fn carried(
             YearYoga::Yamaya
         };
         found.push(Held {
-            afflictions: None,
-            yoga,
-            between: None,
             through: Some(third),
             legs: Some([to_lagna, to_karya]),
+            ..Held::of(yoga)
         });
+    }
+    Ok(found)
+}
+
+/// Where a planet at a sign's end will stand **on entering the next**:
+/// the same sky with it at the next sign's first degree and the other
+/// six where they are (crux C120).
+///
+/// Nothing where it stands short of [`RASHYANTA_DEG`]. That is the
+/// source's own threshold for a planet that "extends its influence to
+/// the next house", and its words for both yogas that ask this — "on
+/// the last degree of a sign", "at the end of a sign" — name the same
+/// place; its worked Gairi-Kamboola puts the Moon at 29°.
+fn entering_next(graha: Graha, sky: &AnnualSky) -> Option<AnnualSky> {
+    let longitude = sky.longitude_of(graha);
+    (longitude.rem_euclid(30.0) >= RASHYANTA_DEG)
+        .then(|| sky.with(graha, ((longitude / 30.0).floor() + 1.0) * 30.0))
+}
+
+/// A planet at a sign's end that, on entering the next, comes into
+/// Ithasala with one of `partners` **and** with a strong third planet:
+/// what Gairi-Kamboola asks of the Moon and Tambira of a lord.
+///
+/// One [`Held`] for each strong third planet it reaches, as Manau and
+/// Nakta hold once for each planet that makes them. The partner leg is
+/// the first of `partners` it reaches; the third is never the mover nor
+/// either of `lords`, since the source asks for "some powerful planet"
+/// and "another planet" beside the pair. The third's strength is read
+/// where it stands, because only the mover moves.
+fn completes_on_entering(
+    yoga: YearYoga,
+    mover: Graha,
+    partners: &[Graha],
+    lords: [Graha; 2],
+    all: &[Strength; 7],
+    sky: &AnnualSky,
+    rules: DrishtiRules,
+) -> Result<Vec<Held>, Error> {
+    let Some(next) = entering_next(mover, sky) else {
+        return Ok(Vec::new());
+    };
+    let ithasala = |other: Graha| -> Result<Option<Between>, Error> {
+        let leg = between_with_rules(mover, other, &next, rules)?;
+        Ok(leg
+            .yoga
+            .is_some_and(crate::Yoga::is_ithasala)
+            .then_some(leg))
+    };
+    let mut to_partner = None;
+    for partner in partners {
+        to_partner = ithasala(*partner)?;
+        if to_partner.is_some() {
+            break;
+        }
+    }
+    let Some(to_partner) = to_partner else {
+        return Ok(Vec::new());
+    };
+    let mut found = Vec::new();
+    for third in all {
+        if third.graha == mover || lords.contains(&third.graha) || !third.is_strong() {
+            continue;
+        }
+        if let Some(to_third) = ithasala(third.graha)? {
+            found.push(Held {
+                through: Some(third.graha),
+                legs: Some([to_partner, to_third]),
+                entering: Some(mover),
+                ..Held::of(yoga)
+            });
+        }
+    }
+    Ok(found)
+}
+
+/// **Tambira**: a pair that neither aspect nor make an Ithasala, and a
+/// lord at a sign's end that completes one from the next — with the
+/// other lord, and with "another planet which is strong or in its own
+/// house", which is [`Strength::is_strong`] and not a second reading.
+///
+/// Asked only of a pair that does not aspect, which is the source's
+/// first clause entire: without an aspect there is no Ithasala of any
+/// kind. The lord must be going on into the next sign, so a retrograde
+/// one is passed by (crux C120). Which lord may move is
+/// [`YogaRules::tambira`].
+fn tambira(
+    lords: [Graha; 2],
+    all: &[Strength; 7],
+    sky: &AnnualSky,
+    states: &AnnualStates,
+    rules: YogaRules,
+) -> Result<Vec<Held>, Error> {
+    let [lagnesha, karyesha] = lords;
+    let movers = [
+        Some((karyesha, lagnesha)),
+        match rules.tambira {
+            TambiraMover::Karyesha => None,
+            TambiraMover::EitherLord => Some((lagnesha, karyesha)),
+        },
+    ];
+    let mut found = Vec::new();
+    for (mover, partner) in movers.into_iter().flatten() {
+        if states.is_retrograde(mover) {
+            continue;
+        }
+        found.extend(completes_on_entering(
+            YearYoga::Tambira,
+            mover,
+            &[partner],
+            lords,
+            all,
+            sky,
+            rules.drishti,
+        )?);
     }
     Ok(found)
 }
@@ -1215,11 +1389,9 @@ fn dutthottha_davira(
             .any(|leg| leg.yoga.is_some_and(crate::Yoga::is_ithasala))
         {
             found.push(Held {
-                afflictions: None,
-                yoga: YearYoga::DutthotthaDavira,
-                between: None,
                 through: Some(third.graha),
                 legs: Some(legs),
+                ..Held::of(YearYoga::DutthotthaDavira)
             });
         }
     }
@@ -1236,9 +1408,9 @@ mod tests {
     )]
 
     use super::{
-        Affliction, Held, MALEFICS, Strength, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YearYoga,
-        YearYogas, YogaRules, affliction, qualification, strength, strength_with_rules, year_yogas,
-        year_yogas_with_rules, year_yogas_with_states,
+        Affliction, Held, MALEFICS, Strength, TambiraMover, YOGA_STRONG_FROM, YOGA_WEAK_BELOW,
+        YearYoga, YearYogas, YogaRules, affliction, qualification, strength, strength_with_rules,
+        year_yogas, year_yogas_with_rules, year_yogas_with_states,
     };
     use crate::bala::{AnnualSky, Bala};
     use crate::drishti::{DrishtiRules, SubDegree, Yoga};
@@ -1365,11 +1537,16 @@ mod tests {
     /// `holds` says nothing, and `why` says which of two reasons applies.
     #[test]
     fn an_unanswered_yoga_says_why_rather_than_reading_as_absent() {
-        // Without states: the three the build does not compute, and the
-        // three it could answer had it been given retrograde and combust.
+        // Without states: those the build does not compute, and those it
+        // could answer had it been given retrograde and combust.
+        let count = |is: fn(&YearYoga) -> bool| YearYoga::ALL.iter().filter(|one| is(one)).count();
+        let unbuilt = count(|one| !one.is_built());
         let found = asked(7);
         assert_eq!(found.states, None);
-        assert_eq!(found.unanswered.len(), 6);
+        assert_eq!(
+            found.unanswered.len(),
+            unbuilt + count(|one| one.needs_states())
+        );
         for yoga in &found.unanswered {
             assert_eq!(found.holds(*yoga), None);
             let why = found.why(*yoga).unwrap();
@@ -1384,8 +1561,8 @@ mod tests {
         // An answered yoga has no reason to give.
         assert_eq!(found.why(YearYoga::Ithasala), None);
 
-        // With states: only the build's own three remain, and the built
-        // and the unanswered are the sixteen.
+        // With states: only the build's own remain, and the built and the
+        // unanswered are the sixteen.
         let states = AnnualStates::default();
         let full = year_yogas_with_states(
             WORKED_LAGNA_DEG,
@@ -1396,7 +1573,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(full.states.as_ref(), Some(&states));
-        assert_eq!(full.unanswered.len(), 3);
+        assert_eq!(full.unanswered.len(), unbuilt);
         let built = YearYoga::ALL.into_iter().filter(|one| one.is_built());
         assert_eq!(built.count() + full.unanswered.len(), YearYoga::ALL.len());
         for yoga in YearYoga::ALL.into_iter().filter(|one| one.needs_states()) {
@@ -2317,6 +2494,218 @@ mod tests {
         assert_eq!(refused.field(), Some("combust"));
     }
 
+    /// The source's worked Gairi-Kamboola, Chart X-17 (K.S. Charak, ch.
+    /// X): Scorpio rising, Mars the lagnesha at 6° of Taurus in Ithasala
+    /// with the Sun, the tenth lord, at 4° of Cancer; an unqualified Moon
+    /// at 29° of Sagittarius; Saturn at 7° of Capricorn, in its own sign.
+    ///
+    /// The chart is "hypothetical" and prints those four. Mercury, Venus
+    /// and Jupiter are placed here where they neither aspect the Moon nor
+    /// reach the next sign's first degree within an orb -- the test's own
+    /// completion, which the book's prose needs to be true and does not
+    /// print.
+    fn chart_x17(moon_deg: f64, saturn_deg: f64) -> AnnualSky {
+        let at = |sign: f64, deg: f64| sign * 30.0 + deg;
+        AnnualSky {
+            sun_deg: at(3.0, 4.0),
+            moon_deg: at(8.0, moon_deg),
+            mars_deg: at(1.0, 6.0),
+            mercury_deg: at(3.0, 20.0),
+            jupiter_deg: at(7.0, 20.0),
+            venus_deg: at(1.0, 20.0),
+            saturn_deg: at(9.0, saturn_deg),
+        }
+    }
+
+    /// Scorpio 15°: X-17 prints the lagna's sign and not its degree.
+    const X17_LAGNA_DEG: f64 = 7.0 * 30.0 + 15.0;
+
+    /// The book's answer, asserted as printed: on entering Capricorn the
+    /// Moon comes into Ithasala with Saturn in its own house, and with the
+    /// pair -- "the lagna lord as well as the tenth lord".
+    #[test]
+    fn the_worked_gairi_kamboola_holds_as_the_book_prints_it() {
+        let sky = chart_x17(29.0, 7.0);
+        assert!(
+            qualification(Graha::Moon, &sky).unwrap().is_unqualified(),
+            "the book calls this Moon unqualified"
+        );
+        let found = year_yogas(X17_LAGNA_DEG, house(10), &sky).unwrap();
+        assert_eq!((found.lagnesha, found.karyesha), (Graha::Mars, Graha::Sun));
+        assert_eq!(found.holds(YearYoga::Ithasala), Some(true));
+        let gairi: Vec<&Held> = found
+            .held
+            .iter()
+            .filter(|one| one.yoga == YearYoga::GairiKamboola)
+            .collect();
+        assert_eq!(gairi.len(), 1, "one powerful planet, one yoga");
+        let held = gairi[0];
+        assert_eq!(held.entering, Some(Graha::Moon));
+        assert_eq!(held.through, Some(Graha::Saturn));
+        assert_eq!(held.between, found.between);
+        let [to_pair, to_saturn] = held.legs.unwrap();
+        for leg in [to_pair, to_saturn] {
+            assert!(leg.yoga.unwrap().is_ithasala(), "{leg:?}");
+            assert_eq!(leg.faster, Graha::Moon, "the Moon is behind at 0°");
+        }
+        assert_eq!(to_saturn.slower, Graha::Saturn);
+        assert!((to_saturn.apart_deg - 7.0).abs() < 1e-9);
+        // The book says the Moon reaches **both** lords; the leg carries
+        // the first, and the second is as true.
+        assert!([Graha::Sun, Graha::Mars].contains(&to_pair.slower));
+        // From where it stands, the Moon aspects neither of the pair, so
+        // there is no Kamboola now -- the whole point of the yoga.
+        assert_eq!(found.holds(YearYoga::Kamboola), Some(false));
+        // And no Khallasara, though every one of its printed clauses
+        // holds: its Moon is one that "is not even in Rashyanta" (C121).
+        assert_eq!(found.holds(YearYoga::Khallasara), Some(false));
+        // Needs no states: the Moon never turns back.
+        assert!(!YearYoga::GairiKamboola.needs_states());
+        assert!(!found.unanswered.contains(&YearYoga::GairiKamboola));
+    }
+
+    /// Gairi-Kamboola and Khallasara want the same unqualified Moon apart
+    /// from the pair; they part on whether it completes the Ithasala from
+    /// the next sign, so exactly one holds.
+    #[test]
+    fn gairi_kamboola_and_khallasara_divide_the_unqualified_moon() {
+        let asked = |sky: &AnnualSky| year_yogas(X17_LAGNA_DEG, house(10), sky).unwrap();
+        // A degree short of the sign's end: nothing to enter, so the
+        // unqualified Moon stands apart and negates.
+        let short = asked(&chart_x17(28.0, 7.0));
+        assert!(
+            qualification(Graha::Moon, &chart_x17(28.0, 7.0))
+                .unwrap()
+                .is_unqualified()
+        );
+        assert_eq!(short.holds(YearYoga::GairiKamboola), Some(false));
+        assert_eq!(short.holds(YearYoga::Khallasara), Some(true));
+        // At the sign's end, but Saturn beyond the orb: the Moon enters
+        // and meets no powerful planet, so it completes nothing -- and
+        // Khallasara stands.
+        let alone = asked(&chart_x17(29.0, 15.0));
+        assert_eq!(alone.holds(YearYoga::GairiKamboola), Some(false));
+        assert_eq!(alone.holds(YearYoga::Khallasara), Some(true));
+        // The printed chart: completes, and so does not negate.
+        let worked = asked(&chart_x17(29.0, 7.0));
+        assert_eq!(worked.holds(YearYoga::GairiKamboola), Some(true));
+        assert_eq!(worked.holds(YearYoga::Khallasara), Some(false));
+    }
+
+    /// A Tambira composed from its three clauses: Aries rising, Mars the
+    /// lagnesha at 5° of Aries; Venus, lord of the second, at 29°30′ of
+    /// Taurus, which Aries does not aspect; Jupiter at 4° of its own
+    /// Sagittarius. Entering Gemini, Venus is behind Mars by five degrees
+    /// across a secretly friendly aspect, and behind Jupiter by four
+    /// across the seventh.
+    const TAMBIRA: AnnualSky = AnnualSky {
+        sun_deg: 40.0,
+        moon_deg: 290.0,
+        mars_deg: 5.0,
+        mercury_deg: 50.0,
+        jupiter_deg: 244.0,
+        venus_deg: 59.5,
+        saturn_deg: 200.0,
+    };
+
+    #[test]
+    fn tambira_is_the_karyesha_completing_the_ithasala_from_the_next_sign() {
+        let found = with(&TAMBIRA, 5.0, 2, &AnnualStates::default());
+        assert_eq!(
+            (found.lagnesha, found.karyesha),
+            (Graha::Mars, Graha::Venus)
+        );
+        let pair = found.between.unwrap();
+        assert!(!pair.drishti.is_aspect(), "the first clause: no aspect");
+        let tambira: Vec<&Held> = found
+            .held
+            .iter()
+            .filter(|one| one.yoga == YearYoga::Tambira)
+            .collect();
+        assert_eq!(tambira.len(), 1);
+        let held = tambira[0];
+        assert_eq!(held.entering, Some(Graha::Venus));
+        assert_eq!(held.through, Some(Graha::Jupiter));
+        assert!(strength(Graha::Jupiter, &TAMBIRA).unwrap().own_sign);
+        let [to_lagnesha, to_jupiter] = held.legs.unwrap();
+        assert_eq!(
+            (to_lagnesha.faster, to_lagnesha.slower),
+            (Graha::Venus, Graha::Mars)
+        );
+        assert!((to_lagnesha.apart_deg - 5.0).abs() < 1e-9);
+        assert!((to_jupiter.apart_deg - 4.0).abs() < 1e-9);
+        assert!(to_lagnesha.yoga.unwrap().is_ithasala());
+        assert!(to_jupiter.yoga.unwrap().is_ithasala());
+    }
+
+    /// Tambira needs the lord to go **on** into the next sign: a
+    /// retrograde one at a sign's end is going back, so the call must be
+    /// given the states or say it was not (C120).
+    #[test]
+    fn a_retrograde_lord_enters_nothing_and_tambira_needs_the_states() {
+        let turned = with(&TAMBIRA, 5.0, 2, &states(&[Graha::Venus], &[]));
+        assert_eq!(turned.holds(YearYoga::Tambira), Some(false));
+        let blind = year_yogas(5.0, house(2), &TAMBIRA).unwrap();
+        assert_eq!(blind.holds(YearYoga::Tambira), None);
+        assert!(blind.why(YearYoga::Tambira).unwrap().contains("not given"));
+    }
+
+    /// The same sky with the pair's offices swapped: Taurus rising makes
+    /// Venus the lagnesha and Mars, lord of the twelfth, the karyesha. The
+    /// definition moves only the karyesha; the source's "some
+    /// authorities" let either move, and the knob says which.
+    #[test]
+    fn which_lord_may_move_is_a_knob() {
+        let lagna = 30.0 + 10.0;
+        let ask = |tambira| {
+            year_yogas_with_states(
+                lagna,
+                house(12),
+                &TAMBIRA,
+                &AnnualStates::default(),
+                YogaRules {
+                    tambira,
+                    ..YogaRules::default()
+                },
+            )
+            .unwrap()
+        };
+        let definition = ask(TambiraMover::Karyesha);
+        assert_eq!(
+            (definition.lagnesha, definition.karyesha),
+            (Graha::Venus, Graha::Mars)
+        );
+        assert_eq!(definition.holds(YearYoga::Tambira), Some(false));
+        let either = ask(TambiraMover::EitherLord);
+        assert_eq!(either.holds(YearYoga::Tambira), Some(true));
+        let held = either
+            .held
+            .iter()
+            .find(|one| one.yoga == YearYoga::Tambira)
+            .unwrap();
+        assert_eq!(held.entering, Some(Graha::Venus), "the lagnesha moved");
+        assert_eq!(TambiraMover::default(), TambiraMover::Karyesha);
+    }
+
+    /// A planet short of a sign's end is not projected at all, and one at
+    /// its end lands on the next sign's first degree -- Pisces into Aries
+    /// across the circle's seam included.
+    #[test]
+    fn only_a_planet_at_a_signs_end_enters_the_next() {
+        use super::entering_next;
+        assert_eq!(entering_next(Graha::Mars, &TAMBIRA), None);
+        let next = entering_next(Graha::Venus, &TAMBIRA).unwrap();
+        assert!((next.longitude_of(Graha::Venus) - 60.0).abs() < 1e-9);
+        assert!((next.longitude_of(Graha::Mars) - 5.0).abs() < 1e-9);
+        let seam = AnnualSky {
+            moon_deg: 359.5,
+            ..TAMBIRA
+        };
+        let over = entering_next(Graha::Moon, &seam).unwrap();
+        assert_eq!(over.sign_of(Graha::Moon), Rashi::Aries);
+        assert!(over.longitude_of(Graha::Moon).abs() < 1e-9);
+    }
+
     /// The two groupings `YearYoga` describes itself by hold of every
     /// sky these tests use, under every set of states: no judgement upon
     /// an Ithasala without one, and no weak-pair yoga without a weak pair.
@@ -2328,6 +2717,8 @@ mod tests {
             (WEAK_PAIR, WEAK_PAIR_LAGNA_DEG),
             (CLEAN_ITHASALA, CLEAN_LAGNA_DEG),
             (DUHPHALI, DUHPHALI_LAGNA_DEG),
+            (TAMBIRA, 5.0),
+            (chart_x17(29.0, 7.0), X17_LAGNA_DEG),
         ];
         let marked = states(
             &[Graha::Mars, Graha::Mercury, Graha::Venus],
@@ -2341,7 +2732,11 @@ mod tests {
                     let weak_pair = !found.same_lord
                         && strength(found.lagnesha, &sky).unwrap().is_weak()
                         && strength(found.karyesha, &sky).unwrap().is_weak();
+                    let unaspecting = found.between.is_some_and(|pair| !pair.drishti.is_aspect());
                     for one in &found.held {
+                        if one.yoga.needs_no_aspect() {
+                            assert!(unaspecting, "{:?} where the pair aspect", one.yoga);
+                        }
                         if one.yoga.judges_an_ithasala() {
                             assert!(ithasala, "{:?} without an Ithasala", one.yoga);
                         }
@@ -2353,16 +2748,21 @@ mod tests {
             }
         }
         // And the declarations are the source's: six judge an Ithasala,
-        // two want a weak pair, none both.
+        // two want a weak pair, three want no aspect, and none of the
+        // three groupings shares a yoga with another.
         let count =
             |is: fn(YearYoga) -> bool| YearYoga::ALL.into_iter().filter(|one| is(*one)).count();
         assert_eq!(count(YearYoga::judges_an_ithasala), 6);
         assert_eq!(count(YearYoga::needs_a_weak_pair), 2);
         assert_eq!(count(YearYoga::is_chart_fact), 2);
-        assert!(
-            YearYoga::ALL
-                .into_iter()
-                .all(|one| !(one.judges_an_ithasala() && one.needs_a_weak_pair()))
-        );
+        assert_eq!(count(YearYoga::needs_no_aspect), 3);
+        assert!(YearYoga::ALL.into_iter().all(|one| {
+            let groups = [
+                one.judges_an_ithasala(),
+                one.needs_a_weak_pair(),
+                one.needs_no_aspect(),
+            ];
+            groups.into_iter().filter(|is| *is).count() <= 1
+        }));
     }
 }

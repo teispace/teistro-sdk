@@ -219,9 +219,16 @@ or better, and *Madhya* is neither.
 about a chart; and Rudda, Duhphali-kuttha and Durapha, which read
 retrograde and combustion from the founded chart's graha states. Read
 literally, Rudda spoils 94.4% of the corpus's Ithasalas (C118); Durapha's
-list is parsed as alternatives (C119). Left: Tambira and Gairi-Kamboola,
-which need a projection into the next sign, and Kuttha, which needs
-Tajika's benefics (C117).
+list is parsed as alternatives (C119).
+
+**Then yogas 9 and 14**, Gairi-Kamboola and Tambira, the two that ask
+what a planet at a sign's end does on entering the next. One projection
+serves both (C120), and the source's worked Gairi-Kamboola, Chart X-17,
+is the acceptance test. Read literally, that chart is a Khallasara too,
+and the source's own comment on Khallasara says it is not (C121). Tambira
+ships the definition's karyesha and, as a knob, the comment's "some
+authorities" reading, which lets either lord move. Left: Kuttha, which
+needs Tajika's benefics (C117).
 
 **Reading the pair rule against the chart found something the table does
 not state.** The **first** house's lord *is* the lagnesha, so a question
