@@ -1425,7 +1425,7 @@ class AnEngine(WithLibrary):
         for varsha, field in [
             ({"through": 2, "sahams": ["punya"]}, "varsha_json.sahams"),
             ({"through": 2, "place": "birth", "sahams": ["punya", Saham.PUNYA]}, "varsha_json.sahams"),
-            ({"through": 2, "place": "birth", "sahams": ["pnya"]}, "varsha_json.sahams"),
+            ({"through": 2, "place": "birth", "sahams": ["pnya"]}, "varsha_json.sahams[0]"),
             (
                 {"through": 2, "place": "birth", "sahams": ["punya"], "saham_rules": {"add_sgn": "never"}},
                 "varsha_json.sahamRules.addSgn",

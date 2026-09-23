@@ -18,8 +18,16 @@
 //!
 //! let typo = read::<Ring>(r#"{"inner": 0.2, "outer": 0.4, "outr": 0.5}"#, "ring").unwrap_err();
 //! assert_eq!(typo.field(), Some("ring.outr"));
+//!
+//! // A value of the wrong kind is named where it stands, not by its record.
+//! let wide = read::<Ring>(r#"{"inner": "wide", "outer": 0.4}"#, "ring").unwrap_err();
+//! assert_eq!(wide.field(), Some("ring.inner"));
 //! # Ok::<(), teistro_core::error::Error>(())
 //! ```
+//!
+//! A value inside an internally tagged enum is buffered before it is read,
+//! so a failure there is named down to the enum and no further: serde
+//! reads the buffer, not the caller's keys.
 
 use serde::Serialize;
 use serde::de::DeserializeOwned;
@@ -45,7 +53,7 @@ pub fn read<T: Serialize + DeserializeOwned>(text: &str, root: &str) -> Result<T
 ///
 /// As [`read`].
 pub fn read_value<T: Serialize + DeserializeOwned>(given: &Value, root: &str) -> Result<T, Error> {
-    let value = T::deserialize(given).map_err(|err| not_json(root, &err))?;
+    let value: T = deserialize(given, root)?;
     let read = serde_json::to_value(&value).map_err(|err| not_json(root, &err))?;
     match unread(given, &read, root) {
         None => Ok(value),
@@ -79,8 +87,58 @@ fn unread(given: &Value, read: &Value, path: &str) -> Option<String> {
     }
 }
 
-fn not_json(root: &str, err: &serde_json::Error) -> Error {
-    Error::invalid_arg(format!("`{root}` is not one: {err}")).with_field(root.to_owned())
+/// Reads a value from JSON already parsed, naming a failure by the path to
+/// the value that failed under `root` — without [`read`]'s key-for-key
+/// check.
+///
+/// For a record whose serialised form is not what it reads, such as a
+/// patch that leaves out what it does not change, and which refuses an
+/// unknown key itself with `deny_unknown_fields`.
+///
+/// # Errors
+///
+/// JSON that is not the type, named where it failed.
+pub fn deserialize<T: DeserializeOwned>(given: &Value, root: &str) -> Result<T, Error> {
+    serde_path_to_error::deserialize(given).map_err(|err| {
+        let at = under(root, &err.path().to_string());
+        not_json(&at, err.inner())
+    })
+}
+
+/// As [`deserialize`], from JSON text.
+///
+/// # Errors
+///
+/// Text that is not JSON, or JSON that is not the type, named where it
+/// failed.
+pub fn deserialize_str<T: DeserializeOwned>(text: &str, root: &str) -> Result<T, Error> {
+    let mut reader = serde_json::Deserializer::from_str(text);
+    let value = serde_path_to_error::deserialize(&mut reader).map_err(|err| {
+        let at = under(root, &err.path().to_string());
+        not_json(&at, err.inner())
+    })?;
+    reader.end().map_err(|err| not_json(root, &err))?;
+    Ok(value)
+}
+
+/// A path the reader reported, under the caller's own root: `.` is the
+/// root itself, and an index joins without a dot. An empty root names
+/// from the value's own root, for a caller that adds its own prefix.
+fn under(root: &str, path: &str) -> String {
+    match path {
+        "." | "" => root.to_owned(),
+        _ if root.is_empty() || path.starts_with('[') => format!("{root}{path}"),
+        _ => format!("{root}.{path}"),
+    }
+}
+
+/// The refusal of a value that is not what `at` reads; at the root of an
+/// empty root it names no field, since there is none to name.
+fn not_json(at: &str, err: &serde_json::Error) -> Error {
+    if at.is_empty() {
+        return Error::invalid_arg(format!("it is not one: {err}"));
+    }
+    Error::invalid_arg(format!("`{at}` is not one: {err}")).with_field(at.to_owned())
 }
 
 #[cfg(test)]
@@ -130,13 +188,59 @@ mod tests {
     }
 
     #[test]
-    fn json_that_is_not_the_type_is_refused_at_the_root() {
+    fn text_that_is_not_json_is_refused_at_the_root() {
         assert_eq!(read::<Ring>("[", "ring").unwrap_err().field(), Some("ring"));
+        // A record where a list belongs is the root's own fault.
         assert_eq!(
-            read::<Ring>(r#"{"inner": "wide"}"#, "ring")
+            read::<Vec<Ring>>("{}", "rings").unwrap_err().field(),
+            Some("rings")
+        );
+    }
+
+    #[test]
+    fn a_value_of_the_wrong_kind_is_refused_where_it_stands() {
+        let wide = read::<Ring>(r#"{"inner": "wide"}"#, "ring").unwrap_err();
+        assert_eq!(wide.field(), Some("ring.inner"));
+        assert!(wide.message.contains("`ring.inner`"), "{}", wide.message);
+        // Down through a list, joined without a dot at the index.
+        let deep =
+            read::<Vec<Ring>>(r#"[{"inner": 0}, {"inner": 0, "outer": []}]"#, "rings").unwrap_err();
+        assert_eq!(deep.field(), Some("rings[1].outer"));
+        // A missing field is its record's fault: the key is not there to name.
+        assert_eq!(
+            read::<Ring>("{}", "ring").unwrap_err().field(),
+            Some("ring")
+        );
+    }
+
+    #[test]
+    fn the_lenient_readers_name_the_value_and_take_what_the_type_takes() {
+        // No key-for-key check: an extra key is the type's own business.
+        let ring: Ring = deserialize_str(r#"{"inner": 1, "extra": 2}"#, "ring").unwrap();
+        assert_eq!(ring.inner.to_bits(), 1.0_f64.to_bits());
+        let wide = deserialize_str::<Ring>(r#"{"inner": 1, "outer": "far"}"#, "ring").unwrap_err();
+        assert_eq!(wide.field(), Some("ring.outer"));
+        let parsed: Value = serde_json::from_str(r#"[{"inner": true}]"#).unwrap();
+        let deep = deserialize::<Vec<Ring>>(&parsed, "rings").unwrap_err();
+        assert_eq!(deep.field(), Some("rings[0].inner"));
+        // An empty root names from the value's own root, and a failure at
+        // that root names nothing.
+        let own = deserialize_str::<Ring>(r#"{"inner": []}"#, "").unwrap_err();
+        assert_eq!(own.field(), Some("inner"));
+        assert_eq!(deserialize_str::<Ring>("[]", "").unwrap_err().field(), None);
+        // Text after the value is refused, as `serde_json::from_str` does.
+        assert_eq!(
+            deserialize_str::<Ring>(r#"{"inner": 1} {}"#, "ring")
                 .unwrap_err()
                 .field(),
             Some("ring")
         );
+    }
+
+    #[test]
+    fn inside_a_tagged_enum_the_name_stops_at_the_enum() {
+        let err =
+            read::<Vec<Shape>>(r#"[{"kind": "circle", "radius": "big"}]"#, "shapes").unwrap_err();
+        assert_eq!(err.field(), Some("shapes[0]"));
     }
 }

@@ -145,8 +145,8 @@ impl RuleRequest {
         self
     }
 
-    /// A request read from JSON. A rule that does not read is refused by its
-    /// place, `rules[3]`, with what inside it did not.
+    /// A request read from JSON. A value that does not read is refused by
+    /// where it stands — `rules[3].when`, `houses` — with what was wrong.
     ///
     /// # Errors
     ///
@@ -164,10 +164,7 @@ impl RuleRequest {
                 .into_iter()
                 .enumerate()
                 .map(|(at, rule)| {
-                    serde_json::from_value::<Rule>(rule).map_err(|err| {
-                        Error::invalid_arg(format!("rule {at} does not read: {err}"))
-                            .with_field(format!("rules[{at}]"))
-                    })
+                    teistro_core::strict::deserialize::<Rule>(&rule, &format!("rules[{at}]"))
                 })
                 .collect::<Result<Vec<_>, _>>()?,
             Some(_) => {
@@ -176,10 +173,13 @@ impl RuleRequest {
                 );
             }
         };
-        let request: RuleRequest = serde_json::from_value(value).map_err(|err| {
-            Error::invalid_arg(format!("the rule request does not read: {err}"))
-                .with_hint("an object of `shipped`, `rules`, `readings`, `houses` and `longevity`")
-        })?;
+        // Named from the request's own root, which its caller prefixes.
+        let request: RuleRequest =
+            teistro_core::strict::deserialize(&value, "").map_err(|err| {
+                err.with_hint(
+                    "an object of `shipped`, `rules`, `readings`, `houses` and `longevity`",
+                )
+            })?;
         Ok(request.with_rules(rules))
     }
 

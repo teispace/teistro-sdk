@@ -1487,7 +1487,7 @@ test("a year's chart answers the sahams asked for", () => {
     assert.throws(() => years(varsha), (error) => error instanceof TeistroError && error.field === field);
   refused({ through: 2, sahams: ['punya'] }, 'varsha_json.sahams');
   refused({ through: 2, place: 'birth', sahams: ['punya', 'punya'] }, 'varsha_json.sahams');
-  refused({ through: 2, place: 'birth', sahams: ['pnya'] }, 'varsha_json.sahams');
+  refused({ through: 2, place: 'birth', sahams: ['pnya'] }, 'varsha_json.sahams[0]');
   refused({ through: 2, place: 'birth', sahams: ['punya'], sahamRules: { add_sign: 'never' } }, 'varsha_json.sahamRules.add_sign');
   ctx.dispose();
 });

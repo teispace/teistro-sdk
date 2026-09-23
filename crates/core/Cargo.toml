@@ -43,6 +43,10 @@ serde = { version = "1", features = ["derive"] }
 # test: `canonical.rs`'s `a_value_reads_back_from_its_own_bytes` fails if
 # the feature is ever off.
 serde_json = { version = "1", features = ["float_roundtrip"] }
+# Names where in a record a value failed to read — `layouts[0].ring.inner`
+# rather than the record alone — so a refusal names the field the caller
+# wrote wrongly (`strict`). dtolnay's, over serde's own `Deserializer`.
+serde_path_to_error = "0.1"
 sha2 = "0.11"
 schemars = { version = "1.2", optional = true }
 
