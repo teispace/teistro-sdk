@@ -1,8 +1,8 @@
 # The sixteen Tajika yogas
 
-Status: **seven of the sixteen built**, 2026-09-23; the other nine
-designed and *named*, which is not the same as absent. Steps 1, 2 and
-the first half of 3 landed the same day. Written after reading the
+Status: **eight of the sixteen built**, 2026-09-23; the other eight
+designed and *named*, which is not the same as absent. Steps 1 and 2,
+and the parts of 3 that needed nothing new, landed the same day. Written after reading the
 source's Table X-3 off the page and before writing any of it, as every
 module since Phase 4 has been. The definitions are in
 [`01-research/feature-universe/07-tajika-varshaphala.md`](../01-research/feature-universe/07-tajika-varshaphala.md),
@@ -205,7 +205,7 @@ by starting to write them would have been the expensive way.
 | malefic influence | `MALEFICS` and the sign aspect, built |
 | **retrograde** | the founded chart's graha rows — **not** in `AnnualSky`, which carries longitudes and nothing else |
 | **combust** | `teistro_state::burn::combustion`, which `teistro-tajika` does not depend on and should not |
-| **"strong" and "weak"** | the Vishwa bala, built — but the source floors it at five units **for the year lord only** and says nothing for the yogas |
+| **"strong" and "weak"** | `Strength`, **built** (C116): graded on the Vishwa bala, with the dignities as alternatives |
 | benefic influence | Tajika's own benefics, which the table does not enumerate as it enumerates the malefics |
 
 ### The input shape this decides
@@ -234,14 +234,37 @@ longitudes genuinely cannot answer Rudda, so the low-level
 not hold* and *cannot be told*, now varying with what the caller
 supplied rather than only with what the build computes.
 
-### The crux that has to be settled first
+### The crux that had to be settled first — and what settling it found
 
 "Strong" and "weak" appear in five of the six, and the source gives a
-floor — five Vishwa units — **only** for the year lord. Using that floor
-for the yogas is a guess wearing a number. It wants registering and
-measuring (how many pairs change side at five units against four or six)
-before any of the five ship, which is the shape C110's degree took and
-the reason that correction is trustworthy.
+floor — five Vishwa units — **only** for the year lord. It was
+registered as **C116** and measured before any of the five shipped
+(`muntha-measured.md` §11), and the measurement overturned the shape
+this page had assumed.
+
+**There is a middle.** This page took strong and weak to be one floor's
+two sides. A second book grades the Vishwa scale into four — under five
+*Nirbali*, five to ten *Madhya*, ten to fifteen *Poorna*, above fifteen
+*Parakrami* — so the yogas' *weak* is read as the bottom grade and their
+*strong* as *Poorna* or better, with a **middling** band that is
+neither. The two books meet at five, which is the one number with two
+sources behind it. With one floor at five, 98.9% of the corpus's
+readings would have been *strong*; graded, 63.9% are, 34.9% are
+middling, and 1.1% are weak.
+
+**A weak planet is rare on this scale whatever the floor.** Weak means a
+total under twenty of eighty, and four hostile divisional lords already
+cost fifteen, so it needs its sign's lord hostile, the others nearly so,
+and a place close to its own debilitation, all at once. Both lords are
+weak in **6** of 22 009 judged matters at the default, and 2 871 at a
+floor of ten. The yogas that need a weak pair — Dutthottha-Davira and
+Durapha — are rare for the reason Khallasara is: the scale, not the
+corpus. The pass holds that ceiling as a check rather than a sentence.
+
+**The building found a defect the one-floor design hid.** Written for a
+single floor, Dutthottha-Davira asked `!is_strong` where it meant
+*weak*; under the graded reading a middling pair walked through. Asked
+positively now, and tested with a middling pair.
 
 ## The order of work
 
@@ -259,14 +282,22 @@ the reason that correction is trustworthy.
 3. The ones that need the strength and the chart's dignities. **Manau,
    Kamboola and Khallasara are done** (2026-09-23) — they need a third
    planet's aspects on the pair rather than a strength, so they came
-   first and brought `unqualified` with them. Left: Rudda,
-   Duhphali-kuttha, Dutthottha-Davira, Tambira, Kuttha, Durapha, which
-   all turn on *strong* and *weak*, and the source floors those only
-   for the year lord.
-4. **Gairi-Kamboola** last: it needs the unqualified Moon *and* a
-   projection of where the Moon will be in the next sign, which is the
-   only one of the sixteen that asks what happens next rather than what
-   is.
+   first and brought `unqualified` with them. **The floors are settled
+   and Dutthottha-Davira is done** (2026-09-23, C116): it needed
+   nothing but *strong* and *weak*. The rest, **regrouped by their
+   hardest blocker** — the survey above had grouped them by the first
+   one found, and two were in the wrong group:
+   - **Rudda, Duhphali-kuttha and Durapha** need `AnnualStates`
+     (retrograde and combust). Rudda needs *only* that — no strength at
+     all — so it is the first of the three.
+   - **Kuttha** needs Tajika's benefics (C117), and nothing else now.
+   - **Tambira** needs a **projection**: the karyesha forming an
+     Ithasala from the *next* sign with a lagnesha its present sign does
+     not aspect. That is not the Bhavishyat Ithasala, which requires the
+     signs to aspect already, so it moves to step 4.
+4. **The two that ask what happens next**: Tambira, and Gairi-Kamboola,
+   which needs the unqualified Moon *and* where it will stand in the next
+   sign. One projection serves both, so they are one unit and last.
 5. Ikabala and Induvara, which are two lines and belong with the rest for
    the sake of the set being whole.
 
@@ -275,9 +306,10 @@ the reason that correction is trustworthy.
 | | |
 |---|---|
 | **decided** | that the module takes a matter and answers for it, because the sources define fourteen of sixteen against a karyesha; that the two chart-level yogas answer regardless |
-| **not decided** | what "strong" and "weak" mean for a yoga, where the source gives a floor only for the year lord; whether "benefic influence" means Tajika's own benefics or the chart's readings; the two cruxes above |
-| **built** | Ithasala, Ishrafa, Nakta, Yamaya, **Manau**, **Kamboola** and **Khallasara**, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**; `sdk.chart().qualification` for the source's *unqualified*, every clause carried; `YearYoga::ALL` names all sixteen and `YearYoga::awaiting` says what each of the other nine still needs, matched exhaustively so a yoga cannot be added without a decision |
-| **not built** | nine of the sixteen, each naming its blocker at every call. They do **not** cross the boundary yet: the sixteen answer a *matter*, so crossing them means deciding which matters a caller asks for — the same shape as the residence decision `varsha_json.place`, and its own unit |
+| **decided by measurement** | what "strong" and "weak" mean for a yoga (C116): graded, weak below five and strong from ten, a middling band between, both `YogaRules` fields |
+| **not decided** | whether "benefic influence" means Tajika's own benefics or the chart's (C117), which is all that stands between Kuttha and shipping; the cruxes above |
+| **built** | Ithasala, Ishrafa, Nakta, Yamaya, **Manau**, **Kamboola**, **Khallasara** and **Dutthottha-Davira**, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**; `sdk.chart().qualification` for the source's *unqualified* and `sdk.chart().strength` for *strong* and *weak*, every clause carried; `YearYoga::ALL` names all sixteen and `YearYoga::awaiting` says what each of the other eight still needs, matched exhaustively so a yoga cannot be added without a decision |
+| **not built** | eight of the sixteen, each naming its blocker at every call. They do **not** cross the boundary yet: the sixteen answer a *matter*, so crossing them means deciding which matters a caller asks for — the same shape as the residence decision `varsha_json.place`, and its own unit |
 
 ## Why this page exists before the code
 

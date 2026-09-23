@@ -56,6 +56,7 @@ pub use varshesha::{
     Chosen, Claim, NoneAspects, Varshesha, VarsheshaRules, WEAK_BELOW, aspects, varshesha,
 };
 pub use yoga::{
-    Held, MALEFICS, Qualification, YearYoga, YearYogas, qualification, year_yogas,
+    Held, MALEFICS, Qualification, Strength, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YearYoga,
+    YearYogas, YogaRules, qualification, strength, strength_with_rules, year_yogas,
     year_yogas_with_rules,
 };

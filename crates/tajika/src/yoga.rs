@@ -19,9 +19,11 @@
 //!
 //! # What is built
 //!
-//! Seven of the sixteen — the four that need the pair's own aspects
-//! and the three that judge an Ithasala those aspects found — and the
-//! other nine say so rather than being silently absent: [`YearYogas::unanswered`] lists them at every call,
+//! Eight of the sixteen — the four that need the pair's own aspects,
+//! the three that judge an Ithasala those aspects found, and
+//! Dutthottha-Davira, the first to turn on a planet's [`Strength`] —
+//! and the other eight say so rather than being silently absent:
+//! [`YearYogas::unanswered`] lists them at every call,
 //! because "Kamboola did not hold" and "this build cannot tell you about
 //! Kamboola" are different statements and a consumer that cannot tell
 //! them apart has been misled. [`YearYoga::awaiting`] carries the reason
@@ -32,7 +34,10 @@ use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::house::House;
 
-use crate::bala::{AnnualSky, SEVEN, drekkana_lord, hudda_lord, navamsha_lord, sign_of_longitude};
+use crate::bala::{
+    AnnualSky, Bala, SEVEN, drekkana_lord, hudda_lord, navamsha_lord, panchavargiya,
+    sign_of_longitude,
+};
 use crate::drishti::{
     Between, Drishti, DrishtiRules, between_with_rules, between_within, deeptamsha, speed_rank,
 };
@@ -122,7 +127,8 @@ impl YearYoga {
             | YearYoga::Yamaya
             | YearYoga::Manau
             | YearYoga::Kamboola
-            | YearYoga::Khallasara => None,
+            | YearYoga::Khallasara
+            | YearYoga::DutthotthaDavira => None,
             YearYoga::Ikabala | YearYoga::Induvara => Some(
                 "the whole-sign houses of the annual lagna, which the pair's own reckoning does not need",
             ),
@@ -132,12 +138,11 @@ impl YearYoga {
             YearYoga::Tambira => {
                 Some("the karyesha at a sign's end, completing an Ithasala from the next")
             }
-            YearYoga::Rudda
-            | YearYoga::DuhphaliKuttha
-            | YearYoga::DutthotthaDavira
-            | YearYoga::Kuttha
-            | YearYoga::Durapha => Some(
-                "strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities",
+            YearYoga::Rudda | YearYoga::DuhphaliKuttha | YearYoga::Durapha => Some(
+                "retrograde and combustion, which an annual chart's longitudes alone cannot say",
+            ),
+            YearYoga::Kuttha => Some(
+                "Tajika's own benefics, which Table X-3 does not enumerate as it enumerates the malefics (crux C117)",
             ),
         }
     }
@@ -274,6 +279,232 @@ pub fn qualification(graha: Graha, sky: &AnnualSky) -> Result<Qualification, Err
     })
 }
 
+/// The Vishwa bala below which a planet is **weak** for the yogas.
+///
+/// Two sources meet on five. K.S. Charak gives it for the
+/// *office-bearers* — below five units the Muntha lord takes the year —
+/// and the graded reading of the Vishwa scale calls a planet under five
+/// *Nirbali*, strengthless. Neither says it for the yogas, which name
+/// *weak* and stop, so it is a [`YogaRules`] field and not a constant
+/// in the judgement (crux C116, measured in
+/// `03-design/muntha-measured.md` §11).
+///
+/// Stated here in full rather than aliased to [`crate::WEAK_BELOW`],
+/// though the two carry the same number today. They answer **different
+/// questions** — which office-bearer may hold the year, and which
+/// planet is weak for a yoga — and an alias would let a later reading
+/// of one silently move the other. A test asserts the coincidence, so
+/// parting them is a decision somebody has to make on purpose.
+pub const YOGA_WEAK_BELOW: Bala = Bala::new(5, 0, 0);
+
+/// The Vishwa bala from which a planet is **strong** on its bala alone,
+/// without a dignity.
+///
+/// Charak never says where strength begins. The graded reading of the
+/// scale does: under five *Nirbali*, five to ten *Madhya* (middling),
+/// ten to fifteen *Poorna* (fully strong), above fifteen *Parakrami* —
+/// so a planet the yogas call *strong* or *powerful* is taken to be one
+/// that is fully strong, and the five-to-ten band is **neither**. That
+/// grading is a second book's and not Charak's, which is why this too
+/// is a [`YogaRules`] field (crux C116); setting it equal to
+/// [`YOGA_WEAK_BELOW`] recovers the reading with no middle at all.
+pub const YOGA_STRONG_FROM: Bala = Bala::new(10, 0, 0);
+
+/// How the sixteen are read where the source leaves a choice.
+///
+/// One value for the whole judgement rather than one argument per
+/// question: the readings the yogas need are not all about aspects, and
+/// a caller that wants to move a strength floor should not have to
+/// learn which of them travels in `DrishtiRules`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(default)]
+pub struct YogaRules {
+    /// How the aspects and the band between Poorna and Ishrafa are read.
+    pub drishti: DrishtiRules,
+    /// The Vishwa bala below which a planet with no dignity is weak.
+    /// Defaults to [`YOGA_WEAK_BELOW`].
+    pub weak_below: Bala,
+    /// The Vishwa bala from which a planet is strong without a dignity.
+    /// Defaults to [`YOGA_STRONG_FROM`]; never below `weak_below`, since
+    /// no planet can be both.
+    pub strong_from: Bala,
+}
+
+impl Default for YogaRules {
+    fn default() -> YogaRules {
+        YogaRules {
+            drishti: DrishtiRules::default(),
+            weak_below: YOGA_WEAK_BELOW,
+            strong_from: YOGA_STRONG_FROM,
+        }
+    }
+}
+
+impl From<DrishtiRules> for YogaRules {
+    fn from(drishti: DrishtiRules) -> YogaRules {
+        YogaRules {
+            drishti,
+            ..YogaRules::default()
+        }
+    }
+}
+
+impl YogaRules {
+    /// Refuses floors that would let a planet be strong and weak at
+    /// once, naming the field to move.
+    ///
+    /// # Errors
+    ///
+    /// `strong_from` below `weak_below`.
+    pub fn check(self) -> Result<YogaRules, Error> {
+        if self.strong_from < self.weak_below {
+            return Err(Error::invalid_arg(format!(
+                "strength begins at {} but weakness runs up to {}: a planet between would be both",
+                self.strong_from, self.weak_below
+            ))
+            .with_field("strong_from")
+            .with_hint(format!(
+                "raise strong_from to at least {}, or lower weak_below",
+                self.weak_below
+            )));
+        }
+        Ok(self)
+    }
+}
+
+/// How a planet of an annual chart stands to **strong** and **weak**,
+/// clause by clause.
+///
+/// Strong is a disjunction of the source's own three — "exalted, in its
+/// own house or otherwise strong". Weak is the absence of all three
+/// **and** a bala under the lower floor. Between the floors lies the
+/// middling planet, which is neither: the yogas that want a weak pair
+/// and the one that wants a strong pair both pass it by. Carrying the
+/// clauses and both floors rather than a verdict is what lets a reader
+/// asking *why* be answered, and lets the floors move (crux C116)
+/// without the yogas that read them being rewritten.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Strength {
+    /// Whose.
+    pub graha: Graha,
+    /// Its Panchavargiya strength, on the scale of twenty the source
+    /// prints it on.
+    pub vishwa: Bala,
+    /// In its sign of exaltation.
+    pub exalted: bool,
+    /// In a sign it rules.
+    pub own_sign: bool,
+    /// The floors this reading was taken against, carried so that a
+    /// verdict can be read back without its rules.
+    pub weak_below: Bala,
+    /// See [`Strength::weak_below`].
+    pub strong_from: Bala,
+}
+
+impl Strength {
+    /// The three ways of being strong, each with the source's own words
+    /// for it, in the order it states them.
+    ///
+    /// Walked rather than named, for the same reason
+    /// [`Qualification::clauses`] is: a clause cannot then be
+    /// relabelled by being moved.
+    #[must_use]
+    pub fn clauses(self) -> [(&'static str, bool); 3] {
+        [
+            ("exalted", self.exalted),
+            ("in a sign it rules", self.own_sign),
+            (
+                "fully strong in Vishwa bala",
+                self.vishwa >= self.strong_from,
+            ),
+        ]
+    }
+
+    /// Whether any clause holds, which is what the source calls
+    /// **strong**.
+    #[must_use]
+    pub fn is_strong(self) -> bool {
+        self.clauses().iter().any(|(_, holds)| *holds)
+    }
+
+    /// Whether no clause holds **and** the bala is under the lower
+    /// floor, which is what the source calls **weak**.
+    #[must_use]
+    pub fn is_weak(self) -> bool {
+        !self.is_strong() && self.vishwa < self.weak_below
+    }
+
+    /// Neither: no dignity, and a bala between the floors.
+    #[must_use]
+    pub fn is_middling(self) -> bool {
+        !self.is_strong() && !self.is_weak()
+    }
+}
+
+/// How every one of the seven stands to strong and weak, under `rules`.
+///
+/// The Panchavargiya bala is computed **once** for the chart and shared,
+/// because every planet's strength is read from the same five divisions
+/// and a per-planet call would recompute all seven to answer for one.
+fn strengths(sky: &AnnualSky, rules: YogaRules) -> Result<[Strength; 7], Error> {
+    let rules = rules.check()?;
+    // `map` over the array keeps the length a type fact, and
+    // `Panchavargiya` already carries the sign it was read in, so the
+    // dignities cost no second lookup.
+    Ok(panchavargiya(sky)?.map(|bala| Strength {
+        graha: bala.graha,
+        vishwa: bala.vishwa,
+        exalted: bala
+            .graha
+            .attributes()
+            .exaltation
+            .is_some_and(|at| at.sign == bala.sign),
+        own_sign: bala.sign.attributes().lord == bala.graha,
+        weak_below: rules.weak_below,
+        strong_from: rules.strong_from,
+    }))
+}
+
+/// How a planet of an annual chart stands to **strong** and **weak**,
+/// under the default floors.
+///
+/// # Errors
+///
+/// A body outside the seven, named `graha`; an annual chart that does
+/// not place it.
+pub fn strength(graha: Graha, sky: &AnnualSky) -> Result<Strength, Error> {
+    strength_with_rules(graha, sky, YogaRules::default())
+}
+
+/// How a planet stands to strong and weak, with the floors chosen.
+///
+/// # Errors
+///
+/// A body outside the seven, named `graha`; an annual chart that does
+/// not place it; floors that would let a planet be both, named
+/// `strong_from`.
+pub fn strength_with_rules(
+    graha: Graha,
+    sky: &AnnualSky,
+    rules: YogaRules,
+) -> Result<Strength, Error> {
+    if speed_rank(graha).is_none() {
+        return Err(
+            Error::invalid_arg(format!("{graha:?} is not one of the seven"))
+                .with_field(String::from("graha")),
+        );
+    }
+    strengths(sky, rules)?
+        .into_iter()
+        .find(|one| one.graha == graha)
+        .ok_or_else(|| {
+            Error::invalid_arg(format!("the annual chart does not place {graha:?}"))
+                .with_field(String::from("graha"))
+        })
+}
+
 /// One of the sixteen, found holding, with what made it hold.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -356,20 +587,23 @@ pub fn year_yogas(
     house: House,
     sky: &AnnualSky,
 ) -> Result<YearYogas, Error> {
-    year_yogas_with_rules(annual_lagna_deg, house, sky, DrishtiRules::default())
+    year_yogas_with_rules(annual_lagna_deg, house, sky, YogaRules::default())
 }
 
 /// The sixteen yogas for one matter, under stated readings.
 ///
 /// # Errors
 ///
-/// As [`year_yogas`].
+/// As [`year_yogas`]; and floors that would let a planet be strong and
+/// weak at once, named `strong_from` — refused on every call, and not
+/// only on the matters that happen to ask about strength.
 pub fn year_yogas_with_rules(
     annual_lagna_deg: f64,
     house: House,
     sky: &AnnualSky,
-    rules: DrishtiRules,
+    rules: YogaRules,
 ) -> Result<YearYogas, Error> {
+    let rules = rules.check()?;
     if !annual_lagna_deg.is_finite() {
         return Err(
             Error::invalid_arg("the annual lagna must be a number of degrees")
@@ -384,7 +618,7 @@ pub fn year_yogas_with_rules(
     let between = if same_lord {
         None
     } else {
-        Some(between_with_rules(lagnesha, karyesha, sky, rules)?)
+        Some(between_with_rules(lagnesha, karyesha, sky, rules.drishti)?)
     };
     let mut held = Vec::new();
     if let Some(pair) = between {
@@ -407,14 +641,18 @@ pub fn year_yogas_with_rules(
                 // the Ithasala is destroyed; the Ithasala is still the
                 // configuration that was destroyed, and a consumer that
                 // saw only the verdict could not say what happened.
-                held.extend(upon_the_ithasala(&pair, sky, rules)?);
+                held.extend(upon_the_ithasala(&pair, sky, rules.drishti)?);
             }
         } else if !pair.drishti.is_aspect() {
             // Only a pair that does not aspect at all can be reached by a
             // third planet: the source asks for the light to be carried
             // where there is no aspect to carry it.
-            held.extend(carried(lagnesha, karyesha, sky, rules)?);
+            held.extend(carried(lagnesha, karyesha, sky, rules.drishti)?);
         }
+        // Asked whatever the pair do between themselves: the source
+        // conditions Dutthottha-Davira on their weakness and on a third
+        // planet's Ithasala, and on nothing they make together.
+        held.extend(dutthottha_davira(lagnesha, karyesha, sky, rules)?);
     }
     Ok(YearYogas {
         house,
@@ -568,6 +806,63 @@ fn carried(
     Ok(found)
 }
 
+/// **Dutthottha-Davira**: the pair both weak, and one of them drawn
+/// into an Ithasala by a third planet that is strong.
+///
+/// Not a judgement *upon* the pair's own Ithasala the way Manau and
+/// Khallasara are — the source conditions it on their weakness and on
+/// the third planet, and on nothing the two make together — so it is
+/// asked of every matter whose lords are distinct.
+///
+/// The source's "another strong planet, exalted or in its own house"
+/// enumerates the same three alternatives [`Strength`] carries, so the
+/// clause is `is_strong` and not a fourth reading of the words.
+fn dutthottha_davira(
+    lagnesha: Graha,
+    karyesha: Graha,
+    sky: &AnnualSky,
+    rules: YogaRules,
+) -> Result<Vec<Held>, Error> {
+    let all = strengths(sky, rules)?;
+    let of = |graha: Graha| {
+        all.into_iter()
+            .find(|one| one.graha == graha)
+            .ok_or_else(|| {
+                Error::invalid_arg(format!("the annual chart does not place {graha:?}"))
+                    .with_field(String::from("graha"))
+            })
+    };
+    // Both lords **weak** is the gate -- not merely short of strong: a
+    // middling pair is not the case the source is describing, whatever
+    // a third planet does about it. Asked positively, because with a
+    // band between the floors `!is_strong` and `is_weak` differ.
+    if !(of(lagnesha)?.is_weak() && of(karyesha)?.is_weak()) {
+        return Ok(Vec::new());
+    }
+    let mut found = Vec::new();
+    for third in all {
+        if third.graha == lagnesha || third.graha == karyesha || !third.is_strong() {
+            continue;
+        }
+        let legs = [
+            between_with_rules(third.graha, lagnesha, sky, rules.drishti)?,
+            between_with_rules(third.graha, karyesha, sky, rules.drishti)?,
+        ];
+        if legs
+            .iter()
+            .any(|leg| leg.yoga.is_some_and(crate::Yoga::is_ithasala))
+        {
+            found.push(Held {
+                yoga: YearYoga::DutthotthaDavira,
+                between: None,
+                through: Some(third.graha),
+                legs: Some(legs),
+            });
+        }
+    }
+    Ok(found)
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(
@@ -578,9 +873,10 @@ mod tests {
     )]
 
     use super::{
-        Held, MALEFICS, YearYoga, YearYogas, qualification, year_yogas, year_yogas_with_rules,
+        Held, MALEFICS, Strength, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YearYoga, YearYogas,
+        YogaRules, qualification, strength, strength_with_rules, year_yogas, year_yogas_with_rules,
     };
-    use crate::bala::AnnualSky;
+    use crate::bala::{AnnualSky, Bala};
     use crate::drishti::{DrishtiRules, SubDegree, Yoga};
     use teistro_core::catalogue::{Graha, Rashi};
     use teistro_core::house::House;
@@ -602,6 +898,25 @@ mod tests {
 
     /// Scorpio 9°26′, the annual lagna of the source's worked year.
     const WORKED_LAGNA_DEG: f64 = 7.0 * 30.0 + 9.0 + 26.0 / 60.0;
+
+    /// A sky with **two weak lords**, found by a deterministic sweep
+    /// rather than composed: Mercury and Venus both fall below the
+    /// floor, and the Sun and Jupiter are strong and reach them.
+    ///
+    /// Kept as literals so the test is a fixture and not a search.
+    const WEAK_PAIR: AnnualSky = AnnualSky {
+        sun_deg: 290.860_054,
+        moon_deg: 143.097_181,
+        mars_deg: 324.878_876,
+        mercury_deg: 344.462_371,
+        jupiter_deg: 265.131_919,
+        venus_deg: 170.583_816,
+        saturn_deg: 210.093_248,
+    };
+
+    /// The annual lagna that makes Mercury the lagnesha and, in the
+    /// second house, Venus the karyesha.
+    const WEAK_PAIR_LAGNA_DEG: f64 = 170.583_429;
 
     fn house(number: u8) -> House {
         House::try_new(number).unwrap()
@@ -682,17 +997,17 @@ mod tests {
     }
 
     /// A yoga this build cannot answer for is **not** reported as absent:
-    /// `holds` says nothing, and every one of the ten is listed.
+    /// `holds` says nothing, and every one of the eight is listed.
     #[test]
     fn an_unbuilt_yoga_says_so_rather_than_reading_as_absent() {
         let found = asked(7);
         assert_eq!(found.holds(YearYoga::GairiKamboola), None);
-        assert_eq!(found.unanswered.len(), 9);
+        assert_eq!(found.unanswered.len(), 8);
         for yoga in &found.unanswered {
             assert!(yoga.awaiting().is_some(), "{yoga:?} carries its reason");
             assert_eq!(found.holds(*yoga), None);
         }
-        // Six are built, ten are not, and the two sets are the sixteen.
+        // Eight are built, eight are not, and the two sets are the sixteen.
         let built = YearYoga::ALL.into_iter().filter(|one| one.is_built());
         assert_eq!(built.count() + found.unanswered.len(), YearYoga::ALL.len());
     }
@@ -1034,7 +1349,7 @@ mod tests {
                 WORKED_LAGNA_DEG,
                 house(10),
                 &sky,
-                DrishtiRules { sub_degree },
+                DrishtiRules { sub_degree }.into(),
             )
             .unwrap()
         };
@@ -1048,5 +1363,245 @@ mod tests {
             Some(Yoga::Ishrafa)
         );
         assert!(under(SubDegree::None).held.is_empty());
+    }
+
+    /// Rules with both floors at `units`.
+    fn floors(weak_below: i64, strong_from: i64) -> YogaRules {
+        YogaRules {
+            weak_below: Bala::new(weak_below, 0, 0),
+            strong_from: Bala::new(strong_from, 0, 0),
+            ..YogaRules::default()
+        }
+    }
+
+    /// The weak floor carries the year lord's number and answers a
+    /// different question; the strong floor is the graded scale's.
+    ///
+    /// The two weak constants are written out separately on purpose
+    /// (crux C116): this asserts they still agree, so parting them has
+    /// to be done deliberately rather than by editing one and moving
+    /// both.
+    #[test]
+    fn the_default_floors_are_the_two_sources_numbers() {
+        assert_eq!(YOGA_WEAK_BELOW, crate::WEAK_BELOW);
+        assert_eq!(YOGA_WEAK_BELOW, Bala::new(5, 0, 0));
+        assert_eq!(YOGA_STRONG_FROM, Bala::new(10, 0, 0));
+        let rules = YogaRules::default();
+        assert_eq!(
+            (rules.weak_below, rules.strong_from),
+            (YOGA_WEAK_BELOW, YOGA_STRONG_FROM)
+        );
+        assert_eq!(rules.check(), Ok(rules));
+    }
+
+    /// The worked chart has **no weak planet** and one middling one.
+    ///
+    /// Worth asserting rather than assuming: on a scale of twenty, a
+    /// planet under five with no dignity is rare, which is the measured
+    /// half of crux C116. Venus, with no dignity and five units and a
+    /// little over, is the planet the middle band exists for.
+    #[test]
+    fn the_worked_chart_has_no_weak_planet_and_one_middling() {
+        let sky = worked();
+        for graha in crate::SEVEN {
+            let how = strength(graha, &sky).unwrap();
+            assert!(!how.is_weak(), "{graha:?} is weak in the worked chart");
+            assert_eq!(how.is_middling(), graha == Graha::Venus, "{graha:?}");
+        }
+        // Each clause answers for somebody, so none of the three is dead.
+        assert!(strength(Graha::Moon, &sky).unwrap().exalted);
+        assert!(strength(Graha::Sun, &sky).unwrap().own_sign);
+        let mercury = strength(Graha::Mercury, &sky).unwrap();
+        assert!(!mercury.exalted && !mercury.own_sign && mercury.is_strong());
+        let venus = strength(Graha::Venus, &sky).unwrap();
+        assert!(venus.vishwa >= Bala::new(5, 0, 0) && venus.vishwa < Bala::new(6, 0, 0));
+    }
+
+    /// Each floor moves its own verdict and only that one.
+    #[test]
+    fn each_floor_is_a_knob() {
+        let sky = worked();
+        let venus = |rules| strength_with_rules(Graha::Venus, &sky, rules).unwrap();
+        // Venus sits a little over five: middling by default, weak once
+        // the lower floor passes it, strong once the upper one reaches
+        // down to it.
+        assert!(venus(floors(5, 10)).is_middling());
+        assert!(venus(floors(6, 10)).is_weak());
+        assert!(venus(floors(5, 5)).is_strong());
+        // Raised to the top of the scale, the bala clause can never hold
+        // and only the dignities keep anyone strong -- the clearest
+        // demonstration that the three really are alternatives.
+        for graha in [
+            Graha::Sun,
+            Graha::Moon,
+            Graha::Mars,
+            Graha::Jupiter,
+            Graha::Saturn,
+        ] {
+            assert!(
+                strength_with_rules(graha, &sky, floors(5, 20))
+                    .unwrap()
+                    .is_strong()
+            );
+        }
+        for graha in [Graha::Mercury, Graha::Venus] {
+            assert!(
+                !strength_with_rules(graha, &sky, floors(5, 20))
+                    .unwrap()
+                    .is_strong()
+            );
+        }
+        // The floors a reading was taken under travel with it.
+        let read = venus(floors(6, 12));
+        assert_eq!(
+            (read.weak_below, read.strong_from),
+            (Bala::new(6, 0, 0), Bala::new(12, 0, 0))
+        );
+    }
+
+    /// Equal floors are the reading with no middle: every planet is one
+    /// or the other.
+    #[test]
+    fn equal_floors_leave_no_middle() {
+        for units in [4, 5, 8, 10] {
+            for graha in crate::SEVEN {
+                let how = strength_with_rules(graha, &worked(), floors(units, units)).unwrap();
+                assert!(!how.is_middling(), "{graha:?} at {units}");
+                assert_ne!(how.is_strong(), how.is_weak(), "{graha:?} at {units}");
+            }
+        }
+    }
+
+    /// Floors that cross are refused, and refused on **every** call --
+    /// including a first-house matter, whose one lord asks nothing about
+    /// strength -- rather than only where a yoga happens to read them.
+    #[test]
+    fn floors_that_cross_are_refused() {
+        let crossed = floors(10, 5);
+        let refused = crossed.check().unwrap_err();
+        assert_eq!(refused.field(), Some("strong_from"));
+        let refused = strength_with_rules(Graha::Sun, &worked(), crossed).unwrap_err();
+        assert_eq!(refused.field(), Some("strong_from"));
+        let refused =
+            year_yogas_with_rules(WORKED_LAGNA_DEG, house(1), &worked(), crossed).unwrap_err();
+        assert_eq!(refused.field(), Some("strong_from"));
+    }
+
+    /// The clauses are named and ordered, as `Qualification`'s are, and
+    /// the three verdicts partition every planet.
+    #[test]
+    fn strength_clauses_are_named_and_the_verdicts_partition() {
+        let names: Vec<&str> = strength(Graha::Moon, &worked())
+            .unwrap()
+            .clauses()
+            .iter()
+            .map(|(name, _)| *name)
+            .collect();
+        assert_eq!(
+            names,
+            [
+                "exalted",
+                "in a sign it rules",
+                "fully strong in Vishwa bala"
+            ]
+        );
+        for graha in crate::SEVEN {
+            let how: Strength = strength(graha, &WEAK_PAIR).unwrap();
+            let verdicts = [how.is_strong(), how.is_middling(), how.is_weak()];
+            assert_eq!(verdicts.iter().filter(|is| **is).count(), 1, "{graha:?}");
+        }
+    }
+
+    #[test]
+    fn strength_refuses_a_body_outside_the_seven() {
+        let refused = strength(Graha::Ketu, &worked()).unwrap_err();
+        assert_eq!(refused.field(), Some("graha"));
+    }
+
+    /// Dutthottha-Davira: both lords weak, and a strong third planet
+    /// drawing one of them into an Ithasala.
+    ///
+    /// **Found by search, like Khallasara's sky and for the same
+    /// reason.** Weak means a Panchavargiya total under twenty of eighty,
+    /// and four hostile divisional lords already cost fifteen of that: so
+    /// a weak planet needs its sign's lord hostile, the others hostile or
+    /// nearly, and a place close to its own debilitation, all at once.
+    /// Two weak lords together is rare: a deterministic sweep of skies
+    /// met it on the 1 122nd. The source's own worked chart cannot serve -- it
+    /// has no weak planet at all.
+    #[test]
+    fn dutthottha_davira_wants_both_lords_weak_and_a_strong_third() {
+        let sky = WEAK_PAIR;
+        let found = year_yogas(WEAK_PAIR_LAGNA_DEG, house(2), &sky).unwrap();
+        assert_eq!(found.lagnesha, Graha::Mercury);
+        assert_eq!(found.karyesha, Graha::Venus);
+        assert!(strength(found.lagnesha, &sky).unwrap().is_weak());
+        assert!(strength(found.karyesha, &sky).unwrap().is_weak());
+        assert_eq!(found.holds(YearYoga::DutthotthaDavira), Some(true));
+
+        // Every one that held names a third planet that is strong, and
+        // reaches one of the pair by Ithasala.
+        let held: Vec<&Held> = found
+            .held
+            .iter()
+            .filter(|one| one.yoga == YearYoga::DutthotthaDavira)
+            .collect();
+        assert!(!held.is_empty());
+        for one in held {
+            let third = one.through.unwrap();
+            assert_ne!(third, found.lagnesha);
+            assert_ne!(third, found.karyesha);
+            assert!(strength(third, &sky).unwrap().is_strong());
+            assert!(
+                one.legs
+                    .unwrap()
+                    .iter()
+                    .any(|leg| leg.yoga.is_some_and(crate::Yoga::is_ithasala))
+            );
+        }
+    }
+
+    /// The upper floor selects **which** third planet qualifies.
+    ///
+    /// Raised to the top of the scale, the Sun -- strong here only by
+    /// its bala -- drops out, while Jupiter, standing in a sign it
+    /// rules, is untouched by any floor at all. Nothing in the sky
+    /// moved; the reading did.
+    #[test]
+    fn the_upper_floor_selects_which_third_planet_qualifies() {
+        let through = |strong_from: i64| -> Vec<Graha> {
+            year_yogas_with_rules(
+                WEAK_PAIR_LAGNA_DEG,
+                house(2),
+                &WEAK_PAIR,
+                floors(5, strong_from),
+            )
+            .unwrap()
+            .held
+            .iter()
+            .filter(|one| one.yoga == YearYoga::DutthotthaDavira)
+            .filter_map(|one| one.through)
+            .collect()
+        };
+        assert_eq!(through(10), vec![Graha::Sun, Graha::Jupiter]);
+        assert_eq!(through(20), vec![Graha::Jupiter]);
+    }
+
+    /// And it wants the pair **weak**, not merely short of strong: lower
+    /// the weak floor under the two lords and they become middling, and
+    /// the yoga goes though the third planets are untouched.
+    #[test]
+    fn dutthottha_davira_passes_a_middling_pair_by() {
+        let rules = floors(1, 10);
+        let found =
+            year_yogas_with_rules(WEAK_PAIR_LAGNA_DEG, house(2), &WEAK_PAIR, rules).unwrap();
+        for lord in [found.lagnesha, found.karyesha] {
+            assert!(
+                strength_with_rules(lord, &WEAK_PAIR, rules)
+                    .unwrap()
+                    .is_middling()
+            );
+        }
+        assert_eq!(found.holds(YearYoga::DutthotthaDavira), Some(false));
     }
 }

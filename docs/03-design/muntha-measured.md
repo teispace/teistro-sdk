@@ -265,23 +265,23 @@ Every chart above is asked all twelve, which is **25 908** questions.
 | Induvara | *awaiting* | -- | the whole-sign houses of the annual lagna, which the pair's own reckoning does not need |
 | **Ithasala** | built | 4250 | 16.4% |
 | **Ishrafa** | built | 3050 | 11.8% |
-| **Nakta** | built | 637 | 2.5% |
-| **Yamaya** | built | 413 | 1.6% |
-| **Manau** | built | 1956 | 7.5% |
+| **Nakta** | built | 603 | 2.3% |
+| **Yamaya** | built | 395 | 1.5% |
+| **Manau** | built | 1756 | 6.8% |
 | **Kamboola** | built | 1094 | 4.2% |
 | GairiKamboola | *awaiting* | -- | an unqualified Moon, and where it will stand in the next sign: the only one of the sixteen that asks what happens next |
 | **Khallasara** | built | 2 | 0.0% |
-| Rudda | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
-| DuhphaliKuttha | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
-| DutthotthaDavira | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
+| Rudda | *awaiting* | -- | retrograde and combustion, which an annual chart's longitudes alone cannot say |
+| DuhphaliKuttha | *awaiting* | -- | retrograde and combustion, which an annual chart's longitudes alone cannot say |
+| **DutthotthaDavira** | built | 4 | 0.0% |
 | Tambira | *awaiting* | -- | the karyesha at a sign's end, completing an Ithasala from the next |
-| Kuttha | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
-| Durapha | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
+| Kuttha | *awaiting* | -- | Tajika's own benefics, which Table X-3 does not enumerate as it enumerates the malefics (crux C117) |
+| Durapha | *awaiting* | -- | retrograde and combustion, which an annual chart's longitudes alone cannot say |
 
-**Seven of the sixteen are built** and the other nine are listed at
+**Eight of the sixteen are built** and the other eight are listed at
 every call rather than left out of the answer, because *did not hold*
 and *cannot be told* are different statements. `YearYogas::holds`
-answers `None` for those nine, never `false`.
+answers `None` for those eight, never `false`.
 
 ### The first house is never a pair
 
@@ -331,3 +331,88 @@ two more sit in the signs either side, a spacing no single sign is
 neutral to. That is a fact about the definition and not about this
 corpus, and it is why C115 asks whether *aspected* here is narrower than
 *by any of the seven*.
+
+## 11. Strong and weak, and the floors between them
+
+Five of the six yogas still awaiting turn on whether a planet is
+**strong** or **weak** — Rudda alone does not — and Charak never
+says where either begins. He gives a figure once, for the office-bearers
+when he chooses the year lord: below five units of Vishwa bala, the
+Muntha lord takes the year instead. A second book grades the whole scale
+— under five *Nirbali*, strengthless; five to ten *Madhya*, middling;
+ten to fifteen *Poorna*, fully strong; above fifteen *Parakrami* — and
+the two meet at five. So the yogas' *weak* is read as *Nirbali* and
+their *strong* as *Poorna* or better, which leaves a **middling** band
+between that is neither. Both floors are `YogaRules` fields, and this
+section measures what each costs (crux C116).
+
+Strength is a disjunction — "exalted, in its own house or otherwise
+strong" — so a **dignified** planet is strong under any floor at all.
+Of the 15 113 readings, seven to each of the 2159 charts, **3207**
+(21.2%) are dignified and beyond either floor's reach.
+
+### Where the seven stand
+
+| Vishwa bala | readings | |
+|---|---:|---|
+| [0, 2) | 0 | 0.0% |
+| [2, 4) | 26 | 0.2% |
+| [4, 6) | 519 | 3.4% |
+| [6, 8) | 1744 | 11.5% |
+| [8, 10) | 3321 | 22.0% |
+| [10, 12) | 3929 | 26.0% |
+| [12, 14) | 3116 | 20.6% |
+| [14, 16) | 1951 | 12.9% |
+| [16, 18) | 488 | 3.2% |
+| [18, 20] | 19 | 0.1% |
+
+The weakest reading anywhere in the corpus is **03:45:15**, on a scale
+of twenty. Under the default floors, **171** readings (1.1%) are weak,
+**5280** (34.9%) middling and **9662** (63.9%) strong.
+
+Of the 25 908 matters asked, **22 009** have two distinct lords to
+judge. The two floors are **separable** — whether a planet is weak
+turns only on the lower and whether it is strong only on the upper, so
+long as they do not cross — so each table moves one and holds the
+other at its default.
+
+### The lower floor: where weak ends
+
+| below | readings weak | both lords weak | of the judged |
+|---:|---:|---:|---:|
+| 4 | 0.2% | 0 | 0.0% |
+| **5** (default) | 1.1% | 6 | 0.0% |
+| 6 | 3.6% | 44 | 0.2% |
+| 8 | 15.1% | 567 | 2.6% |
+| 10 | 36.1% | 2871 | 13.0% |
+
+### The upper floor: where strong begins
+
+| from | readings strong | both lords strong | of the judged |
+|---:|---:|---:|---:|
+| 5 | 98.9% | 21 499 | 97.7% |
+| 8 | 84.9% | 15 824 | 71.9% |
+| **10** (default) | 63.9% | 9042 | 41.1% |
+| 12 | 41.0% | 3727 | 16.9% |
+| 15 | 23.6% | 1294 | 5.9% |
+| 20 | 21.2% | 1055 | 4.8% |
+
+**At the default floors, both lords are weak in 6 of the 22 009 judged
+matters (0.0%), both strong in 9042 (41.1%), and the other 12 961 are
+mixed.** The first is a **ceiling**, not a count of anything that held:
+Dutthottha-Davira and Durapha both require a weak pair before asking
+anything else, so neither can hold in more matters than it allows.
+Dutthottha-Davira held in **4**. Kuttha, which wants both strong, has
+the second to work with.
+
+Five things hold of both tables, and `cargo xtask muntha` **fails** if
+any stops holding, because each is a fact about `Strength` and not about
+this corpus: under the default floors the readings **partition** into
+weak, middling and strong, and the judged matters into both weak, both
+strong and mixed, each part counted on its own rather than by
+difference; raising the lower floor never makes a planet less weak, nor
+raising the upper one more strong; no upper floor falls below the 3207
+dignified readings; where the two floors are **equal** there is no
+middle, so the lower table's row at five and the upper table's meet
+exactly — the one check that ties the two tables to each other; and no
+yoga that needs a weak pair holds in more matters than had one.

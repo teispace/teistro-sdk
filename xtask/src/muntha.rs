@@ -24,8 +24,11 @@ use std::path::Path;
 use teistro::House;
 use teistro::catalogue::{Graha, Rashi};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::tajika::{MOST_YEARS, MunthaDegree, Qualification, Reading, YearYoga, Yoga};
-use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+use teistro::tajika::{
+    Bala, MOST_YEARS, MunthaDegree, Qualification, Reading, SEVEN, Strength, YOGA_STRONG_FROM,
+    YOGA_WEAK_BELOW, YearYoga, Yoga, YogaRules,
+};
+use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
 use crate::births::{Birth, CHARTS, births};
 use crate::generated::{Output, check, write};
@@ -179,6 +182,7 @@ fn page(root: &Path) -> Result<String, String> {
     let swept = sweep(&sdk, &births)?;
     the_kinds(&mut out, &swept);
     the_sixteen(&mut out, &swept);
+    the_floors(&mut out, &swept)?;
     Ok(fill(&out))
 }
 
@@ -647,6 +651,35 @@ fn the_year_lord(out: &mut String, geo: &Worked) {
 /// each. It is the span a reader of a birth chart actually asks about.
 const SWEEP_YEARS: u16 = 40;
 
+/// The lower floors §11 reads the corpus under, in Vishwa units: below
+/// each, a planet with no dignity is **weak**.
+///
+/// Five is the default, where Charak's office-bearer floor and the
+/// graded scale's *Nirbali* meet; four and six are its neighbours; eight
+/// and ten walk up to where the default strong floor begins, above
+/// which the two would cross.
+const WEAK_FLOORS: [i64; 5] = [4, 5, 6, 8, 10];
+
+/// The upper floors, in Vishwa units: from each, a planet is **strong**
+/// on its bala alone.
+///
+/// Ten is the default, the graded scale's *Poorna*; five is the reading
+/// with no middle at all; fifteen is *Parakrami*; and twenty is the top
+/// of the scale, which only a planet perfect in all five parts could
+/// reach, so under it only the dignities hold anyone up.
+const STRONG_FLOORS: [i64; 6] = [5, 8, 10, 12, 15, 20];
+
+/// What one candidate floor makes of the corpus, on its own side of it:
+/// weak readings and weak pairs below a lower floor, strong ones from
+/// an upper.
+#[derive(Clone, Copy, Default)]
+struct AtFloor {
+    /// Readings of a planet on this side.
+    readings: usize,
+    /// Judged matters with **both** lords on this side.
+    both: usize,
+}
+
 /// Every kind of pair the sweep found, counted.
 #[derive(Default)]
 struct Kinds {
@@ -709,6 +742,27 @@ struct Kinds {
     /// the page state that identity instead of printing a number nobody
     /// can check.
     luminary_lagna: usize,
+    /// Readings of a planet's strength: seven to a chart.
+    strengths_read: usize,
+    /// Readings strong by a **dignity** alone — exalted, or in a sign it
+    /// rules — which no floor can make weak.
+    dignified: usize,
+    /// Every reading's Vishwa bala, counted in bands of two units from
+    /// the bottom of the scale: `[0, 2)`, `[2, 4)`, … `[18, 20]`.
+    vishwa_bands: [usize; 10],
+    /// The weakest reading seen, which bounds how low a floor can matter.
+    weakest: Option<Bala>,
+    /// What each of [`WEAK_FLOORS`] makes of the corpus, in that order.
+    weak_side: [AtFloor; WEAK_FLOORS.len()],
+    /// What each of [`STRONG_FLOORS`] makes of it.
+    strong_side: [AtFloor; STRONG_FLOORS.len()],
+    /// Readings neither strong nor weak under the default floors,
+    /// counted from the default verdict itself rather than by difference,
+    /// so the partition it closes is a check and not an identity.
+    middling: usize,
+    /// Judged matters whose pair is neither both weak nor both strong
+    /// under the default floors, counted the same way.
+    mixed: usize,
 }
 
 /// Every pair of every annual chart of every recorded birth, sorted into
@@ -768,6 +822,7 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
             if how.is_unqualified() {
                 kinds.moon_unqualified += 1;
             }
+            let chart_strengths = strengths_of(sdk, &annual, &birth.name, &mut kinds)?;
             let lagna = Rashi::from_id(sign_of(annual.foundation.lagna_deg))
                 .ok_or_else(|| format!("{}: a lagna in no sign", birth.name))?;
             if matches!(lagna.attributes().lord, Graha::Sun | Graha::Moon) {
@@ -783,12 +838,18 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
                 kinds.matters += 1;
                 if asked.same_lord {
                     kinds.same_lord += 1;
+                } else {
+                    partition(&chart_strengths, asked.lagnesha, asked.karyesha, &mut kinds);
                 }
-                for one in &asked.held {
-                    if let Some(at) = YearYoga::ALL.iter().position(|y| *y == one.yoga) {
-                        if let Some(slot) = kinds.yogas.get_mut(at) {
-                            *slot += 1;
-                        }
+                // Counted by **matter**, through `holds`: one matter can
+                // hold a yoga through several planets -- Manau through each
+                // malefic, Nakta and Yamaya through each intermediary,
+                // Dutthottha-Davira through each strong third -- and a
+                // column of shares of the matters asked must not count one
+                // matter twice.
+                for (slot, yoga) in kinds.yogas.iter_mut().zip(YearYoga::ALL) {
+                    if asked.holds(yoga) == Some(true) {
+                        *slot += 1;
                     }
                 }
             }
@@ -823,7 +884,252 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
             kinds.charts, kinds.luminary_lagna, kinds.same_lord,
         ));
     }
+    floors_hold(&kinds)?;
     Ok(kinds)
+}
+
+/// Which of the seven stand on one side of each candidate floor, in
+/// that floor list's order.
+type Sides = Vec<Vec<(Graha, bool)>>;
+
+/// One annual chart's strengths: which of the seven are weak at each
+/// lower floor, which strong at each upper one, and the default verdict
+/// for each.
+struct ChartStrengths {
+    weak: Sides,
+    strong: Sides,
+    default: Vec<Strength>,
+}
+
+/// Rules with the lower floor at `weak_below` and the upper at
+/// `strong_from`, everything else the default.
+fn floors(weak_below: i64, strong_from: i64) -> YogaRules {
+    YogaRules {
+        weak_below: Bala::new(weak_below, 0, 0),
+        strong_from: Bala::new(strong_from, 0, 0),
+        ..YogaRules::default()
+    }
+}
+
+/// Which of the seven one `side` of `rules` puts a planet on, read
+/// through the façade.
+fn side_of(
+    sdk: &Context,
+    annual: &Document,
+    name: &str,
+    rules: YogaRules,
+    side: fn(Strength) -> bool,
+    at: &mut AtFloor,
+) -> Result<Vec<(Graha, bool)>, String> {
+    let mut row = Vec::with_capacity(SEVEN.len());
+    for graha in SEVEN {
+        let on = side(
+            sdk.chart()
+                .strength_with_rules(annual, graha, rules)
+                .map_err(|why| format!("{name}: {graha:?}'s strength: {why}"))?,
+        );
+        if on {
+            at.readings += 1;
+        }
+        row.push((graha, on));
+    }
+    Ok(row)
+}
+
+/// One annual chart's strengths under every candidate floor, and the
+/// facts about them that no floor moves.
+///
+/// Read through the façade rather than recomputed, so the pass measures
+/// the module that answers: a pass that kept its own copy of `is_weak`
+/// would agree with itself and prove nothing. Each side holds the other
+/// floor at its default, which is safe because the two are separable —
+/// weak turns only on the lower floor and strong only on the upper, so
+/// long as they do not cross, and no pair in the lists does.
+fn strengths_of(
+    sdk: &Context,
+    annual: &Document,
+    name: &str,
+    kinds: &mut Kinds,
+) -> Result<ChartStrengths, String> {
+    let default = YogaRules::default();
+    let strong_from = default.strong_from.units();
+    let weak_below = default.weak_below.units();
+    let mut weak = Vec::with_capacity(WEAK_FLOORS.len());
+    for (units, at) in WEAK_FLOORS.into_iter().zip(kinds.weak_side.iter_mut()) {
+        let rules = floors(units, strong_from);
+        weak.push(side_of(sdk, annual, name, rules, Strength::is_weak, at)?);
+    }
+    let mut strong = Vec::with_capacity(STRONG_FLOORS.len());
+    for (units, at) in STRONG_FLOORS.into_iter().zip(kinds.strong_side.iter_mut()) {
+        let rules = floors(weak_below, units);
+        strong.push(side_of(sdk, annual, name, rules, Strength::is_strong, at)?);
+    }
+    // What no floor moves, and the default verdict, read once.
+    let mut verdicts = Vec::with_capacity(SEVEN.len());
+    for graha in SEVEN {
+        let how = sdk
+            .chart()
+            .strength(annual, graha)
+            .map_err(|why| format!("{name}: {graha:?}'s strength: {why}"))?;
+        kinds.strengths_read += 1;
+        if how.exalted || how.own_sign {
+            kinds.dignified += 1;
+        }
+        if how.is_middling() {
+            kinds.middling += 1;
+        }
+        // Twenty itself, reachable only by a planet perfect in all five
+        // parts, belongs to the top band and not to an eleventh.
+        let band = usize::try_from(how.vishwa.units()).unwrap_or(0).min(19) / 2;
+        if let Some(slot) = kinds.vishwa_bands.get_mut(band) {
+            *slot += 1;
+        }
+        kinds.weakest = Some(kinds.weakest.map_or(how.vishwa, |low| low.min(how.vishwa)));
+        verdicts.push(how);
+    }
+    Ok(ChartStrengths {
+        weak,
+        strong,
+        default: verdicts,
+    })
+}
+
+/// Counts one judged matter into every floor's tally, and into the
+/// default partition.
+fn partition(chart: &ChartStrengths, lagnesha: Graha, karyesha: Graha, kinds: &mut Kinds) {
+    let both = |row: &Vec<(Graha, bool)>| {
+        let on = |graha: Graha| row.iter().any(|(one, is)| *one == graha && *is);
+        on(lagnesha) && on(karyesha)
+    };
+    for (row, at) in chart.weak.iter().zip(kinds.weak_side.iter_mut()) {
+        if both(row) {
+            at.both += 1;
+        }
+    }
+    for (row, at) in chart.strong.iter().zip(kinds.strong_side.iter_mut()) {
+        if both(row) {
+            at.both += 1;
+        }
+    }
+    let of = |graha: Graha| chart.default.iter().copied().find(|one| one.graha == graha);
+    if let (Some(lagnesha), Some(karyesha)) = (of(lagnesha), of(karyesha)) {
+        let both_weak = lagnesha.is_weak() && karyesha.is_weak();
+        let both_strong = lagnesha.is_strong() && karyesha.is_strong();
+        if !both_weak && !both_strong {
+            kinds.mixed += 1;
+        }
+    }
+}
+
+/// Where a floor list holds `bala`, or a refusal naming the list.
+///
+/// The page's "default" rows are found by value from the library's own
+/// constants rather than by a hard-coded index, so moving a default
+/// moves the page, and a default the list does not carry fails the pass.
+fn position_of(list: &[i64], bala: Bala, which: &str) -> Result<usize, String> {
+    list.iter()
+        .position(|units| Bala::new(*units, 0, 0) == bala)
+        .ok_or_else(|| format!("the {which} floors do not include the default, {bala}"))
+}
+
+/// The things every reading of the floors must satisfy, refused rather
+/// than printed when one does not.
+///
+/// Each is a fact about the **module**, not about the corpus, so a
+/// failure here is a defect in `Strength` and not a surprising number:
+///
+/// 1. under the default floors, readings **partition** into weak,
+///    middling and strong, and judged matters into both weak, both
+///    strong and the rest;
+/// 2. raising the lower floor never makes a planet **less** weak, and
+///    raising the upper never makes one **more** strong;
+/// 3. no upper floor weakens a **dignified** planet;
+/// 4. where the two floors are equal there is **no middle**, so the
+///    lower table and the upper meet exactly — the one check that ties
+///    the two tables to each other;
+/// 5. no yoga needing a weak pair **held** in more matters than had one.
+fn floors_hold(kinds: &Kinds) -> Result<(), String> {
+    let judged = kinds.matters - kinds.same_lord;
+    let weak_at = position_of(&WEAK_FLOORS, YOGA_WEAK_BELOW, "lower")?;
+    let strong_at = position_of(&STRONG_FLOORS, YOGA_STRONG_FROM, "upper")?;
+    let weak = kinds.weak_side.get(weak_at).copied().unwrap_or_default();
+    let strong = kinds
+        .strong_side
+        .get(strong_at)
+        .copied()
+        .unwrap_or_default();
+
+    let readings = weak.readings + kinds.middling + strong.readings;
+    if readings != kinds.strengths_read {
+        return Err(format!(
+            "{} weak + {} middling + {} strong readings is {readings}, and {} were read",
+            weak.readings, kinds.middling, strong.readings, kinds.strengths_read,
+        ));
+    }
+    let matters = weak.both + kinds.mixed + strong.both;
+    if matters != judged {
+        return Err(format!(
+            "{} both weak + {} mixed + {} both strong is {matters}, and {judged} matters were judged",
+            weak.both, kinds.mixed, strong.both,
+        ));
+    }
+    for (low, high) in kinds.weak_side.iter().zip(kinds.weak_side.iter().skip(1)) {
+        if high.readings < low.readings {
+            return Err(String::from(
+                "raising the lower floor made a planet less weak",
+            ));
+        }
+    }
+    for (low, high) in kinds
+        .strong_side
+        .iter()
+        .zip(kinds.strong_side.iter().skip(1))
+    {
+        if high.readings > low.readings {
+            return Err(String::from(
+                "raising the upper floor made a planet more strong",
+            ));
+        }
+    }
+    if let Some(at) = kinds
+        .strong_side
+        .iter()
+        .find(|at| at.readings < kinds.dignified)
+    {
+        return Err(format!(
+            "an upper floor left {} readings strong, and {} are dignified, which none can weaken",
+            at.readings, kinds.dignified,
+        ));
+    }
+    let lower = kinds.weak_side.get(weak_at).copied().unwrap_or_default();
+    let equal = position_of(&STRONG_FLOORS, YOGA_WEAK_BELOW, "upper")?;
+    let upper = kinds.strong_side.get(equal).copied().unwrap_or_default();
+    if lower.readings + upper.readings != kinds.strengths_read {
+        return Err(format!(
+            "with both floors at {YOGA_WEAK_BELOW}, {} weak + {} strong readings leave a middle \
+             of {}, where there can be none",
+            lower.readings,
+            upper.readings,
+            kinds
+                .strengths_read
+                .abs_diff(lower.readings + upper.readings),
+        ));
+    }
+    let needs_weak_pair = [YearYoga::DutthotthaDavira];
+    for yoga in needs_weak_pair {
+        let held = YearYoga::ALL
+            .iter()
+            .position(|one| *one == yoga)
+            .and_then(|at| kinds.yogas.get(at).copied())
+            .unwrap_or_default();
+        if held > weak.both {
+            return Err(format!(
+                "{yoga:?} held in {held} matters, and only {} had a weak pair for it to need",
+                weak.both,
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn the_kinds(out: &mut String, kinds: &Kinds) {
@@ -1102,6 +1408,168 @@ fn why_khallasara_is_rare(out: &mut String, kinds: &Kinds) {
                 .unwrap_or(kinds.charts),
         ),
         clause_rows(kinds),
+    );
+}
+
+/// §11: where weak ends and strong begins, which the source says only
+/// for the year lord (crux C116).
+fn the_floors(out: &mut String, kinds: &Kinds) -> Result<(), String> {
+    let weak_at = position_of(&WEAK_FLOORS, YOGA_WEAK_BELOW, "lower")?;
+    let strong_at = position_of(&STRONG_FLOORS, YOGA_STRONG_FROM, "upper")?;
+    let weak = kinds.weak_side.get(weak_at).copied().unwrap_or_default();
+    let strong = kinds
+        .strong_side
+        .get(strong_at)
+        .copied()
+        .unwrap_or_default();
+    let bands = kinds
+        .vishwa_bands
+        .iter()
+        .enumerate()
+        .map(|(band, readings)| {
+            let low = band * 2;
+            let close = if band + 1 == kinds.vishwa_bands.len() {
+                ']'
+            } else {
+                ')'
+            };
+            format!(
+                "| [{low}, {}{close} | {} | {} |",
+                low + 2,
+                count(*readings),
+                share(*readings, kinds.strengths_read)
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    let _ = write!(
+        out,
+        "\n## 11. Strong and weak, and the floors between them\n\n\
+         Five of the six yogas still awaiting turn on whether a planet is \
+         **strong** or **weak** — Rudda alone does not — and Charak never \
+         says where either begins. He gives a figure once, for the \
+         office-bearers when he chooses the year lord: below five units of \
+         Vishwa bala, the Muntha lord takes the year instead. A second book \
+         grades the whole scale — under five *Nirbali*, strengthless; five \
+         to ten *Madhya*, middling; ten to fifteen *Poorna*, fully strong; \
+         above fifteen *Parakrami* — and the two meet at five. So the yogas' \
+         *weak* is read as *Nirbali* and their *strong* as *Poorna* or \
+         better, which leaves a **middling** band between that is neither. \
+         Both floors are `YogaRules` fields, and this section measures what \
+         each costs (crux C116).\n\n\
+         Strength is a disjunction — \"exalted, in its own house or \
+         otherwise strong\" — so a **dignified** planet is strong under any \
+         floor at all. Of the {} readings, seven to each of the {} charts, \
+         **{}** ({}) are dignified and beyond either floor's reach.\n\n\
+         ### Where the seven stand\n\n\
+         | Vishwa bala | readings | |\n\
+         |---|---:|---|\n\
+         {bands}\n\n\
+         The weakest reading anywhere in the corpus is **{}**, on a scale \
+         of twenty. Under the default floors, **{}** readings ({}) are \
+         weak, **{}** ({}) middling and **{}** ({}) strong.\n",
+        count(kinds.strengths_read),
+        count(kinds.charts),
+        count(kinds.dignified),
+        share(kinds.dignified, kinds.strengths_read),
+        kinds
+            .weakest
+            .map_or_else(|| String::from("--"), |low| low.to_string()),
+        count(weak.readings),
+        share(weak.readings, kinds.strengths_read),
+        count(kinds.middling),
+        share(kinds.middling, kinds.strengths_read),
+        count(strong.readings),
+        share(strong.readings, kinds.strengths_read),
+    );
+    the_two_floors(out, kinds, weak_at, strong_at);
+    what_the_floors_cost(out, kinds, weak, strong);
+    Ok(())
+}
+
+/// One table per floor, each holding the other at its default.
+fn the_two_floors(out: &mut String, kinds: &Kinds, weak_at: usize, strong_at: usize) {
+    let judged = kinds.matters - kinds.same_lord;
+    let rows = |list: &[i64], side: &[AtFloor], default: usize| {
+        list.iter()
+            .zip(side)
+            .enumerate()
+            .map(|(which, (units, at))| {
+                let floor = if which == default {
+                    format!("**{units}** (default)")
+                } else {
+                    units.to_string()
+                };
+                format!(
+                    "| {floor} | {} | {} | {} |",
+                    share(at.readings, kinds.strengths_read),
+                    count(at.both),
+                    share(at.both, judged),
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    let _ = write!(
+        out,
+        "\nOf the {} matters asked, **{}** have two distinct lords to judge. \
+         The two floors are **separable** — whether a planet is weak turns \
+         only on the lower and whether it is strong only on the upper, so \
+         long as they do not cross — so each table moves one and holds the \
+         other at its default.\n\n\
+         ### The lower floor: where weak ends\n\n\
+         | below | readings weak | both lords weak | of the judged |\n\
+         |---:|---:|---:|---:|\n\
+         {}\n\n\
+         ### The upper floor: where strong begins\n\n\
+         | from | readings strong | both lords strong | of the judged |\n\
+         |---:|---:|---:|---:|\n\
+         {}\n",
+        count(kinds.matters),
+        count(judged),
+        rows(&WEAK_FLOORS, &kinds.weak_side, weak_at),
+        rows(&STRONG_FLOORS, &kinds.strong_side, strong_at),
+    );
+}
+
+/// What the default floors cost the yogas that read them, and the
+/// identities the pass holds both tables to.
+fn what_the_floors_cost(out: &mut String, kinds: &Kinds, weak: AtFloor, strong: AtFloor) {
+    let judged = kinds.matters - kinds.same_lord;
+    let held = YearYoga::ALL
+        .iter()
+        .position(|one| *one == YearYoga::DutthotthaDavira)
+        .and_then(|at| kinds.yogas.get(at).copied())
+        .unwrap_or_default();
+    let _ = write!(
+        out,
+        "\n**At the default floors, both lords are weak in {} of the {} \
+         judged matters ({}), both strong in {} ({}), and the other {} are \
+         mixed.** The first is a **ceiling**, not a count of anything that \
+         held: Dutthottha-Davira and Durapha both require a weak pair before \
+         asking anything else, so neither can hold in more matters than it \
+         allows. Dutthottha-Davira held in **{}**. Kuttha, which wants both \
+         strong, has the second to work with.\n\n\
+         Five things hold of both tables, and `cargo xtask muntha` **fails** \
+         if any stops holding, because each is a fact about `Strength` and \
+         not about this corpus: under the default floors the readings \
+         **partition** into weak, middling and strong, and the judged \
+         matters into both weak, both strong and mixed, each part counted \
+         on its own rather than by difference; raising the lower floor never \
+         makes a planet less weak, nor raising the upper one more strong; no \
+         upper floor falls below the {} dignified readings; where the two \
+         floors are **equal** there is no middle, so the lower table's row \
+         at five and the upper table's meet exactly — the one check that \
+         ties the two tables to each other; and no yoga that needs a weak \
+         pair holds in more matters than had one.\n",
+        count(weak.both),
+        count(judged),
+        share(weak.both, judged),
+        count(strong.both),
+        share(strong.both, judged),
+        count(kinds.mixed),
+        count(held),
+        count(kinds.dignified),
     );
 }
 
