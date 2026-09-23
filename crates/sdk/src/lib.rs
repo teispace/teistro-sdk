@@ -138,7 +138,7 @@ pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths};
 pub use teistro_tajika as tajika;
 pub use teistro_tajika::{
     Bala, Between, Chosen, Claim, Drishti as TajikaDrishti, DrishtiRules, Muntha, MunthaDegree,
-    Natal, Office, OfficeBearers, Panchavargiya, Pravesha, Reading as VarshaReading,
+    Natal, Office, OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading as VarshaReading,
     Relation as TajikaRelation, SubDegree, Varshesha, VarsheshaRules, YearYoga, YearYogas,
     Yoga as TajikaYoga,
 };

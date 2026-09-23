@@ -40,7 +40,7 @@ use teistro_strength::{
 };
 use teistro_tajika::{
     AnnualSky, Between, DrishtiRules, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya,
-    Pravesha, Reading, Varshesha, VarsheshaRules, YearCharts, YearYogas,
+    Pravesha, Qualification, Reading, Varshesha, VarsheshaRules, YearCharts, YearYogas,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -992,6 +992,29 @@ impl<'a> ChartArea<'a> {
             &Self::sky_of(annual)?,
             rules,
         )
+    }
+
+    /// Whether a planet of an annual chart is **unqualified**, clause by
+    /// clause, in the source's own sense of the word.
+    ///
+    /// "Neither exalted nor debilitated, nor aspected/associated, nor in
+    /// its own Hudda, Drekkana or Navamsha." Khallasara and
+    /// Gairi-Kamboola both turn on it, and it is strict: Tajika counts
+    /// eight of the twelve sign relations as an aspect, so a planet
+    /// nothing aspects needs the other six inside the four neutral
+    /// houses at once.
+    ///
+    /// Every clause is carried rather than collapsed into the verdict,
+    /// so a reader asking why a yoga did not hold gets the clause.
+    ///
+    /// It needs **no ephemeris**: the chart is already founded.
+    ///
+    /// # Errors
+    ///
+    /// A body outside the seven, named `graha`; an annual chart that
+    /// does not place it.
+    pub fn qualification(self, annual: &Document, graha: Graha) -> Result<Qualification, Error> {
+        teistro_tajika::qualification(graha, &Self::sky_of(annual)?)
     }
 
     /// Where the seven stand in a founded chart, which both the strengths
