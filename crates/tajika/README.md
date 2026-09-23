@@ -9,7 +9,8 @@ measured over every recorded birth in
 [`annual-chart-measured.md`](../../docs/03-design/annual-chart-measured.md).
 
 Above it, and built: the Muntha, the five office-bearers, the
-Panchavargiya bala, the lord of the year, the Tajika aspects with their
-deeptamsha orbs, the sixteen yogas (`03-design/tajika-yogas.md`) and the
-sahams (`03-design/tajika-sahams.md`). The Mudda and Patyayini dashas
+Panchavargiya bala, the Harsha bala (`03-design/tajika-harsha.md`), the
+lord of the year, the Tajika aspects with their deeptamsha orbs, the
+sixteen yogas (`03-design/tajika-yogas.md`) and the sahams
+(`03-design/tajika-sahams.md`). The Mudda and Patyayini dashas
 are still to come.

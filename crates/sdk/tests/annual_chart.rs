@@ -852,3 +852,40 @@ fn a_formula_of_ones_own_is_read_as_the_tables_are() {
         "the year opens by day"
     );
 }
+
+/// The source's Harsha bala, end to end: its forty-first year founded by
+/// the SDK and read as Table VI-1 prints it, every planet's total; and
+/// Venus's rival place moves only Venus.
+#[test]
+fn the_sources_harsha_bala_reproduces_end_to_end() {
+    use teistro::{HarshaGrade, HarshaRules, VenusPlace};
+    let sdk = source_context();
+    let (_birth, annual) = source_birth_and_year(&sdk);
+    let seven = sdk.chart().harsha(&annual).unwrap();
+    assert_eq!(
+        seven.map(|one| one.total.units()),
+        [15, 10, 10, 0, 10, 0, 10],
+        "Table VI-1's totals"
+    );
+    assert_eq!(seven[0].grade, HarshaGrade::PoornaBali);
+    // Only Saturn stands in its house of joy, the twelfth.
+    assert_eq!(
+        seven.map(|one| one.sthana),
+        [false, false, false, false, false, false, true]
+    );
+
+    let program = sdk
+        .chart()
+        .harsha_with_rules(
+            &annual,
+            HarshaRules {
+                venus: VenusPlace::Twelfth,
+            },
+        )
+        .unwrap();
+    for (verse, rival) in seven.iter().zip(&program) {
+        if verse.graha != Graha::Venus {
+            assert_eq!(verse, rival, "{:?}", verse.graha);
+        }
+    }
+}
