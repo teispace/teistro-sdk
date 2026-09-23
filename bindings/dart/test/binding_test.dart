@@ -1609,6 +1609,108 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test("a year's chart answers the sahams asked for", () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    List<Pravesha> years(VarshaRequest varsha) =>
+        ctx.chart
+            .found(
+              instant: 2447995.4895833335,
+              place: place,
+              utcOffsetSeconds: 20700,
+              varsha: varsha,
+            )
+            .praveshas;
+
+    for (final one in years(
+      const VarshaRequest(
+        through: 4,
+        place: AnnualPlace.birth,
+        sahams: Sahams.these([Saham.karyaSiddhi, Saham.punya]),
+      ),
+    )) {
+      final annual = one.annual!;
+      expect(annual.sahams.map((p) => p.saham), [
+        Saham.karyaSiddhi,
+        Saham.punya,
+      ]);
+      final lagna = annual.lagnaDeg ~/ 30;
+      for (final point in annual.sahams) {
+        expect(point.longitudeDeg, inInclusiveRange(0, 360));
+        final sign = point.longitudeDeg ~/ 30;
+        expect(point.sign, Rashi.byId(sign));
+        expect(point.house, (sign - lagna) % 12 + 1);
+        expect(point.lord.id, lessThan(7));
+      }
+    }
+
+    // `all` is the forty-one in the source's order; unasked is none.
+    final every =
+        years(
+          const VarshaRequest(
+            through: 1,
+            place: AnnualPlace.birth,
+            sahams: Sahams.all,
+          ),
+        ).first.annual!.sahams;
+    expect(every.map((p) => p.saham), Saham.values);
+    expect(
+      years(
+        const VarshaRequest(through: 1, place: AnnualPlace.birth),
+      ).first.annual!.sahams,
+      isEmpty,
+    );
+
+    // The rules cross in the boundary's casing.
+    final never = years(
+      const VarshaRequest(
+        through: 2,
+        place: AnnualPlace.birth,
+        sahams: Sahams.all,
+        sahamRules: SahamRules(addSign: AddSign.never),
+      ),
+    );
+    expect(
+      never.every((one) => one.annual!.sahams.every((p) => !p.addedSign)),
+      isTrue,
+    );
+    years(
+      const VarshaRequest(
+        through: 1,
+        place: AnnualPlace.birth,
+        sahams: Sahams.these([Saham.mrityu]),
+        sahamRules: SahamRules(
+          houses: HousePoints.equal,
+          roga: RogaReading.saturn,
+        ),
+      ),
+    );
+
+    Matcher refusedBy(String field) =>
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field));
+    expect(
+      () => years(
+        const VarshaRequest(through: 2, sahams: Sahams.these([Saham.punya])),
+      ),
+      refusedBy('varsha_json.sahams'),
+    );
+    expect(
+      () => years(
+        const VarshaRequest(
+          through: 2,
+          place: AnnualPlace.birth,
+          sahams: Sahams.these([Saham.punya, Saham.punya]),
+        ),
+      ),
+      refusedBy('varsha_json.sahams'),
+    );
+    ctx.dispose();
+  });
+
   test("a year's chart answers the Tajika yogas for the matters asked", () {
     final ctx = context();
     final place = Observer(

@@ -4855,6 +4855,181 @@ typedef enum ts_year_yoga {
 } ts_year_yoga;
 
 /**
+ * One of the forty-one Tajika sahams (K.S. Charak, ch. XI;
+ * `03-design/tajika-sahams.md`), in the source's order, each id its
+ * number less one.
+ *
+ * Mirrors `teistro::Saham` through an **exhaustive** match, so a saham
+ * added there stops this crate compiling rather than crossing as another.
+ */
+typedef enum ts_saham {
+    /**
+     * **Punya**, general auspiciousness.
+     */
+    TS_SAHAM_PUNYA = 0,
+    /**
+     * **Guru**, the preceptor.
+     */
+    TS_SAHAM_GURU = 1,
+    /**
+     * **Vidya** (Jnana), knowledge.
+     */
+    TS_SAHAM_VIDYA = 2,
+    /**
+     * **Yasha**, fame.
+     */
+    TS_SAHAM_YASHA = 3,
+    /**
+     * **Mitra**, friends.
+     */
+    TS_SAHAM_MITRA = 4,
+    /**
+     * **Mahatmya**, the fruits of virtuous living.
+     */
+    TS_SAHAM_MAHATMYA = 5,
+    /**
+     * **Asha**, hope.
+     */
+    TS_SAHAM_ASHA = 6,
+    /**
+     * **Samarthya**, capability.
+     */
+    TS_SAHAM_SAMARTHYA = 7,
+    /**
+     * **Bhratri**, siblings.
+     */
+    TS_SAHAM_BHRATRI = 8,
+    /**
+     * **Gaurava**, dignity.
+     */
+    TS_SAHAM_GAURAVA = 9,
+    /**
+     * **Pitri** (Taata), the father.
+     */
+    TS_SAHAM_PITRI = 10,
+    /**
+     * **Raja**, royal dignity.
+     */
+    TS_SAHAM_RAJA = 11,
+    /**
+     * **Matri**, the mother.
+     */
+    TS_SAHAM_MATRI = 12,
+    /**
+     * **Putra**, progeny.
+     */
+    TS_SAHAM_PUTRA = 13,
+    /**
+     * **Jeeva**, life.
+     */
+    TS_SAHAM_JEEVA = 14,
+    /**
+     * **Roga**, disease.
+     */
+    TS_SAHAM_ROGA = 15,
+    /**
+     * **Karma**, profession.
+     */
+    TS_SAHAM_KARMA = 16,
+    /**
+     * **Manmatha**, infatuation.
+     */
+    TS_SAHAM_MANMATHA = 17,
+    /**
+     * **Kali**, strife.
+     */
+    TS_SAHAM_KALI = 18,
+    /**
+     * **Kshama**, forgiveness.
+     */
+    TS_SAHAM_KSHAMA = 19,
+    /**
+     * **Shastra**, scriptures.
+     */
+    TS_SAHAM_SHASTRA = 20,
+    /**
+     * **Bandhu**, relatives.
+     */
+    TS_SAHAM_BANDHU = 21,
+    /**
+     * **Mrityu**, death.
+     */
+    TS_SAHAM_MRITYU = 22,
+    /**
+     * **Deshantara**, foreign travel.
+     */
+    TS_SAHAM_DESHANTARA = 23,
+    /**
+     * **Artha** (Dhana), wealth.
+     */
+    TS_SAHAM_ARTHA = 24,
+    /**
+     * **Paradara**, adultery.
+     */
+    TS_SAHAM_PARADARA = 25,
+    /**
+     * **Anya-karma**, an additional vocation.
+     */
+    TS_SAHAM_ANYA_KARMA = 26,
+    /**
+     * **Vanika**, trade.
+     */
+    TS_SAHAM_VANIKA = 27,
+    /**
+     * **Karya-siddhi**, success in a venture.
+     */
+    TS_SAHAM_KARYA_SIDDHI = 28,
+    /**
+     * **Vivaha**, marriage.
+     */
+    TS_SAHAM_VIVAHA = 29,
+    /**
+     * **Prasava**, the delivery of a child.
+     */
+    TS_SAHAM_PRASAVA = 30,
+    /**
+     * **Santaapa**, sorrow.
+     */
+    TS_SAHAM_SANTAAPA = 31,
+    /**
+     * **Shraddha**, devotion.
+     */
+    TS_SAHAM_SHRADDHA = 32,
+    /**
+     * **Preeti**, love.
+     */
+    TS_SAHAM_PREETI = 33,
+    /**
+     * **Jadya**, stupidity.
+     */
+    TS_SAHAM_JADYA = 34,
+    /**
+     * **Vyapara**, business.
+     */
+    TS_SAHAM_VYAPARA = 35,
+    /**
+     * **Paneeya-paata**, falling into water.
+     */
+    TS_SAHAM_PANEEYA_PAATA = 36,
+    /**
+     * **Shatru**, enemies.
+     */
+    TS_SAHAM_SHATRU = 37,
+    /**
+     * **Jalapatha**, a sea voyage.
+     */
+    TS_SAHAM_JALAPATHA = 38,
+    /**
+     * **Bandhana**, imprisonment.
+     */
+    TS_SAHAM_BANDHANA = 39,
+    /**
+     * **Labha**, monetary gain.
+     */
+    TS_SAHAM_LABHA = 40,
+} ts_saham;
+
+/**
  * One of the five clauses of the source's **affliction**, which Rudda
  * and Durapha read. Its ids are the bit positions of
  * `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.

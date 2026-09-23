@@ -32,7 +32,9 @@ use teistro_ffi::calendar::{
     ts_calendar_from_fixed, ts_calendar_is_leap, ts_calendar_jd_of_fixed, ts_calendar_month_length,
     ts_calendar_to_fixed, ts_calendar_weekday,
 };
-use teistro_ffi::chart::{TsChartRequest, TsYearYoga, ts_chart_found, ts_chart_layout_row};
+use teistro_ffi::chart::{
+    TsChartRequest, TsSaham, TsYearYoga, ts_chart_found, ts_chart_layout_row,
+};
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
     ts_context_new, ts_context_profile, ts_context_settings_hash, ts_context_settings_json,
@@ -1843,59 +1845,61 @@ fn a_chart_request_answers_the_annual_charts_instants() {
     );
 }
 
+/// A chart request for two Kathmandu births — 1990-04-11 and J2000 — with
+/// the annual charts `varsha` asks for, answered as the blob's bytes or
+/// the context's refusal. The annual-chart tests share it, so each says
+/// only what it asks.
+fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
+    let instants = [2_447_995.489_583_333_5, 2_451_545.0];
+    let text = CString::new(varsha).unwrap();
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: instants.as_ptr(),
+            instant_count: instants.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+            varsha_json: text.as_ptr(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) };
+    if status != Status::Ok {
+        return Err(ctx.last_error());
+    }
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    Ok(bytes)
+}
+
 /// A year's own chart is founded only when `varsha_json.place` asks, at the
 /// place it names, and its office-bearers come back row for row beside the
 /// returns — all of them or none (`03-design/muntha.md`).
 #[test]
 fn a_chart_request_founds_each_years_chart_where_it_is_told() {
     let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
-    let instants = [2_447_995.489_583_333_5, 2_451_545.0];
-    let base = TsChartRequest {
-        struct_size: 0,
-        kind: 0,
-        reserved: 0,
-        instants: instants.as_ptr(),
-        instant_count: instants.len(),
-        latitude_deg: 27.7172,
-        longitude_deg: 85.324,
-        altitude_m: 1400.0,
-        utc_offset_seconds: 20_700,
-        reserved_tail: 0,
-        sections: 0,
-        reserved_sections: 0,
-        vargas: ptr::null(),
-        varga_count: 0,
-        drawings: ptr::null(),
-        drawing_count: 0,
-        dashas: ptr::null(),
-        dasha_count: 0,
-        theme_json: ptr::null(),
-        rules_json: ptr::null(),
-        interpret_json: ptr::null(),
-        varsha_json: ptr::null(),
-    };
     let schema = schemas::charts();
-    let ask = |json: &str| {
-        let text = CString::new(json).unwrap();
-        let request = sized(
-            TsChartRequest {
-                varsha_json: text.as_ptr(),
-                ..base
-            },
-            |r, s| r.struct_size = s,
-        );
-        let mut blob = TsBlob::empty();
-        // SAFETY: a live context, a valid request and a valid slot.
-        let status = unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) };
-        if status != Status::Ok {
-            return Err(ctx.last_error());
-        }
-        // SAFETY: the library wrote `len` bytes.
-        let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
-        // SAFETY: a descriptor the library wrote.
-        unsafe { ts_blob_free(&raw mut blob) };
-        Ok(bytes)
-    };
+    let ask = |json: &str| annual_blob(&ctx, json);
     let column = |bytes: &[u8], name: &str| {
         Reader::parse(bytes, &schema)
             .unwrap()
@@ -2088,53 +2092,8 @@ fn a_years_chart_carries_the_lord_of_that_year() {
 #[test]
 fn a_years_chart_answers_the_matters_it_was_asked_about() {
     let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
-    let instants = [2_447_995.489_583_333_5, 2_451_545.0];
-    let base = TsChartRequest {
-        struct_size: 0,
-        kind: 0,
-        reserved: 0,
-        instants: instants.as_ptr(),
-        instant_count: instants.len(),
-        latitude_deg: 27.7172,
-        longitude_deg: 85.324,
-        altitude_m: 1400.0,
-        utc_offset_seconds: 20_700,
-        reserved_tail: 0,
-        sections: 0,
-        reserved_sections: 0,
-        vargas: ptr::null(),
-        varga_count: 0,
-        drawings: ptr::null(),
-        drawing_count: 0,
-        dashas: ptr::null(),
-        dasha_count: 0,
-        theme_json: ptr::null(),
-        rules_json: ptr::null(),
-        interpret_json: ptr::null(),
-        varsha_json: ptr::null(),
-    };
     let schema = schemas::charts();
-    let ask = |json: &str| {
-        let text = CString::new(json).unwrap();
-        let request = sized(
-            TsChartRequest {
-                varsha_json: text.as_ptr(),
-                ..base
-            },
-            |r, s| r.struct_size = s,
-        );
-        let mut blob = TsBlob::empty();
-        // SAFETY: a live context, a valid request and a valid slot.
-        let status = unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) };
-        if status != Status::Ok {
-            return Err(ctx.last_error());
-        }
-        // SAFETY: the library wrote `len` bytes.
-        let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
-        // SAFETY: a descriptor the library wrote.
-        unsafe { ts_blob_free(&raw mut blob) };
-        Ok(bytes)
-    };
+    let ask = |json: &str| annual_blob(&ctx, json);
     let ints = |bytes: &[u8], section: &str, name: &str| {
         Reader::parse(bytes, &schema)
             .unwrap()
@@ -2283,6 +2242,152 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
         r#"{"through":2,"place":"birth","varshesha":{"none_aspects":"annual_lagna_lord"}}"#,
         "varsha_json.varshesha.none_aspects",
         "none_aspects",
+    );
+}
+
+/// The lord of each sign, Aries first, by `graha` id.
+const SIGN_LORDS: [usize; 12] = [2, 5, 3, 1, 0, 3, 5, 2, 4, 6, 6, 4];
+
+/// A year's chart answers the **sahams** the request names, in its order,
+/// each where it fell and what it fell in, ragged by `saham_count`
+/// (`03-design/tajika-sahams.md`).
+#[test]
+fn a_years_chart_answers_the_sahams_it_was_asked_for() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let schema = schemas::charts();
+    let ask = |json: &str| annual_blob(&ctx, json);
+    let cells = |bytes: &[u8], section: &str, name: &str| {
+        Reader::parse(bytes, &schema)
+            .unwrap()
+            .column(section, name)
+            .unwrap()
+            .iter()
+            .map(|cell| cell.as_f64())
+            .collect::<Vec<f64>>()
+    };
+    let ints = |bytes: &[u8], section: &str, name: &str| {
+        cells(bytes, section, name)
+            .iter()
+            .map(|cell| *cell as usize)
+            .collect::<Vec<usize>>()
+    };
+
+    // A request names a saham by the key every binding reads it back as,
+    // so a caller can hand back what it was given: the wire's spelling is
+    // the catalogue's, member for member.
+    for saham in teistro::Saham::ALL {
+        let wire = serde_json::to_value(saham).unwrap();
+        let catalogue = teistro_idl::names::kebab(&format!("{:?}", TsSaham::from(saham)));
+        assert_eq!(wire.as_str(), Some(catalogue.as_str()), "{saham:?}");
+    }
+
+    // Three sahams, in the caller's order, for each of two births' three
+    // years.
+    let order = [TsSaham::Raja, TsSaham::KaryaSiddhi, TsSaham::Mrityu].map(|one| one as usize);
+    let asked =
+        ask(r#"{"through":3,"place":"birth","sahams":["raja","karya-siddhi","mrityu"]}"#).unwrap();
+    assert_eq!(ints(&asked, "annual_charts", "saham_count"), vec![3; 6]);
+    assert_eq!(ints(&asked, "year_sahams", "saham"), order.repeat(6));
+    let longitudes = cells(&asked, "year_sahams", "longitude_deg");
+    let signs = ints(&asked, "year_sahams", "sign");
+    let lords = ints(&asked, "year_sahams", "lord");
+    let houses = ints(&asked, "year_sahams", "house");
+    let lagnas = cells(&asked, "annual_charts", "lagna_deg");
+    for (row, deg) in longitudes.iter().enumerate() {
+        assert!((0.0..360.0).contains(deg), "row {row}: {deg}");
+        // The sign is the longitude's, its lord that sign's, and the house
+        // counted by whole signs from the year's own lagna.
+        assert_eq!(signs[row], (deg / 30.0) as usize, "row {row}");
+        assert_eq!(lords[row], SIGN_LORDS[signs[row]], "row {row}");
+        let lagna = (lagnas[row / 3] / 30.0) as usize;
+        assert_eq!(houses[row], (signs[row] + 12 - lagna) % 12 + 1, "row {row}");
+    }
+
+    // `"all"` is the forty-one in the source's order, every year, and the
+    // three pairs that share a formula land together.
+    let all = ask(r#"{"through":2,"place":"birth","sahams":"all"}"#).unwrap();
+    assert_eq!(ints(&all, "annual_charts", "saham_count"), vec![41; 4]);
+    assert_eq!(
+        ints(&all, "year_sahams", "saham"),
+        (0..41).collect::<Vec<usize>>().repeat(4)
+    );
+    let every = cells(&all, "year_sahams", "longitude_deg");
+    for year in 0..4 {
+        for (one, other) in [
+            (TsSaham::Guru, TsSaham::Vidya),
+            (TsSaham::Pitri, TsSaham::Raja),
+            (TsSaham::Kali, TsSaham::Kshama),
+        ] {
+            let at = |saham: TsSaham| every[41 * year + saham as usize];
+            assert_eq!(
+                at(one).to_bits(),
+                at(other).to_bits(),
+                "{one:?} and {other:?}"
+            );
+        }
+    }
+
+    // The rules are read: never adding a sign adds none.
+    let never =
+        ask(r#"{"through":2,"place":"birth","sahams":"all","sahamRules":{"addSign":"never"}}"#)
+            .unwrap();
+    assert!(
+        ints(&never, "year_sahams", "added_sign")
+            .iter()
+            .all(|flag| *flag == 0)
+    );
+    ask(r#"{"through":2,"place":"birth","sahams":["mrityu"],"sahamRules":{"houses":"equal","roga":"saturn"}}"#)
+        .unwrap();
+
+    // Not asked, nothing answered; an empty list asks for nothing.
+    for json in [
+        r#"{"through":2,"place":"birth"}"#,
+        r#"{"through":2,"place":"birth","sahams":[]}"#,
+    ] {
+        let bytes = ask(json).unwrap();
+        assert!(ints(&bytes, "year_sahams", "saham").is_empty(), "{json}");
+        assert!(
+            ints(&bytes, "annual_charts", "saham_count")
+                .iter()
+                .all(|n| *n == 0)
+        );
+    }
+
+    // Each refusal names the field the caller wrote.
+    let refused = |json: &str, field: &str, says: &str| {
+        let error = ask(json).expect_err(json);
+        assert_eq!(error.2.as_deref(), Some(field), "{error:?}");
+        assert!(error.1.contains(says), "{error:?}");
+    };
+    refused(
+        r#"{"through":2,"sahams":["punya"]}"#,
+        "varsha_json.sahams",
+        "place",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","sahams":["punya","punya"]}"#,
+        "varsha_json.sahams",
+        "twice",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","sahams":["pnya"]}"#,
+        "varsha_json.sahams",
+        "pnya",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","sahams":"some"}"#,
+        "varsha_json.sahams",
+        "\"all\"",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","sahams":["punya"],"sahamRules":{"add_sign":"never"}}"#,
+        "varsha_json.sahamRules.add_sign",
+        "add_sign",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","sahams":["punya"],"sahamRules":{"houses":"placidus"}}"#,
+        "varsha_json.sahamRules",
+        "placidus",
     );
 }
 

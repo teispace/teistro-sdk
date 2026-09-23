@@ -1486,6 +1486,7 @@ final class ChartsAnnualCharts {
     required this.retrograde,
     required this.combust,
     required this.matterCount,
+    required this.sahamCount,
     required this.length,
   });
 
@@ -1533,6 +1534,9 @@ final class ChartsAnnualCharts {
 
   /// How many rows of the `year_matters` section belong to this year: the matters `varsha_json.matters` asked about, 0 to 12.
   final Uint8List matterCount;
+
+  /// How many rows of the `year_sahams` section belong to this year: the sahams `varsha_json.sahams` asked for, 0 to 41.
+  final Uint8List sahamCount;
 
   /// The number of rows every column holds.
   final int length;
@@ -1767,6 +1771,43 @@ final class ChartsMatterLegs {
   final int length;
 }
 
+/// The `year_sahams` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.
+final class ChartsYearSahams {
+  const ChartsYearSahams({
+    required this.saham,
+    required this.longitudeDeg,
+    required this.sign,
+    required this.lord,
+    required this.house,
+    required this.addedSign,
+    required this.length,
+  });
+
+  /// Which of the forty-one.
+  final Uint8List saham;
+
+  /// Where it fell, sidereal degrees in [0, 360).
+  final Float64List longitudeDeg;
+
+  /// The sign it fell in, a `rashi` id.
+  final Uint16List sign;
+
+  /// That sign's lord, a `graha` id: the saham's lord, by whose strength the source judges it.
+  final Uint16List lord;
+
+  /// The house it fell in, 1 to 12, counted from the annual lagna by whole signs.
+  final Uint8List house;
+
+  /// 1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise.
+  final Uint8List addedSign;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -1912,6 +1953,7 @@ final class Charts {
     required this.yearMatters,
     required this.matterYogas,
     required this.matterLegs,
+    required this.yearSahams,
   });
 
   /// What kind of chart these are.
@@ -2081,6 +2123,9 @@ final class Charts {
   /// Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand.
   final ChartsMatterLegs matterLegs;
 
+  /// Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.
+  final ChartsYearSahams yearSahams;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -2129,6 +2174,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atYearMatters = blob.section(39, 'year_matters');
   final atMatterYogas = blob.section(40, 'matter_yogas');
   final atMatterLegs = blob.section(41, 'matter_legs');
+  final atYearSahams = blob.section(42, 'year_sahams');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -3401,6 +3447,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atAnnualCharts, 14),
         blob.columnOffset(atAnnualCharts, 14) + atAnnualCharts.count * 1,
       ),
+      sahamCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 15),
+        blob.columnOffset(atAnnualCharts, 15) + atAnnualCharts.count * 1,
+      ),
       length: atAnnualCharts.count,
     ),
     yearClaims: ChartsYearClaims(
@@ -3622,6 +3673,39 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atMatterLegs, 6) + atMatterLegs.count * 8,
       ),
       length: atMatterLegs.count,
+    ),
+    yearSahams: ChartsYearSahams(
+      saham: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 0),
+        blob.columnOffset(atYearSahams, 0) + atYearSahams.count * 1,
+      ),
+      longitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 1),
+        blob.columnOffset(atYearSahams, 1) + atYearSahams.count * 8,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 2),
+        blob.columnOffset(atYearSahams, 2) + atYearSahams.count * 2,
+      ),
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 3),
+        blob.columnOffset(atYearSahams, 3) + atYearSahams.count * 2,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 4),
+        blob.columnOffset(atYearSahams, 4) + atYearSahams.count * 1,
+      ),
+      addedSign: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 5),
+        blob.columnOffset(atYearSahams, 5) + atYearSahams.count * 1,
+      ),
+      length: atYearSahams.count,
     ),
   );
 }

@@ -1,11 +1,11 @@
 # The Tajika sahams
 
 Status: built — 2026-09-23. `crates/tajika/src/saham.rs`, reached at
-`sdk.chart().sahams`, `sahams_with_rules` and `saham_point`. What each
-reading moves is measured over every recorded birth's forty years in
-[`muntha-measured.md`](muntha-measured.md) §14, where the counts are
-generated and cannot go stale; none are written here. Not yet across the
-boundary: that is its own unit, as the yogas' crossing was.
+`sdk.chart().sahams`, `sahams_with_rules` and `saham_point`, and across
+the boundary since the same day as `varsha_json.sahams` (see "Crossing the
+boundary"). What each reading moves is measured over every recorded
+birth's forty years in [`muntha-measured.md`](muntha-measured.md) §14,
+where the counts are generated and cannot go stale; none are written here.
 
 The source is K. S. Charak, *A Textbook of Varshaphala*, ch. XI, "based
 mainly on the Tajika Neelakanthi" (rank 2; see the research page,
@@ -143,6 +143,38 @@ chart's, since "only those Sahams which are strong in the birth chart can
 produce results during a given year", so the façade takes a `Document`
 and not an annual one.
 
+## Crossing the boundary
+
+A caller outside Rust asks for a year's sahams on the chart request, as
+it asks for its matters:
+
+| `varsha_json` | what it is |
+|---|---|
+| `sahams` | `"all"`, the forty-one in the source's order, or saham keys in the caller's order; absent, none is read. Needs `place`, since a saham is read from the year's own chart. A saham named twice is refused. |
+| `sahamRules` | `{addSign, houses, roga}`, each a named reading, every one defaulted to the source's |
+
+Each year's `annual_charts` row counts its sahams in `saham_count`, and
+`year_sahams` carries them ragged beneath it: the saham, its longitude,
+sign, lord and house, and whether a sign was added. Whether the year
+opened by day is `annual_charts.daylight`, which is not repeated.
+
+**A saham is named by its catalogue key**, the kebab-case `karya-siddhi`
+every binding reads one back as, so a caller can hand back what an answer
+gave it. The first cut spelt the wire in serde's snake case, as the rule
+words are, and a Node caller writing the `Saham` type's own
+`'karya-siddhi'` would have been refused — the `noneAspects` trap of the
+yogas' crossing in another shape. The ABI test holds the two spellings
+equal member for member.
+
+`matters` and `sahams` are one reader, `Asked<T>`: `"all"` or these, none
+twice, each member read as its field reads it — a house by number, a
+saham by key.
+
+**Not across**: a caller's own `SahamFormula`, which Rust has at
+`saham_point`, and the birth chart's sahams, which the source reads beside
+the year's. Both wait on a consumer asking; the second will cross with
+saham strength, which needs it.
+
 ## What is decided and what is not
 
 | | |
@@ -151,12 +183,13 @@ and not an annual one.
 | **decided by measurement** | that the rival "between" is a whole-sign rule (600 of 600 probes) and what it moves (§14); that the default must not read the chart's chalit, which is Vehlow's under two shipped profiles |
 | **a reading, not a decision** | Roga's two formulas, both the source's |
 | **built** | `Saham` with `ALL` and `formula`; `SahamFormula`, `SahamTriple`, `SahamTerm`; `sahams` and `saham_point`, memoised per chart; `SahamRules` with `AddSign`, `HousePoints` and `RogaReading`; `sripati_mid_points`; `teistro_chart::foundation::angles_of`; the façade's `sahams`, `sahams_with_rules` and `saham_point`, which need no ephemeris |
-| **not built** | a saham's **strength**, which the source judges by its lord's dignity, its associations and aspects, the Panchavargiya floor of five units, and the **Harsha bala** — which is not built, so strength waits on it; the sahams across the boundary |
+| **not built** | a saham's **strength**, which the source judges by its lord's dignity, its associations and aspects, the Panchavargiya floor of five units, and the **Harsha bala** — which is not built, so strength waits on it; a caller's own formula and the birth chart's sahams across the boundary |
 
 ## The order of work
 
 1. **Done**: the arithmetic, the table, the three readings, the façade.
-2. The crossing: `varsha_json.sahams` naming the sahams asked for, or
-   `"all"`, beside the rules, as `varsha_json.matters` names the houses.
+2. **Done**: the crossing, `varsha_json.sahams` and `sahamRules`, into
+   every binding with its parity keys.
 3. The Harsha bala (Charak ch. VI), then a saham's strength over it and
-   the Panchavargiya bala already built.
+   the Panchavargiya bala already built, crossing with the birth chart's
+   sahams.

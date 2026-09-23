@@ -54,6 +54,7 @@ import {
   TajikaDrishtiById,
   TajikaYogaById,
   YearYogaById,
+  SahamById,
   AfflictionById,
   StrengthById,
   BalanceById,
@@ -2396,6 +2397,7 @@ function annualOf(d, row) {
     retrograde: grahasIn(charts.retrograde[row]),
     combust: grahasIn(charts.combust[row]),
     matters: mattersOf(d, row),
+    sahams: sahamsOf(d, row),
     yearLord: {
       graha: lord(charts.yearLord),
       chosen: VarsheshaChosenById.get(charts.yearLordChosen[row]) ?? 'unknown',
@@ -2424,6 +2426,27 @@ function yogasOf(d, row) {
   const from = startsOf(charts.yogaCount)[row];
   const count = charts.yogaCount[row] ?? 0;
   return Array.from({ length: count }, (_, k) => pairAt(d.yearYogas, from + k));
+}
+
+/**
+ * A year's sahams, ragged by `sahamCount` (`03-design/tajika-sahams.md`).
+ *
+ * @param {object} d the decoded batch
+ * @param {number} row
+ * @returns {object[]}
+ */
+function sahamsOf(d, row) {
+  const sahams = d.yearSahams;
+  const from = startsOf(d.annualCharts.sahamCount)[row];
+  const count = d.annualCharts.sahamCount[row] ?? 0;
+  return Array.from({ length: count }, (_, k) => ({
+    saham: SahamById.get(sahams.saham[from + k]) ?? 'unknown',
+    longitudeDeg: sahams.longitudeDeg[from + k],
+    sign: RashiById.get(sahams.sign[from + k]) ?? 'unknown',
+    lord: GrahaById.get(sahams.lord[from + k]) ?? 'unknown',
+    house: sahams.house[from + k],
+    addedSign: sahams.addedSign[from + k] === 1,
+  }));
 }
 
 /** Each ragged count column's prefix sums, computed once per batch. */

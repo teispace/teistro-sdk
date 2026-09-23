@@ -3606,6 +3606,8 @@ final class VarshaRequest {
     this.varshesha = const VarsheshaRules(),
     this.matters,
     this.yogas = const YogaRules(),
+    this.sahams,
+    this.sahamRules = const SahamRules(),
   });
 
   /// The last year of life wanted, 1 to 200.
@@ -3641,6 +3643,21 @@ final class VarshaRequest {
   /// The readings the sixteen part on, where the source leaves a choice.
   final YogaRules yogas;
 
+  /// The sahams each year's chart is read for. **Needs [place]**; null,
+  /// none is read.
+  ///
+  /// ```dart
+  /// const VarshaRequest(
+  ///   through: 40,
+  ///   place: AnnualPlace.birth,
+  ///   sahams: Sahams.these([Saham.punya, Saham.vivaha]),
+  /// );
+  /// ```
+  final Sahams? sahams;
+
+  /// The readings the sahams part on, where the sources differ.
+  final SahamRules sahamRules;
+
   String get _json => jsonEncode(<String, Object?>{
     'reading': reading.key,
     'through': through,
@@ -3649,7 +3666,109 @@ final class VarshaRequest {
     'varshesha': varshesha._json,
     if (matters case final matters?) 'matters': matters._json,
     'yogas': yogas._json,
+    if (sahams case final sahams?) 'sahams': sahams._json,
+    'sahamRules': sahamRules._json,
   });
+}
+
+/// The sahams a request asks for: all forty-one, or these in the order you
+/// want them answered.
+sealed class Sahams {
+  const Sahams._();
+
+  /// The forty-one, in the source's order.
+  static const Sahams all = _AllSahams();
+
+  /// These, in this order; a saham named twice is refused.
+  const factory Sahams.these(List<Saham> sahams) = _TheseSahams;
+
+  Object get _json;
+}
+
+final class _AllSahams extends Sahams {
+  const _AllSahams() : super._();
+
+  @override
+  Object get _json => 'all';
+}
+
+final class _TheseSahams extends Sahams {
+  const _TheseSahams(this.sahams) : super._();
+
+  final List<Saham> sahams;
+
+  // A saham crosses as its key, the spelling it is read back in.
+  @override
+  Object get _json => [for (final one in sahams) one.key];
+}
+
+/// When a saham is carried a sign further (`03-design/tajika-sahams.md`).
+enum AddSign {
+  /// When c does not fall between b and a by degrees: the source's own.
+  degrees('degrees'),
+
+  /// By whole signs, as a widely used program reads it.
+  signs('signs'),
+
+  /// Never: a − b + c alone.
+  never('never');
+
+  const AddSign(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Where a house's point stands, for the sahams that read one.
+enum HousePoints {
+  /// Sripati's mid-point, built from the angles: the source's own.
+  sripati('sripati'),
+
+  /// The chart's own chalit middles, under whatever its profile names.
+  chalit('chalit'),
+
+  /// Equal houses from the lagna's degree.
+  equal('equal');
+
+  const HousePoints(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Roga's formula: the source gives two.
+enum RogaReading {
+  /// Lagna − Moon + lagna: the saham as given.
+  lagna('lagna'),
+
+  /// Saturn − Moon + lagna: the other authority's.
+  saturn('saturn');
+
+  const RogaReading(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Where the sources differ on a saham. A reading left null is the SDK's
+/// own default, which lives in one place and is not repeated here.
+final class SahamRules {
+  const SahamRules({this.addSign, this.houses, this.roga});
+
+  /// When a saham is carried a sign further.
+  final AddSign? addSign;
+
+  /// Where a house's point stands.
+  final HousePoints? houses;
+
+  /// Roga's formula.
+  final RogaReading? roga;
+
+  Map<String, Object?> get _json => <String, Object?>{
+    if (addSign case final addSign?) 'addSign': addSign.key,
+    if (houses case final houses?) 'houses': houses.key,
+    if (roga case final roga?) 'roga': roga.key,
+  };
 }
 
 /// The matters a request asks the sixteen Tajika yogas about: all twelve,
@@ -4086,6 +4205,7 @@ final class AnnualChart {
     required this.retrograde,
     required this.combust,
     required this.matters,
+    required this.sahams,
   });
 
   /// The annual chart's lagna, sidereal degrees, at the place it was cast
@@ -4116,6 +4236,42 @@ final class AnnualChart {
   /// The sixteen yogas for each matter [VarshaRequest.matters] asked
   /// about, in its order; empty otherwise.
   final List<TajikaMatter> matters;
+
+  /// Each saham [VarshaRequest.sahams] asked for, in its order; empty
+  /// otherwise.
+  final List<TajikaSaham> sahams;
+}
+
+/// Where a saham fell in a year's chart, and what it fell in.
+final class TajikaSaham {
+  const TajikaSaham({
+    required this.saham,
+    required this.longitudeDeg,
+    required this.sign,
+    required this.lord,
+    required this.house,
+    required this.addedSign,
+  });
+
+  /// Which of the forty-one.
+  final Saham saham;
+
+  /// Where it fell, sidereal degrees in [0, 360).
+  final double longitudeDeg;
+
+  /// The sign it fell in.
+  final Rashi sign;
+
+  /// That sign's lord: the saham's lord, by whose strength the source
+  /// judges it.
+  final Graha lord;
+
+  /// The house it fell in, 1 to 12, by whole signs from the annual lagna.
+  final int house;
+
+  /// Whether it was carried a sign further because c did not fall between
+  /// b and a.
+  final bool addedSign;
 }
 
 /// Where each row's block starts in each ragged section under the annual
@@ -4127,13 +4283,15 @@ final class _Starts {
       yogas = _running(batch.annualCharts.yogaCount),
       matters = _running(batch.annualCharts.matterCount),
       held = _running(batch.yearMatters.heldCount),
-      legs = _running(batch.matterYogas.legCount);
+      legs = _running(batch.matterYogas.legCount),
+      sahams = _running(batch.annualCharts.sahamCount);
 
   final List<int> claims;
   final List<int> yogas;
   final List<int> matters;
   final List<int> held;
   final List<int> legs;
+  final List<int> sahams;
 
   static List<int> _running(List<int> counts) {
     final starts = List<int>.filled(counts.length + 1, 0);
@@ -4711,7 +4869,25 @@ final class Chart {
       retrograde: _seven(charts.retrograde[row]),
       combust: _seven(charts.combust[row]),
       matters: _mattersOf(row, starts),
+      sahams: _sahamsOf(row, starts),
     );
+  }
+
+  /// A year's sahams, ragged by `sahamCount`
+  /// (`03-design/tajika-sahams.md`).
+  List<TajikaSaham> _sahamsOf(int row, _Starts starts) {
+    final cols = batch.yearSahams;
+    return [
+      for (var k = starts.sahams[row]; k < starts.sahams[row + 1]; k += 1)
+        TajikaSaham(
+          saham: Saham.byId(cols.saham[k]),
+          longitudeDeg: cols.longitudeDeg[k],
+          sign: Rashi.byId(cols.sign[k]),
+          lord: Graha.byId(cols.lord[k]),
+          house: cols.house[k],
+          addedSign: cols.addedSign[k] == 1,
+        ),
+    ];
   }
 
   /// How two planets stand, from the pair columns of a matter's lords.

@@ -1231,6 +1231,9 @@ class ChartsAnnualCharts:
     matter_count: memoryview[int]
     """How many rows of the `year_matters` section belong to this year: the matters `varsha_json.matters` asked about, 0 to 12."""
 
+    saham_count: memoryview[int]
+    """How many rows of the `year_sahams` section belong to this year: the sahams `varsha_json.sahams` asked for, 0 to 41."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -1413,6 +1416,36 @@ class ChartsMatterLegs:
 
     apart_deg: memoryview[float]
     """How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsYearSahams:
+    """The `year_sahams` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.
+    """
+
+    saham: memoryview[int]
+    """Which of the forty-one."""
+
+    longitude_deg: memoryview[float]
+    """Where it fell, sidereal degrees in [0, 360)."""
+
+    sign: memoryview[int]
+    """The sign it fell in, a `rashi` id."""
+
+    lord: memoryview[int]
+    """That sign's lord, a `graha` id: the saham's lord, by whose strength the source judges it."""
+
+    house: memoryview[int]
+    """The house it fell in, 1 to 12, counted from the annual lagna by whole signs."""
+
+    added_sign: memoryview[int]
+    """1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise."""
 
     length: int
     """The number of rows every column holds."""
@@ -1659,6 +1692,9 @@ class Charts:
     matter_legs: ChartsMatterLegs
     """Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand."""
 
+    year_sahams: ChartsYearSahams
+    """Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1709,6 +1745,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_year_matters = blob.section(39, "year_matters")
     at_matter_yogas = blob.section(40, "matter_yogas")
     at_matter_legs = blob.section(41, "matter_legs")
+    at_year_sahams = blob.section(42, "year_sahams")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -2323,6 +2360,9 @@ def decode_charts(raw: bytes) -> Charts:
             matter_count=blob.column(
                 at_annual_charts, 14, 1, at_annual_charts.count
             ).cast("B"),
+            saham_count=blob.column(
+                at_annual_charts, 15, 1, at_annual_charts.count
+            ).cast("B"),
             length=at_annual_charts.count,
         ),
         year_claims=ChartsYearClaims(
@@ -2462,6 +2502,27 @@ def decode_charts(raw: bytes) -> Charts:
                 at_matter_legs, 6, 8, at_matter_legs.count
             ).cast("d"),
             length=at_matter_legs.count,
+        ),
+        year_sahams=ChartsYearSahams(
+            saham=blob.column(
+                at_year_sahams, 0, 1, at_year_sahams.count
+            ).cast("B"),
+            longitude_deg=blob.column(
+                at_year_sahams, 1, 8, at_year_sahams.count
+            ).cast("d"),
+            sign=blob.column(
+                at_year_sahams, 2, 2, at_year_sahams.count
+            ).cast("H"),
+            lord=blob.column(
+                at_year_sahams, 3, 2, at_year_sahams.count
+            ).cast("H"),
+            house=blob.column(
+                at_year_sahams, 4, 1, at_year_sahams.count
+            ).cast("B"),
+            added_sign=blob.column(
+                at_year_sahams, 5, 1, at_year_sahams.count
+            ).cast("B"),
+            length=at_year_sahams.count,
         ),
     )
 

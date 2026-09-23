@@ -6806,6 +6806,219 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsSaham",
+      "doc": "One of the forty-one Tajika sahams (K.S. Charak, ch. XI;\n`03-design/tajika-sahams.md`), in the source's order, each id its\nnumber less one.\n\nMirrors `teistro::Saham` through an **exhaustive** match, so a saham\nadded there stops this crate compiling rather than crossing as another.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Punya",
+          "value": 0,
+          "doc": "**Punya**, general auspiciousness."
+        },
+        {
+          "name": "Guru",
+          "value": 1,
+          "doc": "**Guru**, the preceptor."
+        },
+        {
+          "name": "Vidya",
+          "value": 2,
+          "doc": "**Vidya** (Jnana), knowledge."
+        },
+        {
+          "name": "Yasha",
+          "value": 3,
+          "doc": "**Yasha**, fame."
+        },
+        {
+          "name": "Mitra",
+          "value": 4,
+          "doc": "**Mitra**, friends."
+        },
+        {
+          "name": "Mahatmya",
+          "value": 5,
+          "doc": "**Mahatmya**, the fruits of virtuous living."
+        },
+        {
+          "name": "Asha",
+          "value": 6,
+          "doc": "**Asha**, hope."
+        },
+        {
+          "name": "Samarthya",
+          "value": 7,
+          "doc": "**Samarthya**, capability."
+        },
+        {
+          "name": "Bhratri",
+          "value": 8,
+          "doc": "**Bhratri**, siblings."
+        },
+        {
+          "name": "Gaurava",
+          "value": 9,
+          "doc": "**Gaurava**, dignity."
+        },
+        {
+          "name": "Pitri",
+          "value": 10,
+          "doc": "**Pitri** (Taata), the father."
+        },
+        {
+          "name": "Raja",
+          "value": 11,
+          "doc": "**Raja**, royal dignity."
+        },
+        {
+          "name": "Matri",
+          "value": 12,
+          "doc": "**Matri**, the mother."
+        },
+        {
+          "name": "Putra",
+          "value": 13,
+          "doc": "**Putra**, progeny."
+        },
+        {
+          "name": "Jeeva",
+          "value": 14,
+          "doc": "**Jeeva**, life."
+        },
+        {
+          "name": "Roga",
+          "value": 15,
+          "doc": "**Roga**, disease."
+        },
+        {
+          "name": "Karma",
+          "value": 16,
+          "doc": "**Karma**, profession."
+        },
+        {
+          "name": "Manmatha",
+          "value": 17,
+          "doc": "**Manmatha**, infatuation."
+        },
+        {
+          "name": "Kali",
+          "value": 18,
+          "doc": "**Kali**, strife."
+        },
+        {
+          "name": "Kshama",
+          "value": 19,
+          "doc": "**Kshama**, forgiveness."
+        },
+        {
+          "name": "Shastra",
+          "value": 20,
+          "doc": "**Shastra**, scriptures."
+        },
+        {
+          "name": "Bandhu",
+          "value": 21,
+          "doc": "**Bandhu**, relatives."
+        },
+        {
+          "name": "Mrityu",
+          "value": 22,
+          "doc": "**Mrityu**, death."
+        },
+        {
+          "name": "Deshantara",
+          "value": 23,
+          "doc": "**Deshantara**, foreign travel."
+        },
+        {
+          "name": "Artha",
+          "value": 24,
+          "doc": "**Artha** (Dhana), wealth."
+        },
+        {
+          "name": "Paradara",
+          "value": 25,
+          "doc": "**Paradara**, adultery."
+        },
+        {
+          "name": "AnyaKarma",
+          "value": 26,
+          "doc": "**Anya-karma**, an additional vocation."
+        },
+        {
+          "name": "Vanika",
+          "value": 27,
+          "doc": "**Vanika**, trade."
+        },
+        {
+          "name": "KaryaSiddhi",
+          "value": 28,
+          "doc": "**Karya-siddhi**, success in a venture."
+        },
+        {
+          "name": "Vivaha",
+          "value": 29,
+          "doc": "**Vivaha**, marriage."
+        },
+        {
+          "name": "Prasava",
+          "value": 30,
+          "doc": "**Prasava**, the delivery of a child."
+        },
+        {
+          "name": "Santaapa",
+          "value": 31,
+          "doc": "**Santaapa**, sorrow."
+        },
+        {
+          "name": "Shraddha",
+          "value": 32,
+          "doc": "**Shraddha**, devotion."
+        },
+        {
+          "name": "Preeti",
+          "value": 33,
+          "doc": "**Preeti**, love."
+        },
+        {
+          "name": "Jadya",
+          "value": 34,
+          "doc": "**Jadya**, stupidity."
+        },
+        {
+          "name": "Vyapara",
+          "value": 35,
+          "doc": "**Vyapara**, business."
+        },
+        {
+          "name": "PaneeyaPaata",
+          "value": 36,
+          "doc": "**Paneeya-paata**, falling into water."
+        },
+        {
+          "name": "Shatru",
+          "value": 37,
+          "doc": "**Shatru**, enemies."
+        },
+        {
+          "name": "Jalapatha",
+          "value": 38,
+          "doc": "**Jalapatha**, a sea voyage."
+        },
+        {
+          "name": "Bandhana",
+          "value": 39,
+          "doc": "**Bandhana**, imprisonment."
+        },
+        {
+          "name": "Labha",
+          "value": 40,
+          "doc": "**Labha**, monetary gain."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsAffliction",
       "doc": "One of the five clauses of the source's **affliction**, which Rudda\nand Durapha read. Its ids are the bit positions of\n`matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.",
       "repr": "u8",
@@ -14539,6 +14752,11 @@
               "name": "matter_count",
               "scalar": "u8",
               "doc": "How many rows of the `year_matters` section belong to this year: the matters `varsha_json.matters` asked about, 0 to 12."
+            },
+            {
+              "name": "saham_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `year_sahams` section belong to this year: the sahams `varsha_json.sahams` asked for, 0 to 41."
             }
           ]
         },
@@ -14791,6 +15009,45 @@
               "name": "apart_deg",
               "scalar": "f64",
               "doc": "How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past."
+            }
+          ]
+        },
+        {
+          "id": 42,
+          "name": "year_sahams",
+          "doc": "Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "saham",
+              "scalar": "u8",
+              "doc": "Which of the forty-one.",
+              "enum": "TsSaham"
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "Where it fell, sidereal degrees in [0, 360)."
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign it fell in, a `rashi` id."
+            },
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "That sign's lord, a `graha` id: the saham's lord, by whose strength the source judges it."
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "The house it fell in, 1 to 12, counted from the annual lagna by whole signs."
+            },
+            {
+              "name": "added_sign",
+              "scalar": "u8",
+              "doc": "1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise."
             }
           ]
         }

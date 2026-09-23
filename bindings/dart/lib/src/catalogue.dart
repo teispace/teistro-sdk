@@ -5440,6 +5440,123 @@ enum YearYoga {
   }
 }
 
+/// One of the forty-one Tajika sahams (K.S. Charak, ch. XI;
+/// `03-design/tajika-sahams.md`), in the source's order, each id its
+/// number less one.
+///
+/// Mirrors `teistro::Saham` through an **exhaustive** match, so a saham
+/// added there stops this crate compiling rather than crossing as another.
+enum Saham {
+  /// **Punya**, general auspiciousness.
+  punya(0, 'punya'),
+  /// **Guru**, the preceptor.
+  guru(1, 'guru'),
+  /// **Vidya** (Jnana), knowledge.
+  vidya(2, 'vidya'),
+  /// **Yasha**, fame.
+  yasha(3, 'yasha'),
+  /// **Mitra**, friends.
+  mitra(4, 'mitra'),
+  /// **Mahatmya**, the fruits of virtuous living.
+  mahatmya(5, 'mahatmya'),
+  /// **Asha**, hope.
+  asha(6, 'asha'),
+  /// **Samarthya**, capability.
+  samarthya(7, 'samarthya'),
+  /// **Bhratri**, siblings.
+  bhratri(8, 'bhratri'),
+  /// **Gaurava**, dignity.
+  gaurava(9, 'gaurava'),
+  /// **Pitri** (Taata), the father.
+  pitri(10, 'pitri'),
+  /// **Raja**, royal dignity.
+  raja(11, 'raja'),
+  /// **Matri**, the mother.
+  matri(12, 'matri'),
+  /// **Putra**, progeny.
+  putra(13, 'putra'),
+  /// **Jeeva**, life.
+  jeeva(14, 'jeeva'),
+  /// **Roga**, disease.
+  roga(15, 'roga'),
+  /// **Karma**, profession.
+  karma(16, 'karma'),
+  /// **Manmatha**, infatuation.
+  manmatha(17, 'manmatha'),
+  /// **Kali**, strife.
+  kali(18, 'kali'),
+  /// **Kshama**, forgiveness.
+  kshama(19, 'kshama'),
+  /// **Shastra**, scriptures.
+  shastra(20, 'shastra'),
+  /// **Bandhu**, relatives.
+  bandhu(21, 'bandhu'),
+  /// **Mrityu**, death.
+  mrityu(22, 'mrityu'),
+  /// **Deshantara**, foreign travel.
+  deshantara(23, 'deshantara'),
+  /// **Artha** (Dhana), wealth.
+  artha(24, 'artha'),
+  /// **Paradara**, adultery.
+  paradara(25, 'paradara'),
+  /// **Anya-karma**, an additional vocation.
+  anyaKarma(26, 'anya-karma'),
+  /// **Vanika**, trade.
+  vanika(27, 'vanika'),
+  /// **Karya-siddhi**, success in a venture.
+  karyaSiddhi(28, 'karya-siddhi'),
+  /// **Vivaha**, marriage.
+  vivaha(29, 'vivaha'),
+  /// **Prasava**, the delivery of a child.
+  prasava(30, 'prasava'),
+  /// **Santaapa**, sorrow.
+  santaapa(31, 'santaapa'),
+  /// **Shraddha**, devotion.
+  shraddha(32, 'shraddha'),
+  /// **Preeti**, love.
+  preeti(33, 'preeti'),
+  /// **Jadya**, stupidity.
+  jadya(34, 'jadya'),
+  /// **Vyapara**, business.
+  vyapara(35, 'vyapara'),
+  /// **Paneeya-paata**, falling into water.
+  paneeyaPaata(36, 'paneeya-paata'),
+  /// **Shatru**, enemies.
+  shatru(37, 'shatru'),
+  /// **Jalapatha**, a sea voyage.
+  jalapatha(38, 'jalapatha'),
+  /// **Bandhana**, imprisonment.
+  bandhana(39, 'bandhana'),
+  /// **Labha**, monetary gain.
+  labha(40, 'labha');
+
+  const Saham(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Saham byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Saham'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Saham? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// One of the five clauses of the source's **affliction**, which Rudda
 /// and Durapha read. Its ids are the bit positions of
 /// `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.

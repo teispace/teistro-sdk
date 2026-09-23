@@ -141,6 +141,37 @@ void main() {
     );
   }
 
+  // ── The sahams: forty-one sensitive points, each a − b + c ────────
+  // Name the ones you want, or `Sahams.all`; each comes back with its
+  // sign, that sign's lord and the house it fell in, as the source reads
+  // them.
+  final points =
+      ctx.chart
+          .found(
+            instant: when.instantJdUtc,
+            place: place,
+            utcOffsetSeconds: when.offsetSeconds,
+            varsha: const VarshaRequest(
+              through: 30,
+              place: AnnualPlace.birth,
+              sahams: Sahams.these([
+                Saham.punya,
+                Saham.vivaha,
+                Saham.karyaSiddhi,
+              ]),
+            ),
+          )
+          .praveshas[29]
+          .annual!;
+  for (final point in points.sahams) {
+    print(
+      '${point.saham.key.padRight(12)} '
+      '${point.longitudeDeg.toStringAsFixed(2).padLeft(6)}°  '
+      '${point.sign.key}, lord ${point.lord.key}, house ${point.house}'
+      '${point.addedSign ? ' (a sign added)' : ''}',
+    );
+  }
+
   // ── The readings are named, and they are not each other ───────────
   for (final reading in VarshaReading.values) {
     final one =

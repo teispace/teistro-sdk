@@ -519,9 +519,16 @@ for (const chart of charts) {
 // Each reading also asks the sixteen yogas a different way, so all three
 // ways cross: every matter under the source's readings, every matter under
 // Tambira's "some authorities", and no matter at all.
+// The sahams likewise: every one under the source's rules, every one
+// under each rival rule, and none.
 const MATTERS = {
-  sidereal: { matters: 'all' },
-  tropical: { matters: 'all', yogas: { tambira: 'either_lord' } },
+  sidereal: { matters: 'all', sahams: 'all' },
+  tropical: {
+    matters: 'all',
+    yogas: { tambira: 'either_lord' },
+    sahams: 'all',
+    sahamRules: { addSign: 'signs', houses: 'equal', roga: 'saturn' },
+  },
   mean: {},
 };
 const pairSaid = (p) =>
@@ -578,6 +585,12 @@ for (const reading of ['sidereal', 'tropical', 'mean']) {
         put(`${at}-matter-${m.house}-pair`, m.between === null ? '-' : pairSaid(m.between));
         put(`${at}-matter-${m.house}-unanswered`, m.unanswered.join(','));
         put(`${at}-matter-${m.house}-held`, m.held.map(heldSaid).join(' '));
+      }
+      for (const p of one.annual.sahams) {
+        put(
+          `${at}-saham-${p.saham}`,
+          `${p.longitudeDeg.toFixed(6)} ${p.sign} ${p.lord} ${p.house} ${p.addedSign}`,
+        );
       }
       put(
         `chart-${i}-varsha-${reading}-${one.year}-year-claims`,

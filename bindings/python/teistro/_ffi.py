@@ -97,6 +97,7 @@ from .catalogue import (
     Resolution,
     Rising,
     Ritu,
+    Saham,
     Samvatsara,
     Scale,
     Sex,

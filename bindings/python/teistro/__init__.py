@@ -107,6 +107,7 @@ from .catalogue import (
     TajikaDrishti,
     TajikaYoga,
     YearYoga,
+    Saham,
     Affliction,
     Vaiseshikamsa,
     DashaPhase,
@@ -327,6 +328,9 @@ __all__ = [
     "TajikaBetween",
     "TajikaMatter",
     "YogaRules",
+    "Saham",
+    "SahamRules",
+    "TajikaSaham",
     "RashiDashaDefinition",
     "UduDashaDefinition",
     "DashaLord",
@@ -2508,6 +2512,38 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
     """The readings the sixteen part on, where the source leaves a choice;
     its own by default."""
 
+    sahams: Union[Literal["all"], List[Union["Saham", str]]]
+    """The sahams each year's chart is read for: `"all"`, the forty-one in
+    the source's order, or `Saham` members (or their keys, `"punya"`) in
+    the order you want them answered. **Needs `place`**; absent, none is
+    read."""
+
+    saham_rules: "SahamRules"
+    """The readings the sahams part on, where the sources differ; the
+    source's own by default."""
+
+
+class SahamRules(TypedDict, total=False):
+    """Where the sources differ on a saham, each a named reading
+    (`03-design/tajika-sahams.md`).
+
+    >>> rules: SahamRules = {"add_sign": "signs", "houses": "equal"}
+    """
+
+    add_sign: Literal["degrees", "signs", "never"]
+    """When a saham is carried a sign further: when c does not fall between
+    b and a by degrees, the source's own; by whole signs, as a widely used
+    program reads it; or never."""
+
+    houses: Literal["sripati", "chalit", "equal"]
+    """Where a house's point stands: Sripati's mid-point built from the
+    angles, the source's own; the chart's chalit under its profile; or
+    equal houses from the lagna's degree."""
+
+    roga: Literal["lagna", "saturn"]
+    """Roga's formula: lagna − Moon + lagna, or the other authority's
+    Saturn − Moon + lagna."""
+
 
 class YogaRules(TypedDict, total=False):
     """Where the source leaves the sixteen Tajika yogas a choice, each a
@@ -2813,6 +2849,36 @@ class AnnualChart:
     """The sixteen yogas for each matter `varsha["matters"]` asked about, in
     its order; empty otherwise."""
 
+    sahams: List["TajikaSaham"]
+    """Each saham `varsha["sahams"]` asked for, in its order; empty
+    otherwise."""
+
+
+@dataclass(frozen=True)
+class TajikaSaham:
+    """Where a saham fell in a year's chart, and what it fell in."""
+
+    saham: Saham
+    """Which of the forty-one."""
+
+    longitude_deg: float
+    """Where it fell, sidereal degrees in [0, 360)."""
+
+    sign: Rashi
+    """The sign it fell in."""
+
+    lord: Graha
+    """That sign's lord: the saham's lord, by whose strength the source
+    judges it."""
+
+    house: int
+    """The house it fell in, 1 to 12, by whole signs from the annual
+    lagna."""
+
+    added_sign: bool
+    """Whether it was carried a sign further because c did not fall between
+    b and a."""
+
 
 @dataclass(frozen=True)
 class Muntha:
@@ -3106,9 +3172,15 @@ def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
         written["place"] = _annual_place(place)
     # The rule records are written in Python's own keys and read in the
     # boundary's, as the place is.
-    for rules in ("varshesha", "yogas"):
+    if "saham_rules" in written:
+        written["sahamRules"] = written.pop("saham_rules")
+    for rules in ("varshesha", "yogas", "sahamRules"):
         if isinstance(written.get(rules), Mapping):
             written[rules] = _camel_keys(written[rules])
+    # A saham crosses as its key, the spelling it is read back in.
+    sahams = written.get("sahams")
+    if isinstance(sahams, (list, tuple)):
+        written["sahams"] = [one.key if isinstance(one, Saham) else one for one in sahams]
     return _record_json(written, "varsha", "{'through': 40, 'place': 'birth'}")
 
 
@@ -3154,6 +3226,7 @@ class _Starts(NamedTuple):
     matters: List[int]
     held: List[int]
     legs: List[int]
+    sahams: List[int]
 
     @staticmethod
     def of(decoded: Any) -> "_Starts":
@@ -3167,6 +3240,7 @@ class _Starts(NamedTuple):
             matters=running(charts.matter_count),
             held=running(decoded.year_matters.held_count),
             legs=running(decoded.matter_yogas.leg_count),
+            sahams=running(charts.saham_count),
         )
 
 
@@ -3239,6 +3313,23 @@ def _matters(decoded: Any, row: int, starts: _Starts) -> List[TajikaMatter]:
     return found
 
 
+def _sahams(decoded: Any, row: int, starts: _Starts) -> List[TajikaSaham]:
+    """A year's sahams, ragged by `saham_count`
+    (`03-design/tajika-sahams.md`)."""
+    sahams = decoded.year_sahams
+    return [
+        TajikaSaham(
+            saham=Saham(sahams.saham[k]),
+            longitude_deg=sahams.longitude_deg[k],
+            sign=Rashi(sahams.sign[k]),
+            lord=Graha(sahams.lord[k]),
+            house=sahams.house[k],
+            added_sign=sahams.added_sign[k] == 1,
+        )
+        for k in range(starts.sahams[row], starts.sahams[row + 1])
+    ]
+
+
 def _annual_chart(decoded: Any, row: int, starts: _Starts) -> Optional[AnnualChart]:
     """Row `row` of `annual_charts`, which runs beside `praveshas` row for
     row or is empty; anything between is a layout this layer cannot pair,
@@ -3297,6 +3388,7 @@ def _annual_chart(decoded: Any, row: int, starts: _Starts) -> Optional[AnnualCha
         retrograde=_members(charts.retrograde[row], _SEVEN),
         combust=_members(charts.combust[row], _SEVEN),
         matters=_matters(decoded, row, starts),
+        sahams=_sahams(decoded, row, starts),
     )
 
 

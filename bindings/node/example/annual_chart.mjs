@@ -97,6 +97,22 @@ for (const matter of judged.matters) {
   );
 }
 
+// ── The sahams: forty-one sensitive points, each a − b + c ─────────────
+// Name the ones you want, or 'all'; each comes back with its sign, that
+// sign's lord and the house it fell in, as the source reads them.
+const points = ctx.chart.found({
+  instant: when.instantJdUtc,
+  place,
+  utcOffsetSeconds: when.offsetSeconds,
+  varsha: { through: 30, place: 'birth', sahams: ['punya', 'vivaha', 'karya-siddhi'] },
+}).praveshas[29].annual;
+for (const one of points.sahams) {
+  console.log(
+    `${one.saham.padEnd(12)} ${one.longitudeDeg.toFixed(2).padStart(6)}°  ${short(one.sign)}, ` +
+      `lord ${short(one.lord)}, house ${one.house}${one.addedSign ? ' (a sign added)' : ''}`,
+  );
+}
+
 // ── The readings are named, and they are not each other ────────────────
 for (const reading of ['sidereal', 'tropical', 'mean']) {
   const one = ctx.chart.found({

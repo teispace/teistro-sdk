@@ -638,6 +638,7 @@ export function decodeCharts(bytes) {
       retrograde: column(blob, at, 12, 'u8', at.count),
       combust: column(blob, at, 13, 'u8', at.count),
       matterCount: column(blob, at, 14, 'u8', at.count),
+      sahamCount: column(blob, at, 15, 'u8', at.count),
       length: at.count,
     };
   }
@@ -709,6 +710,18 @@ export function decodeCharts(bytes) {
       yogaPresent: column(blob, at, 4, 'u8', at.count),
       orbDeg: column(blob, at, 5, 'f64', at.count),
       apartDeg: column(blob, at, 6, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 42, 'year_sahams');
+    out.yearSahams = {
+      saham: column(blob, at, 0, 'u8', at.count),
+      longitudeDeg: column(blob, at, 1, 'f64', at.count),
+      sign: column(blob, at, 2, 'u16', at.count),
+      lord: column(blob, at, 3, 'u16', at.count),
+      house: column(blob, at, 4, 'u8', at.count),
+      addedSign: column(blob, at, 5, 'u8', at.count),
       length: at.count,
     };
   }

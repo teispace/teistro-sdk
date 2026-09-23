@@ -3918,6 +3918,139 @@ class YearYoga(Member):
     """Both weak, in the trika houses, combust or retrograde."""
 
 
+class Saham(Member):
+    """One of the forty-one Tajika sahams (K.S. Charak, ch. XI;
+    `03-design/tajika-sahams.md`), in the source's order, each id its
+    number less one.
+
+    Mirrors `teistro::Saham` through an **exhaustive** match, so a saham
+    added there stops this crate compiling rather than crossing as another.
+    """
+
+    PUNYA = 0
+    """**Punya**, general auspiciousness."""
+
+    GURU = 1
+    """**Guru**, the preceptor."""
+
+    VIDYA = 2
+    """**Vidya** (Jnana), knowledge."""
+
+    YASHA = 3
+    """**Yasha**, fame."""
+
+    MITRA = 4
+    """**Mitra**, friends."""
+
+    MAHATMYA = 5
+    """**Mahatmya**, the fruits of virtuous living."""
+
+    ASHA = 6
+    """**Asha**, hope."""
+
+    SAMARTHYA = 7
+    """**Samarthya**, capability."""
+
+    BHRATRI = 8
+    """**Bhratri**, siblings."""
+
+    GAURAVA = 9
+    """**Gaurava**, dignity."""
+
+    PITRI = 10
+    """**Pitri** (Taata), the father."""
+
+    RAJA = 11
+    """**Raja**, royal dignity."""
+
+    MATRI = 12
+    """**Matri**, the mother."""
+
+    PUTRA = 13
+    """**Putra**, progeny."""
+
+    JEEVA = 14
+    """**Jeeva**, life."""
+
+    ROGA = 15
+    """**Roga**, disease."""
+
+    KARMA = 16
+    """**Karma**, profession."""
+
+    MANMATHA = 17
+    """**Manmatha**, infatuation."""
+
+    KALI = 18
+    """**Kali**, strife."""
+
+    KSHAMA = 19
+    """**Kshama**, forgiveness."""
+
+    SHASTRA = 20
+    """**Shastra**, scriptures."""
+
+    BANDHU = 21
+    """**Bandhu**, relatives."""
+
+    MRITYU = 22
+    """**Mrityu**, death."""
+
+    DESHANTARA = 23
+    """**Deshantara**, foreign travel."""
+
+    ARTHA = 24
+    """**Artha** (Dhana), wealth."""
+
+    PARADARA = 25
+    """**Paradara**, adultery."""
+
+    ANYA_KARMA = 26
+    """**Anya-karma**, an additional vocation."""
+
+    VANIKA = 27
+    """**Vanika**, trade."""
+
+    KARYA_SIDDHI = 28
+    """**Karya-siddhi**, success in a venture."""
+
+    VIVAHA = 29
+    """**Vivaha**, marriage."""
+
+    PRASAVA = 30
+    """**Prasava**, the delivery of a child."""
+
+    SANTAAPA = 31
+    """**Santaapa**, sorrow."""
+
+    SHRADDHA = 32
+    """**Shraddha**, devotion."""
+
+    PREETI = 33
+    """**Preeti**, love."""
+
+    JADYA = 34
+    """**Jadya**, stupidity."""
+
+    VYAPARA = 35
+    """**Vyapara**, business."""
+
+    PANEEYA_PAATA = 36
+    """**Paneeya-paata**, falling into water."""
+
+    SHATRU = 37
+    """**Shatru**, enemies."""
+
+    JALAPATHA = 38
+    """**Jalapatha**, a sea voyage."""
+
+    BANDHANA = 39
+    """**Bandhana**, imprisonment."""
+
+    LABHA = 40
+    """**Labha**, monetary gain."""
+
+
 class Affliction(Member):
     """One of the five clauses of the source's **affliction**, which Rudda
     and Durapha read. Its ids are the bit positions of
@@ -5382,6 +5515,49 @@ _KEYS: dict[str, dict[int, str]] = {
         13: "tambira",
         14: "kuttha",
         15: "durapha",
+    },
+    "Saham": {
+        0: "punya",
+        1: "guru",
+        2: "vidya",
+        3: "yasha",
+        4: "mitra",
+        5: "mahatmya",
+        6: "asha",
+        7: "samarthya",
+        8: "bhratri",
+        9: "gaurava",
+        10: "pitri",
+        11: "raja",
+        12: "matri",
+        13: "putra",
+        14: "jeeva",
+        15: "roga",
+        16: "karma",
+        17: "manmatha",
+        18: "kali",
+        19: "kshama",
+        20: "shastra",
+        21: "bandhu",
+        22: "mrityu",
+        23: "deshantara",
+        24: "artha",
+        25: "paradara",
+        26: "anya-karma",
+        27: "vanika",
+        28: "karya-siddhi",
+        29: "vivaha",
+        30: "prasava",
+        31: "santaapa",
+        32: "shraddha",
+        33: "preeti",
+        34: "jadya",
+        35: "vyapara",
+        36: "paneeya-paata",
+        37: "shatru",
+        38: "jalapatha",
+        39: "bandhana",
+        40: "labha",
     },
     "Affliction": {
         0: "retrograde",

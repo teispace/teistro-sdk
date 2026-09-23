@@ -22,6 +22,7 @@ from teistro import (
     TajikaYoga,
     UduDashaDefinition,
     YearYoga,
+    Saham,
     DashaPhase,
     Nature,
     Balance,
@@ -1368,6 +1369,66 @@ class AnEngine(WithLibrary):
                 {"through": 2, "place": "birth", "matters": [7],
                  "yogas": {"weak_below": 12 * 3600, "strong_from": 4 * 3600}},
                 "varsha_json.yogas.strongFrom",
+            ),
+        ]:
+            with self.subTest(field=field, varsha=varsha):
+                with self.assertRaises(TeistroError) as refused:
+                    years(varsha)
+                self.assertEqual(refused.exception.field, field)
+
+    def test_a_years_chart_answers_the_sahams_asked_for(self) -> None:
+        """The sahams cross for the ones `varsha=` names, in its order, each
+        where it fell and what it fell in (`03-design/tajika-sahams.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+
+        def years(varsha: Any) -> Any:
+            return self.ctx.chart.found(
+                instant=2447995.4895833335,
+                place=observer,
+                utc_offset_seconds=20700,
+                varsha=varsha,
+            ).praveshas
+
+        # A member or its key, as the caller has it.
+        asked = years({"through": 4, "place": "birth", "sahams": [Saham.KARYA_SIDDHI, "punya"]})
+        for one in asked:
+            annual = one.annual
+            assert annual is not None
+            self.assertEqual([p.saham for p in annual.sahams], [Saham.KARYA_SIDDHI, Saham.PUNYA])
+            lagna = int(annual.lagna_deg // 30)
+            for point in annual.sahams:
+                self.assertTrue(0 <= point.longitude_deg < 360)
+                sign = int(point.longitude_deg // 30)
+                self.assertEqual(point.sign, Rashi(sign))
+                self.assertEqual(point.house, (sign - lagna) % 12 + 1)
+                self.assertIsInstance(point.lord, Graha)
+                self.assertIsInstance(point.added_sign, bool)
+
+        # "all" is the forty-one in the source's order; unasked is none.
+        every = years({"through": 1, "place": "birth", "sahams": "all"})[0].annual
+        assert every is not None
+        self.assertEqual([p.saham for p in every.sahams], list(Saham))
+        # A key read back names the saham again.
+        again = years({"through": 1, "place": "birth", "sahams": [p.saham.key for p in every.sahams]})
+        self.assertEqual(again[0].annual, every)
+        unasked = years({"through": 1, "place": "birth"})[0].annual
+        assert unasked is not None
+        self.assertEqual(unasked.sahams, [])
+
+        # The rules are written in Python's own keys.
+        never = years({"through": 2, "place": "birth", "sahams": "all", "saham_rules": {"add_sign": "never"}})
+        self.assertTrue(all(not p.added_sign for one in never for p in one.annual.sahams))
+        years({"through": 1, "place": "birth", "sahams": ["mrityu"], "saham_rules": {"houses": "equal", "roga": "saturn"}})
+
+        for varsha, field in [
+            ({"through": 2, "sahams": ["punya"]}, "varsha_json.sahams"),
+            ({"through": 2, "place": "birth", "sahams": ["punya", Saham.PUNYA]}, "varsha_json.sahams"),
+            ({"through": 2, "place": "birth", "sahams": ["pnya"]}, "varsha_json.sahams"),
+            (
+                {"through": 2, "place": "birth", "sahams": ["punya"], "saham_rules": {"add_sgn": "never"}},
+                "varsha_json.sahamRules.addSgn",
             ),
         ]:
             with self.subTest(field=field, varsha=varsha):

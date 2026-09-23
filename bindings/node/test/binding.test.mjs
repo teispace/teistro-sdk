@@ -13,6 +13,7 @@ import {
   Body,
   Calendar,
   RashiById,
+  SahamById,
   ChartLayout,
   DashaSystem,
   Varga,
@@ -612,8 +613,9 @@ test('every catalogue enum has a complete id table', () => {
   // `TsTajikaYoga`'s three;
   // 1029 since Table X-3 gave the Ithasala a third kind, `Poorna`;
   // 1050 since the sixteen Tajika yogas crossed: `TsYearYoga`'s sixteen and
-  // `TsAffliction`'s five clauses.
-  assert.equal(entries, 1050, 'every member of every enum is in a table');
+  // `TsAffliction`'s five clauses;
+  // 1091 since the sahams crossed: `TsSaham`'s forty-one.
+  assert.equal(entries, 1091, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1442,6 +1444,51 @@ test("a year's chart answers the Tajika yogas for the matters asked", () => {
     { through: 2, place: 'birth', matters: [7], yogas: { weakBelow: 12 * 3600, strongFrom: 4 * 3600 } },
     'varsha_json.yogas.strongFrom',
   );
+  ctx.dispose();
+});
+
+/**
+ * A year's chart answers the sahams the request names, in its order, each
+ * where it fell and what it fell in (`03-design/tajika-sahams.md`).
+ */
+test("a year's chart answers the sahams asked for", () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const years = (varsha) =>
+    ctx.chart.found({ instant: 2447995.4895833335, place, utcOffsetSeconds: 20700, varsha })
+      .praveshas;
+  const signs = [...RashiById.values()];
+
+  const asked = years({ through: 4, place: 'birth', sahams: ['vivaha', 'punya'] });
+  for (const { annual } of asked) {
+    assert.deepEqual(annual.sahams.map((one) => one.saham), ['vivaha', 'punya']);
+    const lagna = Math.floor(annual.lagnaDeg / 30);
+    for (const one of annual.sahams) {
+      assert.ok(one.longitudeDeg >= 0 && one.longitudeDeg < 360);
+      const sign = Math.floor(one.longitudeDeg / 30);
+      assert.equal(one.sign, signs[sign]);
+      assert.equal(one.house, ((sign - lagna + 12) % 12) + 1);
+      assert.ok(one.lord.startsWith('graha.'));
+      assert.equal(typeof one.addedSign, 'boolean');
+    }
+  }
+
+  // `'all'` is the forty-one in the source's order; unasked is none.
+  const every = years({ through: 1, place: 'birth', sahams: 'all' })[0].annual.sahams;
+  assert.deepEqual(every.map((one) => one.saham), [...SahamById.values()]);
+  assert.deepEqual(years({ through: 1, place: 'birth' })[0].annual.sahams, []);
+  // The rules read in the casing these types declare.
+  const never = years({ through: 2, place: 'birth', sahams: 'all', sahamRules: { addSign: 'never' } });
+  assert.ok(never.every(({ annual }) => annual.sahams.every((one) => !one.addedSign)));
+  years({ through: 1, place: 'birth', sahams: ['mrityu'], sahamRules: { houses: 'equal', roga: 'saturn' } });
+
+  // Each refusal names the field written.
+  const refused = (varsha, field) =>
+    assert.throws(() => years(varsha), (error) => error instanceof TeistroError && error.field === field);
+  refused({ through: 2, sahams: ['punya'] }, 'varsha_json.sahams');
+  refused({ through: 2, place: 'birth', sahams: ['punya', 'punya'] }, 'varsha_json.sahams');
+  refused({ through: 2, place: 'birth', sahams: ['pnya'] }, 'varsha_json.sahams');
+  refused({ through: 2, place: 'birth', sahams: ['punya'], sahamRules: { add_sign: 'never' } }, 'varsha_json.sahamRules.add_sign');
   ctx.dispose();
 });
 

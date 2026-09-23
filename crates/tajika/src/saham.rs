@@ -47,9 +47,13 @@ use crate::bala::{AnnualSky, sign_of_longitude};
 /// mainly on the Tajika Neelakanthi" — which describes fifty, and
 /// Venkatesha forty-eight, and Keshava twenty-five. These are the ones
 /// that book gives; one it does not is a [`SahamFormula`] away.
+///
+/// Serialised as its catalogue key in kebab case (`karya-siddhi`), the
+/// key every binding reads a saham back as, so a caller names one in a
+/// request exactly as an answer spelt it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "kebab-case")]
 pub enum Saham {
     /// No. 1, **Punya**, general auspiciousness: Moon − Sun + lagna by day,
     /// reversed by night. The one the rest defer to.

@@ -32,6 +32,7 @@ from teistro import (
     Latitude,
     Longitude,
     Observer,
+    Saham,
     Teistro,
     TeistroError,
     at,
@@ -126,6 +127,24 @@ def main() -> None:
             print(
                 f"house {matter.house}: {matter.lagnesha.key} with {matter.karyesha.key}, "
                 f"held {held}; not answered {', '.join(y.key for y in matter.unanswered)}"
+            )
+
+        # ── The sahams: forty-one sensitive points, each a − b + c ───
+        # Name the ones you want, or "all"; each comes back with its sign,
+        # that sign's lord and the house it fell in, as the source reads
+        # them.
+        points = ctx.chart.found(
+            instant=when.instant_jd_utc,
+            place=place,
+            utc_offset_seconds=when.offset_seconds,
+            varsha={"through": 30, "place": "birth", "sahams": [Saham.PUNYA, Saham.VIVAHA, Saham.KARYA_SIDDHI]},
+        ).praveshas[29].annual
+        assert points is not None
+        for point in points.sahams:
+            added = " (a sign added)" if point.added_sign else ""
+            print(
+                f"{point.saham.key:<12} {point.longitude_deg:6.2f}°  {point.sign.key}, "
+                f"lord {point.lord.key}, house {point.house}{added}"
             )
 
         # ── The readings are named, and they are not each other ──────
