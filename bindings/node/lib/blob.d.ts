@@ -1344,6 +1344,18 @@ export interface ChartsAnnualCharts {
    * How many rows of the `year_yogas` section belong to this year: the pairs of the seven that make an Ithasala or an Ishrafa, 0 to 21.
    */
   readonly yogaCount: Uint8Array;
+  /**
+   * The seven that are retrograde in this year's chart, as a bit set: bit `n` is the graha with catalogue id `n`. What the matters' yogas were judged on.
+   */
+  readonly retrograde: Uint8Array;
+  /**
+   * The seven that are combust in this year's chart, under the context's combustion table, as a bit set like `retrograde`.
+   */
+  readonly combust: Uint8Array;
+  /**
+   * How many rows of the `year_matters` section belong to this year: the matters `varsha_json.matters` asked about, 0 to 12.
+   */
+  readonly matterCount: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -1406,6 +1418,168 @@ export interface ChartsYearYogas {
   readonly orbDeg: Float64Array;
   /**
    * How far apart they stand **within their signs**, degrees, the completed signs deleted as the tradition counts them: positive when the faster is behind the slower and coming to it, negative when it is past.
+   */
+  readonly apartDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `year_matters` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every annual chart's matters, concatenated in the `annual_charts` section's order and **ragged** by its `matter_count`, each year's in the order `varsha_json.matters` named them. Fourteen of the sixteen Tajika yogas are judgements about the lagnesha and the karyesha, so each row is the question as well as where its answer starts (`03-design/tajika-yogas.md`). Empty unless matters were asked for.
+ */
+export interface ChartsYearMatters {
+  /**
+   * The house asked about, 1 to 12, counted from the annual lagna by whole signs.
+   */
+  readonly house: Uint8Array;
+  /**
+   * The sign that house falls in, a `rashi` id.
+   */
+  readonly sign: Uint16Array;
+  /**
+   * The lord of the annual lagna, a `graha` id.
+   */
+  readonly lagnesha: Uint16Array;
+  /**
+   * The lord of the house asked about, a `graha` id.
+   */
+  readonly karyesha: Uint16Array;
+  /**
+   * 1 when one planet is both lords — always so of the first house — and there is no pair to judge; the `pair_*` columns are then read not at all.
+   */
+  readonly sameLord: Uint8Array;
+  /**
+   * The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id.
+   */
+  readonly pairFaster: Uint16Array;
+  /**
+   * The slower of the two, a `graha` id.
+   */
+  readonly pairSlower: Uint16Array;
+  /**
+   * The Tajika aspect between the signs they stand in; `NONE` where they stand in the neutral houses.
+   * The values are `TajikaDrishti` ids.
+   */
+  readonly pairDrishti: Uint8Array;
+  /**
+   * What they are doing, read only when the yoga is present.
+   * The values are `TajikaYoga` ids.
+   */
+  readonly pairYoga: Uint8Array;
+  /**
+   * 1 when they make an Ithasala or an Ishrafa; 0 when they make neither.
+   */
+  readonly pairYogaPresent: Uint8Array;
+  /**
+   * The orb governing the pair, degrees: the mean of their two deeptamshas.
+   */
+  readonly pairOrbDeg: Float64Array;
+  /**
+   * How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past.
+   */
+  readonly pairApartDeg: Float64Array;
+  /**
+   * The yogas this call could not answer for, as a bit set: bit `n` is the `TsYearYoga` with id `n`. A yoga absent from `matter_yogas` did not hold **only** if it is not here.
+   */
+  readonly unanswered: Uint16Array;
+  /**
+   * How many rows of the `matter_yogas` section belong to this matter: the yogas that hold, one row each time one holds.
+   */
+  readonly heldCount: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `matter_yogas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every matter's yogas that hold, concatenated in the `year_matters` section's order and **ragged** by its `held_count`. A yoga may hold more than once in a matter, once for each third planet that makes it.
+ */
+export interface ChartsMatterYogas {
+  /**
+   * Which of the sixteen.
+   * The values are `YearYoga` ids.
+   */
+  readonly yoga: Uint8Array;
+  /**
+   * 1 when the lords' own relation, the matter's `pair_*`, is what made it: an Ithasala or an Ishrafa, and the judgements upon an Ithasala.
+   */
+  readonly byPair: Uint8Array;
+  /**
+   * The third planet it turns on, a `graha` id, read only when `through_present`: the one that carried or gathered the light, the malefic, the Moon, or the strong planet a lord is drawn to.
+   */
+  readonly through: Uint16Array;
+  /**
+   * 1 when there is a third planet.
+   */
+  readonly throughPresent: Uint8Array;
+  /**
+   * The planet judged on entering the next sign, a `graha` id, read only when `entering_present`: Gairi-Kamboola's Moon or Tambira's lord at a sign's end. Its legs are then read from the next sign's first degree.
+   */
+  readonly entering: Uint16Array;
+  /**
+   * 1 when a planet was judged on entering the next sign.
+   */
+  readonly enteringPresent: Uint8Array;
+  /**
+   * 1 when the lords' afflictions are what made it: Rudda and Durapha.
+   */
+  readonly afflictionsPresent: Uint8Array;
+  /**
+   * The lagnesha's afflictions, as a bit set: bit `n` is the `TsAffliction` with id `n`. Read only when `afflictions_present`.
+   */
+  readonly lagneshaAfflictions: Uint8Array;
+  /**
+   * The karyesha's afflictions, as a bit set like `lagnesha_afflictions`.
+   */
+  readonly karyeshaAfflictions: Uint8Array;
+  /**
+   * How many rows of the `matter_legs` section belong to this yoga: none, or two — how the third planet stands to each of the pair.
+   */
+  readonly legCount: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `matter_legs` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand.
+ */
+export interface ChartsMatterLegs {
+  /**
+   * The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id.
+   */
+  readonly faster: Uint16Array;
+  /**
+   * The slower of the two, a `graha` id.
+   */
+  readonly slower: Uint16Array;
+  /**
+   * The Tajika aspect between the signs they stand in; `NONE` where they stand in the neutral houses.
+   * The values are `TajikaDrishti` ids.
+   */
+  readonly drishti: Uint8Array;
+  /**
+   * What they are doing, read only when the yoga is present.
+   * The values are `TajikaYoga` ids.
+   */
+  readonly yoga: Uint8Array;
+  /**
+   * 1 when they make an Ithasala or an Ishrafa; 0 when they make neither.
+   */
+  readonly yogaPresent: Uint8Array;
+  /**
+   * The orb governing the pair, degrees: the mean of their two deeptamshas.
+   */
+  readonly orbDeg: Float64Array;
+  /**
+   * How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past.
    */
   readonly apartDeg: Float64Array;
   /** The number of rows every column holds. */
@@ -1724,6 +1898,18 @@ export interface Charts {
    * Every annual chart's pairs of the seven that make a yoga — an Ithasala in one of its three kinds, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
    */
   readonly yearYogas: ChartsYearYogas;
+  /**
+   * Every annual chart's matters, concatenated in the `annual_charts` section's order and **ragged** by its `matter_count`, each year's in the order `varsha_json.matters` named them. Fourteen of the sixteen Tajika yogas are judgements about the lagnesha and the karyesha, so each row is the question as well as where its answer starts (`03-design/tajika-yogas.md`). Empty unless matters were asked for.
+   */
+  readonly yearMatters: ChartsYearMatters;
+  /**
+   * Every matter's yogas that hold, concatenated in the `year_matters` section's order and **ragged** by its `held_count`. A yoga may hold more than once in a matter, once for each third planet that makes it.
+   */
+  readonly matterYogas: ChartsMatterYogas;
+  /**
+   * Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand.
+   */
+  readonly matterLegs: ChartsMatterLegs;
 }
 
 /**

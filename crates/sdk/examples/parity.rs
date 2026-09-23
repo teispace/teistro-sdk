@@ -1358,11 +1358,23 @@ fn the_bhavas(report: &mut Report, index: usize, document: &teistro::Document) {
 /// All three, because the point of naming a reading is that a consumer can
 /// ask for the one they mean — and a reading that crossed as another would
 /// be invisible in a report that only ever printed the default.
+///
+/// Each reading also asks the sixteen yogas a different way, so all three
+/// ways cross: every matter under the source's readings, every matter
+/// under Tambira's "some authorities", and no matter at all.
 fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
-    for (name, reading) in [
-        ("sidereal", teistro::VarshaReading::Sidereal),
-        ("tropical", teistro::VarshaReading::Tropical),
-        ("mean", teistro::VarshaReading::Mean),
+    let either = teistro::YogaRules {
+        tambira: teistro::TambiraMover::EitherLord,
+        ..teistro::YogaRules::default()
+    };
+    for (name, reading, matters) in [
+        (
+            "sidereal",
+            teistro::VarshaReading::Sidereal,
+            Some(teistro::YogaRules::default()),
+        ),
+        ("tropical", teistro::VarshaReading::Tropical, Some(either)),
+        ("mean", teistro::VarshaReading::Mean, None),
     ] {
         let Ok(years) = sdk.chart().praveshas(document, reading, PARITY_YEARS) else {
             continue;
@@ -1370,7 +1382,7 @@ fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &te
         let key = |what: &str| format!("chart-{index}-varsha-{name}{what}");
         put(report, &key("-count"), years.len().to_string());
         for one in &years {
-            the_year(report, sdk, document, &key, one);
+            the_year(report, sdk, document, &key, one, matters);
         }
     }
 }
@@ -1384,6 +1396,7 @@ fn the_year(
     document: &teistro::Document,
     key: &dyn Fn(&str) -> String,
     one: &teistro::Pravesha,
+    matters: Option<teistro::YogaRules>,
 ) {
     put(
         report,
@@ -1472,6 +1485,7 @@ fn the_year(
         lord.vishwa.to_string(),
     );
     the_yogas(report, sdk, &annual.value, key, one);
+    the_matters(report, sdk, &annual.value, key, one, matters);
     put(
         report,
         &key(&format!("-{}-year-claims", one.year)),
@@ -1524,6 +1538,183 @@ fn the_yogas(
         &key(&format!("-{}-yogas", one.year)),
         said.join(" "),
     );
+}
+
+/// One year's retrograde and combust planets, and the sixteen yogas for
+/// every matter when the reading asked for them: the question each asked,
+/// the pair it names, what it could not answer, and every yoga that held
+/// with what made it hold.
+fn the_matters(
+    report: &mut Report,
+    sdk: &Context,
+    annual: &teistro::Document,
+    key: &dyn Fn(&str) -> String,
+    one: &teistro::Pravesha,
+    rules: Option<teistro::YogaRules>,
+) {
+    let Ok(states) = sdk.chart().annual_states(annual) else {
+        return;
+    };
+    let keys = |grahas: &[teistro::catalogue::Graha]| {
+        grahas
+            .iter()
+            .map(|graha| graha.full_key())
+            .collect::<Vec<&str>>()
+            .join(",")
+    };
+    put(
+        report,
+        &key(&format!("-{}-states", one.year)),
+        format!("R:{} C:{}", keys(&states.retrograde), keys(&states.combust)),
+    );
+    let Some(rules) = rules else {
+        return;
+    };
+    let Ok(every) = sdk
+        .chart()
+        .tajika_yogas_many(annual, &teistro::House::ALL, rules)
+    else {
+        return;
+    };
+    for matter in &every {
+        let at = |what: &str| {
+            key(&format!(
+                "-{}-matter-{}{what}",
+                one.year,
+                matter.house.get()
+            ))
+        };
+        put(
+            report,
+            &at(""),
+            format!(
+                "{} {}>{} {}",
+                matter.sign.full_key(),
+                matter.lagnesha.full_key(),
+                matter.karyesha.full_key(),
+                matter.same_lord
+            ),
+        );
+        put(
+            report,
+            &at("-pair"),
+            matter
+                .between
+                .as_ref()
+                .map_or_else(|| String::from("-"), pair_said),
+        );
+        put(
+            report,
+            &at("-unanswered"),
+            matter
+                .unanswered
+                .iter()
+                .map(|yoga| year_yoga_key(*yoga))
+                .collect::<Vec<&str>>()
+                .join(","),
+        );
+        put(
+            report,
+            &at("-held"),
+            matter
+                .held
+                .iter()
+                .map(held_said)
+                .collect::<Vec<String>>()
+                .join(" "),
+        );
+    }
+}
+
+/// A pair as every runner writes it; the degrees inside a string, so the
+/// four must round them alike.
+fn pair_said(pair: &teistro::Between) -> String {
+    format!(
+        "{}>{}:{}:{}:{:.6}",
+        pair.faster.full_key(),
+        pair.slower.full_key(),
+        drishti_key(pair.drishti),
+        pair.yoga.map_or("-", yoga_key),
+        pair.apart_deg
+    )
+}
+
+/// A yoga that held, and what made it: the third planet, the one entering
+/// the next sign, whether the pair's own relation did, its legs and the
+/// lords' afflictions — `-` wherever there is none.
+fn held_said(held: &teistro::Held) -> String {
+    let graha = |one: Option<teistro::catalogue::Graha>| one.map_or("-", |graha| graha.full_key());
+    let legs = held.legs.as_ref().map_or_else(
+        || String::from("-"),
+        |legs| {
+            legs.iter()
+                .map(pair_said)
+                .collect::<Vec<String>>()
+                .join("/")
+        },
+    );
+    let afflictions = held.afflictions.map_or_else(
+        || String::from("-"),
+        |both| both.map(affliction_said).join("/"),
+    );
+    format!(
+        "{}:{}:{}:{}:{legs}:{afflictions}",
+        year_yoga_key(held.yoga),
+        graha(held.through),
+        graha(held.entering),
+        if held.between.is_some() { "pair" } else { "-" },
+    )
+}
+
+/// One lord's afflictions as the boundary spells its clauses, `+`-joined,
+/// or `none`.
+fn affliction_said(affliction: teistro::Affliction) -> String {
+    let teistro::Affliction {
+        graha: _,
+        retrograde,
+        combust,
+        debilitated,
+        trika,
+        under_malefic,
+    } = affliction;
+    let said: Vec<&str> = [
+        ("retrograde", retrograde),
+        ("combust", combust),
+        ("debilitated", debilitated),
+        ("trika", trika),
+        ("under-malefic", under_malefic),
+    ]
+    .into_iter()
+    .filter_map(|(name, holds)| holds.then_some(name))
+    .collect();
+    if said.is_empty() {
+        String::from("none")
+    } else {
+        said.join("+")
+    }
+}
+
+/// One of the sixteen, spelled as the boundary spells it. Exhaustive, so a
+/// yoga added stops this compiling.
+fn year_yoga_key(yoga: teistro::YearYoga) -> &'static str {
+    match yoga {
+        teistro::YearYoga::Ikabala => "ikabala",
+        teistro::YearYoga::Induvara => "induvara",
+        teistro::YearYoga::Ithasala => "ithasala",
+        teistro::YearYoga::Ishrafa => "ishrafa",
+        teistro::YearYoga::Nakta => "nakta",
+        teistro::YearYoga::Yamaya => "yamaya",
+        teistro::YearYoga::Manau => "manau",
+        teistro::YearYoga::Kamboola => "kamboola",
+        teistro::YearYoga::GairiKamboola => "gairi-kamboola",
+        teistro::YearYoga::Khallasara => "khallasara",
+        teistro::YearYoga::Rudda => "rudda",
+        teistro::YearYoga::DuhphaliKuttha => "duhphali-kuttha",
+        teistro::YearYoga::DutthotthaDavira => "dutthottha-davira",
+        teistro::YearYoga::Tambira => "tambira",
+        teistro::YearYoga::Kuttha => "kuttha",
+        teistro::YearYoga::Durapha => "durapha",
+    }
 }
 
 /// A Tajika aspect and a yoga, spelled as the **boundary** spells them,

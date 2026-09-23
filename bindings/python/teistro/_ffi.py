@@ -19,6 +19,7 @@ from types import TracebackType
 from typing import Any, Final, NamedTuple, Optional, Sequence
 
 from .catalogue import (
+    Affliction,
     Astronomy,
     Auspiciousness,
     AvasthaBaladi,
@@ -119,6 +120,7 @@ from .catalogue import (
     Varna,
     VarsheshaChosen,
     VimshopakaScoring,
+    YearYoga,
     Yoga,
     YogaCause,
     Yoni,

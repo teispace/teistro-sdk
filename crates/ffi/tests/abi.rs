@@ -32,7 +32,7 @@ use teistro_ffi::calendar::{
     ts_calendar_from_fixed, ts_calendar_is_leap, ts_calendar_jd_of_fixed, ts_calendar_month_length,
     ts_calendar_to_fixed, ts_calendar_weekday,
 };
-use teistro_ffi::chart::{TsChartRequest, ts_chart_found, ts_chart_layout_row};
+use teistro_ffi::chart::{TsChartRequest, TsYearYoga, ts_chart_found, ts_chart_layout_row};
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
     ts_context_new, ts_context_profile, ts_context_settings_hash, ts_context_settings_json,
@@ -2079,6 +2079,211 @@ fn a_years_chart_carries_the_lord_of_that_year() {
     unsafe { ts_blob_free(&raw mut bare) };
     let reader = Reader::parse(&empty, &schema).unwrap();
     assert!(reader.column("year_claims", "graha").unwrap().is_empty());
+}
+
+/// A year's chart answers the sixteen Tajika yogas for the **matters** the
+/// request names, in its order, each with the question it asked and every
+/// yoga that held, ragged three deep (`03-design/tajika-yogas.md`,
+/// "Crossing the boundary").
+#[test]
+fn a_years_chart_answers_the_matters_it_was_asked_about() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let instants = [2_447_995.489_583_333_5, 2_451_545.0];
+    let base = TsChartRequest {
+        struct_size: 0,
+        kind: 0,
+        reserved: 0,
+        instants: instants.as_ptr(),
+        instant_count: instants.len(),
+        latitude_deg: 27.7172,
+        longitude_deg: 85.324,
+        altitude_m: 1400.0,
+        utc_offset_seconds: 20_700,
+        reserved_tail: 0,
+        sections: 0,
+        reserved_sections: 0,
+        vargas: ptr::null(),
+        varga_count: 0,
+        drawings: ptr::null(),
+        drawing_count: 0,
+        dashas: ptr::null(),
+        dasha_count: 0,
+        theme_json: ptr::null(),
+        rules_json: ptr::null(),
+        interpret_json: ptr::null(),
+        varsha_json: ptr::null(),
+    };
+    let schema = schemas::charts();
+    let ask = |json: &str| {
+        let text = CString::new(json).unwrap();
+        let request = sized(
+            TsChartRequest {
+                varsha_json: text.as_ptr(),
+                ..base
+            },
+            |r, s| r.struct_size = s,
+        );
+        let mut blob = TsBlob::empty();
+        // SAFETY: a live context, a valid request and a valid slot.
+        let status = unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) };
+        if status != Status::Ok {
+            return Err(ctx.last_error());
+        }
+        // SAFETY: the library wrote `len` bytes.
+        let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+        // SAFETY: a descriptor the library wrote.
+        unsafe { ts_blob_free(&raw mut blob) };
+        Ok(bytes)
+    };
+    let ints = |bytes: &[u8], section: &str, name: &str| {
+        Reader::parse(bytes, &schema)
+            .unwrap()
+            .column(section, name)
+            .unwrap()
+            .iter()
+            .map(|cell| usize::try_from(cell.as_i64()).unwrap())
+            .collect::<Vec<usize>>()
+    };
+    let kuttha = TsYearYoga::Kuttha as usize;
+
+    // Three matters, in the caller's order, for each of two births' four
+    // years.
+    let asked = ask(r#"{"through":4,"place":"birth","matters":[10,1,7]}"#).unwrap();
+    let counts = ints(&asked, "annual_charts", "matter_count");
+    assert_eq!(counts, vec![3; 8]);
+    let houses = ints(&asked, "year_matters", "house");
+    assert_eq!(houses, [10, 1, 7].repeat(8));
+    let same = ints(&asked, "year_matters", "same_lord");
+    let held_counts = ints(&asked, "year_matters", "held_count");
+    let unanswered = ints(&asked, "year_matters", "unanswered");
+    let yogas = ints(&asked, "matter_yogas", "yoga");
+    let by_pair = ints(&asked, "matter_yogas", "by_pair");
+    let leg_counts = ints(&asked, "matter_yogas", "leg_count");
+
+    // Ragged three deep, each count exactly the rows under it.
+    assert_eq!(held_counts.iter().sum::<usize>(), yogas.len());
+    assert!(leg_counts.iter().all(|legs| *legs == 0 || *legs == 2));
+    assert_eq!(
+        leg_counts.iter().sum::<usize>(),
+        ints(&asked, "matter_legs", "faster").len()
+    );
+    assert!(yogas.iter().all(|yoga| *yoga < 16));
+    // The façade reads the states, so only what the build cannot compute
+    // is unanswered: Kuttha, by its bit.
+    assert!(unanswered.iter().all(|bits| *bits == 1 << kuttha));
+    assert!(!yogas.contains(&kuttha));
+
+    // The first house has no pair: its lord is the lagnesha. Only the two
+    // chart facts can hold there, and nothing is made by a pair it lacks.
+    let mut from = 0;
+    for (row, count) in held_counts.iter().enumerate() {
+        let block = from..from + count;
+        if houses[row] == 1 {
+            assert_eq!(same[row], 1, "row {row}");
+        }
+        if same[row] == 1 {
+            assert!(yogas[block.clone()].iter().all(|yoga| *yoga <= 1));
+            assert!(by_pair[block.clone()].iter().all(|flag| *flag == 0));
+        }
+        from += count;
+    }
+    // Ikabala and Induvara are facts about the chart, so each year's three
+    // matters agree on them.
+    let facts = |row: usize| {
+        let start: usize = held_counts[..row].iter().sum();
+        yogas[start..start + held_counts[row]]
+            .iter()
+            .filter(|yoga| **yoga <= 1)
+            .copied()
+            .collect::<Vec<usize>>()
+    };
+    for year in 0..8 {
+        assert_eq!(facts(3 * year), facts(3 * year + 1));
+        assert_eq!(facts(3 * year), facts(3 * year + 2));
+    }
+    // What the matters were judged on crosses beside them: the seven's
+    // bits and no others.
+    for name in ["retrograde", "combust"] {
+        assert!(
+            ints(&asked, "annual_charts", name)
+                .iter()
+                .all(|bits| *bits < 1 << 7)
+        );
+    }
+
+    // `"all"` is the twelve, first to twelfth, every year.
+    let all = ask(r#"{"through":2,"place":"birth","matters":"all"}"#).unwrap();
+    assert_eq!(ints(&all, "annual_charts", "matter_count"), vec![12; 4]);
+    assert_eq!(
+        ints(&all, "year_matters", "house"),
+        (1..=12).collect::<Vec<usize>>().repeat(4)
+    );
+    // Tambira's knob is read: letting either lord move can only add.
+    let tambira = |bytes: &[u8]| {
+        ints(bytes, "matter_yogas", "yoga")
+            .iter()
+            .filter(|yoga| **yoga == TsYearYoga::Tambira as usize)
+            .count()
+    };
+    let either =
+        ask(r#"{"through":2,"place":"birth","matters":"all","yogas":{"tambira":"either_lord"}}"#)
+            .unwrap();
+    assert!(tambira(&either) >= tambira(&all));
+
+    // Not asked, nothing answered: no rows, and every count nought.
+    let unasked = ask(r#"{"through":2,"place":"birth"}"#).unwrap();
+    assert!(ints(&unasked, "year_matters", "house").is_empty());
+    assert!(
+        ints(&unasked, "annual_charts", "matter_count")
+            .iter()
+            .all(|n| *n == 0)
+    );
+    // An empty list asks for nothing and is answered with nothing.
+    let empty = ask(r#"{"through":2,"place":"birth","matters":[]}"#).unwrap();
+    assert!(ints(&empty, "year_matters", "house").is_empty());
+
+    // Both rule records read the boundary's one casing.
+    ask(r#"{"through":2,"place":"birth","varshesha":{"noneAspects":"annual_lagna_lord"}}"#)
+        .unwrap();
+    ask(r#"{"through":2,"place":"birth","matters":[7],"yogas":{"weakBelow":14400,"strongFrom":43200}}"#)
+        .unwrap();
+
+    // Each refusal names the field the caller wrote.
+    let refused = |json: &str, field: &str, says: &str| {
+        let error = ask(json).expect_err(json);
+        assert_eq!(error.2.as_deref(), Some(field), "{error:?}");
+        assert!(error.1.contains(says), "{error:?}");
+    };
+    refused(
+        r#"{"through":2,"matters":[7]}"#,
+        "varsha_json.matters",
+        "place",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","matters":[7,7]}"#,
+        "varsha_json.matters",
+        "twice",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","matters":[13]}"#,
+        "varsha_json.matters",
+        "13",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","matters":"some"}"#,
+        "varsha_json.matters",
+        "\"all\"",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","matters":[7],"yogas":{"weakBelow":43200,"strongFrom":14400}}"#,
+        "varsha_json.yogas.strongFrom",
+        "both",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","varshesha":{"none_aspects":"annual_lagna_lord"}}"#,
+        "varsha_json.varshesha.none_aspects",
+        "none_aspects",
+    );
 }
 
 /// A consumer's **sign-based** system crosses the same way: registered

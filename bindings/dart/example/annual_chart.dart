@@ -115,6 +115,32 @@ void main() {
     );
   }
 
+  // ── The sixteen Tajika yogas answer a matter, not a chart ─────────
+  // Fourteen of them judge the lagnesha against the lord of the house you
+  // ask about, so you name the houses: marriage (7) and career (10) here.
+  final judged =
+      ctx.chart
+          .found(
+            instant: when.instantJdUtc,
+            place: place,
+            utcOffsetSeconds: when.offsetSeconds,
+            varsha: const VarshaRequest(
+              through: 30,
+              place: AnnualPlace.birth,
+              matters: Matters.houses([7, 10]),
+            ),
+          )
+          .praveshas[29]
+          .annual!;
+  for (final matter in judged.matters) {
+    final held = matter.held.map((one) => one.yoga.key).join(', ');
+    print(
+      'house ${matter.house}: ${matter.lagnesha.key} with ${matter.karyesha.key}, '
+      'held ${held.isEmpty ? 'none' : held}; '
+      'not answered ${matter.unanswered.map((yoga) => yoga.key).join(', ')}',
+    );
+  }
+
   // ── The readings are named, and they are not each other ───────────
   for (final reading in VarshaReading.values) {
     final one =

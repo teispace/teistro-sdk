@@ -1222,6 +1222,15 @@ class ChartsAnnualCharts:
     yoga_count: memoryview[int]
     """How many rows of the `year_yogas` section belong to this year: the pairs of the seven that make an Ithasala or an Ishrafa, 0 to 21."""
 
+    retrograde: memoryview[int]
+    """The seven that are retrograde in this year's chart, as a bit set: bit `n` is the graha with catalogue id `n`. What the matters' yogas were judged on."""
+
+    combust: memoryview[int]
+    """The seven that are combust in this year's chart, under the context's combustion table, as a bit set like `retrograde`."""
+
+    matter_count: memoryview[int]
+    """How many rows of the `year_matters` section belong to this year: the matters `varsha_json.matters` asked about, 0 to 12."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -1275,6 +1284,135 @@ class ChartsYearYogas:
 
     apart_deg: memoryview[float]
     """How far apart they stand **within their signs**, degrees, the completed signs deleted as the tradition counts them: positive when the faster is behind the slower and coming to it, negative when it is past."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsYearMatters:
+    """The `year_matters` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every annual chart's matters, concatenated in the `annual_charts` section's order and **ragged** by its `matter_count`, each year's in the order `varsha_json.matters` named them. Fourteen of the sixteen Tajika yogas are judgements about the lagnesha and the karyesha, so each row is the question as well as where its answer starts (`03-design/tajika-yogas.md`). Empty unless matters were asked for.
+    """
+
+    house: memoryview[int]
+    """The house asked about, 1 to 12, counted from the annual lagna by whole signs."""
+
+    sign: memoryview[int]
+    """The sign that house falls in, a `rashi` id."""
+
+    lagnesha: memoryview[int]
+    """The lord of the annual lagna, a `graha` id."""
+
+    karyesha: memoryview[int]
+    """The lord of the house asked about, a `graha` id."""
+
+    same_lord: memoryview[int]
+    """1 when one planet is both lords — always so of the first house — and there is no pair to judge; the `pair_*` columns are then read not at all."""
+
+    pair_faster: memoryview[int]
+    """The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id."""
+
+    pair_slower: memoryview[int]
+    """The slower of the two, a `graha` id."""
+
+    pair_drishti: memoryview[int]
+    """The Tajika aspect between the signs they stand in; `NONE` where they stand in the neutral houses."""
+
+    pair_yoga: memoryview[int]
+    """What they are doing, read only when the yoga is present."""
+
+    pair_yoga_present: memoryview[int]
+    """1 when they make an Ithasala or an Ishrafa; 0 when they make neither."""
+
+    pair_orb_deg: memoryview[float]
+    """The orb governing the pair, degrees: the mean of their two deeptamshas."""
+
+    pair_apart_deg: memoryview[float]
+    """How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past."""
+
+    unanswered: memoryview[int]
+    """The yogas this call could not answer for, as a bit set: bit `n` is the `TsYearYoga` with id `n`. A yoga absent from `matter_yogas` did not hold **only** if it is not here."""
+
+    held_count: memoryview[int]
+    """How many rows of the `matter_yogas` section belong to this matter: the yogas that hold, one row each time one holds."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsMatterYogas:
+    """The `matter_yogas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every matter's yogas that hold, concatenated in the `year_matters` section's order and **ragged** by its `held_count`. A yoga may hold more than once in a matter, once for each third planet that makes it.
+    """
+
+    yoga: memoryview[int]
+    """Which of the sixteen."""
+
+    by_pair: memoryview[int]
+    """1 when the lords' own relation, the matter's `pair_*`, is what made it: an Ithasala or an Ishrafa, and the judgements upon an Ithasala."""
+
+    through: memoryview[int]
+    """The third planet it turns on, a `graha` id, read only when `through_present`: the one that carried or gathered the light, the malefic, the Moon, or the strong planet a lord is drawn to."""
+
+    through_present: memoryview[int]
+    """1 when there is a third planet."""
+
+    entering: memoryview[int]
+    """The planet judged on entering the next sign, a `graha` id, read only when `entering_present`: Gairi-Kamboola's Moon or Tambira's lord at a sign's end. Its legs are then read from the next sign's first degree."""
+
+    entering_present: memoryview[int]
+    """1 when a planet was judged on entering the next sign."""
+
+    afflictions_present: memoryview[int]
+    """1 when the lords' afflictions are what made it: Rudda and Durapha."""
+
+    lagnesha_afflictions: memoryview[int]
+    """The lagnesha's afflictions, as a bit set: bit `n` is the `TsAffliction` with id `n`. Read only when `afflictions_present`."""
+
+    karyesha_afflictions: memoryview[int]
+    """The karyesha's afflictions, as a bit set like `lagnesha_afflictions`."""
+
+    leg_count: memoryview[int]
+    """How many rows of the `matter_legs` section belong to this yoga: none, or two — how the third planet stands to each of the pair."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsMatterLegs:
+    """The `matter_legs` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand.
+    """
+
+    faster: memoryview[int]
+    """The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id."""
+
+    slower: memoryview[int]
+    """The slower of the two, a `graha` id."""
+
+    drishti: memoryview[int]
+    """The Tajika aspect between the signs they stand in; `NONE` where they stand in the neutral houses."""
+
+    yoga: memoryview[int]
+    """What they are doing, read only when the yoga is present."""
+
+    yoga_present: memoryview[int]
+    """1 when they make an Ithasala or an Ishrafa; 0 when they make neither."""
+
+    orb_deg: memoryview[float]
+    """The orb governing the pair, degrees: the mean of their two deeptamshas."""
+
+    apart_deg: memoryview[float]
+    """How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past."""
 
     length: int
     """The number of rows every column holds."""
@@ -1512,6 +1650,15 @@ class Charts:
     year_yogas: ChartsYearYogas
     """Every annual chart's pairs of the seven that make a yoga — an Ithasala in one of its three kinds, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`)."""
 
+    year_matters: ChartsYearMatters
+    """Every annual chart's matters, concatenated in the `annual_charts` section's order and **ragged** by its `matter_count`, each year's in the order `varsha_json.matters` named them. Fourteen of the sixteen Tajika yogas are judgements about the lagnesha and the karyesha, so each row is the question as well as where its answer starts (`03-design/tajika-yogas.md`). Empty unless matters were asked for."""
+
+    matter_yogas: ChartsMatterYogas
+    """Every matter's yogas that hold, concatenated in the `year_matters` section's order and **ragged** by its `held_count`. A yoga may hold more than once in a matter, once for each third planet that makes it."""
+
+    matter_legs: ChartsMatterLegs
+    """Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1559,6 +1706,9 @@ def decode_charts(raw: bytes) -> Charts:
     at_annual_charts = blob.section(36, "annual_charts")
     at_year_claims = blob.section(37, "year_claims")
     at_year_yogas = blob.section(38, "year_yogas")
+    at_year_matters = blob.section(39, "year_matters")
+    at_matter_yogas = blob.section(40, "matter_yogas")
+    at_matter_legs = blob.section(41, "matter_legs")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -2164,6 +2314,15 @@ def decode_charts(raw: bytes) -> Charts:
             yoga_count=blob.column(
                 at_annual_charts, 11, 1, at_annual_charts.count
             ).cast("B"),
+            retrograde=blob.column(
+                at_annual_charts, 12, 1, at_annual_charts.count
+            ).cast("B"),
+            combust=blob.column(
+                at_annual_charts, 13, 1, at_annual_charts.count
+            ).cast("B"),
+            matter_count=blob.column(
+                at_annual_charts, 14, 1, at_annual_charts.count
+            ).cast("B"),
             length=at_annual_charts.count,
         ),
         year_claims=ChartsYearClaims(
@@ -2201,6 +2360,108 @@ def decode_charts(raw: bytes) -> Charts:
                 at_year_yogas, 5, 8, at_year_yogas.count
             ).cast("d"),
             length=at_year_yogas.count,
+        ),
+        year_matters=ChartsYearMatters(
+            house=blob.column(
+                at_year_matters, 0, 1, at_year_matters.count
+            ).cast("B"),
+            sign=blob.column(
+                at_year_matters, 1, 2, at_year_matters.count
+            ).cast("H"),
+            lagnesha=blob.column(
+                at_year_matters, 2, 2, at_year_matters.count
+            ).cast("H"),
+            karyesha=blob.column(
+                at_year_matters, 3, 2, at_year_matters.count
+            ).cast("H"),
+            same_lord=blob.column(
+                at_year_matters, 4, 1, at_year_matters.count
+            ).cast("B"),
+            pair_faster=blob.column(
+                at_year_matters, 5, 2, at_year_matters.count
+            ).cast("H"),
+            pair_slower=blob.column(
+                at_year_matters, 6, 2, at_year_matters.count
+            ).cast("H"),
+            pair_drishti=blob.column(
+                at_year_matters, 7, 1, at_year_matters.count
+            ).cast("B"),
+            pair_yoga=blob.column(
+                at_year_matters, 8, 1, at_year_matters.count
+            ).cast("B"),
+            pair_yoga_present=blob.column(
+                at_year_matters, 9, 1, at_year_matters.count
+            ).cast("B"),
+            pair_orb_deg=blob.column(
+                at_year_matters, 10, 8, at_year_matters.count
+            ).cast("d"),
+            pair_apart_deg=blob.column(
+                at_year_matters, 11, 8, at_year_matters.count
+            ).cast("d"),
+            unanswered=blob.column(
+                at_year_matters, 12, 2, at_year_matters.count
+            ).cast("H"),
+            held_count=blob.column(
+                at_year_matters, 13, 1, at_year_matters.count
+            ).cast("B"),
+            length=at_year_matters.count,
+        ),
+        matter_yogas=ChartsMatterYogas(
+            yoga=blob.column(
+                at_matter_yogas, 0, 1, at_matter_yogas.count
+            ).cast("B"),
+            by_pair=blob.column(
+                at_matter_yogas, 1, 1, at_matter_yogas.count
+            ).cast("B"),
+            through=blob.column(
+                at_matter_yogas, 2, 2, at_matter_yogas.count
+            ).cast("H"),
+            through_present=blob.column(
+                at_matter_yogas, 3, 1, at_matter_yogas.count
+            ).cast("B"),
+            entering=blob.column(
+                at_matter_yogas, 4, 2, at_matter_yogas.count
+            ).cast("H"),
+            entering_present=blob.column(
+                at_matter_yogas, 5, 1, at_matter_yogas.count
+            ).cast("B"),
+            afflictions_present=blob.column(
+                at_matter_yogas, 6, 1, at_matter_yogas.count
+            ).cast("B"),
+            lagnesha_afflictions=blob.column(
+                at_matter_yogas, 7, 1, at_matter_yogas.count
+            ).cast("B"),
+            karyesha_afflictions=blob.column(
+                at_matter_yogas, 8, 1, at_matter_yogas.count
+            ).cast("B"),
+            leg_count=blob.column(
+                at_matter_yogas, 9, 1, at_matter_yogas.count
+            ).cast("B"),
+            length=at_matter_yogas.count,
+        ),
+        matter_legs=ChartsMatterLegs(
+            faster=blob.column(
+                at_matter_legs, 0, 2, at_matter_legs.count
+            ).cast("H"),
+            slower=blob.column(
+                at_matter_legs, 1, 2, at_matter_legs.count
+            ).cast("H"),
+            drishti=blob.column(
+                at_matter_legs, 2, 1, at_matter_legs.count
+            ).cast("B"),
+            yoga=blob.column(
+                at_matter_legs, 3, 1, at_matter_legs.count
+            ).cast("B"),
+            yoga_present=blob.column(
+                at_matter_legs, 4, 1, at_matter_legs.count
+            ).cast("B"),
+            orb_deg=blob.column(
+                at_matter_legs, 5, 8, at_matter_legs.count
+            ).cast("d"),
+            apart_deg=blob.column(
+                at_matter_legs, 6, 8, at_matter_legs.count
+            ).cast("d"),
+            length=at_matter_legs.count,
         ),
     )
 

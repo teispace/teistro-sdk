@@ -110,6 +110,24 @@ def main() -> None:
                 f"{claim.portfolios} portfolio(s)  {aspects} the lagna"
             )
 
+        # ── The sixteen Tajika yogas answer a matter, not a chart ────
+        # Fourteen of them judge the lagnesha against the lord of the house
+        # you ask about, so you name the houses: marriage (7) and career
+        # (10) here.
+        judged = ctx.chart.found(
+            instant=when.instant_jd_utc,
+            place=place,
+            utc_offset_seconds=when.offset_seconds,
+            varsha={"through": 30, "place": "birth", "matters": [7, 10]},
+        ).praveshas[29].annual
+        assert judged is not None
+        for matter in judged.matters:
+            held = ", ".join(one.yoga.key for one in matter.held) or "none"
+            print(
+                f"house {matter.house}: {matter.lagnesha.key} with {matter.karyesha.key}, "
+                f"held {held}; not answered {', '.join(y.key for y in matter.unanswered)}"
+            )
+
         # ── The readings are named, and they are not each other ──────
         for reading in ("sidereal", "tropical", "mean"):
             one = ctx.chart.found(

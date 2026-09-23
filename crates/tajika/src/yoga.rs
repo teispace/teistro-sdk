@@ -375,7 +375,7 @@ pub const YOGA_STRONG_FROM: Bala = Bala::new(10, 0, 0);
 /// learn which of them travels in `DrishtiRules`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(default)]
+#[serde(default, rename_all = "camelCase")]
 pub struct YogaRules {
     /// How the aspects and the band between Poorna and Ishrafa are read.
     pub drishti: DrishtiRules,
@@ -886,7 +886,47 @@ pub fn year_yogas_with_states(
     judge(annual_lagna_deg, house, sky, Some(states), rules)
 }
 
-/// The one judgement every entry point makes, `states` or not.
+/// The sixteen yogas for **several matters** of one annual chart, in the
+/// order the houses are given.
+///
+/// What every matter reads alike — the rules' own check, the states'
+/// validation, the lagna and the seven strengths — is read **once** for
+/// the chart rather than once a matter, which is the point of asking for
+/// them together. `states` is optional as it is between
+/// [`year_yogas_with_rules`] and [`year_yogas_with_states`]: without it,
+/// the yogas that read retrograde and combustion are listed under
+/// [`YearYogas::unanswered`].
+///
+/// ```
+/// use teistro_core::house::House;
+/// use teistro_tajika::{AnnualSky, YogaRules, year_yogas_many};
+///
+/// let sky = AnnualSky {
+///     sun_deg: 40.0, moon_deg: 290.0, mars_deg: 5.0, mercury_deg: 50.0,
+///     jupiter_deg: 244.0, venus_deg: 59.5, saturn_deg: 200.0,
+/// };
+/// let every = year_yogas_many(5.0, &House::ALL, &sky, None, YogaRules::default())?;
+/// assert_eq!(every.len(), 12);
+/// assert!(every[0].same_lord, "the first house's lord is the lagnesha");
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// As [`year_yogas_with_states`], refused before any matter is judged.
+pub fn year_yogas_many(
+    annual_lagna_deg: f64,
+    houses: &[House],
+    sky: &AnnualSky,
+    states: Option<&AnnualStates>,
+    rules: YogaRules,
+) -> Result<Vec<YearYogas>, Error> {
+    let chart = Judgement::of(annual_lagna_deg, sky, states, rules)?;
+    houses.iter().map(|house| chart.matter(*house)).collect()
+}
+
+/// The one judgement every single-matter entry point makes, `states` or
+/// not.
 fn judge(
     annual_lagna_deg: f64,
     house: House,
@@ -894,87 +934,133 @@ fn judge(
     states: Option<&AnnualStates>,
     rules: YogaRules,
 ) -> Result<YearYogas, Error> {
-    let rules = rules.check()?;
-    if let Some(states) = states {
-        states.validate()?;
+    Judgement::of(annual_lagna_deg, sky, states, rules)?.matter(house)
+}
+
+/// What every matter of one annual chart reads alike, checked once.
+struct Judgement<'a> {
+    lagna: Rashi,
+    sky: &'a AnnualSky,
+    states: Option<&'a AnnualStates>,
+    rules: YogaRules,
+    /// The seven strengths, computed on the first matter that has a
+    /// pair to judge — the first house never does — and shared after.
+    strengths: std::cell::OnceCell<[Strength; 7]>,
+}
+
+impl<'a> Judgement<'a> {
+    fn of(
+        annual_lagna_deg: f64,
+        sky: &'a AnnualSky,
+        states: Option<&'a AnnualStates>,
+        rules: YogaRules,
+    ) -> Result<Judgement<'a>, Error> {
+        let rules = rules.check()?;
+        if let Some(states) = states {
+            states.validate()?;
+        }
+        Ok(Judgement {
+            lagna: lagna_of(annual_lagna_deg)?,
+            sky,
+            states,
+            rules,
+            strengths: std::cell::OnceCell::new(),
+        })
     }
-    let lagna = lagna_of(annual_lagna_deg)?;
-    let sign = house.sign_from(lagna);
-    let lagnesha = lagna.attributes().lord;
-    let karyesha = sign.attributes().lord;
-    let same_lord = lagnesha == karyesha;
-    let between = if same_lord {
-        None
-    } else {
-        Some(between_with_rules(lagnesha, karyesha, sky, rules.drishti)?)
-    };
-    // Ikabala and Induvara are facts about the chart, so they answer
-    // every matter alike -- the first house, which has no pair, included.
-    let mut held = chart_facts(lagna, sky);
-    if let Some(pair) = between {
-        // Every pair judgement below that reads strength reads the same
-        // seven, so they are computed once for the matter.
-        let all = strengths(sky, rules)?;
-        if let Some(yoga) = pair.yoga {
-            held.push(Held {
-                between: Some(pair),
-                ..Held::of(if yoga.is_ithasala() {
-                    YearYoga::Ithasala
-                } else {
-                    YearYoga::Ishrafa
-                })
-            });
-            if yoga.is_ithasala() {
-                // The judgements **about** an Ithasala rather than
-                // alternatives to it, asked only where one stands -- and
-                // holding beside it rather than instead of it. Manau,
-                // Khallasara and Rudda say the Ithasala is destroyed or
-                // spoilt; the Ithasala is still the configuration that
-                // was, and a consumer that saw only the verdict could not
-                // say what happened.
-                held.extend(upon_the_ithasala(&pair, &all, sky, rules.drishti)?);
+
+    fn strengths(&self) -> Result<&[Strength; 7], Error> {
+        if let Some(all) = self.strengths.get() {
+            return Ok(all);
+        }
+        let all = strengths(self.sky, self.rules)?;
+        Ok(self.strengths.get_or_init(|| all))
+    }
+
+    fn matter(&self, house: House) -> Result<YearYogas, Error> {
+        let Judgement {
+            lagna,
+            sky,
+            states,
+            rules,
+            ..
+        } = *self;
+        let sign = house.sign_from(lagna);
+        let lagnesha = lagna.attributes().lord;
+        let karyesha = sign.attributes().lord;
+        let same_lord = lagnesha == karyesha;
+        let between = if same_lord {
+            None
+        } else {
+            Some(between_with_rules(lagnesha, karyesha, sky, rules.drishti)?)
+        };
+        // Ikabala and Induvara are facts about the chart, so they answer
+        // every matter alike -- the first house, which has no pair, included.
+        let mut held = chart_facts(lagna, sky);
+        if let Some(pair) = between {
+            // Every pair judgement below that reads strength reads the same
+            // seven, so they are computed once for the chart.
+            let all = *self.strengths()?;
+            if let Some(yoga) = pair.yoga {
+                held.push(Held {
+                    between: Some(pair),
+                    ..Held::of(if yoga.is_ithasala() {
+                        YearYoga::Ithasala
+                    } else {
+                        YearYoga::Ishrafa
+                    })
+                });
+                if yoga.is_ithasala() {
+                    // The judgements **about** an Ithasala rather than
+                    // alternatives to it, asked only where one stands -- and
+                    // holding beside it rather than instead of it. Manau,
+                    // Khallasara and Rudda say the Ithasala is destroyed or
+                    // spoilt; the Ithasala is still the configuration that
+                    // was, and a consumer that saw only the verdict could not
+                    // say what happened.
+                    held.extend(upon_the_ithasala(&pair, &all, sky, rules.drishti)?);
+                    if let Some(states) = states {
+                        held.extend(spoilt(
+                            &pair,
+                            [lagnesha, karyesha],
+                            lagna,
+                            &all,
+                            sky,
+                            states,
+                        )?);
+                    }
+                }
+            } else if !pair.drishti.is_aspect() {
+                // Only a pair that does not aspect at all can be reached by a
+                // third planet: the source asks for the light to be carried
+                // where there is no aspect to carry it.
+                held.extend(carried(lagnesha, karyesha, sky, rules.drishti)?);
                 if let Some(states) = states {
-                    held.extend(spoilt(
-                        &pair,
-                        [lagnesha, karyesha],
-                        lagna,
-                        &all,
-                        sky,
-                        states,
-                    )?);
+                    held.extend(tambira([lagnesha, karyesha], &all, sky, states, rules)?);
                 }
             }
-        } else if !pair.drishti.is_aspect() {
-            // Only a pair that does not aspect at all can be reached by a
-            // third planet: the source asks for the light to be carried
-            // where there is no aspect to carry it.
-            held.extend(carried(lagnesha, karyesha, sky, rules.drishti)?);
+            // Asked whatever the pair do between themselves: the source
+            // conditions these on the pair's weakness, and on nothing they
+            // make together.
+            held.extend(dutthottha_davira(lagnesha, karyesha, &all, sky, rules)?);
             if let Some(states) = states {
-                held.extend(tambira([lagnesha, karyesha], &all, sky, states, rules)?);
+                held.extend(durapha([lagnesha, karyesha], lagna, &all, sky, states)?);
             }
         }
-        // Asked whatever the pair do between themselves: the source
-        // conditions these on the pair's weakness, and on nothing they
-        // make together.
-        held.extend(dutthottha_davira(lagnesha, karyesha, &all, sky, rules)?);
-        if let Some(states) = states {
-            held.extend(durapha([lagnesha, karyesha], lagna, &all, sky, states)?);
-        }
+        Ok(YearYogas {
+            house,
+            sign,
+            lagnesha,
+            karyesha,
+            same_lord,
+            between,
+            held,
+            unanswered: YearYoga::ALL
+                .into_iter()
+                .filter(|yoga| !yoga.is_built() || (states.is_none() && yoga.needs_states()))
+                .collect(),
+            states: states.cloned(),
+        })
     }
-    Ok(YearYogas {
-        house,
-        sign,
-        lagnesha,
-        karyesha,
-        same_lord,
-        between,
-        held,
-        unanswered: YearYoga::ALL
-            .into_iter()
-            .filter(|yoga| !yoga.is_built() || (states.is_none() && yoga.needs_states()))
-            .collect(),
-        states: states.cloned(),
-    })
 }
 
 /// One of the seven's strength from a set already computed.
@@ -1410,7 +1496,7 @@ mod tests {
     use super::{
         Affliction, Held, MALEFICS, Strength, TambiraMover, YOGA_STRONG_FROM, YOGA_WEAK_BELOW,
         YearYoga, YearYogas, YogaRules, affliction, qualification, strength, strength_with_rules,
-        year_yogas, year_yogas_with_rules, year_yogas_with_states,
+        year_yogas, year_yogas_many, year_yogas_with_rules, year_yogas_with_states,
     };
     use crate::bala::{AnnualSky, Bala};
     use crate::drishti::{DrishtiRules, SubDegree, Yoga};
@@ -2654,6 +2740,74 @@ mod tests {
     /// Venus the lagnesha and Mars, lord of the twelfth, the karyesha. The
     /// definition moves only the karyesha; the source's "some
     /// authorities" let either move, and the knob says which.
+    /// Asking several matters at once is asking each alone: the chart-wide
+    /// half is shared, never the answers. Checked over every house, with
+    /// and without states, under a knob that moves one of them.
+    #[test]
+    fn many_matters_answer_as_each_alone() {
+        let knob = YogaRules {
+            tambira: TambiraMover::EitherLord,
+            ..YogaRules::default()
+        };
+        let retro = states(&[Graha::Saturn], &[Graha::Mercury]);
+        for (lagna, sky) in [(5.0, TAMBIRA), (X17_LAGNA_DEG, chart_x17(29.0, 7.0))] {
+            for rules in [YogaRules::default(), knob] {
+                for given in [None, Some(&retro)] {
+                    let many = year_yogas_many(lagna, &House::ALL, &sky, given, rules).unwrap();
+                    let alone: Vec<YearYogas> = House::ALL
+                        .into_iter()
+                        .map(|one| match given {
+                            Some(given) => year_yogas_with_states(lagna, one, &sky, given, rules),
+                            None => year_yogas_with_rules(lagna, one, &sky, rules),
+                        })
+                        .collect::<Result<_, _>>()
+                        .unwrap();
+                    assert_eq!(many, alone);
+                }
+            }
+        }
+        // In the caller's order, repeats and all: the batch is a map, not a set.
+        let order = [house(10), house(7), house(10)];
+        let asked = year_yogas_many(5.0, &order, &TAMBIRA, None, knob).unwrap();
+        assert_eq!(asked.iter().map(|one| one.house).collect::<Vec<_>>(), order);
+        assert!(
+            year_yogas_many(5.0, &[], &TAMBIRA, None, knob)
+                .unwrap()
+                .is_empty()
+        );
+        // The chart-wide checks refuse before any matter, even for none.
+        let crossed = YogaRules {
+            weak_below: YOGA_STRONG_FROM,
+            strong_from: YOGA_WEAK_BELOW,
+            ..YogaRules::default()
+        };
+        let refused = year_yogas_many(5.0, &[], &TAMBIRA, None, crossed).unwrap_err();
+        assert_eq!(refused.field(), Some("strong_from"));
+        let refused = year_yogas_many(f64::NAN, &[], &TAMBIRA, None, knob).unwrap_err();
+        assert_eq!(refused.field(), Some("annual_lagna_deg"));
+    }
+
+    /// The rules cross in the boundary's own casing, partial records
+    /// filled from the defaults.
+    #[test]
+    fn the_rules_read_camel_case_and_fill_the_rest() {
+        let read: YogaRules =
+            serde_json::from_str(r#"{"strongFrom": 43200, "tambira": "either_lord"}"#).unwrap();
+        assert_eq!(read.strong_from, Bala::of_sub_sub(43_200));
+        assert_eq!(read.weak_below, YOGA_WEAK_BELOW);
+        assert_eq!(read.tambira, TambiraMover::EitherLord);
+        let written = serde_json::to_value(YogaRules::default()).unwrap();
+        assert_eq!(
+            written,
+            serde_json::json!({
+                "drishti": {"subDegree": "poorna"},
+                "weakBelow": 18_000,
+                "strongFrom": 36_000,
+                "tambira": "karyesha",
+            })
+        );
+    }
+
     #[test]
     fn which_lord_may_move_is_a_knob() {
         let lagna = 30.0 + 10.0;

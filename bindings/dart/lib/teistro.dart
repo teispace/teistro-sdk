@@ -3604,6 +3604,8 @@ final class VarshaRequest {
     this.muntha = MunthaDegree.signStart,
     this.place,
     this.varshesha = const VarsheshaRules(),
+    this.matters,
+    this.yogas = const YogaRules(),
   });
 
   /// The last year of life wanted, 1 to 200.
@@ -3625,13 +3627,121 @@ final class VarshaRequest {
   /// differ; the source's own by default.
   final VarsheshaRules varshesha;
 
+  /// The matters each year's sixteen Tajika yogas are judged for. Fourteen
+  /// of the sixteen are judgements about the lagnesha and the lord of the
+  /// house asked about, so they answer a matter and not a chart. **Needs
+  /// [place]**; null, none is judged.
+  ///
+  /// ```dart
+  /// const VarshaRequest(
+  ///   through: 40, place: AnnualPlace.birth, matters: Matters.houses([7, 10]));
+  /// ```
+  final Matters? matters;
+
+  /// The readings the sixteen part on, where the source leaves a choice.
+  final YogaRules yogas;
+
   String get _json => jsonEncode(<String, Object?>{
     'reading': reading.key,
     'through': through,
     'muntha': muntha.key,
     if (place case final place?) 'place': place._json,
     'varshesha': varshesha._json,
+    if (matters case final matters?) 'matters': matters._json,
+    'yogas': yogas._json,
   });
+}
+
+/// The matters a request asks the sixteen Tajika yogas about: all twelve,
+/// or houses by number in the order you want them answered.
+sealed class Matters {
+  const Matters._();
+
+  /// The twelve, first to twelfth.
+  static const Matters all = _AllMatters();
+
+  /// These houses, 1 to 12, in this order; a house named twice is refused.
+  const factory Matters.houses(List<int> houses) = _Houses;
+
+  Object get _json;
+}
+
+final class _AllMatters extends Matters {
+  const _AllMatters() : super._();
+
+  @override
+  Object get _json => 'all';
+}
+
+final class _Houses extends Matters {
+  const _Houses(this.houses) : super._();
+
+  final List<int> houses;
+
+  @override
+  Object get _json => houses;
+}
+
+/// How the Tajika aspects read a pair less than a degree past (crux C112).
+enum SubDegree {
+  /// Poorna, the default: an Ithasala fulfilled.
+  poorna('poorna'),
+
+  /// Ishrafa: already drawing apart.
+  ishrafa('ishrafa');
+
+  const SubDegree(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Which lord a Tambira lets reach the next sign.
+enum TambiraMover {
+  /// The karyesha: the definition's, and the default.
+  karyesha('karyesha'),
+
+  /// Either lord: the source's "some authorities".
+  eitherLord('either_lord');
+
+  const TambiraMover(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Where the source leaves the sixteen Tajika yogas a choice
+/// (`03-design/tajika-yogas.md`). A reading left null is the SDK's own
+/// default, which lives in one place and is not repeated here.
+final class YogaRules {
+  const YogaRules({
+    this.subDegree,
+    this.weakBelow,
+    this.strongFrom,
+    this.tambira,
+  });
+
+  /// How a pair less than a degree past reads.
+  final SubDegree? subDegree;
+
+  /// The strength below which a planet with no dignity is weak, in
+  /// **sub-sub units**, 3600 to a unit: `5 * 3600` by default (crux C116).
+  final int? weakBelow;
+
+  /// The strength from which a planet is strong, sub-sub units; `10 * 3600`
+  /// by default.
+  final int? strongFrom;
+
+  /// Which lord a Tambira lets reach the next sign.
+  final TambiraMover? tambira;
+
+  Map<String, Object?> get _json => <String, Object?>{
+    if (subDegree case final subDegree?)
+      'drishti': {'subDegree': subDegree.key},
+    if (weakBelow case final weakBelow?) 'weakBelow': weakBelow,
+    if (strongFrom case final strongFrom?) 'strongFrom': strongFrom,
+    if (tambira case final tambira?) 'tambira': tambira.key,
+  };
 }
 
 /// Where a year's own chart is cast: the birthplace, or a residence in the
@@ -3720,7 +3830,7 @@ final class VarsheshaRules {
   final String moon;
 
   Map<String, Object?> get _json => <String, Object?>{
-    'none_aspects': noneAspects,
+    'noneAspects': noneAspects,
     'tied': tied,
     'moon': moon,
   };
@@ -3841,6 +3951,130 @@ final class TajikaPair {
   final double apartDeg;
 }
 
+/// Two planets of an annual chart, and what they make — which may be
+/// nothing.
+final class TajikaBetween {
+  const TajikaBetween({
+    required this.faster,
+    required this.slower,
+    required this.drishti,
+    required this.yoga,
+    required this.orbDeg,
+    required this.apartDeg,
+  });
+
+  /// The faster of the two by the tradition's ranking.
+  final Graha faster;
+
+  /// The slower.
+  final Graha slower;
+
+  /// The aspect between the signs they stand in.
+  final TajikaDrishti drishti;
+
+  /// What they are doing; null when they make neither an Ithasala nor an
+  /// Ishrafa.
+  final TajikaYoga? yoga;
+
+  /// The orb governing them, degrees: the mean of their deeptamshas.
+  final double orbDeg;
+
+  /// How far apart within their signs, degrees; positive when the faster
+  /// is behind the slower and coming to it.
+  final double apartDeg;
+}
+
+/// The two lords' afflictions, clause by clause: what made a Rudda or a
+/// Durapha.
+final class Afflictions {
+  const Afflictions({required this.lagnesha, required this.karyesha});
+
+  /// The lagnesha's.
+  final List<Affliction> lagnesha;
+
+  /// The karyesha's.
+  final List<Affliction> karyesha;
+}
+
+/// One of the sixteen holding, with what made it hold.
+final class HeldYearYoga {
+  const HeldYearYoga({
+    required this.yoga,
+    required this.between,
+    required this.through,
+    required this.entering,
+    required this.legs,
+    required this.afflictions,
+  });
+
+  /// Which of the sixteen.
+  final YearYoga yoga;
+
+  /// The lords' own relation, where that is what made it.
+  final TajikaBetween? between;
+
+  /// The third planet it turns on, where one does.
+  final Graha? through;
+
+  /// The planet judged on entering the next sign: Gairi-Kamboola's Moon,
+  /// Tambira's lord.
+  final Graha? entering;
+
+  /// How the third planet stands to each of the pair, read from the next
+  /// sign for [entering]; two, or null.
+  final List<TajikaBetween>? legs;
+
+  /// The lords' afflictions, where those made it: Rudda and Durapha.
+  final Afflictions? afflictions;
+}
+
+/// The sixteen Tajika yogas for one matter of a year: the question it asked
+/// as well as the answer, because a list of yogas whose pair a reader
+/// cannot see is not checkable.
+final class TajikaMatter {
+  const TajikaMatter({
+    required this.house,
+    required this.sign,
+    required this.lagnesha,
+    required this.karyesha,
+    required this.sameLord,
+    required this.between,
+    required this.held,
+    required this.unanswered,
+  });
+
+  /// The house asked about, 1 to 12, counted from the annual lagna.
+  final int house;
+
+  /// The sign that house falls in.
+  final Rashi sign;
+
+  /// The lord of the annual lagna.
+  final Graha lagnesha;
+
+  /// The lord of the house asked about.
+  final Graha karyesha;
+
+  /// One planet is both — always so of the first house — so there is no
+  /// pair to judge.
+  final bool sameLord;
+
+  /// How the two lords stand to each other; null when they are one.
+  final TajikaBetween? between;
+
+  /// Every yoga that holds, once for each third planet that makes it.
+  final List<HeldYearYoga> held;
+
+  /// The yogas this call could not answer for. A yoga absent from [held]
+  /// did not hold **only** if it is not listed here.
+  final List<YearYoga> unanswered;
+
+  /// Whether [yoga] holds: null where this call could not say, which is
+  /// not the same answer as false.
+  bool? holds(YearYoga yoga) =>
+      unanswered.contains(yoga) ? null : held.any((one) => one.yoga == yoga);
+}
+
 /// A return's own chart, read down to what Tajika reads from it.
 final class AnnualChart {
   const AnnualChart({
@@ -3849,6 +4083,9 @@ final class AnnualChart {
     required this.officeBearers,
     required this.yearLord,
     required this.yogas,
+    required this.retrograde,
+    required this.combust,
+    required this.matters,
   });
 
   /// The annual chart's lagna, sidereal degrees, at the place it was cast
@@ -3868,7 +4105,57 @@ final class AnnualChart {
   /// pairs that make none do not cross; Rust's `sdk.chart().drishtis` has
   /// all twenty-one.
   final List<TajikaPair> yogas;
+
+  /// The seven retrograde in this chart: what the matters were judged on.
+  final List<Graha> retrograde;
+
+  /// The seven combust in this chart, under the context's combustion
+  /// table.
+  final List<Graha> combust;
+
+  /// The sixteen yogas for each matter [VarshaRequest.matters] asked
+  /// about, in its order; empty otherwise.
+  final List<TajikaMatter> matters;
 }
+
+/// Where each row's block starts in each ragged section under the annual
+/// charts: `starts[row]` to `starts[row + 1]`. Computed once for a chart's
+/// years rather than once a year, so reading them is linear.
+final class _Starts {
+  _Starts(Charts batch)
+    : claims = _running(batch.annualCharts.claimCount),
+      yogas = _running(batch.annualCharts.yogaCount),
+      matters = _running(batch.annualCharts.matterCount),
+      held = _running(batch.yearMatters.heldCount),
+      legs = _running(batch.matterYogas.legCount);
+
+  final List<int> claims;
+  final List<int> yogas;
+  final List<int> matters;
+  final List<int> held;
+  final List<int> legs;
+
+  static List<int> _running(List<int> counts) {
+    final starts = List<int>.filled(counts.length + 1, 0);
+    for (var i = 0; i < counts.length; i += 1) {
+      starts[i + 1] = starts[i] + counts[i];
+    }
+    return starts;
+  }
+}
+
+/// The members of a bit set over a small closed enum, in id order: bit `n`
+/// is the member with id `n`.
+List<T> _members<T>(int bits, List<T> values, int Function(T) id) => [
+  for (final member in values)
+    if (bits & (1 << id(member)) != 0) member,
+];
+
+/// The seven the Tajika bit sets range over, Sun to Saturn: ids 0 to 6.
+final List<Graha> _theSeven = List<Graha>.generate(7, Graha.byId);
+
+/// The seven a year's bit set names, in graha id order.
+List<Graha> _seven(int bits) => _members(bits, _theSeven, (g) => g.id);
 
 /// Where the Muntha stands inside the sign it has reached (crux C107).
 ///
@@ -4368,7 +4655,7 @@ final class Chart {
   /// Row [row] of `annual_charts`, which runs beside `praveshas` row for
   /// row or is empty; anything between is a layout this layer cannot pair,
   /// and it says so rather than giving a year another year's chart.
-  AnnualChart? _annualOf(int row) {
+  AnnualChart? _annualOf(int row, _Starts starts) {
     final charts = batch.annualCharts;
     final returns = batch.praveshas;
     if (charts.lagnaDeg.isEmpty) return null;
@@ -4379,17 +4666,11 @@ final class Chart {
       );
     }
     // The claims are ragged by `claimCount`, as the returns are by
-    // `praveshaCount`: walk to this year's block and take its own count.
-    var from = 0;
-    for (var i = 0; i < row; i += 1) {
-      from += charts.claimCount[i];
-    }
+    // `praveshaCount`: this year's block starts where the ones before end.
+    final from = starts.claims[row];
     final count = charts.claimCount[row];
     final claims = batch.yearClaims;
-    var fromYoga = 0;
-    for (var i = 0; i < row; i += 1) {
-      fromYoga += charts.yogaCount[i];
-    }
+    final fromYoga = starts.yogas[row];
     final pairs = batch.yearYogas;
     return AnnualChart(
       lagnaDeg: charts.lagnaDeg[row],
@@ -4427,6 +4708,103 @@ final class Chart {
           apartDeg: pairs.apartDeg[fromYoga + k],
         ),
       ),
+      retrograde: _seven(charts.retrograde[row]),
+      combust: _seven(charts.combust[row]),
+      matters: _mattersOf(row, starts),
+    );
+  }
+
+  /// How two planets stand, from the pair columns of a matter's lords.
+  TajikaBetween _matterPair(int m) {
+    final cols = batch.yearMatters;
+    return TajikaBetween(
+      faster: Graha.byId(cols.pairFaster[m]),
+      slower: Graha.byId(cols.pairSlower[m]),
+      drishti: TajikaDrishti.byId(cols.pairDrishti[m]),
+      yoga:
+          cols.pairYogaPresent[m] == 1
+              ? TajikaYoga.byId(cols.pairYoga[m])
+              : null,
+      orbDeg: cols.pairOrbDeg[m],
+      apartDeg: cols.pairApartDeg[m],
+    );
+  }
+
+  /// How two planets stand, from one of a held yoga's legs.
+  TajikaBetween _leg(int l) {
+    final cols = batch.matterLegs;
+    return TajikaBetween(
+      faster: Graha.byId(cols.faster[l]),
+      slower: Graha.byId(cols.slower[l]),
+      drishti: TajikaDrishti.byId(cols.drishti[l]),
+      yoga: cols.yogaPresent[l] == 1 ? TajikaYoga.byId(cols.yoga[l]) : null,
+      orbDeg: cols.orbDeg[l],
+      apartDeg: cols.apartDeg[l],
+    );
+  }
+
+  /// A year's matters, each with its question, the lords' pair, what it
+  /// could not answer and every yoga that held — ragged three deep
+  /// (`03-design/tajika-yogas.md`, "Crossing the boundary").
+  List<TajikaMatter> _mattersOf(int row, _Starts starts) => [
+    for (var m = starts.matters[row]; m < starts.matters[row + 1]; m += 1)
+      _matterAt(m, starts),
+  ];
+
+  /// Row [m] of `year_matters`, with the yogas and legs under it.
+  TajikaMatter _matterAt(int m, _Starts starts) {
+    final matters = batch.yearMatters;
+    final held = batch.matterYogas;
+    final between = matters.sameLord[m] == 1 ? null : _matterPair(m);
+    return TajikaMatter(
+      house: matters.house[m],
+      sign: Rashi.byId(matters.sign[m]),
+      lagnesha: Graha.byId(matters.lagnesha[m]),
+      karyesha: Graha.byId(matters.karyesha[m]),
+      sameLord: matters.sameLord[m] == 1,
+      between: between,
+      held: [
+        for (var h = starts.held[m]; h < starts.held[m + 1]; h += 1)
+          HeldYearYoga(
+            yoga: YearYoga.byId(held.yoga[h]),
+            between: held.byPair[h] == 1 ? between : null,
+            through:
+                held.throughPresent[h] == 1
+                    ? Graha.byId(held.through[h])
+                    : null,
+            entering:
+                held.enteringPresent[h] == 1
+                    ? Graha.byId(held.entering[h])
+                    : null,
+            legs:
+                held.legCount[h] == 0
+                    ? null
+                    : [
+                      for (
+                        var l = starts.legs[h];
+                        l < starts.legs[h + 1];
+                        l += 1
+                      )
+                        _leg(l),
+                    ],
+            afflictions:
+                held.afflictionsPresent[h] == 1
+                    ? Afflictions(
+                      lagnesha: _members(
+                        held.lagneshaAfflictions[h],
+                        Affliction.values,
+                        (a) => a.id,
+                      ),
+                      karyesha: _members(
+                        held.karyeshaAfflictions[h],
+                        Affliction.values,
+                        (a) => a.id,
+                      ),
+                    )
+                    : null,
+          ),
+      ],
+      unanswered: _members(matters.unanswered[m], YearYoga.values, (y) => y.id),
     );
   }
 
@@ -4437,6 +4815,7 @@ final class Chart {
       from += counts[i];
     }
     final p = batch.praveshas;
+    final starts = _Starts(batch);
     return List<Pravesha>.generate(
       counts[index],
       (k) => Pravesha(
@@ -4447,7 +4826,7 @@ final class Chart {
           lord: Graha.byId(p.munthaLord[from + k]),
           longitudeDeg: p.munthaDeg[from + k],
         ),
-        annual: _annualOf(from + k),
+        annual: _annualOf(from + k, starts),
       ),
     );
   }

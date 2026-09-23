@@ -4775,6 +4775,114 @@ typedef enum ts_tajika_yoga {
 } ts_tajika_yoga;
 
 /**
+ * One of the sixteen Tajika yogas of the annual chart (K.S. Charak,
+ * Table X-3; `03-design/tajika-yogas.md`), in the table's order.
+ *
+ * Mirrors `teistro::YearYoga` through an **exhaustive** match, so a yoga
+ * added there stops this crate compiling rather than crossing as another.
+ * Its ids are also the bit positions of `year_matters.unanswered`.
+ */
+typedef enum ts_year_yoga {
+    /**
+     * Every planet in a kendra or a panaphara: a fact about the chart.
+     */
+    TS_YEAR_YOGA_IKABALA = 0,
+    /**
+     * Every planet in an apoklima: a fact about the chart.
+     */
+    TS_YEAR_YOGA_INDUVARA = 1,
+    /**
+     * The lagnesha and the karyesha are coming together, in one of the
+     * three kinds `TsTajikaYoga` enumerates.
+     */
+    TS_YEAR_YOGA_ITHASALA = 2,
+    /**
+     * The pair are drawing apart.
+     */
+    TS_YEAR_YOGA_ISHRAFA = 3,
+    /**
+     * The two do not aspect, and a planet faster than both carries the
+     * light between them: past one, coming to the other.
+     */
+    TS_YEAR_YOGA_NAKTA = 4,
+    /**
+     * The two do not aspect, and a planet slower than both gathers their
+     * light: both are coming to it.
+     */
+    TS_YEAR_YOGA_YAMAYA = 5,
+    /**
+     * An Ithasala a malefic destroys.
+     */
+    TS_YEAR_YOGA_MANAU = 6,
+    /**
+     * An Ithasala the Moon joins.
+     */
+    TS_YEAR_YOGA_KAMBOOLA = 7,
+    /**
+     * An Ithasala an unqualified Moon completes on entering the next sign.
+     */
+    TS_YEAR_YOGA_GAIRI_KAMBOOLA = 8,
+    /**
+     * An Ithasala an unqualified Moon negates by standing apart from it.
+     */
+    TS_YEAR_YOGA_KHALLASARA = 9,
+    /**
+     * An Ithasala where either of the pair is afflicted.
+     */
+    TS_YEAR_YOGA_RUDDA = 10,
+    /**
+     * An Ithasala where the slower is strong and the faster weak.
+     */
+    TS_YEAR_YOGA_DUHPHALI_KUTTHA = 11,
+    /**
+     * Both weak, and one in Ithasala with a third, strong planet.
+     */
+    TS_YEAR_YOGA_DUTTHOTTHA_DAVIRA = 12,
+    /**
+     * No aspect and no Ithasala, the karyesha completing one from the
+     * next sign.
+     */
+    TS_YEAR_YOGA_TAMBIRA = 13,
+    /**
+     * Both powerful, well placed and under benefic influence; listed in
+     * `unanswered` while this build cannot compute it (crux C117).
+     */
+    TS_YEAR_YOGA_KUTTHA = 14,
+    /**
+     * Both weak, in the trika houses, combust or retrograde.
+     */
+    TS_YEAR_YOGA_DURAPHA = 15,
+} ts_year_yoga;
+
+/**
+ * One of the five clauses of the source's **affliction**, which Rudda
+ * and Durapha read. Its ids are the bit positions of
+ * `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.
+ */
+typedef enum ts_affliction {
+    /**
+     * Going backwards through the zodiac.
+     */
+    TS_AFFLICTION_RETROGRADE = 0,
+    /**
+     * Burnt by the Sun.
+     */
+    TS_AFFLICTION_COMBUST = 1,
+    /**
+     * In its sign of debilitation.
+     */
+    TS_AFFLICTION_DEBILITATED = 2,
+    /**
+     * In the 6th, 8th or 12th house from the annual lagna.
+     */
+    TS_AFFLICTION_TRIKA = 3,
+    /**
+     * Conjunct or inimically aspected by one of Tajika's malefics.
+     */
+    TS_AFFLICTION_UNDER_MALEFIC = 4,
+} ts_affliction;
+
+/**
  * A time scale of the conversions; the first two ids are the port's.
  */
 typedef enum ts_scale {

@@ -3071,6 +3071,70 @@ export const TajikaYogaById = new Map([
   [3, 'ishrafa'],
 ]);
 
+/** Every YearYoga by name. */
+export const YearYoga = Object.freeze({
+  Ikabala: 'ikabala',
+  Induvara: 'induvara',
+  Ithasala: 'ithasala',
+  Ishrafa: 'ishrafa',
+  Nakta: 'nakta',
+  Yamaya: 'yamaya',
+  Manau: 'manau',
+  Kamboola: 'kamboola',
+  GairiKamboola: 'gairi-kamboola',
+  Khallasara: 'khallasara',
+  Rudda: 'rudda',
+  DuhphaliKuttha: 'duhphali-kuttha',
+  DutthotthaDavira: 'dutthottha-davira',
+  Tambira: 'tambira',
+  Kuttha: 'kuttha',
+  Durapha: 'durapha',
+});
+
+/**
+ * Every YearYoga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const YearYogaById = new Map([
+  [0, 'ikabala'],
+  [1, 'induvara'],
+  [2, 'ithasala'],
+  [3, 'ishrafa'],
+  [4, 'nakta'],
+  [5, 'yamaya'],
+  [6, 'manau'],
+  [7, 'kamboola'],
+  [8, 'gairi-kamboola'],
+  [9, 'khallasara'],
+  [10, 'rudda'],
+  [11, 'duhphali-kuttha'],
+  [12, 'dutthottha-davira'],
+  [13, 'tambira'],
+  [14, 'kuttha'],
+  [15, 'durapha'],
+]);
+
+/** Every Affliction by name. */
+export const Affliction = Object.freeze({
+  Retrograde: 'retrograde',
+  Combust: 'combust',
+  Debilitated: 'debilitated',
+  Trika: 'trika',
+  UnderMalefic: 'under-malefic',
+});
+
+/**
+ * Every Affliction by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AfflictionById = new Map([
+  [0, 'retrograde'],
+  [1, 'combust'],
+  [2, 'debilitated'],
+  [3, 'trika'],
+  [4, 'under-malefic'],
+]);
+
 /** Every Scale by name. */
 export const Scale = Object.freeze({
   Ut1: 'ut1',

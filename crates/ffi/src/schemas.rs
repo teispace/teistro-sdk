@@ -586,12 +586,26 @@ pub fn charts() -> BlobSchema {
             chart_dasha_phala_section(32),
             chart_rules_section(33),
             chart_plans_section(34),
-            chart_praveshas_section(35),
-            chart_annual_charts_section(36),
-            chart_year_claims_section(37),
-            chart_year_yogas_section(38),
-        ],
+        ]
+        .into_iter()
+        .chain(chart_annual_sections())
+        .collect(),
     }
+}
+
+/// The annual charts a batch's births open and everything Tajika reads
+/// from them, in id order: seven sections ragged under one another, so
+/// they are declared together rather than scattered through the rest.
+fn chart_annual_sections() -> [SectionSchema; 7] {
+    [
+        chart_praveshas_section(35),
+        chart_annual_charts_section(36),
+        chart_year_claims_section(37),
+        chart_year_yogas_section(38),
+        chart_year_matters_section(39),
+        chart_matter_yogas_section(40),
+        chart_matter_legs_section(41),
+    ]
 }
 
 /// What every chart answered by rule, as canonical JSON.
@@ -682,7 +696,182 @@ fn chart_annual_charts_section(id: u32) -> SectionSchema {
                 Scalar::U8,
                 "How many rows of the `year_yogas` section belong to this year: the pairs of the seven that make an Ithasala or an Ishrafa, 0 to 21.",
             ),
+            ColumnDef::new(
+                "retrograde",
+                Scalar::U8,
+                "The seven that are retrograde in this year's chart, as a bit set: bit `n` is the graha with catalogue id `n`. What the matters' yogas were judged on.",
+            ),
+            ColumnDef::new(
+                "combust",
+                Scalar::U8,
+                "The seven that are combust in this year's chart, under the context's combustion table, as a bit set like `retrograde`.",
+            ),
+            ColumnDef::new(
+                "matter_count",
+                Scalar::U8,
+                "How many rows of the `year_matters` section belong to this year: the matters `varsha_json.matters` asked about, 0 to 12.",
+            ),
         ],
+    )
+}
+
+/// The seven columns every pair the matter sections carry is written in:
+/// `year_yogas`' own, with a presence flag on the yoga, because a pair
+/// here may make none. `prefix` names them where a section carries a
+/// pair beside other fields.
+fn pair_columns(prefix: &str) -> Vec<ColumnDef> {
+    let named = |name: &str| format!("{prefix}{name}");
+    vec![
+        ColumnDef::new(
+            &named("faster"),
+            Scalar::U16,
+            "The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id.",
+        ),
+        ColumnDef::new(&named("slower"), Scalar::U16, "The slower of the two, a `graha` id."),
+        ColumnDef::new(
+            &named("drishti"),
+            Scalar::U8,
+            "The Tajika aspect between the signs they stand in; `NONE` where they stand in the neutral houses.",
+        )
+        .of_enum("TsTajikaDrishti"),
+        ColumnDef::new(
+            &named("yoga"),
+            Scalar::U8,
+            "What they are doing, read only when the yoga is present.",
+        )
+        .of_enum("TsTajikaYoga"),
+        ColumnDef::new(
+            &named("yoga_present"),
+            Scalar::U8,
+            "1 when they make an Ithasala or an Ishrafa; 0 when they make neither.",
+        ),
+        ColumnDef::new(
+            &named("orb_deg"),
+            Scalar::F64,
+            "The orb governing the pair, degrees: the mean of their two deeptamshas.",
+        ),
+        ColumnDef::new(
+            &named("apart_deg"),
+            Scalar::F64,
+            "How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past.",
+        ),
+    ]
+}
+
+/// Every year's matters: the question each asked, and the pair it names.
+fn chart_year_matters_section(id: u32) -> SectionSchema {
+    let mut fields = vec![
+        ColumnDef::new(
+            "house",
+            Scalar::U8,
+            "The house asked about, 1 to 12, counted from the annual lagna by whole signs.",
+        ),
+        ColumnDef::new(
+            "sign",
+            Scalar::U16,
+            "The sign that house falls in, a `rashi` id.",
+        ),
+        ColumnDef::new(
+            "lagnesha",
+            Scalar::U16,
+            "The lord of the annual lagna, a `graha` id.",
+        ),
+        ColumnDef::new(
+            "karyesha",
+            Scalar::U16,
+            "The lord of the house asked about, a `graha` id.",
+        ),
+        ColumnDef::new(
+            "same_lord",
+            Scalar::U8,
+            "1 when one planet is both lords — always so of the first house — and there is no pair to judge; the `pair_*` columns are then read not at all.",
+        ),
+    ];
+    fields.extend(pair_columns("pair_"));
+    fields.extend([
+        ColumnDef::new(
+            "unanswered",
+            Scalar::U16,
+            "The yogas this call could not answer for, as a bit set: bit `n` is the `TsYearYoga` with id `n`. A yoga absent from `matter_yogas` did not hold **only** if it is not here.",
+        ),
+        ColumnDef::new(
+            "held_count",
+            Scalar::U8,
+            "How many rows of the `matter_yogas` section belong to this matter: the yogas that hold, one row each time one holds.",
+        ),
+    ]);
+    SectionSchema::columns(
+        id,
+        "year_matters",
+        "Every annual chart's matters, concatenated in the `annual_charts` section's order and **ragged** by its `matter_count`, each year's in the order `varsha_json.matters` named them. Fourteen of the sixteen Tajika yogas are judgements about the lagnesha and the karyesha, so each row is the question as well as where its answer starts (`03-design/tajika-yogas.md`). Empty unless matters were asked for.",
+        fields,
+    )
+}
+
+/// Every matter's yogas that hold, and what made each hold.
+fn chart_matter_yogas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "matter_yogas",
+        "Every matter's yogas that hold, concatenated in the `year_matters` section's order and **ragged** by its `held_count`. A yoga may hold more than once in a matter, once for each third planet that makes it.",
+        vec![
+            ColumnDef::new("yoga", Scalar::U8, "Which of the sixteen.").of_enum("TsYearYoga"),
+            ColumnDef::new(
+                "by_pair",
+                Scalar::U8,
+                "1 when the lords' own relation, the matter's `pair_*`, is what made it: an Ithasala or an Ishrafa, and the judgements upon an Ithasala.",
+            ),
+            ColumnDef::new(
+                "through",
+                Scalar::U16,
+                "The third planet it turns on, a `graha` id, read only when `through_present`: the one that carried or gathered the light, the malefic, the Moon, or the strong planet a lord is drawn to.",
+            ),
+            ColumnDef::new(
+                "through_present",
+                Scalar::U8,
+                "1 when there is a third planet.",
+            ),
+            ColumnDef::new(
+                "entering",
+                Scalar::U16,
+                "The planet judged on entering the next sign, a `graha` id, read only when `entering_present`: Gairi-Kamboola's Moon or Tambira's lord at a sign's end. Its legs are then read from the next sign's first degree.",
+            ),
+            ColumnDef::new(
+                "entering_present",
+                Scalar::U8,
+                "1 when a planet was judged on entering the next sign.",
+            ),
+            ColumnDef::new(
+                "afflictions_present",
+                Scalar::U8,
+                "1 when the lords' afflictions are what made it: Rudda and Durapha.",
+            ),
+            ColumnDef::new(
+                "lagnesha_afflictions",
+                Scalar::U8,
+                "The lagnesha's afflictions, as a bit set: bit `n` is the `TsAffliction` with id `n`. Read only when `afflictions_present`.",
+            ),
+            ColumnDef::new(
+                "karyesha_afflictions",
+                Scalar::U8,
+                "The karyesha's afflictions, as a bit set like `lagnesha_afflictions`.",
+            ),
+            ColumnDef::new(
+                "leg_count",
+                Scalar::U8,
+                "How many rows of the `matter_legs` section belong to this yoga: none, or two — how the third planet stands to each of the pair.",
+            ),
+        ],
+    )
+}
+
+/// Every held yoga's legs: how its third planet stands to each of the pair.
+fn chart_matter_legs_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "matter_legs",
+        "Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand.",
+        pair_columns(""),
     )
 }
 

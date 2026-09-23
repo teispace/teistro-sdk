@@ -1483,6 +1483,9 @@ final class ChartsAnnualCharts {
     required this.moonPassedOver,
     required this.claimCount,
     required this.yogaCount,
+    required this.retrograde,
+    required this.combust,
+    required this.matterCount,
     required this.length,
   });
 
@@ -1521,6 +1524,15 @@ final class ChartsAnnualCharts {
 
   /// How many rows of the `year_yogas` section belong to this year: the pairs of the seven that make an Ithasala or an Ishrafa, 0 to 21.
   final Uint8List yogaCount;
+
+  /// The seven that are retrograde in this year's chart, as a bit set: bit `n` is the graha with catalogue id `n`. What the matters' yogas were judged on.
+  final Uint8List retrograde;
+
+  /// The seven that are combust in this year's chart, under the context's combustion table, as a bit set like `retrograde`.
+  final Uint8List combust;
+
+  /// How many rows of the `year_matters` section belong to this year: the matters `varsha_json.matters` asked about, 0 to 12.
+  final Uint8List matterCount;
 
   /// The number of rows every column holds.
   final int length;
@@ -1586,6 +1598,169 @@ final class ChartsYearYogas {
   final Float64List orbDeg;
 
   /// How far apart they stand **within their signs**, degrees, the completed signs deleted as the tradition counts them: positive when the faster is behind the slower and coming to it, negative when it is past.
+  final Float64List apartDeg;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `year_matters` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every annual chart's matters, concatenated in the `annual_charts` section's order and **ragged** by its `matter_count`, each year's in the order `varsha_json.matters` named them. Fourteen of the sixteen Tajika yogas are judgements about the lagnesha and the karyesha, so each row is the question as well as where its answer starts (`03-design/tajika-yogas.md`). Empty unless matters were asked for.
+final class ChartsYearMatters {
+  const ChartsYearMatters({
+    required this.house,
+    required this.sign,
+    required this.lagnesha,
+    required this.karyesha,
+    required this.sameLord,
+    required this.pairFaster,
+    required this.pairSlower,
+    required this.pairDrishti,
+    required this.pairYoga,
+    required this.pairYogaPresent,
+    required this.pairOrbDeg,
+    required this.pairApartDeg,
+    required this.unanswered,
+    required this.heldCount,
+    required this.length,
+  });
+
+  /// The house asked about, 1 to 12, counted from the annual lagna by whole signs.
+  final Uint8List house;
+
+  /// The sign that house falls in, a `rashi` id.
+  final Uint16List sign;
+
+  /// The lord of the annual lagna, a `graha` id.
+  final Uint16List lagnesha;
+
+  /// The lord of the house asked about, a `graha` id.
+  final Uint16List karyesha;
+
+  /// 1 when one planet is both lords — always so of the first house — and there is no pair to judge; the `pair_*` columns are then read not at all.
+  final Uint8List sameLord;
+
+  /// The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id.
+  final Uint16List pairFaster;
+
+  /// The slower of the two, a `graha` id.
+  final Uint16List pairSlower;
+
+  /// The Tajika aspect between the signs they stand in; `NONE` where they stand in the neutral houses.
+  final Uint8List pairDrishti;
+
+  /// What they are doing, read only when the yoga is present.
+  final Uint8List pairYoga;
+
+  /// 1 when they make an Ithasala or an Ishrafa; 0 when they make neither.
+  final Uint8List pairYogaPresent;
+
+  /// The orb governing the pair, degrees: the mean of their two deeptamshas.
+  final Float64List pairOrbDeg;
+
+  /// How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past.
+  final Float64List pairApartDeg;
+
+  /// The yogas this call could not answer for, as a bit set: bit `n` is the `TsYearYoga` with id `n`. A yoga absent from `matter_yogas` did not hold **only** if it is not here.
+  final Uint16List unanswered;
+
+  /// How many rows of the `matter_yogas` section belong to this matter: the yogas that hold, one row each time one holds.
+  final Uint8List heldCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `matter_yogas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every matter's yogas that hold, concatenated in the `year_matters` section's order and **ragged** by its `held_count`. A yoga may hold more than once in a matter, once for each third planet that makes it.
+final class ChartsMatterYogas {
+  const ChartsMatterYogas({
+    required this.yoga,
+    required this.byPair,
+    required this.through,
+    required this.throughPresent,
+    required this.entering,
+    required this.enteringPresent,
+    required this.afflictionsPresent,
+    required this.lagneshaAfflictions,
+    required this.karyeshaAfflictions,
+    required this.legCount,
+    required this.length,
+  });
+
+  /// Which of the sixteen.
+  final Uint8List yoga;
+
+  /// 1 when the lords' own relation, the matter's `pair_*`, is what made it: an Ithasala or an Ishrafa, and the judgements upon an Ithasala.
+  final Uint8List byPair;
+
+  /// The third planet it turns on, a `graha` id, read only when `through_present`: the one that carried or gathered the light, the malefic, the Moon, or the strong planet a lord is drawn to.
+  final Uint16List through;
+
+  /// 1 when there is a third planet.
+  final Uint8List throughPresent;
+
+  /// The planet judged on entering the next sign, a `graha` id, read only when `entering_present`: Gairi-Kamboola's Moon or Tambira's lord at a sign's end. Its legs are then read from the next sign's first degree.
+  final Uint16List entering;
+
+  /// 1 when a planet was judged on entering the next sign.
+  final Uint8List enteringPresent;
+
+  /// 1 when the lords' afflictions are what made it: Rudda and Durapha.
+  final Uint8List afflictionsPresent;
+
+  /// The lagnesha's afflictions, as a bit set: bit `n` is the `TsAffliction` with id `n`. Read only when `afflictions_present`.
+  final Uint8List lagneshaAfflictions;
+
+  /// The karyesha's afflictions, as a bit set like `lagnesha_afflictions`.
+  final Uint8List karyeshaAfflictions;
+
+  /// How many rows of the `matter_legs` section belong to this yoga: none, or two — how the third planet stands to each of the pair.
+  final Uint8List legCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `matter_legs` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand.
+final class ChartsMatterLegs {
+  const ChartsMatterLegs({
+    required this.faster,
+    required this.slower,
+    required this.drishti,
+    required this.yoga,
+    required this.yogaPresent,
+    required this.orbDeg,
+    required this.apartDeg,
+    required this.length,
+  });
+
+  /// The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id.
+  final Uint16List faster;
+
+  /// The slower of the two, a `graha` id.
+  final Uint16List slower;
+
+  /// The Tajika aspect between the signs they stand in; `NONE` where they stand in the neutral houses.
+  final Uint8List drishti;
+
+  /// What they are doing, read only when the yoga is present.
+  final Uint8List yoga;
+
+  /// 1 when they make an Ithasala or an Ishrafa; 0 when they make neither.
+  final Uint8List yogaPresent;
+
+  /// The orb governing the pair, degrees: the mean of their two deeptamshas.
+  final Float64List orbDeg;
+
+  /// How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past.
   final Float64List apartDeg;
 
   /// The number of rows every column holds.
@@ -1734,6 +1909,9 @@ final class Charts {
     required this.annualCharts,
     required this.yearClaims,
     required this.yearYogas,
+    required this.yearMatters,
+    required this.matterYogas,
+    required this.matterLegs,
   });
 
   /// What kind of chart these are.
@@ -1894,6 +2072,15 @@ final class Charts {
   /// Every annual chart's pairs of the seven that make a yoga — an Ithasala in one of its three kinds, coming together, or an Ishrafa, drawing apart — concatenated in the `annual_charts` section's order and **ragged** by its `yoga_count`. Empty when no place was asked for. The pairs that make none are the rest of the twenty-one and do not cross; a Rust caller has `sdk.chart().drishtis` for all of them (`03-design/tajika-aspects.md`).
   final ChartsYearYogas yearYogas;
 
+  /// Every annual chart's matters, concatenated in the `annual_charts` section's order and **ragged** by its `matter_count`, each year's in the order `varsha_json.matters` named them. Fourteen of the sixteen Tajika yogas are judgements about the lagnesha and the karyesha, so each row is the question as well as where its answer starts (`03-design/tajika-yogas.md`). Empty unless matters were asked for.
+  final ChartsYearMatters yearMatters;
+
+  /// Every matter's yogas that hold, concatenated in the `year_matters` section's order and **ragged** by its `held_count`. A yoga may hold more than once in a matter, once for each third planet that makes it.
+  final ChartsMatterYogas matterYogas;
+
+  /// Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand.
+  final ChartsMatterLegs matterLegs;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -1939,6 +2126,9 @@ Charts decodeCharts(Uint8List bytes) {
   final atAnnualCharts = blob.section(36, 'annual_charts');
   final atYearClaims = blob.section(37, 'year_claims');
   final atYearYogas = blob.section(38, 'year_yogas');
+  final atYearMatters = blob.section(39, 'year_matters');
+  final atMatterYogas = blob.section(40, 'matter_yogas');
+  final atMatterLegs = blob.section(41, 'matter_legs');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -3196,6 +3386,21 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atAnnualCharts, 11),
         blob.columnOffset(atAnnualCharts, 11) + atAnnualCharts.count * 1,
       ),
+      retrograde: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 12),
+        blob.columnOffset(atAnnualCharts, 12) + atAnnualCharts.count * 1,
+      ),
+      combust: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 13),
+        blob.columnOffset(atAnnualCharts, 13) + atAnnualCharts.count * 1,
+      ),
+      matterCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 14),
+        blob.columnOffset(atAnnualCharts, 14) + atAnnualCharts.count * 1,
+      ),
       length: atAnnualCharts.count,
     ),
     yearClaims: ChartsYearClaims(
@@ -3253,6 +3458,170 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atYearYogas, 5) + atYearYogas.count * 8,
       ),
       length: atYearYogas.count,
+    ),
+    yearMatters: ChartsYearMatters(
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 0),
+        blob.columnOffset(atYearMatters, 0) + atYearMatters.count * 1,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 1),
+        blob.columnOffset(atYearMatters, 1) + atYearMatters.count * 2,
+      ),
+      lagnesha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 2),
+        blob.columnOffset(atYearMatters, 2) + atYearMatters.count * 2,
+      ),
+      karyesha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 3),
+        blob.columnOffset(atYearMatters, 3) + atYearMatters.count * 2,
+      ),
+      sameLord: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 4),
+        blob.columnOffset(atYearMatters, 4) + atYearMatters.count * 1,
+      ),
+      pairFaster: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 5),
+        blob.columnOffset(atYearMatters, 5) + atYearMatters.count * 2,
+      ),
+      pairSlower: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 6),
+        blob.columnOffset(atYearMatters, 6) + atYearMatters.count * 2,
+      ),
+      pairDrishti: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 7),
+        blob.columnOffset(atYearMatters, 7) + atYearMatters.count * 1,
+      ),
+      pairYoga: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 8),
+        blob.columnOffset(atYearMatters, 8) + atYearMatters.count * 1,
+      ),
+      pairYogaPresent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 9),
+        blob.columnOffset(atYearMatters, 9) + atYearMatters.count * 1,
+      ),
+      pairOrbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 10),
+        blob.columnOffset(atYearMatters, 10) + atYearMatters.count * 8,
+      ),
+      pairApartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 11),
+        blob.columnOffset(atYearMatters, 11) + atYearMatters.count * 8,
+      ),
+      unanswered: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 12),
+        blob.columnOffset(atYearMatters, 12) + atYearMatters.count * 2,
+      ),
+      heldCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearMatters, 13),
+        blob.columnOffset(atYearMatters, 13) + atYearMatters.count * 1,
+      ),
+      length: atYearMatters.count,
+    ),
+    matterYogas: ChartsMatterYogas(
+      yoga: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterYogas, 0),
+        blob.columnOffset(atMatterYogas, 0) + atMatterYogas.count * 1,
+      ),
+      byPair: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterYogas, 1),
+        blob.columnOffset(atMatterYogas, 1) + atMatterYogas.count * 1,
+      ),
+      through: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterYogas, 2),
+        blob.columnOffset(atMatterYogas, 2) + atMatterYogas.count * 2,
+      ),
+      throughPresent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterYogas, 3),
+        blob.columnOffset(atMatterYogas, 3) + atMatterYogas.count * 1,
+      ),
+      entering: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterYogas, 4),
+        blob.columnOffset(atMatterYogas, 4) + atMatterYogas.count * 2,
+      ),
+      enteringPresent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterYogas, 5),
+        blob.columnOffset(atMatterYogas, 5) + atMatterYogas.count * 1,
+      ),
+      afflictionsPresent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterYogas, 6),
+        blob.columnOffset(atMatterYogas, 6) + atMatterYogas.count * 1,
+      ),
+      lagneshaAfflictions: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterYogas, 7),
+        blob.columnOffset(atMatterYogas, 7) + atMatterYogas.count * 1,
+      ),
+      karyeshaAfflictions: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterYogas, 8),
+        blob.columnOffset(atMatterYogas, 8) + atMatterYogas.count * 1,
+      ),
+      legCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterYogas, 9),
+        blob.columnOffset(atMatterYogas, 9) + atMatterYogas.count * 1,
+      ),
+      length: atMatterYogas.count,
+    ),
+    matterLegs: ChartsMatterLegs(
+      faster: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterLegs, 0),
+        blob.columnOffset(atMatterLegs, 0) + atMatterLegs.count * 2,
+      ),
+      slower: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterLegs, 1),
+        blob.columnOffset(atMatterLegs, 1) + atMatterLegs.count * 2,
+      ),
+      drishti: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterLegs, 2),
+        blob.columnOffset(atMatterLegs, 2) + atMatterLegs.count * 1,
+      ),
+      yoga: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterLegs, 3),
+        blob.columnOffset(atMatterLegs, 3) + atMatterLegs.count * 1,
+      ),
+      yogaPresent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterLegs, 4),
+        blob.columnOffset(atMatterLegs, 4) + atMatterLegs.count * 1,
+      ),
+      orbDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterLegs, 5),
+        blob.columnOffset(atMatterLegs, 5) + atMatterLegs.count * 8,
+      ),
+      apartDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atMatterLegs, 6),
+        blob.columnOffset(atMatterLegs, 6) + atMatterLegs.count * 8,
+      ),
+      length: atMatterLegs.count,
     ),
   );
 }

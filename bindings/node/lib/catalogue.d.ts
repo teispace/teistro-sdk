@@ -6372,6 +6372,148 @@ export declare const TajikaYoga: {
 export declare const TajikaYogaById: ReadonlyMap<number, TajikaYoga>;
 
 /**
+ * One of the sixteen Tajika yogas of the annual chart (K.S. Charak,
+ * Table X-3; `03-design/tajika-yogas.md`), in the table's order.
+ *
+ * Mirrors `teistro::YearYoga` through an **exhaustive** match, so a yoga
+ * added there stops this crate compiling rather than crossing as another.
+ * Its ids are also the bit positions of `year_matters.unanswered`.
+ */
+export type YearYoga =
+  | 'ikabala'
+  | 'induvara'
+  | 'ithasala'
+  | 'ishrafa'
+  | 'nakta'
+  | 'yamaya'
+  | 'manau'
+  | 'kamboola'
+  | 'gairi-kamboola'
+  | 'khallasara'
+  | 'rudda'
+  | 'duhphali-kuttha'
+  | 'dutthottha-davira'
+  | 'tambira'
+  | 'kuttha'
+  | 'durapha';
+
+/** Every YearYoga by name; the values are the strings the union accepts. */
+export declare const YearYoga: {
+  /**
+   * Every planet in a kendra or a panaphara: a fact about the chart.
+   */
+  readonly Ikabala: 'ikabala';
+  /**
+   * Every planet in an apoklima: a fact about the chart.
+   */
+  readonly Induvara: 'induvara';
+  /**
+   * The lagnesha and the karyesha are coming together, in one of the
+   * three kinds `TsTajikaYoga` enumerates.
+   */
+  readonly Ithasala: 'ithasala';
+  /**
+   * The pair are drawing apart.
+   */
+  readonly Ishrafa: 'ishrafa';
+  /**
+   * The two do not aspect, and a planet faster than both carries the
+   * light between them: past one, coming to the other.
+   */
+  readonly Nakta: 'nakta';
+  /**
+   * The two do not aspect, and a planet slower than both gathers their
+   * light: both are coming to it.
+   */
+  readonly Yamaya: 'yamaya';
+  /**
+   * An Ithasala a malefic destroys.
+   */
+  readonly Manau: 'manau';
+  /**
+   * An Ithasala the Moon joins.
+   */
+  readonly Kamboola: 'kamboola';
+  /**
+   * An Ithasala an unqualified Moon completes on entering the next sign.
+   */
+  readonly GairiKamboola: 'gairi-kamboola';
+  /**
+   * An Ithasala an unqualified Moon negates by standing apart from it.
+   */
+  readonly Khallasara: 'khallasara';
+  /**
+   * An Ithasala where either of the pair is afflicted.
+   */
+  readonly Rudda: 'rudda';
+  /**
+   * An Ithasala where the slower is strong and the faster weak.
+   */
+  readonly DuhphaliKuttha: 'duhphali-kuttha';
+  /**
+   * Both weak, and one in Ithasala with a third, strong planet.
+   */
+  readonly DutthotthaDavira: 'dutthottha-davira';
+  /**
+   * No aspect and no Ithasala, the karyesha completing one from the
+   * next sign.
+   */
+  readonly Tambira: 'tambira';
+  /**
+   * Both powerful, well placed and under benefic influence; listed in
+   * `unanswered` while this build cannot compute it (crux C117).
+   */
+  readonly Kuttha: 'kuttha';
+  /**
+   * Both weak, in the trika houses, combust or retrograde.
+   */
+  readonly Durapha: 'durapha';
+};
+
+/**
+ * Every YearYoga by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const YearYogaById: ReadonlyMap<number, YearYoga>;
+
+/**
+ * One of the five clauses of the source's **affliction**, which Rudda
+ * and Durapha read. Its ids are the bit positions of
+ * `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.
+ */
+export type Affliction = 'retrograde' | 'combust' | 'debilitated' | 'trika' | 'under-malefic';
+
+/** Every Affliction by name; the values are the strings the union accepts. */
+export declare const Affliction: {
+  /**
+   * Going backwards through the zodiac.
+   */
+  readonly Retrograde: 'retrograde';
+  /**
+   * Burnt by the Sun.
+   */
+  readonly Combust: 'combust';
+  /**
+   * In its sign of debilitation.
+   */
+  readonly Debilitated: 'debilitated';
+  /**
+   * In the 6th, 8th or 12th house from the annual lagna.
+   */
+  readonly Trika: 'trika';
+  /**
+   * Conjunct or inimically aspected by one of Tajika's malefics.
+   */
+  readonly UnderMalefic: 'under-malefic';
+};
+
+/**
+ * Every Affliction by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AfflictionById: ReadonlyMap<number, Affliction>;
+
+/**
  * A time scale of the conversions; the first two ids are the port's.
  */
 export type Scale = 'ut1' | 'tt' | 'utc';

@@ -19,6 +19,7 @@ from typing import Any, cast
 import json
 
 from teistro import (
+    VarshaRequest,
     DashaDefinition,
     Altitude,
     MessagePart,
@@ -616,12 +617,41 @@ def main() -> None:
         # each, because `varsha_json` names one reading per request — and
         # all three, because a reading that crossed as another would be
         # invisible in a report that only printed the default.
+        # Each reading also asks the sixteen yogas a different way, so all
+        # three ways cross: every matter under the source's readings, every
+        # matter under Tambira's "some authorities", and no matter at all.
+        def pair_said(p: Any) -> str:
+            yoga = p.yoga.key if p.yoga is not None else "-"
+            return f"{p.faster.full_key}>{p.slower.full_key}:{p.drishti.key}:{yoga}:{p.apart_deg:.6f}"
+
+        def clauses_said(clauses: Any) -> str:
+            return "+".join(c.key for c in clauses) if clauses else "none"
+
+        def held_said(h: Any) -> str:
+            return ":".join([
+                h.yoga.key,
+                h.through.full_key if h.through is not None else "-",
+                h.entering.full_key if h.entering is not None else "-",
+                "pair" if h.between is not None else "-",
+                "/".join(pair_said(leg) for leg in h.legs) if h.legs is not None else "-",
+                (
+                    f"{clauses_said(h.afflictions.lagnesha)}/{clauses_said(h.afflictions.karyesha)}"
+                    if h.afflictions is not None
+                    else "-"
+                ),
+            ])
+
         for reading in ("sidereal", "tropical", "mean"):
+            varsha: VarshaRequest = {"reading": reading, "through": 12, "place": "birth"}
+            if reading != "mean":
+                varsha["matters"] = "all"
+            if reading == "tropical":
+                varsha["yogas"] = {"tambira": "either_lord"}
             years = geo.chart.found_many(
                 instants=[2460482.5, 2460600.25],
                 place=place,
                 utc_offset_seconds=20700,
-                varsha={"reading": reading, "through": 12, "place": "birth"},
+                varsha=varsha,
             )
             for i, chart in enumerate(years):
                 returns = chart.praveshas
@@ -656,6 +686,21 @@ def main() -> None:
                             for p in annual.yogas
                         ),
                     )
+                    put(
+                        f"{stem}-states",
+                        f"R:{','.join(g.full_key for g in annual.retrograde)} "
+                        f"C:{','.join(g.full_key for g in annual.combust)}",
+                    )
+                    for matter in annual.matters:
+                        asked = f"{stem}-matter-{matter.house}"
+                        put(
+                            asked,
+                            f"{matter.sign.full_key} {matter.lagnesha.full_key}>"
+                            f"{matter.karyesha.full_key} {str(matter.same_lord).lower()}",
+                        )
+                        put(f"{asked}-pair", pair_said(matter.between) if matter.between is not None else "-")
+                        put(f"{asked}-unanswered", ",".join(y.key for y in matter.unanswered))
+                        put(f"{asked}-held", " ".join(held_said(h) for h in matter.held))
                     put(
                         f"{stem}-year-claims",
                         " ".join(
