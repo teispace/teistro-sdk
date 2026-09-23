@@ -477,15 +477,15 @@ fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
         assert_eq!(found.lagnesha, lagna_sign.attributes().lord);
         assert_eq!(found.karyesha, found.sign.attributes().lord);
 
-        // Twelve of the sixteen are not built, and each carries its
+        // Eight of the sixteen are not built, and each carries its
         // reason. A consumer asking about one gets `None` -- not `false`,
         // which would be a claim this build has no right to make.
-        assert_eq!(found.unanswered.len(), 9);
+        assert_eq!(found.unanswered.len(), 8);
         for yoga in &found.unanswered {
             assert!(yoga.awaiting().is_some(), "{yoga:?} says what it needs");
             assert_eq!(found.holds(*yoga), None);
         }
-        // The seven that are built always answer, true or false.
+        // The eight that are built always answer, true or false.
         for yoga in [
             teistro::YearYoga::Ithasala,
             teistro::YearYoga::Ishrafa,
@@ -494,6 +494,7 @@ fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
             teistro::YearYoga::Manau,
             teistro::YearYoga::Kamboola,
             teistro::YearYoga::Khallasara,
+            teistro::YearYoga::DutthotthaDavira,
         ] {
             assert!(found.holds(yoga).is_some(), "{yoga:?} is built");
         }
@@ -546,9 +547,62 @@ fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
     ] {
         let under = sdk
             .chart()
-            .tajika_yogas_with_rules(&annual, tenth, teistro::DrishtiRules { sub_degree })
+            .tajika_yogas_with_rules(&annual, tenth, teistro::DrishtiRules { sub_degree }.into())
             .unwrap();
         assert_eq!(under.house, tenth);
-        assert_eq!(under.unanswered.len(), 9);
+        assert_eq!(under.unanswered.len(), 8);
     }
+}
+
+/// *Strong* and *weak* through the façade: graded by default, both
+/// floors knobs, and floors that cross refused by name (crux C116).
+#[test]
+fn a_planets_strength_is_graded_and_its_floors_are_knobs() {
+    use teistro::tajika::{Bala, SEVEN};
+    let sdk = source_context();
+    let (_birth, annual) = source_birth_and_year(&sdk);
+    let floors = |weak_below: i64, strong_from: i64| teistro::YogaRules {
+        weak_below: Bala::new(weak_below, 0, 0),
+        strong_from: Bala::new(strong_from, 0, 0),
+        ..teistro::YogaRules::default()
+    };
+    for graha in SEVEN {
+        let how = sdk.chart().strength(&annual, graha).unwrap();
+        assert_eq!(how.graha, graha);
+        // Every planet is exactly one of the three.
+        let verdicts = [how.is_strong(), how.is_middling(), how.is_weak()];
+        assert_eq!(verdicts.iter().filter(|is| **is).count(), 1, "{graha:?}");
+        // Strong is any clause; the floors read under travel with it.
+        assert_eq!(
+            how.is_strong(),
+            how.clauses().iter().any(|(_, holds)| *holds)
+        );
+        assert_eq!(
+            (how.weak_below, how.strong_from),
+            (
+                teistro::tajika::YOGA_WEAK_BELOW,
+                teistro::tajika::YOGA_STRONG_FROM
+            )
+        );
+        // Equal floors are the reading with no middle.
+        let flat = sdk
+            .chart()
+            .strength_with_rules(&annual, graha, floors(5, 5))
+            .unwrap();
+        assert!(!flat.is_middling(), "{graha:?}");
+    }
+    // Floors that cross are refused, naming the one to move -- from the
+    // strength and from the yogas alike, and for a matter that asks
+    // nothing about strength.
+    let crossed = floors(10, 5);
+    let refused = sdk
+        .chart()
+        .strength_with_rules(&annual, Graha::Sun, crossed)
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("strong_from"));
+    let refused = sdk
+        .chart()
+        .tajika_yogas_with_rules(&annual, House::try_new(1).unwrap(), crossed)
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("strong_from"));
 }

@@ -40,7 +40,8 @@ use teistro_strength::{
 };
 use teistro_tajika::{
     AnnualSky, Between, DrishtiRules, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya,
-    Pravesha, Qualification, Reading, Varshesha, VarsheshaRules, YearCharts, YearYogas,
+    Pravesha, Qualification, Reading, Strength, Varshesha, VarsheshaRules, YearCharts, YearYogas,
+    YogaRules,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -968,7 +969,7 @@ impl<'a> ChartArea<'a> {
     /// An annual chart that does not place one of the seven, or whose
     /// lagna is not a number.
     pub fn tajika_yogas(self, annual: &Document, house: House) -> Result<YearYogas, Error> {
-        self.tajika_yogas_with_rules(annual, house, DrishtiRules::default())
+        self.tajika_yogas_with_rules(annual, house, YogaRules::default())
     }
 
     /// The sixteen Tajika yogas for one matter, under stated readings.
@@ -984,7 +985,7 @@ impl<'a> ChartArea<'a> {
         self,
         annual: &Document,
         house: House,
-        rules: DrishtiRules,
+        rules: YogaRules,
     ) -> Result<YearYogas, Error> {
         teistro_tajika::year_yogas_with_rules(
             annual.foundation.lagna_deg,
@@ -1015,6 +1016,46 @@ impl<'a> ChartArea<'a> {
     /// does not place it.
     pub fn qualification(self, annual: &Document, graha: Graha) -> Result<Qualification, Error> {
         teistro_tajika::qualification(graha, &Self::sky_of(annual)?)
+    }
+
+    /// How a planet of an annual chart stands to **strong** and **weak**,
+    /// clause by clause.
+    ///
+    /// The source treats its three as alternatives — "exalted, in its own
+    /// house or otherwise strong" — so strength is a disjunction and
+    /// weakness is its denial, with no third state between them.
+    ///
+    /// The floor of the third clause is the one number the source does
+    /// **not** give for the yogas: it floors strength at five Vishwa
+    /// units for the office-bearers when choosing the year lord, and
+    /// says nothing here. That figure is the default and
+    /// [`Chart::strength_with_rules`] moves it; crux C116 records why,
+    /// and `03-design/muntha-measured.md` §11 measures what moving it
+    /// costs.
+    ///
+    /// It needs **no ephemeris**: the chart is already founded.
+    ///
+    /// # Errors
+    ///
+    /// A body outside the seven, named `graha`; an annual chart that
+    /// does not place it.
+    pub fn strength(self, annual: &Document, graha: Graha) -> Result<Strength, Error> {
+        teistro_tajika::strength(graha, &Self::sky_of(annual)?)
+    }
+
+    /// [`Chart::strength`] with the floor between strong and weak chosen.
+    ///
+    /// # Errors
+    ///
+    /// A body outside the seven, named `graha`; an annual chart that
+    /// does not place it.
+    pub fn strength_with_rules(
+        self,
+        annual: &Document,
+        graha: Graha,
+        rules: YogaRules,
+    ) -> Result<Strength, Error> {
+        teistro_tajika::strength_with_rules(graha, &Self::sky_of(annual)?, rules)
     }
 
     /// Where the seven stand in a founded chart, which both the strengths

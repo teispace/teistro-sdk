@@ -199,6 +199,22 @@ third planet's reach is **its own** deeptamsha, not the mean it would
 share with each of the pair. The other twelve are named in the type and
 say at every call what they still need.
 
+**Built the same day: yogas 7, 8, 10 and 13.** Manau, Kamboola and
+Khallasara judge an Ithasala the pair already make, and brought the
+source's *unqualified* with them (C114, C115). Dutthottha-Davira is the
+first to turn on *strong* and *weak*, which Charak never floors for the
+yogas.
+
+**A second source for strength.** Dr Shanker Adawal's exposition of
+Tajik Shastra (*Encyclopedia of Vedic Astrology*, ch. III, "The
+Planetary Strengths") grades the Vishwa bala: above 15 *Parakrami*, 10
+to 15 *Poorna Bali*, 5 to 10 *Madhya Bali*, under 5 *Nirbali*. It cites
+no older text. It meets Charak's office-bearer floor at five, which is
+why five is the one strength figure here with two sources behind it,
+and it is the only source read that says where *strong* begins. The
+yogas are read against it (C116): weak is *Nirbali*, strong is *Poorna*
+or better, and *Madhya* is neither.
+
 **Reading the pair rule against the chart found something the table does
 not state.** The **first** house's lord *is* the lagnesha, so a question
 about the native's own self is never one of the fourteen pair judgements
