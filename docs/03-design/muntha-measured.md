@@ -501,3 +501,78 @@ sign's end (the source's "some authorities", `TambiraMover::EitherLord`)
 holds it in **31** matters to the definition's 20. A retrograde karyesha
 is going back, not on, so it enters nothing, and a call without the
 chart's states cannot answer for Tambira at all.
+
+## 14. The sahams, and what each reading moves
+
+A saham is **a − b + c**, carried one sign further when c does not
+fall between b and a counted from b (`03-design/tajika-sahams.md`). The
+source gives forty-one, and each is read here in every chart under its
+readings and under each rival, through `sdk.chart().sahams_with_rules`.
+1094 of the 2159 charts open by day and read the day formulas.
+
+**Two identities hold, and the pass fails if either does not:** a saham
+reading no other moves when no sign is ever added exactly as often as it
+took one, and a saham that reads no house never moves under equal houses
+— Samarthya and Manmatha among them, which read only the lagna's lord.
+The five that read another saham also move with it: with no sign ever
+added they move in 6756 placements to the 5322 in which they took a sign
+themselves, because Punya, Guru and Vidya lose theirs. Over all
+forty-one, 40 628 of 88 519 placements took the sign. The three pairs
+the source gives one formula each — Vidya and Guru, Raja and Pitri,
+Kshama and Kali — agree in every column.
+
+**Counting "between" in whole signs moves 11 790 placements in all
+(13.3%).** That is the reading a widely used program applies; the
+source's own birth-chart Punya refutes it, the Sun, lagna and Moon all
+in Leo. **Equal houses from the lagna put 23.0%** of the placements of
+the five sahams that read a house past the first in another sign than
+Sripati's mid-points do, which the source builds from the lagna and the
+midheaven and prints. This profile's own chalit is Vehlow's, equal
+houses centred on the lagna, which is why the default reads Sripati's
+from the angles and not the chart's chalit: read off the chalit, this
+column was zero. **Roga's second reading** stands in another sign in
+**1957** of 2159 charts.
+
+| saham | took the added sign | another sign, whole signs | another sign, equal houses |
+|---|---:|---:|---:|
+| 1 Punya | 26.7% | 11.9% | no house past the first |
+| 2 Guru | 73.3% | 11.5% | no house past the first |
+| 3 Vidya | 73.3% | 11.5% | no house past the first |
+| 4 Yasha | 50.7% | 21.2% | no house past the first |
+| 5 Mitra | 50.0% | 25.6% | no house past the first |
+| 6 Mahatmya | 43.4% | 22.0% | no house past the first |
+| 7 Asha | 34.8% | 12.2% | no house past the first |
+| 8 Samarthya | 39.1% | 13.0% | no house past the first |
+| 9 Bhratri | 50.5% | 10.7% | no house past the first |
+| 10 Gaurava | 50.5% | 11.9% | no house past the first |
+| 11 Pitri | 27.7% | 11.7% | no house past the first |
+| 12 Raja | 27.7% | 11.7% | no house past the first |
+| 13 Matri | 34.1% | 12.4% | no house past the first |
+| 14 Putra | 50.3% | 12.6% | no house past the first |
+| 15 Jeeva | 49.0% | 10.7% | no house past the first |
+| 16 Roga | 0.0% | 7.8% | no house past the first |
+| 17 Karma | 35.9% | 14.5% | no house past the first |
+| 18 Manmatha | 34.8% | 11.3% | no house past the first |
+| 19 Kali | 45.3% | 12.4% | no house past the first |
+| 20 Kshama | 45.3% | 12.4% | no house past the first |
+| 21 Shastra | 50.3% | 12.8% | no house past the first |
+| 22 Bandhu | 52.0% | 12.2% | no house past the first |
+| 23 Mrityu | 50.6% | 11.8% | 13.7% |
+| 24 Deshantara | 69.2% | 8.7% | 33.1% |
+| 25 Artha | 8.6% | 6.9% | 19.5% |
+| 26 Paradara | 50.4% | 16.4% | no house past the first |
+| 27 AnyaKarma | 50.1% | 11.9% | no house past the first |
+| 28 Vanika | 48.0% | 11.3% | no house past the first |
+| 29 KaryaSiddhi | 37.9% | 21.5% | no house past the first |
+| 30 Vivaha | 50.3% | 12.0% | no house past the first |
+| 31 Prasava | 32.2% | 13.2% | no house past the first |
+| 32 Santaapa | 49.2% | 12.4% | 14.0% |
+| 33 Shraddha | 50.2% | 14.4% | no house past the first |
+| 34 Preeti | 52.3% | 17.3% | no house past the first |
+| 35 Jadya | 51.9% | 13.7% | no house past the first |
+| 36 Vyapara | 49.7% | 15.0% | no house past the first |
+| 37 PaneeyaPaata | 49.9% | 12.3% | no house past the first |
+| 38 Shatru | 56.3% | 11.4% | no house past the first |
+| 39 Jalapatha | 45.8% | 12.5% | no house past the first |
+| 40 Bandhana | 50.1% | 21.6% | no house past the first |
+| 41 Labha | 84.4% | 8.0% | 34.6% |

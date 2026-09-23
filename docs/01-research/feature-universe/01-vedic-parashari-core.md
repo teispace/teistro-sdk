@@ -50,7 +50,7 @@ must be confirmed before they become golden vectors.
 | Yogi, Avayogi, Sahayogi points and lords | Sun+Moon+93°20′ | | partial | JHora, PyJHora | P0 | `points` |
 | sphutas: Trisphuta, Chatussphuta, Panchasphuta, Prana, Deha, Mrityu, Beeja, Kshetra, Sookshma Trisphuta, Tithi, Yoga, Rahu Tithi sphutas | lagna, Moon, Gulika, Sun, other lords | formulas differ by text (Prasna Marga versus Parashara) **verify** | partial | JHora, PyJHora (12) | P1 | `points` |
 | Kunda (JHora) | | | no | JHora | P2 | `points` |
-| sahamas (36 Tajika sahamas) | day/night birth, planets, cusps | day and night formulas; JHora and PyJHora both list 36 | no | JHora, PyJHora | P1 | `tajika` |
+| Tajika sahams (Charak gives 41; PyJHora 36, not a subset) | day/night birth, planets, the lagna and midheaven | day and night formulas; when the sign is added; Sripati or equal house points — built, [`tajika-sahams.md`](../../03-design/tajika-sahams.md) | no | JHora, PyJHora | P1 | `tajika` |
 | 64th navamsa and 22nd drekkana lords, mrityu bhaga, pushkara navamsa and bhaga | positions | 22nd drekkana has 4 definitions (JHora) | partial (mrityu bhaga, pushkara) | JHora, PyJHora | P0 | `points` |
 | Ayudha, Sarpa, Pakshi drekkanas | drekkana tables | | no | JHora | P1 | `points` |
 | Marana Karaka Sthana | body and house | | yes | JHora, PyJHora | P0 | `state` |

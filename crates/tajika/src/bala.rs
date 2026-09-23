@@ -269,7 +269,7 @@ impl AnnualSky {
     }
 
     /// Every longitude is a number, refused by the field that is not.
-    fn check(&self) -> Result<(), Error> {
+    pub(crate) fn check(&self) -> Result<(), Error> {
         for (field, value) in [
             ("sun_deg", self.sun_deg),
             ("moon_deg", self.moon_deg),
