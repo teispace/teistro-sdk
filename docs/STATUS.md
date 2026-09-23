@@ -45,7 +45,9 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-24 (**the Harsha bala is built**, the
+**Last updated:** 2026-09-24 (**a saham's strength is built**, as a
+report of every clause on the source's strong and weak lists and no
+verdict, because three placements in five meet both. Before it, **the Harsha bala is built**, the
 source's four parts of five units, Table VI-1 reproduced cell for cell,
 and Venus's house of joy read from the *Tajika Nilakanthi* itself — the
 5th — where a widely used program reads the 12th, shipped as a named
@@ -3668,10 +3670,12 @@ on pub.dev (checked 2026-09-07).
    the same evaluator, and three readings as rules, measured in
    `muntha-measured.md` §14, and cross to every binding as
    `varsha_json.sahams` and `sahamRules`. The **Harsha bala** is built
-   (2026-09-24, `03-design/tajika-harsha.md`), measured in §15. Left:
-   Kuttha (`03-design/tajika-yogas.md`); the sahams' strength, over the
-   Harsha and Panchavargiya balas, crossing with the Harsha bala and the
-   birth chart's sahams; the year
+   (2026-09-24, `03-design/tajika-harsha.md`), measured in §15, and so
+   is a **saham's strength**, clause by clause
+   (`03-design/tajika-saham-strength.md`, §16). Left: Kuttha
+   (`03-design/tajika-yogas.md`); carrying the Harsha bala, the
+   strength clauses and the birth chart's sahams across the boundary;
+   the year
    lord's two Moon readings that turn on the Ithasala; and the four
    dashas the annual chart unblocks.
 2c. **The shared examples, printed alike.** Measured 2026-09-22 by running
@@ -3712,6 +3716,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-24 | **A saham's strength, as a report.** Charak's ch. XI lists what makes a saham strong (its lord exalted or in its own sign and vargas or a friend's sign; with a friend, a benefic or the year lord; its lord conjoining or aspecting it, or aspecting the lagna) and weak (its lord under five units of Vishwa bala or with no Harsha bala; its lord neither aspecting nor conjoining it; with an enemy or a malefic), then judges its worked sahams in words. **Measured, 61.6% of placements meet both lists**, so a verdict would decide most sahams by a weighting the source never states; `SahamStrength` carries every clause, walked in the source's order by `strong()` and `weak()` from one list of names, with the facts under them — each of the seven's aspect on the saham, its company, its relation to the lord, the lord's Vishwa and Harsha, the Rahu-Ketu axis the forty-sixth year counts. The source's birth Punya comes back end to end with exactly the company it names: the Sun and the Moon, Mercury, Jupiter and Venus. **The chapter's malefics are three**, the Sun among them, where Manau's are two; both are kept, each where its source uses it, and the catalogue's natures are a named rival. Positional friendship, the only one the source defines, makes a saham's companions its lord's enemies whenever the lord sits in its sign; the pass holds that, and that no saham meets neither list, because the two (c) clauses negate each other. "Benefic houses" is the one clause not read: the source does not say which. Next: the crossing, with the Harsha bala and the birth chart's sahams. |
 | 2026-09-24 | **The Harsha bala, and a verse settled a rival.** Charak's ch. VI gives four parts of five units — a planet in its house of joy, in its exaltation or own sign, in a house of its own gender, in a year opening at its own part of the day — and Table VI-1 comes back cell for cell, from the printed longitudes and end to end. The genders are Tajika's, not the catalogue's: Mercury and Saturn are female, "there is no neuter here". **A widely used program disagreed in 105 of 600 black-box charts, every one of them Venus by five units**, and with Venus's house of joy in the 12th it agreed in 600 of 600. The *Tajika Nilakanthi* itself (Saṃjñā Tantra v. 76, read in Gangadhara Mishra's 1976 edition) counts the houses from the Sun as 9, 3, 6, 1, 11, **5**, 12, as the source and the older doctrine of the planets' joys do, so the 5th is the default and `VenusPlace::Twelfth` reproduces the program. **A zero was a rule**: the measured page showed the Sun, Venus and Saturn never holding twenty, and they cannot — each one's joy is a house of the other gender — so the pass now fails both ways on that list, and a test walks every sky to prove it. `finite_longitude` became the one refusal the Tajika readings share. Next: a saham's strength. |
 | 2026-09-23 | **A refusal names the value, not the record.** The strict reader named any value error by its record — `varsha_json.sahamRules` for a bad `houses` word, `settings_json` for a misspelt knob — so a caller learned *which* record and had to find the key. It now reads through `serde_path_to_error` (dtolnay's, MIT/Apache) and names the path under the caller's root, `varsha_json.sahams[0]`, `settings_json.frame.zodiacs`, `theme.content.body`; `strict::deserialize` and `deserialize_str` do the same without the key-for-key check, for records that deny unknown keys themselves, and the settings patch, the rule request, a theme and a settings document now read through them rather than each naming its own root. Four tests that pinned the coarse field now pin the precise one. The limit is serde's and is tested: inside an internally tagged enum the value is buffered, so the name stops at the enum. Written into the API conventions' principle 4. Next: the Harsha bala. |
 | 2026-09-23 | **The sahams cross.** `varsha_json.sahams` is `"all"` or saham keys in the caller's order, and `varsha_json.sahamRules` carries `{addSign, houses, roga}`; each year's `annual_charts` row counts them in `saham_count` and `year_sahams` carries each saham, its longitude, sign, lord, house and whether a sign was added, decoded in Node, Python and Dart and held equal by four parity runners under the source's rules and under every rival at once. **The spelling was the finding.** The generated catalogue keys every binding reads back are kebab-case (`karya-siddhi`) and serde wrote the wire in snake case, so a Node caller writing the declared `Saham` type would have been refused — the `noneAspects` trap in another shape; `Saham` now serialises as its catalogue key and the ABI test holds the two equal member for member. `matters` and `sahams` share one reader, `Asked<T>`, and the ABI tests' three copies of one chart request became one helper. A value error inside a rule record still names only the record (`varsha_json.sahamRules`), as `yogas` does; naming the path to the value is SDK-wide and its own unit. Next: that, then the Harsha bala. |

@@ -41,8 +41,8 @@ use teistro_strength::{
 use teistro_tajika::{
     Affliction, AnnualSky, AnnualStates, Between, DrishtiRules, Harsha, HarshaRules, Muntha,
     MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN,
-    Saham, SahamFormula, SahamPlace, SahamReading, SahamRules, SahamSky, Strength, Varshesha,
-    VarsheshaRules, YearCharts, YearYogas, YogaRules,
+    Saham, SahamFormula, SahamPlace, SahamReading, SahamRules, SahamSky, SahamStrength,
+    SahamStrengthRules, Strength, Varshesha, VarsheshaRules, YearCharts, YearYogas, YogaRules,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -1157,13 +1157,59 @@ impl<'a> ChartArea<'a> {
             self.context.delta_t(),
             self.context.settings().houses.polar_policy,
         )?;
-        Ok(SahamSky::new(
+        let sky = SahamSky::new(
             Self::sky_of(chart)?,
             foundation.lagna_deg,
             angles.midheaven_deg,
             foundation.day.part.is_daylight(),
         )
-        .with_chalit(foundation.chalit.madhya))
+        .with_chalit(foundation.chalit.madhya);
+        // The nodes only feed a saham's strength, which reads whether a
+        // saham stands in their axis; a chart that does not place Rahu
+        // leaves that fact unread rather than guessed.
+        Ok(match foundation.graha(Graha::Rahu) {
+            Some(rahu) => sky.with_rahu(rahu.longitude_deg),
+            None => sky,
+        })
+    }
+
+    /// A saham's **strength**, clause by clause: every clause of the
+    /// source's strong and weak lists, named and evaluated, with the facts
+    /// they were read from — and **no verdict**, since the source never
+    /// scores a saham (`03-design/tajika-saham-strength.md`).
+    ///
+    /// `year_lord` is the annual chart's lord of the year, from
+    /// [`ChartArea::varshesha`], or `None` for a birth chart, which has
+    /// none. It needs **no ephemeris**.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::sahams`]; a year lord outside the seven, named
+    /// `year_lord`.
+    pub fn saham_strength(
+        self,
+        chart: &Document,
+        which: &[Saham],
+        year_lord: Option<Graha>,
+    ) -> Result<Vec<SahamStrength>, Error> {
+        self.saham_strength_with_rules(chart, which, year_lord, SahamStrengthRules::default())
+    }
+
+    /// A saham's strength under the readings you name: the chapter's or
+    /// the catalogue's natures, positional or natural friendship, the
+    /// Vishwa floor, and the sahams' and the Harsha bala's own rules.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::saham_strength`].
+    pub fn saham_strength_with_rules(
+        self,
+        chart: &Document,
+        which: &[Saham],
+        year_lord: Option<Graha>,
+        rules: SahamStrengthRules,
+    ) -> Result<Vec<SahamStrength>, Error> {
+        teistro_tajika::saham_strength(&self.saham_sky_of(chart)?, which, year_lord, rules)
     }
 
     /// Which of an annual chart's seven are **retrograde** and which

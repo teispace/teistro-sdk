@@ -610,3 +610,44 @@ and their twenties are zeros by the rule rather than by chance.
 | Jupiter | 18.8% | 39.7% | 30.3% | 9.9% | 1.3% |
 | Venus | 18.6% | 38.7% | 34.0% | 8.7% | 0.0% |
 | Saturn | 15.4% | 42.8% | 34.7% | 7.1% | 0.0% |
+
+## 16. A saham's strength
+
+The source lists what makes a saham strong and what makes it weak, and
+judges its worked sahams in words, never by a score
+(`03-design/tajika-saham-strength.md`). Every one of the forty-one is
+read in every chart through `sdk.chart().saham_strength`, under the
+year's own lord.
+
+**The two lists are not two verdicts.** Of 88 519 placements, 32 209
+meet a strong clause and no weak one, 1805 a weak clause and no strong
+one, and **54 505 meet clauses on both lists** (61.6%). A score would
+have to weigh one list against the other, which is a rule the source
+does not state; the report gives the clauses. **None meets neither, and
+the pass fails if one does**: the strong list's "its lord aspects or
+conjoins it" and the weak list's "neither aspects nor conjoins it" are
+each other's negation, so every saham meets one of them.
+
+**Under positional friendship a saham whose lord conjoins it never has a
+friend for company**, since two planets in one sign are enemies there,
+and the pass fails if one does.
+
+| list | clause | holds |
+|---|---|---:|
+| strong | its lord is exalted | 7.9% |
+| strong | its lord is in its own sign | 15.4% |
+| strong | its lord is in its own Hudda | 16.8% |
+| strong | its lord is in its own Drekkana | 13.9% |
+| strong | its lord is in its own Navamsha | 15.4% |
+| strong | its lord is in a friend's sign | 28.5% |
+| strong | it is with a friend of its lord | 12.7% |
+| strong | it is with a natural benefic | 28.9% |
+| strong | it is with the year lord | 8.9% |
+| strong | its lord conjoins it | 8.6% |
+| strong | its lord aspects it | 67.9% |
+| strong | its lord aspects the lagna | 66.8% |
+| weak | its lord is under the Panchavargiya floor | 1.1% |
+| weak | its lord has no Harsha bala | 18.8% |
+| weak | its lord neither aspects nor conjoins it | 32.1% |
+| weak | it is with an enemy of its lord | 13.0% |
+| weak | it is with a natural malefic | 23.9% |

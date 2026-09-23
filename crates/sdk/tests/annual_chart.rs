@@ -889,3 +889,61 @@ fn the_sources_harsha_bala_reproduces_end_to_end() {
         }
     }
 }
+
+/// A saham's strength, end to end, as the source judges its worked
+/// sahams: the birth Punya "associated with the lord of the Saham (i.e.,
+/// the Sun) and with all the natural benefics (viz., the Moon, Mercury,
+/// Jupiter and Venus)", and the forty-first year's "associated with its
+/// own lord as well as two benefics, Mercury and Venus", its lord the
+/// year lord.
+#[test]
+fn the_sources_saham_strength_reproduces_end_to_end() {
+    use teistro::{Saham, SahamNatures, SahamStrengthRules, VarsheshaRules};
+    let sdk = source_context();
+    let (birth, annual) = source_birth_and_year(&sdk);
+
+    let natal = &sdk
+        .chart()
+        .saham_strength(&birth, &[Saham::Punya], None)
+        .unwrap()[0];
+    // Sun, Moon, Mars, Mercury, Jupiter, Venus, Saturn.
+    assert_eq!(natal.company, [true, true, false, true, true, true, false]);
+    assert!(natal.lord_conjoins && natal.with_benefic);
+    assert_eq!(natal.place.house.get(), 1, "in the native's lagna");
+    assert!(!natal.with_year_lord, "a birth chart has no year lord");
+    assert!(
+        natal.in_node_axis.is_some(),
+        "a founded chart places the nodes"
+    );
+    // Under the catalogue's natures Mercury is no benefic, and the Moon,
+    // Jupiter and Venus still keep the Punya benefic company; the Sun,
+    // a malefic in both readings, is with it either way.
+    let parashari = &sdk
+        .chart()
+        .saham_strength_with_rules(
+            &birth,
+            &[Saham::Punya],
+            None,
+            SahamStrengthRules {
+                natures: SahamNatures::Parashari,
+                ..SahamStrengthRules::default()
+            },
+        )
+        .unwrap()[0];
+    assert_eq!(parashari.company, natal.company);
+    assert!(parashari.with_benefic && parashari.with_malefic);
+
+    let lord = sdk
+        .chart()
+        .varshesha(&birth, &annual, 41, VarsheshaRules::default())
+        .unwrap()
+        .graha;
+    assert_eq!(lord, Graha::Sun);
+    let year = &sdk
+        .chart()
+        .saham_strength(&annual, &[Saham::Punya], Some(lord))
+        .unwrap()[0];
+    assert_eq!(year.company, [true, false, false, true, false, true, false]);
+    assert_eq!(year.place.house.get(), 10);
+    assert!(year.with_year_lord && year.lord_own_sign && year.with_benefic);
+}
