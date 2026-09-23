@@ -152,6 +152,9 @@ pub use teistro_tajika::{
 // The Harsha bala: four places a planet of the annual chart is happy in
 // (`03-design/tajika-harsha.md`).
 pub use teistro_tajika::{Harsha, HarshaGrade, HarshaRules, VenusPlace};
+// A saham's strength, clause by clause, and the readings it is judged under
+// (`03-design/tajika-saham-strength.md`).
+pub use teistro_tajika::{Friendship, SahamNatures, SahamStrength, SahamStrengthRules};
 // Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
 // with the rules it was read under (`03-design/strength-schemes.md`).
 pub use teistro_strength as strength;

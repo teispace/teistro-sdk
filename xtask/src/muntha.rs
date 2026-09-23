@@ -191,6 +191,7 @@ fn page(root: &Path) -> Result<String, String> {
     what_happens_next(&mut out, &swept);
     the_sahams(&mut out, &swept);
     the_harsha(&mut out, &swept);
+    the_strength(&mut out, &swept);
     Ok(fill(&out))
 }
 
@@ -804,6 +805,25 @@ struct Kinds {
     sahams: SahamCounts,
     /// What the Harsha bala makes of every chart.
     harsha: HarshaCounts,
+    /// What a saham's strength makes of every saham of every chart.
+    strength: StrengthCounts,
+}
+
+/// Every saham of every chart, sorted by which of the source's two lists
+/// it meets.
+#[derive(Default)]
+struct StrengthCounts {
+    /// Placements meeting some strong clause and no weak one.
+    strong_only: usize,
+    /// Some weak clause and no strong one.
+    weak_only: usize,
+    /// Clauses on both lists at once.
+    both: usize,
+    /// How often each strong clause holds, in `SahamStrength::strong`
+    /// order.
+    strong: [usize; 12],
+    /// How often each weak clause holds, in `SahamStrength::weak` order.
+    weak: [usize; 5],
 }
 
 /// The Harsha bala of every chart, under the verse's reading and the
@@ -933,8 +953,7 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
                 moon_unqualified: how.is_unqualified(),
             };
             ask_every_house(sdk, &chart, &mut kinds)?;
-            count_sahams(sdk, &annual, &birth.name, &mut kinds.sahams)?;
-            count_harsha(sdk, &annual, &birth.name, &mut kinds.harsha)?;
+            read_the_year(sdk, birth, &annual, year.year, &mut kinds)?;
             for pair in pairs {
                 if !pair.drishti.is_aspect() {
                     continue;
@@ -966,11 +985,38 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
             kinds.charts, kinds.luminary_lagna, kinds.same_lord,
         ));
     }
-    floors_hold(&kinds)?;
-    projections_hold(&kinds)?;
-    sahams_hold(&kinds.sahams)?;
-    harsha_holds(kinds.charts, kinds.sahams.by_day, &kinds.harsha)?;
+    sweep_holds(&kinds)?;
     Ok(kinds)
+}
+
+/// What one year's chart gives the sahams, the Harsha bala and a saham's
+/// strength: the readings that need the year and not only its pairs.
+fn read_the_year(
+    sdk: &Context,
+    birth: &Birth,
+    annual: &Document,
+    year: u16,
+    kinds: &mut Kinds,
+) -> Result<(), String> {
+    count_sahams(sdk, annual, &birth.name, &mut kinds.sahams)?;
+    count_harsha(sdk, annual, &birth.name, &mut kinds.harsha)?;
+    count_strength(
+        sdk,
+        &birth.document,
+        annual,
+        year,
+        &birth.name,
+        &mut kinds.strength,
+    )
+}
+
+/// Every identity the sweep's counts must satisfy, each a failure and not
+/// a sentence.
+fn sweep_holds(kinds: &Kinds) -> Result<(), String> {
+    floors_hold(kinds)?;
+    projections_hold(kinds)?;
+    sahams_hold(&kinds.sahams)?;
+    harsha_holds(kinds.charts, kinds.sahams.by_day, &kinds.harsha)
 }
 
 /// One annual chart, with what the sweep already read of it.
@@ -2454,5 +2500,112 @@ fn the_harsha(out: &mut String, kinds: &Kinds) {
         count(counts.sun_dina_ratri),
         count(counts.moon_dina_ratri),
         listed(&NEVER_TWENTY.map(|graha| format!("{graha:?}"))),
+    );
+}
+
+/// Every saham of one chart, read for its strength under the year's own
+/// lord, and sorted by the lists it meets.
+///
+/// Refused if a saham whose lord conjoins it has a friend for company
+/// under positional friendship: two planets in one sign are enemies
+/// there, which is the design page's claim and is held here.
+fn count_strength(
+    sdk: &Context,
+    birth: &Document,
+    annual: &Document,
+    year: u16,
+    name: &str,
+    counts: &mut StrengthCounts,
+) -> Result<(), String> {
+    let lord = sdk
+        .chart()
+        .varshesha(birth, annual, year, teistro::VarsheshaRules::default())
+        .map_err(|why| format!("{name}: its year lord: {why}"))?
+        .graha;
+    let read = sdk
+        .chart()
+        .saham_strength(annual, &Saham::ALL, Some(lord))
+        .map_err(|why| format!("{name}: its sahams' strength: {why}"))?;
+    for one in &read {
+        if one.lord_conjoins && one.with_friend {
+            return Err(format!(
+                "{name}: {:?}'s lord conjoins it and a friend keeps it company, \
+                 which positional friendship forbids",
+                one.saham
+            ));
+        }
+        let strong = one.strong();
+        let weak = one.weak();
+        for (slot, (_, holds)) in counts.strong.iter_mut().zip(strong) {
+            *slot += usize::from(holds);
+        }
+        for (slot, (_, holds)) in counts.weak.iter_mut().zip(weak) {
+            *slot += usize::from(holds);
+        }
+        match (
+            strong.iter().any(|(_, holds)| *holds),
+            weak.iter().any(|(_, holds)| *holds),
+        ) {
+            (true, false) => counts.strong_only += 1,
+            (false, true) => counts.weak_only += 1,
+            (true, true) => counts.both += 1,
+            // Strong (c), "its lord aspects or conjoins it", and weak (c),
+            // "neither aspects nor conjoins it", are each other's
+            // negation, so every saham meets one list: a saham meeting
+            // neither is a broken walker, not a finding.
+            (false, false) => {
+                return Err(format!(
+                    "{name}: {:?} meets neither list, which the two (c) clauses forbid",
+                    one.saham
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn the_strength(out: &mut String, kinds: &Kinds) {
+    let counts = &kinds.strength;
+    let placed = counts.strong_only + counts.weak_only + counts.both;
+    let mut rows = String::new();
+    // The names are the walker's own, never typed out here, so a clause
+    // renamed renames its row.
+    for (name, held) in teistro::SahamStrength::STRONG_CLAUSES
+        .iter()
+        .zip(&counts.strong)
+    {
+        let _ = writeln!(rows, "| strong | {name} | {} |", share(*held, placed));
+    }
+    for (name, held) in teistro::SahamStrength::WEAK_CLAUSES
+        .iter()
+        .zip(&counts.weak)
+    {
+        let _ = writeln!(rows, "| weak | {name} | {} |", share(*held, placed));
+    }
+    let _ = write!(
+        out,
+        "\n## 16. A saham's strength\n\n\
+         The source lists what makes a saham strong and what makes it weak, \
+         and judges its worked sahams in words, never by a score \
+         (`03-design/tajika-saham-strength.md`). Every one of the forty-one \
+         is read in every chart through `sdk.chart().saham_strength`, under \
+         the year's own lord.\n\n\
+         **The two lists are not two verdicts.** Of {} placements, {} meet a \
+         strong clause and no weak one, {} a weak clause and no strong one, \
+         and **{} meet clauses on both lists** ({}). A score would have to \
+         weigh one list against the other, which is a rule the source does \
+         not state; the report gives the clauses. **None meets neither, and \
+         the pass fails if one does**: the strong list's \"its lord aspects \
+         or conjoins it\" and the weak list's \"neither aspects nor conjoins \
+         it\" are each other's negation, so every saham meets one of them.\n\n\
+         **Under positional friendship a saham whose lord conjoins it never \
+         has a friend for company**, since two planets in one sign are \
+         enemies there, and the pass fails if one does.\n\n\
+         | list | clause | holds |\n|---|---|---:|\n{rows}",
+        count(placed),
+        count(counts.strong_only),
+        count(counts.weak_only),
+        count(counts.both),
+        share(counts.both, placed),
     );
 }

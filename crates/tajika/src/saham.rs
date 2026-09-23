@@ -208,6 +208,18 @@ impl Saham {
         self as usize
     }
 
+    /// Whether this is one of the four the source says are best **weak**,
+    /// "according to some": Shatru, Roga, Kali and Mrityu — the sahams of
+    /// enemies, disease, strife and death, "considered best when in
+    /// debility".
+    #[must_use]
+    pub const fn best_weak(self) -> bool {
+        matches!(
+            self,
+            Saham::Shatru | Saham::Roga | Saham::Kali | Saham::Mrityu
+        )
+    }
+
     /// The formula the source gives it, under the rules' reading of
     /// Roga.
     ///
@@ -509,6 +521,10 @@ pub struct SahamSky {
     pub chalit_deg: Option<[f64; 12]>,
     /// Whether the chart was cast between sunrise and sunset.
     pub by_day: bool,
+    /// Rahu, degrees, when the chart places the nodes: what a saham's
+    /// strength reads the Rahu-Ketu axis from, and nothing else.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rahu_deg: Option<f64>,
 }
 
 impl SahamSky {
@@ -522,6 +538,7 @@ impl SahamSky {
             midheaven_deg,
             chalit_deg: None,
             by_day,
+            rahu_deg: None,
         }
     }
 
@@ -533,8 +550,18 @@ impl SahamSky {
         self
     }
 
-    fn check(&self) -> Result<(), Error> {
+    /// The same chart, carrying Rahu for a saham's strength.
+    #[must_use]
+    pub const fn with_rahu(mut self, rahu_deg: f64) -> SahamSky {
+        self.rahu_deg = Some(rahu_deg);
+        self
+    }
+
+    pub(crate) fn check(&self) -> Result<(), Error> {
         self.sky.check()?;
+        if let Some(rahu) = self.rahu_deg {
+            finite_longitude("rahu_deg", rahu)?;
+        }
         for (field, value) in [
             ("lagna_deg", self.lagna_deg),
             ("midheaven_deg", self.midheaven_deg),
