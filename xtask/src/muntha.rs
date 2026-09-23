@@ -24,12 +24,12 @@ use std::path::Path;
 use teistro::House;
 use teistro::catalogue::{Graha, Rashi};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::tajika::{MOST_YEARS, MunthaDegree, Reading, YearYoga, Yoga};
+use teistro::tajika::{MOST_YEARS, MunthaDegree, Qualification, Reading, YearYoga, Yoga};
 use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
 
 use crate::births::{Birth, CHARTS, births};
 use crate::generated::{Output, check, write};
-use crate::measure::{Claim, capitalised, count, fill, listed, plural, spelled, table};
+use crate::measure::{Claim, capitalised, count, fill, listed, plural, spelled, table, times};
 
 const PAGE: &str = "docs/03-design/muntha-measured.md";
 
@@ -691,6 +691,16 @@ struct Kinds {
     same_lord: usize,
     /// How often each of the sixteen held, in `YearYoga::ALL` order.
     yogas: [usize; 16],
+    /// How often each clause of the source's `unqualified` held of the
+    /// Moon, in the order the definition states them: exalted,
+    /// debilitated, aspected, own Hudda, own Drekkana, own Navamsha.
+    ///
+    /// Khallasara needs every one of them false. Counting the clauses
+    /// rather than the verdict is what turns "it never holds" from a
+    /// shrug into a reason.
+    moon_clauses: [usize; 6],
+    /// Charts in which the Moon was unqualified on every clause.
+    moon_unqualified: usize,
     /// Charts whose lagna is ruled by a luminary, which rules one sign.
     ///
     /// The same-lord count has an identity to satisfy: every chart
@@ -742,6 +752,22 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
                 .map_err(|why| format!("{}: its pairs: {why}", birth.name))?;
             kinds.charts += 1;
             kinds.pairs += pairs.len();
+            let how = sdk
+                .chart()
+                .qualification(&annual, Graha::Moon)
+                .map_err(|why| format!("{}: the Moon's qualification: {why}", birth.name))?;
+            // Walked by name, never by index: a clause reordered in the
+            // struct would otherwise relabel a row of the page silently.
+            for (at, (_, holds)) in how.clauses().into_iter().enumerate() {
+                if holds {
+                    if let Some(slot) = kinds.moon_clauses.get_mut(at) {
+                        *slot += 1;
+                    }
+                }
+            }
+            if how.is_unqualified() {
+                kinds.moon_unqualified += 1;
+            }
             let lagna = Rashi::from_id(sign_of(annual.foundation.lagna_deg))
                 .ok_or_else(|| format!("{}: a lagna in no sign", birth.name))?;
             if matches!(lagna.attributes().lord, Graha::Sun | Graha::Moon) {
@@ -1025,6 +1051,99 @@ fn the_sixteen(out: &mut String, kinds: &Kinds) {
         count(kinds.luminary_lagna),
         count(2 * kinds.charts - kinds.luminary_lagna),
     );
+    why_khallasara_is_rare(out, kinds);
+}
+
+/// Why an unqualified Moon is so nearly unreachable, clause by clause.
+///
+/// Split out of [`the_sixteen`] because it is a finding of its own and
+/// not a paragraph of that one: the definition it measures is the
+/// source's, the rarity is structural rather than a fact about this
+/// corpus, and the reasoning belongs beside the count it explains.
+fn why_khallasara_is_rare(out: &mut String, kinds: &Kinds) {
+    let _ = write!(
+        out,
+        "### Why Khallasara is so rare\n\n\
+         Khallasara and Gairi-Kamboola both need an **unqualified** Moon, \
+         which the source defines outright: neither exalted nor \
+         debilitated, nor aspected or associated, nor in its own Hudda, \
+         Drekkana or Navamsha. Every clause must be false at once, and \
+         over the {} annual charts the Moon managed it **{}**, one chart \
+         in {}. The \
+         clause that does the disqualifying is not the interesting one \
+         to guess at, so it is counted:\n\n\
+         | clause | charts |\n\
+         |---|---:|\n\
+         {}\n\n\
+         **The last row is a zero that had to be explained rather than \
+         printed.** The Hudda is the Egyptian terms, which divide every \
+         sign among Mars, Mercury, Jupiter, Venus and Saturn and give \
+         the luminaries nothing — so for the one planet this definition \
+         is ever applied to, that clause is **vacuous**. It is kept in \
+         the code because the source states it and a reader comparing \
+         the two should find all six.\n\n\
+         **The first row is almost the whole of it**, and it is \
+         structural rather than accidental: Tajika counts **eight of the \
+         twelve** sign relations as an aspect — only the 2nd, 6th, 8th \
+         and 12th are nothing at all — so a Moon that nothing aspects \
+         needs all six of the others inside those four houses at once. \
+         The source's own worked chart cannot do it at any degree of the \
+         Moon's circle, because three of its planets share Leo and two \
+         more sit in the signs either side, a spacing no single sign is \
+         neutral to. That is a fact about the definition and not about \
+         this corpus, and it is why C115 asks whether *aspected* here is \
+         narrower than *by any of the seven*.\n",
+        count(kinds.charts),
+        times(kinds.moon_unqualified),
+        count(
+            kinds
+                .charts
+                .checked_div(kinds.moon_unqualified)
+                .unwrap_or(kinds.charts),
+        ),
+        clause_rows(kinds),
+    );
+}
+
+/// One row per clause of the source's definition, named by the
+/// definition itself and ordered as it states them.
+///
+/// The names come from `Qualification::clauses`, so a clause renamed or
+/// reordered in the type moves this table with it rather than leaving a
+/// row labelled with the wrong count.
+fn clause_rows(kinds: &Kinds) -> String {
+    let empty = Qualification {
+        graha: Graha::Moon,
+        exalted: false,
+        debilitated: false,
+        aspected: false,
+        own_hudda: false,
+        own_drekkana: false,
+        own_navamsha: false,
+    };
+    let mut rows: Vec<(usize, &'static str, usize)> = empty
+        .clauses()
+        .into_iter()
+        .enumerate()
+        .map(|(at, (name, _))| (at, name, kinds.moon_clauses.get(at).copied().unwrap_or(0)))
+        .collect();
+    // Commonest first: the point of the table is which clause does the
+    // disqualifying, and that reads off the top rather than out of the
+    // definition's own order.
+    rows.sort_by(|a, b| b.2.cmp(&a.2).then(a.0.cmp(&b.0)));
+    rows.into_iter()
+        .map(|(_, name, held)| {
+            // A zero that is structural says so, because a bare zero and
+            // "this can never happen" are different facts.
+            let note = if held == 0 && name.contains("Hudda") {
+                " — *and never can be*"
+            } else {
+                ""
+            };
+            format!("| {name} | {}{note} |", count(held))
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 /// A count as a share of a total, to one place; `--` where the total is

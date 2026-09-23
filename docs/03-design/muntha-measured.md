@@ -267,10 +267,10 @@ Every chart above is asked all twelve, which is **25 908** questions.
 | **Ishrafa** | built | 3050 | 11.8% |
 | **Nakta** | built | 637 | 2.5% |
 | **Yamaya** | built | 413 | 1.6% |
-| Manau | *awaiting* | -- | a third planet's own aspects on the pair, and Tajika's malefics |
-| Kamboola | *awaiting* | -- | a third planet's own aspects on the pair, and Tajika's malefics |
+| **Manau** | built | 1956 | 7.5% |
+| **Kamboola** | built | 1094 | 4.2% |
 | GairiKamboola | *awaiting* | -- | an unqualified Moon, and where it will stand in the next sign: the only one of the sixteen that asks what happens next |
-| Khallasara | *awaiting* | -- | a third planet's own aspects on the pair, and Tajika's malefics |
+| **Khallasara** | built | 2 | 0.0% |
 | Rudda | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
 | DuhphaliKuttha | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
 | DutthotthaDavira | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
@@ -278,10 +278,10 @@ Every chart above is asked all twelve, which is **25 908** questions.
 | Kuttha | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
 | Durapha | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
 
-**Four of the sixteen are built** and the other twelve are listed at
+**Seven of the sixteen are built** and the other nine are listed at
 every call rather than left out of the answer, because *did not hold*
 and *cannot be told* are different statements. `YearYogas::holds`
-answers `None` for those twelve, never `false`.
+answers `None` for those nine, never `false`.
 
 ### The first house is never a pair
 
@@ -295,9 +295,39 @@ Cancer or Leo, where the luminaries rule one each. The answer reports it
 as `same_lord` rather than returning an empty list that would read as
 *nothing holds*.
 
-The count decomposes, and `cargo xtask muntha` **fails** if it ever
-stops decomposing, because a printed figure nobody can check is the part
-of a generated page that rots. Every one of the 2159 charts contributes
-its first house, and every chart but the 419 whose lagna a **luminary**
-rules contributes one more, since the Sun rules Leo alone and the Moon
-Cancer alone: 2159 + (2159 − 419) = **3899**.
+The count decomposes, and `cargo xtask muntha` **fails** if it ever stops decomposing, because a printed figure nobody can check is the part of a generated page that rots. Every one of the 2159 charts contributes its first house, and every chart but the 419 whose lagna a **luminary** rules contributes one more, since the Sun rules Leo alone and the Moon Cancer alone: 2159 + (2159 − 419) = **3899**.
+### Why Khallasara is so rare
+
+Khallasara and Gairi-Kamboola both need an **unqualified** Moon, which
+the source defines outright: neither exalted nor debilitated, nor
+aspected or associated, nor in its own Hudda, Drekkana or Navamsha.
+Every clause must be false at once, and over the 2159 annual charts the
+Moon managed it **once**, one chart in 2159. The clause that does the
+disqualifying is not the interesting one to guess at, so it is counted:
+
+| clause | charts |
+|---|---:|
+| aspected or associated by another of the seven | 2155 |
+| in a Drekkana it rules | 291 |
+| debilitated | 179 |
+| exalted | 168 |
+| in a Navamsha it rules | 164 |
+| in a Hudda it rules | 0 — *and never can be* |
+
+**The last row is a zero that had to be explained rather than printed.**
+The Hudda is the Egyptian terms, which divide every sign among Mars,
+Mercury, Jupiter, Venus and Saturn and give the luminaries nothing —
+so for the one planet this definition is ever applied to, that clause is
+**vacuous**. It is kept in the code because the source states it and a
+reader comparing the two should find all six.
+
+**The first row is almost the whole of it**, and it is structural rather
+than accidental: Tajika counts **eight of the twelve** sign relations as
+an aspect — only the 2nd, 6th, 8th and 12th are nothing at all — so
+a Moon that nothing aspects needs all six of the others inside those
+four houses at once. The source's own worked chart cannot do it at any
+degree of the Moon's circle, because three of its planets share Leo and
+two more sit in the signs either side, a spacing no single sign is
+neutral to. That is a fact about the definition and not about this
+corpus, and it is why C115 asks whether *aspected* here is narrower than
+*by any of the seven*.

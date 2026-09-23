@@ -1,8 +1,8 @@
 # The sixteen Tajika yogas
 
-Status: **four of the sixteen built**, 2026-09-23; the other twelve
-designed and *named*, which is not the same as absent. Steps 1 and 2 of
-the order of work below landed the same day. Written after reading the
+Status: **seven of the sixteen built**, 2026-09-23; the other nine
+designed and *named*, which is not the same as absent. Steps 1, 2 and
+the first half of 3 landed the same day. Written after reading the
 source's Table X-3 off the page and before writing any of it, as every
 module since Phase 4 has been. The definitions are in
 [`01-research/feature-universe/07-tajika-varshaphala.md`](../01-research/feature-universe/07-tajika-varshaphala.md),
@@ -132,6 +132,117 @@ sitting symmetrically either side of an exact aspect. A reading on which
 one side of exactness is immediate fulfilment and the other side is
 nothing would have to explain that asymmetry, and the book does not.
 
+## Three judgements upon an Ithasala
+
+Manau, Kamboola and Khallasara are not alternatives to the Ithasala —
+they are things said **about** one, so all three are asked only where a
+pair already makes it, and all three are reported **beside** it rather
+than instead of it. Manau says the Ithasala was destroyed; the Ithasala
+is still what was destroyed, and an answer showing only the verdict
+could not say what happened.
+
+Two readings the table's wording forces, both recorded rather than
+assumed:
+
+- **"Conjunct or inimically aspecting" is one condition, not two.** A
+  planet sharing a sign stands at house 1, and house 1 is
+  `Drishti::Inimical` in Tajika. The same collapse applies to
+  Khallasara's "neither conjunct with nor aspecting either".
+- **The third planet must be a third planet.** Mars is a malefic and is
+  also the lagnesha under Scorpio or Aries; a malefic that is itself one
+  of the pair does not destroy its own Ithasala. A test asserts it,
+  because the rule as printed does not say so and the arithmetic would
+  happily say yes.
+
+### Tajika's malefics are two (C114)
+
+`MALEFICS` is `[Mars, Saturn]`, named in this module and deliberately
+**not** read from the catalogue's `Nature::Malefic`, which follows the
+Parashari reckoning and carries the Sun, Rahu and Ketu as well. Reading
+the catalogue would have silently added the Sun to every Manau. A test
+asserts the Sun is absent so the two lists cannot quietly converge.
+
+### "Unqualified", and what measuring it found (C115)
+
+The source defines the word outright, and every clause is computable:
+neither exalted nor debilitated, nor aspected or associated, nor in its
+own Hudda, Drekkana or Navamsha. `Qualification` carries **all six
+clauses separately** rather than collapsing them, so a reader asking why
+a Khallasara did not hold gets the clause — and so a pass can count
+which one does the disqualifying.
+
+Counting it was worth doing. Over 2 159 annual charts the Moon was
+unqualified **once**, and Khallasara held 2 times in 25 908 matters.
+The reason is structural: Tajika counts **eight of the twelve** sign
+relations as an aspect, so a planet nothing aspects needs all six others
+inside the four neutral houses at once. The source's own worked chart
+cannot manage it at any degree of the Moon's circle.
+
+A yoga a text bothers to name and define is unlikely to be that rare, so
+the literal reading is probably too wide — but *probably* is not a
+citation, so it ships literal and C115 records the doubt with the number
+attached.
+
+And one clause is **vacuous**: the Hudda is the Egyptian terms, which
+divide every sign among Mars, Mercury, Jupiter, Venus and Saturn and
+give the luminaries nothing. For the one planet this definition is ever
+applied to, `own_hudda` can never be true. It stays in the code because
+the source states it and a reader comparing the two should find all six;
+the measured zero is explained on the page rather than left looking like
+missing data.
+
+## What the six strength yogas will need, and why they are not here
+
+Rudda, Duhphali-kuttha, Dutthottha-Davira, Tambira, Kuttha and Durapha
+were surveyed before this unit closed rather than after, because two of
+their needs are **structural** and one is a crux — and finding that out
+by starting to write them would have been the expensive way.
+
+| they need | where it is |
+|---|---|
+| exalted, debilitated, own sign | the catalogue, already read by `Qualification` |
+| the trika houses; kendras and panapharas | `House::is_trika`, `is_kendra`, `is_panaphara` — put there when `House` moved to `core` |
+| malefic influence | `MALEFICS` and the sign aspect, built |
+| **retrograde** | the founded chart's graha rows — **not** in `AnnualSky`, which carries longitudes and nothing else |
+| **combust** | `teistro_state::burn::combustion`, which `teistro-tajika` does not depend on and should not |
+| **"strong" and "weak"** | the Vishwa bala, built — but the source floors it at five units **for the year lord only** and says nothing for the yogas |
+| benefic influence | Tajika's own benefics, which the table does not enumerate as it enumerates the malefics |
+
+### The input shape this decides
+
+`AnnualSky` must **not** grow retrograde and combustion. It is the input
+to `panchavargiya` and `drishtis` as well, and neither needs them;
+widening it would make every caller supply data for a question they are
+not asking.
+
+Instead a second input, filled by the façade from the annual `Document`
+and the state crate, exactly as `YearCharts` is filled from two
+documents for the office-bearers:
+
+```rust
+pub struct AnnualStates { retrograde: [bool; 7], combust: [bool; 7] }
+```
+
+Combustion already takes retrograde as an argument, so the two belong in
+one value rather than two. `teistro-tajika` stays free of a
+`teistro-state` dependency; the SDK depends on both already.
+
+**And the honesty mechanism extends for free.** A caller with only
+longitudes genuinely cannot answer Rudda, so the low-level
+`year_yogas` will take the states as an option and list the six under
+`unanswered` when they are absent — the same distinction between *did
+not hold* and *cannot be told*, now varying with what the caller
+supplied rather than only with what the build computes.
+
+### The crux that has to be settled first
+
+"Strong" and "weak" appear in five of the six, and the source gives a
+floor — five Vishwa units — **only** for the year lord. Using that floor
+for the yogas is a guess wearing a number. It wants registering and
+measuring (how many pairs change side at five units against four or six)
+before any of the five ship, which is the shape C110's degree took and
+the reason that correction is trustworthy.
+
 ## The order of work
 
 1. ~~The two corrections above, and `Poorna`, in `drishti`~~ — **done**,
@@ -145,9 +256,13 @@ nothing would have to explain that asymmetry, and the book does not.
    with each of the pair, so the orb was lifted out of `between` into a
    crate-private `between_within` rather than the four bands being
    written a second time.
-3. The ones that need the strength and the chart's dignities: Manau,
-   Kamboola, Khallasara, Rudda, Duhphali-kuttha, Dutthottha-Davira,
-   Tambira, Kuttha, Durapha.
+3. The ones that need the strength and the chart's dignities. **Manau,
+   Kamboola and Khallasara are done** (2026-09-23) — they need a third
+   planet's aspects on the pair rather than a strength, so they came
+   first and brought `unqualified` with them. Left: Rudda,
+   Duhphali-kuttha, Dutthottha-Davira, Tambira, Kuttha, Durapha, which
+   all turn on *strong* and *weak*, and the source floors those only
+   for the year lord.
 4. **Gairi-Kamboola** last: it needs the unqualified Moon *and* a
    projection of where the Moon will be in the next sign, which is the
    only one of the sixteen that asks what happens next rather than what
@@ -161,8 +276,8 @@ nothing would have to explain that asymmetry, and the book does not.
 |---|---|
 | **decided** | that the module takes a matter and answers for it, because the sources define fourteen of sixteen against a karyesha; that the two chart-level yogas answer regardless |
 | **not decided** | what "strong" and "weak" mean for a yoga, where the source gives a floor only for the year lord; whether "benefic influence" means Tajika's own benefics or the chart's readings; the two cruxes above |
-| **built** | Ithasala, Ishrafa, Nakta and Yamaya, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**; `YearYoga::ALL` names all sixteen and `YearYoga::awaiting` says what each of the other twelve still needs, matched exhaustively so a yoga cannot be added without a decision |
-| **not built** | twelve of the sixteen, each naming its blocker at every call. They do **not** cross the boundary yet: the sixteen answer a *matter*, so crossing them means deciding which matters a caller asks for — the same shape as the residence decision `varsha_json.place`, and its own unit |
+| **built** | Ithasala, Ishrafa, Nakta, Yamaya, **Manau**, **Kamboola** and **Khallasara**, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**; `sdk.chart().qualification` for the source's *unqualified*, every clause carried; `YearYoga::ALL` names all sixteen and `YearYoga::awaiting` says what each of the other nine still needs, matched exhaustively so a yoga cannot be added without a decision |
+| **not built** | nine of the sixteen, each naming its blocker at every call. They do **not** cross the boundary yet: the sixteen answer a *matter*, so crossing them means deciding which matters a caller asks for — the same shape as the residence decision `varsha_json.place`, and its own unit |
 
 ## Why this page exists before the code
 

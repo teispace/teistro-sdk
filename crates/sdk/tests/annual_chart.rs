@@ -480,19 +480,33 @@ fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
         // Twelve of the sixteen are not built, and each carries its
         // reason. A consumer asking about one gets `None` -- not `false`,
         // which would be a claim this build has no right to make.
-        assert_eq!(found.unanswered.len(), 12);
+        assert_eq!(found.unanswered.len(), 9);
         for yoga in &found.unanswered {
             assert!(yoga.awaiting().is_some(), "{yoga:?} says what it needs");
             assert_eq!(found.holds(*yoga), None);
         }
-        // The four that are built always answer, true or false.
+        // The seven that are built always answer, true or false.
         for yoga in [
             teistro::YearYoga::Ithasala,
             teistro::YearYoga::Ishrafa,
             teistro::YearYoga::Nakta,
             teistro::YearYoga::Yamaya,
+            teistro::YearYoga::Manau,
+            teistro::YearYoga::Kamboola,
+            teistro::YearYoga::Khallasara,
         ] {
             assert!(found.holds(yoga).is_some(), "{yoga:?} is built");
+        }
+        // Manau, Kamboola and Khallasara are judgements **about** an
+        // Ithasala, so none of them can hold without one.
+        if found.holds(teistro::YearYoga::Ithasala) != Some(true) {
+            for yoga in [
+                teistro::YearYoga::Manau,
+                teistro::YearYoga::Kamboola,
+                teistro::YearYoga::Khallasara,
+            ] {
+                assert_eq!(found.holds(yoga), Some(false), "no Ithasala to judge");
+            }
         }
         // The first house is the lagna, so its lord is the lagnesha and
         // there is no pair to judge.
@@ -505,6 +519,22 @@ fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
             assert!(found.held.iter().all(|one| one.through.is_none()));
         }
     }
+
+    // The source's own definition of "unqualified", through the façade:
+    // every clause carried, and the Hudda one structurally false because
+    // the Egyptian terms give the luminaries no degrees at all.
+    let how = sdk.chart().qualification(&annual, Graha::Moon).unwrap();
+    assert_eq!(how.graha, Graha::Moon);
+    assert!(!how.own_hudda, "the Hudda gives the luminaries nothing");
+    assert_eq!(
+        how.is_unqualified(),
+        !how.exalted
+            && !how.debilitated
+            && !how.aspected
+            && !how.own_hudda
+            && !how.own_drekkana
+            && !how.own_navamsha
+    );
 
     // The readings the source leaves open reach here too, through the
     // pair every one of the fourteen is built on.
@@ -519,6 +549,6 @@ fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
             .tajika_yogas_with_rules(&annual, tenth, teistro::DrishtiRules { sub_degree })
             .unwrap();
         assert_eq!(under.house, tenth);
-        assert_eq!(under.unanswered.len(), 12);
+        assert_eq!(under.unanswered.len(), 9);
     }
 }
