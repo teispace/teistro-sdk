@@ -610,8 +610,10 @@ test('every catalogue enum has a complete id table', () => {
   // 1020 since the year lord's `TsVarsheshaChosen`, seven steps of its chain;
   // 1028 since the Tajika aspects: `TsTajikaDrishti`'s five and
   // `TsTajikaYoga`'s three;
-  // 1029 since Table X-3 gave the Ithasala a third kind, `Poorna`.
-  assert.equal(entries, 1029, 'every member of every enum is in a table');
+  // 1029 since Table X-3 gave the Ithasala a third kind, `Poorna`;
+  // 1050 since the sixteen Tajika yogas crossed: `TsYearYoga`'s sixteen and
+  // `TsAffliction`'s five clauses.
+  assert.equal(entries, 1050, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1370,6 +1372,75 @@ test('a chart carries the annual charts its birth opens', () => {
       varsha: { reading: 'sidereal', through: 0 },
     }),
     (error) => error instanceof TeistroError && error.field === 'varsha_json.through',
+  );
+  ctx.dispose();
+});
+
+/**
+ * A year's chart answers the sixteen Tajika yogas for the matters the
+ * request names, in its order, each carrying its question, the lords'
+ * pair and what it could not answer (`03-design/tajika-yogas.md`).
+ */
+test("a year's chart answers the Tajika yogas for the matters asked", () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const years = (varsha) =>
+    ctx.chart.found({ instant: 2447995.4895833335, place, utcOffsetSeconds: 20700, varsha })
+      .praveshas;
+
+  const asked = years({ through: 6, place: 'birth', matters: [7, 1] });
+  for (const one of asked) {
+    const { matters, retrograde, combust } = one.annual;
+    assert.deepEqual(matters.map((matter) => matter.house), [7, 1]);
+    assert.ok([...retrograde, ...combust].every((graha) => graha.startsWith('graha.')));
+    for (const matter of matters) {
+      // The build computes all but Kuttha, and says so rather than
+      // answering false for it.
+      assert.deepEqual(matter.unanswered, ['kuttha']);
+      assert.equal(matter.holds('kuttha'), null);
+      assert.equal(typeof matter.holds('ithasala'), 'boolean');
+      assert.equal(matter.karyesha !== matter.lagnesha, !matter.sameLord);
+      for (const held of matter.held) {
+        // A yoga made by the pair carries the matter's own pair.
+        if (held.between !== null) assert.equal(held.between, matter.between);
+        if (held.legs !== null) assert.equal(held.legs.length, 2);
+        assert.equal(held.afflictions !== null, ['rudda', 'durapha'].includes(held.yoga));
+      }
+      // An Ithasala holds exactly where the pair make one.
+      const pairYoga = matter.between?.yoga ?? null;
+      assert.equal(matter.holds('ithasala'), pairYoga !== null && pairYoga.startsWith('ithasala'));
+    }
+    // The first house's lord is the lagnesha: no pair, and only the two
+    // facts about the chart can hold.
+    const [, first] = matters;
+    assert.ok(first.sameLord);
+    assert.equal(first.between, null);
+    assert.ok(first.held.every((held) => ['ikabala', 'induvara'].includes(held.yoga)));
+  }
+
+  // `'all'` is the twelve, first to twelfth; unasked is none.
+  const every = years({ through: 2, place: 'birth', matters: 'all' });
+  assert.deepEqual(every[0].annual.matters.map((matter) => matter.house), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  assert.deepEqual(years({ through: 2, place: 'birth' })[0].annual.matters, []);
+  // Tambira's "some authorities" can only add.
+  const tambiras = (found) =>
+    found.flatMap((one) => one.annual.matters).filter((matter) => matter.holds('tambira')).length;
+  const either = years({ through: 2, place: 'birth', matters: 'all', yogas: { tambira: 'either_lord' } });
+  assert.ok(tambiras(either) >= tambiras(every));
+
+  // The rule records read in the casing these types declare.
+  years({ through: 2, place: 'birth', varshesha: { noneAspects: 'annual_lagna_lord' } });
+  years({ through: 2, place: 'birth', matters: [10], yogas: { weakBelow: 4 * 3600, strongFrom: 12 * 3600 } });
+
+  // Each refusal names the field written.
+  const refused = (varsha, field) =>
+    assert.throws(() => years(varsha), (error) => error instanceof TeistroError && error.field === field);
+  refused({ through: 2, matters: [7] }, 'varsha_json.matters');
+  refused({ through: 2, place: 'birth', matters: [7, 7] }, 'varsha_json.matters');
+  refused({ through: 2, place: 'birth', matters: [13] }, 'varsha_json.matters');
+  refused(
+    { through: 2, place: 'birth', matters: [7], yogas: { weakBelow: 12 * 3600, strongFrom: 4 * 3600 } },
+    'varsha_json.yogas.strongFrom',
   );
   ctx.dispose();
 });

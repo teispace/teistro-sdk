@@ -5368,6 +5368,120 @@ enum TajikaYoga {
   }
 }
 
+/// One of the sixteen Tajika yogas of the annual chart (K.S. Charak,
+/// Table X-3; `03-design/tajika-yogas.md`), in the table's order.
+///
+/// Mirrors `teistro::YearYoga` through an **exhaustive** match, so a yoga
+/// added there stops this crate compiling rather than crossing as another.
+/// Its ids are also the bit positions of `year_matters.unanswered`.
+enum YearYoga {
+  /// Every planet in a kendra or a panaphara: a fact about the chart.
+  ikabala(0, 'ikabala'),
+  /// Every planet in an apoklima: a fact about the chart.
+  induvara(1, 'induvara'),
+  /// The lagnesha and the karyesha are coming together, in one of the
+  /// three kinds `TsTajikaYoga` enumerates.
+  ithasala(2, 'ithasala'),
+  /// The pair are drawing apart.
+  ishrafa(3, 'ishrafa'),
+  /// The two do not aspect, and a planet faster than both carries the
+  /// light between them: past one, coming to the other.
+  nakta(4, 'nakta'),
+  /// The two do not aspect, and a planet slower than both gathers their
+  /// light: both are coming to it.
+  yamaya(5, 'yamaya'),
+  /// An Ithasala a malefic destroys.
+  manau(6, 'manau'),
+  /// An Ithasala the Moon joins.
+  kamboola(7, 'kamboola'),
+  /// An Ithasala an unqualified Moon completes on entering the next sign.
+  gairiKamboola(8, 'gairi-kamboola'),
+  /// An Ithasala an unqualified Moon negates by standing apart from it.
+  khallasara(9, 'khallasara'),
+  /// An Ithasala where either of the pair is afflicted.
+  rudda(10, 'rudda'),
+  /// An Ithasala where the slower is strong and the faster weak.
+  duhphaliKuttha(11, 'duhphali-kuttha'),
+  /// Both weak, and one in Ithasala with a third, strong planet.
+  dutthotthaDavira(12, 'dutthottha-davira'),
+  /// No aspect and no Ithasala, the karyesha completing one from the
+  /// next sign.
+  tambira(13, 'tambira'),
+  /// Both powerful, well placed and under benefic influence; listed in
+  /// `unanswered` while this build cannot compute it (crux C117).
+  kuttha(14, 'kuttha'),
+  /// Both weak, in the trika houses, combust or retrograde.
+  durapha(15, 'durapha');
+
+  const YearYoga(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static YearYoga byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a YearYoga'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static YearYoga? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// One of the five clauses of the source's **affliction**, which Rudda
+/// and Durapha read. Its ids are the bit positions of
+/// `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.
+enum Affliction {
+  /// Going backwards through the zodiac.
+  retrograde(0, 'retrograde'),
+  /// Burnt by the Sun.
+  combust(1, 'combust'),
+  /// In its sign of debilitation.
+  debilitated(2, 'debilitated'),
+  /// In the 6th, 8th or 12th house from the annual lagna.
+  trika(3, 'trika'),
+  /// Conjunct or inimically aspected by one of Tajika's malefics.
+  underMalefic(4, 'under-malefic');
+
+  const Affliction(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Affliction byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Affliction'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Affliction? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// A time scale of the conversions; the first two ids are the port's.
 enum Scale {
   /// Universal Time (UT1).

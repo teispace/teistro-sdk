@@ -445,6 +445,31 @@ fn the_sources_worked_year_is_read_as_the_source_reads_it() {
     );
 }
 
+/// Every matter at once, through the façade, answers as each asked alone:
+/// the chart's sky and states are read once and shared, never the
+/// answers.
+#[test]
+fn every_matter_at_once_answers_as_each_alone() {
+    let sdk = source_context();
+    let (_birth, annual) = source_birth_and_year(&sdk);
+    let rules = teistro::YogaRules {
+        tambira: teistro::TambiraMover::EitherLord,
+        ..teistro::YogaRules::default()
+    };
+    let every = sdk
+        .chart()
+        .tajika_yogas_many(&annual, &House::ALL, rules)
+        .unwrap();
+    assert_eq!(every.len(), 12);
+    for (found, house) in every.iter().zip(House::ALL) {
+        let alone = sdk
+            .chart()
+            .tajika_yogas_with_rules(&annual, house, rules)
+            .unwrap();
+        assert_eq!(*found, alone, "house {}", house.get());
+    }
+}
+
 /// The sixteen Tajika yogas, asked of the source's own worked year through
 /// the façade — and asked as the sources define them, about a **matter**.
 ///

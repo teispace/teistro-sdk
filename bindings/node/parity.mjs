@@ -516,12 +516,35 @@ for (const chart of charts) {
 // because the point of naming a reading is that a consumer can ask for
 // the one they mean, and a reading that crossed as another would be
 // invisible in a report that only printed the default.
+// Each reading also asks the sixteen yogas a different way, so all three
+// ways cross: every matter under the source's readings, every matter under
+// Tambira's "some authorities", and no matter at all.
+const MATTERS = {
+  sidereal: { matters: 'all' },
+  tropical: { matters: 'all', yogas: { tambira: 'either_lord' } },
+  mean: {},
+};
+const pairSaid = (p) =>
+  `${p.faster}>${p.slower}:${p.drishti}:${p.yoga ?? '-'}:${p.apartDeg.toFixed(6)}`;
+const heldSaid = (h) =>
+  [
+    h.yoga,
+    h.through ?? '-',
+    h.entering ?? '-',
+    h.between === null ? '-' : 'pair',
+    h.legs === null ? '-' : h.legs.map(pairSaid).join('/'),
+    h.afflictions === null
+      ? '-'
+      : [h.afflictions.lagnesha, h.afflictions.karyesha]
+          .map((clauses) => (clauses.length === 0 ? 'none' : clauses.join('+')))
+          .join('/'),
+  ].join(':');
 for (const reading of ['sidereal', 'tropical', 'mean']) {
   const years = geo.chart.foundMany({
     instants: [2460482.5, 2460600.25],
     place,
     utcOffsetSeconds: 20700,
-    varsha: { reading, through: 12, place: 'birth' },
+    varsha: { reading, through: 12, place: 'birth', ...MATTERS[reading] },
   });
   let i = 0;
   for (const chart of years) {
@@ -548,6 +571,14 @@ for (const reading of ['sidereal', 'tropical', 'mean']) {
           .map((p) => `${p.faster}>${p.slower}:${p.drishti}:${p.yoga}:${p.apartDeg.toFixed(6)}`)
           .join(' '),
       );
+      const at = `chart-${i}-varsha-${reading}-${one.year}`;
+      put(`${at}-states`, `R:${one.annual.retrograde.join(',')} C:${one.annual.combust.join(',')}`);
+      for (const m of one.annual.matters) {
+        put(`${at}-matter-${m.house}`, `${m.sign} ${m.lagnesha}>${m.karyesha} ${m.sameLord}`);
+        put(`${at}-matter-${m.house}-pair`, m.between === null ? '-' : pairSaid(m.between));
+        put(`${at}-matter-${m.house}-unanswered`, m.unanswered.join(','));
+        put(`${at}-matter-${m.house}-held`, m.held.map(heldSaid).join(' '));
+      }
       put(
         `chart-${i}-varsha-${reading}-${one.year}-year-claims`,
         lord.claims

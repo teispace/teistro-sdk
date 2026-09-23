@@ -138,9 +138,9 @@ pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths};
 pub use teistro_tajika as tajika;
 pub use teistro_tajika::{
     Affliction, AnnualStates, Bala, Between, Chosen, Claim, Drishti as TajikaDrishti, DrishtiRules,
-    Muntha, MunthaDegree, Natal, Office, OfficeBearers, Panchavargiya, Pravesha, Qualification,
-    Reading as VarshaReading, Relation as TajikaRelation, Strength, SubDegree, TambiraMover,
-    Varshesha, VarsheshaRules, YearYoga, YearYogas, Yoga as TajikaYoga, YogaRules,
+    Held, Muntha, MunthaDegree, Natal, Office, OfficeBearers, Panchavargiya, Pravesha,
+    Qualification, Reading as VarshaReading, Relation as TajikaRelation, Strength, SubDegree,
+    TambiraMover, Varshesha, VarsheshaRules, YearYoga, YearYogas, Yoga as TajikaYoga, YogaRules,
 };
 // Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
 // with the rules it was read under (`03-design/strength-schemes.md`).

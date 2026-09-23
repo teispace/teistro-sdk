@@ -1767,12 +1767,212 @@ struct AnnualColumns {
     moon_passed_over: Vec<u8>,
     claim_counts: Vec<u8>,
     yoga_counts: Vec<u8>,
+    retrograde: Vec<u8>,
+    combust: Vec<u8>,
+    matter_counts: Vec<u8>,
     /// The `year_claims` section: every year's claimants concatenated, in
     /// the order each year ranks them, ragged by `claim_count`.
     claims: ClaimColumns,
     /// The `year_yogas` section: every year's yoga-making pairs, ragged by
     /// `yoga_count`.
     yogas: YogaColumns,
+    /// The `year_matters` section and the two under it, ragged by
+    /// `matter_count`.
+    matters: MatterColumns,
+}
+
+/// How two planets stand, as the matter sections carry it: `year_yogas`'
+/// own columns and a presence flag on the yoga, because a pair the matter
+/// sections carry may make none.
+///
+/// One shape for the matter's own pair and for every leg, so each binding
+/// decodes a pair in one place.
+#[derive(Default)]
+struct PairColumns {
+    faster: Vec<u16>,
+    slower: Vec<u16>,
+    drishti: Vec<u8>,
+    yoga: Vec<u8>,
+    yoga_present: Vec<u8>,
+    orb_deg: Vec<f64>,
+    apart_deg: Vec<f64>,
+}
+
+impl PairColumns {
+    fn push(&mut self, pair: Option<&teistro::Between>) {
+        let Some(pair) = pair else {
+            // Absent: a row of noughts, read only when the section's own
+            // flag says the pair is there.
+            self.faster.push(0);
+            self.slower.push(0);
+            self.drishti.push(0);
+            self.yoga.push(0);
+            self.yoga_present.push(0);
+            self.orb_deg.push(0.0);
+            self.apart_deg.push(0.0);
+            return;
+        };
+        self.faster.push(pair.faster.id());
+        self.slower.push(pair.slower.id());
+        self.drishti.push(TsTajikaDrishti::from(pair.drishti) as u8);
+        self.yoga
+            .push(pair.yoga.map_or(0, |yoga| TsTajikaYoga::from(yoga) as u8));
+        self.yoga_present.push(u8::from(pair.yoga.is_some()));
+        self.orb_deg.push(pair.orb_deg);
+        self.apart_deg.push(pair.apart_deg);
+    }
+
+    /// The seven columns, in the order every pair-carrying section
+    /// declares them.
+    fn data(&self) -> [ColumnData<'_>; 7] {
+        [
+            ColumnData::U16(&self.faster),
+            ColumnData::U16(&self.slower),
+            ColumnData::U8(&self.drishti),
+            ColumnData::U8(&self.yoga),
+            ColumnData::U8(&self.yoga_present),
+            ColumnData::F64(&self.orb_deg),
+            ColumnData::F64(&self.apart_deg),
+        ]
+    }
+}
+
+/// Every year's matters, flat and ragged, with the yogas each holds and
+/// the legs each of those stands on.
+#[derive(Default)]
+struct MatterColumns {
+    house: Vec<u8>,
+    sign: Vec<u16>,
+    lagnesha: Vec<u16>,
+    karyesha: Vec<u16>,
+    same_lord: Vec<u8>,
+    /// The lords' own relation, present unless `same_lord`.
+    pair: PairColumns,
+    unanswered: Vec<u16>,
+    held_count: Vec<u8>,
+    held: HeldColumns,
+}
+
+/// Every matter's held yogas, flat and ragged by `held_count`.
+#[derive(Default)]
+struct HeldColumns {
+    yoga: Vec<u8>,
+    by_pair: Vec<u8>,
+    through: Vec<u16>,
+    through_present: Vec<u8>,
+    entering: Vec<u16>,
+    entering_present: Vec<u8>,
+    afflictions_present: Vec<u8>,
+    lagnesha_afflictions: Vec<u8>,
+    karyesha_afflictions: Vec<u8>,
+    leg_count: Vec<u8>,
+    /// The `matter_legs` section, ragged by `leg_count`.
+    legs: PairColumns,
+}
+
+/// A graha as a column carries one where it may be absent: its id and a
+/// presence flag, since graha id 0 is the Sun and no sentinel is free.
+fn graha_or_absent(graha: Option<teistro::catalogue::Graha>) -> (u16, u8) {
+    graha.map_or((0, 0), |graha| (graha.id(), 1))
+}
+
+/// Planets as a bit set: bit `n` is the graha with catalogue id `n`. Only
+/// the seven cross here, ids 0 to 6, which a byte holds.
+fn graha_bits(grahas: &[teistro::catalogue::Graha]) -> u8 {
+    grahas.iter().fold(0, |bits, graha| {
+        bits | 1_u8.checked_shl(u32::from(graha.id())).unwrap_or(0)
+    })
+}
+
+impl MatterColumns {
+    fn push(&mut self, matter: &teistro::YearYogas) -> Result<(), Error> {
+        self.house.push(matter.house.get());
+        self.sign.push(matter.sign.id());
+        self.lagnesha.push(matter.lagnesha.id());
+        self.karyesha.push(matter.karyesha.id());
+        self.same_lord.push(u8::from(matter.same_lord));
+        self.pair.push(matter.between.as_ref());
+        self.unanswered
+            .push(matter.unanswered.iter().fold(0, |bits, yoga| {
+                bits | 1_u16 << TsYearYoga::from(*yoga) as u8
+            }));
+        self.held_count
+            .push(u8::try_from(matter.held.len()).unwrap_or(u8::MAX));
+        for held in &matter.held {
+            // A yoga's `between` is the matter's own pair or nothing, which
+            // is why it crosses as a flag; were that ever not so, the flag
+            // would lie, and the batch is refused instead.
+            if held.between.is_some() && held.between != matter.between {
+                return Err(Error::new(
+                    Status::Internal,
+                    format!(
+                        "{:?} for house {} carries a pair other than the matter's own",
+                        held.yoga,
+                        matter.house.get()
+                    ),
+                ));
+            }
+            let held_rows = &mut self.held;
+            held_rows.yoga.push(TsYearYoga::from(held.yoga) as u8);
+            held_rows.by_pair.push(u8::from(held.between.is_some()));
+            let (through, present) = graha_or_absent(held.through);
+            held_rows.through.push(through);
+            held_rows.through_present.push(present);
+            let (entering, present) = graha_or_absent(held.entering);
+            held_rows.entering.push(entering);
+            held_rows.entering_present.push(present);
+            let [lagnesha, karyesha] = held
+                .afflictions
+                .map_or([0, 0], |both| both.map(TsAffliction::bits));
+            held_rows
+                .afflictions_present
+                .push(u8::from(held.afflictions.is_some()));
+            held_rows.lagnesha_afflictions.push(lagnesha);
+            held_rows.karyesha_afflictions.push(karyesha);
+            let legs = held.legs.as_ref().map_or(&[][..], |legs| &legs[..]);
+            held_rows
+                .leg_count
+                .push(u8::try_from(legs.len()).unwrap_or(u8::MAX));
+            for leg in legs {
+                held_rows.legs.push(Some(leg));
+            }
+        }
+        Ok(())
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut columns = vec![
+            ColumnData::U8(&self.house),
+            ColumnData::U16(&self.sign),
+            ColumnData::U16(&self.lagnesha),
+            ColumnData::U16(&self.karyesha),
+            ColumnData::U8(&self.same_lord),
+        ];
+        columns.extend(self.pair.data());
+        columns.extend([
+            ColumnData::U16(&self.unanswered),
+            ColumnData::U8(&self.held_count),
+        ]);
+        writer.columns("year_matters", self.house.len(), &columns)?;
+        let held = &self.held;
+        writer.columns(
+            "matter_yogas",
+            held.yoga.len(),
+            &[
+                ColumnData::U8(&held.yoga),
+                ColumnData::U8(&held.by_pair),
+                ColumnData::U16(&held.through),
+                ColumnData::U8(&held.through_present),
+                ColumnData::U16(&held.entering),
+                ColumnData::U8(&held.entering_present),
+                ColumnData::U8(&held.afflictions_present),
+                ColumnData::U8(&held.lagnesha_afflictions),
+                ColumnData::U8(&held.karyesha_afflictions),
+                ColumnData::U8(&held.leg_count),
+            ],
+        )?;
+        writer.columns("matter_legs", held.legs.faster.len(), &held.legs.data())
+    }
 }
 
 /// Every year's yoga-making pairs, flat and ragged.
@@ -1828,7 +2028,7 @@ impl ClaimColumns {
 }
 
 impl AnnualColumns {
-    fn push(&mut self, year: &AnnualYear) {
+    fn push(&mut self, year: &AnnualYear) -> Result<(), Error> {
         let bearers = &year.bearers;
         self.lagnas.push(year.lagna_deg);
         self.daylight.push(u8::from(bearers.by_day));
@@ -1867,6 +2067,13 @@ impl AnnualColumns {
                 .aspects_lagna
                 .push(u8::from(claim.aspects_lagna));
         }
+        self.retrograde.push(graha_bits(&year.states.retrograde));
+        self.combust.push(graha_bits(&year.states.combust));
+        self.matter_counts
+            .push(u8::try_from(year.matters.len()).unwrap_or(u8::MAX));
+        year.matters
+            .iter()
+            .try_for_each(|matter| self.matters.push(matter))
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
@@ -1886,10 +2093,14 @@ impl AnnualColumns {
                 ColumnData::U8(&self.moon_passed_over),
                 ColumnData::U8(&self.claim_counts),
                 ColumnData::U8(&self.yoga_counts),
+                ColumnData::U8(&self.retrograde),
+                ColumnData::U8(&self.combust),
+                ColumnData::U8(&self.matter_counts),
             ],
         )?;
         self.claims.write(writer)?;
-        self.yogas.write(writer)
+        self.yogas.write(writer)?;
+        self.matters.write(writer)
     }
 }
 
@@ -1903,7 +2114,7 @@ fn sub_sub(bala: teistro::Bala) -> i32 {
 }
 
 impl PraveshaColumns {
-    fn of(praveshas: &[Vec<Year>]) -> PraveshaColumns {
+    fn of(praveshas: &[Vec<Year>]) -> Result<PraveshaColumns, Error> {
         let mut counts = Vec::with_capacity(praveshas.len());
         let mut years = Vec::new();
         let mut jds = Vec::new();
@@ -1920,11 +2131,11 @@ impl PraveshaColumns {
                 muntha_lords.push(one.muntha.lord.id());
                 muntha_degs.push(one.muntha.longitude_deg);
                 if let Some(year) = &one.annual {
-                    annual.push(year);
+                    annual.push(year)?;
                 }
             }
         }
-        PraveshaColumns {
+        Ok(PraveshaColumns {
             counts,
             years,
             jds,
@@ -1932,7 +2143,7 @@ impl PraveshaColumns {
             muntha_lords,
             muntha_degs,
             annual,
-        }
+        })
     }
 
     fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
@@ -2545,6 +2756,94 @@ pub(crate) struct VarshaRequest {
     /// differ; the source's own by default (crux C106).
     #[serde(default)]
     pub(crate) varshesha: teistro::VarsheshaRules,
+    /// The matters each year's sixteen Tajika yogas are judged for;
+    /// absent, none is (`03-design/tajika-yogas.md`, "Crossing the
+    /// boundary"). Needs `place`, since the yogas are read from the
+    /// year's own chart.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) matters: Option<Matters>,
+    /// The readings the sixteen part on, where the source leaves a
+    /// choice; its own by default.
+    #[serde(default)]
+    pub(crate) yogas: teistro::YogaRules,
+}
+
+/// The matters a request asks the sixteen about: `"all"`, or houses by
+/// number in the caller's own order.
+///
+/// `"all"` is a word the caller writes and not a default, because twelve
+/// judgements a year is a cost a caller asking about one matter did not
+/// ask to pay. A house named twice is refused, because it is a mistake
+/// and never a request.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) enum Matters {
+    /// The twelve, first to twelfth.
+    All,
+    /// These, in this order.
+    Houses(Vec<teistro::House>),
+}
+
+impl Matters {
+    /// The houses asked about, in the order they are answered.
+    pub(crate) fn houses(&self) -> &[teistro::House] {
+        match self {
+            Matters::All => &teistro::House::ALL,
+            Matters::Houses(houses) => houses,
+        }
+    }
+}
+
+/// What a caller is told when `matters` is neither of its two shapes.
+const MATTERS_SHAPES: &str = "\"all\", or a list of house numbers 1 to 12";
+
+impl serde::Serialize for Matters {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        match self {
+            Matters::All => serializer.serialize_str("all"),
+            Matters::Houses(houses) => serializer.collect_seq(houses),
+        }
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for Matters {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct Shapes;
+        impl<'de> serde::de::Visitor<'de> for Shapes {
+            type Value = Matters;
+
+            fn expecting(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                write!(out, "{MATTERS_SHAPES}")
+            }
+
+            fn visit_str<E: serde::de::Error>(self, word: &str) -> Result<Matters, E> {
+                if word == "all" {
+                    Ok(Matters::All)
+                } else {
+                    Err(E::custom(format!(
+                        "matters are {MATTERS_SHAPES}, not \"{word}\""
+                    )))
+                }
+            }
+
+            fn visit_seq<A: serde::de::SeqAccess<'de>>(
+                self,
+                mut seq: A,
+            ) -> Result<Matters, A::Error> {
+                use serde::de::Error as _;
+                let mut houses: Vec<teistro::House> = Vec::new();
+                while let Some(number) = seq.next_element::<u8>()? {
+                    let house = teistro::House::try_new(number)
+                        .map_err(|why| A::Error::custom(why.message))?;
+                    if houses.contains(&house) {
+                        return Err(A::Error::custom(format!("house {number} is asked twice")));
+                    }
+                    houses.push(house);
+                }
+                Ok(Matters::Houses(houses))
+            }
+        }
+        deserializer.deserialize_any(Shapes)
+    }
 }
 
 /// Which step of the year lord's chain decided it
@@ -2636,6 +2935,122 @@ impl From<teistro::TajikaYoga> for TsTajikaYoga {
             teistro::TajikaYoga::IthasalaBhavishyat => TsTajikaYoga::IthasalaBhavishyat,
             teistro::TajikaYoga::Ishrafa => TsTajikaYoga::Ishrafa,
         }
+    }
+}
+
+/// One of the sixteen Tajika yogas of the annual chart (K.S. Charak,
+/// Table X-3; `03-design/tajika-yogas.md`), in the table's order.
+///
+/// Mirrors `teistro::YearYoga` through an **exhaustive** match, so a yoga
+/// added there stops this crate compiling rather than crossing as another.
+/// Its ids are also the bit positions of `year_matters.unanswered`.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsYearYoga {
+    /// Every planet in a kendra or a panaphara: a fact about the chart.
+    Ikabala = 0,
+    /// Every planet in an apoklima: a fact about the chart.
+    Induvara = 1,
+    /// The lagnesha and the karyesha are coming together, in one of the
+    /// three kinds `TsTajikaYoga` enumerates.
+    Ithasala = 2,
+    /// The pair are drawing apart.
+    Ishrafa = 3,
+    /// The two do not aspect, and a planet faster than both carries the
+    /// light between them: past one, coming to the other.
+    Nakta = 4,
+    /// The two do not aspect, and a planet slower than both gathers their
+    /// light: both are coming to it.
+    Yamaya = 5,
+    /// An Ithasala a malefic destroys.
+    Manau = 6,
+    /// An Ithasala the Moon joins.
+    Kamboola = 7,
+    /// An Ithasala an unqualified Moon completes on entering the next sign.
+    GairiKamboola = 8,
+    /// An Ithasala an unqualified Moon negates by standing apart from it.
+    Khallasara = 9,
+    /// An Ithasala where either of the pair is afflicted.
+    Rudda = 10,
+    /// An Ithasala where the slower is strong and the faster weak.
+    DuhphaliKuttha = 11,
+    /// Both weak, and one in Ithasala with a third, strong planet.
+    DutthotthaDavira = 12,
+    /// No aspect and no Ithasala, the karyesha completing one from the
+    /// next sign.
+    Tambira = 13,
+    /// Both powerful, well placed and under benefic influence; listed in
+    /// `unanswered` while this build cannot compute it (crux C117).
+    Kuttha = 14,
+    /// Both weak, in the trika houses, combust or retrograde.
+    Durapha = 15,
+}
+
+impl From<teistro::YearYoga> for TsYearYoga {
+    fn from(yoga: teistro::YearYoga) -> TsYearYoga {
+        match yoga {
+            teistro::YearYoga::Ikabala => TsYearYoga::Ikabala,
+            teistro::YearYoga::Induvara => TsYearYoga::Induvara,
+            teistro::YearYoga::Ithasala => TsYearYoga::Ithasala,
+            teistro::YearYoga::Ishrafa => TsYearYoga::Ishrafa,
+            teistro::YearYoga::Nakta => TsYearYoga::Nakta,
+            teistro::YearYoga::Yamaya => TsYearYoga::Yamaya,
+            teistro::YearYoga::Manau => TsYearYoga::Manau,
+            teistro::YearYoga::Kamboola => TsYearYoga::Kamboola,
+            teistro::YearYoga::GairiKamboola => TsYearYoga::GairiKamboola,
+            teistro::YearYoga::Khallasara => TsYearYoga::Khallasara,
+            teistro::YearYoga::Rudda => TsYearYoga::Rudda,
+            teistro::YearYoga::DuhphaliKuttha => TsYearYoga::DuhphaliKuttha,
+            teistro::YearYoga::DutthotthaDavira => TsYearYoga::DutthotthaDavira,
+            teistro::YearYoga::Tambira => TsYearYoga::Tambira,
+            teistro::YearYoga::Kuttha => TsYearYoga::Kuttha,
+            teistro::YearYoga::Durapha => TsYearYoga::Durapha,
+        }
+    }
+}
+
+/// One of the five clauses of the source's **affliction**, which Rudda
+/// and Durapha read. Its ids are the bit positions of
+/// `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsAffliction {
+    /// Going backwards through the zodiac.
+    Retrograde = 0,
+    /// Burnt by the Sun.
+    Combust = 1,
+    /// In its sign of debilitation.
+    Debilitated = 2,
+    /// In the 6th, 8th or 12th house from the annual lagna.
+    Trika = 3,
+    /// Conjunct or inimically aspected by one of Tajika's malefics.
+    UnderMalefic = 4,
+}
+
+impl TsAffliction {
+    /// An affliction's clauses as a bit set: bit `n` is the clause with
+    /// id `n`. The struct is destructured whole, so a clause added to
+    /// `teistro::Affliction` stops this compiling rather than crossing
+    /// unset.
+    fn bits(affliction: teistro::Affliction) -> u8 {
+        let teistro::Affliction {
+            graha: _,
+            retrograde,
+            combust,
+            debilitated,
+            trika,
+            under_malefic,
+        } = affliction;
+        [
+            (TsAffliction::Retrograde, retrograde),
+            (TsAffliction::Combust, combust),
+            (TsAffliction::Debilitated, debilitated),
+            (TsAffliction::Trika, trika),
+            (TsAffliction::UnderMalefic, under_malefic),
+        ]
+        .into_iter()
+        .filter(|(_, holds)| *holds)
+        .fold(0, |bits, (clause, _)| bits | 1 << clause as u8)
     }
 }
 
@@ -2784,6 +3199,28 @@ pub struct AnnualYear {
     /// Ishrafa. The pairs that make none are the rest of the
     /// twenty-one, and a Rust caller has `sdk.chart().drishtis` for them.
     pub yogas: Vec<teistro::Between>,
+    /// Which of the seven are retrograde and which combust: what the
+    /// matters were judged on, reported so an answer can be read without
+    /// the call that made it.
+    pub states: teistro::AnnualStates,
+    /// The sixteen yogas for each matter `varsha_json.matters` asked
+    /// about, in its order; empty when it asked about none.
+    pub matters: Vec<teistro::YearYogas>,
+}
+
+/// One field of the varsha record read on its own, under its own path, so
+/// a refusal names `varsha_json.<field>` — the field the caller wrote —
+/// where the strict reader, handed the whole record, could only name the
+/// record. Removed from `given`, so the record's own read does not see it.
+fn take_field<T: serde::Serialize + serde::de::DeserializeOwned>(
+    given: &mut serde_json::Value,
+    field: &str,
+) -> Result<Option<T>, Error> {
+    given
+        .as_object_mut()
+        .and_then(|fields| fields.remove(field))
+        .map(|value| teistro_core::strict::read_value::<T>(&value, &format!("varsha_json.{field}")))
+        .transpose()
 }
 
 /// The annual charts a request's `varsha_json` asks for, none for null; a
@@ -2798,17 +3235,29 @@ unsafe fn varsha_request_of(varsha_json: *const c_char) -> Result<Option<VarshaR
     let Some(text) = text else {
         return Ok(None);
     };
-    // The place is read on its own, under its own path, so a refusal of it
-    // names `varsha_json.place` — the field the caller wrote — where the
-    // strict reader, handed the whole record, could only name the record.
     let mut given: serde_json::Value = teistro_core::strict::read(text, "varsha_json")?;
-    let place = given
-        .as_object_mut()
-        .and_then(|fields| fields.remove("place"))
-        .map(|place| teistro_core::strict::read_value::<AnnualPlace>(&place, "varsha_json.place"))
-        .transpose()?;
+    let place = take_field::<AnnualPlace>(&mut given, "place")?;
+    let matters = take_field::<Matters>(&mut given, "matters")?;
     let mut asked: VarshaRequest = teistro_core::strict::read_value(&given, "varsha_json")?;
     asked.place = place;
+    asked.matters = matters;
+    if asked.matters.is_some() && asked.place.is_none() {
+        return Err(Error::invalid_arg(
+            "the sixteen yogas are read from each year's own chart, and no chart is founded without a place",
+        )
+        .with_field("varsha_json.matters")
+        .with_hint("add varsha_json.place: \"birth\", or a residence"));
+    }
+    // Checked here, where the caller's own casing is known, so the refusal
+    // names the key they wrote rather than the Rust field behind it.
+    asked.yogas.check().map_err(|error| {
+        let field = if error.field() == Some("strong_from") {
+            "varsha_json.yogas.strongFrom"
+        } else {
+            "varsha_json.yogas"
+        };
+        error.with_field(field)
+    })?;
     // The year is checked here as well as inside, so a caller learns it
     // from the field they wrote rather than from a later refusal naming
     // `through` with no path to it.
@@ -2889,7 +3338,7 @@ impl Sections {
             bhava_bala: BhavaBalaColumns::of(documents),
             vaiseshikamsa: VaiseshikamsaColumns::of(documents),
             dasha_phala: DashaPhalaColumns::of(documents),
-            years: PraveshaColumns::of(praveshas),
+            years: PraveshaColumns::of(praveshas)?,
         })
     }
 }
@@ -2948,14 +3397,7 @@ fn praveshas_of(
                             let annual = asked
                                 .place
                                 .map(|place| {
-                                    annual_year(
-                                        sdk,
-                                        document,
-                                        birth_clock,
-                                        place,
-                                        asked.varshesha,
-                                        pravesha,
-                                    )
+                                    annual_year(sdk, document, birth_clock, place, asked, pravesha)
                                 })
                                 .transpose()?;
                             Ok(Year {
@@ -2987,7 +3429,7 @@ fn annual_year(
     birth: &Document,
     birth_clock: teistro::UtcOffset,
     place: AnnualPlace,
-    varshesha: teistro::VarsheshaRules,
+    asked: &VarshaRequest,
     pravesha: teistro::Pravesha,
 ) -> Result<AnnualYear, Error> {
     let request = match place {
@@ -2998,18 +3440,26 @@ fn annual_year(
     let bearers = sdk.chart().office_bearers(birth, &annual, pravesha.year)?;
     let year_lord = sdk
         .chart()
-        .varshesha(birth, &annual, pravesha.year, varshesha)?;
+        .varshesha(birth, &annual, pravesha.year, asked.varshesha)?;
     let yogas = sdk
         .chart()
         .drishtis(&annual)?
         .into_iter()
         .filter(|pair| pair.yoga.is_some())
         .collect();
+    let matters = match &asked.matters {
+        Some(matters) => sdk
+            .chart()
+            .tajika_yogas_many(&annual, matters.houses(), asked.yogas)?,
+        None => Vec::new(),
+    };
     Ok(AnnualYear {
         lagna_deg: annual.foundation.lagna_deg,
         bearers,
         year_lord,
         yogas,
+        states: sdk.chart().annual_states(&annual)?,
+        matters,
     })
 }
 

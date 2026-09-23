@@ -1004,6 +1004,48 @@ impl<'a> ChartArea<'a> {
         )
     }
 
+    /// The sixteen Tajika yogas for **several matters** of one annual
+    /// chart, in the order the houses are given.
+    ///
+    /// What the matters share — the chart's sky, its retrograde and
+    /// combust planets, the rules' check and the seven strengths — is
+    /// read once for the chart and not once a matter, so asking for all
+    /// twelve costs far less than twelve calls to
+    /// [`ChartArea::tajika_yogas_with_rules`], and answers exactly as they
+    /// would.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, House, YogaRules};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().build()?;
+    /// # let annual: Document = todo!();
+    /// let every = sdk.chart().tajika_yogas_many(&annual, &House::ALL, YogaRules::default())?;
+    /// for matter in &every {
+    ///     println!("house {}: {} held", matter.house.get(), matter.held.len());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::tajika_yogas_with_rules`], refused before any
+    /// matter is judged.
+    pub fn tajika_yogas_many(
+        self,
+        annual: &Document,
+        houses: &[House],
+        rules: YogaRules,
+    ) -> Result<Vec<YearYogas>, Error> {
+        teistro_tajika::year_yogas_many(
+            annual.foundation.lagna_deg,
+            houses,
+            &Self::sky_of(annual)?,
+            Some(&self.annual_states(annual)?),
+            rules,
+        )
+    }
+
     /// Which of an annual chart's seven are **retrograde** and which
     /// **combust** — the two things its longitudes cannot say.
     ///

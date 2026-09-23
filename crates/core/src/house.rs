@@ -34,6 +34,28 @@ use crate::error::Error;
 pub struct House(u8);
 
 impl House {
+    /// All twelve, first to twelfth.
+    ///
+    /// ```
+    /// use teistro_core::house::House;
+    ///
+    /// assert_eq!(House::ALL.map(House::get), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    /// ```
+    pub const ALL: [House; 12] = [
+        House(1),
+        House(2),
+        House(3),
+        House(4),
+        House(5),
+        House(6),
+        House(7),
+        House(8),
+        House(9),
+        House(10),
+        House(11),
+        House(12),
+    ];
+
     /// A house.
     ///
     /// # Errors

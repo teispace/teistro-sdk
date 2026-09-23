@@ -80,6 +80,23 @@ for (const claim of lord.claims) {
   );
 }
 
+// ── The sixteen Tajika yogas answer a matter, not a chart ──────────────
+// Fourteen of them judge the lagnesha against the lord of the house you
+// ask about, so you name the houses: marriage (7) and career (10) here.
+const judged = ctx.chart.found({
+  instant: when.instantJdUtc,
+  place,
+  utcOffsetSeconds: when.offsetSeconds,
+  varsha: { through: 30, place: 'birth', matters: [7, 10] },
+}).praveshas[29].annual;
+for (const matter of judged.matters) {
+  const held = matter.held.map((one) => one.yoga).join(', ') || 'none';
+  console.log(
+    `house ${matter.house}: ${short(matter.lagnesha)} with ${short(matter.karyesha)}, ` +
+      `held ${held}; not answered ${matter.unanswered.join(', ')}`,
+  );
+}
+
 // ── The readings are named, and they are not each other ────────────────
 for (const reading of ['sidereal', 'tropical', 'mean']) {
   const one = ctx.chart.found({

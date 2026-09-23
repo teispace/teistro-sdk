@@ -53,6 +53,8 @@ import type {
   Vara,
   Varga,
   Yoga,
+  YearYoga,
+  Affliction,
 } from './catalogue.js';
 import type {
   CalendarDate,
@@ -593,6 +595,37 @@ export interface VarshaRequest {
   readonly place?: 'birth' | AnnualPlace;
   /** The readings the year lord's chain parts on, where authorities differ. */
   readonly varshesha?: VarsheshaRules;
+  /**
+   * The matters each year's sixteen Tajika yogas are judged for: `'all'`,
+   * or house numbers 1 to 12 in the order you want them answered. Fourteen
+   * of the sixteen are judgements about the lagnesha and the lord of the
+   * house asked about, so the yogas answer a matter and not a chart.
+   * **Needs `place`**; absent, none is judged.
+   *
+   * @example { through: 40, place: 'birth', matters: [7, 10] }
+   */
+  readonly matters?: 'all' | readonly number[];
+  /** The readings the sixteen part on, where the source leaves a choice. */
+  readonly yogas?: YogaRules;
+}
+
+/** Where the source leaves the sixteen Tajika yogas a choice, each a named reading. */
+export interface YogaRules {
+  /** How a pair less than a degree past reads; `'poorna'` by default (crux C112). */
+  readonly drishti?: { readonly subDegree?: 'poorna' | 'ishrafa' };
+  /**
+   * The strength below which a planet with no dignity is weak, in **sub-sub
+   * units**, 3600 to a unit: `5 * 3600` by default (crux C116).
+   */
+  readonly weakBelow?: number;
+  /** The strength from which a planet is strong, sub-sub units; `10 * 3600` by default. */
+  readonly strongFrom?: number;
+  /**
+   * Which lord a Tambira lets reach the next sign: the definition's
+   * `'karyesha'` by default, or `'either_lord'`, the source's "some
+   * authorities".
+   */
+  readonly tambira?: 'karyesha' | 'either_lord';
 }
 
 /** Where the sources differ on the lord of the year, each a named reading. */
@@ -701,6 +734,66 @@ export interface AnnualChart {
    * all twenty-one.
    */
   readonly yogas: readonly TajikaPair[];
+  /** The seven retrograde in this chart: what the matters were judged on. */
+  readonly retrograde: readonly (Graha | 'unknown')[];
+  /** The seven combust in this chart, under the context's combustion table. */
+  readonly combust: readonly (Graha | 'unknown')[];
+  /** The sixteen yogas for each matter `varsha.matters` asked about, in its order; empty otherwise. */
+  readonly matters: readonly TajikaMatter[];
+}
+
+/**
+ * The sixteen Tajika yogas for one matter of a year: the question it asked
+ * as well as the answer, because a list of yogas whose pair a reader
+ * cannot see is not checkable.
+ */
+export interface TajikaMatter {
+  /** The house asked about, 1 to 12, counted from the annual lagna. */
+  readonly house: number;
+  /** The sign that house falls in. */
+  readonly sign: Rashi | 'unknown';
+  /** The lord of the annual lagna. */
+  readonly lagnesha: Graha | 'unknown';
+  /** The lord of the house asked about. */
+  readonly karyesha: Graha | 'unknown';
+  /** One planet is both — always so of the first house — so there is no pair to judge. */
+  readonly sameLord: boolean;
+  /** How the two lords stand to each other; `null` when they are one planet. */
+  readonly between: TajikaBetween | null;
+  /** Every yoga that holds, once for each third planet that makes it. */
+  readonly held: readonly HeldYearYoga[];
+  /**
+   * The yogas this call could not answer for. A yoga absent from `held`
+   * did not hold **only** if it is not listed here.
+   */
+  readonly unanswered: readonly (YearYoga | 'unknown')[];
+  /** Whether a yoga holds: `null` where this call could not say, which is not `false`. */
+  holds(yoga: YearYoga): boolean | null;
+}
+
+/** One of the sixteen holding, with what made it hold. */
+export interface HeldYearYoga {
+  /** Which of the sixteen. */
+  readonly yoga: YearYoga | 'unknown';
+  /** The lords' own relation, where that is what made it; else `null`. */
+  readonly between: TajikaBetween | null;
+  /** The third planet it turns on, where one does. */
+  readonly through: Graha | 'unknown' | null;
+  /** The planet judged on entering the next sign: Gairi-Kamboola's Moon, Tambira's lord. */
+  readonly entering: Graha | 'unknown' | null;
+  /** How the third planet stands to each of the pair, read from the next sign for `entering`. */
+  readonly legs: readonly [TajikaBetween, TajikaBetween] | null;
+  /** The lords' afflictions, where those made it: Rudda and Durapha. */
+  readonly afflictions: {
+    readonly lagnesha: readonly (Affliction | 'unknown')[];
+    readonly karyesha: readonly (Affliction | 'unknown')[];
+  } | null;
+}
+
+/** Two planets of an annual chart, and what they make — which may be nothing. */
+export interface TajikaBetween extends Omit<TajikaPair, 'yoga'> {
+  /** What they are doing; `null` when they make neither an Ithasala nor an Ishrafa. */
+  readonly yoga: TajikaYoga | 'unknown' | null;
 }
 
 /** The Tajika aspect between two signs; the neutral houses give none. */

@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import os
 import unittest
-from typing import Optional
+from typing import Any, Optional
 
 from teistro import (
     Altitude,
@@ -21,6 +21,7 @@ from teistro import (
     TajikaDrishti,
     TajikaYoga,
     UduDashaDefinition,
+    YearYoga,
     DashaPhase,
     Nature,
     Balance,
@@ -60,7 +61,7 @@ from teistro import (
     when_unknown,
 )
 from teistro._ffi import Longitude
-from teistro.catalogue import DayPart
+from teistro.catalogue import DayPart, Graha
 from tests.support import LOCALE, PROFILE, WithLibrary, fixture
 
 
@@ -1295,6 +1296,84 @@ class AnEngine(WithLibrary):
                 varsha={"reading": "sidereal", "through": 0},
             )
         self.assertEqual(wide.exception.field, "varsha_json.through")
+
+    def test_a_years_chart_answers_the_tajika_yogas_for_the_matters_asked(self) -> None:
+        """The sixteen Tajika yogas cross for the matters `varsha=` names, in
+        its order, each carrying its question, the lords' pair and what it
+        could not answer (`03-design/tajika-yogas.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+
+        def years(varsha: Any) -> Any:
+            return self.ctx.chart.found(
+                instant=2447995.4895833335,
+                place=observer,
+                utc_offset_seconds=20700,
+                varsha=varsha,
+            ).praveshas
+
+        for one in years({"through": 6, "place": "birth", "matters": [7, 1]}):
+            annual = one.annual
+            assert annual is not None
+            self.assertEqual([matter.house for matter in annual.matters], [7, 1])
+            self.assertTrue(all(isinstance(graha, Graha) for graha in annual.retrograde + annual.combust))
+            for matter in annual.matters:
+                # All but Kuttha is built, and Kuttha says so rather than
+                # answering False.
+                self.assertEqual(matter.unanswered, [YearYoga.KUTTHA])
+                self.assertIsNone(matter.holds(YearYoga.KUTTHA))
+                self.assertIsInstance(matter.holds(YearYoga.ITHASALA), bool)
+                self.assertEqual(matter.karyesha != matter.lagnesha, not matter.same_lord)
+                for held in matter.held:
+                    if held.between is not None:
+                        self.assertEqual(held.between, matter.between)
+                    self.assertEqual(
+                        held.afflictions is not None,
+                        held.yoga in (YearYoga.RUDDA, YearYoga.DURAPHA),
+                    )
+                pair_yoga = matter.between.yoga if matter.between else None
+                self.assertEqual(
+                    matter.holds(YearYoga.ITHASALA),
+                    pair_yoga is not None and pair_yoga != TajikaYoga.ISHRAFA,
+                )
+            first = annual.matters[1]
+            self.assertTrue(first.same_lord)
+            self.assertIsNone(first.between)
+            self.assertTrue(
+                all(held.yoga in (YearYoga.IKABALA, YearYoga.INDUVARA) for held in first.held)
+            )
+
+        every = years({"through": 2, "place": "birth", "matters": "all"})
+        assert every[0].annual is not None
+        self.assertEqual([m.house for m in every[0].annual.matters], list(range(1, 13)))
+        unasked = years({"through": 2, "place": "birth"})
+        assert unasked[0].annual is not None
+        self.assertEqual(unasked[0].annual.matters, [])
+
+        # The rule records are written in Python's own keys.
+        years({"through": 2, "place": "birth", "varshesha": {"none_aspects": "annual_lagna_lord"}})
+        years({
+            "through": 2,
+            "place": "birth",
+            "matters": [10],
+            "yogas": {"weak_below": 4 * 3600, "strong_from": 12 * 3600, "drishti": {"sub_degree": "ishrafa"}},
+        })
+
+        for varsha, field in [
+            ({"through": 2, "matters": [7]}, "varsha_json.matters"),
+            ({"through": 2, "place": "birth", "matters": [7, 7]}, "varsha_json.matters"),
+            ({"through": 2, "place": "birth", "matters": [13]}, "varsha_json.matters"),
+            (
+                {"through": 2, "place": "birth", "matters": [7],
+                 "yogas": {"weak_below": 12 * 3600, "strong_from": 4 * 3600}},
+                "varsha_json.yogas.strongFrom",
+            ),
+        ]:
+            with self.subTest(field=field, varsha=varsha):
+                with self.assertRaises(TeistroError) as refused:
+                    years(varsha)
+                self.assertEqual(refused.exception.field, field)
 
     def test_a_chart_carries_its_dashas_their_periods_and_the_chain_at_an_instant(self) -> None:
         """A chart's dashas cross whole: the balance, the periods to the

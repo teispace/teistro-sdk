@@ -1609,6 +1609,139 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test("a year's chart answers the Tajika yogas for the matters asked", () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    List<Pravesha> years(VarshaRequest varsha) =>
+        ctx.chart
+            .found(
+              instant: 2447995.4895833335,
+              place: place,
+              utcOffsetSeconds: 20700,
+              varsha: varsha,
+            )
+            .praveshas;
+
+    for (final one in years(
+      const VarshaRequest(
+        through: 6,
+        place: AnnualPlace.birth,
+        matters: Matters.houses([7, 1]),
+      ),
+    )) {
+      final annual = one.annual!;
+      expect(annual.matters.map((matter) => matter.house), [7, 1]);
+      expect(
+        [...annual.retrograde, ...annual.combust].every((g) => g.id < 7),
+        isTrue,
+      );
+      for (final matter in annual.matters) {
+        // All but Kuttha is built, and Kuttha says so rather than
+        // answering false.
+        expect(matter.unanswered, [YearYoga.kuttha]);
+        expect(matter.holds(YearYoga.kuttha), isNull);
+        expect(matter.holds(YearYoga.ithasala), isA<bool>());
+        expect(matter.karyesha != matter.lagnesha, !matter.sameLord);
+        for (final held in matter.held) {
+          if (held.between != null) expect(held.between, same(matter.between));
+          if (held.legs != null) expect(held.legs!.length, 2);
+          expect(
+            held.afflictions != null,
+            held.yoga == YearYoga.rudda || held.yoga == YearYoga.durapha,
+          );
+        }
+        final pairYoga = matter.between?.yoga;
+        expect(
+          matter.holds(YearYoga.ithasala),
+          pairYoga != null && pairYoga != TajikaYoga.ishrafa,
+        );
+      }
+      final first = annual.matters[1];
+      expect(first.sameLord, isTrue);
+      expect(first.between, isNull);
+      expect(
+        first.held.every(
+          (held) =>
+              held.yoga == YearYoga.ikabala || held.yoga == YearYoga.induvara,
+        ),
+        isTrue,
+      );
+    }
+
+    final every = years(
+      const VarshaRequest(
+        through: 2,
+        place: AnnualPlace.birth,
+        matters: Matters.all,
+      ),
+    );
+    expect(every.first.annual!.matters.map((m) => m.house), [
+      for (var house = 1; house <= 12; house += 1) house,
+    ]);
+    expect(
+      years(
+        const VarshaRequest(through: 2, place: AnnualPlace.birth),
+      ).first.annual!.matters,
+      isEmpty,
+    );
+
+    // The rule records cross in the boundary's casing.
+    years(
+      const VarshaRequest(
+        through: 2,
+        place: AnnualPlace.birth,
+        varshesha: VarsheshaRules(noneAspects: 'annual_lagna_lord'),
+      ),
+    );
+    years(
+      const VarshaRequest(
+        through: 2,
+        place: AnnualPlace.birth,
+        matters: Matters.houses([10]),
+        yogas: YogaRules(
+          subDegree: SubDegree.ishrafa,
+          weakBelow: 4 * 3600,
+          strongFrom: 12 * 3600,
+          tambira: TambiraMover.eitherLord,
+        ),
+      ),
+    );
+
+    Matcher refusedBy(String field) =>
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field));
+    expect(
+      () =>
+          years(const VarshaRequest(through: 2, matters: Matters.houses([7]))),
+      refusedBy('varsha_json.matters'),
+    );
+    expect(
+      () => years(
+        const VarshaRequest(
+          through: 2,
+          place: AnnualPlace.birth,
+          matters: Matters.houses([7, 7]),
+        ),
+      ),
+      refusedBy('varsha_json.matters'),
+    );
+    expect(
+      () => years(
+        const VarshaRequest(
+          through: 2,
+          place: AnnualPlace.birth,
+          matters: Matters.houses([7]),
+          yogas: YogaRules(weakBelow: 12 * 3600, strongFrom: 4 * 3600),
+        ),
+      ),
+      refusedBy('varsha_json.yogas.strongFrom'),
+    );
+    ctx.dispose();
+  });
+
   test('a chart carries its dashas, their periods and the chain', () {
     final ctx = context();
     final place = Observer(

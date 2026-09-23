@@ -3850,6 +3850,96 @@ class TajikaYoga(Member):
     """
 
 
+class YearYoga(Member):
+    """One of the sixteen Tajika yogas of the annual chart (K.S. Charak,
+    Table X-3; `03-design/tajika-yogas.md`), in the table's order.
+
+    Mirrors `teistro::YearYoga` through an **exhaustive** match, so a yoga
+    added there stops this crate compiling rather than crossing as another.
+    Its ids are also the bit positions of `year_matters.unanswered`.
+    """
+
+    IKABALA = 0
+    """Every planet in a kendra or a panaphara: a fact about the chart."""
+
+    INDUVARA = 1
+    """Every planet in an apoklima: a fact about the chart."""
+
+    ITHASALA = 2
+    """The lagnesha and the karyesha are coming together, in one of the
+    three kinds `TsTajikaYoga` enumerates.
+    """
+
+    ISHRAFA = 3
+    """The pair are drawing apart."""
+
+    NAKTA = 4
+    """The two do not aspect, and a planet faster than both carries the
+    light between them: past one, coming to the other.
+    """
+
+    YAMAYA = 5
+    """The two do not aspect, and a planet slower than both gathers their
+    light: both are coming to it.
+    """
+
+    MANAU = 6
+    """An Ithasala a malefic destroys."""
+
+    KAMBOOLA = 7
+    """An Ithasala the Moon joins."""
+
+    GAIRI_KAMBOOLA = 8
+    """An Ithasala an unqualified Moon completes on entering the next sign."""
+
+    KHALLASARA = 9
+    """An Ithasala an unqualified Moon negates by standing apart from it."""
+
+    RUDDA = 10
+    """An Ithasala where either of the pair is afflicted."""
+
+    DUHPHALI_KUTTHA = 11
+    """An Ithasala where the slower is strong and the faster weak."""
+
+    DUTTHOTTHA_DAVIRA = 12
+    """Both weak, and one in Ithasala with a third, strong planet."""
+
+    TAMBIRA = 13
+    """No aspect and no Ithasala, the karyesha completing one from the
+    next sign.
+    """
+
+    KUTTHA = 14
+    """Both powerful, well placed and under benefic influence; listed in
+    `unanswered` while this build cannot compute it (crux C117).
+    """
+
+    DURAPHA = 15
+    """Both weak, in the trika houses, combust or retrograde."""
+
+
+class Affliction(Member):
+    """One of the five clauses of the source's **affliction**, which Rudda
+    and Durapha read. Its ids are the bit positions of
+    `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.
+    """
+
+    RETROGRADE = 0
+    """Going backwards through the zodiac."""
+
+    COMBUST = 1
+    """Burnt by the Sun."""
+
+    DEBILITATED = 2
+    """In its sign of debilitation."""
+
+    TRIKA = 3
+    """In the 6th, 8th or 12th house from the annual lagna."""
+
+    UNDER_MALEFIC = 4
+    """Conjunct or inimically aspected by one of Tajika's malefics."""
+
+
 class Scale(Member):
     """A time scale of the conversions; the first two ids are the port's."""
 
@@ -5274,6 +5364,31 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "ithasala-poorna",
         2: "ithasala-bhavishyat",
         3: "ishrafa",
+    },
+    "YearYoga": {
+        0: "ikabala",
+        1: "induvara",
+        2: "ithasala",
+        3: "ishrafa",
+        4: "nakta",
+        5: "yamaya",
+        6: "manau",
+        7: "kamboola",
+        8: "gairi-kamboola",
+        9: "khallasara",
+        10: "rudda",
+        11: "duhphali-kuttha",
+        12: "dutthottha-davira",
+        13: "tambira",
+        14: "kuttha",
+        15: "durapha",
+    },
+    "Affliction": {
+        0: "retrograde",
+        1: "combust",
+        2: "debilitated",
+        3: "trika",
+        4: "under-malefic",
     },
     "Scale": {
         0: "ut1",

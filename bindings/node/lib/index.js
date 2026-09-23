@@ -53,6 +53,8 @@ import {
   VarsheshaChosenById,
   TajikaDrishtiById,
   TajikaYogaById,
+  YearYogaById,
+  AfflictionById,
   StrengthById,
   BalanceById,
   EkadhipatyaById,
@@ -2376,9 +2378,8 @@ function annualOf(d, row) {
   }
   const lord = (column) => GrahaById.get(column[row]) ?? 'unknown';
   // The claims are ragged by `claimCount`, as the returns are by
-  // `praveshaCount`: walk to this year's block and take its own count.
-  let from = 0;
-  for (let i = 0; i < row; i += 1) from += charts.claimCount[i];
+  // `praveshaCount`: this year's block starts where the ones before end.
+  const from = startsOf(charts.claimCount)[row];
   const count = charts.claimCount[row] ?? 0;
   const claims = d.yearClaims;
   return {
@@ -2392,6 +2393,9 @@ function annualOf(d, row) {
       dinaRatri: lord(charts.dinaRatriLord),
     },
     yogas: yogasOf(d, row),
+    retrograde: grahasIn(charts.retrograde[row]),
+    combust: grahasIn(charts.combust[row]),
+    matters: mattersOf(d, row),
     yearLord: {
       graha: lord(charts.yearLord),
       chosen: VarsheshaChosenById.get(charts.yearLordChosen[row]) ?? 'unknown',
@@ -2417,18 +2421,139 @@ function annualOf(d, row) {
  */
 function yogasOf(d, row) {
   const charts = d.annualCharts;
-  let from = 0;
-  for (let i = 0; i < row; i += 1) from += charts.yogaCount[i];
+  const from = startsOf(charts.yogaCount)[row];
   const count = charts.yogaCount[row] ?? 0;
-  const pairs = d.yearYogas;
-  return Array.from({ length: count }, (_, k) => ({
-    faster: GrahaById.get(pairs.faster[from + k]) ?? 'unknown',
-    slower: GrahaById.get(pairs.slower[from + k]) ?? 'unknown',
-    drishti: TajikaDrishtiById.get(pairs.drishti[from + k]) ?? 'unknown',
-    yoga: TajikaYogaById.get(pairs.yoga[from + k]) ?? 'unknown',
-    orbDeg: pairs.orbDeg[from + k],
-    apartDeg: pairs.apartDeg[from + k],
-  }));
+  return Array.from({ length: count }, (_, k) => pairAt(d.yearYogas, from + k));
+}
+
+/** Each ragged count column's prefix sums, computed once per batch. */
+const STARTS = new WeakMap();
+
+/**
+ * Where each row's block starts in the section a count column is ragged
+ * by: `starts[row]` to `starts[row + 1]`. Computed once for the column,
+ * so reading every year of a batch is linear rather than quadratic.
+ *
+ * @param {ArrayLike<number>} counts
+ * @returns {Uint32Array}
+ */
+function startsOf(counts) {
+  let starts = STARTS.get(counts);
+  if (starts === undefined) {
+    starts = new Uint32Array(counts.length + 1);
+    for (let i = 0; i < counts.length; i += 1) starts[i + 1] = starts[i] + counts[i];
+    STARTS.set(counts, starts);
+  }
+  return starts;
+}
+
+/**
+ * How two planets stand, from a section carrying the pair columns — the
+ * year's own pairs, a matter's lords (under `pair`) or a yoga's legs. The
+ * yoga is `null` where they make none, which only the matter sections
+ * carry.
+ *
+ * @param {object} cols the decoded section
+ * @param {number} k the row
+ * @param {string} [prefix] the columns' prefix, `'pair'` for a matter's
+ * @returns {object}
+ */
+function pairAt(cols, k, prefix = '') {
+  const at = (name) => cols[prefix ? prefix + name[0].toUpperCase() + name.slice(1) : name];
+  const present = at('yogaPresent');
+  return {
+    faster: GrahaById.get(at('faster')[k]) ?? 'unknown',
+    slower: GrahaById.get(at('slower')[k]) ?? 'unknown',
+    drishti: TajikaDrishtiById.get(at('drishti')[k]) ?? 'unknown',
+    yoga:
+      present === undefined || present[k] === 1
+        ? (TajikaYogaById.get(at('yoga')[k]) ?? 'unknown')
+        : null,
+    orbDeg: at('orbDeg')[k],
+    apartDeg: at('apartDeg')[k],
+  };
+}
+
+/**
+ * The members of a bit set over a small closed enum: bit `n` is the member
+ * with id `n`, in id order.
+ *
+ * @param {number} bits
+ * @param {Map<number, string>} byId
+ * @returns {string[]}
+ */
+function membersOf(bits, byId) {
+  const found = [];
+  for (const [id, key] of byId) if (bits & (1 << id)) found.push(key);
+  return found;
+}
+
+/**
+ * The seven a year's bit set names, in graha id order.
+ *
+ * @param {number} bits
+ * @returns {string[]}
+ */
+function grahasIn(bits) {
+  return membersOf(bits ?? 0, GrahaById);
+}
+
+/**
+ * A year's matters: each the question it asked, the lords' own pair, the
+ * yogas it could not answer, and every yoga that held with what made it —
+ * ragged three deep, each block located once by `startsOf`
+ * (`03-design/tajika-yogas.md`, "Crossing the boundary").
+ *
+ * @param {object} d the decoded batch
+ * @param {number} row
+ * @returns {object[]}
+ */
+function mattersOf(d, row) {
+  const matters = d.yearMatters;
+  const held = d.matterYogas;
+  const heldStarts = startsOf(matters.heldCount);
+  const legStarts = startsOf(held.legCount);
+  const counted = startsOf(d.annualCharts.matterCount);
+  const found = [];
+  for (let m = counted[row]; m < counted[row + 1]; m += 1) {
+    const between = matters.sameLord[m] === 1 ? null : pairAt(matters, m, 'pair');
+    const unanswered = membersOf(matters.unanswered[m], YearYogaById);
+    const yogas = [];
+    for (let h = heldStarts[m]; h < heldStarts[m + 1]; h += 1) {
+      const legs = [];
+      for (let l = legStarts[h]; l < legStarts[h + 1]; l += 1) legs.push(pairAt(d.matterLegs, l));
+      yogas.push({
+        yoga: YearYogaById.get(held.yoga[h]) ?? 'unknown',
+        between: held.byPair[h] === 1 ? between : null,
+        through: held.throughPresent[h] === 1 ? (GrahaById.get(held.through[h]) ?? 'unknown') : null,
+        entering:
+          held.enteringPresent[h] === 1 ? (GrahaById.get(held.entering[h]) ?? 'unknown') : null,
+        legs: legs.length === 0 ? null : legs,
+        afflictions:
+          held.afflictionsPresent[h] === 1
+            ? {
+                lagnesha: membersOf(held.lagneshaAfflictions[h], AfflictionById),
+                karyesha: membersOf(held.karyeshaAfflictions[h], AfflictionById),
+              }
+            : null,
+      });
+    }
+    found.push({
+      house: matters.house[m],
+      sign: RashiById.get(matters.sign[m]) ?? 'unknown',
+      lagnesha: GrahaById.get(matters.lagnesha[m]) ?? 'unknown',
+      karyesha: GrahaById.get(matters.karyesha[m]) ?? 'unknown',
+      sameLord: matters.sameLord[m] === 1,
+      between,
+      held: yogas,
+      unanswered,
+      // `null` where this call could not answer for the yoga, which is not
+      // the same answer as `false`.
+      holds: (yoga) =>
+        unanswered.includes(yoga) ? null : yogas.some((one) => one.yoga === yoga),
+    });
+  }
+  return found;
 }
 
 /**

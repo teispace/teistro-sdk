@@ -683,6 +683,25 @@ void main() {
   // because `varshaJson` names one reading per request — and all three,
   // because a reading that crossed as another would be invisible in a
   // report that only printed the default.
+  // Each reading also asks the sixteen yogas a different way, so all three
+  // ways cross: every matter under the source's readings, every matter
+  // under Tambira's "some authorities", and no matter at all.
+  String pairSaid(TajikaBetween p) =>
+      '${p.faster.fullKey}>${p.slower.fullKey}:${p.drishti.key}:'
+      '${p.yoga?.key ?? '-'}:${p.apartDeg.toStringAsFixed(6)}';
+  String clausesSaid(List<Affliction> clauses) =>
+      clauses.isEmpty ? 'none' : clauses.map((c) => c.key).join('+');
+  String heldSaid(HeldYearYoga h) => [
+    h.yoga.key,
+    h.through?.fullKey ?? '-',
+    h.entering?.fullKey ?? '-',
+    h.between == null ? '-' : 'pair',
+    h.legs?.map(pairSaid).join('/') ?? '-',
+    if (h.afflictions case final a?)
+      '${clausesSaid(a.lagnesha)}/${clausesSaid(a.karyesha)}'
+    else
+      '-',
+  ].join(':');
   for (final reading in VarshaReading.values) {
     final years = geo.chart.foundMany(
       instants: <double>[2460482.5, 2460600.25],
@@ -692,6 +711,11 @@ void main() {
         through: 12,
         reading: reading,
         place: AnnualPlace.birth,
+        matters: reading == VarshaReading.mean ? null : Matters.all,
+        yogas:
+            reading == VarshaReading.tropical
+                ? const YogaRules(tambira: TambiraMover.eitherLord)
+                : const YogaRules(),
       ),
     );
     var i = 0;
@@ -732,6 +756,21 @@ void main() {
               )
               .join(' '),
         );
+        put(
+          '$stem-states',
+          'R:${annual.retrograde.map((g) => g.fullKey).join(',')} '
+              'C:${annual.combust.map((g) => g.fullKey).join(',')}',
+        );
+        for (final m in annual.matters) {
+          final at = '$stem-matter-${m.house}';
+          put(
+            at,
+            '${m.sign.fullKey} ${m.lagnesha.fullKey}>${m.karyesha.fullKey} ${m.sameLord}',
+          );
+          put('$at-pair', m.between == null ? '-' : pairSaid(m.between!));
+          put('$at-unanswered', m.unanswered.map((y) => y.key).join(','));
+          put('$at-held', m.held.map(heldSaid).join(' '));
+        }
         put(
           '$stem-year-claims',
           yearLord.claims

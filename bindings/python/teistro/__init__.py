@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import ctypes
 import ctypes.util
+import itertools
 import json
 import math
 import os
@@ -105,6 +106,8 @@ from .catalogue import (
     Shodhana,
     TajikaDrishti,
     TajikaYoga,
+    YearYoga,
+    Affliction,
     Vaiseshikamsa,
     DashaPhase,
     Nature,
@@ -316,6 +319,14 @@ __all__ = [
     "YearClaim",
     "YearLord",
     "VarshaRequest",
+    "YearYoga",
+    "Affliction",
+    "Afflictions",
+    "DrishtiRules",
+    "HeldYearYoga",
+    "TajikaBetween",
+    "TajikaMatter",
+    "YogaRules",
     "RashiDashaDefinition",
     "UduDashaDefinition",
     "DashaLord",
@@ -2486,6 +2497,47 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
     """The readings the year lord's chain parts on, where authorities
     differ; the source's own by default."""
 
+    matters: Union[Literal["all"], List[int]]
+    """The matters each year's sixteen Tajika yogas are judged for:
+    `"all"`, or house numbers 1 to 12 in the order you want them answered.
+    Fourteen of the sixteen are judgements about the lagnesha and the lord
+    of the house asked about, so they answer a matter and not a chart.
+    **Needs `place`**; absent, none is judged."""
+
+    yogas: "YogaRules"
+    """The readings the sixteen part on, where the source leaves a choice;
+    its own by default."""
+
+
+class YogaRules(TypedDict, total=False):
+    """Where the source leaves the sixteen Tajika yogas a choice, each a
+    named reading (`03-design/tajika-yogas.md`).
+
+    >>> rules: YogaRules = {"tambira": "either_lord", "strong_from": 12 * 3600}
+    """
+
+    drishti: "DrishtiRules"
+    """How a pair less than a degree past reads (crux C112)."""
+
+    weak_below: int
+    """The strength below which a planet with no dignity is weak, in
+    **sub-sub units**, 3600 to a unit: `5 * 3600` by default (crux C116)."""
+
+    strong_from: int
+    """The strength from which a planet is strong, sub-sub units; `10 * 3600`
+    by default."""
+
+    tambira: Literal["karyesha", "either_lord"]
+    """Which lord a Tambira lets reach the next sign: the definition's
+    karyesha by default, or either, the source's "some authorities"."""
+
+
+class DrishtiRules(TypedDict, total=False):
+    """How the Tajika aspects read a pair less than a degree past."""
+
+    sub_degree: Literal["poorna", "ishrafa"]
+    """Poorna, the default, or Ishrafa (crux C112)."""
+
 
 class VarsheshaRules(TypedDict, total=False):
     """Where the sources differ on the lord of the year, each a named
@@ -2626,6 +2678,109 @@ class TajikaPair:
 
 
 @dataclass(frozen=True)
+class TajikaBetween:
+    """Two planets of an annual chart, and what they make — which may be
+    nothing."""
+
+    faster: Graha
+    """The faster of the two by the tradition's ranking."""
+
+    slower: Graha
+    """The slower."""
+
+    drishti: TajikaDrishti
+    """The aspect between the signs they stand in."""
+
+    yoga: Optional[TajikaYoga]
+    """What they are doing; `None` when they make neither an Ithasala nor an
+    Ishrafa."""
+
+    orb_deg: float
+    """The orb governing them, degrees: the mean of their deeptamshas."""
+
+    apart_deg: float
+    """How far apart within their signs, degrees; positive when the faster
+    is behind the slower and coming to it."""
+
+
+@dataclass(frozen=True)
+class Afflictions:
+    """The two lords' afflictions, clause by clause: what made a Rudda or a
+    Durapha."""
+
+    lagnesha: List[Affliction]
+    """The lagnesha's."""
+
+    karyesha: List[Affliction]
+    """The karyesha's."""
+
+
+@dataclass(frozen=True)
+class HeldYearYoga:
+    """One of the sixteen holding, with what made it hold."""
+
+    yoga: YearYoga
+    """Which of the sixteen."""
+
+    between: Optional[TajikaBetween]
+    """The lords' own relation, where that is what made it."""
+
+    through: Optional[Graha]
+    """The third planet it turns on, where one does."""
+
+    entering: Optional[Graha]
+    """The planet judged on entering the next sign: Gairi-Kamboola's Moon,
+    Tambira's lord."""
+
+    legs: Optional[Tuple[TajikaBetween, TajikaBetween]]
+    """How the third planet stands to each of the pair, read from the next
+    sign for `entering`."""
+
+    afflictions: Optional[Afflictions]
+    """The lords' afflictions, where those made it: Rudda and Durapha."""
+
+
+@dataclass(frozen=True)
+class TajikaMatter:
+    """The sixteen Tajika yogas for one matter of a year: the question it
+    asked as well as the answer, because a list of yogas whose pair a reader
+    cannot see is not checkable."""
+
+    house: int
+    """The house asked about, 1 to 12, counted from the annual lagna."""
+
+    sign: Rashi
+    """The sign that house falls in."""
+
+    lagnesha: Graha
+    """The lord of the annual lagna."""
+
+    karyesha: Graha
+    """The lord of the house asked about."""
+
+    same_lord: bool
+    """One planet is both — always so of the first house — so there is no
+    pair to judge."""
+
+    between: Optional[TajikaBetween]
+    """How the two lords stand to each other; `None` when they are one."""
+
+    held: List[HeldYearYoga]
+    """Every yoga that holds, once for each third planet that makes it."""
+
+    unanswered: List[YearYoga]
+    """The yogas this call could not answer for. A yoga absent from `held`
+    did not hold **only** if it is not listed here."""
+
+    def holds(self, yoga: YearYoga) -> Optional[bool]:
+        """Whether `yoga` holds: `None` where this call could not say, which
+        is not the same answer as `False`."""
+        if yoga in self.unanswered:
+            return None
+        return any(one.yoga == yoga for one in self.held)
+
+
+@dataclass(frozen=True)
 class AnnualChart:
     """A return's own chart, read down to what Tajika reads from it."""
 
@@ -2646,6 +2801,17 @@ class AnnualChart:
     """The pairs of the seven that make a Tajika yoga in this chart. The
     pairs that make none do not cross; Rust's `sdk.chart().drishtis` has all
     twenty-one."""
+
+    retrograde: List[Graha]
+    """The seven retrograde in this chart: what the matters were judged on."""
+
+    combust: List[Graha]
+    """The seven combust in this chart, under the context's combustion
+    table."""
+
+    matters: List[TajikaMatter]
+    """The sixteen yogas for each matter `varsha["matters"]` asked about, in
+    its order; empty otherwise."""
 
 
 @dataclass(frozen=True)
@@ -2932,12 +3098,33 @@ def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
     A residence is taken in the parts `found` takes and written in the
     boundary's words; a word crosses as written, so a wrong one is refused
     by the SDK, by `varsha_json.place`, as in every binding."""
-    place = varsha.get("place") if isinstance(varsha, Mapping) else None
+    if not isinstance(varsha, Mapping):
+        return _record_json(varsha, "varsha", "{'reading': 'sidereal', 'through': 40}")
+    written: Dict[str, Any] = dict(varsha)
+    place = written.get("place")
     if isinstance(place, Mapping):
-        written: Dict[str, Any] = dict(varsha or {})
         written["place"] = _annual_place(place)
-        return _record_json(written, "varsha", "{'through': 40, 'place': 'birth'}")
-    return _record_json(varsha, "varsha", "{'reading': 'sidereal', 'through': 40}")
+    # The rule records are written in Python's own keys and read in the
+    # boundary's, as the place is.
+    for rules in ("varshesha", "yogas"):
+        if isinstance(written.get(rules), Mapping):
+            written[rules] = _camel_keys(written[rules])
+    return _record_json(written, "varsha", "{'through': 40, 'place': 'birth'}")
+
+
+def _camel_keys(record: Mapping[str, Any]) -> Dict[str, Any]:
+    """A rule record's keys in the boundary's casing, all the way down: the
+    values, which are the readings' own words, are left as written. A key
+    this does not know is translated all the same, so the SDK refuses it by
+    the name it crosses as."""
+    def camel(key: str) -> str:
+        head, *rest = key.split("_")
+        return head + "".join(part[:1].upper() + part[1:] for part in rest)
+
+    return {
+        camel(key): _camel_keys(value) if isinstance(value, Mapping) else value
+        for key, value in record.items()
+    }
 
 
 def _annual_place(place: Mapping[str, Any]) -> Dict[str, Any]:
@@ -2957,7 +3144,102 @@ def _annual_place(place: Mapping[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _annual_chart(decoded: Any, row: int) -> Optional[AnnualChart]:
+class _Starts(NamedTuple):
+    """Where each row's block starts in each ragged section under the
+    annual charts: `starts[row]` to `starts[row + 1]`. Computed once for a
+    chart's years rather than once a year, so reading them is linear."""
+
+    claims: List[int]
+    yogas: List[int]
+    matters: List[int]
+    held: List[int]
+    legs: List[int]
+
+    @staticmethod
+    def of(decoded: Any) -> "_Starts":
+        def running(counts: Sequence[int]) -> List[int]:
+            return [0, *itertools.accumulate(counts)]
+
+        charts = decoded.annual_charts
+        return _Starts(
+            claims=running(charts.claim_count),
+            yogas=running(charts.yoga_count),
+            matters=running(charts.matter_count),
+            held=running(decoded.year_matters.held_count),
+            legs=running(decoded.matter_yogas.leg_count),
+        )
+
+
+def _between(section: Any, k: int, prefix: str = "") -> TajikaBetween:
+    """How two planets stand, from a section carrying the pair columns: a
+    matter's lords (under `pair_`) or a yoga's legs."""
+    def at(name: str) -> Any:
+        return getattr(section, prefix + name)
+
+    return TajikaBetween(
+        faster=Graha(at("faster")[k]),
+        slower=Graha(at("slower")[k]),
+        drishti=TajikaDrishti(at("drishti")[k]),
+        yoga=TajikaYoga(at("yoga")[k]) if at("yoga_present")[k] == 1 else None,
+        orb_deg=at("orb_deg")[k],
+        apart_deg=at("apart_deg")[k],
+    )
+
+
+def _members(bits: int, of: Any) -> List[Any]:
+    """The members of a bit set over a small closed enum, in id order: bit
+    `n` is the member with id `n`."""
+    return [member for member in of if bits & (1 << int(member))]
+
+
+def _matters(decoded: Any, row: int, starts: _Starts) -> List[TajikaMatter]:
+    """A year's matters, each with its question, the lords' pair, what it
+    could not answer, and every yoga that held — ragged three deep
+    (`03-design/tajika-yogas.md`, "Crossing the boundary")."""
+    matters = decoded.year_matters
+    held = decoded.matter_yogas
+    found = []
+    for m in range(starts.matters[row], starts.matters[row + 1]):
+        between = None if matters.same_lord[m] == 1 else _between(matters, m, "pair_")
+        yogas = [
+            HeldYearYoga(
+                yoga=YearYoga(held.yoga[h]),
+                between=between if held.by_pair[h] == 1 else None,
+                through=Graha(held.through[h]) if held.through_present[h] == 1 else None,
+                entering=Graha(held.entering[h]) if held.entering_present[h] == 1 else None,
+                legs=(
+                    (_between(decoded.matter_legs, starts.legs[h]),
+                     _between(decoded.matter_legs, starts.legs[h] + 1))
+                    if held.leg_count[h] == 2
+                    else None
+                ),
+                afflictions=(
+                    Afflictions(
+                        lagnesha=_members(held.lagnesha_afflictions[h], Affliction),
+                        karyesha=_members(held.karyesha_afflictions[h], Affliction),
+                    )
+                    if held.afflictions_present[h] == 1
+                    else None
+                ),
+            )
+            for h in range(starts.held[m], starts.held[m + 1])
+        ]
+        found.append(
+            TajikaMatter(
+                house=matters.house[m],
+                sign=Rashi(matters.sign[m]),
+                lagnesha=Graha(matters.lagnesha[m]),
+                karyesha=Graha(matters.karyesha[m]),
+                same_lord=matters.same_lord[m] == 1,
+                between=between,
+                held=yogas,
+                unanswered=_members(matters.unanswered[m], YearYoga),
+            )
+        )
+    return found
+
+
+def _annual_chart(decoded: Any, row: int, starts: _Starts) -> Optional[AnnualChart]:
     """Row `row` of `annual_charts`, which runs beside `praveshas` row for
     row or is empty; anything between is a layout this layer cannot pair,
     and it says so rather than giving a year another year's chart."""
@@ -2970,11 +3252,11 @@ def _annual_chart(decoded: Any, row: int) -> Optional[AnnualChart]:
             f"{len(decoded.praveshas.year)} returns; it is all of them or none"
         )
     # The claims are ragged by `claim_count`, as the returns are by
-    # `pravesha_count`: walk to this year's block and take its own count.
-    start = sum(charts.claim_count[i] for i in range(row))
+    # `pravesha_count`: this year's block starts where the ones before end.
+    start = starts.claims[row]
     count = charts.claim_count[row]
     claims = decoded.year_claims
-    yoga_start = sum(charts.yoga_count[i] for i in range(row))
+    yoga_start = starts.yogas[row]
     pairs = decoded.year_yogas
     return AnnualChart(
         lagna_deg=charts.lagna_deg[row],
@@ -3012,7 +3294,14 @@ def _annual_chart(decoded: Any, row: int) -> Optional[AnnualChart]:
             )
             for i in range(yoga_start, yoga_start + charts.yoga_count[row])
         ],
+        retrograde=_members(charts.retrograde[row], _SEVEN),
+        combust=_members(charts.combust[row], _SEVEN),
+        matters=_matters(decoded, row, starts),
     )
+
+
+#: The seven the Tajika bit sets range over, Sun to Saturn: graha ids 0 to 6.
+_SEVEN = [Graha(n) for n in range(7)]
 
 
 def _bala(sub_sub: int) -> Bala:
@@ -3402,6 +3691,7 @@ class Chart:
         counts = decoded.cast.pravesha_count
         start = sum(counts[i] for i in range(self.index))
         columns = decoded.praveshas
+        starts = _Starts.of(decoded)
         return [
             Pravesha(
                 year=columns.year[i],
@@ -3411,7 +3701,7 @@ class Chart:
                     lord=Graha(columns.muntha_lord[i]),
                     longitude_deg=columns.muntha_deg[i],
                 ),
-                annual=_annual_chart(decoded, i),
+                annual=_annual_chart(decoded, i, starts),
             )
             for i in range(start, start + counts[self.index])
         ]

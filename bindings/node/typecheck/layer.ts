@@ -315,3 +315,34 @@ function theYearsOwnChart(ctx: Context): string {
 }
 
 void theYearsOwnChart;
+
+// The sixteen Tajika yogas for a year's matters, read all the way down,
+// with the rule records in the casing the declarations promise — which
+// the boundary once refused for `noneAspects`.
+function theYearsMatters(ctx: Context): string {
+  const annual = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    varsha: {
+      through: 2,
+      place: 'birth',
+      matters: [7, 10],
+      yogas: { drishti: { subDegree: 'ishrafa' }, weakBelow: 5 * 3600, tambira: 'either_lord' },
+      varshesha: { noneAspects: 'annual_lagna_lord' },
+    },
+  }).praveshas[0]!.annual!;
+  const matter = annual.matters[0]!;
+  const promised: boolean | null = matter.holds('ithasala');
+  const pair: number = matter.between?.apartDeg ?? 0;
+  const held = matter.held[0];
+  const legs: number = held?.legs?.[1].orbDeg ?? 0;
+  const through: string = held?.through ?? '-';
+  const clauses: readonly string[] = held?.afflictions?.karyesha ?? [];
+  const states = `${annual.retrograde.join()} ${annual.combust.join()}`;
+  // @ts-expect-error a matter is 'all' or house numbers, not a word of its own
+  ctx.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, varsha: { through: 1, matters: 'some' } });
+  return `${matter.house} ${matter.sign} ${promised} ${pair} ${legs} ${through} ${clauses} ${states} ${matter.unanswered}`;
+}
+
+void theYearsMatters;

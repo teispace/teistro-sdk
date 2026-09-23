@@ -635,6 +635,9 @@ export function decodeCharts(bytes) {
       moonPassedOver: column(blob, at, 9, 'u8', at.count),
       claimCount: column(blob, at, 10, 'u8', at.count),
       yogaCount: column(blob, at, 11, 'u8', at.count),
+      retrograde: column(blob, at, 12, 'u8', at.count),
+      combust: column(blob, at, 13, 'u8', at.count),
+      matterCount: column(blob, at, 14, 'u8', at.count),
       length: at.count,
     };
   }
@@ -657,6 +660,55 @@ export function decodeCharts(bytes) {
       yoga: column(blob, at, 3, 'u8', at.count),
       orbDeg: column(blob, at, 4, 'f64', at.count),
       apartDeg: column(blob, at, 5, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 39, 'year_matters');
+    out.yearMatters = {
+      house: column(blob, at, 0, 'u8', at.count),
+      sign: column(blob, at, 1, 'u16', at.count),
+      lagnesha: column(blob, at, 2, 'u16', at.count),
+      karyesha: column(blob, at, 3, 'u16', at.count),
+      sameLord: column(blob, at, 4, 'u8', at.count),
+      pairFaster: column(blob, at, 5, 'u16', at.count),
+      pairSlower: column(blob, at, 6, 'u16', at.count),
+      pairDrishti: column(blob, at, 7, 'u8', at.count),
+      pairYoga: column(blob, at, 8, 'u8', at.count),
+      pairYogaPresent: column(blob, at, 9, 'u8', at.count),
+      pairOrbDeg: column(blob, at, 10, 'f64', at.count),
+      pairApartDeg: column(blob, at, 11, 'f64', at.count),
+      unanswered: column(blob, at, 12, 'u16', at.count),
+      heldCount: column(blob, at, 13, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 40, 'matter_yogas');
+    out.matterYogas = {
+      yoga: column(blob, at, 0, 'u8', at.count),
+      byPair: column(blob, at, 1, 'u8', at.count),
+      through: column(blob, at, 2, 'u16', at.count),
+      throughPresent: column(blob, at, 3, 'u8', at.count),
+      entering: column(blob, at, 4, 'u16', at.count),
+      enteringPresent: column(blob, at, 5, 'u8', at.count),
+      afflictionsPresent: column(blob, at, 6, 'u8', at.count),
+      lagneshaAfflictions: column(blob, at, 7, 'u8', at.count),
+      karyeshaAfflictions: column(blob, at, 8, 'u8', at.count),
+      legCount: column(blob, at, 9, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 41, 'matter_legs');
+    out.matterLegs = {
+      faster: column(blob, at, 0, 'u16', at.count),
+      slower: column(blob, at, 1, 'u16', at.count),
+      drishti: column(blob, at, 2, 'u8', at.count),
+      yoga: column(blob, at, 3, 'u8', at.count),
+      yogaPresent: column(blob, at, 4, 'u8', at.count),
+      orbDeg: column(blob, at, 5, 'f64', at.count),
+      apartDeg: column(blob, at, 6, 'f64', at.count),
       length: at.count,
     };
   }

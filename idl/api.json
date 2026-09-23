@@ -6718,6 +6718,127 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsYearYoga",
+      "doc": "One of the sixteen Tajika yogas of the annual chart (K.S. Charak,\nTable X-3; `03-design/tajika-yogas.md`), in the table's order.\n\nMirrors `teistro::YearYoga` through an **exhaustive** match, so a yoga\nadded there stops this crate compiling rather than crossing as another.\nIts ids are also the bit positions of `year_matters.unanswered`.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Ikabala",
+          "value": 0,
+          "doc": "Every planet in a kendra or a panaphara: a fact about the chart."
+        },
+        {
+          "name": "Induvara",
+          "value": 1,
+          "doc": "Every planet in an apoklima: a fact about the chart."
+        },
+        {
+          "name": "Ithasala",
+          "value": 2,
+          "doc": "The lagnesha and the karyesha are coming together, in one of the\nthree kinds `TsTajikaYoga` enumerates."
+        },
+        {
+          "name": "Ishrafa",
+          "value": 3,
+          "doc": "The pair are drawing apart."
+        },
+        {
+          "name": "Nakta",
+          "value": 4,
+          "doc": "The two do not aspect, and a planet faster than both carries the\nlight between them: past one, coming to the other."
+        },
+        {
+          "name": "Yamaya",
+          "value": 5,
+          "doc": "The two do not aspect, and a planet slower than both gathers their\nlight: both are coming to it."
+        },
+        {
+          "name": "Manau",
+          "value": 6,
+          "doc": "An Ithasala a malefic destroys."
+        },
+        {
+          "name": "Kamboola",
+          "value": 7,
+          "doc": "An Ithasala the Moon joins."
+        },
+        {
+          "name": "GairiKamboola",
+          "value": 8,
+          "doc": "An Ithasala an unqualified Moon completes on entering the next sign."
+        },
+        {
+          "name": "Khallasara",
+          "value": 9,
+          "doc": "An Ithasala an unqualified Moon negates by standing apart from it."
+        },
+        {
+          "name": "Rudda",
+          "value": 10,
+          "doc": "An Ithasala where either of the pair is afflicted."
+        },
+        {
+          "name": "DuhphaliKuttha",
+          "value": 11,
+          "doc": "An Ithasala where the slower is strong and the faster weak."
+        },
+        {
+          "name": "DutthotthaDavira",
+          "value": 12,
+          "doc": "Both weak, and one in Ithasala with a third, strong planet."
+        },
+        {
+          "name": "Tambira",
+          "value": 13,
+          "doc": "No aspect and no Ithasala, the karyesha completing one from the\nnext sign."
+        },
+        {
+          "name": "Kuttha",
+          "value": 14,
+          "doc": "Both powerful, well placed and under benefic influence; listed in\n`unanswered` while this build cannot compute it (crux C117)."
+        },
+        {
+          "name": "Durapha",
+          "value": 15,
+          "doc": "Both weak, in the trika houses, combust or retrograde."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsAffliction",
+      "doc": "One of the five clauses of the source's **affliction**, which Rudda\nand Durapha read. Its ids are the bit positions of\n`matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Retrograde",
+          "value": 0,
+          "doc": "Going backwards through the zodiac."
+        },
+        {
+          "name": "Combust",
+          "value": 1,
+          "doc": "Burnt by the Sun."
+        },
+        {
+          "name": "Debilitated",
+          "value": 2,
+          "doc": "In its sign of debilitation."
+        },
+        {
+          "name": "Trika",
+          "value": 3,
+          "doc": "In the 6th, 8th or 12th house from the annual lagna."
+        },
+        {
+          "name": "UnderMalefic",
+          "value": 4,
+          "doc": "Conjunct or inimically aspected by one of Tajika's malefics."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsScale",
       "doc": "A time scale of the conversions; the first two ids are the port's.",
       "repr": "u32",
@@ -14403,6 +14524,21 @@
               "name": "yoga_count",
               "scalar": "u8",
               "doc": "How many rows of the `year_yogas` section belong to this year: the pairs of the seven that make an Ithasala or an Ishrafa, 0 to 21."
+            },
+            {
+              "name": "retrograde",
+              "scalar": "u8",
+              "doc": "The seven that are retrograde in this year's chart, as a bit set: bit `n` is the graha with catalogue id `n`. What the matters' yogas were judged on."
+            },
+            {
+              "name": "combust",
+              "scalar": "u8",
+              "doc": "The seven that are combust in this year's chart, under the context's combustion table, as a bit set like `retrograde`."
+            },
+            {
+              "name": "matter_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `year_matters` section belong to this year: the matters `varsha_json.matters` asked about, 0 to 12."
             }
           ]
         },
@@ -14471,6 +14607,190 @@
               "name": "apart_deg",
               "scalar": "f64",
               "doc": "How far apart they stand **within their signs**, degrees, the completed signs deleted as the tradition counts them: positive when the faster is behind the slower and coming to it, negative when it is past."
+            }
+          ]
+        },
+        {
+          "id": 39,
+          "name": "year_matters",
+          "doc": "Every annual chart's matters, concatenated in the `annual_charts` section's order and **ragged** by its `matter_count`, each year's in the order `varsha_json.matters` named them. Fourteen of the sixteen Tajika yogas are judgements about the lagnesha and the karyesha, so each row is the question as well as where its answer starts (`03-design/tajika-yogas.md`). Empty unless matters were asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "The house asked about, 1 to 12, counted from the annual lagna by whole signs."
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign that house falls in, a `rashi` id."
+            },
+            {
+              "name": "lagnesha",
+              "scalar": "u16",
+              "doc": "The lord of the annual lagna, a `graha` id."
+            },
+            {
+              "name": "karyesha",
+              "scalar": "u16",
+              "doc": "The lord of the house asked about, a `graha` id."
+            },
+            {
+              "name": "same_lord",
+              "scalar": "u8",
+              "doc": "1 when one planet is both lords — always so of the first house — and there is no pair to judge; the `pair_*` columns are then read not at all."
+            },
+            {
+              "name": "pair_faster",
+              "scalar": "u16",
+              "doc": "The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id."
+            },
+            {
+              "name": "pair_slower",
+              "scalar": "u16",
+              "doc": "The slower of the two, a `graha` id."
+            },
+            {
+              "name": "pair_drishti",
+              "scalar": "u8",
+              "doc": "The Tajika aspect between the signs they stand in; `NONE` where they stand in the neutral houses.",
+              "enum": "TsTajikaDrishti"
+            },
+            {
+              "name": "pair_yoga",
+              "scalar": "u8",
+              "doc": "What they are doing, read only when the yoga is present.",
+              "enum": "TsTajikaYoga"
+            },
+            {
+              "name": "pair_yoga_present",
+              "scalar": "u8",
+              "doc": "1 when they make an Ithasala or an Ishrafa; 0 when they make neither."
+            },
+            {
+              "name": "pair_orb_deg",
+              "scalar": "f64",
+              "doc": "The orb governing the pair, degrees: the mean of their two deeptamshas."
+            },
+            {
+              "name": "pair_apart_deg",
+              "scalar": "f64",
+              "doc": "How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past."
+            },
+            {
+              "name": "unanswered",
+              "scalar": "u16",
+              "doc": "The yogas this call could not answer for, as a bit set: bit `n` is the `TsYearYoga` with id `n`. A yoga absent from `matter_yogas` did not hold **only** if it is not here."
+            },
+            {
+              "name": "held_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `matter_yogas` section belong to this matter: the yogas that hold, one row each time one holds."
+            }
+          ]
+        },
+        {
+          "id": 40,
+          "name": "matter_yogas",
+          "doc": "Every matter's yogas that hold, concatenated in the `year_matters` section's order and **ragged** by its `held_count`. A yoga may hold more than once in a matter, once for each third planet that makes it.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "yoga",
+              "scalar": "u8",
+              "doc": "Which of the sixteen.",
+              "enum": "TsYearYoga"
+            },
+            {
+              "name": "by_pair",
+              "scalar": "u8",
+              "doc": "1 when the lords' own relation, the matter's `pair_*`, is what made it: an Ithasala or an Ishrafa, and the judgements upon an Ithasala."
+            },
+            {
+              "name": "through",
+              "scalar": "u16",
+              "doc": "The third planet it turns on, a `graha` id, read only when `through_present`: the one that carried or gathered the light, the malefic, the Moon, or the strong planet a lord is drawn to."
+            },
+            {
+              "name": "through_present",
+              "scalar": "u8",
+              "doc": "1 when there is a third planet."
+            },
+            {
+              "name": "entering",
+              "scalar": "u16",
+              "doc": "The planet judged on entering the next sign, a `graha` id, read only when `entering_present`: Gairi-Kamboola's Moon or Tambira's lord at a sign's end. Its legs are then read from the next sign's first degree."
+            },
+            {
+              "name": "entering_present",
+              "scalar": "u8",
+              "doc": "1 when a planet was judged on entering the next sign."
+            },
+            {
+              "name": "afflictions_present",
+              "scalar": "u8",
+              "doc": "1 when the lords' afflictions are what made it: Rudda and Durapha."
+            },
+            {
+              "name": "lagnesha_afflictions",
+              "scalar": "u8",
+              "doc": "The lagnesha's afflictions, as a bit set: bit `n` is the `TsAffliction` with id `n`. Read only when `afflictions_present`."
+            },
+            {
+              "name": "karyesha_afflictions",
+              "scalar": "u8",
+              "doc": "The karyesha's afflictions, as a bit set like `lagnesha_afflictions`."
+            },
+            {
+              "name": "leg_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `matter_legs` section belong to this yoga: none, or two — how the third planet stands to each of the pair."
+            }
+          ]
+        },
+        {
+          "id": 41,
+          "name": "matter_legs",
+          "doc": "Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "faster",
+              "scalar": "u16",
+              "doc": "The faster of the two by the tradition's ranking — Moon, Mercury, Venus, Sun, Mars, Jupiter, Saturn — a `graha` id."
+            },
+            {
+              "name": "slower",
+              "scalar": "u16",
+              "doc": "The slower of the two, a `graha` id."
+            },
+            {
+              "name": "drishti",
+              "scalar": "u8",
+              "doc": "The Tajika aspect between the signs they stand in; `NONE` where they stand in the neutral houses.",
+              "enum": "TsTajikaDrishti"
+            },
+            {
+              "name": "yoga",
+              "scalar": "u8",
+              "doc": "What they are doing, read only when the yoga is present.",
+              "enum": "TsTajikaYoga"
+            },
+            {
+              "name": "yoga_present",
+              "scalar": "u8",
+              "doc": "1 when they make an Ithasala or an Ishrafa; 0 when they make neither."
+            },
+            {
+              "name": "orb_deg",
+              "scalar": "f64",
+              "doc": "The orb governing the pair, degrees: the mean of their two deeptamshas."
+            },
+            {
+              "name": "apart_deg",
+              "scalar": "f64",
+              "doc": "How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past."
             }
           ]
         }

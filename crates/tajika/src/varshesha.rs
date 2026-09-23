@@ -85,6 +85,7 @@ pub enum MoonMayRule {
 /// The readings the year lord's chain parts on.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(default, rename_all = "camelCase")]
 pub struct VarsheshaRules {
     /// Who takes the year when nobody aspects the lagna.
     pub none_aspects: NoneAspects,
