@@ -21,14 +21,15 @@
 use std::fmt::Write as _;
 use std::path::Path;
 
+use teistro::House;
 use teistro::catalogue::{Graha, Rashi};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::tajika::{MOST_YEARS, MunthaDegree, Reading, Yoga};
+use teistro::tajika::{MOST_YEARS, MunthaDegree, Reading, YearYoga, Yoga};
 use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
 
 use crate::births::{Birth, CHARTS, births};
 use crate::generated::{Output, check, write};
-use crate::measure::{Claim, count, fill, listed, plural, table};
+use crate::measure::{Claim, capitalised, count, fill, listed, plural, spelled, table};
 
 const PAGE: &str = "docs/03-design/muntha-measured.md";
 
@@ -175,7 +176,9 @@ fn page(root: &Path) -> Result<String, String> {
     the_rival(&mut out, &sdk, &births)?;
     the_degree(&mut out, &sdk, &births)?;
     the_worked_year(&mut out)?;
-    the_kinds(&mut out, &sweep(&sdk, &births)?);
+    let swept = sweep(&sdk, &births)?;
+    the_kinds(&mut out, &swept);
+    the_sixteen(&mut out, &swept);
     Ok(fill(&out))
 }
 
@@ -682,6 +685,20 @@ struct Kinds {
     cut_short: Vec<String>,
     /// Why, in the SDK's own words, from the first refusal seen.
     refusal: String,
+    /// Questions asked: one per chart per house of the twelve.
+    matters: usize,
+    /// Matters whose two lords are one planet, so no pair is judged.
+    same_lord: usize,
+    /// How often each of the sixteen held, in `YearYoga::ALL` order.
+    yogas: [usize; 16],
+    /// Charts whose lagna is ruled by a luminary, which rules one sign.
+    ///
+    /// The same-lord count has an identity to satisfy: every chart
+    /// contributes its first house, and every chart but these
+    /// contributes one more. Counting the term separately is what lets
+    /// the page state that identity instead of printing a number nobody
+    /// can check.
+    luminary_lagna: usize,
 }
 
 /// Every pair of every annual chart of every recorded birth, sorted into
@@ -725,6 +742,30 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
                 .map_err(|why| format!("{}: its pairs: {why}", birth.name))?;
             kinds.charts += 1;
             kinds.pairs += pairs.len();
+            let lagna = Rashi::from_id(sign_of(annual.foundation.lagna_deg))
+                .ok_or_else(|| format!("{}: a lagna in no sign", birth.name))?;
+            if matches!(lagna.attributes().lord, Graha::Sun | Graha::Moon) {
+                kinds.luminary_lagna += 1;
+            }
+            for number in 1..=12u8 {
+                let house = House::try_new(number)
+                    .map_err(|why| format!("{}: house {number}: {why}", birth.name))?;
+                let asked = sdk
+                    .chart()
+                    .tajika_yogas(&annual, house)
+                    .map_err(|why| format!("{}: its yogas: {why}", birth.name))?;
+                kinds.matters += 1;
+                if asked.same_lord {
+                    kinds.same_lord += 1;
+                }
+                for one in &asked.held {
+                    if let Some(at) = YearYoga::ALL.iter().position(|y| *y == one.yoga) {
+                        if let Some(slot) = kinds.yogas.get_mut(at) {
+                            *slot += 1;
+                        }
+                    }
+                }
+            }
             for pair in pairs {
                 if !pair.drishti.is_aspect() {
                     continue;
@@ -743,22 +784,24 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
             }
         }
     }
+    // The same-lord count is decomposable, so decompose it and refuse a
+    // run that disagrees: every chart contributes its first house, and
+    // every chart but a luminary-ruled one contributes a second. A
+    // printed figure nobody can check is the part of a generated page
+    // that rots, so this is a failure and not a sentence.
+    let expected = 2 * kinds.charts - kinds.luminary_lagna;
+    if expected != kinds.same_lord {
+        return Err(format!(
+            "the same-lord count does not decompose: 2 x {} charts less {} \
+             luminary lagnas is {expected}, and {} matters were counted",
+            kinds.charts, kinds.luminary_lagna, kinds.same_lord,
+        ));
+    }
     Ok(kinds)
 }
 
 fn the_kinds(out: &mut String, kinds: &Kinds) {
-    let share = |part: usize| {
-        if kinds.aspecting == 0 {
-            String::from("--")
-        } else {
-            #[expect(
-                clippy::cast_precision_loss,
-                reason = "counts of a few tens of thousands, printed to one place"
-            )]
-            let percent = part as f64 * 100.0 / kinds.aspecting as f64;
-            format!("{percent:.1}%")
-        }
-    };
+    let share = |part: usize| share(part, kinds.aspecting);
     let _ = write!(
         out,
         "\n## 9. The four kinds, over the recorded years\n\n\
@@ -913,6 +956,89 @@ fn the_aspects(out: &mut String, geo: &Worked) {
             .map_or_else(|| String::from("none"), |yoga| format!("{yoga:?}")),
         geo.yogas,
     );
+}
+
+/// The sixteen, over every matter of every recorded year.
+fn the_sixteen(out: &mut String, kinds: &Kinds) {
+    let built: Vec<&YearYoga> = YearYoga::ALL.iter().filter(|one| one.is_built()).collect();
+    let rows: String = YearYoga::ALL
+        .iter()
+        .enumerate()
+        .map(|(at, yoga)| {
+            let held = kinds.yogas.get(at).copied().unwrap_or_default();
+            match yoga.awaiting() {
+                None => format!(
+                    "| **{yoga:?}** | built | {} | {} |\n",
+                    count(held),
+                    share(held, kinds.matters)
+                ),
+                Some(why) => format!("| {yoga:?} | *awaiting* | -- | {why} |\n"),
+            }
+        })
+        .collect();
+    let _ = write!(
+        out,
+        "\n## 10. The sixteen yogas, and the matters they answer\n\n\
+         Fourteen of the sixteen are not facts about a chart. They are \
+         judgements about a **pair** — the *lagnesha*, the lord of the \
+         annual lagna, and the *karyesha*, the lord of the house the \
+         matter asked about belongs to — so the same year answers \
+         differently for each of the twelve houses. Every chart above is \
+         asked all twelve, which is **{}** questions.\n\n\
+         | yoga | | held | of the matters asked |\n\
+         |---|---|---:|---|\n\
+         {}\n\n\
+         **{} of the sixteen are built** and the other {} are listed at \
+         every call rather than left out of the answer, because *did not \
+         hold* and *cannot be told* are different statements. \
+         `YearYogas::holds` answers `None` for those {}, never `false`.\n\n\
+         ### The first house is never a pair\n\n\
+         **{}** of the {} matters — {} — have one planet for both lords, \
+         so there is no pair to judge. That is not an edge case that \
+         crept in: the **first** house is the lagna itself, so its lord \
+         is the lagnesha by definition, and a question about the \
+         native's own self can never be one of these fourteen \
+         judgements. One further house is like it under a lagna ruled by \
+         one of the five that rule two signs, and none is under Cancer \
+         or Leo, where the luminaries rule one each. The answer reports \
+         it as `same_lord` rather than returning an empty list that \
+         would read as *nothing holds*.\n\n\
+         The count decomposes, and `cargo xtask muntha` **fails** if it \
+         ever stops decomposing, because a printed figure nobody can \
+         check is the part of a generated page that rots. Every one of \
+         the {} charts contributes its first house, and every chart but \
+         the {} whose lagna a **luminary** rules contributes one more, \
+         since the Sun rules Leo alone and the Moon Cancer alone: {} + \
+         ({} − {}) = **{}**.\n",
+        count(kinds.matters),
+        rows.trim_end(),
+        capitalised(&spelled(built.len())),
+        spelled(YearYoga::ALL.len() - built.len()),
+        spelled(YearYoga::ALL.len() - built.len()),
+        count(kinds.same_lord),
+        count(kinds.matters),
+        share(kinds.same_lord, kinds.matters),
+        count(kinds.charts),
+        count(kinds.luminary_lagna),
+        count(kinds.charts),
+        count(kinds.charts),
+        count(kinds.luminary_lagna),
+        count(2 * kinds.charts - kinds.luminary_lagna),
+    );
+}
+
+/// A count as a share of a total, to one place; `--` where the total is
+/// nothing, because a share of no questions is not zero.
+fn share(part: usize, of: usize) -> String {
+    if of == 0 {
+        return String::from("--");
+    }
+    #[expect(
+        clippy::cast_precision_loss,
+        reason = "counts of a few tens of thousands, printed to one place"
+    )]
+    let percent = part as f64 * 100.0 / of as f64;
+    format!("{percent:.1}%")
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {

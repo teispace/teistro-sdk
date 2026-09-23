@@ -221,7 +221,12 @@ impl TryFrom<u8> for SignRef {
     type Error = String;
 
     fn try_from(house: u8) -> Result<SignRef, String> {
-        House::try_new(house).map(SignRef::House)
+        // The rule language reports its own failures as prose, so the
+        // core refusal is said in its words here rather than the
+        // language gaining a second error type.
+        House::try_new(house)
+            .map(SignRef::House)
+            .map_err(|why| why.to_string())
     }
 }
 
@@ -585,7 +590,7 @@ impl Written {
         match self {
             Written::Number(n) => u8::try_from(n)
                 .map_err(|_| format!("house {n} is not 1 to 12"))
-                .and_then(House::try_new),
+                .and_then(|house| House::try_new(house).map_err(|why| why.to_string())),
             _ => Err(String::from("a house is written as its number, 1 to 12")),
         }
     }

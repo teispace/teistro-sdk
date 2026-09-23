@@ -1,7 +1,8 @@
 # The sixteen Tajika yogas
 
-Status: `designed`, 2026-09-23 — **not built**, except its step 1, which
-landed the same day. Written after reading the
+Status: **four of the sixteen built**, 2026-09-23; the other twelve
+designed and *named*, which is not the same as absent. Steps 1 and 2 of
+the order of work below landed the same day. Written after reading the
 source's Table X-3 off the page and before writing any of it, as every
 module since Phase 4 has been. The definitions are in
 [`01-research/feature-universe/07-tajika-varshaphala.md`](../01-research/feature-universe/07-tajika-varshaphala.md),
@@ -30,13 +31,44 @@ facts, and they are the two that say nothing about a matter.
 
 The API therefore takes a matter and answers for it:
 
-```
-sdk.chart().tajika_yogas(&annual, Bhava::Seventh) -> Vec<Yoga>
+```rust
+sdk.chart().tajika_yogas(&annual, House::try_new(7)?) -> YearYogas
 ```
 
 with the two chart-level yogas answered whatever is asked. A caller who
 wants "every yoga for every house" asks twelve times, which is honest
 about what it is doing.
+
+**The design said `Bhava::Seventh` and the building said `House`**, which
+is the page being corrected by the code as this repository expects. There
+is no `Bhava` in the catalogue and there should not be: a house is named
+by its number, and `House` — a newtype over 1 to 12 with its refusal in
+one place — already existed in `teistro_rules::language`, where three
+other crates were already reaching for it. It moved to `teistro_core`
+rather than being copied, because a second twelve-valued primitive is a
+second place to get the counting wrong. It gained `sign_from`, the
+inverse of its `between`, held by a test over all 144 pairs.
+
+### What the answer carries
+
+`YearYogas` carries the **question** as well as the answer — the house,
+its sign, the lagnesha and the karyesha — because a list of yogas whose
+pair a reader cannot see is not checkable. And it carries
+`unanswered`: the twelve this build cannot yet judge, listed at **every
+call**. `holds` returns `Option<bool>`, so *did not hold* and *cannot be
+told* are different values and not the same silence.
+
+### The first house is never a pair
+
+The building found this and the design had not: the first house's lord
+**is** the lagnesha, by definition, so a question about the native's own
+self can never be one of the fourteen pair judgements. One further house
+is the same under a lagna ruled by one of the five that rule two signs,
+and none is under Cancer or Leo. Over the corpus that is 3 899 of 25 908
+matters — 15.0% — reported as `same_lord` rather than returned as an
+empty list that would read as *nothing holds*. Whether the tradition
+reads one planet for both lords as the matter being promised outright is
+a question no text in reach answers, so it is reported and not decided.
 
 ## What each of the sixteen needs
 
@@ -105,8 +137,14 @@ nothing would have to explain that asymmetry, and the book does not.
 1. ~~The two corrections above, and `Poorna`, in `drishti`~~ — **done**,
    2026-09-23, alone as planned, because they moved a shipped enum. They
    opened C112, which ships as a reading rather than a decision.
-2. The **lagnesha and karyesha** pair, and the four yogas that need only
-   the aspects: Ithasala's three kinds, Ishrafa, Nakta, Yamaya.
+2. ~~The **lagnesha and karyesha** pair, and the four yogas that need
+   only the aspects~~ — **done**, 2026-09-23. Ithasala (in all three of
+   its kinds), Ishrafa, Nakta and Yamaya. Nakta and Yamaya wanted one
+   thing the aspects did not have: the source measures a third planet's
+   reach by **its own** deeptamsha and not by the mean it would share
+   with each of the pair, so the orb was lifted out of `between` into a
+   crate-private `between_within` rather than the four bands being
+   written a second time.
 3. The ones that need the strength and the chart's dignities: Manau,
    Kamboola, Khallasara, Rudda, Duhphali-kuttha, Dutthottha-Davira,
    Tambira, Kuttha, Durapha.
@@ -123,7 +161,8 @@ nothing would have to explain that asymmetry, and the book does not.
 |---|---|
 | **decided** | that the module takes a matter and answers for it, because the sources define fourteen of sixteen against a karyesha; that the two chart-level yogas answer regardless |
 | **not decided** | what "strong" and "weak" mean for a yoga, where the source gives a floor only for the year lord; whether "benefic influence" means Tajika's own benefics or the chart's readings; the two cruxes above |
-| **not built** | all sixteen. What they are built *on* — the three kinds of Ithasala, the Ishrafa, the strength and the dignities — is built |
+| **built** | Ithasala, Ishrafa, Nakta and Yamaya, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**; `YearYoga::ALL` names all sixteen and `YearYoga::awaiting` says what each of the other twelve still needs, matched exhaustively so a yoga cannot be added without a decision |
+| **not built** | twelve of the sixteen, each naming its blocker at every call. They do **not** cross the boundary yet: the sixteen answer a *matter*, so crossing them means deciding which matters a caller asks for — the same shape as the residence decision `varsha_json.place`, and its own unit |
 
 ## Why this page exists before the code
 

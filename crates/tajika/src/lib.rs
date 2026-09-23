@@ -35,6 +35,7 @@ mod muntha;
 mod office;
 mod varsha;
 mod varshesha;
+mod yoga;
 
 pub use bala::{
     AnnualSky, Bala, Panchavargiya, Relation, SEVEN, drekkana_lord, hudda_lord, navamsha_lord,
@@ -54,3 +55,4 @@ pub use varsha::{
 pub use varshesha::{
     Chosen, Claim, NoneAspects, Varshesha, VarsheshaRules, WEAK_BELOW, aspects, varshesha,
 };
+pub use yoga::{Held, YearYoga, YearYogas, year_yogas, year_yogas_with_rules};
