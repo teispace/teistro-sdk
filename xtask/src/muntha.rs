@@ -29,7 +29,10 @@ use teistro::tajika::{
     Strength, TambiraMover, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YearYoga, YearYogas, Yoga,
     YogaRules,
 };
-use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
+use teistro::{
+    AddSign, ChartRequest, Context, Document, Ephemeris, HousePoints, RogaReading, Saham,
+    SahamReading, SahamRules, SahamTerm, UtcOffset,
+};
 
 use crate::births::{Birth, CHARTS, births};
 use crate::generated::{Output, check, write};
@@ -186,6 +189,7 @@ fn page(root: &Path) -> Result<String, String> {
     the_floors(&mut out, &swept)?;
     what_spoils_an_ithasala(&mut out, &sdk, &swept);
     what_happens_next(&mut out, &swept);
+    the_sahams(&mut out, &swept);
     Ok(fill(&out))
 }
 
@@ -795,6 +799,42 @@ struct Kinds {
     moon_at_end: usize,
     /// Of those, the ones whose Moon was unqualified.
     moon_at_end_unqualified: usize,
+    /// What each reading of the sahams makes of every chart.
+    sahams: SahamCounts,
+}
+
+/// The sahams of every chart, under the source's readings and each rival.
+///
+/// Every column is one per saham, in `Saham::ALL` order.
+struct SahamCounts {
+    /// Charts cast between sunrise and sunset, read by the day formulas.
+    by_day: usize,
+    /// Sahams carried one sign on under the default reading.
+    added: Vec<usize>,
+    /// Sahams whose longitude moves when no sign is ever added. Must be
+    /// exactly `added`: a pass that could not see that would be counting
+    /// something other than the rule.
+    never_moved: Vec<usize>,
+    /// Sahams standing in another sign when "between" counts whole signs.
+    signs_moved: Vec<usize>,
+    /// Sahams standing in another sign under equal houses from the lagna.
+    equal_moved: Vec<usize>,
+    /// Charts whose Roga stands in another sign under the Saturn reading.
+    roga_moved: usize,
+}
+
+impl Default for SahamCounts {
+    fn default() -> SahamCounts {
+        let column = || vec![0; Saham::ALL.len()];
+        SahamCounts {
+            by_day: 0,
+            added: column(),
+            never_moved: column(),
+            signs_moved: column(),
+            equal_moved: column(),
+            roga_moved: 0,
+        }
+    }
 }
 
 /// Every pair of every annual chart of every recorded birth, sorted into
@@ -874,6 +914,7 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
                 moon_unqualified: how.is_unqualified(),
             };
             ask_every_house(sdk, &chart, &mut kinds)?;
+            count_sahams(sdk, &annual, &birth.name, &mut kinds.sahams)?;
             for pair in pairs {
                 if !pair.drishti.is_aspect() {
                     continue;
@@ -907,6 +948,7 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
     }
     floors_hold(&kinds)?;
     projections_hold(&kinds)?;
+    sahams_hold(&kinds.sahams)?;
     Ok(kinds)
 }
 
@@ -2042,5 +2084,220 @@ fn what_happens_next(out: &mut String, kinds: &Kinds) {
         count(kinds.charts),
         count(kinds.tambira_either),
         count(tambira),
+    );
+}
+
+/// Reads one chart's forty-one sahams under the source's rules and each
+/// rival, and counts where the rivals move them.
+///
+/// Through `sdk.chart().sahams_with_rules`, the path a consumer calls, so
+/// what is counted is the module that answers.
+fn count_sahams(
+    sdk: &Context,
+    annual: &Document,
+    name: &str,
+    counts: &mut SahamCounts,
+) -> Result<(), String> {
+    let read = |rules: SahamRules| {
+        sdk.chart()
+            .sahams_with_rules(annual, &Saham::ALL, rules)
+            .map_err(|why| format!("{name}: its sahams: {why}"))
+    };
+    let source = SahamRules::default();
+    let base = read(source)?;
+    let never = read(SahamRules {
+        add_sign: AddSign::Never,
+        ..source
+    })?;
+    let signs = read(SahamRules {
+        add_sign: AddSign::Signs,
+        ..source
+    })?;
+    let equal = read(SahamRules {
+        houses: HousePoints::Equal,
+        ..source
+    })?;
+    let roga = read(SahamRules {
+        roga: RogaReading::Saturn,
+        ..source
+    })?;
+    if base.by_day {
+        counts.by_day += 1;
+    }
+    let moved = |rival: &SahamReading, column: &mut Vec<usize>, by_sign: bool| {
+        for ((slot, one), other) in column.iter_mut().zip(&base.points).zip(&rival.points) {
+            let differs = if by_sign {
+                one.point.sign != other.point.sign
+            } else {
+                // Round the circle, so 359.999… and 0 are the same place.
+                let apart = (one.point.longitude_deg - other.point.longitude_deg + 540.0)
+                    .rem_euclid(360.0)
+                    - 180.0;
+                apart.abs() > 1e-9
+            };
+            if differs {
+                *slot += 1;
+            }
+        }
+    };
+    for (slot, asked) in counts.added.iter_mut().zip(&base.points) {
+        if asked.point.added_sign {
+            *slot += 1;
+        }
+    }
+    moved(&never, &mut counts.never_moved, false);
+    moved(&signs, &mut counts.signs_moved, true);
+    moved(&equal, &mut counts.equal_moved, true);
+    let at = Saham::Roga.index();
+    if base.points.get(at).map(|p| p.point.sign) != roga.points.get(at).map(|p| p.point.sign) {
+        counts.roga_moved += 1;
+    }
+    Ok(())
+}
+
+/// Whether any factor of a saham, by day or by night, is of a kind.
+fn reads(saham: Saham, kind: fn(SahamTerm) -> bool) -> bool {
+    let formula = saham.formula(SahamRules::default());
+    [formula.day, formula.night]
+        .iter()
+        .flat_map(|triple| [triple.a, triple.b, triple.c])
+        .any(kind)
+}
+
+/// Whether a saham reads a house a reading can move.
+///
+/// The first house's point is the lagna under every reading, so a saham
+/// reading only its lord — Samarthya and Manmatha, "the lord of the
+/// ascendant" — reads the lagna's lord and cannot move with the houses.
+fn reads_a_house(saham: Saham) -> bool {
+    reads(saham, |term| match term {
+        SahamTerm::House(house) | SahamTerm::HouseLord(house) => house.get() != 1,
+        _ => false,
+    })
+}
+
+/// Whether a saham reads another saham, and so inherits its sign.
+fn reads_a_saham(saham: Saham) -> bool {
+    reads(saham, |term| matches!(term, SahamTerm::Saham(_)))
+}
+
+/// The identities the saham counts must satisfy, refused when they do not.
+fn sahams_hold(counts: &SahamCounts) -> Result<(), String> {
+    for saham in Saham::ALL {
+        let at = saham.index();
+        let (added, never) = (counts.added[at], counts.never_moved[at]);
+        // One that reads another moves with it too, so only its own sign
+        // is a count the identity can hold.
+        if !reads_a_saham(saham) && added != never {
+            return Err(format!(
+                "{saham:?} took the added sign {added} times and moved {never} times \
+                 when it was never added: the two must be one count"
+            ));
+        }
+        if !reads_a_house(saham) && counts.equal_moved[at] != 0 {
+            return Err(format!(
+                "{saham:?} reads no house and moved {} times under equal houses",
+                counts.equal_moved[at]
+            ));
+        }
+    }
+    for (one, other) in [
+        (Saham::Vidya, Saham::Guru),
+        (Saham::Raja, Saham::Pitri),
+        (Saham::Kshama, Saham::Kali),
+    ] {
+        let row = |saham: Saham| {
+            let at = saham.index();
+            (
+                counts.added[at],
+                counts.signs_moved[at],
+                counts.equal_moved[at],
+            )
+        };
+        if row(one) != row(other) {
+            return Err(format!(
+                "{one:?} shares {other:?}'s formula and not its counts"
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// §14: the sahams, and what each reading the tradition divides over
+/// moves.
+fn the_sahams(out: &mut String, kinds: &Kinds) {
+    let counts = &kinds.sahams;
+    let charts = kinds.charts;
+    let mut rows = String::new();
+    for saham in Saham::ALL {
+        let at = saham.index();
+        let equal = if reads_a_house(saham) {
+            share(counts.equal_moved[at], charts)
+        } else {
+            String::from("no house past the first")
+        };
+        let _ = writeln!(
+            rows,
+            "| {} {saham:?} | {} | {} | {equal} |",
+            at + 1,
+            share(counts.added[at], charts),
+            share(counts.signs_moved[at], charts),
+        );
+    }
+    let total = |column: &[usize]| column.iter().sum::<usize>();
+    let placed = charts * Saham::ALL.len();
+    let housed = Saham::ALL.iter().filter(|s| reads_a_house(**s)).count();
+    let derived: Vec<usize> = Saham::ALL
+        .iter()
+        .filter(|saham| reads_a_saham(**saham))
+        .map(|saham| saham.index())
+        .collect();
+    let _ = write!(
+        out,
+        "\n## 14. The sahams, and what each reading moves\n\n\
+         A saham is **a − b + c**, carried one sign further when c does not \
+         fall between b and a counted from b (`03-design/tajika-sahams.md`). \
+         The source gives forty-one, and each is read here in every chart \
+         under its readings and under each rival, through \
+         `sdk.chart().sahams_with_rules`. {} of the {} charts open by day \
+         and read the day formulas.\n\n\
+         **Two identities hold, and the pass fails if either does not:** a \
+         saham reading no other moves when no sign is ever added exactly as \
+         often as it took one, and a saham that reads no house never moves \
+         under equal houses — Samarthya and Manmatha among them, which read only the \
+         lagna's lord. The {} that read another saham also move with \
+         it: with no sign ever added they move in {} placements to the {} \
+         in which they took a sign themselves, because Punya, Guru and Vidya \
+         lose theirs. Over all forty-one, {} of {} placements took the \
+         sign. The three pairs the \
+         source gives one formula each — Vidya and Guru, Raja and Pitri, \
+         Kshama and Kali — agree in every column.\n\n\
+         **Counting \"between\" in whole signs moves {} placements in all \
+         ({}).** That is the reading a widely used program applies; the \
+         source's own birth-chart Punya refutes it, the Sun, lagna and \
+         Moon all in Leo. **Equal houses from the lagna put {}** of the \
+         placements of the {} sahams that read a house past the first in \
+         another sign \
+         than Sripati's mid-points do, which the source builds from the \
+         lagna and the midheaven and prints. This profile's own chalit is \
+         Vehlow's, equal houses centred on the lagna, which is why the \
+         default reads Sripati's from the angles and not the chart's \
+         chalit: read off the chalit, this column was zero. **Roga's \
+         second reading** stands in another sign in **{}** of {} charts.\n\n\
+         | saham | took the added sign | another sign, whole signs | another sign, equal houses |\n\
+         |---|---:|---:|---:|\n{rows}",
+        count(counts.by_day),
+        count(charts),
+        spelled(derived.len()),
+        count(derived.iter().map(|at| counts.never_moved[*at]).sum()),
+        count(derived.iter().map(|at| counts.added[*at]).sum()),
+        count(total(&counts.added)),
+        count(placed),
+        count(total(&counts.signs_moved)),
+        share(total(&counts.signs_moved), placed),
+        share(total(&counts.equal_moved), charts * housed),
+        spelled(housed),
+        count(counts.roga_moved),
+        count(charts),
     );
 }

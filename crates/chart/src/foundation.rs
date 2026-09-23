@@ -27,7 +27,9 @@ use teistro_core::envelope::Version;
 use teistro_core::envelope::{CALCULATION_VERSION, Envelope, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Tt, Ut1, Utc};
-use teistro_core::settings::{GhatiReckoning, HoraReckoning, Node, Resolved, Settings};
+use teistro_core::settings::{
+    GhatiReckoning, HoraReckoning, Node, PolarPolicy, Resolved, Settings,
+};
 use teistro_core::time::LocalClock;
 use teistro_port_ephemeris::columns::CellStatus;
 use teistro_port_ephemeris::{Body, EphemerisProvider, PositionRequest, TimeScale};
@@ -574,23 +576,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         place: &Place,
         zodiac: &ChartZodiac,
     ) -> Result<ChartAngles, Error> {
-        let frame = ChartFrame {
-            sidereal_offset_deg: zodiac.offset_deg,
-            sun_declination_deg: None,
-        };
-        let built = houses_at(
-            HouseSystem::WholeSign,
-            ut1,
-            tt,
-            place,
-            &frame,
-            self.settings().houses.polar_policy,
-        )?;
-        Ok(ChartAngles {
-            ascendant_deg: zodiac.of_tropical(built.angles.ascendant_deg),
-            midheaven_deg: zodiac.of_tropical(built.angles.midheaven_deg),
-            obliquity_deg: teistro_astro::sky::obliquity(tt).true_deg,
-        })
+        angles_in(ut1, tt, place, zodiac, self.settings().houses.polar_policy)
     }
 
     /// The grahas, placed.
@@ -689,4 +675,51 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             house: houses.place(longitude_deg),
         }
     }
+}
+
+/// The angles and the obliquity at an instant, in a chart's zodiac: the
+/// one computation behind [`Founder::angles_at`] and [`angles_of`].
+fn angles_in(
+    ut1: JulianDay<Ut1>,
+    tt: JulianDay<Tt>,
+    place: &Place,
+    zodiac: &ChartZodiac,
+    policy: PolarPolicy,
+) -> Result<ChartAngles, Error> {
+    let frame = ChartFrame {
+        sidereal_offset_deg: zodiac.offset_deg,
+        sun_declination_deg: None,
+    };
+    let built = houses_at(HouseSystem::WholeSign, ut1, tt, place, &frame, policy)?;
+    Ok(ChartAngles {
+        ascendant_deg: zodiac.of_tropical(built.angles.ascendant_deg),
+        midheaven_deg: zodiac.of_tropical(built.angles.midheaven_deg),
+        obliquity_deg: teistro_astro::sky::obliquity(tt).true_deg,
+    })
+}
+
+/// A founded chart's own angles — its ascendant and **midheaven** — with
+/// the obliquity they were built on, in its own zodiac.
+///
+/// What [`Founder::angles_at`] answers at the chart's instant, for a
+/// caller holding only the chart: the foundation carries its bhavas and
+/// not its midheaven, and a module whose source names its own division
+/// needs the midheaven to build it — the Tajika sahams read a house's
+/// Sripati mid-point whatever chalit a profile gives the chart
+/// (`03-design/tajika-sahams.md`). Needs **no ephemeris**: the angles
+/// are the instant, the place and the chart's own ayanamsha offset, so a
+/// stored chart answers it with nothing else to hand.
+///
+/// # Errors
+///
+/// An instant outside the Delta T model's range, or a chart the polar
+/// policy refuses.
+pub fn angles_of(
+    foundation: &ChartFoundation,
+    delta_t: DeltaTModel,
+    policy: PolarPolicy,
+) -> Result<ChartAngles, Error> {
+    let ut1 = JulianDay::<Ut1>::literal(foundation.instant.get());
+    let (tt, _) = tt_of(ut1, delta_t)?;
+    angles_in(ut1, tt, &foundation.place, &foundation.zodiac, policy)
 }

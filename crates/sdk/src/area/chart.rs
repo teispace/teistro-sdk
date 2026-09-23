@@ -6,7 +6,7 @@ use teistro_astro::completion::Completion;
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::day::DayPart;
-use teistro_chart::foundation::{ChartFoundation, Founder};
+use teistro_chart::foundation::{ChartFoundation, Founder, angles_of};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Ayanamsha, ChartKind, DashaSystem, Graha, Rashi, Vara, Varga};
 use teistro_core::envelope::Envelope;
@@ -40,8 +40,9 @@ use teistro_strength::{
 };
 use teistro_tajika::{
     Affliction, AnnualSky, AnnualStates, Between, DrishtiRules, Muntha, MunthaDegree, Natal,
-    OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN, Strength, Varshesha,
-    VarsheshaRules, YearCharts, YearYogas, YogaRules,
+    OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN, Saham, SahamFormula,
+    SahamPlace, SahamReading, SahamRules, SahamSky, Strength, Varshesha, VarsheshaRules,
+    YearCharts, YearYogas, YogaRules,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -1044,6 +1045,89 @@ impl<'a> ChartArea<'a> {
             Some(&self.annual_states(annual)?),
             rules,
         )
+    }
+
+    /// The **sahams** asked for, in a founded chart, under the source's
+    /// readings (`03-design/tajika-sahams.md`).
+    ///
+    /// Any chart: the source reads an annual chart's sahams beside the
+    /// birth chart's, and both are a [`Document`]. Day or night is the
+    /// chart's own; a house's point is Sripati's mid-point, built from the
+    /// chart's lagna and midheaven as the source builds it, whatever chalit
+    /// the profile gives the chart. Each saham is computed once however
+    /// many read it.
+    ///
+    /// It needs **no ephemeris**: the chart is already founded.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, Saham};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().build()?;
+    /// # let annual: Document = todo!();
+    /// let read = sdk.chart().sahams(&annual, &[Saham::Punya, Saham::Vivaha])?;
+    /// for asked in &read.points {
+    ///     println!("{:?}: {:?}, house {}", asked.saham, asked.point.sign, asked.point.house.get());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A chart that does not place one of the seven, or whose lagna or a
+    /// bhava is not a number.
+    pub fn sahams(self, chart: &Document, which: &[Saham]) -> Result<SahamReading, Error> {
+        self.sahams_with_rules(chart, which, SahamRules::default())
+    }
+
+    /// The sahams asked for, under stated readings: when a sign is added,
+    /// where a house stands, and which Roga is meant.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::sahams`].
+    pub fn sahams_with_rules(
+        self,
+        chart: &Document,
+        which: &[Saham],
+        rules: SahamRules,
+    ) -> Result<SahamReading, Error> {
+        teistro_tajika::sahams(&self.saham_sky_of(chart)?, which, rules)
+    }
+
+    /// Where a saham of the caller's own falls: another authority's, or
+    /// one the source does not give, over the same factors and rules.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::sahams`]; and a node or an unreadable fixed degree
+    /// as a factor, named by the factor.
+    pub fn saham_point(
+        self,
+        chart: &Document,
+        formula: &SahamFormula,
+        rules: SahamRules,
+    ) -> Result<SahamPlace, Error> {
+        teistro_tajika::saham_point(&self.saham_sky_of(chart)?, formula, rules)
+    }
+
+    /// What a saham is read from, off a founded chart: its midheaven
+    /// recomputed from its instant and place, which needs no ephemeris, and
+    /// its own chalit for a caller who asks for that.
+    fn saham_sky_of(self, chart: &Document) -> Result<SahamSky, Error> {
+        let foundation = &chart.foundation;
+        let angles = angles_of(
+            foundation,
+            self.context.delta_t(),
+            self.context.settings().houses.polar_policy,
+        )?;
+        Ok(SahamSky::new(
+            Self::sky_of(chart)?,
+            foundation.lagna_deg,
+            angles.midheaven_deg,
+            foundation.day.part.is_daylight(),
+        )
+        .with_chalit(foundation.chalit.madhya))
     }
 
     /// Which of an annual chart's seven are **retrograde** and which

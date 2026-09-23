@@ -142,6 +142,13 @@ pub use teistro_tajika::{
     Qualification, Reading as VarshaReading, Relation as TajikaRelation, Strength, SubDegree,
     TambiraMover, Varshesha, VarsheshaRules, YearYoga, YearYogas, Yoga as TajikaYoga, YogaRules,
 };
+// The sahams: a formula over a chart's points, the source's forty-one as a
+// table of them, and the readings the tradition divides over
+// (`03-design/tajika-sahams.md`).
+pub use teistro_tajika::{
+    AddSign, HousePoints, RogaReading, Saham, SahamFormula, SahamPlace, SahamPoint, SahamReading,
+    SahamRules, SahamTerm, SahamTriple,
+};
 // Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
 // with the rules it was read under (`03-design/strength-schemes.md`).
 pub use teistro_strength as strength;

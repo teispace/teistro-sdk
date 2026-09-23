@@ -14,7 +14,7 @@ Pravesha) and PyJHora (Muntha, balas, Ithasala family, Mudda, Patyayini).
 | Pancha Vargeeya, Dwadasha Vargeeya and Harsha balas | see strengths | | partial | JHora, PyJHora | P0 |
 | Tajika aspects: conjunction, sextile, square, trine, opposition with deeptamsha orbs per planet; applying versus separating by speed | annual chart | orb table (Sun 15, Moon 12, Mars 8, Mercury 7, Jupiter 9, Venus 7, Saturn 9) — **verified 2026-09-23** from Charak's Table X-1, together with the rule that a pair takes the *mean* of its two | partial | all | P0 |
 | the sixteen Tajika yogas (Ikkavala, Induvara, Ithasala kinds, Ishrafa, Nakta, Yamaya, Manau, Kamboola, Gairi Kamboola, Khallasara, Radda, Duphali Kutta, Dutthotha Davira, Tambira, Kuttha, Durapha) | aspects, balas | | partial | JHora, PyJHora | P0 |
-| sahamas (36) with day and night formulas | annual chart | | no | JHora, PyJHora | P1 |
+| sahamas with day and night formulas — **read and built** (2026-09-23, [`tajika-sahams.md`](../../03-design/tajika-sahams.md)): Charak ch. XI gives **41**, not 36, and PyJHora's 36 are not a subset (it adds Apamrityu and lacks six) | annual and birth chart | when the sign is added (degrees, the source; whole signs, PyJHora's measured rule); a house's point (Sripati mid-points, the source); Roga's two formulas; three sahams whose PyJHora formula differs from the source's (Asha, Mitra, Gaurava) | no | JHora, PyJHora | P1 |
 | Mudda (Varsha Vimshottari) and Patyayini dashas | annual chart | | partial | all | P0 |
 | Tithi Pravesha, Yoga Pravesha, Nakshatra Pravesha annual and monthly charts | Sun–Moon composite crossing | | no | JHora | P1 |
 | Tajika sunrise charts | | | no | JHora | P2 |
