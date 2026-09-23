@@ -39,9 +39,9 @@ use teistro_strength::{
     VimshopakaReading,
 };
 use teistro_tajika::{
-    AnnualSky, Between, DrishtiRules, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya,
-    Pravesha, Qualification, Reading, Strength, Varshesha, VarsheshaRules, YearCharts, YearYogas,
-    YogaRules,
+    Affliction, AnnualSky, AnnualStates, Between, DrishtiRules, Muntha, MunthaDegree, Natal,
+    OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN, Strength, Varshesha,
+    VarsheshaRules, YearCharts, YearYogas, YogaRules,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -945,11 +945,18 @@ impl<'a> ChartArea<'a> {
     /// this year?" is `House::try_new(7)`; "what yogas does this year
     /// have?" is not a question these sixteen answer.
     ///
-    /// Four are built today. The other twelve are **listed** in
-    /// [`YearYogas::unanswered`] at every call, because "Kamboola did not
-    /// hold" and "this build cannot tell you about Kamboola" are
-    /// different statements; [`YearYogas::holds`] answers `None` for
-    /// them rather than `false`.
+    /// Those this build does not compute are **listed** in
+    /// [`YearYogas::unanswered`] at every call, and [`YearYogas::why`]
+    /// says what each still needs, because "Kuttha did not hold" and
+    /// "this build cannot tell you about Kuttha" are different
+    /// statements; [`YearYogas::holds`] answers `None` for them rather
+    /// than `false`. The count is not given here because it changes as
+    /// the build grows, and the list is the answer that cannot go stale.
+    ///
+    /// Retrograde and combustion — which Rudda, Duhphali-kuttha and
+    /// Durapha read — are taken from the founded chart's own graha
+    /// states, under this context's combustion table, so no yoga the
+    /// build computes is left unanswered for want of them.
     ///
     /// It needs **no ephemeris**: the chart is already founded.
     ///
@@ -974,24 +981,75 @@ impl<'a> ChartArea<'a> {
 
     /// The sixteen Tajika yogas for one matter, under stated readings.
     ///
-    /// The readings are the aspects' own ([`crate::SubDegree`]), because
-    /// every one of the fourteen pair yogas is built on what the pair is
-    /// doing and inherits whatever the caller reads that as.
+    /// [`YogaRules`] carries every reading the sixteen leave open: the
+    /// aspects' own ([`crate::SubDegree`]), which each pair yoga inherits,
+    /// and the two strength floors (crux C116).
     ///
     /// # Errors
     ///
-    /// As [`ChartArea::tajika_yogas`].
+    /// As [`ChartArea::tajika_yogas`]; and floors that would let a planet
+    /// be strong and weak at once, named `strong_from`.
     pub fn tajika_yogas_with_rules(
         self,
         annual: &Document,
         house: House,
         rules: YogaRules,
     ) -> Result<YearYogas, Error> {
-        teistro_tajika::year_yogas_with_rules(
+        teistro_tajika::year_yogas_with_states(
             annual.foundation.lagna_deg,
             house,
             &Self::sky_of(annual)?,
+            &self.annual_states(annual)?,
             rules,
+        )
+    }
+
+    /// Which of an annual chart's seven are **retrograde** and which
+    /// **combust** — the two things its longitudes cannot say.
+    ///
+    /// Read from the founded chart's own graha states, under this
+    /// context's combustion table (`state.combustion_orbs`), so a
+    /// consumer who wants another table changes the setting and not
+    /// this call.
+    ///
+    /// # Errors
+    ///
+    /// A combustion table the SDK does not ship, named by its setting.
+    pub fn annual_states(self, annual: &Document) -> Result<AnnualStates, Error> {
+        let mut states = AnnualStates::default();
+        for one in state(&annual.foundation, self.context.settings())? {
+            // The nodes are not among the seven the sixteen read.
+            if !SEVEN.contains(&one.graha) {
+                continue;
+            }
+            if one.motion.retrograde {
+                states.retrograde.push(one.graha);
+            }
+            if one.combustion.is_combust() {
+                states.combust.push(one.graha);
+            }
+        }
+        states.check()
+    }
+
+    /// How a planet of an annual chart stands to the source's
+    /// **afflictions** — retrograde, combust, debilitated, in the 6th,
+    /// 8th or 12th, or under malefic influence — clause by clause.
+    ///
+    /// Rudda holds where either of a pair is afflicted at all, and
+    /// Durapha reads three of the five; carrying the clauses is what lets
+    /// a reader asking *why* be answered.
+    ///
+    /// # Errors
+    ///
+    /// A body outside the seven, named `graha`; as
+    /// [`ChartArea::annual_states`].
+    pub fn affliction(self, annual: &Document, graha: Graha) -> Result<Affliction, Error> {
+        teistro_tajika::affliction(
+            graha,
+            annual.foundation.lagna_deg,
+            &Self::sky_of(annual)?,
+            &self.annual_states(annual)?,
         )
     }
 

@@ -1,8 +1,10 @@
 # The sixteen Tajika yogas
 
-Status: **eight of the sixteen built**, 2026-09-23; the other eight
-designed and *named*, which is not the same as absent. Steps 1 and 2,
-and the parts of 3 that needed nothing new, landed the same day. Written after reading the
+Status: built but for the three `YearYoga::awaiting` names —
+2026-09-23; those are designed and *named*, which is not the same as
+absent. The count is deliberately not written here: it is generated in
+`muntha-measured.md` §10 from the type, where it cannot go stale. Steps
+1, 2, 3 and 5 landed the same day; step 4 remains. Written after reading the
 source's Table X-3 off the page and before writing any of it, as every
 module since Phase 4 has been. The definitions are in
 [`01-research/feature-universe/07-tajika-varshaphala.md`](../01-research/feature-universe/07-tajika-varshaphala.md),
@@ -220,19 +222,27 @@ and the state crate, exactly as `YearCharts` is filled from two
 documents for the office-bearers:
 
 ```rust
-pub struct AnnualStates { retrograde: [bool; 7], combust: [bool; 7] }
+pub struct AnnualStates { retrograde: Vec<Graha>, combust: Vec<Graha> }
 ```
 
-Combustion already takes retrograde as an argument, so the two belong in
-one value rather than two. `teistro-tajika` stays free of a
+**Built as sets, not the `[bool; 7]` first written here.** Seven flags
+in some order can be read against the wrong planet and say nothing when
+they are; a set names each planet, and `AnnualStates::check` refuses the
+entries no chart could hold — a luminary retrograde, the Sun combust, a
+node — naming the field. Combustion already takes retrograde as an
+argument, so the two belong in one value rather than two. `teistro-tajika` stays free of a
 `teistro-state` dependency; the SDK depends on both already.
 
-**And the honesty mechanism extends for free.** A caller with only
-longitudes genuinely cannot answer Rudda, so the low-level
-`year_yogas` will take the states as an option and list the six under
-`unanswered` when they are absent — the same distinction between *did
-not hold* and *cannot be told*, now varying with what the caller
-supplied rather than only with what the build computes.
+**And the honesty mechanism extends for free** — built as designed,
+with one addition. A caller with only longitudes genuinely cannot answer
+Rudda, so `year_yogas` and `year_yogas_with_rules` list the three that
+need states under `unanswered`, and `year_yogas_with_states` answers
+them. `unanswered` now varies with what the caller supplied, so
+`YearYogas::holds` asks the call's own list rather than the build, and
+the addition is **`YearYogas::why`**: the build's reason and "this call
+was not given the states" have different remedies, so they are
+different answers. The façade always supplies the states, read from the
+founded chart under the context's combustion table.
 
 ### The crux that had to be settled first — and what settling it found
 
@@ -287,9 +297,14 @@ positively now, and tested with a middling pair.
    nothing but *strong* and *weak*. The rest, **regrouped by their
    hardest blocker** — the survey above had grouped them by the first
    one found, and two were in the wrong group:
-   - **Rudda, Duhphali-kuttha and Durapha** need `AnnualStates`
-     (retrograde and combust). Rudda needs *only* that — no strength at
-     all — so it is the first of the three.
+   - **Rudda, Duhphali-kuttha and Durapha** needed `AnnualStates`
+     (retrograde and combust) — **done** (2026-09-23), with `Affliction`
+     beside `Qualification` and `Strength` as the third clause-carrying
+     verdict. **Read literally, Rudda spoils 94.4% of the corpus's
+     Ithasalas**; the measurement showed the one open clause (C118)
+     cannot change that, since the breadth is the five-way list over two
+     planets. Recorded, not corrected, as C115 was. Durapha's parse (C119)
+     is bounded to six matters by the weak-pair ceiling.
    - **Kuttha** needs Tajika's benefics (C117), and nothing else now.
    - **Tambira** needs a **projection**: the karyesha forming an
      Ithasala from the *next* sign with a lagnesha its present sign does
@@ -298,8 +313,11 @@ positively now, and tested with a middling pair.
 4. **The two that ask what happens next**: Tambira, and Gairi-Kamboola,
    which needs the unqualified Moon *and* where it will stand in the next
    sign. One projection serves both, so they are one unit and last.
-5. Ikabala and Induvara, which are two lines and belong with the rest for
-   the sake of the set being whole.
+5. ~~Ikabala and Induvara~~ — **done** (2026-09-23), with the three above,
+   since the *trika* clause needed the same house-of-a-planet reckoning.
+   They are facts about the chart, so they answer every matter alike —
+   the first house, with no pair, included — and the pass checks that
+   each holds in all twelve of a chart's matters or in none.
 
 ## What is decided and what is not
 
@@ -307,9 +325,9 @@ positively now, and tested with a middling pair.
 |---|---|
 | **decided** | that the module takes a matter and answers for it, because the sources define fourteen of sixteen against a karyesha; that the two chart-level yogas answer regardless |
 | **decided by measurement** | what "strong" and "weak" mean for a yoga (C116): graded, weak below five and strong from ten, a middling band between, both `YogaRules` fields |
-| **not decided** | whether "benefic influence" means Tajika's own benefics or the chart's (C117), which is all that stands between Kuttha and shipping; the cruxes above |
-| **built** | Ithasala, Ishrafa, Nakta, Yamaya, **Manau**, **Kamboola**, **Khallasara** and **Dutthottha-Davira**, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**; `sdk.chart().qualification` for the source's *unqualified* and `sdk.chart().strength` for *strong* and *weak*, every clause carried; `YearYoga::ALL` names all sixteen and `YearYoga::awaiting` says what each of the other eight still needs, matched exhaustively so a yoga cannot be added without a decision |
-| **not built** | eight of the sixteen, each naming its blocker at every call. They do **not** cross the boundary yet: the sixteen answer a *matter*, so crossing them means deciding which matters a caller asks for — the same shape as the residence decision `varsha_json.place`, and its own unit |
+| **not decided** | whether "benefic influence" means Tajika's own benefics or the chart's (C117), which is all that stands between Kuttha and shipping; how *under malefic influence* and Durapha's list read (C118, C119), each shipped as one reading with every clause carried |
+| **built** | every one `YearYoga::awaiting` does not name, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**; `sdk.chart().qualification`, `strength` and `affliction` for the three clause-carrying verdicts, and `annual_states` for what the longitudes cannot say; `YearYoga::ALL` names all sixteen, `awaiting` says what each unbuilt one needs, matched exhaustively so a yoga cannot be added without a decision, and `judges_an_ithasala`, `needs_a_weak_pair` and `is_chart_fact` describe the structure the measured page holds every count to |
+| **not built** | Tambira and Gairi-Kamboola (one projection serves both) and Kuttha (C117), each naming its blocker at every call. They do **not** cross the boundary yet: the sixteen answer a *matter*, so crossing them means deciding which matters a caller asks for — the same shape as the residence decision `varsha_json.place`, and its own unit |
 
 ## Why this page exists before the code
 
