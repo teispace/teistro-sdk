@@ -337,6 +337,36 @@ pub fn between_with_rules(
     sky: &AnnualSky,
     rules: DrishtiRules,
 ) -> Result<Between, Error> {
+    let orb_deg = orb_between(a, b).ok_or_else(|| {
+        Error::invalid_arg(format!("{a:?} has no deeptamsha; the seven have"))
+            .with_field(String::from("graha"))
+    })?;
+    between_within(a, b, sky, orb_deg, rules)
+}
+
+/// How two of the seven stand, under an orb the caller names rather than
+/// the mean of their two deeptamshas.
+///
+/// Nakta and Yamaya need this: the source asks whether a third planet
+/// reaches both of a pair **from within its own deeptamsha**, not from
+/// within the mean it would share with each. Everything else about the
+/// reckoning is the same, so it is the same function with the orb lifted
+/// out rather than a second copy of the four bands.
+///
+/// It is crate-private on purpose. The orb is a real knob and a consumer
+/// composing a yoga of their own would want it, but nothing outside has
+/// asked; making it public is one line the day something does.
+///
+/// # Errors
+///
+/// As [`between`].
+pub(crate) fn between_within(
+    a: Graha,
+    b: Graha,
+    sky: &AnnualSky,
+    orb_deg: f64,
+    rules: DrishtiRules,
+) -> Result<Between, Error> {
     let outside = |graha: Graha| {
         Error::invalid_arg(format!("{graha:?} has no deeptamsha; the seven have"))
             .with_field(String::from("graha"))
@@ -345,7 +375,6 @@ pub fn between_with_rules(
         speed_rank(a).ok_or_else(|| outside(a))?,
         speed_rank(b).ok_or_else(|| outside(b))?,
     );
-    let orb_deg = orb_between(a, b).ok_or_else(|| outside(a))?;
     // The faster of the two; on the same planet, itself.
     let (faster, slower) = if rank_a <= rank_b { (a, b) } else { (b, a) };
     let at = |graha: Graha| -> Result<f64, Error> {

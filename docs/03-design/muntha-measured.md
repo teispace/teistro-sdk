@@ -250,3 +250,54 @@ sunrise to divide a day by, and the hora and ghati a chart is built on
 are measured from one. That is a documented bound of the corpus
 (`05-testing/01-golden-vectors.md`, note 13) and not a fault of the
 aspects.
+
+## 10. The sixteen yogas, and the matters they answer
+
+Fourteen of the sixteen are not facts about a chart. They are judgements
+about a **pair** — the *lagnesha*, the lord of the annual lagna, and
+the *karyesha*, the lord of the house the matter asked about belongs to
+— so the same year answers differently for each of the twelve houses.
+Every chart above is asked all twelve, which is **25 908** questions.
+
+| yoga | | held | of the matters asked |
+|---|---|---:|---|
+| Ikabala | *awaiting* | -- | the whole-sign houses of the annual lagna, which the pair's own reckoning does not need |
+| Induvara | *awaiting* | -- | the whole-sign houses of the annual lagna, which the pair's own reckoning does not need |
+| **Ithasala** | built | 4250 | 16.4% |
+| **Ishrafa** | built | 3050 | 11.8% |
+| **Nakta** | built | 637 | 2.5% |
+| **Yamaya** | built | 413 | 1.6% |
+| Manau | *awaiting* | -- | a third planet's own aspects on the pair, and Tajika's malefics |
+| Kamboola | *awaiting* | -- | a third planet's own aspects on the pair, and Tajika's malefics |
+| GairiKamboola | *awaiting* | -- | an unqualified Moon, and where it will stand in the next sign: the only one of the sixteen that asks what happens next |
+| Khallasara | *awaiting* | -- | a third planet's own aspects on the pair, and Tajika's malefics |
+| Rudda | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
+| DuhphaliKuttha | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
+| DutthotthaDavira | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
+| Tambira | *awaiting* | -- | the karyesha at a sign's end, completing an Ithasala from the next |
+| Kuttha | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
+| Durapha | *awaiting* | -- | strong and weak, which the source floors only for the year lord (crux), and the chart's own dignities |
+
+**Four of the sixteen are built** and the other twelve are listed at
+every call rather than left out of the answer, because *did not hold*
+and *cannot be told* are different statements. `YearYogas::holds`
+answers `None` for those twelve, never `false`.
+
+### The first house is never a pair
+
+**3899** of the 25 908 matters — 15.0% — have one planet for both
+lords, so there is no pair to judge. That is not an edge case that crept
+in: the **first** house is the lagna itself, so its lord is the lagnesha
+by definition, and a question about the native's own self can never be
+one of these fourteen judgements. One further house is like it under a
+lagna ruled by one of the five that rule two signs, and none is under
+Cancer or Leo, where the luminaries rule one each. The answer reports it
+as `same_lord` rather than returning an empty list that would read as
+*nothing holds*.
+
+The count decomposes, and `cargo xtask muntha` **fails** if it ever
+stops decomposing, because a printed figure nobody can check is the part
+of a generated page that rots. Every one of the 2159 charts contributes
+its first house, and every chart but the 419 whose lagna a **luminary**
+rules contributes one more, since the Sun rules Leo alone and the Moon
+Cancer alone: 2159 + (2159 − 419) = **3899**.

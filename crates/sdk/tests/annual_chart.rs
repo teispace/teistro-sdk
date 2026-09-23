@@ -17,7 +17,7 @@
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::tajika::{Reading, SIDEREAL_YEAR_DAYS};
-use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
+use teistro::{ChartRequest, Context, Document, Ephemeris, House, UtcOffset};
 
 const BIRTH: f64 = 2_447_995.489_583_333_5;
 
@@ -443,4 +443,82 @@ fn the_sources_worked_year_is_read_as_the_source_reads_it() {
         !year.claims[0].aspects_lagna,
         "the second house aspects nothing"
     );
+}
+
+/// The sixteen Tajika yogas, asked of the source's own worked year through
+/// the façade — and asked as the sources define them, about a **matter**.
+///
+/// Fourteen of the sixteen are judgements about the lagnesha and the
+/// karyesha, so the same chart answers differently for each of the twelve
+/// houses. What this holds is that the question reaches the answer: the
+/// pair is read from the chart, the yoga from the pair, and a yoga this
+/// build cannot compute says so rather than reading as absent.
+#[test]
+fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
+    let sdk = source_context();
+    let (_birth, annual) = source_birth_and_year(&sdk);
+    // The **first** house is the lagna, so asking about it names the
+    // lagna's own sign: the test takes it from the answer rather than
+    // recomputing a sign from a longitude, which would be a second copy
+    // of the arithmetic under test.
+    let first = sdk
+        .chart()
+        .tajika_yogas(&annual, House::try_new(1).unwrap())
+        .unwrap();
+    let lagna_sign = first.sign;
+    assert!(first.same_lord, "the first house's lord is the lagnesha");
+
+    // Every house is answerable, and each names its own karyesha.
+    for number in 1..=12u8 {
+        let house = House::try_new(number).unwrap();
+        let found = sdk.chart().tajika_yogas(&annual, house).unwrap();
+        assert_eq!(found.house, house);
+        assert_eq!(found.sign, house.sign_from(lagna_sign));
+        assert_eq!(found.lagnesha, lagna_sign.attributes().lord);
+        assert_eq!(found.karyesha, found.sign.attributes().lord);
+
+        // Twelve of the sixteen are not built, and each carries its
+        // reason. A consumer asking about one gets `None` -- not `false`,
+        // which would be a claim this build has no right to make.
+        assert_eq!(found.unanswered.len(), 12);
+        for yoga in &found.unanswered {
+            assert!(yoga.awaiting().is_some(), "{yoga:?} says what it needs");
+            assert_eq!(found.holds(*yoga), None);
+        }
+        // The four that are built always answer, true or false.
+        for yoga in [
+            teistro::YearYoga::Ithasala,
+            teistro::YearYoga::Ishrafa,
+            teistro::YearYoga::Nakta,
+            teistro::YearYoga::Yamaya,
+        ] {
+            assert!(found.holds(yoga).is_some(), "{yoga:?} is built");
+        }
+        // The first house is the lagna, so its lord is the lagnesha and
+        // there is no pair to judge.
+        assert_eq!(found.same_lord, found.karyesha == found.lagnesha);
+        if found.same_lord {
+            assert!(found.between.is_none() && found.held.is_empty());
+        }
+        // Nothing is ever carried across a pair that already aspects.
+        if found.between.is_some_and(|pair| pair.drishti.is_aspect()) {
+            assert!(found.held.iter().all(|one| one.through.is_none()));
+        }
+    }
+
+    // The readings the source leaves open reach here too, through the
+    // pair every one of the fourteen is built on.
+    let tenth = House::try_new(10).unwrap();
+    for sub_degree in [
+        teistro::SubDegree::Poorna,
+        teistro::SubDegree::Ishrafa,
+        teistro::SubDegree::None,
+    ] {
+        let under = sdk
+            .chart()
+            .tajika_yogas_with_rules(&annual, tenth, teistro::DrishtiRules { sub_degree })
+            .unwrap();
+        assert_eq!(under.house, tenth);
+        assert_eq!(under.unanswered.len(), 12);
+    }
 }

@@ -175,6 +175,16 @@ pub(crate) fn spelled(value: usize) -> String {
         .map_or_else(|| count(value), |word| (*word).to_string())
 }
 
+/// A word with its first letter raised, for a spelled number that opens a
+/// sentence: generated prose cannot choose its own case at the call site
+/// without every caller keeping a copy of this.
+pub(crate) fn capitalised(word: &str) -> String {
+    let mut chars = word.chars();
+    chars.next().map_or_else(String::new, |first| {
+        first.to_uppercase().collect::<String>() + chars.as_str()
+    })
+}
+
 /// A count of occasions: `once`, `twice`, `nine times`.
 pub(crate) fn times(value: usize) -> String {
     match value {

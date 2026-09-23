@@ -399,7 +399,9 @@ fn lagna_placement(longitude: f64, sign: Rashi) -> Result<Placement, Error> {
     Ok(Placement {
         longitude,
         sign,
-        house: House::try_new(1).map_err(Error::internal)?,
+        // Core's refusal is already the SDK's error type, so the
+        // bridge no longer restates it.
+        house: House::try_new(1)?,
         dignity: Dignity::Neutral,
         retrograde: false,
         combust: false,

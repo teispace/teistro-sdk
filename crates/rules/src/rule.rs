@@ -663,7 +663,7 @@ impl TryFrom<Written> for Rule {
             }),
             Some("SHANI_HOUSE_8_ESCALATION") => Some(Severity::HouseWeighted {
                 planet: Body::Graha(Graha::Saturn),
-                weights: BTreeMap::from([(House::try_new(8)?, 80)]),
+                weights: BTreeMap::from([(House::try_new(8).map_err(|why| why.to_string())?, 80)]),
                 default: 50,
             }),
             Some(other) => {
@@ -765,7 +765,7 @@ mod house_keys {
                         .map_err(|_| format!("`{text}` is not a house number")),
                 };
                 number
-                    .and_then(House::try_new)
+                    .and_then(|house| House::try_new(house).map_err(|why| why.to_string()))
                     .map(|house| (house, weight))
                     .map_err(serde::de::Error::custom)
             })

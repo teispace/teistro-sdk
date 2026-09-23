@@ -122,58 +122,11 @@ impl Body {
     }
 }
 
-/// A house, 1 to 12.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
-#[serde(try_from = "u8", into = "u8")]
-pub struct House(u8);
-
-impl House {
-    /// A house.
-    ///
-    /// # Errors
-    ///
-    /// A number outside 1 to 12, named.
-    pub fn try_new(house: u8) -> Result<House, String> {
-        if (1..=12).contains(&house) {
-            Ok(House(house))
-        } else {
-            Err(format!("house {house} is not 1 to 12"))
-        }
-    }
-
-    /// Its number, 1 to 12.
-    #[must_use]
-    pub const fn get(self) -> u8 {
-        self.0
-    }
-
-    /// The house `sign` is counted from `from`, whole signs, 1 to 12.
-    #[must_use]
-    pub const fn between(from: Rashi, sign: Rashi) -> House {
-        House((sign as u8 + 12 - from as u8) % 12 + 1)
-    }
-
-    /// The four kendras.
-    pub const KENDRAS: [House; 4] = [House(1), House(4), House(7), House(10)];
-    /// The three trikonas.
-    pub const TRIKONAS: [House; 3] = [House(1), House(5), House(9)];
-    /// The two maraka houses, the second and the seventh (BPHS ch. 44 v. 2).
-    pub const MARAKAS: [House; 2] = [House(2), House(7)];
-}
-
-impl TryFrom<u8> for House {
-    type Error = String;
-
-    fn try_from(house: u8) -> Result<House, String> {
-        House::try_new(house)
-    }
-}
-
-impl From<House> for u8 {
-    fn from(house: House) -> u8 {
-        house.0
-    }
-}
+// A house, 1 to 12, lives in `teistro_core` because four crates need it
+// and none of them may depend on the others. It is re-exported here so
+// that every `crate::language::House` in this crate still reads as the
+// rule language's own word for it.
+pub use teistro_core::house::House;
 
 /// A chara karaka as a rule spells it: `AK`, `AmK`, `BK`, `MK`, `PK`, `GK`,
 /// `DK` or `PiK`.

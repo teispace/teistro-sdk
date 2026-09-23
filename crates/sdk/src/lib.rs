@@ -87,6 +87,10 @@ pub use teistro_core::envelope::{
     CalendarResolution, Envelope, Hash, Provenance, canonical_json, content_hash,
 };
 pub use teistro_core::error::{Error, Status};
+// A house, 1 to 12: the rule language reads one, a placement names one,
+// and a Tajika yoga is asked about one, so it lives in `core` and is
+// named here once for all three.
+pub use teistro_core::house::House;
 pub use teistro_core::interval::Interval;
 pub use teistro_core::key::KeyId;
 pub use teistro_core::quantity;
@@ -135,7 +139,8 @@ pub use teistro_tajika as tajika;
 pub use teistro_tajika::{
     Bala, Between, Chosen, Claim, Drishti as TajikaDrishti, DrishtiRules, Muntha, MunthaDegree,
     Natal, Office, OfficeBearers, Panchavargiya, Pravesha, Reading as VarshaReading,
-    Relation as TajikaRelation, SubDegree, Varshesha, VarsheshaRules, Yoga as TajikaYoga,
+    Relation as TajikaRelation, SubDegree, Varshesha, VarsheshaRules, YearYoga, YearYogas,
+    Yoga as TajikaYoga,
 };
 // Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
 // with the rules it was read under (`03-design/strength-schemes.md`).

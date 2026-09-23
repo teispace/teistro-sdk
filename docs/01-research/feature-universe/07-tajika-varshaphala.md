@@ -192,6 +192,23 @@ single largest thing this reading settled.
 | 15 | Kuttha | both powerful and in kendras or panapharas, under benefic influence and no malefic |
 | 16 | Durapha | both weak, in the trika houses, combust or retrograde |
 
+**Built 2026-09-23: yogas 3 to 6**, the four that need the pair's own
+aspects and nothing else — Ithasala in all three of its kinds, Ishrafa,
+Nakta and Yamaya. Nakta and Yamaya wanted one rule the rest did not: the
+third planet's reach is **its own** deeptamsha, not the mean it would
+share with each of the pair. The other twelve are named in the type and
+say at every call what they still need.
+
+**Reading the pair rule against the chart found something the table does
+not state.** The **first** house's lord *is* the lagnesha, so a question
+about the native's own self is never one of the fourteen pair judgements
+— and one further house is the same under any lagna ruled by one of the
+five that rule two signs. Over the corpus's recorded years that is 3 899
+of 25 908 matters, 15.0%. Whether the tradition reads one planet for both
+lords as the matter being promised outright is a question no text in
+reach answers; it is reported as `same_lord` and not decided. Registered
+as C113.
+
 **"Unqualified" is defined**, and every part of it is computable with what
 is built: "a planet is unqualified when it is neither exalted nor
 debilitated, nor aspected/associated, nor in its own Hudda, Drekkana or

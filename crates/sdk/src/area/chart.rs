@@ -11,6 +11,7 @@ use teistro_core::angle::Nas;
 use teistro_core::catalogue::{Ayanamsha, ChartKind, DashaSystem, Graha, Rashi, Vara, Varga};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
+use teistro_core::house::House;
 use teistro_core::interval::Interval;
 use teistro_core::key::KeyId;
 use teistro_core::quantity::Depth;
@@ -39,7 +40,7 @@ use teistro_strength::{
 };
 use teistro_tajika::{
     AnnualSky, Between, DrishtiRules, Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya,
-    Pravesha, Reading, Varshesha, VarsheshaRules, YearCharts,
+    Pravesha, Reading, Varshesha, VarsheshaRules, YearCharts, YearYogas,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -932,6 +933,65 @@ impl<'a> ChartArea<'a> {
         rules: DrishtiRules,
     ) -> Result<Vec<Between>, Error> {
         teistro_tajika::drishtis_with_rules(&Self::sky_of(annual)?, rules)
+    }
+
+    /// The **sixteen Tajika yogas** of an annual chart, for one matter.
+    ///
+    /// Fourteen of the sixteen are judgements about a **pair** — the
+    /// *lagnesha*, the lord of the annual lagna, and the *karyesha*, the
+    /// lord of the house the matter asked about belongs to — so this
+    /// takes the house and not only the chart. "Is the marriage promised
+    /// this year?" is `House::try_new(7)`; "what yogas does this year
+    /// have?" is not a question these sixteen answer.
+    ///
+    /// Four are built today. The other twelve are **listed** in
+    /// [`YearYogas::unanswered`] at every call, because "Kamboola did not
+    /// hold" and "this build cannot tell you about Kamboola" are
+    /// different statements; [`YearYogas::holds`] answers `None` for
+    /// them rather than `false`.
+    ///
+    /// It needs **no ephemeris**: the chart is already founded.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, House};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().build()?;
+    /// # let annual: Document = todo!();
+    /// let marriage = sdk.chart().tajika_yogas(&annual, House::try_new(7)?)?;
+    /// let promised = marriage.holds(teistro::YearYoga::Ithasala);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// An annual chart that does not place one of the seven, or whose
+    /// lagna is not a number.
+    pub fn tajika_yogas(self, annual: &Document, house: House) -> Result<YearYogas, Error> {
+        self.tajika_yogas_with_rules(annual, house, DrishtiRules::default())
+    }
+
+    /// The sixteen Tajika yogas for one matter, under stated readings.
+    ///
+    /// The readings are the aspects' own ([`crate::SubDegree`]), because
+    /// every one of the fourteen pair yogas is built on what the pair is
+    /// doing and inherits whatever the caller reads that as.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::tajika_yogas`].
+    pub fn tajika_yogas_with_rules(
+        self,
+        annual: &Document,
+        house: House,
+        rules: DrishtiRules,
+    ) -> Result<YearYogas, Error> {
+        teistro_tajika::year_yogas_with_rules(
+            annual.foundation.lagna_deg,
+            house,
+            &Self::sky_of(annual)?,
+            rules,
+        )
     }
 
     /// Where the seven stand in a founded chart, which both the strengths
