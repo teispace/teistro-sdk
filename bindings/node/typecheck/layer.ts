@@ -21,7 +21,7 @@ import type {
   Scale,
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
-import type { Graha } from '../lib/catalogue.js';
+import type { Graha, Saham } from '../lib/catalogue.js';
 import type { CalendarDate } from '../lib/index.js';
 
 declare const build: BuildInfo;
@@ -346,3 +346,30 @@ function theYearsMatters(ctx: Context): string {
 }
 
 void theYearsMatters;
+
+// A year's sahams, read all the way down, with their rules in the casing
+// the declarations promise.
+function theYearsSahams(ctx: Context): string {
+  const annual = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    varsha: {
+      through: 2,
+      place: 'birth',
+      sahams: ['punya', 'vivaha'],
+      sahamRules: { addSign: 'signs', houses: 'equal', roga: 'saturn' },
+    },
+  }).praveshas[0]!.annual!;
+  const one = annual.sahams[0]!;
+  const saham: Saham | 'unknown' = one.saham;
+  const deg: number = one.longitudeDeg;
+  const added: boolean = one.addedSign;
+  // @ts-expect-error a saham is one of the forty-one keys, not a word of its own
+  ctx.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, varsha: { through: 1, sahams: ['pnya'] } });
+  // @ts-expect-error the rules' keys are camelCase
+  ctx.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, varsha: { through: 1, sahamRules: { add_sign: 'never' } } });
+  return `${saham} ${deg} ${one.sign} ${one.lord} ${one.house} ${added}`;
+}
+
+void theYearsSahams;

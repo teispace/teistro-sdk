@@ -54,6 +54,7 @@ import type {
   Varga,
   Yoga,
   YearYoga,
+  Saham,
   Affliction,
 } from './catalogue.js';
 import type {
@@ -607,6 +608,34 @@ export interface VarshaRequest {
   readonly matters?: 'all' | readonly number[];
   /** The readings the sixteen part on, where the source leaves a choice. */
   readonly yogas?: YogaRules;
+  /**
+   * The sahams each year's chart is read for: `'all'`, the forty-one in
+   * the source's order, or their keys in the order you want them answered.
+   * **Needs `place`**; absent, none is read.
+   *
+   * @example { through: 40, place: 'birth', sahams: ['punya', 'vivaha'] }
+   */
+  readonly sahams?: 'all' | readonly Saham[];
+  /** The readings the sahams part on, where the sources differ. */
+  readonly sahamRules?: SahamRules;
+}
+
+/** Where the sources differ on a saham, each a named reading (`03-design/tajika-sahams.md`). */
+export interface SahamRules {
+  /**
+   * When a saham is carried a sign further: when c does not fall between b
+   * and a by `'degrees'`, the source's own; by whole `'signs'`, as a widely
+   * used program reads it; or `'never'`.
+   */
+  readonly addSign?: 'degrees' | 'signs' | 'never';
+  /**
+   * Where a house's point stands: `'sripati'`'s mid-point built from the
+   * angles, the source's own; the chart's `'chalit'` under its profile; or
+   * `'equal'` houses from the lagna's degree.
+   */
+  readonly houses?: 'sripati' | 'chalit' | 'equal';
+  /** Roga's formula: lagna − Moon + lagna, `'lagna'`, or the other authority's `'saturn'`. */
+  readonly roga?: 'lagna' | 'saturn';
 }
 
 /** Where the source leaves the sixteen Tajika yogas a choice, each a named reading. */
@@ -740,6 +769,24 @@ export interface AnnualChart {
   readonly combust: readonly (Graha | 'unknown')[];
   /** The sixteen yogas for each matter `varsha.matters` asked about, in its order; empty otherwise. */
   readonly matters: readonly TajikaMatter[];
+  /** Each saham `varsha.sahams` asked for, in its order; empty otherwise. */
+  readonly sahams: readonly TajikaSaham[];
+}
+
+/** Where a saham fell in a year's chart, and what it fell in. */
+export interface TajikaSaham {
+  /** Which of the forty-one. */
+  readonly saham: Saham | 'unknown';
+  /** Where it fell, sidereal degrees in [0, 360). */
+  readonly longitudeDeg: number;
+  /** The sign it fell in. */
+  readonly sign: Rashi | 'unknown';
+  /** That sign's lord: the saham's lord, by whose strength the source judges it. */
+  readonly lord: Graha | 'unknown';
+  /** The house it fell in, 1 to 12, by whole signs from the annual lagna. */
+  readonly house: number;
+  /** Whether it was carried a sign further because c did not fall between b and a. */
+  readonly addedSign: boolean;
 }
 
 /**

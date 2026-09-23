@@ -716,6 +716,17 @@ void main() {
             reading == VarshaReading.tropical
                 ? const YogaRules(tambira: TambiraMover.eitherLord)
                 : const YogaRules(),
+        // The sahams likewise: every one under the source's rules, every
+        // one under each rival rule, and none.
+        sahams: reading == VarshaReading.mean ? null : Sahams.all,
+        sahamRules:
+            reading == VarshaReading.tropical
+                ? const SahamRules(
+                  addSign: AddSign.signs,
+                  houses: HousePoints.equal,
+                  roga: RogaReading.saturn,
+                )
+                : const SahamRules(),
       ),
     );
     var i = 0;
@@ -770,6 +781,13 @@ void main() {
           put('$at-pair', m.between == null ? '-' : pairSaid(m.between!));
           put('$at-unanswered', m.unanswered.map((y) => y.key).join(','));
           put('$at-held', m.held.map(heldSaid).join(' '));
+        }
+        for (final p in annual.sahams) {
+          put(
+            '$stem-saham-${p.saham.key}',
+            '${p.longitudeDeg.toStringAsFixed(6)} ${p.sign.fullKey} '
+                '${p.lord.fullKey} ${p.house} ${p.addedSign}',
+          );
         }
         put(
           '$stem-year-claims',

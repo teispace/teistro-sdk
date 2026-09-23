@@ -6477,6 +6477,231 @@ export declare const YearYoga: {
 export declare const YearYogaById: ReadonlyMap<number, YearYoga>;
 
 /**
+ * One of the forty-one Tajika sahams (K.S. Charak, ch. XI;
+ * `03-design/tajika-sahams.md`), in the source's order, each id its
+ * number less one.
+ *
+ * Mirrors `teistro::Saham` through an **exhaustive** match, so a saham
+ * added there stops this crate compiling rather than crossing as another.
+ */
+export type Saham =
+  | 'punya'
+  | 'guru'
+  | 'vidya'
+  | 'yasha'
+  | 'mitra'
+  | 'mahatmya'
+  | 'asha'
+  | 'samarthya'
+  | 'bhratri'
+  | 'gaurava'
+  | 'pitri'
+  | 'raja'
+  | 'matri'
+  | 'putra'
+  | 'jeeva'
+  | 'roga'
+  | 'karma'
+  | 'manmatha'
+  | 'kali'
+  | 'kshama'
+  | 'shastra'
+  | 'bandhu'
+  | 'mrityu'
+  | 'deshantara'
+  | 'artha'
+  | 'paradara'
+  | 'anya-karma'
+  | 'vanika'
+  | 'karya-siddhi'
+  | 'vivaha'
+  | 'prasava'
+  | 'santaapa'
+  | 'shraddha'
+  | 'preeti'
+  | 'jadya'
+  | 'vyapara'
+  | 'paneeya-paata'
+  | 'shatru'
+  | 'jalapatha'
+  | 'bandhana'
+  | 'labha';
+
+/** Every Saham by name; the values are the strings the union accepts. */
+export declare const Saham: {
+  /**
+   * **Punya**, general auspiciousness.
+   */
+  readonly Punya: 'punya';
+  /**
+   * **Guru**, the preceptor.
+   */
+  readonly Guru: 'guru';
+  /**
+   * **Vidya** (Jnana), knowledge.
+   */
+  readonly Vidya: 'vidya';
+  /**
+   * **Yasha**, fame.
+   */
+  readonly Yasha: 'yasha';
+  /**
+   * **Mitra**, friends.
+   */
+  readonly Mitra: 'mitra';
+  /**
+   * **Mahatmya**, the fruits of virtuous living.
+   */
+  readonly Mahatmya: 'mahatmya';
+  /**
+   * **Asha**, hope.
+   */
+  readonly Asha: 'asha';
+  /**
+   * **Samarthya**, capability.
+   */
+  readonly Samarthya: 'samarthya';
+  /**
+   * **Bhratri**, siblings.
+   */
+  readonly Bhratri: 'bhratri';
+  /**
+   * **Gaurava**, dignity.
+   */
+  readonly Gaurava: 'gaurava';
+  /**
+   * **Pitri** (Taata), the father.
+   */
+  readonly Pitri: 'pitri';
+  /**
+   * **Raja**, royal dignity.
+   */
+  readonly Raja: 'raja';
+  /**
+   * **Matri**, the mother.
+   */
+  readonly Matri: 'matri';
+  /**
+   * **Putra**, progeny.
+   */
+  readonly Putra: 'putra';
+  /**
+   * **Jeeva**, life.
+   */
+  readonly Jeeva: 'jeeva';
+  /**
+   * **Roga**, disease.
+   */
+  readonly Roga: 'roga';
+  /**
+   * **Karma**, profession.
+   */
+  readonly Karma: 'karma';
+  /**
+   * **Manmatha**, infatuation.
+   */
+  readonly Manmatha: 'manmatha';
+  /**
+   * **Kali**, strife.
+   */
+  readonly Kali: 'kali';
+  /**
+   * **Kshama**, forgiveness.
+   */
+  readonly Kshama: 'kshama';
+  /**
+   * **Shastra**, scriptures.
+   */
+  readonly Shastra: 'shastra';
+  /**
+   * **Bandhu**, relatives.
+   */
+  readonly Bandhu: 'bandhu';
+  /**
+   * **Mrityu**, death.
+   */
+  readonly Mrityu: 'mrityu';
+  /**
+   * **Deshantara**, foreign travel.
+   */
+  readonly Deshantara: 'deshantara';
+  /**
+   * **Artha** (Dhana), wealth.
+   */
+  readonly Artha: 'artha';
+  /**
+   * **Paradara**, adultery.
+   */
+  readonly Paradara: 'paradara';
+  /**
+   * **Anya-karma**, an additional vocation.
+   */
+  readonly AnyaKarma: 'anya-karma';
+  /**
+   * **Vanika**, trade.
+   */
+  readonly Vanika: 'vanika';
+  /**
+   * **Karya-siddhi**, success in a venture.
+   */
+  readonly KaryaSiddhi: 'karya-siddhi';
+  /**
+   * **Vivaha**, marriage.
+   */
+  readonly Vivaha: 'vivaha';
+  /**
+   * **Prasava**, the delivery of a child.
+   */
+  readonly Prasava: 'prasava';
+  /**
+   * **Santaapa**, sorrow.
+   */
+  readonly Santaapa: 'santaapa';
+  /**
+   * **Shraddha**, devotion.
+   */
+  readonly Shraddha: 'shraddha';
+  /**
+   * **Preeti**, love.
+   */
+  readonly Preeti: 'preeti';
+  /**
+   * **Jadya**, stupidity.
+   */
+  readonly Jadya: 'jadya';
+  /**
+   * **Vyapara**, business.
+   */
+  readonly Vyapara: 'vyapara';
+  /**
+   * **Paneeya-paata**, falling into water.
+   */
+  readonly PaneeyaPaata: 'paneeya-paata';
+  /**
+   * **Shatru**, enemies.
+   */
+  readonly Shatru: 'shatru';
+  /**
+   * **Jalapatha**, a sea voyage.
+   */
+  readonly Jalapatha: 'jalapatha';
+  /**
+   * **Bandhana**, imprisonment.
+   */
+  readonly Bandhana: 'bandhana';
+  /**
+   * **Labha**, monetary gain.
+   */
+  readonly Labha: 'labha';
+};
+
+/**
+ * Every Saham by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SahamById: ReadonlyMap<number, Saham>;
+
+/**
  * One of the five clauses of the source's **affliction**, which Rudda
  * and Durapha read. Its ids are the bit positions of
  * `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.

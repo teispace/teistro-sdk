@@ -1359,22 +1359,34 @@ fn the_bhavas(report: &mut Report, index: usize, document: &teistro::Document) {
 /// ask for the one they mean — and a reading that crossed as another would
 /// be invisible in a report that only ever printed the default.
 ///
-/// Each reading also asks the sixteen yogas a different way, so all three
-/// ways cross: every matter under the source's readings, every matter
-/// under Tambira's "some authorities", and no matter at all.
+/// Each reading also asks the sixteen yogas and the sahams a different
+/// way, so every way crosses: every matter and every saham under the
+/// source's readings, every matter under Tambira's "some authorities" and
+/// every saham under each rival rule, and neither at all.
 fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
     let either = teistro::YogaRules {
         tambira: teistro::TambiraMover::EitherLord,
         ..teistro::YogaRules::default()
     };
-    for (name, reading, matters) in [
+    let rivals = teistro::SahamRules {
+        add_sign: teistro::AddSign::Signs,
+        houses: teistro::HousePoints::Equal,
+        roga: teistro::RogaReading::Saturn,
+    };
+    for (name, reading, matters, sahams) in [
         (
             "sidereal",
             teistro::VarshaReading::Sidereal,
             Some(teistro::YogaRules::default()),
+            Some(teistro::SahamRules::default()),
         ),
-        ("tropical", teistro::VarshaReading::Tropical, Some(either)),
-        ("mean", teistro::VarshaReading::Mean, None),
+        (
+            "tropical",
+            teistro::VarshaReading::Tropical,
+            Some(either),
+            Some(rivals),
+        ),
+        ("mean", teistro::VarshaReading::Mean, None, None),
     ] {
         let Ok(years) = sdk.chart().praveshas(document, reading, PARITY_YEARS) else {
             continue;
@@ -1382,7 +1394,7 @@ fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &te
         let key = |what: &str| format!("chart-{index}-varsha-{name}{what}");
         put(report, &key("-count"), years.len().to_string());
         for one in &years {
-            the_year(report, sdk, document, &key, one, matters);
+            the_year(report, sdk, document, &key, one, (matters, sahams));
         }
     }
 }
@@ -1396,7 +1408,7 @@ fn the_year(
     document: &teistro::Document,
     key: &dyn Fn(&str) -> String,
     one: &teistro::Pravesha,
-    matters: Option<teistro::YogaRules>,
+    (matters, sahams): (Option<teistro::YogaRules>, Option<teistro::SahamRules>),
 ) {
     put(
         report,
@@ -1486,6 +1498,7 @@ fn the_year(
     );
     the_yogas(report, sdk, &annual.value, key, one);
     the_matters(report, sdk, &annual.value, key, one, matters);
+    the_sahams(report, sdk, &annual.value, key, one, sahams);
     put(
         report,
         &key(&format!("-{}-year-claims", one.year)),
@@ -1503,6 +1516,49 @@ fn the_year(
             .collect::<Vec<String>>()
             .join(" "),
     );
+}
+
+/// Every saham of one year's chart under one set of rules, when the
+/// reading asked for them: where it fell, its sign, that sign's lord, its
+/// house and whether a sign was added.
+fn the_sahams(
+    report: &mut Report,
+    sdk: &Context,
+    annual: &teistro::Document,
+    key: &dyn Fn(&str) -> String,
+    one: &teistro::Pravesha,
+    rules: Option<teistro::SahamRules>,
+) {
+    let Some(rules) = rules else {
+        return;
+    };
+    let Ok(read) = sdk
+        .chart()
+        .sahams_with_rules(annual, &teistro::Saham::ALL, rules)
+    else {
+        return;
+    };
+    for point in &read.points {
+        // The wire's own key, which every binding reads the saham back as.
+        let name = serde_json::to_value(point.saham)
+            .ok()
+            .and_then(|key| key.as_str().map(str::to_owned))
+            .unwrap_or_default();
+        let place = &point.point;
+        put(
+            report,
+            &key(&format!("-{}-saham-{name}", one.year)),
+            // Inside a string, so compared as text, as the yogas' are.
+            format!(
+                "{:.6} {} {} {} {}",
+                place.longitude_deg,
+                place.sign.full_key(),
+                place.lord.full_key(),
+                place.house.get(),
+                place.added_sign
+            ),
+        );
+    }
 }
 
 /// The pairs of one year's chart that make a yoga, in the order the seven

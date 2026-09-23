@@ -1779,6 +1779,48 @@ struct AnnualColumns {
     /// The `year_matters` section and the two under it, ragged by
     /// `matter_count`.
     matters: MatterColumns,
+    saham_counts: Vec<u8>,
+    /// The `year_sahams` section, ragged by `saham_count`.
+    sahams: SahamColumns,
+}
+
+/// Every year's sahams, flat and ragged, each where it fell and what it
+/// fell in (`03-design/tajika-sahams.md`).
+#[derive(Default)]
+struct SahamColumns {
+    saham: Vec<u8>,
+    longitude_deg: Vec<f64>,
+    sign: Vec<u16>,
+    lord: Vec<u16>,
+    house: Vec<u8>,
+    added_sign: Vec<u8>,
+}
+
+impl SahamColumns {
+    fn push(&mut self, one: &teistro::SahamPoint) {
+        let place = &one.point;
+        self.saham.push(TsSaham::from(one.saham) as u8);
+        self.longitude_deg.push(place.longitude_deg);
+        self.sign.push(place.sign.id());
+        self.lord.push(place.lord.id());
+        self.house.push(place.house.get());
+        self.added_sign.push(u8::from(place.added_sign));
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "year_sahams",
+            self.saham.len(),
+            &[
+                ColumnData::U8(&self.saham),
+                ColumnData::F64(&self.longitude_deg),
+                ColumnData::U16(&self.sign),
+                ColumnData::U16(&self.lord),
+                ColumnData::U8(&self.house),
+                ColumnData::U8(&self.added_sign),
+            ],
+        )
+    }
 }
 
 /// How two planets stand, as the matter sections carry it: `year_yogas`'
@@ -2071,6 +2113,11 @@ impl AnnualColumns {
         self.combust.push(graha_bits(&year.states.combust));
         self.matter_counts
             .push(u8::try_from(year.matters.len()).unwrap_or(u8::MAX));
+        self.saham_counts
+            .push(u8::try_from(year.sahams.len()).unwrap_or(u8::MAX));
+        for one in &year.sahams {
+            self.sahams.push(one);
+        }
         year.matters
             .iter()
             .try_for_each(|matter| self.matters.push(matter))
@@ -2096,11 +2143,13 @@ impl AnnualColumns {
                 ColumnData::U8(&self.retrograde),
                 ColumnData::U8(&self.combust),
                 ColumnData::U8(&self.matter_counts),
+                ColumnData::U8(&self.saham_counts),
             ],
         )?;
         self.claims.write(writer)?;
         self.yogas.write(writer)?;
-        self.matters.write(writer)
+        self.matters.write(writer)?;
+        self.sahams.write(writer)
     }
 }
 
@@ -2761,66 +2810,125 @@ pub(crate) struct VarshaRequest {
     /// boundary"). Needs `place`, since the yogas are read from the
     /// year's own chart.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub(crate) matters: Option<Matters>,
+    pub(crate) matters: Option<Asked<teistro::House>>,
     /// The readings the sixteen part on, where the source leaves a
     /// choice; its own by default.
     #[serde(default)]
     pub(crate) yogas: teistro::YogaRules,
+    /// The sahams each year's chart is read for; absent, none is
+    /// (`03-design/tajika-sahams.md`). Needs `place`, since a saham is
+    /// read from the year's own chart.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) sahams: Option<Asked<teistro::Saham>>,
+    /// The readings the sahams part on — when a sign is added, where a
+    /// house stands, Roga's formula; the source's own by default.
+    #[serde(default)]
+    pub(crate) saham_rules: teistro::SahamRules,
 }
 
-/// The matters a request asks the sixteen about: `"all"`, or houses by
-/// number in the caller's own order.
+/// What a request asks about: `"all"`, or these by name in the caller's
+/// own order — the matters the sixteen yogas are judged for, and the
+/// sahams a year is read for.
 ///
-/// `"all"` is a word the caller writes and not a default, because twelve
-/// judgements a year is a cost a caller asking about one matter did not
-/// ask to pay. A house named twice is refused, because it is a mistake
-/// and never a request.
+/// `"all"` is a word the caller writes and not a default, because every
+/// member a year is a cost a caller asking about one did not ask to pay.
+/// A member named twice is refused, because it is a mistake and never a
+/// request.
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum Matters {
-    /// The twelve, first to twelfth.
+pub(crate) enum Asked<T> {
+    /// Every member, in the catalogue's order.
     All,
     /// These, in this order.
-    Houses(Vec<teistro::House>),
+    These(Vec<T>),
 }
 
-impl Matters {
-    /// The houses asked about, in the order they are answered.
-    pub(crate) fn houses(&self) -> &[teistro::House] {
+/// A member a request may ask about by name, and how the wire names it.
+pub(crate) trait Askable: Copy + PartialEq + 'static {
+    /// How the wire writes one: a house's number, a saham's key.
+    type Wire: serde::de::DeserializeOwned + serde::Serialize;
+    /// Every member, in the order `"all"` answers them.
+    const ALL: &'static [Self];
+    /// The field's two shapes, as a refusal says them.
+    const SHAPES: &'static str;
+    /// The field's name, as a refusal says it.
+    const FIELD: &'static str;
+    /// What a refusal calls one before the wire's own spelling of it.
+    const NOUN: &'static str;
+    /// The member the wire named, or why it names none.
+    fn read(wire: Self::Wire) -> Result<Self, String>;
+    /// The member as the wire writes it.
+    fn wire(self) -> Self::Wire;
+}
+
+impl Askable for teistro::House {
+    type Wire = u8;
+    const ALL: &'static [Self] = &teistro::House::ALL;
+    const SHAPES: &'static str = "\"all\", or a list of house numbers 1 to 12";
+    const FIELD: &'static str = "matters";
+    const NOUN: &'static str = "house ";
+
+    fn read(number: u8) -> Result<Self, String> {
+        teistro::House::try_new(number).map_err(|why| why.message)
+    }
+
+    fn wire(self) -> u8 {
+        self.get()
+    }
+}
+
+impl Askable for teistro::Saham {
+    type Wire = teistro::Saham;
+    const ALL: &'static [Self] = &teistro::Saham::ALL;
+    const SHAPES: &'static str = "\"all\", or a list of saham keys such as \"punya\"";
+    const FIELD: &'static str = "sahams";
+    const NOUN: &'static str = "saham ";
+
+    fn read(saham: teistro::Saham) -> Result<Self, String> {
+        Ok(saham)
+    }
+
+    fn wire(self) -> teistro::Saham {
+        self
+    }
+}
+
+impl<T: Askable> Asked<T> {
+    /// The members asked about, in the order they are answered.
+    pub(crate) fn members(&self) -> &[T] {
         match self {
-            Matters::All => &teistro::House::ALL,
-            Matters::Houses(houses) => houses,
+            Asked::All => T::ALL,
+            Asked::These(these) => these,
         }
     }
 }
 
-/// What a caller is told when `matters` is neither of its two shapes.
-const MATTERS_SHAPES: &str = "\"all\", or a list of house numbers 1 to 12";
-
-impl serde::Serialize for Matters {
+impl<T: Askable> serde::Serialize for Asked<T> {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
-            Matters::All => serializer.serialize_str("all"),
-            Matters::Houses(houses) => serializer.collect_seq(houses),
+            Asked::All => serializer.serialize_str("all"),
+            Asked::These(these) => serializer.collect_seq(these.iter().map(|one| one.wire())),
         }
     }
 }
 
-impl<'de> serde::Deserialize<'de> for Matters {
+impl<'de, T: Askable> serde::Deserialize<'de> for Asked<T> {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        struct Shapes;
-        impl<'de> serde::de::Visitor<'de> for Shapes {
-            type Value = Matters;
+        struct Shapes<T>(std::marker::PhantomData<T>);
+        impl<'de, T: Askable> serde::de::Visitor<'de> for Shapes<T> {
+            type Value = Asked<T>;
 
             fn expecting(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(out, "{MATTERS_SHAPES}")
+                out.write_str(T::SHAPES)
             }
 
-            fn visit_str<E: serde::de::Error>(self, word: &str) -> Result<Matters, E> {
+            fn visit_str<E: serde::de::Error>(self, word: &str) -> Result<Asked<T>, E> {
                 if word == "all" {
-                    Ok(Matters::All)
+                    Ok(Asked::All)
                 } else {
                     Err(E::custom(format!(
-                        "matters are {MATTERS_SHAPES}, not \"{word}\""
+                        "{} are {}, not \"{word}\"",
+                        T::FIELD,
+                        T::SHAPES
                     )))
                 }
             }
@@ -2828,21 +2936,25 @@ impl<'de> serde::Deserialize<'de> for Matters {
             fn visit_seq<A: serde::de::SeqAccess<'de>>(
                 self,
                 mut seq: A,
-            ) -> Result<Matters, A::Error> {
+            ) -> Result<Asked<T>, A::Error> {
                 use serde::de::Error as _;
-                let mut houses: Vec<teistro::House> = Vec::new();
-                while let Some(number) = seq.next_element::<u8>()? {
-                    let house = teistro::House::try_new(number)
-                        .map_err(|why| A::Error::custom(why.message))?;
-                    if houses.contains(&house) {
-                        return Err(A::Error::custom(format!("house {number} is asked twice")));
+                let mut these: Vec<T> = Vec::new();
+                while let Some(wire) = seq.next_element::<T::Wire>()? {
+                    let named = format!(
+                        "{}{}",
+                        T::NOUN,
+                        serde_json::to_string(&wire).unwrap_or_default()
+                    );
+                    let one = T::read(wire).map_err(A::Error::custom)?;
+                    if these.contains(&one) {
+                        return Err(A::Error::custom(format!("{named} is asked twice")));
                     }
-                    houses.push(house);
+                    these.push(one);
                 }
-                Ok(Matters::Houses(houses))
+                Ok(Asked::These(these))
             }
         }
-        deserializer.deserialize_any(Shapes)
+        deserializer.deserialize_any(Shapes(std::marker::PhantomData))
     }
 }
 
@@ -3005,6 +3117,147 @@ impl From<teistro::YearYoga> for TsYearYoga {
             teistro::YearYoga::Tambira => TsYearYoga::Tambira,
             teistro::YearYoga::Kuttha => TsYearYoga::Kuttha,
             teistro::YearYoga::Durapha => TsYearYoga::Durapha,
+        }
+    }
+}
+
+/// One of the forty-one Tajika sahams (K.S. Charak, ch. XI;
+/// `03-design/tajika-sahams.md`), in the source's order, each id its
+/// number less one.
+///
+/// Mirrors `teistro::Saham` through an **exhaustive** match, so a saham
+/// added there stops this crate compiling rather than crossing as another.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsSaham {
+    /// **Punya**, general auspiciousness.
+    Punya = 0,
+    /// **Guru**, the preceptor.
+    Guru = 1,
+    /// **Vidya** (Jnana), knowledge.
+    Vidya = 2,
+    /// **Yasha**, fame.
+    Yasha = 3,
+    /// **Mitra**, friends.
+    Mitra = 4,
+    /// **Mahatmya**, the fruits of virtuous living.
+    Mahatmya = 5,
+    /// **Asha**, hope.
+    Asha = 6,
+    /// **Samarthya**, capability.
+    Samarthya = 7,
+    /// **Bhratri**, siblings.
+    Bhratri = 8,
+    /// **Gaurava**, dignity.
+    Gaurava = 9,
+    /// **Pitri** (Taata), the father.
+    Pitri = 10,
+    /// **Raja**, royal dignity.
+    Raja = 11,
+    /// **Matri**, the mother.
+    Matri = 12,
+    /// **Putra**, progeny.
+    Putra = 13,
+    /// **Jeeva**, life.
+    Jeeva = 14,
+    /// **Roga**, disease.
+    Roga = 15,
+    /// **Karma**, profession.
+    Karma = 16,
+    /// **Manmatha**, infatuation.
+    Manmatha = 17,
+    /// **Kali**, strife.
+    Kali = 18,
+    /// **Kshama**, forgiveness.
+    Kshama = 19,
+    /// **Shastra**, scriptures.
+    Shastra = 20,
+    /// **Bandhu**, relatives.
+    Bandhu = 21,
+    /// **Mrityu**, death.
+    Mrityu = 22,
+    /// **Deshantara**, foreign travel.
+    Deshantara = 23,
+    /// **Artha** (Dhana), wealth.
+    Artha = 24,
+    /// **Paradara**, adultery.
+    Paradara = 25,
+    /// **Anya-karma**, an additional vocation.
+    AnyaKarma = 26,
+    /// **Vanika**, trade.
+    Vanika = 27,
+    /// **Karya-siddhi**, success in a venture.
+    KaryaSiddhi = 28,
+    /// **Vivaha**, marriage.
+    Vivaha = 29,
+    /// **Prasava**, the delivery of a child.
+    Prasava = 30,
+    /// **Santaapa**, sorrow.
+    Santaapa = 31,
+    /// **Shraddha**, devotion.
+    Shraddha = 32,
+    /// **Preeti**, love.
+    Preeti = 33,
+    /// **Jadya**, stupidity.
+    Jadya = 34,
+    /// **Vyapara**, business.
+    Vyapara = 35,
+    /// **Paneeya-paata**, falling into water.
+    PaneeyaPaata = 36,
+    /// **Shatru**, enemies.
+    Shatru = 37,
+    /// **Jalapatha**, a sea voyage.
+    Jalapatha = 38,
+    /// **Bandhana**, imprisonment.
+    Bandhana = 39,
+    /// **Labha**, monetary gain.
+    Labha = 40,
+}
+
+impl From<teistro::Saham> for TsSaham {
+    fn from(saham: teistro::Saham) -> TsSaham {
+        match saham {
+            teistro::Saham::Punya => TsSaham::Punya,
+            teistro::Saham::Guru => TsSaham::Guru,
+            teistro::Saham::Vidya => TsSaham::Vidya,
+            teistro::Saham::Yasha => TsSaham::Yasha,
+            teistro::Saham::Mitra => TsSaham::Mitra,
+            teistro::Saham::Mahatmya => TsSaham::Mahatmya,
+            teistro::Saham::Asha => TsSaham::Asha,
+            teistro::Saham::Samarthya => TsSaham::Samarthya,
+            teistro::Saham::Bhratri => TsSaham::Bhratri,
+            teistro::Saham::Gaurava => TsSaham::Gaurava,
+            teistro::Saham::Pitri => TsSaham::Pitri,
+            teistro::Saham::Raja => TsSaham::Raja,
+            teistro::Saham::Matri => TsSaham::Matri,
+            teistro::Saham::Putra => TsSaham::Putra,
+            teistro::Saham::Jeeva => TsSaham::Jeeva,
+            teistro::Saham::Roga => TsSaham::Roga,
+            teistro::Saham::Karma => TsSaham::Karma,
+            teistro::Saham::Manmatha => TsSaham::Manmatha,
+            teistro::Saham::Kali => TsSaham::Kali,
+            teistro::Saham::Kshama => TsSaham::Kshama,
+            teistro::Saham::Shastra => TsSaham::Shastra,
+            teistro::Saham::Bandhu => TsSaham::Bandhu,
+            teistro::Saham::Mrityu => TsSaham::Mrityu,
+            teistro::Saham::Deshantara => TsSaham::Deshantara,
+            teistro::Saham::Artha => TsSaham::Artha,
+            teistro::Saham::Paradara => TsSaham::Paradara,
+            teistro::Saham::AnyaKarma => TsSaham::AnyaKarma,
+            teistro::Saham::Vanika => TsSaham::Vanika,
+            teistro::Saham::KaryaSiddhi => TsSaham::KaryaSiddhi,
+            teistro::Saham::Vivaha => TsSaham::Vivaha,
+            teistro::Saham::Prasava => TsSaham::Prasava,
+            teistro::Saham::Santaapa => TsSaham::Santaapa,
+            teistro::Saham::Shraddha => TsSaham::Shraddha,
+            teistro::Saham::Preeti => TsSaham::Preeti,
+            teistro::Saham::Jadya => TsSaham::Jadya,
+            teistro::Saham::Vyapara => TsSaham::Vyapara,
+            teistro::Saham::PaneeyaPaata => TsSaham::PaneeyaPaata,
+            teistro::Saham::Shatru => TsSaham::Shatru,
+            teistro::Saham::Jalapatha => TsSaham::Jalapatha,
+            teistro::Saham::Bandhana => TsSaham::Bandhana,
+            teistro::Saham::Labha => TsSaham::Labha,
         }
     }
 }
@@ -3206,6 +3459,9 @@ pub struct AnnualYear {
     /// The sixteen yogas for each matter `varsha_json.matters` asked
     /// about, in its order; empty when it asked about none.
     pub matters: Vec<teistro::YearYogas>,
+    /// Each saham `varsha_json.sahams` asked for, in its order, read
+    /// under `varsha_json.sahamRules`; empty when it asked for none.
+    pub sahams: Vec<teistro::SahamPoint>,
 }
 
 /// One field of the varsha record read on its own, under its own path, so
@@ -3237,16 +3493,28 @@ unsafe fn varsha_request_of(varsha_json: *const c_char) -> Result<Option<VarshaR
     };
     let mut given: serde_json::Value = teistro_core::strict::read(text, "varsha_json")?;
     let place = take_field::<AnnualPlace>(&mut given, "place")?;
-    let matters = take_field::<Matters>(&mut given, "matters")?;
+    let matters = take_field::<Asked<teistro::House>>(&mut given, "matters")?;
+    let sahams = take_field::<Asked<teistro::Saham>>(&mut given, "sahams")?;
+    let saham_rules = take_field::<teistro::SahamRules>(&mut given, "sahamRules")?;
     let mut asked: VarshaRequest = teistro_core::strict::read_value(&given, "varsha_json")?;
     asked.place = place;
     asked.matters = matters;
-    if asked.matters.is_some() && asked.place.is_none() {
-        return Err(Error::invalid_arg(
-            "the sixteen yogas are read from each year's own chart, and no chart is founded without a place",
-        )
-        .with_field("varsha_json.matters")
-        .with_hint("add varsha_json.place: \"birth\", or a residence"));
+    asked.sahams = sahams;
+    asked.saham_rules = saham_rules.unwrap_or_default();
+    if asked.place.is_none() {
+        // Both are read from each year's own chart, so a request for
+        // either without a place is refused by the field that asked.
+        let needs_a_chart = [
+            ("matters", asked.matters.is_some(), "the sixteen yogas"),
+            ("sahams", asked.sahams.is_some(), "the sahams"),
+        ];
+        if let Some((field, _, what)) = needs_a_chart.iter().find(|(_, asked, _)| *asked) {
+            return Err(Error::invalid_arg(format!(
+                "{what} are read from each year's own chart, and no chart is founded without a place"
+            ))
+            .with_field(format!("varsha_json.{field}"))
+            .with_hint("add varsha_json.place: \"birth\", or a residence"));
+        }
     }
     // Checked here, where the caller's own casing is known, so the refusal
     // names the key they wrote rather than the Rust field behind it.
@@ -3450,7 +3718,15 @@ fn annual_year(
     let matters = match &asked.matters {
         Some(matters) => sdk
             .chart()
-            .tajika_yogas_many(&annual, matters.houses(), asked.yogas)?,
+            .tajika_yogas_many(&annual, matters.members(), asked.yogas)?,
+        None => Vec::new(),
+    };
+    let sahams = match &asked.sahams {
+        Some(sahams) => {
+            sdk.chart()
+                .sahams_with_rules(&annual, sahams.members(), asked.saham_rules)?
+                .points
+        }
         None => Vec::new(),
     };
     Ok(AnnualYear {
@@ -3460,6 +3736,7 @@ fn annual_year(
         yogas,
         states: sdk.chart().annual_states(&annual)?,
         matters,
+        sahams,
     })
 }
 

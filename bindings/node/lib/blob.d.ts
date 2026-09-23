@@ -1356,6 +1356,10 @@ export interface ChartsAnnualCharts {
    * How many rows of the `year_matters` section belong to this year: the matters `varsha_json.matters` asked about, 0 to 12.
    */
   readonly matterCount: Uint8Array;
+  /**
+   * How many rows of the `year_sahams` section belong to this year: the sahams `varsha_json.sahams` asked for, 0 to 41.
+   */
+  readonly sahamCount: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -1582,6 +1586,42 @@ export interface ChartsMatterLegs {
    * How far apart they stand within their signs, degrees: positive when the faster is behind the slower and coming to it, negative when it is past.
    */
   readonly apartDeg: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `year_sahams` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.
+ */
+export interface ChartsYearSahams {
+  /**
+   * Which of the forty-one.
+   * The values are `Saham` ids.
+   */
+  readonly saham: Uint8Array;
+  /**
+   * Where it fell, sidereal degrees in [0, 360).
+   */
+  readonly longitudeDeg: Float64Array;
+  /**
+   * The sign it fell in, a `rashi` id.
+   */
+  readonly sign: Uint16Array;
+  /**
+   * That sign's lord, a `graha` id: the saham's lord, by whose strength the source judges it.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * The house it fell in, 1 to 12, counted from the annual lagna by whole signs.
+   */
+  readonly house: Uint8Array;
+  /**
+   * 1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise.
+   */
+  readonly addedSign: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -1910,6 +1950,10 @@ export interface Charts {
    * Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand.
    */
   readonly matterLegs: ChartsMatterLegs;
+  /**
+   * Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.
+   */
+  readonly yearSahams: ChartsYearSahams;
 }
 
 /**

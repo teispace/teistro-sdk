@@ -44,11 +44,12 @@ class TheCatalogue(unittest.TestCase):
         # three -- four since Table X-3 gave the Ithasala a third kind,
         # `Poorna`, which adds a member and no new enum; 108 since the
         # sixteen Tajika yogas crossed, `YearYoga`'s sixteen and
-        # `Affliction`'s five clauses.
-        self.assertEqual(len(every_enum()), 108)
+        # `Affliction`'s five clauses; 109 since the sahams crossed,
+        # `Saham`'s forty-one.
+        self.assertEqual(len(every_enum()), 109)
         self.assertEqual(
             sum(len(list(found)) for found in every_enum()),
-            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5,
+            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

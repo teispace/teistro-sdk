@@ -643,10 +643,14 @@ def main() -> None:
 
         for reading in ("sidereal", "tropical", "mean"):
             varsha: VarshaRequest = {"reading": reading, "through": 12, "place": "birth"}
+            # The sahams likewise: every one under the source's rules,
+            # every one under each rival rule, and none.
             if reading != "mean":
                 varsha["matters"] = "all"
+                varsha["sahams"] = "all"
             if reading == "tropical":
                 varsha["yogas"] = {"tambira": "either_lord"}
+                varsha["saham_rules"] = {"add_sign": "signs", "houses": "equal", "roga": "saturn"}
             years = geo.chart.found_many(
                 instants=[2460482.5, 2460600.25],
                 place=place,
@@ -701,6 +705,12 @@ def main() -> None:
                         put(f"{asked}-pair", pair_said(matter.between) if matter.between is not None else "-")
                         put(f"{asked}-unanswered", ",".join(y.key for y in matter.unanswered))
                         put(f"{asked}-held", " ".join(held_said(h) for h in matter.held))
+                    for point in annual.sahams:
+                        put(
+                            f"{stem}-saham-{point.saham.key}",
+                            f"{point.longitude_deg:.6f} {point.sign.full_key} {point.lord.full_key} "
+                            f"{point.house} {str(point.added_sign).lower()}",
+                        )
                     put(
                         f"{stem}-year-claims",
                         " ".join(

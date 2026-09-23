@@ -594,9 +594,9 @@ pub fn charts() -> BlobSchema {
 }
 
 /// The annual charts a batch's births open and everything Tajika reads
-/// from them, in id order: seven sections ragged under one another, so
+/// from them, in id order: eight sections ragged under one another, so
 /// they are declared together rather than scattered through the rest.
-fn chart_annual_sections() -> [SectionSchema; 7] {
+fn chart_annual_sections() -> [SectionSchema; 8] {
     [
         chart_praveshas_section(35),
         chart_annual_charts_section(36),
@@ -605,6 +605,7 @@ fn chart_annual_sections() -> [SectionSchema; 7] {
         chart_year_matters_section(39),
         chart_matter_yogas_section(40),
         chart_matter_legs_section(41),
+        chart_year_sahams_section(42),
     ]
 }
 
@@ -710,6 +711,44 @@ fn chart_annual_charts_section(id: u32) -> SectionSchema {
                 "matter_count",
                 Scalar::U8,
                 "How many rows of the `year_matters` section belong to this year: the matters `varsha_json.matters` asked about, 0 to 12.",
+            ),
+            ColumnDef::new(
+                "saham_count",
+                Scalar::U8,
+                "How many rows of the `year_sahams` section belong to this year: the sahams `varsha_json.sahams` asked for, 0 to 41.",
+            ),
+        ],
+    )
+}
+
+/// Every year's sahams: where each fell, and what it fell in.
+fn chart_year_sahams_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "year_sahams",
+        "Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.",
+        vec![
+            ColumnDef::new("saham", Scalar::U8, "Which of the forty-one.").of_enum("TsSaham"),
+            ColumnDef::new(
+                "longitude_deg",
+                Scalar::F64,
+                "Where it fell, sidereal degrees in [0, 360).",
+            ),
+            ColumnDef::new("sign", Scalar::U16, "The sign it fell in, a `rashi` id."),
+            ColumnDef::new(
+                "lord",
+                Scalar::U16,
+                "That sign's lord, a `graha` id: the saham's lord, by whose strength the source judges it.",
+            ),
+            ColumnDef::new(
+                "house",
+                Scalar::U8,
+                "The house it fell in, 1 to 12, counted from the annual lagna by whole signs.",
+            ),
+            ColumnDef::new(
+                "added_sign",
+                Scalar::U8,
+                "1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise.",
             ),
         ],
     )
