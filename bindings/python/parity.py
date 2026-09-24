@@ -19,6 +19,7 @@ from typing import Any, cast
 import json
 
 from teistro import (
+    LocalDay,
     VarshaRequest,
     DashaDefinition,
     Altitude,
@@ -75,6 +76,30 @@ def put(key: str, value: Any) -> None:
         report[key] = "null"
     else:
         report[key] = str(value)
+
+
+def put_day(prefix: str, day: LocalDay) -> None:
+    """A local day's every field, under the same keys for a chart's day and
+    an almanac's, because the two layers hand back one record."""
+    put(f"{prefix}-vara", day.vara.full_key)
+    put(f"{prefix}-sunrise", day.sunrise)
+    put(f"{prefix}-sunset", day.sunset)
+    put(f"{prefix}-next-sunrise", day.next_sunrise)
+    put(f"{prefix}-date", f"{day.date.year}-{day.date.month}-{day.date.day}")
+    put(f"{prefix}-calendar", day.date.calendar.full_key)
+    put(f"{prefix}-era", "none" if day.date.era is None else day.date.era.full_key)
+    put(f"{prefix}-era-year", day.date.era_year)
+    put(f"{prefix}-resolution", day.date.resolution.key)
+    put(
+        f"{prefix}-polar",
+        "none" if day.polar is None else f"{day.polar.kind.key}/{day.polar.policy.key}",
+    )
+    put(
+        f"{prefix}-convention",
+        day.convention.key
+        if day.convention is not None
+        else f"custom {number(day.custom_altitude_deg or 0.0)}",
+    )
 
 
 def main() -> None:
@@ -344,21 +369,13 @@ def main() -> None:
 
         for chart in charts:
             i = chart.index
-            chart_columns = charts.decoded
             put(f"chart-{i}-instant", chart.instant)
             put(f"chart-{i}-lagna", chart.lagna_deg)
             put(f"chart-{i}-day-lagna", chart.day_lagna_deg)
             put(f"chart-{i}-ayanamsha", chart.ayanamsha_offset_deg)
             put(f"chart-{i}-day-part", chart.day_part.key)
             put(f"chart-{i}-day-elapsed", chart.day_elapsed)
-            put(f"chart-{i}-vara", chart.vara.full_key)
-            put(f"chart-{i}-sunrise", chart_columns.day.sunrise[i])
-            put(f"chart-{i}-sunset", chart_columns.day.sunset[i])
-            put(
-                f"chart-{i}-date",
-                f"{chart_columns.day.year[i]}-{chart_columns.day.month[i]}"
-                f"-{chart_columns.day.day_of_month[i]}",
-            )
+            put_day(f"chart-{i}", chart.day)
             timing = chart.timing
             put(f"chart-{i}-ghati", timing.ghati)
             put(f"chart-{i}-pala", timing.pala)
@@ -792,16 +809,7 @@ def main() -> None:
 
         for almanac_day in week:
             i = almanac_day.index
-            day_columns = week.decoded
-            put(f"day-{i}-vara", almanac_day.vara.full_key)
-            put(f"day-{i}-sunrise", almanac_day.sunrise)
-            put(f"day-{i}-sunset", almanac_day.sunset)
-            put(f"day-{i}-next-sunrise", day_columns.day.next_sunrise[i])
-            put(
-                f"day-{i}-date",
-                f"{day_columns.day.year[i]}-{day_columns.day.month[i]}"
-                f"-{day_columns.day.day_of_month[i]}",
-            )
+            put_day(f"day-{i}", almanac_day.day)
             put(f"day-{i}-window-from", almanac_day.window.from_jd)
             put(f"day-{i}-window-to", almanac_day.window.to_jd)
             put(f"day-{i}-month", almanac_day.month.month.full_key)
@@ -894,7 +902,7 @@ def main() -> None:
             place=place,
             utc_offset_seconds=20700,
         )
-        put("almanac-single-agrees", one_day.sunrise == week.at(0).sunrise)
+        put("almanac-single-agrees", one_day.day.sunrise == week.at(0).day.sunrise)
 
     # ── The surface's shape ───────────────────────────────────────────
     #

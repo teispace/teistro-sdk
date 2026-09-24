@@ -2672,7 +2672,7 @@ final class Frame {
   /// another rather than one of its own.
   void writeInto(FrameStruct raw, ffi.Allocator arena) {
     raw.structSize = ffi.sizeOf<FrameStruct>();
-    raw.ayanamsha = ayanamsha?.id ?? 0xFFFF;
+    raw.ayanamsha = ayanamsha?.id ?? noMember;
     raw.centre = centre.id;
     raw.equinox = equinox.id;
     raw.coordinates = coordinates.id;
@@ -2688,7 +2688,7 @@ final class Frame {
 
   /// Reads a value out of a struct, which may be one held inside another.
   static Frame readFrom(FrameStruct raw) => Frame(
-        ayanamsha: raw.ayanamsha == 0xFFFF ? null : Ayanamsha.byId(raw.ayanamsha),
+        ayanamsha: raw.ayanamsha == noMember ? null : Ayanamsha.byId(raw.ayanamsha),
         centre: Centre.byId(raw.centre),
         equinox: Equinox.byId(raw.equinox),
         coordinates: Coordinates.byId(raw.coordinates),
@@ -2751,7 +2751,7 @@ final class CalendarDate {
   void writeInto(CalendarDateStruct raw, ffi.Allocator arena) {
     raw.structSize = ffi.sizeOf<CalendarDateStruct>();
     raw.calendar = calendar.id;
-    raw.era = era?.id ?? 0xFFFF;
+    raw.era = era?.id ?? noMember;
     raw.year = year;
     raw.eraYear = eraYear;
     raw.month = month;
@@ -2767,7 +2767,7 @@ final class CalendarDate {
   /// Reads a value out of a struct, which may be one held inside another.
   static CalendarDate readFrom(CalendarDateStruct raw) => CalendarDate(
         calendar: Calendar.byId(raw.calendar),
-        era: raw.era == 0xFFFF ? null : Era.byId(raw.era),
+        era: raw.era == noMember ? null : Era.byId(raw.era),
         year: raw.year,
         eraYear: raw.eraYear,
         month: raw.month,

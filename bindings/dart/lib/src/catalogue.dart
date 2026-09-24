@@ -17,6 +17,10 @@ const int generatedAbiVersion = 1;
 /// must be the same build (`Teistro.open` checks it).
 const String generatedSdkVersion = '0.0.0';
 
+/// What a nullable catalogue field holds for none: no member is numbered
+/// this high, and `0` is a member.
+const int noMember = 0xFFFF;
+
 /// The ABI version of the vtable layout.
 const int vtableAbiVersion = 3;
 

@@ -148,6 +148,10 @@ CONTEXT_TEST_PROVIDER: Final = 1
 GENERATED_ABI_VERSION: Final = 1
 GENERATED_SDK_VERSION: Final = "0.0.0"
 
+# What a nullable catalogue field holds for none: no member is numbered
+# this high, and `0` is a member.
+NO_MEMBER: Final = 0xFFFF
+
 _SIZES_64: Final[dict[str, int]] = {
     "ts_observer": 24,
     "ts_position_request": 72,
@@ -1923,7 +1927,7 @@ class Frame:
         caller keeps alive until the call has returned.
         """
         raw.struct_size = ctypes.sizeof(_FrameStruct)
-        raw.ayanamsha = _c_value(self.ayanamsha)
+        raw.ayanamsha = NO_MEMBER if self.ayanamsha is None else int(self.ayanamsha)
         raw.centre = _c_value(self.centre)
         raw.equinox = _c_value(self.equinox)
         raw.coordinates = _c_value(self.coordinates)
@@ -1948,7 +1952,7 @@ class Frame:
     def _of(cls, raw: _FrameStruct) -> Frame:
         """The value the library wrote into a C struct."""
         return cls(
-            ayanamsha=Ayanamsha(raw.ayanamsha),
+            ayanamsha=None if raw.ayanamsha == NO_MEMBER else Ayanamsha(raw.ayanamsha),
             centre=Centre(raw.centre),
             equinox=Equinox(raw.equinox),
             coordinates=Coordinates(raw.coordinates),
@@ -2017,7 +2021,7 @@ class CalendarDate:
         """
         raw.struct_size = ctypes.sizeof(_CalendarDateStruct)
         raw.calendar = _c_value(self.calendar)
-        raw.era = _c_value(self.era)
+        raw.era = NO_MEMBER if self.era is None else int(self.era)
         raw.year = _c_value(self.year)
         raw.era_year = _c_value(self.era_year)
         raw.month = _c_value(self.month)
@@ -2042,7 +2046,7 @@ class CalendarDate:
         """The value the library wrote into a C struct."""
         return cls(
             calendar=Calendar(raw.calendar),
-            era=Era(raw.era),
+            era=None if raw.era == NO_MEMBER else Era(raw.era),
             year=raw.year,
             era_year=raw.era_year,
             month=raw.month,

@@ -8,8 +8,12 @@
 // parity runner (untyped `.mjs`), and could not be named by a TypeScript
 // consumer at all.
 //
-// So this asks both sides. The runtime answers for itself: every exported
-// class, its prototype's members and its static ones. The declarations are
+// So this asks both sides. The runtime answers for itself: every value the
+// module exports, and for every exported class its prototype's members and
+// its static ones. The exports were not asked until 2026-09-24, and eight
+// were missing — `date`, `at`, `whenUnknown`, the three zone helpers,
+// `messages` and `entityForms`, every helper the README teaches — because
+// a gate over classes cannot see a function. The declarations are
 // asked through the pinned compiler, by writing a throwaway file of
 // type-level assertions — `Exclude<runtime, keyof Declared>` must be
 // `never`, and so must the reverse — and type-checking it at the same
@@ -47,6 +51,7 @@ const isClass = (value) =>
 function instances() {
   const { Calendar, ChartKind, Context, TeistroError, Body, date } = layer;
   const ctx = new Context({ profile: 'parashari-classical', ephemeris: 'builtin' });
+  const engined = new Context({ profile: 'parashari-classical', testProvider: true });
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
   const charts = ctx.chart.foundMany({ instants: [2460482.5], place, utcOffsetSeconds: 20700, kind: ChartKind.Natal });
   let error;
@@ -67,8 +72,25 @@ function instances() {
     AlmanacDay: ctx.almanac.day({ date: date(Calendar.Gregorian, 2024, 6, 21), place, utcOffsetSeconds: 20700 }),
     Rendered: ctx.intl.render('entity.graha.sun.name'),
     TeistroError: error instanceof TeistroError ? error : undefined,
+    // The areas a context hands out, each the one a consumer reaches.
+    CalendarArea: ctx.calendar,
+    TimeArea: ctx.time,
+    IntlArea: ctx.intl,
+    KeysArea: ctx.keys,
+    FrameArea: ctx.frame,
+    ChartArea: ctx.chart,
+    AlmanacArea: ctx.almanac,
+    // The built-in describes no operations of its own; the test provider
+    // does, which is what an engine is made from.
+    Engine: engined.engine,
   };
-  return { made, dispose: () => ctx.dispose() };
+  return {
+    made,
+    dispose: () => {
+      ctx.dispose();
+      engined.dispose();
+    },
+  };
 }
 
 /**
@@ -119,6 +141,16 @@ const lines = [
   'type Named<T> = Extract<keyof T, string>;',
   '',
 ];
+// The module itself: every value it exports at run time is a value its
+// declarations export, and the reverse. `typeof Layer` is the declared
+// module's values; its types are not in it, and need not be.
+const exported = union(Object.keys(layer));
+lines.push(
+  '// the module: exported at run time, and not declared.',
+  `none<Exclude<${exported}, keyof typeof Layer>>();`,
+  '// the module: declared, and not exported at run time.',
+  `none<Exclude<keyof typeof Layer, ${exported}>>();`,
+);
 const unmeasured = [];
 for (const [name] of classes) {
   const instance = made[name];
@@ -168,7 +200,7 @@ try {
     process.exit(1);
   }
   console.log(
-    `${classes.length} exported classes, measured on real instances: every member is declared, and none is declared that is not there`,
+    `${Object.keys(layer).length} exports and ${classes.length} exported classes, measured on the real module and real instances: every one is declared, and none is declared that is not there`,
   );
 } finally {
   rmSync(scratch, { recursive: true, force: true });

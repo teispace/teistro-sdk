@@ -117,7 +117,7 @@ void main() {
   print(
     'lagna          ${chart.lagnaDeg.toStringAsFixed(4)}° -- '
     '${ctx.intl.entity(lagna.fullKey).name} at ${into.toStringAsFixed(4)}°, '
-    'vara ${chart.vara.fullKey}',
+    'vara ${chart.day.vara.fullKey}',
   );
   // `null`, and it means what it says: a tropical chart has no
   // ayanamsha, not an ayanamsha of nought.

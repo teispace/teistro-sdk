@@ -45,7 +45,7 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-24 (**the Rust façade's examples join the comparison**: `check-parity` compares four sets of the shared examples, and asking why Rust's printed differently made the port validate and reckon coverage for every provider, gave Rust's positions their provenance, moved the plans' one call into the façade, and named a chart's ayanamsha in every binding; eight differences are excused by name until 2f and 2g remove them. Before it, **the shared examples print alike in every binding**, gated by `check-parity`, and building it fixed coverage for a consumer's own provider, Python's exports and a stale Node union. Before that, **the Harsha bala, a saham's strength and
+**Last updated:** 2026-09-24 (**one `LocalDay` in every binding's chart and almanac**, whose date is the one `calendar.convert` takes; building it fixed Python's reading of a calendar with no era, made a chart in a polar day refuse by naming its policy, and gave Node's declarations the eight helpers they lacked, now gated both ways. Before it, **the Rust façade's examples join the comparison**: `check-parity` compares four sets of the shared examples, and asking why Rust's printed differently made the port validate and reckon coverage for every provider, gave Rust's positions their provenance, moved the plans' one call into the façade, and named a chart's ayanamsha in every binding; eight differences are excused by name until 2f and 2g remove them. Before it, **the shared examples print alike in every binding**, gated by `check-parity`, and building it fixed coverage for a consumer's own provider, Python's exports and a stale Node union. Before that, **the Harsha bala, a saham's strength and
 the birth's own sahams cross to all four bindings**: every saham carries
 its clauses as bits over two generated enums and seven rows of facts, every
 founded year its Harsha bala, and every chart its own sahams, which now
@@ -3745,12 +3745,43 @@ on pub.dev (checked 2026-09-07).
    What is left is `EXCUSED` in `xtask/src/examples.rs`, eight entries
    each naming the item below that removes it, refused both ways and
    printed on every run.
-2e. **One day record in every binding's chart and almanac.** Node reads
-   a chart's day as `chart.day`, the decoded row with `vara` named;
-   Python and Dart flatten `vara` and `sunrise` onto the chart and leave
-   the sunset, the civil date and the day's state out, so their parity
-   runners read those from the blob's raw columns. A `ChartDay` like
-   `ChartTiming` closes it, and the runners then read the layer.
+2e. ~~One day record in every binding's chart and almanac~~ — **done**
+   (2026-09-24). `chart.day` and an almanac day's `day` are one
+   `LocalDay` in Node, Python and Dart: the civil date as the
+   `CalendarDate` `calendar.convert` returns (so it goes straight back
+   into it), the weekday, the sunrise, sunset and next sunrise, `polar`
+   (`null`, or `{kind, policy}` as Rust's `DayState` has it) and the
+   sunrise convention or its custom altitude. Python's and Dart's
+   flattened `vara`, `sunrise`, `sunset` and a second `hora_lord` beside
+   `timing.hora_lord` are gone, so a day is read one way everywhere. The
+   parity runners read the layer through one helper for both days, and
+   the comparison gained seven values a day. Building it found three
+   more:
+   - Python's generated reader built `Era(0xFFFF)` for a calendar with
+     no era, where Node and Dart read none, and its writer wrote `None`
+     as `0` — which is `era.VIKRAMA`, and for `Frame.ayanamsha`
+     Lahiri. The emitters now share one `NO_MEMBER` sentinel, generated
+     once into each binding and read back as `None`/`null`.
+   - A chart founded in a polar day under `NEAREST_EVENT` — the default
+     — was handed a day weeks away and refused later, by the ghati
+     reckoning, naming only the instant. `chart_day` now refuses where it
+     chooses the day, naming `day.polar_day_policy` and the policy that
+     holds it (`CIVIL_MIDNIGHT`), tested in the chart crate and in all
+     three bindings at Tromsø's midsummer.
+   - The façade could not name the type of `chart.day.day`: `LocalDay`,
+     `DayState`, `PolarKind` and `ChartDay` are re-exported now.
+   - **Node's declarations lacked eight of its exports** — `date`, `at`,
+     `whenUnknown`, `ianaZone`, `fixedZone`, `localMeanZone`, `messages`
+     and `entityForms`, every helper the README teaches — so a strict
+     TypeScript consumer could import none of them; and declared eight
+     area classes and two decoders the module did not export, and hid the
+     catalogue's `MoonEvent` value behind the record's interface. Found
+     because an example read a field the declarations no longer had and
+     no type-check reads the `.mjs` examples. `typecheck/surface.mjs`
+     now measures the module's own exports both ways as well as every
+     class's members, and the areas are exported and measured on real
+     instances (their `_run` helper moved off them, into a module
+     `WeakMap`): 273 exports and 16 classes, both directions.
 2f. **One spelling of a key, and of a field, in every binding.** A
    closed enum's key is its variant in kebab case in the three
    bindings (`out-of-range`, `iana`, `time-unknown-fallback`,
@@ -3816,6 +3847,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-24 | **One day record in every binding, and three things it found.** A chart's day was a row of ids under the blob's names in Node and a weekday and a sunrise flattened onto the chart in Python and Dart, so two parity runners read raw columns. `LocalDay` is the record in all three, for a chart's day and an almanac's alike — the date the calendar area returns, the weekday, the sunrises, `polar` as Rust's `DayState` shapes it and the convention — and each runner prints it through one helper (seven new values a day, all four agreeing). Probing it rather than assuming found: Python's generated reader turned a missing era (`0xFFFF`) into a member and wrote `None` as `0`, a real era's id, which one shared `NO_MEMBER` sentinel now fixes in the generator; a chart at Tromsø's midsummer under the default `NEAREST_EVENT` was given a day a month away and refused by the ghati reckoning in words that named no knob, and now `chart_day` refuses by `day.polar_day_policy` with `CIVIL_MIDNIGHT` as the hint (a synthetic midnight-sun model in the chart crate's tests, and the real place in all three bindings'); and the façade could not name `LocalDay`, now re-exported with `DayState`, `PolarKind` and `ChartDay`. And an example reading a removed field, which `tsc` never sees, led to Node's declarations lacking eight exports (`date`, `at`, the zone helpers, `messages`) and declaring ten the module did not export — `surface.mjs` now measures the module's exports both ways, and the areas on real instances. Next: 2f. |
 | 2026-09-24 | **The Rust façade's examples join the comparison, and six of their differences were the SDK's.** One of Rust's ten examples printed what the bindings print. Asking why, example by example, found the SDK again: a **Rust provider** was asked for instants outside its coverage and had to validate its own requests, where a foreign one had both done for it — `ask_positions` now validates a request and reckons its coverage for every provider, and `Completion` asks through it, so the foreign adapter's own check is gone and the Rust example's provider was asked for one cell, not two; Rust's **positions carried no provenance**, so `positions` answers in an envelope stamped by `Context::positions_provenance`, which the boundary now calls too, and the parity gate compares `provenance-fnv` for Rust (absences nine to eight, Rust 12,950 values, all agreeing); the **plans** a chart says were composed only in `crates/ffi`, so `ChartArea::interpreted` founds, reads and composes in one call and the boundary only encodes; the bindings' `birth_chart` read **raw positions** and so missed the profile's topocentric Moon (8.4455° against the founded 9.1738°), and all four found the chart now; **no binding could name a chart's ayanamsha**, which the blob carried — `Chart.ayanamsha`, on the chart because Dart's generated `Charts.ayanamsha` is the raw id, and the Node typecheck fixture's negative case caught that `index.d.ts` had not imported the type; and `Detail`, `CellStatus` and `ZoneSource` gained the `key()` their serde spelling implies, each tested against it, which retired the Rust parity runner's `screaming` helper. `examples.rs` runs Rust as the fourth set and `check-rust` runs its examples through it; what is left is `EXCUSED`, eight entries naming the item that removes each, refused both ways (the gate caught my own wrong line number from both sides) and printed every run. Found and filed: **2f** a closed enum's key is kebab in the bindings and SCREAMING everywhere else, and a binding's refusal names the C argument; **2g** the year's chart is composed only at the boundary, and the corpus examples are Rust's alone; **2h** provenance is an untyped map in every binding, and a binding's `found(one)` carries its batch's content hash. Next: 2e. |
 | 2026-09-24 | **The shared examples print alike, and three of their seven differences were the SDK's.** Running all eleven in Node, Python and Dart and diffing the output found presentation first — a bare catalogue key against a full one, `False` against `false`, a sign padded as `+ 1.0196` — and then **a provider written in a binding refusing a whole batch for one instant outside its coverage**, each binding with its own error type, where a native provider marks one cell `OUT_OF_RANGE` and keeps the rest. The port's own rule said per cell; the ABI page let a binding "refuse early in its own adapter" and all three had. `VtableProvider::positions` now asks a foreign provider only for the instants it covers and scatters its answer back, and the three host-side checks are gone (a Rust test, proved red, and one in each binding). Python's package root named a hand-kept list of kinds and missed **48** of them or their `__all__` entries — `ProviderCode` among them, so a provider could not name its own cell's status — now held by a test over every generated enum. Only Node exposed the ishtakaal, so `ChartTiming` is one record in all three and the parity runners read it through the layer rather than the blob. **Why only Node was right led to a fourth:** Node's `export *` gives way to an explicit export, and `index.d.ts` hand-declared `VarsheshaChosen` with seven of the catalogue's ten steps — a `Record` over the answer's own type in the typecheck fixture now fails on a missing step, and `check-lints` gains `layer-does-not-shadow-a-kind`, reading the kinds from `idl/api.json` and allowing exactly `MoonEvent` (the panchanga record) in all three layers, proved red on the old declaration file. The comparison lives in `check-parity` beside the values, and the three near-identical example runners in the binding gates became one (`examples.rs`). Measured and not done: the Rust façade's examples (1 of 10 alike) and one day record across the layers, `## Next` 2d and 2e. Next: 2d. |
 | 2026-09-24 | **The annual dashas cross, and a caller could have been refused the value it was handed.** `varsha_json.dashas` names the systems through the same `Asked<T>` reader as the matters and the sahams, and `varsha_json.dashaRules` carries `AnnualDashaRules`; each year's chart answers them in three ragged sections — `year_dashas` under `annual_charts.dasha_count`, and under each its ring (`year_dasha_shares`) and periods (`year_dasha_periods`). **Node reads a system back as `'dasha_system.MUDDA'`, the catalogue's full key, and the wire took only `"MUDDA"`**, so a caller writing `DashaSystem.Mudda`, or handing back what a year answered, would have been refused: the sahams' lesson in another shape. The boundary now takes a system by its full key or its bare one, and every binding sends its own member as it stands. The periods share the natal `dasha_periods` layout, one Rust writer and one schema builder, and each binding decodes a period and walks `at(jd)` through one helper for both; the year's section carries one column more, because the Patyayini runs **one sign among seven planets** and a birth dasha is all signs' or none. A clock of no length is refused at `varsha_json.dashaRules.clock` by `YearClock::check`, the check the kernel itself runs. Python had never exported `Nakshatra`, which `Dasha.seed` already returned, so a strict caller could not name its own answer's type; it is exported. The parity runners print every dasha of 24 years twice — under the sources' readings, and under the even clock, the entry Moon's balance and the elapsed birth period three levels deep — and all four agree on 12 958 values. `dasha-kernels.md`'s three tables still filed the two nakshatra years under the scale decorator, with the correction only at the foot of the page; the tables say the year kernel now. Every step of the Tajika item is built and crosses. |

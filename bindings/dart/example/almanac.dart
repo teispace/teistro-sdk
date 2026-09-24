@@ -81,10 +81,10 @@ void main() {
     final d = week.decoded.day;
     final i = day.index;
     print(
-      '${name(day.vara.fullKey).padRight(12)} '
+      '${name(day.day.vara.fullKey).padRight(12)} '
       '${d.year[i]}-${d.month[i].toString().padLeft(2, '0')}-'
       '${d.dayOfMonth[i].toString().padLeft(2, '0')}'
-      '   sunrise ${clock(day.sunrise)}  sunset ${clock(day.sunset)}'
+      '   sunrise ${clock(day.day.sunrise)}  sunset ${clock(day.day.sunset)}'
       '   ${name(day.month.amanta.fullKey)} ${name(day.month.paksha.fullKey)}',
     );
     // The five limbs. The vara is one of them and is the day's own; the
@@ -167,7 +167,7 @@ void main() {
     utcOffsetSeconds: offsetSeconds,
   );
   print(
-    'day(one)       ${name(one.vara.fullKey)}  ${one.horas.length} horas, '
+    'day(one)       ${name(one.day.vara.fullKey)}  ${one.horas.length} horas, '
     '${one.muhurtas.length} muhurtas, ${one.choghadiya.length} choghadiya',
   );
   ctx.dispose();

@@ -46,6 +46,24 @@ function fnv(text) {
 
 const put = (key, value) => report.set(key, typeof value === 'number' ? number(value) : String(value));
 
+/**
+ * A local day's every field, under the same keys for a chart's day and an
+ * almanac's, because the two layers hand back one record.
+ */
+const putDay = (prefix, day) => {
+  put(`${prefix}-vara`, day.vara);
+  put(`${prefix}-sunrise`, day.sunrise);
+  put(`${prefix}-sunset`, day.sunset);
+  put(`${prefix}-next-sunrise`, day.nextSunrise);
+  put(`${prefix}-date`, `${day.date.year}-${day.date.month}-${day.date.day}`);
+  put(`${prefix}-calendar`, day.date.calendar);
+  put(`${prefix}-era`, day.date.era ?? 'none');
+  put(`${prefix}-era-year`, day.date.eraYear);
+  put(`${prefix}-resolution`, day.date.resolution);
+  put(`${prefix}-polar`, day.polar === null ? 'none' : `${day.polar.kind}/${day.polar.policy}`);
+  put(`${prefix}-convention`, day.convention ?? `custom ${number(day.customAltitudeDeg)}`);
+};
+
 // ── The library itself ─────────────────────────────────────────────────
 put('abi', abiVersion());
 put('sdk', sdkVersion());
@@ -325,10 +343,7 @@ for (const chart of charts) {
   put(`chart-${i}-ayanamsha`, chart.ayanamshaOffsetDeg);
   put(`chart-${i}-day-part`, chart.dayPart);
   put(`chart-${i}-day-elapsed`, chart.dayElapsed);
-  put(`chart-${i}-vara`, chart.day.vara);
-  put(`chart-${i}-sunrise`, chart.day.sunrise);
-  put(`chart-${i}-sunset`, chart.day.sunset);
-  put(`chart-${i}-date`, `${chart.day.year}-${chart.day.month}-${chart.day.dayOfMonth}`);
+  putDay(`chart-${i}`, chart.day);
   put(`chart-${i}-ghati`, chart.timing.ghati);
   put(`chart-${i}-pala`, chart.timing.pala);
   put(`chart-${i}-vipala`, chart.timing.vipala);
@@ -654,11 +669,7 @@ put('almanac-provenance-fnv', fnv(week.decoded.provenance));
 
 for (const day of week) {
   const i = day.index;
-  put(`day-${i}-vara`, day.day.vara);
-  put(`day-${i}-sunrise`, day.day.sunrise);
-  put(`day-${i}-sunset`, day.day.sunset);
-  put(`day-${i}-next-sunrise`, day.day.nextSunrise);
-  put(`day-${i}-date`, `${day.day.year}-${day.day.month}-${day.day.dayOfMonth}`);
+  putDay(`day-${i}`, day.day);
   put(`day-${i}-window-from`, day.window.from);
   put(`day-${i}-window-to`, day.window.to);
   put(`day-${i}-month`, day.month.month);

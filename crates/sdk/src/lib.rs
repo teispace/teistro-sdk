@@ -78,6 +78,7 @@ pub use scale::{Conversion, Scale};
 pub use teistro_astro::DeltaTModel;
 pub use teistro_astro::delta_t::DeltaT;
 pub use teistro_calendar::{CalendarDate, FixedDay, Weekday};
+pub use teistro_chart::day::ChartDay;
 pub use teistro_chart::foundation::{ChartFoundation, GrahaPosition};
 pub use teistro_core::catalogue;
 // `canonical_json` and `content_hash` with them: a stored chart keeps
@@ -197,7 +198,12 @@ pub use teistro_port_ephemeris::{
     Equinox, Frame, Identity, Overrides, PositionColumns, PositionRequest, ProviderError,
     TimeScale, Zodiac,
 };
-pub use teistro_time::{CivilDateTime, CivilTime, Resolved, ZoneResolution, ZoneSpec};
+// A chart's day and an almanac's are one record, `LocalDay`, and a
+// consumer reading either names its type from here rather than from the
+// time crate underneath.
+pub use teistro_time::{
+    CivilDateTime, CivilTime, DayState, LocalDay, PolarKind, Resolved, ZoneResolution, ZoneSpec,
+};
 
 /// The Julian day at the UTC midnight that begins a fixed day.
 ///

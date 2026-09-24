@@ -17,7 +17,7 @@
 use std::collections::BTreeSet;
 use std::fmt::Write;
 
-use crate::emit::{DocStyle, field_doc_with, line_comment, reserved};
+use crate::emit::{DocStyle, NO_MEMBER, field_doc_with, line_comment, reserved};
 use crate::model::{
     Api, BlobSchema, EnumDef, FieldDef, FunctionDef, OpaqueDef, ParamDef, Role, Scalar,
     SectionKind, SectionSchema, StructDef, StructRole, TypeRef,
@@ -70,6 +70,10 @@ pub fn catalogue(api: &Api) -> String {
         out,
         "/// The ABI these declarations were generated for; the library must agree.\nconst int generatedAbiVersion = {};\n\n/// The SDK version these declarations were generated from; the library\n/// must be the same build (`Teistro.open` checks it).\nconst String generatedSdkVersion = '{}';\n",
         api.abi_version, api.sdk_version
+    );
+    let _ = writeln!(
+        out,
+        "/// What a nullable catalogue field holds for none: no member is numbered\n/// this high, and `0` is a member.\nconst int noMember = {NO_MEMBER};\n"
     );
     for c in constants(api) {
         let _ = writeln!(
@@ -588,7 +592,7 @@ fn render_write(out: &mut String, s: &StructDef, roles: &[FieldRole]) {
             FieldRole::Value => {
                 if f.meta.enum_name.is_some() {
                     if f.meta.nullable {
-                        format!("raw.{field} = {field}?.id ?? 0xFFFF;")
+                        format!("raw.{field} = {field}?.id ?? noMember;")
                     } else {
                         format!("raw.{field} = {field}.id;")
                     }
@@ -665,7 +669,7 @@ fn render_read(out: &mut String, api: &Api, s: &StructDef, roles: &[FieldRole], 
                 if let Some(enum_name) = &f.meta.enum_name {
                     let e = binding_type_name(enum_name);
                     if f.meta.nullable {
-                        format!("raw.{field} == 0xFFFF ? null : {e}.byId(raw.{field})")
+                        format!("raw.{field} == noMember ? null : {e}.byId(raw.{field})")
                     } else {
                         format!("{e}.byId(raw.{field})")
                     }

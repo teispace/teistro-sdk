@@ -33,10 +33,12 @@
 use std::collections::BTreeMap;
 
 use teistro::catalogue::{Calendar, ChartKind, ChartLayout, DashaSystem, Graha, Varga};
+use teistro::settings::SunriseConvention;
 use teistro::{
     Body, CalendarDate, ChartRequest, Context, Ephemeris, Frame, PositionRequest, Scale, Script,
     TimeScale, Timeline,
 };
+use teistro::{DayState, LocalDay};
 use teistro_core::envelope::CalendarResolution;
 use teistro_core::envelope::Envelope;
 use teistro_core::interval::Interval;
@@ -638,29 +640,7 @@ fn one_chart(
         &format!("chart-{index}-day-elapsed"),
         number(chart.day.elapsed),
     );
-    put(
-        report,
-        &format!("chart-{index}-vara"),
-        chart.day.day.vara.full_key().to_owned(),
-    );
-    put(
-        report,
-        &format!("chart-{index}-sunrise"),
-        number(chart.day.day.sunrise.get()),
-    );
-    put(
-        report,
-        &format!("chart-{index}-sunset"),
-        number(chart.day.day.sunset.get()),
-    );
-    put(
-        report,
-        &format!("chart-{index}-date"),
-        format!(
-            "{}-{}-{}",
-            chart.day.day.date.year, chart.day.day.date.month, chart.day.day.date.day
-        ),
-    );
+    put_day(report, &format!("chart-{index}"), &chart.day.day);
     put(
         report,
         &format!("chart-{index}-ghati"),
@@ -2363,36 +2343,68 @@ fn the_drishti(report: &mut Report, index: usize, document: &teistro::Document) 
     }
 }
 
+/// A local day's every field, under the same keys for a chart's day and
+/// an almanac's, because every binding hands back one record for both.
+fn put_day(report: &mut Report, prefix: &str, day: &LocalDay) {
+    let key = |what: &str| format!("{prefix}-{what}");
+    put(report, &key("vara"), day.vara.full_key().to_owned());
+    put(report, &key("sunrise"), number(day.sunrise.get()));
+    put(report, &key("sunset"), number(day.sunset.get()));
+    put(report, &key("next-sunrise"), number(day.next_sunrise.get()));
+    put(
+        report,
+        &key("date"),
+        format!("{}-{}-{}", day.date.year, day.date.month, day.date.day),
+    );
+    put(
+        report,
+        &key("calendar"),
+        day.date.calendar.full_key().to_owned(),
+    );
+    put(
+        report,
+        &key("era"),
+        day.date
+            .era
+            .map_or_else(|| String::from("none"), |era| era.era.full_key().to_owned()),
+    );
+    put(
+        report,
+        &key("era-year"),
+        day.date.era.map_or(0, |era| era.year).to_string(),
+    );
+    put(
+        report,
+        &key("resolution"),
+        resolution(&day.date.resolution).to_owned(),
+    );
+    put(
+        report,
+        &key("polar"),
+        match day.state {
+            DayState::Normal => String::from("none"),
+            DayState::Polar { kind, policy } => format!(
+                "{}/{}",
+                kebab(&format!("{kind:?}")),
+                kebab(&format!("{policy:?}"))
+            ),
+        },
+    );
+    put(
+        report,
+        &key("convention"),
+        match day.convention {
+            SunriseConvention::Named { which } => kebab(&format!("{which:?}")),
+            SunriseConvention::Custom { altitude_deg } => {
+                format!("custom {}", number(altitude_deg))
+            }
+        },
+    );
+}
+
 /// One day of the almanac, as the report prints it.
 fn one_day(report: &mut Report, index: usize, day: &teistro_panchanga::almanac::Panchanga) {
-    put(
-        report,
-        &format!("day-{index}-vara"),
-        day.day.vara.full_key().to_owned(),
-    );
-    put(
-        report,
-        &format!("day-{index}-sunrise"),
-        number(day.day.sunrise.get()),
-    );
-    put(
-        report,
-        &format!("day-{index}-sunset"),
-        number(day.day.sunset.get()),
-    );
-    put(
-        report,
-        &format!("day-{index}-next-sunrise"),
-        number(day.day.next_sunrise.get()),
-    );
-    put(
-        report,
-        &format!("day-{index}-date"),
-        format!(
-            "{}-{}-{}",
-            day.day.date.year, day.day.date.month, day.day.date.day
-        ),
-    );
+    put_day(report, &format!("day-{index}"), &day.day);
     put(
         report,
         &format!("day-{index}-window-from"),

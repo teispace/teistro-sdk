@@ -47,6 +47,7 @@ from teistro import (
     Shodhana,
     Status,
     Teistro,
+    PolarDay,
     TeistroError,
     TimeScale,
     PlanRequest,
@@ -66,7 +67,16 @@ from teistro import (
     when_unknown,
 )
 from teistro._ffi import Longitude
-from teistro.catalogue import Ayanamsha, DayPart, Graha
+from teistro.catalogue import (
+    Ayanamsha,
+    DayPart,
+    Era,
+    Graha,
+    PolarDayPolicy,
+    PolarKind,
+    Sunrise,
+    Vara,
+)
 from tests.support import LOCALE, PROFILE, WithLibrary, fixture
 
 
@@ -669,6 +679,65 @@ class AnEngine(WithLibrary):
                     drawings=[(ChartLayout.SOUTH_INDIAN, Varga.D9), wrong],  # type: ignore[list-item]
                 )
             self.assertEqual(caught.exception.field, "drawings[1]")
+
+    def test_a_charts_day_is_the_almanacs_and_its_date_converts(self) -> None:
+        """A chart's day and an almanac's are one record, and its date is the
+        one `calendar.convert` takes. Before, Python flattened the weekday
+        and the sunrise onto the chart and left the rest out."""
+        place = Observer(
+            latitude_deg=Latitude(27.7172),
+            longitude_deg=Longitude(85.324),
+            altitude_m=Altitude(1400),
+        )
+        day = self.ctx.chart.found(
+            instant=2451545.0, place=place, utc_offset_seconds=20700
+        ).day
+        self.assertEqual(
+            self.ctx.almanac.day(date=day.date, place=place, utc_offset_seconds=20700).day,
+            day,
+        )
+        self.assertEqual(
+            (day.date.calendar, day.date.era, day.date.year, day.date.month, day.date.day),
+            (Calendar.BIKRAM_SAMBAT, Era.VIKRAMA, 2056, 9, 17),
+        )
+        gregorian = self.ctx.calendar.convert(day.date, Calendar.GREGORIAN)
+        self.assertEqual((gregorian.year, gregorian.month, gregorian.day), (2000, 1, 1))
+        self.assertEqual(day.vara, Vara.SHANIVARA)
+        self.assertTrue(day.sunrise < day.sunset < 2451545.0 < day.next_sunrise)
+        self.assertIsNone(day.polar)
+        self.assertEqual(day.convention, Sunrise.CENTRE_NO_REFRACTION)
+        self.assertIsNone(day.custom_altitude_deg)
+
+        # A custom altitude is a number and no named convention.
+        custom = {"day": {"sunrise": {"kind": "CUSTOM", "altitude_deg": -0.5}}}
+        with self.teistro.context(
+            profile=PROFILE, settings=custom, test_provider=True
+        ) as ctx:
+            own = ctx.chart.found(instant=2451545.0, place=place, utc_offset_seconds=20700).day
+            self.assertEqual((own.convention, own.custom_altitude_deg), (None, -0.5))
+
+        # Tromsø at midsummer: civil midnight holds the instant and says so;
+        # the nearest real sunrise is weeks away, and the refusal names the
+        # policy rather than the instant.
+        tromso = Observer(
+            latitude_deg=Latitude(69.65), longitude_deg=Longitude(18.96), altitude_m=Altitude(0)
+        )
+        def policy(name: str) -> dict[str, object]:
+            return {"day": {"polar_day_policy": name}}
+
+        with self.teistro.context(
+            profile=PROFILE, settings=policy("CIVIL_MIDNIGHT"), test_provider=True
+        ) as ctx:
+            polar = ctx.chart.found(
+                instant=2451716.5, place=tromso, utc_offset_seconds=7200
+            ).day.polar
+            self.assertEqual(polar, PolarDay(kind=PolarKind.DAY, policy=PolarDayPolicy.CIVIL_MIDNIGHT))
+        with self.teistro.context(
+            profile=PROFILE, settings=policy("NEAREST_EVENT"), test_provider=True
+        ) as ctx:
+            with self.assertRaises(TeistroError) as caught:
+                ctx.chart.found(instant=2451716.5, place=tromso, utc_offset_seconds=7200)
+            self.assertEqual(caught.exception.field, "day.polar_day_policy")
 
     def test_a_chart_carries_the_day_it_belongs_to_and_both_house_readings(self) -> None:
         """A founded chart knows more than where the grahas are: which arc

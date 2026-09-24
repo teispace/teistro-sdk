@@ -130,7 +130,7 @@ pub(crate) fn surfaces_of(source: &str, entry_points: &[String]) -> Result<Vec<S
         let Some((area, class)) = wired(line) else {
             continue;
         };
-        let body = class_body(source, &format!("\nclass {class} "))?;
+        let body = class_body(source, &format!("\nexport class {class} "))?;
         out.push(Surface {
             name: area,
             class,

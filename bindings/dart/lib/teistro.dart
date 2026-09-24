@@ -5257,6 +5257,101 @@ final class Bhava {
   final double sandhiDeg;
 }
 
+/// A day with no sunrise or no sunset: which, and what the policy did
+/// about it.
+final class PolarDay {
+  const PolarDay({required this.kind, required this.policy});
+
+  /// Whether the Sun stayed up or stayed down.
+  final PolarKind kind;
+
+  /// The policy that put bounds on the day.
+  final PolarDayPolicy policy;
+}
+
+/// A local day, as a chart and an almanac both read it: the civil date,
+/// its weekday, the sunrise that opened it, its sunset and the sunrise
+/// that closes it, whether it had a sunrise at all, and by which
+/// convention. The same record in every binding.
+final class LocalDay {
+  const LocalDay({
+    required this.date,
+    required this.vara,
+    required this.sunrise,
+    required this.sunset,
+    required this.nextSunrise,
+    required this.polar,
+    required this.convention,
+    required this.customAltitudeDeg,
+  });
+
+  /// One row of a `day` section -- a chart's or an almanac's, which share
+  /// it -- read into the record both layers hand back.
+  factory LocalDay._of(Day section, int i) {
+    final custom = section.conventionKind[i] == _customSunrise;
+    final era = section.era[i];
+    return LocalDay(
+      date: CalendarDate(
+        calendar: Calendar.byId(section.calendar[i]),
+        era: era == noMember ? null : Era.byId(era),
+        year: section.year[i],
+        eraYear: section.eraYear[i],
+        month: section.month[i],
+        day: section.dayOfMonth[i],
+        resolution: Resolution.byId(section.resolution[i]),
+        computedMonth: section.computedMonth[i],
+        computedDay: section.computedDay[i],
+      ),
+      vara: Vara.byId(section.vara[i]),
+      sunrise: section.sunrise[i],
+      sunset: section.sunset[i],
+      nextSunrise: section.nextSunrise[i],
+      polar:
+          DayState.byId(section.stateKind[i]) == DayState.polar
+              ? PolarDay(
+                kind: PolarKind.byId(section.statePolarKind[i]),
+                policy: PolarDayPolicy.byId(section.statePolarPolicy[i]),
+              )
+              : null,
+      convention: custom ? null : Sunrise.byId(section.conventionKind[i]),
+      customAltitudeDeg: custom ? section.conventionValue[i] : null,
+    );
+  }
+
+  /// The convention column's value for a custom sunrise altitude.
+  static const int _customSunrise = 0xFF;
+
+  /// The civil date, as `calendar.convert` returns one, so it can be
+  /// handed back to it.
+  final CalendarDate date;
+
+  /// The weekday, which the sunrise-anchored reckoning keeps from sunrise
+  /// to sunrise.
+  final Vara vara;
+
+  /// The sunrise that opened the day, or what the polar policy put in its
+  /// place, as a Julian day (UTC).
+  final double sunrise;
+
+  /// The sunset that closed its daylight, as a Julian day (UTC).
+  final double sunset;
+
+  /// The sunrise that closes it, as a Julian day (UTC).
+  final double nextSunrise;
+
+  /// `null` for a day the Sun rose and set on; what happened instead, for
+  /// one it did not.
+  final PolarDay? polar;
+
+  /// The named sunrise convention the day was reckoned by; `null` for a
+  /// custom altitude.
+  final Sunrise? convention;
+
+  /// The custom altitude of the Sun's centre, degrees, when [convention]
+  /// is `null`; `null` otherwise.
+  final double? customAltitudeDeg;
+}
+
 /// Where in its day a chart's moment falls: the ishtakaal and the hora.
 /// The same record in every binding.
 final class ChartTiming {
@@ -5349,14 +5444,9 @@ final class Chart {
   /// What kind of chart this is.
   ChartKind get kind => ChartKind.byId(batch.kind);
 
-  /// The weekday the chart's day carries.
-  Vara get vara => Vara.byId(batch.day.vara[index]);
-
-  /// The sunrise that opened the chart's day, as a Julian day (UTC).
-  double get sunrise => batch.day.sunrise[index];
-
-  /// The graha that rules the hora holding the instant.
-  Graha get horaLord => Graha.byId(batch.timing.horaLord[index]);
+  /// The day the chart's moment belongs to, which may be the civil date
+  /// before the instant's: its date, weekday and sunrises.
+  LocalDay get day => LocalDay._of(batch.day, index);
 
   /// Where in its day the moment falls, in the reckonings the settings
   /// named.
@@ -6269,14 +6359,8 @@ final class AlmanacDay {
   /// Where in that batch it sits.
   final int index;
 
-  /// The weekday the day carries.
-  Vara get vara => Vara.byId(batch.decoded.day.vara[index]);
-
-  /// The sunrise that opened the day, as a Julian day (UTC).
-  double get sunrise => batch.decoded.day.sunrise[index];
-
-  /// The sunset that closed its daylight.
-  double get sunset => batch.decoded.day.sunset[index];
+  /// The day itself: its date, weekday and sunrises.
+  LocalDay get day => LocalDay._of(batch.decoded.day, index);
 
   /// What the spans are clipped to.
   Interval get window => Interval(

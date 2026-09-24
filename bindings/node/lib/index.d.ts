@@ -65,6 +65,10 @@ import type {
   VarsheshaChosen,
   GhatiReckoning,
   Affliction,
+  PolarDayPolicy,
+  PolarKind,
+  Sunrise,
+  Longitude,
 } from './catalogue.js';
 import type {
   CalendarDate,
@@ -92,7 +96,52 @@ import type { EntityForms, Messages } from './messages.js';
 export * from './catalogue.js';
 export type * from './types.js';
 export type * from './blob.js';
-export { decodeIntlRender, decodePositions } from './blob.js';
+/**
+ * A date in a calendar, without naming the fields a call fills in: the era
+ * and the era year are what the call resolves them to, and the resolution
+ * is `defined`, which is what a date a caller states means.
+ *
+ * @example date(Calendar.Gregorian, 2015, 4, 14)
+ */
+export declare function date(calendar: Calendar, year: number, month: number, day: number): CalendarDate;
+
+/**
+ * A date at a time of day.
+ *
+ * @example at(date(Calendar.Gregorian, 1986, 1, 1), { hour: 0, minute: 20 })
+ */
+export declare function at(
+  day: CalendarDate,
+  time?: {
+    readonly hour?: number;
+    readonly minute?: number;
+    readonly second?: number;
+    readonly nanos?: number;
+  },
+): CivilDateTime;
+
+/**
+ * A date whose time of day is unknown. Nothing guesses one: unless the
+ * profile sets `time.unknown_time`, a resolution refuses it by name.
+ *
+ * @example whenUnknown(date(Calendar.Gregorian, 1986, 1, 1))
+ */
+export declare function whenUnknown(day: CalendarDate): CivilDateTime;
+
+/** A zone of the embedded database, by its IANA name. */
+export declare function ianaZone(name: string): ZoneSpec;
+
+/** A fixed offset from UTC, in seconds east. */
+export declare function fixedZone(offsetSeconds: number): ZoneSpec;
+
+/**
+ * Local mean time at a longitude east of Greenwich, which is what a chart
+ * from before the zone existed is cast in.
+ */
+export declare function localMeanZone(longitudeDeg: Longitude): ZoneSpec;
+
+export { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
+export { entityForms, messages } from './messages.js';
 
 /** A failed call, with everything the library said about it. */
 export declare class TeistroError extends Error {
@@ -1679,9 +1728,7 @@ export declare class Chart {
    * The day the chart belongs to, which is not always its civil date:
    * the values the blob carries, with `vara` named.
    */
-  readonly day: Omit<{ [K in keyof DecodedCharts['day']]: number }, 'length' | 'vara'> & {
-    readonly vara: Vara | 'unknown';
-  };
+  readonly day: LocalDay;
   /** Where in its day the moment falls, in the reckonings the settings named. */
   readonly timing: ChartTiming;
   /** The grahas, in the catalogue's order, one object each. */
@@ -1801,6 +1848,38 @@ export interface ChoghadiyaPeriod extends Interval {
 }
 
 /**
+ * A local day, as a chart and an almanac both read it: the civil date,
+ * its weekday, the sunrise that opened it, its sunset and the sunrise that
+ * closes it, whether it had a sunrise at all, and by which convention.
+ */
+export interface LocalDay {
+  /** The civil date, spelled as `calendar.convert` spells one, so it can be handed back to it. */
+  readonly date: CalendarDate;
+  /** The weekday, which the sunrise-anchored reckoning keeps from sunrise to sunrise. */
+  readonly vara: Vara | 'unknown';
+  /** The sunrise that opened the day, or what the polar policy put in its place, as a Julian day (UTC). */
+  readonly sunrise: number;
+  /** The sunset that closed its daylight, as a Julian day (UTC). */
+  readonly sunset: number;
+  /** The sunrise that closes it, as a Julian day (UTC). */
+  readonly nextSunrise: number;
+  /** `null` for a day the Sun rose and set on; what happened instead, for one it did not. */
+  readonly polar: PolarDay | null;
+  /** The named sunrise convention the day was reckoned by; `null` for a custom altitude. */
+  readonly convention: Sunrise | 'unknown' | null;
+  /** The custom altitude of the Sun's centre, degrees, when `convention` is `null`; `null` otherwise. */
+  readonly customAltitudeDeg: number | null;
+}
+
+/** A day with no sunrise or no sunset: which, and what the policy did about it. */
+export interface PolarDay {
+  /** Whether the Sun stayed up or stayed down. */
+  readonly kind: PolarKind | 'unknown';
+  /** The policy that put bounds on the day. */
+  readonly policy: PolarDayPolicy | 'unknown';
+}
+
+/**
  * Where in its day a chart's moment falls: the ishtakaal and the hora. The
  * same record in every binding.
  */
@@ -1840,6 +1919,15 @@ export interface Muhurta extends Interval {
   /** Whether it is one of the fifteen of the daylight. */
   readonly daylight: boolean;
 }
+
+/**
+ * The catalogue's `MoonEvent` members, which this module exports at run
+ * time beside the record of the same name: the record's interface would
+ * otherwise hide the catalogue's value from a TypeScript consumer, since
+ * an explicit export beats `export *`. A value and an interface of one
+ * name merge, so both are reachable.
+ */
+export declare const MoonEvent: typeof import('./catalogue.js').MoonEvent;
 
 /** A moonrise or a moonset. */
 export interface MoonEvent {
@@ -1905,9 +1993,7 @@ export declare class AlmanacDay {
    * The day itself — the same eighteen fields a chart's day carries,
    * decoded into the same type, with `vara` named.
    */
-  readonly day: Omit<{ [K in keyof DecodedAlmanac['day']]: number }, 'length' | 'vara'> & {
-    readonly vara: Vara | 'unknown';
-  };
+  readonly day: LocalDay;
   /** What the spans are clipped to. */
   readonly window: Interval;
   /** The lunar month, under both conventions. */

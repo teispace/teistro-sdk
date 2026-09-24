@@ -24,7 +24,7 @@ import type {
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
 import type { Ayanamsha, Graha, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
-import type { CalendarDate } from '../lib/index.js';
+import type { CalendarDate, PolarDay } from '../lib/index.js';
 
 declare const build: BuildInfo;
 declare function refuse(info: BuildInfo, named: boolean): string | null;
@@ -169,6 +169,12 @@ function charts(): string {
   // is in the type, so it cannot be read as a member without a check.
   const ayanamsha: Ayanamsha | 'unknown' | null = one.ayanamsha;
   const custom: boolean = one.ayanamshaCustom;
+  // A chart's day is the record an almanac's is: its date is the one
+  // `calendar.convert` takes, and a day the Sun rose on has no polar state.
+  const date: CalendarDate = one.day.date;
+  const polar: PolarDay | null = one.day.polar;
+  // @ts-expect-error a day's polar state is absent on a day the Sun rose
+  const kind: string = one.day.polar.kind;
   // @ts-expect-error a chart's ayanamsha may be absent
   const always: Ayanamsha = one.ayanamsha;
 
@@ -188,7 +194,7 @@ function charts(): string {
   ctx.chart.foundMany({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
   // @ts-expect-error a chart is a view; its index is not a number to set
   first.index = 2;
-  return `${lagna} ${vara} ${bhava} ${part} ${elapsed} ${madhya} ${ayanamsha} ${custom} ${always} ${count} ${every.length} ${first.instant}`;
+  return `${lagna} ${vara} ${bhava} ${part} ${elapsed} ${madhya} ${ayanamsha} ${custom} ${always} ${date.year} ${polar} ${kind} ${count} ${every.length} ${first.instant}`;
 }
 
 void charts;

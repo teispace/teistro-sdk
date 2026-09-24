@@ -45,6 +45,7 @@ from ._blob import (
     decode_positions,
 )
 from ._ffi import (
+    NO_MEMBER,
     CONTEXT_TEST_PROVIDER,
     GENERATED_ABI_VERSION,
     GENERATED_SDK_VERSION,
@@ -213,6 +214,8 @@ from .catalogue import (
 
 __all__ = [
     "ChartTiming",
+    "LocalDay",
+    "PolarDay",
     "Altitude",
     "Engine",
     "Ayanamsha",
@@ -4082,6 +4085,94 @@ def _drawing_bits(
 
 
 @dataclass(frozen=True)
+class PolarDay:
+    """A day with no sunrise or no sunset: which, and what the policy did
+    about it."""
+
+    kind: PolarKind
+    """Whether the Sun stayed up or stayed down."""
+
+    policy: PolarDayPolicy
+    """The policy that put bounds on the day."""
+
+
+@dataclass(frozen=True)
+class LocalDay:
+    """A local day, as a chart and an almanac both read it: the civil date,
+    its weekday, the sunrise that opened it, its sunset and the sunrise
+    that closes it, whether it had a sunrise at all, and by which
+    convention. The same record in every binding."""
+
+    date: CalendarDate
+    """The civil date, as `calendar.convert` returns one, so it can be
+    handed back to it."""
+
+    vara: Vara
+    """The weekday, which the sunrise-anchored reckoning keeps from
+    sunrise to sunrise."""
+
+    sunrise: float
+    """The sunrise that opened the day, or what the polar policy put in its
+    place, as a Julian day (UTC)."""
+
+    sunset: float
+    """The sunset that closed its daylight, as a Julian day (UTC)."""
+
+    next_sunrise: float
+    """The sunrise that closes it, as a Julian day (UTC)."""
+
+    polar: Optional[PolarDay]
+    """`None` for a day the Sun rose and set on; what happened instead, for
+    one it did not."""
+
+    convention: Optional[Sunrise]
+    """The named sunrise convention the day was reckoned by; `None` for a
+    custom altitude."""
+
+    custom_altitude_deg: Optional[float]
+    """The custom altitude of the Sun's centre, degrees, when `convention`
+    is `None`; `None` otherwise."""
+
+
+#: The convention column's value for a custom sunrise altitude.
+_CUSTOM_SUNRISE = 0xFF
+
+
+def _local_day(section: Any, i: int) -> LocalDay:
+    """One row of a `day` section -- a chart's or an almanac's, which share
+    it -- read into the record both layers hand back."""
+    custom = section.convention_kind[i] == _CUSTOM_SUNRISE
+    polar = DayState(section.state_kind[i]) == DayState.POLAR
+    return LocalDay(
+        date=CalendarDate(
+            calendar=Calendar(section.calendar[i]),
+            era=None if section.era[i] == NO_MEMBER else Era(section.era[i]),
+            year=section.year[i],
+            era_year=section.era_year[i],
+            month=section.month[i],
+            day=section.day_of_month[i],
+            resolution=Resolution(section.resolution[i]),
+            computed_month=section.computed_month[i],
+            computed_day=section.computed_day[i],
+        ),
+        vara=Vara(section.vara[i]),
+        sunrise=section.sunrise[i],
+        sunset=section.sunset[i],
+        next_sunrise=section.next_sunrise[i],
+        polar=(
+            PolarDay(
+                kind=PolarKind(section.state_polar_kind[i]),
+                policy=PolarDayPolicy(section.state_polar_policy[i]),
+            )
+            if polar
+            else None
+        ),
+        convention=None if custom else Sunrise(section.convention_kind[i]),
+        custom_altitude_deg=section.convention_value[i] if custom else None,
+    )
+
+
+@dataclass(frozen=True)
 class ChartTiming:
     """Where in its day a chart's moment falls: the ishtakaal and the hora.
     The same record in every binding."""
@@ -4181,19 +4272,10 @@ class Chart:
         return self.batch.kind
 
     @property
-    def vara(self) -> Vara:
-        """The weekday the chart's day carries."""
-        return Vara(self.batch.decoded.day.vara[self.index])
-
-    @property
-    def sunrise(self) -> float:
-        """The sunrise that opened the chart's day, as a Julian day (UTC)."""
-        return self.batch.decoded.day.sunrise[self.index]
-
-    @property
-    def hora_lord(self) -> Graha:
-        """The graha that rules the hora holding the instant."""
-        return Graha(self.batch.decoded.timing.hora_lord[self.index])
+    def day(self) -> LocalDay:
+        """The day the chart's moment belongs to, which may be the civil
+        date before the instant's: its date, weekday and sunrises."""
+        return _local_day(self.batch.decoded.day, self.index)
 
     @property
     def timing(self) -> ChartTiming:
@@ -5081,19 +5163,9 @@ class AlmanacDay:
         """Where in that batch it sits."""
 
     @property
-    def vara(self) -> Vara:
-        """The weekday the day carries."""
-        return Vara(self.batch.decoded.day.vara[self.index])
-
-    @property
-    def sunrise(self) -> float:
-        """The sunrise that opened the day, as a Julian day (UTC)."""
-        return self.batch.decoded.day.sunrise[self.index]
-
-    @property
-    def sunset(self) -> float:
-        """The sunset that closed its daylight."""
-        return self.batch.decoded.day.sunset[self.index]
+    def day(self) -> LocalDay:
+        """The day itself: its date, weekday and sunrises."""
+        return _local_day(self.batch.decoded.day, self.index)
 
     @property
     def window(self) -> Interval:

@@ -45,6 +45,29 @@ void put(String key, Object? value) {
   };
 }
 
+/// A local day's every field, under the same keys for a chart's day and
+/// an almanac's, because the two layers hand back one record.
+void putDay(String prefix, LocalDay day) {
+  put('$prefix-vara', day.vara.fullKey);
+  put('$prefix-sunrise', day.sunrise);
+  put('$prefix-sunset', day.sunset);
+  put('$prefix-next-sunrise', day.nextSunrise);
+  put('$prefix-date', '${day.date.year}-${day.date.month}-${day.date.day}');
+  put('$prefix-calendar', day.date.calendar.fullKey);
+  put('$prefix-era', day.date.era?.fullKey ?? 'none');
+  put('$prefix-era-year', day.date.eraYear);
+  put('$prefix-resolution', day.date.resolution.key);
+  final polar = day.polar;
+  put(
+    '$prefix-polar',
+    polar == null ? 'none' : '${polar.kind.key}/${polar.policy.key}',
+  );
+  put(
+    '$prefix-convention',
+    day.convention?.key ?? 'custom ${number(day.customAltitudeDeg ?? 0)}',
+  );
+}
+
 void main() {
   final teistro = Teistro.open();
 
@@ -367,13 +390,7 @@ void main() {
     put('chart-$i-ayanamsha', chart.ayanamshaOffsetDeg);
     put('chart-$i-day-part', chart.dayPart.key);
     put('chart-$i-day-elapsed', chart.dayElapsed);
-    put('chart-$i-vara', chart.vara.fullKey);
-    put('chart-$i-sunrise', charts.day.sunrise[i]);
-    put('chart-$i-sunset', charts.day.sunset[i]);
-    put(
-      'chart-$i-date',
-      '${charts.day.year[i]}-${charts.day.month[i]}-${charts.day.dayOfMonth[i]}',
-    );
+    putDay('chart-$i', chart.day);
     final timing = chart.timing;
     put('chart-$i-ghati', timing.ghati);
     put('chart-$i-pala', timing.pala);
@@ -889,15 +906,7 @@ void main() {
 
   for (final day in week.each) {
     final i = day.index;
-    final columns = week.decoded;
-    put('day-$i-vara', day.vara.fullKey);
-    put('day-$i-sunrise', day.sunrise);
-    put('day-$i-sunset', day.sunset);
-    put('day-$i-next-sunrise', columns.day.nextSunrise[i]);
-    put(
-      'day-$i-date',
-      '${columns.day.year[i]}-${columns.day.month[i]}-${columns.day.dayOfMonth[i]}',
-    );
+    putDay('day-$i', day.day);
     put('day-$i-window-from', day.window.from);
     put('day-$i-window-to', day.window.to);
     put('day-$i-month', day.month.month.fullKey);
@@ -984,7 +993,7 @@ void main() {
     place: place,
     utcOffsetSeconds: 20700,
   );
-  put('almanac-single-agrees', oneDay.sunrise == week.at(0).sunrise);
+  put('almanac-single-agrees', oneDay.day.sunrise == week.at(0).day.sunrise);
   geo.dispose();
 
   // ── The surface's shape ───────────────────────────────────────────

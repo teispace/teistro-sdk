@@ -1733,6 +1733,51 @@ test('a chart names its ayanamsha, and a tropical one has none', () => {
   tropical.dispose();
 });
 
+/**
+ * A chart's day and an almanac's are one record, and its date is the one
+ * `calendar.convert` takes. Before, a chart's day named its weekday and
+ * handed back every other id as a number, under the blob's own names.
+ */
+test('a chart\'s day is the almanac\'s, and its date is one calendar.convert takes', () => {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const ctx = context();
+  const day = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).day;
+  assert.deepEqual(ctx.almanac.day({ date: day.date, place, utcOffsetSeconds: 20700 }).day, day);
+  assert.deepEqual(
+    [day.date.calendar, day.date.era, day.date.year, day.date.month, day.date.day],
+    ['calendar.BIKRAM_SAMBAT', 'era.VIKRAMA', 2056, 9, 17],
+  );
+  const gregorian = ctx.calendar.convert(day.date, Calendar.Gregorian);
+  assert.deepEqual([gregorian.year, gregorian.month, gregorian.day], [2000, 1, 1]);
+  assert.equal(day.vara, 'vara.SHANIVARA');
+  assert.ok(day.sunrise < day.sunset && day.sunset < 2451545 && 2451545 < day.nextSunrise);
+  assert.equal(day.polar, null);
+  assert.equal(day.convention, 'centre-no-refraction');
+  assert.equal(day.customAltitudeDeg, null);
+  ctx.dispose();
+
+  // A custom altitude is a number and no named convention.
+  const custom = context({ settings: { day: { sunrise: { kind: 'CUSTOM', altitude_deg: -0.5 } } } });
+  const own = custom.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).day;
+  assert.deepEqual([own.convention, own.customAltitudeDeg], [null, -0.5]);
+  custom.dispose();
+
+  // Tromsø at midsummer: the Sun does not set. Civil midnight holds the
+  // instant and says so; the nearest real sunrise is weeks away, and the
+  // refusal names the policy rather than the instant.
+  const tromso = { latitude: 69.65, longitude: 18.96, altitude: 0 };
+  const midsummer = { instant: 2451716.5, place: tromso, utcOffsetSeconds: 7200 };
+  const civil = context({ settings: { day: { polar_day_policy: 'CIVIL_MIDNIGHT' } } });
+  assert.deepEqual(civil.chart.found(midsummer).day.polar, { kind: 'day', policy: 'civil-midnight' });
+  civil.dispose();
+  const nearest = context({ settings: { day: { polar_day_policy: 'NEAREST_EVENT' } } });
+  assert.throws(
+    () => nearest.chart.found(midsummer),
+    (error) => error.field === 'day.polar_day_policy' && error.hint.includes('CIVIL_MIDNIGHT'),
+  );
+  nearest.dispose();
+});
+
 test('a chart carries its Vimshopaka, each graha\'s four scores', () => {
   const ctx = context();
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
