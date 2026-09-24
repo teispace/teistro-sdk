@@ -3128,6 +3128,10 @@ fn count_annual_dashas(
 /// Periods that run end to end from `from` to `to`, each beginning where
 /// the last ended; a period that runs for no time is not listed and so
 /// cannot break the run.
+#[expect(
+    clippy::float_cmp,
+    reason = "a boundary is an exact share of its parent, so the ends must equal it and not be near it"
+)]
 fn runs_end_to_end(periods: &[&PeriodRow], from: f64, to: f64) -> Result<(), String> {
     let (Some(first), Some(last)) = (periods.first(), periods.last()) else {
         return Err(String::from("are none"));
