@@ -739,6 +739,19 @@ void main() {
                   roga: RogaReading.saturn,
                 )
                 : const SahamRules(),
+        // And the annual dashas: every one under the sources' readings,
+        // every one under a rival clock, balance and birth period three
+        // levels deep, and none.
+        dashas: reading == VarshaReading.mean ? null : AnnualDashas.all,
+        dashaRules:
+            reading == VarshaReading.tropical
+                ? const AnnualDashaRules(
+                  clock: YearClock.even,
+                  balance: MuddaBalance.entryMoon,
+                  birthPeriod: BirthPeriod.elapsed,
+                  depth: 3,
+                )
+                : const AnnualDashaRules(),
       ),
     );
     var i = 0;
@@ -802,6 +815,27 @@ void main() {
         }
         for (final p in annual.sahams) {
           put('$stem-saham-${p.saham.key}', sahamSaid(p));
+        }
+        for (final d in annual.dashas) {
+          final said = '$stem-dasha-${d.system.fullKey}';
+          final ring = d.ring;
+          put(
+            said,
+            '${d.seed?.fullKey ?? '-'} ${ring.first} '
+            '${ring.remaining?.toStringAsFixed(9) ?? 'null'} '
+            '${d.year.from.toStringAsFixed(9)} ${d.year.to.toStringAsFixed(9)} | '
+            '${ring.shares.map((s) => '${s.lord.fullKey}/${s.sign?.fullKey ?? '-'}/${s.weight.toStringAsFixed(3)}').join(' ')}',
+          );
+          put(
+            '$said-periods',
+            d.periods
+                .map(
+                  (p) =>
+                      '${p.path}:${p.lord.fullKey}:${p.sign?.fullKey ?? '-'}:'
+                      '${p.from.toStringAsFixed(9)}:${p.to.toStringAsFixed(9)}',
+                )
+                .join(' '),
+          );
         }
         put(
           '$stem-harsha',

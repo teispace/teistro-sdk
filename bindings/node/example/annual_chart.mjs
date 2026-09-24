@@ -23,7 +23,7 @@
 // The record is `birth_chart.mjs`'s own, so the two can be read side by
 // side.
 
-import { Calendar, Context, TeistroError, at, date, ianaZone } from '../lib/index.js';
+import { Calendar, Context, DashaSystem, TeistroError, at, date, ianaZone } from '../lib/index.js';
 
 const ctx = new Context({ profile: 'nepali-default', ephemeris: 'builtin' });
 const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
@@ -116,6 +116,23 @@ for (const one of points.sahams) {
 }
 // And the seven's Harsha bala that year: four places each is happy in.
 console.log(points.harsha.map((h) => `${short(h.graha)} ${h.total}`).join(', '));
+
+// ── The annual dashas: the year divided among its lords ────────────────
+// The Mudda runs round the nine from the birth nakshatra's lord, one lord
+// further each year; the Patyayini is read from the year's own chart, and
+// its lagna's share is a sign's. The Sun is read over the year once for
+// both, and each year closes on the next return.
+const dashas = ctx.chart.found({
+  instant: when.instantJdUtc,
+  place,
+  utcOffsetSeconds: when.offsetSeconds,
+  varsha: { through: 30, place: 'birth', dashas: [DashaSystem.Mudda, DashaSystem.Patyayini] },
+}).praveshas[29].annual.dashas;
+for (const dasha of dashas) {
+  const mahas = dasha.periods.filter((period) => period.level === 1);
+  const days = mahas.map((period) => `${short(period.sign ?? period.lord)} ${(period.to - period.from).toFixed(1)}`);
+  console.log(`${short(dasha.system)}: ${days.join(', ')}`);
+}
 
 // ── The readings are named, and they are not each other ────────────────
 for (const reading of ['sidereal', 'tropical', 'mean']) {

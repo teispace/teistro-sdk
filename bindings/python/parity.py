@@ -656,12 +656,22 @@ def main() -> None:
             varsha: VarshaRequest = {"reading": reading, "through": 12, "place": "birth"}
             # The sahams likewise: every one under the source's rules,
             # every one under each rival rule, and none.
+            # And the annual dashas: every one under the sources' readings,
+            # every one under a rival clock, balance and birth period three
+            # levels deep, and none.
             if reading != "mean":
                 varsha["matters"] = "all"
                 varsha["sahams"] = "all"
+                varsha["dashas"] = "all"
             if reading == "tropical":
                 varsha["yogas"] = {"tambira": "either_lord"}
                 varsha["saham_rules"] = {"add_sign": "signs", "houses": "equal", "roga": "saturn"}
+                varsha["dasha_rules"] = {
+                    "clock": "even",
+                    "balance": "entry_moon",
+                    "birth_period": "ELAPSED",
+                    "depth": 3,
+                }
             years = geo.chart.found_many(
                 instants=[2460482.5, 2460600.25],
                 place=place,
@@ -720,6 +730,27 @@ def main() -> None:
                         put(f"{asked}-held", " ".join(held_said(h) for h in matter.held))
                     for point in annual.sahams:
                         put(f"{stem}-saham-{point.saham.key}", saham_said(point))
+                    for dasha in annual.dashas:
+                        said = f"{stem}-dasha-{dasha.system.full_key}"
+                        ring = dasha.ring
+                        left = "null" if ring.remaining is None else f"{ring.remaining:.9f}"
+                        put(
+                            said,
+                            f"{dasha.seed.full_key if dasha.seed is not None else '-'} {ring.first} {left} "
+                            f"{dasha.year.from_jd:.9f} {dasha.year.to_jd:.9f} | "
+                            + " ".join(
+                                f"{s.lord.full_key}/{s.sign.full_key if s.sign is not None else '-'}/{s.weight:.3f}"
+                                for s in ring.shares
+                            ),
+                        )
+                        put(
+                            f"{said}-periods",
+                            " ".join(
+                                f"{p.path}:{p.lord.full_key}:{p.sign.full_key if p.sign is not None else '-'}:"
+                                f"{p.span.from_jd:.9f}:{p.span.to_jd:.9f}"
+                                for p in dasha.periods
+                            ),
+                        )
                     put(
                         f"{stem}-harsha",
                         " ".join(

@@ -48,6 +48,7 @@ use teistro_state::burn::Burning;
 
 use crate::blob::TsBlob;
 use crate::context::TsContext;
+use crate::schemas::SignedBy;
 use crate::string::TsString;
 use crate::support::{c_struct, optional_text, read_in, slice, with_context, write_plain};
 use teistro_core::settings::{GhatiReckoning, HoraReckoning, PolarDayPolicy, Sunrise};
@@ -1789,6 +1790,11 @@ struct AnnualColumns {
     sahams: SahamColumns,
     /// The `year_harsha` section, seven rows a year.
     harsha: HarshaColumns,
+    dasha_counts: Vec<u8>,
+    /// The `year_dashas` section and the two under it, ragged by
+    /// `dasha_count`; written after the births' sahams, whose ids come
+    /// first.
+    dashas: YearDashaColumns,
 }
 
 /// A chart's sahams, flat and ragged, each where it fell, what it fell in
@@ -2251,6 +2257,11 @@ impl AnnualColumns {
             self.sahams.push(one);
         }
         self.harsha.push(&year.harsha);
+        self.dasha_counts
+            .push(u8::try_from(year.dashas.len()).unwrap_or(u8::MAX));
+        for dasha in &year.dashas {
+            self.dashas.push(dasha);
+        }
         year.matters
             .iter()
             .try_for_each(|matter| self.matters.push(matter))
@@ -2277,6 +2288,7 @@ impl AnnualColumns {
                 ColumnData::U8(&self.combust),
                 ColumnData::U8(&self.matter_counts),
                 ColumnData::U8(&self.saham_counts),
+                ColumnData::U8(&self.dasha_counts),
             ],
         )?;
         self.claims.write(writer)?;
@@ -2353,7 +2365,8 @@ impl PraveshaColumns {
         )?;
         self.annual.write(writer)?;
         self.natal
-            .write(writer, "natal_sahams", "natal_saham_seven")
+            .write(writer, "natal_sahams", "natal_saham_seven")?;
+        self.annual.dashas.write(writer)
     }
 }
 
@@ -2459,12 +2472,73 @@ struct DashaColumns {
     span_to: Vec<f64>,
     depth: Vec<u8>,
     period_count: Vec<u32>,
+    /// The `dasha_periods` section.
+    periods: PeriodColumns,
+}
+
+/// A dasha's periods as the boundary carries them, depth first in time
+/// order: one shape for the births' `dasha_periods` and the years'
+/// `year_dasha_periods`, so a period is laid out, and decoded, in one
+/// place.
+#[derive(Default)]
+struct PeriodColumns {
     level: Vec<u8>,
     index: Vec<u8>,
+    has_sign: Vec<u8>,
     sign: Vec<u16>,
     lord: Vec<u16>,
     from: Vec<f64>,
     to: Vec<f64>,
+}
+
+impl PeriodColumns {
+    fn with_capacity(periods: usize) -> PeriodColumns {
+        PeriodColumns {
+            level: Vec::with_capacity(periods),
+            index: Vec::with_capacity(periods),
+            has_sign: Vec::with_capacity(periods),
+            sign: Vec::with_capacity(periods),
+            lord: Vec::with_capacity(periods),
+            from: Vec::with_capacity(periods),
+            to: Vec::with_capacity(periods),
+        }
+    }
+
+    fn push(&mut self, period: &teistro::dasha::PeriodRow) {
+        let places: Vec<u8> = period
+            .path
+            .split('/')
+            .map(|step| step.parse().unwrap_or(u8::MAX))
+            .collect();
+        self.level
+            .push(u8::try_from(places.len()).unwrap_or(u8::MAX));
+        self.index.push(places.last().copied().unwrap_or(0));
+        self.has_sign.push(u8::from(period.sign.is_some()));
+        self.sign
+            .push(period.sign.map_or(0, teistro_core::catalogue::Rashi::id));
+        self.lord.push(period.lord.id());
+        self.from.push(period.interval.from.get());
+        self.to.push(period.interval.to.get());
+    }
+
+    fn write(
+        &self,
+        writer: &mut Writer<'_>,
+        section: &str,
+        signed_by: SignedBy,
+    ) -> Result<(), teistro_idl::blob::BlobError> {
+        let mut columns = vec![ColumnData::U8(&self.level), ColumnData::U8(&self.index)];
+        if let SignedBy::Period = signed_by {
+            columns.push(ColumnData::U8(&self.has_sign));
+        }
+        columns.extend([
+            ColumnData::U16(&self.sign),
+            ColumnData::U16(&self.lord),
+            ColumnData::F64(&self.from),
+            ColumnData::F64(&self.to),
+        ]);
+        writer.columns(section, self.lord.len(), &columns)
+    }
 }
 
 impl DashaColumns {
@@ -2504,12 +2578,7 @@ impl DashaColumns {
             span_to: Vec::with_capacity(rows),
             depth: Vec::with_capacity(rows),
             period_count: Vec::with_capacity(rows),
-            level: Vec::with_capacity(periods),
-            index: Vec::with_capacity(periods),
-            sign: Vec::with_capacity(periods),
-            lord: Vec::with_capacity(periods),
-            from: Vec::with_capacity(periods),
-            to: Vec::with_capacity(periods),
+            periods: PeriodColumns::with_capacity(periods),
         };
         for reading in documents.iter().flat_map(|d| &d.dashas) {
             // A registered system crosses as the id its context gave it,
@@ -2581,21 +2650,7 @@ impl DashaColumns {
             .period_count
             .push(u32::try_from(reading.periods.len()).unwrap_or(u32::MAX));
         for period in &reading.periods {
-            let places: Vec<u8> = period
-                .path
-                .split('/')
-                .map(|step| step.parse().unwrap_or(u8::MAX))
-                .collect();
-            columns
-                .level
-                .push(u8::try_from(places.len()).unwrap_or(u8::MAX));
-            columns.index.push(places.last().copied().unwrap_or(0));
-            columns
-                .sign
-                .push(period.sign.map_or(0, teistro_core::catalogue::Rashi::id));
-            columns.lord.push(period.lord.id());
-            columns.from.push(period.interval.from.get());
-            columns.to.push(period.interval.to.get());
+            columns.periods.push(period);
         }
     }
 
@@ -2624,18 +2679,95 @@ impl DashaColumns {
                 ColumnData::U32(&self.period_count),
             ],
         )?;
+        self.periods.write(writer, "dasha_periods", SignedBy::Dasha)
+    }
+}
+
+/// Every year's annual dashas (`03-design/annual-dashas.md`): a row a
+/// year a system, ragged by `annual_charts.dasha_count`, with each one's
+/// ring and periods ragged under it.
+#[derive(Default)]
+struct YearDashaColumns {
+    system: Vec<u16>,
+    seeded: Vec<u8>,
+    seed: Vec<u16>,
+    first: Vec<u8>,
+    remaining: Vec<f64>,
+    from: Vec<f64>,
+    to: Vec<f64>,
+    share_count: Vec<u8>,
+    period_count: Vec<u32>,
+    /// The `year_dasha_shares` section, ragged by `share_count`.
+    shares: ShareColumns,
+    /// The `year_dasha_periods` section, ragged by `period_count`.
+    periods: PeriodColumns,
+}
+
+/// The lords a year's dasha runs round, each with its weight.
+#[derive(Default)]
+struct ShareColumns {
+    lord: Vec<u16>,
+    has_sign: Vec<u8>,
+    sign: Vec<u16>,
+    weight: Vec<f64>,
+}
+
+impl YearDashaColumns {
+    fn push(&mut self, dasha: &teistro::AnnualDasha) {
+        let ring = &dasha.ring;
+        self.system.push(dasha.system.id());
+        self.seeded.push(u8::from(dasha.seed.is_some()));
+        self.seed
+            .push(dasha.seed.map_or(0, teistro_core::catalogue::Nakshatra::id));
+        self.first.push(u8::try_from(ring.first).unwrap_or(u8::MAX));
+        self.remaining.push(ring.remaining.unwrap_or(f64::NAN));
+        self.from.push(dasha.year.from.get());
+        self.to.push(dasha.year.to.get());
+        self.share_count
+            .push(u8::try_from(ring.ring.len()).unwrap_or(u8::MAX));
+        self.period_count
+            .push(u32::try_from(dasha.periods.len()).unwrap_or(u32::MAX));
+        for share in &ring.ring {
+            self.shares.lord.push(share.lord.id());
+            self.shares.has_sign.push(u8::from(share.sign.is_some()));
+            self.shares
+                .sign
+                .push(share.sign.map_or(0, teistro_core::catalogue::Rashi::id));
+            self.shares.weight.push(share.weight);
+        }
+        for period in &dasha.periods {
+            self.periods.push(period);
+        }
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
         writer.columns(
-            "dasha_periods",
-            self.lord.len(),
+            "year_dashas",
+            self.system.len(),
             &[
-                ColumnData::U8(&self.level),
-                ColumnData::U8(&self.index),
-                ColumnData::U16(&self.sign),
-                ColumnData::U16(&self.lord),
+                ColumnData::U16(&self.system),
+                ColumnData::U8(&self.seeded),
+                ColumnData::U16(&self.seed),
+                ColumnData::U8(&self.first),
+                ColumnData::F64(&self.remaining),
                 ColumnData::F64(&self.from),
                 ColumnData::F64(&self.to),
+                ColumnData::U8(&self.share_count),
+                ColumnData::U32(&self.period_count),
             ],
-        )
+        )?;
+        writer.columns(
+            "year_dasha_shares",
+            self.shares.lord.len(),
+            &[
+                ColumnData::U16(&self.shares.lord),
+                ColumnData::U8(&self.shares.has_sign),
+                ColumnData::U16(&self.shares.sign),
+                ColumnData::F64(&self.shares.weight),
+            ],
+        )?;
+        self.periods
+            .write(writer, "year_dasha_periods", SignedBy::Period)
     }
 }
 
@@ -2979,6 +3111,15 @@ pub(crate) struct VarshaRequest {
     /// The Harsha bala's reading of Venus's house of joy.
     #[serde(default)]
     pub(crate) harsha_rules: teistro::HarshaRules,
+    /// The annual dashas each year is divided by; absent, none is
+    /// (`03-design/annual-dashas.md`). Needs `place`, since a year's
+    /// dasha opens at its own chart and the Patyayini is read from it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub(crate) dashas: Option<Asked<teistro::catalogue::DashaSystem>>,
+    /// The readings the annual dashas part on — the clock, the balance,
+    /// the birth period, the depth; the sources' own by default.
+    #[serde(default)]
+    pub(crate) dasha_rules: teistro::AnnualDashaRules,
 }
 
 impl VarshaRequest {
@@ -3083,6 +3224,40 @@ impl Askable for teistro::Saham {
 
     fn wire(self) -> teistro::Saham {
         self
+    }
+}
+
+/// An annual dasha is named by its catalogue key, bare (`"MUDDA"`) or
+/// full (`"dasha_system.MUDDA"`): the full key is what every binding reads
+/// a system back as, so a caller can hand back what it was given, and the
+/// bare one is what the Rust key and the natal settings spell.
+impl Askable for teistro::catalogue::DashaSystem {
+    type Wire = String;
+    const ALL: &'static [Self] = &teistro::tajika::ANNUAL_DASHAS;
+    const SHAPES: &'static str = "\"all\", or a list of annual dasha keys: \"dasha_system.PATYAYINI\", \"dasha_system.MUDDA\", \"dasha_system.VARSHA_YOGINI\", with or without the kind";
+    const FIELD: &'static str = "dashas";
+    const NOUN: &'static str = "dasha ";
+
+    fn read(key: String) -> Result<Self, String> {
+        let bare = key
+            .strip_prefix(Self::KIND.name())
+            .and_then(|rest| rest.strip_prefix('.'))
+            .unwrap_or(&key);
+        let system = Self::from_key(bare).ok_or_else(|| {
+            teistro_core::catalogue::UnknownKey::in_kind::<Self>(bare).to_string()
+        })?;
+        if teistro::tajika::ANNUAL_DASHAS.contains(&system) {
+            Ok(system)
+        } else {
+            Err(format!(
+                "{key} is not an annual dasha; the annual dashas are {}",
+                Self::SHAPES
+            ))
+        }
+    }
+
+    fn wire(self) -> String {
+        self.full_key().to_owned()
     }
 }
 
@@ -3813,6 +3988,9 @@ pub struct AnnualYear {
     pub sahams: Vec<teistro::SahamStrength>,
     /// The seven's Harsha bala in this year's chart.
     pub harsha: [teistro::Harsha; 7],
+    /// Each annual dasha `varsha_json.dashas` asked for, in its order,
+    /// under `varsha_json.dashaRules`; empty when it asked for none.
+    pub dashas: Vec<teistro::AnnualDasha>,
 }
 
 /// One chart's answer to `varsha_json`: its years, and its own sahams.
@@ -3857,21 +4035,38 @@ unsafe fn varsha_request_of(varsha_json: *const c_char) -> Result<Option<VarshaR
     let matters = take_field::<Asked<teistro::House>>(&mut given, "matters")?;
     let sahams = take_field::<Asked<teistro::Saham>>(&mut given, "sahams")?;
     let saham_rules = take_field::<teistro::SahamRules>(&mut given, "sahamRules")?;
+    let dashas = take_field::<Asked<teistro::catalogue::DashaSystem>>(&mut given, "dashas")?;
+    let dasha_rules = take_field::<teistro::AnnualDashaRules>(&mut given, "dashaRules")?;
     let mut asked: VarshaRequest = teistro_core::strict::read_value(&given, "varsha_json")?;
     asked.place = place;
     asked.matters = matters;
     asked.sahams = sahams;
     asked.saham_rules = saham_rules.unwrap_or_default();
-    // The matters are read from each year's own chart, so they need a
-    // place; the sahams do not, since a birth chart holds sahams of its
-    // own and without a place those are what is answered.
-    if asked.matters.is_some() && asked.place.is_none() {
-        return Err(Error::invalid_arg(
-            "the sixteen yogas are read from each year's own chart, and no chart is founded without a place",
-        )
-        .with_field("varsha_json.matters")
-        .with_hint("add varsha_json.place: \"birth\", or a residence"));
+    asked.dashas = dashas;
+    asked.dasha_rules = dasha_rules.unwrap_or_default();
+    // The matters and the annual dashas are read from each year's own
+    // chart, so they need a place, and a request for either without one
+    // is refused by the field that asked. The sahams do not, since a
+    // birth chart holds sahams of its own and without a place those are
+    // what is answered.
+    if asked.place.is_none() {
+        let needs_a_chart = [
+            ("matters", asked.matters.is_some(), "the sixteen yogas are"),
+            ("dashas", asked.dashas.is_some(), "an annual dasha is"),
+        ];
+        if let Some((field, _, what)) = needs_a_chart.iter().find(|(_, asked, _)| *asked) {
+            return Err(Error::invalid_arg(format!(
+                "{what} read from each year's own chart, and no chart is founded without a place"
+            ))
+            .with_field(format!("varsha_json.{field}"))
+            .with_hint("add varsha_json.place: \"birth\", or a residence"));
+        }
     }
+    asked
+        .dasha_rules
+        .clock
+        .check()
+        .map_err(|error| error.with_field("varsha_json.dashaRules.clock"))?;
     // Checked here, where the caller's own casing is known, so the refusal
     // names the key they wrote rather than the Rust field behind it.
     asked.yogas.check().map_err(|error| {
@@ -4103,6 +4298,18 @@ fn annual_year(
         None => Vec::new(),
     };
     let harsha = sdk.chart().harsha_with_rules(&annual, asked.harsha_rules)?;
+    // One call for every system asked, so the Sun is read over the year
+    // once however many divide it.
+    let dashas = match &asked.dashas {
+        Some(dashas) => sdk.chart().annual_dashas(
+            birth,
+            &annual,
+            pravesha.year,
+            dashas.members(),
+            asked.dasha_rules,
+        )?,
+        None => Vec::new(),
+    };
     Ok(AnnualYear {
         lagna_deg: annual.foundation.lagna_deg,
         bearers,
@@ -4112,6 +4319,7 @@ fn annual_year(
         matters,
         sahams,
         harsha,
+        dashas,
     })
 }
 

@@ -626,6 +626,95 @@ export interface VarshaRequest {
   readonly sahamStrength?: SahamStrengthReadings;
   /** The Harsha bala's reading of Venus's house of joy. */
   readonly harshaRules?: HarshaRules;
+  /**
+   * The annual dashas each year is divided by: `'all'`, the three in the
+   * catalogue's order, or their keys in the order you want them answered.
+   * The Sun is read over a year once however many are asked for.
+   * **Needs `place`**; absent, none is read.
+   *
+   * @example { through: 40, place: 'birth', dashas: [DashaSystem.Mudda] }
+   */
+  readonly dashas?: 'all' | readonly AnnualDashaSystem[];
+  /** The readings the annual dashas part on, where the sources differ. */
+  readonly dashaRules?: AnnualDashaRules;
+}
+
+/**
+ * The annual dashas: the Patyayini, read from the year's own chart, and the
+ * two nakshatra years — the `DashaSystem` keys a year's dasha is read back
+ * as, so `DashaSystem.Mudda` asks for one.
+ */
+export type AnnualDashaSystem = 'dasha_system.PATYAYINI' | 'dasha_system.MUDDA' | 'dasha_system.VARSHA_YOGINI';
+
+/** Where the sources differ on an annual dasha, each a named reading (`03-design/annual-dashas.md`). */
+export interface AnnualDashaRules {
+  /**
+   * What a unit of the year is (crux C122): the Sun's motion through one
+   * degree, `'sun_degrees'`, the source's own, so the year closes on the
+   * next return; an `'even'` share of the time between the returns; or
+   * `{ days: n }`, the whole year as so many civil days from the return,
+   * the printed durations (360, and 365 for the Patyayini).
+   */
+  readonly clock?: 'sun_degrees' | 'even' | { readonly days: number };
+  /**
+   * Where a nakshatra year's balance comes from (crux C123): what remained
+   * of the birth Moon's nakshatra, `'natal_moon'`, the source's own; the
+   * Moon's at the return, `'entry_moon'`; or `'whole'`, none.
+   */
+  readonly balance?: 'natal_moon' | 'entry_moon' | 'whole';
+  /**
+   * How the balance is measured, `'SPATIAL'` by arc or `'TEMPORAL'` by
+   * time; absent, each balance's source's own: by arc for the birth Moon,
+   * by time for the Moon at the return.
+   */
+  readonly measure?: 'SPATIAL' | 'TEMPORAL';
+  /** How the first lord's two pieces are divided among sub-lords, as the natal birth period's; `'COMPRESSED'` by default. */
+  readonly birthPeriod?: 'COMPRESSED' | 'ELAPSED';
+  /** How many levels the periods go down: `2`, mahadashas and antardashas, by default. */
+  readonly depth?: number;
+}
+
+/** One lord of the ring a year's dasha runs round. */
+export interface AnnualDashaShare {
+  /** Its lord: the graha, or the sign's lord when the share is a sign's. */
+  readonly lord: Graha | 'unknown';
+  /** The sign, when the share is one's: the Patyayini's lagna; `null` for a planet's. */
+  readonly sign: Rashi | 'unknown' | null;
+  /**
+   * Its weight, of which a lord's share of the year is its weight over the
+   * ring's: a nakshatra year's lord's natal years, or a Patyayini share's
+   * patyamsha in nanoarcseconds. 0 for a lord that runs for no time.
+   */
+  readonly weight: number;
+}
+
+/** One annual dasha of a year: its ring, the year it divides, and its periods. */
+export interface AnnualDasha {
+  /** Which of the three. */
+  readonly system: AnnualDashaSystem | 'unknown';
+  /** The birth Moon's nakshatra, which seeds a nakshatra year; `null` for the Patyayini. */
+  readonly seed: Nakshatra | 'unknown' | null;
+  /** The lord the year opens with: `ring.shares[ring.first].lord`. */
+  readonly firstLord: Graha | 'unknown';
+  /** The lords the year runs round. */
+  readonly ring: {
+    /** In the order the ring runs. */
+    readonly shares: readonly AnnualDashaShare[];
+    /** The place in `shares` the year opens with, from 0. */
+    readonly first: number;
+    /**
+     * How much of the first lord's share was still to run at the return, 0
+     * to 1, the rest closing the year; `null` when it runs whole from the
+     * return: the Patyayini, and a `'whole'` balance.
+     */
+    readonly remaining: number | null;
+  };
+  /** The year, Julian days (UTC): from its return to where the clock closes it, under the default clock the next return. */
+  readonly year: { readonly from: number; readonly to: number };
+  /** Every period to the rules' depth, depth first in time order; a period that runs for no time is not listed. */
+  readonly periods: readonly DashaPeriod[];
+  /** The periods running at a Julian day (UTC), from the mahadasha down; empty outside the year. */
+  at(jd: number): readonly DashaPeriod[];
 }
 
 /** Where the sources differ on a saham's strength (`03-design/tajika-saham-strength.md`). */
@@ -816,6 +905,8 @@ export interface AnnualChart {
   readonly sahams: readonly TajikaSaham[];
   /** The seven's Harsha bala in this year's chart, in the catalogue's order. */
   readonly harsha: readonly HarshaBala[];
+  /** Each annual dasha `varsha.dashas` asked for, in its order, under `varsha.dashaRules`; empty otherwise. */
+  readonly dashas: readonly AnnualDasha[];
 }
 
 /** One planet's Harsha bala: four places it is happy in, five units each. */

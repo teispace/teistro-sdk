@@ -181,6 +181,36 @@ void main() {
   // And the seven's Harsha bala that year: four places each is happy in.
   print(points.harsha.map((h) => '${h.graha.key} ${h.total}').join(', '));
 
+  // ── The annual dashas: the year divided among its lords ────────────
+  // The Mudda runs round the nine from the birth nakshatra's lord, one
+  // lord further each year; the Patyayini is read from the year's own
+  // chart, and its lagna's share is a sign's. The Sun is read over the
+  // year once for both, and each year closes on the next return.
+  final divided =
+      ctx.chart
+          .found(
+            instant: when.instantJdUtc,
+            place: place,
+            utcOffsetSeconds: when.offsetSeconds,
+            varsha: const VarshaRequest(
+              through: 30,
+              place: AnnualPlace.birth,
+              dashas: AnnualDashas.these([
+                DashaSystem.mudda,
+                DashaSystem.patyayini,
+              ]),
+            ),
+          )
+          .praveshas[29]
+          .annual!;
+  for (final dasha in divided.dashas) {
+    final days = [
+      for (final p in dasha.periods.where((p) => p.level == 1))
+        '${p.sign?.key ?? p.lord.key} ${(p.to - p.from).toStringAsFixed(1)}',
+    ];
+    print('${dasha.system.key}: ${days.join(', ')}');
+  }
+
   // ── The readings are named, and they are not each other ───────────
   for (final reading in VarshaReading.values) {
     final one =

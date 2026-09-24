@@ -1359,10 +1359,12 @@ fn the_bhavas(report: &mut Report, index: usize, document: &teistro::Document) {
 /// ask for the one they mean — and a reading that crossed as another would
 /// be invisible in a report that only ever printed the default.
 ///
-/// Each reading also asks the sixteen yogas and the sahams a different
-/// way, so every way crosses: every matter and every saham under the
-/// source's readings, every matter under Tambira's "some authorities" and
-/// every saham under each rival rule, and neither at all.
+/// Each reading also asks the sixteen yogas, the sahams and the annual
+/// dashas a different way, so every way crosses: every matter, saham and
+/// annual dasha under the sources' readings; every matter under Tambira's
+/// "some authorities", every saham under each rival rule and every annual
+/// dasha under a rival clock, balance and birth period, three levels
+/// deep; and none of them at all.
 fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
     let either = teistro::YogaRules {
         tambira: teistro::TambiraMover::EitherLord,
@@ -1373,58 +1375,73 @@ fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &te
         houses: teistro::HousePoints::Equal,
         roga: teistro::RogaReading::Saturn,
     };
-    for (name, reading, matters, sahams) in [
+    let rival_dashas = teistro::AnnualDashaRules {
+        clock: teistro::YearClock::Even,
+        balance: teistro::MuddaBalance::EntryMoon,
+        birth_period: teistro::settings::BirthPeriod::Elapsed,
+        depth: teistro::quantity::Depth::try_new(3).expect("three levels"),
+        ..teistro::AnnualDashaRules::default()
+    };
+    for (name, reading, asked) in [
         (
             "sidereal",
             teistro::VarshaReading::Sidereal,
-            Some(teistro::YogaRules::default()),
-            Some(teistro::SahamRules::default()),
+            Asked {
+                matters: Some(teistro::YogaRules::default()),
+                sahams: Some(teistro::SahamRules::default()),
+                dashas: Some(teistro::AnnualDashaRules::default()),
+            },
         ),
         (
             "tropical",
             teistro::VarshaReading::Tropical,
-            Some(either),
-            Some(rivals),
+            Asked {
+                matters: Some(either),
+                sahams: Some(rivals),
+                dashas: Some(rival_dashas),
+            },
         ),
-        ("mean", teistro::VarshaReading::Mean, None, None),
+        ("mean", teistro::VarshaReading::Mean, Asked::default()),
     ] {
         let Ok(years) = sdk.chart().praveshas(document, reading, PARITY_YEARS) else {
             continue;
         };
         let key = |what: &str| format!("chart-{index}-varsha-{name}{what}");
         put(report, &key("-count"), years.len().to_string());
-        the_natal_sahams(report, sdk, document, &key, sahams);
+        the_natal_sahams(report, sdk, document, &key, asked.sahams);
         for one in &years {
-            the_year(report, sdk, document, &key, one, (matters, sahams));
+            the_year(report, sdk, document, &key, one, asked);
         }
     }
 }
 
-/// One year of one reading: its instant, its Muntha, its own chart at the
-/// birthplace, that chart's office-bearers and the lord of the year with
-/// every claim it was chosen over.
-fn the_year(
+/// What one reading asks of each year beside its chart, each under its
+/// rules; none, not asked.
+#[derive(Clone, Copy, Default)]
+struct Asked {
+    matters: Option<teistro::YogaRules>,
+    sahams: Option<teistro::SahamRules>,
+    dashas: Option<teistro::AnnualDashaRules>,
+}
+
+/// One year's Muntha, or false when there is none to read and so no year.
+///
+/// The Muntha is progressed by the year's own count and by nothing the
+/// reading decides, so recording it under each of the three holds that
+/// independence across all four runners as well as holding the bindings
+/// to one another.
+fn the_muntha(
     report: &mut Report,
     sdk: &Context,
     document: &teistro::Document,
     key: &dyn Fn(&str) -> String,
     one: &teistro::Pravesha,
-    (matters, sahams): (Option<teistro::YogaRules>, Option<teistro::SahamRules>),
-) {
-    put(
-        report,
-        &key(&format!("-{}", one.year)),
-        number(one.at.get()),
-    );
-    // The Muntha is progressed by the year's own count and by
-    // nothing the reading decides, so recording it under each of
-    // the three holds that independence across all four runners
-    // as well as holding the bindings to one another.
+) -> bool {
     let Ok(muntha) = sdk
         .chart()
         .muntha(document, one.year, teistro::MunthaDegree::default())
     else {
-        return;
+        return false;
     };
     put(
         report,
@@ -1441,6 +1458,28 @@ fn the_year(
         &key(&format!("-{}-muntha-deg", one.year)),
         number(muntha.longitude_deg),
     );
+    true
+}
+
+/// One year of one reading: its instant, its Muntha, its own chart at the
+/// birthplace, that chart's office-bearers and the lord of the year with
+/// every claim it was chosen over.
+fn the_year(
+    report: &mut Report,
+    sdk: &Context,
+    document: &teistro::Document,
+    key: &dyn Fn(&str) -> String,
+    one: &teistro::Pravesha,
+    asked: Asked,
+) {
+    put(
+        report,
+        &key(&format!("-{}", one.year)),
+        number(one.at.get()),
+    );
+    if !the_muntha(report, sdk, document, key, one) {
+        return;
+    }
     // The year's own chart at the birthplace, as `"place":"birth"`
     // founds it at the boundary, and its office-bearers.
     let at_birth = ChartRequest::at(
@@ -1498,9 +1537,25 @@ fn the_year(
         lord.vishwa.to_string(),
     );
     the_yogas(report, sdk, &annual.value, key, one);
-    the_matters(report, sdk, &annual.value, key, one, matters);
-    the_sahams(report, sdk, &annual.value, key, one, sahams, lord.graha);
+    the_matters(report, sdk, &annual.value, key, one, asked.matters);
+    the_sahams(
+        report,
+        sdk,
+        &annual.value,
+        key,
+        one,
+        asked.sahams,
+        lord.graha,
+    );
     the_harsha(report, sdk, &annual.value, key, one);
+    the_annual_dashas(
+        report,
+        sdk,
+        (document, &annual.value),
+        key,
+        one,
+        asked.dashas,
+    );
     put(
         report,
         &key(&format!("-{}-year-claims", one.year)),
@@ -1583,6 +1638,76 @@ fn the_natal_sahams(
             &key(&format!("-natal-saham-{}", wire_key(&point.saham))),
             saham_said(point),
         );
+    }
+}
+
+/// Every annual dasha of one year under one set of rules, when the
+/// reading asked for them: its seed, ring and year on one line and its
+/// periods on another, each as text so the four runners round alike.
+fn the_annual_dashas(
+    report: &mut Report,
+    sdk: &Context,
+    (natal, annual): (&teistro::Document, &teistro::Document),
+    key: &dyn Fn(&str) -> String,
+    one: &teistro::Pravesha,
+    rules: Option<teistro::AnnualDashaRules>,
+) {
+    let Some(rules) = rules else {
+        return;
+    };
+    let Ok(dashas) = sdk.chart().annual_dashas(
+        natal,
+        annual,
+        one.year,
+        &teistro::tajika::ANNUAL_DASHAS,
+        rules,
+    ) else {
+        return;
+    };
+    for dasha in &dashas {
+        let at = key(&format!("-{}-dasha-{}", one.year, dasha.system.full_key()));
+        let ring = &dasha.ring;
+        let shares: Vec<String> = ring
+            .ring
+            .iter()
+            .map(|share| {
+                format!(
+                    "{}/{}/{:.3}",
+                    share.lord.full_key(),
+                    share.sign.map_or("-", |sign| sign.full_key()),
+                    share.weight
+                )
+            })
+            .collect();
+        put(
+            report,
+            &at,
+            format!(
+                "{} {} {} {:.9} {:.9} | {}",
+                dasha.seed.map_or("-", |seed| seed.full_key()),
+                ring.first,
+                ring.remaining
+                    .map_or_else(|| String::from("null"), |left| format!("{left:.9}")),
+                dasha.year.from.get(),
+                dasha.year.to.get(),
+                shares.join(" "),
+            ),
+        );
+        let periods: Vec<String> = dasha
+            .periods
+            .iter()
+            .map(|period| {
+                format!(
+                    "{}:{}:{}:{:.9}:{:.9}",
+                    period.path,
+                    period.lord.full_key(),
+                    period.sign.map_or("-", |sign| sign.full_key()),
+                    period.interval.from.get(),
+                    period.interval.to.get(),
+                )
+            })
+            .collect();
+        put(report, &format!("{at}-periods"), periods.join(" "));
     }
 }
 

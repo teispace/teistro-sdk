@@ -281,7 +281,50 @@ The answer is an `AnnualDasha`:
 - the periods as the natal reading's own `PeriodRow`s, to the depth
   asked for.
 
-It crosses the boundary as JSON, as the natal reading does.
+### Crossing the boundary
+
+A binding asks for the annual dashas beside everything else a year's
+chart answers, in the same `varsha_json`:
+
+```json
+{ "through": 40, "place": "birth",
+  "dashas": ["dasha_system.MUDDA", "PATYAYINI"],
+  "dashaRules": { "clock": { "days": 360 }, "depth": 1 } }
+```
+
+- `dashas` is `"all"` (the three in the catalogue's order) or systems in
+  the caller's order, through the same `Asked<T>` reader as the matters
+  and the sahams. A system is named by its catalogue key, **full or
+  bare**. The full key is what every binding reads a system back as
+  (`DashaSystem.Mudda` in Node is `'dasha_system.MUDDA'`), so a caller can
+  hand back what it was given; the bare one is what Rust and the natal
+  settings spell. Another system is refused as not an annual dasha, a
+  misspelt one with the catalogue's "did you mean", and one named twice
+  as a mistake.
+- `dashaRules` is `AnnualDashaRules`, in the boundary's casing. A clock
+  of no length is refused at `varsha_json.dashaRules.clock` by the same
+  `YearClock::check` the kernel runs, so the request and the call cannot
+  disagree about what a year is.
+- **It needs `place`**, as the matters do: a year's dasha opens at its
+  own chart, and the Patyayini is read from it.
+- Each year asks `annual_dashas` once for every system, so the Sun is
+  read over the year once however many divide it.
+
+Three ragged sections carry the answer, beside the year's others:
+`annual_charts.dasha_count` says how many rows of `year_dashas` are each
+year's; each of those carries its system, seed, the place its ring opens
+at, what remained of the first lord's share (NaN for none), the year, and
+how many rows of `year_dasha_shares` (its ring) and `year_dasha_periods`
+are its. The periods share the natal `dasha_periods` layout and one
+decoder in every binding, with one column more: the Patyayini runs **one
+sign among seven planets**, so a year's period says row by row whether it
+is a sign's, where a birth dasha is all signs' or none and says it once.
+
+Node, Python and Dart answer an `AnnualDasha` with the natal `Dasha`'s
+periods and `at(jd)`, its ring as shares, and `firstLord`. The four
+parity runners print every dasha of 24 years under the sources' readings
+and under a rival clock, balance and birth period three levels deep, and
+agree value for value.
 
 ## Not built, and why
 
@@ -298,7 +341,7 @@ It crosses the boundary as JSON, as the natal reading does.
 
 ## Order of work
 
-Steps 1 to 5 are built (2026-09-24). What the building changed:
+Steps 1 to 6 are built (2026-09-24). What the first five changed:
 - The `even` clock's gap from the Sun's is up to **3.90 days**, not two:
   the equation of centre is counted twice.
 - The batch call exists because three systems of one year would
@@ -326,6 +369,11 @@ Steps 1 to 5 are built (2026-09-24). What the building changed:
    computed.
 5. The measured pass over the corpus's 2 159 recorded years
    (`muntha-measured.md` §19).
-6. **Next:** the boundary (a `varsha_json` request for the systems and
-   their rules, and a ragged section of periods beside the year's other
-   sections), the three bindings and parity.
+6. The boundary, the three bindings and parity (2026-09-24), above.
+   What the building changed: the page had said the answer crosses as
+   JSON, and it crosses as columns like the rest of the year; a system
+   is accepted by its full key as well as its bare one, because the
+   bindings read it back full and a caller would otherwise be refused
+   the value it was given; and Python had never exported `Nakshatra`,
+   which a `Dasha`'s seed already returned, so a strict caller could not
+   name its own answer's type.

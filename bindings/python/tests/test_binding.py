@@ -39,6 +39,7 @@ from teistro import (
     Ephemeris,
     EphemerisProvider,
     Latitude,
+    Nakshatra,
     Observer,
     Plugin,
     Rashi,
@@ -1467,6 +1468,98 @@ class AnEngine(WithLibrary):
             (
                 {"through": 1, "place": "birth", "harsha_rules": {"venus": "sixth"}},
                 "varsha_json.harshaRules.venus",
+            ),
+        ]:
+            with self.subTest(field=field, varsha=varsha):
+                with self.assertRaises(TeistroError) as refused:
+                    years(varsha)
+                self.assertEqual(refused.exception.field, field)
+
+    def test_a_years_chart_answers_the_annual_dashas_asked_for(self) -> None:
+        """The annual dashas cross for the ones `varsha=` names, in its
+        order: each opens on its return and closes on the next, and its
+        periods run end to end (`03-design/annual-dashas.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+
+        def years(varsha: Any) -> Any:
+            return self.ctx.chart.found(
+                instant=2447995.4895833335,
+                place=observer,
+                utc_offset_seconds=20700,
+                varsha=varsha,
+            ).praveshas
+
+        # A member or its key, bare or full, as the caller has it.
+        asked = years({"through": 3, "place": "birth", "dashas": [DashaSystem.MUDDA, "dasha_system.PATYAYINI"]})
+        for k, one in enumerate(asked):
+            annual = one.annual
+            assert annual is not None
+            self.assertEqual([d.system for d in annual.dashas], [DashaSystem.MUDDA, DashaSystem.PATYAYINI])
+            for dasha in annual.dashas:
+                self.assertEqual(dasha.year.from_jd, one.instant)
+                if k + 1 < len(asked):
+                    self.assertLess(abs(dasha.year.to_jd - asked[k + 1].instant), 2e-7)
+                self.assertEqual(dasha.first_lord, dasha.ring.shares[dasha.ring.first].lord)
+                # The mahadashas run end to end across the year.
+                mahas = [p for p in dasha.periods if p.level == 1]
+                self.assertEqual(mahas[0].span.from_jd, dasha.year.from_jd)
+                self.assertEqual(mahas[-1].span.to_jd, dasha.year.to_jd)
+                for before, after in zip(mahas, mahas[1:]):
+                    self.assertEqual(after.span.from_jd, before.span.to_jd)
+                # Mid-year a mahadasha runs, and one of its own under it.
+                chain = dasha.at((dasha.year.from_jd + dasha.year.to_jd) / 2)
+                self.assertEqual(len(chain), 2)
+                self.assertTrue(chain[1].path.startswith(chain[0].path + "/"))
+                self.assertEqual(dasha.at(dasha.year.to_jd), [])
+            mudda, patyayini = annual.dashas
+            self.assertIsInstance(mudda.seed, Nakshatra)
+            self.assertEqual(len(mudda.ring.shares), 9)
+            assert mudda.ring.remaining is not None
+            self.assertTrue(0 < mudda.ring.remaining <= 1)
+            self.assertIsNone(patyayini.seed)
+            self.assertIsNone(patyayini.ring.remaining)
+            self.assertEqual(sum(share.sign is not None for share in patyayini.ring.shares), 1)
+            self.assertTrue(any(p.sign is not None for p in patyayini.periods))
+        firsts = [one.annual.dashas[0].ring.first for one in asked]
+        self.assertEqual(firsts[1:], [(first + 1) % 9 for first in firsts[:-1]])
+
+        # "all" is the three in the catalogue's order; unasked is none.
+        every = years({"through": 1, "place": "birth", "dashas": "all"})[0].annual
+        assert every is not None
+        self.assertEqual(
+            [d.system for d in every.dashas],
+            [DashaSystem.PATYAYINI, DashaSystem.MUDDA, DashaSystem.VARSHA_YOGINI],
+        )
+        # A system read back names it again.
+        again = years({"through": 1, "place": "birth", "dashas": [d.system for d in every.dashas]})
+        self.assertEqual(again[0].annual.dashas, every.dashas)
+        unasked = years({"through": 1, "place": "birth"})[0].annual
+        assert unasked is not None
+        self.assertEqual(unasked.dashas, [])
+
+        # The rules are written in Python's own keys.
+        days = years({
+            "through": 1,
+            "place": "birth",
+            "dashas": ["MUDDA"],
+            "dasha_rules": {"clock": {"days": 360}, "depth": 1, "birth_period": "ELAPSED", "measure": "TEMPORAL"},
+        })[0].annual.dashas[0]
+        self.assertEqual(days.year.to_jd - days.year.from_jd, 360)
+        self.assertTrue(all(p.level == 1 for p in days.periods))
+
+        for varsha, field in [
+            ({"through": 2, "dashas": [DashaSystem.MUDDA]}, "varsha_json.dashas"),
+            ({"through": 2, "place": "birth", "dashas": [DashaSystem.VIMSHOTTARI]}, "varsha_json.dashas"),
+            ({"through": 2, "place": "birth", "dashas": ["MUDDA", DashaSystem.MUDDA]}, "varsha_json.dashas"),
+            (
+                {"through": 2, "place": "birth", "dashas": "all", "dasha_rules": {"clock": {"days": 0}}},
+                "varsha_json.dashaRules.clock",
+            ),
+            (
+                {"through": 2, "place": "birth", "dashas": "all", "dasha_rules": {"birth_perod": "ELAPSED"}},
+                "varsha_json.dashaRules.birthPerod",
             ),
         ]:
             with self.subTest(field=field, varsha=varsha):

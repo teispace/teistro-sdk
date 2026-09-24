@@ -195,6 +195,8 @@ tables they need are rules rather than tables.
 4. **The year lord** itself, each fallback a named step so a caller sees
    which one decided it.
 
-The four dashas the annual chart unblocks — Mudda, Varsha Narayana, Varsha
-Yogini and Patyayini — come after, and are counted in
+The dashas the annual chart unblocks came after. The Mudda, the Varsha
+Yogini and the Patyayini are built and cross every binding
+([`annual-dashas.md`](annual-dashas.md)); Varsha Narayana is in no book
+read. All four are counted in
 [`dasha-coverage-measured.md`](dasha-coverage-measured.md).

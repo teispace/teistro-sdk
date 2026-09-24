@@ -14939,6 +14939,11 @@
               "name": "saham_count",
               "scalar": "u8",
               "doc": "How many rows of the `year_sahams` section belong to this year: the sahams `varsha_json.sahams` asked for, 0 to 41."
+            },
+            {
+              "name": "dasha_count",
+              "scalar": "u8",
+              "doc": "How many rows of the `year_dashas` section belong to this year: the annual dashas `varsha_json.dashas` asked for, 0 to 3."
             }
           ]
         },
@@ -15430,6 +15435,136 @@
               "name": "company",
               "scalar": "u8",
               "doc": "1 when it stands in the saham's sign: the saham's company."
+            }
+          ]
+        },
+        {
+          "id": 47,
+          "name": "year_dashas",
+          "doc": "Every annual chart's annual dashas, concatenated in the `annual_charts` section's order and **ragged** by its `dasha_count`, each year's in the order `varsha_json.dashas` named them, read under `varsha_json.dashaRules` (`03-design/annual-dashas.md`). Each runs round a ring of lords (the next `share_count` rows of `year_dasha_shares`) from `first`, and its periods are the next `period_count` rows of `year_dasha_periods`. Empty unless annual dashas were asked for and a place given.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "system",
+              "scalar": "u16",
+              "doc": "Which: the Patyayini, the Mudda or the Varsha Yogini.",
+              "enum": "DashaSystem"
+            },
+            {
+              "name": "seeded",
+              "scalar": "u8",
+              "doc": "1 when the birth nakshatra seeds the year and `seed` names it: the Mudda and the Varsha Yogini; 0 for the Patyayini, which is read from the year's own chart, and `seed` is zero."
+            },
+            {
+              "name": "seed",
+              "scalar": "u16",
+              "doc": "The birth Moon's nakshatra, when `seeded`.",
+              "enum": "Nakshatra"
+            },
+            {
+              "name": "first",
+              "scalar": "u8",
+              "doc": "The place in the ring the year opens with, from 0: for a nakshatra year the birth nakshatra's lord advanced one for each completed year."
+            },
+            {
+              "name": "remaining",
+              "scalar": "f64",
+              "doc": "How much of the first lord's share was still to run when the year opened, 0 to 1; the rest closes the year. NaN when the first lord runs its whole share from the return and the year ends with the lord before it: the Patyayini, and a balance of `whole`."
+            },
+            {
+              "name": "from_jd",
+              "scalar": "f64",
+              "doc": "When the year opens: its return, a Julian day (UTC)."
+            },
+            {
+              "name": "to_jd",
+              "scalar": "f64",
+              "doc": "When the year closes, a Julian day (UTC): under the default clock the next return, as the Sun's own crossing of its return longitude."
+            },
+            {
+              "name": "share_count",
+              "scalar": "u8",
+              "doc": "How many rows of `year_dasha_shares` are this dasha's ring: 9 for the Mudda, 8 for the Varsha Yogini and the Patyayini."
+            },
+            {
+              "name": "period_count",
+              "scalar": "u32",
+              "doc": "How many rows of `year_dasha_periods` are this dasha's."
+            }
+          ]
+        },
+        {
+          "id": 48,
+          "name": "year_dasha_shares",
+          "doc": "Every annual dasha's ring, concatenated in the `year_dashas` section's order and **ragged** by its `share_count`, in the order the ring runs: a lord's share of the year is its weight over the ring's.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "Its lord: the graha, or the lord of the sign when the share is a sign's.",
+              "enum": "Graha"
+            },
+            {
+              "name": "has_sign",
+              "scalar": "u8",
+              "doc": "1 when the share is a sign's and `sign` names it: the Patyayini's lagna; 0 for a planet's, and `sign` is zero."
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign, when `has_sign`.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "weight",
+              "scalar": "f64",
+              "doc": "Its weight: a nakshatra year's lord's natal years, or a Patyayini share's patyamsha — its krishamsha less the one before it — in nanoarcseconds, exactly. Only the ratios matter. 0 for a lord tied with the one before it, which runs for no time and has no period."
+            }
+          ]
+        },
+        {
+          "id": 49,
+          "name": "year_dasha_periods",
+          "doc": "Every annual dasha's periods, concatenated in the `year_dashas` section's order and **ragged** by its `period_count`, each depth first in time order from the year's return to its close: a mahadasha, then its antardashas, then the next mahadasha, to `varsha_json.dashaRules.depth` levels. A period that runs for no time is not listed, and its place is kept in the others' `index`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "level",
+              "scalar": "u8",
+              "doc": "How deep: 1 for a mahadasha."
+            },
+            {
+              "name": "index",
+              "scalar": "u8",
+              "doc": "Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0."
+            },
+            {
+              "name": "has_sign",
+              "scalar": "u8",
+              "doc": "1 when it is a sign's period and `sign` names it: the Patyayini's lagna; 0 for a planet's."
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign it is the period of, when `has_sign`; zero otherwise.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "Its lord.",
+              "enum": "Graha"
+            },
+            {
+              "name": "from_jd",
+              "scalar": "f64",
+              "doc": "When it begins, a Julian day (UTC)."
+            },
+            {
+              "name": "to_jd",
+              "scalar": "f64",
+              "doc": "When it ends, a Julian day (UTC)."
             }
           ]
         }

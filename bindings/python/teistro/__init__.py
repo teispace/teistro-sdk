@@ -30,7 +30,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from pathlib import Path
 from types import MappingProxyType, TracebackType
-from typing import Any, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Sequence, Tuple, TypedDict, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Sequence, Tuple, TypedDict, TypeVar, Union
 
 from . import messages as intl
 from ._blob import (
@@ -269,6 +269,7 @@ __all__ = [
     "DashaBalance",
     "DashaPeriod",
     "DashaSystem",
+    "Nakshatra",
     "Rashi",
     "WrittenBalance",
     # The Ashtakavarga: what a chart answers with, and the two readings.
@@ -343,6 +344,11 @@ __all__ = [
     "HarshaRules",
     "HarshaBala",
     "TajikaRelation",
+    "AnnualDasha",
+    "AnnualDashaRules",
+    "AnnualDashaShare",
+    "DashaRing",
+    "YearOfDays",
     "RashiDashaDefinition",
     "UduDashaDefinition",
     "DashaLord",
@@ -2206,16 +2212,115 @@ class Dasha:
 
     def at(self, jd: float) -> list[DashaPeriod]:
         """The periods running at a Julian day (UTC), from the mahadasha
-        down to `depth`; empty before birth and past the end of the cycle.
+        down to `depth`; empty before birth and past the end of the cycle."""
+        return _chain_at(self.periods, jd)
 
-        Depth first order means a period's children follow it, so one walk
-        that takes the next level's running period finds the chain.
-        """
-        chain: list[DashaPeriod] = []
-        for period in self.periods:
-            if period.level == len(chain) + 1 and period.span.from_jd <= jd < period.span.to_jd:
-                chain.append(period)
-        return chain
+
+def _chain_at(periods: Sequence[DashaPeriod], jd: float) -> list[DashaPeriod]:
+    """The periods running at a Julian day (UTC), from the mahadasha down.
+
+    Depth first order means a period's children follow it, so one walk
+    that takes the next level's running period finds the chain.
+    """
+    chain: list[DashaPeriod] = []
+    for period in periods:
+        if period.level == len(chain) + 1 and period.span.from_jd <= jd < period.span.to_jd:
+            chain.append(period)
+    return chain
+
+
+def _periods(cells: Any, start: int, count: int, signed: Callable[[int], bool]) -> Tuple[DashaPeriod, ...]:
+    """A dasha's periods from a period section — the births'
+    `dasha_periods` or the years' `year_dasha_periods`, which share a
+    layout — so a period is decoded in one place.
+
+    A period's path is its index below the nearest earlier period one level
+    up, so it is rebuilt by truncating the path to the level before it.
+    """
+    periods: list[DashaPeriod] = []
+    path: list[str] = []
+    for i in range(start, start + count):
+        level = cells.level[i]
+        del path[level - 1 :]
+        path.append(str(cells.index[i]))
+        periods.append(
+            DashaPeriod(
+                path="/".join(path),
+                level=level,
+                sign=Rashi(cells.sign[i]) if signed(i) else None,
+                lord=Graha(cells.lord[i]),
+                span=Interval(from_jd=cells.from_jd[i], to_jd=cells.to_jd[i]),
+            )
+        )
+    return tuple(periods)
+
+
+@dataclass(frozen=True)
+class AnnualDashaShare:
+    """One lord of the ring a year's dasha runs round."""
+
+    lord: Graha
+    """Its lord: the graha, or the sign's lord when the share is a sign's."""
+
+    sign: Optional[Rashi]
+    """The sign, when the share is one's: the Patyayini's lagna; None for a
+    planet's."""
+
+    weight: float
+    """Its weight, of which a lord's share of the year is its weight over
+    the ring's: a nakshatra year's lord's natal years, or a Patyayini
+    share's patyamsha in nanoarcseconds. 0 for a lord that runs for no
+    time."""
+
+
+@dataclass(frozen=True)
+class DashaRing:
+    """The lords a year's dasha runs round, and where it opens."""
+
+    shares: Tuple[AnnualDashaShare, ...]
+    """In the order the ring runs."""
+
+    first: int
+    """The place in `shares` the year opens with, from 0."""
+
+    remaining: Optional[float]
+    """How much of the first lord's share was still to run at the return, 0
+    to 1, the rest closing the year; None when it runs whole from the
+    return: the Patyayini, and a `"whole"` balance."""
+
+
+@dataclass(frozen=True)
+class AnnualDasha:
+    """One annual dasha of a year: its ring, the year it divides, and its
+    periods (`03-design/annual-dashas.md`)."""
+
+    system: DashaSystem
+    """Which of the three: `PATYAYINI`, `MUDDA` or `VARSHA_YOGINI`."""
+
+    seed: Optional[Nakshatra]
+    """The birth Moon's nakshatra, which seeds a nakshatra year; None for
+    the Patyayini."""
+
+    ring: DashaRing
+    """The lords the year runs round."""
+
+    year: Interval
+    """The year: from its return to where the clock closes it, under the
+    default clock the next return."""
+
+    periods: Tuple[DashaPeriod, ...]
+    """Every period to the rules' depth, depth first in time order; a
+    period that runs for no time is not listed."""
+
+    @property
+    def first_lord(self) -> Graha:
+        """The lord the year opens with."""
+        return self.ring.shares[self.ring.first].lord
+
+    def at(self, jd: float) -> list[DashaPeriod]:
+        """The periods running at a Julian day (UTC), from the mahadasha
+        down; empty outside the year."""
+        return _chain_at(self.periods, jd)
 
 
 @dataclass(frozen=True)
@@ -2540,6 +2645,56 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
 
     harsha_rules: "HarshaRules"
     """The Harsha bala's reading of Venus's house of joy."""
+
+    dashas: Union[Literal["all"], List[Union["DashaSystem", str]]]
+    """The annual dashas each year is divided by: `"all"`, the three in the
+    catalogue's order, or `DashaSystem.PATYAYINI`, `MUDDA` and
+    `VARSHA_YOGINI` (or their keys) in the order you want them answered.
+    The Sun is read over a year once however many are asked for. **Needs
+    `place`**; absent, none is read."""
+
+    dasha_rules: "AnnualDashaRules"
+    """The readings the annual dashas part on, where the sources differ;
+    theirs by default."""
+
+
+class AnnualDashaRules(TypedDict, total=False):
+    """Where the sources differ on an annual dasha, each a named reading
+    (`03-design/annual-dashas.md`).
+
+    >>> rules: AnnualDashaRules = {"clock": {"days": 360}, "depth": 1}
+    """
+
+    clock: Union[Literal["sun_degrees", "even"], "YearOfDays"]
+    """What a unit of the year is (crux C122): `"sun_degrees"`, the Sun's
+    motion through one degree and the source's own, so the year closes on
+    the next return; an `"even"` share of the time between the returns; or
+    `{"days": n}`, the whole year as so many civil days from the return,
+    the printed durations (360, and 365 for the Patyayini)."""
+
+    balance: Literal["natal_moon", "entry_moon", "whole"]
+    """Where a nakshatra year's balance comes from (crux C123): what
+    remained of the birth Moon's nakshatra, the source's own; the Moon's at
+    the return; or none."""
+
+    measure: Literal["SPATIAL", "TEMPORAL"]
+    """How the balance is measured, by arc or by time; absent, each
+    balance's source's own: by arc for the birth Moon, by time for the Moon
+    at the return."""
+
+    birth_period: Literal["COMPRESSED", "ELAPSED"]
+    """How the first lord's two pieces are divided among sub-lords, as the
+    natal birth period's; `"COMPRESSED"` by default."""
+
+    depth: int
+    """How many levels the periods go down: 2, mahadashas and antardashas,
+    by default."""
+
+
+class YearOfDays(TypedDict):
+    """A year of so many civil days from the return."""
+
+    days: float
 
 
 class SahamStrengthReadings(TypedDict, total=False):
@@ -2919,6 +3074,10 @@ class AnnualChart:
     harsha: List["HarshaBala"]
     """The seven's Harsha bala in this year's chart, in the catalogue's
     order."""
+
+    dashas: List["AnnualDasha"]
+    """Each annual dasha `varsha["dashas"]` asked for, in its order, under
+    `varsha["dasha_rules"]`; empty otherwise."""
 
 
 @dataclass(frozen=True)
@@ -3317,16 +3476,21 @@ def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
         ("saham_rules", "sahamRules"),
         ("saham_strength", "sahamStrength"),
         ("harsha_rules", "harshaRules"),
+        ("dasha_rules", "dashaRules"),
     ):
         if snake in written:
             written[camel] = written.pop(snake)
-    for rules in ("varshesha", "yogas", "sahamRules", "sahamStrength", "harshaRules"):
+    for rules in ("varshesha", "yogas", "sahamRules", "sahamStrength", "harshaRules", "dashaRules"):
         if isinstance(written.get(rules), Mapping):
             written[rules] = _camel_keys(written[rules])
     # A saham crosses as its key, the spelling it is read back in.
     sahams = written.get("sahams")
     if isinstance(sahams, (list, tuple)):
         written["sahams"] = [one.key if isinstance(one, Saham) else one for one in sahams]
+    # And a dasha system as its full key, the spelling it is read back in.
+    dashas = written.get("dashas")
+    if isinstance(dashas, (list, tuple)):
+        written["dashas"] = [one.full_key if isinstance(one, DashaSystem) else one for one in dashas]
     return _record_json(written, "varsha", "{'through': 40, 'place': 'birth'}")
 
 
@@ -3373,6 +3537,9 @@ class _Starts(NamedTuple):
     held: List[int]
     legs: List[int]
     sahams: List[int]
+    dashas: List[int]
+    shares: List[int]
+    periods: List[int]
 
     @staticmethod
     def of(decoded: Any) -> "_Starts":
@@ -3387,6 +3554,9 @@ class _Starts(NamedTuple):
             held=running(decoded.year_matters.held_count),
             legs=running(decoded.matter_yogas.leg_count),
             sahams=running(charts.saham_count),
+            dashas=running(charts.dasha_count),
+            shares=running(decoded.year_dashas.share_count),
+            periods=running(decoded.year_dashas.period_count),
         )
 
 
@@ -3454,6 +3624,44 @@ def _matters(decoded: Any, row: int, starts: _Starts) -> List[TajikaMatter]:
                 between=between,
                 held=yogas,
                 unanswered=_members(matters.unanswered[m], YearYoga),
+            )
+        )
+    return found
+
+
+def _annual_dashas(decoded: Any, row: int, starts: _Starts) -> List[AnnualDasha]:
+    """A year's annual dashas, ragged by `dasha_count`, each with its ring
+    and its periods ragged under it by `share_count` and `period_count`
+    (`03-design/annual-dashas.md`)."""
+    rows = decoded.year_dashas
+    shares = decoded.year_dasha_shares
+    cells = decoded.year_dasha_periods
+    found = []
+    for k in range(starts.dashas[row], starts.dashas[row + 1]):
+        remaining = rows.remaining[k]
+        found.append(
+            AnnualDasha(
+                system=DashaSystem(rows.system[k]),
+                seed=Nakshatra(rows.seed[k]) if rows.seeded[k] == 1 else None,
+                ring=DashaRing(
+                    shares=tuple(
+                        AnnualDashaShare(
+                            lord=Graha(shares.lord[i]),
+                            sign=Rashi(shares.sign[i]) if shares.has_sign[i] == 1 else None,
+                            weight=shares.weight[i],
+                        )
+                        for i in range(starts.shares[k], starts.shares[k + 1])
+                    ),
+                    first=rows.first[k],
+                    remaining=None if math.isnan(remaining) else remaining,
+                ),
+                year=Interval(from_jd=rows.from_jd[k], to_jd=rows.to_jd[k]),
+                periods=_periods(
+                    cells,
+                    starts.periods[k],
+                    rows.period_count[k],
+                    lambda i: cells.has_sign[i] == 1,
+                ),
             )
         )
     return found
@@ -3578,6 +3786,7 @@ def _annual_chart(decoded: Any, row: int, starts: _Starts) -> Optional[AnnualCha
         matters=_matters(decoded, row, starts),
         sahams=_sahams(decoded, row, starts),
         harsha=_harsha(decoded, row),
+        dashas=_annual_dashas(decoded, row, starts),
     )
 
 
@@ -4508,21 +4717,7 @@ def _dasha(decoded: Charts, row: int, start: int, count: int, names: Mapping[int
     cells = decoded.dasha_periods
     seeded = rows.seeded[row] != 0
     signed = rows.signed[row] != 0
-    periods: list[DashaPeriod] = []
-    path: list[str] = []
-    for i in range(start, start + count):
-        level = cells.level[i]
-        del path[level - 1 :]
-        path.append(str(cells.index[i]))
-        periods.append(
-            DashaPeriod(
-                path="/".join(path),
-                level=level,
-                sign=Rashi(cells.sign[i]) if signed else None,
-                lord=Graha(cells.lord[i]),
-                span=Interval(from_jd=cells.from_jd[i], to_jd=cells.to_jd[i]),
-            )
-        )
+    periods = _periods(cells, start, count, lambda _: signed)
     span_from = rows.moon_span_from[row]
     return Dasha(
         system=_dasha_system(rows.system[row], names),
@@ -4545,7 +4740,7 @@ def _dasha(decoded: Charts, row: int, start: int, count: int, names: Mapping[int
         else None,
         moon_span=None if math.isnan(span_from) else Interval(from_jd=span_from, to_jd=rows.moon_span_to[row]),
         depth=rows.depth[row],
-        periods=tuple(periods),
+        periods=periods,
     )
 
 

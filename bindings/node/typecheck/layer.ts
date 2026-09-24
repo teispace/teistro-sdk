@@ -6,6 +6,7 @@
 import type {
   Almanac,
   AlmanacDay,
+  AnnualDashaSystem,
   Body,
   BuildInfo,
   Calendar,
@@ -13,6 +14,7 @@ import type {
   ChartBatchRequest,
   Charts,
   Context,
+  DashaPeriod,
   EphemerisProvider,
   LayoutHolds,
   LayoutKey,
@@ -375,6 +377,39 @@ function theYearsSahams(ctx: Context): string {
   const happy = annual.harsha.map((h) => `${h.graha}:${h.total}:${h.grade}:${h.sthana}`).join();
   return `${saham} ${deg} ${one.sign} ${one.lord} ${one.house} ${added} ${clause} ${facing} ${axis} ${one.lordVishwa} ${one.lordHarsha} ${happy}`;
 }
+
+// A year's annual dashas, read all the way down, asked for by the keys
+// they are read back as and with their rules in the declared casing.
+function theYearsDashas(ctx: Context): string {
+  const annual = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    varsha: {
+      through: 2,
+      place: 'birth',
+      dashas: ['dasha_system.MUDDA', 'dasha_system.PATYAYINI'],
+      dashaRules: { clock: { days: 365 }, balance: 'entry_moon', measure: 'TEMPORAL', birthPeriod: 'ELAPSED', depth: 3 },
+    },
+  }).praveshas[0]!.annual!;
+  const dasha = annual.dashas[0]!;
+  const system: AnnualDashaSystem | 'unknown' = dasha.system;
+  const again: readonly AnnualDashaSystem[] = system === 'unknown' ? [] : [system];
+  const seed: string | null = dasha.seed;
+  const share = dasha.ring.shares[dasha.ring.first]!;
+  const sign: string | null = share.sign;
+  const remaining: number | null = dasha.ring.remaining;
+  const running: readonly DashaPeriod[] = dasha.at((dasha.year.from + dasha.year.to) / 2);
+  // @ts-expect-error an annual dasha is one of the three, not a natal system
+  ctx.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, varsha: { through: 1, dashas: ['dasha_system.VIMSHOTTARI'] } });
+  // @ts-expect-error the rules' keys are camelCase
+  ctx.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, varsha: { through: 1, dashaRules: { birth_period: 'ELAPSED' } } });
+  // @ts-expect-error a clock of days is a record, not a bare number
+  ctx.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, varsha: { through: 1, dashaRules: { clock: 360 } } });
+  return `${system} ${again} ${seed} ${share.lord} ${share.weight} ${sign} ${remaining} ${running.map((p) => p.path)} ${dasha.firstLord} ${dasha.periods.length}`;
+}
+
+void theYearsDashas;
 
 // The birth's own sahams, and the readings a saham's strength and the
 // Harsha bala part on, in the casing the declarations promise.
