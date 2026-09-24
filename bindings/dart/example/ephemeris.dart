@@ -92,16 +92,10 @@ void main() {
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 
-  // ── Which build am I talking to? ───────────────────────────────────
-  // A service checks this once at start-up. The binding already refuses
-  // a library that is not the build it was generated from; this is how
-  // to log what it did load.
-  final build = teistro.build;
-  print(
-    'library  Teistro ${build.sdk}  ABI ${build.abi}'
-    '  catalogue ${build.catalogue}  ${build.target}'
-    '  ${build.commit.substring(0, 8)}${build.dirty ? '-dirty' : ''}',
-  );
+  // The binding already refuses a library that is not the build it was
+  // generated from; `teistro.build` says what it did load -- the SDK and
+  // ABI versions, the target and the commit -- which is for a bug report.
+  // What computed an answer is stamped on the answer, and is printed last.
 
   // ── One call for the whole year ────────────────────────────────────
   final canonical = teistro.canonicalFrame;
@@ -128,12 +122,12 @@ void main() {
 
   // ── The columns ────────────────────────────────────────────────────
   // Point 2 above, checked rather than printed: the type is this
-  // language's own, and the compiler holds it.
+  // language's own, a view over the blob's own bytes, and the compiler
+  // holds it.
   final cells = sky.cells;
   final Float64List lon = cells.lon;
   print(
-    'columns  lon holds ${lon.length} doubles in'
-    ' ${lon.lengthInBytes} bytes, a view over the blob\'s own bytes',
+    'columns  lon holds ${lon.length} doubles in ${lon.lengthInBytes} bytes',
   );
 
   // ── What the columns are for ───────────────────────────────────────
@@ -146,7 +140,7 @@ void main() {
     final speed = cells.lonSpeed[column];
     final direction = speed < 0 ? 'retrograde' : 'direct';
     print(
-      '  ${body.key.padRight(10)} ${name.padRight(8)}'
+      '  ${graha.key.padRight(10)} ${name.padRight(8)}'
       ' ${direction.padRight(10)} at'
       ' ${'${speed >= 0 ? '+' : ''}${speed.toStringAsFixed(4)}'.padLeft(8)}°/day,'
       ' ${crossings.length} sign change(s), ${turns.length} station(s)',
@@ -183,6 +177,11 @@ void main() {
   // The whole envelope is canonical JSON: byte-identical across every
   // binding, which is what makes it safe to hash and store.
   print('envelope ${jsonEncode(provenance).length} bytes of canonical JSON');
+  final provider = provenance['provider']! as Map<String, Object?>;
+  print(
+    'provider ${provider['name']} ${provider['version']}'
+    ' (data ${provider['data_version']})',
+  );
 
   ctx.dispose();
 }

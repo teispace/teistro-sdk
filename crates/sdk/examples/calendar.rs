@@ -174,8 +174,8 @@ fn main() -> Result<(), Error> {
         );
     }
     println!(
-        "       the official table runs BS 1970 to 2095; on either side the SDK's\n\
-         \x20      own engine answers, and says so"
+        "       the official table runs BS 1970 to 2095; on either side the SDK's \
+         own engine answers, and says so"
     );
 
     // ── The typed message accessors ────────────────────────────────────

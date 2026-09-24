@@ -33,6 +33,7 @@ import {
   Karana,
   KaranaById,
   NakshatraById,
+  RashiById,
   TithiById,
   VaraById,
   YogaById,
@@ -156,9 +157,13 @@ console.log(`  tithi is   ${(found.tithiElapsed * 100).toFixed(1)}% elapsed at t
 // short of Aries, when it had entered Aries two and a half hours
 // earlier: `(360 - sun) % 360` of a longitude just past zero is just
 // under 360, and reads as nearly a whole circle still to go.
+// The sign is read from the SDK rather than written in, so the line
+// stays true on any day: `RashiById` turns the division into a member
+// and the intl layer says it in the context's locale.
+const sign = ctx.intl.entity(RashiById.get(Math.floor(found.sun / 30))).name;
 const intoSign = found.sun % 30;
 console.log(
-  `  the Sun stands ${intoSign.toFixed(4)}° into Aries, so the Mesha Sankranti` +
+  `  the Sun stands ${intoSign.toFixed(4)}° into ${sign}, so the Mesha Sankranti` +
     ` is about ${(intoSign / 0.9856 * 24).toFixed(1)} hours past --`,
 );
 console.log('  which is what BS 2082 is reckoned from, and why it opens today');

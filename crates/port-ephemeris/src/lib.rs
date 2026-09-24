@@ -66,7 +66,7 @@ pub use error::ProviderError;
 pub use frame::{Centre, Coordinates, Corrections, Equinox, Frame, Zodiac};
 pub use horizon::{DiscPoint, Horizon, HorizonEventKind, HorizonRequest, Refraction};
 pub use native::{Native, NativeFunction, NativeManifest, NativeParam, Role};
-pub use provider::{EphemerisProvider, PositionRequest, validate};
+pub use provider::{EphemerisProvider, PositionRequest, ask_positions, validate};
 pub use test_provider::TestProvider;
 pub use vtable::{
     AyanamshaFn, CapabilitiesFn, CrossingsFn, DecodedRequest, DeltaTFn, Dut1Fn, Exported,

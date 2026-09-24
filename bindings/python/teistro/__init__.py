@@ -665,7 +665,7 @@ class Teistro:
         return frame_unpack(self.library, bits)
 
     def julian_day_of_fixed(self, fixed: int) -> float:
-        """The Julian day at noon of a fixed day number."""
+        """The Julian day at the UTC midnight that begins a fixed day."""
         return calendar_jd_of_fixed(self.library, fixed)
 
     def fixed_of_julian_day(self, jd: float) -> tuple[int, float]:
@@ -4144,6 +4144,21 @@ class Chart:
     def ayanamsha_offset_deg(self) -> float:
         """The ayanamsha applied at this instant, degrees; zero if tropical."""
         return self.batch.decoded.cast.ayanamsha_offset_deg[self.index]
+
+    @property
+    def ayanamsha(self) -> Optional[Ayanamsha]:
+        """The catalogued ayanamsha this chart was read under, or `None`
+        when none was applied -- a tropical chart -- or the settings
+        defined their own, which `ayanamsha_custom` says. One for the
+        batch, since the frame is the request's."""
+        decoded = self.batch.decoded
+        return Ayanamsha(decoded.ayanamsha) if decoded.ayanamsha_kind == 1 else None
+
+    @property
+    def ayanamsha_custom(self) -> bool:
+        """Whether the ayanamsha is one the settings define rather than a
+        catalogued one."""
+        return self.batch.decoded.ayanamsha_kind == 2
 
     @property
     def day_part(self) -> DayPart:

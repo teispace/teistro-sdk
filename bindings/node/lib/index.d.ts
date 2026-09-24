@@ -7,6 +7,7 @@
 // decode on first use, and the error.
 
 import type {
+  Ayanamsha,
   AvasthaBaladi,
   AvasthaDeeptadi,
   AvasthaSayanadi,
@@ -1658,6 +1659,15 @@ export declare class Chart {
   readonly dayLagnaDeg: number;
   /** The ayanamsha applied at this instant, degrees; zero if tropical. */
   readonly ayanamshaOffsetDeg: number;
+  /**
+   * The catalogued ayanamsha this chart was read under, or `null` when
+   * none was applied -- a tropical chart -- or the settings defined their
+   * own, which `ayanamshaCustom` says. One for the batch, since the frame
+   * is the request's.
+   */
+  readonly ayanamsha: Ayanamsha | 'unknown' | null;
+  /** Whether the ayanamsha is one the settings define rather than a catalogued one. */
+  readonly ayanamshaCustom: boolean;
   /**
    * Which arc of its day the instant falls in. This and `dayElapsed`
    * belong to the instant, not to the day.

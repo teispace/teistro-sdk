@@ -98,7 +98,14 @@ def main() -> None:
         print(f"  BS   {described(ctx, new_year)}")
         print(f"  ->   {described(ctx, gregorian)}")
         print(f"  ->   {described(ctx, back)}")
-        print(f"  fixed day {ctx.calendar.fixed_of(new_year)}, weekday {ctx.calendar.weekday_of(new_year)}")
+        # The library's, not a context's: a fixed day and a Julian day are
+        # two spellings of one integer, and no profile or locale changes
+        # the arithmetic.
+        fixed = ctx.calendar.fixed_of(new_year)
+        print(
+            f"  fixed day {fixed}, weekday {ctx.calendar.weekday_of(new_year)},"
+            f" Julian day {teistro.julian_day_of_fixed(fixed):.1f}"
+        )
 
         # ── Inside the table, and outside it ──────────────────────────
         # A date a caller *states* is always `DEFINED`: it is what was

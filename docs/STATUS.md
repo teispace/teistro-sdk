@@ -45,7 +45,7 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-24 (**the shared examples print alike in every binding**, gated by `check-parity`, and building it fixed coverage for a consumer's own provider, Python's exports and a stale Node union. Before it, **the Harsha bala, a saham's strength and
+**Last updated:** 2026-09-24 (**the Rust façade's examples join the comparison**: `check-parity` compares four sets of the shared examples, and asking why Rust's printed differently made the port validate and reckon coverage for every provider, gave Rust's positions their provenance, moved the plans' one call into the façade, and named a chart's ayanamsha in every binding; eight differences are excused by name until 2f and 2g remove them. Before it, **the shared examples print alike in every binding**, gated by `check-parity`, and building it fixed coverage for a consumer's own provider, Python's exports and a stale Node union. Before that, **the Harsha bala, a saham's strength and
 the birth's own sahams cross to all four bindings**: every saham carries
 its clauses as bits over two generated enums and seven rows of facts, every
 founded year its Harsha bala, and every chart its own sahams, which now
@@ -3709,20 +3709,84 @@ on pub.dev (checked 2026-09-07).
    found a fourth: Node's hand-written `VarsheshaChosen` shadowed the
    catalogue's and lacked the Moon's three steps, which
    `layer-does-not-shadow-a-kind` now refuses in every binding.
-2d. **The Rust façade's examples, printed alike.** Measured 2026-09-24:
-   of the ten examples `crates/sdk/examples` shares with the bindings,
-   **one** (`chart_reading`) prints what they print; the others differ
-   by `Debug` spellings (`Natal`, `Iana`) against catalogue keys, ASCII
-   against the bindings' rules and arrows, and prose that drifted
-   (`panchanga`'s Sankranti line). It has no `annual_chart`, and its
-   `phala` and `readings` have no binding counterpart. Normalise the ten,
-   add the eleventh, and bring Rust into the comparison.
+2d. ~~The Rust façade's examples, printed alike~~ — **done**
+   (2026-09-24). `check-parity` compares four sets, the Rust façade's
+   `crates/sdk/examples` beside the three bindings', and ten of the
+   eleven names are shared. Measured before: **one** of Rust's ten
+   printed what the bindings print. Asking why the rest did not found
+   the SDK's own differences again, six of them:
+   - A **Rust** provider was asked for instants outside its coverage
+     and had to mark them itself, where a foreign one was not. The
+     port now validates a request and reckons its coverage for every
+     provider through one function (`ask_positions`), which `Completion`
+     calls, so no provider is asked for a body it did not declare or an
+     instant it does not have. The foreign adapter's own check is gone.
+   - A Rust grid of positions carried **no provenance**. `positions`
+     now answers in an envelope stamped by `Context::positions_provenance`,
+     which the C boundary calls too, so `provenance-fnv` left the parity
+     gate's list of Rust absences (nine became eight).
+   - The **plans** a chart is asked to say were composed only at the C
+     boundary, so a Rust consumer assembled sections and composers by
+     hand. `ChartArea::interpreted` founds, reads and composes in one
+     call; `PlanRequest::sections` and `InterpretArea::plans` are its
+     parts, and the boundary only encodes what it answers.
+   - The bindings' `birth_chart` asked for raw positions, which bypass
+     the profile's **topocentric** Moon: it printed 8.4455° where the
+     chart the same SDK founds says 9.1738°. It founds the chart now, in
+     all four.
+   - No binding could say **which ayanamsha** a chart applied: the blob
+     carried it and no layer read it. `Chart.ayanamsha` and
+     `ayanamshaCustom` in all three, on the chart, because Dart's
+     generated `Charts.ayanamsha` is the raw id and would win over an
+     extension of the same name.
+   - Two docs of one function disagreed with the value: Python's
+     `julian_day_of_fixed` said noon and Rust's `jd_of_fixed` local
+     time; both say the UTC midnight the C description says.
+   What is left is `EXCUSED` in `xtask/src/examples.rs`, eight entries
+   each naming the item below that removes it, refused both ways and
+   printed on every run.
 2e. **One day record in every binding's chart and almanac.** Node reads
    a chart's day as `chart.day`, the decoded row with `vara` named;
    Python and Dart flatten `vara` and `sunrise` onto the chart and leave
    the sunset, the civil date and the day's state out, so their parity
    runners read those from the blob's raw columns. A `ChartDay` like
    `ChartTiming` closes it, and the runners then read the layer.
+2f. **One spelling of a key, and of a field, in every binding.** A
+   closed enum's key is its variant in kebab case in the three
+   bindings (`out-of-range`, `iana`, `time-unknown-fallback`,
+   `unsupported`, `mean-node`) and `SCREAMING_SNAKE` everywhere else —
+   serde, the C constants, the locale packs, a stored document, the
+   Rust types' `key()`, and a catalogue member (`graha.SUN`). So a
+   binding reads `TIME_UNKNOWN_FALLBACK` in a stored chart and hands
+   back `time-unknown-fallback`. `idl/api.json` lists no key for a
+   closed enum, and each generator infers one (`names::kebab`): list it
+   at the source, one spelling, and make the bindings read it. With it:
+   a completion step is `positions:Native` on a chart (`step_keys`, a
+   `{:?}`) and `positions:NATIVE` on a positions result — recorded
+   2026-09-08, and the stored `stack-agreement-*.json` tables carry the
+   first; `Body::key()` says `SUN` where the IDL's key is `sun`; and a
+   binding's refusal names the C argument (`interpret_json.readings`,
+   `varsha_json.through`) where the caller wrote `interpret.readings`.
+   Five of `EXCUSED` go when this lands.
+2g. **The year's chart in one Rust call, and the corpus examples in
+   every binding.** The annual chart — each year's return, its Muntha,
+   office-bearers, year lord, Tajika yogas by matter, sahams, Harsha
+   bala and annual dashas — is composed in `crates/ffi/src/chart.rs`
+   (`VarshaRequest`, `praveshas_of`, `annual_year`, about 300 lines),
+   not in the façade, so Rust has the parts and not the call, and no
+   `annual_chart.rs`. Move it as `ChartArea::interpreted` moved the
+   plans, then write the eleventh Rust example. And Rust's `phala.rs`
+   and `readings.rs`, which load the reading corpora from `packs/`,
+   have no binding counterpart though every binding has `loadPack` and
+   the `phala` plan: write them in the three. Three of `EXCUSED` go.
+2h. **What a binding hands back is typed, and its own.** A result's
+   provenance is an untyped map in all three bindings
+   (`Record<string, unknown>`, a `dict`, a `Map<String, Object?>`), and
+   so are a positions result's steps in Python and Dart. And a binding's
+   `found(one)` chart carries its **batch's** provenance, whose content
+   hash is of a list of one, where Rust's `found` re-seals the envelope
+   around the chart it holds — so a binding's stored chart claims a hash
+   that is not its own value's.
 3. Spike 3's remaining consequences: the kit's corpus checks (positions
    against fixtures per tier) and the `sdk-only` cross-provider
    byte-identity check; the Teimeris adapter as the Teimeris package's
@@ -3752,6 +3816,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-24 | **The Rust façade's examples join the comparison, and six of their differences were the SDK's.** One of Rust's ten examples printed what the bindings print. Asking why, example by example, found the SDK again: a **Rust provider** was asked for instants outside its coverage and had to validate its own requests, where a foreign one had both done for it — `ask_positions` now validates a request and reckons its coverage for every provider, and `Completion` asks through it, so the foreign adapter's own check is gone and the Rust example's provider was asked for one cell, not two; Rust's **positions carried no provenance**, so `positions` answers in an envelope stamped by `Context::positions_provenance`, which the boundary now calls too, and the parity gate compares `provenance-fnv` for Rust (absences nine to eight, Rust 12,950 values, all agreeing); the **plans** a chart says were composed only in `crates/ffi`, so `ChartArea::interpreted` founds, reads and composes in one call and the boundary only encodes; the bindings' `birth_chart` read **raw positions** and so missed the profile's topocentric Moon (8.4455° against the founded 9.1738°), and all four found the chart now; **no binding could name a chart's ayanamsha**, which the blob carried — `Chart.ayanamsha`, on the chart because Dart's generated `Charts.ayanamsha` is the raw id, and the Node typecheck fixture's negative case caught that `index.d.ts` had not imported the type; and `Detail`, `CellStatus` and `ZoneSource` gained the `key()` their serde spelling implies, each tested against it, which retired the Rust parity runner's `screaming` helper. `examples.rs` runs Rust as the fourth set and `check-rust` runs its examples through it; what is left is `EXCUSED`, eight entries naming the item that removes each, refused both ways (the gate caught my own wrong line number from both sides) and printed every run. Found and filed: **2f** a closed enum's key is kebab in the bindings and SCREAMING everywhere else, and a binding's refusal names the C argument; **2g** the year's chart is composed only at the boundary, and the corpus examples are Rust's alone; **2h** provenance is an untyped map in every binding, and a binding's `found(one)` carries its batch's content hash. Next: 2e. |
 | 2026-09-24 | **The shared examples print alike, and three of their seven differences were the SDK's.** Running all eleven in Node, Python and Dart and diffing the output found presentation first — a bare catalogue key against a full one, `False` against `false`, a sign padded as `+ 1.0196` — and then **a provider written in a binding refusing a whole batch for one instant outside its coverage**, each binding with its own error type, where a native provider marks one cell `OUT_OF_RANGE` and keeps the rest. The port's own rule said per cell; the ABI page let a binding "refuse early in its own adapter" and all three had. `VtableProvider::positions` now asks a foreign provider only for the instants it covers and scatters its answer back, and the three host-side checks are gone (a Rust test, proved red, and one in each binding). Python's package root named a hand-kept list of kinds and missed **48** of them or their `__all__` entries — `ProviderCode` among them, so a provider could not name its own cell's status — now held by a test over every generated enum. Only Node exposed the ishtakaal, so `ChartTiming` is one record in all three and the parity runners read it through the layer rather than the blob. **Why only Node was right led to a fourth:** Node's `export *` gives way to an explicit export, and `index.d.ts` hand-declared `VarsheshaChosen` with seven of the catalogue's ten steps — a `Record` over the answer's own type in the typecheck fixture now fails on a missing step, and `check-lints` gains `layer-does-not-shadow-a-kind`, reading the kinds from `idl/api.json` and allowing exactly `MoonEvent` (the panchanga record) in all three layers, proved red on the old declaration file. The comparison lives in `check-parity` beside the values, and the three near-identical example runners in the binding gates became one (`examples.rs`). Measured and not done: the Rust façade's examples (1 of 10 alike) and one day record across the layers, `## Next` 2d and 2e. Next: 2d. |
 | 2026-09-24 | **The annual dashas cross, and a caller could have been refused the value it was handed.** `varsha_json.dashas` names the systems through the same `Asked<T>` reader as the matters and the sahams, and `varsha_json.dashaRules` carries `AnnualDashaRules`; each year's chart answers them in three ragged sections — `year_dashas` under `annual_charts.dasha_count`, and under each its ring (`year_dasha_shares`) and periods (`year_dasha_periods`). **Node reads a system back as `'dasha_system.MUDDA'`, the catalogue's full key, and the wire took only `"MUDDA"`**, so a caller writing `DashaSystem.Mudda`, or handing back what a year answered, would have been refused: the sahams' lesson in another shape. The boundary now takes a system by its full key or its bare one, and every binding sends its own member as it stands. The periods share the natal `dasha_periods` layout, one Rust writer and one schema builder, and each binding decodes a period and walks `at(jd)` through one helper for both; the year's section carries one column more, because the Patyayini runs **one sign among seven planets** and a birth dasha is all signs' or none. A clock of no length is refused at `varsha_json.dashaRules.clock` by `YearClock::check`, the check the kernel itself runs. Python had never exported `Nakshatra`, which `Dasha.seed` already returned, so a strict caller could not name its own answer's type; it is exported. The parity runners print every dasha of 24 years twice — under the sources' readings, and under the even clock, the entry Moon's balance and the elapsed birth period three levels deep — and all four agree on 12 958 values. `dasha-kernels.md`'s three tables still filed the two nakshatra years under the scale decorator, with the correction only at the foot of the page; the tables say the year kernel now. Every step of the Tajika item is built and crosses. |
 | 2026-09-24 | **The annual dashas are built, and two sentences of the dasha design were wrong.** Charak's chapter V gives three dashas of a year with a worked year each: the Mudda, the Varsha Yogini and the Patyayini. The *Tajika Nilakanthi* gives the Patyayini's tie rule and antardasha order, and a second reading of the Mudda's balance. Both nakshatra systems turned out to be **one rule**: Charak's two formulas are each the natal row's own seat for the birth nakshatra, advanced one lord a year. So the build reuses `VIMSHOTTARI` and `YOGINI`, and a test holds both printed formulas for every nakshatra over 200 years. `dasha-kernels.md` had filed the Mudda under the scale decorator. It is not one: a year opens part-way through its first lord and closes on the rest, so that lord appears twice. The same page said the Patyayini's periods come from strengths; they come from longitudes within the sign. All three run on a fourth `Timeline`, `YearDasha`, which computes every boundary in shares and turns it into an instant last, through a clock. Charak's Tables V-2, V-5, V-8 and V-9 and the Nilakanthi's Jupiter (35 d 49 gh 52 pa) reproduce. Charak's own prose says Rahu's tail is 13.39 days where his table says 15.39: a slip, recorded and not fitted. **C122**: both books define a year's unit as the Sun's motion through one degree. That is the default, with an even spread and plain days as readings. The design page said the even spread stands about two days from the Sun's clock; the first end-to-end test measured 3.86, because the gap is the equation of centre counted *twice*. The pass over 2 159 recorded years (`muntha-measured.md` §19) puts the worst at **3.90 days**. **C123**: the balance comes from the birth Moon (Charak), from the Moon at the return (the appendix), or from none (older almanacs). `annual_dashas` answers several systems of one year from **one** reading of the Sun, because three single calls would read it three times. The natal chart's refusal of the three now points at the call that computes them rather than listing the natal systems, and the coverage page measures that the pointer is there. The Patyayini's tie rule decided no recorded year, and it is built because the verse states it. **Then the pass took 33 minutes on CI**, where it had taken 43 s. Every gate was green, and it was caught only by reading the step's duration. The Sun's clock had searched each of its 360 crossings separately. The knots are now fitted from one day-spaced sampling and then corrected against the Sun in batched Newton rounds, and they stand within 0.04 ms of the searched crossings (a unit test covers both zodiacs, geocentric and topocentric). Two things the fitting found: a topocentric Sun moves up to 8.8″ and back each day, which samples a day apart cannot see (a fit alone was 205 s out); and **the built-in's reported Sun speed is not the derivative of its longitude**, differing by 3–8 × 10⁻⁵ °/day. That is more than a missing nutation rate explains, so it is **open**, and nothing fits on speeds meanwhile. A profile, not a guess, found the rest of the cost in `teistro-astro`'s IAU series. That crate is now optimised in the dev profile, and every generated page reproduced byte for byte. The pass counts the years on every core, one context per worker. `check-muntha` takes 1:14 locally and the whole fast-check sweep 2:50, where it had taken about 25 minutes. |

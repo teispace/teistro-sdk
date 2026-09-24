@@ -60,7 +60,7 @@ function tableEphemeris({ wantedFrame = null, broken = false } = {}) {
     jdMax: 2469807.0,
     positions(request) {
       if (broken) {
-        throw new Error('ephemeris file de431.eph is not where the index says');
+        throw new Error('a data file is missing: de431.eph is not where the index says');
       }
       // **Check the frame first.** Answering at all asserts that the
       // answer is in the frame that was asked for; a provider that

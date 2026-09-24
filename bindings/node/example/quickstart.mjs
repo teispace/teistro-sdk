@@ -5,7 +5,6 @@ import {
   Body,
   Calendar,
   Context,
-  abiVersion,
   at,
   date,
   ianaZone,
@@ -13,7 +12,11 @@ import {
 } from '../lib/index.js';
 import { messages } from '../lib/messages.js';
 
-console.log(`Teistro ${sdkVersion()}, ABI ${abiVersion()}`);
+// The SDK's version is what a log line wants. The ABI -- the C
+// boundary's revision -- was checked when the library loaded: one this
+// package was not generated against is refused there, so `abiVersion()`
+// is for a bug report rather than for every run.
+console.log(`Teistro ${sdkVersion()}`);
 
 const ctx = new Context({
   profile: 'nepali-default',

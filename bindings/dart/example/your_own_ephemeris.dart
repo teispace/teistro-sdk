@@ -121,7 +121,9 @@ base class Broken extends TableEphemeris {
 
   @override
   PositionAnswer? positions(PositionQuery query) {
-    throw StateError('ephemeris file de431.eph is not where the index says');
+    throw StateError(
+      'a data file is missing: de431.eph is not where the index says',
+    );
   }
 }
 

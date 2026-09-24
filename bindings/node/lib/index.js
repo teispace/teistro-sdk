@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import {
   ABI_VERSION,
   AyanaById,
+  AyanamshaById,
   BodyById,
   CONTEXT_TEST_PROVIDER,
   CalendarById,
@@ -592,6 +593,22 @@ export class Chart {
   /** The ayanamsha applied at this instant, degrees; zero if tropical. */
   get ayanamshaOffsetDeg() {
     return this.#batch.decoded.cast.ayanamshaOffsetDeg[this.#index];
+  }
+
+  /**
+   * The catalogued ayanamsha this chart was read under, or `null` when
+   * none was applied -- a tropical chart -- or the settings defined their
+   * own, which `ayanamshaCustom` says. One for the batch, since the frame
+   * is the request's.
+   */
+  get ayanamsha() {
+    const { ayanamshaKind, ayanamsha } = this.#batch.decoded;
+    return ayanamshaKind === 1 ? (AyanamshaById.get(ayanamsha) ?? 'unknown') : null;
+  }
+
+  /** Whether the ayanamsha is one the settings define rather than a catalogued one. */
+  get ayanamshaCustom() {
+    return this.#batch.decoded.ayanamshaKind === 2;
   }
 
   /**

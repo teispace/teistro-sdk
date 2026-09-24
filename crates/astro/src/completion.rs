@@ -23,6 +23,7 @@ use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
     Body, Capabilities, Cell, Centre, Coordinates, Corrections, EphemerisProvider, Equinox, Frame,
     Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, TimeScale, Zodiac,
+    ask_positions,
 };
 
 use crate::ayanamsha::{self, Basis};
@@ -44,6 +45,19 @@ pub enum Implementation {
     Sdk,
     /// Nothing to do: the provider returned the requested frame.
     PassThrough,
+}
+
+impl Implementation {
+    /// The key it is spelled by wherever it is serialised — `NATIVE`,
+    /// `SDK`, `PASS_THROUGH` — and so the spelling every binding reads.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Implementation::Native => "NATIVE",
+            Implementation::Sdk => "SDK",
+            Implementation::PassThrough => "PASS_THROUGH",
+        }
+    }
 }
 
 /// One completion step and who did it.
@@ -358,6 +372,13 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         Ok(value)
     }
 
+    /// The provider's positions, asked as the port asks: validated, and
+    /// only for the instants it covers. Every call this completion makes
+    /// goes through here.
+    fn ask(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
+        ask_positions(self.provider, &self.capabilities, request)
+    }
+
     /// Positions in the requested frame, completed from the provider's
     /// native frame where they differ.
     ///
@@ -381,7 +402,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             });
         }
         if wanted == native {
-            let columns = self.provider.positions(request)?;
+            let columns = self.ask(request)?;
             return Ok(Completed {
                 columns,
                 steps: vec![Step {
@@ -399,7 +420,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         // shipped adapter would have answered here, so this changes what
         // `sdk-only` means for the first time.
         if self.policy != OverridePolicy::SdkOnly {
-            match self.provider.positions(request) {
+            match self.ask(request) {
                 Ok(columns) => {
                     return Ok(Completed {
                         columns,
@@ -419,7 +440,7 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             implementation: Implementation::Native,
         }];
         let native_request = request.in_frame(native);
-        let mut columns = self.provider.positions(&native_request)?;
+        let mut columns = self.ask(&native_request)?;
         // The equinox before the centre, and before everything else.
         //
         // Every other step is a rotation or a shift within one epoch, and

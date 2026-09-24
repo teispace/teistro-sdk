@@ -74,6 +74,7 @@ fn main() -> Result<(), Error> {
         Frame::CANONICAL,
     ))?;
     let sun = sky
+        .value
         .columns
         .at(0, 0)
         .ok_or_else(|| Error::internal("a grid of one has a first cell"))?;

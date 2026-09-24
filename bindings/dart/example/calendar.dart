@@ -94,8 +94,13 @@ void main() {
   print('  BS   ${described(newYear)}');
   print('  ->   ${described(gregorian)}');
   print('  ->   ${described(back)}');
+  // The library's, not a context's: a fixed day and a Julian day are two
+  // spellings of one integer, and no profile or locale changes the
+  // arithmetic.
+  final fixed = ctx.calendar.fixedOf(newYear);
   print(
-    '  fixed day ${ctx.calendar.fixedOf(newYear)}, weekday ${ctx.calendar.weekdayOf(newYear)}',
+    '  fixed day $fixed, weekday ${ctx.calendar.weekdayOf(newYear)},'
+    ' Julian day ${teistro.julianDayOfFixed(fixed).toStringAsFixed(1)}',
   );
 
   // ── Inside the table, and outside it ───────────────────────────────

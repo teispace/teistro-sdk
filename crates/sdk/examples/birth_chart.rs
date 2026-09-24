@@ -30,6 +30,7 @@
 
 use teistro::catalogue::{Calendar, ChartKind, Nakshatra, Rashi};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+use teistro::settings::AyanamshaChoice;
 use teistro::{
     CalendarDate, CivilDateTime, CivilTime, Context, Ephemeris, Error, GrahaPosition, ZoneSpec,
 };
@@ -76,9 +77,9 @@ fn row(sdk: &Context, placed: &GrahaPosition) -> Result<String, Error> {
     let (nakshatra, pada) = nakshatra_of(placed.longitude_deg)
         .ok_or_else(|| Error::internal("a normalised longitude has a nakshatra"))?;
     Ok(format!(
-        "{:<10} {:<2} {} {:<12} {:>8.4}°  {:<14} {pada}   {:>2}",
+        "{:<12} {:<2} {} {:<12} {:>8.4}°  {:<14} {pada}   {:>2}",
         graha.name(),
-        graha.glyph.as_deref().unwrap_or(" "),
+        graha.glyph.as_deref().unwrap_or(""),
         // There is no retrograde flag at the boundary or here: a graha
         // is retrograde when its longitude is decreasing, which is what
         // the speed says. `is_retrograde` is that comparison, named.
@@ -179,12 +180,12 @@ fn main() -> Result<(), Error> {
     let resolved = when(&sdk, &born)?;
     let seconds = resolved.zone.offset.seconds();
     println!(
-        "      JD {:.6} UTC   offset {}{:02}:{:02}   {:?} (tzdb {})",
+        "      JD {:.6} UTC   offset {}{:02}:{:02}   {} (tzdb {})",
         resolved.instant.get(),
         if seconds < 0 { '-' } else { '+' },
         seconds.abs() / 3600,
         (seconds.abs() % 3600) / 60,
-        resolved.zone.source,
+        resolved.zone.source.key(),
         resolved.zone.tzdb_version,
     );
     // This record sits on the day Nepal moved from +05:30 to +05:45,
@@ -207,8 +208,8 @@ fn main() -> Result<(), Error> {
     let chart = &founded.value;
 
     println!();
-    println!("graha         glyph  sign             deg  nakshatra      pada bhava");
-    println!("{}", "-".repeat(70));
+    println!("graha             sign               deg  nakshatra      pada bhava");
+    println!("{}", "─".repeat(67));
     for placed in &chart.grahas {
         println!("{}", row(&sdk, placed)?);
     }
@@ -222,27 +223,28 @@ fn main() -> Result<(), Error> {
         chart.lagna_deg,
         sdk.intl().entity(lagna.full_key())?.name(),
         into,
-        chart.day.day.vara.key(),
+        chart.day.day.vara.full_key(),
     );
     // `Option`, and it means what it says: a tropical chart has no
     // ayanamsha, not an ayanamsha of nought.
-    println!(
-        "ayanamsha      {:.6}° applied ({})",
-        chart.zodiac.offset_deg,
-        chart.zodiac.ayanamsha.as_ref().map_or_else(
-            || String::from("tropical, none applied"),
-            |choice| format!("{choice:?}")
+    match &chart.zodiac.ayanamsha {
+        None => println!("ayanamsha      tropical, none applied"),
+        Some(choice) => println!(
+            "ayanamsha      {:.6}° applied ({})",
+            chart.zodiac.offset_deg,
+            match choice {
+                AyanamshaChoice::Catalogued { id } => id.full_key(),
+                AyanamshaChoice::Custom { .. } => "custom",
+            },
         ),
-    );
+    }
     println!("steps applied  {}", chart.steps.join(", "));
-    // The provenance envelope is the chart's own, not the context's: it
-    // stamps the settings, the provider, the time layer and a content
-    // hash of the value. This is what a stored chart keeps in order to
-    // say what computed it.
+    // The provenance envelope stamps the settings, the provider, the
+    // time layer and a content hash of this chart; it is what a stored
+    // chart keeps in order to say what computed it.
     println!(
-        "settings hash  {}…  content {}…",
-        &founded.provenance.settings_hash.to_string()[..16],
-        &founded.provenance.content_hash.to_string()[..16],
+        "settings hash  {}…",
+        &founded.provenance.settings_hash.to_string()[..16]
     );
 
     // ── A birth with no recorded time ──────────────────────────────────

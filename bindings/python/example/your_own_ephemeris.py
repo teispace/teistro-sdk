@@ -130,7 +130,7 @@ class Broken(TableEphemeris):
     name = "broken"
 
     def positions(self, query: PositionQuery) -> Optional[PositionAnswer]:
-        raise FileNotFoundError("ephemeris file de431.eph is not where the index says")
+        raise FileNotFoundError("a data file is missing: de431.eph is not where the index says")
 
 
 def main() -> None:

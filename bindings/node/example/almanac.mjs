@@ -119,7 +119,7 @@ for (const day of week) {
 // adding up every earlier day's count. The layer does that sum once when
 // the batch is decoded, so `day.tithi` is a slice and not a search.
 const counted = [...week].reduce((total, day) => total + day.karana.length, 0);
-console.log(`${counted} karanas across ${week.length} days, from one blob`);
+console.log(`${counted} karanas across ${week.length} days, from one crossing`);
 console.log(`settings hash  ${ctx.settingsHash.slice(0, 16)}…`);
 
 // A day on its own is the range of one unwrapped: same crossing, and the

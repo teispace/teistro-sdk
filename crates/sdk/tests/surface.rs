@@ -388,7 +388,8 @@ fn positions_answer_in_the_frame_asked_for() {
     let jds = [2_451_545.0];
     let bodies = [Body::Sun, Body::Moon];
     let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL);
-    let sky = sdk.positions(&request).expect("the built-in ephemeris");
+    let stamped = sdk.positions(&request).expect("the built-in ephemeris");
+    let sky = &stamped.value;
 
     // The answer is the astronomy crate's own type: a Rust consumer
     // reads a `Longitude` off it where every other binding decodes a
@@ -407,6 +408,16 @@ fn positions_answer_in_the_frame_asked_for() {
         sky.step_keys()
             .iter()
             .any(|step| step.starts_with("positions:"))
+    );
+    // Stamped as a chart is: the provider that answered, in the frame it
+    // answered, under this context's settings -- the same stamp the C
+    // boundary puts on the blob, since both take it from one function.
+    assert_eq!(stamped.provenance.provider.name, "teistro-builtin");
+    assert_eq!(stamped.provenance.settings_hash, sdk.settings_hash());
+    assert_eq!(
+        stamped.provenance,
+        sdk.positions_provenance(&request, sky),
+        "one stamp, whoever asks for it"
     );
 }
 

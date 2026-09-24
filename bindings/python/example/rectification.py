@@ -127,6 +127,11 @@ def main() -> None:
             f"ishtakaal {single.timing.ghati}:{single.timing.pala}:{single.timing.vipala}  "
             f"hora lord {single.timing.hora_lord.full_key}"
         )
+        # The same crossing, so the same answer to the bit: `==` on two
+        # floats is a comparison of their bits for every value but NaN and
+        # zero's sign.
+        agrees = single.lagna_deg == charts[0].lagna_deg
+        print(f"               and it agrees with the batch of one bit for bit: {str(agrees).lower()}")
 
 
 if __name__ == "__main__":

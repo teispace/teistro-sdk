@@ -12,7 +12,7 @@
 // application that shows a date without showing that is hiding the one
 // thing a user might need to know.
 
-import { Calendar, Context, date } from '../lib/index.js';
+import { Calendar, Context, date, julianDayOfFixed } from '../lib/index.js';
 import { messages } from '../lib/messages.js';
 
 /** The days of the week, from the boundary's ISO numbering. */
@@ -91,7 +91,14 @@ const back = ctx.calendar.convert(gregorian, Calendar.BikramSambat);
 console.log(`  BS   ${described(newYear)}`);
 console.log(`  ->   ${described(gregorian)}`);
 console.log(`  ->   ${described(back)}`);
-console.log(`  fixed day ${ctx.calendar.fixedOf(newYear)}, weekday ${ctx.calendar.weekdayOf(newYear)}`);
+// A free function, not a context's operation: a fixed day and a Julian
+// day are two spellings of one integer, and no profile or locale changes
+// the arithmetic.
+const fixed = ctx.calendar.fixedOf(newYear);
+console.log(
+  `  fixed day ${fixed}, weekday ${ctx.calendar.weekdayOf(newYear)},` +
+    ` Julian day ${julianDayOfFixed(fixed).toFixed(1)}`,
+);
 
 // ── Inside the table, and outside it ───────────────────────────────────
 // A date a caller *states* is always `defined`: it is what was asked for.

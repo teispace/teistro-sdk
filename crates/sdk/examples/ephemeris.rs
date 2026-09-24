@@ -16,13 +16,14 @@
 //!    so there is nothing between the astronomy and the caller
 //!    (`03-design/rust-consumer-surface.md` §3).
 //! 3. **What the answer says about itself.** `steps` names every
-//!    correction applied, and the provider's own `capabilities` say what
-//!    it is and what it covers.
+//!    correction applied, and the provenance envelope carries the
+//!    settings hash and the provider that answered — the two things a
+//!    cache key and an audit trail are made of.
 //!
-//! Where the other three bindings print a `buildInfo`, Rust has none and
-//! should not: Cargo resolved the versions and there is no ABI between
-//! this program and the SDK (§6). What is worth logging at start-up is
-//! the **provider**, which is what the last section prints.
+//! There is no `buildInfo` to log, as the other three bindings have:
+//! Cargo resolved the versions and there is no ABI between this program
+//! and the SDK (§6). The provider that answered is stamped on the answer,
+//! which is what the last line prints.
 //!
 //! `Ephemeris::Builtin` computes with the analytic ephemeris the SDK
 //! carries, so this file runs anywhere with nothing installed. It is the
@@ -37,7 +38,10 @@
 #![expect(clippy::print_stdout, reason = "an example is a program that prints")]
 
 use teistro::catalogue::{Ayanamsha, Graha, Rashi};
-use teistro::{Body, Context, Ephemeris, Error, Frame, PositionRequest, TimeScale, Zodiac};
+use teistro::{
+    Body, Context, Envelope, Ephemeris, Error, Frame, PositionRequest, TimeScale, Zodiac,
+    canonical_json,
+};
 
 /// A year from the start of 2025, one sample a day at noon UTC.
 const START_JD: f64 = 2_460_676.5;
@@ -112,17 +116,16 @@ fn stations(speeds: &[f64], stride: usize, column: usize) -> Vec<(usize, &'stati
 /// once: where it went, and where it turned.
 fn the_scans(sdk: &Context, sky: &teistro::Completed) -> Result<(), Error> {
     let stride = sky.columns.body_count;
-    for (column, &(body, graha)) in BODIES.iter().enumerate() {
+    for (column, &(_, graha)) in BODIES.iter().enumerate() {
         let name = sdk.intl().entity(graha.full_key())?.name().to_owned();
         let crossings = ingresses(&sky.columns.lon, stride, column);
         let turns = stations(&sky.columns.lon_speed, stride, column);
         let speed = sky.columns.lon_speed.get(column).copied().unwrap_or(0.0);
         println!(
-            "  {:<10} {name:<8} {:<10} at {}{:>7.4}°/day, {} sign change(s), {} station(s)",
-            format!("{body:?}"),
+            "  {:<10} {name:<8} {:<10} at {:>8}°/day, {} sign change(s), {} station(s)",
+            graha.key(),
             if speed < 0.0 { "retrograde" } else { "direct" },
-            if speed < 0.0 { "" } else { "+" },
-            speed,
+            format!("{speed:+.4}"),
             crossings.len(),
             turns.len(),
         );
@@ -143,63 +146,34 @@ fn the_scans(sdk: &Context, sky: &teistro::Completed) -> Result<(), Error> {
     Ok(())
 }
 
-/// What the answer says about itself: the steps applied, and the hash
-/// that makes two runs comparable.
-fn what_it_says(sdk: &Context, sky: &teistro::Completed) {
-    println!("steps    {}", sky.step_keys().join(", "));
-    println!("profile  {}", sdk.profile());
-    println!("hash     {}", sdk.settings_hash());
+/// What the answer says about itself: the steps applied, the hash that
+/// makes two runs comparable, and the provider that answered.
+fn what_it_says(sky: &Envelope<teistro::Completed>) {
+    let steps: Vec<String> = sky
+        .value
+        .steps
+        .iter()
+        .map(|step| format!("{}:{}", step.name, step.implementation.key()))
+        .collect();
+    println!("steps    {}", steps.join(", "));
+    let provenance = &sky.provenance;
+    println!("profile  {}", provenance.profile);
+    println!("hash     {}", provenance.settings_hash);
     println!(
-        "         two contexts with the same settings hash compute the same numbers,\n\
-         \x20        so it is the cache key"
+        "         two contexts with the same settings hash compute the same numbers, \
+         so it is the cache key"
     );
+    // The whole envelope is canonical JSON: byte-identical across every
+    // binding, which is what makes it safe to hash and store.
     println!(
-        "settings {} bytes of canonical JSON -- byte-identical in every binding,\n\
-         \x20        which is what makes it safe to hash and store",
-        sdk.settings_json().len(),
+        "envelope {} bytes of canonical JSON",
+        canonical_json(provenance).len()
     );
-}
-
-/// Which ephemeris am I talking to?
-///
-/// A service logs this once at start-up. There is no `buildInfo` here:
-/// Cargo fixed the versions and no ABI is crossed, so what there is to
-/// know is what the provider declares about itself.
-fn which_ephemeris(sdk: &Context) -> Result<(), Error> {
-    let provider = sdk
-        .ephemeris()
-        .ok_or_else(|| Error::internal("this context was built with an ephemeris"))?;
-    let what = provider.capabilities();
-    let or_dash = |value: &str| {
-        if value.is_empty() {
-            String::from("-")
-        } else {
-            value.to_owned()
-        }
-    };
+    let provider = &provenance.provider;
     println!(
         "provider {} {} (data {})",
-        what.identity.name,
-        or_dash(&what.identity.version),
-        or_dash(&what.identity.data_version),
+        provider.name, provider.version, provider.data_version
     );
-    println!(
-        "covers   JD {:.1} to {:.1}, {} bodies, native frame {:?}/{:?}",
-        what.jd_range.0,
-        what.jd_range.1,
-        what.bodies.len(),
-        what.native_frame.centre,
-        what.native_frame.zodiac,
-    );
-    println!(
-        "natively {}",
-        if what.overrides.names().is_empty() {
-            String::from("nothing -- every step above is the SDK's own")
-        } else {
-            what.overrides.names().join(", ")
-        },
-    );
-    Ok(())
 }
 
 fn main() -> Result<(), Error> {
@@ -222,29 +196,31 @@ fn main() -> Result<(), Error> {
         .collect();
     let bodies: Vec<Body> = BODIES.iter().map(|&(body, _)| body).collect();
     let frame = Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri));
-    let sky = sdk.positions(&PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame))?;
+    let stamped = sdk.positions(&PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame))?;
+    let sky = &stamped.value;
     println!(
         "grid     {} instants x {} bodies = {} cells in one call",
         sky.columns.jd_count,
         sky.columns.body_count,
         sky.columns.len(),
     );
+
+    // ── The columns ────────────────────────────────────────────────────
+    // Point 2 above, declared rather than printed: the type is the
+    // astronomy crate's own, with no blob between it and this program.
+    let lon: &Vec<f64> = &sky.columns.lon;
     println!(
-        "columns  lon is a Vec<f64> of {} values, {} bytes -- the astronomy crate's own,\n\
-         \x20        with no blob between it and this program",
-        sky.columns.lon.len(),
-        sky.columns.lon.len() * size_of::<f64>(),
+        "columns  lon holds {} doubles in {} bytes",
+        lon.len(),
+        size_of_val(lon.as_slice()),
     );
 
     // ── What the columns are for ───────────────────────────────────────
     println!();
-    the_scans(&sdk, &sky)?;
+    the_scans(&sdk, sky)?;
 
     // ── What the answer says about itself ──────────────────────────────
     println!();
-    what_it_says(&sdk, &sky);
-
-    // ── Which ephemeris am I talking to? ───────────────────────────────
-    println!();
-    which_ephemeris(&sdk)
+    what_it_says(&stamped);
+    Ok(())
 }

@@ -50,9 +50,11 @@ use teistro_tajika::{
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
+use crate::area::Plans;
 use crate::area::system_of;
 use crate::context::Context;
 use crate::ephemeris::no_ephemeris;
+use crate::plan_request::PlanRequest;
 use crate::reading::{ChartRequest, Sections};
 use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
@@ -321,6 +323,64 @@ impl<'a> ChartArea<'a> {
             answered.push((document, reading));
         }
         Ok(Envelope::sealing(answered, provenance))
+    }
+
+    /// Charts founded, read and **said**, in one call: each chart's
+    /// document, what it answers by rule when `rules` names some, and the
+    /// plans `asked` names (`03-design/plans-at-the-boundary.md`).
+    ///
+    /// The sections the composers read are computed whether or not the
+    /// request named them ([`PlanRequest::sections`]), because a consumer
+    /// asks for the plan and not for the knob underneath it. This is the
+    /// call every binding's `interpret` option makes, so a plan is composed
+    /// in one place for every language.
+    ///
+    /// # Errors
+    ///
+    /// `readings` asked for without rules ([`PlanRequest::check`]), and as
+    /// [`ChartArea::readings`] and [`ChartArea::readings_with_rules`].
+    pub fn interpreted<'r>(
+        self,
+        instants: &[JulianDay<Utc>],
+        request: &ChartRequest,
+        rules: Option<&'r RuleSet>,
+        asked: PlanRequest,
+    ) -> Result<Envelope<Vec<Interpreted<'r>>>, Error> {
+        asked.check(rules.is_some())?;
+        let wanted = asked.sections(request.clone());
+        let (read, provenance): (Vec<(Document, Option<RulesReading<'r>>)>, _) = match rules {
+            None => {
+                let read = self.readings(instants, &wanted)?;
+                (
+                    read.value
+                        .into_iter()
+                        .map(|document| (document, None))
+                        .collect(),
+                    read.provenance,
+                )
+            }
+            Some(set) => {
+                let read = self.readings_with_rules(instants, &wanted, set)?;
+                (
+                    read.value
+                        .into_iter()
+                        .map(|(document, reading)| (document, Some(reading)))
+                        .collect(),
+                    read.provenance,
+                )
+            }
+        };
+        let interpret = self.context.interpret();
+        let mut charts = Vec::with_capacity(read.len());
+        for (document, reading) in read {
+            let plans = interpret.plans(&document, reading.as_ref(), asked)?;
+            charts.push(Interpreted {
+                document,
+                reading,
+                plans,
+            });
+        }
+        Ok(Envelope::new(charts, provenance))
     }
 
     /// One reading: the batch of one, unwrapped.
@@ -2031,4 +2091,18 @@ impl<'a> ChartArea<'a> {
             &|at| founder.ascendant_at(at, place, zodiac),
         )
     }
+}
+
+/// One chart as [`ChartArea::interpreted`] answers it: the reading, what
+/// it answers by rule when rules were asked for, and what it says.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Interpreted<'r> {
+    /// The chart's reading, with the sections asked for and the ones the
+    /// composers read.
+    pub document: Document,
+    /// What the chart answers by rule; `None` when no rules were asked
+    /// for.
+    pub reading: Option<RulesReading<'r>>,
+    /// The plans asked for, each `None` where it was not.
+    pub plans: Plans,
 }

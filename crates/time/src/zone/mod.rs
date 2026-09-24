@@ -122,6 +122,18 @@ pub enum ZoneSource {
     Manual,
 }
 
+impl ZoneSource {
+    /// The key it is serialised as: `IANA`, `LOCAL_MEAN`, `MANUAL`.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            ZoneSource::Iana => "IANA",
+            ZoneSource::LocalMean => "LOCAL_MEAN",
+            ZoneSource::Manual => "MANUAL",
+        }
+    }
+}
+
 /// Which rules produced the offset.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -755,4 +767,23 @@ pub fn date_of(
 ) -> Result<CalendarDate, Error> {
     let (day, _) = FixedDay::from_local_jd(clock.local_jd(instant));
     calendar.date_of(day)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use super::ZoneSource;
+
+    /// A source's key is its serialised spelling, so a program matching on
+    /// either reads the same word.
+    #[test]
+    fn a_source_is_keyed_as_it_serialises() {
+        for source in [ZoneSource::Iana, ZoneSource::LocalMean, ZoneSource::Manual] {
+            assert_eq!(
+                serde_json::to_string(&source).unwrap(),
+                format!("\"{}\"", source.key())
+            );
+        }
+    }
 }
