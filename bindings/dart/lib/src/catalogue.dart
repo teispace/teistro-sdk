@@ -5557,6 +5557,191 @@ enum Saham {
   }
 }
 
+/// How a planet stands to another by Tajika's friendship: the relation a
+/// saham's company is read by (`03-design/tajika-saham-strength.md`).
+///
+/// Mirrors `teistro::TajikaRelation` through an **exhaustive** match.
+enum TajikaRelation {
+  /// The planet is the other: its own.
+  own(0, 'own'),
+  /// A friend.
+  friend(1, 'friend'),
+  /// Neither.
+  neutral(2, 'neutral'),
+  /// An enemy.
+  enemy(3, 'enemy');
+
+  const TajikaRelation(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static TajikaRelation byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a TajikaRelation'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static TajikaRelation? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What the source calls a planet by its Harsha bala
+/// (`03-design/tajika-harsha.md`).
+///
+/// Mirrors `teistro::HarshaGrade` through an **exhaustive** match.
+enum HarshaGrade {
+  /// No part: without strength.
+  nirbala(0, 'nirbala'),
+  /// One part, five units: weak.
+  alpabali(1, 'alpabali'),
+  /// Two parts, ten units: of medium strength.
+  madhyaBali(2, 'madhya-bali'),
+  /// Three parts, fifteen units: fully strong.
+  poornaBali(3, 'poorna-bali'),
+  /// All four, twenty units: extraordinarily strong, and rare.
+  extraordinary(4, 'extraordinary');
+
+  const HarshaGrade(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static HarshaGrade byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a HarshaGrade'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static HarshaGrade? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// A clause of the source's list of what makes a saham **strong**, in its
+/// order (`03-design/tajika-saham-strength.md`). Its ids are the bit
+/// positions of a saham row's `strong` column.
+///
+/// Mirrors `teistro::StrongClause` through an **exhaustive** match.
+enum SahamStrong {
+  /// Its lord is exalted.
+  lordExalted(0, 'lord-exalted'),
+  /// Its lord is in its own sign.
+  lordOwnSign(1, 'lord-own-sign'),
+  /// Its lord is in its own Hudda.
+  lordOwnHudda(2, 'lord-own-hudda'),
+  /// Its lord is in its own Drekkana.
+  lordOwnDrekkana(3, 'lord-own-drekkana'),
+  /// Its lord is in its own Navamsha.
+  lordOwnNavamsha(4, 'lord-own-navamsha'),
+  /// Its lord is in a friend's sign.
+  lordInFriendsSign(5, 'lord-in-friends-sign'),
+  /// It is with a friend of its lord.
+  withFriend(6, 'with-friend'),
+  /// It is with a natural benefic.
+  withBenefic(7, 'with-benefic'),
+  /// It is with the year lord.
+  withYearLord(8, 'with-year-lord'),
+  /// Its lord conjoins it.
+  lordConjoins(9, 'lord-conjoins'),
+  /// Its lord aspects it.
+  lordAspectsSaham(10, 'lord-aspects-saham'),
+  /// Its lord aspects the lagna.
+  lordAspectsLagna(11, 'lord-aspects-lagna');
+
+  const SahamStrong(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static SahamStrong byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a SahamStrong'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static SahamStrong? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// A clause of the source's list of what makes a saham **weak**, in its
+/// order. Its ids are the bit positions of a saham row's `weak` column.
+///
+/// Mirrors `teistro::WeakClause` through an **exhaustive** match.
+enum SahamWeak {
+  /// Its lord is under the Panchavargiya floor.
+  lordWeakVishwa(0, 'lord-weak-vishwa'),
+  /// Its lord has no Harsha bala.
+  lordLacksHarsha(1, 'lord-lacks-harsha'),
+  /// Its lord neither aspects nor conjoins it.
+  lordApart(2, 'lord-apart'),
+  /// It is with an enemy of its lord.
+  withEnemy(3, 'with-enemy'),
+  /// It is with a natural malefic.
+  withMalefic(4, 'with-malefic');
+
+  const SahamWeak(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static SahamWeak byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a SahamWeak'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static SahamWeak? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// One of the five clauses of the source's **affliction**, which Rudda
 /// and Durapha read. Its ids are the bit positions of
 /// `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.

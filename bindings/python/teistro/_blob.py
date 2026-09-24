@@ -341,6 +341,9 @@ class ChartsCast:
     Ragged for a reason of its own: the request settles how many returns are wanted, and an ephemeris that ends first settles how many there are (`03-design/annual-chart.md`). Fewer than asked for is the answer, so a reader takes this count and never the number it requested.
     """
 
+    natal_saham_count: memoryview[int]
+    """How many rows of the `natal_sahams` section belong to this chart: the sahams `varsha_json.sahams` asked for, 0 to 41."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -1426,7 +1429,7 @@ class ChartsYearSahams:
     """The `year_sahams` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.
+    Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`), and judged for strength under the year's own lord (`03-design/tajika-saham-strength.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for and a place given.
     """
 
     saham: memoryview[int]
@@ -1442,10 +1445,154 @@ class ChartsYearSahams:
     """That sign's lord, a `graha` id: the saham's lord, by whose strength the source judges it."""
 
     house: memoryview[int]
-    """The house it fell in, 1 to 12, counted from the annual lagna by whole signs."""
+    """The house it fell in, 1 to 12, counted from the chart's lagna by whole signs. The 6th, 8th and 12th are where the source calls a saham handicapped."""
 
     added_sign: memoryview[int]
     """1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise."""
+
+    strong: memoryview[int]
+    """The clauses of the source's strong list that hold, as a bit set: bit `n` is the `TsSahamStrong` with id `n`. Reported and never weighed: the source judges in words and gives no score (`03-design/tajika-saham-strength.md`)."""
+
+    weak: memoryview[int]
+    """The clauses of the source's weak list that hold, as a bit set over `TsSahamWeak`. A saham may meet clauses on both lists, and three in five do."""
+
+    lord_vishwa: memoryview[int]
+    """The saham lord's Panchavargiya Vishwa bala, exact, in sub-sub units of which a unit holds 3600."""
+
+    lord_harsha: memoryview[int]
+    """The saham lord's Harsha bala grade."""
+
+    node_axis: memoryview[int]
+    """1 when the saham's sign is Rahu's or Ketu's, which the source's forty-sixth year counts against a saham; 0 when not; 2 when the chart placed no nodes to read."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsYearSahamSeven:
+    """The `year_saham_seven` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Seven rows under each row of `year_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from.
+    """
+
+    graha: memoryview[int]
+    """Which of the seven, a `graha` id."""
+
+    drishti: memoryview[int]
+    """The Tajika aspect its sign casts on the saham's; one in the saham's own sign casts the inimical aspect and is also its company."""
+
+    relation: memoryview[int]
+    """How it stands to the saham's lord, under the request's friendship."""
+
+    company: memoryview[int]
+    """1 when it stands in the saham's sign: the saham's company."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsYearHarsha:
+    """The `year_harsha` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Seven rows under each row of `annual_charts`, one for each of the seven in the catalogue's order — **fixed, not ragged**: each planet's Harsha bala, four places it is "happy" in, five units each (`03-design/tajika-harsha.md`), read under `varsha_json.harshaRules`. Empty when no place was asked for.
+    """
+
+    graha: memoryview[int]
+    """Which of the seven, a `graha` id."""
+
+    house: memoryview[int]
+    """The house it stands in, whole signs from the annual lagna."""
+
+    sthana: memoryview[int]
+    """1 in its house of joy: the first part."""
+
+    uchcha_swakshetra: memoryview[int]
+    """1 in its exaltation or own sign: the second part."""
+
+    stri_purusha: memoryview[int]
+    """1 in a house of its own gender, Tajika's genders: the third part."""
+
+    dina_ratri: memoryview[int]
+    """1 in a year opening at its own part of the day: the fourth part."""
+
+    total: memoryview[int]
+    """The parts held, five units each: 0 to 20."""
+
+    grade: memoryview[int]
+    """What the source calls that total."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsNatalSahams:
+    """The `natal_sahams` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every birth chart's own sahams, concatenated in the `cast` section's order and **ragged** by its `natal_saham_count`, each chart's in the order `varsha_json.sahams` named them, with their strength — which has no year lord, so `with_year_lord` never holds here. The source reads a year's sahams beside the birth's: "only those Sahams which are strong in the birth chart can produce results during a given year". Answered with or without a place; empty unless sahams were asked for.
+    """
+
+    saham: memoryview[int]
+    """Which of the forty-one."""
+
+    longitude_deg: memoryview[float]
+    """Where it fell, sidereal degrees in [0, 360)."""
+
+    sign: memoryview[int]
+    """The sign it fell in, a `rashi` id."""
+
+    lord: memoryview[int]
+    """That sign's lord, a `graha` id: the saham's lord, by whose strength the source judges it."""
+
+    house: memoryview[int]
+    """The house it fell in, 1 to 12, counted from the chart's lagna by whole signs. The 6th, 8th and 12th are where the source calls a saham handicapped."""
+
+    added_sign: memoryview[int]
+    """1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise."""
+
+    strong: memoryview[int]
+    """The clauses of the source's strong list that hold, as a bit set: bit `n` is the `TsSahamStrong` with id `n`. Reported and never weighed: the source judges in words and gives no score (`03-design/tajika-saham-strength.md`)."""
+
+    weak: memoryview[int]
+    """The clauses of the source's weak list that hold, as a bit set over `TsSahamWeak`. A saham may meet clauses on both lists, and three in five do."""
+
+    lord_vishwa: memoryview[int]
+    """The saham lord's Panchavargiya Vishwa bala, exact, in sub-sub units of which a unit holds 3600."""
+
+    lord_harsha: memoryview[int]
+    """The saham lord's Harsha bala grade."""
+
+    node_axis: memoryview[int]
+    """1 when the saham's sign is Rahu's or Ketu's, which the source's forty-sixth year counts against a saham; 0 when not; 2 when the chart placed no nodes to read."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsNatalSahamSeven:
+    """The `natal_saham_seven` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Seven rows under each row of `natal_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from.
+    """
+
+    graha: memoryview[int]
+    """Which of the seven, a `graha` id."""
+
+    drishti: memoryview[int]
+    """The Tajika aspect its sign casts on the saham's; one in the saham's own sign casts the inimical aspect and is also its company."""
+
+    relation: memoryview[int]
+    """How it stands to the saham's lord, under the request's friendship."""
+
+    company: memoryview[int]
+    """1 when it stands in the saham's sign: the saham's company."""
 
     length: int
     """The number of rows every column holds."""
@@ -1693,7 +1840,19 @@ class Charts:
     """Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand."""
 
     year_sahams: ChartsYearSahams
-    """Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for."""
+    """Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`), and judged for strength under the year's own lord (`03-design/tajika-saham-strength.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for and a place given."""
+
+    year_saham_seven: ChartsYearSahamSeven
+    """Seven rows under each row of `year_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from."""
+
+    year_harsha: ChartsYearHarsha
+    """Seven rows under each row of `annual_charts`, one for each of the seven in the catalogue's order — **fixed, not ragged**: each planet's Harsha bala, four places it is "happy" in, five units each (`03-design/tajika-harsha.md`), read under `varsha_json.harshaRules`. Empty when no place was asked for."""
+
+    natal_sahams: ChartsNatalSahams
+    """Every birth chart's own sahams, concatenated in the `cast` section's order and **ragged** by its `natal_saham_count`, each chart's in the order `varsha_json.sahams` named them, with their strength — which has no year lord, so `with_year_lord` never holds here. The source reads a year's sahams beside the birth's: "only those Sahams which are strong in the birth chart can produce results during a given year". Answered with or without a place; empty unless sahams were asked for."""
+
+    natal_saham_seven: ChartsNatalSahamSeven
+    """Seven rows under each row of `natal_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from."""
 
 
 def decode_charts(raw: bytes) -> Charts:
@@ -1746,6 +1905,10 @@ def decode_charts(raw: bytes) -> Charts:
     at_matter_yogas = blob.section(40, "matter_yogas")
     at_matter_legs = blob.section(41, "matter_legs")
     at_year_sahams = blob.section(42, "year_sahams")
+    at_year_saham_seven = blob.section(43, "year_saham_seven")
+    at_year_harsha = blob.section(44, "year_harsha")
+    at_natal_sahams = blob.section(45, "natal_sahams")
+    at_natal_saham_seven = blob.section(46, "natal_saham_seven")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -1767,6 +1930,9 @@ def decode_charts(raw: bytes) -> Charts:
             point_count=blob.column(at_cast, 6, 4, at_cast.count).cast("I"),
             aspect_count=blob.column(at_cast, 7, 4, at_cast.count).cast("I"),
             pravesha_count=blob.column(at_cast, 8, 4, at_cast.count).cast("I"),
+            natal_saham_count=blob.column(
+                at_cast, 9, 4, at_cast.count
+            ).cast("I"),
             length=at_cast.count,
         ),
         grahas=ChartsGrahas(
@@ -2522,7 +2688,115 @@ def decode_charts(raw: bytes) -> Charts:
             added_sign=blob.column(
                 at_year_sahams, 5, 1, at_year_sahams.count
             ).cast("B"),
+            strong=blob.column(
+                at_year_sahams, 6, 2, at_year_sahams.count
+            ).cast("H"),
+            weak=blob.column(
+                at_year_sahams, 7, 1, at_year_sahams.count
+            ).cast("B"),
+            lord_vishwa=blob.column(
+                at_year_sahams, 8, 4, at_year_sahams.count
+            ).cast("i"),
+            lord_harsha=blob.column(
+                at_year_sahams, 9, 1, at_year_sahams.count
+            ).cast("B"),
+            node_axis=blob.column(
+                at_year_sahams, 10, 1, at_year_sahams.count
+            ).cast("B"),
             length=at_year_sahams.count,
+        ),
+        year_saham_seven=ChartsYearSahamSeven(
+            graha=blob.column(
+                at_year_saham_seven, 0, 2, at_year_saham_seven.count
+            ).cast("H"),
+            drishti=blob.column(
+                at_year_saham_seven, 1, 1, at_year_saham_seven.count
+            ).cast("B"),
+            relation=blob.column(
+                at_year_saham_seven, 2, 1, at_year_saham_seven.count
+            ).cast("B"),
+            company=blob.column(
+                at_year_saham_seven, 3, 1, at_year_saham_seven.count
+            ).cast("B"),
+            length=at_year_saham_seven.count,
+        ),
+        year_harsha=ChartsYearHarsha(
+            graha=blob.column(
+                at_year_harsha, 0, 2, at_year_harsha.count
+            ).cast("H"),
+            house=blob.column(
+                at_year_harsha, 1, 1, at_year_harsha.count
+            ).cast("B"),
+            sthana=blob.column(
+                at_year_harsha, 2, 1, at_year_harsha.count
+            ).cast("B"),
+            uchcha_swakshetra=blob.column(
+                at_year_harsha, 3, 1, at_year_harsha.count
+            ).cast("B"),
+            stri_purusha=blob.column(
+                at_year_harsha, 4, 1, at_year_harsha.count
+            ).cast("B"),
+            dina_ratri=blob.column(
+                at_year_harsha, 5, 1, at_year_harsha.count
+            ).cast("B"),
+            total=blob.column(
+                at_year_harsha, 6, 1, at_year_harsha.count
+            ).cast("B"),
+            grade=blob.column(
+                at_year_harsha, 7, 1, at_year_harsha.count
+            ).cast("B"),
+            length=at_year_harsha.count,
+        ),
+        natal_sahams=ChartsNatalSahams(
+            saham=blob.column(
+                at_natal_sahams, 0, 1, at_natal_sahams.count
+            ).cast("B"),
+            longitude_deg=blob.column(
+                at_natal_sahams, 1, 8, at_natal_sahams.count
+            ).cast("d"),
+            sign=blob.column(
+                at_natal_sahams, 2, 2, at_natal_sahams.count
+            ).cast("H"),
+            lord=blob.column(
+                at_natal_sahams, 3, 2, at_natal_sahams.count
+            ).cast("H"),
+            house=blob.column(
+                at_natal_sahams, 4, 1, at_natal_sahams.count
+            ).cast("B"),
+            added_sign=blob.column(
+                at_natal_sahams, 5, 1, at_natal_sahams.count
+            ).cast("B"),
+            strong=blob.column(
+                at_natal_sahams, 6, 2, at_natal_sahams.count
+            ).cast("H"),
+            weak=blob.column(
+                at_natal_sahams, 7, 1, at_natal_sahams.count
+            ).cast("B"),
+            lord_vishwa=blob.column(
+                at_natal_sahams, 8, 4, at_natal_sahams.count
+            ).cast("i"),
+            lord_harsha=blob.column(
+                at_natal_sahams, 9, 1, at_natal_sahams.count
+            ).cast("B"),
+            node_axis=blob.column(
+                at_natal_sahams, 10, 1, at_natal_sahams.count
+            ).cast("B"),
+            length=at_natal_sahams.count,
+        ),
+        natal_saham_seven=ChartsNatalSahamSeven(
+            graha=blob.column(
+                at_natal_saham_seven, 0, 2, at_natal_saham_seven.count
+            ).cast("H"),
+            drishti=blob.column(
+                at_natal_saham_seven, 1, 1, at_natal_saham_seven.count
+            ).cast("B"),
+            relation=blob.column(
+                at_natal_saham_seven, 2, 1, at_natal_saham_seven.count
+            ).cast("B"),
+            company=blob.column(
+                at_natal_saham_seven, 3, 1, at_natal_saham_seven.count
+            ).cast("B"),
+            length=at_natal_saham_seven.count,
         ),
     )
 

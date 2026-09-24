@@ -4051,6 +4051,117 @@ class Saham(Member):
     """**Labha**, monetary gain."""
 
 
+class TajikaRelation(Member):
+    """How a planet stands to another by Tajika's friendship: the relation a
+    saham's company is read by (`03-design/tajika-saham-strength.md`).
+
+    Mirrors `teistro::TajikaRelation` through an **exhaustive** match.
+    """
+
+    OWN = 0
+    """The planet is the other: its own."""
+
+    FRIEND = 1
+    """A friend."""
+
+    NEUTRAL = 2
+    """Neither."""
+
+    ENEMY = 3
+    """An enemy."""
+
+
+class HarshaGrade(Member):
+    """What the source calls a planet by its Harsha bala
+    (`03-design/tajika-harsha.md`).
+
+    Mirrors `teistro::HarshaGrade` through an **exhaustive** match.
+    """
+
+    NIRBALA = 0
+    """No part: without strength."""
+
+    ALPABALI = 1
+    """One part, five units: weak."""
+
+    MADHYA_BALI = 2
+    """Two parts, ten units: of medium strength."""
+
+    POORNA_BALI = 3
+    """Three parts, fifteen units: fully strong."""
+
+    EXTRAORDINARY = 4
+    """All four, twenty units: extraordinarily strong, and rare."""
+
+
+class SahamStrong(Member):
+    """A clause of the source's list of what makes a saham **strong**, in its
+    order (`03-design/tajika-saham-strength.md`). Its ids are the bit
+    positions of a saham row's `strong` column.
+
+    Mirrors `teistro::StrongClause` through an **exhaustive** match.
+    """
+
+    LORD_EXALTED = 0
+    """Its lord is exalted."""
+
+    LORD_OWN_SIGN = 1
+    """Its lord is in its own sign."""
+
+    LORD_OWN_HUDDA = 2
+    """Its lord is in its own Hudda."""
+
+    LORD_OWN_DREKKANA = 3
+    """Its lord is in its own Drekkana."""
+
+    LORD_OWN_NAVAMSHA = 4
+    """Its lord is in its own Navamsha."""
+
+    LORD_IN_FRIENDS_SIGN = 5
+    """Its lord is in a friend's sign."""
+
+    WITH_FRIEND = 6
+    """It is with a friend of its lord."""
+
+    WITH_BENEFIC = 7
+    """It is with a natural benefic."""
+
+    WITH_YEAR_LORD = 8
+    """It is with the year lord."""
+
+    LORD_CONJOINS = 9
+    """Its lord conjoins it."""
+
+    LORD_ASPECTS_SAHAM = 10
+    """Its lord aspects it."""
+
+    LORD_ASPECTS_LAGNA = 11
+    """Its lord aspects the lagna."""
+
+
+class SahamWeak(Member):
+    """A clause of the source's list of what makes a saham **weak**, in its
+    order. Its ids are the bit positions of a saham row's `weak` column.
+
+    Mirrors `teistro::WeakClause` through an **exhaustive** match.
+    """
+
+    LORD_WEAK_VISHWA = 0
+    """Its lord is under the Panchavargiya floor."""
+
+    LORD_LACKS_HARSHA = 1
+    """Its lord has no Harsha bala."""
+
+    LORD_APART = 2
+    """Its lord neither aspects nor conjoins it."""
+
+    WITH_ENEMY = 3
+    """It is with an enemy of its lord."""
+
+    WITH_MALEFIC = 4
+    """It is with a natural malefic."""
+
+
 class Affliction(Member):
     """One of the five clauses of the source's **affliction**, which Rudda
     and Durapha read. Its ids are the bit positions of
@@ -5558,6 +5669,40 @@ _KEYS: dict[str, dict[int, str]] = {
         38: "jalapatha",
         39: "bandhana",
         40: "labha",
+    },
+    "TajikaRelation": {
+        0: "own",
+        1: "friend",
+        2: "neutral",
+        3: "enemy",
+    },
+    "HarshaGrade": {
+        0: "nirbala",
+        1: "alpabali",
+        2: "madhya-bali",
+        3: "poorna-bali",
+        4: "extraordinary",
+    },
+    "SahamStrong": {
+        0: "lord-exalted",
+        1: "lord-own-sign",
+        2: "lord-own-hudda",
+        3: "lord-own-drekkana",
+        4: "lord-own-navamsha",
+        5: "lord-in-friends-sign",
+        6: "with-friend",
+        7: "with-benefic",
+        8: "with-year-lord",
+        9: "lord-conjoins",
+        10: "lord-aspects-saham",
+        11: "lord-aspects-lagna",
+    },
+    "SahamWeak": {
+        0: "lord-weak-vishwa",
+        1: "lord-lacks-harsha",
+        2: "lord-apart",
+        3: "with-enemy",
+        4: "with-malefic",
     },
     "Affliction": {
         0: "retrograde",

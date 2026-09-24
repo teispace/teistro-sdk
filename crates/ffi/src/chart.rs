@@ -1745,6 +1745,10 @@ struct PraveshaColumns {
     muntha_degs: Vec<f64>,
     /// The `annual_charts` section, one row per return or none at all.
     annual: AnnualColumns,
+    /// How many of `natal` each chart holds: `cast.natal_saham_count`.
+    natal_counts: Vec<u32>,
+    /// The births' own sahams, the `natal_sahams` section.
+    natal: SahamColumns,
 }
 
 /// The years' own charts, parallel to `praveshas` row for row when a place
@@ -1780,12 +1784,19 @@ struct AnnualColumns {
     /// `matter_count`.
     matters: MatterColumns,
     saham_counts: Vec<u8>,
-    /// The `year_sahams` section, ragged by `saham_count`.
+    /// The `year_sahams` section, ragged by `saham_count`, and the seven
+    /// rows under each.
     sahams: SahamColumns,
+    /// The `year_harsha` section, seven rows a year.
+    harsha: HarshaColumns,
 }
 
-/// Every year's sahams, flat and ragged, each where it fell and what it
-/// fell in (`03-design/tajika-sahams.md`).
+/// A chart's sahams, flat and ragged, each where it fell, what it fell in
+/// and its strength clause by clause, with the seven planets' facts under
+/// each (`03-design/tajika-saham-strength.md`).
+///
+/// One shape for the years' sahams and the births', so each binding
+/// decodes a saham in one place.
 #[derive(Default)]
 struct SahamColumns {
     saham: Vec<u8>,
@@ -1794,22 +1805,81 @@ struct SahamColumns {
     lord: Vec<u16>,
     house: Vec<u8>,
     added_sign: Vec<u8>,
+    strong: Vec<u16>,
+    weak: Vec<u8>,
+    lord_vishwa: Vec<i32>,
+    lord_harsha: Vec<u8>,
+    node_axis: Vec<u8>,
+    /// Seven rows under each saham, the catalogue's order.
+    seven_graha: Vec<u16>,
+    seven_drishti: Vec<u8>,
+    seven_relation: Vec<u8>,
+    seven_company: Vec<u8>,
 }
 
+/// What a saham row's `node_axis` holds when the chart placed no nodes.
+const NODE_AXIS_UNREAD: u8 = 2;
+
 impl SahamColumns {
-    fn push(&mut self, one: &teistro::SahamPoint) {
-        let place = &one.point;
+    fn push(&mut self, one: &teistro::SahamStrength) {
+        let place = &one.place;
         self.saham.push(TsSaham::from(one.saham) as u8);
         self.longitude_deg.push(place.longitude_deg);
         self.sign.push(place.sign.id());
         self.lord.push(place.lord.id());
         self.house.push(place.house.get());
         self.added_sign.push(u8::from(place.added_sign));
+        self.strong
+            .push(one.strong().iter().fold(0, |bits, (clause, holds)| {
+                if *holds {
+                    bits | 1_u16 << TsSahamStrong::from(*clause) as u8
+                } else {
+                    bits
+                }
+            }));
+        self.weak
+            .push(one.weak().iter().fold(0, |bits, (clause, holds)| {
+                if *holds {
+                    bits | 1_u8 << TsSahamWeak::from(*clause) as u8
+                } else {
+                    bits
+                }
+            }));
+        self.lord_vishwa.push(sub_sub(one.lord_vishwa));
+        self.lord_harsha
+            .push(TsHarshaGrade::from(one.lord_harsha) as u8);
+        self.node_axis
+            .push(one.in_node_axis.map_or(NODE_AXIS_UNREAD, u8::from));
+        for (at, graha) in teistro::tajika::SEVEN.iter().enumerate() {
+            self.seven_graha.push(graha.id());
+            self.seven_drishti.push(
+                one.aspects
+                    .get(at)
+                    .map_or(TsTajikaDrishti::None, |drishti| {
+                        TsTajikaDrishti::from(*drishti)
+                    }) as u8,
+            );
+            self.seven_relation.push(
+                one.relations
+                    .get(at)
+                    .map_or(TsTajikaRelation::Neutral, |relation| {
+                        TsTajikaRelation::from(*relation)
+                    }) as u8,
+            );
+            self.seven_company
+                .push(u8::from(one.company.get(at).copied().unwrap_or(false)));
+        }
     }
 
-    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+    /// The sahams under `name`, and their seven rows under `seven`.
+    fn write(
+        &self,
+        writer: &mut Writer<'_>,
+        name: &str,
+        seven: &str,
+    ) -> Result<(), teistro_idl::blob::BlobError> {
         writer.columns(
-            "year_sahams",
+            name,
             self.saham.len(),
             &[
                 ColumnData::U8(&self.saham),
@@ -1818,6 +1888,68 @@ impl SahamColumns {
                 ColumnData::U16(&self.lord),
                 ColumnData::U8(&self.house),
                 ColumnData::U8(&self.added_sign),
+                ColumnData::U16(&self.strong),
+                ColumnData::U8(&self.weak),
+                ColumnData::I32(&self.lord_vishwa),
+                ColumnData::U8(&self.lord_harsha),
+                ColumnData::U8(&self.node_axis),
+            ],
+        )?;
+        writer.columns(
+            seven,
+            self.seven_graha.len(),
+            &[
+                ColumnData::U16(&self.seven_graha),
+                ColumnData::U8(&self.seven_drishti),
+                ColumnData::U8(&self.seven_relation),
+                ColumnData::U8(&self.seven_company),
+            ],
+        )
+    }
+}
+
+/// Every founded year's Harsha bala: seven rows each, the catalogue's
+/// order (`03-design/tajika-harsha.md`).
+#[derive(Default)]
+struct HarshaColumns {
+    graha: Vec<u16>,
+    house: Vec<u8>,
+    sthana: Vec<u8>,
+    uchcha_swakshetra: Vec<u8>,
+    stri_purusha: Vec<u8>,
+    dina_ratri: Vec<u8>,
+    total: Vec<u8>,
+    grade: Vec<u8>,
+}
+
+impl HarshaColumns {
+    fn push(&mut self, seven: &[teistro::Harsha; 7]) {
+        for one in seven {
+            self.graha.push(one.graha.id());
+            self.house.push(one.house.get());
+            self.sthana.push(u8::from(one.sthana));
+            self.uchcha_swakshetra.push(u8::from(one.uchcha_swakshetra));
+            self.stri_purusha.push(u8::from(one.stri_purusha));
+            self.dina_ratri.push(u8::from(one.dina_ratri));
+            self.total
+                .push(u8::try_from(one.total.units()).unwrap_or(u8::MAX));
+            self.grade.push(TsHarshaGrade::from(one.grade) as u8);
+        }
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "year_harsha",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::U8(&self.house),
+                ColumnData::U8(&self.sthana),
+                ColumnData::U8(&self.uchcha_swakshetra),
+                ColumnData::U8(&self.stri_purusha),
+                ColumnData::U8(&self.dina_ratri),
+                ColumnData::U8(&self.total),
+                ColumnData::U8(&self.grade),
             ],
         )
     }
@@ -2118,6 +2250,7 @@ impl AnnualColumns {
         for one in &year.sahams {
             self.sahams.push(one);
         }
+        self.harsha.push(&year.harsha);
         year.matters
             .iter()
             .try_for_each(|matter| self.matters.push(matter))
@@ -2149,7 +2282,9 @@ impl AnnualColumns {
         self.claims.write(writer)?;
         self.yogas.write(writer)?;
         self.matters.write(writer)?;
-        self.sahams.write(writer)
+        self.sahams
+            .write(writer, "year_sahams", "year_saham_seven")?;
+        self.harsha.write(writer)
     }
 }
 
@@ -2163,15 +2298,22 @@ fn sub_sub(bala: teistro::Bala) -> i32 {
 }
 
 impl PraveshaColumns {
-    fn of(praveshas: &[Vec<Year>]) -> Result<PraveshaColumns, Error> {
-        let mut counts = Vec::with_capacity(praveshas.len());
+    fn of(varsha: &[ChartVarsha]) -> Result<PraveshaColumns, Error> {
+        let mut counts = Vec::with_capacity(varsha.len());
         let mut years = Vec::new();
         let mut jds = Vec::new();
         let mut muntha_signs = Vec::new();
         let mut muntha_lords = Vec::new();
         let mut muntha_degs = Vec::new();
         let mut annual = AnnualColumns::default();
-        for found in praveshas {
+        let mut natal_counts = Vec::with_capacity(varsha.len());
+        let mut natal = SahamColumns::default();
+        for chart in varsha {
+            natal_counts.push(u32::try_from(chart.natal_sahams.len()).unwrap_or(u32::MAX));
+            for one in &chart.natal_sahams {
+                natal.push(one);
+            }
+            let found = &chart.years;
             counts.push(u32::try_from(found.len()).unwrap_or(u32::MAX));
             for one in found {
                 years.push(one.pravesha.year);
@@ -2192,6 +2334,8 @@ impl PraveshaColumns {
             muntha_lords,
             muntha_degs,
             annual,
+            natal_counts,
+            natal,
         })
     }
 
@@ -2207,7 +2351,9 @@ impl PraveshaColumns {
                 ColumnData::F64(&self.muntha_degs),
             ],
         )?;
-        self.annual.write(writer)
+        self.annual.write(writer)?;
+        self.natal
+            .write(writer, "natal_sahams", "natal_saham_seven")
     }
 }
 
@@ -2218,6 +2364,7 @@ fn chart_rows(
     point_counts: &[u32],
     aspect_counts: &[u32],
     pravesha_counts: &[u32],
+    natal_saham_counts: &[u32],
 ) -> Vec<Vec<FixedValue>> {
     charts
         .iter()
@@ -2233,6 +2380,7 @@ fn chart_rows(
                 u64::from(point_counts.get(at).copied().unwrap_or(0)).into(),
                 u64::from(aspect_counts.get(at).copied().unwrap_or(0)).into(),
                 u64::from(pravesha_counts.get(at).copied().unwrap_or(0)).into(),
+                u64::from(natal_saham_counts.get(at).copied().unwrap_or(0)).into(),
             ]
         })
         .collect()
@@ -2557,9 +2705,9 @@ pub struct Composed<'a> {
     pub rules: &'a str,
     /// What every chart has to say (`plans-at-the-boundary.md`).
     pub plans: &'a str,
-    /// Every chart's annual-chart instants, in the batch's order
-    /// (`annual-chart.md`); empty when none were asked for.
-    pub praveshas: &'a [Vec<Year>],
+    /// Every chart's annual charts and its own sahams, in the batch's
+    /// order (`annual-chart.md`); empty when none were asked for.
+    pub praveshas: &'a [ChartVarsha],
 }
 
 /// counts saying so.
@@ -2626,6 +2774,7 @@ pub fn encode(
                 &by.points.counts,
                 &by.aspects.counts,
                 &by.years.counts,
+                &by.years.natal_counts,
             ),
         )?;
         columns.write(&mut writer, charts.len() * graha_count)?;
@@ -2824,6 +2973,51 @@ pub(crate) struct VarshaRequest {
     /// house stands, Roga's formula; the source's own by default.
     #[serde(default)]
     pub(crate) saham_rules: teistro::SahamRules,
+    /// The readings a saham's strength parts on; the chapter's by default.
+    #[serde(default)]
+    pub(crate) saham_strength: StrengthReadings,
+    /// The Harsha bala's reading of Venus's house of joy.
+    #[serde(default)]
+    pub(crate) harsha_rules: teistro::HarshaRules,
+}
+
+impl VarshaRequest {
+    /// Every reading a saham's strength is judged under, assembled from
+    /// the request's three records.
+    fn strength_rules(&self) -> teistro::SahamStrengthRules {
+        teistro::SahamStrengthRules {
+            sahams: self.saham_rules,
+            harsha: self.harsha_rules,
+            natures: self.saham_strength.natures,
+            friendship: self.saham_strength.friendship,
+            weak_below: self.saham_strength.weak_below,
+        }
+    }
+}
+
+/// `varsha_json.sahamStrength`: the readings a saham's strength parts on
+/// that are its own, the sahams' and the Harsha bala's having records of
+/// their own beside it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
+pub(crate) struct StrengthReadings {
+    /// Which planets are benefic and malefic.
+    pub(crate) natures: teistro::SahamNatures,
+    /// Whose friendship "friend" and "inimical" read.
+    pub(crate) friendship: teistro::Friendship,
+    /// The Vishwa bala below which a saham's lord is weak, sub-sub units.
+    pub(crate) weak_below: teistro::Bala,
+}
+
+impl Default for StrengthReadings {
+    fn default() -> StrengthReadings {
+        let rules = teistro::SahamStrengthRules::default();
+        StrengthReadings {
+            natures: rules.natures,
+            friendship: rules.friendship,
+            weak_below: rules.weak_below,
+        }
+    }
 }
 
 /// What a request asks about: `"all"`, or these by name in the caller's
@@ -3262,6 +3456,149 @@ impl From<teistro::Saham> for TsSaham {
     }
 }
 
+/// How a planet stands to another by Tajika's friendship: the relation a
+/// saham's company is read by (`03-design/tajika-saham-strength.md`).
+///
+/// Mirrors `teistro::TajikaRelation` through an **exhaustive** match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsTajikaRelation {
+    /// The planet is the other: its own.
+    Own = 0,
+    /// A friend.
+    Friend = 1,
+    /// Neither.
+    Neutral = 2,
+    /// An enemy.
+    Enemy = 3,
+}
+
+impl From<teistro::TajikaRelation> for TsTajikaRelation {
+    fn from(relation: teistro::TajikaRelation) -> TsTajikaRelation {
+        match relation {
+            teistro::TajikaRelation::Own => TsTajikaRelation::Own,
+            teistro::TajikaRelation::Friend => TsTajikaRelation::Friend,
+            teistro::TajikaRelation::Neutral => TsTajikaRelation::Neutral,
+            teistro::TajikaRelation::Enemy => TsTajikaRelation::Enemy,
+        }
+    }
+}
+
+/// What the source calls a planet by its Harsha bala
+/// (`03-design/tajika-harsha.md`).
+///
+/// Mirrors `teistro::HarshaGrade` through an **exhaustive** match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsHarshaGrade {
+    /// No part: without strength.
+    Nirbala = 0,
+    /// One part, five units: weak.
+    Alpabali = 1,
+    /// Two parts, ten units: of medium strength.
+    MadhyaBali = 2,
+    /// Three parts, fifteen units: fully strong.
+    PoornaBali = 3,
+    /// All four, twenty units: extraordinarily strong, and rare.
+    Extraordinary = 4,
+}
+
+impl From<teistro::HarshaGrade> for TsHarshaGrade {
+    fn from(grade: teistro::HarshaGrade) -> TsHarshaGrade {
+        match grade {
+            teistro::HarshaGrade::Nirbala => TsHarshaGrade::Nirbala,
+            teistro::HarshaGrade::Alpabali => TsHarshaGrade::Alpabali,
+            teistro::HarshaGrade::MadhyaBali => TsHarshaGrade::MadhyaBali,
+            teistro::HarshaGrade::PoornaBali => TsHarshaGrade::PoornaBali,
+            teistro::HarshaGrade::Extraordinary => TsHarshaGrade::Extraordinary,
+        }
+    }
+}
+
+/// A clause of the source's list of what makes a saham **strong**, in its
+/// order (`03-design/tajika-saham-strength.md`). Its ids are the bit
+/// positions of a saham row's `strong` column.
+///
+/// Mirrors `teistro::StrongClause` through an **exhaustive** match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsSahamStrong {
+    /// Its lord is exalted.
+    LordExalted = 0,
+    /// Its lord is in its own sign.
+    LordOwnSign = 1,
+    /// Its lord is in its own Hudda.
+    LordOwnHudda = 2,
+    /// Its lord is in its own Drekkana.
+    LordOwnDrekkana = 3,
+    /// Its lord is in its own Navamsha.
+    LordOwnNavamsha = 4,
+    /// Its lord is in a friend's sign.
+    LordInFriendsSign = 5,
+    /// It is with a friend of its lord.
+    WithFriend = 6,
+    /// It is with a natural benefic.
+    WithBenefic = 7,
+    /// It is with the year lord.
+    WithYearLord = 8,
+    /// Its lord conjoins it.
+    LordConjoins = 9,
+    /// Its lord aspects it.
+    LordAspectsSaham = 10,
+    /// Its lord aspects the lagna.
+    LordAspectsLagna = 11,
+}
+
+impl From<teistro::StrongClause> for TsSahamStrong {
+    fn from(clause: teistro::StrongClause) -> TsSahamStrong {
+        match clause {
+            teistro::StrongClause::LordExalted => TsSahamStrong::LordExalted,
+            teistro::StrongClause::LordOwnSign => TsSahamStrong::LordOwnSign,
+            teistro::StrongClause::LordOwnHudda => TsSahamStrong::LordOwnHudda,
+            teistro::StrongClause::LordOwnDrekkana => TsSahamStrong::LordOwnDrekkana,
+            teistro::StrongClause::LordOwnNavamsha => TsSahamStrong::LordOwnNavamsha,
+            teistro::StrongClause::LordInFriendsSign => TsSahamStrong::LordInFriendsSign,
+            teistro::StrongClause::WithFriend => TsSahamStrong::WithFriend,
+            teistro::StrongClause::WithBenefic => TsSahamStrong::WithBenefic,
+            teistro::StrongClause::WithYearLord => TsSahamStrong::WithYearLord,
+            teistro::StrongClause::LordConjoins => TsSahamStrong::LordConjoins,
+            teistro::StrongClause::LordAspectsSaham => TsSahamStrong::LordAspectsSaham,
+            teistro::StrongClause::LordAspectsLagna => TsSahamStrong::LordAspectsLagna,
+        }
+    }
+}
+
+/// A clause of the source's list of what makes a saham **weak**, in its
+/// order. Its ids are the bit positions of a saham row's `weak` column.
+///
+/// Mirrors `teistro::WeakClause` through an **exhaustive** match.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsSahamWeak {
+    /// Its lord is under the Panchavargiya floor.
+    LordWeakVishwa = 0,
+    /// Its lord has no Harsha bala.
+    LordLacksHarsha = 1,
+    /// Its lord neither aspects nor conjoins it.
+    LordApart = 2,
+    /// It is with an enemy of its lord.
+    WithEnemy = 3,
+    /// It is with a natural malefic.
+    WithMalefic = 4,
+}
+
+impl From<teistro::WeakClause> for TsSahamWeak {
+    fn from(clause: teistro::WeakClause) -> TsSahamWeak {
+        match clause {
+            teistro::WeakClause::LordWeakVishwa => TsSahamWeak::LordWeakVishwa,
+            teistro::WeakClause::LordLacksHarsha => TsSahamWeak::LordLacksHarsha,
+            teistro::WeakClause::LordApart => TsSahamWeak::LordApart,
+            teistro::WeakClause::WithEnemy => TsSahamWeak::WithEnemy,
+            teistro::WeakClause::WithMalefic => TsSahamWeak::WithMalefic,
+        }
+    }
+}
+
 /// One of the five clauses of the source's **affliction**, which Rudda
 /// and Durapha read. Its ids are the bit positions of
 /// `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.
@@ -3459,9 +3796,21 @@ pub struct AnnualYear {
     /// The sixteen yogas for each matter `varsha_json.matters` asked
     /// about, in its order; empty when it asked about none.
     pub matters: Vec<teistro::YearYogas>,
-    /// Each saham `varsha_json.sahams` asked for, in its order, read
-    /// under `varsha_json.sahamRules`; empty when it asked for none.
-    pub sahams: Vec<teistro::SahamPoint>,
+    /// Each saham `varsha_json.sahams` asked for, in its order, with its
+    /// strength under the year's own lord; empty when it asked for none.
+    pub sahams: Vec<teistro::SahamStrength>,
+    /// The seven's Harsha bala in this year's chart.
+    pub harsha: [teistro::Harsha; 7],
+}
+
+/// One chart's answer to `varsha_json`: its years, and its own sahams.
+#[derive(Clone, Debug, Default)]
+pub struct ChartVarsha {
+    /// The years, each with its chart when a place was asked for.
+    pub years: Vec<Year>,
+    /// The birth chart's own sahams, with their strength, when
+    /// `varsha_json.sahams` asked; the source reads a year's beside them.
+    pub natal_sahams: Vec<teistro::SahamStrength>,
 }
 
 /// One field of the varsha record read on its own, under its own path, so
@@ -3501,20 +3850,15 @@ unsafe fn varsha_request_of(varsha_json: *const c_char) -> Result<Option<VarshaR
     asked.matters = matters;
     asked.sahams = sahams;
     asked.saham_rules = saham_rules.unwrap_or_default();
-    if asked.place.is_none() {
-        // Both are read from each year's own chart, so a request for
-        // either without a place is refused by the field that asked.
-        let needs_a_chart = [
-            ("matters", asked.matters.is_some(), "the sixteen yogas"),
-            ("sahams", asked.sahams.is_some(), "the sahams"),
-        ];
-        if let Some((field, _, what)) = needs_a_chart.iter().find(|(_, asked, _)| *asked) {
-            return Err(Error::invalid_arg(format!(
-                "{what} are read from each year's own chart, and no chart is founded without a place"
-            ))
-            .with_field(format!("varsha_json.{field}"))
-            .with_hint("add varsha_json.place: \"birth\", or a residence"));
-        }
+    // The matters are read from each year's own chart, so they need a
+    // place; the sahams do not, since a birth chart holds sahams of its
+    // own and without a place those are what is answered.
+    if asked.matters.is_some() && asked.place.is_none() {
+        return Err(Error::invalid_arg(
+            "the sixteen yogas are read from each year's own chart, and no chart is founded without a place",
+        )
+        .with_field("varsha_json.matters")
+        .with_hint("add varsha_json.place: \"birth\", or a residence"));
     }
     // Checked here, where the caller's own casing is known, so the refusal
     // names the key they wrote rather than the Rust field behind it.
@@ -3591,7 +3935,7 @@ impl Sections {
         documents: &[Document],
         graha_count: usize,
         registered: &teistro::dasha::DashaSystems,
-        praveshas: &[Vec<Year>],
+        praveshas: &[ChartVarsha],
     ) -> Result<Sections, Error> {
         Ok(Sections {
             vargas: VargaColumns::of(documents, graha_count)?,
@@ -3643,7 +3987,7 @@ fn praveshas_of(
     documents: &[Document],
     birth_clock: teistro::UtcOffset,
     asked: Option<&VarshaRequest>,
-) -> Result<Vec<Vec<Year>>, Error> {
+) -> Result<Vec<ChartVarsha>, Error> {
     let Some(asked) = asked else {
         return Ok(Vec::new());
     };
@@ -3675,6 +4019,22 @@ fn praveshas_of(
                             })
                         })
                         .collect::<Result<Vec<Year>, Error>>()
+                })
+                .and_then(|years| {
+                    // The birth's own sahams, which have no year lord.
+                    let natal_sahams = match &asked.sahams {
+                        Some(sahams) => sdk.chart().saham_strength_with_rules(
+                            document,
+                            sahams.members(),
+                            None,
+                            asked.strength_rules(),
+                        )?,
+                        None => Vec::new(),
+                    };
+                    Ok(ChartVarsha {
+                        years,
+                        natal_sahams,
+                    })
                 })
                 // A refusal names the request field the caller wrote and
                 // the chart it was refused for, so a batch says which one.
@@ -3722,13 +4082,15 @@ fn annual_year(
         None => Vec::new(),
     };
     let sahams = match &asked.sahams {
-        Some(sahams) => {
-            sdk.chart()
-                .sahams_with_rules(&annual, sahams.members(), asked.saham_rules)?
-                .points
-        }
+        Some(sahams) => sdk.chart().saham_strength_with_rules(
+            &annual,
+            sahams.members(),
+            Some(year_lord.graha),
+            asked.strength_rules(),
+        )?,
         None => Vec::new(),
     };
+    let harsha = sdk.chart().harsha_with_rules(&annual, asked.harsha_rules)?;
     Ok(AnnualYear {
         lagna_deg: annual.foundation.lagna_deg,
         bearers,
@@ -3737,6 +4099,7 @@ fn annual_year(
         states: sdk.chart().annual_states(&annual)?,
         matters,
         sahams,
+        harsha,
     })
 }
 

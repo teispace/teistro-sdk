@@ -7019,6 +7019,168 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsTajikaRelation",
+      "doc": "How a planet stands to another by Tajika's friendship: the relation a\nsaham's company is read by (`03-design/tajika-saham-strength.md`).\n\nMirrors `teistro::TajikaRelation` through an **exhaustive** match.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Own",
+          "value": 0,
+          "doc": "The planet is the other: its own."
+        },
+        {
+          "name": "Friend",
+          "value": 1,
+          "doc": "A friend."
+        },
+        {
+          "name": "Neutral",
+          "value": 2,
+          "doc": "Neither."
+        },
+        {
+          "name": "Enemy",
+          "value": 3,
+          "doc": "An enemy."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsHarshaGrade",
+      "doc": "What the source calls a planet by its Harsha bala\n(`03-design/tajika-harsha.md`).\n\nMirrors `teistro::HarshaGrade` through an **exhaustive** match.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Nirbala",
+          "value": 0,
+          "doc": "No part: without strength."
+        },
+        {
+          "name": "Alpabali",
+          "value": 1,
+          "doc": "One part, five units: weak."
+        },
+        {
+          "name": "MadhyaBali",
+          "value": 2,
+          "doc": "Two parts, ten units: of medium strength."
+        },
+        {
+          "name": "PoornaBali",
+          "value": 3,
+          "doc": "Three parts, fifteen units: fully strong."
+        },
+        {
+          "name": "Extraordinary",
+          "value": 4,
+          "doc": "All four, twenty units: extraordinarily strong, and rare."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsSahamStrong",
+      "doc": "A clause of the source's list of what makes a saham **strong**, in its\norder (`03-design/tajika-saham-strength.md`). Its ids are the bit\npositions of a saham row's `strong` column.\n\nMirrors `teistro::StrongClause` through an **exhaustive** match.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "LordExalted",
+          "value": 0,
+          "doc": "Its lord is exalted."
+        },
+        {
+          "name": "LordOwnSign",
+          "value": 1,
+          "doc": "Its lord is in its own sign."
+        },
+        {
+          "name": "LordOwnHudda",
+          "value": 2,
+          "doc": "Its lord is in its own Hudda."
+        },
+        {
+          "name": "LordOwnDrekkana",
+          "value": 3,
+          "doc": "Its lord is in its own Drekkana."
+        },
+        {
+          "name": "LordOwnNavamsha",
+          "value": 4,
+          "doc": "Its lord is in its own Navamsha."
+        },
+        {
+          "name": "LordInFriendsSign",
+          "value": 5,
+          "doc": "Its lord is in a friend's sign."
+        },
+        {
+          "name": "WithFriend",
+          "value": 6,
+          "doc": "It is with a friend of its lord."
+        },
+        {
+          "name": "WithBenefic",
+          "value": 7,
+          "doc": "It is with a natural benefic."
+        },
+        {
+          "name": "WithYearLord",
+          "value": 8,
+          "doc": "It is with the year lord."
+        },
+        {
+          "name": "LordConjoins",
+          "value": 9,
+          "doc": "Its lord conjoins it."
+        },
+        {
+          "name": "LordAspectsSaham",
+          "value": 10,
+          "doc": "Its lord aspects it."
+        },
+        {
+          "name": "LordAspectsLagna",
+          "value": 11,
+          "doc": "Its lord aspects the lagna."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsSahamWeak",
+      "doc": "A clause of the source's list of what makes a saham **weak**, in its\norder. Its ids are the bit positions of a saham row's `weak` column.\n\nMirrors `teistro::WeakClause` through an **exhaustive** match.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "LordWeakVishwa",
+          "value": 0,
+          "doc": "Its lord is under the Panchavargiya floor."
+        },
+        {
+          "name": "LordLacksHarsha",
+          "value": 1,
+          "doc": "Its lord has no Harsha bala."
+        },
+        {
+          "name": "LordApart",
+          "value": 2,
+          "doc": "Its lord neither aspects nor conjoins it."
+        },
+        {
+          "name": "WithEnemy",
+          "value": 3,
+          "doc": "It is with an enemy of its lord."
+        },
+        {
+          "name": "WithMalefic",
+          "value": 4,
+          "doc": "It is with a natural malefic."
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsAffliction",
       "doc": "One of the five clauses of the source's **affliction**, which Rudda\nand Durapha read. Its ids are the bit positions of\n`matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.",
       "repr": "u8",
@@ -13239,6 +13401,11 @@
               "name": "pravesha_count",
               "scalar": "u32",
               "doc": "How many rows of the `praveshas` section belong to this chart. Zero when no annual charts were asked for.\n\nRagged for a reason of its own: the request settles how many returns are wanted, and an ephemeris that ends first settles how many there are (`03-design/annual-chart.md`). Fewer than asked for is the answer, so a reader takes this count and never the number it requested."
+            },
+            {
+              "name": "natal_saham_count",
+              "scalar": "u32",
+              "doc": "How many rows of the `natal_sahams` section belong to this chart: the sahams `varsha_json.sahams` asked for, 0 to 41."
             }
           ]
         },
@@ -15015,7 +15182,7 @@
         {
           "id": 42,
           "name": "year_sahams",
-          "doc": "Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.",
+          "doc": "Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`), and judged for strength under the year's own lord (`03-design/tajika-saham-strength.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for and a place given.",
           "kind": "columns",
           "fields": [
             {
@@ -15042,12 +15209,212 @@
             {
               "name": "house",
               "scalar": "u8",
-              "doc": "The house it fell in, 1 to 12, counted from the annual lagna by whole signs."
+              "doc": "The house it fell in, 1 to 12, counted from the chart's lagna by whole signs. The 6th, 8th and 12th are where the source calls a saham handicapped."
             },
             {
               "name": "added_sign",
               "scalar": "u8",
               "doc": "1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise."
+            },
+            {
+              "name": "strong",
+              "scalar": "u16",
+              "doc": "The clauses of the source's strong list that hold, as a bit set: bit `n` is the `TsSahamStrong` with id `n`. Reported and never weighed: the source judges in words and gives no score (`03-design/tajika-saham-strength.md`)."
+            },
+            {
+              "name": "weak",
+              "scalar": "u8",
+              "doc": "The clauses of the source's weak list that hold, as a bit set over `TsSahamWeak`. A saham may meet clauses on both lists, and three in five do."
+            },
+            {
+              "name": "lord_vishwa",
+              "scalar": "i32",
+              "doc": "The saham lord's Panchavargiya Vishwa bala, exact, in sub-sub units of which a unit holds 3600."
+            },
+            {
+              "name": "lord_harsha",
+              "scalar": "u8",
+              "doc": "The saham lord's Harsha bala grade.",
+              "enum": "TsHarshaGrade"
+            },
+            {
+              "name": "node_axis",
+              "scalar": "u8",
+              "doc": "1 when the saham's sign is Rahu's or Ketu's, which the source's forty-sixth year counts against a saham; 0 when not; 2 when the chart placed no nodes to read."
+            }
+          ]
+        },
+        {
+          "id": 43,
+          "name": "year_saham_seven",
+          "doc": "Seven rows under each row of `year_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which of the seven, a `graha` id."
+            },
+            {
+              "name": "drishti",
+              "scalar": "u8",
+              "doc": "The Tajika aspect its sign casts on the saham's; one in the saham's own sign casts the inimical aspect and is also its company.",
+              "enum": "TsTajikaDrishti"
+            },
+            {
+              "name": "relation",
+              "scalar": "u8",
+              "doc": "How it stands to the saham's lord, under the request's friendship.",
+              "enum": "TsTajikaRelation"
+            },
+            {
+              "name": "company",
+              "scalar": "u8",
+              "doc": "1 when it stands in the saham's sign: the saham's company."
+            }
+          ]
+        },
+        {
+          "id": 44,
+          "name": "year_harsha",
+          "doc": "Seven rows under each row of `annual_charts`, one for each of the seven in the catalogue's order — **fixed, not ragged**: each planet's Harsha bala, four places it is \"happy\" in, five units each (`03-design/tajika-harsha.md`), read under `varsha_json.harshaRules`. Empty when no place was asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which of the seven, a `graha` id."
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "The house it stands in, whole signs from the annual lagna."
+            },
+            {
+              "name": "sthana",
+              "scalar": "u8",
+              "doc": "1 in its house of joy: the first part."
+            },
+            {
+              "name": "uchcha_swakshetra",
+              "scalar": "u8",
+              "doc": "1 in its exaltation or own sign: the second part."
+            },
+            {
+              "name": "stri_purusha",
+              "scalar": "u8",
+              "doc": "1 in a house of its own gender, Tajika's genders: the third part."
+            },
+            {
+              "name": "dina_ratri",
+              "scalar": "u8",
+              "doc": "1 in a year opening at its own part of the day: the fourth part."
+            },
+            {
+              "name": "total",
+              "scalar": "u8",
+              "doc": "The parts held, five units each: 0 to 20."
+            },
+            {
+              "name": "grade",
+              "scalar": "u8",
+              "doc": "What the source calls that total.",
+              "enum": "TsHarshaGrade"
+            }
+          ]
+        },
+        {
+          "id": 45,
+          "name": "natal_sahams",
+          "doc": "Every birth chart's own sahams, concatenated in the `cast` section's order and **ragged** by its `natal_saham_count`, each chart's in the order `varsha_json.sahams` named them, with their strength — which has no year lord, so `with_year_lord` never holds here. The source reads a year's sahams beside the birth's: \"only those Sahams which are strong in the birth chart can produce results during a given year\". Answered with or without a place; empty unless sahams were asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "saham",
+              "scalar": "u8",
+              "doc": "Which of the forty-one.",
+              "enum": "TsSaham"
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "Where it fell, sidereal degrees in [0, 360)."
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign it fell in, a `rashi` id."
+            },
+            {
+              "name": "lord",
+              "scalar": "u16",
+              "doc": "That sign's lord, a `graha` id: the saham's lord, by whose strength the source judges it."
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "The house it fell in, 1 to 12, counted from the chart's lagna by whole signs. The 6th, 8th and 12th are where the source calls a saham handicapped."
+            },
+            {
+              "name": "added_sign",
+              "scalar": "u8",
+              "doc": "1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise."
+            },
+            {
+              "name": "strong",
+              "scalar": "u16",
+              "doc": "The clauses of the source's strong list that hold, as a bit set: bit `n` is the `TsSahamStrong` with id `n`. Reported and never weighed: the source judges in words and gives no score (`03-design/tajika-saham-strength.md`)."
+            },
+            {
+              "name": "weak",
+              "scalar": "u8",
+              "doc": "The clauses of the source's weak list that hold, as a bit set over `TsSahamWeak`. A saham may meet clauses on both lists, and three in five do."
+            },
+            {
+              "name": "lord_vishwa",
+              "scalar": "i32",
+              "doc": "The saham lord's Panchavargiya Vishwa bala, exact, in sub-sub units of which a unit holds 3600."
+            },
+            {
+              "name": "lord_harsha",
+              "scalar": "u8",
+              "doc": "The saham lord's Harsha bala grade.",
+              "enum": "TsHarshaGrade"
+            },
+            {
+              "name": "node_axis",
+              "scalar": "u8",
+              "doc": "1 when the saham's sign is Rahu's or Ketu's, which the source's forty-sixth year counts against a saham; 0 when not; 2 when the chart placed no nodes to read."
+            }
+          ]
+        },
+        {
+          "id": 46,
+          "name": "natal_saham_seven",
+          "doc": "Seven rows under each row of `natal_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which of the seven, a `graha` id."
+            },
+            {
+              "name": "drishti",
+              "scalar": "u8",
+              "doc": "The Tajika aspect its sign casts on the saham's; one in the saham's own sign casts the inimical aspect and is also its company.",
+              "enum": "TsTajikaDrishti"
+            },
+            {
+              "name": "relation",
+              "scalar": "u8",
+              "doc": "How it stands to the saham's lord, under the request's friendship.",
+              "enum": "TsTajikaRelation"
+            },
+            {
+              "name": "company",
+              "scalar": "u8",
+              "doc": "1 when it stands in the saham's sign: the saham's company."
             }
           ]
         }

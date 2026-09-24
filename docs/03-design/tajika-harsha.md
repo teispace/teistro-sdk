@@ -72,11 +72,12 @@ caller can reproduce that program; the default is the verse's.
 | **decided by the source** | the four parts, their five units, the places of joy, the genders, the feminine houses, whole signs (Table VI-1, all 28 cells) |
 | **decided by the rank-1 text** | Venus's place is the 5th (v. 76) |
 | **decided by measurement** | the rival program differs in Venus's place and nothing else (600 of 600) |
-| **not built** | the Dwadashavargiya bala, the source's twelve-fold strength, which it calls elaborate and seldom used; the crossing, which lands with saham strength |
+| **across the boundary** | `year_harsha`, seven rows under each founded year, with `varsha_json.harshaRules` (`tajika-saham-strength.md`, "Crossing the boundary") |
+| **not built** | the Dwadashavargiya bala, the source's twelve-fold strength, which it calls elaborate and seldom used |
 
 ## The order of work
 
 1. **Done**: the four parts, the grades, the rival, the façade.
-2. A saham's strength, over the Harsha bala and the Panchavargiya bala
-   (`tajika-sahams.md`), crossing with the Harsha bala and the birth
-   chart's sahams.
+2. **Done**: a saham's strength, over the Harsha bala and the
+   Panchavargiya bala (`tajika-saham-strength.md`), and the crossing of
+   both with the birth chart's sahams.

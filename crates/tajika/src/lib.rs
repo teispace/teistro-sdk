@@ -59,7 +59,8 @@ pub use saham::{
     sripati_mid_points,
 };
 pub use saham_strength::{
-    Friendship, SahamNatures, SahamStrength, SahamStrengthRules, saham_strength,
+    Friendship, SahamNatures, SahamStrength, SahamStrengthRules, StrongClause, WeakClause,
+    saham_strength,
 };
 pub use states::AnnualStates;
 pub use varsha::{

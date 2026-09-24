@@ -108,6 +108,10 @@ from .catalogue import (
     TajikaYoga,
     YearYoga,
     Saham,
+    SahamStrong,
+    SahamWeak,
+    HarshaGrade,
+    TajikaRelation,
     Affliction,
     Vaiseshikamsa,
     DashaPhase,
@@ -331,6 +335,14 @@ __all__ = [
     "Saham",
     "SahamRules",
     "TajikaSaham",
+    "SahamStrong",
+    "SahamWeak",
+    "SahamSeven",
+    "SahamStrengthReadings",
+    "HarshaGrade",
+    "HarshaRules",
+    "HarshaBala",
+    "TajikaRelation",
     "RashiDashaDefinition",
     "UduDashaDefinition",
     "DashaLord",
@@ -2522,6 +2534,42 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
     """The readings the sahams part on, where the sources differ; the
     source's own by default."""
 
+    saham_strength: "SahamStrengthReadings"
+    """The readings a saham's strength parts on; the chapter's by
+    default."""
+
+    harsha_rules: "HarshaRules"
+    """The Harsha bala's reading of Venus's house of joy."""
+
+
+class SahamStrengthReadings(TypedDict, total=False):
+    """Where the sources differ on a saham's strength
+    (`03-design/tajika-saham-strength.md`).
+
+    >>> readings: SahamStrengthReadings = {"natures": "parashari"}
+    """
+
+    natures: Literal["chapter", "parashari"]
+    """Which planets are benefic and malefic: the chapter's own, the Sun a
+    malefic among them, or the catalogue's Parashari natures."""
+
+    friendship: Literal["positional", "natural"]
+    """Tajika's positional friendship, the source's, or the catalogue's
+    natural one."""
+
+    weak_below: int
+    """The Vishwa bala below which a saham's lord is weak, in **sub-sub
+    units**, 3600 to a unit: `5 * 3600` by default."""
+
+
+class HarshaRules(TypedDict, total=False):
+    """Where the sources differ on the Harsha bala
+    (`03-design/tajika-harsha.md`)."""
+
+    venus: Literal["fifth", "twelfth"]
+    """Venus's house of joy: the verse's fifth, or the twelfth a widely
+    used program reads."""
+
 
 class SahamRules(TypedDict, total=False):
     """Where the sources differ on a saham, each a named reading
@@ -2850,8 +2898,12 @@ class AnnualChart:
     its order; empty otherwise."""
 
     sahams: List["TajikaSaham"]
-    """Each saham `varsha["sahams"]` asked for, in its order; empty
-    otherwise."""
+    """Each saham `varsha["sahams"]` asked for, in its order, with its
+    strength under the year's lord; empty otherwise."""
+
+    harsha: List["HarshaBala"]
+    """The seven's Harsha bala in this year's chart, in the catalogue's
+    order."""
 
 
 @dataclass(frozen=True)
@@ -2878,6 +2930,80 @@ class TajikaSaham:
     added_sign: bool
     """Whether it was carried a sign further because c did not fall between
     b and a."""
+
+    strong: List[SahamStrong]
+    """The clauses of the source's strong list that hold. Reported and
+    never weighed: the source gives no score, and three sahams in five
+    meet clauses on both lists."""
+
+    weak: List[SahamWeak]
+    """The clauses of the source's weak list that hold."""
+
+    lord_vishwa: "Bala"
+    """The saham lord's Panchavargiya Vishwa bala."""
+
+    lord_harsha: HarshaGrade
+    """The saham lord's Harsha bala grade."""
+
+    in_node_axis: Optional[bool]
+    """Whether it stands in the Rahu-Ketu axis; `None` when the chart
+    placed no nodes."""
+
+    seven: List["SahamSeven"]
+    """How each of the seven stands to it, in the catalogue's order."""
+
+    @property
+    def handicapped(self) -> bool:
+        """In the 6th, 8th or 12th, where the source calls a saham
+        handicapped."""
+        return self.house in (6, 8, 12)
+
+
+@dataclass(frozen=True)
+class SahamSeven:
+    """How one of the seven stands to a saham."""
+
+    graha: Graha
+    """Which planet."""
+
+    drishti: TajikaDrishti
+    """The Tajika aspect its sign casts on the saham's."""
+
+    relation: TajikaRelation
+    """How it stands to the saham's lord, under the friendship read."""
+
+    company: bool
+    """Whether it keeps the saham company, in the saham's sign."""
+
+
+@dataclass(frozen=True)
+class HarshaBala:
+    """One planet's Harsha bala: four places it is happy in, five units
+    each (`03-design/tajika-harsha.md`)."""
+
+    graha: Graha
+    """Whose."""
+
+    house: int
+    """The house it stands in, whole signs from the annual lagna."""
+
+    sthana: bool
+    """In its house of joy."""
+
+    uchcha_swakshetra: bool
+    """In its exaltation or own sign."""
+
+    stri_purusha: bool
+    """In a house of its own gender, Tajika's genders."""
+
+    dina_ratri: bool
+    """In a year opening at its own part of the day."""
+
+    total: int
+    """The parts held, five units each: 0 to 20."""
+
+    grade: HarshaGrade
+    """What the source calls that total."""
 
 
 @dataclass(frozen=True)
@@ -3172,9 +3298,14 @@ def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
         written["place"] = _annual_place(place)
     # The rule records are written in Python's own keys and read in the
     # boundary's, as the place is.
-    if "saham_rules" in written:
-        written["sahamRules"] = written.pop("saham_rules")
-    for rules in ("varshesha", "yogas", "sahamRules"):
+    for snake, camel in (
+        ("saham_rules", "sahamRules"),
+        ("saham_strength", "sahamStrength"),
+        ("harsha_rules", "harshaRules"),
+    ):
+        if snake in written:
+            written[camel] = written.pop(snake)
+    for rules in ("varshesha", "yogas", "sahamRules", "sahamStrength", "harshaRules"):
         if isinstance(written.get(rules), Mapping):
             written[rules] = _camel_keys(written[rules])
     # A saham crosses as its key, the spelling it is read back in.
@@ -3316,17 +3447,59 @@ def _matters(decoded: Any, row: int, starts: _Starts) -> List[TajikaMatter]:
 def _sahams(decoded: Any, row: int, starts: _Starts) -> List[TajikaSaham]:
     """A year's sahams, ragged by `saham_count`
     (`03-design/tajika-sahams.md`)."""
-    sahams = decoded.year_sahams
     return [
-        TajikaSaham(
-            saham=Saham(sahams.saham[k]),
-            longitude_deg=sahams.longitude_deg[k],
-            sign=Rashi(sahams.sign[k]),
-            lord=Graha(sahams.lord[k]),
-            house=sahams.house[k],
-            added_sign=sahams.added_sign[k] == 1,
-        )
+        _saham_at(decoded.year_sahams, decoded.year_saham_seven, k)
         for k in range(starts.sahams[row], starts.sahams[row + 1])
+    ]
+
+
+def _saham_at(cols: Any, seven: Any, k: int) -> TajikaSaham:
+    """One saham row, from the years' sections or the births': where it
+    fell, its strength clause by clause, and the seven rows under it. One
+    decoder for both, so they cannot drift
+    (`03-design/tajika-saham-strength.md`)."""
+    axis = cols.node_axis[k]
+    return TajikaSaham(
+        saham=Saham(cols.saham[k]),
+        longitude_deg=cols.longitude_deg[k],
+        sign=Rashi(cols.sign[k]),
+        lord=Graha(cols.lord[k]),
+        house=cols.house[k],
+        added_sign=cols.added_sign[k] == 1,
+        strong=_members(cols.strong[k], SahamStrong),
+        weak=_members(cols.weak[k], SahamWeak),
+        lord_vishwa=_bala(cols.lord_vishwa[k]),
+        lord_harsha=HarshaGrade(cols.lord_harsha[k]),
+        # 2 is the boundary's "the chart placed no nodes to read".
+        in_node_axis=None if axis == 2 else axis == 1,
+        seven=[
+            SahamSeven(
+                graha=Graha(seven.graha[at]),
+                drishti=TajikaDrishti(seven.drishti[at]),
+                relation=TajikaRelation(seven.relation[at]),
+                company=seven.company[at] == 1,
+            )
+            for at in range(7 * k, 7 * k + 7)
+        ],
+    )
+
+
+def _harsha(decoded: Any, row: int) -> List[HarshaBala]:
+    """A founded year's Harsha bala: seven rows a year, fixed, in the
+    catalogue's order (`03-design/tajika-harsha.md`)."""
+    h = decoded.year_harsha
+    return [
+        HarshaBala(
+            graha=Graha(h.graha[at]),
+            house=h.house[at],
+            sthana=h.sthana[at] == 1,
+            uchcha_swakshetra=h.uchcha_swakshetra[at] == 1,
+            stri_purusha=h.stri_purusha[at] == 1,
+            dina_ratri=h.dina_ratri[at] == 1,
+            total=h.total[at],
+            grade=HarshaGrade(h.grade[at]),
+        )
+        for at in range(7 * row, 7 * row + 7)
     ]
 
 
@@ -3389,6 +3562,7 @@ def _annual_chart(decoded: Any, row: int, starts: _Starts) -> Optional[AnnualCha
         combust=_members(charts.combust[row], _SEVEN),
         matters=_matters(decoded, row, starts),
         sahams=_sahams(decoded, row, starts),
+        harsha=_harsha(decoded, row),
     )
 
 
@@ -3762,6 +3936,21 @@ class Chart:
                 ),
             )
             for i in range(start, start + counts[self.index])
+        ]
+
+    @property
+    def sahams(self) -> List[TajikaSaham]:
+        """The birth chart's own sahams, each with its strength clause by
+        clause — which has no year lord — in the order `varsha["sahams"]`
+        named them; empty unless it asked. The source reads a year's
+        sahams beside these, and they need no place
+        (`03-design/tajika-saham-strength.md`)."""
+        decoded = self.batch.decoded
+        counts = decoded.cast.natal_saham_count
+        start = sum(counts[i] for i in range(self.index))
+        return [
+            _saham_at(decoded.natal_sahams, decoded.natal_saham_seven, k)
+            for k in range(start, start + counts[self.index])
         ]
 
     @property

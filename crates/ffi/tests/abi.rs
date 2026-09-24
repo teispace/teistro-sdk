@@ -33,7 +33,8 @@ use teistro_ffi::calendar::{
     ts_calendar_to_fixed, ts_calendar_weekday,
 };
 use teistro_ffi::chart::{
-    TsChartRequest, TsSaham, TsYearYoga, ts_chart_found, ts_chart_layout_row,
+    TsChartRequest, TsSaham, TsSahamStrong, TsSahamWeak, TsYearYoga, ts_chart_found,
+    ts_chart_layout_row,
 };
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
@@ -2365,11 +2366,6 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
         assert!(error.1.contains(says), "{error:?}");
     };
     refused(
-        r#"{"through":2,"sahams":["punya"]}"#,
-        "varsha_json.sahams",
-        "place",
-    );
-    refused(
         r#"{"through":2,"place":"birth","sahams":["punya","punya"]}"#,
         "varsha_json.sahams",
         "twice",
@@ -2393,6 +2389,75 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
         r#"{"through":2,"place":"birth","sahams":["punya"],"sahamRules":{"houses":"placidus"}}"#,
         "varsha_json.sahamRules.houses",
         "placidus",
+    );
+
+    // Each saham carries its strength, clause by clause, over the enums
+    // the generator reads, and seven rows under it, one per planet.
+    let asked =
+        ask(r#"{"through":3,"place":"birth","sahams":["raja","karya-siddhi","mrityu"]}"#).unwrap();
+    let lords = ints(&asked, "year_sahams", "lord");
+    let strong = ints(&asked, "year_sahams", "strong");
+    let weak = ints(&asked, "year_sahams", "weak");
+    let seven = ints(&asked, "year_saham_seven", "graha");
+    assert_eq!(seven.len(), 7 * strong.len());
+    assert_eq!(seven[..7], [0, 1, 2, 3, 4, 5, 6]);
+    let company = ints(&asked, "year_saham_seven", "company");
+    let apart = 1 << TsSahamWeak::LordApart as usize;
+    let near = (1 << TsSahamStrong::LordConjoins as usize)
+        | (1 << TsSahamStrong::LordAspectsSaham as usize);
+    for (row, (strong, weak)) in strong.iter().zip(&weak).enumerate() {
+        assert!(*strong < 1 << 12 && *weak < 1 << 5, "row {row}");
+        // The two (c) clauses negate each other, so exactly one holds.
+        assert_ne!(strong & near != 0, weak & apart != 0, "row {row}");
+        // The lord's own row of the seven is its company exactly when it
+        // conjoins the saham.
+        let conjoins = strong & (1 << TsSahamStrong::LordConjoins as usize) != 0;
+        assert_eq!(company[7 * row + lords[row]] == 1, conjoins, "row {row}");
+    }
+    assert!(
+        ints(&asked, "year_sahams", "node_axis")
+            .iter()
+            .all(|axis| *axis <= 1),
+        "a founded chart places the nodes"
+    );
+
+    // The Harsha bala comes with every founded year: seven rows each, a
+    // total of five units a part held.
+    let totals = ints(&asked, "year_harsha", "total");
+    assert_eq!(totals.len(), 7 * 6);
+    let parts: usize = ["sthana", "uchcha_swakshetra", "stri_purusha", "dina_ratri"]
+        .iter()
+        .map(|part| ints(&asked, "year_harsha", part).iter().sum::<usize>())
+        .sum();
+    assert_eq!(totals.iter().sum::<usize>(), 5 * parts);
+
+    // The births' own sahams come beside the years', and need no place:
+    // without one they are all that is answered.
+    assert_eq!(ints(&asked, "cast", "natal_saham_count"), vec![3, 3]);
+    assert_eq!(ints(&asked, "natal_sahams", "saham"), order.repeat(2));
+    let births = ask(r#"{"through":2,"sahams":["punya"]}"#).unwrap();
+    assert_eq!(ints(&births, "cast", "natal_saham_count"), vec![1, 1]);
+    assert_eq!(ints(&births, "natal_saham_seven", "graha").len(), 14);
+    assert!(ints(&births, "year_sahams", "saham").is_empty());
+    // A birth has no year lord.
+    let with_year_lord = 1 << TsSahamStrong::WithYearLord as usize;
+    assert!(
+        ints(&births, "natal_sahams", "strong")
+            .iter()
+            .all(|bits| bits & with_year_lord == 0)
+    );
+    // Their readings are named and read.
+    ask(r#"{"through":1,"place":"birth","sahams":"all","sahamStrength":{"natures":"parashari","friendship":"natural","weakBelow":14400},"harshaRules":{"venus":"twelfth"}}"#)
+        .unwrap();
+    refused(
+        r#"{"through":1,"sahams":["punya"],"sahamStrength":{"natures":"vedic"}}"#,
+        "varsha_json.sahamStrength.natures",
+        "vedic",
+    );
+    refused(
+        r#"{"through":1,"place":"birth","harshaRules":{"venus":"sixth"}}"#,
+        "varsha_json.harshaRules.venus",
+        "sixth",
     );
 }
 

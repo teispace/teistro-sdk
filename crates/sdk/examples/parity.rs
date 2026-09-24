@@ -1393,6 +1393,7 @@ fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &te
         };
         let key = |what: &str| format!("chart-{index}-varsha-{name}{what}");
         put(report, &key("-count"), years.len().to_string());
+        the_natal_sahams(report, sdk, document, &key, sahams);
         for one in &years {
             the_year(report, sdk, document, &key, one, (matters, sahams));
         }
@@ -1498,7 +1499,8 @@ fn the_year(
     );
     the_yogas(report, sdk, &annual.value, key, one);
     the_matters(report, sdk, &annual.value, key, one, matters);
-    the_sahams(report, sdk, &annual.value, key, one, sahams);
+    the_sahams(report, sdk, &annual.value, key, one, sahams, lord.graha);
+    the_harsha(report, sdk, &annual.value, key, one);
     put(
         report,
         &key(&format!("-{}-year-claims", one.year)),
@@ -1519,8 +1521,7 @@ fn the_year(
 }
 
 /// Every saham of one year's chart under one set of rules, when the
-/// reading asked for them: where it fell, its sign, that sign's lord, its
-/// house and whether a sign was added.
+/// reading asked for them, with its strength under the year's lord.
 fn the_sahams(
     report: &mut Report,
     sdk: &Context,
@@ -1528,37 +1529,153 @@ fn the_sahams(
     key: &dyn Fn(&str) -> String,
     one: &teistro::Pravesha,
     rules: Option<teistro::SahamRules>,
+    year_lord: teistro::catalogue::Graha,
 ) {
     let Some(rules) = rules else {
         return;
     };
-    let Ok(read) = sdk
-        .chart()
-        .sahams_with_rules(annual, &teistro::Saham::ALL, rules)
-    else {
+    let Ok(read) = sdk.chart().saham_strength_with_rules(
+        annual,
+        &teistro::Saham::ALL,
+        Some(year_lord),
+        teistro::SahamStrengthRules {
+            sahams: rules,
+            ..teistro::SahamStrengthRules::default()
+        },
+    ) else {
         return;
     };
-    for point in &read.points {
-        // The wire's own key, which every binding reads the saham back as.
-        let name = serde_json::to_value(point.saham)
-            .ok()
-            .and_then(|key| key.as_str().map(str::to_owned))
-            .unwrap_or_default();
-        let place = &point.point;
+    for point in &read {
         put(
             report,
-            &key(&format!("-{}-saham-{name}", one.year)),
-            // Inside a string, so compared as text, as the yogas' are.
-            format!(
-                "{:.6} {} {} {} {}",
-                place.longitude_deg,
-                place.sign.full_key(),
-                place.lord.full_key(),
-                place.house.get(),
-                place.added_sign
-            ),
+            &key(&format!("-{}-saham-{}", one.year, wire_key(&point.saham))),
+            saham_said(point),
         );
     }
+}
+
+/// A birth's own sahams under one set of rules, when the reading asked
+/// for them: the same line a year's saham prints.
+fn the_natal_sahams(
+    report: &mut Report,
+    sdk: &Context,
+    birth: &teistro::Document,
+    key: &dyn Fn(&str) -> String,
+    rules: Option<teistro::SahamRules>,
+) {
+    let Some(rules) = rules else {
+        return;
+    };
+    let Ok(read) = sdk.chart().saham_strength_with_rules(
+        birth,
+        &teistro::Saham::ALL,
+        None,
+        teistro::SahamStrengthRules {
+            sahams: rules,
+            ..teistro::SahamStrengthRules::default()
+        },
+    ) else {
+        return;
+    };
+    for point in &read {
+        put(
+            report,
+            &key(&format!("-natal-saham-{}", wire_key(&point.saham))),
+            saham_said(point),
+        );
+    }
+}
+
+/// One year's Harsha bala, the seven in the catalogue's order.
+fn the_harsha(
+    report: &mut Report,
+    sdk: &Context,
+    annual: &teistro::Document,
+    key: &dyn Fn(&str) -> String,
+    one: &teistro::Pravesha,
+) {
+    let Ok(seven) = sdk.chart().harsha(annual) else {
+        return;
+    };
+    let said: Vec<String> = seven
+        .iter()
+        .map(|h| {
+            format!(
+                "{}:{}:{}{}{}{}:{}:{}",
+                h.graha.full_key(),
+                h.house.get(),
+                u8::from(h.sthana),
+                u8::from(h.uchcha_swakshetra),
+                u8::from(h.stri_purusha),
+                u8::from(h.dina_ratri),
+                h.total.units(),
+                wire_key(&h.grade),
+            )
+        })
+        .collect();
+    put(
+        report,
+        &key(&format!("-{}-harsha", one.year)),
+        said.join(" "),
+    );
+}
+
+/// A member as the bindings' catalogues key it: serde's own spelling with
+/// the catalogue's hyphens, which is the generator's kebab case for every
+/// member these runners print.
+fn wire_key<T: serde::Serialize>(member: &T) -> String {
+    serde_json::to_value(member)
+        .ok()
+        .and_then(|key| key.as_str().map(|word| word.replace('_', "-")))
+        .unwrap_or_default()
+}
+
+/// One saham as every runner prints it: its place, its clauses, its
+/// lord's strengths and how the seven stand to it. Inside a string, so
+/// compared as text, as the yogas' are.
+fn saham_said(point: &teistro::SahamStrength) -> String {
+    let place = &point.place;
+    let held = |list: Vec<String>| list.join(",");
+    let strong = held(
+        point
+            .strong()
+            .iter()
+            .filter(|(_, holds)| *holds)
+            .map(|(clause, _)| wire_key(clause))
+            .collect(),
+    );
+    let weak = held(
+        point
+            .weak()
+            .iter()
+            .filter(|(_, holds)| *holds)
+            .map(|(clause, _)| wire_key(clause))
+            .collect(),
+    );
+    let axis = point
+        .in_node_axis
+        .map_or_else(|| String::from("null"), |axis| axis.to_string());
+    let seven: Vec<String> = (0..7)
+        .map(|at| {
+            format!(
+                "{}/{}/{}",
+                point.aspects.get(at).map(wire_key).unwrap_or_default(),
+                point.relations.get(at).map(wire_key).unwrap_or_default(),
+                u8::from(point.company.get(at).copied().unwrap_or(false)),
+            )
+        })
+        .collect();
+    format!(
+        "{:.6} {} {} {} {} | S:{strong} W:{weak} | {} {} {axis} | {}",
+        place.longitude_deg,
+        place.sign.full_key(),
+        place.lord.full_key(),
+        place.house.get(),
+        place.added_sign,
+        point.lord_vishwa,
+        wire_key(&point.lord_harsha),
+        seven.join(" "),
+    )
 }
 
 /// The pairs of one year's chart that make a yoga, in the order the seven

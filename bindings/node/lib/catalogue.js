@@ -3207,6 +3207,102 @@ export const SahamById = new Map([
   [40, 'labha'],
 ]);
 
+/** Every TajikaRelation by name. */
+export const TajikaRelation = Object.freeze({
+  Own: 'own',
+  Friend: 'friend',
+  Neutral: 'neutral',
+  Enemy: 'enemy',
+});
+
+/**
+ * Every TajikaRelation by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TajikaRelationById = new Map([
+  [0, 'own'],
+  [1, 'friend'],
+  [2, 'neutral'],
+  [3, 'enemy'],
+]);
+
+/** Every HarshaGrade by name. */
+export const HarshaGrade = Object.freeze({
+  Nirbala: 'nirbala',
+  Alpabali: 'alpabali',
+  MadhyaBali: 'madhya-bali',
+  PoornaBali: 'poorna-bali',
+  Extraordinary: 'extraordinary',
+});
+
+/**
+ * Every HarshaGrade by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const HarshaGradeById = new Map([
+  [0, 'nirbala'],
+  [1, 'alpabali'],
+  [2, 'madhya-bali'],
+  [3, 'poorna-bali'],
+  [4, 'extraordinary'],
+]);
+
+/** Every SahamStrong by name. */
+export const SahamStrong = Object.freeze({
+  LordExalted: 'lord-exalted',
+  LordOwnSign: 'lord-own-sign',
+  LordOwnHudda: 'lord-own-hudda',
+  LordOwnDrekkana: 'lord-own-drekkana',
+  LordOwnNavamsha: 'lord-own-navamsha',
+  LordInFriendsSign: 'lord-in-friends-sign',
+  WithFriend: 'with-friend',
+  WithBenefic: 'with-benefic',
+  WithYearLord: 'with-year-lord',
+  LordConjoins: 'lord-conjoins',
+  LordAspectsSaham: 'lord-aspects-saham',
+  LordAspectsLagna: 'lord-aspects-lagna',
+});
+
+/**
+ * Every SahamStrong by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SahamStrongById = new Map([
+  [0, 'lord-exalted'],
+  [1, 'lord-own-sign'],
+  [2, 'lord-own-hudda'],
+  [3, 'lord-own-drekkana'],
+  [4, 'lord-own-navamsha'],
+  [5, 'lord-in-friends-sign'],
+  [6, 'with-friend'],
+  [7, 'with-benefic'],
+  [8, 'with-year-lord'],
+  [9, 'lord-conjoins'],
+  [10, 'lord-aspects-saham'],
+  [11, 'lord-aspects-lagna'],
+]);
+
+/** Every SahamWeak by name. */
+export const SahamWeak = Object.freeze({
+  LordWeakVishwa: 'lord-weak-vishwa',
+  LordLacksHarsha: 'lord-lacks-harsha',
+  LordApart: 'lord-apart',
+  WithEnemy: 'with-enemy',
+  WithMalefic: 'with-malefic',
+});
+
+/**
+ * Every SahamWeak by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SahamWeakById = new Map([
+  [0, 'lord-weak-vishwa'],
+  [1, 'lord-lacks-harsha'],
+  [2, 'lord-apart'],
+  [3, 'with-enemy'],
+  [4, 'with-malefic'],
+]);
+
 /** Every Affliction by name. */
 export const Affliction = Object.freeze({
   Retrograde: 'retrograde',

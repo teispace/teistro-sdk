@@ -55,6 +55,10 @@ import type {
   Yoga,
   YearYoga,
   Saham,
+  SahamStrong,
+  SahamWeak,
+  HarshaGrade,
+  TajikaRelation,
   Affliction,
 } from './catalogue.js';
 import type {
@@ -618,6 +622,29 @@ export interface VarshaRequest {
   readonly sahams?: 'all' | readonly Saham[];
   /** The readings the sahams part on, where the sources differ. */
   readonly sahamRules?: SahamRules;
+  /** The readings a saham's strength parts on. */
+  readonly sahamStrength?: SahamStrengthReadings;
+  /** The Harsha bala's reading of Venus's house of joy. */
+  readonly harshaRules?: HarshaRules;
+}
+
+/** Where the sources differ on a saham's strength (`03-design/tajika-saham-strength.md`). */
+export interface SahamStrengthReadings {
+  /**
+   * Which planets are benefic and malefic: the `'chapter'`'s own, the Sun
+   * a malefic among them, or the catalogue's `'parashari'` natures.
+   */
+  readonly natures?: 'chapter' | 'parashari';
+  /** Tajika's `'positional'` friendship, the source's, or the catalogue's `'natural'` one. */
+  readonly friendship?: 'positional' | 'natural';
+  /** The Vishwa bala below which a saham's lord is weak, in **sub-sub units**: `5 * 3600` by default. */
+  readonly weakBelow?: number;
+}
+
+/** Where the sources differ on the Harsha bala (`03-design/tajika-harsha.md`). */
+export interface HarshaRules {
+  /** Venus's house of joy: the verse's `'fifth'`, or the `'twelfth'` a widely used program reads. */
+  readonly venus?: 'fifth' | 'twelfth';
 }
 
 /** Where the sources differ on a saham, each a named reading (`03-design/tajika-sahams.md`). */
@@ -769,8 +796,42 @@ export interface AnnualChart {
   readonly combust: readonly (Graha | 'unknown')[];
   /** The sixteen yogas for each matter `varsha.matters` asked about, in its order; empty otherwise. */
   readonly matters: readonly TajikaMatter[];
-  /** Each saham `varsha.sahams` asked for, in its order; empty otherwise. */
+  /** Each saham `varsha.sahams` asked for, in its order, with its strength under the year's lord; empty otherwise. */
   readonly sahams: readonly TajikaSaham[];
+  /** The seven's Harsha bala in this year's chart, in the catalogue's order. */
+  readonly harsha: readonly HarshaBala[];
+}
+
+/** One planet's Harsha bala: four places it is happy in, five units each. */
+export interface HarshaBala {
+  /** Whose. */
+  readonly graha: Graha | 'unknown';
+  /** The house it stands in, whole signs from the annual lagna. */
+  readonly house: number;
+  /** In its house of joy. */
+  readonly sthana: boolean;
+  /** In its exaltation or own sign. */
+  readonly uchchaSwakshetra: boolean;
+  /** In a house of its own gender, Tajika's genders. */
+  readonly striPurusha: boolean;
+  /** In a year opening at its own part of the day. */
+  readonly dinaRatri: boolean;
+  /** The parts held, five units each: 0 to 20. */
+  readonly total: number;
+  /** What the source calls that total. */
+  readonly grade: HarshaGrade | 'unknown';
+}
+
+/** How one of the seven stands to a saham. */
+export interface SahamSeven {
+  /** Which planet. */
+  readonly graha: Graha | 'unknown';
+  /** The Tajika aspect its sign casts on the saham's. */
+  readonly drishti: TajikaDrishti | 'unknown';
+  /** How it stands to the saham's lord, under the friendship read. */
+  readonly relation: TajikaRelation | 'unknown';
+  /** Whether it keeps the saham company, in the saham's sign. */
+  readonly company: boolean;
 }
 
 /** Where a saham fell in a year's chart, and what it fell in. */
@@ -787,6 +848,24 @@ export interface TajikaSaham {
   readonly house: number;
   /** Whether it was carried a sign further because c did not fall between b and a. */
   readonly addedSign: boolean;
+  /**
+   * The clauses of the source's strong list that hold. Reported and never
+   * weighed: the source gives no score, and three sahams in five meet
+   * clauses on both lists.
+   */
+  readonly strong: readonly (SahamStrong | 'unknown')[];
+  /** The clauses of the source's weak list that hold. */
+  readonly weak: readonly (SahamWeak | 'unknown')[];
+  /** The saham lord's Panchavargiya Vishwa bala. */
+  readonly lordVishwa: Bala;
+  /** The saham lord's Harsha bala grade. */
+  readonly lordHarsha: HarshaGrade | 'unknown';
+  /** Whether it stands in the Rahu-Ketu axis; `null` when the chart placed no nodes. */
+  readonly inNodeAxis: boolean | null;
+  /** In the 6th, 8th or 12th, where the source calls a saham handicapped. */
+  readonly handicapped: boolean;
+  /** How each of the seven stands to it, in the catalogue's order. */
+  readonly seven: readonly SahamSeven[];
 }
 
 /**
@@ -1561,6 +1640,11 @@ export declare class Chart {
    * schools differ on, so pass the instant to `found` yourself.
    */
   readonly praveshas: readonly Pravesha[];
+  /**
+   * The birth chart's own sahams with their strength, in the order
+   * `varsha.sahams` named them; empty unless it asked. Needs no place.
+   */
+  readonly sahams: readonly TajikaSaham[];
   /** The upagrahas and special lagnas; empty unless `points` asked. */
   readonly points: readonly DerivedPoint[];
   /** The twelve bhavas as the houses service reads them; empty unless `houses` asked. */

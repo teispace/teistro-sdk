@@ -3608,6 +3608,8 @@ final class VarshaRequest {
     this.yogas = const YogaRules(),
     this.sahams,
     this.sahamRules = const SahamRules(),
+    this.sahamStrength = const SahamStrengthReadings(),
+    this.harshaRules = const HarshaRules(),
   });
 
   /// The last year of life wanted, 1 to 200.
@@ -3658,6 +3660,12 @@ final class VarshaRequest {
   /// The readings the sahams part on, where the sources differ.
   final SahamRules sahamRules;
 
+  /// The readings a saham's strength parts on.
+  final SahamStrengthReadings sahamStrength;
+
+  /// The Harsha bala's reading of Venus's house of joy.
+  final HarshaRules harshaRules;
+
   String get _json => jsonEncode(<String, Object?>{
     'reading': reading.key,
     'through': through,
@@ -3668,7 +3676,87 @@ final class VarshaRequest {
     'yogas': yogas._json,
     if (sahams case final sahams?) 'sahams': sahams._json,
     'sahamRules': sahamRules._json,
+    'sahamStrength': sahamStrength._json,
+    'harshaRules': harshaRules._json,
   });
+}
+
+/// Which planets a saham's strength calls benefic and malefic.
+enum SahamNatures {
+  /// The chapter's own: the Sun a malefic among them.
+  chapter('chapter'),
+
+  /// The catalogue's Parashari natures.
+  parashari('parashari');
+
+  const SahamNatures(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Whose friendship a saham's "friend" and "inimical" clauses read.
+enum SahamFriendship {
+  /// Tajika's positional friendship, the only one the source defines.
+  positional('positional'),
+
+  /// The catalogue's natural friendships.
+  natural('natural');
+
+  const SahamFriendship(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Where the sources differ on a saham's strength
+/// (`03-design/tajika-saham-strength.md`). A reading left null is the
+/// SDK's own default.
+final class SahamStrengthReadings {
+  const SahamStrengthReadings({this.natures, this.friendship, this.weakBelow});
+
+  /// Which planets are benefic and malefic.
+  final SahamNatures? natures;
+
+  /// Whose friendship is read.
+  final SahamFriendship? friendship;
+
+  /// The Vishwa bala below which a saham's lord is weak, in **sub-sub
+  /// units**: `5 * 3600` by default.
+  final int? weakBelow;
+
+  Map<String, Object?> get _json => <String, Object?>{
+    if (natures case final natures?) 'natures': natures.key,
+    if (friendship case final friendship?) 'friendship': friendship.key,
+    if (weakBelow case final weakBelow?) 'weakBelow': weakBelow,
+  };
+}
+
+/// Venus's house of joy, which the Harsha bala's first part reads.
+enum VenusPlace {
+  /// The fifth: the verse's, and the default.
+  fifth('fifth'),
+
+  /// The twelfth, as a widely used program reads it.
+  twelfth('twelfth');
+
+  const VenusPlace(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Where the sources differ on the Harsha bala
+/// (`03-design/tajika-harsha.md`).
+final class HarshaRules {
+  const HarshaRules({this.venus});
+
+  /// Venus's house of joy.
+  final VenusPlace? venus;
+
+  Map<String, Object?> get _json => <String, Object?>{
+    if (venus case final venus?) 'venus': venus.key,
+  };
 }
 
 /// The sahams a request asks for: all forty-one, or these in the order you
@@ -4206,6 +4294,7 @@ final class AnnualChart {
     required this.combust,
     required this.matters,
     required this.sahams,
+    required this.harsha,
   });
 
   /// The annual chart's lagna, sidereal degrees, at the place it was cast
@@ -4237,9 +4326,73 @@ final class AnnualChart {
   /// about, in its order; empty otherwise.
   final List<TajikaMatter> matters;
 
-  /// Each saham [VarshaRequest.sahams] asked for, in its order; empty
-  /// otherwise.
+  /// Each saham [VarshaRequest.sahams] asked for, in its order, with its
+  /// strength under the year's lord; empty otherwise.
   final List<TajikaSaham> sahams;
+
+  /// The seven's Harsha bala in this year's chart, in the catalogue's
+  /// order.
+  final List<HarshaBala> harsha;
+}
+
+/// One planet's Harsha bala: four places it is happy in, five units each.
+final class HarshaBala {
+  const HarshaBala({
+    required this.graha,
+    required this.house,
+    required this.sthana,
+    required this.uchchaSwakshetra,
+    required this.striPurusha,
+    required this.dinaRatri,
+    required this.total,
+    required this.grade,
+  });
+
+  /// Whose.
+  final Graha graha;
+
+  /// The house it stands in, whole signs from the annual lagna.
+  final int house;
+
+  /// In its house of joy.
+  final bool sthana;
+
+  /// In its exaltation or own sign.
+  final bool uchchaSwakshetra;
+
+  /// In a house of its own gender, Tajika's genders.
+  final bool striPurusha;
+
+  /// In a year opening at its own part of the day.
+  final bool dinaRatri;
+
+  /// The parts held, five units each: 0 to 20.
+  final int total;
+
+  /// What the source calls that total.
+  final HarshaGrade grade;
+}
+
+/// How one of the seven stands to a saham.
+final class SahamSeven {
+  const SahamSeven({
+    required this.graha,
+    required this.drishti,
+    required this.relation,
+    required this.company,
+  });
+
+  /// Which planet.
+  final Graha graha;
+
+  /// The Tajika aspect its sign casts on the saham's.
+  final TajikaDrishti drishti;
+
+  /// How it stands to the saham's lord, under the friendship read.
+  final TajikaRelation relation;
+
+  /// Whether it keeps the saham company, in the saham's sign.
+  final bool company;
 }
 
 /// Where a saham fell in a year's chart, and what it fell in.
@@ -4251,6 +4404,12 @@ final class TajikaSaham {
     required this.lord,
     required this.house,
     required this.addedSign,
+    required this.strong,
+    required this.weak,
+    required this.lordVishwa,
+    required this.lordHarsha,
+    required this.inNodeAxis,
+    required this.seven,
   });
 
   /// Which of the forty-one.
@@ -4272,6 +4431,111 @@ final class TajikaSaham {
   /// Whether it was carried a sign further because c did not fall between
   /// b and a.
   final bool addedSign;
+
+  /// The clauses of the source's strong list that hold. Reported and never
+  /// weighed: the source gives no score, and three sahams in five meet
+  /// clauses on both lists.
+  final List<SahamStrong> strong;
+
+  /// The clauses of the source's weak list that hold.
+  final List<SahamWeak> weak;
+
+  /// The saham lord's Panchavargiya Vishwa bala.
+  final Bala lordVishwa;
+
+  /// The saham lord's Harsha bala grade.
+  final HarshaGrade lordHarsha;
+
+  /// Whether it stands in the Rahu-Ketu axis; null when the chart placed
+  /// no nodes.
+  final bool? inNodeAxis;
+
+  /// How each of the seven stands to it, in the catalogue's order.
+  final List<SahamSeven> seven;
+
+  /// In the 6th, 8th or 12th, where the source calls a saham handicapped.
+  bool get handicapped => house == 6 || house == 8 || house == 12;
+}
+
+/// A saham section's columns and the seven rows under it, from the years'
+/// sections or the births': the generated classes share no type, and one
+/// decoder must read both so they cannot drift.
+final class _SahamCols {
+  _SahamCols.year(Charts batch)
+    : saham = batch.yearSahams.saham,
+      longitudeDeg = batch.yearSahams.longitudeDeg,
+      sign = batch.yearSahams.sign,
+      lord = batch.yearSahams.lord,
+      house = batch.yearSahams.house,
+      addedSign = batch.yearSahams.addedSign,
+      strong = batch.yearSahams.strong,
+      weak = batch.yearSahams.weak,
+      lordVishwa = batch.yearSahams.lordVishwa,
+      lordHarsha = batch.yearSahams.lordHarsha,
+      nodeAxis = batch.yearSahams.nodeAxis,
+      sevenGraha = batch.yearSahamSeven.graha,
+      sevenDrishti = batch.yearSahamSeven.drishti,
+      sevenRelation = batch.yearSahamSeven.relation,
+      sevenCompany = batch.yearSahamSeven.company;
+
+  _SahamCols.natal(Charts batch)
+    : saham = batch.natalSahams.saham,
+      longitudeDeg = batch.natalSahams.longitudeDeg,
+      sign = batch.natalSahams.sign,
+      lord = batch.natalSahams.lord,
+      house = batch.natalSahams.house,
+      addedSign = batch.natalSahams.addedSign,
+      strong = batch.natalSahams.strong,
+      weak = batch.natalSahams.weak,
+      lordVishwa = batch.natalSahams.lordVishwa,
+      lordHarsha = batch.natalSahams.lordHarsha,
+      nodeAxis = batch.natalSahams.nodeAxis,
+      sevenGraha = batch.natalSahamSeven.graha,
+      sevenDrishti = batch.natalSahamSeven.drishti,
+      sevenRelation = batch.natalSahamSeven.relation,
+      sevenCompany = batch.natalSahamSeven.company;
+
+  final List<int> saham;
+  final List<double> longitudeDeg;
+  final List<int> sign;
+  final List<int> lord;
+  final List<int> house;
+  final List<int> addedSign;
+  final List<int> strong;
+  final List<int> weak;
+  final List<int> lordVishwa;
+  final List<int> lordHarsha;
+  final List<int> nodeAxis;
+  final List<int> sevenGraha;
+  final List<int> sevenDrishti;
+  final List<int> sevenRelation;
+  final List<int> sevenCompany;
+
+  /// Row [k]: where it fell, its strength clause by clause, and the seven
+  /// rows under it.
+  TajikaSaham at(int k) => TajikaSaham(
+    saham: Saham.byId(saham[k]),
+    longitudeDeg: longitudeDeg[k],
+    sign: Rashi.byId(sign[k]),
+    lord: Graha.byId(lord[k]),
+    house: house[k],
+    addedSign: addedSign[k] == 1,
+    strong: _members(strong[k], SahamStrong.values, (c) => c.id),
+    weak: _members(weak[k], SahamWeak.values, (c) => c.id),
+    lordVishwa: Bala(lordVishwa[k]),
+    lordHarsha: HarshaGrade.byId(lordHarsha[k]),
+    // 2 is the boundary's "the chart placed no nodes to read".
+    inNodeAxis: nodeAxis[k] == 2 ? null : nodeAxis[k] == 1,
+    seven: [
+      for (var at = 7 * k; at < 7 * k + 7; at += 1)
+        SahamSeven(
+          graha: Graha.byId(sevenGraha[at]),
+          drishti: TajikaDrishti.byId(sevenDrishti[at]),
+          relation: TajikaRelation.byId(sevenRelation[at]),
+          company: sevenCompany[at] == 1,
+        ),
+    ],
+  );
 }
 
 /// Where each row's block starts in each ragged section under the annual
@@ -4870,22 +5134,35 @@ final class Chart {
       combust: _seven(charts.combust[row]),
       matters: _mattersOf(row, starts),
       sahams: _sahamsOf(row, starts),
+      harsha: _harshaOf(row),
     );
   }
 
   /// A year's sahams, ragged by `sahamCount`
   /// (`03-design/tajika-sahams.md`).
   List<TajikaSaham> _sahamsOf(int row, _Starts starts) {
-    final cols = batch.yearSahams;
+    final cols = _SahamCols.year(batch);
     return [
       for (var k = starts.sahams[row]; k < starts.sahams[row + 1]; k += 1)
-        TajikaSaham(
-          saham: Saham.byId(cols.saham[k]),
-          longitudeDeg: cols.longitudeDeg[k],
-          sign: Rashi.byId(cols.sign[k]),
-          lord: Graha.byId(cols.lord[k]),
-          house: cols.house[k],
-          addedSign: cols.addedSign[k] == 1,
+        cols.at(k),
+    ];
+  }
+
+  /// A founded year's Harsha bala: seven rows a year, fixed, in the
+  /// catalogue's order (`03-design/tajika-harsha.md`).
+  List<HarshaBala> _harshaOf(int row) {
+    final h = batch.yearHarsha;
+    return [
+      for (var at = 7 * row; at < 7 * row + 7; at += 1)
+        HarshaBala(
+          graha: Graha.byId(h.graha[at]),
+          house: h.house[at],
+          sthana: h.sthana[at] == 1,
+          uchchaSwakshetra: h.uchchaSwakshetra[at] == 1,
+          striPurusha: h.striPurusha[at] == 1,
+          dinaRatri: h.dinaRatri[at] == 1,
+          total: h.total[at],
+          grade: HarshaGrade.byId(h.grade[at]),
         ),
     ];
   }
@@ -4982,6 +5259,21 @@ final class Chart {
       ],
       unanswered: _members(matters.unanswered[m], YearYoga.values, (y) => y.id),
     );
+  }
+
+  /// The birth chart's own sahams, each with its strength clause by
+  /// clause — which has no year lord — in the order
+  /// [VarshaRequest.sahams] named them; empty unless it asked. The source
+  /// reads a year's sahams beside these, and they need no place
+  /// (`03-design/tajika-saham-strength.md`).
+  List<TajikaSaham> get sahams {
+    final counts = batch.cast.natalSahamCount;
+    var from = 0;
+    for (var i = 0; i < index; i += 1) {
+      from += counts[i];
+    }
+    final cols = _SahamCols.natal(batch);
+    return [for (var k = from; k < from + counts[index]; k += 1) cols.at(k)];
   }
 
   List<Pravesha> get praveshas {

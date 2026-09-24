@@ -6702,6 +6702,195 @@ export declare const Saham: {
 export declare const SahamById: ReadonlyMap<number, Saham>;
 
 /**
+ * How a planet stands to another by Tajika's friendship: the relation a
+ * saham's company is read by (`03-design/tajika-saham-strength.md`).
+ *
+ * Mirrors `teistro::TajikaRelation` through an **exhaustive** match.
+ */
+export type TajikaRelation = 'own' | 'friend' | 'neutral' | 'enemy';
+
+/** Every TajikaRelation by name; the values are the strings the union accepts. */
+export declare const TajikaRelation: {
+  /**
+   * The planet is the other: its own.
+   */
+  readonly Own: 'own';
+  /**
+   * A friend.
+   */
+  readonly Friend: 'friend';
+  /**
+   * Neither.
+   */
+  readonly Neutral: 'neutral';
+  /**
+   * An enemy.
+   */
+  readonly Enemy: 'enemy';
+};
+
+/**
+ * Every TajikaRelation by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TajikaRelationById: ReadonlyMap<number, TajikaRelation>;
+
+/**
+ * What the source calls a planet by its Harsha bala
+ * (`03-design/tajika-harsha.md`).
+ *
+ * Mirrors `teistro::HarshaGrade` through an **exhaustive** match.
+ */
+export type HarshaGrade = 'nirbala' | 'alpabali' | 'madhya-bali' | 'poorna-bali' | 'extraordinary';
+
+/** Every HarshaGrade by name; the values are the strings the union accepts. */
+export declare const HarshaGrade: {
+  /**
+   * No part: without strength.
+   */
+  readonly Nirbala: 'nirbala';
+  /**
+   * One part, five units: weak.
+   */
+  readonly Alpabali: 'alpabali';
+  /**
+   * Two parts, ten units: of medium strength.
+   */
+  readonly MadhyaBali: 'madhya-bali';
+  /**
+   * Three parts, fifteen units: fully strong.
+   */
+  readonly PoornaBali: 'poorna-bali';
+  /**
+   * All four, twenty units: extraordinarily strong, and rare.
+   */
+  readonly Extraordinary: 'extraordinary';
+};
+
+/**
+ * Every HarshaGrade by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const HarshaGradeById: ReadonlyMap<number, HarshaGrade>;
+
+/**
+ * A clause of the source's list of what makes a saham **strong**, in its
+ * order (`03-design/tajika-saham-strength.md`). Its ids are the bit
+ * positions of a saham row's `strong` column.
+ *
+ * Mirrors `teistro::StrongClause` through an **exhaustive** match.
+ */
+export type SahamStrong =
+  | 'lord-exalted'
+  | 'lord-own-sign'
+  | 'lord-own-hudda'
+  | 'lord-own-drekkana'
+  | 'lord-own-navamsha'
+  | 'lord-in-friends-sign'
+  | 'with-friend'
+  | 'with-benefic'
+  | 'with-year-lord'
+  | 'lord-conjoins'
+  | 'lord-aspects-saham'
+  | 'lord-aspects-lagna';
+
+/** Every SahamStrong by name; the values are the strings the union accepts. */
+export declare const SahamStrong: {
+  /**
+   * Its lord is exalted.
+   */
+  readonly LordExalted: 'lord-exalted';
+  /**
+   * Its lord is in its own sign.
+   */
+  readonly LordOwnSign: 'lord-own-sign';
+  /**
+   * Its lord is in its own Hudda.
+   */
+  readonly LordOwnHudda: 'lord-own-hudda';
+  /**
+   * Its lord is in its own Drekkana.
+   */
+  readonly LordOwnDrekkana: 'lord-own-drekkana';
+  /**
+   * Its lord is in its own Navamsha.
+   */
+  readonly LordOwnNavamsha: 'lord-own-navamsha';
+  /**
+   * Its lord is in a friend's sign.
+   */
+  readonly LordInFriendsSign: 'lord-in-friends-sign';
+  /**
+   * It is with a friend of its lord.
+   */
+  readonly WithFriend: 'with-friend';
+  /**
+   * It is with a natural benefic.
+   */
+  readonly WithBenefic: 'with-benefic';
+  /**
+   * It is with the year lord.
+   */
+  readonly WithYearLord: 'with-year-lord';
+  /**
+   * Its lord conjoins it.
+   */
+  readonly LordConjoins: 'lord-conjoins';
+  /**
+   * Its lord aspects it.
+   */
+  readonly LordAspectsSaham: 'lord-aspects-saham';
+  /**
+   * Its lord aspects the lagna.
+   */
+  readonly LordAspectsLagna: 'lord-aspects-lagna';
+};
+
+/**
+ * Every SahamStrong by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SahamStrongById: ReadonlyMap<number, SahamStrong>;
+
+/**
+ * A clause of the source's list of what makes a saham **weak**, in its
+ * order. Its ids are the bit positions of a saham row's `weak` column.
+ *
+ * Mirrors `teistro::WeakClause` through an **exhaustive** match.
+ */
+export type SahamWeak = 'lord-weak-vishwa' | 'lord-lacks-harsha' | 'lord-apart' | 'with-enemy' | 'with-malefic';
+
+/** Every SahamWeak by name; the values are the strings the union accepts. */
+export declare const SahamWeak: {
+  /**
+   * Its lord is under the Panchavargiya floor.
+   */
+  readonly LordWeakVishwa: 'lord-weak-vishwa';
+  /**
+   * Its lord has no Harsha bala.
+   */
+  readonly LordLacksHarsha: 'lord-lacks-harsha';
+  /**
+   * Its lord neither aspects nor conjoins it.
+   */
+  readonly LordApart: 'lord-apart';
+  /**
+   * It is with an enemy of its lord.
+   */
+  readonly WithEnemy: 'with-enemy';
+  /**
+   * It is with a natural malefic.
+   */
+  readonly WithMalefic: 'with-malefic';
+};
+
+/**
+ * Every SahamWeak by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SahamWeakById: ReadonlyMap<number, SahamWeak>;
+
+/**
  * One of the five clauses of the source's **affliction**, which Rudda
  * and Durapha read. Its ids are the bit positions of
  * `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.

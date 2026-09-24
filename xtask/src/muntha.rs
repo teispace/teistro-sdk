@@ -2570,17 +2570,21 @@ fn the_strength(out: &mut String, kinds: &Kinds) {
     let mut rows = String::new();
     // The names are the walker's own, never typed out here, so a clause
     // renamed renames its row.
-    for (name, held) in teistro::SahamStrength::STRONG_CLAUSES
-        .iter()
-        .zip(&counts.strong)
-    {
-        let _ = writeln!(rows, "| strong | {name} | {} |", share(*held, placed));
+    for (clause, held) in teistro::StrongClause::ALL.iter().zip(&counts.strong) {
+        let _ = writeln!(
+            rows,
+            "| strong | {} | {} |",
+            clause.name(),
+            share(*held, placed)
+        );
     }
-    for (name, held) in teistro::SahamStrength::WEAK_CLAUSES
-        .iter()
-        .zip(&counts.weak)
-    {
-        let _ = writeln!(rows, "| weak | {name} | {} |", share(*held, placed));
+    for (clause, held) in teistro::WeakClause::ALL.iter().zip(&counts.weak) {
+        let _ = writeln!(
+            rows,
+            "| weak | {} | {} |",
+            clause.name(),
+            share(*held, placed)
+        );
     }
     let _ = write!(
         out,

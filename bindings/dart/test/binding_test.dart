@@ -1692,12 +1692,67 @@ void _engineTests() {
 
     Matcher refusedBy(String field) =>
         throwsA(isA<TeistroException>().having((e) => e.field, 'field', field));
-    expect(
-      () => years(
-        const VarshaRequest(through: 2, sahams: Sahams.these([Saham.punya])),
+    // Each saham carries its strength, every founded year its Harsha
+    // bala, and every birth its own sahams, which need no place.
+    final chart = ctx.chart.found(
+      instant: 2447995.4895833335,
+      place: place,
+      utcOffsetSeconds: 20700,
+      varsha: const VarshaRequest(
+        through: 2,
+        place: AnnualPlace.birth,
+        sahams: Sahams.all,
+        sahamStrength: SahamStrengthReadings(
+          natures: SahamNatures.chapter,
+          friendship: SahamFriendship.positional,
+          weakBelow: 5 * 3600,
+        ),
+        harshaRules: HarshaRules(venus: VenusPlace.twelfth),
       ),
-      refusedBy('varsha_json.sahams'),
     );
+    for (final one in chart.praveshas) {
+      final annual = one.annual!;
+      for (final saham in annual.sahams) {
+        final near =
+            saham.strong.contains(SahamStrong.lordConjoins) ||
+            saham.strong.contains(SahamStrong.lordAspectsSaham);
+        // The two (c) clauses negate each other: exactly one holds.
+        expect(near, isNot(saham.weak.contains(SahamWeak.lordApart)));
+        expect(saham.seven, hasLength(7));
+        expect(
+          saham.seven.firstWhere((s) => s.graha == saham.lord).company,
+          saham.strong.contains(SahamStrong.lordConjoins),
+        );
+        expect(saham.inNodeAxis, isNotNull);
+      }
+      expect(annual.harsha, hasLength(7));
+      for (final h in annual.harsha) {
+        final parts =
+            [
+              h.sthana,
+              h.uchchaSwakshetra,
+              h.striPurusha,
+              h.dinaRatri,
+            ].where((held) => held).length;
+        expect(h.total, 5 * parts);
+      }
+    }
+    expect(chart.sahams, hasLength(41));
+    expect(
+      chart.sahams.every((s) => !s.strong.contains(SahamStrong.withYearLord)),
+      isTrue,
+    );
+    final natal = ctx.chart.found(
+      instant: 2447995.4895833335,
+      place: place,
+      utcOffsetSeconds: 20700,
+      varsha: const VarshaRequest(
+        through: 1,
+        sahams: Sahams.these([Saham.punya]),
+      ),
+    );
+    expect(natal.sahams.map((s) => s.saham), [Saham.punya]);
+    expect(natal.praveshas.first.annual, isNull);
     expect(
       () => years(
         const VarshaRequest(
