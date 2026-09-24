@@ -72,7 +72,9 @@ void main() {
     '${week.length} days at ${place.latitudeDeg}°N ${place.longitudeDeg}°E, '
     'one crossing',
   );
-  print('calendar ${week.calendar.key}   model ${week.model.split(',').first}');
+  print(
+    'calendar ${week.calendar.fullKey}   model ${week.model.split(',').first}',
+  );
   print('');
 
   for (final day in week.each) {
@@ -165,7 +167,7 @@ void main() {
     utcOffsetSeconds: offsetSeconds,
   );
   print(
-    'almanacDay     ${name(one.vara.fullKey)}  ${one.horas.length} horas, '
+    'day(one)       ${name(one.vara.fullKey)}  ${one.horas.length} horas, '
     '${one.muhurtas.length} muhurtas, ${one.choghadiya.length} choghadiya',
   );
   ctx.dispose();

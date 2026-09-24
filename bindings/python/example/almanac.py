@@ -84,7 +84,7 @@ def main() -> None:
             f"{len(week)} days at {place.latitude_deg}°N "
             f"{place.longitude_deg}°E, one crossing"
         )
-        print(f"calendar {week.calendar.key}   model {week.model.split(',')[0]}")
+        print(f"calendar {week.calendar.full_key}   model {week.model.split(',')[0]}")
         print("")
 
         columns = week.decoded.day
@@ -170,7 +170,7 @@ def main() -> None:
             utc_offset_seconds=OFFSET_SECONDS,
         )
         print(
-            f"almanac_day    {name(one.vara.full_key)}  {len(one.horas)} horas, "
+            f"day(one)       {name(one.vara.full_key)}  {len(one.horas)} horas, "
             f"{len(one.muhurtas)} muhurtas, {len(one.choghadiya)} choghadiya"
         )
 

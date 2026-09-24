@@ -5257,6 +5257,45 @@ final class Bhava {
   final double sandhiDeg;
 }
 
+/// Where in its day a chart's moment falls: the ishtakaal and the hora.
+/// The same record in every binding.
+final class ChartTiming {
+  const ChartTiming({
+    required this.ghati,
+    required this.pala,
+    required this.vipala,
+    required this.ghatiReckoning,
+    required this.horaNumber,
+    required this.horaLord,
+    required this.horaStart,
+    required this.horaEnd,
+  });
+
+  /// The ishtakaal's ghatis since sunrise, 0 to 59.
+  final int ghati;
+
+  /// Its palas, 0 to 59.
+  final int pala;
+
+  /// Its vipalas, 0 to 59.
+  final int vipala;
+
+  /// How the ghatis were measured.
+  final GhatiReckoning ghatiReckoning;
+
+  /// Which hora of the day holds the instant, 1 to 24.
+  final int horaNumber;
+
+  /// The graha that rules it.
+  final Graha horaLord;
+
+  /// When that hora began, as a Julian day (UTC).
+  final double horaStart;
+
+  /// When it ends, as a Julian day (UTC).
+  final double horaEnd;
+}
+
 /// One founded chart: a view over its batch, not a copy.
 ///
 /// Every getter reads the batch's columns at this chart's index, so a
@@ -5304,6 +5343,22 @@ final class Chart {
 
   /// The graha that rules the hora holding the instant.
   Graha get horaLord => Graha.byId(batch.timing.horaLord[index]);
+
+  /// Where in its day the moment falls, in the reckonings the settings
+  /// named.
+  ChartTiming get timing {
+    final t = batch.timing;
+    return ChartTiming(
+      ghati: t.ghati[index],
+      pala: t.pala[index],
+      vipala: t.vipala[index],
+      ghatiReckoning: GhatiReckoning.byId(t.ghatiReckoning[index]),
+      horaNumber: t.horaNumber[index],
+      horaLord: Graha.byId(t.horaLord[index]),
+      horaStart: t.horaStart[index],
+      horaEnd: t.horaEnd[index],
+    );
+  }
 
   /// What each graha **is**, as opposed to where it is — or an empty
   /// list unless `state: true` asked for it.

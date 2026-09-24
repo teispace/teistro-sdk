@@ -20,6 +20,7 @@ from teistro import (
     EphemerisProvider,
     PositionAnswer,
     PositionQuery,
+    ProviderCode,
     Status,
     TeistroError,
 )
@@ -110,7 +111,9 @@ class AProviderWrittenInPython(WithLibrary):
         self.assertIn("MARS; it answers SUN", str(caught.exception))
         self.assertEqual(provider.asked, 0, "it was never asked")
 
-    def test_an_instant_outside_its_coverage_is_refused(self) -> None:
+    def test_an_instant_outside_its_coverage_is_a_cell_and_never_asked_for(self) -> None:
+        # As a native provider answers it: the batch keeps what it can
+        # compute, and the provider sees only the instants it declared.
         class Narrow(StraightLine):
             name = "narrow"
             jd_min = 2451545.0
@@ -118,9 +121,14 @@ class AProviderWrittenInPython(WithLibrary):
 
         provider = Narrow()
         with self.teistro.context(profile=PROFILE, provider=provider) as ctx:
-            with self.assertRaises(Exception) as caught:
-                ctx.positions(instants=[2400000.0], bodies=[Body.SUN])
-        self.assertIn("coverage", str(caught.exception))
+            sky = ctx.positions(instants=[2400000.0, 2451545.5], bodies=[Body.SUN])
+            outside, inside = sky.at(0, 0), sky.at(1, 0)
+        self.assertEqual(outside.status, int(ProviderCode.OUT_OF_RANGE))
+        self.assertEqual(inside.status, int(ProviderCode.OK))
+        self.assertEqual(inside.distance, 1.0)
+        self.assertEqual(provider.asked, 1)
+        assert provider.last is not None
+        self.assertEqual(list(provider.last.jds), [2451545.5])
 
     def test_what_it_raises_reaches_the_caller(self) -> None:
         # This is the one that matters: a Python exception escaping a

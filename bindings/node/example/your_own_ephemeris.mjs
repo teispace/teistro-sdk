@@ -17,9 +17,11 @@
 //   provider's native frame and completes the rest itself, stamping each
 //   step. This is why an engine that knows nothing about the ayanamsha
 //   can serve a Vedic chart.
-// - **Say what you cover.** `bodies`, `jdMin` and `jdMax` are checked
-//   *before* the provider is called, so a request it cannot serve is
-//   refused by name rather than by a wrong answer.
+// - **Say what you cover.** `bodies` is checked *before* the provider is
+//   called, so a body it does not answer is refused by name rather than by
+//   a wrong answer. An instant outside `jdMin`..`jdMax` is never asked
+//   for: its cells come back `out-of-range` and the rest are answered,
+//   as they would be from any engine.
 // - **Throwing is allowed.** What it threw reaches the caller, so the
 //   sentence is not lost; only a code crosses the C ABI.
 
@@ -27,6 +29,8 @@ import {
   Ayanamsha,
   Body,
   Context,
+  ProviderCodeById,
+  TeistroError,
   canonicalFrame,
   packFrame,
 } from '../lib/index.js';
@@ -132,12 +136,13 @@ function tableEphemeris({ wantedFrame = null, broken = false } = {}) {
 
 // ── An instant outside its coverage ────────────────────────────────────
 {
-  const ctx = new Context({ profile: 'parashari-classical', provider: tableEphemeris() });
-  try {
-    ctx.positions({ instants: [2200000.0], bodies: [Body.Sun] });
-  } catch (error) {
-    console.log(`refused  ${error.message}`);
-  }
+  const provider = tableEphemeris();
+  const ctx = new Context({ profile: 'parashari-classical', provider });
+  const sky = ctx.positions({ instants: [2200000.0, 2451545.0], bodies: [Body.Sun] });
+  const status = (row) => ProviderCodeById.get(sky.at(row, 0).status);
+  console.log('');
+  console.log(`coverage 2200000 is ${status(0)} and 2451545 is ${status(1)}:`);
+  console.log(`         the provider was asked for ${provider.state.cells} cell(s)`);
   ctx.dispose();
 }
 
@@ -172,9 +177,11 @@ function tableEphemeris({ wantedFrame = null, broken = false } = {}) {
   try {
     ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] });
   } catch (error) {
+    // What the provider threw, and not the library's refusal of it.
+    if (error instanceof TeistroError) throw error;
     console.log('');
-    console.log(`thrown   ${error.constructor.name}: ${error.message}`);
-    console.log('         the error itself crossed back, not just a code');
+    console.log(`thrown   ${error.message}`);
+    console.log("         the provider's own error crossed back, not just a code");
   }
   ctx.dispose();
 }

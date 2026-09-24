@@ -35,6 +35,14 @@
 //! two languages' formatting may disagree in the last digit and that is
 //! not a difference between the bindings.
 //!
+//! # The shared examples
+//!
+//! After the values, the examples every binding carries are run and
+//! compared the same way, byte for byte rather than value for value
+//! (`examples.rs`): the same names in each binding, and the same output
+//! from each. The scenario says the bindings answer alike; the examples
+//! say a reader who copies one gets what the page beside it promised.
+//!
 //! Run by hand (`cargo xtask check-parity`) and in the nightly matrix; a
 //! toolchain that is missing is reported and its runner skipped, and a
 //! run with fewer than two reports is nothing to compare.
@@ -43,6 +51,7 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::binding::{build, library, library_artefact, present};
+use crate::examples::{Binding, Runtime, differences};
 use crate::measure::plural;
 
 const NODE: &str = "bindings/node/parity.mjs";
@@ -353,6 +362,18 @@ pub(crate) fn check(root: &Path) -> i32 {
         );
         return 1;
     }
+    let values = values_agree(&reports, ran);
+    let present = |binding: Binding| match binding {
+        Binding::Node => has_node,
+        Binding::Python => has_python,
+        Binding::Dart => has_dart,
+    };
+    let examples = examples_agree(root, present);
+    values.max(examples)
+}
+
+/// The reports compared, value for value: 0 when they agree.
+fn values_agree(reports: &[Report], ran: bool) -> i32 {
     if reports.len() < 2 {
         println!("skip  nothing to compare: {} report(s)", reports.len());
         return i32::from(reports.is_empty() && ran);
@@ -382,5 +403,60 @@ pub(crate) fn check(root: &Path) -> i32 {
     } else {
         println!("FAIL  the bindings disagree on {differences} value(s)");
         1
+    }
+}
+
+/// The shared examples, run in every binding this machine can run and
+/// compared byte for byte (`examples.rs`): 0 when they print alike.
+///
+/// Counted as the runners are: a binding whose examples were tried and
+/// failed is a failure, never a skip, or a crashed example would leave
+/// the others agreeing about a set that was never whole.
+fn examples_agree(root: &Path, present: impl Fn(Binding) -> bool) -> i32 {
+    let runtime = Runtime::of(root);
+    let mut sets = Vec::new();
+    let mut attempted = 0usize;
+    for binding in Binding::ALL {
+        if !present(binding) {
+            continue;
+        }
+        attempted += 1;
+        if let Ok(ran) = binding.run(root, &runtime) {
+            sets.push((binding, ran));
+        }
+    }
+    if sets.len() < attempted {
+        println!(
+            "FAIL  {} of the {} this machine can run did not run their examples",
+            attempted - sets.len(),
+            plural(attempted, "binding")
+        );
+        return 1;
+    }
+    if sets.len() < 2 {
+        println!(
+            "skip  no examples to compare: {}",
+            plural(sets.len(), "binding")
+        );
+        return 0;
+    }
+    let names: Vec<&str> = sets.iter().map(|(binding, _)| binding.name()).collect();
+    match differences(&sets) {
+        0 => {
+            let count = sets.first().map_or(0, |(_, ran)| ran.len());
+            println!(
+                "ok    the {} print alike in {}",
+                plural(count, "shared example"),
+                names.join(", ")
+            );
+            0
+        }
+        found => {
+            println!(
+                "FAIL  the shared examples differ in {}",
+                plural(found, "way")
+            );
+            1
+        }
     }
 }

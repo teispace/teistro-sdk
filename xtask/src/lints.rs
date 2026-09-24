@@ -676,6 +676,135 @@ fn composers_reach_every_binding(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// The API description every binding's catalogue is generated from.
+const DESCRIPTION: &str = "idl/api.json";
+
+/// The kinds a binding's own layer spells as something else, each with
+/// the reason. Every binding must shadow exactly these: one that does not
+/// exports the kind where the others export a record, and one that
+/// shadows another name hides a kind the others export.
+const SHADOWED: [(&str, &str); 1] = [(
+    "MoonEvent",
+    "the record a panchanga day's `moon_events` decode to, reading the kind's column as `rise`",
+)];
+
+/// Each binding's hand-written layer, and the pattern a top-level
+/// declaration in it takes, the name in its first group.
+const LAYERS: [(&str, &str); 3] = [
+    (
+        "bindings/node/lib/index.d.ts",
+        r"^export (?:declare )?(?:interface|type|class|const|function|enum) (\w+)",
+    ),
+    (
+        "bindings/dart/lib/teistro.dart",
+        r"^(?:(?:final|sealed|abstract|base|interface) )*(?:class|enum|typedef|mixin|extension type) (\w+)",
+    ),
+    (
+        "bindings/python/teistro/__init__.py",
+        r"^(?:class (\w+)|(\w+)(?:: TypeAlias)? = )",
+    ),
+];
+
+/// That no binding's hand-written layer hides a generated kind behind a
+/// declaration of its own, except the ones [`SHADOWED`] lists.
+///
+/// The defect this holds is silent in two languages at once: Node's
+/// `export *` gives way to an explicit export of the same name, and Dart's
+/// re-export to a declaration of the library's own, so a hand-kept union
+/// that shadows the catalogue's compiles, type-checks and lags. Node's
+/// `VarsheshaChosen` did for a day, three of its ten steps short, and two
+/// more Tajika unions were copies waiting to do the same.
+fn layers_do_not_shadow_a_kind(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "layer-does-not-shadow-a-kind";
+    let kinds: Vec<String> = std::fs::read_to_string(root.join(DESCRIPTION))
+        .ok()
+        .and_then(|text| serde_json::from_str::<serde_json::Value>(&text).ok())
+        .and_then(|api| {
+            // The description spells a kind as C does, `TsGraha` for the
+            // prefix `ts_`; every binding spells it without the prefix.
+            let prefix: String = api
+                .get("prefix")?
+                .as_str()?
+                .split('_')
+                .map(|part| {
+                    let mut letters = part.chars();
+                    letters.next().map_or_else(String::new, |first| {
+                        first.to_uppercase().chain(letters).collect()
+                    })
+                })
+                .collect();
+            api.get("enums")?
+                .as_array()?
+                .iter()
+                .map(|e| {
+                    let name = e.get("name")?.as_str()?;
+                    Some(name.strip_prefix(&prefix).unwrap_or(name).to_owned())
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+    if kinds.is_empty() {
+        outcome.failures.push(Finding {
+            file: DESCRIPTION.to_owned(),
+            line: 1,
+            text: String::from("names no enums, so no layer could be checked against it"),
+            rule: RULE,
+        });
+        return;
+    }
+    let expected: Vec<&str> = SHADOWED.iter().map(|(name, _)| *name).collect();
+    for (layer, pattern) in LAYERS {
+        let Ok(text) = std::fs::read_to_string(root.join(layer)) else {
+            outcome.failures.push(Finding {
+                file: layer.to_owned(),
+                line: 1,
+                text: String::from("is a binding's layer and could not be read"),
+                rule: RULE,
+            });
+            continue;
+        };
+        let Ok(declaration) = regex::Regex::new(pattern) else {
+            continue;
+        };
+        let mut shadowed: Vec<&str> = Vec::new();
+        for (index, line) in text.lines().enumerate() {
+            let Some(name) = declaration
+                .captures(line)
+                .and_then(|found| found.iter().skip(1).flatten().next())
+                .map(|name| name.as_str())
+            else {
+                continue;
+            };
+            if !kinds.iter().any(|kind| kind == name) || shadowed.contains(&name) {
+                continue;
+            }
+            shadowed.push(name);
+            let finding = Finding {
+                file: layer.to_owned(),
+                line: index + 1,
+                text: format!("declares `{name}`, which is a generated kind"),
+                rule: RULE,
+            };
+            if expected.contains(&name) {
+                outcome.allowed.push(finding);
+            } else {
+                outcome.failures.push(finding);
+            }
+        }
+        for name in expected.iter().filter(|name| !shadowed.contains(name)) {
+            outcome.failures.push(Finding {
+                file: layer.to_owned(),
+                line: 1,
+                text: format!(
+                    "does not declare `{name}`, which the other bindings spell as their own; \
+                     export the kind under it or drop it from SHADOWED"
+                ),
+                rule: RULE,
+            });
+        }
+    }
+}
+
 /// Where the generated pages live, and the suffix that marks one.
 const MEASURED: (&str, &str) = ("docs/03-design", "-measured.md");
 
@@ -1641,6 +1770,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     serialised_types_describe_themselves(root, &mut outcome);
     predicates_are_listed(root, &mut outcome);
     composers_reach_every_binding(root, &mut outcome);
+    layers_do_not_shadow_a_kind(root, &mut outcome);
     crates_are_listed(root, &mut outcome);
     open_questions_are_named(root, &mut outcome);
     generated_pages_are_gated(root, &mut outcome);
@@ -1663,6 +1793,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "serialised-type-describes-itself",
         "every-predicate-is-listed",
         "composer-reaches-every-binding",
+        "layer-does-not-shadow-a-kind",
         "crate-is-listed",
         "open-question-is-named",
         "generated-page-is-gated",

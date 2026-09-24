@@ -68,7 +68,17 @@ console.log(
     `${positions.length} positions, ${aspects.length} drishtis, ` +
     `${conditions.length} conditions, ${karakas.length} karakas`,
 );
-console.log(`keys     ${[...new Set(placements.concat(readings).map((item) => item.key))].join(', ')}`);
+const every = [
+  ...placements,
+  ...readings,
+  ...strength,
+  ...houses,
+  ...positions,
+  ...aspects,
+  ...conditions,
+  ...karakas,
+];
+console.log(`keys     ${[...new Set(every.map((item) => item.key))].join(', ')}`);
 
 // ── The same plan, said twice ──────────────────────────────────────────
 // Nothing between an item and the renderer: `item.params` is what
@@ -98,6 +108,7 @@ for (const locale of ['en-Latn', 'ne-Deva-NP']) {
 
 // ── What it does not say, and what it refuses ──────────────────────────
 const lagna = placements.some((item) => JSON.stringify(item.params).includes('LAGNA'));
+console.log(`\nthe lagna is in the placements: ${lagna}`);
 // The Shadbala says whether a graha reaches its required rupas; no locale
 // says it, so the plan does not either.
 const strong = strength.some((item) => JSON.stringify(item.params).includes('strong'));
@@ -110,7 +121,6 @@ console.log(`a houses item claims a sign: ${classed}`);
 // locale's rendering, never a string the composer wrote.
 const written = positions.some((item) => JSON.stringify(item.params).includes('\u00b0'));
 console.log(`a position item carries a rendered angle: ${written}`);
-console.log(`\nthe lagna is in the placements: ${lagna}`);
 
 try {
   ctx.chart.found({
@@ -122,6 +132,7 @@ try {
 } catch (error) {
   if (!(error instanceof TeistroError)) throw error;
   console.log(`refused  ${error.field}: ${error.message}`);
+  console.log(`hint     ${error.hint}`);
 }
 
 ctx.dispose();

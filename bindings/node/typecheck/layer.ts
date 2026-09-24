@@ -306,6 +306,22 @@ function theYearsOwnChart(ctx: Context): string {
   }).praveshas[0]!;
   const annual = year.annual!;
   const lord: string = `${annual.yearLord.graha} ${annual.yearLord.chosen}`;
+  // Every step of the chain, and no other: a hand-kept copy of this union
+  // once shadowed the catalogue's and lacked the Moon's three readings.
+  const steps: Record<typeof annual.yearLord.chosen, string> = {
+    strongest: 'the strongest',
+    'most-portfolios': 'the most portfolios',
+    'muntha-lord-unaspected': "the Muntha's lord, unaspected",
+    'muntha-lord-all-weak': "the Muntha's lord, all weak",
+    'muntha-lord-tied': "the Muntha's lord, tied",
+    'dina-ratri-tied': 'the day or night lord, tied',
+    'annual-lagna-lord-unaspected': "the year's lagna lord, unaspected",
+    'strongest-unaspected': 'the strongest, unaspected',
+    'moons-ithasala': "through the Moon's Ithasala",
+    'moons-sign-lord': "the Moon's sign lord",
+    unknown: 'a step this build does not know',
+  };
+  const step: string = steps[annual.yearLord.chosen];
   const bala: number = annual.yearLord.vishwa.units + annual.yearLord.vishwa.total;
   const claim = annual.yearLord.claims[0]!;
   const held: number = claim.portfolios;
@@ -313,7 +329,7 @@ function theYearsOwnChart(ctx: Context): string {
   const pair = annual.yogas[0];
   const orb: number = pair?.orbDeg ?? 0;
   const muntha: string = `${year.muntha.sign} ${year.muntha.lord}`;
-  return `${lord} ${bala} ${held} ${aspects} ${orb} ${muntha} ${annual.byDay}`;
+  return `${lord} ${step} ${bala} ${held} ${aspects} ${orb} ${muntha} ${annual.byDay}`;
 }
 
 void theYearsOwnChart;

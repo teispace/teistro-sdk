@@ -19,7 +19,7 @@ void main() {
     Calendar.gregorian.date(2015, 4, 14),
     Calendar.bikramSambat,
   );
-  print('${bs.year}-${bs.month}-${bs.day} ${bs.era?.key}');
+  print('${bs.year}-${bs.month}-${bs.day} ${bs.era?.fullKey ?? ''}');
 
   // A Kathmandu birth time, with the metadata a stored chart keeps.
   final resolved = ctx.time.resolve(

@@ -374,11 +374,12 @@ void main() {
       'chart-$i-date',
       '${charts.day.year[i]}-${charts.day.month[i]}-${charts.day.dayOfMonth[i]}',
     );
-    put('chart-$i-ghati', charts.timing.ghati[i]);
-    put('chart-$i-pala', charts.timing.pala[i]);
-    put('chart-$i-vipala', charts.timing.vipala[i]);
-    put('chart-$i-hora-number', charts.timing.horaNumber[i]);
-    put('chart-$i-hora-lord', chart.horaLord.fullKey);
+    final timing = chart.timing;
+    put('chart-$i-ghati', timing.ghati);
+    put('chart-$i-pala', timing.pala);
+    put('chart-$i-vipala', timing.vipala);
+    put('chart-$i-hora-number', timing.horaNumber);
+    put('chart-$i-hora-lord', timing.horaLord.fullKey);
     final states = chart.states;
     for (var j = 0; j < states.length; j += 1) {
       final state = states[j];

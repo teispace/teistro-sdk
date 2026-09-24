@@ -27,6 +27,7 @@ import {
   ChartKindById,
   ChoghadiyaById,
   DirectionById,
+  GhatiReckoningById,
   GrahaById,
   HouseSystemById,
   KaalaById,
@@ -324,25 +325,14 @@ function describeProvider(provider) {
   });
   // The callback answers with plain arrays; a column left out is zeroes,
   // which is what a provider that computes no speeds means.
-  // The coverage span, and only that: a topocentric frame without an
-  // observer, a body the provider never declared and an instant that is
-  // not a number are all refused by the port itself, on the SDK's side of
-  // the boundary, where the sentence survives into a `TeistroError` that
-  // names what is missing. The Dart and Python adapters keep exactly this
-  // much and no more.
-  const validate = (request) => {
-    const low = provider.jdMin ?? 1721057.5;
-    const high = provider.jdMax ?? 2816787.5;
-    for (const jd of request.jds) {
-      if (jd < low || jd > high) {
-        throw new RangeError(
-          `the instant ${jd} is outside the provider's coverage (${low} to ${high})`,
-        );
-      }
-    }
-  };
+  // Nothing is checked here. The coverage span, a topocentric frame
+  // without an observer, a body the provider never declared and an instant
+  // that is not a number are all the port's, on the SDK's side of the
+  // boundary: an instant outside the span comes back as an `OUT_OF_RANGE`
+  // cell and never reaches `positions`, exactly as it would from a native
+  // provider, and the rest are refused as a `TeistroError` that names what
+  // is missing. The Dart and Python adapters check nothing either.
   const answering = (request) => {
-    validate(request);
     const answer = provider.positions(request);
     // Nothing means "I cannot produce that frame"; the SDK then asks for
     // the provider's native frame and completes the rest itself.
@@ -633,7 +623,11 @@ export class Chart {
   /** Where in its day the moment falls, and which hora holds it. */
   get timing() {
     const timing = row(this.#batch.decoded.timing, this.#index);
-    return { ...timing, horaLord: GrahaById.get(timing.horaLord) ?? 'unknown' };
+    return {
+      ...timing,
+      ghatiReckoning: GhatiReckoningById.get(timing.ghatiReckoning) ?? 'unknown',
+      horaLord: GrahaById.get(timing.horaLord) ?? 'unknown',
+    };
   }
 
   /**

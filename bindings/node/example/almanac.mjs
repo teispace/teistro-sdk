@@ -130,7 +130,7 @@ const one = ctx.almanac.day({
   utcOffsetSeconds: 20700,
 });
 console.log(
-  `almanacDay     ${name(one.day.vara)}  ${one.horas.length} horas, ${one.muhurtas.length} muhurtas, ` +
+  `day(one)       ${name(one.day.vara)}  ${one.horas.length} horas, ${one.muhurtas.length} muhurtas, ` +
     `${one.choghadiya.length} choghadiya`,
 );
 ctx.dispose();

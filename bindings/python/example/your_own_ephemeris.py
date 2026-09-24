@@ -16,9 +16,11 @@ The contract is small and worth reading carefully:
   provider's own frame and completes the rest itself, stamping each step.
   This is why an engine that knows nothing about the ecliptic can still
   serve a Vedic chart.
-- **Say what you cover.** `bodies`, `jd_min` and `jd_max` are checked
-  *before* the provider is called, so a request it cannot serve is
-  refused by name rather than by a wrong answer.
+- **Say what you cover.** `bodies` is checked *before* the provider is
+  called, so a body it does not answer is refused by name rather than by
+  a wrong answer. An instant outside `jd_min`..`jd_max` is never asked
+  for: its cells come back `out-of-range` and the rest are answered, as
+  they would be from any engine.
 - **Raising is allowed.** An exception is carried across the boundary as
   a refusal code and re-raised on the caller's side, so the sentence is
   not lost. That matters more here than in a compiled binding: an
@@ -37,12 +39,13 @@ import dataclasses
 import json
 from typing import Optional, Sequence
 
-from teistro.catalogue import Ayanamsha
 from teistro import (
+    Ayanamsha,
     Body,
     EphemerisProvider,
     PositionAnswer,
     PositionQuery,
+    ProviderCode,
     Status,
     Teistro,
     TeistroError,
@@ -130,15 +133,6 @@ class Broken(TableEphemeris):
         raise FileNotFoundError("ephemeris file de431.eph is not where the index says")
 
 
-def reason(error: BaseException) -> str:
-    """The sentence inside a refusal, whatever kind it is.
-
-    A library refusal carries its hint as well, which belongs in front of
-    a person and not in the middle of a demonstration.
-    """
-    return error.message if isinstance(error, TeistroError) else str(error)
-
-
 def main() -> None:
     teistro = Teistro.open()
 
@@ -169,18 +163,22 @@ def main() -> None:
     with teistro.context(profile="parashari-classical", provider=provider) as ctx:
         try:
             ctx.positions(instants=[2451545.0], bodies=[Body.SATURN])
-        except Exception as error:  # noqa: BLE001 — the point is what it says
+        except TeistroError as error:
             print()
-            print(f"refused  {reason(error)}")
+            print(f"refused  {error.message}")
             print(f"         and the provider was asked {provider.calls} times")
 
     # ── An instant outside its coverage ───────────────────────────────
     provider = TableEphemeris()
     with teistro.context(profile="parashari-classical", provider=provider) as ctx:
-        try:
-            ctx.positions(instants=[2200000.0], bodies=[Body.SUN])
-        except Exception as error:  # noqa: BLE001
-            print(f"refused  {reason(error)}")
+        sky = ctx.positions(instants=[2200000.0, 2451545.0], bodies=[Body.SUN])
+
+        def status(row: int) -> str:
+            return ProviderCode(sky.at(row, 0).status).key
+
+        print()
+        print(f"coverage 2200000 is {status(0)} and 2451545 is {status(1)}:")
+        print(f"         the provider was asked for {provider.cells} cell(s)")
 
     # ── A frame it does not compute ───────────────────────────────────
     # This provider computes tropical positions and declares no native
@@ -217,8 +215,8 @@ def main() -> None:
             ctx.positions(instants=[2451545.0], bodies=[Body.SUN])
         except FileNotFoundError as error:
             print()
-            print(f"raised   {type(error).__name__}: {error}")
-            print("         the exception itself crossed back, not just a code")
+            print(f"thrown   {error}")
+            print("         the provider's own error crossed back, not just a code")
 
     # ── A refusal a user should see ───────────────────────────────────
     # Every refusal from the library carries a status a program can match

@@ -110,10 +110,12 @@ console.log(
 );
 
 // ── The columns ────────────────────────────────────────────────────────
+// Point 2 above, checked rather than printed: the type is this language's own.
 const cells = sky.cells;
+if (!(cells.lon instanceof Float64Array)) throw new Error('lon is not a Float64Array');
 console.log(
-  `columns  lon is a ${cells.lon.constructor.name}` +
-    ` of ${cells.lon.length} values, ${cells.lon.byteLength} bytes`,
+  `columns  lon holds ${cells.lon.length} doubles in ${cells.lon.byteLength} bytes,` +
+    " a view over the blob's own bytes",
 );
 
 // ── What the columns are for ───────────────────────────────────────────
@@ -127,7 +129,7 @@ for (const [column, [body, graha]] of BODIES.entries()) {
   const key = body.split('.').at(-1);
   console.log(
     `  ${key.padEnd(10)} ${name.padEnd(8)} ${direction.padEnd(10)} at` +
-      ` ${speed >= 0 ? '+' : ''}${speed.toFixed(4).padStart(7)}°/day,` +
+      ` ${`${speed >= 0 ? '+' : ''}${speed.toFixed(4)}`.padStart(8)}°/day,` +
       ` ${crossings.length} sign change(s), ${turns.length} station(s)`,
   );
   for (const [day, sign] of crossings.slice(0, 3)) {

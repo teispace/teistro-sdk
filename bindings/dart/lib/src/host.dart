@@ -156,7 +156,9 @@ abstract base class EphemerisProvider {
   /// default.
   String get dataVersion => '';
 
-  /// The first Julian day it covers; year 0 by default.
+  /// The first Julian day it covers; year 0 by default. An instant
+  /// outside the span is never asked for: its cells come back
+  /// `OUT_OF_RANGE` and the rest of the batch is answered.
   double get jdMin => 1721057.5;
 
   /// The last Julian day it covers; year 3000 by default.
@@ -342,9 +344,10 @@ final class HostProvider {
   }
 
   int _answer(PositionRequestStruct request, PositionColumnsStruct out) {
+    // Nothing is checked before the provider is asked: coverage, the
+    // observer, the bodies and the instants are all the port's, on the
+    // SDK's side, so an instant outside the span never arrives here.
     final query = _read(request);
-    final refusal = _validate(query);
-    if (refusal != null) return refusal;
     final cells = query.cellCount;
     if (out.capacity < cells) return ProviderCode.invalid.id;
     final answer = provider.positions(query);
@@ -398,27 +401,6 @@ final class HostProvider {
       for (var i = 0; i < request.bodyCount; i++) Body.byId(request.bodies[i]),
     ],
   );
-
-  /// What this side checks before the provider is asked.
-  ///
-  /// Only the coverage span: a topocentric frame without an observer, a
-  /// body the provider never declared and an instant that is not a number
-  /// are all refused by the port itself, on the SDK's side of the
-  /// boundary, where the sentence survives into a [TeistroException] that
-  /// names what is missing. Checking them again here would be a second
-  /// copy of the same policy, saying it worse.
-  int? _validate(PositionQuery query) {
-    for (final jd in query.jds) {
-      if (jd < provider.jdMin || jd > provider.jdMax) {
-        thrown = StateError(
-          'the instant $jd is outside the provider\'s coverage '
-          '(${provider.jdMin} to ${provider.jdMax})',
-        );
-        return ProviderCode.outOfRange.id;
-      }
-    }
-    return null;
-  }
 
   static void _write(
     ffi.Pointer<ffi.Double> column,

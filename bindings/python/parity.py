@@ -359,11 +359,12 @@ def main() -> None:
                 f"{chart_columns.day.year[i]}-{chart_columns.day.month[i]}"
                 f"-{chart_columns.day.day_of_month[i]}",
             )
-            put(f"chart-{i}-ghati", chart_columns.timing.ghati[i])
-            put(f"chart-{i}-pala", chart_columns.timing.pala[i])
-            put(f"chart-{i}-vipala", chart_columns.timing.vipala[i])
-            put(f"chart-{i}-hora-number", chart_columns.timing.hora_number[i])
-            put(f"chart-{i}-hora-lord", chart.hora_lord.full_key)
+            timing = chart.timing
+            put(f"chart-{i}-ghati", timing.ghati)
+            put(f"chart-{i}-pala", timing.pala)
+            put(f"chart-{i}-vipala", timing.vipala)
+            put(f"chart-{i}-hora-number", timing.hora_number)
+            put(f"chart-{i}-hora-lord", timing.hora_lord.full_key)
             for j, state in enumerate(chart.states):
                 key = f"chart-{i}-state-{j}"
                 put(key, state.graha.full_key)

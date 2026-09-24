@@ -16,10 +16,11 @@
 //! is on the machine the library was really built on
 //! (`03-design/binding-surface-measured.md` §3).
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
 use crate::binding::{blob_fixtures, library, present, python_command, step};
+use crate::examples::{Binding, Runtime};
 use crate::platform::Platform;
 
 const PACKAGE: &str = "bindings/python";
@@ -50,12 +51,6 @@ const REQUIREMENTS: &str = "bindings/python/typecheck/requirements.txt";
 fn exists_with_extension(path: &Path) -> bool {
     path.with_extension("exe").exists()
 }
-
-/// Where the examples live. **Every** file there is run, so a scenario
-/// added to the directory is gated by having been added — the failure a
-/// list in this file would eventually have is that someone writes an
-/// example and forgets to list it.
-const EXAMPLES: &str = "example";
 
 /// The interpreter to use: `PYTHON` when the environment names one, else
 /// `python3`.
@@ -159,42 +154,6 @@ fn wrong_usages(package: &Path, checker: &(String, Vec<String>)) -> Result<(), (
     Ok(())
 }
 
-/// Runs every example, in name order, and says how many.
-///
-/// An example is a program a reader is invited to copy, so it is held to
-/// the same bar as a test: it must run, against the library this build
-/// produced, and its output is shown when it does not.
-fn examples(package: &Path, python: &str, library: &Path) -> Result<(), ()> {
-    let directory = package.join(EXAMPLES);
-    let mut found: Vec<PathBuf> = std::fs::read_dir(&directory)
-        .map_err(|e| println!("FAIL  {PACKAGE}/{EXAMPLES}: {e}"))?
-        .flatten()
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|kind| kind == "py"))
-        .collect();
-    found.sort();
-    if found.is_empty() {
-        println!("FAIL  {PACKAGE}/{EXAMPLES} holds no examples");
-        return Err(());
-    }
-    for example in &found {
-        let name = example
-            .file_name()
-            .map_or_else(String::new, |name| name.to_string_lossy().to_string());
-        step(
-            python_command(python)
-                .arg(example)
-                .env("TEISTRO_LIBRARY", library)
-                .env("PYTHONPATH", package)
-                .current_dir(package),
-            "",
-            &format!("{PACKAGE}/{EXAMPLES}/{name} did not run"),
-        )?;
-    }
-    println!("ok    {PACKAGE}/{EXAMPLES}: {} example(s) run", found.len());
-    Ok(())
-}
-
 pub(crate) fn check(root: &Path) -> i32 {
     let python = interpreter();
     if !present(&python, "--version") {
@@ -219,7 +178,7 @@ pub(crate) fn check(root: &Path) -> i32 {
                 &format!("{PACKAGE}/tests did not pass"),
             )
         })
-        .and_then(|()| examples(&package, &python, &library));
+        .and_then(|()| Binding::Python.run(root, &Runtime::of(root)).map(drop));
     if outcome.is_err() {
         return 1;
     }

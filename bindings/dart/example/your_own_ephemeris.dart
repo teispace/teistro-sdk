@@ -17,9 +17,11 @@
 //   and completes the rest itself, stamping each step. This is why an
 //   engine that knows nothing about the ayanamsha can serve a Vedic
 //   chart.
-// - **Say what you cover.** `bodies`, `jdMin` and `jdMax` are checked
-//   *before* the provider is called, so a request it cannot serve is
-//   refused by name rather than by a wrong answer.
+// - **Say what you cover.** `bodies` is checked *before* the provider is
+//   called, so a body it does not answer is refused by name rather than by
+//   a wrong answer. An instant outside `jdMin`..`jdMax` is never asked
+//   for: its cells come back `out-of-range` and the rest are answered,
+//   as they would be from any engine.
 // - **Throwing is allowed.** What it threw is carried across the
 //   boundary and rethrown on the caller's side, so the sentence is not
 //   lost; only a code crosses the C ABI.
@@ -110,17 +112,6 @@ base class TableEphemeris extends EphemerisProvider {
   }
 }
 
-/// The sentence inside a refusal, whatever kind it is.
-///
-/// A library refusal and an error raised on this side of the boundary
-/// both carry one, but Dart gives them no common supertype that says so,
-/// so the shape is matched rather than the type named.
-String reason(Object error) => switch (error) {
-  TeistroException(:final message) => message,
-  StateError(:final message) => message,
-  _ => '$error',
-};
-
 /// A provider that fails the way a real one does: with a sentence.
 base class Broken extends TableEphemeris {
   Broken();
@@ -173,9 +164,9 @@ void main() {
     );
     try {
       ctx.positions(instants: [2451545.0], bodies: [Body.saturn]);
-    } catch (error) {
+    } on TeistroException catch (error) {
       print('');
-      print('refused  ${reason(error)}');
+      print('refused  ${error.message}');
       print('         and the provider was asked ${provider.calls} times');
     }
     ctx.dispose();
@@ -183,15 +174,19 @@ void main() {
 
   // ── An instant outside its coverage ────────────────────────────────
   {
+    final provider = TableEphemeris();
     final ctx = teistro.context(
       profile: 'parashari-classical',
-      provider: TableEphemeris(),
+      provider: provider,
     );
-    try {
-      ctx.positions(instants: [2200000.0], bodies: [Body.sun]);
-    } catch (error) {
-      print('refused  ${reason(error)}');
-    }
+    final sky = ctx.positions(
+      instants: [2200000.0, 2451545.0],
+      bodies: [Body.sun],
+    );
+    String status(int row) => ProviderCode.byId(sky.at(row, 0).status).key;
+    print('');
+    print('coverage 2200000 is ${status(0)} and 2451545 is ${status(1)}:');
+    print('         the provider was asked for ${provider.cells} cell(s)');
     ctx.dispose();
   }
 
@@ -250,8 +245,8 @@ void main() {
       ctx.positions(instants: [2451545.0], bodies: [Body.sun]);
     } on StateError catch (error) {
       print('');
-      print('thrown   StateError: ${error.message}');
-      print('         the error itself crossed back, not just a code');
+      print('thrown   ${error.message}');
+      print("         the provider's own error crossed back, not just a code");
     }
     ctx.dispose();
   }

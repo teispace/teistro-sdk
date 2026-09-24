@@ -15,6 +15,7 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::binding::{blob_fixtures, library, present, step};
+use crate::examples::{Binding, Runtime};
 
 const PACKAGE: &str = "bindings/dart";
 /// The Teimeris adapter's own package, which the SDK does not depend on
@@ -31,10 +32,6 @@ const ADAPTER: &str = "adapters/ephemeris-teimeris/dart";
 /// "a swapped latitude and longitude does not compile" is proved.
 const WRONG: &str = "typecheck/wrong.dart";
 const FIXTURES: &str = "target/tsrb";
-/// Where the examples live. **Every** file there is run, so a scenario
-/// added to the directory is gated by having been added.
-const EXAMPLES: &str = "example";
-
 /// Analyses the file of wrong usages and holds it to what it expects:
 /// every `// expect: <text>` line must be answered by an error carrying
 /// that text, and no error may go unexpected.
@@ -82,42 +79,6 @@ fn wrong_usages(package: &Path) -> Result<(), ()> {
         "ok    {PACKAGE}/{WRONG}: {} wrong usage(s) do not compile",
         expected.len()
     );
-    Ok(())
-}
-
-/// Runs every example, in name order, and says how many.
-///
-/// An example is a program a reader is invited to copy, so it is held to
-/// the same bar as a test: it must run against the library this build
-/// produced.
-fn examples(package: &Path, library: &Path) -> Result<(), ()> {
-    let directory = package.join(EXAMPLES);
-    let mut found: Vec<std::path::PathBuf> = std::fs::read_dir(&directory)
-        .map_err(|e| println!("FAIL  {PACKAGE}/{EXAMPLES}: {e}"))?
-        .flatten()
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|kind| kind == "dart"))
-        .collect();
-    found.sort();
-    if found.is_empty() {
-        println!("FAIL  {PACKAGE}/{EXAMPLES} holds no examples");
-        return Err(());
-    }
-    for example in &found {
-        let name = example
-            .file_name()
-            .map_or_else(String::new, |name| name.to_string_lossy().to_string());
-        step(
-            Command::new("dart")
-                .arg("run")
-                .arg(example)
-                .env("TEISTRO_LIBRARY", library)
-                .current_dir(package),
-            "",
-            &format!("{PACKAGE}/{EXAMPLES}/{name} did not run"),
-        )?;
-    }
-    println!("ok    {PACKAGE}/{EXAMPLES}: {} example(s) run", found.len());
     Ok(())
 }
 
@@ -196,7 +157,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         })
         .and_then(|()| adapter(root))
         .and_then(|()| wrong_usages(&package))
-        .and_then(|()| examples(&package, &library))
+        .and_then(|()| Binding::Dart.run(root, &Runtime::of(root)).map(drop))
         .and_then(|()| {
             step(
                 Command::new("dart")

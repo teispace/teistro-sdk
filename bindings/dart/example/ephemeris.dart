@@ -127,10 +127,13 @@ void main() {
   );
 
   // ── The columns ────────────────────────────────────────────────────
+  // Point 2 above, checked rather than printed: the type is this
+  // language's own, and the compiler holds it.
   final cells = sky.cells;
+  final Float64List lon = cells.lon;
   print(
-    'columns  lon is a ${cells.lon.runtimeType}'
-    ' of ${cells.lon.length} values, ${cells.lon.lengthInBytes} bytes',
+    'columns  lon holds ${lon.length} doubles in'
+    ' ${lon.lengthInBytes} bytes, a view over the blob\'s own bytes',
   );
 
   // ── What the columns are for ───────────────────────────────────────
@@ -145,7 +148,7 @@ void main() {
     print(
       '  ${body.key.padRight(10)} ${name.padRight(8)}'
       ' ${direction.padRight(10)} at'
-      ' ${speed >= 0 ? '+' : ''}${speed.toStringAsFixed(4).padLeft(7)}°/day,'
+      ' ${'${speed >= 0 ? '+' : ''}${speed.toStringAsFixed(4)}'.padLeft(8)}°/day,'
       ' ${crossings.length} sign change(s), ${turns.length} station(s)',
     );
     for (final (day, sign) in crossings.take(3)) {
