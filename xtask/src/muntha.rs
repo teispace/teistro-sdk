@@ -827,6 +827,11 @@ struct Kinds {
 }
 
 /// The annual dashas of every recorded year (`03-design/annual-dashas.md`).
+/// How far the Sun's clock may close from the next return, seconds: its
+/// last knot and the return's search each stop within the search's
+/// tolerance of the one crossing, so they differ by at most twice it.
+const CLOSE_BOUND_S: f64 = 2.0 * teistro_astro::events::TOLERANCE_DAYS * 86_400.0;
+
 #[derive(Default)]
 struct DashaCounts {
     /// Years read, each for all three systems at once.
@@ -836,8 +841,6 @@ struct DashaCounts {
     /// Years whose next return the sweep also found, so that the Sun's
     /// clock can be held to closing on it.
     closings: usize,
-    /// The farthest the Sun's clock closed from the next return, seconds.
-    worst_close_s: f64,
     /// The farthest an even spread stood from the Sun's clock at any of the
     /// Mudda's boundaries, days.
     worst_even_days: f64,
@@ -854,7 +857,6 @@ impl DashaCounts {
         self.years += other.years;
         self.periods += other.periods;
         self.closings += other.closings;
-        self.worst_close_s = self.worst_close_s.max(other.worst_close_s);
         self.worst_even_days = self.worst_even_days.max(other.worst_even_days);
         self.ties += other.ties;
         self.lagna_first += other.lagna_first;
@@ -3146,7 +3148,7 @@ fn count_annual_dashas(
         }
         if let Some(next) = next {
             let off_s = (dasha.year.to.get() - next).abs() * 86_400.0;
-            if off_s >= 0.05 {
+            if off_s > CLOSE_BOUND_S {
                 return Err(at(&format!(
                     "the {:?}'s Sun clock closes {off_s} s from the next return",
                     dasha.system
@@ -3154,7 +3156,6 @@ fn count_annual_dashas(
             }
             if dasha.system == DashaSystem::Mudda {
                 counts.closings += 1;
-                counts.worst_close_s = counts.worst_close_s.max(off_s);
             }
         }
         if dasha.system == DashaSystem::Patyayini {
@@ -3238,9 +3239,11 @@ fn the_annual_dashas(out: &mut String, kinds: &Kinds) {
          mahadashas run end to end from the return to the year's close, and \
          each mahadasha's antardashas run end to end across it. The pass \
          fails on the first that does not. Where the sweep also found the \
-         next return ({} years), the Sun's clock closes on it, the worst by \
-         **{:.4} s**: the clock's last knot and the return's own search, \
-         each held to the search's tolerance, find one crossing.\n\n\
+         next return ({} years), the Sun's clock closes on it **within {:.2} \
+         ms**, twice the search's tolerance: the clock's last knot and the \
+         return's own search each stop within it of the one crossing. The \
+         gap inside that bound is the two solvers' rounding and differs \
+         between platforms, so the pass holds the bound and prints it.\n\n\
          **An even spread between the returns stands up to {:.2} days** from \
          the Sun's clock at one of the Mudda's boundaries: the equation of \
          centre at the boundary less its value at the return, which can \
@@ -3253,7 +3256,7 @@ fn the_annual_dashas(out: &mut String, kinds: &Kinds) {
         count(counts.years),
         count(counts.periods),
         count(counts.closings),
-        counts.worst_close_s,
+        CLOSE_BOUND_S * 1_000.0,
         counts.worst_even_days,
         count(counts.ties),
         if counts.ties == 0 {

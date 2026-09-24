@@ -727,9 +727,11 @@ Every one of them opens on its return. In every one, the mahadashas run
 end to end from the return to the year's close, and each mahadasha's
 antardashas run end to end across it. The pass fails on the first that
 does not. Where the sweep also found the next return (2105 years), the
-Sun's clock closes on it, the worst by **0.0057 s**: the clock's last
-knot and the return's own search, each held to the search's tolerance,
-find one crossing.
+Sun's clock closes on it **within 17.28 ms**, twice the search's
+tolerance: the clock's last knot and the return's own search each stop
+within it of the one crossing. The gap inside that bound is the two
+solvers' rounding and differs between platforms, so the pass holds the
+bound and prints it.
 
 **An even spread between the returns stands up to 3.90 days** from the
 Sun's clock at one of the Mudda's boundaries: the equation of centre at
