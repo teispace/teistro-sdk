@@ -31,9 +31,9 @@ use teistro::tajika::{
     YOGA_WEAK_BELOW, YearYoga, YearYogas, Yoga, YogaRules,
 };
 use teistro::{
-    AddSign, AnnualDashaRules, ChartRequest, Context, Document, Ephemeris, HarshaGrade,
-    HarshaRules, HousePoints, PeriodRow, RogaReading, Saham, SahamReading, SahamRules, SahamTerm,
-    UtcOffset, VenusPlace, YearClock,
+    AddSign, AnnualDasha, AnnualDashaRules, ChartRequest, Context, Document, Ephemeris,
+    HarshaGrade, HarshaRules, HousePoints, PeriodRow, RogaReading, Saham, SahamReading, SahamRules,
+    SahamTerm, UtcOffset, VenusPlace, YearClock, YearDasha,
 };
 
 use crate::births::{Birth, CHARTS, births};
@@ -155,12 +155,18 @@ fn against_the_recording(sdk: &Context, births: &[Birth]) -> Result<(usize, usiz
     Ok((wrong, of))
 }
 
-fn page(root: &Path) -> Result<String, String> {
-    let sdk = Context::builder()
+/// The context every reading here is made under; a worker builds its own,
+/// since a context serves one thread.
+fn conformance() -> Result<Context, String> {
+    Context::builder()
         .profile("conformance-baseline")
         .ephemeris([Ephemeris::Builtin])
         .build()
-        .map_err(|why| format!("the conformance profile: {why}"))?;
+        .map_err(|why| format!("the conformance profile: {why}"))
+}
+
+fn page(root: &Path) -> Result<String, String> {
+    let sdk = conformance()?;
     let births = births(root, &sdk)?;
     if births.is_empty() {
         return Err(format!("{CHARTS} records no chart"));
@@ -842,6 +848,19 @@ struct DashaCounts {
     lagna_first: usize,
 }
 
+impl DashaCounts {
+    /// Another worker's counts added to these.
+    fn absorb(&mut self, other: &DashaCounts) {
+        self.years += other.years;
+        self.periods += other.periods;
+        self.closings += other.closings;
+        self.worst_close_s = self.worst_close_s.max(other.worst_close_s);
+        self.worst_even_days = self.worst_even_days.max(other.worst_even_days);
+        self.ties += other.ties;
+        self.lagna_first += other.lagna_first;
+    }
+}
+
 /// The lord of every recorded year, by the step that chose it.
 #[derive(Default)]
 struct LordCounts {
@@ -965,6 +984,7 @@ impl Default for SahamCounts {
 /// would agree with itself and prove nothing.
 fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
     let mut kinds = Kinds::default();
+    let mut dasha_years = Vec::new();
     for birth in births {
         let years = sdk
             .chart()
@@ -1036,7 +1056,12 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
             };
             ask_every_house(sdk, &chart, &mut kinds)?;
             read_the_year(sdk, birth, &annual, year.year, &mut kinds)?;
-            count_annual_dashas(sdk, birth, &annual, year.year, next, &mut kinds.dashas)?;
+            dasha_years.push(DashaYear {
+                birth,
+                annual: annual.clone(),
+                year: year.year,
+                next,
+            });
             for pair in pairs {
                 if !pair.drishti.is_aspect() {
                     continue;
@@ -1055,21 +1080,60 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
             }
         }
     }
-    // The same-lord count is decomposable, so decompose it and refuse a
-    // run that disagrees: every chart contributes its first house, and
-    // every chart but a luminary-ruled one contributes a second. A
-    // printed figure nobody can check is the part of a generated page
-    // that rots, so this is a failure and not a sentence.
-    let expected = 2 * kinds.charts - kinds.luminary_lagna;
-    if expected != kinds.same_lord {
-        return Err(format!(
-            "the same-lord count does not decompose: 2 x {} charts less {} \
-             luminary lagnas is {expected}, and {} matters were counted",
-            kinds.charts, kinds.luminary_lagna, kinds.same_lord,
-        ));
-    }
+    kinds.dashas = count_every_annual_dasha(&dasha_years)?;
     sweep_holds(&kinds)?;
     Ok(kinds)
+}
+
+/// One year the annual dashas are counted over: gathered by the sweep and
+/// counted after it, on every core, since the Sun's clock is the one reading
+/// in the sweep that costs more than the rest of a year's together.
+struct DashaYear<'b> {
+    birth: &'b Birth,
+    annual: Document,
+    year: u16,
+    next: Option<f64>,
+}
+
+/// Every gathered year's annual dashas, counted by as many workers as the
+/// machine has cores, each with its own context, over consecutive runs of
+/// the years. The runs are joined in order and each stops at its first
+/// refusal, so the refusal reported is the sweep's first, as it would be
+/// counted on one thread; the counts are sums and greatest values, which do
+/// not depend on the order they are taken in.
+fn count_every_annual_dasha(years: &[DashaYear<'_>]) -> Result<DashaCounts, String> {
+    let workers = std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get);
+    let run = years.len().div_ceil(workers).max(1);
+    std::thread::scope(|scope| {
+        let counted: Vec<_> = years
+            .chunks(run)
+            .map(|part| {
+                scope.spawn(move || {
+                    let sdk = conformance()?;
+                    let mut counts = DashaCounts::default();
+                    for one in part {
+                        count_annual_dashas(
+                            &sdk,
+                            one.birth,
+                            &one.annual,
+                            one.year,
+                            one.next,
+                            &mut counts,
+                        )?;
+                    }
+                    Ok::<DashaCounts, String>(counts)
+                })
+            })
+            .collect();
+        let mut total = DashaCounts::default();
+        for worker in counted {
+            let part = worker
+                .join()
+                .map_err(|_| String::from("a worker counting the annual dashas panicked"))??;
+            total.absorb(&part);
+        }
+        Ok(total)
+    })
 }
 
 /// What one year's chart gives the sahams, the Harsha bala and a saham's
@@ -1097,6 +1161,19 @@ fn read_the_year(
 /// Every identity the sweep's counts must satisfy, each a failure and not
 /// a sentence.
 fn sweep_holds(kinds: &Kinds) -> Result<(), String> {
+    // The same-lord count is decomposable, so decompose it and refuse a
+    // run that disagrees: every chart contributes its first house, and
+    // every chart but a luminary-ruled one contributes a second. A
+    // printed figure nobody can check is the part of a generated page
+    // that rots, so this is a failure and not a sentence.
+    let expected = 2 * kinds.charts - kinds.luminary_lagna;
+    if expected != kinds.same_lord {
+        return Err(format!(
+            "the same-lord count does not decompose: 2 x {} charts less {} \
+             luminary lagnas is {expected}, and {} matters were counted",
+            kinds.charts, kinds.luminary_lagna, kinds.same_lord,
+        ));
+    }
     floors_hold(kinds)?;
     projections_hold(kinds)?;
     sahams_hold(&kinds.sahams)?;
@@ -3104,18 +3181,16 @@ fn count_annual_dashas(
         .iter()
         .find(|dasha| dasha.system == DashaSystem::Mudda)
         .ok_or_else(|| at("no Mudda among the three"))?;
-    let even = sdk
-        .chart()
-        .annual_dasha(
-            &birth.document,
-            annual,
-            year,
-            DashaSystem::Mudda,
-            AnnualDashaRules {
-                clock: YearClock::Even,
-                ..rules
-            },
-        )
+    // The even clock runs between the same two returns, so the Mudda on it
+    // is the same ring on a clock of two knots: nothing to read from the
+    // sky that the Sun's clock has not read already.
+    let even_rules = AnnualDashaRules {
+        clock: YearClock::Even,
+        ..rules
+    };
+    let even = teistro::dasha::Clock::even(sun.year)
+        .and_then(|clock| YearDasha::new(sun.ring.clone(), clock, even_rules.birth_period))
+        .map(|dasha| AnnualDasha::of(&dasha, DashaSystem::Mudda, year, even_rules, sun.seed))
         .map_err(|why| at(&format!("the Mudda on an even clock: {why}")))?;
     for (one, other) in sun.periods.iter().zip(&even.periods) {
         counts.worst_even_days = counts
@@ -3164,8 +3239,8 @@ fn the_annual_dashas(out: &mut String, kinds: &Kinds) {
          each mahadasha's antardashas run end to end across it. The pass \
          fails on the first that does not. Where the sweep also found the \
          next return ({} years), the Sun's clock closes on it, the worst by \
-         **{:.4} s**, two searches for one crossing agreeing to their own \
-         tolerance.\n\n\
+         **{:.4} s**: the clock's last knot and the return's own search, \
+         each held to the search's tolerance, find one crossing.\n\n\
          **An even spread between the returns stands up to {:.2} days** from \
          the Sun's clock at one of the Mudda's boundaries: the equation of \
          centre at the boundary less its value at the return, which can \

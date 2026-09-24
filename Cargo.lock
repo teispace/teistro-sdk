@@ -1934,6 +1934,7 @@ dependencies = [
  "teistro-astro",
  "teistro-core",
  "teistro-dasha",
+ "teistro-ephemeris-builtin",
  "teistro-port-ephemeris",
  "teistro-vargas",
 ]
