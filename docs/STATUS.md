@@ -3693,7 +3693,7 @@ on pub.dev (checked 2026-09-07).
    Charak's chapter V names those three, and Varsha Narayana is in no
    book read. With that, every step of this item is built and crosses.
 2c. ~~The shared examples, printed alike~~ — **done** (2026-09-24).
-   All eleven print the same bytes in Node, Python and Dart, and
+   All eleven print the same lines in Node, Python and Dart, and
    `check-parity` holds it: the same names in each binding, both ways,
    and the same output from each (`xtask/src/examples.rs`, proved red
    by a misspelt key and a removed file). A language's own type is

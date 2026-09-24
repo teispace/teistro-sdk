@@ -1,12 +1,17 @@
 //! The shared examples: every binding carries the same programs, and each
-//! program prints the same bytes in every binding.
+//! program prints the same lines in every binding.
 //!
 //! An example is what a reader copies, so it is held to two bars. Each
 //! binding's own gate runs its examples against the library the build
 //! produced (`check-node`, `check-python`, `check-dart`), which says they
 //! work. `check-parity` runs them all and compares what they print, which
 //! says they are **one** set of examples and not three: the same names in
-//! every binding, and the same output from each, byte for byte.
+//! every binding, and the same output from each, line for line.
+//!
+//! Line for line and not byte for byte, because a line's ending is the
+//! platform's and not the binding's: on Windows Python's `print` writes
+//! `\r\n` where Node writes `\n`, and the first verify run of this gate
+//! failed every example on win32 with every line alike.
 //!
 //! The second bar was a sentence until it was measured. On 2026-09-22 four
 //! of the eleven printed alike and seven differed — a full catalogue key
@@ -238,7 +243,7 @@ pub(crate) fn differences(sets: &[(Binding, Vec<Ran>)]) -> usize {
             let Some(yours) = theirs.iter().find(|ran| ran.name == mine.name) else {
                 continue;
             };
-            if mine.output == yours.output {
+            if mine.output.lines().eq(yours.output.lines()) {
                 continue;
             }
             found += 1;
@@ -277,7 +282,7 @@ mod tests {
         }
     }
 
-    /// Alike is byte for byte, and a missing example is a difference in
+    /// Alike is line for line, and a missing example is a difference in
     /// either direction.
     #[test]
     fn examples_differ_by_name_or_by_output() {
@@ -302,6 +307,15 @@ mod tests {
         assert_eq!(
             differences(&[(Binding::Node, short), (Binding::Dart, long)]),
             1
+        );
+
+        // A line's ending is the platform's: Python on Windows ends each
+        // with `\r\n` where Node ends it with `\n`.
+        let unix = vec![ran("a", "x\ny\n")];
+        let windows = vec![ran("a", "x\r\ny\r\n")];
+        assert_eq!(
+            differences(&[(Binding::Node, unix), (Binding::Python, windows)]),
+            0
         );
     }
 }
