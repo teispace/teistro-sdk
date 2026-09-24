@@ -64,7 +64,7 @@ console.log('');
 for (const day of week) {
   const d = day.day;
   console.log(
-    `${name(d.vara).padEnd(12)} ${d.year}-${String(d.month).padStart(2, '0')}-${String(d.dayOfMonth).padStart(2, '0')}` +
+    `${name(d.vara).padEnd(12)} ${d.date.year}-${String(d.date.month).padStart(2, '0')}-${String(d.date.day).padStart(2, '0')}` +
       `   sunrise ${clock(d.sunrise)}  sunset ${clock(d.sunset)}` +
       `   ${name(day.month.amanta)} ${name(day.month.paksha)}`,
   );

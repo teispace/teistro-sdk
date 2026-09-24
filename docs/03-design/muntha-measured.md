@@ -243,13 +243,15 @@ out before those births reach their fortieth year, and the SDK answers
 the years it covers rather than refusing the whole request. A further
 **1 year** returned but could not be **founded**, belonging to 1 birth:
 `c028-troms-1988-06-21`. The SDK refuses rather than inventing a day —
-*out of range: JD 2448064.4323329213 UTC is not in the local day from JD
-2448098.4552060068 UTC to JD 2448099.477145168 UTC (field `instant`)*
-— because a birth above the polar circle in its own summer has no
-sunrise to divide a day by, and the hora and ghati a chart is built on
-are measured from one. That is a documented bound of the corpus
-(`05-testing/01-golden-vectors.md`, note 13) and not a fault of the
-aspects.
+*unsupported: JD 2448064.4323329213 UTC falls in a polar day at
+69.6492°N 18.9553°E 10 m, and under NEAREST_EVENT its day runs from JD
+2448098.4552060068 UTC to JD 2448099.477145168 UTC, which does not hold
+it (field `day.polar_day_policy`); choose CIVIL_MIDNIGHT, which reckons
+a polar day from civil midnight to the next* — because a birth above
+the polar circle in its own summer has no sunrise to divide a day by,
+and the hora and ghati a chart is built on are measured from one. That
+is a documented bound of the corpus (`05-testing/01-golden-vectors.md`,
+note 13) and not a fault of the aspects.
 
 ## 10. The sixteen yogas, and the matters they answer
 

@@ -22,6 +22,12 @@ import {
   BodyById,
   CONTEXT_TEST_PROVIDER,
   CalendarById,
+  DayStateById,
+  EraById,
+  PolarDayPolicyById,
+  PolarKindById,
+  ResolutionById,
+  SunriseById,
   ChartKind,
   ChartLayoutById,
   DayPartById,
@@ -451,6 +457,48 @@ function row(columns, index) {
   return out;
 }
 
+/** The convention column's value for a custom sunrise altitude. */
+const CUSTOM_SUNRISE = 0xff;
+
+/**
+ * One row of a `day` section -- a chart's or an almanac's, which share it --
+ * read into the record both layers hand back: the civil date as
+ * `calendar.convert` spells one, so it can be handed straight back to it,
+ * every id named, and the day's state and convention as the shapes they
+ * are rather than as the columns they cross in.
+ */
+function localDay(section, index) {
+  const r = row(section, index);
+  const era = EraById.get(r.era);
+  const custom = r.conventionKind === CUSTOM_SUNRISE;
+  return {
+    date: {
+      calendar: CalendarById.get(r.calendar),
+      ...(era === undefined ? {} : { era }),
+      year: r.year,
+      eraYear: r.eraYear,
+      month: r.month,
+      day: r.dayOfMonth,
+      resolution: ResolutionById.get(r.resolution),
+      computedMonth: r.computedMonth,
+      computedDay: r.computedDay,
+    },
+    vara: VaraById.get(r.vara) ?? 'unknown',
+    sunrise: r.sunrise,
+    sunset: r.sunset,
+    nextSunrise: r.nextSunrise,
+    polar:
+      DayStateById.get(r.stateKind) === 'polar'
+        ? {
+            kind: PolarKindById.get(r.statePolarKind) ?? 'unknown',
+            policy: PolarDayPolicyById.get(r.statePolarPolicy) ?? 'unknown',
+          }
+        : null,
+    convention: custom ? null : (SunriseById.get(r.conventionKind) ?? 'unknown'),
+    customAltitudeDeg: custom ? r.conventionValue : null,
+  };
+}
+
 /**
  * A batch of founded charts at one place: where every graha stands, in
  * which bhava under both readings, in which zodiac, on which day, at
@@ -633,8 +681,7 @@ export class Chart {
    * `vara` is named; the rest are the values the blob carries.
    */
   get day() {
-    const day = row(this.#batch.decoded.day, this.#index);
-    return { ...day, vara: VaraById.get(day.vara) ?? 'unknown' };
+    return localDay(this.#batch.decoded.day, this.#index);
   }
 
   /** Where in its day the moment falls, and which hora holds it. */
@@ -1191,8 +1238,7 @@ export class AlmanacDay {
    * type.
    */
   get day() {
-    const day = row(this.#batch.decoded.day, this.#index);
-    return { ...day, vara: VaraById.get(day.vara) ?? 'unknown' };
+    return localDay(this.#batch.decoded.day, this.#index);
   }
 
   /** What the spans are clipped to. */
@@ -1536,7 +1582,7 @@ export class Rendered extends Decoded {
  * have is `undefined` rather than a function that fails when called, and
  * `Object.keys` lists what the engine offers.
  */
-class Engine {
+export class Engine {
   #reach;
   #manifest = null;
 
@@ -1611,65 +1657,68 @@ class Engine {
  * addon's context with the disposed check and the provider's own thrown
  * value already applied, so no area touches the handle.
  */
+/**
+ * Each area's way to the boundary, kept beside the area rather than on it:
+ * an area's members are exactly the operations `index.d.ts` declares, and
+ * a helper on the instance would be a public member nothing declares.
+ */
+const reaches = new WeakMap();
+
+/** Calls the boundary through the area's context. */
+const run = (area, work) => reaches.get(area)(work);
+
 class Area {
-  #reach;
-
   constructor(reach) {
-    this.#reach = reach;
-    // A private field is not a property, so a subclass's own state
-    // (`IntlArea`'s memo) still works on a frozen instance.
+    reaches.set(this, reach);
+    // Frozen, so a consumer cannot add to an area; a subclass keeps its own
+    // state (`IntlArea`'s memo) in private fields, which are not properties.
     Object.freeze(this);
-  }
-
-  /** @internal what the subclasses call the boundary through. */
-  _run(run) {
-    return this.#reach(run);
   }
 }
 
 /** `sdk.calendar` — the calendars, and the fixed day they share. */
-class CalendarArea extends Area {
+export class CalendarArea extends Area {
   /** The date a fixed day falls on in a calendar. */
   dateOf(calendar, fixed) {
-    return this._run((inner) => inner.calendarFromFixed(calendar, fixed));
+    return run(this, (inner) => inner.calendarFromFixed(calendar, fixed));
   }
 
   /** The fixed day of a date. */
   fixedOf(date) {
-    return this._run((inner) => inner.calendarToFixed(clean(date)));
+    return run(this, (inner) => inner.calendarToFixed(clean(date)));
   }
 
   /** The same date in another calendar. */
   convert(date, into) {
-    return this._run((inner) => inner.calendarConvert(clean(date), into));
+    return run(this, (inner) => inner.calendarConvert(clean(date), into));
   }
 
   /** The weekday of a date, Monday `1` to Sunday `7`. */
   weekdayOf(date) {
-    return this._run((inner) => inner.calendarWeekday(clean(date)));
+    return run(this, (inner) => inner.calendarWeekday(clean(date)));
   }
 
   /** The length of a month. */
   monthLength(calendar, year, month) {
-    return this._run((inner) => inner.calendarMonthLength(calendar, year, month));
+    return run(this, (inner) => inner.calendarMonthLength(calendar, year, month));
   }
 
   /** Whether a year is a leap year. */
   isLeap(calendar, year) {
-    return this._run((inner) => inner.calendarIsLeap(calendar, year)) === 1;
+    return run(this, (inner) => inner.calendarIsLeap(calendar, year)) === 1;
   }
 }
 
 /** `sdk.time` — the scales, the zones and what separates them. */
-class TimeArea extends Area {
+export class TimeArea extends Area {
   /** A civil date and time in a zone, resolved to an instant with its metadata. */
   resolve(civil, zone) {
-    return this._run((inner) => inner.timeResolve(clean(civil), clean(zone)));
+    return run(this, (inner) => inner.timeResolve(clean(civil), clean(zone)));
   }
 
   /** The civil date and time of an instant in a zone. */
   civilOf(jdUtc, zone, calendar) {
-    return this._run((inner) => inner.timeCivil(finite(jdUtc, 'jdUtc'), clean(zone), calendar));
+    return run(this, (inner) => inner.timeCivil(finite(jdUtc, 'jdUtc'), clean(zone), calendar));
   }
 
   /**
@@ -1679,31 +1728,31 @@ class TimeArea extends Area {
    * `convert`. The area carries the word now.
    */
   convert(jd, from, to) {
-    return this._run((inner) => inner.timeConvert(finite(jd, 'jd'), from, to));
+    return run(this, (inner) => inner.timeConvert(finite(jd, 'jd'), from, to));
   }
 
   /** Delta T at a UT1 instant, with what produced it. */
   deltaT(jdUt1) {
-    return this._run((inner) => inner.timeDeltaT(finite(jdUt1, 'jdUt1')));
+    return run(this, (inner) => inner.timeDeltaT(finite(jdUt1, 'jdUt1')));
   }
 }
 
 /** `sdk.intl` — the locale, its messages and the scripts they are in. */
-class IntlArea extends Area {
+export class IntlArea extends Area {
   #messages = null;
 
   /** The locale every render resolves from. */
   get locale() {
-    return this._run((inner) => inner.intlLocale());
+    return run(this, (inner) => inner.intlLocale());
   }
 
   set locale(tag) {
-    this._run((inner) => inner.intlSetLocale(tag));
+    run(this, (inner) => inner.intlSetLocale(tag));
   }
 
   /** Renders a message of the current locale with its parameters. */
   render(key, params) {
-    const bytes = this._run((inner) =>
+    const bytes = run(this, (inner) =>
       inner.intlRender(key, params === undefined ? undefined : JSON.stringify(params)),
     );
     return new Rendered(bytes);
@@ -1711,7 +1760,7 @@ class IntlArea extends Area {
 
   /** Whether the current locale or its fallbacks have a message. */
   has(key) {
-    return this._run((inner) => inner.intlHas(key)) === 1;
+    return run(this, (inner) => inner.intlHas(key)) === 1;
   }
 
   /**
@@ -1719,7 +1768,7 @@ class IntlArea extends Area {
    * or Nepali term written in the other.
    */
   transliterate(text, from = 'deva', to = 'iast') {
-    return this._run((inner) => inner.intlTransliterate(text, from, to));
+    return run(this, (inner) => inner.intlTransliterate(text, from, to));
   }
 
   /**
@@ -1728,7 +1777,7 @@ class IntlArea extends Area {
    * locale gives it.
    */
   entity(key) {
-    return entityForms(this._run((inner) => inner.intlEntity(key)));
+    return entityForms(run(this, (inner) => inner.intlEntity(key)));
   }
 
   /**
@@ -1751,43 +1800,43 @@ class IntlArea extends Area {
 
   /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
   loadPack(bytes) {
-    return this._run((inner) => inner.intlLoadPack(Buffer.from(bytes)));
+    return run(this, (inner) => inner.intlLoadPack(Buffer.from(bytes)));
   }
 }
 
 /** `sdk.keys` — the catalogue's keys and their packed ids. */
-class KeysArea extends Area {
+export class KeysArea extends Area {
   /** The packed id of a catalogue key. */
   id(key) {
-    return this._run((inner) => inner.keyParse(key));
+    return run(this, (inner) => inner.keyParse(key));
   }
 
   /** The catalogue key of a packed id. */
   name(id) {
-    return this._run((inner) => inner.keyName(id));
+    return run(this, (inner) => inner.keyName(id));
   }
 }
 
 /** `sdk.frame` — the coordinate conventions a request is expressed in. */
-class FrameArea extends Area {
+export class FrameArea extends Area {
   /** The SDK's canonical frame: apparent geocentric ecliptic of date, tropical. */
   canonical() {
-    return this._run(() => native.frameCanonical());
+    return run(this, () => native.frameCanonical());
   }
 
   /** Packs a frame's fields into the bits a position request carries. */
   pack(frame) {
-    return this._run(() => native.framePack(clean(frame)));
+    return run(this, () => native.framePack(clean(frame)));
   }
 
   /** The frame a packed set of bits describes. */
   unpack(bits) {
-    return this._run(() => native.frameUnpack(bits));
+    return run(this, () => native.frameUnpack(bits));
   }
 }
 
 /** `sdk.chart` — a chart founded at an instant and a place. */
-class ChartArea extends Area {
+export class ChartArea extends Area {
   /** The member id of each layout the context registered, by its full key. */
   #registered;
   /** The member id of each dasha system the context registered, by its full key. */
@@ -1812,7 +1861,7 @@ class ChartArea extends Area {
    * @returns {object} the row, a fresh object to change
    */
   layout(key) {
-    return JSON.parse(this._run((inner) => inner.chartLayoutRow(key)));
+    return JSON.parse(run(this, (inner) => inner.chartLayoutRow(key)));
   }
 
   /**
@@ -1878,7 +1927,7 @@ class ChartArea extends Area {
    */
   foundMany(request) {
     const place = request.place ?? {};
-    const bytes = this._run((inner) =>
+    const bytes = run(this, (inner) =>
       inner.chartFound({
         kind: request.kind ?? ChartKind.Natal,
         instants: instants(request.instants, 'instants', { allowEmpty: true }),
@@ -2988,7 +3037,7 @@ function catalogueKeys(asked, field, kind) {
  * tradition's name for five of its limbs
  * (`03-design/surface-areas.md`).
  */
-class AlmanacArea extends Area {
+export class AlmanacArea extends Area {
   /**
    * The almanac of every day in a range, at one place.
    *
@@ -3010,7 +3059,7 @@ class AlmanacArea extends Area {
     const place = request.place ?? {};
     const from = request.from ?? {};
     const to = request.to ?? from;
-    const bytes = this._run((inner) =>
+    const bytes = run(this, (inner) =>
       inner.panchangaDays({
         calendar: from.calendar,
         fromYear: finite(from.year, 'from.year'),
@@ -3431,6 +3480,6 @@ export const localMeanZone = (longitudeDeg) => ({
   longitudeDeg,
 });
 
-export { decodeIntlRender, decodePositions } from './blob.js';
+export { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
 export * from './catalogue.js';

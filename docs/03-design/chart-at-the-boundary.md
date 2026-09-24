@@ -531,16 +531,22 @@ five rather than describing part of one.
   is more likely a slip than an ask — but two entry points behaving
   differently on `[]` is a papercut, and choosing deliberately is better
   than the asymmetry standing because nobody looked.
-- **The day's catalogued columns cross as ids, and only some are named.**
-  A chart's `day.vara` is a `u16` in the blob; the Node layer names it
-  and leaves the other seventeen columns as the numbers they are, which
-  is what the layer did before the batch. Naming them all by hand in
-  three bindings is the kind of table that drifts from the schema. The
-  emitters know which columns name an enum — `field.enum_name` is what
-  writes "The values are `Vara` ids" into the generated documentation —
-  so a generated map from section and column to enum name would let each
-  layer resolve them without a table of its own. Worth doing when a
-  second blob carries catalogued columns.
+- **~~The day's catalogued columns cross as ids, and only some are
+  named.~~ Resolved (2026-09-24) as a record, not a table.** A chart's
+  `day` named its weekday and handed back the other seventeen columns as
+  numbers under the blob's names in Node, and Python and Dart flattened
+  the weekday and the sunrise onto the chart and left the rest out, so
+  their parity runners read the raw columns. Every binding now reads the
+  `day` section — a chart's and an almanac's, which share it — into one
+  `LocalDay`: the civil date as the `CalendarDate` `calendar.convert`
+  returns, so it can be handed straight back to it, the weekday, the
+  three sunrises and sunset, `polar` as `null` or `{kind, policy}` (the
+  Rust `DayState`'s shape, so there is no half-state), and the sunrise
+  convention or the custom altitude. One reader per binding, over the
+  section, rather than a map per column: the columns are not
+  independent — the date is nine of them, the state three — and a map
+  would have handed them back as a flat row again. The parity runners
+  print every field of it under one helper, for both days.
 - **~~What the panchanga blob shares with this one.~~ Built, and the
   sharing cost a correction.** The `day` section really is one section in
   two blobs, decoding to one type in each binding — the shape mechanism

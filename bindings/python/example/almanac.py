@@ -91,9 +91,9 @@ def main() -> None:
         for day in week:
             i = day.index
             print(
-                f"{name(day.vara.full_key):<12} "
+                f"{name(day.day.vara.full_key):<12} "
                 f"{columns.year[i]}-{columns.month[i]:02}-{columns.day_of_month[i]:02}"
-                f"   sunrise {clock(day.sunrise)}  sunset {clock(day.sunset)}"
+                f"   sunrise {clock(day.day.sunrise)}  sunset {clock(day.day.sunset)}"
                 f"   {name(day.month.amanta.full_key)} {name(day.month.paksha.full_key)}"
             )
 
@@ -170,7 +170,7 @@ def main() -> None:
             utc_offset_seconds=OFFSET_SECONDS,
         )
         print(
-            f"day(one)       {name(one.vara.full_key)}  {len(one.horas)} horas, "
+            f"day(one)       {name(one.day.vara.full_key)}  {len(one.horas)} horas, "
             f"{len(one.muhurtas)} muhurtas, {len(one.choghadiya)} choghadiya"
         )
 

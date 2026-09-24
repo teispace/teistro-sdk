@@ -123,7 +123,7 @@ def main() -> None:
         )
         print("")
         print(
-            f"found(one)     lagna {single.lagna_deg:.4f}°  vara {single.vara.full_key}  "
+            f"found(one)     lagna {single.lagna_deg:.4f}°  vara {single.day.vara.full_key}  "
             f"ishtakaal {single.timing.ghati}:{single.timing.pala}:{single.timing.vipala}  "
             f"hora lord {single.timing.hora_lord.full_key}"
         )

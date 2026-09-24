@@ -28,6 +28,13 @@ use std::fmt::Write;
 
 use crate::model::FieldDef;
 
+/// What a nullable catalogue field holds for "none" at the C boundary:
+/// every id is a `u16`, and no member is numbered this high. A binding
+/// writes it for its own null and reads it back as null, never as a
+/// member — `0` is a member (`era.VIKRAMA`), so a null written as zero
+/// would read back as a real one.
+pub const NO_MEMBER: &str = "0xFFFF";
+
 /// How a field's metadata is spelled inside its documentation.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DocStyle {

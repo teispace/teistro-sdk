@@ -116,7 +116,7 @@ void main() {
   print('');
   print(
     'found(one)     lagna ${single.lagnaDeg.toStringAsFixed(4)}°  '
-    'vara ${single.vara.fullKey}  '
+    'vara ${single.day.vara.fullKey}  '
     'ishtakaal ${single.timing.ghati}:${single.timing.pala}:${single.timing.vipala}  '
     'hora lord ${single.timing.horaLord.fullKey}',
   );

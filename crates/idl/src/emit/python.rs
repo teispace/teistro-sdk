@@ -32,7 +32,7 @@
 use std::collections::BTreeSet;
 use std::fmt::Write;
 
-use crate::emit::{DocStyle, field_doc_with, line_comment, reserved};
+use crate::emit::{DocStyle, NO_MEMBER, field_doc_with, line_comment, reserved};
 use crate::layout::{Target, struct_layout};
 use crate::model::{
     Api, BlobSchema, EnumDef, EnumValue, FieldDef, FunctionDef, OpaqueDef, ParamDef, Role, Scalar,
@@ -418,6 +418,10 @@ fn render_constants(out: &mut String, api: &Api) {
         out,
         "# The ABI and the SDK version these declarations were generated from. A\n# library that answers otherwise is refused when it is opened.\nGENERATED_ABI_VERSION: Final = {}\nGENERATED_SDK_VERSION: Final = \"{}\"\n",
         api.abi_version, api.sdk_version
+    );
+    let _ = writeln!(
+        out,
+        "# What a nullable catalogue field holds for none: no member is numbered\n# this high, and `0` is a member.\nNO_MEMBER: Final = {NO_MEMBER}\n"
     );
 }
 
@@ -819,6 +823,9 @@ fn render_write(out: &mut String, s: &StructDef, roles: &[FieldRole]) {
                 .replace("{name}", &binding_type_name(name)),
                 _ => format!("raw.{field} = _c_value(self.{field})"),
             },
+            FieldRole::Value if f.meta.nullable && f.meta.enum_name.is_some() => format!(
+                "raw.{field} = NO_MEMBER if self.{field} is None else int(self.{field})"
+            ),
             FieldRole::Value => format!("raw.{field} = _c_value(self.{field})"),
         };
         let _ = writeln!(out, "        {line}");
@@ -891,7 +898,11 @@ fn read_plain(field: &FieldDef, ty: &TypeRef, name: &str) -> String {
         return format!("{}(raw.{name})", pascal(brand));
     }
     if let Some(enum_name) = &field.meta.enum_name {
-        return format!("{}(raw.{name})", binding_type_name(enum_name));
+        let member = format!("{}(raw.{name})", binding_type_name(enum_name));
+        if field.meta.nullable {
+            return format!("None if raw.{name} == NO_MEMBER else {member}");
+        }
+        return member;
     }
     match ty {
         TypeRef::Enum { name: enum_name } => {

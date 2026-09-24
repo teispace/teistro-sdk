@@ -1275,6 +1275,106 @@ void _engineTests() {
     tropical.dispose();
   });
 
+  // A chart's day and an almanac's are one record, and its date is the one
+  // `calendar.convert` takes. Before, Dart flattened the weekday and the
+  // sunrise onto the chart and left the rest out.
+  test('a chart\'s day is the almanac\'s, and its date converts', () {
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final ctx = context();
+    final day =
+        ctx.chart
+            .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+            .day;
+    final same =
+        ctx.almanac
+            .day(date: day.date, place: place, utcOffsetSeconds: 20700)
+            .day;
+    expect(
+      [same.vara, same.sunrise, same.sunset, same.nextSunrise, same.date.day],
+      [day.vara, day.sunrise, day.sunset, day.nextSunrise, day.date.day],
+    );
+    expect(
+      [
+        day.date.calendar,
+        day.date.era,
+        day.date.year,
+        day.date.month,
+        day.date.day,
+      ],
+      [Calendar.bikramSambat, Era.vikrama, 2056, 9, 17],
+    );
+    final gregorian = ctx.calendar.convert(day.date, Calendar.gregorian);
+    expect([gregorian.year, gregorian.month, gregorian.day], [2000, 1, 1]);
+    expect(day.vara, Vara.shanivara);
+    expect(day.sunrise < day.sunset && day.sunset < 2451545.0, isTrue);
+    expect(2451545.0 < day.nextSunrise, isTrue);
+    expect(day.polar, isNull);
+    expect(day.convention, Sunrise.centreNoRefraction);
+    expect(day.customAltitudeDeg, isNull);
+    ctx.dispose();
+
+    // A custom altitude is a number and no named convention.
+    final custom = context(
+      settings: {
+        'day': {
+          'sunrise': {'kind': 'CUSTOM', 'altitude_deg': -0.5},
+        },
+      },
+    );
+    final own =
+        custom.chart
+            .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+            .day;
+    expect(own.convention, isNull);
+    expect(own.customAltitudeDeg, -0.5);
+    custom.dispose();
+
+    // Tromsø at midsummer: civil midnight holds the instant and says so;
+    // the nearest real sunrise is weeks away, and the refusal names the
+    // policy rather than the instant.
+    final tromso = Observer(
+      latitudeDeg: Latitude(69.65),
+      longitudeDeg: Longitude(18.96),
+      altitudeM: Altitude(0),
+    );
+    Context under(String policy) => context(
+      settings: {
+        'day': {'polar_day_policy': policy},
+      },
+    );
+    final civil = under('CIVIL_MIDNIGHT');
+    final polar =
+        civil.chart
+            .found(instant: 2451716.5, place: tromso, utcOffsetSeconds: 7200)
+            .day
+            .polar!;
+    expect(
+      [polar.kind, polar.policy],
+      [PolarKind.day, PolarDayPolicy.civilMidnight],
+    );
+    civil.dispose();
+    final nearest = under('NEAREST_EVENT');
+    expect(
+      () => nearest.chart.found(
+        instant: 2451716.5,
+        place: tromso,
+        utcOffsetSeconds: 7200,
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'day.polar_day_policy',
+        ),
+      ),
+    );
+    nearest.dispose();
+  });
+
   test('a chart carries its Vimshopaka, each graha\'s four scores', () {
     final ctx = context();
     final place = Observer(

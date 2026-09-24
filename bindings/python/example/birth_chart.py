@@ -138,7 +138,7 @@ def main() -> None:
         lagna, into = rashi_of(chart.lagna_deg)
         print(
             f"lagna          {chart.lagna_deg:.4f}° -- {ctx.intl.entity(lagna.full_key).name}"
-            f" at {into:.4f}°, vara {chart.vara.full_key}"
+            f" at {into:.4f}°, vara {chart.day.vara.full_key}"
         )
         # `None`, and it means what it says: a tropical chart has no
         # ayanamsha, not an ayanamsha of nought.
