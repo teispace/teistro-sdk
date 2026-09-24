@@ -229,7 +229,8 @@ pub(crate) const FILL: usize = 72;
 /// be. A block that is a heading, a table or a list is left exactly as it
 /// was written.
 pub(crate) fn fill(page: &str) -> String {
-    page.split("\n\n")
+    let mut filled = page
+        .split("\n\n")
         .map(|block| {
             // A fenced block is verbatim: wrapping one would run its
             // lines together and break the very command it prints. The
@@ -261,7 +262,13 @@ pub(crate) fn fill(page: &str) -> String {
             }
         })
         .collect::<Vec<_>>()
-        .join("\n\n")
+        .join("\n\n");
+    // Wrapping a paragraph rebuilds it from its words, which drops the
+    // newline a page ends on when its last block is prose.
+    if page.ends_with('\n') && !filled.ends_with('\n') {
+        filled.push('\n');
+    }
+    filled
 }
 
 /// A list of items, wrapped so that generated prose stays readable.
@@ -387,6 +394,18 @@ mod tests {
             filled.contains("1. a list item\n   and its continuation"),
             "{filled}"
         );
+    }
+
+    /// A page whose last block is prose still ends on its newline, and
+    /// one that never had a newline is not given one.
+    #[test]
+    fn filling_keeps_the_pages_last_newline() {
+        assert_eq!(
+            fill("# A heading\n\nlast words\nwrapped\n"),
+            "# A heading\n\nlast words wrapped\n"
+        );
+        assert_eq!(fill("last words"), "last words");
+        assert_eq!(fill("| a |\n"), "| a |\n");
     }
 
     #[test]

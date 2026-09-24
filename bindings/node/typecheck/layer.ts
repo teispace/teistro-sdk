@@ -328,7 +328,7 @@ function theYearsMatters(ctx: Context): string {
       through: 2,
       place: 'birth',
       matters: [7, 10],
-      yogas: { drishti: { subDegree: 'ishrafa' }, weakBelow: 5 * 3600, tambira: 'either_lord' },
+      yogas: { drishti: { subDegree: 'ishrafa' }, weakBelow: 5 * 3600, tambira: 'either_lord', moonBenefic: 'waxing' },
       varshesha: { noneAspects: 'annual_lagna_lord' },
     },
   }).praveshas[0]!.annual!;

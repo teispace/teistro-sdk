@@ -17,7 +17,9 @@
 use teistro::catalogue::Graha;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::tajika::{Reading, SIDEREAL_YEAR_DAYS};
-use teistro::{ChartRequest, Context, Document, Ephemeris, House, UtcOffset};
+use teistro::{
+    ChartRequest, Context, Document, Ephemeris, House, MoonBenefic, UtcOffset, YogaRules,
+};
 
 const BIRTH: f64 = 2_447_995.489_583_333_5;
 
@@ -502,12 +504,13 @@ fn the_years_yogas_answer_a_matter_and_name_what_they_cannot_answer() {
         assert_eq!(found.lagnesha, lagna_sign.attributes().lord);
         assert_eq!(found.karyesha, found.sign.attributes().lord);
 
-        // The façade reads retrograde and combustion from the chart, so
-        // only what the build does not compute is left unanswered, and
-        // each carries its reason. A consumer asking about one gets
-        // `None` -- not `false`, which would be a claim this build has no
-        // right to make.
+        // The façade reads retrograde and combustion from the chart, and
+        // the build computes all sixteen, so nothing is left unanswered;
+        // were a yoga ever unbuilt again, it would carry its reason and a
+        // consumer asking about it would get `None` -- not `false`, which
+        // would be a claim this build has no right to make.
         assert!(found.states.is_some(), "the façade supplies the states");
+        assert_eq!(found.unanswered, [], "every one of the sixteen answers");
         for yoga in &found.unanswered {
             assert!(!yoga.is_built(), "{yoga:?} is built and was not answered");
             assert_eq!(found.why(*yoga), yoga.awaiting());
@@ -619,6 +622,63 @@ fn an_annual_charts_states_reach_every_yoga_that_reads_them() {
         assert_eq!(how.is_afflicted(), how.clauses().iter().any(|(_, is)| *is));
     }
     let refused = sdk.chart().affliction(&annual, Graha::Rahu).unwrap_err();
+    assert_eq!(refused.field(), Some("graha"));
+}
+
+/// Kuttha read back through its clauses, in every matter of the source's
+/// year: it holds exactly where both lords are favoured, under the
+/// default readings and under the commentary's waxing Moon alike.
+#[test]
+fn kuttha_holds_exactly_where_both_lords_are_favoured() {
+    let sdk = source_context();
+    let (_birth, annual) = source_birth_and_year(&sdk);
+    let waxing = YogaRules {
+        moon_benefic: MoonBenefic::Waxing,
+        ..YogaRules::default()
+    };
+    for rules in [YogaRules::default(), waxing] {
+        let every = sdk
+            .chart()
+            .tajika_yogas_many(&annual, &House::ALL, rules)
+            .unwrap();
+        for asked in every.iter().filter(|asked| !asked.same_lord) {
+            let favoured = |graha| {
+                sdk.chart()
+                    .favour_with_rules(&annual, graha, rules)
+                    .unwrap()
+                    .is_favoured()
+            };
+            assert_eq!(
+                asked.holds(teistro::YearYoga::Kuttha),
+                Some(favoured(asked.lagnesha) && favoured(asked.karyesha)),
+                "{:?} under {rules:?}",
+                asked.house
+            );
+        }
+    }
+}
+
+/// Kuttha's clauses through the façade: read from the founded chart,
+/// the first of them the strength the rest of the yogas read, and the
+/// verdict every clause and nothing else (crux C117).
+#[test]
+fn a_planets_favour_is_its_four_clauses_and_nothing_else() {
+    let sdk = source_context();
+    let (_birth, annual) = source_birth_and_year(&sdk);
+    for graha in teistro::tajika::SEVEN {
+        let how = sdk.chart().favour(&annual, graha).unwrap();
+        assert_eq!(how.graha, graha);
+        assert_eq!(how.strength, sdk.chart().strength(&annual, graha).unwrap());
+        assert_eq!(how.is_favoured(), how.clauses().iter().all(|(_, is)| *is));
+        assert_eq!(
+            how,
+            sdk.chart()
+                .favour_with_rules(&annual, graha, YogaRules::default())
+                .unwrap(),
+            "{graha:?}: the default is the default rules"
+        );
+    }
+    let refused = sdk.chart().favour(&annual, Graha::Rahu).unwrap_err();
     assert_eq!(refused.field(), Some("graha"));
 }
 

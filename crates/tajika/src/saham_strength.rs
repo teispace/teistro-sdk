@@ -33,7 +33,7 @@ use crate::bala::{Bala, Relation, panchavargiya, sign_of_longitude};
 use crate::drishti::Drishti;
 use crate::harsha::{HarshaGrade, HarshaRules, harsha};
 use crate::saham::{Saham, SahamPlace, SahamRules, SahamSky, sahams};
-use crate::yoga::qualification;
+use crate::yoga::{BENEFICS, qualification};
 
 /// Which planets a saham's clauses call benefic and malefic.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -43,7 +43,8 @@ pub enum SahamNatures {
     /// The chapter's own: the Moon, Mercury, Jupiter and Venus benefic,
     /// the Sun, Mars and Saturn malefic — its forty-seventh year calls the
     /// Sun "another malefic", its birth Punya is with "all the natural
-    /// benefics (viz., the Moon, Mercury, Jupiter and Venus)".
+    /// benefics (viz., the Moon, Mercury, Jupiter and Venus)" — the
+    /// [`BENEFICS`] Kuttha reads, so the two cannot drift apart.
     #[default]
     Chapter,
     /// The catalogue's Parashari natures, under which Mercury is neither.
@@ -55,10 +56,7 @@ impl SahamNatures {
     #[must_use]
     pub fn is_benefic(self, graha: Graha) -> bool {
         match self {
-            SahamNatures::Chapter => matches!(
-                graha,
-                Graha::Moon | Graha::Mercury | Graha::Jupiter | Graha::Venus
-            ),
+            SahamNatures::Chapter => BENEFICS.contains(&graha),
             SahamNatures::Parashari => nature(graha) == Some(Nature::Benefic),
         }
     }

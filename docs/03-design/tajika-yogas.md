@@ -1,12 +1,12 @@
 # The sixteen Tajika yogas
 
-Status: built but for what `YearYoga::awaiting` names —
-2026-09-23; that is designed and *named*, which is not the same as
-absent. The count is deliberately not written here: it is generated in
-`muntha-measured.md` §10 from the type, where it cannot go stale. All
-five steps of the order of work landed the same day, and the sixteen
-**cross** every binding for the matters a caller names (see *Crossing the
-boundary*); what remains waits on a source (C117), not on building.
+Status: **all sixteen built** — the fifteen on 2026-09-23, Kuttha on
+2026-09-24 once the *Tajika Nilakanthi* named its benefics (C117).
+`YearYoga::awaiting` stays, matched exhaustively, so a yoga added later
+cannot compile until somebody says whether it is built; the count is
+generated in `muntha-measured.md` §10 from the type, where it cannot go
+stale. The sixteen **cross** every binding for the matters a caller
+names (see *Crossing the boundary*).
 Written after reading the source's Table X-3 off the page and before
 writing any of it, as every
 module since Phase 4 has been. The definitions are in
@@ -87,7 +87,7 @@ Everything below is already built unless marked.
 | own Hudda, Drekkana and Navamsha | `bala`'s lords, which "unqualified" needs |
 | exalted, debilitated, retrograde, combust | the founded chart's own graha rows |
 | kendra, panaphara, apoklima, trika | whole-sign houses from the annual lagna |
-| benefic and malefic | Tajika's own reckoning: **Mars and Saturn** are the malefics Manau names |
+| benefic and malefic | Tajika's own reckoning: **Mars and Saturn** are the malefics Manau names; the **Moon, Mercury, Jupiter and Venus** the benefics Kuttha reads (C117) |
 
 Nothing here is missing. The module is a composition, which is why it was
 worth building the aspects and the strength first and separately.
@@ -211,7 +211,7 @@ by starting to write them would have been the expensive way.
 | **retrograde** | the founded chart's graha rows — **not** in `AnnualSky`, which carries longitudes and nothing else |
 | **combust** | `teistro_state::burn::combustion`, which `teistro-tajika` does not depend on and should not |
 | **"strong" and "weak"** | `Strength`, **built** (C116): graded on the Vishwa bala, with the dignities as alternatives |
-| benefic influence | Tajika's own benefics, which the table does not enumerate as it enumerates the malefics |
+| benefic influence | `BENEFICS` (C117, closed): the four the *Nilakanthi*'s commentary and Charak's saham chapter both name |
 
 ### The input shape this decides
 
@@ -308,7 +308,8 @@ positively now, and tested with a middling pair.
      cannot change that, since the breadth is the five-way list over two
      planets. Recorded, not corrected, as C115 was. Durapha's parse (C119)
      is bounded to six matters by the weak-pair ceiling.
-   - **Kuttha** needs Tajika's benefics (C117), and nothing else now.
+   - **Kuttha** needed Tajika's benefics (C117) — **done** (2026-09-24);
+     see *Kuttha, read from two books* below.
    - **Tambira** needed a **projection**: the karyesha forming an
      Ithasala from the *next* sign with a lagnesha its present sign does
      not aspect. That is not the Bhavishyat Ithasala, which requires the
@@ -406,6 +407,66 @@ not hold* from *cannot be told*, which is the half a program acts on.
 Each binding's answer has `holds(yoga)`, returning `null` / `None` for an
 unanswered yoga exactly as the Rust `Option<bool>` does.
 
+## Kuttha, read from two books
+
+**Done, 2026-09-24.** Charak's definition is two clauses about the pair:
+
+> (i) Lagnesha and karyesha are powerful and posited in the kendras or
+> the panapharas. (ii) Presence of benefic aspects, and absence of
+> malefic aspects.
+
+He names no benefics for it (C117). The *Tajika Nilakanthi*'s Kuttha
+verses (Ṣoḍaśayoga vv. 67–68) are the text he condenses. Its commentary
+names them: *śubhena*, "by a benefic", is "any one of the **full Moon,
+Mercury, Jupiter and Venus**". The same verse's malefic is the one whose
+*kṣuta* aspect reaches the planet (houses 1, 4, 7 and 10) or that shares
+its sign. That is `malefic_reaches` word for word, the reading Manau and
+Rudda already ship, so Kuttha adds no second definition of a malefic's
+reach. Charak's saham chapter names the same four "natural benefics",
+with no condition on the Moon.
+
+So each lord is **favoured** when all four of these hold, and Kuttha
+holds when both lords are:
+
+| clause | read as |
+|---|---|
+| powerful | `Strength::is_strong` (C116), the reading every yoga that says "strong" shares |
+| in a kendra or a panaphara | whole-sign houses from the annual lagna, as Ikabala reads them |
+| under a benefic's aspect | one of `BENEFICS`, other than the lord itself, joins it or aspects it by any of the eight Tajika aspects. The partner counts, as it does for Rudda's malefic (C118) |
+| free of a malefic's | no one of `MALEFICS`, other than itself, reaches it: `malefic_reaches` |
+
+**One reading is a knob.** The commentary's *full* Moon: `YogaRules::moon_benefic`
+is `always` by default, which is Charak's plain list, or `waxing`, which
+reads *full* as the bright half. The waxing Moon is less than 180° ahead
+of the Sun, so the two longitudes already in `AnnualSky` are all it
+needs. A narrower reading (only near the full, or 72° either side) is
+another member of the same enum if a text asks for it.
+
+**One reading is not a knob, deliberately.** The verses list further
+marks of a powerful planet: risen from the Sun's beams, direct, aspecting
+the lagna, slow, and in vv. 69–70 the time of day, the half of the chart
+and the gender of the sign. Those are **alternatives**, each "makes it
+strong", and not conditions all of which hold. Charak's Kuttha keeps two
+of them and states the rest nowhere. Kuttha therefore needs no
+`AnnualStates`, and the risen and direct marks are not smuggled in as
+conditions a book does not state.
+
+**Every clause is reported.** `favour(graha, lagna, sky, rules)` returns
+the four clauses for one planet, as `affliction` does for Rudda's list.
+A reader asking why a Kuttha did not hold gets the clause, and one
+holding a narrower reading of any clause applies it to the answer
+without the yoga being rewritten. A held Kuttha carries nothing more
+than its name, because each of its clauses is true by definition, as
+Ikabala's are.
+
+**What the corpus says** is measured in `muntha-measured.md`: how often
+it holds, under both Moon readings, and which clause turns away the most
+pairs that are otherwise favoured. Kuttha wants **both** lords strong, so
+it can hold in no more matters than have a strong pair, and
+`YearYoga::needs_a_strong_pair` puts it under that ceiling, which the
+pass checks. It is the mirror of the weak-pair ceiling Durapha and
+Dutthottha-Davira live under.
+
 ## What is decided and what is not
 
 | | |
@@ -413,9 +474,10 @@ unanswered yoga exactly as the Rust `Option<bool>` does.
 | **decided** | that the module takes a matter and answers for it, because the sources define fourteen of sixteen against a karyesha; that the two chart-level yogas answer regardless |
 | **decided by measurement** | what "strong" and "weak" mean for a yoga (C116): graded, weak below five and strong from ten, a middling band between, both `YogaRules` fields |
 | **decided by the source** | that a Moon completing a Gairi-Kamboola is not also a Khallasara (C121, the source's comment against its own table) |
-| **not decided** | whether "benefic influence" means Tajika's own benefics or the chart's (C117), which is all that stands between Kuttha and shipping; how *under malefic influence* and Durapha's list read (C118, C119), each shipped as one reading with every clause carried; what *on entering the next sign* means (C120), shipped as the instant projection with a retrograde lord entering nothing; which lord Tambira moves, shipped as the definition's karyesha with the source's "some authorities" a `YogaRules::tambira` away |
-| **built** | every one `YearYoga::awaiting` does not name, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**, and `tajika_yogas_many` for several matters at once, which judges the chart's rules, states and strengths once; the crossing, `varsha_json.matters` and `varsha_json.yogas`, in all four bindings; `sdk.chart().qualification`, `strength` and `affliction` for the three clause-carrying verdicts, and `annual_states` for what the longitudes cannot say; `YearYoga::ALL` names all sixteen, `awaiting` says what each unbuilt one needs, matched exhaustively so a yoga cannot be added without a decision, and `judges_an_ithasala`, `needs_a_weak_pair`, `needs_no_aspect` and `is_chart_fact` describe the structure the measured page holds every count to |
-| **not built** | Kuttha (C117), naming its blocker at every call — across the boundary too, as a bit in every matter's `unanswered` |
+| **decided by two sources** | Kuttha's benefics (C117): the four the *Nilakanthi*'s commentary and Charak's saham chapter both name, with the commentary's *full* Moon a `YogaRules::moon_benefic` away |
+| **not decided** | how *under malefic influence* and Durapha's list read (C118, C119), each shipped as one reading with every clause carried; what *on entering the next sign* means (C120), shipped as the instant projection with a retrograde lord entering nothing; which lord Tambira moves, shipped as the definition's karyesha with the source's "some authorities" a `YogaRules::tambira` away |
+| **built** | every one `YearYoga::awaiting` does not name, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**, and `tajika_yogas_many` for several matters at once, which judges the chart's rules, states and strengths once; the crossing, `varsha_json.matters` and `varsha_json.yogas`, in all four bindings; `sdk.chart().qualification`, `strength`, `affliction` and `favour` for the four clause-carrying verdicts, and `annual_states` for what the longitudes cannot say; `YearYoga::ALL` names all sixteen, `awaiting` says what each unbuilt one needs, matched exhaustively so a yoga cannot be added without a decision, and `judges_an_ithasala`, `needs_a_weak_pair`, `needs_no_aspect` and `is_chart_fact` describe the structure the measured page holds every count to |
+| **not built** | nothing: `unanswered` is empty wherever `AnnualStates` were given, and still lists the four that read them where they were not |
 
 ## Why this page exists before the code
 

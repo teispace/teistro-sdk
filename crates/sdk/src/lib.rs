@@ -138,9 +138,10 @@ pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths};
 pub use teistro_tajika as tajika;
 pub use teistro_tajika::{
     Affliction, AnnualStates, Bala, Between, Chosen, Claim, Drishti as TajikaDrishti, DrishtiRules,
-    Held, Muntha, MunthaDegree, Natal, Office, OfficeBearers, Panchavargiya, Pravesha,
-    Qualification, Reading as VarshaReading, Relation as TajikaRelation, Strength, SubDegree,
-    TambiraMover, Varshesha, VarsheshaRules, YearYoga, YearYogas, Yoga as TajikaYoga, YogaRules,
+    Favour, Held, MoonBenefic, Muntha, MunthaDegree, Natal, Office, OfficeBearers, Panchavargiya,
+    Pravesha, Qualification, Reading as VarshaReading, Relation as TajikaRelation, Strength,
+    SubDegree, TambiraMover, Varshesha, VarsheshaRules, YearYoga, YearYogas, Yoga as TajikaYoga,
+    YogaRules,
 };
 // The sahams: a formula over a chart's points, the source's forty-one as a
 // table of them, and the readings the tradition divides over

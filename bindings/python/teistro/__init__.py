@@ -2615,6 +2615,10 @@ class YogaRules(TypedDict, total=False):
     """Which lord a Tambira lets reach the next sign: the definition's
     karyesha by default, or either, the source's "some authorities"."""
 
+    moon_benefic: Literal["always", "waxing"]
+    """When the Moon counts among Kuttha's benefics: always by default,
+    Charak's list, or waxing, the commentary's "full Moon" (crux C117)."""
+
 
 class DrishtiRules(TypedDict, total=False):
     """How the Tajika aspects read a pair less than a degree past."""

@@ -1797,10 +1797,10 @@ void _engineTests() {
         isTrue,
       );
       for (final matter in annual.matters) {
-        // All but Kuttha is built, and Kuttha says so rather than
-        // answering false.
-        expect(matter.unanswered, [YearYoga.kuttha]);
-        expect(matter.holds(YearYoga.kuttha), isNull);
+        // All sixteen are built and the façade reads the states, so every
+        // one answers true or false.
+        expect(matter.unanswered, isEmpty);
+        expect(matter.holds(YearYoga.kuttha), isA<bool>());
         expect(matter.holds(YearYoga.ithasala), isA<bool>());
         expect(matter.karyesha != matter.lagnesha, !matter.sameLord);
         for (final held in matter.held) {
@@ -1845,6 +1845,21 @@ void _engineTests() {
       ).first.annual!.matters,
       isEmpty,
     );
+    // The commentary's full Moon can only take a Kuttha away.
+    int kutthas(Iterable<Pravesha> found) =>
+        found
+            .expand((one) => one.annual!.matters)
+            .where((matter) => matter.holds(YearYoga.kuttha) ?? false)
+            .length;
+    final waxing = years(
+      const VarshaRequest(
+        through: 2,
+        place: AnnualPlace.birth,
+        matters: Matters.all,
+        yogas: YogaRules(moonBenefic: MoonBenefic.waxing),
+      ),
+    );
+    expect(kutthas(waxing), lessThanOrEqualTo(kutthas(every)));
 
     // The rule records cross in the boundary's casing.
     years(
@@ -1864,6 +1879,7 @@ void _engineTests() {
           weakBelow: 4 * 3600,
           strongFrom: 12 * 3600,
           tambira: TambiraMover.eitherLord,
+          moonBenefic: MoonBenefic.waxing,
         ),
       ),
     );

@@ -39,9 +39,9 @@ use teistro_strength::{
     VimshopakaReading,
 };
 use teistro_tajika::{
-    Affliction, AnnualSky, AnnualStates, Between, DrishtiRules, Harsha, HarshaRules, Muntha,
-    MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading, SEVEN,
-    Saham, SahamFormula, SahamPlace, SahamReading, SahamRules, SahamSky, SahamStrength,
+    Affliction, AnnualSky, AnnualStates, Between, DrishtiRules, Favour, Harsha, HarshaRules,
+    Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading,
+    SEVEN, Saham, SahamFormula, SahamPlace, SahamReading, SahamRules, SahamSky, SahamStrength,
     SahamStrengthRules, Strength, Varshesha, VarsheshaRules, YearCharts, YearYogas, YogaRules,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
@@ -982,18 +982,16 @@ impl<'a> ChartArea<'a> {
     /// this year?" is `House::try_new(7)`; "what yogas does this year
     /// have?" is not a question these sixteen answer.
     ///
-    /// Those this build does not compute are **listed** in
-    /// [`YearYogas::unanswered`] at every call, and [`YearYogas::why`]
-    /// says what each still needs, because "Kuttha did not hold" and
-    /// "this build cannot tell you about Kuttha" are different
-    /// statements; [`YearYogas::holds`] answers `None` for them rather
-    /// than `false`. The count is not given here because it changes as
-    /// the build grows, and the list is the answer that cannot go stale.
+    /// A yoga a call cannot answer for is **listed** in
+    /// [`YearYogas::unanswered`], and [`YearYogas::why`] says what it
+    /// needs, because "Kuttha did not hold" and "this call cannot tell
+    /// you about Kuttha" are different statements; [`YearYogas::holds`]
+    /// answers `None` for it rather than `false`.
     ///
-    /// Retrograde and combustion — which Rudda, Duhphali-kuttha and
-    /// Durapha read — are taken from the founded chart's own graha
-    /// states, under this context's combustion table, so no yoga the
-    /// build computes is left unanswered for want of them.
+    /// Retrograde and combustion — which Rudda, Duhphali-kuttha,
+    /// Tambira and Durapha read — are taken from the founded chart's own
+    /// graha states, under this context's combustion table, so every one
+    /// of the sixteen is answered and the list comes back empty.
     ///
     /// It needs **no ephemeris**: the chart is already founded.
     ///
@@ -1322,6 +1320,46 @@ impl<'a> ChartArea<'a> {
         rules: YogaRules,
     ) -> Result<Strength, Error> {
         teistro_tajika::strength_with_rules(graha, &Self::sky_of(annual)?, rules)
+    }
+
+    /// How a planet of an annual chart stands to what **Kuttha** asks of
+    /// each lord — powerful, in a kendra or a panaphara, under a benefic's
+    /// aspect and no malefic's — clause by clause.
+    ///
+    /// Kuttha holds where both lords are favoured. A reader asking why it
+    /// did not hold for a matter asks this of the two lords, and gets the
+    /// clause that stopped it (crux C117).
+    ///
+    /// It needs **no ephemeris** and no retrograde or combustion: the
+    /// chart is already founded, and Kuttha reads neither.
+    ///
+    /// # Errors
+    ///
+    /// A body outside the seven, named `graha`; an annual chart that
+    /// does not place it.
+    pub fn favour(self, annual: &Document, graha: Graha) -> Result<Favour, Error> {
+        self.favour_with_rules(annual, graha, YogaRules::default())
+    }
+
+    /// [`Chart::favour`] with the strength floors and the Moon's reading
+    /// chosen.
+    ///
+    /// # Errors
+    ///
+    /// As [`Chart::favour`]; and floors that would let a planet be both,
+    /// named `strong_from`.
+    pub fn favour_with_rules(
+        self,
+        annual: &Document,
+        graha: Graha,
+        rules: YogaRules,
+    ) -> Result<Favour, Error> {
+        teistro_tajika::favour(
+            graha,
+            annual.foundation.lagna_deg,
+            &Self::sky_of(annual)?,
+            rules,
+        )
     }
 
     /// Where the seven stand in a founded chart, which both the strengths
