@@ -21,8 +21,11 @@
 //! And the **Moon** is passed over: "mild in nature and therefore unable to
 //! govern unless extraordinarily strong", it is not made lord of the year
 //! even when it is the strongest office-bearer aspecting the lagna, and the
-//! next one down takes it instead. That is the source's general rule, so it
-//! is the default and a knob, not a silence.
+//! next one down takes it instead. Where there is nobody to step down to,
+//! the planet in **Ithasala** with the Moon takes it, the strongest of
+//! several, and failing any the **lord of the Moon's sign** — Charak's rule
+//! for that case, and the *Tajika Nilakanthi*'s for every case, which is
+//! [`MoonMayRule::Ithasala`].
 //!
 //! Every answer says **which step decided it**, because a year lord chosen
 //! by the fallback is a different statement about the year from one chosen
@@ -32,8 +35,8 @@ use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 
-use crate::bala::{Bala, Panchavargiya, sign_of_longitude};
-use crate::drishti::Drishti;
+use crate::bala::{AnnualSky, Bala, Panchavargiya, SEVEN, sign_of_longitude};
+use crate::drishti::{Drishti, DrishtiRules, between_with_rules};
 use crate::office::{Office, OfficeBearers};
 
 /// The strength below which an office-bearer cannot hold the year.
@@ -53,6 +56,9 @@ pub enum NoneAspects {
     MunthaLord,
     /// The annual lagna's lord takes it, which "some authorities" give.
     AnnualLagnaLord,
+    /// The strongest of the five takes it, aspect or none: the *Tajika
+    /// Nilakanthi*'s Varshatantra v. 11.
+    Strongest,
 }
 
 /// Who takes the year when the office-bearers tie outright (crux C106).
@@ -67,19 +73,38 @@ pub enum Tied {
     DinaRatriPati,
 }
 
-/// Whether the Moon may hold the year.
+/// Whether the Moon may hold the year, and who takes it when it may not.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum MoonMayRule {
     /// It is passed over and the next one down that aspects takes the
-    /// year: the source's general rule, and the default.
+    /// year; where nobody is next, its **Ithasala successor** does.
+    /// Charak's two steps, and the default.
     #[default]
     PassedOver,
+    /// Its Ithasala successor takes the year at once, with no step down:
+    /// the *Tajika Nilakanthi*'s own view (Varshatantra v. 12), which
+    /// Charak gives as "some authorities".
+    Ithasala,
     /// It holds the year like any other office-bearer, for the
     /// "extraordinarily strong and well-positioned" Moon the source
     /// allows and leaves to the reader.
     LikeAnyOther,
+}
+
+/// Which planets may succeed the Moon through an Ithasala.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum MoonPartner {
+    /// Any of the seven, the default: Charak's "the planet with which
+    /// this Moon establishes an Ithasala", and the *Nilakanthi*'s verse.
+    #[default]
+    AnyPlanet,
+    /// Only an office-bearer, as one of the *Nilakanthi*'s two
+    /// commentaries reads its verse.
+    OfficeBearer,
 }
 
 /// The readings the year lord's chain parts on.
@@ -93,6 +118,11 @@ pub struct VarsheshaRules {
     pub tied: Tied,
     /// Whether the Moon may hold it.
     pub moon: MoonMayRule,
+    /// Who may succeed the Moon through an Ithasala.
+    pub moon_partner: MoonPartner,
+    /// How the Ithasala the Moon's successor needs is read: the same
+    /// rules the yogas take.
+    pub drishti: DrishtiRules,
 }
 
 /// Which step of the chain decided the year's lord.
@@ -118,14 +148,44 @@ pub enum Chosen {
     /// The annual lagna's lord, because nobody aspects the lagna and the
     /// rules ask for that reading.
     AnnualLagnaLordUnaspected,
+    /// The strongest of the five, because nobody aspects the lagna and the
+    /// rules ask for the *Nilakanthi*'s reading.
+    StrongestUnaspected,
+    /// The planet in Ithasala with the Moon, the strongest of several, in
+    /// the Moon's place.
+    MoonsIthasala,
+    /// The lord of the Moon's sign, in the Moon's place, the Moon being in
+    /// Ithasala with nothing. The Moon itself where it stands in Cancer,
+    /// as the *Nilakanthi*'s commentary says.
+    MoonsSignLord,
 }
 
 impl Chosen {
+    /// Every step, in the chain's order.
+    pub const ALL: [Chosen; 10] = [
+        Chosen::Strongest,
+        Chosen::MostPortfolios,
+        Chosen::MunthaLordUnaspected,
+        Chosen::MunthaLordAllWeak,
+        Chosen::MunthaLordTied,
+        Chosen::DinaRatriTied,
+        Chosen::AnnualLagnaLordUnaspected,
+        Chosen::StrongestUnaspected,
+        Chosen::MoonsIthasala,
+        Chosen::MoonsSignLord,
+    ];
+
     /// Whether the year lord was chosen on its own strength rather than by
     /// a fallback.
     #[must_use]
     pub const fn on_strength(self) -> bool {
         matches!(self, Chosen::Strongest | Chosen::MostPortfolios)
+    }
+
+    /// Whether it was chosen in the Moon's place.
+    #[must_use]
+    pub const fn succeeds_the_moon(self) -> bool {
+        matches!(self, Chosen::MoonsIthasala | Chosen::MoonsSignLord)
     }
 }
 
@@ -156,8 +216,9 @@ pub struct Varshesha {
     /// Every claimant, strongest first, so a reader can see the decision
     /// rather than take it on trust.
     pub claims: Vec<Claim>,
-    /// Whether the Moon was passed over on the way here: it was the
-    /// strongest aspecting office-bearer and is "unable to govern".
+    /// Whether the Moon was passed over on the way here: the chain would
+    /// have given it the year, and it is "unable to govern". True even
+    /// where the successor proves to be the Moon itself, in Cancer.
     pub moon_passed_over: bool,
 }
 
@@ -179,12 +240,19 @@ pub fn aspects(graha_sign: Rashi, lagna_sign: Rashi) -> bool {
 
 /// The lord of the year.
 ///
+/// `sky` and `strengths` describe the same annual chart: the strengths
+/// rank the claimants, and the sky gives the Ithasala a Moon's successor
+/// is read from.
+///
 /// # Errors
 ///
 /// An annual lagna that is not a number, named `annual_lagna_deg`; a
-/// strength table that does not carry one of the office-bearers.
+/// strength table that does not carry an office-bearer or a planet the
+/// Moon is in Ithasala with, named `strengths`; a sky that places a planet
+/// at no longitude.
 pub fn varshesha(
     bearers: &OfficeBearers,
+    sky: &AnnualSky,
     strengths: &[Panchavargiya],
     annual_lagna_deg: f64,
     rules: VarsheshaRules,
@@ -196,19 +264,10 @@ pub fn varshesha(
         );
     }
     let lagna = sign_of_longitude(annual_lagna_deg);
-    let strength_of = |graha: Graha| -> Result<(Bala, Rashi), Error> {
-        strengths
-            .iter()
-            .find(|one| one.graha == graha)
-            .map(|one| (one.vishwa, one.sign))
-            .ok_or_else(|| {
-                Error::invalid_arg(format!("no strength for {graha:?}, an office-bearer"))
-                    .with_field("strengths")
-            })
-    };
+    let table = Strengths(strengths);
     let mut claims = Vec::with_capacity(5);
     for graha in bearers.claimants() {
-        let (vishwa, sign) = strength_of(graha)?;
+        let (vishwa, sign) = table.of(graha)?;
         claims.push(Claim {
             graha,
             vishwa,
@@ -224,31 +283,56 @@ pub fn varshesha(
             .then(b.portfolios.cmp(&a.portfolios))
             .then(a.graha.id().cmp(&b.graha.id()))
     });
-    let muntha_lord = bearers.holder(Office::Muntha);
-    let mut moon_passed_over = false;
-    let answer = |graha: Graha,
-                  chosen: Chosen,
-                  claims: Vec<Claim>,
-                  moon_passed_over: bool|
-     -> Result<Varshesha, Error> {
-        let (vishwa, _) = strength_of(graha)?;
-        Ok(Varshesha {
-            graha,
-            chosen,
-            vishwa,
-            claims,
-            moon_passed_over,
-        })
-    };
+    let (mut graha, mut chosen, mut moon_passed_over) = chain(&claims, bearers, rules);
+    // Wherever the chain lands on the Moon, it is "unable to govern" and
+    // its successor takes the year, unless the rules let it rule.
+    if graha == Graha::Moon && rules.moon != MoonMayRule::LikeAnyOther {
+        (graha, chosen) = successor(bearers, sky, &table, rules)?;
+        moon_passed_over = true;
+    }
+    Ok(Varshesha {
+        graha,
+        chosen,
+        vishwa: table.of(graha)?.0,
+        claims,
+        moon_passed_over,
+    })
+}
 
+/// The strength table, looked up by planet and refused by name where it
+/// does not carry one.
+struct Strengths<'a>(&'a [Panchavargiya]);
+
+impl Strengths<'_> {
+    fn of(&self, graha: Graha) -> Result<(Bala, Rashi), Error> {
+        self.0
+            .iter()
+            .find(|one| one.graha == graha)
+            .map(|one| (one.vishwa, one.sign))
+            .ok_or_else(|| {
+                Error::invalid_arg(format!("no strength for {graha:?}")).with_field("strengths")
+            })
+    }
+}
+
+/// The chain over the ranked claims, before the Moon's own rule: the year
+/// lord, the step that chose it, and whether the Moon stepped down for the
+/// next one that aspects.
+fn chain(
+    claims: &[Claim],
+    bearers: &OfficeBearers,
+    rules: VarsheshaRules,
+) -> (Graha, Chosen, bool) {
+    let muntha_lord = bearers.holder(Office::Muntha);
     // 1. Every office-bearer too weak to hold the year at all.
     if claims.iter().all(|claim| claim.vishwa < WEAK_BELOW) {
-        return answer(muntha_lord, Chosen::MunthaLordAllWeak, claims, false);
+        return (muntha_lord, Chosen::MunthaLordAllWeak, false);
     }
-    // 2. Only those that aspect the lagna may hold it — and the Moon,
-    //    "unable to govern", steps aside for the next one down unless the
-    //    rules say it may rule like any other.
+    // 2. Only those that aspect the lagna may hold it — and under the
+    //    default the Moon, "unable to govern", steps aside for the next one
+    //    down, where there is one.
     let mut aspecting: Vec<&Claim> = claims.iter().filter(|claim| claim.aspects_lagna).collect();
+    let mut stepped_down = false;
     if rules.moon == MoonMayRule::PassedOver
         && aspecting
             .first()
@@ -256,22 +340,67 @@ pub fn varshesha(
         && aspecting.len() > 1
     {
         aspecting.remove(0);
-        moon_passed_over = true;
+        stepped_down = true;
     }
-    let Some(best) = aspecting.first().copied().copied() else {
+    let Some(best) = aspecting.first().copied() else {
         let (graha, chosen) = match rules.none_aspects {
             NoneAspects::MunthaLord => (muntha_lord, Chosen::MunthaLordUnaspected),
             NoneAspects::AnnualLagnaLord => (
                 bearers.holder(Office::VarshaLagna),
                 Chosen::AnnualLagnaLordUnaspected,
             ),
+            // The claims are ranked, so the first is the strongest.
+            NoneAspects::Strongest => claims
+                .first()
+                .map_or((muntha_lord, Chosen::MunthaLordUnaspected), |claim| {
+                    (claim.graha, Chosen::StrongestUnaspected)
+                }),
         };
-        return answer(graha, chosen, claims, moon_passed_over);
+        return (graha, chosen, stepped_down);
     };
     // 3, 4 and 5. The strongest of them; on a tie of strength the most
     // portfolios; and on a tie of that too the reading of an outright tie.
-    let (graha, chosen) = break_the_tie(&aspecting, &best, bearers, rules);
-    answer(graha, chosen, claims, moon_passed_over)
+    let (graha, chosen) = break_the_tie(&aspecting, best, bearers, rules);
+    (graha, chosen, stepped_down)
+}
+
+/// Who takes the year in the Moon's place: the planet in Ithasala with it,
+/// the strongest of several, and otherwise the lord of its sign.
+///
+/// "Strongest" by the same Vishwa bala the claims are ranked by. The
+/// sources name no tie-break for that, so an exact tie goes to the first
+/// in [`SEVEN`]'s weekday order, which keeps the answer independent of how
+/// the strength table is ordered.
+fn successor(
+    bearers: &OfficeBearers,
+    sky: &AnnualSky,
+    table: &Strengths<'_>,
+    rules: VarsheshaRules,
+) -> Result<(Graha, Chosen), Error> {
+    let claimants = bearers.claimants();
+    let mut best: Option<(Bala, Graha)> = None;
+    for graha in SEVEN {
+        if graha == Graha::Moon
+            || (rules.moon_partner == MoonPartner::OfficeBearer && !claimants.contains(&graha))
+        {
+            continue;
+        }
+        let pair = between_with_rules(Graha::Moon, graha, sky, rules.drishti)?;
+        if !pair.yoga.is_some_and(crate::Yoga::is_ithasala) {
+            continue;
+        }
+        let (vishwa, _) = table.of(graha)?;
+        if best.is_none_or(|(strongest, _)| vishwa > strongest) {
+            best = Some((vishwa, graha));
+        }
+    }
+    Ok(match best {
+        Some((_, graha)) => (graha, Chosen::MoonsIthasala),
+        None => (
+            sign_of_longitude(sky.moon_deg).attributes().lord,
+            Chosen::MoonsSignLord,
+        ),
+    })
 }
 
 /// Who takes the year among those tied with the strongest, and why.
@@ -315,9 +444,10 @@ mod tests {
     )]
 
     use super::{
-        Chosen, MoonMayRule, NoneAspects, Tied, VarsheshaRules, WEAK_BELOW, aspects, varshesha,
+        Chosen, MoonMayRule, MoonPartner, NoneAspects, Tied, VarsheshaRules, WEAK_BELOW, aspects,
+        varshesha,
     };
-    use crate::bala::{AnnualSky, Bala, panchavargiya};
+    use crate::bala::{AnnualSky, Bala, Panchavargiya, panchavargiya};
     use crate::office::{OfficeBearers, YearCharts, office_bearers};
     use teistro_core::catalogue::{Graha, Rashi};
 
@@ -359,7 +489,8 @@ mod tests {
     fn the_sources_worked_year_is_reproduced() {
         let (bearers, sky, lagna) = worked();
         let strengths = panchavargiya(&sky).unwrap();
-        let found = varshesha(&bearers, &strengths, lagna, VarsheshaRules::default()).unwrap();
+        let found =
+            varshesha(&bearers, &sky, &strengths, lagna, VarsheshaRules::default()).unwrap();
         assert_eq!(found.graha, Graha::Sun);
         assert_eq!(found.vishwa.to_string(), "14:20:15");
         assert_eq!(found.chosen, Chosen::Strongest);
@@ -390,7 +521,7 @@ mod tests {
     /// holds the year under the other reading.
     #[test]
     fn the_moon_is_passed_over_unless_the_rules_allow_it() {
-        let (bearers, _, lagna) = worked();
+        let (bearers, sky, lagna) = worked();
         // A table in which the Moon is strongest and everything aspects
         // the lagna, the Moon among them.
         let strengths: Vec<crate::bala::Panchavargiya> = crate::bala::SEVEN
@@ -418,13 +549,14 @@ mod tests {
             dina_ratri: Graha::Moon,
             ..bearers
         };
-        let passed = varshesha(&lunar, &strengths, lagna, VarsheshaRules::default()).unwrap();
+        let passed = varshesha(&lunar, &sky, &strengths, lagna, VarsheshaRules::default()).unwrap();
         assert_ne!(passed.graha, Graha::Moon);
         assert!(passed.moon_passed_over);
         assert_eq!(passed.graha, Graha::Sun, "the next one down that aspects");
 
         let allowed = varshesha(
             &lunar,
+            &sky,
             &strengths,
             lagna,
             VarsheshaRules {
@@ -437,64 +569,321 @@ mod tests {
         assert!(!allowed.moon_passed_over);
     }
 
-    /// The source's **second** worked year (Chart VII-1), which exercises
-    /// the Moon rule and the "next lower that aspects" step together.
-    ///
-    /// Three planets hold the five portfolios. The Moon is the strongest
-    /// at 12:28:15 and is passed over; Mercury is next at 10:49:15 and
-    /// "does not aspect the lagna and therefore goes out of the
-    /// competition"; **Venus**, the weakest at 9:06:30, holds the year on
-    /// account of its aspect. The chain must skip two claimants for two
-    /// different reasons to reach it.
-    #[test]
-    fn the_sources_second_worked_year_skips_two_claimants() {
+    /// The source's **second** worked year (Chart VII-1), read off the
+    /// page: Gemini rising at 12°53′.
+    fn chart_vii_1() -> (OfficeBearers, AnnualSky, f64) {
+        let at = |sign: f64, deg: f64, min: f64| sign * 30.0 + deg + min / 60.0;
+        let sky = AnnualSky {
+            sun_deg: at(7.0, 0.0, 40.0),
+            moon_deg: at(2.0, 18.0, 57.0),
+            mars_deg: at(6.0, 14.0, 43.0),
+            mercury_deg: at(7.0, 4.0, 8.0),
+            jupiter_deg: at(2.0, 16.0, 35.0),
+            venus_deg: at(8.0, 17.0, 28.0),
+            saturn_deg: at(8.0, 16.0, 57.0),
+        };
+        // "Three planets (the Moon, Mercury, and Venus) share among
+        // themselves the five portfolios": the Muntha in Libra, a Cancer
+        // birth, and Mercury "the lord of the lagna in the annual chart as
+        // also the Tri-Rashi Pati and the Dina-Ratri Pati" -- which, with
+        // the Sun in Scorpio, makes it a night return.
         let bearers = OfficeBearers {
-            muntha: Graha::Moon,
-            janma_lagna: Graha::Mercury,
-            varsha_lagna: Graha::Venus,
-            tri_rashi: Graha::Moon,
+            muntha: Graha::Venus,
+            janma_lagna: Graha::Moon,
+            varsha_lagna: Graha::Mercury,
+            tri_rashi: Graha::Mercury,
             dina_ratri: Graha::Mercury,
+            by_day: false,
+        };
+        (bearers, sky, at(2.0, 12.0, 53.0))
+    }
+
+    /// Chart VII-1 under Charak's default: the Moon leads and steps down,
+    /// Mercury is stronger than Venus but stands in the sixth, and **Venus**
+    /// holds the year, as printed.
+    ///
+    /// The Moon's 12:28:15 and Mercury's 10:49:15 are the book's to the
+    /// sub-unit. Its Venus, 9:06:30, is not: the chain gives 7:14:00, the
+    /// house part read with Jupiter opposite as an enemy where the book
+    /// reads it neutral (`03-design/varshesha.md`). The answer does not
+    /// turn on it.
+    #[test]
+    fn the_sources_second_worked_year_steps_down_to_venus() {
+        let (bearers, sky, lagna) = chart_vii_1();
+        let strengths = panchavargiya(&sky).unwrap();
+        let found =
+            varshesha(&bearers, &sky, &strengths, lagna, VarsheshaRules::default()).unwrap();
+        assert_eq!(found.graha, Graha::Venus, "the source's answer");
+        assert_eq!(found.chosen, Chosen::Strongest);
+        assert!(found.moon_passed_over, "the Moon led and stepped aside");
+        let printed = |graha: Graha| {
+            found
+                .claims
+                .iter()
+                .find(|claim| claim.graha == graha)
+                .map(|claim| (claim.vishwa.to_string(), claim.aspects_lagna))
+                .unwrap()
+        };
+        assert_eq!(printed(Graha::Moon), (String::from("12:28:15"), true));
+        assert_eq!(printed(Graha::Mercury), (String::from("10:49:15"), false));
+        assert_eq!(printed(Graha::Venus), (String::from("07:14:00"), true));
+    }
+
+    /// Chart VII-1 under the *Nilakanthi*'s reading, which Charak gives as
+    /// "some authorities": no step down. The Moon has "just moved ahead of
+    /// Venus", and past every other planet it aspects, so it forms no
+    /// Ithasala, and "the next consideration falls on the lord of the Moon
+    /// sign, which is Mercury".
+    #[test]
+    fn the_sources_second_worked_year_falls_to_the_moons_sign_lord() {
+        let (bearers, sky, lagna) = chart_vii_1();
+        let strengths = panchavargiya(&sky).unwrap();
+        let rules = VarsheshaRules {
+            moon: MoonMayRule::Ithasala,
+            ..VarsheshaRules::default()
+        };
+        let found = varshesha(&bearers, &sky, &strengths, lagna, rules).unwrap();
+        assert_eq!(found.graha, Graha::Mercury, "the source's answer");
+        assert_eq!(found.chosen, Chosen::MoonsSignLord);
+        assert!(found.chosen.succeeds_the_moon() && !found.chosen.on_strength());
+        assert!(found.moon_passed_over);
+        assert_eq!(found.vishwa.to_string(), "10:49:15");
+    }
+
+    /// Aries rising at 1°. The office-bearers are Mars (in Taurus, the
+    /// second), the Sun (in Virgo, the sixth) and the Moon, in Aries at 10°
+    /// and the only one of them that aspects the lagna. Jupiter at Leo 15°
+    /// is five degrees ahead of the Moon in a trine: an Ithasala. Nothing
+    /// else is: Venus is in Taurus, Mercury in Virgo and Saturn in Scorpio,
+    /// none of them aspecting Aries.
+    fn lone_moon() -> (OfficeBearers, AnnualSky) {
+        let bearers = OfficeBearers {
+            muntha: Graha::Mars,
+            janma_lagna: Graha::Moon,
+            varsha_lagna: Graha::Mars,
+            tri_rashi: Graha::Sun,
+            dina_ratri: Graha::Sun,
             by_day: true,
         };
-        // Aries rising. The Moon and Venus aspect it from the fifth;
-        // Mercury stands in the twelfth, which aspects nothing.
-        let lagna = 1.0;
-        let placed = |graha: Graha| match graha {
-            Graha::Moon | Graha::Venus => Rashi::Leo,
-            Graha::Mercury => Rashi::Pisces,
-            _ => Rashi::Aries,
+        let sky = AnnualSky {
+            sun_deg: 155.0,
+            moon_deg: 10.0,
+            mars_deg: 35.0,
+            mercury_deg: 158.0,
+            jupiter_deg: 135.0,
+            venus_deg: 50.0,
+            saturn_deg: 230.0,
         };
-        let strengths: Vec<crate::bala::Panchavargiya> = crate::bala::SEVEN
+        (bearers, sky)
+    }
+
+    /// A strength table read off `sky`'s signs, with the strengths chosen.
+    fn ranked(sky: &AnnualSky, vishwa: impl Fn(Graha) -> Bala) -> Vec<Panchavargiya> {
+        crate::bala::SEVEN
             .into_iter()
-            .map(|graha| crate::bala::Panchavargiya {
+            .map(|graha| Panchavargiya {
                 graha,
-                sign: placed(graha),
+                sign: crate::bala::sign_of_longitude(sky.longitude_of(graha)),
                 griha: Bala::default(),
                 uchcha: Bala::default(),
                 hudda: Bala::default(),
                 drekkana: Bala::default(),
                 navamsha: Bala::default(),
                 total: Bala::default(),
-                vishwa: match graha {
-                    Graha::Moon => Bala::new(12, 28, 15),
-                    Graha::Mercury => Bala::new(10, 49, 15),
-                    Graha::Venus => Bala::new(9, 6, 30),
-                    _ => Bala::new(1, 0, 0),
-                },
+                vishwa: vishwa(graha),
             })
-            .collect();
-        let found = varshesha(&bearers, &strengths, lagna, VarsheshaRules::default()).unwrap();
-        assert_eq!(found.graha, Graha::Venus, "the source's answer");
-        assert_eq!(found.vishwa.to_string(), "09:06:30");
-        assert!(found.moon_passed_over, "the Moon led and stepped aside");
-        // Mercury was skipped for the other reason, which the claims show.
-        let mercury = found
-            .claims
-            .iter()
-            .find(|claim| claim.graha == Graha::Mercury)
-            .unwrap();
-        assert!(!mercury.aspects_lagna);
-        assert!(mercury.vishwa > found.vishwa, "stronger, and out of it");
+            .collect()
+    }
+
+    fn moon_leads(graha: Graha) -> Bala {
+        match graha {
+            Graha::Moon => Bala::new(12, 0, 0),
+            Graha::Mars => Bala::new(8, 0, 0),
+            Graha::Sun => Bala::new(7, 0, 0),
+            _ => Bala::new(6, 0, 0),
+        }
+    }
+
+    /// The Moon is the only office-bearer that aspects, so there is no one
+    /// to step down to, and "it still does not become the year lord": the
+    /// planet in Ithasala with it does, office-bearer or not. The build
+    /// answered the Moon here until the successor was built.
+    #[test]
+    fn a_lone_moon_is_succeeded_by_its_ithasala() {
+        let (bearers, sky) = lone_moon();
+        let strengths = ranked(&sky, moon_leads);
+        let found = varshesha(&bearers, &sky, &strengths, 1.0, VarsheshaRules::default()).unwrap();
+        assert_eq!(found.graha, Graha::Jupiter);
+        assert_eq!(found.chosen, Chosen::MoonsIthasala);
+        assert!(found.moon_passed_over);
+        assert_eq!(found.vishwa, Bala::new(6, 0, 0), "its own strength");
+        assert!(!bearers.claimants().contains(&Graha::Jupiter));
+
+        // Narrowed to the office-bearers, Jupiter cannot succeed it, no
+        // office-bearer is in Ithasala with the Moon, and the lord of its
+        // sign, Aries, takes the year.
+        let narrowed = VarsheshaRules {
+            moon_partner: MoonPartner::OfficeBearer,
+            ..VarsheshaRules::default()
+        };
+        let found = varshesha(&bearers, &sky, &strengths, 1.0, narrowed).unwrap();
+        assert_eq!(
+            (found.graha, found.chosen),
+            (Graha::Mars, Chosen::MoonsSignLord)
+        );
+
+        // And allowed to rule, it rules.
+        let allowed = VarsheshaRules {
+            moon: MoonMayRule::LikeAnyOther,
+            ..VarsheshaRules::default()
+        };
+        let found = varshesha(&bearers, &sky, &strengths, 1.0, allowed).unwrap();
+        assert_eq!(
+            (found.graha, found.chosen),
+            (Graha::Moon, Chosen::Strongest)
+        );
+        assert!(!found.moon_passed_over);
+    }
+
+    /// Several in Ithasala with the Moon: "the strongest of them becomes
+    /// the year lord". Saturn at Sagittarius 14°, four degrees ahead of the
+    /// Moon in the other trine, joins Jupiter, and is made the stronger.
+    #[test]
+    fn of_several_in_ithasala_the_strongest_succeeds() {
+        let (bearers, lone) = lone_moon();
+        let sky = AnnualSky {
+            saturn_deg: 254.0,
+            ..lone
+        };
+        let strengths = ranked(&sky, |graha| match graha {
+            Graha::Saturn => Bala::new(9, 0, 0),
+            other => moon_leads(other),
+        });
+        let found = varshesha(&bearers, &sky, &strengths, 1.0, VarsheshaRules::default()).unwrap();
+        assert_eq!(
+            (found.graha, found.chosen),
+            (Graha::Saturn, Chosen::MoonsIthasala)
+        );
+    }
+
+    /// A Moon in its own Cancer, in Ithasala with nothing, is the lord of
+    /// its own sign, and "that very Moon is the year lord", as the
+    /// *Nilakanthi*'s commentary has it. Passed over, and back.
+    #[test]
+    fn a_moon_in_cancer_succeeds_itself() {
+        let (bearers, _) = lone_moon();
+        // The Moon at Cancer 20° aspects Aries from the fourth; the Sun,
+        // Mercury, Mars and Venus are all behind it in signs it aspects, so
+        // each is an Ishrafa; Jupiter in Leo and Saturn in Sagittarius are
+        // in the second and sixth from it, which aspect nothing.
+        let sky = AnnualSky {
+            sun_deg: 155.0,
+            moon_deg: 110.0,
+            mars_deg: 35.0,
+            mercury_deg: 158.0,
+            jupiter_deg: 135.0,
+            venus_deg: 40.0,
+            saturn_deg: 265.0,
+        };
+        let strengths = ranked(&sky, moon_leads);
+        let found = varshesha(&bearers, &sky, &strengths, 1.0, VarsheshaRules::default()).unwrap();
+        assert_eq!(
+            (found.graha, found.chosen),
+            (Graha::Moon, Chosen::MoonsSignLord)
+        );
+        assert!(found.moon_passed_over);
+    }
+
+    /// A Moon that inherits the year through a fallback is still the Moon:
+    /// it holds the Muntha's portfolio, nobody aspects the lagna, and its
+    /// Ithasala successor takes the year.
+    #[test]
+    fn a_moon_reached_by_a_fallback_is_succeeded_too() {
+        let (lone, lone_sky) = lone_moon();
+        let bearers = OfficeBearers {
+            muntha: Graha::Moon,
+            ..lone
+        };
+        // The Moon at Taurus 10° aspects nothing in Aries, and Jupiter at
+        // Leo 15° is five degrees ahead of it from the fourth.
+        let sky = AnnualSky {
+            moon_deg: 40.0,
+            ..lone_sky
+        };
+        let strengths = ranked(&sky, moon_leads);
+        let found = varshesha(&bearers, &sky, &strengths, 1.0, VarsheshaRules::default()).unwrap();
+        assert!(found.claims.iter().all(|claim| !claim.aspects_lagna));
+        assert_eq!(
+            (found.graha, found.chosen),
+            (Graha::Jupiter, Chosen::MoonsIthasala)
+        );
+        assert!(found.moon_passed_over);
+    }
+
+    /// Nobody aspecting the lagna gives the year to the Muntha's lord
+    /// (Charak), the annual lagna's lord ("some authorities") or the
+    /// strongest of the five (the *Nilakanthi*'s v. 11).
+    #[test]
+    fn nobody_aspecting_has_three_readings() {
+        let (lone, lone_sky) = lone_moon();
+        let bearers = OfficeBearers {
+            muntha: Graha::Sun,
+            ..lone
+        };
+        let sky = AnnualSky {
+            moon_deg: 40.0,
+            ..lone_sky
+        };
+        let strengths = ranked(&sky, |graha| match graha {
+            Graha::Mars => Bala::new(14, 0, 0),
+            other => moon_leads(other),
+        });
+        let ask = |none_aspects| {
+            varshesha(
+                &bearers,
+                &sky,
+                &strengths,
+                1.0,
+                VarsheshaRules {
+                    none_aspects,
+                    ..VarsheshaRules::default()
+                },
+            )
+            .unwrap()
+        };
+        let charak = ask(NoneAspects::MunthaLord);
+        assert!(charak.claims.iter().all(|claim| !claim.aspects_lagna));
+        assert_eq!(
+            (charak.graha, charak.chosen),
+            (Graha::Sun, Chosen::MunthaLordUnaspected)
+        );
+        let lagna_lord = ask(NoneAspects::AnnualLagnaLord);
+        assert_eq!(
+            (lagna_lord.graha, lagna_lord.chosen),
+            (Graha::Mars, Chosen::AnnualLagnaLordUnaspected)
+        );
+        let strongest = ask(NoneAspects::Strongest);
+        assert_eq!(
+            (strongest.graha, strongest.chosen),
+            (Graha::Mars, Chosen::StrongestUnaspected)
+        );
+        assert!(!strongest.chosen.on_strength(), "a fallback, strong or not");
+    }
+
+    /// The readings cross in the boundary's casing, partial records filled
+    /// from the defaults, and a reading nobody wrote is refused.
+    #[test]
+    fn the_rules_read_camel_case_and_fill_the_rest() {
+        let read: VarsheshaRules = serde_json::from_str(
+            r#"{"moon": "ithasala", "moonPartner": "office_bearer", "noneAspects": "strongest"}"#,
+        )
+        .unwrap();
+        assert_eq!(read.moon, MoonMayRule::Ithasala);
+        assert_eq!(read.moon_partner, MoonPartner::OfficeBearer);
+        assert_eq!(read.none_aspects, NoneAspects::Strongest);
+        assert_eq!(read.tied, Tied::MunthaLord);
+        assert_eq!(read.drishti, crate::DrishtiRules::default());
+        assert!(serde_json::from_str::<VarsheshaRules>(r#"{"moonPartner": "any"}"#).is_err());
     }
 
     /// The Tajika aspect is the houses 3, 5, 9, 11 and the kendras; the
@@ -524,7 +913,8 @@ mod tests {
         // aspects nothing; the Sun in Leo is in the second, also nothing;
         // Mars in Scorpio is in the fifth, which is a friendly aspect.
         let lagna = 3.0 * 30.0 + 10.0;
-        let found = varshesha(&bearers, &strengths, lagna, VarsheshaRules::default()).unwrap();
+        let found =
+            varshesha(&bearers, &sky, &strengths, lagna, VarsheshaRules::default()).unwrap();
         assert_eq!(found.graha, Graha::Mars);
         assert_eq!(found.chosen, Chosen::Strongest);
         let jupiter = found
@@ -536,50 +926,11 @@ mod tests {
         assert!(jupiter.vishwa > found.vishwa, "stronger, and passed over");
     }
 
-    /// When nobody aspects, the Muntha's lord takes the year — or the
-    /// annual lagna's lord, under the other reading.
-    #[test]
-    fn nobody_aspecting_falls_to_the_muntha_lord_or_the_lagna_lord() {
-        let (bearers, sky, _) = worked();
-        let strengths = panchavargiya(&sky).unwrap();
-        // Libra rising: Jupiter is in the third… so instead put the lagna
-        // where all three office-bearers sit in neutral houses. Jupiter in
-        // Sagittarius, the Sun in Leo and Mars in Scorpio are all neutral
-        // from Capricorn: the twelfth, the eighth and the eleventh — Mars
-        // is not, so Aquarius: the eleventh, seventh and tenth. Only a sign
-        // from which all three are neutral will do, and Cancer leaves Mars
-        // aspecting. Virgo: Jupiter fourth, so no. Test the rule directly
-        // instead, with a lagna that leaves each of them unaspecting.
-        let lagna = 5.0 * 30.0 + 1.0; // Virgo
-        let found = varshesha(&bearers, &strengths, lagna, VarsheshaRules::default()).unwrap();
-        if found.claims.iter().any(|claim| claim.aspects_lagna) {
-            // Virgo does aspect one of them; the fallback is exercised by
-            // the constructed case below instead.
-            assert!(found.chosen.on_strength());
-        }
-        // Constructed: no claimant aspects, so the chain must fall through.
-        let none = varshesha(
-            &bearers,
-            &strengths,
-            0.0,
-            VarsheshaRules {
-                none_aspects: NoneAspects::AnnualLagnaLord,
-                ..VarsheshaRules::default()
-            },
-        )
-        .unwrap();
-        assert!(
-            none.chosen.on_strength() || none.chosen == Chosen::AnnualLagnaLordUnaspected,
-            "{:?}",
-            none.chosen
-        );
-    }
-
     /// Every office-bearer under five units, and the Muntha's lord takes
     /// the year whatever the aspects say.
     #[test]
     fn all_of_them_weak_falls_to_the_muntha_lord() {
-        let (bearers, _, lagna) = worked();
+        let (bearers, sky, lagna) = worked();
         let feeble: Vec<crate::bala::Panchavargiya> = crate::bala::SEVEN
             .into_iter()
             .map(|graha| crate::bala::Panchavargiya {
@@ -594,7 +945,7 @@ mod tests {
                 vishwa: Bala::new(4, 0, 0),
             })
             .collect();
-        let found = varshesha(&bearers, &feeble, lagna, VarsheshaRules::default()).unwrap();
+        let found = varshesha(&bearers, &sky, &feeble, lagna, VarsheshaRules::default()).unwrap();
         assert_eq!(found.chosen, Chosen::MunthaLordAllWeak);
         assert_eq!(found.graha, bearers.muntha);
         assert!(found.vishwa < WEAK_BELOW);
@@ -605,7 +956,7 @@ mod tests {
     /// portfolios, and a tie of that too goes to the Muntha's lord.
     #[test]
     fn a_tie_goes_to_the_portfolios_and_then_to_the_muntha_lord() {
-        let (bearers, _, lagna) = worked();
+        let (bearers, sky, lagna) = worked();
         let level = |vishwa: Bala| -> Vec<crate::bala::Panchavargiya> {
             crate::bala::SEVEN
                 .into_iter()
@@ -630,6 +981,7 @@ mod tests {
         // and the Muntha's lord takes it.
         let found = varshesha(
             &bearers,
+            &sky,
             &level(Bala::new(10, 0, 0)),
             lagna,
             VarsheshaRules::default(),
@@ -641,6 +993,7 @@ mod tests {
         // The other reading gives that same tie to the Dina-Ratri Pati.
         let others = varshesha(
             &bearers,
+            &sky,
             &level(Bala::new(10, 0, 0)),
             lagna,
             VarsheshaRules {
@@ -657,8 +1010,14 @@ mod tests {
     fn a_lagna_that_is_not_a_number_is_refused_by_that_field() {
         let (bearers, sky, _) = worked();
         let strengths = panchavargiya(&sky).unwrap();
-        let why = varshesha(&bearers, &strengths, f64::NAN, VarsheshaRules::default())
-            .expect_err("refused");
+        let why = varshesha(
+            &bearers,
+            &sky,
+            &strengths,
+            f64::NAN,
+            VarsheshaRules::default(),
+        )
+        .expect_err("refused");
         assert_eq!(why.field(), Some("annual_lagna_deg"));
     }
 }

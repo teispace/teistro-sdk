@@ -1497,7 +1497,17 @@ void _engineTests() {
     for (final one in cast) {
       final lord = one.annual!.yearLord;
       expect(lord.claims.length, inInclusiveRange(1, 5));
-      expect(lord.claims.map((claim) => claim.graha), contains(lord.graha));
+      // Among its own claimants, unless it succeeds the Moon, whose Ithasala
+      // may be with any planet.
+      final succeedsTheMoon = const [
+        VarsheshaChosen.moonsIthasala,
+        VarsheshaChosen.moonsSignLord,
+      ].contains(lord.chosen);
+      if (succeedsTheMoon) {
+        expect(lord.moonPassedOver, isTrue);
+      } else {
+        expect(lord.claims.map((claim) => claim.graha), contains(lord.graha));
+      }
       final ranked = [for (final claim in lord.claims) claim.vishwa.total];
       final sorted = [...ranked]..sort((int a, int b) => b - a);
       expect(ranked, orderedEquals(sorted));
@@ -1866,7 +1876,13 @@ void _engineTests() {
       const VarshaRequest(
         through: 2,
         place: AnnualPlace.birth,
-        varshesha: VarsheshaRules(noneAspects: 'annual_lagna_lord'),
+        varshesha: VarsheshaRules(
+          noneAspects: NoneAspects.annualLagnaLord,
+          tied: VarsheshaTied.dinaRatriPati,
+          moon: MoonMayRule.ithasala,
+          moonPartner: MoonPartner.officeBearer,
+          subDegree: SubDegree.ishrafa,
+        ),
       ),
     );
     years(

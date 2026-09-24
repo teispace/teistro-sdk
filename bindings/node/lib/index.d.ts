@@ -691,12 +691,23 @@ export interface YogaRules {
 
 /** Where the sources differ on the lord of the year, each a named reading. */
 export interface VarsheshaRules {
-  /** Who takes the year when nobody aspects the lagna; the Muntha's lord by default. */
-  readonly noneAspects?: 'muntha_lord' | 'annual_lagna_lord';
+  /**
+   * Who takes the year when nobody aspects the lagna: the Muntha's lord by
+   * default, the annual lagna's lord, or the Nilakanthi's strongest of the five.
+   */
+  readonly noneAspects?: 'muntha_lord' | 'annual_lagna_lord' | 'strongest';
   /** Who takes it on an outright tie; the Muntha's lord by default. */
   readonly tied?: 'muntha_lord' | 'dina_ratri_pati';
-  /** Whether the Moon may hold it; passed over by default, as the source has it. */
-  readonly moon?: 'passed_over' | 'like_any_other';
+  /**
+   * Whether the Moon may hold it: `'passed_over'` by default, stepping down
+   * to the next claimant and else to its Ithasala successor; `'ithasala'`,
+   * the Nilakanthi's successor at once; or `'like_any_other'`.
+   */
+  readonly moon?: 'passed_over' | 'ithasala' | 'like_any_other';
+  /** Who may succeed the Moon: any planet by default, or only an office-bearer. */
+  readonly moonPartner?: 'any_planet' | 'office_bearer';
+  /** How the Ithasala the Moon's successor needs is read, as for the yogas. */
+  readonly drishti?: { readonly subDegree?: 'poorna' | 'ishrafa' };
 }
 
 /** A residence to cast each year's chart for, in `found`'s own place shape. */

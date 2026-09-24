@@ -1490,7 +1490,7 @@ fn the_year(
     put(
         report,
         &key(&format!("-{}-year-lord-chosen", one.year)),
-        chosen_key(lord.chosen).to_owned(),
+        wire_key(&lord.chosen),
     );
     put(
         report,
@@ -1701,8 +1701,8 @@ fn the_yogas(
                 "{}>{}:{}:{}:{apart}",
                 pair.faster.full_key(),
                 pair.slower.full_key(),
-                drishti_key(pair.drishti),
-                yoga_key(yoga)
+                wire_key(&pair.drishti),
+                wire_key(&yoga)
             ))
         })
         .collect();
@@ -1782,8 +1782,8 @@ fn the_matters(
             matter
                 .unanswered
                 .iter()
-                .map(|yoga| year_yoga_key(*yoga))
-                .collect::<Vec<&str>>()
+                .map(wire_key)
+                .collect::<Vec<String>>()
                 .join(","),
         );
         put(
@@ -1806,8 +1806,9 @@ fn pair_said(pair: &teistro::Between) -> String {
         "{}>{}:{}:{}:{:.6}",
         pair.faster.full_key(),
         pair.slower.full_key(),
-        drishti_key(pair.drishti),
-        pair.yoga.map_or("-", yoga_key),
+        wire_key(&pair.drishti),
+        pair.yoga
+            .map_or_else(|| String::from("-"), |yoga| wire_key(&yoga)),
         pair.apart_deg
     )
 }
@@ -1832,7 +1833,7 @@ fn held_said(held: &teistro::Held) -> String {
     );
     format!(
         "{}:{}:{}:{}:{legs}:{afflictions}",
-        year_yoga_key(held.yoga),
+        wire_key(&held.yoga),
         graha(held.through),
         graha(held.entering),
         if held.between.is_some() { "pair" } else { "-" },
@@ -1864,68 +1865,6 @@ fn affliction_said(affliction: teistro::Affliction) -> String {
         String::from("none")
     } else {
         said.join("+")
-    }
-}
-
-/// One of the sixteen, spelled as the boundary spells it. Exhaustive, so a
-/// yoga added stops this compiling.
-fn year_yoga_key(yoga: teistro::YearYoga) -> &'static str {
-    match yoga {
-        teistro::YearYoga::Ikabala => "ikabala",
-        teistro::YearYoga::Induvara => "induvara",
-        teistro::YearYoga::Ithasala => "ithasala",
-        teistro::YearYoga::Ishrafa => "ishrafa",
-        teistro::YearYoga::Nakta => "nakta",
-        teistro::YearYoga::Yamaya => "yamaya",
-        teistro::YearYoga::Manau => "manau",
-        teistro::YearYoga::Kamboola => "kamboola",
-        teistro::YearYoga::GairiKamboola => "gairi-kamboola",
-        teistro::YearYoga::Khallasara => "khallasara",
-        teistro::YearYoga::Rudda => "rudda",
-        teistro::YearYoga::DuhphaliKuttha => "duhphali-kuttha",
-        teistro::YearYoga::DutthotthaDavira => "dutthottha-davira",
-        teistro::YearYoga::Tambira => "tambira",
-        teistro::YearYoga::Kuttha => "kuttha",
-        teistro::YearYoga::Durapha => "durapha",
-    }
-}
-
-/// A Tajika aspect and a yoga, spelled as the **boundary** spells them,
-/// for the same reason as [`chosen_key`]. Exhaustive, so a kind added
-/// stops this compiling.
-fn drishti_key(drishti: teistro::TajikaDrishti) -> &'static str {
-    match drishti {
-        teistro::TajikaDrishti::Friendly => "friendly",
-        teistro::TajikaDrishti::SecretlyFriendly => "secretly-friendly",
-        teistro::TajikaDrishti::Inimical => "inimical",
-        teistro::TajikaDrishti::SecretlyInimical => "secretly-inimical",
-        teistro::TajikaDrishti::None => "none",
-    }
-}
-
-fn yoga_key(yoga: teistro::TajikaYoga) -> &'static str {
-    match yoga {
-        teistro::TajikaYoga::IthasalaVartamana => "ithasala-vartamana",
-        teistro::TajikaYoga::IthasalaPoorna => "ithasala-poorna",
-        teistro::TajikaYoga::IthasalaBhavishyat => "ithasala-bhavishyat",
-        teistro::TajikaYoga::Ishrafa => "ishrafa",
-    }
-}
-
-/// The year lord's step, spelled as the **boundary** spells it, so the
-/// Rust runner and the bindings compare as themselves.
-///
-/// An exhaustive match: a step added to the chain stops this compiling
-/// rather than printing a name no binding has.
-fn chosen_key(chosen: teistro::Chosen) -> &'static str {
-    match chosen {
-        teistro::Chosen::Strongest => "strongest",
-        teistro::Chosen::MostPortfolios => "most-portfolios",
-        teistro::Chosen::MunthaLordUnaspected => "muntha-lord-unaspected",
-        teistro::Chosen::MunthaLordAllWeak => "muntha-lord-all-weak",
-        teistro::Chosen::MunthaLordTied => "muntha-lord-tied",
-        teistro::Chosen::DinaRatriTied => "dina-ratri-tied",
-        teistro::Chosen::AnnualLagnaLordUnaspected => "annual-lagna-lord-unaspected",
     }
 }
 

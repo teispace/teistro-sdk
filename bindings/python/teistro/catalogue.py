@@ -3796,6 +3796,21 @@ class VarsheshaChosen(Member):
     for that reading.
     """
 
+    STRONGEST_UNASPECTED = 7
+    """The strongest of the five, because nobody aspects and the rules ask
+    for the *Nilakanthi*'s reading.
+    """
+
+    MOONS_ITHASALA = 8
+    """The planet in Ithasala with the Moon, the strongest of several, in
+    the Moon's place.
+    """
+
+    MOONS_SIGN_LORD = 9
+    """The lord of the Moon's sign, in the Moon's place: the Moon itself
+    where it stands in Cancer.
+    """
+
 
 class TajikaDrishti(Member):
     """The Tajika aspect between two signs (`03-design/tajika-aspects.md`).
@@ -5595,6 +5610,9 @@ _KEYS: dict[str, dict[int, str]] = {
         4: "muntha-lord-tied",
         5: "dina-ratri-tied",
         6: "annual-lagna-lord-unaspected",
+        7: "strongest-unaspected",
+        8: "moons-ithasala",
+        9: "moons-sign-lord",
     },
     "TajikaDrishti": {
         0: "friendly",

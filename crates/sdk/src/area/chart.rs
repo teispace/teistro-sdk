@@ -915,8 +915,15 @@ impl<'a> ChartArea<'a> {
         rules: VarsheshaRules,
     ) -> Result<Varshesha, Error> {
         let bearers = self.office_bearers(natal, annual, completed_years)?;
-        let strengths = self.panchavargiya(annual)?;
-        teistro_tajika::varshesha(&bearers, &strengths, annual.foundation.lagna_deg, rules)
+        let sky = Self::sky_of(annual)?;
+        let strengths = teistro_tajika::panchavargiya(&sky)?;
+        teistro_tajika::varshesha(
+            &bearers,
+            &sky,
+            &strengths,
+            annual.foundation.lagna_deg,
+            rules,
+        )
     }
 
     /// The **Tajika aspects** of an annual chart you founded: every pair

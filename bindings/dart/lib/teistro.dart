@@ -4036,29 +4036,104 @@ final class OfficeBearers {
   final Graha dinaRatri;
 }
 
+/// Who takes the year when no office-bearer aspects the lagna.
+enum NoneAspects {
+  /// The Muntha's lord: Charak's rule, and the default.
+  munthaLord('muntha_lord'),
+
+  /// The annual lagna's lord, which "some authorities" give.
+  annualLagnaLord('annual_lagna_lord'),
+
+  /// The strongest of the five: the Nilakanthi's Varshatantra v. 11.
+  strongest('strongest');
+
+  const NoneAspects(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Who takes the year when the office-bearers tie outright.
+enum VarsheshaTied {
+  /// The Muntha's lord: the source's rule, and the default.
+  munthaLord('muntha_lord'),
+
+  /// The Dina-Ratri Pati, which "still others" give.
+  dinaRatriPati('dina_ratri_pati');
+
+  const VarsheshaTied(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Whether the Moon may hold the year, and who takes it when it may not.
+enum MoonMayRule {
+  /// Passed over for the next claimant that aspects, and else for its
+  /// Ithasala successor: Charak's two steps, and the default.
+  passedOver('passed_over'),
+
+  /// Its Ithasala successor at once: the Nilakanthi's own view.
+  ithasala('ithasala'),
+
+  /// It holds the year like any other office-bearer.
+  likeAnyOther('like_any_other');
+
+  const MoonMayRule(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Which planets may succeed the Moon through an Ithasala.
+enum MoonPartner {
+  /// Any of the seven: the default.
+  anyPlanet('any_planet'),
+
+  /// Only an office-bearer, as one commentary reads the verse.
+  officeBearer('office_bearer');
+
+  const MoonPartner(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
 /// Where the sources differ on the lord of the year, each a named reading
-/// (`03-design/varshesha.md`).
+/// (`03-design/varshesha.md`). A reading left null is the SDK's own
+/// default, which lives in one place and is not repeated here.
 final class VarsheshaRules {
   const VarsheshaRules({
-    this.noneAspects = 'muntha_lord',
-    this.tied = 'muntha_lord',
-    this.moon = 'passed_over',
+    this.noneAspects,
+    this.tied,
+    this.moon,
+    this.moonPartner,
+    this.subDegree,
   });
 
-  /// Who takes the year when nobody aspects the lagna: `muntha_lord` or
-  /// `annual_lagna_lord`.
-  final String noneAspects;
+  /// Who takes the year when nobody aspects the lagna.
+  final NoneAspects? noneAspects;
 
-  /// Who takes it on an outright tie: `muntha_lord` or `dina_ratri_pati`.
-  final String tied;
+  /// Who takes it on an outright tie.
+  final VarsheshaTied? tied;
 
-  /// Whether the Moon may hold it: `passed_over` or `like_any_other`.
-  final String moon;
+  /// Whether the Moon may hold it.
+  final MoonMayRule? moon;
+
+  /// Who may succeed the Moon.
+  final MoonPartner? moonPartner;
+
+  /// How a pair less than a degree past reads, for the Ithasala the
+  /// Moon's successor needs.
+  final SubDegree? subDegree;
 
   Map<String, Object?> get _json => <String, Object?>{
-    'noneAspects': noneAspects,
-    'tied': tied,
-    'moon': moon,
+    if (noneAspects case final noneAspects?) 'noneAspects': noneAspects.key,
+    if (tied case final tied?) 'tied': tied.key,
+    if (moon case final moon?) 'moon': moon.key,
+    if (moonPartner case final moonPartner?) 'moonPartner': moonPartner.key,
+    if (subDegree case final subDegree?)
+      'drishti': {'subDegree': subDegree.key},
   };
 }
 

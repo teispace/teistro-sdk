@@ -25,9 +25,9 @@ use teistro::House;
 use teistro::catalogue::{Graha, Rashi};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::tajika::{
-    AnnualStates, Bala, Favour, MOST_YEARS, MoonBenefic, MunthaDegree, Qualification,
-    RASHYANTA_DEG, Reading, SEVEN, Strength, TambiraMover, YOGA_STRONG_FROM, YOGA_WEAK_BELOW,
-    YearYoga, YearYogas, Yoga, YogaRules,
+    AnnualStates, Bala, Chosen, Favour, MOST_YEARS, MoonBenefic, MoonMayRule, MunthaDegree,
+    Qualification, RASHYANTA_DEG, Reading, SEVEN, Strength, TambiraMover, YOGA_STRONG_FROM,
+    YOGA_WEAK_BELOW, YearYoga, YearYogas, Yoga, YogaRules,
 };
 use teistro::{
     AddSign, ChartRequest, Context, Document, Ephemeris, HarshaGrade, HarshaRules, HousePoints,
@@ -193,6 +193,7 @@ fn page(root: &Path) -> Result<String, String> {
     the_harsha(&mut out, &swept);
     the_strength(&mut out, &swept);
     the_kuttha(&mut out, &swept);
+    the_year_lords(&mut out, &swept);
     Ok(fill(&out))
 }
 
@@ -810,6 +811,29 @@ struct Kinds {
     strength: StrengthCounts,
     /// What Kuttha makes of every judged matter.
     kuttha: KutthaCounts,
+    /// The lord of every year, under Charak's chain and the Nilakanthi's.
+    lords: LordCounts,
+}
+
+/// The lord of every recorded year, by the step that chose it.
+#[derive(Default)]
+struct LordCounts {
+    /// Years, one per annual chart read.
+    years: usize,
+    /// Under Charak's chain, in `Chosen::ALL` order.
+    charak: [usize; Chosen::ALL.len()],
+    /// Under the Nilakanthi's reading of the Moon, the same order.
+    nilakanthi: [usize; Chosen::ALL.len()],
+    /// Years in which the chain would have given the Moon the year under
+    /// the default: it stepped down, or it was succeeded.
+    moon_led: usize,
+    /// Of the default's successors, those that hold no portfolio.
+    outside: usize,
+    /// Years whose lord the Nilakanthi's reading changes.
+    changed: usize,
+    /// Years in which the Moon holds the year under the default: only a
+    /// Moon in Cancer, succeeding itself.
+    moon_rules: usize,
 }
 
 /// Kuttha over every judged matter: where it held under each reading of
@@ -1030,14 +1054,15 @@ fn read_the_year(
 ) -> Result<(), String> {
     count_sahams(sdk, annual, &birth.name, &mut kinds.sahams)?;
     count_harsha(sdk, annual, &birth.name, &mut kinds.harsha)?;
-    count_strength(
+    let lord = count_year_lord(
         sdk,
         &birth.document,
         annual,
         year,
         &birth.name,
-        &mut kinds.strength,
-    )
+        &mut kinds.lords,
+    )?;
+    count_strength(sdk, annual, lord, &birth.name, &mut kinds.strength)
 }
 
 /// Every identity the sweep's counts must satisfy, each a failure and not
@@ -2667,6 +2692,91 @@ fn the_harsha(out: &mut String, kinds: &Kinds) {
     );
 }
 
+/// One year's lord under both readings of the Moon, counted by step, and
+/// the default's lord returned for the readings that need it.
+///
+/// Refused if a lord is not among its own claimants without succeeding
+/// the Moon, if the Moon holds the year by any step but its own sign, or
+/// if a year the Moon did not lead reads differently under the two.
+fn count_year_lord(
+    sdk: &Context,
+    birth: &Document,
+    annual: &Document,
+    year: u16,
+    name: &str,
+    counts: &mut LordCounts,
+) -> Result<Graha, String> {
+    let ask = |moon| {
+        sdk.chart()
+            .varshesha(
+                birth,
+                annual,
+                year,
+                teistro::VarsheshaRules {
+                    moon,
+                    ..teistro::VarsheshaRules::default()
+                },
+            )
+            .map_err(|why| format!("{name}: its year lord, the Moon {moon:?}: {why}"))
+    };
+    let charak = ask(MoonMayRule::PassedOver)?;
+    let nilakanthi = ask(MoonMayRule::Ithasala)?;
+    counts.years += 1;
+    for (read, tally) in [
+        (&charak, &mut counts.charak),
+        (&nilakanthi, &mut counts.nilakanthi),
+    ] {
+        let at = Chosen::ALL
+            .iter()
+            .position(|step| *step == read.chosen)
+            .ok_or_else(|| format!("{name}: {:?} is not in Chosen::ALL", read.chosen))?;
+        if let Some(slot) = tally.get_mut(at) {
+            *slot += 1;
+        }
+        let claimed = read.claims.iter().any(|claim| claim.graha == read.graha);
+        if !claimed && !read.chosen.succeeds_the_moon() {
+            return Err(format!(
+                "{name}: {:?} holds the year by {:?} and is not among its claimants",
+                read.graha, read.chosen
+            ));
+        }
+        if read.graha == Graha::Moon && read.chosen != Chosen::MoonsSignLord {
+            return Err(format!(
+                "{name}: the Moon holds the year by {:?}",
+                read.chosen
+            ));
+        }
+    }
+    if !charak.moon_passed_over && charak.graha != nilakanthi.graha {
+        return Err(format!(
+            "{name}: the Moon did not lead, and the two readings disagree"
+        ));
+    }
+    for read in [&charak, &nilakanthi] {
+        if matches!(
+            read.chosen,
+            Chosen::AnnualLagnaLordUnaspected | Chosen::StrongestUnaspected
+        ) {
+            return Err(format!(
+                "{name}: {:?} chose the year, and its reading was not asked",
+                read.chosen
+            ));
+        }
+    }
+    counts.moon_led += usize::from(charak.moon_passed_over);
+    counts.moon_rules += usize::from(charak.graha == Graha::Moon);
+    counts.changed += usize::from(charak.graha != nilakanthi.graha);
+    if charak.chosen.succeeds_the_moon()
+        && !charak
+            .claims
+            .iter()
+            .any(|claim| claim.graha == charak.graha)
+    {
+        counts.outside += 1;
+    }
+    Ok(charak.graha)
+}
+
 /// Every saham of one chart, read for its strength under the year's own
 /// lord, and sorted by the lists it meets.
 ///
@@ -2675,17 +2785,11 @@ fn the_harsha(out: &mut String, kinds: &Kinds) {
 /// there, which is the design page's claim and is held here.
 fn count_strength(
     sdk: &Context,
-    birth: &Document,
     annual: &Document,
-    year: u16,
+    lord: Graha,
     name: &str,
     counts: &mut StrengthCounts,
 ) -> Result<(), String> {
-    let lord = sdk
-        .chart()
-        .varshesha(birth, annual, year, teistro::VarsheshaRules::default())
-        .map_err(|why| format!("{name}: its year lord: {why}"))?
-        .graha;
     let read = sdk
         .chart()
         .saham_strength(annual, &Saham::ALL, Some(lord))
@@ -2820,5 +2924,60 @@ fn the_kuttha(out: &mut String, kinds: &Kinds) {
         count(counts.strong_pairs - held),
         count(counts.waxing),
         count(held),
+    );
+}
+
+fn the_year_lords(out: &mut String, kinds: &Kinds) {
+    let counts = &kinds.lords;
+    let mut rows = String::new();
+    for ((step, charak), nilakanthi) in Chosen::ALL
+        .iter()
+        .zip(&counts.charak)
+        .zip(&counts.nilakanthi)
+    {
+        let _ = writeln!(
+            rows,
+            "| `{step:?}` | {} | {} |",
+            count(*charak),
+            count(*nilakanthi)
+        );
+    }
+    let succeeded = counts
+        .charak
+        .iter()
+        .zip(Chosen::ALL)
+        .filter(|(_, step)| step.succeeds_the_moon())
+        .map(|(held, _)| held)
+        .sum::<usize>();
+    let _ = write!(
+        out,
+        "\n## 18. The lord of the year, over the recorded years\n\n\
+         Every recorded year's lord, through `sdk.chart().varshesha`, by the \
+         step of the chain that chose it (`03-design/varshesha.md`). Charak's \
+         chain passes the Moon over for the next claimant that aspects and, \
+         where there is none, for its **Ithasala successor**. The *Tajika \
+         Nilakanthi*'s own view takes the successor at once \
+         (`moon: ithasala`).\n\n\
+         | step | Charak | Nilakanthi |\n|---|---:|---:|\n{rows}\n\
+         Of {} years, the Moon would have led the chain in **{}**. Under \
+         Charak it was succeeded in **{}**: the case the build answered \
+         with the Moon itself until the successor was built. Of those \
+         successors, {} hold no portfolio, which only the Moon's Ithasala \
+         allows. The Moon holds the year in {}, and only ever as a Moon in \
+         Cancer succeeding itself. The Nilakanthi's reading changes the \
+         lord of **{}** years.\n\n\
+         The rows for the lagna lord's and the strongest's readings of an \
+         unaspected lagna are zero by construction, since neither is asked \
+         here. The others are what the corpus holds. The pass fails if a \
+         lord is not among its claimants without succeeding the Moon, if \
+         the Moon holds the year by any other step, if the two readings \
+         disagree about a year the Moon did not lead, or if a reading not \
+         asked is ever counted.\n",
+        count(counts.years),
+        count(counts.moon_led),
+        count(succeeded),
+        count(counts.outside),
+        count(counts.moon_rules),
+        count(counts.changed),
     );
 }

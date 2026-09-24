@@ -47,11 +47,13 @@ class TheCatalogue(unittest.TestCase):
         # `Affliction`'s five clauses; 109 since the sahams crossed,
         # `Saham`'s forty-one; 113 since their strength crossed,
         # `SahamStrong`'s twelve clauses, `SahamWeak`'s five,
-        # `HarshaGrade`'s five and `TajikaRelation`'s four.
+        # `HarshaGrade`'s five and `TajikaRelation`'s four; and
+        # `VarsheshaChosen` three steps longer since the Moon's successor
+        # and the Nilakanthi's reading of an unaspected lagna.
         self.assertEqual(len(every_enum()), 113)
         self.assertEqual(
             sum(len(list(found)) for found in every_enum()),
-            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4,
+            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

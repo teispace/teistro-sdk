@@ -2634,14 +2634,25 @@ class VarsheshaRules(TypedDict, total=False):
     >>> rules: VarsheshaRules = {"moon": "like_any_other"}
     """
 
-    none_aspects: Literal["muntha_lord", "annual_lagna_lord"]
-    """Who takes the year when nobody aspects the lagna."""
+    none_aspects: Literal["muntha_lord", "annual_lagna_lord", "strongest"]
+    """Who takes the year when nobody aspects the lagna: the Muntha's lord
+    by default, the annual lagna's lord, or the Nilakanthi's strongest of
+    the five."""
 
     tied: Literal["muntha_lord", "dina_ratri_pati"]
     """Who takes it on an outright tie."""
 
-    moon: Literal["passed_over", "like_any_other"]
-    """Whether the Moon may hold it; passed over by default."""
+    moon: Literal["passed_over", "ithasala", "like_any_other"]
+    """Whether the Moon may hold it: passed over by default, stepping down
+    to the next claimant and else to its Ithasala successor; the
+    Nilakanthi's successor at once; or like any other."""
+
+    moon_partner: Literal["any_planet", "office_bearer"]
+    """Who may succeed the Moon: any planet by default, or only an
+    office-bearer."""
+
+    drishti: "DrishtiRules"
+    """How the Ithasala the Moon's successor needs is read."""
 
 
 class VarshaPlace(TypedDict):
