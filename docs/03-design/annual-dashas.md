@@ -169,15 +169,31 @@ parts by 3.86 days, and the pass measures it over every recorded year.
 calendar and not about the sky. It is the one reading that needs no
 ephemeris, so a context with none can still ask for it.
 
-**The clock is built once per year, not once per boundary.** The Sun's
-crossings of every whole degree from its return longitude come from one
-lattice search over the year: the same `Search` the return uses, with a
-step of one degree, so 361 instants. A unit between two degrees is placed
-linearly between their crossings. Within one degree (about a day) the
-Sun's speed changes by less than 0.02%, so the interpolation error is
-under a second. That is inside the arithmetic the search itself answers
-to. A tree six levels deep then costs no more ephemeris than the
+**The clock is built once per year, not once per boundary.** Its knots
+are the instants the Sun crosses every whole degree from its return
+longitude, 361 of them, and a unit between two degrees is placed linearly
+between their crossings. Within one degree (about a day) the Sun's speed
+changes by less than 0.02%, so that interpolation is out by under a
+second. A tree six levels deep then costs no more ephemeris than the
 mahadashas do.
+
+**The knots are found in two batched passes over the Sun, not by a search
+for each** (`sun_knots`). The first samples the year a day apart and fits
+the quintic through the six samples around each crossing. It fits the
+longitudes alone, because a provider's speed need not be the derivative
+of its longitude: the built-in's differs from it by up to 0.3″ a day. The
+second corrects every knot against the Sun by Newton's method, all the
+knots still moving read in one request a round, until each correction is
+inside the search's tolerance. The fit sets how soon the knots are found
+and never where, which matters topocentrically. There the parallax moves
+the Sun up to 8.8″ and back each day, and samples a day apart all see it
+at one hour, so the fit alone was 205 s out at a year's close. Against a
+search for each crossing, in both zodiacs, geocentric and topocentric,
+the knots stand within **0.04 ms** (a unit test holds them to a tenth of
+the tolerance). The first build searched for each of the 360 crossings;
+this reads the Sun about a quarter as often and in four requests rather
+than about 4 000. An `even` clock has one knot, so it skips the fit and is
+corrected from the mean motion.
 
 **What Charak's printed dates can settle: nothing to the day.** His
 Mudda table writes each duration in months and days and dates the ends by
@@ -240,7 +256,7 @@ sdk.chart().annual_dasha(&natal, &annual, completed_years, DashaSystem::Mudda, r
 sdk.chart().annual_dashas(&natal, &annual, completed_years, &ANNUAL_DASHAS, rules)
 ```
 
-The second is the first for several systems of one year. It searches
+The second is the first for several systems of one year. It reads
 the Sun's year **once** for all of them, and it answers each exactly as
 the single call would, which a test holds.
 
@@ -286,9 +302,15 @@ Steps 1 to 5 are built (2026-09-24). What the building changed:
 - The `even` clock's gap from the Sun's is up to **3.90 days**, not two:
   the equation of centre is counted twice.
 - The batch call exists because three systems of one year would
-  otherwise search the same Sun three times.
+  otherwise read the same Sun three times.
 - `sun_knots` serves both Sun-reading clocks, with 360 divisions and
   with one.
+- A search for each of the 360 crossings made the measured pass 33
+  minutes on CI. The knots are now fitted and then corrected in batches,
+  which the pass counts on every core; the pass takes about a minute.
+  `teistro-astro` is also optimised in the dev profile, which every gate
+  runs under. Rust does not reorder float arithmetic at any level, and
+  every generated page reproduced byte for byte under the change.
 
 1. `teistro-dasha`: `YearDasha`, with its ring, its clock and its
    `Timeline`. Tests cover the split first lord, a remainder of 0 or 1,
@@ -297,8 +319,8 @@ Steps 1 to 5 are built (2026-09-24). What the building changed:
    rule. Acceptance: Charak's Tables V-2, V-5 and V-8/V-9, and the
    Nilakanthi's Jupiter. The two printed formulas are checked against
    the seat rule for every nakshatra and 0–199 years.
-3. The Sun-degree clock through one lattice search, and `even` through
-   the next return.
+3. The Sun-degree clock through its knots, fitted and then corrected
+   against the Sun, and `even` through the next return.
 4. `sdk.chart().annual_dasha` and `annual_dashas`, the natal refusal's
    new hint, and the coverage page's three rows moved from excused to
    computed.

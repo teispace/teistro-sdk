@@ -1433,8 +1433,8 @@ impl<'a> ChartArea<'a> {
     }
 
     /// Several annual dashas of **one** year, in the order asked, over one
-    /// clock: the Sun's crossings of the year are searched once however
-    /// many systems read them.
+    /// clock: the Sun's crossings of the year are found once however many
+    /// systems read them.
     ///
     /// ```no_run
     /// # use teistro::{AnnualDashaRules, Context, Document, Ephemeris};

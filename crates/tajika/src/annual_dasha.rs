@@ -18,7 +18,7 @@
 //!   next return, or plain days.
 
 use serde::{Deserialize, Serialize};
-use teistro_astro::events::{Lattice, Longitudes, Quantity, Search};
+use teistro_astro::events::Longitudes;
 use teistro_astro::sidereal::{Sidereal, Zodiac};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra};
@@ -310,23 +310,58 @@ pub fn patyayini_ring(
     })
 }
 
+/// How far apart the Sun is sampled for the first guess at its knots, days.
+///
+/// A knot is found in two passes over the Sun, each asking for many
+/// instants at once, where a search for each crossing asked for one at a
+/// time. The **first** samples the year a day apart and fits, around each
+/// crossing, the quintic through the six samples nearest it ([`KNOT_FIT`]);
+/// only the longitudes are fitted, since a provider's speed need not be the
+/// derivative of its longitude (the built-in's differs from it by up to
+/// 0.3″ a day). Geocentric, the fit alone stands within 1.4 ms of the
+/// crossing; topocentric it cannot, since the parallax moves the Sun by up
+/// to 8.8″ and back each day and samples a day apart all see it at one hour.
+/// The **second** is [`polish`], which corrects every knot against the Sun
+/// itself until its correction is within the tolerance a search is held
+/// to, so that the fit sets only how soon the knots are found and never
+/// where: measured against a search for each crossing, in both zodiacs,
+/// geocentric and topocentric, the knots stand within 0.04 ms of it.
+const KNOT_STEP_DAYS: f64 = 1.0;
+
+/// How many samples the curve through a crossing is fitted to: six, a
+/// quintic, centred on the two either side of it where the year allows.
+const KNOT_FIT: usize = 6;
+
+/// How many rounds a knot's first guess is corrected in before the search
+/// gives it up. From the fit a geocentric knot needs one, which confirms
+/// it, and a topocentric one three or four; from the Sun's mean motion,
+/// which is up to two days out, about six.
+const KNOT_ROUNDS: u8 = 16;
+
+/// How many rounds from the mean motion are counted on when choosing it
+/// over the fit: a clock of fewer divisions than a year's samples divided
+/// by this is cheaper to correct from the mean motion.
+const MEAN_ROUNDS: usize = 6;
+
 /// The instants that divide the year into `divisions` equal arcs of the
 /// Sun's motion, from where it stood at the return through the next
 /// return: `divisions + 1` knots, the first the return itself and the last
-/// the next, found in **one** search over the year.
+/// the next, each within the search tolerance of the Sun's crossing.
 ///
 /// 360 divisions put each of the Sun's degrees at the instant it crosses
 /// it ([`YearClock::SunDegrees`]); one division is the two returns alone
 /// ([`YearClock::Even`]). The longitude is read on the annual chart's own
-/// zodiac, as the return was.
+/// zodiac, as the return was. How the knots are found, in two batched
+/// passes over the Sun rather than a search for each, is
+/// [`KNOT_STEP_DAYS`]'s to say.
 ///
 /// # Errors
 ///
 /// No divisions, or more than [`YEAR_UNITS`], named `divisions`; a
 /// longitude that is not a number, named `sun_deg`; whatever the source
-/// refuses while searching; a year the search did not see to its end,
+/// refuses while reading; a year the samples did not reach the end of,
 /// which only an ephemeris ending inside it can cause, as `OUT_OF_RANGE`
-/// named `opens`.
+/// named `opens`; a knot that would not settle, `NOT_CONVERGED`.
 pub fn sun_knots<S: Longitudes + ?Sized>(
     tropical: &S,
     zodiac: Zodiac,
@@ -346,42 +381,198 @@ pub fn sun_knots<S: Longitudes + ?Sized>(
                 .with_field("sun_deg"),
         );
     }
-    let sidereal = Sidereal {
+    let sun = Sidereal {
         tropical,
         ayanamsha: zodiac.ayanamsha,
         basis: zodiac.basis,
         precession: zodiac.precession,
         delta_t: zodiac.delta_t,
     };
-    let lattice = Lattice {
-        origin_deg: sun_deg.rem_euclid(360.0),
-        step_deg: if divisions == 1 {
-            0.0
-        } else {
-            360.0 / f64::from(divisions)
-        },
+    let arc = 360.0 / f64::from(divisions);
+    let levels: Vec<f64> = (1..=divisions)
+        .map(|division| arc * f64::from(division))
+        .collect();
+    // From the return to a sidereal year and a week on, past the next
+    // return's crossing.
+    let reach = crate::varsha::SIDEREAL_YEAR_DAYS + 7.0;
+    let samples: Vec<JulianDay<Ut1>> = (0..=u16::MAX)
+        .map(|step| f64::from(step) * KNOT_STEP_DAYS)
+        .take_while(|&days| days <= reach + KNOT_STEP_DAYS)
+        .map(|days| JulianDay::literal(opens.get() + days))
+        .collect();
+    let mut guesses = if levels.len() * MEAN_ROUNDS < samples.len() {
+        levels
+            .iter()
+            .map(|level| opens.get() + level / 360.0 * crate::varsha::SIDEREAL_YEAR_DAYS)
+            .collect()
+    } else {
+        fitted(&sun, &samples, sun_deg, &levels)?
     };
-    // Half a day in, past the return's own crossing; a sidereal year and a
-    // week on, past the next return's.
-    let from = JulianDay::<Ut1>::literal(opens.get() + 0.5);
-    let to = JulianDay::<Ut1>::literal(opens.get() + crate::varsha::SIDEREAL_YEAR_DAYS + 7.0);
-    let events =
-        Search::new(&sidereal, Quantity::Longitude(Body::Sun), lattice).between(from, to)?;
-    let wanted = usize::from(divisions);
-    if events.len() < wanted {
-        return Err(Error::new(
-            Status::OutOfRange,
-            format!(
-                "the Sun crossed {} of the year's {wanted} divisions inside the ephemeris",
-                events.len()
-            ),
-        )
-        .with_field("opens"));
-    }
-    let mut knots = Vec::with_capacity(wanted + 1);
+    polish(&sun, sun_deg, &levels, &mut guesses)?;
+    let mut knots = Vec::with_capacity(guesses.len() + 1);
     knots.push(opens.get());
-    knots.extend(events.iter().take(wanted).map(|event| event.instant.get()));
+    knots.extend(guesses);
     Ok(knots)
+}
+
+/// The first guess at each level's knot: where the quintic through the
+/// samples around its crossing reaches it.
+fn fitted<S: Longitudes + ?Sized>(
+    sun: &S,
+    samples: &[JulianDay<Ut1>],
+    sun_deg: f64,
+    levels: &[f64],
+) -> Result<Vec<f64>, Error> {
+    let mut read = Vec::with_capacity(samples.len());
+    sun.longitudes_and_speeds(Body::Sun, samples, &mut read)?;
+    // How far past its place at the return the Sun has gone, unwrapped so
+    // that a degree is a level on a rising curve.
+    let mut past = Vec::with_capacity(read.len());
+    let mut last = sun_deg;
+    let mut gone = 0.0;
+    for &(longitude, _) in &read {
+        gone += signed_arc(longitude, last);
+        last = longitude;
+        past.push(gone);
+    }
+    let mut at = 0;
+    let mut guesses = Vec::with_capacity(levels.len());
+    for (crossed, &level) in levels.iter().enumerate() {
+        while past.get(at + 1).is_some_and(|&next| next < level) {
+            at += 1;
+        }
+        let Some(start) = samples.get(at).filter(|_| at + 1 < past.len()) else {
+            return Err(Error::new(
+                Status::OutOfRange,
+                format!(
+                    "the Sun crossed {crossed} of the year's {} divisions inside the ephemeris",
+                    levels.len()
+                ),
+            )
+            .with_field("opens"));
+        };
+        guesses.push(start.get() + crossing(&past, at, level) * KNOT_STEP_DAYS);
+    }
+    Ok(guesses)
+}
+
+/// Corrects each knot against the Sun until its correction is within the
+/// search tolerance: Newton's method, every knot still moving read in one
+/// request a round.
+fn polish<S: Longitudes + ?Sized>(
+    sun: &S,
+    sun_deg: f64,
+    levels: &[f64],
+    knots: &mut [f64],
+) -> Result<(), Error> {
+    let mut open: Vec<(usize, f64)> = levels.iter().copied().enumerate().collect();
+    let mut instants = Vec::with_capacity(open.len());
+    let mut read = Vec::with_capacity(open.len());
+    for _ in 0..KNOT_ROUNDS {
+        instants.clear();
+        instants.extend(open.iter().map(|&(index, _)| {
+            JulianDay::<Ut1>::literal(knots.get(index).copied().unwrap_or_default())
+        }));
+        sun.longitudes_and_speeds(Body::Sun, &instants, &mut read)?;
+        let mut still = Vec::new();
+        for (&(index, level), &(longitude, speed)) in open.iter().zip(&read) {
+            // Days past the level, at the speed the Sun is moving; the Sun
+            // never moves slower than about 0.95° a day, so the floor only
+            // keeps a provider's nonsense from throwing a knot across the
+            // year.
+            // The last correction is taken too, since it costs nothing: a
+            // knot is read again only while its correction is larger than
+            // the tolerance.
+            let late = signed_arc(longitude, sun_deg + level) / speed.max(0.5);
+            if let Some(knot) = knots.get_mut(index) {
+                *knot -= late;
+            }
+            if late.abs() > teistro_astro::events::TOLERANCE_DAYS {
+                still.push((index, level));
+            }
+        }
+        if still.is_empty() {
+            return Ok(());
+        }
+        open = still;
+    }
+    Err(Error::new(
+        Status::NotConverged,
+        format!(
+            "{} of the year's knots did not settle within {KNOT_ROUNDS} rounds",
+            open.len()
+        ),
+    ))
+}
+
+/// The arc from `from` to `to`, degrees in (-180, 180].
+fn signed_arc(to: f64, from: f64) -> f64 {
+    180.0 - (180.0 - (to - from)).rem_euclid(360.0)
+}
+
+/// Where between samples `at` and `at + 1`, 0 to 1, the curve through the
+/// [`KNOT_FIT`] samples around them reaches `level`, which lies between
+/// the two: the Illinois method on the bracket, which keeps it and so
+/// cannot leave it.
+fn crossing(past: &[f64], at: usize, level: f64) -> f64 {
+    let first = at
+        .saturating_sub(KNOT_FIT / 2 - 1)
+        .min(past.len().saturating_sub(KNOT_FIT));
+    let nodes = past
+        .get(first..)
+        .map_or(&[][..], |rest| rest.get(..KNOT_FIT).unwrap_or(rest));
+    let offset = node(at - first);
+    let off_level = |share: f64| through(nodes, offset + share) - level;
+    let (mut low, mut high) = (0.0, 1.0);
+    let (mut below, mut above) = (off_level(low), off_level(high));
+    let mut kept = 0_i8;
+    for _ in 0..64 {
+        if above - below <= 0.0 {
+            break;
+        }
+        let share = (low * above - high * below) / (above - below);
+        let off = off_level(share);
+        if off < 0.0 {
+            (low, below) = (share, off);
+            if kept == -1 {
+                above *= 0.5;
+            }
+            kept = -1;
+        } else {
+            (high, above) = (share, off);
+            if kept == 1 {
+                below *= 0.5;
+            }
+            kept = 1;
+        }
+        if high - low < 1e-12 || off.abs() < 1e-12 {
+            return share;
+        }
+    }
+    f64::midpoint(low, high)
+}
+
+/// A sample's place along the fit, in steps from its first.
+fn node(index: usize) -> f64 {
+    f64::from(u8::try_from(index).unwrap_or(u8::MAX))
+}
+
+/// The polynomial through `values` at 0, 1, 2 … read at `x`: Lagrange's
+/// form, which for six points is cheaper than building the coefficients.
+fn through(values: &[f64], x: f64) -> f64 {
+    values
+        .iter()
+        .enumerate()
+        .map(|(i, &value)| {
+            values
+                .iter()
+                .enumerate()
+                .filter(|&(j, _)| j != i)
+                .fold(value, |term, (j, _)| {
+                    term * (x - node(j)) / (node(i) - node(j))
+                })
+        })
+        .sum()
 }
 
 impl YearClock {
@@ -716,6 +907,91 @@ mod tests {
         assert_eq!(even.year(), Interval::literal(OPENS, OPENS + 365.25));
         assert_eq!(YearClock::SunDegrees.divisions(), Some(360));
         assert_eq!(YearClock::Days(360.0).divisions(), None);
+    }
+
+    /// The knots stand where a search for each crossing finds it: in both
+    /// zodiacs, geocentric and topocentric, across three centuries, and
+    /// under the clock of one division as well as of 360.
+    #[test]
+    fn the_knots_are_the_searched_crossings() {
+        use teistro_astro::delta_t::DeltaTModel;
+        use teistro_astro::events::{Lattice, Quantity, Search, TOLERANCE_DAYS};
+        use teistro_astro::precession::PrecessionModel;
+        use teistro_astro::{Completion, ayanamsha::Basis};
+        use teistro_core::catalogue::Ayanamsha;
+        use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+        use teistro_core::settings::OverridePolicy;
+        use teistro_port_ephemeris::{Centre, Frame};
+
+        let provider = teistro_ephemeris_builtin::provider::Builtin::new();
+        let completion = Completion::new(
+            &provider,
+            OverridePolicy::SdkOnly,
+            DeltaTModel::TableThenModel,
+        );
+        let kathmandu = Place::new(
+            Latitude::try_new(27.7172).unwrap(),
+            Longitude::try_new(85.324).unwrap(),
+            Altitude::try_new(1400.0).unwrap(),
+        );
+        let geocentric = completion.longitudes(Frame::CANONICAL);
+        let topocentric = completion
+            .longitudes(Frame::CANONICAL.with_centre(Centre::Topocentric))
+            .with_observer(kathmandu);
+        let mut worst: f64 = 0.0;
+        for tropical in [&geocentric, &topocentric] {
+            for ayanamsha in [None, Some(Ayanamsha::Lahiri.into())] {
+                let zodiac = Zodiac {
+                    ayanamsha,
+                    basis: Basis::True,
+                    precession: PrecessionModel::default(),
+                    delta_t: DeltaTModel::TableThenModel,
+                };
+                let sidereal = Sidereal {
+                    tropical,
+                    ayanamsha: zodiac.ayanamsha,
+                    basis: zodiac.basis,
+                    precession: zodiac.precession,
+                    delta_t: zodiac.delta_t,
+                };
+                for opens in [2_415_020.3, 2_451_545.0, 2_488_070.7] {
+                    let (sun, _) = sidereal
+                        .longitude_and_speed(Body::Sun, JulianDay::literal(opens))
+                        .unwrap();
+                    let searched = |step_deg: f64| {
+                        let lattice = Lattice {
+                            origin_deg: sun,
+                            step_deg,
+                        };
+                        Search::new(&sidereal, Quantity::Longitude(Body::Sun), lattice)
+                            .with_tolerance_days(1e-10)
+                            .between(
+                                JulianDay::literal(opens + 0.5),
+                                JulianDay::literal(opens + 370.0),
+                            )
+                            .unwrap()
+                    };
+                    for (divisions, step_deg) in [(YEAR_UNITS, 1.0), (1, 0.0)] {
+                        let knots =
+                            sun_knots(tropical, zodiac, JulianDay::literal(opens), sun, divisions)
+                                .unwrap();
+                        assert_eq!(knots.len(), usize::from(divisions) + 1);
+                        assert_eq!(knots[0], opens);
+                        let found = searched(step_deg);
+                        for (knot, event) in knots.iter().skip(1).zip(&found) {
+                            worst = worst.max((knot - event.instant.get()).abs());
+                        }
+                    }
+                }
+            }
+        }
+        // 0.04 ms when measured: the last correction is taken as well as
+        // checked, so a knot ends far inside the tolerance it is held to.
+        assert!(
+            worst < TOLERANCE_DAYS / 10.0,
+            "a knot {} ms off its crossing",
+            worst * 86_400_000.0
+        );
     }
 
     #[test]

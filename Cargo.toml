@@ -118,3 +118,13 @@ debug = "line-tables-only"
 # reads.
 [profile.dev.package."*"]
 debug = false
+
+# The astronomy is optimised even in a dev build, since every gate runs
+# under this profile and the IAU series (nutation, the Earth's position)
+# are most of what a gate that reads the sky spends: unoptimised, the
+# annual dashas' pass took 33 minutes on CI. Rust does not reorder or
+# contract float arithmetic at any optimisation level, so the numbers are
+# the same bits; every generated page reproduced byte for byte under it.
+# Stepping through `teistro-astro` in a debugger is what it costs.
+[profile.dev.package.teistro-astro]
+opt-level = 3
