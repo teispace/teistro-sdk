@@ -1776,6 +1776,156 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test("a year's chart answers the annual dashas asked for", () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    List<Pravesha> years(VarshaRequest varsha) =>
+        ctx.chart
+            .found(
+              instant: 2447995.4895833335,
+              place: place,
+              utcOffsetSeconds: 20700,
+              varsha: varsha,
+            )
+            .praveshas;
+    Matcher refusedBy(String field) =>
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field));
+
+    final asked = years(
+      const VarshaRequest(
+        through: 3,
+        place: AnnualPlace.birth,
+        dashas: AnnualDashas.these([DashaSystem.mudda, DashaSystem.patyayini]),
+      ),
+    );
+    for (final (k, one) in asked.indexed) {
+      final annual = one.annual!;
+      expect(annual.dashas.map((d) => d.system), [
+        DashaSystem.mudda,
+        DashaSystem.patyayini,
+      ]);
+      for (final dasha in annual.dashas) {
+        expect(dasha.year.from, one.instant);
+        if (k + 1 < asked.length) {
+          expect(dasha.year.to, closeTo(asked[k + 1].instant, 2e-7));
+        }
+        expect(dasha.firstLord, dasha.ring.shares[dasha.ring.first].lord);
+        // The mahadashas run end to end across the year.
+        final mahas = dasha.periods.where((p) => p.level == 1).toList();
+        expect(mahas.first.from, dasha.year.from);
+        expect(mahas.last.to, dasha.year.to);
+        for (var i = 1; i < mahas.length; i += 1) {
+          expect(mahas[i].from, mahas[i - 1].to);
+        }
+        // Mid-year a mahadasha runs, and one of its own under it.
+        final chain = dasha.at((dasha.year.from + dasha.year.to) / 2);
+        expect(chain, hasLength(2));
+        expect(chain[1].path, startsWith('${chain[0].path}/'));
+        expect(dasha.at(dasha.year.to), isEmpty);
+      }
+      final [mudda, patyayini] = annual.dashas;
+      expect(mudda.seed, isNotNull);
+      expect(mudda.ring.shares, hasLength(9));
+      expect(mudda.ring.remaining, inInclusiveRange(0, 1));
+      expect(patyayini.seed, isNull);
+      expect(patyayini.ring.remaining, isNull);
+      expect(patyayini.ring.shares.where((s) => s.sign != null), hasLength(1));
+      expect(patyayini.periods.any((p) => p.sign != null), isTrue);
+    }
+    final firsts = [
+      for (final one in asked) one.annual!.dashas.first.ring.first,
+    ];
+    for (var i = 1; i < firsts.length; i += 1) {
+      expect(firsts[i], (firsts[i - 1] + 1) % 9);
+    }
+
+    // `all` is the three in the catalogue's order; unasked is none.
+    expect(
+      years(
+        const VarshaRequest(
+          through: 1,
+          place: AnnualPlace.birth,
+          dashas: AnnualDashas.all,
+        ),
+      ).first.annual!.dashas.map((d) => d.system),
+      [DashaSystem.patyayini, DashaSystem.mudda, DashaSystem.varshaYogini],
+    );
+    expect(
+      years(
+        const VarshaRequest(through: 1, place: AnnualPlace.birth),
+      ).first.annual!.dashas,
+      isEmpty,
+    );
+
+    // The rules cross in the boundary's casing.
+    final days =
+        years(
+          const VarshaRequest(
+            through: 1,
+            place: AnnualPlace.birth,
+            dashas: AnnualDashas.these([DashaSystem.mudda]),
+            dashaRules: AnnualDashaRules(
+              clock: YearClock.days(360),
+              depth: 1,
+              birthPeriod: BirthPeriod.elapsed,
+              measure: Balance.temporal,
+              balance: MuddaBalance.entryMoon,
+            ),
+          ),
+        ).first.annual!.dashas.single;
+    expect(days.year.to - days.year.from, 360);
+    expect(days.periods.every((p) => p.level == 1), isTrue);
+    years(
+      const VarshaRequest(
+        through: 1,
+        place: AnnualPlace.birth,
+        dashas: AnnualDashas.all,
+        dashaRules: AnnualDashaRules(
+          clock: YearClock.even,
+          measure: Balance.spatial,
+          birthPeriod: BirthPeriod.compressed,
+          balance: MuddaBalance.whole,
+        ),
+      ),
+    );
+
+    expect(
+      () => years(
+        const VarshaRequest(
+          through: 2,
+          dashas: AnnualDashas.these([DashaSystem.mudda]),
+        ),
+      ),
+      refusedBy('varsha_json.dashas'),
+    );
+    expect(
+      () => years(
+        const VarshaRequest(
+          through: 2,
+          place: AnnualPlace.birth,
+          dashas: AnnualDashas.these([DashaSystem.vimshottari]),
+        ),
+      ),
+      refusedBy('varsha_json.dashas'),
+    );
+    expect(
+      () => years(
+        const VarshaRequest(
+          through: 2,
+          place: AnnualPlace.birth,
+          dashas: AnnualDashas.all,
+          dashaRules: AnnualDashaRules(clock: YearClock.days(0)),
+        ),
+      ),
+      refusedBy('varsha_json.dashaRules.clock'),
+    );
+    ctx.dispose();
+  });
+
   test("a year's chart answers the Tajika yogas for the matters asked", () {
     final ctx = context();
     final place = Observer(

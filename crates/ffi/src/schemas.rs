@@ -599,9 +599,9 @@ pub fn charts() -> BlobSchema {
 }
 
 /// The annual charts a batch's births open and everything Tajika reads
-/// from them, in id order: twelve sections ragged under one another, so
+/// from them, in id order: fifteen sections ragged under one another, so
 /// they are declared together rather than scattered through the rest.
-fn chart_annual_sections() -> [SectionSchema; 12] {
+fn chart_annual_sections() -> [SectionSchema; 15] {
     [
         chart_praveshas_section(35),
         chart_annual_charts_section(36),
@@ -623,6 +623,14 @@ fn chart_annual_sections() -> [SectionSchema; 12] {
             "Every birth chart's own sahams, concatenated in the `cast` section's order and **ragged** by its `natal_saham_count`, each chart's in the order `varsha_json.sahams` named them, with their strength — which has no year lord, so `with_year_lord` never holds here. The source reads a year's sahams beside the birth's: \"only those Sahams which are strong in the birth chart can produce results during a given year\". Answered with or without a place; empty unless sahams were asked for.",
         ),
         saham_seven_section(46, "natal_saham_seven", "natal_sahams"),
+        chart_year_dashas_section(47),
+        chart_year_dasha_shares_section(48),
+        dasha_periods_section(
+            49,
+            "year_dasha_periods",
+            "Every annual dasha's periods, concatenated in the `year_dashas` section's order and **ragged** by its `period_count`, each depth first in time order from the year's return to its close: a mahadasha, then its antardashas, then the next mahadasha, to `varsha_json.dashaRules.depth` levels. A period that runs for no time is not listed, and its place is kept in the others' `index`.",
+            SignedBy::Period,
+        ),
     ]
 }
 
@@ -733,6 +741,98 @@ fn chart_annual_charts_section(id: u32) -> SectionSchema {
                 "saham_count",
                 Scalar::U8,
                 "How many rows of the `year_sahams` section belong to this year: the sahams `varsha_json.sahams` asked for, 0 to 41.",
+            ),
+            ColumnDef::new(
+                "dasha_count",
+                Scalar::U8,
+                "How many rows of the `year_dashas` section belong to this year: the annual dashas `varsha_json.dashas` asked for, 0 to 3.",
+            ),
+        ],
+    )
+}
+
+/// Every year's annual dashas: which, what seeds it, and where its ring
+/// opens.
+fn chart_year_dashas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "year_dashas",
+        "Every annual chart's annual dashas, concatenated in the `annual_charts` section's order and **ragged** by its `dasha_count`, each year's in the order `varsha_json.dashas` named them, read under `varsha_json.dashaRules` (`03-design/annual-dashas.md`). Each runs round a ring of lords (the next `share_count` rows of `year_dasha_shares`) from `first`, and its periods are the next `period_count` rows of `year_dasha_periods`. Empty unless annual dashas were asked for and a place given.",
+        vec![
+            ColumnDef::new(
+                "system",
+                Scalar::U16,
+                "Which: the Patyayini, the Mudda or the Varsha Yogini.",
+            )
+            .of_enum("DashaSystem"),
+            ColumnDef::new(
+                "seeded",
+                Scalar::U8,
+                "1 when the birth nakshatra seeds the year and `seed` names it: the Mudda and the Varsha Yogini; 0 for the Patyayini, which is read from the year's own chart, and `seed` is zero.",
+            ),
+            ColumnDef::new(
+                "seed",
+                Scalar::U16,
+                "The birth Moon's nakshatra, when `seeded`.",
+            )
+            .of_enum("Nakshatra"),
+            ColumnDef::new(
+                "first",
+                Scalar::U8,
+                "The place in the ring the year opens with, from 0: for a nakshatra year the birth nakshatra's lord advanced one for each completed year.",
+            ),
+            ColumnDef::new(
+                "remaining",
+                Scalar::F64,
+                "How much of the first lord's share was still to run when the year opened, 0 to 1; the rest closes the year. NaN when the first lord runs its whole share from the return and the year ends with the lord before it: the Patyayini, and a balance of `whole`.",
+            ),
+            ColumnDef::new(
+                "from_jd",
+                Scalar::F64,
+                "When the year opens: its return, a Julian day (UTC).",
+            ),
+            ColumnDef::new(
+                "to_jd",
+                Scalar::F64,
+                "When the year closes, a Julian day (UTC): under the default clock the next return, as the Sun's own crossing of its return longitude.",
+            ),
+            ColumnDef::new(
+                "share_count",
+                Scalar::U8,
+                "How many rows of `year_dasha_shares` are this dasha's ring: 9 for the Mudda, 8 for the Varsha Yogini and the Patyayini.",
+            ),
+            ColumnDef::new(
+                "period_count",
+                Scalar::U32,
+                "How many rows of `year_dasha_periods` are this dasha's.",
+            ),
+        ],
+    )
+}
+
+/// The lords a year's dasha runs round, and each one's share of it.
+fn chart_year_dasha_shares_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "year_dasha_shares",
+        "Every annual dasha's ring, concatenated in the `year_dashas` section's order and **ragged** by its `share_count`, in the order the ring runs: a lord's share of the year is its weight over the ring's.",
+        vec![
+            ColumnDef::new(
+                "lord",
+                Scalar::U16,
+                "Its lord: the graha, or the lord of the sign when the share is a sign's.",
+            )
+            .of_enum("Graha"),
+            ColumnDef::new(
+                "has_sign",
+                Scalar::U8,
+                "1 when the share is a sign's and `sign` names it: the Patyayini's lagna; 0 for a planet's, and `sign` is zero.",
+            ),
+            ColumnDef::new("sign", Scalar::U16, "The sign, when `has_sign`.").of_enum("Rashi"),
+            ColumnDef::new(
+                "weight",
+                Scalar::F64,
+                "Its weight: a nakshatra year's lord's natal years, or a Patyayini share's patyamsha — its krishamsha less the one before it — in nanoarcseconds, exactly. Only the ratios matter. 0 for a lord tied with the one before it, which runs for no time and has no period.",
             ),
         ],
     )
@@ -1456,34 +1556,63 @@ fn chart_vaiseshikamsa_section(id: u32) -> SectionSchema {
     )
 }
 
-/// Every dasha's periods, depth first in time order.
+/// Whether a period section says row by row that a period is a sign's:
+/// a birth dasha is all signs' or all lords', which `dashas.signed` says
+/// once, where a year's Patyayini runs one sign among seven planets.
+#[derive(Clone, Copy)]
+pub(crate) enum SignedBy {
+    /// Once, by `dashas.signed`.
+    Dasha,
+    /// For each period, by its `has_sign`.
+    Period,
+}
+
+/// Every birth dasha's periods, depth first in time order.
 fn chart_dasha_periods_section(id: u32) -> SectionSchema {
-    SectionSchema::columns(
+    dasha_periods_section(
         id,
         "dasha_periods",
         "Every dasha's periods of its birth cycle, concatenated in the `dashas` section's order and **ragged** by its `period_count`, each dasha's depth first in time order: a mahadasha, then its antardashas and theirs, then the next mahadasha. A period's path is its `index` below the nearest earlier period one `level` up.",
-        vec![
-            ColumnDef::new("level", Scalar::U8, "How deep: 1 for a mahadasha."),
-            ColumnDef::new(
-                "index",
-                Scalar::U8,
-                "Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.",
-            ),
-            ColumnDef::new(
-                "sign",
-                Scalar::U16,
-                "The sign it is the period of, when its dasha is `signed`; zero otherwise.",
-            )
-            .of_enum("Rashi"),
-            ColumnDef::new("lord", Scalar::U16, "Its lord.").of_enum("Graha"),
-            ColumnDef::new(
-                "from_jd",
-                Scalar::F64,
-                "When it begins, a Julian day (UTC).",
-            ),
-            ColumnDef::new("to_jd", Scalar::F64, "When it ends, a Julian day (UTC)."),
-        ],
+        SignedBy::Dasha,
     )
+}
+
+/// A dasha's periods, depth first in time order: one layout for the
+/// births' `dasha_periods` and the years' `year_dasha_periods`, so every
+/// binding decodes a period in one place.
+fn dasha_periods_section(id: u32, name: &str, doc: &str, signed_by: SignedBy) -> SectionSchema {
+    let mut columns = vec![
+        ColumnDef::new("level", Scalar::U8, "How deep: 1 for a mahadasha."),
+        ColumnDef::new(
+            "index",
+            Scalar::U8,
+            "Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.",
+        ),
+    ];
+    let sign = match signed_by {
+        SignedBy::Dasha => {
+            "The sign it is the period of, when its dasha is `signed`; zero otherwise."
+        }
+        SignedBy::Period => {
+            columns.push(ColumnDef::new(
+                "has_sign",
+                Scalar::U8,
+                "1 when it is a sign's period and `sign` names it: the Patyayini's lagna; 0 for a planet's.",
+            ));
+            "The sign it is the period of, when `has_sign`; zero otherwise."
+        }
+    };
+    columns.extend([
+        ColumnDef::new("sign", Scalar::U16, sign).of_enum("Rashi"),
+        ColumnDef::new("lord", Scalar::U16, "Its lord.").of_enum("Graha"),
+        ColumnDef::new(
+            "from_jd",
+            Scalar::F64,
+            "When it begins, a Julian day (UTC).",
+        ),
+        ColumnDef::new("to_jd", Scalar::F64, "When it ends, a Julian day (UTC)."),
+    ]);
+    SectionSchema::columns(id, name, doc, columns)
 }
 
 /// Every chart's drishti: which body looks at which, how strongly, and

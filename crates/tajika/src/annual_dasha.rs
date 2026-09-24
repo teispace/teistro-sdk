@@ -587,6 +587,30 @@ impl YearClock {
             YearClock::Days(_) => None,
         }
     }
+
+    /// Refuses a clock no year can run on: a year of days that is not a
+    /// length of more than none. Every other reading is a year.
+    ///
+    /// ```
+    /// use teistro_tajika::YearClock;
+    ///
+    /// assert!(YearClock::Days(360.0).check().is_ok());
+    /// assert!(YearClock::Days(0.0).check().is_err());
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A [`YearClock::Days`] of no length or not a number, named `clock`.
+    pub fn check(self) -> Result<(), Error> {
+        match self {
+            YearClock::Days(days) if !(days.is_finite() && days > 0.0) => Err(Error::invalid_arg(
+                format!("a year of days is a length of more than none, not {days}"),
+            )
+            .with_field("clock")
+            .with_hint("360 for the Mudda and the Yogini as printed, 365 for the Patyayini")),
+            YearClock::SunDegrees | YearClock::Even | YearClock::Days(_) => Ok(()),
+        }
+    }
 }
 
 /// The clock a year runs on: from `opens` for so many days, or through
@@ -602,11 +626,8 @@ pub fn year_clock(
     opens: JulianDay<Utc>,
     sun_knots: Option<Vec<f64>>,
 ) -> Result<Clock, Error> {
+    reading.check()?;
     match reading {
-        YearClock::Days(days) if !(days.is_finite() && days > 0.0) => Err(Error::invalid_arg(
-            format!("a year of days is a length of more than none, not {days}"),
-        )
-        .with_field("clock")),
         YearClock::Days(days) => Clock::new(vec![opens.get(), opens.get() + days]),
         YearClock::Even | YearClock::SunDegrees => Clock::new(sun_knots.ok_or_else(|| {
             Error::invalid_arg("a clock that reads the Sun is built from its knots")

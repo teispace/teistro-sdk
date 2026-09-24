@@ -2232,20 +2232,134 @@ final class Dasha {
 
   /// The periods running at a Julian day (UTC), from the mahadasha down to
   /// [depth]; empty before birth and past the end of the cycle.
-  ///
-  /// Depth first order means a period's children follow it, so one walk
-  /// that takes the next level's running period finds the chain.
-  List<DashaPeriod> at(double jd) {
-    final chain = <DashaPeriod>[];
-    for (final period in periods) {
-      if (period.level == chain.length + 1 &&
-          period.from <= jd &&
-          jd < period.to) {
-        chain.add(period);
-      }
+  List<DashaPeriod> at(double jd) => _chainAt(periods, jd);
+}
+
+/// The periods running at a Julian day (UTC), from the mahadasha down.
+///
+/// Depth first order means a period's children follow it, so one walk that
+/// takes the next level's running period finds the chain.
+List<DashaPeriod> _chainAt(List<DashaPeriod> periods, double jd) {
+  final chain = <DashaPeriod>[];
+  for (final period in periods) {
+    if (period.level == chain.length + 1 &&
+        period.from <= jd &&
+        jd < period.to) {
+      chain.add(period);
     }
-    return chain;
   }
+  return chain;
+}
+
+/// A dasha's periods from the columns of a period section — the births'
+/// `dasha_periods` or the years' `year_dasha_periods`, which share a
+/// layout — so a period is decoded in one place. A period's path is its
+/// index below the nearest earlier period one level up.
+List<DashaPeriod> _periodsOf({
+  required List<int> level,
+  required List<int> index,
+  required List<int> sign,
+  required List<int> lord,
+  required List<double> from,
+  required List<double> to,
+  required int start,
+  required int count,
+  required bool Function(int i) signed,
+}) {
+  final path = <int>[];
+  return List<DashaPeriod>.unmodifiable([
+    for (var i = start; i < start + count; i += 1)
+      DashaPeriod(
+        path: (path
+              ..length = level[i] - 1
+              ..add(index[i]))
+            .join('/'),
+        level: level[i],
+        sign: signed(i) ? Rashi.byId(sign[i]) : null,
+        lord: Graha.byId(lord[i]),
+        from: from[i],
+        to: to[i],
+      ),
+  ]);
+}
+
+/// One lord of the ring a year's dasha runs round.
+final class AnnualDashaShare {
+  const AnnualDashaShare({
+    required this.lord,
+    required this.sign,
+    required this.weight,
+  });
+
+  /// Its lord: the graha, or the sign's lord when the share is a sign's.
+  final Graha lord;
+
+  /// The sign, when the share is one's: the Patyayini's lagna; null for a
+  /// planet's.
+  final Rashi? sign;
+
+  /// Its weight, of which a lord's share of the year is its weight over the
+  /// ring's: a nakshatra year's lord's natal years, or a Patyayini share's
+  /// patyamsha in nanoarcseconds. 0 for a lord that runs for no time.
+  final double weight;
+}
+
+/// The lords a year's dasha runs round, and where it opens.
+final class DashaRing {
+  const DashaRing({
+    required this.shares,
+    required this.first,
+    required this.remaining,
+  });
+
+  /// In the order the ring runs.
+  final List<AnnualDashaShare> shares;
+
+  /// The place in [shares] the year opens with, from 0.
+  final int first;
+
+  /// How much of the first lord's share was still to run at the return, 0
+  /// to 1, the rest closing the year; null when it runs whole from the
+  /// return: the Patyayini, and [MuddaBalance.whole].
+  final double? remaining;
+}
+
+/// One annual dasha of a year: its ring, the year it divides, and its
+/// periods (`03-design/annual-dashas.md`).
+final class AnnualDasha {
+  const AnnualDasha({
+    required this.system,
+    required this.seed,
+    required this.ring,
+    required this.year,
+    required this.periods,
+  });
+
+  /// Which of the three: [DashaSystem.patyayini], [DashaSystem.mudda] or
+  /// [DashaSystem.varshaYogini].
+  final DashaSystem system;
+
+  /// The birth Moon's nakshatra, which seeds a nakshatra year; null for the
+  /// Patyayini.
+  final Nakshatra? seed;
+
+  /// The lords the year runs round.
+  final DashaRing ring;
+
+  /// The year: from its return to where the clock closes it, under the
+  /// default clock the next return.
+  final Interval year;
+
+  /// Every period to the rules' depth, depth first in time order; a period
+  /// that runs for no time is not listed.
+  final List<DashaPeriod> periods;
+
+  /// The lord the year opens with.
+  Graha get firstLord => ring.shares[ring.first].lord;
+
+  /// The periods running at a Julian day (UTC), from the mahadasha down;
+  /// empty outside the year.
+  List<DashaPeriod> at(double jd) => _chainAt(periods, jd);
 }
 
 /// Where one body stands in a divisional chart.
@@ -3424,22 +3538,17 @@ Dasha _dashaOf(Charts batch, int row, int start, int count) {
   final p = batch.dashaPeriods;
   final seeded = d.seeded[row] != 0;
   final signed = d.signed[row] != 0;
-  final path = <int>[];
-  final periods = List<DashaPeriod>.generate(count, (k) {
-    final i = start + k;
-    final level = p.level[i];
-    path
-      ..length = level - 1
-      ..add(p.index[i]);
-    return DashaPeriod(
-      path: path.join('/'),
-      level: level,
-      sign: signed ? Rashi.byId(p.sign[i]) : null,
-      lord: Graha.byId(p.lord[i]),
-      from: p.fromJd[i],
-      to: p.toJd[i],
-    );
-  }, growable: false);
+  final periods = _periodsOf(
+    level: p.level,
+    index: p.index,
+    sign: p.sign,
+    lord: p.lord,
+    from: p.fromJd,
+    to: p.toJd,
+    start: start,
+    count: count,
+    signed: (_) => signed,
+  );
   final spanFrom = d.moonSpanFrom[row];
   return Dasha(
     system: _dashaSystem(batch, d.system[row]),
@@ -3464,7 +3573,7 @@ Dasha _dashaOf(Charts batch, int row, int start, int count) {
     moonSpan:
         spanFrom.isNaN ? null : Interval(from: spanFrom, to: d.moonSpanTo[row]),
     depth: d.depth[row],
-    periods: List<DashaPeriod>.unmodifiable(periods),
+    periods: periods,
   );
 }
 
@@ -3610,6 +3719,8 @@ final class VarshaRequest {
     this.sahamRules = const SahamRules(),
     this.sahamStrength = const SahamStrengthReadings(),
     this.harshaRules = const HarshaRules(),
+    this.dashas,
+    this.dashaRules = const AnnualDashaRules(),
   });
 
   /// The last year of life wanted, 1 to 200.
@@ -3666,6 +3777,22 @@ final class VarshaRequest {
   /// The Harsha bala's reading of Venus's house of joy.
   final HarshaRules harshaRules;
 
+  /// The annual dashas each year is divided by. The Sun is read over a year
+  /// once however many are asked for. **Needs [place]**; null, none is
+  /// read.
+  ///
+  /// ```dart
+  /// const VarshaRequest(
+  ///   through: 40,
+  ///   place: AnnualPlace.birth,
+  ///   dashas: AnnualDashas.these([DashaSystem.mudda]),
+  /// );
+  /// ```
+  final AnnualDashas? dashas;
+
+  /// The readings the annual dashas part on, where the sources differ.
+  final AnnualDashaRules dashaRules;
+
   String get _json => jsonEncode(<String, Object?>{
     'reading': reading.key,
     'through': through,
@@ -3678,7 +3805,156 @@ final class VarshaRequest {
     'sahamRules': sahamRules._json,
     'sahamStrength': sahamStrength._json,
     'harshaRules': harshaRules._json,
+    if (dashas case final dashas?) 'dashas': dashas._json,
+    'dashaRules': dashaRules._json,
   });
+}
+
+/// The annual dashas a request asks for: the three, or these in the order
+/// you want them answered (`03-design/annual-dashas.md`).
+sealed class AnnualDashas {
+  const AnnualDashas._();
+
+  /// The Patyayini, the Mudda and the Varsha Yogini, the catalogue's order.
+  static const AnnualDashas all = _AllAnnualDashas();
+
+  /// These, in this order: [DashaSystem.patyayini], [DashaSystem.mudda] or
+  /// [DashaSystem.varshaYogini]. Another system, or one named twice, is
+  /// refused.
+  const factory AnnualDashas.these(List<DashaSystem> systems) =
+      _TheseAnnualDashas;
+
+  Object get _json;
+}
+
+final class _AllAnnualDashas extends AnnualDashas {
+  const _AllAnnualDashas() : super._();
+
+  @override
+  Object get _json => 'all';
+}
+
+final class _TheseAnnualDashas extends AnnualDashas {
+  const _TheseAnnualDashas(this.systems) : super._();
+
+  final List<DashaSystem> systems;
+
+  // A system crosses as its full key, the spelling it is read back in.
+  @override
+  Object get _json => [for (final one in systems) one.fullKey];
+}
+
+/// What a unit of the year is (crux C122).
+sealed class YearClock {
+  const YearClock._();
+
+  /// The Sun's motion through one degree from where it stood at the return:
+  /// the source's own, so the year closes on the next return.
+  static const YearClock sunDegrees = _NamedClock('sun_degrees');
+
+  /// An equal share of the time from this return to the next.
+  static const YearClock even = _NamedClock('even');
+
+  /// The whole year as this many civil days from the return: the printed
+  /// durations, 360 for the Mudda and the Yogini and 365 for the Patyayini.
+  const factory YearClock.days(double days) = _DaysClock;
+
+  Object get _json;
+}
+
+final class _NamedClock extends YearClock {
+  const _NamedClock(this.key) : super._();
+
+  final String key;
+
+  @override
+  Object get _json => key;
+}
+
+final class _DaysClock extends YearClock {
+  const _DaysClock(this.days) : super._();
+
+  final double days;
+
+  @override
+  Object get _json => {'days': days};
+}
+
+/// Where the balance a nakshatra year opens with comes from (crux C123).
+enum MuddaBalance {
+  /// What remained of the birth Moon's nakshatra: the source's own.
+  natalMoon('natal_moon'),
+
+  /// How far the Moon at the return is through its own nakshatra.
+  entryMoon('entry_moon'),
+
+  /// None: the first lord runs its whole share from the return.
+  whole('whole');
+
+  const MuddaBalance(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// How a dasha's birth period — an annual dasha's first lord's two pieces —
+/// is divided among its sub-periods.
+enum BirthPeriod {
+  /// Each sub-period its share of the balance: the default.
+  compressed('COMPRESSED'),
+
+  /// Each its share of the whole period, those already over dropped.
+  elapsed('ELAPSED');
+
+  const BirthPeriod(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
+/// Where the sources differ on an annual dasha
+/// (`03-design/annual-dashas.md`). A reading left null is the SDK's own
+/// default.
+final class AnnualDashaRules {
+  const AnnualDashaRules({
+    this.clock,
+    this.balance,
+    this.measure,
+    this.birthPeriod,
+    this.depth,
+  });
+
+  /// What a unit of the year is; [YearClock.sunDegrees] by default.
+  final YearClock? clock;
+
+  /// Where a nakshatra year's balance comes from; [MuddaBalance.natalMoon]
+  /// by default.
+  final MuddaBalance? balance;
+
+  /// How the balance is measured; null, each balance's source's own: by arc
+  /// for the birth Moon, by time for the Moon at the return.
+  final Balance? measure;
+
+  /// How the first lord's two pieces are divided among sub-lords.
+  final BirthPeriod? birthPeriod;
+
+  /// How many levels the periods go down: 2, mahadashas and antardashas,
+  /// by default.
+  final int? depth;
+
+  Map<String, Object?> get _json => <String, Object?>{
+    if (clock case final clock?) 'clock': clock._json,
+    if (balance case final balance?) 'balance': balance.key,
+    // The measure is a settings knob, which the boundary reads by its own
+    // key; an exhaustive switch, so a new member stops this compiling.
+    if (measure case final measure?)
+      'measure': switch (measure) {
+        Balance.spatial => 'SPATIAL',
+        Balance.temporal => 'TEMPORAL',
+      },
+    if (birthPeriod case final birthPeriod?) 'birthPeriod': birthPeriod.key,
+    if (depth case final depth?) 'depth': depth,
+  };
 }
 
 /// Which planets a saham's strength calls benefic and malefic.
@@ -4389,6 +4665,7 @@ final class AnnualChart {
     required this.matters,
     required this.sahams,
     required this.harsha,
+    required this.dashas,
   });
 
   /// The annual chart's lagna, sidereal degrees, at the place it was cast
@@ -4427,6 +4704,10 @@ final class AnnualChart {
   /// The seven's Harsha bala in this year's chart, in the catalogue's
   /// order.
   final List<HarshaBala> harsha;
+
+  /// Each annual dasha [VarshaRequest.dashas] asked for, in its order,
+  /// under [VarshaRequest.dashaRules]; empty otherwise.
+  final List<AnnualDasha> dashas;
 }
 
 /// One planet's Harsha bala: four places it is happy in, five units each.
@@ -4642,7 +4923,10 @@ final class _Starts {
       matters = _running(batch.annualCharts.matterCount),
       held = _running(batch.yearMatters.heldCount),
       legs = _running(batch.matterYogas.legCount),
-      sahams = _running(batch.annualCharts.sahamCount);
+      sahams = _running(batch.annualCharts.sahamCount),
+      dashas = _running(batch.annualCharts.dashaCount),
+      shares = _running(batch.yearDashas.shareCount),
+      periods = _running(batch.yearDashas.periodCount);
 
   final List<int> claims;
   final List<int> yogas;
@@ -4650,6 +4934,9 @@ final class _Starts {
   final List<int> held;
   final List<int> legs;
   final List<int> sahams;
+  final List<int> dashas;
+  final List<int> shares;
+  final List<int> periods;
 
   static List<int> _running(List<int> counts) {
     final starts = List<int>.filled(counts.length + 1, 0);
@@ -5229,7 +5516,51 @@ final class Chart {
       matters: _mattersOf(row, starts),
       sahams: _sahamsOf(row, starts),
       harsha: _harshaOf(row),
+      dashas: _annualDashasOf(row, starts),
     );
+  }
+
+  /// A year's annual dashas, ragged by `dashaCount`, each with its ring and
+  /// its periods ragged under it by `shareCount` and `periodCount`
+  /// (`03-design/annual-dashas.md`).
+  List<AnnualDasha> _annualDashasOf(int row, _Starts starts) {
+    final d = batch.yearDashas;
+    final shares = batch.yearDashaShares;
+    final p = batch.yearDashaPeriods;
+    return [
+      for (var k = starts.dashas[row]; k < starts.dashas[row + 1]; k += 1)
+        AnnualDasha(
+          system: DashaSystem.byId(d.system[k]),
+          seed: d.seeded[k] == 1 ? Nakshatra.byId(d.seed[k]) : null,
+          ring: DashaRing(
+            shares: List<AnnualDashaShare>.unmodifiable([
+              for (var i = starts.shares[k]; i < starts.shares[k + 1]; i += 1)
+                AnnualDashaShare(
+                  lord: Graha.byId(shares.lord[i]),
+                  sign:
+                      shares.hasSign[i] == 1
+                          ? Rashi.byId(shares.sign[i])
+                          : null,
+                  weight: shares.weight[i],
+                ),
+            ]),
+            first: d.first[k],
+            remaining: d.remaining[k].isNaN ? null : d.remaining[k],
+          ),
+          year: Interval(from: d.fromJd[k], to: d.toJd[k]),
+          periods: _periodsOf(
+            level: p.level,
+            index: p.index,
+            sign: p.sign,
+            lord: p.lord,
+            from: p.fromJd,
+            to: p.toJd,
+            start: starts.periods[k],
+            count: d.periodCount[k],
+            signed: (i) => p.hasSign[i] == 1,
+          ),
+        ),
+    ];
   }
 
   /// A year's sahams, ragged by `sahamCount`

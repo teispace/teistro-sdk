@@ -1364,6 +1364,10 @@ export interface ChartsAnnualCharts {
    * How many rows of the `year_sahams` section belong to this year: the sahams `varsha_json.sahams` asked for, 0 to 41.
    */
   readonly sahamCount: Uint8Array;
+  /**
+   * How many rows of the `year_dashas` section belong to this year: the annual dashas `varsha_json.dashas` asked for, 0 to 3.
+   */
+  readonly dashaCount: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -1811,6 +1815,125 @@ export interface ChartsNatalSahamSeven {
 }
 
 /**
+ * The `year_dashas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every annual chart's annual dashas, concatenated in the `annual_charts` section's order and **ragged** by its `dasha_count`, each year's in the order `varsha_json.dashas` named them, read under `varsha_json.dashaRules` (`03-design/annual-dashas.md`). Each runs round a ring of lords (the next `share_count` rows of `year_dasha_shares`) from `first`, and its periods are the next `period_count` rows of `year_dasha_periods`. Empty unless annual dashas were asked for and a place given.
+ */
+export interface ChartsYearDashas {
+  /**
+   * Which: the Patyayini, the Mudda or the Varsha Yogini.
+   * The values are `DashaSystem` ids.
+   */
+  readonly system: Uint16Array;
+  /**
+   * 1 when the birth nakshatra seeds the year and `seed` names it: the Mudda and the Varsha Yogini; 0 for the Patyayini, which is read from the year's own chart, and `seed` is zero.
+   */
+  readonly seeded: Uint8Array;
+  /**
+   * The birth Moon's nakshatra, when `seeded`.
+   * The values are `Nakshatra` ids.
+   */
+  readonly seed: Uint16Array;
+  /**
+   * The place in the ring the year opens with, from 0: for a nakshatra year the birth nakshatra's lord advanced one for each completed year.
+   */
+  readonly first: Uint8Array;
+  /**
+   * How much of the first lord's share was still to run when the year opened, 0 to 1; the rest closes the year. NaN when the first lord runs its whole share from the return and the year ends with the lord before it: the Patyayini, and a balance of `whole`.
+   */
+  readonly remaining: Float64Array;
+  /**
+   * When the year opens: its return, a Julian day (UTC).
+   */
+  readonly fromJd: Float64Array;
+  /**
+   * When the year closes, a Julian day (UTC): under the default clock the next return, as the Sun's own crossing of its return longitude.
+   */
+  readonly toJd: Float64Array;
+  /**
+   * How many rows of `year_dasha_shares` are this dasha's ring: 9 for the Mudda, 8 for the Varsha Yogini and the Patyayini.
+   */
+  readonly shareCount: Uint8Array;
+  /**
+   * How many rows of `year_dasha_periods` are this dasha's.
+   */
+  readonly periodCount: Uint32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `year_dasha_shares` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every annual dasha's ring, concatenated in the `year_dashas` section's order and **ragged** by its `share_count`, in the order the ring runs: a lord's share of the year is its weight over the ring's.
+ */
+export interface ChartsYearDashaShares {
+  /**
+   * Its lord: the graha, or the lord of the sign when the share is a sign's.
+   * The values are `Graha` ids.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * 1 when the share is a sign's and `sign` names it: the Patyayini's lagna; 0 for a planet's, and `sign` is zero.
+   */
+  readonly hasSign: Uint8Array;
+  /**
+   * The sign, when `has_sign`.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /**
+   * Its weight: a nakshatra year's lord's natal years, or a Patyayini share's patyamsha — its krishamsha less the one before it — in nanoarcseconds, exactly. Only the ratios matter. 0 for a lord tied with the one before it, which runs for no time and has no period.
+   */
+  readonly weight: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `year_dasha_periods` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every annual dasha's periods, concatenated in the `year_dashas` section's order and **ragged** by its `period_count`, each depth first in time order from the year's return to its close: a mahadasha, then its antardashas, then the next mahadasha, to `varsha_json.dashaRules.depth` levels. A period that runs for no time is not listed, and its place is kept in the others' `index`.
+ */
+export interface ChartsYearDashaPeriods {
+  /**
+   * How deep: 1 for a mahadasha.
+   */
+  readonly level: Uint8Array;
+  /**
+   * Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.
+   */
+  readonly index: Uint8Array;
+  /**
+   * 1 when it is a sign's period and `sign` names it: the Patyayini's lagna; 0 for a planet's.
+   */
+  readonly hasSign: Uint8Array;
+  /**
+   * The sign it is the period of, when `has_sign`; zero otherwise.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /**
+   * Its lord.
+   * The values are `Graha` ids.
+   */
+  readonly lord: Uint16Array;
+  /**
+   * When it begins, a Julian day (UTC).
+   */
+  readonly fromJd: Float64Array;
+  /**
+   * When it ends, a Julian day (UTC).
+   */
+  readonly toJd: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -2154,6 +2277,18 @@ export interface Charts {
    * Seven rows under each row of `natal_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from.
    */
   readonly natalSahamSeven: ChartsNatalSahamSeven;
+  /**
+   * Every annual chart's annual dashas, concatenated in the `annual_charts` section's order and **ragged** by its `dasha_count`, each year's in the order `varsha_json.dashas` named them, read under `varsha_json.dashaRules` (`03-design/annual-dashas.md`). Each runs round a ring of lords (the next `share_count` rows of `year_dasha_shares`) from `first`, and its periods are the next `period_count` rows of `year_dasha_periods`. Empty unless annual dashas were asked for and a place given.
+   */
+  readonly yearDashas: ChartsYearDashas;
+  /**
+   * Every annual dasha's ring, concatenated in the `year_dashas` section's order and **ragged** by its `share_count`, in the order the ring runs: a lord's share of the year is its weight over the ring's.
+   */
+  readonly yearDashaShares: ChartsYearDashaShares;
+  /**
+   * Every annual dasha's periods, concatenated in the `year_dashas` section's order and **ragged** by its `period_count`, each depth first in time order from the year's return to its close: a mahadasha, then its antardashas, then the next mahadasha, to `varsha_json.dashaRules.depth` levels. A period that runs for no time is not listed, and its place is kept in the others' `index`.
+   */
+  readonly yearDashaPeriods: ChartsYearDashaPeriods;
 }
 
 /**

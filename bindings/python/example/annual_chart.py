@@ -28,6 +28,7 @@ from __future__ import annotations
 from teistro import (
     Altitude,
     Calendar,
+    DashaSystem,
     Ephemeris,
     Latitude,
     Longitude,
@@ -152,6 +153,27 @@ def main() -> None:
             print(f"  strong: {strong}; weak: {weak}")
         # And the seven's Harsha bala that year: four places each is happy in.
         print(", ".join(f"{h.graha.key} {h.total}" for h in points.harsha))
+
+        # ── The annual dashas: the year divided among its lords ───────
+        # The Mudda runs round the nine from the birth nakshatra's lord,
+        # one lord further each year; the Patyayini is read from the year's
+        # own chart, and its lagna's share is a sign's. The Sun is read
+        # over the year once for both, and each year closes on the next
+        # return.
+        divided = ctx.chart.found(
+            instant=when.instant_jd_utc,
+            place=place,
+            utc_offset_seconds=when.offset_seconds,
+            varsha={"through": 30, "place": "birth", "dashas": [DashaSystem.MUDDA, DashaSystem.PATYAYINI]},
+        ).praveshas[29].annual
+        assert divided is not None
+        for dasha in divided.dashas:
+            days = ", ".join(
+                f"{(p.sign or p.lord).key} {p.span.to_jd - p.span.from_jd:.1f}"
+                for p in dasha.periods
+                if p.level == 1
+            )
+            print(f"{dasha.system.key}: {days}")
 
         # ── The readings are named, and they are not each other ──────
         for reading in ("sidereal", "tropical", "mean"):

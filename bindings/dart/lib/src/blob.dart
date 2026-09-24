@@ -1491,6 +1491,7 @@ final class ChartsAnnualCharts {
     required this.combust,
     required this.matterCount,
     required this.sahamCount,
+    required this.dashaCount,
     required this.length,
   });
 
@@ -1541,6 +1542,9 @@ final class ChartsAnnualCharts {
 
   /// How many rows of the `year_sahams` section belong to this year: the sahams `varsha_json.sahams` asked for, 0 to 41.
   final Uint8List sahamCount;
+
+  /// How many rows of the `year_dashas` section belong to this year: the annual dashas `varsha_json.dashas` asked for, 0 to 3.
+  final Uint8List dashaCount;
 
   /// The number of rows every column holds.
   final int length;
@@ -1992,6 +1996,125 @@ final class ChartsNatalSahamSeven {
   final int length;
 }
 
+/// The `year_dashas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every annual chart's annual dashas, concatenated in the `annual_charts` section's order and **ragged** by its `dasha_count`, each year's in the order `varsha_json.dashas` named them, read under `varsha_json.dashaRules` (`03-design/annual-dashas.md`). Each runs round a ring of lords (the next `share_count` rows of `year_dasha_shares`) from `first`, and its periods are the next `period_count` rows of `year_dasha_periods`. Empty unless annual dashas were asked for and a place given.
+final class ChartsYearDashas {
+  const ChartsYearDashas({
+    required this.system,
+    required this.seeded,
+    required this.seed,
+    required this.first,
+    required this.remaining,
+    required this.fromJd,
+    required this.toJd,
+    required this.shareCount,
+    required this.periodCount,
+    required this.length,
+  });
+
+  /// Which: the Patyayini, the Mudda or the Varsha Yogini.
+  final Uint16List system;
+
+  /// 1 when the birth nakshatra seeds the year and `seed` names it: the Mudda and the Varsha Yogini; 0 for the Patyayini, which is read from the year's own chart, and `seed` is zero.
+  final Uint8List seeded;
+
+  /// The birth Moon's nakshatra, when `seeded`.
+  final Uint16List seed;
+
+  /// The place in the ring the year opens with, from 0: for a nakshatra year the birth nakshatra's lord advanced one for each completed year.
+  final Uint8List first;
+
+  /// How much of the first lord's share was still to run when the year opened, 0 to 1; the rest closes the year. NaN when the first lord runs its whole share from the return and the year ends with the lord before it: the Patyayini, and a balance of `whole`.
+  final Float64List remaining;
+
+  /// When the year opens: its return, a Julian day (UTC).
+  final Float64List fromJd;
+
+  /// When the year closes, a Julian day (UTC): under the default clock the next return, as the Sun's own crossing of its return longitude.
+  final Float64List toJd;
+
+  /// How many rows of `year_dasha_shares` are this dasha's ring: 9 for the Mudda, 8 for the Varsha Yogini and the Patyayini.
+  final Uint8List shareCount;
+
+  /// How many rows of `year_dasha_periods` are this dasha's.
+  final Uint32List periodCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `year_dasha_shares` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every annual dasha's ring, concatenated in the `year_dashas` section's order and **ragged** by its `share_count`, in the order the ring runs: a lord's share of the year is its weight over the ring's.
+final class ChartsYearDashaShares {
+  const ChartsYearDashaShares({
+    required this.lord,
+    required this.hasSign,
+    required this.sign,
+    required this.weight,
+    required this.length,
+  });
+
+  /// Its lord: the graha, or the lord of the sign when the share is a sign's.
+  final Uint16List lord;
+
+  /// 1 when the share is a sign's and `sign` names it: the Patyayini's lagna; 0 for a planet's, and `sign` is zero.
+  final Uint8List hasSign;
+
+  /// The sign, when `has_sign`.
+  final Uint16List sign;
+
+  /// Its weight: a nakshatra year's lord's natal years, or a Patyayini share's patyamsha — its krishamsha less the one before it — in nanoarcseconds, exactly. Only the ratios matter. 0 for a lord tied with the one before it, which runs for no time and has no period.
+  final Float64List weight;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `year_dasha_periods` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every annual dasha's periods, concatenated in the `year_dashas` section's order and **ragged** by its `period_count`, each depth first in time order from the year's return to its close: a mahadasha, then its antardashas, then the next mahadasha, to `varsha_json.dashaRules.depth` levels. A period that runs for no time is not listed, and its place is kept in the others' `index`.
+final class ChartsYearDashaPeriods {
+  const ChartsYearDashaPeriods({
+    required this.level,
+    required this.index,
+    required this.hasSign,
+    required this.sign,
+    required this.lord,
+    required this.fromJd,
+    required this.toJd,
+    required this.length,
+  });
+
+  /// How deep: 1 for a mahadasha.
+  final Uint8List level;
+
+  /// Its place in its parent's sequence, from 0; under the elapsed reading of the birth period the first may not be 0.
+  final Uint8List index;
+
+  /// 1 when it is a sign's period and `sign` names it: the Patyayini's lagna; 0 for a planet's.
+  final Uint8List hasSign;
+
+  /// The sign it is the period of, when `has_sign`; zero otherwise.
+  final Uint16List sign;
+
+  /// Its lord.
+  final Uint16List lord;
+
+  /// When it begins, a Julian day (UTC).
+  final Float64List fromJd;
+
+  /// When it ends, a Julian day (UTC).
+  final Float64List toJd;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -2142,6 +2265,9 @@ final class Charts {
     required this.yearHarsha,
     required this.natalSahams,
     required this.natalSahamSeven,
+    required this.yearDashas,
+    required this.yearDashaShares,
+    required this.yearDashaPeriods,
   });
 
   /// What kind of chart these are.
@@ -2326,6 +2452,15 @@ final class Charts {
   /// Seven rows under each row of `natal_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from.
   final ChartsNatalSahamSeven natalSahamSeven;
 
+  /// Every annual chart's annual dashas, concatenated in the `annual_charts` section's order and **ragged** by its `dasha_count`, each year's in the order `varsha_json.dashas` named them, read under `varsha_json.dashaRules` (`03-design/annual-dashas.md`). Each runs round a ring of lords (the next `share_count` rows of `year_dasha_shares`) from `first`, and its periods are the next `period_count` rows of `year_dasha_periods`. Empty unless annual dashas were asked for and a place given.
+  final ChartsYearDashas yearDashas;
+
+  /// Every annual dasha's ring, concatenated in the `year_dashas` section's order and **ragged** by its `share_count`, in the order the ring runs: a lord's share of the year is its weight over the ring's.
+  final ChartsYearDashaShares yearDashaShares;
+
+  /// Every annual dasha's periods, concatenated in the `year_dashas` section's order and **ragged** by its `period_count`, each depth first in time order from the year's return to its close: a mahadasha, then its antardashas, then the next mahadasha, to `varsha_json.dashaRules.depth` levels. A period that runs for no time is not listed, and its place is kept in the others' `index`.
+  final ChartsYearDashaPeriods yearDashaPeriods;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -2379,6 +2514,9 @@ Charts decodeCharts(Uint8List bytes) {
   final atYearHarsha = blob.section(44, 'year_harsha');
   final atNatalSahams = blob.section(45, 'natal_sahams');
   final atNatalSahamSeven = blob.section(46, 'natal_saham_seven');
+  final atYearDashas = blob.section(47, 'year_dashas');
+  final atYearDashaShares = blob.section(48, 'year_dasha_shares');
+  final atYearDashaPeriods = blob.section(49, 'year_dasha_periods');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -3661,6 +3799,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atAnnualCharts, 15),
         blob.columnOffset(atAnnualCharts, 15) + atAnnualCharts.count * 1,
       ),
+      dashaCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atAnnualCharts, 16),
+        blob.columnOffset(atAnnualCharts, 16) + atAnnualCharts.count * 1,
+      ),
       length: atAnnualCharts.count,
     ),
     yearClaims: ChartsYearClaims(
@@ -4087,6 +4230,115 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atNatalSahamSeven, 3) + atNatalSahamSeven.count * 1,
       ),
       length: atNatalSahamSeven.count,
+    ),
+    yearDashas: ChartsYearDashas(
+      system: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashas, 0),
+        blob.columnOffset(atYearDashas, 0) + atYearDashas.count * 2,
+      ),
+      seeded: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashas, 1),
+        blob.columnOffset(atYearDashas, 1) + atYearDashas.count * 1,
+      ),
+      seed: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashas, 2),
+        blob.columnOffset(atYearDashas, 2) + atYearDashas.count * 2,
+      ),
+      first: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashas, 3),
+        blob.columnOffset(atYearDashas, 3) + atYearDashas.count * 1,
+      ),
+      remaining: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashas, 4),
+        blob.columnOffset(atYearDashas, 4) + atYearDashas.count * 8,
+      ),
+      fromJd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashas, 5),
+        blob.columnOffset(atYearDashas, 5) + atYearDashas.count * 8,
+      ),
+      toJd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashas, 6),
+        blob.columnOffset(atYearDashas, 6) + atYearDashas.count * 8,
+      ),
+      shareCount: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashas, 7),
+        blob.columnOffset(atYearDashas, 7) + atYearDashas.count * 1,
+      ),
+      periodCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashas, 8),
+        blob.columnOffset(atYearDashas, 8) + atYearDashas.count * 4,
+      ),
+      length: atYearDashas.count,
+    ),
+    yearDashaShares: ChartsYearDashaShares(
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaShares, 0),
+        blob.columnOffset(atYearDashaShares, 0) + atYearDashaShares.count * 2,
+      ),
+      hasSign: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaShares, 1),
+        blob.columnOffset(atYearDashaShares, 1) + atYearDashaShares.count * 1,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaShares, 2),
+        blob.columnOffset(atYearDashaShares, 2) + atYearDashaShares.count * 2,
+      ),
+      weight: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaShares, 3),
+        blob.columnOffset(atYearDashaShares, 3) + atYearDashaShares.count * 8,
+      ),
+      length: atYearDashaShares.count,
+    ),
+    yearDashaPeriods: ChartsYearDashaPeriods(
+      level: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaPeriods, 0),
+        blob.columnOffset(atYearDashaPeriods, 0) + atYearDashaPeriods.count * 1,
+      ),
+      index: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaPeriods, 1),
+        blob.columnOffset(atYearDashaPeriods, 1) + atYearDashaPeriods.count * 1,
+      ),
+      hasSign: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaPeriods, 2),
+        blob.columnOffset(atYearDashaPeriods, 2) + atYearDashaPeriods.count * 1,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaPeriods, 3),
+        blob.columnOffset(atYearDashaPeriods, 3) + atYearDashaPeriods.count * 2,
+      ),
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaPeriods, 4),
+        blob.columnOffset(atYearDashaPeriods, 4) + atYearDashaPeriods.count * 2,
+      ),
+      fromJd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaPeriods, 5),
+        blob.columnOffset(atYearDashaPeriods, 5) + atYearDashaPeriods.count * 8,
+      ),
+      toJd: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearDashaPeriods, 6),
+        blob.columnOffset(atYearDashaPeriods, 6) + atYearDashaPeriods.count * 8,
+      ),
+      length: atYearDashaPeriods.count,
     ),
   );
 }

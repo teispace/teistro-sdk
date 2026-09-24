@@ -2479,6 +2479,239 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
     );
 }
 
+/// A year's chart answers the **annual dashas** the request names, in its
+/// order: each opens on its return and closes on the next, its ring and
+/// its periods ragged under it, and its mahadashas and antardashas run end
+/// to end (`03-design/annual-dashas.md`).
+#[test]
+fn a_years_chart_answers_the_annual_dashas_it_was_asked_for() {
+    const PATYAYINI: usize = 36;
+    const MUDDA: usize = 37;
+    const VARSHA_YOGINI: usize = 39;
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let schema = schemas::charts();
+    let ask = |json: &str| annual_blob(&ctx, json);
+    let cells = |bytes: &[u8], section: &str, name: &str| {
+        Reader::parse(bytes, &schema)
+            .unwrap()
+            .column(section, name)
+            .unwrap()
+            .iter()
+            .map(|cell| cell.as_f64())
+            .collect::<Vec<f64>>()
+    };
+    let ints = |bytes: &[u8], section: &str, name: &str| {
+        cells(bytes, section, name)
+            .iter()
+            .map(|cell| *cell as usize)
+            .collect::<Vec<usize>>()
+    };
+    for (system, id) in [
+        (teistro::catalogue::DashaSystem::Mudda, MUDDA),
+        (teistro::catalogue::DashaSystem::Patyayini, PATYAYINI),
+        (teistro::catalogue::DashaSystem::VarshaYogini, VARSHA_YOGINI),
+    ] {
+        assert_eq!(usize::from(system as u16), id, "{system:?}");
+    }
+
+    // Two systems in the caller's order, for each of two births' three
+    // years.
+    // A system is named by its key, full as every binding reads it back
+    // or bare as Rust spells it.
+    let asked = ask(r#"{"through":3,"place":"birth","dashas":["dasha_system.MUDDA","PATYAYINI"]}"#)
+        .unwrap();
+    assert_eq!(ints(&asked, "annual_charts", "dasha_count"), vec![2; 6]);
+    assert_eq!(
+        ints(&asked, "year_dashas", "system"),
+        [MUDDA, PATYAYINI].repeat(6)
+    );
+    let seeded = ints(&asked, "year_dashas", "seeded");
+    let seeds = ints(&asked, "year_dashas", "seed");
+    let firsts = ints(&asked, "year_dashas", "first");
+    let remaining = cells(&asked, "year_dashas", "remaining");
+    let opens = cells(&asked, "year_dashas", "from_jd");
+    let closes = cells(&asked, "year_dashas", "to_jd");
+    let share_counts = ints(&asked, "year_dashas", "share_count");
+    let period_counts = ints(&asked, "year_dashas", "period_count");
+    let returns = cells(&asked, "praveshas", "jd");
+    let lords = ints(&asked, "year_dasha_shares", "lord");
+    let has_sign = ints(&asked, "year_dasha_shares", "has_sign");
+    let weights = cells(&asked, "year_dasha_shares", "weight");
+    let levels = ints(&asked, "year_dasha_periods", "level");
+    let period_signed = ints(&asked, "year_dasha_periods", "has_sign");
+    let from = cells(&asked, "year_dasha_periods", "from_jd");
+    let to = cells(&asked, "year_dasha_periods", "to_jd");
+    assert_eq!(lords.len(), share_counts.iter().sum::<usize>());
+    assert_eq!(levels.len(), period_counts.iter().sum::<usize>());
+    // The Sun's clock closes a year on the next return, each found to the
+    // search's tolerance: twice 1e-7 days apart at most.
+    let bound = 2.0 * 1e-7;
+    let (mut share, mut period) = (0, 0);
+    for row in 0..12 {
+        let year = row / 2;
+        let mudda = row % 2 == 0;
+        assert_eq!(opens[row].to_bits(), returns[year].to_bits(), "row {row}");
+        if year % 3 != 2 {
+            assert!((closes[row] - returns[year + 1]).abs() < bound, "row {row}");
+        }
+        // The Mudda is seeded by the birth Moon, the same every year, and
+        // its ring advances one lord a year; the Patyayini is read from
+        // the year's own chart, and its lagna is the one sign's share.
+        let ring = share..share + share_counts[row];
+        if mudda {
+            assert_eq!((seeded[row], share_counts[row]), (1, 9), "row {row}");
+            assert!(remaining[row] > 0.0 && remaining[row] <= 1.0, "row {row}");
+            assert!(has_sign[ring.clone()].iter().all(|flag| *flag == 0));
+            if year % 3 != 0 {
+                assert_eq!(seeds[row], seeds[row - 2], "row {row}");
+                assert_eq!(firsts[row], (firsts[row - 2] + 1) % 9, "row {row}");
+            }
+        } else {
+            assert_eq!((seeded[row], seeds[row], share_counts[row]), (0, 0, 8));
+            assert!(remaining[row].is_nan(), "row {row}");
+            assert_eq!(has_sign[ring.clone()].iter().sum::<usize>(), 1, "row {row}");
+        }
+        assert!(weights[ring].iter().all(|weight| *weight >= 0.0));
+        share += share_counts[row];
+        // The mahadashas run end to end from the return to the close, and
+        // each one's antardashas end to end across it.
+        let periods = period..period + period_counts[row];
+        let mut edge = opens[row];
+        let mut parent: Option<(f64, f64)> = None;
+        let mut inner = 0.0_f64;
+        for k in periods.clone() {
+            assert!(from[k] < to[k], "row {row} period {k}");
+            if levels[k] == 1 {
+                if let Some((_, end)) = parent {
+                    assert_eq!(inner.to_bits(), end.to_bits(), "row {row} period {k}");
+                }
+                assert_eq!(from[k].to_bits(), edge.to_bits(), "row {row} period {k}");
+                edge = to[k];
+                parent = Some((from[k], to[k]));
+                inner = from[k];
+            } else {
+                assert_eq!(levels[k], 2, "row {row} period {k}");
+                assert_eq!(from[k].to_bits(), inner.to_bits(), "row {row} period {k}");
+                inner = to[k];
+            }
+        }
+        assert_eq!(edge.to_bits(), closes[row].to_bits(), "row {row}");
+        let signs = period_signed[periods.clone()]
+            .iter()
+            .filter(|flag| **flag == 1);
+        assert_eq!(signs.count() > 0, !mudda, "row {row}");
+        period = periods.end;
+    }
+
+    // `"all"` is the three in the catalogue's order.
+    let all = ask(r#"{"through":1,"place":"birth","dashas":"all"}"#).unwrap();
+    assert_eq!(
+        ints(&all, "year_dashas", "system"),
+        [PATYAYINI, MUDDA, VARSHA_YOGINI].repeat(2)
+    );
+
+    // The rules are read: a year of 360 days is exactly that long, and one
+    // level lists the mahadashas alone.
+    let days = ask(
+        r#"{"through":1,"place":"birth","dashas":["MUDDA"],"dashaRules":{"clock":{"days":360},"depth":1}}"#,
+    )
+    .unwrap();
+    let (opens, closes) = (
+        cells(&days, "year_dashas", "from_jd"),
+        cells(&days, "year_dashas", "to_jd"),
+    );
+    for (open, close) in opens.iter().zip(&closes) {
+        assert_eq!((close - open).to_bits(), 360.0_f64.to_bits());
+    }
+    assert!(
+        ints(&days, "year_dasha_periods", "level")
+            .iter()
+            .all(|level| *level == 1)
+    );
+    let whole =
+        ask(r#"{"through":1,"place":"birth","dashas":["MUDDA"],"dashaRules":{"balance":"whole"}}"#)
+            .unwrap();
+    assert!(
+        cells(&whole, "year_dashas", "remaining")
+            .iter()
+            .all(|r| r.is_nan())
+    );
+    // Every reading the rules name is accepted as a binding spells it.
+    for rules in [
+        r#"{"clock":"even","balance":"entry_moon","measure":"SPATIAL","birthPeriod":"ELAPSED","depth":3}"#,
+        r#"{"clock":"sun_degrees","balance":"natal_moon","measure":"TEMPORAL","birthPeriod":"COMPRESSED"}"#,
+    ] {
+        let json =
+            format!(r#"{{"through":1,"place":"birth","dashas":"all","dashaRules":{rules}}}"#);
+        ask(&json).expect(&json);
+    }
+
+    // Not asked, nothing answered; an empty list asks for nothing.
+    for json in [
+        r#"{"through":2,"place":"birth"}"#,
+        r#"{"through":2,"place":"birth","dashas":[]}"#,
+    ] {
+        let bytes = ask(json).unwrap();
+        assert!(ints(&bytes, "year_dashas", "system").is_empty(), "{json}");
+        assert!(
+            ints(&bytes, "year_dasha_periods", "level").is_empty(),
+            "{json}"
+        );
+        assert!(
+            ints(&bytes, "annual_charts", "dasha_count")
+                .iter()
+                .all(|n| *n == 0)
+        );
+    }
+
+    // Each refusal names the field the caller wrote.
+    let refused = |json: &str, field: &str, says: &str| {
+        let error = ask(json).expect_err(json);
+        assert_eq!(error.2.as_deref(), Some(field), "{error:?}");
+        assert!(error.1.contains(says), "{error:?}");
+    };
+    refused(
+        r#"{"through":2,"dashas":["MUDDA"]}"#,
+        "varsha_json.dashas",
+        "place",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","dashas":["MUDDA","dasha_system.MUDDA"]}"#,
+        "varsha_json.dashas",
+        "twice",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","dashas":["VIMSHOTTARI"]}"#,
+        "varsha_json.dashas",
+        "not an annual dasha",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","dashas":["MUDA"]}"#,
+        "varsha_json.dashas",
+        "did you mean `MUDDA`",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","dashas":["graha.MUDDA"]}"#,
+        "varsha_json.dashas",
+        "graha.MUDDA",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","dashas":"some"}"#,
+        "varsha_json.dashas",
+        "\"all\"",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","dashas":["MUDDA"],"dashaRules":{"clock":{"days":0}}}"#,
+        "varsha_json.dashaRules.clock",
+        "more than none",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","dashas":["MUDDA"],"dashaRules":{"clok":"even"}}"#,
+        "varsha_json.dashaRules.clok",
+        "clok",
+    );
+}
+
 /// A consumer's **sign-based** system crosses the same way: registered
 /// through `options.dashas_json` under `"kernel":"rashi"`, asked for by the
 /// id `ts_key_parse` gives, and answered in the `dashas` section with the

@@ -1935,30 +1935,64 @@ function dashasOf(batch) {
   return decoded;
 }
 
+/**
+ * A dasha's periods from a period section — the births' `dasha_periods` or
+ * the years' `year_dasha_periods`, which share a layout — so a period is
+ * decoded in one place. A period's path is its index below the nearest
+ * earlier period one level up, so it is rebuilt by truncating the path to
+ * the level before it.
+ *
+ * @param {object} cols the decoded period section
+ * @param {number} start its first row
+ * @param {number} count how many rows
+ * @param {(i: number) => boolean} signed whether row `i` is a sign's period
+ * @returns {readonly object[]}
+ */
+function periodsFrom(cols, start, count, signed) {
+  const periods = [];
+  const path = [];
+  for (let i = start; i < start + count; i += 1) {
+    const level = cols.level[i];
+    path.length = level - 1;
+    path.push(cols.index[i]);
+    periods.push(
+      Object.freeze({
+        path: path.join('/'),
+        level,
+        sign: signed(i) ? (RashiById.get(cols.sign[i]) ?? 'unknown') : null,
+        lord: GrahaById.get(cols.lord[i]) ?? 'unknown',
+        from: cols.fromJd[i],
+        to: cols.toJd[i],
+      }),
+    );
+  }
+  return Object.freeze(periods);
+}
+
+/**
+ * The periods running at a Julian day (UTC), from the mahadasha down.
+ * Depth first order means a period's children follow it, so one walk that
+ * takes the next level's running period finds the chain.
+ *
+ * @param {readonly object[]} periods
+ * @param {number} jd
+ * @returns {object[]}
+ */
+function chainAt(periods, jd) {
+  const chain = [];
+  for (const period of periods) {
+    if (period.level === chain.length + 1 && period.from <= jd && jd < period.to) chain.push(period);
+  }
+  return chain;
+}
+
 /** One dasha row and its periods, in this layer's shape. */
 function dashaFrom(batch, row, start, count) {
   const d = batch.decoded;
   const rows = d.dashas;
   const seeded = rows.seeded[row] !== 0;
   const signed = rows.signed[row] !== 0;
-  const periods = [];
-  const path = [];
-  for (let k = 0; k < count; k += 1) {
-    const i = start + k;
-    const level = d.dashaPeriods.level[i];
-    path.length = level - 1;
-    path.push(d.dashaPeriods.index[i]);
-    periods.push(
-      Object.freeze({
-        path: path.join('/'),
-        level,
-        sign: signed ? (RashiById.get(d.dashaPeriods.sign[i]) ?? 'unknown') : null,
-        lord: GrahaById.get(d.dashaPeriods.lord[i]) ?? 'unknown',
-        from: d.dashaPeriods.fromJd[i],
-        to: d.dashaPeriods.toJd[i],
-      }),
-    );
-  }
+  const periods = periodsFrom(d.dashaPeriods, start, count, () => signed);
   const spanFrom = rows.moonSpanFrom[row];
   return Object.freeze({
     system: DashaSystemById.get(rows.system[row]) ?? batch.dashaName(rows.system[row]) ?? 'unknown',
@@ -1981,17 +2015,13 @@ function dashaFrom(batch, row, start, count) {
       : null,
     moonSpan: Number.isNaN(spanFrom) ? null : Object.freeze({ from: spanFrom, to: rows.moonSpanTo[row] }),
     depth: rows.depth[row],
-    periods: Object.freeze(periods),
+    periods,
     /**
      * The periods running at a Julian day (UTC), from the mahadasha down to
      * the depth the periods go; empty before birth and past the cycle.
      */
     at(jd) {
-      const chain = [];
-      for (const period of periods) {
-        if (period.level === chain.length + 1 && period.from <= jd && jd < period.to) chain.push(period);
-      }
-      return chain;
+      return chainAt(periods, jd);
     },
   });
 }
@@ -2418,6 +2448,7 @@ function annualOf(d, row) {
     matters: mattersOf(d, row),
     sahams: sahamsOf(d, row),
     harsha: harshaOf(d, row),
+    dashas: annualDashasOf(d, row),
     yearLord: {
       graha: lord(charts.yearLord),
       chosen: VarsheshaChosenById.get(charts.yearLordChosen[row]) ?? 'unknown',
@@ -2459,6 +2490,58 @@ function sahamsOf(d, row) {
   const from = startsOf(d.annualCharts.sahamCount)[row];
   const count = d.annualCharts.sahamCount[row] ?? 0;
   return Array.from({ length: count }, (_, k) => sahamAt(d.yearSahams, d.yearSahamSeven, from + k));
+}
+
+/**
+ * A year's annual dashas, ragged by `dashaCount`, each with its ring and
+ * its periods ragged under it by `shareCount` and `periodCount`
+ * (`03-design/annual-dashas.md`).
+ *
+ * @param {object} d the decoded batch
+ * @param {number} row
+ * @returns {object[]}
+ */
+function annualDashasOf(d, row) {
+  const rows = d.yearDashas;
+  const shares = d.yearDashaShares;
+  const cols = d.yearDashaPeriods;
+  const from = startsOf(d.annualCharts.dashaCount)[row];
+  const count = d.annualCharts.dashaCount[row] ?? 0;
+  const shareStarts = startsOf(rows.shareCount);
+  const periodStarts = startsOf(rows.periodCount);
+  return Array.from({ length: count }, (_, k) => {
+    const at = from + k;
+    const ring = Array.from({ length: rows.shareCount[at] }, (_, j) => {
+      const i = shareStarts[at] + j;
+      return Object.freeze({
+        lord: GrahaById.get(shares.lord[i]) ?? 'unknown',
+        sign: shares.hasSign[i] === 1 ? (RashiById.get(shares.sign[i]) ?? 'unknown') : null,
+        weight: shares.weight[i],
+      });
+    });
+    const first = rows.first[at];
+    const remaining = rows.remaining[at];
+    const periods = periodsFrom(cols, periodStarts[at], rows.periodCount[at], (i) => cols.hasSign[i] === 1);
+    return Object.freeze({
+      system: DashaSystemById.get(rows.system[at]) ?? 'unknown',
+      seed: rows.seeded[at] === 1 ? (NakshatraById.get(rows.seed[at]) ?? 'unknown') : null,
+      firstLord: ring[first]?.lord ?? 'unknown',
+      ring: Object.freeze({
+        shares: Object.freeze(ring),
+        first,
+        remaining: Number.isNaN(remaining) ? null : remaining,
+      }),
+      year: Object.freeze({ from: rows.fromJd[at], to: rows.toJd[at] }),
+      periods,
+      /**
+       * The periods running at a Julian day (UTC), from the mahadasha down;
+       * empty outside the year.
+       */
+      at(jd) {
+        return chainAt(periods, jd);
+      },
+    });
+  });
 }
 
 /**

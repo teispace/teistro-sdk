@@ -640,6 +640,7 @@ export function decodeCharts(bytes) {
       combust: column(blob, at, 13, 'u8', at.count),
       matterCount: column(blob, at, 14, 'u8', at.count),
       sahamCount: column(blob, at, 15, 'u8', at.count),
+      dashaCount: column(blob, at, 16, 'u8', at.count),
       length: at.count,
     };
   }
@@ -779,6 +780,44 @@ export function decodeCharts(bytes) {
       drishti: column(blob, at, 1, 'u8', at.count),
       relation: column(blob, at, 2, 'u8', at.count),
       company: column(blob, at, 3, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 47, 'year_dashas');
+    out.yearDashas = {
+      system: column(blob, at, 0, 'u16', at.count),
+      seeded: column(blob, at, 1, 'u8', at.count),
+      seed: column(blob, at, 2, 'u16', at.count),
+      first: column(blob, at, 3, 'u8', at.count),
+      remaining: column(blob, at, 4, 'f64', at.count),
+      fromJd: column(blob, at, 5, 'f64', at.count),
+      toJd: column(blob, at, 6, 'f64', at.count),
+      shareCount: column(blob, at, 7, 'u8', at.count),
+      periodCount: column(blob, at, 8, 'u32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 48, 'year_dasha_shares');
+    out.yearDashaShares = {
+      lord: column(blob, at, 0, 'u16', at.count),
+      hasSign: column(blob, at, 1, 'u8', at.count),
+      sign: column(blob, at, 2, 'u16', at.count),
+      weight: column(blob, at, 3, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 49, 'year_dasha_periods');
+    out.yearDashaPeriods = {
+      level: column(blob, at, 0, 'u8', at.count),
+      index: column(blob, at, 1, 'u8', at.count),
+      hasSign: column(blob, at, 2, 'u8', at.count),
+      sign: column(blob, at, 3, 'u16', at.count),
+      lord: column(blob, at, 4, 'u16', at.count),
+      fromJd: column(blob, at, 5, 'f64', at.count),
+      toJd: column(blob, at, 6, 'f64', at.count),
       length: at.count,
     };
   }

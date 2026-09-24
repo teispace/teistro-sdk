@@ -520,17 +520,32 @@ for (const chart of charts) {
 // ways cross: every matter under the source's readings, every matter under
 // Tambira's "some authorities", and no matter at all.
 // The sahams likewise: every one under the source's rules, every one
-// under each rival rule, and none.
+// under each rival rule, and none; and the annual dashas: every one under
+// the sources' readings, every one under a rival clock, balance and birth
+// period three levels deep, and none.
 const MATTERS = {
-  sidereal: { matters: 'all', sahams: 'all' },
+  sidereal: { matters: 'all', sahams: 'all', dashas: 'all' },
   tropical: {
     matters: 'all',
     yogas: { tambira: 'either_lord' },
     sahams: 'all',
     sahamRules: { addSign: 'signs', houses: 'equal', roga: 'saturn' },
+    dashas: 'all',
+    dashaRules: { clock: 'even', balance: 'entry_moon', birthPeriod: 'ELAPSED', depth: 3 },
   },
   mean: {},
 };
+// One annual dasha as every runner prints it: its seed, ring and year on
+// one line, and its periods on another.
+const dashaSaid = (d) =>
+  [
+    `${d.seed ?? '-'} ${d.ring.first} ${d.ring.remaining === null ? 'null' : d.ring.remaining.toFixed(9)}`,
+    `${d.year.from.toFixed(9)} ${d.year.to.toFixed(9)}`,
+    '|',
+    d.ring.shares.map((s) => `${s.lord}/${s.sign ?? '-'}/${s.weight.toFixed(3)}`).join(' '),
+  ].join(' ');
+const periodsSaid = (d) =>
+  d.periods.map((p) => `${p.path}:${p.lord}:${p.sign ?? '-'}:${p.from.toFixed(9)}:${p.to.toFixed(9)}`).join(' ');
 // One saham as every runner prints it: its place, its clauses, its lord's
 // strengths and how the seven stand to it.
 const sahamSaid = (p) =>
@@ -597,6 +612,10 @@ for (const reading of ['sidereal', 'tropical', 'mean']) {
         put(`${at}-matter-${m.house}-held`, m.held.map(heldSaid).join(' '));
       }
       for (const p of one.annual.sahams) put(`${at}-saham-${p.saham}`, sahamSaid(p));
+      for (const d of one.annual.dashas) {
+        put(`${at}-dasha-${d.system}`, dashaSaid(d));
+        put(`${at}-dasha-${d.system}-periods`, periodsSaid(d));
+      }
       put(
         `${at}-harsha`,
         one.annual.harsha

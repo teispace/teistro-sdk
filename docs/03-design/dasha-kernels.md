@@ -15,8 +15,8 @@ arithmetic (`exact-arithmetic.md`) are Phase 1 types.
 |---|---|
 | systems examined | 56 (27 nakshatra-seeded, 27 sign-progression, Kalachakra, Sudarshana Chakra) |
 | expressible as a row over the udu or rashi kernel | 50 |
-| assigned to another kernel | Kalachakra (own kernel); Mudda, Varsha Narayana, Varsha Yogini and Tribhagi (the scale decorator); Sudarshana Chakra and probably Yogardha (composition) |
-| genuinely resisted | Patyayini (periods from planetary strengths: its own small kernel); Panchaswara (shape not established) |
+| assigned to another kernel | Kalachakra (own kernel); Mudda, Varsha Yogini and Patyayini (the year kernel, `YearDasha`: corrected when built, see [`annual-dashas.md`](annual-dashas.md)); Tribhagi and Varsha Narayana (the scale decorator); Sudarshana Chakra and probably Yogardha (composition) |
+| genuinely resisted | Panchaswara (shape not established) |
 | corrections forced on the first schema | four (seed-to-lord map, balance window from the span, derived totals, three direction rules) |
 
 **This table examines the systems; it does not say which are built.** The
@@ -309,7 +309,8 @@ seventeen.
 | K-udu | nakshatra-seeded proportional cycles (seed may be a tithi, yoga or karana instead) | seed → lord by a map; balance from the elapsed fraction of the seed span; lords walk in sequence with year shares; children divide the parent proportionally |
 | K-rashi | sign progressions (Jaimini) | start sign by rule; order by rule; period length by rule; sub-periods by rule; direction rules that differ per step |
 | K-kalachakra | Kalachakra | navamsa-path driven, deha and jeeva, paramayush variants; its own kernel, parameterised for the known variants |
-| scale decorator | Tribhagi, Mudda, Varsha Narayana, Varsha Yogini | a `CycleScale { factor, rounds }` over another definition: Tribhagi is a Vimshottari definition scaled by 2/3 and run twice; Mudda is scaled by one solar year over 120 |
+| scale decorator | Tribhagi, Varsha Narayana | a `CycleScale { factor, rounds }` over another definition: Tribhagi is a Vimshottari definition scaled by 2/3 and run twice. Varsha Narayana's place here is unconfirmed: no book read gives it |
+| year | Mudda, Varsha Yogini, Patyayini | a ring of lords with weights that opens part-way through its first lord's share and closes on the rest, every boundary a share turned into an instant through the year's clock (`YearDasha`, [`annual-dashas.md`](annual-dashas.md)). The first draft put the two nakshatra years under the scale decorator; a scaled row cannot show its first lord twice |
 | composition | Sudarshana Chakra (three simultaneous rashi progressions), Yogardha if it is the mean of two systems | a combinator over kernels, not an algorithm |
 | tree layer | every system | lazy cursor, `dasha_at`, range iteration, search; written once against `roots` and `children` |
 
@@ -327,7 +328,7 @@ pub struct UduDashaDef {
     pub birth_period: BirthPeriod,   // Compressed (measured default) | Elapsed (crux C48)
     pub after_cycle: AfterCycle,     // End (measured default) | Repeat
     pub year_length: YearLengthId,   // per system, from the profile's table (see the cruxes page)
-    pub scale: Option<CycleScale>,   // Tribhagi, Mudda
+    pub scale: Option<CycleScale>,   // Tribhagi
     pub applicability: Option<RuleRef>,   // a rules-engine rule (Ashtottari's conditions)
     pub sources: Vec<Citation>,
     pub confidence: Mark,            // V | T | S
@@ -467,8 +468,9 @@ default until a primary text decides.
 | Yogardha | | | mean of two systems, if confirmed a composition | | S |
 | Kalachakra | | own kernel; the baseline engine has it with its constants and tests | | | V (baseline) |
 | Sudarshana Chakra | lagna, Sun, Moon | three simultaneous rashi progressions | | | T |
-| Mudda, Varsha Narayana, Varsha Yogini | | scale decorator over the base definition | | | V (Mudda, baseline), T |
-| Patyayini | | own kernel: periods from planetary strengths in the annual chart | | | T |
+| Mudda, Varsha Yogini | birth nakshatra | the natal row's lords from its seat, one further each completed year | natal years as weights, through the year's clock | the ring from each lord | V (`YearDasha`, [`annual-dashas.md`](annual-dashas.md)) |
+| Varsha Narayana | | scale decorator over the base definition, unconfirmed | | | T |
+| Patyayini | annual lagna and the seven | by longitude within the sign, strength breaking a tie | the gaps between them | the ring from each lord | V (`YearDasha`) |
 
 Chara and Narayana differ in one boolean; Padanadhamsa and Chara in the
 start rule; Shoola and Niryana Shoola in the start rule; the three

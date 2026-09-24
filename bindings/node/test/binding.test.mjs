@@ -1465,6 +1465,80 @@ test("a year's chart answers the Tajika yogas for the matters asked", () => {
 });
 
 /**
+ * A year's chart answers the annual dashas the request names, in its order:
+ * each opens on its return and closes on the next, and its periods run end
+ * to end (`03-design/annual-dashas.md`).
+ */
+test("a year's chart answers the annual dashas asked for", () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const years = (varsha) =>
+    ctx.chart.found({ instant: 2447995.4895833335, place, utcOffsetSeconds: 20700, varsha })
+      .praveshas;
+
+  // A system is asked for by the key it is read back as.
+  const asked = years({ through: 3, place: 'birth', dashas: [DashaSystem.Mudda, DashaSystem.Patyayini] });
+  for (const [k, { instant, annual }] of asked.entries()) {
+    const [mudda, patyayini] = annual.dashas;
+    assert.deepEqual(annual.dashas.map((one) => one.system), [DashaSystem.Mudda, DashaSystem.Patyayini]);
+    for (const dasha of annual.dashas) {
+      assert.equal(dasha.year.from, instant);
+      if (k + 1 < asked.length) assert.ok(Math.abs(dasha.year.to - asked[k + 1].instant) < 2e-7);
+      assert.equal(dasha.firstLord, dasha.ring.shares[dasha.ring.first].lord);
+      // The mahadashas run end to end across the year.
+      const mahas = dasha.periods.filter((period) => period.level === 1);
+      assert.equal(mahas[0].from, dasha.year.from);
+      assert.equal(mahas.at(-1).to, dasha.year.to);
+      for (let i = 1; i < mahas.length; i += 1) assert.equal(mahas[i].from, mahas[i - 1].to);
+      // The chain running mid-year is a mahadasha and one of its own.
+      const chain = dasha.at((dasha.year.from + dasha.year.to) / 2);
+      assert.equal(chain.length, 2);
+      assert.ok(chain[1].path.startsWith(`${chain[0].path}/`));
+      assert.deepEqual(dasha.at(dasha.year.to), []);
+    }
+    // The Mudda is seeded by the birth Moon and runs round the nine; the
+    // Patyayini is read from the year's chart, its lagna a sign's share.
+    assert.ok(mudda.seed.startsWith('nakshatra.'));
+    assert.equal(mudda.ring.shares.length, 9);
+    assert.ok(mudda.ring.remaining > 0 && mudda.ring.remaining <= 1);
+    assert.equal(patyayini.seed, null);
+    assert.equal(patyayini.ring.remaining, null);
+    assert.equal(patyayini.ring.shares.filter((share) => share.sign !== null).length, 1);
+    assert.ok(patyayini.periods.some((period) => period.sign !== null));
+  }
+  const firsts = asked.map(({ annual }) => annual.dashas[0].ring.first);
+  assert.deepEqual(firsts.slice(1), firsts.slice(0, -1).map((first) => (first + 1) % 9));
+
+  // `'all'` is the three in the catalogue's order; unasked is none.
+  const every = years({ through: 1, place: 'birth', dashas: 'all' })[0].annual.dashas;
+  assert.deepEqual(every.map((one) => one.system), [
+    DashaSystem.Patyayini,
+    DashaSystem.Mudda,
+    DashaSystem.VarshaYogini,
+  ]);
+  assert.deepEqual(years({ through: 1, place: 'birth' })[0].annual.dashas, []);
+  // The rules read in the casing these types declare.
+  const days = years({
+    through: 1,
+    place: 'birth',
+    dashas: ['dasha_system.MUDDA'],
+    dashaRules: { clock: { days: 360 }, depth: 1, birthPeriod: 'ELAPSED', measure: 'TEMPORAL' },
+  })[0].annual.dashas[0];
+  assert.equal(days.year.to - days.year.from, 360);
+  assert.ok(days.periods.every((period) => period.level === 1));
+
+  // Each refusal names the field written.
+  const refused = (varsha, field) =>
+    assert.throws(() => years(varsha), (error) => error instanceof TeistroError && error.field === field);
+  refused({ through: 2, dashas: [DashaSystem.Mudda] }, 'varsha_json.dashas');
+  refused({ through: 2, place: 'birth', dashas: [DashaSystem.Vimshottari] }, 'varsha_json.dashas');
+  refused({ through: 2, place: 'birth', dashas: ['MUDDA', DashaSystem.Mudda] }, 'varsha_json.dashas');
+  refused({ through: 2, place: 'birth', dashas: 'all', dashaRules: { clock: { days: -1 } } }, 'varsha_json.dashaRules.clock');
+  refused({ through: 2, place: 'birth', dashas: 'all', dashaRules: { birth_period: 'ELAPSED' } }, 'varsha_json.dashaRules.birth_period');
+  ctx.dispose();
+});
+
+/**
  * A year's chart answers the sahams the request names, in its order, each
  * where it fell and what it fell in (`03-design/tajika-sahams.md`).
  */
