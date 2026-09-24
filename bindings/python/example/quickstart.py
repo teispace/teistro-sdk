@@ -9,7 +9,11 @@ from teistro import Body, Calendar, Ephemeris, Teistro, at, date, iana_zone, int
 
 def main() -> None:
     teistro = Teistro.open()
-    print(f"Teistro {teistro.version}, ABI {teistro.abi}")
+    # The SDK's version is what a log line wants. The ABI -- the C
+    # boundary's revision -- was checked when the library opened: one this
+    # package was not generated against is refused there, so `teistro.abi`
+    # is for a bug report rather than for every run.
+    print(f"Teistro {teistro.version}")
 
     with teistro.context(
         profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN

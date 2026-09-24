@@ -1241,6 +1241,40 @@ void _engineTests() {
   /// A chart's Vimshopaka crosses whole: every graha's four scores out of 20
   /// under the default reading, the text's, whose least in any varga is 5;
   /// null unless asked.
+  // A chart names the ayanamsha it was read under. The blob carried it and
+  // no layer read it, so a reader could see an offset and not whose; and a
+  // tropical chart has none, which is not an ayanamsha of nought.
+  test('a chart names its ayanamsha, and a tropical one has none', () {
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final sidereal = context();
+    final chart = sidereal.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    expect(chart.ayanamsha, Ayanamsha.lahiri);
+    expect(chart.ayanamshaCustom, isFalse);
+    expect(chart.ayanamshaOffsetDeg, isNot(0.0));
+    sidereal.dispose();
+    final tropical = context(
+      settings: {
+        'frame': {'zodiac': 'TROPICAL'},
+      },
+    );
+    final western = tropical.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    expect(western.ayanamsha, isNull);
+    expect(western.ayanamshaCustom, isFalse);
+    tropical.dispose();
+  });
+
   test('a chart carries its Vimshopaka, each graha\'s four scores', () {
     final ctx = context();
     final place = Observer(

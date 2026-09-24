@@ -30,7 +30,7 @@ use core::ffi::c_char;
 
 use teistro::dasha::DashaName;
 use teistro::render_svg::Theme;
-use teistro::{ChartRequest, Plan, PlanRequest, RuleRequest, RuleSet, RulesReading};
+use teistro::{ChartRequest, PlanRequest, RuleRequest, RuleSet};
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
@@ -4345,51 +4345,13 @@ unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Erro
         })
 }
 
-/// The narrative plans one chart was asked for, and only those: a composer
-/// not asked for is absent rather than empty, and one asked for that has
-/// nothing to say is present and empty, which is an answer
-/// (`03-design/plans-at-the-boundary.md` §4).
-#[derive(serde::Serialize)]
-struct Plans {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    placements: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    readings: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    strength: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    houses: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    positions: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    aspects: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    conditions: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    karakas: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    chalit: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    phala: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "bhavaBala")]
-    bhava_bala: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    vimshopaka: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    panchanga: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    states: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename = "dashaPhala")]
-    dasha_phala: Option<Plan>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    ashtakavarga: Option<Plan>,
-}
-
 /// The charts a request asks for, the canonical JSON of what they answer by
 /// rule, and the canonical JSON of the plans they were asked to say — each
 /// empty when the request asked for none.
+///
+/// The reading and the composing are the façade's
+/// ([`teistro::ChartArea::interpreted`]), so a plan is composed in one place
+/// for Rust and every binding; this only encodes what it answered.
 fn read_charts(
     sdk: &teistro::Context,
     instants: &[JulianDay<Utc>],
@@ -4397,177 +4359,29 @@ fn read_charts(
     rules: Option<&RuleSet>,
     asked: PlanRequest,
 ) -> Result<(Envelope<Vec<Document>>, String, String), Error> {
-    let Some(set) = rules else {
-        // The placements read the graha states through `RuleInputs`, so a
-        // request asking for them computes the states whether or not
-        // `sections` named them — the rule `rules_json` already follows for
-        // what its rules read.
-        let wanted = sections_for(request.clone(), asked);
-        let read = sdk.chart().readings(instants, &wanted)?;
-        let plans = compose(sdk, &read.value, None, asked)?;
-        return Ok((read, String::new(), plans));
-    };
-    let read =
-        sdk.chart()
-            .readings_with_rules(instants, &sections_for(request.clone(), asked), set)?;
-    let (documents, readings): (Vec<Document>, Vec<RulesReading<'_>>) =
-        read.value.into_iter().unzip();
-    let json = teistro_core::envelope::canonical_json(&readings);
-    let plans = compose(sdk, &documents, Some(&readings), asked)?;
-    Ok((Envelope::new(documents, read.provenance), json, plans))
-}
-
-/// The request with the sections the composers read, whether or not
-/// `sections` named them — the rule `rules_json` already follows for what
-/// its rules read (`03-design/plans-at-the-boundary.md` §2).
-///
-/// A composer asking for a section it was not given would be a dead end: the
-/// consumer asked for the plan, not for the knob underneath it.
-fn sections_for(request: ChartRequest, asked: PlanRequest) -> ChartRequest {
-    // `chalit` needs no section at all: both house readings are on the
-    // chart's own grahas, which every founded chart carries.
-    //
-    // `placements`, `positions`, `conditions`, `karakas` and `phala` all
-    // read the graha states through `RuleInputs`, so any one asks for
-    // them; `states` reads the section itself, which is the same section.
-    let request = if asked.placements
-        || asked.positions
-        || asked.conditions
-        || asked.karakas
-        || asked.phala
-        || asked.states
-    {
-        request.with_state()
+    let read = sdk.chart().interpreted(instants, request, rules, asked)?;
+    let rules_json = if rules.is_some() {
+        let readings: Vec<_> = read
+            .value
+            .iter()
+            .filter_map(|chart| chart.reading.as_ref())
+            .collect();
+        teistro_core::envelope::canonical_json(&readings)
     } else {
-        request
+        String::new()
     };
-    let request = if asked.strength {
-        request.with_shadbala()
+    let plans_json = if asked.asks_for_something() {
+        let plans: Vec<_> = read.value.iter().map(|chart| &chart.plans).collect();
+        teistro_core::envelope::canonical_json(&plans)
     } else {
-        request
+        String::new()
     };
-    let request = if asked.houses {
-        request.with_houses()
-    } else {
-        request
-    };
-    let request = if asked.aspects {
-        request.with_aspects()
-    } else {
-        request
-    };
-    // The only composer that needs a section of its own: the dasha phala
-    // is a pure function of the foundation and the states, and is computed
-    // only when a request asks.
-    let request = if asked.dasha_phala {
-        request.with_dasha_phala()
-    } else {
-        request
-    };
-    // The almanac is the one section a composer shares with the rules
-    // rather than owning: a rule reading the panchanga asks for it too.
-    let request = if asked.panchanga {
-        request.with_panchanga()
-    } else {
-        request
-    };
-    let request = if asked.bhava_bala {
-        request.with_bhava_bala()
-    } else {
-        request
-    };
-    let request = if asked.vimshopaka {
-        request.with_vimshopaka()
-    } else {
-        request
-    };
-    if asked.ashtakavarga {
-        request.with_ashtakavarga()
-    } else {
-        request
-    }
-}
-
-/// Every chart's plans as canonical JSON, empty when no composer was asked
-/// for. The readings are the ones the same charts just answered: a plan
-/// says what the rules found and never evaluates them again.
-fn compose(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    readings: Option<&[RulesReading<'_>]>,
-    asked: PlanRequest,
-) -> Result<String, Error> {
-    if !asked.asks_for_something() {
-        return Ok(String::new());
-    }
-    let mut plans = Vec::with_capacity(documents.len());
-    for (at, document) in documents.iter().enumerate() {
-        plans.push(Plans {
-            placements: asked
-                .placements
-                .then(|| sdk.interpret().placements(document))
-                .transpose()?,
-            readings: asked.readings.then(|| {
-                readings
-                    .and_then(|readings| readings.get(at))
-                    .map_or_else(Plan::default, |reading| sdk.interpret().readings(reading))
-            }),
-            strength: asked
-                .strength
-                .then(|| sdk.interpret().strength(document))
-                .transpose()?,
-            houses: asked
-                .houses
-                .then(|| sdk.interpret().houses(document))
-                .transpose()?,
-            positions: asked
-                .positions
-                .then(|| sdk.interpret().positions(document))
-                .transpose()?,
-            aspects: asked
-                .aspects
-                .then(|| sdk.interpret().aspects(document))
-                .transpose()?,
-            conditions: asked
-                .conditions
-                .then(|| sdk.interpret().conditions(document))
-                .transpose()?,
-            karakas: asked
-                .karakas
-                .then(|| sdk.interpret().karakas(document))
-                .transpose()?,
-            chalit: asked.chalit.then(|| sdk.interpret().chalit(document)),
-            phala: asked
-                .phala
-                .then(|| sdk.interpret().phala(document))
-                .transpose()?,
-            bhava_bala: asked
-                .bhava_bala
-                .then(|| sdk.interpret().bhava_bala(document))
-                .transpose()?,
-            vimshopaka: asked
-                .vimshopaka
-                .then(|| sdk.interpret().vimshopaka(document))
-                .transpose()?,
-            panchanga: asked
-                .panchanga
-                .then(|| sdk.interpret().panchanga(document))
-                .transpose()?,
-            states: asked
-                .states
-                .then(|| sdk.interpret().states(document))
-                .transpose()?,
-            dasha_phala: asked
-                .dasha_phala
-                .then(|| sdk.interpret().dasha_phala(document))
-                .transpose()?,
-            ashtakavarga: asked
-                .ashtakavarga
-                .then(|| sdk.interpret().ashtakavarga(document))
-                .transpose()?,
-        });
-    }
-    Ok(teistro_core::envelope::canonical_json(&plans))
+    let documents = read.value.into_iter().map(|chart| chart.document).collect();
+    Ok((
+        Envelope::new(documents, read.provenance),
+        rules_json,
+        plans_json,
+    ))
 }
 
 /// Founds a chart at an instant and a place and answers with its blob:

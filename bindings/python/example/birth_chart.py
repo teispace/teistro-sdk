@@ -8,11 +8,14 @@ takes, in order:
 2.  That civil time resolved to an **instant**, which needs the zone's
     history: Nepal was +05:30 until 1986 and +05:45 after, and the
     resolution says which rule it used and from which tzdb.
-3.  Positions in a **sidereal** frame. This is the step everyone gets
-    wrong. The SDK's canonical frame is *tropical*, because that is what
-    an ephemeris computes; a Vedic chart wants the sidereal zodiac, so
-    the request names one and the SDK completes it — and stamps every
-    step it applied, which this example prints.
+3.  The chart **founded** at that instant and place. The SDK's canonical
+    frame is *tropical*, because that is what an ephemeris computes; a
+    Vedic chart wants the sidereal zodiac, and the profile says which
+    ayanamsha and which centre, so the founder asks for that frame and
+    the SDK completes it — and stamps every step it applied, which this
+    example prints. Positions asked for directly would not know the
+    profile wants the Moon seen from Kathmandu rather than from the
+    Earth's centre, which moves it most of a degree.
 4.  Each longitude read as a rashi, a nakshatra and a pada, using the
     catalogue's own members and the locale's own names.
 
@@ -29,14 +32,14 @@ Run it:
 
 from __future__ import annotations
 
-import dataclasses
-from dataclasses import dataclass
-
 from teistro import (
-    Body,
+    Altitude,
     Calendar,
-    Context,
+    ChartKind,
     Ephemeris,
+    Latitude,
+    Longitude,
+    Observer,
     Teistro,
     TeistroError,
     at,
@@ -44,88 +47,24 @@ from teistro import (
     iana_zone,
     when_unknown,
 )
-from teistro.catalogue import Ayanamsha, Graha, Nakshatra, Rashi
-
-#: The nine grahas of a Vedic chart. Ketu is not a body an ephemeris
-#: answers: it is Rahu's opposite point, so it is computed rather than
-#: asked for, and the SDK's own `points` module does the same.
-GRAHAS: list[tuple[Graha, Body]] = [
-    (Graha.SUN, Body.SUN),
-    (Graha.MOON, Body.MOON),
-    (Graha.MARS, Body.MARS),
-    (Graha.MERCURY, Body.MERCURY),
-    (Graha.JUPITER, Body.JUPITER),
-    (Graha.VENUS, Body.VENUS),
-    (Graha.SATURN, Body.SATURN),
-    (Graha.RAHU, Body.MEAN_NODE),
-]
+from teistro.catalogue import Nakshatra, Rashi
 
 #: A nakshatra is a twenty-seventh of the circle; a pada a quarter of one.
 NAKSHATRA_DEG = 360.0 / 27.0
 PADA_DEG = NAKSHATRA_DEG / 4.0
 
 
-@dataclass(frozen=True)
-class Placement:
-    """One graha as a chart shows it."""
-
-    graha: Graha
-    longitude: float
-    speed: float
-
-    @property
-    def rashi(self) -> Rashi:
-        """The sign it stands in."""
-        return Rashi(int(self.longitude // 30.0))
-
-    @property
-    def degree_in_rashi(self) -> float:
-        """How far into that sign, in degrees."""
-        return self.longitude % 30.0
-
-    @property
-    def nakshatra(self) -> Nakshatra:
-        """The lunar mansion it stands in."""
-        return Nakshatra(int(self.longitude // NAKSHATRA_DEG))
-
-    @property
-    def pada(self) -> int:
-        """Which quarter of that mansion, 1 to 4."""
-        return int((self.longitude % NAKSHATRA_DEG) // PADA_DEG) + 1
-
-    @property
-    def retrograde(self) -> bool:
-        """Whether it is moving backwards.
-
-        There is no flag at the boundary: a graha is retrograde when its
-        longitude is decreasing, which is what the speed column says.
-        Rahu always is.
-        """
-        return self.speed < 0.0
+def rashi_of(longitude: float) -> tuple[Rashi, float]:
+    """The sign a longitude stands in, and how far into it."""
+    return Rashi(int(longitude // 30.0)), longitude % 30.0
 
 
-def chart(ctx: Context, teistro: Teistro, instant: float) -> list[Placement]:
-    """Every graha at one instant, in the sidereal zodiac.
-
-    One call for the whole grid, never a loop: the boundary takes the
-    instants and the bodies together and answers with columns, so asking
-    for eight grahas costs one crossing rather than eight.
-    """
-    # The canonical frame with two fields changed. Everything else — the
-    # centre, the corrections, the equinox — is left as the SDK computes
-    # it, so this asks for "what you would give me, but sidereal".
-    frame = dataclasses.replace(
-        teistro.canonical_frame, sidereal=True, ayanamsha=Ayanamsha.LAHIRI
+def nakshatra_of(longitude: float) -> tuple[Nakshatra, int]:
+    """The lunar mansion a longitude stands in, and which quarter of it, 1 to 4."""
+    return (
+        Nakshatra(int(longitude // NAKSHATRA_DEG)),
+        int((longitude % NAKSHATRA_DEG) // PADA_DEG) + 1,
     )
-    sky = ctx.positions(
-        instants=[instant],
-        bodies=[body for _, body in GRAHAS],
-        frame=frame,
-    )
-    return [
-        Placement(graha, sky.at(0, index).longitude, sky.at(0, index).longitude_speed)
-        for index, (graha, _) in enumerate(GRAHAS)
-    ]
 
 
 def main() -> None:
@@ -161,41 +100,62 @@ def main() -> None:
         # would be wrong: `iana` above says the answer came from the
         # embedded database rather than from a guess.
 
-        # ── 3. The sky, sidereal ──────────────────────────────────────
-        placements = chart(ctx, teistro, when.instant_jd_utc)
+        # ── 3. The chart ──────────────────────────────────────────────
+        place = Observer(
+            latitude_deg=Latitude(27.7172),
+            longitude_deg=Longitude(85.324),
+            altitude_m=Altitude(1400),
+        )
+        chart = ctx.chart.found(
+            instant=when.instant_jd_utc,
+            place=place,
+            utc_offset_seconds=when.offset_seconds,
+            kind=ChartKind.NATAL,
+        )
 
-        # ── 4. The chart ──────────────────────────────────────────────
         print()
-        print(f"{'graha':12} {'':4} {'sign':12} {'deg':>9}  {'nakshatra':14} pada")
-        print("─" * 62)
-        for placed in placements:
+        print("graha             sign               deg  nakshatra      pada bhava")
+        print("─" * 67)
+        for placed in chart.grahas:
             graha = ctx.intl.entity(placed.graha.full_key)
-            rashi = ctx.intl.entity(placed.rashi.full_key)
-            nakshatra = ctx.intl.entity(placed.nakshatra.full_key)
+            rashi, degrees = rashi_of(placed.longitude_deg)
+            nakshatra, pada = nakshatra_of(placed.longitude_deg)
+            # There is no retrograde flag to trust blindly: a graha is
+            # retrograde when its longitude is decreasing, which is what
+            # the speed says, and `retrograde` is that comparison, named.
             mark = "℞" if placed.retrograde else " "
+            # The bhava is the chart's placement system's answer -- the
+            # question most of the tradition answers with "in the seventh".
             print(
                 f"{graha.name:12} {graha.glyph or '':2} {mark:1} "
-                f"{rashi.name:12} {placed.degree_in_rashi:8.4f}°  "
-                f"{nakshatra.name:14} {placed.pada}"
+                f"{ctx.intl.entity(rashi.full_key).name:12} {degrees:8.4f}°  "
+                f"{ctx.intl.entity(nakshatra.full_key).name:14} {pada}   "
+                f"{placed.house.bhava:2}"
             )
 
-        # ── What the SDK had to do to answer ──────────────────────────
-        # Every result carries the steps that produced it. Here the
-        # provider answered tropical positions and the SDK applied the
-        # ayanamsha and shifted the zodiac; against a provider that
-        # answers sidereal natively, those steps would say so instead.
+        # ── 4. What the chart is measured in, and against ─────────────
         print()
-        sky = ctx.positions(
-            instants=[when.instant_jd_utc],
-            bodies=[Body.SUN],
-            frame=dataclasses.replace(
-                teistro.canonical_frame, sidereal=True, ayanamsha=Ayanamsha.LAHIRI
-            ),
+        lagna, into = rashi_of(chart.lagna_deg)
+        print(
+            f"lagna          {chart.lagna_deg:.4f}° -- {ctx.intl.entity(lagna.full_key).name}"
+            f" at {into:.4f}°, vara {chart.vara.full_key}"
         )
-        steps = ", ".join(
-            f"{step['name']}:{step['implementation']}" for step in sky.steps_applied
-        )
-        print(f"steps applied  {steps}")
+        # `None`, and it means what it says: a tropical chart has no
+        # ayanamsha, not an ayanamsha of nought.
+        if chart.ayanamsha is not None:
+            applied = chart.ayanamsha.full_key
+        elif chart.ayanamsha_custom:
+            applied = "custom"
+        else:
+            applied = None
+        if applied is None:
+            print("ayanamsha      tropical, none applied")
+        else:
+            print(f"ayanamsha      {chart.ayanamsha_offset_deg:.6f}° applied ({applied})")
+        print(f"steps applied  {', '.join(chart.batch.steps_applied)}")
+        # The provenance envelope stamps the settings, the provider and
+        # the time layer; it is what a stored chart keeps in order to say
+        # what computed it.
         print(f"settings hash  {ctx.settings_hash[:16]}…")
 
     # ── A birth with no recorded time ─────────────────────────────────

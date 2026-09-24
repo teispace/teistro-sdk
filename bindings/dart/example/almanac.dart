@@ -156,7 +156,7 @@ void main() {
     0,
     (total, day) => total + day.karana.length,
   );
-  print('$counted karanas across ${week.length} days, from one blob');
+  print('$counted karanas across ${week.length} days, from one crossing');
   print('settings hash  ${ctx.settingsHash.substring(0, 16)}…');
 
   // A day on its own is the range of one unwrapped: same crossing, and

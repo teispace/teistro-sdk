@@ -5322,6 +5322,20 @@ final class Chart {
   /// The ayanamsha applied at this instant, degrees; zero if tropical.
   double get ayanamshaOffsetDeg => batch.cast.ayanamshaOffsetDeg[index];
 
+  /// The catalogued ayanamsha this chart was read under, or `null` when
+  /// none was applied -- a tropical chart -- or the settings defined their
+  /// own, which [ayanamshaCustom] says. One for the batch, since the frame
+  /// is the request's.
+  ///
+  /// Not on [Charts], whose generated `ayanamsha` is the raw id and would
+  /// win over an extension member of the same name.
+  Ayanamsha? get ayanamsha =>
+      batch.ayanamshaKind == 1 ? Ayanamsha.byId(batch.ayanamsha) : null;
+
+  /// Whether the ayanamsha is one the settings define rather than a
+  /// catalogued one.
+  bool get ayanamshaCustom => batch.ayanamshaKind == 2;
+
   /// Which arc of its day the instant falls in.
   ///
   /// This and [dayElapsed] belong to the **instant**, not to the day, so

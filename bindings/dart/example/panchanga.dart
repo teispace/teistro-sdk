@@ -194,9 +194,12 @@ void main() {
   // short of Aries, when it had entered Aries two and a half hours
   // earlier: `(360 - sun) % 360` of a longitude just past zero is just
   // under 360, and reads as nearly a whole circle still to go.
+  // The sign is read from the SDK rather than written in, so the line
+  // stays true on any day, said in the context's locale.
+  final sign = ctx.intl.entity(Rashi.byId(found.sun ~/ 30).fullKey).name;
   final intoSign = found.sun % 30.0;
   print(
-    '  the Sun stands ${intoSign.toStringAsFixed(4)}° into Aries, so the Mesha'
+    '  the Sun stands ${intoSign.toStringAsFixed(4)}° into $sign, so the Mesha'
     ' Sankranti is about ${(intoSign / 0.9856 * 24).toStringAsFixed(1)} hours past --',
   );
   print('  which is what BS 2082 is reckoned from, and why it opens today');

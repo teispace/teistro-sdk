@@ -320,19 +320,18 @@ principle:
   absence that stops being deliberate is a failed gate rather than a
   number nobody watched. Both branches proved red.
 
-  The nine are of three kinds. `abi` and the six `build-*` keys are the
+  The eight are of two kinds. `abi` and the six `build-*` keys are the
   **boundary's own handshake**, and there is no boundary here and
   nothing to hand-shake — while `sdk`, `catalogue-version` and
   `default-profile`, which the other three *ask* the library for, this
   runner prints from constants, because Cargo resolved the graph and a
-  resolved graph is what a `const` looks like. `provenance-fnv` is the
-  positions envelope's canonical JSON, whose input hash is of the
-  boundary's **decoded request record**; a Rust consumer holds the
-  `PositionRequest` itself, and the three fields of that envelope anyone
-  reads — the profile, the settings hash and the provider's frame — the
-  runner prints from the context and the columns. And
+  resolved graph is what a `const` looks like. And
   `surface.(root).dispose` is the one operation this surface cannot
-  have.
+  have. There were nine: `provenance-fnv`, the positions envelope's
+  canonical JSON, was absent because `positions` answered without an
+  envelope and the boundary stamped its own. Since 2026-09-24 both stamp
+  it with `Context::positions_provenance`, so it is compared like any
+  other value.
 
   Growing it found two real gaps, which is what a gate is for.
   `jd_of_fixed` and `fixed_of_jd` were operations the façade did not

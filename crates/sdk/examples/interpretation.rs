@@ -22,7 +22,10 @@
 //!    guessing.
 //! 4. **It is the reading that is interpreted**, not the ephemeris: the plan
 //!    is composed from the document the SDK already answered with, so
-//!    nothing is computed twice.
+//!    nothing is computed twice. `sdk.chart().interpreted` founds the
+//!    chart, reads the sections the composers need and composes the plans
+//!    asked for in one call, which is the call every binding's `interpret`
+//!    option makes.
 //!
 //! ```sh
 //! cargo run --release -p teistro --example interpretation
@@ -33,12 +36,148 @@
 use teistro::catalogue::Calendar;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
-    CalendarDate, ChartRequest, CivilDateTime, CivilTime, Context, Ephemeris, Error, Plan, ZoneSpec,
+    CalendarDate, ChartRequest, CivilDateTime, CivilTime, Context, Ephemeris, Error, Item, Plan,
+    PlanRequest, Plans, RuleRequest, ShippedRules, Value, ZoneSpec,
 };
+
+/// Whether any item's slots, written as JSON, mention `needle` -- the
+/// question a reader asks of a plan before rendering it.
+fn mentions(items: &[Item], needle: &str) -> bool {
+    items
+        .iter()
+        .any(|item| serde_json::to_string(&item.params).is_ok_and(|json| json.contains(needle)))
+}
+
+/// The eight plans this example asks for, each as its items. Every plan
+/// asked for is present, and one that had nothing to say is present and
+/// empty, which is an answer.
+struct Said {
+    placements: Vec<Item>,
+    readings: Vec<Item>,
+    strength: Vec<Item>,
+    houses: Vec<Item>,
+    positions: Vec<Item>,
+    aspects: Vec<Item>,
+    conditions: Vec<Item>,
+    karakas: Vec<Item>,
+}
+
+impl Said {
+    fn of(plans: Plans) -> Said {
+        let items = |plan: Option<Plan>| plan.map(|plan| plan.items).unwrap_or_default();
+        Said {
+            placements: items(plans.placements),
+            readings: items(plans.readings),
+            strength: items(plans.strength),
+            houses: items(plans.houses),
+            positions: items(plans.positions),
+            aspects: items(plans.aspects),
+            conditions: items(plans.conditions),
+            karakas: items(plans.karakas),
+        }
+    }
+
+    /// Every plan but the readings, in the order they are said.
+    fn plain(&self) -> [&Vec<Item>; 7] {
+        [
+            &self.placements,
+            &self.strength,
+            &self.houses,
+            &self.positions,
+            &self.aspects,
+            &self.conditions,
+            &self.karakas,
+        ]
+    }
+}
+
+/// How long each plan is, and every key the plans say.
+fn the_plan(said: &Said) {
+    println!(
+        "plan     {} placement items, {} reading items, {} strengths, {} lordships, \
+         {} positions, {} drishtis, {} conditions, {} karakas",
+        said.placements.len(),
+        said.readings.len(),
+        said.strength.len(),
+        said.houses.len(),
+        said.positions.len(),
+        said.aspects.len(),
+        said.conditions.len(),
+        said.karakas.len(),
+    );
+    let [placements, rest @ ..] = said.plain();
+    let mut keys: Vec<&str> = Vec::new();
+    for item in placements
+        .iter()
+        .chain(&said.readings)
+        .chain(rest.into_iter().flatten())
+    {
+        if !keys.contains(&item.key.as_str()) {
+            keys.push(&item.key);
+        }
+    }
+    println!("keys     {}", keys.join(", "));
+}
+
+/// The same plans, said in two locales.
+fn say(sdk: &Context, said: &Said) -> Result<(), Error> {
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        sdk.intl().set_locale(locale)?;
+        println!("\n{locale}");
+        for item in said.plain().into_iter().flatten() {
+            let rendered = sdk.intl().render(&item.key, &item.params);
+            // A fallback would mean this locale had no message of its own,
+            // and an example that hid that would teach the wrong thing.
+            let mark = if rendered.is_fallback {
+                "  (fallback)"
+            } else {
+                ""
+            };
+            println!("  {}{mark}", rendered.text);
+        }
+        // A reading names its rule in a slot the message does not print,
+        // so a consumer can group a plan by rule. Here it prefixes the line.
+        for item in &said.readings {
+            let rendered = sdk.intl().render(&item.key, &item.params);
+            let rule = match item.params.get("rule") {
+                Some(Value::Str(rule)) => rule.as_str(),
+                _ => "",
+            };
+            let mark = if rendered.is_fallback {
+                "  (fallback)"
+            } else {
+                ""
+            };
+            println!("  {rule}: {}{mark}", rendered.text);
+        }
+    }
+    Ok(())
+}
+
+/// What the plans claim, and what they do not.
+fn the_claims(said: &Said) {
+    println!(
+        "\nthe lagna is in the placements: {}",
+        mentions(&said.placements, "LAGNA")
+    );
+    println!(
+        "a strength item claims \"strong\": {}",
+        mentions(&said.strength, "strong")
+    );
+    println!(
+        "a houses item claims a sign: {}",
+        mentions(&said.houses, "rashi")
+    );
+    println!(
+        "a position item carries a rendered angle: {}",
+        mentions(&said.positions, "\u{b0}")
+    );
+}
 
 fn main() -> Result<(), Error> {
     let sdk = Context::builder()
         .profile("nepali-default")
+        .locale("en-Latn")
         .ephemeris([Ephemeris::Builtin])
         .build()?;
 
@@ -54,63 +193,53 @@ fn main() -> Result<(), Error> {
         Longitude::try_new(85.324)?,
         Altitude::try_new(1400.0)?,
     );
+    let request = ChartRequest::at(place, resolved.zone.offset);
 
-    // ── The reading a composer interprets ──────────────────────────────
-    // `with_state` is what makes it interpretable: a rule and a composer
-    // read what a graha *is*, and a document without it is refused rather
-    // than read as neutral.
-    let request = ChartRequest::at(place, resolved.zone.offset)
-        .with_state()
-        .with_shadbala()
+    // ── One call: the chart, what its rules answer, and what it says ──
+    // The rules whose answers the readings composer will say. The sections
+    // the composers read are computed whether or not the request named
+    // them.
+    let rules =
+        RuleRequest::shipped([ShippedRules::Nabhasas, ShippedRules::Arishtas]).rule_set()?;
+    let asked = PlanRequest::default()
+        .with_placements()
+        .with_readings()
+        .with_strength()
         .with_houses()
-        .with_aspects();
-    let document = sdk.chart().reading(resolved.instant, &request)?.value;
+        .with_positions()
+        .with_aspects()
+        .with_conditions()
+        .with_karakas();
+    let charts = sdk
+        .chart()
+        .interpreted(&[resolved.instant], &request, Some(&rules), asked)?;
+    let chart = charts
+        .value
+        .into_iter()
+        .next()
+        .ok_or_else(|| Error::internal("one instant founded one chart"))?;
+    let said = Said::of(chart.plans);
 
-    // ── The plan ───────────────────────────────────────────────────────
-    // Several composers, one plan: a report concatenates what it wants to
-    // say in the order it wants to say it, which is what a flat plan is
-    // for. This example uses the ones the sections above pay for; the
-    // whole list is `PlanRequest::MEMBERS`, and it is not counted here
-    // because a count beside a growing list rots.
-    // Where a graha *stands* and what it *rules* are different facts, and
-    // it takes two composers to say both.
-    let mut plan: Plan = sdk.interpret().placements(&document)?;
-    plan.items.extend(sdk.interpret().strength(&document)?);
-    plan.items.extend(sdk.interpret().houses(&document)?);
-    // `positions` says what `placements` rounds away, which is why it is a
-    // composer of its own: a page picks the precision it wants.
-    plan.items.extend(sdk.interpret().positions(&document)?);
-    // The first composer whose messages were written for it: no locale
-    // carried a word for a drishti until `sdk.aspect` was added.
-    plan.items.extend(sdk.interpret().aspects(&document)?);
-    // What a graha *is* where it stands, and which chara karaka it holds:
-    // the six facts of a placement the two composers above round away.
-    // Both read the same states `placements` does, so they cost no knob.
-    plan.items.extend(sdk.interpret().conditions(&document)?);
-    plan.items.extend(sdk.interpret().karakas(&document)?);
-    println!("plan  {} items, {} keys", plan.len(), plan.keys().len());
-    for key in plan.keys() {
-        println!("  {key}");
+    println!("BS 2042-09-17  00:20  Kathmandu");
+    the_plan(&said);
+    say(&sdk, &said)?;
+    the_claims(&said);
+
+    // `readings` says what rules answered, so asking for it without rules
+    // is refused rather than answered with an empty plan.
+    let without = sdk.chart().interpreted(
+        &[resolved.instant],
+        &request,
+        None,
+        PlanRequest::default().with_readings(),
+    );
+    if let Err(refusal) = without {
+        println!(
+            "refused  {}: {}",
+            refusal.field().unwrap_or_default(),
+            refusal.message
+        );
+        println!("hint     {}", refusal.hint().unwrap_or_default());
     }
-
-    // The same plan, said twice.
-    for locale in ["en-Latn", "ne-Deva-NP"] {
-        sdk.intl().set_locale(locale)?;
-        println!("\n{locale}");
-        for item in &plan {
-            let said = sdk.intl().render(&item.key, &item.params);
-            // A fallback would mean this locale had no message of its own,
-            // and an example that hid that would teach the wrong thing.
-            let mark = if said.is_fallback { " (fallback)" } else { "" };
-            println!("  {}{mark}", said.text);
-        }
-    }
-
-    // ── What it does not say ───────────────────────────────────────────
-    let lagna = plan
-        .items
-        .iter()
-        .any(|item| format!("{:?}", item.params).contains("LAGNA"));
-    println!("\nthe lagna is in the plan: {lagna}");
     Ok(())
 }

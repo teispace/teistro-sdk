@@ -33,37 +33,34 @@ envelope exists to carry.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every value leaves the SDK carrying the hash of itself | **holds** | 0 of 3 disagree; so nothing reaches a consumer claiming the hash of the empty string, and a producer's caller that wants only the numbers pays for nothing |
-| every field the envelope documents is filled by someone | falsified | 5 of 10 disagree |
+| every value leaves the SDK carrying the hash of itself | falsified | 1 of 3 disagree; not sealing: crates/ffi/src/positions.rs |
+| every field the envelope documents is filled by someone | falsified | 6 of 10 disagree |
 
 | producer | fills |
 |---|---|
 | `crates/chart/src/foundation.rs` | `provider`, `time.delta_t_model`, `time.leap_table` |
-| `crates/ffi/src/positions.rs` | `content_hash`, `provider`, `time.delta_t_model`, `time.leap_table`, `time.tzdb_version` |
+| `crates/ffi/src/positions.rs` | `provider` |
 | `crates/panchanga/src/almanac.rs` | `provider`, `time.delta_t_model`, `time.leap_table` |
 | `crates/serial/src/seal.rs` | `content_hash` |
 
-**`content_hash` is the hash of nothing on none of the 3 places a value
-is published.** `Provenance::new` still sets it to `Hash::of(&[])` as a
-placeholder, and the shape problem this section found is answered the
-way `crates/serial` answered it: a value and its stamp are joined by a
-constructor that knows both, so the one field that cannot be filled
-until the value exists is filled where it can be. `Envelope::sealing` is
-that join, and the five publishing callers use it instead of each
-writing the same mending line.
+**`content_hash` is the hash of nothing on 1 of the 3 places a value is
+sealed.** `Provenance::new` sets it to `Hash::of(&[])` as a placeholder,
+and a sealer that does not replace it hands over a value carrying the
+hash of the empty string where its own hash should be — the field is
+documented as "the hash of the canonical serialisation of the value" and
+on those it is not that. They are: `crates/ffi/src/positions.rs`.
 
-**Where, was measured rather than argued.** Sealing inside the producers
-— `Founder::found` and `Almanac::between` — charged every caller a
-full canonical serialisation of the value for a field many of them
-discard, and the instruction-count gate put `panchanga` 8.8% over its
-base for ten days of it against a 3% budget. Producing is not
-publishing: a caller who wants the numbers pays for the numbers, and a
-consumer handed an envelope gets a true hash.
+That is not a bug in any one of them. It is a **shape** problem: a value
+and its stamp are built separately and joined at the end, so the one
+field that cannot be filled until the value exists is the one everybody
+forgets. `crates/serial`'s answer is to make the joining the only way to
+build the pair, so the hash is computed by the constructor and never by
+a caller who remembers.
 
-Nothing at all fills 5: `module_versions`, `packs`,
-`time.delta_t_seconds`, `calendar`, `applied_conventions`. Each is a
-field the envelope documents and nothing sets, which a consumer reading
-the schema would expect to find.
+Nothing at all fills 6: `module_versions`, `packs`,
+`time.delta_t_seconds`, `time.tzdb_version`, `calendar`,
+`applied_conventions`. Each is a field the envelope documents and
+nothing sets, which a consumer reading the schema would expect to find.
 
 ## 3. The canonical form is canonical
 
@@ -149,7 +146,7 @@ works, and almost nothing carries it.
 
 ## 6. What this pass decides
 
-- **A value and its stamp are sealed together.** 2 of the
+- **A value and its stamp are sealed together.** 3 of the
 4 producers ship a `content_hash` that is the hash of nothing,
 because the field cannot be filled until the value exists and a
 caller has to remember. The module makes the sealing the only

@@ -119,7 +119,9 @@ fn limbs_at(sdk: &Context, instant: f64, weekday: u8) -> Result<Limbs, Error> {
     let frame = Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri));
     let jds = [instant];
     let bodies = [Body::Sun, Body::Moon];
-    let sky = sdk.positions(&PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame))?;
+    let sky = sdk
+        .positions(&PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame))?
+        .value;
     let missing = || Error::internal("a grid of one instant by two bodies has both cells");
     let sun = sky.columns.at(0, 0).ok_or_else(missing)?.lon;
     let moon = sky.columns.at(0, 1).ok_or_else(missing)?.lon;
@@ -209,7 +211,7 @@ fn main() -> Result<(), Error> {
         .ok_or_else(|| Error::internal("a longitude under 360 is one of twelve signs"))?;
     let into = found.sun % 30.0;
     println!(
-        "  the Sun stands {:.4}° into {}, so the Mesha Sankranti is {:.1} hours past --",
+        "  the Sun stands {:.4}° into {}, so the Mesha Sankranti is about {:.1} hours past --",
         into,
         sdk.intl().entity(sign.full_key())?.name(),
         // The Sun moves about 0.9856° a day, so its distance into the
@@ -218,6 +220,6 @@ fn main() -> Result<(), Error> {
         // not estimate.
         into / 0.9856 * 24.0,
     );
-    println!("  which is what the new year is reckoned from, and why BS 2082 opens today");
+    println!("  which is what BS 2082 is reckoned from, and why it opens today");
     Ok(())
 }

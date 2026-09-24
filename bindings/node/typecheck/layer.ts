@@ -23,7 +23,7 @@ import type {
   Scale,
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
-import type { Graha, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
+import type { Ayanamsha, Graha, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
 import type { CalendarDate } from '../lib/index.js';
 
 declare const build: BuildInfo;
@@ -165,6 +165,12 @@ function charts(): string {
   const part: string = one.dayPart;
   const elapsed: number = one.dayElapsed;
   const madhya: number = one.houses[0]!.madhyaDeg;
+  // Which ayanamsha, by name, and a tropical chart has none: the absence
+  // is in the type, so it cannot be read as a member without a check.
+  const ayanamsha: Ayanamsha | 'unknown' | null = one.ayanamsha;
+  const custom: boolean = one.ayanamshaCustom;
+  // @ts-expect-error a chart's ayanamsha may be absent
+  const always: Ayanamsha = one.ayanamsha;
 
   const request: ChartBatchRequest = {
     instants: new Float64Array([2460482.5, 2460600.25]),
@@ -182,7 +188,7 @@ function charts(): string {
   ctx.chart.foundMany({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
   // @ts-expect-error a chart is a view; its index is not a number to set
   first.index = 2;
-  return `${lagna} ${vara} ${bhava} ${part} ${elapsed} ${madhya} ${count} ${every.length} ${first.instant}`;
+  return `${lagna} ${vara} ${bhava} ${part} ${elapsed} ${madhya} ${ayanamsha} ${custom} ${always} ${count} ${every.length} ${first.instant}`;
 }
 
 void charts;

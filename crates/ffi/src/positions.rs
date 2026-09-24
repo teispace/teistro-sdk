@@ -8,47 +8,17 @@
     reason = "the C boundary: every block carries a SAFETY comment"
 )]
 
-use serde::Serialize;
 use teistro_astro::completion::{Completed, Completion, CompletionError};
 use teistro_core::Status;
-use teistro_core::envelope::{
-    CALCULATION_VERSION, Provenance, Version, canonical_json, content_hash,
-};
+use teistro_core::envelope::{Provenance, canonical_json};
 use teistro_core::error::Error;
 use teistro_idl::blob::{ColumnData, Writer};
 use teistro_port_ephemeris::{DecodedRequest, PositionRequestC, ProviderError};
-use teistro_time::EmbeddedTzdb;
 
 use crate::blob::TsBlob;
 use crate::context::TsContext;
 use crate::schemas;
 use crate::support::{with_context, write_plain};
-
-/// The request as the input hash sees it.
-#[derive(Serialize)]
-struct RequestRecord<'a> {
-    scale: &'static str,
-    frame: String,
-    bodies: Vec<&'static str>,
-    jds: &'a [f64],
-    observer: Option<[f64; 3]>,
-    speeds: bool,
-}
-
-impl<'a> RequestRecord<'a> {
-    fn of(decoded: &'a DecodedRequest<'_>) -> RequestRecord<'a> {
-        RequestRecord {
-            scale: decoded.scale.name(),
-            frame: decoded.frame.key(),
-            bodies: decoded.bodies.iter().map(|b| b.key()).collect(),
-            jds: decoded.jds,
-            observer: decoded
-                .observer
-                .map(|p| [p.latitude.get(), p.longitude.get(), p.altitude.get()]),
-            speeds: decoded.speeds,
-        }
-    }
-}
 
 /// Positions over a grid of instants and bodies in the requested frame:
 /// the provider answers in the frame it can, the SDK completes the rest
@@ -91,37 +61,13 @@ pub unsafe extern "C" fn ts_positions(
                 return Err(error.into());
             }
         };
-        let provenance = provenance(ctx, &completion, &decoded, &completed);
+        let provenance = ctx
+            .sdk()
+            .positions_provenance(&decoded.request(), &completed);
         let encoded = encode(&decoded, &completed, &provenance)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
-}
-
-fn provenance<P: teistro_port_ephemeris::EphemerisProvider + ?Sized>(
-    ctx: &TsContext,
-    completion: &Completion<'_, P>,
-    decoded: &DecodedRequest<'_>,
-    completed: &Completed,
-) -> Provenance {
-    let settings = ctx.settings();
-    let mut provenance = Provenance::new(
-        Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
-        CALCULATION_VERSION,
-        teistro_core::catalogue::SCHEMA_VERSION,
-        ctx.profile(),
-        settings.hash(),
-        content_hash(&RequestRecord::of(decoded)),
-    );
-    provenance.provider = completion
-        .capabilities()
-        .identity
-        .stamp(completed.columns.frame, completed.step_keys());
-    provenance.time.delta_t_model = ctx.delta_t().key().to_string();
-    provenance.time.leap_table = teistro_time::leap::version().to_string();
-    provenance.time.tzdb_version = EmbeddedTzdb::bundled_version().to_string();
-    provenance.content_hash = content_hash(&completed.columns);
-    provenance
 }
 
 fn encode(

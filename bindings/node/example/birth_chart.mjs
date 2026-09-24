@@ -8,11 +8,14 @@
 // 2. That civil time resolved to an **instant**, which needs the zone's
 //    history: Nepal was +05:30 until 1986 and +05:45 after, and the
 //    resolution says which rule it used and from which tzdb.
-// 3. Positions in a **sidereal** frame. This is the step everyone gets
-//    wrong. The SDK's canonical frame is *tropical*, because that is
-//    what an ephemeris computes; a Vedic chart wants the sidereal
-//    zodiac, so the request names one and the SDK completes it — and
-//    stamps every step it applied, which this example prints.
+// 3. The chart **founded** at that instant and place. The SDK's canonical
+//    frame is *tropical*, because that is what an ephemeris computes; a
+//    Vedic chart wants the sidereal zodiac, and the profile says which
+//    ayanamsha and which centre, so the founder asks for that frame and
+//    the SDK completes it — and stamps every step it applied, which this
+//    example prints. Positions asked for directly would not know the
+//    profile wants the Moon seen from Kathmandu rather than from the
+//    Earth's centre, which moves it most of a degree.
 // 4. Each longitude read as a rashi, a nakshatra and a pada, using the
 //    catalogue's own members and the locale's own names.
 //
@@ -22,99 +25,29 @@
 // runs anywhere the package installs.
 
 import {
-  Ayanamsha,
-  Body,
   Calendar,
+  ChartKind,
   Context,
-  Graha,
   NakshatraById,
   RashiById,
   at,
-  canonicalFrame,
   date,
   ianaZone,
   whenUnknown,
 } from '../lib/index.js';
 
-// The grahas of a Vedic chart, each paired with the body an ephemeris
-// answers for it. Ketu is not a body: it is Rahu's opposite point, so it
-// is computed rather than asked for, as the SDK's own `points` module
-// does.
-const GRAHAS = [
-  [Graha.Sun, Body.Sun],
-  [Graha.Moon, Body.Moon],
-  [Graha.Mars, Body.Mars],
-  [Graha.Mercury, Body.Mercury],
-  [Graha.Jupiter, Body.Jupiter],
-  [Graha.Venus, Body.Venus],
-  [Graha.Saturn, Body.Saturn],
-  [Graha.Rahu, Body.MeanNode],
-];
-
 // A nakshatra is a twenty-seventh of the circle; a pada a quarter of one.
 const NAKSHATRA_DEG = 360 / 27;
 const PADA_DEG = NAKSHATRA_DEG / 4;
 
-/** One graha as a chart shows it. */
-class Placement {
-  constructor(graha, longitude, speed) {
-    this.graha = graha;
-    this.longitude = longitude;
-    this.speed = speed;
-  }
+/** The sign a longitude stands in, and how far into it. */
+const rashiOf = (longitude) => [RashiById.get(Math.floor(longitude / 30)), longitude % 30];
 
-  /** The sign it stands in. */
-  get rashi() {
-    return RashiById.get(Math.floor(this.longitude / 30));
-  }
-
-  /** How far into that sign, in degrees. */
-  get degreeInRashi() {
-    return this.longitude % 30;
-  }
-
-  /** The lunar mansion it stands in. */
-  get nakshatra() {
-    return NakshatraById.get(Math.floor(this.longitude / NAKSHATRA_DEG));
-  }
-
-  /** Which quarter of that mansion, 1 to 4. */
-  get pada() {
-    return Math.floor((this.longitude % NAKSHATRA_DEG) / PADA_DEG) + 1;
-  }
-
-  /**
-   * Whether it is moving backwards. There is no flag at the boundary: a
-   * graha is retrograde when its longitude is decreasing, which is what
-   * the speed column says. Rahu always is.
-   */
-  get retrograde() {
-    return this.speed < 0;
-  }
-}
-
-/**
- * Every graha at one instant, in the sidereal zodiac.
- *
- * One call for the whole grid, never a loop: the boundary takes the
- * instants and the bodies together and answers with columns, so asking
- * for eight grahas costs one crossing rather than eight.
- */
-function chart(ctx, instant) {
-  // The canonical frame with two fields changed. Everything else — the
-  // centre, the corrections, the equinox — is left as the SDK computes
-  // it, so this asks for "what you would give me, but sidereal".
-  const frame = { ...canonicalFrame(), sidereal: true, ayanamsha: Ayanamsha.Lahiri };
-  const sky = ctx.positions({
-    instants: [instant],
-    bodies: GRAHAS.map(([, body]) => body),
-    frame,
-  });
-  return GRAHAS.map(
-    ([graha], index) =>
-      new Placement(graha, sky.at(0, index).longitude, sky.at(0, index).longitudeSpeed),
-  );
-}
+/** The lunar mansion a longitude stands in, and which quarter of it, 1 to 4. */
+const nakshatraOf = (longitude) => [
+  NakshatraById.get(Math.floor(longitude / NAKSHATRA_DEG)),
+  Math.floor((longitude % NAKSHATRA_DEG) / PADA_DEG) + 1,
+];
 
 const two = (value) => String(value).padStart(2, '0');
 
@@ -147,40 +80,58 @@ console.log(
 // `iana` above says the answer came from the embedded database rather
 // than from a guess.
 
-// ── 3. The sky, sidereal ───────────────────────────────────────────────
-const placements = chart(ctx, when.instantJdUtc);
+// ── 3. The chart ───────────────────────────────────────────────────────
+const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+const chart = ctx.chart.found({
+  instant: when.instantJdUtc,
+  place,
+  utcOffsetSeconds: when.offsetSeconds,
+  kind: ChartKind.Natal,
+});
 
-// ── 4. The chart ───────────────────────────────────────────────────────
 console.log('');
-console.log('graha             sign               deg  nakshatra      pada');
-console.log('─'.repeat(62));
-for (const placed of placements) {
+console.log('graha             sign               deg  nakshatra      pada bhava');
+console.log('─'.repeat(67));
+for (const placed of chart.grahas) {
   const graha = ctx.intl.entity(placed.graha);
-  const rashi = ctx.intl.entity(placed.rashi);
-  const nakshatra = ctx.intl.entity(placed.nakshatra);
+  const [rashi, degrees] = rashiOf(placed.longitudeDeg);
+  const [nakshatra, pada] = nakshatraOf(placed.longitudeDeg);
   console.log(
     `${graha.name.padEnd(12)} ${(graha.glyph ?? '').padEnd(2)} ` +
+      // There is no retrograde flag to trust blindly: a graha is
+      // retrograde when its longitude is decreasing, which is what the
+      // speed says, and `retrograde` is that comparison, named.
       `${placed.retrograde ? '℞' : ' '} ` +
-      `${rashi.name.padEnd(12)} ` +
-      `${placed.degreeInRashi.toFixed(4).padStart(8)}°  ` +
-      `${nakshatra.name.padEnd(14)} ${placed.pada}`,
+      `${ctx.intl.entity(rashi).name.padEnd(12)} ` +
+      `${degrees.toFixed(4).padStart(8)}°  ` +
+      `${ctx.intl.entity(nakshatra).name.padEnd(14)} ${pada}   ` +
+      // Which bhava it is in, under the chart's placement system -- the
+      // question most of the tradition answers with "in the seventh".
+      `${String(placed.house.bhava).padStart(2)}`,
   );
 }
 
-// ── What the SDK had to do to answer ───────────────────────────────────
-// Every result carries the steps that produced it. Here the provider
-// answered tropical positions and the SDK applied the ayanamsha and
-// shifted the zodiac; against a provider that answers sidereal natively,
-// those steps would say so instead.
+// ── 4. What the chart is measured in, and against ──────────────────────
 console.log('');
-const sky = ctx.positions({
-  instants: [when.instantJdUtc],
-  bodies: [Body.Sun],
-  frame: { ...canonicalFrame(), sidereal: true, ayanamsha: Ayanamsha.Lahiri },
-});
-const steps = sky.steps.map((step) => `${step.name}:${step.implementation}`).join(', ');
-console.log(`steps applied  ${steps}`);
-console.log(`settings hash  ${ctx.settingsHash.slice(0, 16)}…`);
+const [lagna, into] = rashiOf(chart.lagnaDeg);
+console.log(
+  `lagna          ${chart.lagnaDeg.toFixed(4)}° -- ${ctx.intl.entity(lagna).name}` +
+    ` at ${into.toFixed(4)}°, vara ${chart.day.vara}`,
+);
+// `null`, and it means what it says: a tropical chart has no ayanamsha,
+// not an ayanamsha of nought.
+const ayanamsha =
+  chart.ayanamsha ?? (chart.ayanamshaCustom ? 'custom' : null);
+console.log(
+  ayanamsha === null
+    ? 'ayanamsha      tropical, none applied'
+    : `ayanamsha      ${chart.ayanamshaOffsetDeg.toFixed(6)}° applied (${ayanamsha})`,
+);
+console.log(`steps applied  ${chart.steps.join(', ')}`);
+// The provenance envelope stamps the settings, the provider and the
+// time layer; it is what a stored chart keeps in order to say what
+// computed it.
+console.log(`settings hash  ${chart.provenance.settings_hash.slice(0, 16)}…`);
 ctx.dispose();
 
 // ── A birth with no recorded time ──────────────────────────────────────

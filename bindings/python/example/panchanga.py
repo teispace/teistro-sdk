@@ -40,7 +40,7 @@ import dataclasses
 from dataclasses import dataclass
 
 from teistro import Body, Calendar, Context, Ephemeris, Teistro, at, date, iana_zone
-from teistro.catalogue import Ayanamsha, Karana, Nakshatra, Tithi, Vara, Yoga
+from teistro.catalogue import Ayanamsha, Karana, Nakshatra, Rashi, Tithi, Vara, Yoga
 
 NAKSHATRA_DEG = 360.0 / 27.0
 YOGA_DEG = 360.0 / 27.0
@@ -184,9 +184,12 @@ def main() -> None:
         # short of Aries, when it had entered Aries two and a half hours
         # earlier: `(360 - sun) % 360` of a longitude just past zero is just
         # under 360, and reads as nearly a whole circle still to go.
+        # The sign is read from the SDK rather than written in, so the line
+        # stays true on any day, said in the context's locale.
+        sign = ctx.intl.entity(Rashi(int(found.sun // 30)).full_key).name
         into_sign = found.sun % 30.0
         print(
-            f"  the Sun stands {into_sign:.4f}° into Aries, so the Mesha Sankranti"
+            f"  the Sun stands {into_sign:.4f}° into {sign}, so the Mesha Sankranti"
             f" is about {into_sign / 0.9856 * 24:.1f} hours past --"
         )
         print("  which is what BS 2082 is reckoned from, and why it opens today")

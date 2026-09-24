@@ -82,12 +82,6 @@ fn kebab(variant: &str) -> String {
     out
 }
 
-/// A variant's name in screaming snake case, which is how a detail is
-/// spelled: `UnknownKey` is `UNKNOWN_KEY`.
-fn screaming(variant: &str) -> String {
-    kebab(variant).replace('-', "_").to_uppercase()
-}
-
 /// How a resolution's kind is spelled, which is the tag its JSON
 /// carries.
 fn resolution(of: &CalendarResolution) -> &'static str {
@@ -371,10 +365,9 @@ fn keys(report: &mut Report, sdk: &Context) {
     put(
         report,
         "refusal-detail",
-        refusal.detail.map_or_else(
-            || String::from("none"),
-            |detail| screaming(&format!("{detail:?}")),
-        ),
+        refusal
+            .detail
+            .map_or_else(|| String::from("none"), |detail| detail.key().to_owned()),
     );
     put(
         report,
@@ -393,7 +386,8 @@ fn positions(report: &mut Report, sdk: &Context) {
     let jds = [2_451_545.0, 2_451_546.0];
     let bodies = [Body::Sun, Body::Moon, Body::Mars];
     let request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL);
-    let sky = sdk.positions(&request).expect("the test provider");
+    let stamped = sdk.positions(&request).expect("the test provider");
+    let sky = &stamped.value;
     put(report, "cells", sky.columns.len().to_string());
     put(
         report,
@@ -430,22 +424,27 @@ fn positions(report: &mut Report, sdk: &Context) {
         );
     }
     // What the other three read off the positions blob's provenance
-    // envelope. **There is no envelope here**, and §6 says why: the
-    // envelope's input hash is of the boundary's own decoded request
-    // record, which a Rust consumer does not have and does not want --
-    // it holds the `PositionRequest` itself. The three fields a consumer
-    // actually reads are on the context and on the columns, and they are
-    // the same values, so the comparison still bites: a boundary
-    // computing under a different profile than the context reports would
-    // disagree here.
-    put(report, "provenance-profile", sdk.profile().to_owned());
+    // envelope, read off the same envelope: the boundary stamps its blob
+    // with the façade's own function, so the canonical JSON is compared
+    // whole as well as by the fields a consumer reads.
+    let provenance = &stamped.provenance;
+    put(
+        report,
+        "provenance-fnv",
+        fnv(&teistro::canonical_json(provenance)),
+    );
+    put(report, "provenance-profile", provenance.profile.clone());
     put(
         report,
         "provenance-settings-hash",
-        sdk.settings_hash().to_string(),
+        provenance.settings_hash.to_string(),
     );
-    put(report, "provenance-provider-frame", sky.columns.frame.key());
-    // Built here rather than from `step_keys`, which is the astronomy
+    put(
+        report,
+        "provenance-provider-frame",
+        provenance.provider.frame.clone(),
+    );
+    // `Implementation::key`, not `step_keys`, which is the astronomy
     // crate's `{:?}` and gives `PassThrough` where the report wants
     // `PASS_THROUGH` -- the spelling every generated catalogue uses.
     put(
@@ -453,13 +452,7 @@ fn positions(report: &mut Report, sdk: &Context) {
         "steps",
         sky.steps
             .iter()
-            .map(|step| {
-                format!(
-                    "{}:{}",
-                    step.name,
-                    screaming(&format!("{:?}", step.implementation))
-                )
-            })
+            .map(|step| format!("{}:{}", step.name, step.implementation.key()))
             .collect::<Vec<_>>()
             .join(","),
     );

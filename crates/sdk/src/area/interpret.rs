@@ -10,6 +10,7 @@ use teistro_interpret::{
 use teistro_serial::document::Document;
 
 use crate::context::Context;
+use crate::plan_request::PlanRequest;
 use crate::rule_request::RulesReading;
 use crate::rules_bridge::RuleInputs;
 
@@ -347,4 +348,132 @@ impl<'a> InterpretArea<'a> {
             &*engine,
         )
     }
+
+    /// Every plan `asked` names, for one chart: a composer not asked for
+    /// is absent rather than empty, and one asked for that has nothing to
+    /// say is present and empty, which is an answer
+    /// (`03-design/plans-at-the-boundary.md` §4).
+    ///
+    /// `reading` is what the same chart's rules answered, which
+    /// `readings` says and never evaluates again; without one, `readings`
+    /// is an empty plan. [`ChartArea::interpreted`](crate::ChartArea::interpreted)
+    /// founds the charts, computes the sections these composers read and
+    /// calls this, which is the one call a consumer usually wants.
+    ///
+    /// # Errors
+    ///
+    /// A document without a section a composer asked for reads, naming
+    /// the section.
+    pub fn plans(
+        self,
+        document: &Document,
+        reading: Option<&RulesReading<'_>>,
+        asked: PlanRequest,
+    ) -> Result<Plans, Error> {
+        Ok(Plans {
+            placements: asked
+                .placements
+                .then(|| self.placements(document))
+                .transpose()?,
+            readings: asked
+                .readings
+                .then(|| reading.map_or_else(Plan::default, |reading| self.readings(reading))),
+            strength: asked
+                .strength
+                .then(|| self.strength(document))
+                .transpose()?,
+            houses: asked.houses.then(|| self.houses(document)).transpose()?,
+            positions: asked
+                .positions
+                .then(|| self.positions(document))
+                .transpose()?,
+            aspects: asked.aspects.then(|| self.aspects(document)).transpose()?,
+            conditions: asked
+                .conditions
+                .then(|| self.conditions(document))
+                .transpose()?,
+            karakas: asked.karakas.then(|| self.karakas(document)).transpose()?,
+            chalit: asked.chalit.then(|| self.chalit(document)),
+            phala: asked.phala.then(|| self.phala(document)).transpose()?,
+            bhava_bala: asked
+                .bhava_bala
+                .then(|| self.bhava_bala(document))
+                .transpose()?,
+            vimshopaka: asked
+                .vimshopaka
+                .then(|| self.vimshopaka(document))
+                .transpose()?,
+            panchanga: asked
+                .panchanga
+                .then(|| self.panchanga(document))
+                .transpose()?,
+            states: asked.states.then(|| self.states(document)).transpose()?,
+            dasha_phala: asked
+                .dasha_phala
+                .then(|| self.dasha_phala(document))
+                .transpose()?,
+            ashtakavarga: asked
+                .ashtakavarga
+                .then(|| self.ashtakavarga(document))
+                .transpose()?,
+        })
+    }
+}
+
+/// The narrative plans one chart was asked for, and only those: a composer
+/// not asked for is absent rather than empty, and one asked for that has
+/// nothing to say is present and empty, which is an answer
+/// (`03-design/plans-at-the-boundary.md` §4).
+#[derive(Clone, Debug, Default, PartialEq, serde::Serialize)]
+pub struct Plans {
+    /// Where each graha stands and who shares a sign.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub placements: Option<Plan>,
+    /// What each rule the chart held says.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub readings: Option<Plan>,
+    /// Each graha's Shadbala, the strongest first.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strength: Option<Plan>,
+    /// The lord of each bhava.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub houses: Option<Plan>,
+    /// Where each graha stands, to the degree.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub positions: Option<Plan>,
+    /// Which graha looks at which, and how strongly.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub aspects: Option<Plan>,
+    /// What each graha is where it stands.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub conditions: Option<Plan>,
+    /// Which chara karaka each graha holds.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub karakas: Option<Plan>,
+    /// Where the two house readings disagree.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub chalit: Option<Plan>,
+    /// The placements' effects from the readings corpus.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub phala: Option<Plan>,
+    /// Each bhava's strength.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "bhavaBala")]
+    pub bhava_bala: Option<Plan>,
+    /// Each graha's vimshopaka strength.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub vimshopaka: Option<Plan>,
+    /// The day's five limbs.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub panchanga: Option<Plan>,
+    /// Each graha's states.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub states: Option<Plan>,
+    /// What the running dashas promise.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "dashaPhala")]
+    pub dasha_phala: Option<Plan>,
+    /// The ashtakavarga's bindus.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ashtakavarga: Option<Plan>,
 }

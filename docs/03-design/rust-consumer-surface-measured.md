@@ -17,7 +17,7 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 | an entry point's work reaches one SDK crate, so a façade over it is a rename | falsified | 23 of 48 disagree; 23 reach two or more; 8 reach none at all, and those are the C caller's memory: `ts_abi_version`, `ts_sdk_version`, `ts_default_profile`, `ts_build_info`, `ts_string_free`, `ts_blob_free`, `ts_context_free`, `ts_provider_free` |
 | the façade owns the composition: every crate a context needs is one it depends on | **holds** | 0 of 13 disagree; so every area's composition has a home outside the C boundary |
 | and the boundary is inverted onto it, so the composition is written once | **holds** | 0 of 1 disagree; `teistro-ffi` depends on `teistro` |
-| every type an area's signature names is reachable from the crate root | falsified | 11 of 89 disagree; not reachable: `Chain`, `Content`, `DashaName`, `DashaSystems`, `Evaluator`, `Labels`, `Readings`, `Rule`, `Running`, `Theme`, `VargaSigns` |
+| every type an area's signature names is reachable from the crate root | falsified | 11 of 90 disagree; not reachable: `Chain`, `Content`, `DashaName`, `DashaSystems`, `Evaluator`, `Labels`, `Readings`, `Rule`, `Running`, `Theme`, `VargaSigns` |
 
 **The composition has one home**, and it is the façade: every crate a context needs is one the façade depends on, and the boundary depends on the façade rather than composing them itself. That is the state [the design page](rust-consumer-surface.md) asks for, and these two rows are its acceptance test.
 
@@ -25,7 +25,7 @@ ADR-0030 §9 leaves Rust's own consumer surface to the Rust binding's own page, 
 
 | area | crates | which |
 |---|---|---|
-| `(root)` | 4 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris`, `teistro-time` |
+| `(root)` | 3 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris` |
 | `almanac` | 11 | `teistro-aspect`, `teistro-astro`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-houses`, `teistro-panchanga`, `teistro-port-ephemeris`, `teistro-serial`, `teistro-state`, `teistro-time` |
 | `calendar` | 2 | `teistro-calendar`, `teistro-core` |
 | `chart` | 11 | `teistro-aspect`, `teistro-astro`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-geometry`, `teistro-houses`, `teistro-port-ephemeris`, `teistro-serial`, `teistro-state`, `teistro-time` |
@@ -43,8 +43,8 @@ Widest first. Read through the boundary's own helpers, because a body that names
 |---|---|---|---|
 | `ts_chart_found` | `chart` | 11 | `teistro-aspect`, `teistro-astro`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-geometry`, `teistro-houses`, `teistro-port-ephemeris`, `teistro-serial`, `teistro-state`, `teistro-time` |
 | `ts_panchanga_days` | `panchanga` | 11 | `teistro-aspect`, `teistro-astro`, `teistro-calendar`, `teistro-chart`, `teistro-core`, `teistro-houses`, `teistro-panchanga`, `teistro-port-ephemeris`, `teistro-serial`, `teistro-state`, `teistro-time` |
-| `ts_positions` | `positions` | 4 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris`, `teistro-time` |
 | `ts_time_civil` | `time` | 4 | `teistro-astro`, `teistro-calendar`, `teistro-core`, `teistro-time` |
+| `ts_positions` | `positions` | 3 | `teistro-astro`, `teistro-core`, `teistro-port-ephemeris` |
 | `ts_time_convert` | `time` | 3 | `teistro-astro`, `teistro-core`, `teistro-time` |
 | `ts_time_delta_t` | `time` | 3 | `teistro-astro`, `teistro-core`, `teistro-time` |
 | `ts_time_resolve` | `time` | 3 | `teistro-astro`, `teistro-core`, `teistro-time` |

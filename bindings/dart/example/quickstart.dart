@@ -6,7 +6,11 @@ import 'package:teistro/teistro.dart';
 
 void main() {
   final teistro = Teistro.open();
-  print('Teistro ${teistro.version}, ABI ${teistro.abi}');
+  // The SDK's version is what a log line wants. The ABI -- the C
+  // boundary's revision -- was checked when the library opened: one this
+  // package was not generated against is refused there, so `teistro.abi`
+  // is for a bug report rather than for every run.
+  print('Teistro ${teistro.version}');
 
   final ctx = teistro.context(
     profile: 'nepali-default',

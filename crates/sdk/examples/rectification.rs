@@ -79,7 +79,7 @@ fn candidates(start: JulianDay<Utc>) -> Vec<JulianDay<Utc>> {
 /// The table: every candidate's lagna, and where it changes sign.
 fn the_table(sdk: &Context, charts: &[teistro::ChartFoundation]) -> Result<(), Error> {
     println!("local   lagna        sign            moon         bhava");
-    println!("{}", "-".repeat(58));
+    println!("{}", "─".repeat(58));
     let mut previous: Option<Rashi> = None;
     for (index, chart) in charts.iter().enumerate() {
         let sign = sign_of(chart.lagna_deg)
@@ -95,7 +95,7 @@ fn the_table(sdk: &Context, charts: &[teistro::ChartFoundation]) -> Result<(), E
             moon.map_or(0.0, |placed| placed.longitude_deg),
             moon.map_or(0, |placed| placed.house.bhava),
             if previous.is_some_and(|before| before != sign) {
-                "   <- lagna changes sign"
+                "   ← lagna changes sign"
             } else {
                 ""
             },
@@ -143,10 +143,10 @@ fn main() -> Result<(), Error> {
         charts.len(),
     );
     println!(
-        "place  {:.4}°N {:.4}°E   {:?}",
+        "place  {}°N {}°E   {}",
         place.latitude.get(),
         place.longitude.get(),
-        ChartKind::Natal,
+        ChartKind::Natal.full_key(),
     );
     println!();
     the_table(&sdk, charts)?;
@@ -157,20 +157,15 @@ fn main() -> Result<(), Error> {
     // minute" holds constant. The instant, the lagna, the day and the
     // timing are per chart. The provenance envelope stamps the batch as
     // a whole, so a rectification run reproduces as one thing.
+    // The model and the steps are the batch's: one solar model reckoned
+    // every chart's day, so the first chart's description is all of them.
+    let first = charts
+        .first()
+        .ok_or_else(|| Error::internal("eighteen instants found eighteen charts"))?;
     println!();
-    println!(
-        "steps applied  {}",
-        charts
-            .first()
-            .map(|chart| chart.steps.join(", "))
-            .unwrap_or_default(),
-    );
-    println!(
-        "provenance     profile {}, provider {}, settings {}…",
-        founded.provenance.profile,
-        founded.provenance.provider.name,
-        &founded.provenance.settings_hash.to_string()[..16],
-    );
+    println!("model          {}", first.day.day.model);
+    println!("steps applied  {}", first.steps.join(", "));
+    println!("settings hash  {}…", &sdk.settings_hash().to_string()[..16]);
 
     // A batch of one is the ordinary case, and `found` is the same
     // crossing with the batch unwrapped: the answer is a chart, not a
@@ -180,18 +175,17 @@ fn main() -> Result<(), Error> {
         .found(start.instant, &place, start.zone.offset, ChartKind::Natal)?;
     println!();
     println!(
-        "found(one)     lagna {:.4}°  vara {}  ishtakaal {}:{}:{}",
+        "found(one)     lagna {:.4}°  vara {}  ishtakaal {}:{}:{}  hora lord {}",
         single.value.lagna_deg,
-        single.value.day.day.vara.key(),
+        single.value.day.day.vara.full_key(),
         single.value.timing.ishtakaal.ghati,
         single.value.timing.ishtakaal.pala,
         single.value.timing.ishtakaal.vipala,
+        single.value.timing.hora.lord.full_key(),
     );
     println!(
         "               and it agrees with the batch of one bit for bit: {}",
-        charts
-            .first()
-            .is_some_and(|first| first.lagna_deg.to_bits() == single.value.lagna_deg.to_bits()),
+        first.lagna_deg.to_bits() == single.value.lagna_deg.to_bits(),
     );
     Ok(())
 }

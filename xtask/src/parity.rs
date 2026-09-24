@@ -51,7 +51,7 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::binding::{build, library, library_artefact, present};
-use crate::examples::{Binding, Runtime, differences};
+use crate::examples::{Binding, EXCUSED, Runtime, differences};
 use crate::measure::plural;
 
 const NODE: &str = "bindings/node/parity.mjs";
@@ -93,19 +93,19 @@ struct Report {
 /// Every key the Rust runner does not print, and why each one is not a
 /// gap.
 ///
-/// Nine, and they are of three kinds. `abi` and the `build-*` keys are
+/// Eight, and they are of two kinds. `abi` and the `build-*` keys are
 /// the **boundary's own handshake**: there is no ABI between a Rust
 /// consumer and the SDK, and nothing to hand-shake, because Cargo
 /// resolved the graph — `sdk`, `catalogue-version` and `default-profile`
-/// the runner *does* print, from constants. `provenance-fnv` is the
-/// positions envelope's canonical JSON, whose input hash is of the
-/// boundary's **decoded** request record; a Rust consumer holds the
-/// `PositionRequest` itself, and the three fields of that envelope
-/// anyone reads — the profile, the settings hash and the provider's
-/// frame — the runner prints. And `surface.(root).dispose` is the one
-/// operation this surface cannot have: a `Context` is dropped, so
-/// listing it would be a disagreement where §6 intends an absence.
-const RUST_ABSENCES: [&str; 9] = [
+/// the runner *does* print, from constants. And `surface.(root).dispose`
+/// is the one operation this surface cannot have: a `Context` is dropped,
+/// so listing it would be a disagreement where §6 intends an absence.
+///
+/// `provenance-fnv` was a ninth until the façade's `positions` answered
+/// in an envelope: the boundary and the façade now stamp it with one
+/// function, so the hash of its canonical JSON is compared like any other
+/// value.
+const RUST_ABSENCES: [&str; 8] = [
     "abi",
     "build-abi",
     "build-catalogue",
@@ -113,7 +113,6 @@ const RUST_ABSENCES: [&str; 9] = [
     "build-dirty",
     "build-sdk",
     "build-target",
-    "provenance-fnv",
     "surface.(root).dispose",
 ];
 
@@ -367,6 +366,8 @@ pub(crate) fn check(root: &Path) -> i32 {
         Binding::Node => has_node,
         Binding::Python => has_python,
         Binding::Dart => has_dart,
+        // Cargo is what runs this gate, so the Rust set is always here.
+        Binding::Rust => true,
     };
     let examples = examples_agree(root, present);
     values.max(examples)
@@ -441,14 +442,18 @@ fn examples_agree(root: &Path, present: impl Fn(Binding) -> bool) -> i32 {
         return 0;
     }
     let names: Vec<&str> = sets.iter().map(|(binding, _)| binding.name()).collect();
-    match differences(&sets) {
+    match differences(&sets, &EXCUSED) {
         0 => {
             let count = sets.first().map_or(0, |(_, ran)| ran.len());
             println!(
-                "ok    the {} print alike in {}",
+                "ok    the {} print alike in {}, but for {} each naming the item that removes it",
                 plural(count, "shared example"),
-                names.join(", ")
+                names.join(", "),
+                plural(EXCUSED.len(), "excused difference"),
             );
+            for excused in &EXCUSED {
+                println!("        excused  {}", excused.describe());
+            }
             0
         }
         found => {

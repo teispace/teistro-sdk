@@ -49,8 +49,8 @@ mod render;
 mod scale;
 
 pub use area::{
-    AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea, IntlArea, KeysArea,
-    TimeArea,
+    AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea, Interpreted,
+    IntlArea, KeysArea, Plans, TimeArea,
 };
 mod plan_request;
 mod rule_request;
@@ -199,7 +199,7 @@ pub use teistro_port_ephemeris::{
 };
 pub use teistro_time::{CivilDateTime, CivilTime, Resolved, ZoneResolution, ZoneSpec};
 
-/// The Julian day a fixed day begins at, in local time.
+/// The Julian day at the UTC midnight that begins a fixed day.
 ///
 /// A **free function** and not an area's operation, as it is in the
 /// other three bindings: it takes no context, because a fixed day and a

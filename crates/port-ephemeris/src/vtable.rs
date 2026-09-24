@@ -819,14 +819,20 @@ impl VtableProvider {
     }
 }
 
-impl VtableProvider {
-    /// One call across the boundary for a request every instant of which
-    /// the provider covers.
-    fn cross(
-        &self,
-        positions_fn: PositionsFn,
-        request: &PositionRequest<'_>,
-    ) -> Result<PositionColumns, ProviderError> {
+impl EphemerisProvider for VtableProvider {
+    fn capabilities(&self) -> Capabilities {
+        self.capabilities.clone()
+    }
+
+    fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
+        let Some(positions_fn) = self.vtable.positions else {
+            return Err(ProviderError::unsupported("positions"));
+        };
+        // No check of the request here: the port validates it and reckons
+        // its coverage on this side of the boundary before any provider is
+        // asked (`crate::ask_positions`), so the sentence that names a
+        // missing body survives into every binding, where a refusal raised
+        // out there would arrive as a number.
         let ids: Vec<u16> = request.bodies.iter().map(|b| b.id()).collect();
         let raw_request = PositionRequestC {
             struct_size: size_of_u32::<PositionRequestC>(),
@@ -870,65 +876,6 @@ impl VtableProvider {
         }
         for (slot, bits) in columns.source.iter_mut().zip(&sources) {
             *slot = Source::from_bits(*bits);
-        }
-        Ok(columns)
-    }
-}
-
-impl EphemerisProvider for VtableProvider {
-    fn capabilities(&self) -> Capabilities {
-        self.capabilities.clone()
-    }
-
-    fn positions(&self, request: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
-        let Some(positions_fn) = self.vtable.positions else {
-            return Err(ProviderError::unsupported("positions"));
-        };
-        // The same check a native provider makes of itself, made here on
-        // this side of the boundary. It has to be here: only a code
-        // crosses back, so a refusal raised out there arrives as a number
-        // and the sentence that would have named the body is lost. Made
-        // here, the words survive into every binding, and no binding has
-        // to keep its own copy of the policy.
-        crate::validate(&self.capabilities, request)?;
-        // Coverage is reckoned per cell, as a native provider reckons it:
-        // an instant outside the declared span is `OutOfRange` and the
-        // batch keeps every instant it can compute. Reckoned here, the
-        // provider is never asked for an instant it said it does not
-        // have, and no binding keeps its own copy of the rule — which is
-        // what three did, each refusing the whole batch with its own
-        // error type where a native provider refused one cell.
-        let covered: Vec<f64> = request
-            .jds
-            .iter()
-            .copied()
-            .filter(|jd| self.capabilities.covers(*jd))
-            .collect();
-        if covered.len() == request.jds.len() {
-            return self.cross(positions_fn, request);
-        }
-        let mut columns =
-            PositionColumns::new(request.jds.len(), request.bodies.len(), request.frame);
-        columns.status.fill(CellStatus::OutOfRange);
-        if covered.is_empty() {
-            return Ok(columns);
-        }
-        let answered = self.cross(
-            positions_fn,
-            &PositionRequest {
-                jds: &covered,
-                ..*request
-            },
-        )?;
-        columns.frame = answered.frame;
-        let rows = request
-            .jds
-            .iter()
-            .enumerate()
-            .filter(|(_, jd)| self.capabilities.covers(**jd))
-            .map(|(row, _)| row);
-        for (from, to) in rows.enumerate() {
-            columns.copy_row(to, &answered, from);
         }
         Ok(columns)
     }
@@ -1708,7 +1655,6 @@ mod tests {
     use teistro_core::quantity::{Altitude, Latitude, Longitude};
 
     use super::*;
-    use crate::columns::Cell;
     use crate::frame::Zodiac;
     use crate::test_provider::TestProvider;
 
@@ -1779,82 +1725,6 @@ mod tests {
                 .bit_identical(&via_trait)
         );
         assert!(format!("{through_box:?}").contains("test-provider"));
-    }
-
-    /// The test provider, remembering every instant it was asked for.
-    struct Recording(TestProvider, std::sync::Mutex<Vec<f64>>);
-
-    impl EphemerisProvider for Recording {
-        fn capabilities(&self) -> Capabilities {
-            self.0.capabilities()
-        }
-
-        fn positions(
-            &self,
-            request: &PositionRequest<'_>,
-        ) -> Result<PositionColumns, ProviderError> {
-            self.1.lock().unwrap().extend_from_slice(request.jds);
-            self.0.positions(request)
-        }
-    }
-
-    /// Coverage is a cell's outcome whichever side of the boundary the
-    /// provider is written on: the instants outside the declared span come
-    /// back `OutOfRange`, the rest come back as the provider answered them,
-    /// and the provider is never asked for an instant it does not have.
-    #[test]
-    fn a_foreign_provider_is_asked_only_for_the_instants_it_covers() {
-        let exported = Exported::new(Recording(TestProvider::new(), std::sync::Mutex::default()));
-        // SAFETY: the box outlives the bound provider in this test.
-        let bound =
-            unsafe { VtableProvider::bind(Exported::<Recording>::vtable(), exported.user_data()) }
-                .unwrap();
-        let (first, last) = TestProvider::JD_RANGE;
-        let bodies = [Body::Sun, Body::Moon];
-        let jds = [first - 1.0, 2_460_000.5, last + 1.0, 2_460_100.5];
-        let answer = bound
-            .positions(&PositionRequest::new(
-                &jds,
-                TimeScale::Ut1,
-                &bodies,
-                Frame::CANONICAL,
-            ))
-            .unwrap();
-        let inside = [2_460_000.5, 2_460_100.5];
-        assert_eq!(*exported.provider().1.lock().unwrap(), inside);
-        let direct = TestProvider::new()
-            .positions(&PositionRequest::new(
-                &inside,
-                TimeScale::Ut1,
-                &bodies,
-                Frame::CANONICAL,
-            ))
-            .unwrap();
-        for (row, from) in [(0, None), (1, Some(0)), (2, None), (3, Some(1))] {
-            for body in 0..bodies.len() {
-                let cell = answer.at(row, body).unwrap();
-                match from {
-                    None => assert_eq!(cell, Cell::failed(CellStatus::OutOfRange)),
-                    Some(from) => assert_eq!(cell, direct.at(from, body).unwrap()),
-                }
-            }
-        }
-        exported.provider().1.lock().unwrap().clear();
-        let nowhere = [first - 2.0, last + 2.0];
-        let answer = bound
-            .positions(&PositionRequest::new(
-                &nowhere,
-                TimeScale::Ut1,
-                &bodies,
-                Frame::CANONICAL,
-            ))
-            .unwrap();
-        assert!(exported.provider().1.lock().unwrap().is_empty());
-        assert!(
-            answer
-                .cells()
-                .all(|cell| cell.status == CellStatus::OutOfRange)
-        );
     }
 
     /// The test provider with a crossings override that answers one event

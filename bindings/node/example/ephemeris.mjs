@@ -29,7 +29,6 @@ import {
   Context,
   Graha,
   RashiById,
-  buildInfo,
   canonicalFrame,
 } from '../lib/index.js';
 
@@ -87,15 +86,10 @@ const ctx = new Context({
   ephemeris: 'builtin',
 });
 
-// ── Which build am I talking to? ───────────────────────────────────────
-// A service checks this once at start-up. The binding already refuses a
-// library that is not the build it was generated from; this is how to log
-// what it did load.
-console.log(
-  `library  Teistro ${buildInfo.sdk}  ABI ${buildInfo.abi}` +
-    `  catalogue ${buildInfo.catalogue}  ${buildInfo.target}` +
-    `  ${buildInfo.commit.slice(0, 8)}${buildInfo.dirty ? '-dirty' : ''}`,
-);
+// The binding already refuses a library that is not the build it was
+// generated from; `buildInfo` says what it did load -- the SDK and ABI
+// versions, the target and the commit -- which is for a bug report. What
+// computed an answer is stamped on the answer, and is printed last.
 
 // ── One call for the whole year ────────────────────────────────────────
 const frame = { ...canonicalFrame(), sidereal: true, ayanamsha: Ayanamsha.Lahiri };
@@ -110,13 +104,11 @@ console.log(
 );
 
 // ── The columns ────────────────────────────────────────────────────────
-// Point 2 above, checked rather than printed: the type is this language's own.
+// Point 2 above, checked rather than printed: the type is this
+// language's own, a view over the blob's own bytes.
 const cells = sky.cells;
 if (!(cells.lon instanceof Float64Array)) throw new Error('lon is not a Float64Array');
-console.log(
-  `columns  lon holds ${cells.lon.length} doubles in ${cells.lon.byteLength} bytes,` +
-    " a view over the blob's own bytes",
-);
+console.log(`columns  lon holds ${cells.lon.length} doubles in ${cells.lon.byteLength} bytes`);
 
 // ── What the columns are for ───────────────────────────────────────────
 console.log('');
@@ -126,7 +118,7 @@ for (const [column, [body, graha]] of BODIES.entries()) {
   const turns = stations(cells.lonSpeed, DAYS, sky.bodyCount, column);
   const speed = cells.lonSpeed[column];
   const direction = speed < 0 ? 'retrograde' : 'direct';
-  const key = body.split('.').at(-1);
+  const key = graha.split('.').at(-1);
   console.log(
     `  ${key.padEnd(10)} ${name.padEnd(8)} ${direction.padEnd(10)} at` +
       ` ${`${speed >= 0 ? '+' : ''}${speed.toFixed(4)}`.padStart(8)}°/day,` +
@@ -159,5 +151,7 @@ console.log(
 // The whole envelope is canonical JSON: byte-identical across every
 // binding, which is what makes it safe to hash and store.
 console.log(`envelope ${JSON.stringify(provenance).length} bytes of canonical JSON`);
+const provider = provenance.provider;
+console.log(`provider ${provider.name} ${provider.version} (data ${provider.data_version})`);
 
 ctx.dispose();

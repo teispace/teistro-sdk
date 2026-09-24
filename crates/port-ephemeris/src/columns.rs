@@ -31,6 +31,20 @@ pub enum CellStatus {
 }
 
 impl CellStatus {
+    /// The key it is serialised as: `OK`, `OUT_OF_RANGE`, `PROVIDER` for
+    /// a provider's own code.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            CellStatus::Ok => "OK",
+            CellStatus::NotComputed => "NOT_COMPUTED",
+            CellStatus::UnsupportedBody => "UNSUPPORTED_BODY",
+            CellStatus::OutOfRange => "OUT_OF_RANGE",
+            CellStatus::DataMissing => "DATA_MISSING",
+            CellStatus::Provider { .. } => "PROVIDER",
+        }
+    }
+
     /// The stable code at the C boundary: `0` ok, the reserved negatives
     /// as [`crate::ProviderError::code`], anything else the provider's own.
     #[must_use]
@@ -423,6 +437,13 @@ mod tests {
             CellStatus::Provider { code: -107 },
         ] {
             assert_eq!(CellStatus::from_code(status.code()), status);
+            // The key is the serialised spelling, so a program matching on
+            // either reads the same word.
+            let serialised = serde_json::to_value(status).unwrap();
+            assert_eq!(
+                serialised.get("kind"),
+                Some(&serde_json::json!(status.key()))
+            );
         }
         let source = Source {
             kind: EphemerisKind::Files,

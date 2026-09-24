@@ -1,4 +1,4 @@
-//! The Rust façade's own gate: the eight examples run, and the crate's
+//! The Rust façade's own gate: the examples run, and the crate's
 //! tests and doctests pass under the features the examples need.
 //!
 //! Run by hand (`cargo xtask check-rust`) and in the nightly matrix. The
@@ -13,77 +13,14 @@
 //! composes the crates, so there is nothing to build and load
 //! (`03-design/rust-consumer-surface.md` §3).
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 
 use crate::binding::{cargo, step};
+use crate::examples::{Binding, Runtime};
 
-/// The crate the examples belong to, as Cargo names it.
+/// The crate the tests belong to, as Cargo names it.
 const PACKAGE: &str = "teistro";
-/// Where the examples live. **Every** file there is run, so a scenario
-/// added to the directory is gated by having been added — the failure a
-/// list in this file would eventually have is that someone writes an
-/// example and forgets to list it.
-const EXAMPLES: &str = "crates/sdk/examples";
-/// The one example this gate leaves alone: it prints the parity report,
-/// and `check-parity` runs it as one of four runners. Running it here
-/// too would pay twice for one proof and bury this gate's output under
-/// five hundred lines of `key<TAB>value`.
-///
-/// A name and not a list, because the rule is "the example another gate
-/// already runs" and there is exactly one.
-const RUN_BY_CHECK_PARITY: &str = "parity";
-
-/// Every example in name order, by target name.
-fn found(root: &Path) -> Result<Vec<String>, ()> {
-    let directory = root.join(EXAMPLES);
-    let mut names: Vec<String> = std::fs::read_dir(&directory)
-        .map_err(|e| println!("FAIL  {EXAMPLES}: {e}"))?
-        .flatten()
-        .map(|entry| entry.path())
-        .filter(|path| path.extension().is_some_and(|kind| kind == "rs"))
-        .filter_map(|path: PathBuf| {
-            path.file_stem()
-                .map(|stem| stem.to_string_lossy().to_string())
-        })
-        .filter(|name| name != RUN_BY_CHECK_PARITY)
-        .collect();
-    names.sort();
-    if names.is_empty() {
-        println!("FAIL  {EXAMPLES} holds no examples");
-        return Err(());
-    }
-    Ok(names)
-}
-
-/// Runs every example, in name order, and says how many.
-///
-/// An example is a program a reader is invited to copy, so it is held to
-/// the same bar as a test: it must run against the crate this build
-/// produced. **Release**, because the built-in ephemeris is a truncated
-/// VSOP87 and ELP2000 and a debug build of it takes minutes over a year
-/// of the sky — which is also what the README tells a reader to do.
-fn examples(root: &Path, names: &[String]) -> Result<(), ()> {
-    for name in names {
-        step(
-            Command::new(cargo())
-                .args([
-                    "run",
-                    "--quiet",
-                    "--release",
-                    "-p",
-                    PACKAGE,
-                    "--example",
-                    name,
-                ])
-                .current_dir(root),
-            "",
-            &format!("{EXAMPLES}/{name}.rs did not run"),
-        )?;
-    }
-    println!("ok    {EXAMPLES}: {} example(s) run", names.len());
-    Ok(())
-}
 
 /// The crate's own tests and doctests.
 ///
@@ -101,11 +38,15 @@ fn tests(root: &Path) -> Result<(), ()> {
     )
 }
 
+/// The examples, run as `check-parity` runs them to compare them with the
+/// bindings' — every file in the directory but the parity runner, which
+/// that gate runs as one of four runners.
+fn examples(root: &Path) -> Result<(), ()> {
+    Binding::Rust.run(root, &Runtime::of(root)).map(drop)
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
-    let Ok(names) = found(root) else {
-        return 1;
-    };
-    if tests(root).is_err() || examples(root, &names).is_err() {
+    if tests(root).is_err() || examples(root).is_err() {
         return 1;
     }
     0

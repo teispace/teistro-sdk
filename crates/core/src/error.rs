@@ -147,6 +147,25 @@ pub enum Detail {
     BatchTooLarge,
 }
 
+impl Detail {
+    /// The key it is serialised as, and the one every binding reads:
+    /// `UNKNOWN_KEY`, `DST_GAP`.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Detail::Unsourced => "UNSOURCED",
+            Detail::UnknownKey => "UNKNOWN_KEY",
+            Detail::DeprecatedKey => "DEPRECATED_KEY",
+            Detail::DstGap => "DST_GAP",
+            Detail::TimeUnknown => "TIME_UNKNOWN",
+            Detail::NonexistentDate => "NONEXISTENT_DATE",
+            Detail::Sealed => "SEALED",
+            Detail::Overflow => "OVERFLOW",
+            Detail::BatchTooLarge => "BATCH_TOO_LARGE",
+        }
+    }
+}
+
 /// A reference to a localisable message: a key and its slots.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -408,6 +427,28 @@ mod tests {
     )]
 
     use super::*;
+
+    /// A detail's key is its serialised spelling, so a program matching
+    /// on either reads the same word.
+    #[test]
+    fn a_detail_is_keyed_as_it_serialises() {
+        for detail in [
+            Detail::Unsourced,
+            Detail::UnknownKey,
+            Detail::DeprecatedKey,
+            Detail::DstGap,
+            Detail::TimeUnknown,
+            Detail::NonexistentDate,
+            Detail::Sealed,
+            Detail::Overflow,
+            Detail::BatchTooLarge,
+        ] {
+            assert_eq!(
+                serde_json::to_string(&detail).unwrap(),
+                format!("\"{}\"", detail.key())
+            );
+        }
+    }
 
     #[test]
     fn a_field_is_named_from_an_outer_record() {

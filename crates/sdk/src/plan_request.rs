@@ -10,6 +10,8 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 
+use crate::reading::ChartRequest;
+
 /// Which narrative plans a chart reading is asked for.
 ///
 /// ```
@@ -310,6 +312,79 @@ impl PlanRequest {
             .with_hint("name the rules in the rule request beside this one"));
         }
         Ok(())
+    }
+
+    /// `request` with the sections these composers read, whether or not it
+    /// named them — the rule a rule request already follows for what its
+    /// rules read (`03-design/plans-at-the-boundary.md` §2).
+    ///
+    /// A composer asking for a section it was not given would be a dead
+    /// end: the consumer asked for the plan, not for the knob underneath
+    /// it.
+    #[must_use]
+    pub fn sections(self, request: ChartRequest) -> ChartRequest {
+        // `chalit` needs no section at all: both house readings are on the
+        // chart's own grahas, which every founded chart carries.
+        //
+        // `placements`, `positions`, `conditions`, `karakas` and `phala` all
+        // read the graha states through `RuleInputs`, so any one asks for
+        // them; `states` reads the section itself, which is the same section.
+        let request = if self.placements
+            || self.positions
+            || self.conditions
+            || self.karakas
+            || self.phala
+            || self.states
+        {
+            request.with_state()
+        } else {
+            request
+        };
+        let request = if self.strength {
+            request.with_shadbala()
+        } else {
+            request
+        };
+        let request = if self.houses {
+            request.with_houses()
+        } else {
+            request
+        };
+        let request = if self.aspects {
+            request.with_aspects()
+        } else {
+            request
+        };
+        // The only composer that needs a section of its own: the dasha phala
+        // is a pure function of the foundation and the states, and is computed
+        // only when a request asks.
+        let request = if self.dasha_phala {
+            request.with_dasha_phala()
+        } else {
+            request
+        };
+        // The almanac is the one section a composer shares with the rules
+        // rather than owning: a rule reading the panchanga asks for it too.
+        let request = if self.panchanga {
+            request.with_panchanga()
+        } else {
+            request
+        };
+        let request = if self.bhava_bala {
+            request.with_bhava_bala()
+        } else {
+            request
+        };
+        let request = if self.vimshopaka {
+            request.with_vimshopaka()
+        } else {
+            request
+        };
+        if self.ashtakavarga {
+            request.with_ashtakavarga()
+        } else {
+            request
+        }
     }
 }
 

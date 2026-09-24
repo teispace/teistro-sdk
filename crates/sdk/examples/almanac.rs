@@ -80,14 +80,14 @@ fn spans(sdk: &Context, printed: &[LimbSpan]) -> String {
             format!(
                 "{}{} until {}{}",
                 if whole.from.get() < inside.from.get() {
-                    '<'
+                    '‹'
                 } else {
                     ' '
                 },
                 name(sdk, member),
                 clock(inside.to),
                 if whole.to.get() > inside.to.get() {
-                    '>'
+                    '›'
                 } else {
                     ' '
                 },
@@ -163,7 +163,7 @@ fn print_day(sdk: &Context, day: &Panchanga) {
         day.kaalas
             .iter()
             .map(|kaala| format!(
-                "{} {}-{}",
+                "{} {}–{}",
                 name(sdk, kaala.kaala.full_key()),
                 clock(kaala.at.from),
                 clock(kaala.at.to)
@@ -191,7 +191,7 @@ fn print_day(sdk: &Context, day: &Panchanga) {
     // value.
     if let Some(abhijit) = day.muhurtas.abhijit {
         println!(
-            "  {:<10} {}-{}{}",
+            "  {:<10} {}–{}{}",
             "abhijit",
             clock(abhijit.from),
             clock(abhijit.to),
@@ -247,15 +247,18 @@ fn main() -> Result<(), Error> {
     let week = sdk.almanac().of(&from, &to, &place, offset)?;
 
     println!(
-        "{} days at {:.4}°N {:.4}°E, one crossing",
+        "{} days at {}°N {}°E, one crossing",
         week.value.len(),
         place.latitude.get(),
         place.longitude.get(),
     );
+    // The solar model reckoned every day of the week, so the first day's
+    // description is all of them; its first clause names the model.
+    let model = week.value.first().map_or("", |day| day.day.model.as_str());
     println!(
-        "calendar {}   provider {}",
+        "calendar {}   model {}",
         from.calendar.full_key(),
-        week.provenance.provider.name,
+        model.split(',').next().unwrap_or_default(),
     );
     println!();
 
@@ -263,24 +266,17 @@ fn main() -> Result<(), Error> {
         print_day(&sdk, day);
     }
 
-    // ── What the boundary shared, which is the point ──────────────────
+    // ── One crossing, which is the point ──────────────────────────────
     // Day *n*'s next sunrise is day *n+1*'s sunrise, computed once. That
     // is why a week is one crossing and not seven.
-    let shared = week.value.windows(2).all(|pair| match pair {
-        [earlier, later] => {
-            earlier.day.next_sunrise.get().to_bits() == later.day.sunrise.get().to_bits()
-        }
-        _ => false,
-    });
-    println!("consecutive days share a boundary, bit for bit: {shared}");
     let karanas: usize = week.value.iter().map(|day| day.limbs.karana.len()).sum();
     println!(
         "{karanas} karanas across {} days, from one crossing",
         week.value.len(),
     );
     println!(
-        "content hash   {}…  -- of the week as a value, so a stored page can be checked",
-        &week.provenance.content_hash.to_string()[..16],
+        "settings hash  {}…",
+        &week.provenance.settings_hash.to_string()[..16]
     );
 
     // A day on its own is the range of one unwrapped: same crossing, and
@@ -291,7 +287,7 @@ fn main() -> Result<(), Error> {
         offset,
     )?;
     println!(
-        "almanac().day  {}  {} horas, {} muhurtas, {} choghadiya",
+        "day(one)       {}  {} horas, {} muhurtas, {} choghadiya",
         name(&sdk, one.value.day.vara.full_key()),
         one.value.horas.len(),
         one.value.muhurtas.daylight.len() + one.value.muhurtas.night.len(),

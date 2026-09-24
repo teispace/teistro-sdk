@@ -7,7 +7,7 @@ use teistro_core::quantity::{JulianDay, Place, Ut1};
 
 use crate::body::{Body, TimeScale};
 use crate::capabilities::{Capabilities, Obliquity};
-use crate::columns::PositionColumns;
+use crate::columns::{CellStatus, PositionColumns};
 use crate::crossing::{CrossingRequest, Event};
 use crate::error::ProviderError;
 use crate::frame::{Centre, Frame};
@@ -352,11 +352,11 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Box<P> {
 /// a reason to refuse the batch.
 ///
 /// Every provider is held to this, whichever side of the boundary it is
-/// written on: a native one calls this itself, and a foreign one is
-/// checked by [`crate::VtableProvider`] before the call crosses out. That
-/// is what lets a refusal name what is missing — the check runs where the
-/// words survive, rather than in each binding, where only a code crosses
-/// back.
+/// written on, because the SDK asks every provider through
+/// [`ask_positions`], which makes this check first. That is also what
+/// lets a refusal name what is missing — the check runs where the words
+/// survive, rather than in each binding, where only a code crosses back.
+/// A provider called directly may make it of itself.
 ///
 /// The order is the order a reader would ask in: what the frame needs,
 /// then what the provider answers, then what the instants are.
@@ -394,9 +394,68 @@ pub fn validate(
     // Coverage is deliberately not checked here. An instant outside the
     // declared span is a *per-cell* outcome — `CellStatus::OutOfRange` —
     // so a year-long grid whose last day runs past the ephemeris keeps
-    // the 364 days it can compute rather than losing all of them. A
-    // provider that would rather refuse the whole batch says so itself.
+    // the 364 days it can compute rather than losing all of them, and it
+    // is [`ask_positions`] that reckons it.
     Ok(())
+}
+
+/// Asks `provider` for positions the way the SDK always asks: the request
+/// [`validate`]d against `capabilities` first, then only the instants
+/// they cover, with every other instant's cells
+/// [`CellStatus::OutOfRange`].
+///
+/// These are the port's rules and not a provider's. The SDK asks every
+/// provider through here, native or foreign, so a provider is **never
+/// asked for a body it did not declare or an instant it said it does not
+/// have**, and none has to keep its own copy of either check. A year-long
+/// grid whose last day runs past the ephemeris keeps the days it can
+/// compute. Before coverage was the port's, three bindings each refused
+/// the whole batch with their own error where a native provider refused
+/// one cell.
+///
+/// A request the provider covers entirely is passed through untouched,
+/// with no copy. One it covers in part is asked as the covered instants
+/// alone, in order, and the answer is scattered back into the rows they
+/// came from; one it covers not at all never reaches it.
+///
+/// # Errors
+///
+/// What [`validate`] refuses, and whatever the provider refuses.
+pub fn ask_positions<P: EphemerisProvider + ?Sized>(
+    provider: &P,
+    capabilities: &Capabilities,
+    request: &PositionRequest<'_>,
+) -> Result<PositionColumns, ProviderError> {
+    validate(capabilities, request)?;
+    if request.jds.iter().all(|jd| capabilities.covers(*jd)) {
+        return provider.positions(request);
+    }
+    let covered: Vec<f64> = request
+        .jds
+        .iter()
+        .copied()
+        .filter(|jd| capabilities.covers(*jd))
+        .collect();
+    let mut columns = PositionColumns::new(request.jds.len(), request.bodies.len(), request.frame);
+    columns.status.fill(CellStatus::OutOfRange);
+    if covered.is_empty() {
+        return Ok(columns);
+    }
+    let answered = provider.positions(&PositionRequest {
+        jds: &covered,
+        ..*request
+    })?;
+    columns.frame = answered.frame;
+    let rows = request
+        .jds
+        .iter()
+        .enumerate()
+        .filter(|(_, jd)| capabilities.covers(**jd))
+        .map(|(row, _)| row);
+    for (from, to) in rows.enumerate() {
+        columns.copy_row(to, &answered, from);
+    }
+    Ok(columns)
 }
 
 #[cfg(test)]
@@ -406,7 +465,91 @@ mod tests {
     use teistro_core::quantity::{Altitude, Latitude, Longitude};
 
     use super::*;
+    use crate::columns::Cell;
     use crate::test_provider::TestProvider;
+
+    /// The test provider, remembering every instant it was asked for.
+    struct Recording(TestProvider, std::sync::Mutex<Vec<f64>>);
+
+    impl EphemerisProvider for Recording {
+        fn capabilities(&self) -> Capabilities {
+            self.0.capabilities()
+        }
+
+        fn positions(
+            &self,
+            request: &PositionRequest<'_>,
+        ) -> Result<PositionColumns, ProviderError> {
+            self.1.lock().unwrap().extend_from_slice(request.jds);
+            self.0.positions(request)
+        }
+    }
+
+    /// Coverage is a cell's outcome and the port's to reckon: the instants
+    /// outside the declared span come back `OutOfRange`, the rest come back
+    /// as the provider answered them, and the provider is never asked for
+    /// an instant it does not have -- nor for a body it did not declare.
+    #[test]
+    fn a_provider_is_asked_only_for_what_it_covers() {
+        let recording = Recording(TestProvider::new(), std::sync::Mutex::default());
+        let capabilities = recording.capabilities();
+        let (first, last) = TestProvider::JD_RANGE;
+        let bodies = [Body::Sun, Body::Moon];
+        let ask = |jds: &[f64]| {
+            ask_positions(
+                &recording,
+                &capabilities,
+                &PositionRequest::new(jds, TimeScale::Ut1, &bodies, Frame::CANONICAL),
+            )
+        };
+        let answer = ask(&[first - 1.0, 2_460_000.5, last + 1.0, 2_460_100.5]).unwrap();
+        let inside = [2_460_000.5, 2_460_100.5];
+        assert_eq!(*recording.1.lock().unwrap(), inside);
+        let direct = TestProvider::new()
+            .positions(&PositionRequest::new(
+                &inside,
+                TimeScale::Ut1,
+                &bodies,
+                Frame::CANONICAL,
+            ))
+            .unwrap();
+        for (row, from) in [(0, None), (1, Some(0)), (2, None), (3, Some(1))] {
+            for body in 0..bodies.len() {
+                let cell = answer.at(row, body).unwrap();
+                match from {
+                    None => assert_eq!(cell, Cell::failed(CellStatus::OutOfRange)),
+                    Some(from) => assert_eq!(cell, direct.at(from, body).unwrap()),
+                }
+            }
+        }
+
+        recording.1.lock().unwrap().clear();
+        let answer = ask(&[first - 2.0, last + 2.0]).unwrap();
+        assert!(recording.1.lock().unwrap().is_empty());
+        assert!(
+            answer
+                .cells()
+                .all(|cell| cell.status == CellStatus::OutOfRange)
+        );
+
+        // A covered request passes through whole, and a NaN is refused
+        // rather than marked, though no coverage holds it.
+        recording.1.lock().unwrap().clear();
+        ask(&inside).unwrap();
+        assert_eq!(*recording.1.lock().unwrap(), inside);
+        assert!(matches!(
+            ask(&[2_460_000.5, f64::NAN]),
+            Err(ProviderError::Invalid { .. })
+        ));
+        recording.1.lock().unwrap().clear();
+        let undeclared = ask_positions(
+            &recording,
+            &capabilities,
+            &PositionRequest::new(&inside, TimeScale::Ut1, &[Body::Pluto], Frame::CANONICAL),
+        );
+        assert!(matches!(undeclared, Err(ProviderError::Unsupported { .. })));
+        assert!(recording.1.lock().unwrap().is_empty());
+    }
 
     #[test]
     fn validation_names_the_first_problem() {

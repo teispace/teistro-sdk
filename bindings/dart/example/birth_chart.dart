@@ -8,11 +8,14 @@
 // 2. That civil time resolved to an **instant**, which needs the zone's
 //    history: Nepal was +05:30 until 1986 and +05:45 after, and the
 //    resolution says which rule it used and from which tzdb.
-// 3. Positions in a **sidereal** frame. This is the step everyone gets
-//    wrong. The SDK's canonical frame is *tropical*, because that is
-//    what an ephemeris computes; a Vedic chart wants the sidereal
-//    zodiac, so the request names one and the SDK completes it — and
-//    stamps every step it applied, which this example prints.
+// 3. The chart **founded** at that instant and place. The SDK's
+//    canonical frame is *tropical*, because that is what an ephemeris
+//    computes; a Vedic chart wants the sidereal zodiac, and the profile
+//    says which ayanamsha and which centre, so the founder asks for that
+//    frame and the SDK completes it — and stamps every step it applied,
+//    which this example prints. Positions asked for directly would not
+//    know the profile wants the Moon seen from Kathmandu rather than
+//    from the Earth's centre, which moves it most of a degree.
 // 4. Each longitude read as a rashi, a nakshatra and a pada, using the
 //    catalogue's own members and the locale's own names.
 //
@@ -23,86 +26,22 @@
 
 import 'package:teistro/teistro.dart';
 
-/// The grahas of a Vedic chart, each paired with the body an ephemeris
-/// answers for it. Ketu is not a body: it is Rahu's opposite point, so
-/// it is computed rather than asked for, as the SDK's own `points`
-/// module does.
-const List<(Graha, Body)> grahas = [
-  (Graha.sun, Body.sun),
-  (Graha.moon, Body.moon),
-  (Graha.mars, Body.mars),
-  (Graha.mercury, Body.mercury),
-  (Graha.jupiter, Body.jupiter),
-  (Graha.venus, Body.venus),
-  (Graha.saturn, Body.saturn),
-  (Graha.rahu, Body.meanNode),
-];
-
 /// A nakshatra is a twenty-seventh of the circle; a pada a quarter of one.
 const double nakshatraDeg = 360.0 / 27.0;
 const double padaDeg = nakshatraDeg / 4.0;
 
-/// One graha as a chart shows it.
-final class Placement {
-  const Placement(this.graha, this.longitude, this.speed);
+/// The sign a longitude stands in, and how far into it.
+(Rashi, double) rashiOf(double longitude) => (
+  Rashi.byId(longitude ~/ 30),
+  longitude % 30.0,
+);
 
-  final Graha graha;
-  final double longitude;
-  final double speed;
-
-  /// The sign it stands in.
-  Rashi get rashi => Rashi.byId(longitude ~/ 30);
-
-  /// How far into that sign, in degrees.
-  double get degreeInRashi => longitude % 30.0;
-
-  /// The lunar mansion it stands in.
-  Nakshatra get nakshatra => Nakshatra.byId(longitude ~/ nakshatraDeg);
-
-  /// Which quarter of that mansion, 1 to 4.
-  int get pada => (longitude % nakshatraDeg) ~/ padaDeg + 1;
-
-  /// Whether it is moving backwards. There is no flag at the boundary: a
-  /// graha is retrograde when its longitude is decreasing, which is what
-  /// the speed column says. Rahu always is.
-  bool get retrograde => speed < 0;
-}
-
-/// Every graha at one instant, in the sidereal zodiac.
-///
-/// One call for the whole grid, never a loop: the boundary takes the
-/// instants and the bodies together and answers with columns, so asking
-/// for eight grahas costs one crossing rather than eight.
-List<Placement> chart(Teistro teistro, Context ctx, double instant) {
-  // The canonical frame with two fields changed. Everything else — the
-  // centre, the corrections, the equinox — is left as the SDK computes
-  // it, so this asks for "what you would give me, but sidereal".
-  final canonical = teistro.canonicalFrame;
-  final frame = Frame(
-    ayanamsha: Ayanamsha.lahiri,
-    centre: canonical.centre,
-    equinox: canonical.equinox,
-    coordinates: canonical.coordinates,
-    sidereal: true,
-    lightTime: canonical.lightTime,
-    aberration: canonical.aberration,
-    deflection: canonical.deflection,
-    nutation: canonical.nutation,
-  );
-  final sky = ctx.positions(
-    instants: [instant],
-    bodies: [for (final (_, body) in grahas) body],
-    frame: frame,
-  );
-  return [
-    for (var i = 0; i < grahas.length; i++)
-      Placement(
-        grahas[i].$1,
-        sky.at(0, i).longitude,
-        sky.at(0, i).longitudeSpeed,
-      ),
-  ];
-}
+/// The lunar mansion a longitude stands in, and which quarter of it, 1
+/// to 4.
+(Nakshatra, int) nakshatraOf(double longitude) => (
+  Nakshatra.byId(longitude ~/ nakshatraDeg),
+  (longitude % nakshatraDeg) ~/ padaDeg + 1,
+);
 
 void main() {
   final teistro = Teistro.open();
@@ -138,52 +77,62 @@ void main() {
   // `iana` above says the answer came from the embedded database rather
   // than from a guess.
 
-  // ── 3. The sky, sidereal ────────────────────────────────────────────
-  final placements = chart(teistro, ctx, when.instantJdUtc);
+  // ── 3. The chart ───────────────────────────────────────────────────
+  final place = Observer(
+    latitudeDeg: Latitude(27.7172),
+    longitudeDeg: Longitude(85.324),
+    altitudeM: Altitude(1400),
+  );
+  final chart = ctx.chart.found(
+    instant: when.instantJdUtc,
+    place: place,
+    utcOffsetSeconds: when.offsetSeconds,
+  );
 
-  // ── 4. The chart ────────────────────────────────────────────────────
   print('');
-  print('graha             sign               deg  nakshatra      pada');
-  print('─' * 62);
-  for (final placed in placements) {
+  print('graha             sign               deg  nakshatra      pada bhava');
+  print('─' * 67);
+  for (final placed in chart.grahas) {
     final graha = ctx.intl.entity(placed.graha.fullKey);
-    final rashi = ctx.intl.entity(placed.rashi.fullKey);
-    final nakshatra = ctx.intl.entity(placed.nakshatra.fullKey);
+    final (rashi, degrees) = rashiOf(placed.longitudeDeg);
+    final (nakshatra, pada) = nakshatraOf(placed.longitudeDeg);
     print(
       '${graha.name.padRight(12)} ${(graha.glyph ?? '').padRight(2)} '
+      // There is no retrograde flag to trust blindly: a graha is
+      // retrograde when its longitude is decreasing, which is what the
+      // speed says, and `retrograde` is that comparison, named.
       '${placed.retrograde ? '℞' : ' '} '
-      '${rashi.name.padRight(12)} '
-      '${placed.degreeInRashi.toStringAsFixed(4).padLeft(8)}°  '
-      '${nakshatra.name.padRight(14)} ${placed.pada}',
+      '${ctx.intl.entity(rashi.fullKey).name.padRight(12)} '
+      '${degrees.toStringAsFixed(4).padLeft(8)}°  '
+      '${ctx.intl.entity(nakshatra.fullKey).name.padRight(14)} $pada   '
+      // Which bhava it is in, under the chart's placement system -- the
+      // question most of the tradition answers with "in the seventh".
+      '${placed.house.bhava.toString().padLeft(2)}',
     );
   }
 
-  // ── What the SDK had to do to answer ────────────────────────────────
-  // Every result carries the steps that produced it. Here the provider
-  // answered tropical positions and the SDK applied the ayanamsha and
-  // shifted the zodiac; against a provider that answers sidereal
-  // natively, those steps would say so instead.
+  // ── 4. What the chart is measured in, and against ───────────────────
   print('');
-  final sky = ctx.positions(
-    instants: [when.instantJdUtc],
-    bodies: [Body.sun],
-    frame: Frame(
-      ayanamsha: Ayanamsha.lahiri,
-      centre: teistro.canonicalFrame.centre,
-      equinox: teistro.canonicalFrame.equinox,
-      coordinates: teistro.canonicalFrame.coordinates,
-      sidereal: true,
-      lightTime: teistro.canonicalFrame.lightTime,
-      aberration: teistro.canonicalFrame.aberration,
-      deflection: teistro.canonicalFrame.deflection,
-      nutation: teistro.canonicalFrame.nutation,
-    ),
+  final (lagna, into) = rashiOf(chart.lagnaDeg);
+  print(
+    'lagna          ${chart.lagnaDeg.toStringAsFixed(4)}° -- '
+    '${ctx.intl.entity(lagna.fullKey).name} at ${into.toStringAsFixed(4)}°, '
+    'vara ${chart.vara.fullKey}',
   );
-  final steps = sky.stepsApplied
-      .cast<Map<String, Object?>>()
-      .map((step) => '${step['name']}:${step['implementation']}')
-      .join(', ');
-  print('steps applied  $steps');
+  // `null`, and it means what it says: a tropical chart has no
+  // ayanamsha, not an ayanamsha of nought.
+  final applied =
+      chart.ayanamsha?.fullKey ?? (chart.ayanamshaCustom ? 'custom' : null);
+  print(
+    applied == null
+        ? 'ayanamsha      tropical, none applied'
+        : 'ayanamsha      ${chart.ayanamshaOffsetDeg.toStringAsFixed(6)}° '
+            'applied ($applied)',
+  );
+  print('steps applied  ${chart.batch.stepsApplied.join(', ')}');
+  // The provenance envelope stamps the settings, the provider and the
+  // time layer; it is what a stored chart keeps in order to say what
+  // computed it.
   print('settings hash  ${ctx.settingsHash.substring(0, 16)}…');
   ctx.dispose();
 

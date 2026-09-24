@@ -88,16 +88,11 @@ def main() -> None:
     with teistro.context(
         profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
-        # ── Which build am I talking to? ──────────────────────────────
-        # A service checks this once at start-up. The binding already
-        # refuses a library that is not the build it was generated from;
-        # this is how to log what it did load.
-        build = teistro.build
-        print(
-            f"library  Teistro {build.sdk}  ABI {build.abi}"
-            f"  catalogue {build.catalogue}  {build.target}"
-            f"  {build.commit[:8]}{'-dirty' if build.dirty else ''}"
-        )
+        # The binding already refuses a library that is not the build it
+        # was generated from; `teistro.build` says what it did load -- the
+        # SDK and ABI versions, the target and the commit -- which is for
+        # a bug report. What computed an answer is stamped on the answer,
+        # and is printed last.
 
         # ── One call for the whole year ───────────────────────────────
         frame = dataclasses.replace(
@@ -114,13 +109,10 @@ def main() -> None:
 
         # ── The columns ───────────────────────────────────────────────
         # Point 2 above, checked rather than printed: the type is this
-        # language's own.
+        # language's own, a view over the blob's own bytes.
         cells = sky.decoded.cells
         assert isinstance(cells.lon, memoryview) and cells.lon.format == "d" and cells.lon.readonly
-        print(
-            f"columns  lon holds {len(cells.lon)} doubles in {cells.lon.nbytes} bytes,"
-            " a view over the blob's own bytes"
-        )
+        print(f"columns  lon holds {len(cells.lon)} doubles in {cells.lon.nbytes} bytes")
         # numpy, when a caller has it, wraps this without copying:
         #     import numpy as np
         #     longitudes = np.asarray(cells.lon).reshape(DAYS, len(BODIES))
@@ -134,7 +126,7 @@ def main() -> None:
             speed = cells.lon_speed[column]
             direction = "retrograde" if speed < 0 else "direct"
             print(
-                f"  {body.key:10} {name:8} {direction:10} at {speed:+8.4f}°/day,"
+                f"  {graha.key:10} {name:8} {direction:10} at {speed:+8.4f}°/day,"
                 f" {len(crossings)} sign change(s), {len(turns)} station(s)"
             )
             for day, sign in crossings[:3]:
@@ -161,6 +153,8 @@ def main() -> None:
         # The whole envelope is canonical JSON: byte-identical across
         # every binding, which is what makes it safe to hash and store.
         print(f"envelope {len(json.dumps(provenance, separators=(',', ':')))} bytes of canonical JSON")
+        provider = provenance["provider"]
+        print(f"provider {provider['name']} {provider['version']} (data {provider['data_version']})")
 
 
 if __name__ == "__main__":

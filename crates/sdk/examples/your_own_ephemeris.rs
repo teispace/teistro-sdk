@@ -17,10 +17,12 @@
 //!   the provider's native frame and completes the rest itself, stamping
 //!   each step. This is why an engine that knows nothing about the
 //!   ayanamsha can serve a Vedic chart.
-//! - **Say what you cover.** `bodies` and `jd_range` are checked
-//!   *before* your `positions` runs — `validate` is the SDK's own check,
-//!   re-exported so you use the same one — so a request you cannot serve
-//!   is refused by name rather than by a wrong answer.
+//! - **Say what you cover.** `bodies` and `jd_range` are the SDK's to
+//!   check, not yours: a body you did not declare refuses the request by
+//!   name before `positions` runs, and an instant outside `jd_range` is
+//!   never asked for — its cells come back `OutOfRange` and the rest of
+//!   the grid is answered. The same rule holds for a provider written in
+//!   any binding.
 //! - **A refusal is a value, not a panic.** `ProviderError` is what
 //!   crosses back, and the sentence in it reaches the caller. A Rust
 //!   consumer gets the whole error; only a code crosses the C ABI.
@@ -41,7 +43,7 @@ use teistro::catalogue::Ayanamsha;
 use teistro::{
     Body, Capabilities, Cell, CellStatus, Context, Ephemeris, EphemerisKind, EphemerisProvider,
     Error, Frame, Identity, PositionColumns, PositionRequest, ProviderError, Source, TimeScale,
-    Zodiac, validate,
+    Zodiac, canonical_json,
 };
 
 /// J2000.0, which this toy measures from.
@@ -69,8 +71,8 @@ struct TableEphemeris {
 }
 
 impl TableEphemeris {
-    /// Coverage: J2000 to about 2050. A request outside this is refused
-    /// before `positions` is ever called.
+    /// Coverage: J2000 to about 2050. An instant outside it is never
+    /// asked for.
     const JD_RANGE: (f64, f64) = (J2000, 2_469_807.0);
     /// The bodies it has rows for.
     const BODIES: [Body; 2] = [Body::Sun, Body::Moon];
@@ -136,11 +138,6 @@ impl EphemerisProvider for TableEphemeris {
                 detail: String::from("de431.eph is not where the index says"),
             });
         }
-        // The SDK's own check, so a provider refuses a body or an
-        // instant it does not cover in exactly the words every other
-        // provider uses.
-        let capabilities = self.capabilities();
-        validate(&capabilities, request)?;
         // **Check the frame.** Answering at all asserts that the answer
         // is in the frame that was asked for; a provider that computes
         // only its own must say so.
@@ -160,21 +157,11 @@ impl EphemerisProvider for TableEphemeris {
         let mut columns = PositionColumns::new(
             request.jds.len(),
             request.bodies.len(),
-            capabilities.native_frame,
+            self.capabilities().native_frame,
         );
         for (at, jd) in request.jds.iter().enumerate() {
             let days = jd - J2000;
             for (which, body) in request.bodies.iter().enumerate() {
-                // **Coverage is per cell**, which is the port's own
-                // decision: a year-long grid whose last day runs past
-                // the table keeps the 364 days it can compute. So an
-                // instant outside the span is a cell with a status, not
-                // a refusal of the batch -- `capabilities.covers` is the
-                // question, and `Cell::failed` the answer.
-                if !capabilities.covers(*jd) {
-                    columns.set_at(at, which, Cell::failed(CellStatus::OutOfRange));
-                    continue;
-                }
                 let (start, rate) = if *body == Body::Sun {
                     (280.46, 0.9856)
                 } else {
@@ -253,16 +240,13 @@ fn the_happy_path() -> Result<(), Error> {
     // write a provider: a week of two bodies asked the table once.
     let (asked, cell_count, _) = table.tally();
     println!("asked    {asked} time(s) for {cell_count} cells");
+    let columns = &sky.value.columns;
     println!(
         "answered {} cells over {} days",
-        sky.columns.len(),
-        sky.columns.jd_count
+        columns.len(),
+        columns.jd_count
     );
-    let cell = |instant, body| {
-        sky.columns
-            .at(instant, body)
-            .map_or(f64::NAN, |cell| cell.lon)
-    };
+    let cell = |instant, body| columns.at(instant, body).map_or(f64::NAN, |cell| cell.lon);
     println!(
         "  sun  {:>8.4}° -> {:>8.4}° in a week",
         cell(0, 0),
@@ -273,44 +257,42 @@ fn the_happy_path() -> Result<(), Error> {
         cell(0, 1),
         cell(6, 1)
     );
+    // The provider's own name and data version are stamped on the answer,
+    // which is how a stored chart says what computed it.
+    println!("  stamped as {}", canonical_json(&sky.provenance.provider));
     Ok(())
 }
 
-/// What the SDK refuses before the provider is asked, what it marks
-/// per cell, and what the provider refuses itself.
-fn the_refusals() -> Result<(), Error> {
-    println!();
-    // A body the provider never declared refuses the **whole request**,
-    // and names what it does answer -- a refusal that is an instruction.
-    let sdk = context_over(&Arc::new(TableEphemeris::new()))?;
+/// A body it never declared, which the SDK refuses before the provider
+/// is asked.
+fn a_body_it_never_declared() -> Result<(), Error> {
+    let table = Arc::new(TableEphemeris::new());
+    let sdk = context_over(&table)?;
     let jds = [J2000];
     let bodies = [Body::Saturn];
-    match sdk.positions(&PositionRequest::new(
+    let Err(refusal) = sdk.positions(&PositionRequest::new(
         &jds,
         TimeScale::Ut1,
         &bodies,
         Frame::CANONICAL,
-    )) {
-        Ok(_) => println!("refused  a body it never declared: it was not, which is a defect"),
-        Err(refusal) => println!("refused  a body it never declared: {}", refusal.message),
-    }
+    )) else {
+        return Err(Error::internal("Saturn was never declared"));
+    };
+    let (asked, _, _) = table.tally();
+    println!();
+    println!("refused  {}", refusal.message);
+    println!("         and the provider was asked {asked} times");
+    Ok(())
+}
 
-    // **Coverage is a per-cell outcome, not a refusal**, and that is the
-    // port's own decision (`provider::validate`): a year-long grid whose
-    // last day runs past the ephemeris keeps the 364 days it can compute
-    // rather than losing all of them. So an instant outside the declared
-    // span comes back as a cell with a status, and a caller reads the
-    // status rather than catching an error.
-    //
-    // This is the one place a Rust provider differs from the same
-    // provider written in JavaScript, Dart or Python: those reach the
-    // port through an adapter shim that checks the coverage span up
-    // front and refuses the batch, because a provider in those languages
-    // answers columns and not statuses. In Rust you are the port, so you
-    // say it per cell -- or refuse the batch yourself, which a provider
-    // that would rather is free to do.
-    let sdk = context_over(&Arc::new(TableEphemeris::new()))?;
-    let jds = [J2000, 2_200_000.0];
+/// An instant outside its coverage, which is a cell's outcome and not a
+/// refusal of the batch: a year-long grid whose last day runs past the
+/// table keeps the days it can compute, and the provider is never asked
+/// for the instant it said it does not have.
+fn an_instant_outside_its_coverage() -> Result<(), Error> {
+    let table = Arc::new(TableEphemeris::new());
+    let sdk = context_over(&table)?;
+    let jds = [2_200_000.0, J2000];
     let bodies = [Body::Sun];
     let sky = sdk.positions(&PositionRequest::new(
         &jds,
@@ -318,33 +300,25 @@ fn the_refusals() -> Result<(), Error> {
         &bodies,
         Frame::CANONICAL,
     ))?;
+    let status = |row| {
+        sky.value
+            .columns
+            .at(row, 0)
+            .map_or("missing", |cell| cell.status.key())
+    };
+    let (_, cells, _) = table.tally();
+    println!();
     println!(
-        "per cell an instant inside coverage is {:?} and one outside it is {:?};",
-        sky.columns.at(0, 0).map(|cell| cell.status),
-        sky.columns.at(1, 0).map(|cell| cell.status),
+        "coverage 2200000 is {} and 2451545 is {}:",
+        status(0),
+        status(1)
     );
-    println!("         the grid keeps what it could compute");
-
-    // When the provider itself fails, its own sentence reaches the
-    // caller -- not a code, and not "the provider failed".
-    let sdk = context_over(&Arc::new(TableEphemeris::broken()))?;
-    let jds = [J2000];
-    let bodies = [Body::Sun];
-    if let Err(refusal) = sdk.positions(&PositionRequest::new(
-        &jds,
-        TimeScale::Ut1,
-        &bodies,
-        Frame::CANONICAL,
-    )) {
-        println!();
-        println!("thrown   {:?}: {}", refusal.status, refusal.message);
-        println!("         the provider's own sentence crossed back, not just a code");
-    }
+    println!("         the provider was asked for {cells} cell(s)");
     Ok(())
 }
 
 /// A frame it does not compute, which the SDK completes.
-fn the_frame_it_refuses() -> Result<(), Error> {
+fn a_frame_it_does_not_compute() -> Result<(), Error> {
     // This table computes tropical positions and insists on that frame.
     // Ask for a sidereal zodiac and the SDK does the rest, naming every
     // step it applied.
@@ -365,15 +339,41 @@ fn the_frame_it_refuses() -> Result<(), Error> {
         Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)),
     ))?;
     let lon = |sky: &teistro::Completed| sky.columns.at(0, 0).map_or(f64::NAN, |cell| cell.lon);
+    let steps: Vec<String> = sidereal
+        .value
+        .steps
+        .iter()
+        .map(|step| format!("{}:{}", step.name, step.implementation.key()))
+        .collect();
+    let (_, _, refusals) = table.tally();
     println!();
     println!(
-        "frames   the table answered {:.4}° tropical; a sidereal request is {:.4}°",
-        lon(&tropical),
-        lon(&sidereal),
+        "frames   the provider answered {:.4}° tropical; a sidereal request is {:.4}°",
+        lon(&tropical.value),
+        lon(&sidereal.value),
     );
-    let (_, _, refusals) = table.tally();
-    println!("         it refused the frame {refusals} time(s), and the SDK completed it:");
-    println!("         {}", sidereal.step_keys().join(", "));
+    println!("         it refused the frame {refusals} time(s), and the");
+    println!("         SDK completed it: {}", steps.join(", "));
+    Ok(())
+}
+
+/// When the provider itself fails, its own sentence reaches the caller --
+/// not a code, and not "the provider failed".
+fn when_the_provider_itself_fails() -> Result<(), Error> {
+    let sdk = context_over(&Arc::new(TableEphemeris::broken()))?;
+    let jds = [J2000];
+    let bodies = [Body::Sun];
+    let Err(refusal) = sdk.positions(&PositionRequest::new(
+        &jds,
+        TimeScale::Ut1,
+        &bodies,
+        Frame::CANONICAL,
+    )) else {
+        return Err(Error::internal("the broken table answered"));
+    };
+    println!();
+    println!("thrown   {}", refusal.message);
+    println!("         the provider's own error crossed back, not just a code");
     Ok(())
 }
 
@@ -383,54 +383,33 @@ fn the_frame_it_refuses() -> Result<(), Error> {
 /// on and, where the SDK knows one, the detail and a hint to act on.
 /// That is what to put in front of a person.
 fn a_refusal_a_user_should_see() -> Result<(), Error> {
-    let sdk = context_over(&Arc::new(TableEphemeris::new()))?;
+    let sdk = Context::builder().profile("parashari-classical").build()?;
     let Err(refusal) = sdk.keys().id("graha.SUNN") else {
         return Err(Error::internal("`graha.SUNN` is not a key"));
     };
     println!();
-    println!("status   {:?}", refusal.status);
+    println!("status   {}", refusal.status.name());
     println!("message  {}", refusal.message);
     println!(
         "detail   {}",
-        refusal
-            .detail
-            .map_or_else(String::new, |detail| format!("{detail:?}"))
+        refusal.detail.map_or("", |detail| detail.key())
     );
     println!("hint     {}", refusal.hint().unwrap_or_default());
     println!("         a program matches on `status`; a person reads the message and the hint");
     Ok(())
 }
 
-/// And the chain, which is what a real consumer writes.
-///
-/// **An entry the chain can fall back *from* is a recipe, not a built
-/// provider**: a `Box<dyn EphemerisProvider>` cannot fail to open, so a
-/// chain of them always stops at the first. `Ephemeris::opening` takes
-/// the closure, under the name a refusal will use.
-fn the_chain() -> Result<(), Error> {
-    let sdk = Context::builder()
-        .profile("parashari-classical")
-        .ephemeris([
-            Ephemeris::opening("table-ephemeris", || {
-                Err(Error::internal("the rows are not on this machine"))
-            }),
-            Ephemeris::Builtin,
-        ])
-        .build()?;
-    println!();
-    println!(
-        "chain    the first entry could not open, so the second answered: {}",
-        sdk.ephemeris()
-            .map(|provider| provider.capabilities().identity.name)
-            .unwrap_or_default(),
-    );
-    Ok(())
-}
+// A chain whose first entry is a recipe -- `Ephemeris::opening` -- lets a
+// later entry be the fallback for an engine that cannot open on this
+// machine: a built `Box<dyn EphemerisProvider>` cannot fail to open, so a
+// chain of them always stops at the first. The crate's own tests hold
+// that (`tests/surface.rs`).
 
 fn main() -> Result<(), Error> {
     the_happy_path()?;
-    the_refusals()?;
-    the_frame_it_refuses()?;
-    a_refusal_a_user_should_see()?;
-    the_chain()
+    a_body_it_never_declared()?;
+    an_instant_outside_its_coverage()?;
+    a_frame_it_does_not_compute()?;
+    when_the_provider_itself_fails()?;
+    a_refusal_a_user_should_see()
 }

@@ -159,7 +159,7 @@ def main() -> None:
         # once when the batch is built, so `day.karana` is a slice and
         # not a search.
         counted = sum(len(day.karana) for day in week)
-        print(f"{counted} karanas across {len(week)} days, from one blob")
+        print(f"{counted} karanas across {len(week)} days, from one crossing")
         print(f"settings hash  {ctx.settings_hash[:16]}…")
 
         # A day on its own is the range of one unwrapped: same crossing,

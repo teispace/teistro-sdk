@@ -3,9 +3,12 @@
 
 use core::cell::{Ref, RefCell, RefMut};
 
+use serde::Serialize;
 use teistro_astro::DeltaTModel;
 use teistro_astro::completion::{Completed, Completion};
-use teistro_core::envelope::Hash;
+use teistro_core::envelope::{
+    CALCULATION_VERSION, Envelope, Hash, Provenance, Version, content_hash,
+};
 use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
     DEFAULT_PROFILE, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
@@ -15,6 +18,7 @@ use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
 use teistro_port_ephemeris::{CachingProvider, EphemerisProvider, PositionRequest};
+use teistro_time::EmbeddedTzdb;
 
 use crate::BUNDLES;
 use crate::area::{
@@ -183,18 +187,63 @@ impl Context {
     /// The answer is the astronomy crate's own `Completed`: a Rust
     /// consumer reads `JulianDay` and `Longitude` off it, where every
     /// other binding decodes a result blob to get the same numbers back
-    /// as doubles.
+    /// as doubles. It comes in the same envelope as a chart's, stamped
+    /// with what computed it, so a stored grid says which provider and
+    /// which data answered.
+    ///
+    /// An instant outside the provider's coverage is not an error: its
+    /// cells are `OutOfRange` and the rest of the grid is answered, and
+    /// the provider is never asked for it.
     ///
     /// # Errors
     ///
     /// A context with no ephemeris, a frame the provider refuses and the
-    /// SDK cannot complete, an instant outside the provider's coverage,
-    /// or the provider's own refusal, which crosses back as itself.
-    pub fn positions(&self, request: &PositionRequest<'_>) -> Result<Completed, Error> {
+    /// SDK cannot complete, or the provider's own refusal, which crosses
+    /// back as itself.
+    pub fn positions(&self, request: &PositionRequest<'_>) -> Result<Envelope<Completed>, Error> {
         let provider = self.provider.as_deref().ok_or_else(no_ephemeris)?;
         let completion =
             Completion::new(provider, self.settings().provider.overrides, self.delta_t);
-        completion.positions(request).map_err(Error::from)
+        let completed = completion.positions(request).map_err(Error::from)?;
+        let provenance = self.positions_provenance(request, &completed);
+        Ok(Envelope::new(completed, provenance))
+    }
+
+    /// The provenance [`Context::positions`] stamps its answer with: this
+    /// context's settings and profile, the request's hash, the provider's
+    /// identity with the frame it answered in and the steps applied, the
+    /// time scales' tables, and the hash of the columns.
+    ///
+    /// Public for a caller that completes a request itself and wants the
+    /// answer stamped as this context would stamp it — which is what the C
+    /// boundary does, since it reads a provider's own error code on the
+    /// way that this façade's `Error` does not carry. A context with no
+    /// ephemeris stamps the provider as unnamed.
+    #[must_use]
+    pub fn positions_provenance(
+        &self,
+        request: &PositionRequest<'_>,
+        completed: &Completed,
+    ) -> Provenance {
+        let mut provenance = Provenance::new(
+            Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
+            CALCULATION_VERSION,
+            teistro_core::catalogue::SCHEMA_VERSION,
+            self.profile(),
+            self.settings_hash(),
+            content_hash(&RequestRecord::of(request)),
+        );
+        if let Some(provider) = self.provider.as_deref() {
+            provenance.provider = provider
+                .capabilities()
+                .identity
+                .stamp(completed.columns.frame, completed.step_keys());
+        }
+        provenance.time.delta_t_model = self.delta_t.key().to_string();
+        provenance.time.leap_table = teistro_time::leap::version().to_string();
+        provenance.time.tzdb_version = EmbeddedTzdb::bundled_version().to_string();
+        provenance.content_hash = content_hash(&completed.columns);
+        provenance
     }
 
     /// The locale engine: a message, an entity's forms,
@@ -456,4 +505,32 @@ fn remembering(
         inner,
         cells as usize,
     )))
+}
+
+/// A positions request as its input hash sees it: every field that
+/// changes the answer, named rather than numbered, so the hash is the
+/// same whichever binding asked.
+#[derive(Serialize)]
+struct RequestRecord<'a> {
+    scale: &'static str,
+    frame: String,
+    bodies: Vec<&'static str>,
+    jds: &'a [f64],
+    observer: Option<[f64; 3]>,
+    speeds: bool,
+}
+
+impl<'a> RequestRecord<'a> {
+    fn of(request: &'a PositionRequest<'_>) -> RequestRecord<'a> {
+        RequestRecord {
+            scale: request.scale.name(),
+            frame: request.frame.key(),
+            bodies: request.bodies.iter().map(|b| b.key()).collect(),
+            jds: request.jds,
+            observer: request
+                .observer
+                .map(|p| [p.latitude.get(), p.longitude.get(), p.altitude.get()]),
+            speeds: request.speeds,
+        }
+    }
 }

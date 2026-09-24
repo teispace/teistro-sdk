@@ -120,5 +120,11 @@ void main() {
     'ishtakaal ${single.timing.ghati}:${single.timing.pala}:${single.timing.vipala}  '
     'hora lord ${single.timing.horaLord.fullKey}',
   );
+  // The same crossing, so the same answer to the bit: `==` on two doubles
+  // is a comparison of their bits for every value but NaN and zero's sign.
+  print(
+    '               and it agrees with the batch of one bit for bit: '
+    '${single.lagnaDeg == charts.at(0).lagnaDeg}',
+  );
   ctx.dispose();
 }

@@ -46,10 +46,10 @@ pub(crate) fn system_of(id: Calendar) -> Result<&'static dyn CalendarSystem, Err
 
 pub use almanac::AlmanacArea;
 pub use calendar::CalendarArea;
-pub use chart::ChartArea;
+pub use chart::{ChartArea, Interpreted};
 pub use engine::EngineArea;
 pub use frame::FrameArea;
-pub use interpret::InterpretArea;
+pub use interpret::{InterpretArea, Plans};
 pub use intl::IntlArea;
 pub use keys::KeysArea;
 pub use time::TimeArea;

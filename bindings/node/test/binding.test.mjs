@@ -1713,6 +1713,26 @@ test('a chart carries its Vaiseshikamsa, each scheme\'s count and name', () => {
  * under the default reading, the text's, whose least in any varga is 5;
  * `null` unless asked.
  */
+/**
+ * A chart names the ayanamsha it was read under. The blob carried it and no
+ * layer read it, so a reader could see an offset and not whose; and a
+ * tropical chart has none, which is not an ayanamsha of nought.
+ */
+test('a chart names its ayanamsha, and a tropical one has none', () => {
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const sidereal = context();
+  const chart = sidereal.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 });
+  assert.equal(chart.ayanamsha, 'ayanamsha.LAHIRI');
+  assert.equal(chart.ayanamshaCustom, false);
+  assert.notEqual(chart.ayanamshaOffsetDeg, 0);
+  sidereal.dispose();
+  const tropical = context({ settings: { frame: { zodiac: 'TROPICAL' } } });
+  const western = tropical.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 });
+  assert.equal(western.ayanamsha, null);
+  assert.equal(western.ayanamshaCustom, false);
+  tropical.dispose();
+});
+
 test('a chart carries its Vimshopaka, each graha\'s four scores', () => {
   const ctx = context();
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };

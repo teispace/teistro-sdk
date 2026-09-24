@@ -66,7 +66,7 @@ from teistro import (
     when_unknown,
 )
 from teistro._ffi import Longitude
-from teistro.catalogue import DayPart, Graha
+from teistro.catalogue import Ayanamsha, DayPart, Graha
 from tests.support import LOCALE, PROFILE, WithLibrary, fixture
 
 
@@ -691,8 +691,22 @@ class AnEngine(WithLibrary):
         self.assertLessEqual(chart.day_elapsed, 1.0)
         self.assertGreaterEqual(chart.day_lagna_deg, 0.0)
         self.assertLess(chart.day_lagna_deg, 360.0)
-        # The context is sidereal, so an ayanamsha was applied.
+        # The context is sidereal, so an ayanamsha was applied -- and it is
+        # named, where the blob had carried it and nothing had read it.
         self.assertNotEqual(chart.ayanamsha_offset_deg, 0.0)
+        self.assertEqual(chart.ayanamsha, Ayanamsha.LAHIRI)
+        self.assertFalse(chart.ayanamsha_custom)
+        # A tropical chart has none, which is not an ayanamsha of nought.
+        with self.teistro.context(
+            profile=PROFILE,
+            settings={"frame": {"zodiac": "TROPICAL"}},
+            test_provider=True,
+        ) as tropical:
+            western = tropical.chart.found(
+                instant=2451545.0, place=observer, utc_offset_seconds=20700
+            )
+            self.assertIsNone(western.ayanamsha)
+            self.assertFalse(western.ayanamsha_custom)
 
         # Both house readings are kept; the chalit is the other twelve,
         # each with its own centre and opening cusp.
