@@ -730,14 +730,14 @@ def main() -> None:
                         put(f"{asked}-held", " ".join(held_said(h) for h in matter.held))
                     for point in annual.sahams:
                         put(f"{stem}-saham-{point.saham.key}", saham_said(point))
-                    for dasha in annual.dashas:
-                        said = f"{stem}-dasha-{dasha.system.full_key}"
-                        ring = dasha.ring
+                    for year_dasha in annual.dashas:
+                        said = f"{stem}-dasha-{year_dasha.system.full_key}"
+                        ring = year_dasha.ring
                         left = "null" if ring.remaining is None else f"{ring.remaining:.9f}"
                         put(
                             said,
-                            f"{dasha.seed.full_key if dasha.seed is not None else '-'} {ring.first} {left} "
-                            f"{dasha.year.from_jd:.9f} {dasha.year.to_jd:.9f} | "
+                            f"{year_dasha.seed.full_key if year_dasha.seed is not None else '-'} {ring.first} {left} "
+                            f"{year_dasha.year.from_jd:.9f} {year_dasha.year.to_jd:.9f} | "
                             + " ".join(
                                 f"{s.lord.full_key}/{s.sign.full_key if s.sign is not None else '-'}/{s.weight:.3f}"
                                 for s in ring.shares
@@ -748,7 +748,7 @@ def main() -> None:
                             " ".join(
                                 f"{p.path}:{p.lord.full_key}:{p.sign.full_key if p.sign is not None else '-'}:"
                                 f"{p.span.from_jd:.9f}:{p.span.to_jd:.9f}"
-                                for p in dasha.periods
+                                for p in year_dasha.periods
                             ),
                         )
                     put(
