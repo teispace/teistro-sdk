@@ -227,8 +227,14 @@ serves both (C120), and the source's worked Gairi-Kamboola, Chart X-17,
 is the acceptance test. Read literally, that chart is a Khallasara too,
 and the source's own comment on Khallasara says it is not (C121). Tambira
 ships the definition's karyesha and, as a knob, the comment's "some
-authorities" reading, which lets either lord move. Left: Kuttha, which
-needs Tajika's benefics (C117).
+authorities" reading, which lets either lord move.
+
+**Last, yoga 15**, Kuttha, which waited on Tajika's benefics (C117) until
+the *Tajika Nilakanthi*'s commentary named them: the full Moon, Mercury,
+Jupiter and Venus, the four Charak's saham chapter also calls natural
+benefics. Its malefic clause is the *kṣuta* aspect, which Manau's reading
+already is. The Moon ships benefic by default, and the commentary's
+*full* ships as the knob `moon_benefic: waxing`.
 
 **Reading the pair rule against the chart found something the table does
 not state.** The **first** house's lord *is* the lagnesha, so a question

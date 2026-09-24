@@ -278,13 +278,13 @@ charts and **1**, a divisibility the pass checks.
 | **DuhphaliKuttha** | built | 36 | 0.1% |
 | **DutthotthaDavira** | built | 4 | 0.0% |
 | **Tambira** | built | 20 | 0.1% |
-| Kuttha | *awaiting* | -- | Tajika's own benefics, which Table X-3 does not enumerate as it enumerates the malefics (crux C117) |
+| **Kuttha** | built | 958 | 3.7% |
 | **Durapha** | built | 4 | 0.0% |
 
-**15 of the sixteen are built** and the other one are listed at every
+**16 of the sixteen are built** and the other no are listed at every
 call rather than left out of the answer, because *did not hold* and
 *cannot be told* are different statements. `YearYogas::holds` answers
-`None` for those one, never `false`.
+`None` for those no, never `false`.
 
 ### The first house is never a pair
 
@@ -651,3 +651,32 @@ and the pass fails if one does.
 | weak | its lord neither aspects nor conjoins it | 32.1% |
 | weak | it is with an enemy of its lord | 13.0% |
 | weak | it is with a natural malefic | 23.9% |
+
+## 17. Kuttha
+
+Kuttha wants both lords powerful, in a kendra or a panaphara, under a
+benefic's aspect and no malefic's (`03-design/tajika-yogas.md`, crux
+C117). It held in **958** of the 22 009 judged matters (4.4%). It can
+hold only where both lords are strong, and the default floors find
+**9042** such matters, so 8084 of them were turned away by a clause
+other than strength.
+
+**Which clause turns a strong pair away.** A clause fails a matter where
+it fails of either lord. The last column counts the matters it turned
+away alone, the near misses: one clause read otherwise and the Kuttha
+would have held. *Powerful* reads zero by construction, since only
+strong pairs are counted, and the pass fails if it does not.
+
+| clause | turned away | alone |
+|---|---:|---:|
+| powerful | 0 | 0 |
+| in a kendra or a panaphara | 5116 | 1397 |
+| under a benefic's aspect | 628 | 50 |
+| under no malefic's aspect | 6555 | 2708 |
+
+**The commentary's full Moon** (`moon_benefic: waxing`) holds Kuttha in
+**897** matters to the default's 958. It can only remove a benefic, so
+it can never add a Kuttha. The pass asks it of every strong pair and
+fails if it adds one. It also fails if `favour` and the yoga disagree
+about a single matter, or if Kuttha's strong pairs differ from the
+floors' own count.

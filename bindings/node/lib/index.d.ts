@@ -682,6 +682,11 @@ export interface YogaRules {
    * authorities".
    */
   readonly tambira?: 'karyesha' | 'either_lord';
+  /**
+   * When the Moon counts among Kuttha's benefics: `'always'` by default,
+   * Charak's list, or `'waxing'`, the commentary's "full Moon" (crux C117).
+   */
+  readonly moonBenefic?: 'always' | 'waxing';
 }
 
 /** Where the sources differ on the lord of the year, each a named reading. */

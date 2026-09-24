@@ -1399,10 +1399,10 @@ test("a year's chart answers the Tajika yogas for the matters asked", () => {
     assert.deepEqual(matters.map((matter) => matter.house), [7, 1]);
     assert.ok([...retrograde, ...combust].every((graha) => graha.startsWith('graha.')));
     for (const matter of matters) {
-      // The build computes all but Kuttha, and says so rather than
-      // answering false for it.
-      assert.deepEqual(matter.unanswered, ['kuttha']);
-      assert.equal(matter.holds('kuttha'), null);
+      // The build computes all sixteen, and the façade reads the states,
+      // so every one answers true or false and none is left unanswered.
+      assert.deepEqual(matter.unanswered, []);
+      assert.equal(typeof matter.holds('kuttha'), 'boolean');
       assert.equal(typeof matter.holds('ithasala'), 'boolean');
       assert.equal(matter.karyesha !== matter.lagnesha, !matter.sameLord);
       for (const held of matter.held) {
@@ -1432,6 +1432,11 @@ test("a year's chart answers the Tajika yogas for the matters asked", () => {
     found.flatMap((one) => one.annual.matters).filter((matter) => matter.holds('tambira')).length;
   const either = years({ through: 2, place: 'birth', matters: 'all', yogas: { tambira: 'either_lord' } });
   assert.ok(tambiras(either) >= tambiras(every));
+  // The commentary's full Moon can only take a Kuttha away.
+  const kutthas = (found) =>
+    found.flatMap((one) => one.annual.matters).filter((matter) => matter.holds('kuttha')).length;
+  const waxing = years({ through: 2, place: 'birth', matters: 'all', yogas: { moonBenefic: 'waxing' } });
+  assert.ok(kutthas(waxing) <= kutthas(every));
 
   // The rule records read in the casing these types declare.
   years({ through: 2, place: 'birth', varshesha: { noneAspects: 'annual_lagna_lord' } });

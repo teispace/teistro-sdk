@@ -25,9 +25,9 @@ use teistro::House;
 use teistro::catalogue::{Graha, Rashi};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::tajika::{
-    AnnualStates, Bala, MOST_YEARS, MunthaDegree, Qualification, RASHYANTA_DEG, Reading, SEVEN,
-    Strength, TambiraMover, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YearYoga, YearYogas, Yoga,
-    YogaRules,
+    AnnualStates, Bala, Favour, MOST_YEARS, MoonBenefic, MunthaDegree, Qualification,
+    RASHYANTA_DEG, Reading, SEVEN, Strength, TambiraMover, YOGA_STRONG_FROM, YOGA_WEAK_BELOW,
+    YearYoga, YearYogas, Yoga, YogaRules,
 };
 use teistro::{
     AddSign, ChartRequest, Context, Document, Ephemeris, HarshaGrade, HarshaRules, HousePoints,
@@ -192,6 +192,7 @@ fn page(root: &Path) -> Result<String, String> {
     the_sahams(&mut out, &swept);
     the_harsha(&mut out, &swept);
     the_strength(&mut out, &swept);
+    the_kuttha(&mut out, &swept);
     Ok(fill(&out))
 }
 
@@ -807,6 +808,35 @@ struct Kinds {
     harsha: HarshaCounts,
     /// What a saham's strength makes of every saham of every chart.
     strength: StrengthCounts,
+    /// What Kuttha makes of every judged matter.
+    kuttha: KutthaCounts,
+}
+
+/// Kuttha over every judged matter: where it held under each reading of
+/// the Moon, and which clause turned away a pair strong enough to ask.
+#[derive(Default)]
+struct KutthaCounts {
+    /// Matters whose two lords are both strong: the most Kuttha can hold
+    /// in, counted here from `favour` so the pass can compare it with the
+    /// floors' own partition.
+    strong_pairs: usize,
+    /// Matters in which `favour` finds both lords favoured, which must be
+    /// exactly those in which the yoga held.
+    favoured: usize,
+    /// Matters in which Kuttha holds under the commentary's waxing Moon.
+    waxing: usize,
+    /// Strong-pair matters in which Kuttha held under the waxing Moon and
+    /// not under the default: none, since the reading only removes a
+    /// benefic. Counted rather than assumed, so the pass can fail on it.
+    waxing_only: usize,
+    /// For each clause, in `Favour::clauses` order, the strong-pair
+    /// matters it turned away by failing of either lord.
+    turned_away: [usize; 4],
+    /// Of those, the ones in which it was the only clause to fail.
+    alone: [usize; 4],
+    /// The clauses' own names, taken from the first favour read, so the
+    /// page never types one out.
+    names: [&'static str; 4],
 }
 
 /// Every saham of every chart, sorted by which of the source's two lists
@@ -1044,6 +1074,7 @@ fn ask_every_house(sdk: &Context, chart: &Asked<'_>, kinds: &mut Kinds) -> Resul
             kinds.same_lord += 1;
         } else {
             partition(chart_strengths, asked.lagnesha, asked.karyesha, kinds);
+            count_kuttha(sdk, chart, house, &asked, &mut kinds.kuttha)?;
         }
         // Counted by **matter**, through `holds`: one matter can hold a
         // yoga through several planets -- Manau through each malefic, Nakta
@@ -1058,6 +1089,82 @@ fn ask_every_house(sdk: &Context, chart: &Asked<'_>, kinds: &mut Kinds) -> Resul
         what_spoiled(&asked, kinds);
         what_enters(sdk, chart, house, &asked, kinds)?;
     }
+    Ok(())
+}
+
+/// Counts one judged matter into Kuttha's tally, from the chart's
+/// favours and from the yoga itself, and refuses a matter where the two
+/// disagree.
+fn count_kuttha(
+    sdk: &Context,
+    chart: &Asked<'_>,
+    house: House,
+    asked: &YearYogas,
+    counts: &mut KutthaCounts,
+) -> Result<(), String> {
+    let name = chart.name;
+    let favour_of = |graha: Graha| {
+        chart
+            .strengths
+            .favour
+            .iter()
+            .find(|one| one.graha == graha)
+            .copied()
+            .ok_or_else(|| format!("{name}: no favour read for {graha:?}"))
+    };
+    let lords = [favour_of(asked.lagnesha)?, favour_of(asked.karyesha)?];
+    let favoured = lords.iter().all(|one| one.is_favoured());
+    let held = asked.holds(YearYoga::Kuttha) == Some(true);
+    if favoured != held {
+        return Err(format!(
+            "{name}: house {}: both lords favoured is {favoured}, and Kuttha held is {held}",
+            house.get()
+        ));
+    }
+    counts.favoured += usize::from(favoured);
+    if !lords.iter().all(|one| one.strength.is_strong()) {
+        return Ok(());
+    }
+    counts.strong_pairs += 1;
+    counts.names = lords[0].clauses().map(|(clause, _)| clause);
+    // A clause fails the matter where it fails of either lord.
+    let failing =
+        lords
+            .map(Favour::clauses)
+            .into_iter()
+            .fold([false; 4], |mut failing, clauses| {
+                for (slot, (_, holds)) in failing.iter_mut().zip(clauses) {
+                    *slot |= !holds;
+                }
+                failing
+            });
+    let failures = failing.iter().filter(|fails| **fails).count();
+    for ((away, alone), fails) in counts
+        .turned_away
+        .iter_mut()
+        .zip(counts.alone.iter_mut())
+        .zip(failing)
+    {
+        *away += usize::from(fails);
+        *alone += usize::from(fails && failures == 1);
+    }
+    // Asked of every strong pair, not only where the default held, so that
+    // "the waxing reading only removes" is a count that can fail.
+    let waxing = sdk
+        .chart()
+        .tajika_yogas_with_rules(
+            chart.annual,
+            house,
+            YogaRules {
+                moon_benefic: MoonBenefic::Waxing,
+                ..YogaRules::default()
+            },
+        )
+        .map_err(|why| format!("{name}: its yogas, the Moon waxing: {why}"))?
+        .holds(YearYoga::Kuttha)
+        == Some(true);
+    counts.waxing += usize::from(waxing);
+    counts.waxing_only += usize::from(waxing && !held);
     Ok(())
 }
 
@@ -1181,6 +1288,9 @@ struct ChartStrengths {
     weak: Sides,
     strong: Sides,
     default: Vec<Strength>,
+    /// Each of the seven's standing to Kuttha's clauses, read once for the
+    /// chart and looked up by every matter.
+    favour: Vec<Favour>,
 }
 
 /// Rules with the lower floor at `weak_below` and the upper at
@@ -1269,10 +1379,19 @@ fn strengths_of(
         kinds.weakest = Some(kinds.weakest.map_or(how.vishwa, |low| low.min(how.vishwa)));
         verdicts.push(how);
     }
+    let favour = SEVEN
+        .into_iter()
+        .map(|graha| {
+            sdk.chart()
+                .favour(annual, graha)
+                .map_err(|why| format!("{name}: {graha:?}'s favour: {why}"))
+        })
+        .collect::<Result<_, _>>()?;
     Ok(ChartStrengths {
         weak,
         strong,
         default: verdicts,
+        favour,
     })
 }
 
@@ -1397,7 +1516,46 @@ fn floors_hold(kinds: &Kinds) -> Result<(), String> {
                 .abs_diff(lower.readings + upper.readings),
         ));
     }
-    ceilings_hold(kinds, weak.both)
+    ceilings_hold(kinds, weak.both, strong.both)?;
+    kuttha_holds(kinds, strong.both)
+}
+
+/// What Kuttha's counts must satisfy: the strong pairs it read are the
+/// floors' own, the lords' favours agree with the yoga, the waxing Moon
+/// only removes, and no strong pair is turned away for want of strength.
+fn kuttha_holds(kinds: &Kinds, strong_pairs: usize) -> Result<(), String> {
+    let counts = &kinds.kuttha;
+    let held = held_in(kinds, YearYoga::Kuttha);
+    if counts.strong_pairs != strong_pairs {
+        return Err(format!(
+            "Kuttha read {} strong pairs, and the default floors found {strong_pairs}",
+            counts.strong_pairs
+        ));
+    }
+    if counts.favoured != held {
+        return Err(format!(
+            "both lords were favoured in {} matters, and Kuttha held in {held}",
+            counts.favoured
+        ));
+    }
+    if counts.waxing_only != 0 || counts.waxing > held {
+        return Err(format!(
+            "the waxing Moon held Kuttha in {} matters, {} of them where the default did not;              a reading that only removes a benefic cannot add a Kuttha",
+            counts.waxing, counts.waxing_only
+        ));
+    }
+    if counts.turned_away.first().copied() != Some(0) {
+        return Err(String::from(
+            "a strong pair was turned away as not powerful, which it cannot be",
+        ));
+    }
+    let mut away = counts.turned_away.iter().zip(&counts.alone);
+    if let Some((turned, alone)) = away.find(|(turned, alone)| alone > turned) {
+        return Err(format!(
+            "a clause turned away {alone} matters alone and only {turned} in all"
+        ));
+    }
+    Ok(())
 }
 
 /// How many matters a yoga held in.
@@ -1411,12 +1569,13 @@ fn held_in(kinds: &Kinds, yoga: YearYoga) -> usize {
 
 /// No yoga holds in more matters than its definition allows: a judgement
 /// **upon** an Ithasala no more often than an Ithasala stands, and one
-/// needing a **weak pair** no more often than there was one.
+/// needing a **weak pair**, or a **strong** one, no more often than there
+/// was one.
 ///
 /// Both groupings are read from `YearYoga` itself rather than kept as a
 /// list here, so a yoga built later is held to its ceiling without this
 /// pass being edited.
-fn ceilings_hold(kinds: &Kinds, weak_pairs: usize) -> Result<(), String> {
+fn ceilings_hold(kinds: &Kinds, weak_pairs: usize, strong_pairs: usize) -> Result<(), String> {
     let ithasalas = held_in(kinds, YearYoga::Ithasala);
     for yoga in YearYoga::ALL {
         let held = held_in(kinds, yoga);
@@ -1440,6 +1599,11 @@ fn ceilings_hold(kinds: &Kinds, weak_pairs: usize) -> Result<(), String> {
         if yoga.needs_a_weak_pair() && held > weak_pairs {
             return Err(format!(
                 "{yoga:?} held in {held} matters, and only {weak_pairs} had a weak pair for it to need"
+            ));
+        }
+        if yoga.needs_a_strong_pair() && held > strong_pairs {
+            return Err(format!(
+                "{yoga:?} held in {held} matters, and only {strong_pairs} had a strong pair for it to need"
             ));
         }
     }
@@ -2611,5 +2775,50 @@ fn the_strength(out: &mut String, kinds: &Kinds) {
         count(counts.weak_only),
         count(counts.both),
         share(counts.both, placed),
+    );
+}
+
+fn the_kuttha(out: &mut String, kinds: &Kinds) {
+    let counts = &kinds.kuttha;
+    let held = held_in(kinds, YearYoga::Kuttha);
+    let judged = kinds.matters - kinds.same_lord;
+    let mut rows = String::new();
+    // Named by the walker, so a clause renamed renames its row.
+    let clauses = counts
+        .names
+        .iter()
+        .zip(counts.turned_away.iter().zip(&counts.alone));
+    for (clause, (away, alone)) in clauses {
+        let _ = writeln!(rows, "| {clause} | {} | {} |", count(*away), count(*alone));
+    }
+    let _ = write!(
+        out,
+        "\n## 17. Kuttha\n\n\
+         Kuttha wants both lords powerful, in a kendra or a panaphara, under \
+         a benefic's aspect and no malefic's (`03-design/tajika-yogas.md`, \
+         crux C117). It held in **{}** of the {} judged matters ({}). It can \
+         hold only where both lords are strong, and the default floors find \
+         **{}** such matters, so {} of them were turned away by a clause \
+         other than strength.\n\n\
+         **Which clause turns a strong pair away.** A clause fails a matter \
+         where it fails of either lord. The last column counts the matters \
+         it turned away alone, the near misses: one clause read otherwise \
+         and the Kuttha would have held. *Powerful* reads zero by \
+         construction, since only strong pairs are counted, and the pass \
+         fails if it does not.\n\n\
+         | clause | turned away | alone |\n|---|---:|---:|\n{rows}\n\
+         **The commentary's full Moon** (`moon_benefic: waxing`) holds \
+         Kuttha in **{}** matters to the default's {}. It can only remove \
+         a benefic, so it can never add a Kuttha. The pass asks it of every \
+         strong pair and fails if it adds one. It also fails if `favour` \
+         and the yoga disagree about a single matter, or if Kuttha's strong \
+         pairs differ from the floors' own count.\n",
+        count(held),
+        count(judged),
+        share(held, judged),
+        count(counts.strong_pairs),
+        count(counts.strong_pairs - held),
+        count(counts.waxing),
+        count(held),
     );
 }

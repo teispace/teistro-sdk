@@ -71,8 +71,8 @@ pub use varshesha::{
     Chosen, Claim, NoneAspects, Varshesha, VarsheshaRules, WEAK_BELOW, aspects, varshesha,
 };
 pub use yoga::{
-    Affliction, Held, MALEFICS, Qualification, Strength, TambiraMover, YOGA_STRONG_FROM,
-    YOGA_WEAK_BELOW, YearYoga, YearYogas, YogaRules, affliction, qualification, strength,
-    strength_with_rules, year_yogas, year_yogas_many, year_yogas_with_rules,
-    year_yogas_with_states,
+    Affliction, BENEFICS, Favour, Held, MALEFICS, MoonBenefic, Qualification, Strength,
+    TambiraMover, YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YearYoga, YearYogas, YogaRules, affliction,
+    favour, qualification, strength, strength_with_rules, year_yogas, year_yogas_many,
+    year_yogas_with_rules, year_yogas_with_states,
 };

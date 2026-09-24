@@ -19,13 +19,14 @@
 //!
 //! # What is built
 //!
-//! All but the few [`YearYoga::awaiting`] names, and those say so rather
-//! than being silently absent: [`YearYogas::unanswered`] lists them at
-//! every call, because "Kuttha did not hold" and "this build cannot tell
-//! you about Kuttha" are different statements and a consumer that cannot
-//! tell them apart has been misled. [`YearYogas::why`] carries the reason
-//! for each, and `check-muntha` counts both sets from the type — which is
-//! why no count is written here, where it would go stale.
+//! All sixteen. A yoga a call cannot answer for is not silently absent:
+//! [`YearYogas::unanswered`] lists it, because "Rudda did not hold" and
+//! "this call cannot tell you about Rudda" are different statements and
+//! a consumer that cannot tell them apart has been misled.
+//! [`YearYogas::why`] carries the reason — today only that the call was
+//! given no [`AnnualStates`], since [`YearYoga::awaiting`] names nothing.
+//! It stays, matched exhaustively, so a yoga added later must say which
+//! side it falls on, and `check-muntha` counts both sets from the type.
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
@@ -135,10 +136,8 @@ impl YearYoga {
             | YearYoga::Ikabala
             | YearYoga::Induvara
             | YearYoga::GairiKamboola
-            | YearYoga::Tambira => None,
-            YearYoga::Kuttha => Some(
-                "Tajika's own benefics, which Table X-3 does not enumerate as it enumerates the malefics (crux C117)",
-            ),
+            | YearYoga::Tambira
+            | YearYoga::Kuttha => None,
         }
     }
 
@@ -204,6 +203,13 @@ impl YearYoga {
         matches!(self, YearYoga::DutthotthaDavira | YearYoga::Durapha)
     }
 
+    /// Whether it needs **both** lords strong, and so can hold only where
+    /// they are: the mirror of [`YearYoga::needs_a_weak_pair`].
+    #[must_use]
+    pub const fn needs_a_strong_pair(self) -> bool {
+        matches!(self, YearYoga::Kuttha)
+    }
+
     /// Whether this build answers for it.
     #[must_use]
     pub const fn is_built(self) -> bool {
@@ -219,6 +225,18 @@ impl YearYoga {
 /// here is the only way that stays true when the catalogue's own list is
 /// read for some other purpose (crux C114).
 pub const MALEFICS: [Graha; 2] = [Graha::Mars, Graha::Saturn];
+
+/// Tajika's own benefics, as Kuttha reads them: **the Moon, Mercury,
+/// Jupiter and Venus** (crux C117).
+///
+/// Table X-3 enumerates none. The *Tajika Nilakanthi*'s commentary on
+/// its Kuttha verses glosses "by a benefic" as any one of the full Moon,
+/// Mercury, Jupiter and Venus, and Charak's saham chapter calls the same
+/// four "the natural benefics". Mercury is here and the catalogue's
+/// Parashari `Nature` marks it neither, which is why this is its own
+/// list, as [`MALEFICS`] is. Whether the Moon must also be *full* is a
+/// reading, [`YogaRules::moon_benefic`].
+pub const BENEFICS: [Graha; 4] = [Graha::Moon, Graha::Mercury, Graha::Jupiter, Graha::Venus];
 
 /// Why a planet is not **unqualified**, clause by clause.
 ///
@@ -388,6 +406,8 @@ pub struct YogaRules {
     pub strong_from: Bala,
     /// Which of the pair a Tambira lets reach the next sign.
     pub tambira: TambiraMover,
+    /// When the Moon counts among [`BENEFICS`] for Kuttha.
+    pub moon_benefic: MoonBenefic,
 }
 
 impl Default for YogaRules {
@@ -397,6 +417,7 @@ impl Default for YogaRules {
             weak_below: YOGA_WEAK_BELOW,
             strong_from: YOGA_STRONG_FROM,
             tambira: TambiraMover::default(),
+            moon_benefic: MoonBenefic::default(),
         }
     }
 }
@@ -416,6 +437,34 @@ pub enum TambiraMover {
     Karyesha,
     /// **Either lord**: the "some authorities" of the source's comment.
     EitherLord,
+}
+
+/// When the Moon is one of the [`BENEFICS`] whose aspect makes a
+/// Kuttha.
+///
+/// Charak's list names the Moon with no condition. The *Nilakanthi*'s
+/// commentary names the **full** Moon, which needs a reading of *full*.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum MoonBenefic {
+    /// **Always**, the default: Charak's four natural benefics.
+    #[default]
+    Always,
+    /// **Waxing** only, the bright half: less than 180° ahead of the Sun.
+    /// The commentary's "full Moon", read as widely as its word allows.
+    Waxing,
+}
+
+impl MoonBenefic {
+    /// Whether the Moon of `sky` counts as a benefic under this reading.
+    #[must_use]
+    pub fn holds(self, sky: &AnnualSky) -> bool {
+        match self {
+            MoonBenefic::Always => true,
+            MoonBenefic::Waxing => (sky.moon_deg - sky.sun_deg).rem_euclid(360.0) < 180.0,
+        }
+    }
 }
 
 impl From<DrishtiRules> for YogaRules {
@@ -715,6 +764,120 @@ fn afflicted(graha: Graha, lagna: Rashi, sky: &AnnualSky, states: &AnnualStates)
     }
 }
 
+/// How a planet of an annual chart stands to what **Kuttha** asks of
+/// each lord, clause by clause.
+///
+/// Charak's definition — "powerful and posited in the kendras or the
+/// panapharas", with "benefic aspects, and absence of malefic aspects" —
+/// read as four clauses of one planet, as the *Nilakanthi*'s verses read
+/// them (crux C117). Carried as clauses, as [`Affliction`] is for
+/// Rudda, so a reader asking why a Kuttha did not hold gets the clause
+/// that stopped it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Favour {
+    /// Whose.
+    pub graha: Graha,
+    /// How it stands to strong and weak; the first clause is
+    /// [`Strength::is_strong`].
+    pub strength: Strength,
+    /// In a kendra or a panaphara, by whole signs from the annual lagna.
+    pub well_placed: bool,
+    /// Joined or aspected by one of [`BENEFICS`] other than itself, the
+    /// Moon only where [`YogaRules::moon_benefic`] counts it — the
+    /// partner in the pair included, as it is for Rudda's malefic.
+    pub benefic_aspect: bool,
+    /// Reached by none of [`MALEFICS`] other than itself: neither joined
+    /// by one nor aspected by one from the 1st, 4th, 7th or 10th, the
+    /// *kṣuta* aspect the verse names.
+    pub free_of_malefics: bool,
+}
+
+impl Favour {
+    /// The four clauses, each with the source's own words for it, in the
+    /// order it states them.
+    #[must_use]
+    pub fn clauses(self) -> [(&'static str, bool); 4] {
+        [
+            ("powerful", self.strength.is_strong()),
+            ("in a kendra or a panaphara", self.well_placed),
+            ("under a benefic's aspect", self.benefic_aspect),
+            ("under no malefic's aspect", self.free_of_malefics),
+        ]
+    }
+
+    /// Whether every clause holds: what Kuttha asks of each lord.
+    #[must_use]
+    pub fn is_favoured(self) -> bool {
+        self.clauses().iter().all(|(_, holds)| *holds)
+    }
+}
+
+/// How a planet of an annual chart stands to what Kuttha asks of each
+/// lord.
+///
+/// It needs no [`AnnualStates`]: Charak's Kuttha states neither
+/// retrograde nor combust, and the verse's own "risen" and "direct" are
+/// among alternative marks of strength rather than conditions of it.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_tajika::{AnnualSky, YogaRules, favour};
+///
+/// let sky = AnnualSky {
+///     sun_deg: 40.0, moon_deg: 290.0, mars_deg: 5.0, mercury_deg: 50.0,
+///     jupiter_deg: 244.0, venus_deg: 59.5, saturn_deg: 200.0,
+/// };
+/// let moon = favour(Graha::Moon, 5.0, &sky, YogaRules::default())?;
+/// // Capricorn is the tenth from an Aries lagna. Mercury and Venus aspect
+/// // it from Taurus, the ninth; Mars and Saturn reach it from the tenth
+/// // and the fourth, the aspect the verse calls *kṣuta*.
+/// assert!(moon.well_placed && moon.benefic_aspect && !moon.free_of_malefics);
+/// assert!(!moon.is_favoured());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// A body outside the seven, named `graha`; an annual lagna that is not a
+/// number, named `annual_lagna_deg`; floors that would let a planet be
+/// strong and weak at once, named `strong_from`.
+pub fn favour(
+    graha: Graha,
+    annual_lagna_deg: f64,
+    sky: &AnnualSky,
+    rules: YogaRules,
+) -> Result<Favour, Error> {
+    let strength = strength_with_rules(graha, sky, rules)?;
+    Ok(favoured(
+        strength,
+        lagna_of(annual_lagna_deg)?,
+        sky,
+        rules.moon_benefic,
+    ))
+}
+
+/// [`favour`] once its inputs are known good and its strength is read.
+fn favoured(strength: Strength, lagna: Rashi, sky: &AnnualSky, moon: MoonBenefic) -> Favour {
+    let graha = strength.graha;
+    let sign = sign_of_longitude(sky.longitude_of(graha));
+    let sign_of = |other: Graha| sign_of_longitude(sky.longitude_of(other));
+    let house = house_of(graha, lagna, sky);
+    Favour {
+        graha,
+        strength,
+        well_placed: house.is_kendra() || house.is_panaphara(),
+        benefic_aspect: BENEFICS.into_iter().any(|benefic| {
+            benefic != graha
+                && (benefic != Graha::Moon || moon.holds(sky))
+                && Drishti::between_signs(sign_of(benefic), sign).is_aspect()
+        }),
+        free_of_malefics: !MALEFICS
+            .into_iter()
+            .any(|malefic| malefic != graha && malefic_reaches(sign_of(malefic), sign)),
+    }
+}
+
 /// One of the sixteen, found holding, with what made it hold.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -789,9 +952,10 @@ pub struct YearYogas {
     /// compute, and — where no [`AnnualStates`] were supplied — those
     /// that need them ([`YearYoga::needs_states`]).
     ///
-    /// Never empty today, and that is the point: an absent yoga in
-    /// [`YearYogas::held`] means it did not hold **only** for the ones
-    /// not listed here. [`YearYogas::why`] says which reason applies.
+    /// Empty where the call was given [`AnnualStates`], and that is the
+    /// point: an absent yoga in [`YearYogas::held`] means it did not hold
+    /// **only** for the ones not listed here. [`YearYogas::why`] says
+    /// which reason applies.
     pub unanswered: Vec<YearYoga>,
     /// The retrograde and combust planets the judgement read, where it
     /// was given any — reported, so an answer can be read back without
@@ -1042,6 +1206,7 @@ impl<'a> Judgement<'a> {
             // conditions these on the pair's weakness, and on nothing they
             // make together.
             held.extend(dutthottha_davira(lagnesha, karyesha, &all, sky, rules)?);
+            held.extend(kuttha([lagnesha, karyesha], lagna, &all, sky, rules)?);
             if let Some(states) = states {
                 held.extend(durapha([lagnesha, karyesha], lagna, &all, sky, states)?);
             }
@@ -1162,6 +1327,29 @@ fn durapha(
         afflictions: Some(afflictions),
         ..Held::of(YearYoga::Durapha)
     }))
+}
+
+/// **Kuttha**: both lords powerful, in a kendra or a panaphara, under a
+/// benefic's aspect and no malefic's (crux C117).
+///
+/// Asked whatever the pair do between themselves, as Durapha, its
+/// antagonist, is: the source conditions it on each lord's own standing
+/// and on nothing the two make together. Its clauses are true by
+/// definition wherever it holds, so it carries nothing but its name;
+/// [`favour`] reports them for a pair it passed by.
+fn kuttha(
+    lords: [Graha; 2],
+    lagna: Rashi,
+    all: &[Strength; 7],
+    sky: &AnnualSky,
+    rules: YogaRules,
+) -> Result<Option<Held>, Error> {
+    for graha in lords {
+        if !favoured(strength_in(all, graha)?, lagna, sky, rules.moon_benefic).is_favoured() {
+            return Ok(None);
+        }
+    }
+    Ok(Some(Held::of(YearYoga::Kuttha)))
 }
 
 /// The yogas that judge an **Ithasala** the pair already makes and read
@@ -1494,9 +1682,10 @@ mod tests {
     )]
 
     use super::{
-        Affliction, Held, MALEFICS, Strength, TambiraMover, YOGA_STRONG_FROM, YOGA_WEAK_BELOW,
-        YearYoga, YearYogas, YogaRules, affliction, qualification, strength, strength_with_rules,
-        year_yogas, year_yogas_many, year_yogas_with_rules, year_yogas_with_states,
+        Affliction, BENEFICS, Held, MALEFICS, MoonBenefic, Strength, TambiraMover,
+        YOGA_STRONG_FROM, YOGA_WEAK_BELOW, YearYoga, YearYogas, YogaRules, affliction, favour,
+        qualification, strength, strength_with_rules, year_yogas, year_yogas_many,
+        year_yogas_with_rules, year_yogas_with_states,
     };
     use crate::bala::{AnnualSky, Bala};
     use crate::drishti::{DrishtiRules, SubDegree, Yoga};
@@ -2796,6 +2985,10 @@ mod tests {
         assert_eq!(read.strong_from, Bala::of_sub_sub(43_200));
         assert_eq!(read.weak_below, YOGA_WEAK_BELOW);
         assert_eq!(read.tambira, TambiraMover::EitherLord);
+        assert_eq!(read.moon_benefic, MoonBenefic::Always);
+        let waxing: YogaRules = serde_json::from_str(r#"{"moonBenefic": "waxing"}"#).unwrap();
+        assert_eq!(waxing.moon_benefic, MoonBenefic::Waxing);
+        assert!(serde_json::from_str::<YogaRules>(r#"{"moonBenefic": "full"}"#).is_err());
         let written = serde_json::to_value(YogaRules::default()).unwrap();
         assert_eq!(
             written,
@@ -2804,6 +2997,7 @@ mod tests {
                 "weakBelow": 18_000,
                 "strongFrom": 36_000,
                 "tambira": "karyesha",
+                "moonBenefic": "always",
             })
         );
     }
@@ -2918,5 +3112,220 @@ mod tests {
             ];
             groups.into_iter().filter(|is| *is).count() <= 1
         }));
+    }
+
+    /// Aries rising at 5°, composed so that the fourth house's question
+    /// is a **Kuttha**: Mars, the lagnesha, exalted in Capricorn (the
+    /// tenth), and the Moon, the karyesha, exalted in Taurus (the second).
+    /// The Moon aspects Mars from the ninth and is its **only** benefic;
+    /// Mercury and Venus aspect the Moon from Leo, the tenth, and nothing
+    /// in Capricorn. Saturn and Jupiter, in Gemini, reach neither.
+    ///
+    /// `sun_deg` sets the Moon's phase and nothing a clause reads.
+    fn kuttha_sky(sun_deg: f64) -> AnnualSky {
+        AnnualSky {
+            sun_deg,
+            moon_deg: 40.0,
+            mars_deg: 280.0,
+            mercury_deg: 135.0,
+            jupiter_deg: 70.0,
+            venus_deg: 140.0,
+            saturn_deg: 75.0,
+        }
+    }
+
+    const KUTTHA_LAGNA_DEG: f64 = 5.0;
+
+    /// The Sun in Leo, a waning Moon; and in Aries, a waxing one.
+    const WANING: f64 = 130.0;
+    const WAXING: f64 = 10.0;
+
+    fn kuttha_under(sky: &AnnualSky, moon_benefic: MoonBenefic) -> Option<bool> {
+        let rules = YogaRules {
+            moon_benefic,
+            ..YogaRules::default()
+        };
+        year_yogas_with_rules(KUTTHA_LAGNA_DEG, house(4), sky, rules)
+            .unwrap()
+            .holds(YearYoga::Kuttha)
+    }
+
+    /// Tajika's benefics are the four both sources name, and the sahams'
+    /// chapter reads the same list rather than a copy of it (crux C117).
+    #[test]
+    fn tajikas_benefics_are_the_four_both_sources_name() {
+        use crate::SahamNatures;
+        assert_eq!(
+            BENEFICS,
+            [Graha::Moon, Graha::Mercury, Graha::Jupiter, Graha::Venus]
+        );
+        for graha in crate::SEVEN {
+            assert_eq!(
+                SahamNatures::Chapter.is_benefic(graha),
+                BENEFICS.contains(&graha),
+                "{graha:?}"
+            );
+            assert!(
+                !(BENEFICS.contains(&graha) && MALEFICS.contains(&graha)),
+                "{graha:?} is both"
+            );
+        }
+    }
+
+    /// Kuttha: both lords powerful, in a kendra or a panaphara, under a
+    /// benefic's aspect and no malefic's; and it carries nothing but its
+    /// name, since every clause is true wherever it holds.
+    #[test]
+    fn kuttha_holds_where_both_lords_are_favoured() {
+        let sky = kuttha_sky(WANING);
+        let found = year_yogas(KUTTHA_LAGNA_DEG, house(4), &sky).unwrap();
+        assert_eq!((found.lagnesha, found.karyesha), (Graha::Mars, Graha::Moon));
+        assert_eq!(found.holds(YearYoga::Kuttha), Some(true));
+        let held = found
+            .held
+            .iter()
+            .find(|one| one.yoga == YearYoga::Kuttha)
+            .unwrap();
+        assert_eq!(*held, Held::of(YearYoga::Kuttha));
+        for graha in [Graha::Mars, Graha::Moon] {
+            let how = favour(graha, KUTTHA_LAGNA_DEG, &sky, YogaRules::default()).unwrap();
+            assert!(how.is_favoured(), "{graha:?}: {:?}", how.clauses());
+            assert!(how.strength.exalted, "{graha:?} is exalted");
+        }
+        // Built, and needing no states: answered without them.
+        assert!(YearYoga::Kuttha.is_built());
+        assert!(!YearYoga::Kuttha.needs_states());
+        assert!(YearYoga::Kuttha.needs_a_strong_pair());
+        assert!(!found.unanswered.contains(&YearYoga::Kuttha));
+    }
+
+    /// Each clause, broken alone, turns the Kuttha away and is the one
+    /// clause `favour` reports false.
+    #[test]
+    fn each_clause_of_kuttha_turns_it_away_alone() {
+        let lone = |sky: &AnnualSky, lagna: f64, graha: Graha| -> Vec<&'static str> {
+            favour(graha, lagna, sky, YogaRules::default())
+                .unwrap()
+                .clauses()
+                .into_iter()
+                .filter(|(_, holds)| !holds)
+                .map(|(clause, _)| clause)
+                .collect()
+        };
+
+        // No benefic on the Moon: Mercury and Venus leave Leo for Gemini,
+        // the twelfth from Taurus.
+        let unaspected = AnnualSky {
+            mercury_deg: 62.0,
+            venus_deg: 64.0,
+            ..kuttha_sky(WANING)
+        };
+        assert_eq!(
+            lone(&unaspected, KUTTHA_LAGNA_DEG, Graha::Moon),
+            ["under a benefic's aspect"]
+        );
+        assert_eq!(
+            year_yogas(KUTTHA_LAGNA_DEG, house(4), &unaspected)
+                .unwrap()
+                .holds(YearYoga::Kuttha),
+            Some(false)
+        );
+
+        // A malefic on the Moon: Saturn in Aquarius, the fourth from
+        // Taurus and the twelfth from Capricorn.
+        let harmed = AnnualSky {
+            saturn_deg: 305.0,
+            ..kuttha_sky(WANING)
+        };
+        assert_eq!(
+            lone(&harmed, KUTTHA_LAGNA_DEG, Graha::Moon),
+            ["under no malefic's aspect"]
+        );
+        assert!(lone(&harmed, KUTTHA_LAGNA_DEG, Graha::Mars).is_empty());
+        assert_eq!(
+            year_yogas(KUTTHA_LAGNA_DEG, house(4), &harmed)
+                .unwrap()
+                .holds(YearYoga::Kuttha),
+            Some(false)
+        );
+
+        // Badly placed: Scorpio rising keeps Mars the lagnesha and the
+        // Moon, ninth-house lord, the karyesha; Capricorn is the third.
+        let scorpio = 215.0;
+        let sky = kuttha_sky(WANING);
+        assert_eq!(
+            lone(&sky, scorpio, Graha::Mars),
+            ["in a kendra or a panaphara"]
+        );
+        let found = year_yogas(scorpio, house(9), &sky).unwrap();
+        assert_eq!((found.lagnesha, found.karyesha), (Graha::Mars, Graha::Moon));
+        assert_eq!(found.holds(YearYoga::Kuttha), Some(false));
+
+        // Not powerful: the weak pair is the other end of the scale.
+        let weak = year_yogas(WEAK_PAIR_LAGNA_DEG, house(2), &WEAK_PAIR).unwrap();
+        assert_eq!(weak.holds(YearYoga::Kuttha), Some(false));
+        let mercury = favour(
+            Graha::Mercury,
+            WEAK_PAIR_LAGNA_DEG,
+            &WEAK_PAIR,
+            YogaRules::default(),
+        )
+        .unwrap();
+        assert!(!mercury.clauses()[0].1, "a weak lord is not powerful");
+    }
+
+    /// A benefic lord does not favour itself: Jupiter alone in Gemini,
+    /// with the Moon in the second from it and Mercury and Venus in the
+    /// twelfth, has no benefic's aspect however benefic it is.
+    #[test]
+    fn a_benefic_does_not_aspect_itself_into_favour() {
+        let sky = AnnualSky {
+            sun_deg: 100.0,
+            mercury_deg: 95.0,
+            venus_deg: 105.0,
+            ..kuttha_sky(WANING)
+        };
+        let jupiter = favour(Graha::Jupiter, KUTTHA_LAGNA_DEG, &sky, YogaRules::default()).unwrap();
+        assert!(!jupiter.benefic_aspect);
+    }
+
+    /// The commentary's *full* Moon is a knob: read as waxing, a waning
+    /// Moon is no benefic, and Mars, whose only benefic it is, loses its
+    /// favour.
+    #[test]
+    fn the_full_moon_reading_turns_on_the_moons_phase() {
+        assert_eq!(YogaRules::default().moon_benefic, MoonBenefic::Always);
+        let dark = kuttha_sky(WANING);
+        let bright = kuttha_sky(WAXING);
+        assert!(!MoonBenefic::Waxing.holds(&dark));
+        assert!(MoonBenefic::Waxing.holds(&bright));
+        for sky in [&dark, &bright] {
+            assert!(MoonBenefic::Always.holds(sky));
+            assert_eq!(kuttha_under(sky, MoonBenefic::Always), Some(true));
+        }
+        assert_eq!(kuttha_under(&dark, MoonBenefic::Waxing), Some(false));
+        assert_eq!(kuttha_under(&bright, MoonBenefic::Waxing), Some(true));
+
+        // The phase's edges: new is the first instant of waxing, full the
+        // first of waning.
+        let at = |sun_deg: f64, moon_deg: f64| AnnualSky {
+            sun_deg,
+            moon_deg,
+            ..kuttha_sky(0.0)
+        };
+        assert!(MoonBenefic::Waxing.holds(&at(100.0, 100.0)));
+        assert!(!MoonBenefic::Waxing.holds(&at(100.0, 280.0)));
+        assert!(MoonBenefic::Waxing.holds(&at(350.0, 20.0)), "across 0°");
+    }
+
+    /// `favour` refuses what `affliction` refuses, by name.
+    #[test]
+    fn favour_refuses_by_name() {
+        let sky = kuttha_sky(WANING);
+        let rules = YogaRules::default();
+        let body = favour(Graha::Rahu, KUTTHA_LAGNA_DEG, &sky, rules).unwrap_err();
+        assert_eq!(body.field(), Some("graha"));
+        let lagna = favour(Graha::Mars, f64::NAN, &sky, rules).unwrap_err();
+        assert_eq!(lagna.field(), Some("annual_lagna_deg"));
     }
 }

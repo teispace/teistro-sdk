@@ -3285,8 +3285,8 @@ pub enum TsYearYoga {
     /// No aspect and no Ithasala, the karyesha completing one from the
     /// next sign.
     Tambira = 13,
-    /// Both powerful, well placed and under benefic influence; listed in
-    /// `unanswered` while this build cannot compute it (crux C117).
+    /// Both powerful, in a kendra or a panaphara, under a benefic's aspect
+    /// and no malefic's (crux C117).
     Kuttha = 14,
     /// Both weak, in the trika houses, combust or retrograde.
     Durapha = 15,

@@ -6460,8 +6460,8 @@ export declare const YearYoga: {
    */
   readonly Tambira: 'tambira';
   /**
-   * Both powerful, well placed and under benefic influence; listed in
-   * `unanswered` while this build cannot compute it (crux C117).
+   * Both powerful, in a kendra or a panaphara, under a benefic's aspect
+   * and no malefic's (crux C117).
    */
   readonly Kuttha: 'kuttha';
   /**

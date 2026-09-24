@@ -1322,10 +1322,10 @@ class AnEngine(WithLibrary):
             self.assertEqual([matter.house for matter in annual.matters], [7, 1])
             self.assertTrue(all(isinstance(graha, Graha) for graha in annual.retrograde + annual.combust))
             for matter in annual.matters:
-                # All but Kuttha is built, and Kuttha says so rather than
-                # answering False.
-                self.assertEqual(matter.unanswered, [YearYoga.KUTTHA])
-                self.assertIsNone(matter.holds(YearYoga.KUTTHA))
+                # All sixteen are built and the façade reads the states, so
+                # every one answers True or False.
+                self.assertEqual(matter.unanswered, [])
+                self.assertIsInstance(matter.holds(YearYoga.KUTTHA), bool)
                 self.assertIsInstance(matter.holds(YearYoga.ITHASALA), bool)
                 self.assertEqual(matter.karyesha != matter.lagnesha, not matter.same_lord)
                 for held in matter.held:
@@ -1362,6 +1362,18 @@ class AnEngine(WithLibrary):
             "matters": [10],
             "yogas": {"weak_below": 4 * 3600, "strong_from": 12 * 3600, "drishti": {"sub_degree": "ishrafa"}},
         })
+
+        # The commentary's full Moon can only take a Kuttha away.
+        def kutthas(found: Any) -> int:
+            return sum(
+                bool(matter.holds(YearYoga.KUTTHA))
+                for one in found
+                for matter in one.annual.matters
+            )
+
+        every = years({"through": 2, "place": "birth", "matters": "all"})
+        waxing = years({"through": 2, "place": "birth", "matters": "all", "yogas": {"moon_benefic": "waxing"}})
+        self.assertLessEqual(kutthas(waxing), kutthas(every))
 
         for varsha, field in [
             ({"through": 2, "matters": [7]}, "varsha_json.matters"),

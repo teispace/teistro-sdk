@@ -3917,6 +3917,20 @@ enum TambiraMover {
   final String key;
 }
 
+/// When the Moon counts among Kuttha's benefics (crux C117).
+enum MoonBenefic {
+  /// Always: Charak's list, and the default.
+  always('always'),
+
+  /// Waxing only: the commentary's "full Moon", read as the bright half.
+  waxing('waxing');
+
+  const MoonBenefic(this.key);
+
+  /// The key the boundary reads.
+  final String key;
+}
+
 /// Where the source leaves the sixteen Tajika yogas a choice
 /// (`03-design/tajika-yogas.md`). A reading left null is the SDK's own
 /// default, which lives in one place and is not repeated here.
@@ -3926,6 +3940,7 @@ final class YogaRules {
     this.weakBelow,
     this.strongFrom,
     this.tambira,
+    this.moonBenefic,
   });
 
   /// How a pair less than a degree past reads.
@@ -3942,12 +3957,16 @@ final class YogaRules {
   /// Which lord a Tambira lets reach the next sign.
   final TambiraMover? tambira;
 
+  /// When the Moon counts among Kuttha's benefics.
+  final MoonBenefic? moonBenefic;
+
   Map<String, Object?> get _json => <String, Object?>{
     if (subDegree case final subDegree?)
       'drishti': {'subDegree': subDegree.key},
     if (weakBelow case final weakBelow?) 'weakBelow': weakBelow,
     if (strongFrom case final strongFrom?) 'strongFrom': strongFrom,
     if (tambira case final tambira?) 'tambira': tambira.key,
+    if (moonBenefic case final moonBenefic?) 'moonBenefic': moonBenefic.key,
   };
 }
 

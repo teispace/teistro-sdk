@@ -2109,7 +2109,6 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
             .map(|cell| usize::try_from(cell.as_i64()).unwrap())
             .collect::<Vec<usize>>()
     };
-    let kuttha = TsYearYoga::Kuttha as usize;
 
     // Three matters, in the caller's order, for each of two births' four
     // years.
@@ -2133,10 +2132,9 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
         ints(&asked, "matter_legs", "faster").len()
     );
     assert!(yogas.iter().all(|yoga| *yoga < 16));
-    // The façade reads the states, so only what the build cannot compute
-    // is unanswered: Kuttha, by its bit.
-    assert!(unanswered.iter().all(|bits| *bits == 1 << kuttha));
-    assert!(!yogas.contains(&kuttha));
+    // The façade reads the states and the build computes all sixteen, so
+    // no matter carries an unanswered bit.
+    assert!(unanswered.iter().all(|bits| *bits == 0));
 
     // The first house has no pair: its lord is the lagnesha. Only the two
     // chart facts can hold there, and nothing is made by a pair it lacks.
@@ -2194,6 +2192,17 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
         ask(r#"{"through":2,"place":"birth","matters":"all","yogas":{"tambira":"either_lord"}}"#)
             .unwrap();
     assert!(tambira(&either) >= tambira(&all));
+    // And the Moon's: read only as waxing, it can only take a Kuttha away.
+    let kuttha = |bytes: &[u8]| {
+        ints(bytes, "matter_yogas", "yoga")
+            .iter()
+            .filter(|yoga| **yoga == TsYearYoga::Kuttha as usize)
+            .count()
+    };
+    let waxing =
+        ask(r#"{"through":2,"place":"birth","matters":"all","yogas":{"moonBenefic":"waxing"}}"#)
+            .unwrap();
+    assert!(kuttha(&waxing) <= kuttha(&all));
 
     // Not asked, nothing answered: no rows, and every count nought.
     let unasked = ask(r#"{"through":2,"place":"birth"}"#).unwrap();
@@ -2243,6 +2252,11 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
         r#"{"through":2,"place":"birth","matters":[7],"yogas":{"weakBelow":43200,"strongFrom":14400}}"#,
         "varsha_json.yogas.strongFrom",
         "both",
+    );
+    refused(
+        r#"{"through":2,"place":"birth","matters":[7],"yogas":{"moonBenefic":"full"}}"#,
+        "varsha_json.yogas.moonBenefic",
+        "full",
     );
     refused(
         r#"{"through":2,"place":"birth","varshesha":{"none_aspects":"annual_lagna_lord"}}"#,
