@@ -22,6 +22,7 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use teistro::House;
+use teistro::catalogue::DashaSystem;
 use teistro::catalogue::{Graha, Rashi};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::tajika::{
@@ -30,8 +31,9 @@ use teistro::tajika::{
     YOGA_WEAK_BELOW, YearYoga, YearYogas, Yoga, YogaRules,
 };
 use teistro::{
-    AddSign, ChartRequest, Context, Document, Ephemeris, HarshaGrade, HarshaRules, HousePoints,
-    RogaReading, Saham, SahamReading, SahamRules, SahamTerm, UtcOffset, VenusPlace,
+    AddSign, AnnualDashaRules, ChartRequest, Context, Document, Ephemeris, HarshaGrade,
+    HarshaRules, HousePoints, PeriodRow, RogaReading, Saham, SahamReading, SahamRules, SahamTerm,
+    UtcOffset, VenusPlace, YearClock,
 };
 
 use crate::births::{Birth, CHARTS, births};
@@ -194,6 +196,7 @@ fn page(root: &Path) -> Result<String, String> {
     the_strength(&mut out, &swept);
     the_kuttha(&mut out, &swept);
     the_year_lords(&mut out, &swept);
+    the_annual_dashas(&mut out, &swept);
     Ok(fill(&out))
 }
 
@@ -813,6 +816,30 @@ struct Kinds {
     kuttha: KutthaCounts,
     /// The lord of every year, under Charak's chain and the Nilakanthi's.
     lords: LordCounts,
+    /// The three annual dashas of every year.
+    dashas: DashaCounts,
+}
+
+/// The annual dashas of every recorded year (`03-design/annual-dashas.md`).
+#[derive(Default)]
+struct DashaCounts {
+    /// Years read, each for all three systems at once.
+    years: usize,
+    /// Periods listed, mahadashas and antardashas, over all three.
+    periods: usize,
+    /// Years whose next return the sweep also found, so that the Sun's
+    /// clock can be held to closing on it.
+    closings: usize,
+    /// The farthest the Sun's clock closed from the next return, seconds.
+    worst_close_s: f64,
+    /// The farthest an even spread stood from the Sun's clock at any of the
+    /// Mudda's boundaries, days.
+    worst_even_days: f64,
+    /// Patyayini years in which two lords share a krishamsha to the
+    /// nanoarcsecond, so that the tie rule decided the order.
+    ties: usize,
+    /// Patyayini years that open with the lagna.
+    lagna_first: usize,
 }
 
 /// The lord of every recorded year, by the step that chose it.
@@ -948,7 +975,8 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
         if years.len() < usize::from(SWEEP_YEARS) {
             kinds.cut_short.push(birth.name.clone());
         }
-        for year in years {
+        for (index, year) in years.iter().copied().enumerate() {
+            let next = years.get(index + 1).map(|after| after.at.get());
             // A high-latitude birth in its polar summer has no sunrise to
             // divide a day by, and the SDK refuses rather than inventing
             // one. Counted and named, never swallowed.
@@ -1008,6 +1036,7 @@ fn sweep(sdk: &Context, births: &[Birth]) -> Result<Kinds, String> {
             };
             ask_every_house(sdk, &chart, &mut kinds)?;
             read_the_year(sdk, birth, &annual, year.year, &mut kinds)?;
+            count_annual_dashas(sdk, birth, &annual, year.year, next, &mut kinds.dashas)?;
             for pair in pairs {
                 if !pair.drishti.is_aspect() {
                     continue;
@@ -2979,5 +3008,180 @@ fn the_year_lords(out: &mut String, kinds: &Kinds) {
         count(counts.outside),
         count(counts.moon_rules),
         count(counts.changed),
+    );
+}
+
+/// The three annual dashas of one year, all at once, held to what every
+/// year's must satisfy: each opens on the return, its mahadashas run end to
+/// end to the year's close and each one's antardashas end to end across
+/// it, and the Sun's clock closes on the next return.
+fn count_annual_dashas(
+    sdk: &Context,
+    birth: &Birth,
+    annual: &Document,
+    year: u16,
+    next: Option<f64>,
+    counts: &mut DashaCounts,
+) -> Result<(), String> {
+    let rules = AnnualDashaRules::default();
+    let all = sdk
+        .chart()
+        .annual_dashas(
+            &birth.document,
+            annual,
+            year,
+            &teistro::tajika::ANNUAL_DASHAS,
+            rules,
+        )
+        .map_err(|why| format!("{} year {year}: its annual dashas: {why}", birth.name))?;
+    counts.years += 1;
+    let at = |what: &str| format!("{} year {year}: {what}", birth.name);
+    for dasha in &all {
+        counts.periods += dasha.periods.len();
+        if dasha.year.from != annual.foundation.instant {
+            return Err(at(&format!(
+                "the {:?} does not open on the return",
+                dasha.system
+            )));
+        }
+        let mahadashas: Vec<&PeriodRow> = dasha
+            .periods
+            .iter()
+            .filter(|row| !row.path.contains('/'))
+            .collect();
+        runs_end_to_end(&mahadashas, dasha.year.from.get(), dasha.year.to.get())
+            .map_err(|why| at(&format!("the {:?}'s mahadashas {why}", dasha.system)))?;
+        for maha in &mahadashas {
+            let prefix = format!("{}/", maha.path);
+            let children: Vec<&PeriodRow> = dasha
+                .periods
+                .iter()
+                .filter(|row| row.path.starts_with(&prefix))
+                .collect();
+            runs_end_to_end(&children, maha.interval.from.get(), maha.interval.to.get()).map_err(
+                |why| {
+                    at(&format!(
+                        "the {:?}'s {} antardashas {why}",
+                        dasha.system, maha.path
+                    ))
+                },
+            )?;
+        }
+        if let Some(next) = next {
+            let off_s = (dasha.year.to.get() - next).abs() * 86_400.0;
+            if off_s >= 0.05 {
+                return Err(at(&format!(
+                    "the {:?}'s Sun clock closes {off_s} s from the next return",
+                    dasha.system
+                )));
+            }
+            if dasha.system == DashaSystem::Mudda {
+                counts.closings += 1;
+                counts.worst_close_s = counts.worst_close_s.max(off_s);
+            }
+        }
+        if dasha.system == DashaSystem::Patyayini {
+            if dasha
+                .ring
+                .ring
+                .iter()
+                .skip(1)
+                .any(|share| share.weight == 0.0)
+            {
+                counts.ties += 1;
+            }
+            if dasha
+                .ring
+                .ring
+                .first()
+                .is_some_and(|share| share.sign.is_some())
+            {
+                counts.lagna_first += 1;
+            }
+        }
+    }
+    let sun = all
+        .iter()
+        .find(|dasha| dasha.system == DashaSystem::Mudda)
+        .ok_or_else(|| at("no Mudda among the three"))?;
+    let even = sdk
+        .chart()
+        .annual_dasha(
+            &birth.document,
+            annual,
+            year,
+            DashaSystem::Mudda,
+            AnnualDashaRules {
+                clock: YearClock::Even,
+                ..rules
+            },
+        )
+        .map_err(|why| at(&format!("the Mudda on an even clock: {why}")))?;
+    for (one, other) in sun.periods.iter().zip(&even.periods) {
+        counts.worst_even_days = counts
+            .worst_even_days
+            .max((one.interval.to.get() - other.interval.to.get()).abs());
+    }
+    Ok(())
+}
+
+/// Periods that run end to end from `from` to `to`, each beginning where
+/// the last ended; a period that runs for no time is not listed and so
+/// cannot break the run.
+fn runs_end_to_end(periods: &[&PeriodRow], from: f64, to: f64) -> Result<(), String> {
+    let (Some(first), Some(last)) = (periods.first(), periods.last()) else {
+        return Err(String::from("are none"));
+    };
+    if first.interval.from.get() != from || last.interval.to.get() != to {
+        return Err(String::from("do not span their parent"));
+    }
+    if let Some(gap) = periods
+        .windows(2)
+        .find(|pair| matches!(pair, [one, other] if one.interval.to != other.interval.from))
+    {
+        return Err(format!("break between {} and the next", gap[0].path));
+    }
+    Ok(())
+}
+
+/// §19: the three annual dashas over every recorded year.
+fn the_annual_dashas(out: &mut String, kinds: &Kinds) {
+    let counts = &kinds.dashas;
+    let _ = write!(
+        out,
+        "\n## 19. The annual dashas, over the recorded years\n\n\
+         The Mudda, the Varsha Yogini and the Patyayini of every recorded \
+         year, through `sdk.chart().annual_dashas` under the default readings \
+         (`03-design/annual-dashas.md`): the Sun's clock and the birth \
+         Moon's balance. {} years were read, {} periods listed to the \
+         antardasha.\n\n\
+         Every one of them opens on its return. In every one, the \
+         mahadashas run end to end from the return to the year's close, and \
+         each mahadasha's antardashas run end to end across it. The pass \
+         fails on the first that does not. Where the sweep also found the \
+         next return ({} years), the Sun's clock closes on it, the worst by \
+         **{:.4} s**, two searches for one crossing agreeing to their own \
+         tolerance.\n\n\
+         **An even spread between the returns stands up to {:.2} days** from \
+         the Sun's clock at one of the Mudda's boundaries: the equation of \
+         centre at the boundary less its value at the return, which can \
+         reach twice its 1.92°. So C122 is a real choice and not a rounding: \
+         the clock moves a period's end by days.\n\n\
+         The Patyayini's tie rule decided the order in **{}** years{} The \
+         rule is built because the verse states it, and a chart of a \
+         consumer's may be the one where it holds. The year opened with the \
+         lagna in {}.\n",
+        count(counts.years),
+        count(counts.periods),
+        count(counts.closings),
+        counts.worst_close_s,
+        counts.worst_even_days,
+        count(counts.ties),
+        if counts.ties == 0 {
+            ": no two of the eight shared a krishamsha to the nanoarcsecond."
+        } else {
+            ", each a pair sharing a krishamsha to the nanoarcsecond."
+        },
+        count(counts.lagna_first),
     );
 }

@@ -1933,6 +1933,7 @@ dependencies = [
  "serde_json",
  "teistro-astro",
  "teistro-core",
+ "teistro-dasha",
  "teistro-port-ephemeris",
  "teistro-vargas",
 ]

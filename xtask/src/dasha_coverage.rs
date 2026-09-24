@@ -109,7 +109,7 @@ impl Blocker {
 /// quietly stop being exhaustive.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-const NOT_BUILT: [(&str, Blocker, &str); 22] = [
+const NOT_BUILT: [(&str, Blocker, &str); 19] = [
     (
         "SHODASHOTTARI",
         Blocker::Text,
@@ -226,29 +226,13 @@ const NOT_BUILT: [(&str, Blocker, &str); 22] = [
          belongs to the Jaimini module and this follows it",
     ),
     (
-        "MUDDA",
-        Blocker::Module,
-        "Vimshottari scaled to the year, which needs the **annual chart** — the \
-         Varsha Pravesha solar return, whose instant is measured in \
-         `annual-chart-measured.md` and whose design is `annual-chart.md`. The \
-         scale decorator it would use is built and Tribhagi uses it",
-    ),
-    (
         "VARSHA_NARAYANA",
-        Blocker::Module,
-        "Narayana over the annual chart, blocked on the same solar return",
-    ),
-    (
-        "VARSHA_YOGINI",
-        Blocker::Module,
-        "Yogini over the annual chart, blocked on the same solar return",
-    ),
-    (
-        "PATYAYINI",
-        Blocker::Module,
-        "periods from the grahas' strengths **in the annual chart**, so it needs a \
-         kernel of its own as well. Filed under the module because finishing the \
-         kernel would not unblock it",
+        Blocker::Text,
+        "Narayana read over one year. The solar return it waited on is built \
+         and the three annual dashas beside it are computed \
+         (`annual-dashas.md`), but neither book read for them gives this one: \
+         Charak's chapter V and the *Tajika Nilakanthi* name the Mudda, the \
+         Yogini and the Patyayini and stop",
     ),
 ];
 
@@ -412,7 +396,12 @@ fn refusals(sdk: &teistro::Context, ask: &[&'static str]) -> Result<Vec<Refused>
 
 /// The catalogue against the build, and the list against both.
 fn page(_root: &Path) -> Result<String, String> {
-    let computed: BTreeSet<&str> = teistro::dasha::systems().map(DashaSystem::key).collect();
+    // A natal chart's systems and a year's: both are computed, each from
+    // the chart it divides.
+    let computed: BTreeSet<&str> = teistro::dasha::systems()
+        .chain(teistro::tajika::ANNUAL_DASHAS)
+        .map(DashaSystem::key)
+        .collect();
     let catalogued: BTreeSet<&str> = DashaSystem::ALL.iter().map(|system| system.key()).collect();
     let excused: BTreeMap<&str, (Blocker, &str)> = NOT_BUILT
         .into_iter()
@@ -450,13 +439,15 @@ fn page(_root: &Path) -> Result<String, String> {
         .filter(|key| catalogued.contains(key) && !computed.contains(key))
         .collect();
     let refused = refusals(&sdk, &askable)?;
+    let annual = annual_pointers(&sdk)?;
 
     let mut out = String::new();
     out.push_str("# What the catalogue names and what this build computes\n\n");
     let _ = write!(
         out,
         "Status: `generated` by `cargo xtask dasha-coverage` over \
-         `DashaSystem::ALL` and `teistro::dasha::systems()`. Do not edit: \
+         `DashaSystem::ALL`, `teistro::dasha::systems()` and \
+         `teistro::tajika::ANNUAL_DASHAS`. Do not edit: \
          `check-dasha-coverage` regenerates this page and fails on any \
          difference. The design it measures is \
          [`dasha-kernels.md`](dasha-kernels.md).\n\n"
@@ -478,6 +469,8 @@ fn page(_root: &Path) -> Result<String, String> {
         count(computed.len()),
         count(catalogued.len() - computed.len()),
     );
+
+    one_year_not_a_life(&mut out, &annual);
 
     the_queue(&mut out);
 
@@ -501,6 +494,61 @@ fn page(_root: &Path) -> Result<String, String> {
     );
 
     Ok(fill(&out))
+}
+
+/// A natal chart asked for each annual dasha: whether the refusal points
+/// at the call that computes it.
+fn annual_pointers(sdk: &teistro::Context) -> Result<Vec<(DashaSystem, bool)>, String> {
+    let place = teistro::quantity::Place::new(
+        teistro::quantity::Latitude::try_new(27.7172).map_err(|why| why.to_string())?,
+        teistro::quantity::Longitude::try_new(85.324).map_err(|why| why.to_string())?,
+        teistro::quantity::Altitude::try_new(1400.0).map_err(|why| why.to_string())?,
+    );
+    let offset = teistro::UtcOffset::try_from_seconds(20_700).map_err(|why| why.to_string())?;
+    let instant =
+        teistro::quantity::JulianDay::try_new(2_448_000.5).map_err(|why| why.to_string())?;
+    let mut out = Vec::new();
+    for system in teistro::tajika::ANNUAL_DASHAS {
+        let request = teistro::ChartRequest::at(place, offset).with_dashas([system]);
+        let Err(error) = sdk.chart().readings(&[instant], &request) else {
+            return Err(format!(
+                "a natal chart asked for `{}` answered it rather than pointing at the year",
+                system.key()
+            ));
+        };
+        let points = error
+            .hint()
+            .is_some_and(|hint| hint.contains("annual_dasha"));
+        if !points {
+            return Err(format!(
+                "a natal chart asked for `{}` was refused without naming \
+                 `annual_dasha`, which computes it: {error}",
+                system.key()
+            ));
+        }
+        out.push((system, points));
+    }
+    Ok(out)
+}
+
+/// The dashas that divide a year and not a life, and where they are asked.
+fn one_year_not_a_life(out: &mut String, annual: &[(DashaSystem, bool)]) {
+    let named: Vec<String> = annual
+        .iter()
+        .map(|(system, _)| format!("`{}`", system.key()))
+        .collect();
+    let pointed = annual.iter().filter(|(_, points)| *points).count();
+    let _ = write!(
+        out,
+        "Of the computed, {} divide **one year** rather than a life: {}. They \
+         are computed from an annual chart by `sdk.chart().annual_dasha` \
+         ([`annual-dashas.md`](annual-dashas.md)), so a natal chart asked for \
+         one is refused, and {} of those refusals name that call in the hint \
+         rather than leaving the caller at a list of the natal systems.\n\n",
+        count(annual.len()),
+        listed(&named),
+        count(pointed),
+    );
 }
 
 /// The two sizes the page is about, counted from the types.

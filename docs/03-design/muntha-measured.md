@@ -715,3 +715,28 @@ The others are what the corpus holds. The pass fails if a lord is not
 among its claimants without succeeding the Moon, if the Moon holds the
 year by any other step, if the two readings disagree about a year the
 Moon did not lead, or if a reading not asked is ever counted.
+
+## 19. The annual dashas, over the recorded years
+
+The Mudda, the Varsha Yogini and the Patyayini of every recorded year,
+through `sdk.chart().annual_dashas` under the default readings
+(`03-design/annual-dashas.md`): the Sun's clock and the birth Moon's
+balance. 2159 years were read, 546 227 periods listed to the antardasha.
+
+Every one of them opens on its return. In every one, the mahadashas run
+end to end from the return to the year's close, and each mahadasha's
+antardashas run end to end across it. The pass fails on the first that
+does not. Where the sweep also found the next return (2105 years), the
+Sun's clock closes on it, the worst by **0.0084 s**, two searches for
+one crossing agreeing to their own tolerance.
+
+**An even spread between the returns stands up to 3.90 days** from the
+Sun's clock at one of the Mudda's boundaries: the equation of centre at
+the boundary less its value at the return, which can reach twice its
+1.92°. So C122 is a real choice and not a rounding: the clock moves a
+period's end by days.
+
+The Patyayini's tie rule decided the order in **0** years: no two of the
+eight shared a krishamsha to the nanoarcsecond. The rule is built
+because the verse states it, and a chart of a consumer's may be the one
+where it holds. The year opened with the lagna in 250.

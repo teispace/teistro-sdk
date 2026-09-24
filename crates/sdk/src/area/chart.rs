@@ -3,12 +3,15 @@
 
 use teistro_aspect::Aspects;
 use teistro_astro::completion::Completion;
+use teistro_astro::events::FrameLongitudes;
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{ChartFoundation, Founder, angles_of};
 use teistro_core::angle::Nas;
-use teistro_core::catalogue::{Ayanamsha, ChartKind, DashaSystem, Graha, Rashi, Vara, Varga};
+use teistro_core::catalogue::{
+    Ayanamsha, ChartKind, DashaSystem, Graha, Nakshatra, Rashi, Vara, Varga,
+};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::house::House;
@@ -21,7 +24,7 @@ use teistro_core::settings::Balance;
 use teistro_core::time::UtcOffset;
 use teistro_dasha::{
     Birth, Dasha, DashaCursor, DashaName, DashaReading, KalachakraDasha, KalachakraRules,
-    RashiChart, RashiDasha, RashiRules, Rules as DashaRules,
+    RashiChart, RashiDasha, RashiRules, Rules as DashaRules, YearDasha, YearRing,
 };
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
@@ -39,10 +42,11 @@ use teistro_strength::{
     VimshopakaReading,
 };
 use teistro_tajika::{
-    Affliction, AnnualSky, AnnualStates, Between, DrishtiRules, Favour, Harsha, HarshaRules,
-    Muntha, MunthaDegree, Natal, OfficeBearers, Panchavargiya, Pravesha, Qualification, Reading,
-    SEVEN, Saham, SahamFormula, SahamPlace, SahamReading, SahamRules, SahamSky, SahamStrength,
-    SahamStrengthRules, Strength, Varshesha, VarsheshaRules, YearCharts, YearYogas, YogaRules,
+    Affliction, AnnualDasha, AnnualDashaRules, AnnualSky, AnnualStates, Between, DrishtiRules,
+    Favour, Harsha, HarshaRules, MuddaBalance, Muntha, MunthaDegree, Natal, OfficeBearers,
+    Panchavargiya, Pravesha, Qualification, Reading, SEVEN, Saham, SahamFormula, SahamPlace,
+    SahamReading, SahamRules, SahamSky, SahamStrength, SahamStrengthRules, Strength, Varshesha,
+    VarsheshaRules, YearCharts, YearYogas, YogaRules,
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
@@ -517,7 +521,14 @@ impl<'a> ChartArea<'a> {
             "{} is a dasha the catalogue names and this build does not compute yet",
             system.key()
         ))
-        .with_hint(format!("the dashas built are {}", built.join(", ")))
+        .with_hint(if teistro_tajika::ANNUAL_DASHAS.contains(&system) {
+            format!(
+                "{} divides one year: read it with sdk.chart().annual_dasha",
+                system.key()
+            )
+        } else {
+            format!("the dashas built are {}", built.join(", "))
+        })
     }
 
     /// The birth a nakshatra-seeded dasha reads: the instant, the Moon, and
@@ -1369,6 +1380,190 @@ impl<'a> ChartArea<'a> {
         )
     }
 
+    /// One year's **annual dasha**: the Mudda, the Varsha Yogini or the
+    /// Patyayini, from a birth chart and an annual chart **you founded**
+    /// (`03-design/annual-dashas.md`).
+    ///
+    /// The year opens at the annual chart's instant, which is the return.
+    /// Under the default clock it closes on the next return, each of its
+    /// 360 units the Sun's motion through one degree. The answer carries
+    /// the ring the year runs round, the year itself, and every period to
+    /// the rules' depth; the readings the sources differ on are
+    /// [`AnnualDashaRules`], each named on the answer.
+    ///
+    /// Asking for more than one system of the same year?
+    /// [`ChartArea::annual_dashas`] reads the Sun over the year once for
+    /// all of them.
+    ///
+    /// ```no_run
+    /// # use teistro::{AnnualDashaRules, ChartRequest, Context, Document, Ephemeris};
+    /// # use teistro::catalogue::DashaSystem;
+    /// # use teistro::tajika::Reading;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let natal: Document = todo!();
+    /// # let request: ChartRequest = todo!();
+    /// let annual = sdk.chart().annual(&natal, Reading::Sidereal, 40, &request)?;
+    /// let mudda = sdk.chart().annual_dasha(
+    ///     &natal,
+    ///     &annual.value,
+    ///     40,
+    ///     DashaSystem::Mudda,
+    ///     AnnualDashaRules::default(),
+    /// )?;
+    /// let first = &mudda.periods[0];
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::annual_dashas`].
+    pub fn annual_dasha(
+        self,
+        natal: &Document,
+        annual: &Document,
+        completed_years: u16,
+        system: DashaSystem,
+        rules: AnnualDashaRules,
+    ) -> Result<AnnualDasha, Error> {
+        self.annual_dashas(natal, annual, completed_years, &[system], rules)?
+            .pop()
+            .ok_or_else(|| Error::internal("one system asked is one answered"))
+    }
+
+    /// Several annual dashas of **one** year, in the order asked, over one
+    /// clock: the Sun's crossings of the year are searched once however
+    /// many systems read them.
+    ///
+    /// ```no_run
+    /// # use teistro::{AnnualDashaRules, Context, Document, Ephemeris};
+    /// # use teistro::tajika::ANNUAL_DASHAS;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (natal, annual): (Document, Document) = todo!();
+    /// let all_three =
+    ///     sdk.chart().annual_dashas(&natal, &annual, 40, &ANNUAL_DASHAS, AnnualDashaRules::default())?;
+    /// assert_eq!(all_three.len(), 3);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A system other than the three, named `system` with the three in the
+    /// hint, before anything is searched; a `completed_years` past two
+    /// hundred, named `completed_years`; no ephemeris, for a clock that
+    /// reads the Sun or a balance measured by time; what the rules' clock
+    /// refuses; a chart that does not place one of the seven.
+    pub fn annual_dashas(
+        self,
+        natal: &Document,
+        annual: &Document,
+        completed_years: u16,
+        systems: &[DashaSystem],
+        rules: AnnualDashaRules,
+    ) -> Result<Vec<AnnualDasha>, Error> {
+        if completed_years > teistro_tajika::MOST_YEARS {
+            return Err(Error::invalid_arg(format!(
+                "an annual dasha is read for 0 to {} completed years, not {completed_years}",
+                teistro_tajika::MOST_YEARS
+            ))
+            .with_field("completed_years"));
+        }
+        if let Some(stranger) = systems
+            .iter()
+            .find(|system| !teistro_tajika::ANNUAL_DASHAS.contains(system))
+        {
+            let built: Vec<&str> = teistro_tajika::ANNUAL_DASHAS
+                .iter()
+                .map(|one| one.key())
+                .collect();
+            return Err(
+                Error::invalid_arg(format!("{} is not an annual dasha", stranger.key()))
+                    .with_field("system")
+                    .with_hint(format!("the annual dashas are {}", built.join(", "))),
+            );
+        }
+        if systems.is_empty() {
+            return Ok(Vec::new());
+        }
+        let year = &annual.foundation;
+        let knots = match rules.clock.divisions() {
+            Some(divisions) => {
+                let sun = year
+                    .graha(Graha::Sun)
+                    .ok_or_else(|| Error::internal("a founded chart places the Sun"))?
+                    .longitude_deg;
+                Some(self.in_chart_sky(year, |longitudes, zodiac| {
+                    teistro_tajika::sun_knots(longitudes, zodiac, year.instant, sun, divisions)
+                })?)
+            }
+            None => None,
+        };
+        let clock = teistro_tajika::year_clock(rules.clock, year.instant, knots)?;
+        systems
+            .iter()
+            .map(|&system| {
+                let (ring, seed) =
+                    self.annual_ring(natal, annual, completed_years, system, rules)?;
+                let dasha = YearDasha::new(ring, clock.clone(), rules.birth_period)?;
+                Ok(AnnualDasha::of(
+                    &dasha,
+                    system,
+                    completed_years,
+                    rules,
+                    seed,
+                ))
+            })
+            .collect()
+    }
+
+    /// The ring one annual dasha runs round in a year, and the birth
+    /// nakshatra it is seeded from when it is a nakshatra year.
+    fn annual_ring(
+        self,
+        natal: &Document,
+        annual: &Document,
+        completed_years: u16,
+        system: DashaSystem,
+        rules: AnnualDashaRules,
+    ) -> Result<(YearRing, Option<Nakshatra>), Error> {
+        let moon_of = |foundation: &ChartFoundation| {
+            foundation
+                .graha(Graha::Moon)
+                .ok_or_else(|| Error::internal("a founded chart places the Moon"))
+                .and_then(|moon| Ok(Nas::try_from_degrees(moon.longitude_deg)?))
+        };
+        if system == DashaSystem::Patyayini {
+            let sky = Self::sky_of(annual)?;
+            let strengths = teistro_tajika::panchavargiya(&sky)?;
+            let ring =
+                teistro_tajika::patyayini_ring(&sky, annual.foundation.lagna_deg, &strengths)?;
+            return Ok((ring, None));
+        }
+        let birth_moon = moon_of(&natal.foundation)?;
+        let remaining = match rules.balance {
+            MuddaBalance::Whole => None,
+            MuddaBalance::NatalMoon | MuddaBalance::EntryMoon => {
+                let foundation = if rules.balance == MuddaBalance::NatalMoon {
+                    &natal.foundation
+                } else {
+                    &annual.foundation
+                };
+                Some(match rules.measure() {
+                    Balance::Temporal => teistro_tajika::remaining_by_time(
+                        foundation.instant,
+                        self.moon_span(foundation)?,
+                    )?,
+                    _ => teistro_tajika::remaining_by_arc(moon_of(foundation)?),
+                })
+            }
+        };
+        let ring = teistro_tajika::nakshatra_ring(system, birth_moon, completed_years, remaining)?;
+        Ok((ring, Some(birth_moon.nakshatra())))
+    }
+
     /// Where the seven stand in a founded chart, which both the strengths
     /// and the aspects read.
     fn sky_of(annual: &Document) -> Result<AnnualSky, Error> {
@@ -1407,11 +1602,17 @@ impl<'a> ChartArea<'a> {
         })
     }
 
-    /// The Moon's stay in its nakshatra around the birth, searched in the
-    /// chart's own frame and zodiac: topocentric when the chart is, since a
-    /// topocentric Moon can stand a degree from the geocentric one and move
-    /// the nakshatra's edge by hours.
-    fn moon_span(self, foundation: &ChartFoundation) -> Result<Interval, Error> {
+    /// Runs a search on a founded chart's **own** sky: its frame,
+    /// topocentric when the chart is, and its zodiac on the settings'
+    /// ayanamsha basis, so what is found agrees with what the chart placed.
+    fn in_chart_sky<R>(
+        self,
+        foundation: &ChartFoundation,
+        search: impl FnOnce(
+            &FrameLongitudes<'_, dyn EphemerisProvider + '_>,
+            LimbZodiac,
+        ) -> Result<R, Error>,
+    ) -> Result<R, Error> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let settings = self.context.settings();
         let completion = Completion::new(
@@ -1430,7 +1631,17 @@ impl<'a> ChartArea<'a> {
             PrecessionModel::default(),
             self.context.delta_t(),
         );
-        Ok(nakshatra_at(&longitudes, foundation.instant, zodiac)?.whole)
+        search(&longitudes, zodiac)
+    }
+
+    /// The Moon's stay in its nakshatra around the birth, searched in the
+    /// chart's own frame and zodiac: topocentric when the chart is, since a
+    /// topocentric Moon can stand a degree from the geocentric one and move
+    /// the nakshatra's edge by hours.
+    fn moon_span(self, foundation: &ChartFoundation) -> Result<Interval, Error> {
+        self.in_chart_sky(foundation, |longitudes, zodiac| {
+            Ok(nakshatra_at(longitudes, foundation.instant, zodiac)?.whole)
+        })
     }
 
     /// The cursor behind a document's dasha: to read deeper than the
