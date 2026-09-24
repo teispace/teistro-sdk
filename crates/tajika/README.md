@@ -13,5 +13,6 @@ Panchavargiya bala, the Harsha bala (`03-design/tajika-harsha.md`), the
 lord of the year, the Tajika aspects with their deeptamsha orbs, the
 sixteen yogas (`03-design/tajika-yogas.md`), the sahams
 (`03-design/tajika-sahams.md`) and each saham's strength, clause by
-clause (`03-design/tajika-saham-strength.md`). The Mudda and Patyayini dashas
-are still to come.
+clause (`03-design/tajika-saham-strength.md`), and the three annual dashas —
+the Mudda, the Varsha Yogini and the Patyayini — as rings over one year
+(`03-design/annual-dashas.md`).

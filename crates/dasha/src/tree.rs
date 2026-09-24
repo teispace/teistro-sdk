@@ -224,6 +224,26 @@ impl Period {
         }
     }
 
+    /// A period of a year's ring (`annual`), which states its own span
+    /// and the span its sub-periods divide.
+    pub(crate) const fn of_share(
+        lord: Graha,
+        sign: Option<Rashi>,
+        path: Path,
+        interval: Interval,
+        whole: Interval,
+        seat: usize,
+    ) -> Period {
+        Period {
+            lord,
+            sign,
+            path,
+            interval,
+            whole,
+            seat,
+        }
+    }
+
     /// The span its sub-periods are shares of.
     #[must_use]
     pub const fn whole(&self) -> Interval {

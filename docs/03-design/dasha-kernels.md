@@ -601,6 +601,14 @@ period levels as an ordinal message with the profile's level names.
 ## What resisted and what is watched
 
 - **Patyayini** needs its own kernel (periods from strengths); planned.
+  **Built 2026-09-24, and two sentences here were wrong**
+  ([`annual-dashas.md`](annual-dashas.md)). Its periods come from the
+  gaps between the grahas' and the lagna's longitudes *within their
+  signs*, not from strengths; strength only breaks a tie. And the Mudda
+  and the Varsha Yogini are not the scale decorator: a year opens part-way
+  through its first lord's share and closes on the rest, so the first
+  lord appears twice. All three run on one year kernel, `YearDasha`, and
+  none of them is a scaled row.
 - **Panchaswara** has no attested shape here; stays S.
 - **Karaka dasha** orders lords by chara-karaka strength; that would be a
   third chart-query field in K-udu. It is not added until Ashtakavarga,

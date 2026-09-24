@@ -11,7 +11,9 @@
 //! - [`rashi`]: the sign-based (Jaimini) systems as rows over their own
 //!   kernel, measured in `docs/03-design/rashi-dashas-measured.md`;
 //! - [`reading`]: a dasha as a chart document carries it, its periods as
-//!   rows to the settings' depth.
+//!   rows to the settings' depth;
+//! - [`annual`]: one year cut into shares, the kernel of the annual
+//!   dashas (`docs/03-design/annual-dashas.md`).
 //!
 //! Three things the corpus settled that a reading of the texts does not
 //! (`dasha-measured.md`):
@@ -45,6 +47,7 @@
 //! # Ok::<(), Box<dyn std::error::Error>>(())
 //! ```
 
+pub mod annual;
 pub mod balance;
 pub mod definition;
 pub mod kalachakra;
@@ -54,6 +57,7 @@ pub mod registry;
 pub mod row;
 pub mod tree;
 
+pub use annual::{Clock, Share, YearDasha, YearRing};
 pub use balance::{BalanceAtBirth, Written};
 pub use definition::DashaDefinition;
 pub use kalachakra::{KalachakraDasha, KalachakraRules, pada_row};

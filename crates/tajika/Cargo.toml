@@ -15,11 +15,12 @@ publish = false
 # Derives `schemars::JsonSchema` on the types a chart document carries,
 # so `cargo xtask gen document-schema` can describe it
 # (`docs/03-design/document-schema.md`).
-schema = ["dep:schemars", "teistro-core/schema"]
+schema = ["dep:schemars", "teistro-core/schema", "teistro-dasha/schema"]
 
 [dependencies]
 teistro-astro = { path = "../astro" }
 teistro-core = { path = "../core" }
+teistro-dasha = { path = "../dasha" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-vargas = { path = "../vargas" }
 serde = { version = "1", features = ["derive"] }

@@ -14,11 +14,12 @@
     reason = "tests fail by panicking and index what they asked for"
 )]
 
-use teistro::catalogue::Graha;
+use teistro::catalogue::{DashaSystem, Graha};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::tajika::{Reading, SIDEREAL_YEAR_DAYS};
 use teistro::{
-    ChartRequest, Context, Document, Ephemeris, House, MoonBenefic, UtcOffset, YogaRules,
+    AnnualDashaRules, ChartRequest, Context, Document, Ephemeris, House, MoonBenefic, MuddaBalance,
+    PeriodRow, UtcOffset, YearClock, YogaRules,
 };
 
 const BIRTH: f64 = 2_447_995.489_583_333_5;
@@ -1006,4 +1007,287 @@ fn the_sources_saham_strength_reproduces_end_to_end() {
     assert_eq!(year.company, [true, false, false, true, false, true, false]);
     assert_eq!(year.place.house.get(), 10);
     assert!(year.with_year_lord && year.lord_own_sign && year.with_benefic);
+}
+
+/// The birth, its thirtieth annual chart and the next return, which the
+/// annual dashas divide the year between.
+fn thirtieth_year(sdk: &Context) -> (Document, Document, f64) {
+    let natal = natal(sdk);
+    let annual = sdk
+        .chart()
+        .annual(&natal, Reading::Sidereal, 30, &request())
+        .unwrap()
+        .value;
+    let next = sdk
+        .chart()
+        .praveshas(&natal, Reading::Sidereal, 31)
+        .unwrap()[30]
+        .at
+        .get();
+    (natal, annual, next)
+}
+
+/// Each system's year opens on the return and, under the Sun's clock,
+/// closes on the next; its mahadashas run end to end across it.
+#[test]
+fn an_annual_dasha_divides_the_year_from_one_return_to_the_next() {
+    let sdk = context();
+    let (natal, annual, next) = thirtieth_year(&sdk);
+    for system in [
+        DashaSystem::Mudda,
+        DashaSystem::VarshaYogini,
+        DashaSystem::Patyayini,
+    ] {
+        let dasha = sdk
+            .chart()
+            .annual_dasha(&natal, &annual, 30, system, AnnualDashaRules::default())
+            .unwrap();
+        assert_eq!(dasha.system, system);
+        assert_eq!(dasha.year.from, annual.foundation.instant);
+        // The last of the Sun's 360 degrees is the next return: the same
+        // crossing, found by two searches.
+        assert!(
+            (dasha.year.to.get() - next).abs() * 86_400.0 < 1.0,
+            "{system:?} ends {} s from the next return",
+            (dasha.year.to.get() - next) * 86_400.0
+        );
+        let mahadashas: Vec<&PeriodRow> = dasha
+            .periods
+            .iter()
+            .filter(|row| !row.path.contains('/'))
+            .collect();
+        assert_eq!(mahadashas.first().unwrap().interval.from, dasha.year.from);
+        assert_eq!(mahadashas.last().unwrap().interval.to, dasha.year.to);
+        for pair in mahadashas.windows(2) {
+            assert_eq!(pair[0].interval.to, pair[1].interval.from, "{system:?}");
+        }
+        // The default depth is the antardashas both sources tabulate.
+        assert!(dasha.periods.iter().any(|row| row.path.contains('/')));
+        assert!(
+            dasha
+                .periods
+                .iter()
+                .all(|row| row.path.matches('/').count() <= 1)
+        );
+    }
+}
+
+/// The Mudda opens on the birth's own Vimshottari lord advanced one lord
+/// for each completed year, and a Patyayini names its lagna by the sign.
+#[test]
+fn the_mudda_is_the_natal_vimshottari_advanced_by_the_years() {
+    let sdk = context();
+    let (natal, annual, _) = thirtieth_year(&sdk);
+    let mudda = sdk
+        .chart()
+        .annual_dasha(
+            &natal,
+            &annual,
+            30,
+            DashaSystem::Mudda,
+            AnnualDashaRules::default(),
+        )
+        .unwrap();
+    let lords: Vec<Graha> = teistro::dasha::VIMSHOTTARI
+        .lords
+        .iter()
+        .map(|lord| lord.graha)
+        .collect();
+    let seed = mudda.seed.unwrap();
+    // Vimshottari seats Ashwini (0) at Ketu, the first of its lords.
+    let natal_first = usize::from(seed.id()) % 9;
+    let expected = lords[(natal_first + 30) % 9];
+    assert_eq!(mudda.ring.ring[mudda.ring.first].lord, expected);
+    assert_eq!(mudda.periods[0].lord, expected);
+
+    let patyayini = sdk
+        .chart()
+        .annual_dasha(
+            &natal,
+            &annual,
+            30,
+            DashaSystem::Patyayini,
+            AnnualDashaRules::default(),
+        )
+        .unwrap();
+    assert!(patyayini.seed.is_none() && patyayini.ring.remaining.is_none());
+    let lagna: Vec<_> = patyayini
+        .ring
+        .ring
+        .iter()
+        .filter(|share| share.sign.is_some())
+        .collect();
+    assert_eq!(lagna.len(), 1, "the lagna holds one share of the eight");
+    assert_eq!(patyayini.ring.ring.len(), 8);
+}
+
+/// The three clocks the sources give: the Sun's degree and an even spread
+/// both end on the next return and part in between; days end where they
+/// count to.
+#[test]
+fn the_clocks_are_readings_and_each_is_named_on_the_answer() {
+    let sdk = context();
+    let (natal, annual, _) = thirtieth_year(&sdk);
+    let under = |clock| {
+        sdk.chart()
+            .annual_dasha(
+                &natal,
+                &annual,
+                30,
+                DashaSystem::Mudda,
+                AnnualDashaRules {
+                    clock,
+                    ..AnnualDashaRules::default()
+                },
+            )
+            .unwrap()
+    };
+    let sun = under(YearClock::SunDegrees);
+    let even = under(YearClock::Even);
+    let days = under(YearClock::Days(360.0));
+    assert_eq!(even.rules.clock, YearClock::Even);
+    // The same crossing found by two searches, each to a hundredth of a
+    // second (`teistro_astro::events::TOLERANCE_DAYS`).
+    assert!((sun.year.to.get() - even.year.to.get()).abs() * 86_400.0 < 0.05);
+    assert!((days.year.days() - 360.0).abs() < 1e-9);
+    // Between the returns the two part by the equation of centre there less
+    // the equation at the return: up to twice its 1.92°, about 3.9 days.
+    let apart = sun
+        .periods
+        .iter()
+        .zip(&even.periods)
+        .map(|(one, other)| (one.interval.to.get() - other.interval.to.get()).abs())
+        .fold(0.0_f64, f64::max);
+    assert!(apart > 0.1 && apart < 3.95, "{apart} days");
+}
+
+/// The balance a nakshatra year opens with is a reading: the birth Moon's,
+/// the Moon's at the return, or none.
+#[test]
+fn the_balance_is_a_reading_and_none_runs_the_first_lord_whole() {
+    let sdk = context();
+    let (natal, annual, _) = thirtieth_year(&sdk);
+    let under = |balance| {
+        sdk.chart()
+            .annual_dasha(
+                &natal,
+                &annual,
+                30,
+                DashaSystem::VarshaYogini,
+                AnnualDashaRules {
+                    balance,
+                    ..AnnualDashaRules::default()
+                },
+            )
+            .unwrap()
+    };
+    let natal_moon = under(MuddaBalance::NatalMoon);
+    let entry_moon = under(MuddaBalance::EntryMoon);
+    let whole = under(MuddaBalance::Whole);
+    let remaining = |dasha: &teistro::AnnualDasha| dasha.ring.remaining;
+    assert!(remaining(&natal_moon).is_some() && remaining(&entry_moon).is_some());
+    assert_ne!(remaining(&natal_moon), remaining(&entry_moon));
+    assert_eq!(remaining(&whole), None);
+    // One period fewer: the first lord is not split across the year's ends.
+    let count = |dasha: &teistro::AnnualDasha| {
+        dasha
+            .periods
+            .iter()
+            .filter(|row| !row.path.contains('/'))
+            .count()
+    };
+    assert_eq!(count(&whole), 8);
+    assert_eq!(natal_moon.ring.first, entry_moon.ring.first);
+}
+
+/// A system that is not an annual dasha is refused by name with the three
+/// that are; a natal chart asked for one of the three is pointed at them.
+#[test]
+fn the_annual_dashas_are_refused_where_they_are_not_and_found_where_they_are() {
+    let sdk = context();
+    let (natal, annual, _) = thirtieth_year(&sdk);
+    let refused = sdk
+        .chart()
+        .annual_dasha(
+            &natal,
+            &annual,
+            30,
+            DashaSystem::Vimshottari,
+            AnnualDashaRules::default(),
+        )
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("system"));
+    assert!(
+        refused.hint().unwrap_or_default().contains("MUDDA"),
+        "{refused}"
+    );
+    let too_old = sdk
+        .chart()
+        .annual_dasha(
+            &natal,
+            &annual,
+            201,
+            DashaSystem::Mudda,
+            AnnualDashaRules::default(),
+        )
+        .unwrap_err();
+    assert_eq!(too_old.field(), Some("completed_years"));
+    let natal_asked = sdk
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(BIRTH),
+            &request().with_dashas([DashaSystem::Mudda]),
+        )
+        .unwrap_err();
+    assert!(
+        natal_asked
+            .hint()
+            .unwrap_or_default()
+            .contains("annual_dasha"),
+        "{natal_asked}"
+    );
+}
+
+/// Asking for the three at once reads the Sun once and answers exactly as
+/// three calls do, in the order asked; a stranger among them is refused
+/// before anything is searched.
+#[test]
+fn several_annual_dashas_answer_as_each_alone() {
+    let sdk = context();
+    let (natal, annual, _) = thirtieth_year(&sdk);
+    let asked = [
+        DashaSystem::VarshaYogini,
+        DashaSystem::Patyayini,
+        DashaSystem::Mudda,
+    ];
+    let rules = AnnualDashaRules::default();
+    let together = sdk
+        .chart()
+        .annual_dashas(&natal, &annual, 30, &asked, rules)
+        .unwrap();
+    assert_eq!(together.len(), asked.len());
+    for (one, system) in together.iter().zip(asked) {
+        let alone = sdk
+            .chart()
+            .annual_dasha(&natal, &annual, 30, system, rules)
+            .unwrap();
+        assert_eq!(*one, alone);
+    }
+    let refused = sdk
+        .chart()
+        .annual_dashas(
+            &natal,
+            &annual,
+            30,
+            &[DashaSystem::Mudda, DashaSystem::Yogini],
+            rules,
+        )
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("system"));
+    assert!(
+        sdk.chart()
+            .annual_dashas(&natal, &annual, 30, &[], rules)
+            .unwrap()
+            .is_empty()
+    );
 }

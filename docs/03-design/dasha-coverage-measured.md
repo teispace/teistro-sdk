@@ -1,12 +1,12 @@
 # What the catalogue names and what this build computes
 
 Status: `generated` by `cargo xtask dasha-coverage` over
-`DashaSystem::ALL` and `teistro::dasha::systems()`. Do not edit:
-`check-dasha-coverage` regenerates this page and fails on any
-difference. The design it measures is
-[`dasha-kernels.md`](dasha-kernels.md).
+`DashaSystem::ALL`, `teistro::dasha::systems()` and
+`teistro::tajika::ANNUAL_DASHAS`. Do not edit: `check-dasha-coverage`
+regenerates this page and fails on any difference. The design it
+measures is [`dasha-kernels.md`](dasha-kernels.md).
 
-The catalogue names 40 dasha systems and this build computes 18. The 22
+The catalogue names 40 dasha systems and this build computes 21. The 19
 left are **not** a backlog of unwritten code: every one of them is
 blocked on something that is not typing, and this page is the list of
 what, grouped by the blocker that would have to go first.
@@ -17,7 +17,14 @@ would be a defect is the gap going **undeclared**, because then a
 consumer reading the catalogue cannot tell a feature from a name waiting
 for one. It is declared twice over: named here, and refused at the call.
 
-## 11 systems: the text is not settled
+Of the computed, 3 divide **one year** rather than a life: `PATYAYINI`,
+`MUDDA` and `VARSHA_YOGINI`. They are computed from an annual chart by
+`sdk.chart().annual_dasha` ([`annual-dashas.md`](annual-dashas.md)), so
+a natal chart asked for one is refused, and 3 of those refusals name
+that call in the hint rather than leaving the caller at a list of the
+natal systems.
+
+## 12 systems: the text is not settled
 
 What closes them is a cited source read by someone who reads it.
 Building is not what is missing: every row here is one line of table
@@ -37,6 +44,7 @@ and all of them are listed.
 | `PANCHASWARA` | no attested shape at all. It is catalogued because a system by that name is named, which is what a key space is for |
 | `STHIRA` | the row is stated — from the lagna, consecutive, seven, eight or nine years by modality — and nothing here verifies it. It is one boolean from Mandooka's row, which is exactly why a guess would go unnoticed |
 | `VARNADA` | the Varnada lagna it starts from **is** built (`teistro_points`), so what is missing is not the point but which of five school variants of it the dasha counts from |
+| `VARSHA_NARAYANA` | Narayana read over one year. The solar return it waited on is built and the three annual dashas beside it are computed (`annual-dashas.md`), but neither book read for them gives this one: Charak's chapter V and the *Tajika Nilakanthi* name the Mudda, the Yogini and the Patyayini and stop |
 
 ## 5 systems: the kernel cannot express it
 
@@ -54,7 +62,7 @@ at a time.
 | `YOGARDHA` | the mean of two systems, if that is what it is. A composition over kernels is not an algorithm inside one |
 | `SUDARSHANA_CHAKRA` | three rashi progressions running at once, from the lagna, the Sun and the Moon. The same composition, and the reason it is a combinator |
 
-## 6 systems: it waits on a module
+## 2 systems: it waits on a module
 
 What closes them is the module itself. Each is the **last** step of one,
 so scheduling the dasha separately would schedule the module twice.
@@ -63,14 +71,10 @@ so scheduling the dasha separately would schedule the module twice.
 |---|---|
 | `AAYU` | the longevity module decides the span this divides, and that span is three methods with a reconciliation between them (`crates/rules` `longevity`). The dasha is what the module ends with |
 | `SUDASA` | it starts from the karakamsha, which is the navamsha of the Atmakaraka and is not built — the Sree lagna beside it in the sources is. Karakamsha belongs to the Jaimini module and this follows it |
-| `MUDDA` | Vimshottari scaled to the year, which needs the **annual chart** — the Varsha Pravesha solar return, whose instant is measured in `annual-chart-measured.md` and whose design is `annual-chart.md`. The scale decorator it would use is built and Tribhagi uses it |
-| `VARSHA_NARAYANA` | Narayana over the annual chart, blocked on the same solar return |
-| `VARSHA_YOGINI` | Yogini over the annual chart, blocked on the same solar return |
-| `PATYAYINI` | periods from the grahas' strengths **in the annual chart**, so it needs a kernel of its own as well. Filed under the module because finishing the kernel would not unblock it |
 
 ## Asking for one
 
-Every one of the 22 unbuilt systems was asked of a real founded chart.
+Every one of the 19 unbuilt systems was asked of a real founded chart.
 None of them answered: each came back refused, naming the system asked
 for and hinting with every system this build does compute. That is what
 makes the gap a declared one rather than a dead end — a member that
@@ -89,7 +93,7 @@ reference, or where a system starts, the order it visits the signs in
 and how long a sign runs — each checked by the same row validation a
 shipped system passes. So a consumer holding the text registers the
 system on their context and asks for it by key, today, with no change
-here. That covers 5 of the 22 systems left.
+here. That covers 5 of the 19 systems left.
 
 | system | the kernel it arrives as | what is still missing |
 |---|---|---|
@@ -104,7 +108,7 @@ The path is walked once per kernel rather than cited:
 nakshatra-seeded kernel and `DEMO_STHIRA`, every sign from the lagna for
 seven, eight or nine years by modality, the sign-based kernel.
 
-**The other 17 cannot be supplied by anyone**, and each for a reason in
+**The other 14 cannot be supplied by anyone**, and each for a reason in
 its own row rather than for want of an arm: `SUDASA` starts from the
 karakamsha, which is a place `Start` does not name; the tithi, yoga and
 karana seeds want a reference that is not a nakshatra; `TARA`, `KARAKA`
@@ -118,12 +122,12 @@ section exists to keep visible.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every catalogued system this build does not compute is listed here with a reason | **holds** | 0 of 22 disagree |
-| no reason here outlives its blocker: nothing listed is already computed | **holds** | 0 of 22 disagree |
-| every reason names a system the catalogue names | **holds** | 0 of 22 disagree |
+| every catalogued system this build does not compute is listed here with a reason | **holds** | 0 of 19 disagree |
+| no reason here outlives its blocker: nothing listed is already computed | **holds** | 0 of 19 disagree |
+| every reason names a system the catalogue names | **holds** | 0 of 19 disagree |
 | every system said to be registrable is one this build does not compute | **holds** | 0 of 5 disagree |
-| asking for an unbuilt system is refused and never answered | **holds** | 0 of 22 disagree |
-| the refusal names the system asked for | **holds** | 0 of 22 disagree |
-| the refusal names every system this build does compute | **holds** | 0 of 22 disagree |
-| the counts on this page are read from the types and not written down | **holds** | `DashaSystem::ALL` 40, `teistro::dasha::systems()` 18 |
+| asking for an unbuilt system is refused and never answered | **holds** | 0 of 19 disagree |
+| the refusal names the system asked for | **holds** | 0 of 19 disagree |
+| the refusal names every system this build does compute | **holds** | 0 of 19 disagree |
+| the counts on this page are read from the types and not written down | **holds** | `DashaSystem::ALL` 40, `teistro::dasha::systems()` 21 |
 

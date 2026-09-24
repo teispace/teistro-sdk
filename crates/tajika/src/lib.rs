@@ -29,6 +29,7 @@
 
 #![doc(html_no_source)]
 
+mod annual_dasha;
 mod bala;
 mod drishti;
 mod harsha;
@@ -41,6 +42,11 @@ mod varsha;
 mod varshesha;
 mod yoga;
 
+pub use annual_dasha::{
+    ANNUAL_DASHAS, AnnualDasha, AnnualDashaRules, MuddaBalance, YEAR_UNITS, YearClock,
+    nakshatra_ring, natal_row, patyayini_ring, remaining_by_arc, remaining_by_time, sun_knots,
+    year_clock,
+};
 pub use bala::{
     AnnualSky, Bala, Panchavargiya, Relation, SEVEN, drekkana_lord, hudda_lord, navamsha_lord,
     panchavargiya,
