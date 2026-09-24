@@ -378,6 +378,7 @@ final class ChartsCast {
     required this.pointCount,
     required this.aspectCount,
     required this.praveshaCount,
+    required this.natalSahamCount,
     required this.length,
   });
 
@@ -413,6 +414,9 @@ final class ChartsCast {
   ///
   /// Ragged for a reason of its own: the request settles how many returns are wanted, and an ephemeris that ends first settles how many there are (`03-design/annual-chart.md`). Fewer than asked for is the answer, so a reader takes this count and never the number it requested.
   final Uint32List praveshaCount;
+
+  /// How many rows of the `natal_sahams` section belong to this chart: the sahams `varsha_json.sahams` asked for, 0 to 41.
+  final Uint32List natalSahamCount;
 
   /// The number of rows every column holds.
   final int length;
@@ -1774,7 +1778,7 @@ final class ChartsMatterLegs {
 /// The `year_sahams` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.
+/// Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`), and judged for strength under the year's own lord (`03-design/tajika-saham-strength.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for and a place given.
 final class ChartsYearSahams {
   const ChartsYearSahams({
     required this.saham,
@@ -1783,6 +1787,11 @@ final class ChartsYearSahams {
     required this.lord,
     required this.house,
     required this.addedSign,
+    required this.strong,
+    required this.weak,
+    required this.lordVishwa,
+    required this.lordHarsha,
+    required this.nodeAxis,
     required this.length,
   });
 
@@ -1798,11 +1807,186 @@ final class ChartsYearSahams {
   /// That sign's lord, a `graha` id: the saham's lord, by whose strength the source judges it.
   final Uint16List lord;
 
-  /// The house it fell in, 1 to 12, counted from the annual lagna by whole signs.
+  /// The house it fell in, 1 to 12, counted from the chart's lagna by whole signs. The 6th, 8th and 12th are where the source calls a saham handicapped.
   final Uint8List house;
 
   /// 1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise.
   final Uint8List addedSign;
+
+  /// The clauses of the source's strong list that hold, as a bit set: bit `n` is the `TsSahamStrong` with id `n`. Reported and never weighed: the source judges in words and gives no score (`03-design/tajika-saham-strength.md`).
+  final Uint16List strong;
+
+  /// The clauses of the source's weak list that hold, as a bit set over `TsSahamWeak`. A saham may meet clauses on both lists, and three in five do.
+  final Uint8List weak;
+
+  /// The saham lord's Panchavargiya Vishwa bala, exact, in sub-sub units of which a unit holds 3600.
+  final Int32List lordVishwa;
+
+  /// The saham lord's Harsha bala grade.
+  final Uint8List lordHarsha;
+
+  /// 1 when the saham's sign is Rahu's or Ketu's, which the source's forty-sixth year counts against a saham; 0 when not; 2 when the chart placed no nodes to read.
+  final Uint8List nodeAxis;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `year_saham_seven` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Seven rows under each row of `year_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from.
+final class ChartsYearSahamSeven {
+  const ChartsYearSahamSeven({
+    required this.graha,
+    required this.drishti,
+    required this.relation,
+    required this.company,
+    required this.length,
+  });
+
+  /// Which of the seven, a `graha` id.
+  final Uint16List graha;
+
+  /// The Tajika aspect its sign casts on the saham's; one in the saham's own sign casts the inimical aspect and is also its company.
+  final Uint8List drishti;
+
+  /// How it stands to the saham's lord, under the request's friendship.
+  final Uint8List relation;
+
+  /// 1 when it stands in the saham's sign: the saham's company.
+  final Uint8List company;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `year_harsha` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Seven rows under each row of `annual_charts`, one for each of the seven in the catalogue's order — **fixed, not ragged**: each planet's Harsha bala, four places it is "happy" in, five units each (`03-design/tajika-harsha.md`), read under `varsha_json.harshaRules`. Empty when no place was asked for.
+final class ChartsYearHarsha {
+  const ChartsYearHarsha({
+    required this.graha,
+    required this.house,
+    required this.sthana,
+    required this.uchchaSwakshetra,
+    required this.striPurusha,
+    required this.dinaRatri,
+    required this.total,
+    required this.grade,
+    required this.length,
+  });
+
+  /// Which of the seven, a `graha` id.
+  final Uint16List graha;
+
+  /// The house it stands in, whole signs from the annual lagna.
+  final Uint8List house;
+
+  /// 1 in its house of joy: the first part.
+  final Uint8List sthana;
+
+  /// 1 in its exaltation or own sign: the second part.
+  final Uint8List uchchaSwakshetra;
+
+  /// 1 in a house of its own gender, Tajika's genders: the third part.
+  final Uint8List striPurusha;
+
+  /// 1 in a year opening at its own part of the day: the fourth part.
+  final Uint8List dinaRatri;
+
+  /// The parts held, five units each: 0 to 20.
+  final Uint8List total;
+
+  /// What the source calls that total.
+  final Uint8List grade;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `natal_sahams` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every birth chart's own sahams, concatenated in the `cast` section's order and **ragged** by its `natal_saham_count`, each chart's in the order `varsha_json.sahams` named them, with their strength — which has no year lord, so `with_year_lord` never holds here. The source reads a year's sahams beside the birth's: "only those Sahams which are strong in the birth chart can produce results during a given year". Answered with or without a place; empty unless sahams were asked for.
+final class ChartsNatalSahams {
+  const ChartsNatalSahams({
+    required this.saham,
+    required this.longitudeDeg,
+    required this.sign,
+    required this.lord,
+    required this.house,
+    required this.addedSign,
+    required this.strong,
+    required this.weak,
+    required this.lordVishwa,
+    required this.lordHarsha,
+    required this.nodeAxis,
+    required this.length,
+  });
+
+  /// Which of the forty-one.
+  final Uint8List saham;
+
+  /// Where it fell, sidereal degrees in [0, 360).
+  final Float64List longitudeDeg;
+
+  /// The sign it fell in, a `rashi` id.
+  final Uint16List sign;
+
+  /// That sign's lord, a `graha` id: the saham's lord, by whose strength the source judges it.
+  final Uint16List lord;
+
+  /// The house it fell in, 1 to 12, counted from the chart's lagna by whole signs. The 6th, 8th and 12th are where the source calls a saham handicapped.
+  final Uint8List house;
+
+  /// 1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise.
+  final Uint8List addedSign;
+
+  /// The clauses of the source's strong list that hold, as a bit set: bit `n` is the `TsSahamStrong` with id `n`. Reported and never weighed: the source judges in words and gives no score (`03-design/tajika-saham-strength.md`).
+  final Uint16List strong;
+
+  /// The clauses of the source's weak list that hold, as a bit set over `TsSahamWeak`. A saham may meet clauses on both lists, and three in five do.
+  final Uint8List weak;
+
+  /// The saham lord's Panchavargiya Vishwa bala, exact, in sub-sub units of which a unit holds 3600.
+  final Int32List lordVishwa;
+
+  /// The saham lord's Harsha bala grade.
+  final Uint8List lordHarsha;
+
+  /// 1 when the saham's sign is Rahu's or Ketu's, which the source's forty-sixth year counts against a saham; 0 when not; 2 when the chart placed no nodes to read.
+  final Uint8List nodeAxis;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `natal_saham_seven` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Seven rows under each row of `natal_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from.
+final class ChartsNatalSahamSeven {
+  const ChartsNatalSahamSeven({
+    required this.graha,
+    required this.drishti,
+    required this.relation,
+    required this.company,
+    required this.length,
+  });
+
+  /// Which of the seven, a `graha` id.
+  final Uint16List graha;
+
+  /// The Tajika aspect its sign casts on the saham's; one in the saham's own sign casts the inimical aspect and is also its company.
+  final Uint8List drishti;
+
+  /// How it stands to the saham's lord, under the request's friendship.
+  final Uint8List relation;
+
+  /// 1 when it stands in the saham's sign: the saham's company.
+  final Uint8List company;
 
   /// The number of rows every column holds.
   final int length;
@@ -1954,6 +2138,10 @@ final class Charts {
     required this.matterYogas,
     required this.matterLegs,
     required this.yearSahams,
+    required this.yearSahamSeven,
+    required this.yearHarsha,
+    required this.natalSahams,
+    required this.natalSahamSeven,
   });
 
   /// What kind of chart these are.
@@ -2123,8 +2311,20 @@ final class Charts {
   /// Every held yoga's legs, concatenated in the `matter_yogas` section's order and **ragged** by its `leg_count`: how the third planet stands to each of the pair, or, for a planet entering the next sign, to its partner and to the strong third it reaches, read from where it will stand.
   final ChartsMatterLegs matterLegs;
 
-  /// Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.
+  /// Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`), and judged for strength under the year's own lord (`03-design/tajika-saham-strength.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for and a place given.
   final ChartsYearSahams yearSahams;
+
+  /// Seven rows under each row of `year_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from.
+  final ChartsYearSahamSeven yearSahamSeven;
+
+  /// Seven rows under each row of `annual_charts`, one for each of the seven in the catalogue's order — **fixed, not ragged**: each planet's Harsha bala, four places it is "happy" in, five units each (`03-design/tajika-harsha.md`), read under `varsha_json.harshaRules`. Empty when no place was asked for.
+  final ChartsYearHarsha yearHarsha;
+
+  /// Every birth chart's own sahams, concatenated in the `cast` section's order and **ragged** by its `natal_saham_count`, each chart's in the order `varsha_json.sahams` named them, with their strength — which has no year lord, so `with_year_lord` never holds here. The source reads a year's sahams beside the birth's: "only those Sahams which are strong in the birth chart can produce results during a given year". Answered with or without a place; empty unless sahams were asked for.
+  final ChartsNatalSahams natalSahams;
+
+  /// Seven rows under each row of `natal_sahams`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from.
+  final ChartsNatalSahamSeven natalSahamSeven;
 
 }
 
@@ -2175,6 +2375,10 @@ Charts decodeCharts(Uint8List bytes) {
   final atMatterYogas = blob.section(40, 'matter_yogas');
   final atMatterLegs = blob.section(41, 'matter_legs');
   final atYearSahams = blob.section(42, 'year_sahams');
+  final atYearSahamSeven = blob.section(43, 'year_saham_seven');
+  final atYearHarsha = blob.section(44, 'year_harsha');
+  final atNatalSahams = blob.section(45, 'natal_sahams');
+  final atNatalSahamSeven = blob.section(46, 'natal_saham_seven');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2229,6 +2433,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atCast, 8),
         blob.columnOffset(atCast, 8) + atCast.count * 4,
+      ),
+      natalSahamCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 9),
+        blob.columnOffset(atCast, 9) + atCast.count * 4,
       ),
       length: atCast.count,
     ),
@@ -3705,7 +3914,179 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atYearSahams, 5),
         blob.columnOffset(atYearSahams, 5) + atYearSahams.count * 1,
       ),
+      strong: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 6),
+        blob.columnOffset(atYearSahams, 6) + atYearSahams.count * 2,
+      ),
+      weak: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 7),
+        blob.columnOffset(atYearSahams, 7) + atYearSahams.count * 1,
+      ),
+      lordVishwa: Int32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 8),
+        blob.columnOffset(atYearSahams, 8) + atYearSahams.count * 4,
+      ),
+      lordHarsha: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 9),
+        blob.columnOffset(atYearSahams, 9) + atYearSahams.count * 1,
+      ),
+      nodeAxis: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahams, 10),
+        blob.columnOffset(atYearSahams, 10) + atYearSahams.count * 1,
+      ),
       length: atYearSahams.count,
+    ),
+    yearSahamSeven: ChartsYearSahamSeven(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahamSeven, 0),
+        blob.columnOffset(atYearSahamSeven, 0) + atYearSahamSeven.count * 2,
+      ),
+      drishti: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahamSeven, 1),
+        blob.columnOffset(atYearSahamSeven, 1) + atYearSahamSeven.count * 1,
+      ),
+      relation: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahamSeven, 2),
+        blob.columnOffset(atYearSahamSeven, 2) + atYearSahamSeven.count * 1,
+      ),
+      company: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearSahamSeven, 3),
+        blob.columnOffset(atYearSahamSeven, 3) + atYearSahamSeven.count * 1,
+      ),
+      length: atYearSahamSeven.count,
+    ),
+    yearHarsha: ChartsYearHarsha(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearHarsha, 0),
+        blob.columnOffset(atYearHarsha, 0) + atYearHarsha.count * 2,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearHarsha, 1),
+        blob.columnOffset(atYearHarsha, 1) + atYearHarsha.count * 1,
+      ),
+      sthana: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearHarsha, 2),
+        blob.columnOffset(atYearHarsha, 2) + atYearHarsha.count * 1,
+      ),
+      uchchaSwakshetra: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearHarsha, 3),
+        blob.columnOffset(atYearHarsha, 3) + atYearHarsha.count * 1,
+      ),
+      striPurusha: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearHarsha, 4),
+        blob.columnOffset(atYearHarsha, 4) + atYearHarsha.count * 1,
+      ),
+      dinaRatri: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearHarsha, 5),
+        blob.columnOffset(atYearHarsha, 5) + atYearHarsha.count * 1,
+      ),
+      total: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearHarsha, 6),
+        blob.columnOffset(atYearHarsha, 6) + atYearHarsha.count * 1,
+      ),
+      grade: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atYearHarsha, 7),
+        blob.columnOffset(atYearHarsha, 7) + atYearHarsha.count * 1,
+      ),
+      length: atYearHarsha.count,
+    ),
+    natalSahams: ChartsNatalSahams(
+      saham: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 0),
+        blob.columnOffset(atNatalSahams, 0) + atNatalSahams.count * 1,
+      ),
+      longitudeDeg: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 1),
+        blob.columnOffset(atNatalSahams, 1) + atNatalSahams.count * 8,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 2),
+        blob.columnOffset(atNatalSahams, 2) + atNatalSahams.count * 2,
+      ),
+      lord: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 3),
+        blob.columnOffset(atNatalSahams, 3) + atNatalSahams.count * 2,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 4),
+        blob.columnOffset(atNatalSahams, 4) + atNatalSahams.count * 1,
+      ),
+      addedSign: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 5),
+        blob.columnOffset(atNatalSahams, 5) + atNatalSahams.count * 1,
+      ),
+      strong: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 6),
+        blob.columnOffset(atNatalSahams, 6) + atNatalSahams.count * 2,
+      ),
+      weak: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 7),
+        blob.columnOffset(atNatalSahams, 7) + atNatalSahams.count * 1,
+      ),
+      lordVishwa: Int32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 8),
+        blob.columnOffset(atNatalSahams, 8) + atNatalSahams.count * 4,
+      ),
+      lordHarsha: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 9),
+        blob.columnOffset(atNatalSahams, 9) + atNatalSahams.count * 1,
+      ),
+      nodeAxis: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahams, 10),
+        blob.columnOffset(atNatalSahams, 10) + atNatalSahams.count * 1,
+      ),
+      length: atNatalSahams.count,
+    ),
+    natalSahamSeven: ChartsNatalSahamSeven(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahamSeven, 0),
+        blob.columnOffset(atNatalSahamSeven, 0) + atNatalSahamSeven.count * 2,
+      ),
+      drishti: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahamSeven, 1),
+        blob.columnOffset(atNatalSahamSeven, 1) + atNatalSahamSeven.count * 1,
+      ),
+      relation: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahamSeven, 2),
+        blob.columnOffset(atNatalSahamSeven, 2) + atNatalSahamSeven.count * 1,
+      ),
+      company: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atNatalSahamSeven, 3),
+        blob.columnOffset(atNatalSahamSeven, 3) + atNatalSahamSeven.count * 1,
+      ),
+      length: atNatalSahamSeven.count,
     ),
   );
 }

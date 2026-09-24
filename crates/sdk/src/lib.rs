@@ -154,7 +154,9 @@ pub use teistro_tajika::{
 pub use teistro_tajika::{Harsha, HarshaGrade, HarshaRules, VenusPlace};
 // A saham's strength, clause by clause, and the readings it is judged under
 // (`03-design/tajika-saham-strength.md`).
-pub use teistro_tajika::{Friendship, SahamNatures, SahamStrength, SahamStrengthRules};
+pub use teistro_tajika::{
+    Friendship, SahamNatures, SahamStrength, SahamStrengthRules, StrongClause, WeakClause,
+};
 // Strength measures: the Ashtakavarga, the Vimshopaka and the Shadbala, each
 // with the rules it was read under (`03-design/strength-schemes.md`).
 pub use teistro_strength as strength;

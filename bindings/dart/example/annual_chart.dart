@@ -170,7 +170,16 @@ void main() {
       '${point.sign.key}, lord ${point.lord.key}, house ${point.house}'
       '${point.addedSign ? ' (a sign added)' : ''}',
     );
+    // Its strength is the source's clauses, reported and never scored.
+    final strong = point.strong.map((c) => c.key).join(', ');
+    final weak = point.weak.map((c) => c.key).join(', ');
+    print(
+      '  strong: ${strong.isEmpty ? 'none' : strong}; '
+      'weak: ${weak.isEmpty ? 'none' : weak}',
+    );
   }
+  // And the seven's Harsha bala that year: four places each is happy in.
+  print(points.harsha.map((h) => '${h.graha.key} ${h.total}').join(', '));
 
   // ── The readings are named, and they are not each other ───────────
   for (final reading in VarshaReading.values) {

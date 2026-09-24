@@ -641,6 +641,17 @@ def main() -> None:
                 ),
             ])
 
+        def saham_said(p: Any) -> str:
+            """One saham as every runner prints it."""
+            axis = "null" if p.in_node_axis is None else str(p.in_node_axis).lower()
+            seven = " ".join(f"{s.drishti.key}/{s.relation.key}/{int(s.company)}" for s in p.seven)
+            return " | ".join([
+                f"{p.longitude_deg:.6f} {p.sign.full_key} {p.lord.full_key} {p.house} {str(p.added_sign).lower()}",
+                f"S:{','.join(c.key for c in p.strong)} W:{','.join(c.key for c in p.weak)}",
+                f"{p.lord_vishwa} {p.lord_harsha.key} {axis}",
+                seven,
+            ])
+
         for reading in ("sidereal", "tropical", "mean"):
             varsha: VarshaRequest = {"reading": reading, "through": 12, "place": "birth"}
             # The sahams likewise: every one under the source's rules,
@@ -660,6 +671,8 @@ def main() -> None:
             for i, chart in enumerate(years):
                 returns = chart.praveshas
                 put(f"chart-{i}-varsha-{reading}-count", len(returns))
+                for point in chart.sahams:
+                    put(f"chart-{i}-varsha-{reading}-natal-saham-{point.saham.key}", saham_said(point))
                 for pravesha in returns:
                     stem = f"chart-{i}-varsha-{reading}-{pravesha.year}"
                     put(stem, pravesha.instant)
@@ -706,11 +719,15 @@ def main() -> None:
                         put(f"{asked}-unanswered", ",".join(y.key for y in matter.unanswered))
                         put(f"{asked}-held", " ".join(held_said(h) for h in matter.held))
                     for point in annual.sahams:
-                        put(
-                            f"{stem}-saham-{point.saham.key}",
-                            f"{point.longitude_deg:.6f} {point.sign.full_key} {point.lord.full_key} "
-                            f"{point.house} {str(point.added_sign).lower()}",
-                        )
+                        put(f"{stem}-saham-{point.saham.key}", saham_said(point))
+                    put(
+                        f"{stem}-harsha",
+                        " ".join(
+                            f"{h.graha.full_key}:{h.house}:{int(h.sthana)}{int(h.uchcha_swakshetra)}"
+                            f"{int(h.stri_purusha)}{int(h.dina_ratri)}:{h.total}:{h.grade.key}"
+                            for h in annual.harsha
+                        ),
+                    )
                     put(
                         f"{stem}-year-claims",
                         " ".join(

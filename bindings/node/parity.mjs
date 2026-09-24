@@ -531,6 +531,15 @@ const MATTERS = {
   },
   mean: {},
 };
+// One saham as every runner prints it: its place, its clauses, its lord's
+// strengths and how the seven stand to it.
+const sahamSaid = (p) =>
+  [
+    `${p.longitudeDeg.toFixed(6)} ${p.sign} ${p.lord} ${p.house} ${p.addedSign}`,
+    `S:${p.strong.join(',')} W:${p.weak.join(',')}`,
+    `${p.lordVishwa} ${p.lordHarsha} ${p.inNodeAxis}`,
+    p.seven.map((s) => `${s.drishti}/${s.relation}/${+s.company}`).join(' '),
+  ].join(' | ');
 const pairSaid = (p) =>
   `${p.faster}>${p.slower}:${p.drishti}:${p.yoga ?? '-'}:${p.apartDeg.toFixed(6)}`;
 const heldSaid = (h) =>
@@ -556,6 +565,7 @@ for (const reading of ['sidereal', 'tropical', 'mean']) {
   let i = 0;
   for (const chart of years) {
     put(`chart-${i}-varsha-${reading}-count`, chart.praveshas.length);
+    for (const p of chart.sahams) put(`chart-${i}-varsha-${reading}-natal-saham-${p.saham}`, sahamSaid(p));
     for (const one of chart.praveshas) {
       put(`chart-${i}-varsha-${reading}-${one.year}`, one.instant);
       put(`chart-${i}-varsha-${reading}-${one.year}-muntha`, one.muntha.sign);
@@ -586,12 +596,13 @@ for (const reading of ['sidereal', 'tropical', 'mean']) {
         put(`${at}-matter-${m.house}-unanswered`, m.unanswered.join(','));
         put(`${at}-matter-${m.house}-held`, m.held.map(heldSaid).join(' '));
       }
-      for (const p of one.annual.sahams) {
-        put(
-          `${at}-saham-${p.saham}`,
-          `${p.longitudeDeg.toFixed(6)} ${p.sign} ${p.lord} ${p.house} ${p.addedSign}`,
-        );
-      }
+      for (const p of one.annual.sahams) put(`${at}-saham-${p.saham}`, sahamSaid(p));
+      put(
+        `${at}-harsha`,
+        one.annual.harsha
+          .map((h) => `${h.graha}:${h.house}:${+h.sthana}${+h.uchchaSwakshetra}${+h.striPurusha}${+h.dinaRatri}:${h.total}:${h.grade}`)
+          .join(' '),
+      );
       put(
         `chart-${i}-varsha-${reading}-${one.year}-year-claims`,
         lord.claims

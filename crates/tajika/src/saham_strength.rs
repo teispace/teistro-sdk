@@ -214,77 +214,158 @@ pub struct SahamStrength {
     pub with_malefic: bool,
 }
 
-impl SahamStrength {
-    /// The source's strong list, in its order: the names
-    /// [`SahamStrength::strong`] gives its clauses.
-    pub const STRONG_CLAUSES: [&'static str; 12] = [
-        "its lord is exalted",
-        "its lord is in its own sign",
-        "its lord is in its own Hudda",
-        "its lord is in its own Drekkana",
-        "its lord is in its own Navamsha",
-        "its lord is in a friend's sign",
-        "it is with a friend of its lord",
-        "it is with a natural benefic",
-        "it is with the year lord",
-        "its lord conjoins it",
-        "its lord aspects it",
-        "its lord aspects the lagna",
+/// A clause of the source's **strong** list (ch. XI, 1 A), in its order.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum StrongClause {
+    /// (a) Its lord is exalted.
+    LordExalted,
+    /// (a) Its lord is in its own sign.
+    LordOwnSign,
+    /// (a) "In the vargas": its lord is in its own Hudda.
+    LordOwnHudda,
+    /// (a) "In the vargas": its lord is in its own Drekkana.
+    LordOwnDrekkana,
+    /// (a) "In the vargas": its lord is in its own Navamsha.
+    LordOwnNavamsha,
+    /// (a) Its lord is in a sign belonging to its friend.
+    LordInFriendsSign,
+    /// (b) It is with a friend of its lord.
+    WithFriend,
+    /// (b) It is with a natural benefic.
+    WithBenefic,
+    /// (b) It is with the year lord.
+    WithYearLord,
+    /// (c) Its lord conjoins it.
+    LordConjoins,
+    /// (c) Its lord aspects it.
+    LordAspectsSaham,
+    /// (c) Its lord aspects the lagna.
+    LordAspectsLagna,
+}
+
+impl StrongClause {
+    /// Every clause, in the source's order.
+    pub const ALL: [StrongClause; 12] = [
+        StrongClause::LordExalted,
+        StrongClause::LordOwnSign,
+        StrongClause::LordOwnHudda,
+        StrongClause::LordOwnDrekkana,
+        StrongClause::LordOwnNavamsha,
+        StrongClause::LordInFriendsSign,
+        StrongClause::WithFriend,
+        StrongClause::WithBenefic,
+        StrongClause::WithYearLord,
+        StrongClause::LordConjoins,
+        StrongClause::LordAspectsSaham,
+        StrongClause::LordAspectsLagna,
     ];
 
-    /// The source's weak list, in its order: the names
-    /// [`SahamStrength::weak`] gives its clauses.
-    pub const WEAK_CLAUSES: [&'static str; 5] = [
-        "its lord is under the Panchavargiya floor",
-        "its lord has no Harsha bala",
-        "its lord neither aspects nor conjoins it",
-        "it is with an enemy of its lord",
-        "it is with a natural malefic",
-    ];
-
-    /// The source's strong list, in its order, each clause named and
-    /// whether it holds.
+    /// The clause in words.
     #[must_use]
-    pub fn strong(&self) -> [(&'static str, bool); 12] {
-        let holds = [
-            self.lord_exalted,
-            self.lord_own_sign,
-            self.lord_own_hudda,
-            self.lord_own_drekkana,
-            self.lord_own_navamsha,
-            self.lord_in_friends_sign,
-            self.with_friend,
-            self.with_benefic,
-            self.with_year_lord,
-            self.lord_conjoins,
-            self.lord_aspects_saham,
-            self.lord_aspects_lagna,
-        ];
-        let mut at = 0;
-        SahamStrength::STRONG_CLAUSES.map(|name| {
-            let clause = (name, holds.get(at).copied().unwrap_or(false));
-            at += 1;
-            clause
-        })
+    pub const fn name(self) -> &'static str {
+        match self {
+            StrongClause::LordExalted => "its lord is exalted",
+            StrongClause::LordOwnSign => "its lord is in its own sign",
+            StrongClause::LordOwnHudda => "its lord is in its own Hudda",
+            StrongClause::LordOwnDrekkana => "its lord is in its own Drekkana",
+            StrongClause::LordOwnNavamsha => "its lord is in its own Navamsha",
+            StrongClause::LordInFriendsSign => "its lord is in a friend's sign",
+            StrongClause::WithFriend => "it is with a friend of its lord",
+            StrongClause::WithBenefic => "it is with a natural benefic",
+            StrongClause::WithYearLord => "it is with the year lord",
+            StrongClause::LordConjoins => "its lord conjoins it",
+            StrongClause::LordAspectsSaham => "its lord aspects it",
+            StrongClause::LordAspectsLagna => "its lord aspects the lagna",
+        }
+    }
+}
+
+/// A clause of the source's **weak** list (ch. XI, 2), in its order.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "snake_case")]
+pub enum WeakClause {
+    /// (a) Its lord is under the Panchavargiya floor.
+    LordWeakVishwa,
+    /// (b) Its lord has no Harsha bala.
+    LordLacksHarsha,
+    /// (c) Its lord neither aspects nor conjoins it.
+    LordApart,
+    /// (d) It is with an enemy of its lord.
+    WithEnemy,
+    /// (d) It is with a natural malefic.
+    WithMalefic,
+}
+
+impl WeakClause {
+    /// Every clause, in the source's order.
+    pub const ALL: [WeakClause; 5] = [
+        WeakClause::LordWeakVishwa,
+        WeakClause::LordLacksHarsha,
+        WeakClause::LordApart,
+        WeakClause::WithEnemy,
+        WeakClause::WithMalefic,
+    ];
+
+    /// The clause in words.
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            WeakClause::LordWeakVishwa => "its lord is under the Panchavargiya floor",
+            WeakClause::LordLacksHarsha => "its lord has no Harsha bala",
+            WeakClause::LordApart => "its lord neither aspects nor conjoins it",
+            WeakClause::WithEnemy => "it is with an enemy of its lord",
+            WeakClause::WithMalefic => "it is with a natural malefic",
+        }
+    }
+}
+
+impl SahamStrength {
+    /// Whether one clause of the strong list holds.
+    #[must_use]
+    pub const fn holds_strong(&self, clause: StrongClause) -> bool {
+        match clause {
+            StrongClause::LordExalted => self.lord_exalted,
+            StrongClause::LordOwnSign => self.lord_own_sign,
+            StrongClause::LordOwnHudda => self.lord_own_hudda,
+            StrongClause::LordOwnDrekkana => self.lord_own_drekkana,
+            StrongClause::LordOwnNavamsha => self.lord_own_navamsha,
+            StrongClause::LordInFriendsSign => self.lord_in_friends_sign,
+            StrongClause::WithFriend => self.with_friend,
+            StrongClause::WithBenefic => self.with_benefic,
+            StrongClause::WithYearLord => self.with_year_lord,
+            StrongClause::LordConjoins => self.lord_conjoins,
+            StrongClause::LordAspectsSaham => self.lord_aspects_saham,
+            StrongClause::LordAspectsLagna => self.lord_aspects_lagna,
+        }
     }
 
-    /// The source's weak list, in its order, each clause named and
-    /// whether it holds.
+    /// Whether one clause of the weak list holds.
     #[must_use]
-    pub fn weak(&self) -> [(&'static str, bool); 5] {
-        let holds = [
-            self.lord_weak_vishwa,
-            self.lord_lacks_harsha,
-            !self.lord_conjoins && !self.lord_aspects_saham,
-            self.with_enemy,
-            self.with_malefic,
-        ];
-        let mut at = 0;
-        SahamStrength::WEAK_CLAUSES.map(|name| {
-            let clause = (name, holds.get(at).copied().unwrap_or(false));
-            at += 1;
-            clause
-        })
+    pub const fn holds_weak(&self, clause: WeakClause) -> bool {
+        match clause {
+            WeakClause::LordWeakVishwa => self.lord_weak_vishwa,
+            WeakClause::LordLacksHarsha => self.lord_lacks_harsha,
+            WeakClause::LordApart => !self.lord_conjoins && !self.lord_aspects_saham,
+            WeakClause::WithEnemy => self.with_enemy,
+            WeakClause::WithMalefic => self.with_malefic,
+        }
+    }
+
+    /// The source's strong list, in its order, each clause and whether it
+    /// holds.
+    #[must_use]
+    pub fn strong(&self) -> [(StrongClause, bool); 12] {
+        StrongClause::ALL.map(|clause| (clause, self.holds_strong(clause)))
+    }
+
+    /// The source's weak list, in its order, each clause and whether it
+    /// holds.
+    #[must_use]
+    pub fn weak(&self) -> [(WeakClause, bool); 5] {
+        WeakClause::ALL.map(|clause| (clause, self.holds_weak(clause)))
     }
 
     /// In the 6th, 8th or 12th, where the source says a saham "is
@@ -415,7 +496,9 @@ mod tests {
         reason = "tests fail by panicking and index what they asked for"
     )]
 
-    use super::{Friendship, SahamNatures, SahamStrengthRules, saham_strength};
+    use super::{
+        Friendship, SahamNatures, SahamStrengthRules, StrongClause, WeakClause, saham_strength,
+    };
     use crate::{AnnualSky, Saham, SahamSky};
     use teistro_core::catalogue::Graha;
 
@@ -543,9 +626,10 @@ mod tests {
         let punya = &saham_strength(&x1(), &[Saham::Punya], None, SahamStrengthRules::default())
             .unwrap()[0];
         let strong = punya.strong();
-        assert_eq!(strong[9], ("its lord conjoins it", true));
+        assert_eq!(strong[9], (StrongClause::LordConjoins, true));
+        assert_eq!(strong[9].0.name(), "its lord conjoins it");
         let weak = punya.weak();
-        assert_eq!(weak[2], ("its lord neither aspects nor conjoins it", false));
+        assert_eq!(weak[2], (WeakClause::LordApart, false));
     }
 
     #[test]

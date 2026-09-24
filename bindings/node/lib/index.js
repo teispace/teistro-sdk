@@ -55,6 +55,10 @@ import {
   TajikaYogaById,
   YearYogaById,
   SahamById,
+  SahamStrongById,
+  SahamWeakById,
+  HarshaGradeById,
+  TajikaRelationById,
   AfflictionById,
   StrengthById,
   BalanceById,
@@ -757,6 +761,21 @@ export class Chart {
       },
       annual: annualOf(d, from + k),
     }));
+  }
+
+  /**
+   * The birth chart's own sahams, each with its strength clause by clause
+   * — which has no year lord — in the order `varsha.sahams` named them;
+   * empty unless it asked (`03-design/tajika-saham-strength.md`). The
+   * source reads a year's sahams beside these.
+   */
+  get sahams() {
+    const d = this.#batch.decoded;
+    const from = startsOf(d.cast.natalSahamCount)[this.#index];
+    const count = d.cast.natalSahamCount[this.#index] ?? 0;
+    return Array.from({ length: count }, (_, k) =>
+      sahamAt(d.natalSahams, d.natalSahamSeven, from + k),
+    );
   }
 
   get aspects() {
@@ -2398,6 +2417,7 @@ function annualOf(d, row) {
     combust: grahasIn(charts.combust[row]),
     matters: mattersOf(d, row),
     sahams: sahamsOf(d, row),
+    harsha: harshaOf(d, row),
     yearLord: {
       graha: lord(charts.yearLord),
       chosen: VarsheshaChosenById.get(charts.yearLordChosen[row]) ?? 'unknown',
@@ -2436,17 +2456,74 @@ function yogasOf(d, row) {
  * @returns {object[]}
  */
 function sahamsOf(d, row) {
-  const sahams = d.yearSahams;
   const from = startsOf(d.annualCharts.sahamCount)[row];
   const count = d.annualCharts.sahamCount[row] ?? 0;
-  return Array.from({ length: count }, (_, k) => ({
-    saham: SahamById.get(sahams.saham[from + k]) ?? 'unknown',
-    longitudeDeg: sahams.longitudeDeg[from + k],
-    sign: RashiById.get(sahams.sign[from + k]) ?? 'unknown',
-    lord: GrahaById.get(sahams.lord[from + k]) ?? 'unknown',
-    house: sahams.house[from + k],
-    addedSign: sahams.addedSign[from + k] === 1,
-  }));
+  return Array.from({ length: count }, (_, k) => sahamAt(d.yearSahams, d.yearSahamSeven, from + k));
+}
+
+/**
+ * One saham row, from the years' sections or the births': where it fell,
+ * its strength clause by clause, and the seven rows under it
+ * (`03-design/tajika-saham-strength.md`). One decoder for both, so they
+ * cannot drift.
+ *
+ * @param {object} cols the saham section
+ * @param {object} seven the seven-row section under it
+ * @param {number} k the row
+ * @returns {object}
+ */
+function sahamAt(cols, seven, k) {
+  const axis = cols.nodeAxis[k];
+  return {
+    saham: SahamById.get(cols.saham[k]) ?? 'unknown',
+    longitudeDeg: cols.longitudeDeg[k],
+    sign: RashiById.get(cols.sign[k]) ?? 'unknown',
+    lord: GrahaById.get(cols.lord[k]) ?? 'unknown',
+    house: cols.house[k],
+    addedSign: cols.addedSign[k] === 1,
+    strong: membersOf(cols.strong[k], SahamStrongById),
+    weak: membersOf(cols.weak[k], SahamWeakById),
+    lordVishwa: bala(cols.lordVishwa[k]),
+    lordHarsha: HarshaGradeById.get(cols.lordHarsha[k]) ?? 'unknown',
+    // 2 is the boundary's "the chart placed no nodes to read".
+    inNodeAxis: axis === 2 ? null : axis === 1,
+    // A handicap the source names: the 6th, 8th or 12th.
+    handicapped: [6, 8, 12].includes(cols.house[k]),
+    seven: Array.from({ length: 7 }, (_, g) => {
+      const at = 7 * k + g;
+      return {
+        graha: GrahaById.get(seven.graha[at]) ?? 'unknown',
+        drishti: TajikaDrishtiById.get(seven.drishti[at]) ?? 'unknown',
+        relation: TajikaRelationById.get(seven.relation[at]) ?? 'unknown',
+        company: seven.company[at] === 1,
+      };
+    }),
+  };
+}
+
+/**
+ * A founded year's Harsha bala: seven rows a year, fixed, in the
+ * catalogue's order (`03-design/tajika-harsha.md`).
+ *
+ * @param {object} d the decoded batch
+ * @param {number} row
+ * @returns {object[]}
+ */
+function harshaOf(d, row) {
+  const h = d.yearHarsha;
+  return Array.from({ length: 7 }, (_, g) => {
+    const at = 7 * row + g;
+    return {
+      graha: GrahaById.get(h.graha[at]) ?? 'unknown',
+      house: h.house[at],
+      sthana: h.sthana[at] === 1,
+      uchchaSwakshetra: h.uchchaSwakshetra[at] === 1,
+      striPurusha: h.striPurusha[at] === 1,
+      dinaRatri: h.dinaRatri[at] === 1,
+      total: h.total[at],
+      grade: HarshaGradeById.get(h.grade[at]) ?? 'unknown',
+    };
+  });
 }
 
 /** Each ragged count column's prefix sums, computed once per batch. */

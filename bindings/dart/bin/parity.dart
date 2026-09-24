@@ -702,6 +702,18 @@ void main() {
     else
       '-',
   ].join(':');
+  // One saham as every runner prints it: its place, its clauses, its
+  // lord's strengths and how the seven stand to it.
+  String sahamSaid(TajikaSaham p) => [
+    '${p.longitudeDeg.toStringAsFixed(6)} ${p.sign.fullKey} '
+        '${p.lord.fullKey} ${p.house} ${p.addedSign}',
+    'S:${p.strong.map((c) => c.key).join(',')} '
+        'W:${p.weak.map((c) => c.key).join(',')}',
+    '${p.lordVishwa} ${p.lordHarsha.key} ${p.inNodeAxis}',
+    p.seven
+        .map((s) => '${s.drishti.key}/${s.relation.key}/${s.company ? 1 : 0}')
+        .join(' '),
+  ].join(' | ');
   for (final reading in VarshaReading.values) {
     final years = geo.chart.foundMany(
       instants: <double>[2460482.5, 2460600.25],
@@ -733,6 +745,12 @@ void main() {
     for (final chart in years.each) {
       final found = chart.praveshas;
       put('chart-$i-varsha-${reading.key}-count', found.length);
+      for (final p in chart.sahams) {
+        put(
+          'chart-$i-varsha-${reading.key}-natal-saham-${p.saham.key}',
+          sahamSaid(p),
+        );
+      }
       for (final one in found) {
         final stem = 'chart-$i-varsha-${reading.key}-${one.year}';
         put(stem, one.instant);
@@ -783,12 +801,20 @@ void main() {
           put('$at-held', m.held.map(heldSaid).join(' '));
         }
         for (final p in annual.sahams) {
-          put(
-            '$stem-saham-${p.saham.key}',
-            '${p.longitudeDeg.toStringAsFixed(6)} ${p.sign.fullKey} '
-                '${p.lord.fullKey} ${p.house} ${p.addedSign}',
-          );
+          put('$stem-saham-${p.saham.key}', sahamSaid(p));
         }
+        put(
+          '$stem-harsha',
+          annual.harsha
+              .map(
+                (h) =>
+                    '${h.graha.fullKey}:${h.house}:'
+                    '${h.sthana ? 1 : 0}${h.uchchaSwakshetra ? 1 : 0}'
+                    '${h.striPurusha ? 1 : 0}${h.dinaRatri ? 1 : 0}:'
+                    '${h.total}:${h.grade.key}',
+              )
+              .join(' '),
+        );
         put(
           '$stem-year-claims',
           yearLord.claims

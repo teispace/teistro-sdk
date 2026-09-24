@@ -432,6 +432,11 @@ fn chart_cast_section(id: u32) -> SectionSchema {
                 Scalar::U32,
                 "How many rows of the `praveshas` section belong to this chart. Zero when no annual charts were asked for.\n\nRagged for a reason of its own: the request settles how many returns are wanted, and an ephemeris that ends first settles how many there are (`03-design/annual-chart.md`). Fewer than asked for is the answer, so a reader takes this count and never the number it requested.",
             ),
+            ColumnDef::new(
+                "natal_saham_count",
+                Scalar::U32,
+                "How many rows of the `natal_sahams` section belong to this chart: the sahams `varsha_json.sahams` asked for, 0 to 41.",
+            ),
         ],
     )
 }
@@ -594,9 +599,9 @@ pub fn charts() -> BlobSchema {
 }
 
 /// The annual charts a batch's births open and everything Tajika reads
-/// from them, in id order: eight sections ragged under one another, so
+/// from them, in id order: twelve sections ragged under one another, so
 /// they are declared together rather than scattered through the rest.
-fn chart_annual_sections() -> [SectionSchema; 8] {
+fn chart_annual_sections() -> [SectionSchema; 12] {
     [
         chart_praveshas_section(35),
         chart_annual_charts_section(36),
@@ -605,7 +610,19 @@ fn chart_annual_sections() -> [SectionSchema; 8] {
         chart_year_matters_section(39),
         chart_matter_yogas_section(40),
         chart_matter_legs_section(41),
-        chart_year_sahams_section(42),
+        saham_section(
+            42,
+            "year_sahams",
+            "Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`), and judged for strength under the year's own lord (`03-design/tajika-saham-strength.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for and a place given.",
+        ),
+        saham_seven_section(43, "year_saham_seven", "year_sahams"),
+        chart_year_harsha_section(44),
+        saham_section(
+            45,
+            "natal_sahams",
+            "Every birth chart's own sahams, concatenated in the `cast` section's order and **ragged** by its `natal_saham_count`, each chart's in the order `varsha_json.sahams` named them, with their strength — which has no year lord, so `with_year_lord` never holds here. The source reads a year's sahams beside the birth's: \"only those Sahams which are strong in the birth chart can produce results during a given year\". Answered with or without a place; empty unless sahams were asked for.",
+        ),
+        saham_seven_section(46, "natal_saham_seven", "natal_sahams"),
     ]
 }
 
@@ -721,12 +738,14 @@ fn chart_annual_charts_section(id: u32) -> SectionSchema {
     )
 }
 
-/// Every year's sahams: where each fell, and what it fell in.
-fn chart_year_sahams_section(id: u32) -> SectionSchema {
+/// A chart's sahams: where each fell, what it fell in, and its strength
+/// clause by clause. One shape for the years' and the births', so every
+/// binding decodes a saham in one place.
+fn saham_section(id: u32, name: &str, doc: &str) -> SectionSchema {
     SectionSchema::columns(
         id,
-        "year_sahams",
-        "Every annual chart's sahams, concatenated in the `annual_charts` section's order and **ragged** by its `saham_count`, each year's in the order `varsha_json.sahams` named them. A saham is a − b + c from the year's own chart, carried a sign further where c does not fall between b and a, each read under `varsha_json.sahamRules` (`03-design/tajika-sahams.md`). Whether the year opened by day, which chooses each saham's night formula, is `annual_charts.daylight`. Empty unless sahams were asked for.",
+        name,
+        doc,
         vec![
             ColumnDef::new("saham", Scalar::U8, "Which of the forty-one.").of_enum("TsSaham"),
             ColumnDef::new(
@@ -743,13 +762,113 @@ fn chart_year_sahams_section(id: u32) -> SectionSchema {
             ColumnDef::new(
                 "house",
                 Scalar::U8,
-                "The house it fell in, 1 to 12, counted from the annual lagna by whole signs.",
+                "The house it fell in, 1 to 12, counted from the chart's lagna by whole signs. The 6th, 8th and 12th are where the source calls a saham handicapped.",
             ),
             ColumnDef::new(
                 "added_sign",
                 Scalar::U8,
                 "1 when it was carried a sign further because c did not fall between b and a, under the request's `addSign` rule; 0 otherwise.",
             ),
+            ColumnDef::new(
+                "strong",
+                Scalar::U16,
+                "The clauses of the source's strong list that hold, as a bit set: bit `n` is the `TsSahamStrong` with id `n`. Reported and never weighed: the source judges in words and gives no score (`03-design/tajika-saham-strength.md`).",
+            ),
+            ColumnDef::new(
+                "weak",
+                Scalar::U8,
+                "The clauses of the source's weak list that hold, as a bit set over `TsSahamWeak`. A saham may meet clauses on both lists, and three in five do.",
+            ),
+            ColumnDef::new(
+                "lord_vishwa",
+                Scalar::I32,
+                "The saham lord's Panchavargiya Vishwa bala, exact, in sub-sub units of which a unit holds 3600.",
+            ),
+            ColumnDef::new(
+                "lord_harsha",
+                Scalar::U8,
+                "The saham lord's Harsha bala grade.",
+            )
+            .of_enum("TsHarshaGrade"),
+            ColumnDef::new(
+                "node_axis",
+                Scalar::U8,
+                "1 when the saham's sign is Rahu's or Ketu's, which the source's forty-sixth year counts against a saham; 0 when not; 2 when the chart placed no nodes to read.",
+            ),
+        ],
+    )
+}
+
+/// The seven planets' facts under each saham of `of`: seven rows a saham,
+/// the catalogue's order, so a reader indexes them by the saham's row.
+fn saham_seven_section(id: u32, name: &str, of: &str) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        name,
+        &format!("Seven rows under each row of `{of}`, one for each of the seven in the catalogue's order — **fixed, not ragged**, so a saham's rows start at its row times seven: how each planet stands to the saham, which is what the strength clauses were read from."),
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "Which of the seven, a `graha` id."),
+            ColumnDef::new(
+                "drishti",
+                Scalar::U8,
+                "The Tajika aspect its sign casts on the saham's; one in the saham's own sign casts the inimical aspect and is also its company.",
+            )
+            .of_enum("TsTajikaDrishti"),
+            ColumnDef::new(
+                "relation",
+                Scalar::U8,
+                "How it stands to the saham's lord, under the request's friendship.",
+            )
+            .of_enum("TsTajikaRelation"),
+            ColumnDef::new(
+                "company",
+                Scalar::U8,
+                "1 when it stands in the saham's sign: the saham's company.",
+            ),
+        ],
+    )
+}
+
+/// Every founded year's Harsha bala, seven rows a year.
+fn chart_year_harsha_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "year_harsha",
+        "Seven rows under each row of `annual_charts`, one for each of the seven in the catalogue's order — **fixed, not ragged**: each planet's Harsha bala, four places it is \"happy\" in, five units each (`03-design/tajika-harsha.md`), read under `varsha_json.harshaRules`. Empty when no place was asked for.",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "Which of the seven, a `graha` id."),
+            ColumnDef::new(
+                "house",
+                Scalar::U8,
+                "The house it stands in, whole signs from the annual lagna.",
+            ),
+            ColumnDef::new(
+                "sthana",
+                Scalar::U8,
+                "1 in its house of joy: the first part.",
+            ),
+            ColumnDef::new(
+                "uchcha_swakshetra",
+                Scalar::U8,
+                "1 in its exaltation or own sign: the second part.",
+            ),
+            ColumnDef::new(
+                "stri_purusha",
+                Scalar::U8,
+                "1 in a house of its own gender, Tajika's genders: the third part.",
+            ),
+            ColumnDef::new(
+                "dina_ratri",
+                Scalar::U8,
+                "1 in a year opening at its own part of the day: the fourth part.",
+            ),
+            ColumnDef::new(
+                "total",
+                Scalar::U8,
+                "The parts held, five units each: 0 to 20.",
+            ),
+            ColumnDef::new("grade", Scalar::U8, "What the source calls that total.")
+                .of_enum("TsHarshaGrade"),
         ],
     )
 }

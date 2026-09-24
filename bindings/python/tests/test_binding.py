@@ -23,6 +23,8 @@ from teistro import (
     UduDashaDefinition,
     YearYoga,
     Saham,
+    SahamStrong,
+    SahamWeak,
     DashaPhase,
     Nature,
     Balance,
@@ -1423,18 +1425,71 @@ class AnEngine(WithLibrary):
         years({"through": 1, "place": "birth", "sahams": ["mrityu"], "saham_rules": {"houses": "equal", "roga": "saturn"}})
 
         for varsha, field in [
-            ({"through": 2, "sahams": ["punya"]}, "varsha_json.sahams"),
             ({"through": 2, "place": "birth", "sahams": ["punya", Saham.PUNYA]}, "varsha_json.sahams"),
             ({"through": 2, "place": "birth", "sahams": ["pnya"]}, "varsha_json.sahams[0]"),
             (
                 {"through": 2, "place": "birth", "sahams": ["punya"], "saham_rules": {"add_sgn": "never"}},
                 "varsha_json.sahamRules.addSgn",
             ),
+            (
+                {"through": 1, "sahams": ["punya"], "saham_strength": {"natures": "vedic"}},
+                "varsha_json.sahamStrength.natures",
+            ),
+            (
+                {"through": 1, "place": "birth", "harsha_rules": {"venus": "sixth"}},
+                "varsha_json.harshaRules.venus",
+            ),
         ]:
             with self.subTest(field=field, varsha=varsha):
                 with self.assertRaises(TeistroError) as refused:
                     years(varsha)
                 self.assertEqual(refused.exception.field, field)
+
+    def test_a_sahams_strength_the_harsha_bala_and_the_births_sahams_cross(self) -> None:
+        """Each saham carries its strength clause by clause, every founded
+        year its Harsha bala, and every birth its own sahams, which need no
+        place (`03-design/tajika-saham-strength.md`)."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+
+        def found(varsha: Any) -> Any:
+            return self.ctx.chart.found(
+                instant=2447995.4895833335,
+                place=observer,
+                utc_offset_seconds=20700,
+                varsha=varsha,
+            )
+
+        chart = found({
+            "through": 2,
+            "place": "birth",
+            "sahams": "all",
+            "saham_strength": {"natures": "chapter", "friendship": "positional", "weak_below": 5 * 3600},
+            "harsha_rules": {"venus": "twelfth"},
+        })
+        for one in chart.praveshas:
+            annual = one.annual
+            assert annual is not None
+            for saham in annual.sahams:
+                near = SahamStrong.LORD_CONJOINS in saham.strong or SahamStrong.LORD_ASPECTS_SAHAM in saham.strong
+                # The two (c) clauses negate each other: exactly one holds.
+                self.assertNotEqual(near, SahamWeak.LORD_APART in saham.weak)
+                self.assertEqual(len(saham.seven), 7)
+                lord = next(s for s in saham.seven if s.graha == saham.lord)
+                self.assertEqual(lord.company, SahamStrong.LORD_CONJOINS in saham.strong)
+                self.assertIsInstance(saham.in_node_axis, bool)
+                self.assertEqual(saham.handicapped, saham.house in (6, 8, 12))
+            self.assertEqual(len(annual.harsha), 7)
+            for h in annual.harsha:
+                parts = sum([h.sthana, h.uchcha_swakshetra, h.stri_purusha, h.dina_ratri])
+                self.assertEqual(h.total, 5 * parts)
+        self.assertEqual(len(chart.sahams), 41)
+        self.assertTrue(all(SahamStrong.WITH_YEAR_LORD not in one.strong for one in chart.sahams))
+        # Without a place, the birth's sahams are what is answered.
+        natal = found({"through": 1, "sahams": [Saham.PUNYA]})
+        self.assertEqual([one.saham for one in natal.sahams], [Saham.PUNYA])
+        self.assertIsNone(natal.praveshas[0].annual)
 
     def test_a_chart_carries_its_dashas_their_periods_and_the_chain_at_an_instant(self) -> None:
         """A chart's dashas cross whole: the balance, the periods to the

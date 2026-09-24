@@ -223,6 +223,7 @@ export function decodeCharts(bytes) {
       pointCount: column(blob, at, 6, 'u32', at.count),
       aspectCount: column(blob, at, 7, 'u32', at.count),
       praveshaCount: column(blob, at, 8, 'u32', at.count),
+      natalSahamCount: column(blob, at, 9, 'u32', at.count),
       length: at.count,
     };
   }
@@ -722,6 +723,62 @@ export function decodeCharts(bytes) {
       lord: column(blob, at, 3, 'u16', at.count),
       house: column(blob, at, 4, 'u8', at.count),
       addedSign: column(blob, at, 5, 'u8', at.count),
+      strong: column(blob, at, 6, 'u16', at.count),
+      weak: column(blob, at, 7, 'u8', at.count),
+      lordVishwa: column(blob, at, 8, 'i32', at.count),
+      lordHarsha: column(blob, at, 9, 'u8', at.count),
+      nodeAxis: column(blob, at, 10, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 43, 'year_saham_seven');
+    out.yearSahamSeven = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      drishti: column(blob, at, 1, 'u8', at.count),
+      relation: column(blob, at, 2, 'u8', at.count),
+      company: column(blob, at, 3, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 44, 'year_harsha');
+    out.yearHarsha = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      house: column(blob, at, 1, 'u8', at.count),
+      sthana: column(blob, at, 2, 'u8', at.count),
+      uchchaSwakshetra: column(blob, at, 3, 'u8', at.count),
+      striPurusha: column(blob, at, 4, 'u8', at.count),
+      dinaRatri: column(blob, at, 5, 'u8', at.count),
+      total: column(blob, at, 6, 'u8', at.count),
+      grade: column(blob, at, 7, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 45, 'natal_sahams');
+    out.natalSahams = {
+      saham: column(blob, at, 0, 'u8', at.count),
+      longitudeDeg: column(blob, at, 1, 'f64', at.count),
+      sign: column(blob, at, 2, 'u16', at.count),
+      lord: column(blob, at, 3, 'u16', at.count),
+      house: column(blob, at, 4, 'u8', at.count),
+      addedSign: column(blob, at, 5, 'u8', at.count),
+      strong: column(blob, at, 6, 'u16', at.count),
+      weak: column(blob, at, 7, 'u8', at.count),
+      lordVishwa: column(blob, at, 8, 'i32', at.count),
+      lordHarsha: column(blob, at, 9, 'u8', at.count),
+      nodeAxis: column(blob, at, 10, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 46, 'natal_saham_seven');
+    out.natalSahamSeven = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      drishti: column(blob, at, 1, 'u8', at.count),
+      relation: column(blob, at, 2, 'u8', at.count),
+      company: column(blob, at, 3, 'u8', at.count),
       length: at.count,
     };
   }

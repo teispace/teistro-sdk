@@ -5030,6 +5030,147 @@ typedef enum ts_saham {
 } ts_saham;
 
 /**
+ * How a planet stands to another by Tajika's friendship: the relation a
+ * saham's company is read by (`03-design/tajika-saham-strength.md`).
+ *
+ * Mirrors `teistro::TajikaRelation` through an **exhaustive** match.
+ */
+typedef enum ts_tajika_relation {
+    /**
+     * The planet is the other: its own.
+     */
+    TS_TAJIKA_RELATION_OWN = 0,
+    /**
+     * A friend.
+     */
+    TS_TAJIKA_RELATION_FRIEND = 1,
+    /**
+     * Neither.
+     */
+    TS_TAJIKA_RELATION_NEUTRAL = 2,
+    /**
+     * An enemy.
+     */
+    TS_TAJIKA_RELATION_ENEMY = 3,
+} ts_tajika_relation;
+
+/**
+ * What the source calls a planet by its Harsha bala
+ * (`03-design/tajika-harsha.md`).
+ *
+ * Mirrors `teistro::HarshaGrade` through an **exhaustive** match.
+ */
+typedef enum ts_harsha_grade {
+    /**
+     * No part: without strength.
+     */
+    TS_HARSHA_GRADE_NIRBALA = 0,
+    /**
+     * One part, five units: weak.
+     */
+    TS_HARSHA_GRADE_ALPABALI = 1,
+    /**
+     * Two parts, ten units: of medium strength.
+     */
+    TS_HARSHA_GRADE_MADHYA_BALI = 2,
+    /**
+     * Three parts, fifteen units: fully strong.
+     */
+    TS_HARSHA_GRADE_POORNA_BALI = 3,
+    /**
+     * All four, twenty units: extraordinarily strong, and rare.
+     */
+    TS_HARSHA_GRADE_EXTRAORDINARY = 4,
+} ts_harsha_grade;
+
+/**
+ * A clause of the source's list of what makes a saham **strong**, in its
+ * order (`03-design/tajika-saham-strength.md`). Its ids are the bit
+ * positions of a saham row's `strong` column.
+ *
+ * Mirrors `teistro::StrongClause` through an **exhaustive** match.
+ */
+typedef enum ts_saham_strong {
+    /**
+     * Its lord is exalted.
+     */
+    TS_SAHAM_STRONG_LORD_EXALTED = 0,
+    /**
+     * Its lord is in its own sign.
+     */
+    TS_SAHAM_STRONG_LORD_OWN_SIGN = 1,
+    /**
+     * Its lord is in its own Hudda.
+     */
+    TS_SAHAM_STRONG_LORD_OWN_HUDDA = 2,
+    /**
+     * Its lord is in its own Drekkana.
+     */
+    TS_SAHAM_STRONG_LORD_OWN_DREKKANA = 3,
+    /**
+     * Its lord is in its own Navamsha.
+     */
+    TS_SAHAM_STRONG_LORD_OWN_NAVAMSHA = 4,
+    /**
+     * Its lord is in a friend's sign.
+     */
+    TS_SAHAM_STRONG_LORD_IN_FRIENDS_SIGN = 5,
+    /**
+     * It is with a friend of its lord.
+     */
+    TS_SAHAM_STRONG_WITH_FRIEND = 6,
+    /**
+     * It is with a natural benefic.
+     */
+    TS_SAHAM_STRONG_WITH_BENEFIC = 7,
+    /**
+     * It is with the year lord.
+     */
+    TS_SAHAM_STRONG_WITH_YEAR_LORD = 8,
+    /**
+     * Its lord conjoins it.
+     */
+    TS_SAHAM_STRONG_LORD_CONJOINS = 9,
+    /**
+     * Its lord aspects it.
+     */
+    TS_SAHAM_STRONG_LORD_ASPECTS_SAHAM = 10,
+    /**
+     * Its lord aspects the lagna.
+     */
+    TS_SAHAM_STRONG_LORD_ASPECTS_LAGNA = 11,
+} ts_saham_strong;
+
+/**
+ * A clause of the source's list of what makes a saham **weak**, in its
+ * order. Its ids are the bit positions of a saham row's `weak` column.
+ *
+ * Mirrors `teistro::WeakClause` through an **exhaustive** match.
+ */
+typedef enum ts_saham_weak {
+    /**
+     * Its lord is under the Panchavargiya floor.
+     */
+    TS_SAHAM_WEAK_LORD_WEAK_VISHWA = 0,
+    /**
+     * Its lord has no Harsha bala.
+     */
+    TS_SAHAM_WEAK_LORD_LACKS_HARSHA = 1,
+    /**
+     * Its lord neither aspects nor conjoins it.
+     */
+    TS_SAHAM_WEAK_LORD_APART = 2,
+    /**
+     * It is with an enemy of its lord.
+     */
+    TS_SAHAM_WEAK_WITH_ENEMY = 3,
+    /**
+     * It is with a natural malefic.
+     */
+    TS_SAHAM_WEAK_WITH_MALEFIC = 4,
+} ts_saham_weak;
+
+/**
  * One of the five clauses of the source's **affliction**, which Rudda
  * and Durapha read. Its ids are the bit positions of
  * `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.

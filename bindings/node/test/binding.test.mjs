@@ -614,8 +614,11 @@ test('every catalogue enum has a complete id table', () => {
   // 1029 since Table X-3 gave the Ithasala a third kind, `Poorna`;
   // 1050 since the sixteen Tajika yogas crossed: `TsYearYoga`'s sixteen and
   // `TsAffliction`'s five clauses;
-  // 1091 since the sahams crossed: `TsSaham`'s forty-one.
-  assert.equal(entries, 1091, 'every member of every enum is in a table');
+  // 1091 since the sahams crossed: `TsSaham`'s forty-one;
+  // 1117 since their strength crossed: `TsSahamStrong`'s twelve clauses,
+  // `TsSahamWeak`'s five, `TsHarshaGrade`'s five and `TsTajikaRelation`'s
+  // four.
+  assert.equal(entries, 1117, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1485,10 +1488,43 @@ test("a year's chart answers the sahams asked for", () => {
   // Each refusal names the field written.
   const refused = (varsha, field) =>
     assert.throws(() => years(varsha), (error) => error instanceof TeistroError && error.field === field);
-  refused({ through: 2, sahams: ['punya'] }, 'varsha_json.sahams');
   refused({ through: 2, place: 'birth', sahams: ['punya', 'punya'] }, 'varsha_json.sahams');
   refused({ through: 2, place: 'birth', sahams: ['pnya'] }, 'varsha_json.sahams[0]');
   refused({ through: 2, place: 'birth', sahams: ['punya'], sahamRules: { add_sign: 'never' } }, 'varsha_json.sahamRules.add_sign');
+  refused({ through: 1, sahams: ['punya'], sahamStrength: { natures: 'vedic' } }, 'varsha_json.sahamStrength.natures');
+  refused({ through: 1, place: 'birth', harshaRules: { venus: 'sixth' } }, 'varsha_json.harshaRules.venus');
+
+  // Each saham carries its strength, clause by clause and never weighed.
+  const found = ctx.chart.found({
+    instant: 2447995.4895833335,
+    place,
+    utcOffsetSeconds: 20700,
+    varsha: { through: 2, place: 'birth', sahams: 'all', harshaRules: { venus: 'twelfth' } },
+  });
+  for (const { annual } of found.praveshas) {
+    for (const one of annual.sahams) {
+      // The two (c) clauses negate each other: exactly one holds.
+      const near = one.strong.includes('lord-conjoins') || one.strong.includes('lord-aspects-saham');
+      assert.notEqual(near, one.weak.includes('lord-apart'));
+      assert.equal(one.seven.length, 7);
+      assert.equal(one.seven.find((s) => s.graha === one.lord)?.company, one.strong.includes('lord-conjoins'));
+      assert.equal(typeof one.inNodeAxis, 'boolean');
+      assert.equal(one.handicapped, [6, 8, 12].includes(one.house));
+      assert.ok(one.lordVishwa.total >= 0);
+    }
+    // The Harsha bala, every year, seven planets, five units a part.
+    assert.equal(annual.harsha.length, 7);
+    for (const h of annual.harsha) {
+      const parts = [h.sthana, h.uchchaSwakshetra, h.striPurusha, h.dinaRatri].filter(Boolean).length;
+      assert.equal(h.total, 5 * parts);
+    }
+  }
+  // The birth's own sahams come beside the years', and need no place.
+  assert.equal(found.sahams.length, 41);
+  assert.ok(found.sahams.every((one) => !one.strong.includes('with-year-lord')));
+  const natal = ctx.chart.found({ instant: 2447995.4895833335, place, utcOffsetSeconds: 20700, varsha: { through: 1, sahams: ['punya'] } });
+  assert.deepEqual(natal.sahams.map((one) => one.saham), ['punya']);
+  assert.equal(natal.praveshas[0].annual, null);
   ctx.dispose();
 });
 

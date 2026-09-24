@@ -21,7 +21,7 @@ import type {
   Scale,
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
-import type { Graha, Saham } from '../lib/catalogue.js';
+import type { Graha, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
 import type { CalendarDate } from '../lib/index.js';
 
 declare const build: BuildInfo;
@@ -369,7 +369,33 @@ function theYearsSahams(ctx: Context): string {
   ctx.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, varsha: { through: 1, sahams: ['pnya'] } });
   // @ts-expect-error the rules' keys are camelCase
   ctx.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, varsha: { through: 1, sahamRules: { add_sign: 'never' } } });
-  return `${saham} ${deg} ${one.sign} ${one.lord} ${one.house} ${added}`;
+  const clause: SahamStrong | 'unknown' | undefined = one.strong[0];
+  const facing: string = one.seven.map((s) => `${s.graha}:${s.drishti}:${s.relation}:${s.company}`).join();
+  const axis: boolean | null = one.inNodeAxis;
+  const happy = annual.harsha.map((h) => `${h.graha}:${h.total}:${h.grade}:${h.sthana}`).join();
+  return `${saham} ${deg} ${one.sign} ${one.lord} ${one.house} ${added} ${clause} ${facing} ${axis} ${one.lordVishwa} ${one.lordHarsha} ${happy}`;
 }
+
+// The birth's own sahams, and the readings a saham's strength and the
+// Harsha bala part on, in the casing the declarations promise.
+function theBirthsSahams(ctx: Context): string {
+  const chart = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    varsha: {
+      through: 1,
+      sahams: 'all',
+      sahamStrength: { natures: 'parashari', friendship: 'natural', weakBelow: 4 * 3600 },
+      harshaRules: { venus: 'twelfth' },
+    },
+  });
+  const weak: readonly (SahamWeak | 'unknown')[] = chart.sahams[0]?.weak ?? [];
+  // @ts-expect-error natures are the chapter's or the catalogue's, not a word of its own
+  ctx.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, varsha: { through: 1, sahamStrength: { natures: 'vedic' } } });
+  return weak.join();
+}
+
+void theBirthsSahams;
 
 void theYearsSahams;

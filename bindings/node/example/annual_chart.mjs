@@ -111,7 +111,11 @@ for (const one of points.sahams) {
     `${one.saham.padEnd(12)} ${one.longitudeDeg.toFixed(2).padStart(6)}°  ${short(one.sign)}, ` +
       `lord ${short(one.lord)}, house ${one.house}${one.addedSign ? ' (a sign added)' : ''}`,
   );
+  // Its strength is the source's clauses, reported and never scored.
+  console.log(`  strong: ${one.strong.join(', ') || 'none'}; weak: ${one.weak.join(', ') || 'none'}`);
 }
+// And the seven's Harsha bala that year: four places each is happy in.
+console.log(points.harsha.map((h) => `${short(h.graha)} ${h.total}`).join(', '));
 
 // ── The readings are named, and they are not each other ────────────────
 for (const reading of ['sidereal', 'tropical', 'mean']) {

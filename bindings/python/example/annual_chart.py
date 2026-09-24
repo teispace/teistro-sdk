@@ -146,6 +146,12 @@ def main() -> None:
                 f"{point.saham.key:<12} {point.longitude_deg:6.2f}°  {point.sign.key}, "
                 f"lord {point.lord.key}, house {point.house}{added}"
             )
+            # Its strength is the source's clauses, reported and never scored.
+            strong = ", ".join(c.key for c in point.strong) or "none"
+            weak = ", ".join(c.key for c in point.weak) or "none"
+            print(f"  strong: {strong}; weak: {weak}")
+        # And the seven's Harsha bala that year: four places each is happy in.
+        print(", ".join(f"{h.graha.key} {h.total}" for h in points.harsha))
 
         # ── The readings are named, and they are not each other ──────
         for reading in ("sidereal", "tropical", "mean"):

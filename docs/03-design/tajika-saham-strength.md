@@ -1,6 +1,6 @@
 # A saham's strength
 
-Status: built — 2026-09-24. `crates/tajika/src/saham_strength.rs`,
+Status: built — 2026-09-24, and across the boundary the same day. `crates/tajika/src/saham_strength.rs`,
 reached at `sdk.chart().saham_strength` and `saham_strength_with_rules`.
 
 The source is K. S. Charak, *A Textbook of Varshaphala*, ch. XI, "The
@@ -97,10 +97,34 @@ and the source does not say where, so it is not founded here; the facts it
 names are the ones the report carries, `with_malefic` and
 `in_node_axis`.
 
+## Crossing the boundary
+
+The clauses, the Harsha bala and the birth chart's sahams cross together,
+on the chart request's `varsha_json`:
+
+| `varsha_json` | what it adds |
+|---|---|
+| `sahams` | as before; each saham now answers with its strength, under its year's own lord. **Without a place** it answers the birth charts' sahams alone, where it was refused: a birth chart needs no annual chart to hold sahams. |
+| `sahamStrength` | `{natures, friendship, weakBelow}`, the readings above |
+| `harshaRules` | `{venus}`, the Harsha bala's reading |
+
+| section | what it carries |
+|---|---|
+| `year_sahams`, `natal_sahams` | each saham's place as before, and its strength: the strong and weak clauses as bit sets over `TsSahamStrong` and `TsSahamWeak`, the lord's Vishwa bala exact and its Harsha grade, and the Rahu-Ketu axis. The birth's are ragged by `cast.natal_saham_count` |
+| `year_saham_seven`, `natal_saham_seven` | seven rows under each saham, one per planet: its aspect on the saham's sign, its relation to the lord, and whether it keeps the saham company |
+| `year_harsha` | seven rows under each founded year: the four parts, the total and the grade |
+
+**The clause bits are enums the generator reads**, `StrongClause` and
+`WeakClause` in Rust mirrored as `TsSahamStrong` and `TsSahamWeak`, so
+every binding names a clause from its own generated catalogue and none
+keeps a copy of the source's wording. A seven-row section is fixed and
+not ragged: the seven are always seven, so a reader indexes it by the
+saham's row times seven.
+
 ## What is decided and what is not
 
 | | |
 |---|---|
 | **decided by the source** | the clauses and their lists; the chapter's natures; the 6-8-12 handicap; the four sahams best weak |
 | **a reading, not a decision** | the vargas as the Tajika three; friendship as Tajika's positional one; "lacks Harsha bala" as none at all |
-| **not built** | a verdict, which the source never gives; "benefic houses", which it does not define; the crossing, which carries the clauses with the Harsha bala and the birth chart's sahams |
+| **not built** | a verdict, which the source never gives; "benefic houses", which it does not define |
