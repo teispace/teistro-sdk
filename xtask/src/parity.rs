@@ -38,7 +38,7 @@
 //! # The shared examples
 //!
 //! After the values, the examples every binding carries are run and
-//! compared the same way, byte for byte rather than value for value
+//! compared the same way, line for line rather than value for value
 //! (`examples.rs`): the same names in each binding, and the same output
 //! from each. The scenario says the bindings answer alike; the examples
 //! say a reader who copies one gets what the page beside it promised.
@@ -407,7 +407,7 @@ fn values_agree(reports: &[Report], ran: bool) -> i32 {
 }
 
 /// The shared examples, run in every binding this machine can run and
-/// compared byte for byte (`examples.rs`): 0 when they print alike.
+/// compared line for line (`examples.rs`): 0 when they print alike.
 ///
 /// Counted as the runners are: a binding whose examples were tried and
 /// failed is a failure, never a skip, or a crashed example would leave
