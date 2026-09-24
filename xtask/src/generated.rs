@@ -100,8 +100,39 @@ pub(crate) fn check(root: &Path, outputs: &[Output], generator: &str) -> i32 {
                 "FAIL  {} differs from what `{generator}` produces",
                 output.path
             );
+            for line in differing_lines(&actual, &output.text) {
+                println!("      {line}");
+            }
             failures += 1;
         }
     }
     failures
+}
+
+/// How many differing lines a failed check prints: enough to name the
+/// number that moved, which on a platform the author does not run is the
+/// only way to see it, and few enough not to bury the rest of the run.
+const SHOWN_LINES: usize = 6;
+
+/// The first lines where the checked-in file and the produced text part,
+/// each as `line N: - checked in` and `+ produced`.
+fn differing_lines(checked_in: &str, produced: &str) -> Vec<String> {
+    let (old, new): (Vec<&str>, Vec<&str>) =
+        (checked_in.lines().collect(), produced.lines().collect());
+    let mut shown = Vec::new();
+    for at in 0..old.len().max(new.len()) {
+        let (was, is) = (old.get(at), new.get(at));
+        if was != is {
+            shown.push(format!(
+                "line {}: - {}\n            + {}",
+                at + 1,
+                was.unwrap_or(&"(nothing)"),
+                is.unwrap_or(&"(nothing)")
+            ));
+            if shown.len() == SHOWN_LINES {
+                break;
+            }
+        }
+    }
+    shown
 }
