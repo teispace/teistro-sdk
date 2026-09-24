@@ -4713,6 +4713,21 @@ typedef enum ts_varshesha_chosen {
      * for that reading.
      */
     TS_VARSHESHA_CHOSEN_ANNUAL_LAGNA_LORD_UNASPECTED = 6,
+    /**
+     * The strongest of the five, because nobody aspects and the rules ask
+     * for the *Nilakanthi*'s reading.
+     */
+    TS_VARSHESHA_CHOSEN_STRONGEST_UNASPECTED = 7,
+    /**
+     * The planet in Ithasala with the Moon, the strongest of several, in
+     * the Moon's place.
+     */
+    TS_VARSHESHA_CHOSEN_MOONS_ITHASALA = 8,
+    /**
+     * The lord of the Moon's sign, in the Moon's place: the Moon itself
+     * where it stands in Cancer.
+     */
+    TS_VARSHESHA_CHOSEN_MOONS_SIGN_LORD = 9,
 } ts_varshesha_chosen;
 
 /**

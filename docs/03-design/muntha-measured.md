@@ -680,3 +680,38 @@ it can never add a Kuttha. The pass asks it of every strong pair and
 fails if it adds one. It also fails if `favour` and the yoga disagree
 about a single matter, or if Kuttha's strong pairs differ from the
 floors' own count.
+
+## 18. The lord of the year, over the recorded years
+
+Every recorded year's lord, through `sdk.chart().varshesha`, by the step
+of the chain that chose it (`03-design/varshesha.md`). Charak's chain
+passes the Moon over for the next claimant that aspects and, where there
+is none, for its **Ithasala successor**. The *Tajika Nilakanthi*'s own
+view takes the successor at once (`moon: ithasala`).
+
+| step | Charak | Nilakanthi |
+|---|---:|---:|
+| `Strongest` | 2091 | 1915 |
+| `MostPortfolios` | 1 | 1 |
+| `MunthaLordUnaspected` | 41 | 41 |
+| `MunthaLordAllWeak` | 0 | 0 |
+| `MunthaLordTied` | 0 | 0 |
+| `DinaRatriTied` | 0 | 0 |
+| `AnnualLagnaLordUnaspected` | 0 | 0 |
+| `StrongestUnaspected` | 0 | 0 |
+| `MoonsIthasala` | 22 | 156 |
+| `MoonsSignLord` | 4 | 46 |
+
+Of 2159 years, the Moon would have led the chain in **202**. Under
+Charak it was succeeded in **26**: the case the build answered with the
+Moon itself until the successor was built. Of those successors, 14 hold
+no portfolio, which only the Moon's Ithasala allows. The Moon holds the
+year in 1, and only ever as a Moon in Cancer succeeding itself. The
+Nilakanthi's reading changes the lord of **134** years.
+
+The rows for the lagna lord's and the strongest's readings of an
+unaspected lagna are zero by construction, since neither is asked here.
+The others are what the corpus holds. The pass fails if a lord is not
+among its claimants without succeeding the Moon, if the Moon holds the
+year by any other step, if the two readings disagree about a year the
+Moon did not lead, or if a reading not asked is ever counted.

@@ -5250,7 +5250,16 @@ enum VarsheshaChosen {
   dinaRatriTied(5, 'dina-ratri-tied'),
   /// The annual lagna's lord, because nobody aspects and the rules ask
   /// for that reading.
-  annualLagnaLordUnaspected(6, 'annual-lagna-lord-unaspected');
+  annualLagnaLordUnaspected(6, 'annual-lagna-lord-unaspected'),
+  /// The strongest of the five, because nobody aspects and the rules ask
+  /// for the *Nilakanthi*'s reading.
+  strongestUnaspected(7, 'strongest-unaspected'),
+  /// The planet in Ithasala with the Moon, the strongest of several, in
+  /// the Moon's place.
+  moonsIthasala(8, 'moons-ithasala'),
+  /// The lord of the Moon's sign, in the Moon's place: the Moon itself
+  /// where it stands in Cancer.
+  moonsSignLord(9, 'moons-sign-lord');
 
   const VarsheshaChosen(this.id, this.key);
 

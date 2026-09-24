@@ -3178,6 +3178,15 @@ pub enum TsVarsheshaChosen {
     /// The annual lagna's lord, because nobody aspects and the rules ask
     /// for that reading.
     AnnualLagnaLordUnaspected = 6,
+    /// The strongest of the five, because nobody aspects and the rules ask
+    /// for the *Nilakanthi*'s reading.
+    StrongestUnaspected = 7,
+    /// The planet in Ithasala with the Moon, the strongest of several, in
+    /// the Moon's place.
+    MoonsIthasala = 8,
+    /// The lord of the Moon's sign, in the Moon's place: the Moon itself
+    /// where it stands in Cancer.
+    MoonsSignLord = 9,
 }
 
 /// The Tajika aspect between two signs (`03-design/tajika-aspects.md`).
@@ -3656,6 +3665,9 @@ impl From<teistro::Chosen> for TsVarsheshaChosen {
             teistro::Chosen::AnnualLagnaLordUnaspected => {
                 TsVarsheshaChosen::AnnualLagnaLordUnaspected
             }
+            teistro::Chosen::StrongestUnaspected => TsVarsheshaChosen::StrongestUnaspected,
+            teistro::Chosen::MoonsIthasala => TsVarsheshaChosen::MoonsIthasala,
+            teistro::Chosen::MoonsSignLord => TsVarsheshaChosen::MoonsSignLord,
         }
     }
 }

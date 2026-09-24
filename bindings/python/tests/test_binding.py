@@ -21,6 +21,7 @@ from teistro import (
     TajikaDrishti,
     TajikaYoga,
     UduDashaDefinition,
+    VarsheshaChosen,
     YearYoga,
     Saham,
     SahamStrong,
@@ -1212,7 +1213,13 @@ class AnEngine(WithLibrary):
             assert one.annual is not None
             lord = one.annual.year_lord
             self.assertTrue(1 <= len(lord.claims) <= 5)
-            self.assertIn(lord.graha, [claim.graha for claim in lord.claims])
+            # Among its own claimants, unless it succeeds the Moon, whose
+            # Ithasala may be with any planet.
+            succeeds_the_moon = lord.chosen in (VarsheshaChosen.MOONS_ITHASALA, VarsheshaChosen.MOONS_SIGN_LORD)
+            if succeeds_the_moon:
+                self.assertTrue(lord.moon_passed_over)
+            else:
+                self.assertIn(lord.graha, [claim.graha for claim in lord.claims])
             ranked = [claim.vishwa.total for claim in lord.claims]
             self.assertEqual(ranked, sorted(ranked, reverse=True))
             self.assertRegex(str(lord.vishwa), r"^\d\d:\d\d:\d\d$")
@@ -1356,6 +1363,16 @@ class AnEngine(WithLibrary):
 
         # The rule records are written in Python's own keys.
         years({"through": 2, "place": "birth", "varshesha": {"none_aspects": "annual_lagna_lord"}})
+        years({
+            "through": 2,
+            "place": "birth",
+            "varshesha": {
+                "none_aspects": "strongest",
+                "moon": "ithasala",
+                "moon_partner": "office_bearer",
+                "drishti": {"sub_degree": "ishrafa"},
+            },
+        })
         years({
             "through": 2,
             "place": "birth",

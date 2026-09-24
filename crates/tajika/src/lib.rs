@@ -68,7 +68,8 @@ pub use varsha::{
     years,
 };
 pub use varshesha::{
-    Chosen, Claim, NoneAspects, Varshesha, VarsheshaRules, WEAK_BELOW, aspects, varshesha,
+    Chosen, Claim, MoonMayRule, MoonPartner, NoneAspects, Tied, Varshesha, VarsheshaRules,
+    WEAK_BELOW, aspects, varshesha,
 };
 pub use yoga::{
     Affliction, BENEFICS, Favour, Held, MALEFICS, MoonBenefic, Qualification, Strength,

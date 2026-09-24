@@ -6251,7 +6251,10 @@ export type VarsheshaChosen =
   | 'muntha-lord-all-weak'
   | 'muntha-lord-tied'
   | 'dina-ratri-tied'
-  | 'annual-lagna-lord-unaspected';
+  | 'annual-lagna-lord-unaspected'
+  | 'strongest-unaspected'
+  | 'moons-ithasala'
+  | 'moons-sign-lord';
 
 /** Every VarsheshaChosen by name; the values are the strings the union accepts. */
 export declare const VarsheshaChosen: {
@@ -6286,6 +6289,21 @@ export declare const VarsheshaChosen: {
    * for that reading.
    */
   readonly AnnualLagnaLordUnaspected: 'annual-lagna-lord-unaspected';
+  /**
+   * The strongest of the five, because nobody aspects and the rules ask
+   * for the *Nilakanthi*'s reading.
+   */
+  readonly StrongestUnaspected: 'strongest-unaspected';
+  /**
+   * The planet in Ithasala with the Moon, the strongest of several, in
+   * the Moon's place.
+   */
+  readonly MoonsIthasala: 'moons-ithasala';
+  /**
+   * The lord of the Moon's sign, in the Moon's place: the Moon itself
+   * where it stands in Cancer.
+   */
+  readonly MoonsSignLord: 'moons-sign-lord';
 };
 
 /**

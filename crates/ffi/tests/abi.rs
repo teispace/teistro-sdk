@@ -33,8 +33,8 @@ use teistro_ffi::calendar::{
     ts_calendar_to_fixed, ts_calendar_weekday,
 };
 use teistro_ffi::chart::{
-    TsChartRequest, TsSaham, TsSahamStrong, TsSahamWeak, TsYearYoga, ts_chart_found,
-    ts_chart_layout_row,
+    TsChartRequest, TsSaham, TsSahamStrong, TsSahamWeak, TsVarsheshaChosen, TsYearYoga,
+    ts_chart_found, ts_chart_layout_row,
 };
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
@@ -2035,11 +2035,13 @@ fn a_years_chart_carries_the_lord_of_that_year() {
     // Every year names a lord and ranks between one and five claimants.
     assert!(counts.iter().all(|count| (1..=5).contains(count)));
     // The chain's step is one this ABI knows.
-    assert!(
-        ints("annual_charts", "year_lord_chosen")
-            .iter()
-            .all(|step| (0..=6).contains(step))
-    );
+    let chosen = ints("annual_charts", "year_lord_chosen");
+    let last = TsVarsheshaChosen::MoonsSignLord as i64;
+    assert!(chosen.iter().all(|step| (0..=last).contains(step)));
+    let succeeds_the_moon = |step: i64| {
+        step == TsVarsheshaChosen::MoonsIthasala as i64
+            || step == TsVarsheshaChosen::MoonsSignLord as i64
+    };
     // A strength is exact, in sub-sub units, and inside its own bound of
     // twenty units.
     let vishwa = ints("annual_charts", "year_lord_vishwa");
@@ -2056,7 +2058,8 @@ fn a_years_chart_carries_the_lord_of_that_year() {
     assert!(aspects.iter().all(|flag| *flag == 0 || *flag == 1));
 
     // Each year's claimants are ranked strongest first, and the lord is
-    // one of them — the strongest that aspects, or a named fallback.
+    // one of them — the strongest that aspects, or a named fallback — unless
+    // it succeeds the Moon, whose Ithasala may be with any planet.
     let mut from = 0usize;
     for (year, count) in counts.iter().enumerate() {
         let take = usize::try_from(*count).unwrap();
@@ -2066,7 +2069,8 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             "year {year} is not ranked"
         );
         assert!(
-            claim_graha[from..from + take].contains(&lords[year]),
+            succeeds_the_moon(chosen[year])
+                || claim_graha[from..from + take].contains(&lords[year]),
             "the lord of year {year} is not among its claimants"
         );
         from += take;

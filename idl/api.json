@@ -6652,6 +6652,21 @@
           "name": "AnnualLagnaLordUnaspected",
           "value": 6,
           "doc": "The annual lagna's lord, because nobody aspects and the rules ask\nfor that reading."
+        },
+        {
+          "name": "StrongestUnaspected",
+          "value": 7,
+          "doc": "The strongest of the five, because nobody aspects and the rules ask\nfor the *Nilakanthi*'s reading."
+        },
+        {
+          "name": "MoonsIthasala",
+          "value": 8,
+          "doc": "The planet in Ithasala with the Moon, the strongest of several, in\nthe Moon's place."
+        },
+        {
+          "name": "MoonsSignLord",
+          "value": 9,
+          "doc": "The lord of the Moon's sign, in the Moon's place: the Moon itself\nwhere it stands in Cancer."
         }
       ],
       "source": "crates/ffi/src/chart.rs"

@@ -618,7 +618,7 @@ test('every catalogue enum has a complete id table', () => {
   // 1117 since their strength crossed: `TsSahamStrong`'s twelve clauses,
   // `TsSahamWeak`'s five, `TsHarshaGrade`'s five and `TsTajikaRelation`'s
   // four.
-  assert.equal(entries, 1117, 'every member of every enum is in a table');
+  assert.equal(entries, 1120, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1292,7 +1292,11 @@ test('a chart carries the annual charts its birth opens', () => {
   for (const one of cast) {
     const lord = one.annual.yearLord;
     assert.ok(lord.claims.length >= 1 && lord.claims.length <= 5);
-    assert.ok(lord.claims.some((claim) => claim.graha === lord.graha));
+    // Among its own claimants, unless it succeeds the Moon, whose Ithasala
+    // may be with any planet.
+    const succeedsTheMoon = ['moons-ithasala', 'moons-sign-lord'].includes(lord.chosen);
+    assert.ok(succeedsTheMoon || lord.claims.some((claim) => claim.graha === lord.graha));
+    if (succeedsTheMoon) assert.equal(lord.moonPassedOver, true);
     // Ranked strongest first, and the strength reads as the sources write it.
     const ranked = lord.claims.map((claim) => claim.vishwa.total);
     assert.deepEqual(ranked, [...ranked].sort((a, b) => b - a));
@@ -1440,6 +1444,11 @@ test("a year's chart answers the Tajika yogas for the matters asked", () => {
 
   // The rule records read in the casing these types declare.
   years({ through: 2, place: 'birth', varshesha: { noneAspects: 'annual_lagna_lord' } });
+  years({
+    through: 2,
+    place: 'birth',
+    varshesha: { noneAspects: 'strongest', moon: 'ithasala', moonPartner: 'office_bearer', drishti: { subDegree: 'ishrafa' } },
+  });
   years({ through: 2, place: 'birth', matters: [10], yogas: { weakBelow: 4 * 3600, strongFrom: 12 * 3600 } });
 
   // Each refusal names the field written.

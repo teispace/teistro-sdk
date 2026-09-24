@@ -3015,6 +3015,9 @@ export const VarsheshaChosen = Object.freeze({
   MunthaLordTied: 'muntha-lord-tied',
   DinaRatriTied: 'dina-ratri-tied',
   AnnualLagnaLordUnaspected: 'annual-lagna-lord-unaspected',
+  StrongestUnaspected: 'strongest-unaspected',
+  MoonsIthasala: 'moons-ithasala',
+  MoonsSignLord: 'moons-sign-lord',
 });
 
 /**
@@ -3029,6 +3032,9 @@ export const VarsheshaChosenById = new Map([
   [4, 'muntha-lord-tied'],
   [5, 'dina-ratri-tied'],
   [6, 'annual-lagna-lord-unaspected'],
+  [7, 'strongest-unaspected'],
+  [8, 'moons-ithasala'],
+  [9, 'moons-sign-lord'],
 ]);
 
 /** Every TajikaDrishti by name. */
