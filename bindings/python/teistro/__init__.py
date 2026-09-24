@@ -161,9 +161,58 @@ from .catalogue import (
     Status,
     TimeScale,
     ZoneKind,
+    Astronomy,
+    Chosen,
+    DayState,
+    DeltaTSource,
+    DistanceUnit,
+    Dst,
+    Equinox,
+    GhatiReckoning,
+    HoraReckoning,
+    Kind,
+    PolarDayPolicy,
+    PolarKind,
+    ProviderCode,
+    Reading,
+    SpeedModel,
+    Sunrise,
+    YogaCause,
+    ZoneEra,
+    ZoneSource,
+    ZoneWarning,
+    Auspiciousness,
+    AyanamshaCategory,
+    BalaScheme,
+    BodyClass,
+    CharaKaraka,
+    DashaFamily,
+    Degeneracy,
+    Deity,
+    Gana,
+    Gender,
+    Guna,
+    Koota,
+    Modality,
+    MuhurtaNature,
+    Nadi,
+    Parity,
+    PointFamily,
+    Rising,
+    Ritu,
+    Samvatsara,
+    Sex,
+    Star,
+    StarClass,
+    State,
+    Tatwa,
+    TithiClass,
+    Varna,
+    Yoni,
 )
 
 __all__ = [
+    "ChartTiming",
     "Altitude",
     "Engine",
     "Ayanamsha",
@@ -363,6 +412,72 @@ __all__ = [
     "VargaChart",
     "VargaPlacement",
     "PlacedInVarga",
+    "Astronomy",
+    "Chosen",
+    "DayState",
+    "DeltaTSource",
+    "DistanceUnit",
+    "Dst",
+    "Equinox",
+    "GhatiReckoning",
+    "HoraReckoning",
+    "Kind",
+    "PolarDayPolicy",
+    "PolarKind",
+    "ProviderCode",
+    "Reading",
+    "SpeedModel",
+    "Sunrise",
+    "YogaCause",
+    "ZoneEra",
+    "ZoneSource",
+    "ZoneWarning",
+    "Auspiciousness",
+    "Ayana",
+    "AyanamshaCategory",
+    "BalaScheme",
+    "BodyClass",
+    "CharaKaraka",
+    "Choghadiya",
+    "DashaFamily",
+    "DayPart",
+    "Degeneracy",
+    "Deity",
+    "Direction",
+    "Gana",
+    "Gender",
+    "Graha",
+    "Guna",
+    "HouseSystem",
+    "Kaala",
+    "Karana",
+    "Koota",
+    "LunarMonth",
+    "Masa",
+    "Modality",
+    "MonthKind",
+    "MuhurtaNature",
+    "MuhurtaYoga",
+    "Nadi",
+    "Paksha",
+    "Panchaka",
+    "Parity",
+    "Point",
+    "PointFamily",
+    "Rising",
+    "Ritu",
+    "Samvatsara",
+    "Sex",
+    "Star",
+    "StarClass",
+    "State",
+    "Tatwa",
+    "Tithi",
+    "TithiClass",
+    "Vara",
+    "Varna",
+    "Yoga",
+    "Yoni",
 ]
 
 #: The environment variable that names the shared library, which wins over
@@ -3966,6 +4081,36 @@ def _drawing_bits(
     return bits
 
 
+@dataclass(frozen=True)
+class ChartTiming:
+    """Where in its day a chart's moment falls: the ishtakaal and the hora.
+    The same record in every binding."""
+
+    ghati: int
+    """The ishtakaal's ghatis since sunrise, 0 to 59."""
+
+    pala: int
+    """Its palas, 0 to 59."""
+
+    vipala: int
+    """Its vipalas, 0 to 59."""
+
+    ghati_reckoning: GhatiReckoning
+    """How the ghatis were measured."""
+
+    hora_number: int
+    """Which hora of the day holds the instant, 1 to 24."""
+
+    hora_lord: Graha
+    """The graha that rules it."""
+
+    hora_start: float
+    """When that hora began, as a Julian day (UTC)."""
+
+    hora_end: float
+    """When it ends, as a Julian day (UTC)."""
+
+
 class Chart:
     """One founded chart: a view over its batch, not a copy.
 
@@ -4034,6 +4179,22 @@ class Chart:
     def hora_lord(self) -> Graha:
         """The graha that rules the hora holding the instant."""
         return Graha(self.batch.decoded.timing.hora_lord[self.index])
+
+    @property
+    def timing(self) -> ChartTiming:
+        """Where in its day the moment falls, in the reckonings the settings
+        named."""
+        t, i = self.batch.decoded.timing, self.index
+        return ChartTiming(
+            ghati=t.ghati[i],
+            pala=t.pala[i],
+            vipala=t.vipala[i],
+            ghati_reckoning=GhatiReckoning(t.ghati_reckoning[i]),
+            hora_number=t.hora_number[i],
+            hora_lord=Graha(t.hora_lord[i]),
+            hora_start=t.hora_start[i],
+            hora_end=t.hora_end[i],
+        )
 
     @property
     def states(self) -> list[GrahaState]:

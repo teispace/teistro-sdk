@@ -100,8 +100,8 @@ const single = ctx.chart.found({
 });
 console.log('');
 console.log(
-  `found(one)     lagna ${single.lagnaDeg.toFixed(4)}°  ` +
-    `vara ${single.day.vara}  ` +
-    `ishtakaal ${single.timing.ghati}:${single.timing.pala}:${single.timing.vipala}`,
+  `found(one)     lagna ${single.lagnaDeg.toFixed(4)}°  vara ${single.day.vara}  ` +
+    `ishtakaal ${single.timing.ghati}:${single.timing.pala}:${single.timing.vipala}  ` +
+    `hora lord ${single.timing.horaLord}`,
 );
 ctx.dispose();

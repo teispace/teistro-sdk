@@ -159,7 +159,9 @@ class EphemerisProvider:
     version: str = ""
     #: What identifies its data, an ephemeris file's edition.
     data_version: str = ""
-    #: The first Julian day it covers; year 0 by default.
+    #: The first Julian day it covers; year 0 by default. An instant
+    #: outside the span is never asked for: its cells come back
+    #: `OUT_OF_RANGE` and the rest of the batch is answered.
     jd_min: float = 1721057.5
     #: The last Julian day it covers; year 3000 by default.
     jd_max: float = 2816787.5
@@ -296,10 +298,10 @@ class HostProvider:
     def _answer(
         self, request: _PositionRequestStruct, out: _PositionColumnsStruct
     ) -> int:
+        # Nothing is checked before the provider is asked: coverage, the
+        # observer, the bodies and the instants are all the port's, on the
+        # SDK's side, so an instant outside the span never arrives here.
         query = self._read(request)
-        refusal = self._validate(query)
-        if refusal is not None:
-            return refusal
         cells = query.cell_count
         if out.capacity < cells:
             return int(ProviderCode.INVALID)
@@ -358,25 +360,6 @@ class HostProvider:
             jds=[request.jds[i] for i in range(request.jd_count)],
             bodies=[Body(request.bodies[i]) for i in range(request.body_count)],
         )
-
-    def _validate(self, query: PositionQuery) -> Optional[int]:
-        """What this side checks before the provider is asked.
-
-        Only the coverage span: a topocentric frame without an observer, a
-        body the provider never declared and an instant that is not a
-        number are all refused by the port itself, on the SDK's side of
-        the boundary, where the sentence survives into a `TeistroError`
-        that names what is missing. Checking them again here would be a
-        second copy of the same policy, saying it worse.
-        """
-        for jd in query.jds:
-            if jd < self.provider.jd_min or jd > self.provider.jd_max:
-                self.raised = ValueError(
-                    f"the instant {jd} is outside the provider's coverage "
-                    f"({self.provider.jd_min} to {self.provider.jd_max})"
-                )
-                return int(ProviderCode.OUT_OF_RANGE)
-        return None
 
     def close(self) -> None:
         """Releases the trampolines and the memory the vtable points at.

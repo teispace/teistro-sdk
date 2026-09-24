@@ -293,6 +293,37 @@ impl PositionColumns {
             .then(|| jd_index * self.body_count + body_index)
     }
 
+    /// Copies one instant's row of every column from `from`, whose bodies
+    /// are this grid's bodies in the same order. A row outside either grid
+    /// copies nothing.
+    pub(crate) fn copy_row(&mut self, row: usize, from: &PositionColumns, from_row: usize) {
+        /// One column's row, when both grids hold it.
+        fn copy<T: Copy>(into: &mut [T], out_of: &[T], width: usize, row: usize, from_row: usize) {
+            let target = into.chunks_exact_mut(width).nth(row);
+            if let (Some(target), Some(source)) = (target, out_of.chunks_exact(width).nth(from_row))
+            {
+                target.copy_from_slice(source);
+            }
+        }
+        debug_assert_eq!(self.body_count, from.body_count, "rows of different bodies");
+        let width = self.body_count;
+        if width == 0 || width != from.body_count {
+            return;
+        }
+        for (into, out_of) in [
+            (&mut self.lon, &from.lon),
+            (&mut self.lat, &from.lat),
+            (&mut self.dist, &from.dist),
+            (&mut self.lon_speed, &from.lon_speed),
+            (&mut self.lat_speed, &from.lat_speed),
+            (&mut self.dist_speed, &from.dist_speed),
+        ] {
+            copy(into, out_of, width, row, from_row);
+        }
+        copy(&mut self.status, &from.status, width, row, from_row);
+        copy(&mut self.source, &from.source, width, row, from_row);
+    }
+
     /// One cell by flat index.
     #[must_use]
     pub fn cell(&self, index: usize) -> Option<Cell> {

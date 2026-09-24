@@ -134,14 +134,16 @@ void main() {
         item['key']! as String,
         item['params']! as Map<String, Object?>,
       );
-      print('  ${said.text}${said.isFallback == 1 ? '  (fallback)' : ''}');
+      print('  ${said.text}${said.fallback ? '  (fallback)' : ''}');
     }
     // A reading names its rule in a slot the message does not print, so a
     // consumer can group a plan by rule.
     for (final item in readings) {
       final params = item['params']! as Map<String, Object?>;
       final said = ctx.intl.render(item['key']! as String, params);
-      print('  ${params['rule']}: ${said.text}');
+      print(
+        '  ${params['rule']}: ${said.text}${said.fallback ? '  (fallback)' : ''}',
+      );
     }
   }
 
@@ -178,6 +180,7 @@ void main() {
     );
   } on TeistroException catch (error) {
     print('refused  ${error.field}: ${error.message}');
+    print('hint     ${error.hint}');
   }
 
   ctx.dispose();

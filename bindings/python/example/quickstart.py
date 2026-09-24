@@ -16,7 +16,7 @@ def main() -> None:
     ) as ctx:
         # 14 April 2015 is 1 Baisakh 2072 BS.
         bs = ctx.calendar.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)
-        era = bs.era.key if bs.era is not None else ""
+        era = bs.era.full_key if bs.era is not None else ""
         print(f"{bs.year}-{bs.month}-{bs.day} {era}")
 
         # A Kathmandu birth time, with the metadata a stored chart keeps.

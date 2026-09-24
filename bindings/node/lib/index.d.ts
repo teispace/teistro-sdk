@@ -59,6 +59,10 @@ import type {
   SahamWeak,
   HarshaGrade,
   TajikaRelation,
+  TajikaDrishti,
+  TajikaYoga,
+  VarsheshaChosen,
+  GhatiReckoning,
   Affliction,
 } from './catalogue.js';
 import type {
@@ -843,16 +847,6 @@ export interface Bala {
   toString(): string;
 }
 
-/** Which step of the chain decided the year's lord. */
-export type VarsheshaChosen =
-  | 'strongest'
-  | 'most-portfolios'
-  | 'muntha-lord-unaspected'
-  | 'muntha-lord-all-weak'
-  | 'muntha-lord-tied'
-  | 'dina-ratri-tied'
-  | 'annual-lagna-lord-unaspected';
-
 /** One office-bearer's claim on the year's lordship. */
 export interface YearClaim {
   /** Whose claim it is. */
@@ -1028,30 +1022,6 @@ export interface TajikaBetween extends Omit<TajikaPair, 'yoga'> {
   /** What they are doing; `null` when they make neither an Ithasala nor an Ishrafa. */
   readonly yoga: TajikaYoga | 'unknown' | null;
 }
-
-/** The Tajika aspect between two signs; the neutral houses give none. */
-export type TajikaDrishti =
-  | 'friendly'
-  | 'secretly-friendly'
-  | 'inimical'
-  | 'secretly-inimical'
-  | 'none';
-
-/**
- * What two planets inside each other's orb are doing.
- *
- * Three of the four are kinds of Ithasala, the coming-together, as the
- * source's Table X-3 enumerates them.
- */
-export type TajikaYoga =
-  /** Vartamana: the faster is behind the slower by a degree or more, and coming to it. */
-  | 'ithasala-vartamana'
-  /** Poorna: as Vartamana but within a single degree, so already fulfilled. */
-  | 'ithasala-poorna'
-  /** Bhavishyat: the faster is past but at the sign's end, so it acts from the next sign. */
-  | 'ithasala-bhavishyat'
-  /** Ishrafa: the faster is a degree or more past the slower and drawing away. */
-  | 'ishrafa';
 
 /** Two planets of an annual chart, and what they make. */
 export interface TajikaPair {
@@ -1702,11 +1672,8 @@ export declare class Chart {
   readonly day: Omit<{ [K in keyof DecodedCharts['day']]: number }, 'length' | 'vara'> & {
     readonly vara: Vara | 'unknown';
   };
-  /** Where in its day the moment falls, with `horaLord` named. */
-  readonly timing: Omit<
-    { [K in keyof DecodedCharts['timing']]: number },
-    'length' | 'horaLord'
-  > & { readonly horaLord: Graha | 'unknown' };
+  /** Where in its day the moment falls, in the reckonings the settings named. */
+  readonly timing: ChartTiming;
   /** The grahas, in the catalogue's order, one object each. */
   readonly grahas: readonly PlacedGraha[];
   /** The divisional charts asked for, in the order asked; empty unless `vargas` named some. */
@@ -1821,6 +1788,29 @@ export interface ChoghadiyaPeriod extends Interval {
   readonly lord: Graha | 'unknown';
   /** Whether it is one of the eight of the daylight. */
   readonly daytime: boolean;
+}
+
+/**
+ * Where in its day a chart's moment falls: the ishtakaal and the hora. The
+ * same record in every binding.
+ */
+export interface ChartTiming {
+  /** The ishtakaal's ghatis since sunrise, 0 to 59. */
+  readonly ghati: number;
+  /** Its palas, 0 to 59. */
+  readonly pala: number;
+  /** Its vipalas, 0 to 59. */
+  readonly vipala: number;
+  /** How the ghatis were measured. */
+  readonly ghatiReckoning: GhatiReckoning | 'unknown';
+  /** Which hora of the day holds the instant, 1 to 24. */
+  readonly horaNumber: number;
+  /** The graha that rules it. */
+  readonly horaLord: Graha | 'unknown';
+  /** When that hora began, as a Julian day (UTC). */
+  readonly horaStart: number;
+  /** When it ends, as a Julian day (UTC). */
+  readonly horaEnd: number;
 }
 
 /** One hora, from sunrise. */
@@ -2130,7 +2120,11 @@ export interface EphemerisProvider {
   readonly version?: string;
   /** What identifies its data; empty by default. */
   readonly dataVersion?: string;
-  /** The first Julian day it covers; year 0 by default. */
+  /**
+   * The first Julian day it covers; year 0 by default. An instant outside
+   * the span is never asked for: its cells come back `OUT_OF_RANGE` and the
+   * rest of the batch is answered.
+   */
   readonly jdMin?: number;
   /** The last Julian day it covers; year 3000 by default. */
   readonly jdMax?: number;

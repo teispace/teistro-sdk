@@ -162,7 +162,8 @@ void main() {
 
   test('a provider answers only the bodies and the instants it '
       'declared', () {
-    final ctx = teistro.context(provider: StraightLine(answers: [Body.sun]));
+    final provider = StraightLine(answers: [Body.sun]);
+    final ctx = teistro.context(provider: provider);
     addTearDown(ctx.dispose);
     // Refused by the port, on the SDK's side of the boundary and before
     // the provider is asked, so the sentence survives: it names the body
@@ -181,18 +182,20 @@ void main() {
             ),
       ),
     );
-    // An instant outside the coverage is refused the same way, and the
-    // refusal names the span rather than only the instant.
-    expect(
-      () => ctx.positions(instants: [1e9], bodies: [Body.sun]),
-      throwsA(
-        isA<StateError>().having(
-          (e) => e.message,
-          'message',
-          contains("outside the provider's coverage"),
-        ),
-      ),
+    // An instant outside the coverage is a cell, as a native provider
+    // answers it: the batch keeps what it can compute, and the provider
+    // is asked only for the instants it declared. The Node and Python
+    // bindings hold the same.
+    final positions = ctx.positions(
+      instants: [1e9, 2451545.0],
+      bodies: [Body.sun],
     );
+    expect(
+      ProviderCode.byId(positions.at(0, 0).status),
+      ProviderCode.outOfRange,
+    );
+    expect(ProviderCode.byId(positions.at(1, 0).status), ProviderCode.ok);
+    expect(provider.calls.single.jds, [2451545.0]);
   });
 
   test('a provider is checked at the door', () {

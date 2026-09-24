@@ -12,6 +12,8 @@ import { test } from 'node:test';
 import {
   Body,
   Calendar,
+  ProviderCode,
+  ProviderCodeById,
   RashiById,
   SahamById,
   ChartLayout,
@@ -450,6 +452,23 @@ test('an ephemeris written in JavaScript answers the SDK', () => {
   assert.equal(positions.at(0, 1).longitudeSpeed, 13.176);
   assert.equal(positions.provenance.provider.name, 'a-provider-in-javascript');
   assert.equal(positions.provenance.provider.version, '1.2.3');
+});
+
+test('an instant outside its coverage is a cell, and never asked for', () => {
+  // As a native provider answers it: the batch keeps what it can compute,
+  // and the provider sees only the instants it declared. The Dart and
+  // Python bindings hold the same.
+  const { calls, provider } = jsProvider({ jdMin: 2451545.0, jdMax: 2451546.0 });
+  const ctx = new Context({ provider, profile: 'nepali-default' });
+  const positions = ctx.positions({ instants: [2400000.0, 2451545.5], bodies: [Body.Sun] });
+  assert.equal(ProviderCodeById.get(positions.at(0, 0).status), ProviderCode.OutOfRange);
+  assert.equal(ProviderCodeById.get(positions.at(1, 0).status), ProviderCode.Ok);
+  assert.ok(Math.abs(positions.at(1, 0).longitude - (2451545.5 % 360)) < 1e-9);
+  assert.equal(calls.length, 1);
+  assert.deepEqual(Array.from(calls[0].jds), [2451545.5]);
+  ctx.positions({ instants: [2400000.0], bodies: [Body.Sun] });
+  assert.equal(calls.length, 1, 'nothing it covers, so it is not asked at all');
+  ctx.dispose();
 });
 
 test('a provider that refuses a frame is completed by the SDK', () => {

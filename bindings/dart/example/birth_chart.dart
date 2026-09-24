@@ -143,7 +143,7 @@ void main() {
 
   // ── 4. The chart ────────────────────────────────────────────────────
   print('');
-  print('graha            sign               deg  nakshatra      pada');
+  print('graha             sign               deg  nakshatra      pada');
   print('─' * 62);
   for (final placed in placements) {
     final graha = ctx.intl.entity(placed.graha.fullKey);

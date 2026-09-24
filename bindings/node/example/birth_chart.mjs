@@ -152,7 +152,7 @@ const placements = chart(ctx, when.instantJdUtc);
 
 // ── 4. The chart ───────────────────────────────────────────────────────
 console.log('');
-console.log('graha            sign               deg  nakshatra      pada');
+console.log('graha             sign               deg  nakshatra      pada');
 console.log('─'.repeat(62));
 for (const placed of placements) {
   const graha = ctx.intl.entity(placed.graha);

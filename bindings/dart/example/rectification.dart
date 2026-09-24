@@ -71,7 +71,7 @@ void main() {
   );
   print(
     'place  ${place.latitudeDeg}°N ${place.longitudeDeg}°E   '
-    '${ChartKind.byId(charts.kind).key}',
+    '${ChartKind.byId(charts.kind).fullKey}',
   );
   print('');
   print('local   lagna        sign            moon         bhava');
@@ -116,8 +116,9 @@ void main() {
   print('');
   print(
     'found(one)     lagna ${single.lagnaDeg.toStringAsFixed(4)}°  '
-    'vara ${single.vara.key}  '
-    'hora lord ${single.horaLord.key}',
+    'vara ${single.vara.fullKey}  '
+    'ishtakaal ${single.timing.ghati}:${single.timing.pala}:${single.timing.vipala}  '
+    'hora lord ${single.timing.horaLord.fullKey}',
   );
   ctx.dispose();
 }

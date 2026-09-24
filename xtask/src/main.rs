@@ -191,6 +191,7 @@ mod document_schema;
 mod doshas;
 mod engine;
 mod ephemgen;
+mod examples;
 mod exercised;
 mod facade;
 mod ffi;

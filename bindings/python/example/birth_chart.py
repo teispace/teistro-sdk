@@ -229,7 +229,7 @@ def main() -> None:
                 )
                 print(
                     f"{label} JD {resolved.instant_jd_utc:.6f}"
-                    f"  time known {resolved.time_known}  {warnings}"
+                    f"  time known {str(resolved.time_known).lower()}  {warnings}"
                 )
     # MIDNIGHT is refused for a different reason, and it is this record's
     # own: the clocks jumped at midnight on this very date, so 00:00

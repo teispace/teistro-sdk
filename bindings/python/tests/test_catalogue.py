@@ -29,6 +29,23 @@ def every_enum() -> list[type[catalogue.Member]]:
 
 
 class TheCatalogue(unittest.TestCase):
+    def test_the_package_exports_every_kind_the_others_do(self) -> None:
+        # Node re-exports the whole catalogue and Dart exports its file; a
+        # hand-kept list here left forty-eight kinds out of the package or
+        # out of `__all__`, `ProviderCode` among them, so a provider could
+        # not name the status of its own cell. A name the package declares
+        # for itself is a shadow, which `check-lints` holds to one list
+        # across all three bindings (`layer-does-not-shadow-a-kind`).
+        import teistro
+
+        missing = sorted(
+            kind.__name__
+            for kind in every_enum()
+            if kind.__name__ not in teistro.__all__
+            or getattr(teistro, kind.__name__, None) is None
+        )
+        self.assertEqual(missing, [], "kinds the package root does not export")
+
     def test_there_are_as_many_enums_as_the_description_carries(self) -> None:
         # 96 since chart_layout joined the catalogue, whose eight members
         # here are its six layouts, its UNKNOWN, and the kind's own member

@@ -113,11 +113,13 @@ def main() -> None:
         )
 
         # ── The columns ───────────────────────────────────────────────
+        # Point 2 above, checked rather than printed: the type is this
+        # language's own.
         cells = sky.decoded.cells
+        assert isinstance(cells.lon, memoryview) and cells.lon.format == "d" and cells.lon.readonly
         print(
-            f"columns  lon is a {type(cells.lon).__name__}"
-            f" of {cells.lon.format!r}, {cells.lon.nbytes} bytes,"
-            f" read-only={cells.lon.readonly}"
+            f"columns  lon holds {len(cells.lon)} doubles in {cells.lon.nbytes} bytes,"
+            " a view over the blob's own bytes"
         )
         # numpy, when a caller has it, wraps this without copying:
         #     import numpy as np

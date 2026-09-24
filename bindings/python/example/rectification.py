@@ -79,7 +79,7 @@ def main() -> None:
         )
         print(
             f"place  {place.latitude_deg}°N {place.longitude_deg}°E   "
-            f"{charts.kind.key}"
+            f"{charts.kind.full_key}"
         )
         print("")
         print("local   lagna        sign            moon         bhava")
@@ -123,9 +123,9 @@ def main() -> None:
         )
         print("")
         print(
-            f"found(one)     lagna {single.lagna_deg:.4f}°  "
-            f"vara {single.vara.key}  "
-            f"hora lord {single.hora_lord.key}"
+            f"found(one)     lagna {single.lagna_deg:.4f}°  vara {single.vara.full_key}  "
+            f"ishtakaal {single.timing.ghati}:{single.timing.pala}:{single.timing.vipala}  "
+            f"hora lord {single.timing.hora_lord.full_key}"
         )
 
 

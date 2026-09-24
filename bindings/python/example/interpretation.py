@@ -128,23 +128,24 @@ def main() -> None:
             # print, so a consumer can group a plan by rule.
             for item in readings:
                 said = ctx.intl.render(item["key"], item["params"])
-                print(f"  {item['params']['rule']}: {said.text}")
+                fallback = "  (fallback)" if said.is_fallback else ""
+                print(f"  {item['params']['rule']}: {said.text}{fallback}")
 
         # ── What it does not say, and what it refuses ──────────────────
         lagna = any("LAGNA" in json.dumps(item["params"]) for item in placements)
-        print(f"\nthe lagna is in the placements: {lagna}")
+        print(f"\nthe lagna is in the placements: {str(lagna).lower()}")
         # The Shadbala says whether a graha reaches its required rupas; no
         # locale says it, so the plan does not either.
         strong = any("strong" in json.dumps(item["params"]) for item in weights)
-        print(f'a strength item claims "strong": {strong}')
+        print(f'a strength item claims "strong": {str(strong).lower()}')
         # A bhava knows its sign, its cusps and its class; no locale says
         # any of them, so the houses plan says the lord and stops there.
         signed = any("rashi" in json.dumps(item["params"]) for item in ruled)
-        print(f"a houses item claims a sign: {signed}")
+        print(f"a houses item claims a sign: {str(signed).lower()}")
         # A position crosses as a number: the degree signs a reader sees
         # are the locale's rendering, never a string the composer wrote.
         angled = any("\u00b0" in json.dumps(item["params"]) for item in degrees)
-        print(f"a position item carries a rendered angle: {angled}")
+        print(f"a position item carries a rendered angle: {str(angled).lower()}")
 
         try:
             ctx.chart.found(
@@ -154,7 +155,8 @@ def main() -> None:
                 interpret={"readings": True},
             )
         except TeistroError as error:
-            print(f"refused  {error.field}: {error}")
+            print(f"refused  {error.field}: {error.message}")
+            print(f"hint     {error.hint}")
 
 
 if __name__ == "__main__":
