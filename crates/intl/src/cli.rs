@@ -603,7 +603,7 @@ pub fn build_packs(
                 continue;
             }
             let bytes = pack::build(locale, name)?;
-            std::fs::write(out.join(format!("{}.{name}.tpack", locale.tag)), &bytes)?;
+            std::fs::write(out.join(pack::file_name(&locale.tag, name)), &bytes)?;
             sizes.push(PackSize {
                 locale: locale.tag.clone(),
                 namespace: name.clone(),

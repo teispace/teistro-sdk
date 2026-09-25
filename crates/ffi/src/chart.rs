@@ -2208,7 +2208,7 @@ impl ClaimColumns {
 }
 
 impl AnnualColumns {
-    fn push(&mut self, year: &AnnualYear) -> Result<(), Error> {
+    fn push(&mut self, year: &teistro::AnnualChart) -> Result<(), Error> {
         let bearers = &year.bearers;
         self.lagnas.push(year.lagna_deg);
         self.daylight.push(u8::from(bearers.by_day));
@@ -2310,7 +2310,7 @@ fn sub_sub(bala: teistro::Bala) -> i32 {
 }
 
 impl PraveshaColumns {
-    fn of(varsha: &[ChartVarsha]) -> Result<PraveshaColumns, Error> {
+    fn of(varsha: &[teistro::Varsha]) -> Result<PraveshaColumns, Error> {
         let mut counts = Vec::with_capacity(varsha.len());
         let mut years = Vec::new();
         let mut jds = Vec::new();
@@ -2839,7 +2839,7 @@ pub struct Composed<'a> {
     pub plans: &'a str,
     /// Every chart's annual charts and its own sahams, in the batch's
     /// order (`annual-chart.md`); empty when none were asked for.
-    pub praveshas: &'a [ChartVarsha],
+    pub praveshas: &'a [teistro::Varsha],
 }
 
 /// counts saying so.
@@ -3041,10 +3041,6 @@ pub unsafe extern "C" fn ts_chart_layout_row(
 /// argument itself something unreadable, and that refusal names it.
 const INTERPRET: &str = "interpret";
 
-/// The name a refusal gives a chart request's annual charts, as
-/// [`INTERPRET`] (`varsha.through`, not `varsha_json.through`).
-const VARSHA: &str = "varsha";
-
 /// The name a refusal gives a chart request's rule set, as [`INTERPRET`]
 /// (`rules.rules[0]`, not `rules_json.rules[0]`).
 const RULES: &str = "rules";
@@ -3062,274 +3058,6 @@ unsafe fn plan_request_of(interpret_json: *const c_char) -> Result<PlanRequest, 
         return Ok(PlanRequest::default());
     };
     PlanRequest::from_json(text).map_err(|error| error.under(INTERPRET))
-}
-
-/// What a request's `varsha_json` asks for, or none for null.
-///
-/// A record rather than two scalar fields on the request, because the
-/// annual chart grows: the month and sixty-hour charts are the same search
-/// with a step, and a field added to an object is not a field added to a
-/// C struct.
-#[derive(serde::Serialize, serde::Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "camelCase")]
-pub(crate) struct VarshaRequest {
-    /// Which longitude the Sun returns to; the tradition's by default.
-    #[serde(default)]
-    pub(crate) reading: teistro::tajika::Reading,
-    /// The last year of life wanted, 1 to 200.
-    pub(crate) through: u16,
-    /// Where the Muntha stands inside the sign it has reached; the
-    /// source's own reading by default (crux C107).
-    #[serde(default)]
-    pub(crate) muntha: teistro::MunthaDegree,
-    /// Where each year's own chart is cast, when the caller wants the
-    /// charts and not only their instants; absent, none is founded and
-    /// the answer is the instants and the Muntha, as it always was.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub(crate) place: Option<AnnualPlace>,
-    /// The readings the year lord's chain parts on, where authorities
-    /// differ; the source's own by default (crux C106).
-    #[serde(default)]
-    pub(crate) varshesha: teistro::VarsheshaRules,
-    /// The matters each year's sixteen Tajika yogas are judged for;
-    /// absent, none is (`03-design/tajika-yogas.md`, "Crossing the
-    /// boundary"). Needs `place`, since the yogas are read from the
-    /// year's own chart.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub(crate) matters: Option<Asked<teistro::House>>,
-    /// The readings the sixteen part on, where the source leaves a
-    /// choice; its own by default.
-    #[serde(default)]
-    pub(crate) yogas: teistro::YogaRules,
-    /// The sahams each year's chart is read for; absent, none is
-    /// (`03-design/tajika-sahams.md`). Needs `place`, since a saham is
-    /// read from the year's own chart.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub(crate) sahams: Option<Asked<teistro::Saham>>,
-    /// The readings the sahams part on — when a sign is added, where a
-    /// house stands, Roga's formula; the source's own by default.
-    #[serde(default)]
-    pub(crate) saham_rules: teistro::SahamRules,
-    /// The readings a saham's strength parts on; the chapter's by default.
-    #[serde(default)]
-    pub(crate) saham_strength: StrengthReadings,
-    /// The Harsha bala's reading of Venus's house of joy.
-    #[serde(default)]
-    pub(crate) harsha_rules: teistro::HarshaRules,
-    /// The annual dashas each year is divided by; absent, none is
-    /// (`03-design/annual-dashas.md`). Needs `place`, since a year's
-    /// dasha opens at its own chart and the Patyayini is read from it.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub(crate) dashas: Option<Asked<teistro::catalogue::DashaSystem>>,
-    /// The readings the annual dashas part on — the clock, the balance,
-    /// the birth period, the depth; the sources' own by default.
-    #[serde(default)]
-    pub(crate) dasha_rules: teistro::AnnualDashaRules,
-}
-
-impl VarshaRequest {
-    /// Every reading a saham's strength is judged under, assembled from
-    /// the request's three records.
-    fn strength_rules(&self) -> teistro::SahamStrengthRules {
-        teistro::SahamStrengthRules {
-            sahams: self.saham_rules,
-            harsha: self.harsha_rules,
-            natures: self.saham_strength.natures,
-            friendship: self.saham_strength.friendship,
-            weak_below: self.saham_strength.weak_below,
-        }
-    }
-}
-
-/// `varsha_json.sahamStrength`: the readings a saham's strength parts on
-/// that are its own, the sahams' and the Harsha bala's having records of
-/// their own beside it.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
-pub(crate) struct StrengthReadings {
-    /// Which planets are benefic and malefic.
-    pub(crate) natures: teistro::SahamNatures,
-    /// Whose friendship "friend" and "inimical" read.
-    pub(crate) friendship: teistro::Friendship,
-    /// The Vishwa bala below which a saham's lord is weak, sub-sub units.
-    pub(crate) weak_below: teistro::Bala,
-}
-
-impl Default for StrengthReadings {
-    fn default() -> StrengthReadings {
-        let rules = teistro::SahamStrengthRules::default();
-        StrengthReadings {
-            natures: rules.natures,
-            friendship: rules.friendship,
-            weak_below: rules.weak_below,
-        }
-    }
-}
-
-/// What a request asks about: `"all"`, or these by name in the caller's
-/// own order — the matters the sixteen yogas are judged for, and the
-/// sahams a year is read for.
-///
-/// `"all"` is a word the caller writes and not a default, because every
-/// member a year is a cost a caller asking about one did not ask to pay.
-/// A member named twice is refused, because it is a mistake and never a
-/// request.
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum Asked<T> {
-    /// Every member, in the catalogue's order.
-    All,
-    /// These, in this order.
-    These(Vec<T>),
-}
-
-/// A member a request may ask about by name, and how the wire names it.
-pub(crate) trait Askable: Copy + PartialEq + 'static {
-    /// How the wire writes one: a house's number, a saham's key.
-    type Wire: serde::de::DeserializeOwned + serde::Serialize;
-    /// Every member, in the order `"all"` answers them.
-    const ALL: &'static [Self];
-    /// The field's two shapes, as a refusal says them.
-    const SHAPES: &'static str;
-    /// The field's name, as a refusal says it.
-    const FIELD: &'static str;
-    /// What a refusal calls one before the wire's own spelling of it.
-    const NOUN: &'static str;
-    /// The member the wire named, or why it names none.
-    fn read(wire: Self::Wire) -> Result<Self, String>;
-    /// The member as the wire writes it.
-    fn wire(self) -> Self::Wire;
-}
-
-impl Askable for teistro::House {
-    type Wire = u8;
-    const ALL: &'static [Self] = &teistro::House::ALL;
-    const SHAPES: &'static str = "\"all\", or a list of house numbers 1 to 12";
-    const FIELD: &'static str = "matters";
-    const NOUN: &'static str = "house ";
-
-    fn read(number: u8) -> Result<Self, String> {
-        teistro::House::try_new(number).map_err(|why| why.message)
-    }
-
-    fn wire(self) -> u8 {
-        self.get()
-    }
-}
-
-impl Askable for teistro::Saham {
-    type Wire = teistro::Saham;
-    const ALL: &'static [Self] = &teistro::Saham::ALL;
-    const SHAPES: &'static str = "\"all\", or a list of saham keys such as \"punya\"";
-    const FIELD: &'static str = "sahams";
-    const NOUN: &'static str = "saham ";
-
-    fn read(saham: teistro::Saham) -> Result<Self, String> {
-        Ok(saham)
-    }
-
-    fn wire(self) -> teistro::Saham {
-        self
-    }
-}
-
-/// An annual dasha is named by its catalogue key, bare (`"MUDDA"`) or
-/// full (`"dasha_system.MUDDA"`): the full key is what every binding reads
-/// a system back as, so a caller can hand back what it was given, and the
-/// bare one is what the Rust key and the natal settings spell.
-impl Askable for teistro::catalogue::DashaSystem {
-    type Wire = String;
-    const ALL: &'static [Self] = &teistro::tajika::ANNUAL_DASHAS;
-    const SHAPES: &'static str = "\"all\", or a list of annual dasha keys: \"dasha_system.PATYAYINI\", \"dasha_system.MUDDA\", \"dasha_system.VARSHA_YOGINI\", with or without the kind";
-    const FIELD: &'static str = "dashas";
-    const NOUN: &'static str = "dasha ";
-
-    fn read(key: String) -> Result<Self, String> {
-        let bare = key
-            .strip_prefix(Self::KIND.name())
-            .and_then(|rest| rest.strip_prefix('.'))
-            .unwrap_or(&key);
-        let system = Self::from_key(bare).ok_or_else(|| {
-            teistro_core::catalogue::UnknownKey::in_kind::<Self>(bare).to_string()
-        })?;
-        if teistro::tajika::ANNUAL_DASHAS.contains(&system) {
-            Ok(system)
-        } else {
-            Err(format!(
-                "{key} is not an annual dasha; the annual dashas are {}",
-                Self::SHAPES
-            ))
-        }
-    }
-
-    fn wire(self) -> String {
-        self.full_key().to_owned()
-    }
-}
-
-impl<T: Askable> Asked<T> {
-    /// The members asked about, in the order they are answered.
-    pub(crate) fn members(&self) -> &[T] {
-        match self {
-            Asked::All => T::ALL,
-            Asked::These(these) => these,
-        }
-    }
-}
-
-impl<T: Askable> serde::Serialize for Asked<T> {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        match self {
-            Asked::All => serializer.serialize_str("all"),
-            Asked::These(these) => serializer.collect_seq(these.iter().map(|one| one.wire())),
-        }
-    }
-}
-
-impl<'de, T: Askable> serde::Deserialize<'de> for Asked<T> {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        struct Shapes<T>(std::marker::PhantomData<T>);
-        impl<'de, T: Askable> serde::de::Visitor<'de> for Shapes<T> {
-            type Value = Asked<T>;
-
-            fn expecting(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                out.write_str(T::SHAPES)
-            }
-
-            fn visit_str<E: serde::de::Error>(self, word: &str) -> Result<Asked<T>, E> {
-                if word == "all" {
-                    Ok(Asked::All)
-                } else {
-                    Err(E::custom(format!(
-                        "{} are {}, not \"{word}\"",
-                        T::FIELD,
-                        T::SHAPES
-                    )))
-                }
-            }
-
-            fn visit_seq<A: serde::de::SeqAccess<'de>>(
-                self,
-                mut seq: A,
-            ) -> Result<Asked<T>, A::Error> {
-                use serde::de::Error as _;
-                let mut these: Vec<T> = Vec::new();
-                while let Some(wire) = seq.next_element::<T::Wire>()? {
-                    let named = format!(
-                        "{}{}",
-                        T::NOUN,
-                        serde_json::to_string(&wire).unwrap_or_default()
-                    );
-                    let one = T::read(wire).map_err(A::Error::custom)?;
-                    if these.contains(&one) {
-                        return Err(A::Error::custom(format!("{named} is asked twice")));
-                    }
-                    these.push(one);
-                }
-                Ok(Asked::These(these))
-            }
-        }
-        deserializer.deserialize_any(Shapes(std::marker::PhantomData))
-    }
 }
 
 /// Which step of the year lord's chain decided it
@@ -3852,241 +3580,20 @@ impl From<teistro::Chosen> for TsVarsheshaChosen {
     }
 }
 
-/// Where a year's chart is cast (`03-design/muntha.md`, "Where a year's
-/// chart is cast").
-///
-/// **The birthplace or a residence**, and the SDK decides neither for
-/// anyone: the schools differ, and the one Tajika text read casts every
-/// chart it works "for Bombay (the place of birth of the native)" without
-/// stating a rule. So `"birth"` is a word a caller writes, not a default
-/// a caller receives.
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub(crate) enum AnnualPlace {
-    /// The birth chart's own place and clock.
-    Birth,
-    /// Somewhere else, under its own clock.
-    At {
-        /// Where.
-        place: teistro::quantity::Place,
-        /// The clock kept there.
-        offset: teistro::UtcOffset,
-    },
-}
-
-/// The words `varsha_json.place` is written in, other than `"birth"`.
-#[derive(serde::Serialize, serde::Deserialize)]
-#[serde(deny_unknown_fields, rename_all = "camelCase")]
-struct Residence {
-    latitude_deg: f64,
-    longitude_deg: f64,
-    #[serde(default)]
-    altitude_m: f64,
-    utc_offset_seconds: i32,
-}
-
-/// What a caller is told when `place` is neither of its two shapes.
-const PLACE_SHAPES: &str = "\"birth\", or {latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds}";
-
-impl serde::Serialize for AnnualPlace {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        match self {
-            AnnualPlace::Birth => serializer.serialize_str("birth"),
-            AnnualPlace::At { place, offset } => Residence {
-                latitude_deg: place.latitude.get(),
-                longitude_deg: place.longitude.get(),
-                altitude_m: place.altitude.get(),
-                utc_offset_seconds: offset.seconds(),
-            }
-            .serialize(serializer),
-        }
-    }
-}
-
-impl<'de> serde::Deserialize<'de> for AnnualPlace {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        struct Shapes;
-        impl<'de> serde::de::Visitor<'de> for Shapes {
-            type Value = AnnualPlace;
-
-            fn expecting(&self, out: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                write!(out, "{PLACE_SHAPES}")
-            }
-
-            fn visit_str<E: serde::de::Error>(self, word: &str) -> Result<AnnualPlace, E> {
-                if word == "birth" {
-                    Ok(AnnualPlace::Birth)
-                } else {
-                    Err(E::custom(format!(
-                        "a place is {PLACE_SHAPES}, not \"{word}\""
-                    )))
-                }
-            }
-
-            fn visit_map<M: serde::de::MapAccess<'de>>(
-                self,
-                map: M,
-            ) -> Result<AnnualPlace, M::Error> {
-                use serde::de::Error as _;
-                let at: Residence = serde::Deserialize::deserialize(
-                    serde::de::value::MapAccessDeserializer::new(map),
-                )?;
-                let refused = |why: String| M::Error::custom(why);
-                let place = teistro::quantity::Place::new(
-                    teistro::quantity::Latitude::try_new(at.latitude_deg)
-                        .map_err(|why| refused(format!("latitudeDeg: {why}")))?,
-                    teistro::quantity::Longitude::try_new(at.longitude_deg)
-                        .map_err(|why| refused(format!("longitudeDeg: {why}")))?,
-                    teistro::quantity::Altitude::try_new(at.altitude_m)
-                        .map_err(|why| refused(format!("altitudeM: {why}")))?,
-                );
-                let offset = teistro::UtcOffset::try_from_seconds(at.utc_offset_seconds)
-                    .map_err(|why| refused(format!("utcOffsetSeconds: {why}")))?;
-                Ok(AnnualPlace::At { place, offset })
-            }
-        }
-        deserializer.deserialize_any(Shapes)
-    }
-}
-
-/// One annual chart's instant and the Muntha standing at it, with the
-/// year's own chart when a place was asked for.
-///
-/// They travel together because they are answered together: the Muntha
-/// is the return's own year count progressed over the birth's lagna, and
-/// the office-bearers are read from the birth and the chart founded at
-/// that instant, so a second pass to fetch either would be a second chance
-/// to disagree about which year it is (`03-design/muntha.md`).
-#[derive(Clone, Debug)]
-pub struct Year {
-    /// The instant, and which year of the birth it opens.
-    pub pravesha: teistro::Pravesha,
-    /// The Muntha standing at it, progressed by that year's own count.
-    pub muntha: teistro::Muntha,
-    /// The year's own chart, read down to what Tajika reads from it; none
-    /// unless `varsha_json.place` asked for the charts.
-    pub annual: Option<AnnualYear>,
-}
-
-/// What a year's own chart says, for the office-bearers and whoever reads
-/// the chart after them.
-#[derive(Clone, Debug)]
-pub struct AnnualYear {
-    /// The annual chart's lagna, sidereal degrees.
-    pub lagna_deg: f64,
-    /// The five office-bearers, and whether the year opened by day.
-    pub bearers: teistro::OfficeBearers,
-    /// The lord of the year, with every claim it was chosen over.
-    pub year_lord: teistro::Varshesha,
-    /// The pairs of that chart that make a yoga: an Ithasala or an
-    /// Ishrafa. The pairs that make none are the rest of the
-    /// twenty-one, and a Rust caller has `sdk.chart().drishtis` for them.
-    pub yogas: Vec<teistro::Between>,
-    /// Which of the seven are retrograde and which combust: what the
-    /// matters were judged on, reported so an answer can be read without
-    /// the call that made it.
-    pub states: teistro::AnnualStates,
-    /// The sixteen yogas for each matter `varsha_json.matters` asked
-    /// about, in its order; empty when it asked about none.
-    pub matters: Vec<teistro::YearYogas>,
-    /// Each saham `varsha_json.sahams` asked for, in its order, with its
-    /// strength under the year's own lord; empty when it asked for none.
-    pub sahams: Vec<teistro::SahamStrength>,
-    /// The seven's Harsha bala in this year's chart.
-    pub harsha: [teistro::Harsha; 7],
-    /// Each annual dasha `varsha_json.dashas` asked for, in its order,
-    /// under `varsha_json.dashaRules`; empty when it asked for none.
-    pub dashas: Vec<teistro::AnnualDasha>,
-}
-
-/// One chart's answer to `varsha_json`: its years, and its own sahams.
-#[derive(Clone, Debug, Default)]
-pub struct ChartVarsha {
-    /// The years, each with its chart when a place was asked for.
-    pub years: Vec<Year>,
-    /// The birth chart's own sahams, with their strength, when
-    /// `varsha_json.sahams` asked; the source reads a year's beside them.
-    pub natal_sahams: Vec<teistro::SahamStrength>,
-}
-
-/// One field of the varsha record read on its own, under its own path, so
-/// a refusal names `varsha.<field>` — the field the caller wrote —
-/// where the strict reader, handed the whole record, could only name the
-/// record. Removed from `given`, so the record's own read does not see it.
-fn take_field<T: serde::Serialize + serde::de::DeserializeOwned>(
-    given: &mut serde_json::Value,
-    field: &str,
-) -> Result<Option<T>, Error> {
-    given
-        .as_object_mut()
-        .and_then(|fields| fields.remove(field))
-        .map(|value| teistro_core::strict::read_value::<T>(&value, &format!("{VARSHA}.{field}")))
-        .transpose()
-}
-
-/// The annual charts a request's `varsha_json` asks for, none for null; a
-/// refusal is named from the request's root, `varsha.through`.
+/// The annual charts a request's `varsha_json` asks for, none for null; the
+/// façade reads and checks the record ([`teistro::VarshaRequest::from_json`]),
+/// naming a refusal from its root, `varsha.through`.
 ///
 /// # Safety
 ///
 /// `varsha_json` null or a NUL-terminated string.
-unsafe fn varsha_request_of(varsha_json: *const c_char) -> Result<Option<VarshaRequest>, Error> {
+unsafe fn varsha_request_of(
+    varsha_json: *const c_char,
+) -> Result<Option<teistro::VarshaRequest>, Error> {
     // SAFETY: the caller's contract.
-    let text = unsafe { optional_text(varsha_json, "varsha_json") }?;
-    let Some(text) = text else {
-        return Ok(None);
-    };
-    let mut given: serde_json::Value = teistro_core::strict::read(text, VARSHA)?;
-    let place = take_field::<AnnualPlace>(&mut given, "place")?;
-    let matters = take_field::<Asked<teistro::House>>(&mut given, "matters")?;
-    let sahams = take_field::<Asked<teistro::Saham>>(&mut given, "sahams")?;
-    let saham_rules = take_field::<teistro::SahamRules>(&mut given, "sahamRules")?;
-    let dashas = take_field::<Asked<teistro::catalogue::DashaSystem>>(&mut given, "dashas")?;
-    let dasha_rules = take_field::<teistro::AnnualDashaRules>(&mut given, "dashaRules")?;
-    let mut asked: VarshaRequest = teistro_core::strict::read_value(&given, VARSHA)?;
-    asked.place = place;
-    asked.matters = matters;
-    asked.sahams = sahams;
-    asked.saham_rules = saham_rules.unwrap_or_default();
-    asked.dashas = dashas;
-    asked.dasha_rules = dasha_rules.unwrap_or_default();
-    // The matters and the annual dashas are read from each year's own
-    // chart, so they need a place, and a request for either without one
-    // is refused by the field that asked. The sahams do not, since a
-    // birth chart holds sahams of its own and without a place those are
-    // what is answered.
-    if asked.place.is_none() {
-        let needs_a_chart = [
-            ("matters", asked.matters.is_some(), "the sixteen yogas are"),
-            ("dashas", asked.dashas.is_some(), "an annual dasha is"),
-        ];
-        if let Some((field, _, what)) = needs_a_chart.iter().find(|(_, asked, _)| *asked) {
-            return Err(Error::invalid_arg(format!(
-                "{what} read from each year's own chart, and no chart is founded without a place"
-            ))
-            .with_field(format!("{VARSHA}.{field}"))
-            .with_hint(format!("add {VARSHA}.place: \"birth\", or a residence")));
-        }
-    }
-    asked
-        .dasha_rules
-        .clock
-        .check()
-        .map_err(|error| error.with_field(format!("{VARSHA}.dashaRules.clock")))?;
-    // Checked here, where the caller's own casing is known, so the refusal
-    // names the key they wrote rather than the Rust field behind it.
-    asked.yogas.check().map_err(|error| {
-        let field = if error.field() == Some("strong_from") {
-            "yogas.strongFrom"
-        } else {
-            "yogas"
-        };
-        error.with_field(format!("{VARSHA}.{field}"))
-    })?;
-    // The year is checked here as well as inside, so a caller learns it
-    // from the field they wrote rather than from a later refusal naming
-    // `through` with no path to it.
-    teistro::tajika::years(asked.through).map_err(|error| error.under(VARSHA))?;
-    Ok(Some(asked))
+    unsafe { optional_text(varsha_json, "varsha_json") }?
+        .map(teistro::VarshaRequest::from_json)
+        .transpose()
 }
 
 impl GrahaColumns {
@@ -4147,7 +3654,7 @@ impl Sections {
         documents: &[Document],
         graha_count: usize,
         registered: &teistro::dasha::DashaSystems,
-        praveshas: &[ChartVarsha],
+        praveshas: &[teistro::Varsha],
     ) -> Result<Sections, Error> {
         Ok(Sections {
             vargas: VargaColumns::of(documents, graha_count)?,
@@ -4189,17 +3696,16 @@ fn where_and_when(asked: &TsChartRequest) -> Result<(Place, ChartKind, UtcOffset
     Ok((place, kind, clock))
 }
 
-/// Every chart's annual-chart instants, empty when none were asked for.
+/// Every chart's annual charts, empty when none were asked for.
 ///
-/// Computed here rather than in `encode` because it needs the context: a
-/// return is a search over the provider, and `encode` has only the
-/// documents.
+/// Composed by the façade ([`teistro::ChartArea::varsha`]), one birth at a
+/// time; a refusal says which chart of the batch it was refused for.
 fn praveshas_of(
     sdk: &teistro::Context,
     documents: &[Document],
     birth_clock: teistro::UtcOffset,
-    asked: Option<&VarshaRequest>,
-) -> Result<Vec<ChartVarsha>, Error> {
+    asked: Option<&teistro::VarshaRequest>,
+) -> Result<Vec<teistro::Varsha>, Error> {
     let Some(asked) = asked else {
         return Ok(Vec::new());
     };
@@ -4208,122 +3714,10 @@ fn praveshas_of(
         .enumerate()
         .map(|(at, document)| {
             sdk.chart()
-                .praveshas(document, asked.reading, asked.through)
-                .and_then(|found| {
-                    found
-                        .into_iter()
-                        .map(|pravesha| {
-                            // The Muntha is progressed by the years the
-                            // return *completes*, which is exactly what
-                            // this field counts.
-                            let muntha =
-                                sdk.chart().muntha(document, pravesha.year, asked.muntha)?;
-                            let annual = asked
-                                .place
-                                .map(|place| {
-                                    annual_year(sdk, document, birth_clock, place, asked, pravesha)
-                                })
-                                .transpose()?;
-                            Ok(Year {
-                                pravesha,
-                                muntha,
-                                annual,
-                            })
-                        })
-                        .collect::<Result<Vec<Year>, Error>>()
-                })
-                .and_then(|years| {
-                    // The birth's own sahams, which have no year lord.
-                    let natal_sahams = match &asked.sahams {
-                        Some(sahams) => sdk.chart().saham_strength_with_rules(
-                            document,
-                            sahams.members(),
-                            None,
-                            asked.strength_rules(),
-                        )?,
-                        None => Vec::new(),
-                    };
-                    Ok(ChartVarsha {
-                        years,
-                        natal_sahams,
-                    })
-                })
-                // A refusal names the request field the caller wrote and
-                // the chart it was refused for, so a batch says which one.
-                .map_err(|error| error.under(VARSHA).with_hint(format!("chart {at}")))
+                .varsha(document, birth_clock, asked)
+                .map_err(|error| error.with_hint(format!("chart {at}")))
         })
         .collect()
-}
-
-/// A year's own chart, founded where the caller said and read down to what
-/// Tajika reads from it.
-///
-/// Founded with a bare request — the foundation and nothing else — because
-/// the batch's own sections (vargas, dashas, drawings) were asked of the
-/// births, and a year's chart asked for them too would cost each year a
-/// whole reading nobody requested.
-fn annual_year(
-    sdk: &teistro::Context,
-    birth: &Document,
-    birth_clock: teistro::UtcOffset,
-    place: AnnualPlace,
-    asked: &VarshaRequest,
-    pravesha: teistro::Pravesha,
-) -> Result<AnnualYear, Error> {
-    let request = match place {
-        AnnualPlace::Birth => ChartRequest::at(birth.foundation.place, birth_clock),
-        AnnualPlace::At { place, offset } => ChartRequest::at(place, offset),
-    };
-    let annual = sdk.chart().reading(pravesha.at, &request)?.value;
-    let bearers = sdk.chart().office_bearers(birth, &annual, pravesha.year)?;
-    let year_lord = sdk
-        .chart()
-        .varshesha(birth, &annual, pravesha.year, asked.varshesha)?;
-    let yogas = sdk
-        .chart()
-        .drishtis(&annual)?
-        .into_iter()
-        .filter(|pair| pair.yoga.is_some())
-        .collect();
-    let matters = match &asked.matters {
-        Some(matters) => sdk
-            .chart()
-            .tajika_yogas_many(&annual, matters.members(), asked.yogas)?,
-        None => Vec::new(),
-    };
-    let sahams = match &asked.sahams {
-        Some(sahams) => sdk.chart().saham_strength_with_rules(
-            &annual,
-            sahams.members(),
-            Some(year_lord.graha),
-            asked.strength_rules(),
-        )?,
-        None => Vec::new(),
-    };
-    let harsha = sdk.chart().harsha_with_rules(&annual, asked.harsha_rules)?;
-    // One call for every system asked, so the Sun is read over the year
-    // once however many divide it.
-    let dashas = match &asked.dashas {
-        Some(dashas) => sdk.chart().annual_dashas(
-            birth,
-            &annual,
-            pravesha.year,
-            dashas.members(),
-            asked.dasha_rules,
-        )?,
-        None => Vec::new(),
-    };
-    Ok(AnnualYear {
-        lagna_deg: annual.foundation.lagna_deg,
-        bearers,
-        year_lord,
-        yogas,
-        states: sdk.chart().annual_states(&annual)?,
-        matters,
-        sahams,
-        harsha,
-        dashas,
-    })
 }
 
 /// The rule set a request's `rules_json` names, or none for null; a refusal is

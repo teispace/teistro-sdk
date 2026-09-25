@@ -244,6 +244,26 @@ pub enum StrongClause {
 }
 
 impl StrongClause {
+    /// The member's key, as serde writes it and every binding reads it
+    /// back: `LORD_EXALTED`.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            StrongClause::LordExalted => "LORD_EXALTED",
+            StrongClause::LordOwnSign => "LORD_OWN_SIGN",
+            StrongClause::LordOwnHudda => "LORD_OWN_HUDDA",
+            StrongClause::LordOwnDrekkana => "LORD_OWN_DREKKANA",
+            StrongClause::LordOwnNavamsha => "LORD_OWN_NAVAMSHA",
+            StrongClause::LordInFriendsSign => "LORD_IN_FRIENDS_SIGN",
+            StrongClause::WithFriend => "WITH_FRIEND",
+            StrongClause::WithBenefic => "WITH_BENEFIC",
+            StrongClause::WithYearLord => "WITH_YEAR_LORD",
+            StrongClause::LordConjoins => "LORD_CONJOINS",
+            StrongClause::LordAspectsSaham => "LORD_ASPECTS_SAHAM",
+            StrongClause::LordAspectsLagna => "LORD_ASPECTS_LAGNA",
+        }
+    }
+
     /// Every clause, in the source's order.
     pub const ALL: [StrongClause; 12] = [
         StrongClause::LordExalted,
@@ -298,6 +318,19 @@ pub enum WeakClause {
 }
 
 impl WeakClause {
+    /// The member's key, as serde writes it and every binding reads it
+    /// back: `LORD_WEAK_VISHWA`.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            WeakClause::LordWeakVishwa => "LORD_WEAK_VISHWA",
+            WeakClause::LordLacksHarsha => "LORD_LACKS_HARSHA",
+            WeakClause::LordApart => "LORD_APART",
+            WeakClause::WithEnemy => "WITH_ENEMY",
+            WeakClause::WithMalefic => "WITH_MALEFIC",
+        }
+    }
+
     /// Every clause, in the source's order.
     pub const ALL: [WeakClause; 5] = [
         WeakClause::LordWeakVishwa,

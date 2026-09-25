@@ -135,10 +135,23 @@ impl<'a> InterpretArea<'a> {
     /// # Errors
     ///
     /// A document a rule cannot read: one without its graha states, naming
-    /// the section to ask for ([`RuleInputs::of`]).
+    /// the section to ask for ([`RuleInputs::of`]); and one without its
+    /// panchanga, whose limbs this says — refused rather than said without
+    /// them, since a plan missing half its subjects reads as a chart the
+    /// corpus has nothing to say of.
     pub fn phala(self, document: &Document) -> Result<Plan, Error> {
+        // The states first, as every composer over `RuleInputs` refuses a
+        // bare document for those.
+        let inputs = RuleInputs::of(document)?;
+        if document.panchanga.is_none() {
+            return Err(Error::invalid_arg(
+                "the document carries no panchanga, whose limbs the phala composer says; ask \
+                 for it with `ChartRequest::with_panchanga`",
+            )
+            .with_field("panchanga"));
+        }
         let engine = self.context.locale_engine();
-        Ok(phala(&RuleInputs::of(document)?.chart, &*engine))
+        Ok(phala(&inputs.chart, &*engine))
     }
 
     /// Each bhava's strength in virupas, the first house first.

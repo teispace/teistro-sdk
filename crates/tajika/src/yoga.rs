@@ -93,6 +93,30 @@ pub enum YearYoga {
 }
 
 impl YearYoga {
+    /// The member's key, as serde writes it and every binding reads it
+    /// back: `IKABALA`.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            YearYoga::Ikabala => "IKABALA",
+            YearYoga::Induvara => "INDUVARA",
+            YearYoga::Ithasala => "ITHASALA",
+            YearYoga::Ishrafa => "ISHRAFA",
+            YearYoga::Nakta => "NAKTA",
+            YearYoga::Yamaya => "YAMAYA",
+            YearYoga::Manau => "MANAU",
+            YearYoga::Kamboola => "KAMBOOLA",
+            YearYoga::GairiKamboola => "GAIRI_KAMBOOLA",
+            YearYoga::Khallasara => "KHALLASARA",
+            YearYoga::Rudda => "RUDDA",
+            YearYoga::DuhphaliKuttha => "DUHPHALI_KUTTHA",
+            YearYoga::DutthotthaDavira => "DUTTHOTTHA_DAVIRA",
+            YearYoga::Tambira => "TAMBIRA",
+            YearYoga::Kuttha => "KUTTHA",
+            YearYoga::Durapha => "DURAPHA",
+        }
+    }
+
     /// All sixteen, in the source's own table order.
     pub const ALL: [YearYoga; 16] = [
         YearYoga::Ikabala,

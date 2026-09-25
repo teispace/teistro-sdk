@@ -129,6 +129,10 @@ name = "vimshopaka"
 required-features = ["builtin-ephemeris"]
 
 [[example]]
+name = "annual_chart"
+required-features = ["builtin-ephemeris"]
+
+[[example]]
 name = "almanac"
 required-features = ["builtin-ephemeris"]
 

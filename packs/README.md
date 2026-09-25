@@ -51,6 +51,12 @@ cargo run -p teistro-intl --bin teistro-intl -- \
 a locale instead. The same command over `packs/states` builds the other
 corpus.
 
+The `phala` and `readings` examples, in Rust and every binding, read
+`target/packs/readings` and `target/packs/states`, or the directory
+`TEISTRO_PACKS` names; `cargo xtask check-parity` builds both there before
+it runs any example, with the same builder and the same file names
+(`teistro_intl::pack::file_name`) as the command above.
+
 ## Loading one
 
 The bytes are the whole interface — a file beside your binary, a download,
