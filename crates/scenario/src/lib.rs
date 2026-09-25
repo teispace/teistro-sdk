@@ -36,6 +36,13 @@
 //! timeline makes per pixel, so the instruction count watches the budget
 //! `09-performance-architecture.md` sets it (`crates/dasha/benches` times
 //! it).
+//!
+//! The rows counted over the twenty-eight nakshatras with Abhijit are a
+//! section of their own, **dashas-28**, and not more rows in `dashas`. The
+//! benchmark gate compares a section with itself on the base commit, so
+//! a row added to a section reads as that section's code getting slower:
+//! adding the two to `dashas` read as 46% more instructions for a kernel
+//! whose cost per dasha had not moved. A new section is reported as new.
 
 use teistro_astro::ayanamsha::{self, Basis};
 use teistro_astro::delta_t::{DeltaTModel, delta_t};
@@ -58,8 +65,8 @@ use teistro_core::settings::{
 use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::{
-    ASHTOTTARI_BPHS, Birth, Dasha, KalachakraDasha, KalachakraRules, RASHI_ROWS, ROWS, RashiChart,
-    RashiDasha, Rules as DashaRules, Timeline,
+    ASHTOTTARI_BPHS, Birth, Chain, Dasha, KalachakraDasha, KalachakraRules, RASHI_ROWS, ROWS,
+    RashiChart, RashiDasha, Rules as DashaRules, Timeline, UduRow, Wheel,
 };
 use teistro_geometry::{Body, Placements, Point, place, rows};
 use teistro_panchanga::Almanac;
@@ -96,7 +103,7 @@ impl Section {
 }
 
 /// The sections in the order every report lists them.
-pub const SECTIONS: [&str; 8] = [
+pub const SECTIONS: [&str; 9] = [
     "calendar",
     "astro",
     "houses",
@@ -105,6 +112,7 @@ pub const SECTIONS: [&str; 8] = [
     "geometry",
     "render",
     "dashas",
+    "dashas-28",
 ];
 
 /// One section by name, or `None` when nothing is called that.
@@ -119,6 +127,7 @@ pub fn section(name: &str) -> Option<Section> {
         "geometry" => Some(geometry()),
         "render" => Some(render()),
         "dashas" => Some(dashas()),
+        "dashas-28" => Some(dashas_28()),
         _ => None,
     }
 }
@@ -497,49 +506,69 @@ fn panchanga() -> Section {
     section
 }
 
+/// The Moons both dasha sections are seeded from, spread round the zodiac.
+const MOONS: [f64; 4] = [3.7, 101.25, 221.786_980_828_370_36, 347.9];
+
+/// The birth both dasha sections count from.
+const DASHA_BIRTH_JD: f64 = 2_447_995.489_583_333_5;
+
+/// The rules every nakshatra-seeded row is walked under.
+const DASHA_RULES: DashaRules = DashaRules {
+    balance: Balance::Spatial,
+    year_length: YearLength::Julian36525,
+    birth_period: BirthPeriod::Compressed,
+    after_cycle: AfterCycle::Repeat,
+    seed_overflow: SeedOverflow::WrapToStart,
+    ashtottari_grouping: AshtottariGrouping::ThreeEach,
+};
+
+/// A birth with the Moon at `moon` degrees.
+fn dasha_birth(moon: f64) -> Option<Birth> {
+    Some(Birth {
+        instant: JulianDay::literal(DASHA_BIRTH_JD),
+        moon: Nas::from_degrees(Degrees::try_new(moon).ok()?),
+        moon_span: None,
+    })
+}
+
+/// Walks a timeline's chain at depth five at instants over three
+/// centuries, pushing each period's lord and bounds.
+fn push_chains(section: &mut Section, timeline: impl Fn(JulianDay<Utc>, Depth) -> Chain) {
+    let Ok(depth) = Depth::try_new(5) else {
+        return;
+    };
+    for i in 0..300 {
+        let at = JulianDay::literal(DASHA_BIRTH_JD + f64::from(i) * 365.25 + 0.371 * f64::from(i));
+        for period in timeline(at, depth).iter() {
+            section.push_int(i64::from(period.lord as u16));
+            section.push(period.interval.from.get());
+            section.push(period.interval.to.get());
+        }
+    }
+}
+
+/// The nakshatra-seeded rows counted round `wheel`, as each section
+/// walks them.
+fn rows_on(wheel: Wheel) -> impl Iterator<Item = &'static UduRow> {
+    ROWS.iter()
+        .chain([&ASHTOTTARI_BPHS])
+        .filter(move |row| row.wheel == wheel)
+}
+
 /// The dashas: the chain at depth five, at instants over three centuries,
-/// for every shipped row of every kernel, from Moons spread round the
-/// zodiac; each period's lord and bounds.
+/// for every shipped row on the twenty-seven nakshatras, the Kalachakra
+/// and every sign-based row, from Moons spread round the zodiac; each
+/// period's lord and bounds.
+///
+/// The rows counted over the twenty-eight with Abhijit are
+/// [`dashas_28`]'s, so a change to either wheel is priced on its own and
+/// neither section's work grows when the other gains a row.
 fn dashas() -> Section {
     let mut section = Section::new("dashas");
-    let Ok(depth) = Depth::try_new(5) else {
-        return section;
-    };
-    let rules = DashaRules {
-        balance: Balance::Spatial,
-        year_length: YearLength::Julian36525,
-        birth_period: BirthPeriod::Compressed,
-        after_cycle: AfterCycle::Repeat,
-        seed_overflow: SeedOverflow::WrapToStart,
-        ashtottari_grouping: AshtottariGrouping::ThreeEach,
-    };
-    let birth_jd = 2_447_995.489_583_333_5;
-    let instants: Vec<JulianDay<Utc>> = (0..300)
-        .map(|i| JulianDay::literal(birth_jd + f64::from(i) * 365.25 + 0.371 * f64::from(i)))
-        .collect();
-    let mut chains = |timeline: &dyn Fn(JulianDay<Utc>) -> teistro_dasha::Chain| {
-        for instant in &instants {
-            for period in timeline(*instant).iter() {
-                section.push_int(i64::from(period.lord as u16));
-                section.push(period.interval.from.get());
-                section.push(period.interval.to.get());
-            }
-        }
-    };
-    // The last inside Abhijit, which only the twenty-eight-nakshatra rows
-    // count as its own segment.
-    for moon in [3.7, 101.25, 221.786_980_828_370_36, 347.9, 278.0] {
-        let Ok(degrees) = Degrees::try_new(moon) else {
-            continue;
-        };
-        let birth = Birth {
-            instant: JulianDay::literal(birth_jd),
-            moon: Nas::from_degrees(degrees),
-            moon_span: None,
-        };
-        for row in ROWS.iter().chain([&ASHTOTTARI_BPHS]) {
-            if let Ok(dasha) = Dasha::new(row, &birth, rules) {
-                chains(&|at| dasha.at(at, depth));
+    for birth in MOONS.into_iter().filter_map(dasha_birth) {
+        for row in rows_on(Wheel::Nakshatras) {
+            if let Ok(dasha) = Dasha::new(row, &birth, DASHA_RULES) {
+                push_chains(&mut section, |at, depth| dasha.at(at, depth));
             }
         }
         let kalachakra = KalachakraDasha::new(
@@ -554,7 +583,7 @@ fn dashas() -> Section {
             },
         );
         if let Ok(dasha) = kalachakra {
-            chains(&|at| dasha.at(at, depth));
+            push_chains(&mut section, |at, depth| dasha.at(at, depth));
         }
     }
     let chart = RashiChart {
@@ -578,13 +607,28 @@ fn dashas() -> Section {
         let made = RashiDasha::new(
             row,
             &chart,
-            JulianDay::literal(birth_jd),
+            JulianDay::literal(DASHA_BIRTH_JD),
             YearLength::Julian36525,
             AfterCycle::Repeat,
             teistro_dasha::RashiRules::RECORDING_ENGINE,
         );
         if let Ok(dasha) = made {
-            chains(&|at| dasha.at(at, depth));
+            push_chains(&mut section, |at, depth| dasha.at(at, depth));
+        }
+    }
+    section
+}
+
+/// The rows counted over the twenty-eight nakshatras with Abhijit
+/// (`03-design/dasha-kernels.md`, "The 28-nakshatra wheel"), from the
+/// same Moons and one inside Abhijit, the segment only this wheel has.
+fn dashas_28() -> Section {
+    let mut section = Section::new("dashas-28");
+    for birth in MOONS.into_iter().chain([278.0]).filter_map(dasha_birth) {
+        for row in rows_on(Wheel::WithAbhijit) {
+            if let Ok(dasha) = Dasha::new(row, &birth, DASHA_RULES) {
+                push_chains(&mut section, |at, depth| dasha.at(at, depth));
+            }
         }
     }
     section
