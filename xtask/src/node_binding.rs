@@ -17,6 +17,16 @@ use crate::platform::Platform;
 
 const FIXTURES: &str = "target/tsrb";
 const TESTS: &str = "bindings/node/test/";
+/// The Node binding's suite, as `node --test` is given it from the
+/// package's own directory (and from the staged wasm package, which has
+/// the same layout).
+///
+/// **A pattern, not a directory.** Node 20 read `test/` as "the tests in
+/// it"; Node 22, the floor, reads it as a module to run and fails with
+/// `Cannot find module`. A glob, which `node --test` expands itself on 22
+/// and later, means the same on every supported Node, and `npm test` in
+/// `package.json` is held to it by a test.
+pub(crate) const SUITE: &str = "test/*.test.mjs";
 /// Where the examples live. **Every** file there is run, so a scenario
 /// added to the directory is gated by having been added.
 /// Where the pinned TypeScript compiler and the strict consumer live.
@@ -112,9 +122,9 @@ pub(crate) fn check(root: &Path) -> i32 {
     let outcome = blob_fixtures(root, &fixtures).and_then(|()| {
         step(
             Command::new("node")
-                .args(["--test", TESTS])
+                .args(["--test", SUITE])
                 .env("TEISTRO_FIXTURES", &fixtures)
-                .current_dir(root),
+                .current_dir(root.join("bindings/node")),
             &format!("{TESTS} decodes what the library produced"),
             &format!("{TESTS} did not pass"),
         )
@@ -168,4 +178,21 @@ pub(crate) fn check(root: &Path) -> i32 {
         &format!("{ADAPTER_TSCONFIG} does not type-check"),
     );
     i32::from(adapter.is_err())
+}
+
+#[cfg(test)]
+mod tests {
+    /// `npm test` runs the suite the gates run, spelt the way every
+    /// supported Node reads it.
+    #[test]
+    fn npm_test_runs_the_suite_the_gates_run() {
+        let manifest =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../bindings/node/package.json");
+        let text = std::fs::read_to_string(manifest).unwrap_or_default();
+        let json: serde_json::Value = serde_json::from_str(&text).unwrap_or_default();
+        assert_eq!(
+            json["scripts"]["test"],
+            format!("node --test {}", super::SUITE)
+        );
+    }
 }
