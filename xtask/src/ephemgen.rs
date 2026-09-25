@@ -758,6 +758,29 @@ fn module(emitted: &[Emitted]) -> String {
     // enabled wins instead, which makes every combination build and
     // makes `--all-features` mean `full` rather than an error.
     let names: Vec<&str> = emitted.iter().map(|tier| tier.tier).collect();
+    // And none enabled is refused by name: a dependent that turns the
+    // crate on and names no tier gets a sentence rather than an error
+    // about a missing `PLANETS`.
+    let any: Vec<String> = names
+        .iter()
+        .map(|name| format!("feature = \"{name}\""))
+        .collect();
+    let spelled: Vec<String> = names.iter().map(|name| format!("`{name}`")).collect();
+    let prefixed: Vec<String> = names
+        .iter()
+        .map(|name| format!("`builtin-{name}`"))
+        .collect();
+    let _ = writeln!(
+        out,
+        "// Said by name rather than left to a missing item: a dependent that turns\n\
+         // on the built-in and names no tier gets this sentence, not an error about\n\
+         // `PLANETS`.\n\
+         #[cfg(not(any({})))]\n\
+         compile_error!(\"teistro-ephemeris-builtin needs a tier: enable {} (on the façade and the boundary, {})\");\n",
+        any.join(", "),
+        or_list(&spelled),
+        or_list(&prefixed)
+    );
     for (index, tier) in emitted.iter().enumerate() {
         let richer: Vec<String> = names
             .iter()
@@ -795,4 +818,13 @@ fn module(emitted: &[Emitted]) -> String {
          }};"
     );
     out
+}
+
+/// Items as English offers them: `a`, `a or b`, `a, b or c`.
+fn or_list(items: &[String]) -> String {
+    match items {
+        [] => String::new(),
+        [only] => only.clone(),
+        [rest @ .., last] => format!("{} or {last}", rest.join(", ")),
+    }
 }

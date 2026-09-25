@@ -13,6 +13,12 @@
 //! | `standard` | 3e-8 au, 0.6190″, 15860 terms | 0.01, 0.7131″, 1139 terms | 531 of 640 KB | 763 KB |
 //! | `full` | whole theory, 0.0000″, 39198 terms | whole theory, 0.0000″, 37872 terms | 2408 of 4096 KB | 4231 KB |
 
+// Said by name rather than left to a missing item: a dependent that turns
+// on the built-in and names no tier gets this sentence, not an error about
+// `PLANETS`.
+#[cfg(not(any(feature = "compact", feature = "standard", feature = "full")))]
+compile_error!("teistro-ephemeris-builtin needs a tier: enable `compact`, `standard` or `full` (on the façade and the boundary, `builtin-compact`, `builtin-standard` or `builtin-full`)");
+
 #[cfg(all(feature = "compact", not(feature = "standard"), not(feature = "full")))]
 #[rustfmt::skip]
 mod compact;
