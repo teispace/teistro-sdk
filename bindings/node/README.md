@@ -87,7 +87,7 @@ the explicit form rather than the only one (ADR-0007). `using ctx = new
 Context(...)` calls it for you where the runtime has explicit resource
 management — that is **Node 24 and above**, so this package's own tests
 use `try`/`finally` instead and so should anything that has to run on the
-Node 20 this package supports.
+Node 22 this package supports.
 
 ## Which ephemeris
 

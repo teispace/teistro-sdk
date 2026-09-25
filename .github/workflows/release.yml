@@ -92,7 +92,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - uses: dart-lang/setup-dart@v1
       - name: What this platform ships
         run: cargo xtask package ${{ matrix.platform }}
@@ -132,7 +132,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - name: The wasm package, staged
         run: cargo xtask package wasm
       - name: The package through the Node suite, a browser and an install
@@ -206,7 +206,7 @@ jobs:
           path: dist
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           registry-url: https://registry.npmjs.org
       - uses: dart-lang/setup-dart@v1
       - uses: actions/setup-python@v5

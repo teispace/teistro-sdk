@@ -24,7 +24,7 @@
     "@teistro/sdk": "0.0.0"
   },
   "engines": {
-    "node": ">=20.11"
+    "node": ">=22"
   },
   "repository": {
     "type": "git",

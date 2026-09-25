@@ -60,7 +60,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - uses: dart-lang/setup-dart@v1
       - uses: actions/setup-python@v5
         with:
@@ -107,7 +107,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - name: The wasm package passes the Node suite unchanged, and in a browser as in Node
         run: cargo xtask check-wasm
 
