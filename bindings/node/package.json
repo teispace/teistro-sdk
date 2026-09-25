@@ -44,7 +44,7 @@
     "NOTICE"
   ],
   "scripts": {
-    "test": "node --test test/"
+    "test": "node --test test/*.test.mjs"
   },
   "optionalDependencies": {
     "@teistro/sdk-linux-x64": "0.0.0",

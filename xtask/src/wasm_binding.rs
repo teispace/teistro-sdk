@@ -465,7 +465,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         .and_then(|()| {
             step(
                 Command::new("node")
-                    .args(["--test", "test/"])
+                    .args(["--test", crate::node_binding::SUITE])
                     .env("TEISTRO_FIXTURES", root.join(FIXTURES))
                     // A plugin is a shared library, which a wasm module
                     // cannot open (ADR-0029); the suite's plugin tests

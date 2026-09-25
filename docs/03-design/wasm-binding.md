@@ -358,7 +358,13 @@ Rejected:
    Workers' free plan allows. Wrangler needs Node 22, and Node 20 had left
    support in April, so the packages' floor rose to 22 before their first
    release, and `node-is-tested-at-its-floor` now holds every package's
-   `engines` and every workflow's Node to one value.
+   `engines` and every workflow's Node to one value. The first run at the
+   new floor failed every bindings row: Node 20 read `node --test test/`
+   as the tests in a directory, and Node 22 reads it as a module to load.
+   The suite is a glob now (`test/*.test.mjs`), one constant for
+   `check-node`, `check-wasm` and `npm test`, and it is run locally on
+   Node 22 before CI is asked; a green run on a newer Node proved nothing
+   about the floor.
 
 ## 7. What is left
 
