@@ -332,9 +332,25 @@ Rejected:
 - **ADR-0005's module profiles**, for every binding at once; the wasm
   package then ships one module per profile and the size file gains an
   entry each.
-- **`wasm-opt`** (Binaryen), which typically takes a further tenth off a
-  wasm-bindgen module. It is one more pinned tool, so it waits until a
-  measurement says the tenth is worth it.
+- **`wasm-opt`** (Binaryen) is **measured and declined** (2026-09-25,
+  version 133, on the 4,760,590-byte compact module). It takes 6–7% off
+  the raw module and makes the **gzipped** one 6–7% larger, which is what
+  a browser downloads:
+
+  | Level | Bytes | Gzipped |
+  | --- | ---: | ---: |
+  | none | 4,760,590 | 1,313,475 |
+  | `-Os` | 4,450,152 | 1,396,229 |
+  | `-Oz` | 4,420,722 | 1,400,042 |
+  | `-O3` | 4,491,544 | 1,404,436 |
+
+  The code section shrinks 9% and compresses 10% worse (830 KB to 910 KB
+  gzipped); the data section, the ephemeris tables, barely moves. A timed
+  run of 140,000 positions put every level inside the unoptimised
+  module's own run-to-run spread (7.6 s to 9.7 s), so no speed was
+  shown to pay for a pinned tool and 7–18 s a build. Measure again if
+  the module's code comes to outweigh its compressibility, and by the
+  gzipped size.
 - **Edge runtimes** that forbid `fetch` of the module's own URL
   (Cloudflare Workers import a module instead); a loader for them is a
   third `#native` condition, `workerd`.
