@@ -153,10 +153,8 @@ impl Path {
                     }
                     for piece in 1..CURVE_PIECES {
                         let angle = begin + sweep * f64::from(piece) / f64::from(CURVE_PIECES);
-                        points.push(Point::new(
-                            centre.x + radius * math::cos(angle),
-                            centre.y + radius * math::sin(angle),
-                        ));
+                        let (sin, cos) = math::sin_cos(angle);
+                        points.push(Point::new(centre.x + radius * cos, centre.y + radius * sin));
                     }
                     points.push(to);
                 }
