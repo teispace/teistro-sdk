@@ -8,7 +8,7 @@
     reason = "the C boundary: every block carries a SAFETY comment"
 )]
 
-use teistro_astro::completion::{Completed, Completion, CompletionError};
+use teistro_astro::completion::{Completed, CompletionError};
 use teistro_core::Status;
 use teistro_core::envelope::{Provenance, canonical_json};
 use teistro_core::error::Error;
@@ -46,9 +46,7 @@ pub unsafe extern "C" fn ts_positions(
         // SAFETY: non-null; the caller promises a readable request whose
         // arrays hold the counts it states.
         let decoded = unsafe { (*request).decode() }?;
-        let provider = ctx.provider().ok_or_else(teistro::Ephemeris::missing)?;
-        let completion =
-            Completion::new(provider, ctx.settings().provider.overrides, ctx.delta_t());
+        let completion = ctx.sdk().completion()?;
         let completed = match completion.positions(&decoded.request()) {
             Ok(completed) => completed,
             Err(error) => {

@@ -93,7 +93,13 @@ pub struct GrahaPosition {
     pub latitude_deg: f64,
     /// Distance, astronomical units; zero for a point that has none.
     pub distance_au: f64,
-    /// Motion in longitude, degrees a day; negative when retrograde.
+    /// Motion in the chart's longitude, degrees a day; negative when
+    /// retrograde. In a sidereal chart it is the tropical motion less the
+    /// ayanamsha's own rate, so it is the rate of [`longitude_deg`] and
+    /// not of [`tropical_deg`].
+    ///
+    /// [`longitude_deg`]: GrahaPosition::longitude_deg
+    /// [`tropical_deg`]: GrahaPosition::tropical_deg
     pub speed_deg_per_day: f64,
     /// Where it falls under the chart's chalit.
     pub placement: Placement,
@@ -305,6 +311,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let ut1 = JulianDay::<Ut1>::literal(instant.get());
         let (tt, _) = tt_of(ut1, self.delta_t)?;
         let zodiac = ChartZodiac::of(self.settings(), tt, self.precession, self.delta_t)?;
+        let turning =
+            ChartZodiac::rate_deg_per_day(self.settings(), tt, self.precession, self.delta_t)?;
         let day = chart_day(
             self.model,
             self.calendar,
@@ -346,7 +354,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let day_lagna_deg = self.lagna(day_ut1, day_tt, place, &zodiac)?;
 
         let timing = self.timing(&day, instant)?;
-        let (grahas, steps) = self.grahas(ut1, place, &zodiac, &houses, &chalit)?;
+        let (grahas, steps) = self.grahas(ut1, place, (&zodiac, turning), &houses, &chalit)?;
         Ok(ChartFoundation {
             instant,
             place: *place,
@@ -579,12 +587,13 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         angles_in(ut1, tt, place, zodiac, self.settings().houses.polar_policy)
     }
 
-    /// The grahas, placed.
+    /// The grahas, placed, each moving in the chart's zodiac: the zodiac
+    /// comes with its rate against the tropical one.
     fn grahas(
         &self,
         ut1: JulianDay<Ut1>,
         place: &Place,
-        zodiac: &ChartZodiac,
+        (zodiac, turning): (&ChartZodiac, f64),
         houses: &Bhavas,
         chalit: &Bhavas,
     ) -> Result<(Vec<GrahaPosition>, Vec<String>), Error> {
@@ -599,7 +608,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             self.settings().provider.overrides,
             self.delta_t,
         )
-        .with_precession(self.precession);
+        .with_precession(self.precession)
+        // A graha's speed is reported, so it is the derivative of its
+        // place rather than a rate carried through the steps.
+        .deriving_speeds();
         let completed: Completed = completion.positions(&request)?;
 
         let mut grahas = Vec::with_capacity(bodies.len() + 1);
@@ -623,7 +635,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 cell.lon,
                 cell.lat,
                 cell.dist,
-                cell.lon_speed,
+                cell.lon_speed - turning,
                 zodiac,
                 houses,
                 chalit,
@@ -631,13 +643,14 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         }
 
         // Ketu: Rahu's opposite point in the same frame, with the same
-        // speed and no distance of its own (entry 6).
+        // speed (entry 6) and the same distance: the node line's, which an
+        // engine gives both ends of and a chart must not report as none.
         if let Some(rahu) = grahas.iter().find(|g| g.graha == Graha::Rahu).copied() {
             grahas.push(Self::position(
                 Graha::Ketu,
                 rahu.tropical_deg + 180.0,
                 -rahu.latitude_deg,
-                0.0,
+                rahu.distance_au,
                 rahu.speed_deg_per_day,
                 zodiac,
                 houses,

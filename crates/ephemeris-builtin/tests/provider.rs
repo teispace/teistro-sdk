@@ -456,18 +456,50 @@ fn the_mean_node_regresses_once_in_a_saros_and_a_bit() {
 /// conformance corpus records it under every centre, and a provider that
 /// answered a nominal distance beside one would be dressing a constant up
 /// as a measurement.
+///
+/// It lies on the ecliptic **of date**, which is the plane it is an
+/// intersection with: carried into that frame its latitude is nothing.
+/// In J2000's it has the latitude the two ecliptics' tilt gives it, and a
+/// node given none there came back to the ecliptic of date 0.017 degrees
+/// off it in 1800, which the conformance corpus found at every tier.
 #[test]
-fn the_nodes_and_the_mean_apogee_are_directions() {
+fn the_nodes_and_the_mean_apogee_are_directions_on_the_ecliptic_of_date() {
     let bodies = [Body::MeanNode, Body::TrueNode, Body::MeanApogee];
     let columns = ask(&INSTANTS, &bodies);
+    let provider = Builtin::new();
+    let of_date = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    )
+    .positions(&PositionRequest::new(
+        &INSTANTS,
+        TimeScale::Tt,
+        &bodies,
+        Frame {
+            equinox: Equinox::OfDate,
+            ..frame()
+        },
+    ))
+    .unwrap_or_else(|error| panic!("carried to the equinox of date: {error}"))
+    .columns;
     for jd_index in 0..INSTANTS.len() {
         for (body_index, body) in bodies.iter().enumerate() {
             let cell = columns.at(jd_index, body_index).expect("a cell");
             assert!(!body.is_placed(), "{body:?} is not somewhere");
-            assert_eq!(cell.lat, 0.0, "{body:?} is on the ecliptic by construction");
             assert_eq!(cell.dist, 0.0, "{body:?} has no distance to report");
             assert_eq!(cell.lat_speed, 0.0);
             assert!((0.0..360.0).contains(&cell.lon), "{body:?} at {}", cell.lon);
+            let dated = of_date.at(jd_index, body_index).expect("a cell of date");
+            // The theory carries its direction back by its own precession
+            // and the SDK forward by Vondrák's, and the two part by 1.4
+            // milliarcseconds in 1858: nothing like the 0.017 degrees a
+            // dropped latitude cost.
+            assert!(
+                dated.lat.abs() < 1e-6,
+                "{body:?} is on the ecliptic of date, not {}",
+                dated.lat
+            );
         }
     }
 }

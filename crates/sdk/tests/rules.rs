@@ -346,12 +346,17 @@ fn every_corpus_chart_the_sdk_computes_reads_as_the_corpus_recorded_it() {
     // Aries, where the recording engine's Sun stands 0.2″ short of it and the
     // built-in ephemeris's past it. So the Sun's sign and dignity differ, and
     // the Sun, 29.99999° into Pisces for the engine and the least advanced
-    // graha for the SDK, reorders all seven karakas. No field differs
-    // anywhere else. Twelve points and fourteen with Gulika and Mandi, and
-    // neither special-lagna figure on any chart.
+    // graha for the SDK, reorders all seven karakas. One retrograde flag
+    // differs too: c053 is cast within hours of Mercury's station, where
+    // the engine's speed is -1.4e-6 degrees a day and the SDK's, the
+    // derivative of its standard-tier places, +1.5e-5 — a sign inside any
+    // tier's accuracy, which the corpus's own edge policy reports rather
+    // than fails. No field differs anywhere else. Twelve points and
+    // fourteen with Gulika and Mandi, and neither special-lagna figure on
+    // any chart.
     assert_eq!(
         (charts, points, differ, special),
-        (51, 51 * 14, [1, 1, 0, 0, 7], [0, 0])
+        (51, 51 * 14, [1, 1, 1, 0, 7], [0, 0])
     );
     let decided: Vec<(&str, usize)> = decided
         .iter()

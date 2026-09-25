@@ -303,15 +303,23 @@ fn on_the_ecliptic(longitude: f64) -> [f64; 3] {
 /// A node or an apogee: a **direction**, not a place.
 ///
 /// The port is explicit that nothing sits at a node — it is where the
-/// Moon's orbit crosses the ecliptic — so the latitude is zero by
-/// construction and the distance is zero rather than a nominal figure
-/// dressed up as a measurement. No observer sees such a point displaced,
-/// which is why the conformance corpus records them identically under
-/// every centre.
-fn direction_cell(longitude: f64, rate: f64, source: Source) -> Cell {
+/// Moon's orbit crosses the ecliptic — so the distance is zero rather than
+/// a nominal figure dressed up as a measurement. No observer sees such a
+/// point displaced, which is why the conformance corpus records them
+/// identically under every centre.
+///
+/// Its latitude is zero **in the ecliptic of date**, the plane it is an
+/// intersection with, and this cell is in J2000's. So the whole direction
+/// is kept, latitude and all: the two ecliptics are tilted by some 47
+/// arcseconds a century, and a node carried back with its J2000 latitude
+/// dropped reached the ecliptic of date again 0.017 degrees off it in
+/// 1800 and 0.04 in 2399, which the conformance corpus's recorded charts
+/// found at every tier alike.
+fn direction_cell(direction: [f64; 3], rate: f64, source: Source) -> Cell {
+    let [x, y, z] = direction;
     Cell {
-        lon: longitude.to_degrees().rem_euclid(360.0),
-        lat: 0.0,
+        lon: y.atan2(x).to_degrees().rem_euclid(360.0),
+        lat: z.atan2(x.hypot(y)).to_degrees(),
         dist: 0.0,
         lon_speed: rate.to_degrees(),
         lat_speed: 0.0,
@@ -375,9 +383,8 @@ fn cross(a: [f64; 3], b: [f64; 3]) -> [f64; 3] {
 /// wrong plane put this 2044 arcseconds out by 2400 — against a mean node
 /// from the same crate that was right to 0.985, because the mean node
 /// already took its longitude of date and carried the direction back.
-fn true_node_longitude(position: [f64; 3], velocity: [f64; 3], pole: [f64; 3]) -> f64 {
-    let node = cross(pole, cross(position, velocity));
-    node[1].atan2(node[0])
+fn true_node(position: [f64; 3], velocity: [f64; 3], pole: [f64; 3]) -> [f64; 3] {
+    cross(pole, cross(position, velocity))
 }
 
 /// The apogee of the Moon's osculating orbit: the direction of it, and
@@ -587,7 +594,7 @@ impl EphemerisProvider for Builtin {
                         // reaches J2000 by the path the Moon's own
                         // position takes.
                         let rotated = elp::to_j2000(on_the_ecliptic(longitude), dynamical);
-                        direction_cell(rotated[1].atan2(rotated[0]), rate, source)
+                        direction_cell(rotated, rate, source)
                     }
                     (Some(_), Body::TrueNode) => {
                         // The node's own motion is a wobble of about half
@@ -597,7 +604,8 @@ impl EphemerisProvider for Builtin {
                         let (position, velocity) = self.moon(dynamical);
                         let at = |jd: f64| {
                             let (p, v) = self.moon(jd);
-                            true_node_longitude(p, v, ecliptic_pole_of_date(jd))
+                            let node = true_node(p, v, ecliptic_pole_of_date(jd));
+                            node[1].atan2(node[0])
                         };
                         let before = at(dynamical - STEP);
                         let after = at(dynamical + STEP);
@@ -609,11 +617,7 @@ impl EphemerisProvider for Builtin {
                             moved += std::f64::consts::TAU;
                         }
                         direction_cell(
-                            true_node_longitude(
-                                position,
-                                velocity,
-                                ecliptic_pole_of_date(dynamical),
-                            ),
+                            true_node(position, velocity, ecliptic_pole_of_date(dynamical)),
                             moved / (2.0 * STEP),
                             source,
                         )

@@ -49,6 +49,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "crc32fast"
+version = "1.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "01a7799fd6b852db0e61728dde9a204c423b44d689dbd432522543614b490e78"
+dependencies = [
+ "cfg-if",
+]
+
+[[package]]
 name = "crypto-common"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -100,10 +109,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "displaydoc"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c6232dd377dcc64799954cbd3a9bb882e9cdc1308ccd87b1c098f1fb2eaf82a8"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.5",
+]
+
+[[package]]
+name = "equivalent"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "877a4ace8713b0bcf2a4e7eec82529c029f1d0619886d18145fea96c3ffe5c0f"
+
+[[package]]
 name = "find-msvc-tools"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e0f1c7c3a72c66fd80abe965175f7523475c0489a87d3ff9d6e8c87d87a9d2d"
+
+[[package]]
+name = "fixed_decimal"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79c3c892f121fff406e5dd6b28c1b30096b95111c30701a899d4f2b18da6d1bd"
+dependencies = [
+ "displaydoc",
+ "smallvec",
+ "writeable",
+]
+
+[[package]]
+name = "hashbrown"
+version = "0.17.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
 
 [[package]]
 name = "hybrid-array"
@@ -112,6 +155,100 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "707114b52a152fa7bdb290cd7cd5912d9467273b6d74e21b8d81aca1f8533f6b"
 dependencies = [
  "typenum",
+]
+
+[[package]]
+name = "icu_collections"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c6b649701667bbe825c3b7e6388cb521c23d88644678e83c0c4d0a621a34b43"
+dependencies = [
+ "displaydoc",
+ "potential_utf",
+ "yoke",
+ "zerofrom",
+ "zerovec",
+]
+
+[[package]]
+name = "icu_locale"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "532b11722e350ab6bf916ba6eb0efe3ee54b932666afec989465f9243fe6dd60"
+dependencies = [
+ "icu_collections",
+ "icu_locale_core",
+ "icu_locale_data",
+ "icu_provider",
+ "potential_utf",
+ "tinystr",
+ "zerovec",
+]
+
+[[package]]
+name = "icu_locale_core"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "edba7861004dd3714265b4db54a3c390e880ab658fec5f7db895fae2046b5bb6"
+dependencies = [
+ "displaydoc",
+ "litemap",
+ "serde",
+ "tinystr",
+ "writeable",
+ "zerovec",
+]
+
+[[package]]
+name = "icu_locale_data"
+version = "2.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c5f1d16b4c3a2642d3a719f18f6b06070ab0aef246a6418130c955ae08aa831"
+
+[[package]]
+name = "icu_plurals"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f9cfe49f5b1d1163cc58db451562339916a9ca5cbcaae83924d41a0bf839474"
+dependencies = [
+ "fixed_decimal",
+ "icu_locale",
+ "icu_plurals_data",
+ "icu_provider",
+ "zerovec",
+]
+
+[[package]]
+name = "icu_plurals_data"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f018a98dccf7f0eb02ba06ac0ff67d102d8ded80734724305e924de304e12ff0"
+
+[[package]]
+name = "icu_provider"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85962cf0ce02e1e0a629cc34e7ca3e373ce20dda4c4d7294bbd0bf1fdb59e614"
+dependencies = [
+ "displaydoc",
+ "icu_locale_core",
+ "serde",
+ "stable_deref_trait",
+ "writeable",
+ "yoke",
+ "zerofrom",
+ "zerotrie",
+ "zerovec",
+]
+
+[[package]]
+name = "indexmap"
+version = "2.14.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc4e190f5d26ca7051642629da2c52fc03bde85a03197c99408dcd291734c855"
+dependencies = [
+ "equivalent",
+ "hashbrown",
 ]
 
 [[package]]
@@ -170,6 +307,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
 
 [[package]]
+name = "litemap"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47d9d19d1d6efa0109d2f65ff4c85cddd50bd572e5a00127ab10987290bcefae"
+
+[[package]]
 name = "log"
 version = "0.4.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -194,6 +337,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "10ab3eb7f3becc3a1cbc4f2c6f20267996cfc1a6467a873763411b136a122715"
 dependencies = [
  "portable-atomic",
+]
+
+[[package]]
+name = "potential_utf"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d83eb9bc6d8e5cf568e7a1101d60ee05e81ed50ea106026f3d18deeb046d7661"
+dependencies = [
+ "serde_core",
+ "writeable",
+ "zerovec",
 ]
 
 [[package]]
@@ -250,11 +404,23 @@ version = "1.0.151"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c841b55ecdae098c80dcae9cf767f6f8a0c2cdb3416bbef72181df4d0fe73f14"
 dependencies = [
+ "indexmap",
  "itoa",
  "memchr",
  "serde",
  "serde_core",
  "zmij",
+]
+
+[[package]]
+name = "serde_path_to_error"
+version = "0.1.20"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10a9ff822e371bb5403e391ecd83e182e0e77ba7f6fe0160b795797109d1b457"
+dependencies = [
+ "itoa",
+ "serde",
+ "serde_core",
 ]
 
 [[package]]
@@ -273,6 +439,18 @@ name = "shlex"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f8fadd59c855ef2080decdef8ff161eb6661b86933c9d82e5ba29dc602a55aba"
+
+[[package]]
+name = "smallvec"
+version = "1.16.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f9395f0f0eee849a9b707b2f06bb92a6a422090e2123bb2ef8e87a0e61892a8e"
+
+[[package]]
+name = "stable_deref_trait"
+version = "1.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
 name = "syn"
@@ -297,6 +475,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "synstructure"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "901704edd0dfe137f1987838ee4f259e4e063c31371bdb423f7ae38ec6f77f02"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.5",
+]
+
+[[package]]
 name = "teimeris"
 version = "0.1.0"
 dependencies = [
@@ -308,6 +497,44 @@ name = "teimeris-sys"
 version = "0.1.0"
 dependencies = [
  "cc",
+]
+
+[[package]]
+name = "teistro"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-aspect",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-dasha",
+ "teistro-geometry",
+ "teistro-houses",
+ "teistro-interpret",
+ "teistro-intl",
+ "teistro-panchanga",
+ "teistro-points",
+ "teistro-port-ephemeris",
+ "teistro-render-svg",
+ "teistro-rules",
+ "teistro-serial",
+ "teistro-state",
+ "teistro-strength",
+ "teistro-tajika",
+ "teistro-time",
+ "teistro-vargas",
+]
+
+[[package]]
+name = "teistro-aspect"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-chart",
+ "teistro-core",
 ]
 
 [[package]]
@@ -331,12 +558,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-chart"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-core",
+ "teistro-port-ephemeris",
+ "teistro-time",
+]
+
+[[package]]
 name = "teistro-core"
 version = "0.0.0"
 dependencies = [
  "serde",
  "serde_json",
+ "serde_path_to_error",
  "sha2",
+]
+
+[[package]]
+name = "teistro-dasha"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-core",
 ]
 
 [[package]]
@@ -354,6 +602,7 @@ version = "0.0.0"
 dependencies = [
  "serde",
  "serde_json",
+ "teistro",
  "teistro-astro",
  "teistro-core",
  "teistro-port-ephemeris",
@@ -377,6 +626,78 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-geometry"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-vargas",
+]
+
+[[package]]
+name = "teistro-houses"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-astro",
+ "teistro-chart",
+ "teistro-core",
+]
+
+[[package]]
+name = "teistro-interpret"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-aspect",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-houses",
+ "teistro-intl",
+ "teistro-rules",
+ "teistro-state",
+ "teistro-strength",
+]
+
+[[package]]
+name = "teistro-intl"
+version = "0.0.0"
+dependencies = [
+ "crc32fast",
+ "fixed_decimal",
+ "icu_locale_core",
+ "icu_plurals",
+ "serde",
+ "serde_json",
+ "sha2",
+ "teistro-calendar",
+ "teistro-core",
+]
+
+[[package]]
+name = "teistro-panchanga"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-port-ephemeris",
+ "teistro-time",
+]
+
+[[package]]
+name = "teistro-points"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-chart",
+ "teistro-core",
+]
+
+[[package]]
 name = "teistro-port-ephemeris"
 version = "0.0.0"
 dependencies = [
@@ -395,6 +716,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-render-svg"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-core",
+ "teistro-geometry",
+]
+
+[[package]]
+name = "teistro-rules"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-aspect",
+ "teistro-core",
+ "teistro-points",
+ "teistro-state",
+]
+
+[[package]]
+name = "teistro-serial"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-aspect",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-dasha",
+ "teistro-geometry",
+ "teistro-houses",
+ "teistro-panchanga",
+ "teistro-points",
+ "teistro-state",
+ "teistro-strength",
+ "teistro-vargas",
+]
+
+[[package]]
 name = "teistro-siddhanta"
 version = "0.0.0"
 dependencies = [
@@ -402,6 +764,38 @@ dependencies = [
  "teistro-astro",
  "teistro-core",
  "teistro-port-ephemeris",
+]
+
+[[package]]
+name = "teistro-state"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-time",
+]
+
+[[package]]
+name = "teistro-strength"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-aspect",
+ "teistro-core",
+ "teistro-state",
+]
+
+[[package]]
+name = "teistro-tajika"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-astro",
+ "teistro-core",
+ "teistro-dasha",
+ "teistro-port-ephemeris",
+ "teistro-vargas",
 ]
 
 [[package]]
@@ -416,6 +810,17 @@ dependencies = [
  "teistro-core",
  "teistro-port-ephemeris",
  "teistro-port-timezone",
+]
+
+[[package]]
+name = "teistro-vargas"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-astro",
+ "teistro-chart",
+ "teistro-core",
+ "teistro-port-ephemeris",
 ]
 
 [[package]]
@@ -439,6 +844,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "tinystr"
+version = "0.8.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1e27c91459209c2986af3dcf603a5a74a4368754ce37414f59acc971167f643"
+dependencies = [
+ "displaydoc",
+ "serde_core",
+ "zerovec",
+]
+
+[[package]]
 name = "typenum"
 version = "1.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -449,6 +865,89 @@ name = "unicode-ident"
 version = "1.0.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6e4313cd5fcd3dad5cafa179702e2b244f760991f45397d14d4ebf38247da75"
+
+[[package]]
+name = "writeable"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
+
+[[package]]
+name = "yoke"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "709fe23a0424b6a435d82152b1bd3fdfb0833487d5fa90d05d42762a9891fef5"
+dependencies = [
+ "stable_deref_trait",
+ "yoke-derive",
+ "zerofrom",
+]
+
+[[package]]
+name = "yoke-derive"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33811428bee40dbceb6d545e95754741d17a6aef9a4849f0fd62e2ba4f412a78"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.5",
+ "synstructure",
+]
+
+[[package]]
+name = "zerofrom"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ec05a11813ea801ff6d75110ad09cd0824ddba17dfe17128ea0d5f68e6c5272"
+dependencies = [
+ "zerofrom-derive",
+]
+
+[[package]]
+name = "zerofrom-derive"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f75b4683f6c7f45248d4d64056a24298c6281e0993356d7d1b4a1a962ef10d4a"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.5",
+ "synstructure",
+]
+
+[[package]]
+name = "zerotrie"
+version = "0.2.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ea269c3bd32f0a32c321907a2ae912ba6f4649bb0fc764a15627e99a7095a3f"
+dependencies = [
+ "displaydoc",
+ "zerovec",
+]
+
+[[package]]
+name = "zerovec"
+version = "0.11.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb0464e17806c1d976d5cba29399c7f08e516e279e2ba493f63123b5fca67dd8"
+dependencies = [
+ "serde",
+ "yoke",
+ "zerofrom",
+ "zerovec-derive",
+]
+
+[[package]]
+name = "zerovec-derive"
+version = "0.11.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34df6fc39dbd26ddc9c10e6a2984476e13acce22e64e4487636ef494369225da"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.5",
+]
 
 [[package]]
 name = "zmij"

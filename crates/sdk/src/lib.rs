@@ -191,7 +191,7 @@ pub use teistro_intl::pack;
 // dependencies to call one operation is the thing this crate exists to
 // stop -- and the test for `positions` reached past it before these
 // were here, which is how the gap was noticed.
-pub use teistro_astro::completion::Completed;
+pub use teistro_astro::completion::{Completed, Completion};
 pub use teistro_core::time::UtcOffset;
 // And what an ephemeris of your own needs to *implement* the port, not
 // merely to call it: writing a provider is a first-class use of this
