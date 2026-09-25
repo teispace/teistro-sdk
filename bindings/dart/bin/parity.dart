@@ -521,9 +521,9 @@ void main() {
           cell.outline.segments
               .map(
                 (step) => switch (step) {
-                  QuadSegment() => 'quad',
-                  ArcSegment() => 'arc',
-                  LineSegment() => 'line',
+                  QuadSegment() => 'QUAD',
+                  ArcSegment() => 'ARC',
+                  LineSegment() => 'LINE',
                 },
               )
               .join(','),

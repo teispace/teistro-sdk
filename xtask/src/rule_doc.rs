@@ -24,8 +24,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 use std::path::Path;
 
+use teistro::ShippedRules;
 use teistro_rules::reference::{BodyRef, SignRef, Subject};
-use teistro_rules::{Condition, Rule, shipped};
+use teistro_rules::{Condition, Rule};
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, count, fill, plural, table};
@@ -36,16 +37,13 @@ const CORPUS: [&str; 2] = [
     "fixtures/baseline/doshas/rules.json",
 ];
 
-/// The shipped packs, in the order the page reports them.
+/// Every shipped pack, in the order a rule request lists them, each by the
+/// key it names it with, so a set the SDK adds is on the page unasked.
 fn packs() -> Vec<(&'static str, &'static [Rule])> {
-    vec![
-        ("nabhasas", shipped::nabhasas()),
-        ("arishtas", shipped::arishtas()),
-        ("gandantas", shipped::gandantas()),
-        ("readings", shipped::readings()),
-        ("doshas", shipped::computed_doshas()),
-        ("yogas", shipped::computed_yogas()),
-    ]
+    ShippedRules::ALL
+        .into_iter()
+        .map(|set| (set.key(), set.rules()))
+        .collect()
 }
 
 /// The corpus's own rules, which exercise eleven predicates no shipped pack
@@ -486,7 +484,10 @@ pub(crate) fn print(root: &Path, what: Option<&str>) -> i32 {
         .collect();
     let corpus = corpus(root).unwrap_or_default();
     if let Some(name) = what {
-        if let Some((_, pack)) = packs().into_iter().find(|(pack, _)| *pack == name) {
+        if let Some((_, pack)) = packs()
+            .into_iter()
+            .find(|(pack, _)| pack.eq_ignore_ascii_case(name))
+        {
             rules = pack.iter().collect();
         } else if name == "corpus" {
             rules = corpus.iter().collect();

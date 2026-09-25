@@ -101,12 +101,12 @@ pub struct TsContextOptions {
     /// `api: nullable`
     pub layouts_json: *const c_char,
     /// Dasha systems of the consumer's own, as a JSON array of definitions,
-    /// each naming the `kernel` that runs it. `"kernel": "udu"` is the
+    /// each naming the `kernel` that runs it. `"kernel": "UDU"` is the
     /// nakshatra-seeded kind: a key the catalogue does not have, its lords
     /// and their years in order, the reference nakshatra, and optionally
     /// `count`, `span`, `offset`, `repeats`, `scale`, `year_length`, `depth`
-    /// and `sources`. `"kernel": "rashi"` is the sign-based kind: a key, and
-    /// optionally `start`, `order`, `length`, `namedLord`, `strongerOf`,
+    /// and `sources`. `"kernel": "RASHI"` is the sign-based kind: a key, and
+    /// optionally `start`, `order`, `length`, `named_lord`, `stronger_of`,
     /// `year_length`, `depth` and `sources` (the document schema's
     /// `DashaDefinition`). The kernel is **stated** and never inferred from
     /// which fields are present, so a typo is refused by the field the

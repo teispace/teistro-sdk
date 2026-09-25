@@ -894,7 +894,7 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
   };
   assert.equal(ctx.chart.found(request).rules, null, 'no rules, no answers');
 
-  const answered = ctx.chart.found({ ...request, rules: { shipped: ['nabhasas'], longevity: true } }).rules;
+  const answered = ctx.chart.found({ ...request, rules: { shipped: ['NABHASAS'], longevity: true } }).rules;
   assert.ok(answered.present.length > 0);
   for (const held of answered.present) {
     assert.equal(typeof held.rule, 'string');
@@ -911,14 +911,14 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
     source: { text: 'BPHS' },
     conditions: [{ type: 'rule', key: shipped }],
   };
-  const withMine = ctx.chart.found({ ...request, rules: { shipped: ['nabhasas'], rules: [mine] } }).rules;
+  const withMine = ctx.chart.found({ ...request, rules: { shipped: ['NABHASAS'], rules: [mine] } }).rules;
   assert.ok(withMine.present.some((held) => held.rule === 'MINE'));
 
   assert.throws(
     () => ctx.chart.found({ ...request, rules: { rules: [{ key: 'X', category: 'raja' }] } }),
     (error) => error instanceof TeistroError && error.field === 'rules.rules[0]',
   );
-  assert.throws(() => ctx.chart.found({ ...request, rules: ['nabhasas'] }), /rules: expected/u);
+  assert.throws(() => ctx.chart.found({ ...request, rules: ['NABHASAS'] }), /rules: expected/u);
   ctx.dispose();
 });
 
@@ -939,7 +939,7 @@ test('plans compose in the same crossing, and render with nothing in between', (
 
   const plans = ctx.chart.found({
     ...request,
-    rules: { shipped: ['nabhasas'] },
+    rules: { shipped: ['NABHASAS'] },
     interpret: {
       placements: true,
       readings: true,
@@ -1064,7 +1064,7 @@ test('a theme writes each drawing as SVG, and a wrong one is refused by its fiel
   };
   assert.equal(ctx.chart.found(request).drawings[0].svg, undefined, 'no theme, no SVG');
 
-  const [north, wheel] = ctx.chart.found({ ...request, theme: 'dark' }).drawings;
+  const [north, wheel] = ctx.chart.found({ ...request, theme: 'DARK' }).drawings;
   assert.match(north.svg, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/u);
   assert.match(north.svg, /data-body="graha\.SUN">सू/u, 'written in the locale');
   assert.match(north.svg, /fill="#121212"/u, 'in the dark theme');
@@ -1072,7 +1072,7 @@ test('a theme writes each drawing as SVG, and a wrong one is refused by its fiel
 
   // Every field a record can name, so a key the SDK does not read fails here.
   const every = {
-    extends: 'light',
+    extends: 'LIGHT',
     style: {
       size: 600,
       background: '#fafafa',
@@ -1089,7 +1089,7 @@ test('a theme writes each drawing as SVG, and a wrong one is refused by its fiel
       line_height: 1.25,
       baseline_shift: 0.35,
     },
-    content: { body_form: 'glyph', cell_label: 'house', lagna_mark: false, retrograde_mark: null, degrees: true },
+    content: { body_form: 'GLYPH', cell_label: 'HOUSE', lagna_mark: false, retrograde_mark: null, degrees: true },
   };
   const custom = ctx.chart.found({ ...request, theme: every }).drawings[0].svg;
   assert.match(custom, /viewBox="0 0 600 600"/u);
@@ -1099,10 +1099,14 @@ test('a theme writes each drawing as SVG, and a wrong one is refused by its fiel
     () => ctx.chart.found({ ...request, theme: { style: { ink: 'black' } } }),
     (error) => error instanceof TeistroError && error.field === 'theme.style.ink',
   );
-  assert.throws(
-    () => ctx.chart.found({ ...request, theme: 'sepia' }),
-    (error) => error instanceof TeistroError && error.field === 'theme.extends',
-  );
+  // A theme is named by its key, as every other word is; the lowercase
+  // name is refused with the keys it could have been.
+  for (const name of ['sepia', 'dark']) {
+    assert.throws(
+      () => ctx.chart.found({ ...request, theme: name }),
+      (error) => error instanceof TeistroError && error.field === 'theme.extends' && /"DARK"/u.test(error.hint),
+    );
+  }
   assert.throws(() => ctx.chart.found({ ...request, theme: 7 }), /theme: expected/u);
   ctx.dispose();
 });
@@ -1116,7 +1120,8 @@ test('a layout of your own is registered, drawn by its key, and refused by its f
   const base = context();
   const row = base.chart.layout('SOUTH_INDIAN');
   assert.deepEqual(base.chart.layout(ChartLayout.SouthIndian), row, 'bare or full');
-  assert.equal(row.shape.kind, 'grid');
+  assert.equal(row.shape.kind, 'GRID');
+  assert.equal(row.shape.direction, 'CLOCKWISE', 'the words a row answers are keys');
   assert.throws(
     () => base.chart.layout('ACME_KERALA'),
     (error) => error instanceof TeistroError && error.field === 'key' && /NORTH_INDIAN/u.test(error.hint),
@@ -1136,7 +1141,7 @@ test('a layout of your own is registered, drawn by its key, and refused by its f
       { layout: ChartLayout.SouthIndian, varga: Varga.D1 },
       { layout: 'chart_layout.ACME_KERALA', varga: Varga.D1 },
     ],
-    theme: 'light',
+    theme: 'LIGHT',
   }).drawings;
   assert.equal(own.layout, 'chart_layout.ACME_KERALA');
   assert.deepEqual(own.cells, south.cells, 'the same row draws the same chart');
@@ -1159,7 +1164,7 @@ test('a layout of your own is registered, drawn by its key, and refused by its f
   assert.throws(refused([kerala, row]), field('options.layouts_json[1].key'), 'a shipped key');
   assert.throws(refused([kerala, kerala]), field('options.layouts_json[1].key'), 'a key taken twice');
   assert.throws(
-    refused([{ ...kerala, shape: { ...kerala.shape, heading: 'clockwise' } }]),
+    refused([{ ...kerala, shape: { ...kerala.shape, heading: 'CLOCKWISE' } }]),
     field('options.layouts_json[0].shape.heading'),
     'a misspelt field',
   );
@@ -1194,7 +1199,7 @@ test('a chart carries its Ashtakavarga, each graha\'s bindus and their reduction
 
 /** Vimshottari's table, under a consumer's key. */
 const VIMSHOTTARI_TWIN = {
-  kernel: 'udu',
+  kernel: 'UDU',
   key: 'ACME_VIMSHOTTARI',
   lords: [['KETU', 7], ['VENUS', 20], ['SUN', 6], ['MOON', 10], ['MARS', 7], ['RAHU', 18], ['JUPITER', 16], ['SATURN', 19], ['MERCURY', 17]]
     .map(([graha, years]) => ({ graha, years })),
@@ -1202,7 +1207,7 @@ const VIMSHOTTARI_TWIN = {
 };
 
 /** Chara's row under a consumer's key, the other kernel's twin. */
-const CHARA_TWIN = { kernel: 'rashi', key: 'ACME_CHARA' };
+const CHARA_TWIN = { kernel: 'RASHI', key: 'ACME_CHARA' };
 
 /**
  * A consumer's own dasha system crosses: registered on the context, asked for
@@ -1253,8 +1258,13 @@ test('a consumer dasha system registers, is asked for by its key and reads as it
     (error) => error instanceof TeistroError && error.field === 'options.dashas_json[0].span',
   );
   assert.throws(
-    () => context({ dashaSystems: [{ ...CHARA_TWIN, strongerOf: [1, 13] }] }),
+    () => context({ dashaSystems: [{ ...CHARA_TWIN, stronger_of: [1, 13] }] }),
     (error) => error instanceof TeistroError && error.field === 'options.dashas_json[0].stronger_of[1]',
+  );
+  // A field in another spelling is refused by name, not read as its default.
+  assert.throws(
+    () => context({ dashaSystems: [{ ...CHARA_TWIN, namedLord: 'FIRST' }] }),
+    (error) => error instanceof TeistroError && error.field === 'options.dashas_json[0].namedLord',
   );
 });
 

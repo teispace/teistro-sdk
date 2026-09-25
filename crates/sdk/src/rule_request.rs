@@ -14,7 +14,7 @@ use teistro_rules::{HouseReading, Readings, Rule, RuleResult, check_references, 
 
 /// A set of rules the kernel ships.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ShippedRules {
     /// The recording engine's doshas the kernel computes.
     Doshas,
@@ -41,6 +41,19 @@ impl ShippedRules {
         ShippedRules::Nabhasas,
     ];
 
+    /// Its key, as serde writes it and a request names it.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            ShippedRules::Doshas => "DOSHAS",
+            ShippedRules::Yogas => "YOGAS",
+            ShippedRules::Gandantas => "GANDANTAS",
+            ShippedRules::Arishtas => "ARISHTAS",
+            ShippedRules::Readings => "READINGS",
+            ShippedRules::Nabhasas => "NABHASAS",
+        }
+    }
+
     /// Its rules.
     #[must_use]
     pub fn rules(self) -> &'static [Rule] {
@@ -57,7 +70,7 @@ impl ShippedRules {
 
 /// The two named readings a request evaluates rules under.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RuleReadings {
     /// The texts' readings wherever a text settles one.
     #[default]
@@ -82,7 +95,7 @@ impl RuleReadings {
 /// ```
 /// use teistro::{RuleRequest, ShippedRules};
 ///
-/// let request = RuleRequest::from_json(r#"{"shipped": ["nabhasas"], "houses": true}"#)?;
+/// let request = RuleRequest::from_json(r#"{"shipped": ["NABHASAS"], "houses": true}"#)?;
 /// assert_eq!(request, RuleRequest::shipped([ShippedRules::Nabhasas]).with_houses());
 /// let set = request.rule_set()?;
 /// assert_eq!(set.rules(), ShippedRules::Nabhasas.rules());

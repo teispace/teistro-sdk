@@ -46,7 +46,7 @@ const chart = ctx.chart.found({
   utcOffsetSeconds: when.offsetSeconds,
   // The rules whose answers the readings composer will say. The sections
   // they read are computed whether or not they are asked for here.
-  rules: { shipped: ['nabhasas', 'arishtas'] },
+  rules: { shipped: ['NABHASAS', 'ARISHTAS'] },
   interpret: {
     placements: true,
     readings: true,

@@ -305,6 +305,7 @@ __all__ = [
     "RuleRequest",
     "RulesReading",
     "ShippedRules",
+    "ShippedTheme",
     "Theme",
     "ThemeContent",
     "ThemeRecord",
@@ -2651,10 +2652,10 @@ class UnitPointRow(TypedDict):
 
 
 class SegmentRow(TypedDict, total=False):
-    """One step of an outline: `kind` is `line`, `quad` or `arc`, with
-    `to`, and a `quad`'s `control` or an `arc`'s `centre` and `clockwise`."""
+    """One step of an outline: `kind` is `LINE`, `QUAD` or `ARC`, with
+    `to`, and a `QUAD`'s `control` or an `ARC`'s `centre` and `clockwise`."""
 
-    kind: Literal["line", "quad", "arc"]
+    kind: Literal["LINE", "QUAD", "ARC"]
     to: UnitPointRow
     control: UnitPointRow
     centre: UnitPointRow
@@ -2669,10 +2670,10 @@ class OutlineRow(TypedDict):
 
 
 class HoldsRow(TypedDict):
-    """What a grid cell always carries: `{"kind": "sign", "value": "ARIES"}`
-    or `{"kind": "house", "value": 1}`."""
+    """What a grid cell always carries: `{"kind": "SIGN", "value": "ARIES"}`
+    or `{"kind": "HOUSE", "value": 1}`."""
 
-    kind: Literal["sign", "house"]
+    kind: Literal["SIGN", "HOUSE"]
     value: Union[str, int]
 
 
@@ -2690,20 +2691,20 @@ class LayoutRingRow(TypedDict):
 
     inner: float
     outer: float
-    counts_from: Literal["lagna", "moon", "sun", "cusps", "zodiac"]
+    counts_from: Literal["LAGNA", "MOON", "SUN", "CUSPS", "ZODIAC"]
 
 
 class LayoutShapeRow(TypedDict, total=False):
-    """Twelve cells fixed in the row (`kind` `grid`: `cells`, `frame`), or
-    rings computed per chart (`kind` `radial`: `rings`, `starts_at`); both
+    """Twelve cells fixed in the row (`kind` `GRID`: `cells`, `frame`), or
+    rings computed per chart (`kind` `RADIAL`: `rings`, `starts_at`); both
     carry `direction`."""
 
-    kind: Literal["grid", "radial"]
+    kind: Literal["GRID", "RADIAL"]
     cells: List[LayoutCellRow]
     frame: List[OutlineRow]
     rings: List[LayoutRingRow]
     starts_at: int
-    direction: Literal["clockwise", "anticlockwise"]
+    direction: Literal["CLOCKWISE", "ANTICLOCKWISE"]
 
 
 class _VarshaRequestRequired(TypedDict):
@@ -3348,7 +3349,7 @@ class DashaLord(TypedDict):
 
 
 class _UduDashaDefinitionRequired(TypedDict):
-    kernel: Literal["udu"]
+    kernel: Literal["UDU"]
     key: str
     lords: List[DashaLord]
     reference: str
@@ -3361,7 +3362,7 @@ class UduDashaDefinition(_UduDashaDefinitionRequired, total=False):
     defaults to Vimshottari's shape (`03-design/dasha-kernels.md`).
 
     >>> saptaka: UduDashaDefinition = {
-    ...     "kernel": "udu",
+    ...     "kernel": "UDU",
     ...     "key": "ACME_SAPTAKA",
     ...     "lords": [{"graha": g, "years": 10} for g in ("SUN", "MOON", "MARS")],
     ...     "reference": "KRITTIKA",
@@ -3379,7 +3380,7 @@ class UduDashaDefinition(_UduDashaDefinitionRequired, total=False):
 
 
 class _RashiDashaDefinitionRequired(TypedDict):
-    kernel: Literal["rashi"]
+    kernel: Literal["RASHI"]
     key: str
 
 
@@ -3391,18 +3392,18 @@ class RashiDashaDefinition(_RashiDashaDefinitionRequired, total=False):
     (`03-design/dasha-kernels.md`).
 
     >>> sthira: RashiDashaDefinition = {
-    ...     "kernel": "rashi",
+    ...     "kernel": "RASHI",
     ...     "key": "ACME_STHIRA",
-    ...     "length": {"by_modality": {"movable": 7, "fixed": 8, "dual": 9}},
+    ...     "length": {"BY_MODALITY": {"movable": 7, "fixed": 8, "dual": 9}},
     ... }
     """
 
     sources: List[str]
-    start: Literal["LAGNA", "arudha_lagna", "navamsa_lagna"]
-    order: Literal["consecutive", "trine_groups", "drishti_chain", "leap"]
-    length: Union[str, Dict[str, object]]
-    namedLord: Literal["stronger", "first"]
-    strongerOf: List[int]
+    start: Literal["LAGNA", "ARUDHA_LAGNA", "NAVAMSA_LAGNA"]
+    order: Literal["CONSECUTIVE", "TRINE_GROUPS", "DRISHTI_CHAIN", "LEAP"]
+    length: Union[Literal["COUNT_TO_LORD", "COUNT_TO_LORD_BY_DIGNITY"], Dict[str, object]]
+    named_lord: Literal["STRONGER", "FIRST"]
+    stronger_of: List[int]
     year_length: str
     depth: int
 
@@ -3453,25 +3454,29 @@ class ThemeStyle(TypedDict, total=False):
 class ThemeContent(TypedDict, total=False):
     """What a drawing says: every field optional, over the theme it extends."""
 
-    body_form: Literal["short", "glyph"]
-    cell_label: Literal["auto", "sign_number", "sign_short", "sign_glyph", "HOUSE", "nothing"]
+    body_form: Literal["SHORT", "GLYPH"]
+    cell_label: Literal["AUTO", "SIGN_NUMBER", "SIGN_SHORT", "SIGN_GLYPH", "HOUSE", "NOTHING"]
     lagna_mark: bool
     retrograde_mark: Optional[str]
     degrees: bool
+
+
+ShippedTheme = Literal["LIGHT", "DARK"]
+"""A theme the SDK ships, by its key: dark ink on white, or light on dark."""
 
 
 class ThemeRecord(TypedDict, total=False):
     """A theme naming only what it changes, over the light theme or the
     shipped one `extends` names."""
 
-    extends: Literal["light", "dark"]
+    extends: ShippedTheme
     style: ThemeStyle
     content: ThemeContent
 
 
-Theme = Union[Literal["light", "dark"], ThemeRecord]
+Theme = Union[ShippedTheme, ThemeRecord]
 """The theme a request writes its drawings as SVG in: a shipped theme's
-name, or a record naming only what it changes."""
+key, or a record naming only what it changes."""
 
 
 def _theme_json(theme: Optional[Theme]) -> Optional[str]:
@@ -3484,12 +3489,12 @@ def _theme_json(theme: Optional[Theme]) -> Optional[str]:
         return json.dumps(theme)
     raise TeistroError(
         Status.INVALID_ARG,
-        "a theme is 'light', 'dark' or a theme record",
+        "a theme is 'LIGHT', 'DARK' or a theme record",
         field="theme",
     )
 
 
-ShippedRules = Literal["doshas", "yogas", "gandantas", "arishtas", "readings", "nabhasas"]
+ShippedRules = Literal["DOSHAS", "YOGAS", "GANDANTAS", "ARISHTAS", "READINGS", "NABHASAS"]
 """A set of rules the SDK ships."""
 
 
@@ -3500,7 +3505,7 @@ class RuleRequest(TypedDict, total=False):
 
     shipped: List[ShippedRules]
     rules: List[Mapping[str, Any]]
-    readings: Literal["texts", "recording-engine"]
+    readings: Literal["TEXTS", "RECORDING_ENGINE"]
     houses: bool
     longevity: bool
 
@@ -3983,11 +3988,14 @@ def _point(raw: Mapping[str, Any]) -> UnitPoint:
 
 def _segment(raw: Mapping[str, Any]) -> Segment:
     kind = raw["kind"]
-    if kind == "line":
+    if kind == "LINE":
         return LineSegment(to=_point(raw["to"]))
-    if kind == "quad":
+    if kind == "QUAD":
         return QuadSegment(control=_point(raw["control"]), to=_point(raw["to"]))
-    return ArcSegment(centre=_point(raw["centre"]), clockwise=bool(raw["clockwise"]), to=_point(raw["to"]))
+    if kind == "ARC":
+        return ArcSegment(centre=_point(raw["centre"]), clockwise=bool(raw["clockwise"]), to=_point(raw["to"]))
+    # A step the SDK does not write is refused, never read as an arc.
+    raise TeistroError(Status.INTERNAL, f"an outline step of kind {kind!r}", field="segments")
 
 
 def _outline(raw: Mapping[str, Any]) -> Outline:

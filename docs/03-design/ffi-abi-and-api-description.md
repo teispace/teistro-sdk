@@ -215,6 +215,54 @@ does not write. Each binding's `provenance` is that record, and
 A record's name is held against `reserved::PYTHON_BUILTINS`, which is why
 the provenance's warning is `ProvenanceWarning` in the schema.
 
+### 3.7 One spelling of a word a consumer writes
+
+A request takes what an answer gives, so a word a consumer writes is spelt
+the way every binding reads it back and every stored document holds it.
+Three kinds of word, three rules:
+
+| word | spelling | examples |
+|---|---|---|
+| a closed enum's member, and a tagged union's tag | a key, `SCREAMING_SNAKE_CASE` | `'MUDDA'`, `'NABHASAS'`, `'DARK'`, `{"kernel": "RASHI"}`, `{"BY_MODALITY": {…}}`, `{"kind": "GRID"}` |
+| a sentinel standing where a list or a record would | lowercase, deliberately | `matters: 'all'`, `place: 'birth'`, a binding's `'unknown'` |
+| a field | the record's own convention: camel case in a façade request (`utcOffsetSeconds`, `strongFrom`), snake case in a row or document (`counts_from`, `named_lord`, `year_length`) | |
+
+**A sentinel is lowercase because a key never is.** A key is
+`[A-Z][A-Z0-9_]*`, so `'all'` can never be a member's name, now or after
+the catalogue grows, and a reader tells "every one" from "this one" at a
+glance. `'unknown'` — a binding's word for a member newer than it — was
+already built on the same reasoning.
+
+**A row's fields are the document's.** A layout, a theme or a dasha
+definition is registered by a request, answered by `sdk.chart.layout` and
+held in a stored document, so it keeps the document's snake case, which is
+also what makes a row copied out of an answer register unchanged. The
+boundary reads every row strictly (`teistro_core::strict`), so a field in
+the other convention is a refusal naming its path, never a default read in
+its place.
+
+2f made the keys one spelling and held them to serde
+(`crates/ffi/tests/keys.rs`). 2i found the four request records beside
+them still serde's lowercase — a rule request's `shipped` and `readings`, a
+theme's `body_form`, `cell_label` and shipped names, a layout's `kind`,
+`direction` and `counts_from`, and a rashi dasha's `kernel`, `start`,
+`order`, `length` and `named_lord` — each round-tripping through serde, so
+no test could see it. It also found `RashiDefinition` camel-cased where the
+seeded row was not, while Node, Python and Dart each declared
+`year_length`. The strict reader refused it, so a sign-based system's own
+year was a field every binding offered and none could use. The lint
+`a-word-is-spelt-as-a-key` now reads every serde enum in the crates and
+refuses a `rename_all` other than `SCREAMING_SNAKE_CASE`. The exceptions
+are formats that are not the SDK's words, and the list fails both ways:
+- the rule format, which pack authors write in kebab case;
+- the API description's own model;
+- a pack's CLDR fields;
+- an engine manifest's words.
+
+`schema-measured.md` §8 counts the words the document schema itself
+writes, rather than the attributes in a list of crates, which is how it
+had missed two crates.
+
 ## 4. Algorithms
 
 - **Extraction.** Every source file is parsed with `syn`; public

@@ -3930,16 +3930,56 @@ on pub.dev (checked 2026-09-07).
      the content hash; `your_own_ephemeris` prints the provider stamp's
      fields rather than a serialisation of it; Node's `Chart.steps` doc
      described the positions' shape.
-2i. **The request vocabularies that are still lowercase.** 2f made one
-   spelling of every enum that crosses as a key and of every Tajika word;
-   the words a caller writes inside four other request records are
-   serde's lowercase still: a rule set's shipped names (`'nabhasas'`), a
-   theme's `body_form` and `cell_label`, a layout ring's `counts_from`
-   and `direction`, and a consumer rashi dasha's `start`, `order`,
-   `length` and `namedLord`. Measure each against what a consumer reads
-   back — a request takes what an answer gives — and respell the ones an
-   answer carries, with the sentinels (`'all'`, `'birth'`) decided
-   deliberately rather than by default.
+2i. ~~The request vocabularies that are still lowercase~~ — **done**
+   (2026-09-25). Measured against what a consumer reads back, every one
+   was carried by an answer or a stored document: a layout row is what
+   `sdk.chart.layout` answers, a drawing's outline steps come back in
+   every chart, and a consumer's dasha definition is held in the document
+   (its schema listed `arudha_lagna` and `udu` beside 571 keys). So all
+   were respelt as keys, request and answer alike:
+   - a rule request's `shipped` (`'NABHASAS'`) and `readings`
+     (`'RECORDING_ENGINE'`); `ShippedRules::key` is the one list, and
+     `rule-doc-measured.md` names the sets through it;
+   - a theme's `body_form` and `cell_label`, and the shipped themes, now
+     typed as `ShippedTheme` (`'LIGHT'`, `'DARK'`) with the refusal's
+     hint built from `ShippedTheme::ALL`;
+   - a layout's `kind`, `direction` and `counts_from`, a cell's `holds`
+     and an outline step's `kind` (`'ARC'`);
+   - a dasha definition's `kernel`, and a sign-based one's `start`,
+     `order`, `length` and `named_lord` (`{"BY_MODALITY": {…}}`).
+   **The sentinels stay lowercase, deliberately.** A key is
+   `[A-Z][A-Z0-9_]*`, so `'all'`, `'birth'` and a binding's `'unknown'`
+   can never collide with a member, now or after the catalogue grows —
+   `ffi-abi-and-api-description.md` §3.7 records the rule and why.
+   What the measuring found besides:
+   - `RashiDefinition` was **camel-cased** (`namedLord`, `yearLength`)
+     beside the seeded row's snake case, while Node, Python and Dart each
+     declared `year_length`, which the boundary's strict reader refused: a
+     sign-based system's own year was offered by every binding and usable
+     by none. Its fields are the document's snake case now, and a camel
+     field is refused by its path in all four languages.
+   - Python's unions were half-respelt by 2f's regex sweep
+     (`"LAGNA" | "arudha_lagna"`, `"HOUSE"` among lowercase members).
+   - Python and Dart decoded an outline step or a layout shape they did
+     not know as a line, an arc or a grid; each now refuses it. Dart's
+     sign-based definition took bare strings and is typed (`RashiStart`,
+     `RashiOrder`, `RashiNamedLord`, a sealed `RashiLength`).
+   - `schema-measured.md` §8 counted `rename_all` in a hand-kept list of
+     crates and missed `teistro-dasha` and `teistro-geometry`, whose
+     lowercase words were in every document it claimed held one
+     convention. It now reads the document schema's own `enum`s and
+     `const`s (571 words, 0 not keys).
+   - The lint `a-word-is-spelt-as-a-key` refuses a serde enum spelt any
+     other way unless `SPELT_OTHERWISE` names where and why, and that list
+     fails both ways (proved red both ways). The exceptions are formats
+     that are not the SDK's words:
+     - the rule format, kebab case throughout, whose `NodeSide` still
+       says `'rahu'` where every other record says `'RAHU'`; it is a
+       language of its own, and whether to respell it is a separate
+       decision;
+     - the API description's model;
+     - a pack's CLDR fields;
+     - an engine manifest.
 3. Spike 3's remaining consequences: the kit's corpus checks (positions
    against fixtures per tier) and the `sdk-only` cross-provider
    byte-identity check; the Teimeris adapter as the Teimeris package's
@@ -3969,6 +4009,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-25 | **The last lowercase words, a field every binding offered and none could use, and a claim that measured the wrong thing.** Four request records still spelt their words in serde's lowercase: a rule request's sets, a theme's forms and names, a layout's shape, and a consumer's dasha definition. Each came back in an answer or a stored document, so each is a key now, request and answer alike; the themes and sets are typed with one key list each. The sentinels `'all'`, `'birth'` and `'unknown'` stay lowercase on purpose, because a key never is, and §3.7 of the API description page records the rule. Measuring found `RashiDefinition` camel-cased, so the `year_length` all three bindings declared was refused at the boundary. It also found Python's unions half-respelt by 2f's regex sweep, and Python and Dart reading an unknown outline step as a line or an arc. Last, `schema-measured.md`'s "one casing convention" claim held only because it counted attributes in a crate list that left out the two crates at fault; it now reads the document schema's 571 words. The lint `a-word-is-spelt-as-a-key` holds the class, with four format exceptions that fail both ways. Parity: 12,992 values, 13 examples alike. Next: 3. |
 | 2026-09-25 | **Typed provenance, a member's own hash, and a hash of nothing.** A result's provenance crossed as JSON every binding read as an untyped map, and a binding's `found(one)` carried its batch's hash. `idl/api.json` now describes the JSON records (`Provenance`, `Step` and twelve they reach) from serde's own schema, refusing any construct outside a closed subset, and `emit::records` types and decodes them in Node, Python and Dart, each refusing a key the SDK does not write; `provenance` is the record and `provenanceJson` the canonical text (the blob section renamed to say so). `content_hashes` gives a batch's hash and every member's from one serialisation, every façade call seals once where three serialised twice, and the charts and panchanga blobs carry each member's hash, printed by all four parity runners. Comparing a batch's hash computed two ways found **every rules batch sealed with SHA-256 of ""**: `Map::Listed` and `Spans::Degrees` were tagged newtypes holding a list, which serde cannot write, and the canonical writer mapped the error to the empty string — now struct variants, the port's `Quantity` crosses through a wire mirror, the writer stops on such a value in a debug build, and the widest document is held to serialise whole. The parity gate compares 12,992 values in four languages, 13 examples alike. Next: 2i. |
 | 2026-09-25 | **The year's chart in one Rust call, and a composer that said half a chart.** The annual chart was composed at the C boundary alone (`VarshaRequest`, `praveshas_of`, `annual_year`), so Rust had its parts and not its call. The request and the composition moved into the façade as `teistro::VarshaRequest` and `sdk.chart().varsha(&birth, clock, &request)`, refusals named under `varsha` as the bindings name them, and about 640 lines left `crates/ffi`; the move caught a saham refusal still spelling `"punya"`. Rust's `annual_chart` printed what Node prints on its first run, once six Tajika enums had a `key()` held to serde. The bindings' `phala` and `readings` needed built packs, so the example gate builds both corpora into `target/packs` with the one file-name rule `teistro-intl build` uses, and all four languages load those bytes — Rust stopped building packs in the process. Writing them found that **`phala` asked for alone gave the chart no panchanga**, so it said ten subjects of twenty with nothing to tell that from a corpus without words; it asks for the section now, and the composer refuses a document without one, proved red. Also fixed: three bindings' README rows and example headers that said the boundary answers the instant and not the chart, and that dashas do not cross. `EXCUSED` is empty: 13 shared examples print alike in Node, Python, Dart and Rust, and the four parity runners agree on 12,987 values (Rust 12,979). Next: 2h. |
 | 2026-09-25 | **One spelling of a key and of a field, and what the one spelling found.** The bindings spelt a closed enum's member in kebab case and everything else in `SCREAMING_SNAKE_CASE`; `idl/api.json` now records every member's key, the generators read it with no inference (`names::kebab` deleted, the C header byte-identical), and `crates/ffi/tests/keys.rs` reads each key through the Rust type's serde and the boundary's conversion, every member reached, five unserialised enums excused both ways, proved red. Holding the keys to serde found the Tajika crate and the provenance record spelling lowercase, so the same varsha request took `'MUDDA'` and `'punya'` and every stored document held two conventions — `schema-measured.md`'s one-convention claim went from falsified to holds, and its prose now names the minority instead of asserting it. A chart's steps were a `Debug` (`positions:Native`), now `Step::key`; a refusal names the record the caller wrote (`varsha.through`), not the C argument; the ephemeris names are keys too (`'BUILTIN'`), and the boundary's duplicate "no ephemeris" refusal is gone. The regex sweep that respelt the bindings also uppercased dictionary keys and subscripts, caught by reading its diff and by `tsc` on a `Record` key no regex could see. Five of `EXCUSED` gone, three left for 2g. Found and filed: **2i**, the lowercase words inside four other request records. Next: 2g. |

@@ -1755,6 +1755,126 @@ fn predicates_are_listed(root: &Path, outcome: &mut Outcome) {
     });
 }
 
+/// The sources whose serde enums spell their members in a convention of
+/// their own, each with why. A path is a file or a crate's `src`; it
+/// excuses what is under it and must still excuse something, so an entry
+/// outlives nothing it was written for.
+const SPELT_OTHERWISE: [(&str, &str); 4] = [
+    (
+        "crates/rules/src",
+        "the rule format, a language of its own that pack authors write, \
+         spelt in kebab case throughout (`03-design/rules-engine.md`)",
+    ),
+    (
+        "crates/idl/src",
+        "the API description's own format, which the generators read and \
+         no consumer writes",
+    ),
+    (
+        "crates/intl/src",
+        "a pack's own format: CLDR's `ltr` and `rtl`, and the validator's \
+         report on a pack",
+    ),
+    (
+        "crates/port-ephemeris/src/native.rs",
+        "an engine manifest's own words, which the engine writes and the \
+         SDK reads as given",
+    ),
+];
+
+/// Every word a consumer writes or reads back is spelt as a key.
+///
+/// A closed enum's member crosses as its key, `SCREAMING_SNAKE_CASE`, in
+/// every binding, stored document and request (`03-design/
+/// ffi-abi-and-api-description.md` §3.7). 2f found the Tajika crate
+/// lowercase and 2i four request records beside it — a rashi dasha's
+/// `start`, a layout's `direction`, a theme's `body_form`, a rule
+/// request's `shipped` — each found by a reader and none by a gate, since
+/// serde reads its own spelling back and every round trip agrees. So the
+/// rule is read off the source: an enum with a `rename_all` other than
+/// `SCREAMING_SNAKE_CASE` is refused unless [`SPELT_OTHERWISE`] names
+/// where it stands and why.
+fn words_are_spelt_as_keys(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "a-word-is-spelt-as-a-key";
+    const KEYS: &str = "SCREAMING_SNAKE_CASE";
+    let convention = regex::Regex::new(r#"\brename_all\s*=\s*"([^"]+)""#)
+        .unwrap_or_else(|error| panic!("the pattern compiles: {error}"));
+    let mut used = vec![false; SPELT_OTHERWISE.len()];
+    let Ok(crates) = std::fs::read_dir(root.join("crates")) else {
+        return;
+    };
+    let mut crates: Vec<PathBuf> = crates.flatten().map(|entry| entry.path()).collect();
+    crates.sort();
+    for krate in crates {
+        for path in sources(&krate.join("src")) {
+            let Ok(text) = std::fs::read_to_string(&path) else {
+                continue;
+            };
+            let shown = path
+                .strip_prefix(root)
+                .unwrap_or(&path)
+                .display()
+                .to_string();
+            let lines = outside_tests(&text);
+            for (at, (number, line)) in lines.iter().enumerate() {
+                let Some(found) = convention.captures(line) else {
+                    continue;
+                };
+                let spelt = &found[1];
+                // The item the attribute stands on: the first declaration
+                // after it, past the rest of a multi-line attribute.
+                let item = lines[at + 1..]
+                    .iter()
+                    .map(|(_, next)| {
+                        next.trim_start()
+                            .trim_start_matches("pub(crate) ")
+                            .trim_start_matches("pub ")
+                    })
+                    .find(|next| next.starts_with("enum ") || next.starts_with("struct "));
+                let Some(name) = item.and_then(|item| item.strip_prefix("enum ")) else {
+                    continue;
+                };
+                if spelt == KEYS {
+                    continue;
+                }
+                let name = name
+                    .split(|c: char| !(c.is_alphanumeric() || c == '_'))
+                    .next()
+                    .unwrap_or(name);
+                let finding = Finding {
+                    file: shown.clone(),
+                    line: *number,
+                    text: format!("`{name}` spells its members `{spelt}`, not as keys"),
+                    rule: RULE,
+                };
+                match SPELT_OTHERWISE
+                    .iter()
+                    .position(|(under, _)| shown.starts_with(under))
+                {
+                    Some(entry) => {
+                        used[entry] = true;
+                        outcome.allowed.push(finding);
+                    }
+                    None => outcome.failures.push(finding),
+                }
+            }
+        }
+    }
+    for ((under, why), used) in SPELT_OTHERWISE.iter().zip(used) {
+        if !used {
+            outcome.failures.push(Finding {
+                file: String::from("xtask/src/lints.rs"),
+                line: line_of(
+                    &std::fs::read_to_string(root.join("xtask/src/lints.rs")).unwrap_or_default(),
+                    under,
+                ),
+                text: format!("`{under}` is excused ({why}) and spells nothing otherwise"),
+                rule: RULE,
+            });
+        }
+    }
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
@@ -1788,6 +1908,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     platform_runners(root, &mut outcome);
     targets_declare_their_features(root, &mut outcome);
     serialised_types_describe_themselves(root, &mut outcome);
+    words_are_spelt_as_keys(root, &mut outcome);
     predicates_are_listed(root, &mut outcome);
     composers_reach_every_binding(root, &mut outcome);
     layers_do_not_shadow_a_kind(root, &mut outcome);
@@ -1811,6 +1932,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "target-declares-the-feature-it-needs",
         "a-tier-turns-on-its-base",
         "serialised-type-describes-itself",
+        "a-word-is-spelt-as-a-key",
         "every-predicate-is-listed",
         "composer-reaches-every-binding",
         "layer-does-not-shadow-a-kind",

@@ -261,7 +261,7 @@ shipped.dispose();
 // A dasha system of the consumer's own, the same definition every runner
 // registers: a backward count, a two-nakshatra window, an offset, a savana
 // year and a depth of two (`03-design/dasha-kernels.md`).
-const parityDasha = JSON.parse('{"kernel":"udu","key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}');
+const parityDasha = JSON.parse('{"kernel":"UDU","key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}');
 const geo = new Context({
   profile: 'parashari-classical',
   locale: 'ne-Deva-NP',
@@ -296,10 +296,10 @@ const charts = geo.chart.foundMany({
     { layout: 'chart_layout.ACME_KERALA', varga: Varga.D9 },
   ],
   // Every drawing written as SVG too, so the four agree on the bytes.
-  theme: 'dark',
+  theme: 'DARK',
   // The text-written rules and the longevity readings, so the four agree on
   // what every chart answers by rule.
-  rules: { shipped: ['nabhasas'], longevity: true },
+  rules: { shipped: ['NABHASAS'], longevity: true },
   // Every composer, so the four agree on what every chart *says* and not
   // only on what it computes (`03-design/plans-at-the-boundary.md`).
   interpret: {

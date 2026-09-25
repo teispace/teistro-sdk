@@ -611,12 +611,12 @@ final class ContextOptionsStruct extends ffi.Struct {
   external ffi.Pointer<ffi.Char> layoutsJson;
 
   /// Dasha systems of the consumer's own, as a JSON array of definitions,
-  /// each naming the `kernel` that runs it. `"kernel": "udu"` is the
+  /// each naming the `kernel` that runs it. `"kernel": "UDU"` is the
   /// nakshatra-seeded kind: a key the catalogue does not have, its lords
   /// and their years in order, the reference nakshatra, and optionally
   /// `count`, `span`, `offset`, `repeats`, `scale`, `year_length`, `depth`
-  /// and `sources`. `"kernel": "rashi"` is the sign-based kind: a key, and
-  /// optionally `start`, `order`, `length`, `namedLord`, `strongerOf`,
+  /// and `sources`. `"kernel": "RASHI"` is the sign-based kind: a key, and
+  /// optionally `start`, `order`, `length`, `named_lord`, `stronger_of`,
   /// `year_length`, `depth` and `sources` (the document schema's
   /// `DashaDefinition`). The kernel is **stated** and never inferred from
   /// which fields are present, so a typo is refused by the field the
@@ -921,11 +921,11 @@ final class ChartRequestStruct extends ffi.Struct {
 
   /// A theme to write every drawing as SVG in, as JSON: an object of
   /// `style` and `content` naming only what it changes, over the light
-  /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+  /// theme or the shipped one its `extends` names (`{"extends": "DARK"}`).
   /// The SVGs come back in the blob's `svgs` section, in the context's
   /// locale. Null for none, which costs nothing
   /// (`03-design/render-svg.md`).
-  /// Example: {"extends":"dark"}. May be null.
+  /// Example: {"extends":"DARK"}. May be null.
   external ffi.Pointer<ffi.Char> themeJson;
 
   /// Rules to answer over every chart, as JSON: `shipped` names the
@@ -935,7 +935,7 @@ final class ChartRequestStruct extends ffi.Struct {
   /// blob's `rules` section, and the sections the rules read are computed
   /// whether or not `sections` asked for them. Null for none, which costs
   /// nothing.
-  /// Example: {"shipped":["nabhasas"]}. May be null.
+  /// Example: {"shipped":["NABHASAS"]}. May be null.
   external ffi.Pointer<ffi.Char> rulesJson;
 
   /// Narrative plans to compose over every chart, as JSON: an object
@@ -2456,12 +2456,12 @@ final class ContextOptions {
   final String? layoutsJson;
 
   /// Dasha systems of the consumer's own, as a JSON array of definitions,
-  /// each naming the `kernel` that runs it. `"kernel": "udu"` is the
+  /// each naming the `kernel` that runs it. `"kernel": "UDU"` is the
   /// nakshatra-seeded kind: a key the catalogue does not have, its lords
   /// and their years in order, the reference nakshatra, and optionally
   /// `count`, `span`, `offset`, `repeats`, `scale`, `year_length`, `depth`
-  /// and `sources`. `"kernel": "rashi"` is the sign-based kind: a key, and
-  /// optionally `start`, `order`, `length`, `namedLord`, `strongerOf`,
+  /// and `sources`. `"kernel": "RASHI"` is the sign-based kind: a key, and
+  /// optionally `start`, `order`, `length`, `named_lord`, `stronger_of`,
   /// `year_length`, `depth` and `sources` (the document schema's
   /// `DashaDefinition`). The kernel is **stated** and never inferred from
   /// which fields are present, so a typo is refused by the field the
@@ -2870,11 +2870,11 @@ final class ChartRequest {
 
   /// A theme to write every drawing as SVG in, as JSON: an object of
   /// `style` and `content` naming only what it changes, over the light
-  /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+  /// theme or the shipped one its `extends` names (`{"extends": "DARK"}`).
   /// The SVGs come back in the blob's `svgs` section, in the context's
   /// locale. Null for none, which costs nothing
   /// (`03-design/render-svg.md`).
-  /// Example: {"extends":"dark"}. May be null.
+  /// Example: {"extends":"DARK"}. May be null.
   final String? themeJson;
 
   /// Rules to answer over every chart, as JSON: `shipped` names the
@@ -2884,7 +2884,7 @@ final class ChartRequest {
   /// blob's `rules` section, and the sections the rules read are computed
   /// whether or not `sections` asked for them. Null for none, which costs
   /// nothing.
-  /// Example: {"shipped":["nabhasas"]}. May be null.
+  /// Example: {"shipped":["NABHASAS"]}. May be null.
   final String? rulesJson;
 
   /// Narrative plans to compose over every chart, as JSON: an object

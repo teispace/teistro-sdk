@@ -56,20 +56,23 @@ It is an object:
 
 ```json
 {
-  "shipped": ["nabhasas", "readings", "arishtas", "gandantas", "doshas", "yogas"],
+  "shipped": ["NABHASAS", "READINGS", "ARISHTAS", "GANDANTAS", "DOSHAS", "YOGAS"],
   "rules": [ { "key": "…", "category": "…", "source": { … }, "conditions": [ … ] } ],
-  "readings": "texts",
+  "readings": "TEXTS",
   "houses": true,
   "longevity": true
 }
 ```
 
-- `shipped` names the kernel's own sets by their `shipped::` function; `rules`
+- `shipped` names the kernel's own sets by key (`ShippedRules::key`), one per
+  `shipped::` function; `rules`
   is a consumer's own rules in the kernel's rule format, read strictly. Both
   may be given, and together they are one set: a consumer's rule may name a
   shipped rule by key. A key given twice is refused.
-- `readings` is `"texts"` or `"recording-engine"`, the two named `Readings`;
-  it defaults to `"texts"`.
+- `readings` is `"TEXTS"` or `"RECORDING_ENGINE"`, the two named `Readings`;
+  it defaults to `"TEXTS"`. Both are keys, as every word a request writes is
+  (`ffi-abi-and-api-description.md` §3.7); the rules themselves are in the
+  rule format, which is a language of its own and spelt in kebab case.
 - `houses` adds the twelve house readings; `longevity` adds the three pairs,
   the three spans and the marakas. Both default to false, so a consumer pays
   for what it asks.
@@ -168,7 +171,7 @@ The JSON is written once per chart.
    IDL, the header and `check-ffi`. **Built**: section 33; a held rule and a
    present rule are written by key through one helper, `teistro_rules::key_of`,
    so a house reading does not repeat whole rules; an ABI test founds two charts
-   with `{"shipped": ["nabhasas"], "longevity": true}`, reads each chart's
+   with `{"shipped": ["NABHASAS"], "longevity": true}`, reads each chart's
    present rules and Pindayu from the bytes, finds the section empty without
    rules, and a rule that does not read refused as `rules.rules[0]`.
 3. Node, Dart and Python: the option and the parsed section, each binding's

@@ -7,7 +7,7 @@ design it measures is [`rule-doc.md`](rule-doc.md).
 
 ## What was rendered
 
-1654 rules: 263 in `nabhasas`, 73 in `arishtas`, 4 in `gandantas`, 632 in `readings`, 17 in `doshas`, 8 in `yogas`, 657 in `the corpus's own`. Their 5415 conditions are written 2600 ways, which say 2596 things, and the renderer gives those 2596 sentences.
+1654 rules: 17 in `DOSHAS`, 8 in `YOGAS`, 4 in `GANDANTAS`, 73 in `ARISHTAS`, 632 in `READINGS`, 263 in `NABHASAS`, 657 in `the corpus's own`. Their 5415 conditions are written 2600 ways, which say 2596 things, and the renderer gives those 2596 sentences.
 
 The 997 shipped rules are what a consumer evaluates; the corpus's own
 are rendered beside them because they exercise predicates no shipped

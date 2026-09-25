@@ -344,7 +344,7 @@ pub fn counted_years(chart: &RashiChart, sign: Rashi, lord: Graha) -> u8 {
 /// Where a system starts.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Start {
     /// The lagna.
     Lagna,
@@ -357,7 +357,7 @@ pub enum Start {
 /// The order a system visits the signs in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Order {
     /// Every sign in turn from the start, forward from an odd start and back
     /// from an even one.
@@ -377,7 +377,7 @@ pub enum Order {
 /// How long a sign's period runs.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Length {
     /// The count to the sign's stronger lord.
     CountToLord,
@@ -400,7 +400,7 @@ pub enum Length {
 /// Which lord a mahadasha names.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum NamedLord {
     /// The stronger of a dual-lorded sign's two.
     Stronger,
@@ -770,7 +770,6 @@ pub const MANDOOKA: RashiRow = row(
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase")]
 pub struct RashiDefinition {
     /// The key it is registered under, in the key grammar and not one the
     /// catalogue has.

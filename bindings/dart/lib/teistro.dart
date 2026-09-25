@@ -2429,28 +2429,30 @@ sealed class Segment {
   factory Segment._of(Map<String, Object?> raw) {
     final to = UnitPoint._of(raw['to']! as Map<String, Object?>);
     return switch (raw['kind']) {
-      'quad' => QuadSegment(
+      'LINE' => LineSegment(to),
+      'QUAD' => QuadSegment(
         UnitPoint._of(raw['control']! as Map<String, Object?>),
         to,
       ),
-      'arc' => ArcSegment(
+      'ARC' => ArcSegment(
         UnitPoint._of(raw['centre']! as Map<String, Object?>),
         raw['clockwise']! as bool,
         to,
       ),
-      _ => LineSegment(to),
+      // A step the SDK does not write is refused, never read as a line.
+      final kind => throw StateError('an outline step of kind $kind'),
     };
   }
 
   Map<String, Object?> _json() => switch (this) {
-    LineSegment() => {'kind': 'line', 'to': to._json()},
+    LineSegment() => {'kind': 'LINE', 'to': to._json()},
     QuadSegment(:final control) => {
-      'kind': 'quad',
+      'kind': 'QUAD',
       'control': control._json(),
       'to': to._json(),
     },
     ArcSegment(:final centre, :final clockwise) => {
-      'kind': 'arc',
+      'kind': 'ARC',
       'centre': centre._json(),
       'clockwise': clockwise,
       'to': to._json(),
@@ -2508,10 +2510,20 @@ final class Outline {
 /// Which way a layout's signs or houses run, as a reader sees it.
 enum LayoutDirection {
   /// With the hands of a clock.
-  clockwise,
+  clockwise('CLOCKWISE'),
 
   /// Against them.
-  anticlockwise,
+  anticlockwise('ANTICLOCKWISE');
+
+  const LayoutDirection(this.key);
+
+  /// The key a layout row spells it with.
+  final String key;
+
+  static LayoutDirection _byKey(Object? key) => values.firstWhere(
+    (direction) => direction.key == key,
+    orElse: () => throw StateError('a layout running $key'),
+  );
 }
 
 /// What a grid cell always carries: a sign, or a house.
@@ -2519,13 +2531,14 @@ sealed class CellHolds {
   const CellHolds();
 
   factory CellHolds._of(Map<String, Object?> raw) => switch (raw['kind']) {
-    'sign' => HoldsSign(Rashi.byKey(raw['value']! as String) ?? Rashi.unknown),
-    _ => HoldsHouse(raw['value']! as int),
+    'SIGN' => HoldsSign(Rashi.byKey(raw['value']! as String) ?? Rashi.unknown),
+    'HOUSE' => HoldsHouse(raw['value']! as int),
+    final kind => throw StateError('a cell holding a $kind'),
   };
 
   Map<String, Object?> _json() => switch (this) {
-    HoldsSign(:final sign) => {'kind': 'sign', 'value': sign.key},
-    HoldsHouse(:final house) => {'kind': 'house', 'value': house},
+    HoldsSign(:final sign) => {'kind': 'SIGN', 'value': sign.key},
+    HoldsHouse(:final house) => {'kind': 'HOUSE', 'value': house},
   };
 }
 
@@ -2577,19 +2590,29 @@ final class LayoutCell {
 /// What a ring of a radial layout counts its first house from.
 enum RingReference {
   /// The lagna's sign.
-  lagna,
+  lagna('LAGNA'),
 
   /// The Moon's sign.
-  moon,
+  moon('MOON'),
 
   /// The Sun's sign.
-  sun,
+  sun('SUN'),
 
   /// The chart's cusps, each house as wide as it is.
-  cusps,
+  cusps('CUSPS'),
 
   /// Twelve signs of 30°, turned so the lagna's degree sits at the start.
-  zodiac,
+  zodiac('ZODIAC');
+
+  const RingReference(this.key);
+
+  /// The key a layout row spells it with.
+  final String key;
+
+  static RingReference _byKey(Object? key) => values.firstWhere(
+    (reference) => reference.key == key,
+    orElse: () => throw StateError('a ring counting from $key'),
+  );
 }
 
 /// One ring of a radial layout.
@@ -2612,7 +2635,7 @@ final class LayoutRing {
   Map<String, Object?> _json() => {
     'inner': inner,
     'outer': outer,
-    'counts_from': countsFrom.name,
+    'counts_from': countsFrom.key,
   };
 }
 
@@ -2625,29 +2648,25 @@ sealed class LayoutShape {
   final LayoutDirection direction;
 
   factory LayoutShape._of(Map<String, Object?> raw) {
-    final direction = LayoutDirection.values.byName(
-      raw['direction']! as String,
-    );
+    final direction = LayoutDirection._byKey(raw['direction']);
     List<Map<String, Object?>> objects(String name) => [
       for (final item in raw[name]! as List<Object?>)
         item! as Map<String, Object?>,
     ];
     return switch (raw['kind']) {
-      'radial' => RadialShape(
+      'RADIAL' => RadialShape(
         rings: [
           for (final ring in objects('rings'))
             LayoutRing(
               inner: (ring['inner']! as num).toDouble(),
               outer: (ring['outer']! as num).toDouble(),
-              countsFrom: RingReference.values.byName(
-                ring['counts_from']! as String,
-              ),
+              countsFrom: RingReference._byKey(ring['counts_from']),
             ),
         ],
         startsAt: raw['starts_at']! as int,
         direction: direction,
       ),
-      _ => GridShape(
+      'GRID' => GridShape(
         cells: [
           for (final cell in objects('cells'))
             LayoutCell(
@@ -2660,21 +2679,22 @@ sealed class LayoutShape {
         frame: [for (final path in objects('frame')) Outline._of(path)],
         direction: direction,
       ),
+      final kind => throw StateError('a layout shaped as $kind'),
     };
   }
 
   Map<String, Object?> _json() => switch (this) {
     GridShape(:final cells, :final frame) => {
-      'kind': 'grid',
+      'kind': 'GRID',
       'cells': [for (final cell in cells) cell._json()],
       'frame': [for (final path in frame) path._json()],
-      'direction': direction.name,
+      'direction': direction.key,
     },
     RadialShape(:final rings, :final startsAt) => {
-      'kind': 'radial',
+      'kind': 'RADIAL',
       'rings': [for (final ring in rings) ring._json()],
       'starts_at': startsAt,
-      'direction': direction.name,
+      'direction': direction.key,
     },
   };
 }
@@ -2737,7 +2757,7 @@ final class DashaLord {
 ///     lords: [for (final g in [Graha.sun, Graha.moon, Graha.mars]) DashaLord(g, 10)],
 ///     reference: Nakshatra.krittika,
 ///   ),
-///   RashiDashaDefinition(key: 'ACME_STHIRA', length: {'by_modality': {'movable': 7, 'fixed': 8, 'dual': 9}}),
+///   RashiDashaDefinition(key: 'ACME_STHIRA', length: RashiLength.byModality(movable: 7, fixed: 8, dual: 9)),
 /// ]);
 /// ctx.chart.found(/* … */ dashas: [DashaSystem.registered('ACME_SAPTAKA')]);
 /// ```
@@ -2802,7 +2822,7 @@ final class UduDashaDefinition extends DashaDefinition {
 
   @override
   Map<String, Object?> toJson() => {
-    'kernel': 'udu',
+    'kernel': 'UDU',
     'key': key,
     'lords': [for (final lord in lords) lord.toJson()],
     'reference': reference.key,
@@ -2839,18 +2859,19 @@ final class RashiDashaDefinition extends DashaDefinition {
   /// Where the table comes from.
   final List<String> sources;
 
-  /// `lagna` (the default), `arudha_lagna` or `navamsa_lagna`.
-  final String? start;
+  /// Where it starts; the lagna by default.
+  final RashiStart? start;
 
-  /// `consecutive` (the default), `trine_groups`, `drishti_chain` or `leap`.
-  final String? order;
+  /// The order it visits the signs in; every sign in turn by default.
+  final RashiOrder? order;
 
-  /// `count_to_lord` (the default), `count_to_lord_by_dignity`,
-  /// `{'fixed': 9}` or `{'by_modality': {'movable': 7, 'fixed': 8, 'dual': 9}}`.
-  final Object? length;
+  /// How long a sign's period runs; the count to its stronger lord by
+  /// default.
+  final RashiLength? length;
 
-  /// `stronger` (the default) or `first`.
-  final String? namedLord;
+  /// Which lord a mahadasha names; the stronger of a dual-lorded sign's two
+  /// by default.
+  final RashiNamedLord? namedLord;
 
   /// The houses from the lagna to start from the strongest of; none by
   /// default, which starts from `start` itself.
@@ -2864,16 +2885,123 @@ final class RashiDashaDefinition extends DashaDefinition {
 
   @override
   Map<String, Object?> toJson() => {
-    'kernel': 'rashi',
+    'kernel': 'RASHI',
     'key': key,
     if (sources.isNotEmpty) 'sources': sources,
-    if (start != null) 'start': start,
-    if (order != null) 'order': order,
-    if (length != null) 'length': length,
-    if (namedLord != null) 'namedLord': namedLord,
-    if (strongerOf.isNotEmpty) 'strongerOf': strongerOf,
+    if (start case final start?) 'start': start.key,
+    if (order case final order?) 'order': order.key,
+    if (length case final length?) 'length': length._json,
+    if (namedLord case final lord?) 'named_lord': lord.key,
+    if (strongerOf.isNotEmpty) 'stronger_of': strongerOf,
     if (yearLength != null) 'year_length': yearLength,
     if (depth != null) 'depth': depth,
+  };
+}
+
+/// Where a sign-based system starts.
+enum RashiStart {
+  /// The lagna.
+  lagna('LAGNA'),
+
+  /// The arudha lagna.
+  arudhaLagna('ARUDHA_LAGNA'),
+
+  /// The navamsa lagna.
+  navamsaLagna('NAVAMSA_LAGNA');
+
+  const RashiStart(this.key);
+
+  /// The key a definition spells it with.
+  final String key;
+}
+
+/// The order a sign-based system visits the signs in.
+enum RashiOrder {
+  /// Every sign in turn, forward from an odd start and back from an even.
+  consecutive('CONSECUTIVE'),
+
+  /// The trine groups from the start's.
+  trineGroups('TRINE_GROUPS'),
+
+  /// The ninth, tenth and eleventh from the start, each with the signs it
+  /// aspects.
+  drishtiChain('DRISHTI_CHAIN'),
+
+  /// Back two signs at a time from the start.
+  leap('LEAP');
+
+  const RashiOrder(this.key);
+
+  /// The key a definition spells it with.
+  final String key;
+}
+
+/// Which lord a sign-based system's mahadasha names.
+enum RashiNamedLord {
+  /// The stronger of a dual-lorded sign's two.
+  stronger('STRONGER'),
+
+  /// The first, Ketu or Rahu.
+  first('FIRST');
+
+  const RashiNamedLord(this.key);
+
+  /// The key a definition spells it with.
+  final String key;
+}
+
+/// How long a sign's period runs, in a sign-based system.
+sealed class RashiLength {
+  const RashiLength._();
+
+  /// The count to the sign's stronger lord.
+  static const RashiLength countToLord = _KeyedLength('COUNT_TO_LORD');
+
+  /// The same, a year more when that lord is exalted and a year less when
+  /// debilitated.
+  static const RashiLength countToLordByDignity = _KeyedLength(
+    'COUNT_TO_LORD_BY_DIGNITY',
+  );
+
+  /// The same [years] for every sign.
+  const factory RashiLength.fixed(int years) = _FixedLength;
+
+  /// By the sign's modality.
+  const factory RashiLength.byModality({
+    required int movable,
+    required int fixed,
+    required int dual,
+  }) = _ModalLength;
+
+  Object get _json;
+}
+
+final class _KeyedLength extends RashiLength {
+  const _KeyedLength(this.key) : super._();
+  final String key;
+  @override
+  Object get _json => key;
+}
+
+final class _FixedLength extends RashiLength {
+  const _FixedLength(this.years) : super._();
+  final int years;
+  @override
+  Object get _json => {'FIXED': years};
+}
+
+final class _ModalLength extends RashiLength {
+  const _ModalLength({
+    required this.movable,
+    required this.fixed,
+    required this.dual,
+  }) : super._();
+  final int movable;
+  final int fixed;
+  final int dual;
+  @override
+  Object get _json => {
+    'BY_MODALITY': {'movable': movable, 'fixed': fixed, 'dual': dual},
   };
 }
 
@@ -3069,10 +3197,10 @@ final class ThemeStyle {
 /// The locale form a drawn body is written in.
 enum BodyForm {
   /// The locale's abbreviation: `Su`, `सू`.
-  short('short'),
+  short('SHORT'),
 
   /// The symbol: `☉`.
-  glyph('glyph');
+  glyph('GLYPH');
 
   const BodyForm(this.key);
 
@@ -3083,22 +3211,22 @@ enum BodyForm {
 /// What a drawn cell's label shows.
 enum CellLabel {
   /// The sign's number, or on a wheel the house and the sign's glyph.
-  auto('auto'),
+  auto('AUTO'),
 
   /// The sign's number, 1 for Aries.
-  signNumber('sign_number'),
+  signNumber('SIGN_NUMBER'),
 
   /// The sign's abbreviation.
-  signShort('sign_short'),
+  signShort('SIGN_SHORT'),
 
   /// The sign's symbol.
-  signGlyph('sign_glyph'),
+  signGlyph('SIGN_GLYPH'),
 
   /// The house's number.
-  house('house'),
+  house('HOUSE'),
 
   /// Nothing.
-  nothing('nothing');
+  nothing('NOTHING');
 
   const CellLabel(this.key);
 
@@ -3147,10 +3275,10 @@ final class ChartTheme {
   const ChartTheme._(this._base, this._style, this._content);
 
   /// Dark ink on white, as a printed patrika.
-  static const light = ChartTheme._('light', ThemeStyle(), ThemeContent());
+  static const light = ChartTheme._('LIGHT', ThemeStyle(), ThemeContent());
 
   /// Light ink on a dark page.
-  static const dark = ChartTheme._('dark', ThemeStyle(), ThemeContent());
+  static const dark = ChartTheme._('DARK', ThemeStyle(), ThemeContent());
 
   /// This theme with what [style] and [content] name changed.
   ChartTheme copyWith({
@@ -3609,34 +3737,41 @@ List<Map<String, Object?>> _sectionOf(String json) =>
 /// A set of rules the SDK ships.
 enum ShippedRules {
   /// The recording engine's doshas the SDK computes.
-  doshas,
+  doshas('DOSHAS'),
 
   /// The recording engine's yogas the SDK computes.
-  yogas,
+  yogas('YOGAS'),
 
   /// The gandantas of BPHS ch. 92.
-  gandantas,
+  gandantas('GANDANTAS'),
 
   /// The evils at birth and their cancellations.
-  arishtas,
+  arishtas('ARISHTAS'),
 
   /// The generated readings of a graha, a pair and a rising part.
-  readings,
+  readings('READINGS'),
 
   /// The yogas, doshas and classes of life written from the texts.
-  nabhasas,
+  nabhasas('NABHASAS');
+
+  const ShippedRules(this.key);
+
+  /// The key a rule request names it with.
+  final String key;
 }
 
 /// The readings a request evaluates rules under.
 enum RuleReadings {
   /// The texts' readings wherever a text settles one.
-  texts('texts'),
+  texts('TEXTS'),
 
   /// The recording engine's.
-  recordingEngine('recording-engine');
+  recordingEngine('RECORDING_ENGINE');
 
-  const RuleReadings(this._key);
-  final String _key;
+  const RuleReadings(this.key);
+
+  /// The key a rule request names it with.
+  final String key;
 }
 
 /// The rules a request asks a chart to answer
@@ -3668,9 +3803,9 @@ final class RuleRequest {
   final bool longevity;
 
   String get _json => jsonEncode(<String, Object?>{
-    'shipped': [for (final set in shipped) set.name],
+    'shipped': [for (final set in shipped) set.key],
     'rules': rules,
-    'readings': readings._key,
+    'readings': readings.key,
     'houses': houses,
     'longevity': longevity,
   });

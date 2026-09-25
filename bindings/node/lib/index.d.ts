@@ -297,10 +297,10 @@ export interface UnitPoint {
 
 /** One step of an outline, from wherever the previous step ended. */
 export type Segment =
-  | { readonly kind: 'line'; readonly to: UnitPoint }
-  | { readonly kind: 'quad'; readonly control: UnitPoint; readonly to: UnitPoint }
+  | { readonly kind: 'LINE'; readonly to: UnitPoint }
+  | { readonly kind: 'QUAD'; readonly control: UnitPoint; readonly to: UnitPoint }
   | {
-      readonly kind: 'arc';
+      readonly kind: 'ARC';
       /** The circle's centre. */
       readonly centre: UnitPoint;
       /** Which way the arc runs, as a reader sees it. */
@@ -1130,15 +1130,15 @@ export type DashaKey = `dasha_system.${string}`;
  * @example
  * const ctx = new Context({
  *   dashaSystems: [{
- *     kernel: 'udu',
+ *     kernel: 'UDU',
  *     key: 'ACME_SAPTAKA',
  *     lords: ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN']
  *       .map((graha) => ({ graha, years: 10 })),
  *     reference: 'KRITTIKA',
  *   }, {
- *     kernel: 'rashi',
+ *     kernel: 'RASHI',
  *     key: 'ACME_STHIRA',
- *     length: { by_modality: { movable: 7, fixed: 8, dual: 9 } },
+ *     length: { BY_MODALITY: { movable: 7, fixed: 8, dual: 9 } },
  *   }],
  * });
  * ctx.chart.found({ instant, place, utcOffsetSeconds, dashas: ['dasha_system.ACME_SAPTAKA'] });
@@ -1152,7 +1152,7 @@ export type DashaDefinition = UduDashaDefinition | RashiDashaDefinition;
  */
 export interface UduDashaDefinition {
   /** The kernel that runs it: lords for years, seeded by the Moon's nakshatra. */
-  readonly kernel: 'udu';
+  readonly kernel: 'UDU';
   /** Its key: `[A-Z][A-Z0-9_]`, at most 48 characters, and not one the catalogue has. */
   readonly key: string;
   /** Where the table comes from. */
@@ -1179,10 +1179,10 @@ export interface UduDashaDefinition {
 
 /** How long a sign's period runs, in a sign-based system. */
 export type RashiLength =
-  | 'count_to_lord'
-  | 'count_to_lord_by_dignity'
-  | { readonly fixed: number }
-  | { readonly by_modality: { readonly movable: number; readonly fixed: number; readonly dual: number } };
+  | 'COUNT_TO_LORD'
+  | 'COUNT_TO_LORD_BY_DIGNITY'
+  | { readonly FIXED: number }
+  | { readonly BY_MODALITY: { readonly movable: number; readonly fixed: number; readonly dual: number } };
 
 /**
  * A sign-based (Jaimini) dasha system of your own: its key, and optionally
@@ -1192,21 +1192,21 @@ export type RashiLength =
  */
 export interface RashiDashaDefinition {
   /** The kernel that runs it: the twelve signs in an order, each for a number of years. */
-  readonly kernel: 'rashi';
+  readonly kernel: 'RASHI';
   /** Its key: `[A-Z][A-Z0-9_]`, at most 48 characters, and not one the catalogue has. */
   readonly key: string;
   /** Where the row comes from. */
   readonly sources?: readonly string[];
   /** Where it starts; the lagna by default. */
-  readonly start?: 'lagna' | 'arudha_lagna' | 'navamsa_lagna';
+  readonly start?: 'LAGNA' | 'ARUDHA_LAGNA' | 'NAVAMSA_LAGNA';
   /** The order it visits the signs in; every sign in turn by default. */
-  readonly order?: 'consecutive' | 'trine_groups' | 'drishti_chain' | 'leap';
+  readonly order?: 'CONSECUTIVE' | 'TRINE_GROUPS' | 'DRISHTI_CHAIN' | 'LEAP';
   /** How long a sign's period runs; the count to its stronger lord by default. */
   readonly length?: RashiLength;
   /** Which lord a mahadasha names; the stronger of a dual-lorded sign's two by default. */
-  readonly namedLord?: 'stronger' | 'first';
+  readonly named_lord?: 'STRONGER' | 'FIRST';
   /** The houses from the lagna to start from the strongest of; none by default. */
-  readonly strongerOf?: readonly number[];
+  readonly stronger_of?: readonly number[];
   /** The length of its year; `JULIAN_365_25` by default. */
   readonly year_length?: 'JULIAN_365_25' | 'SAVANA_360' | 'SIDEREAL' | 'TROPICAL' | 'LUNAR' | 'NAKSHATRA_324';
   /** How many levels of periods a reading carries, 1 to 6; three by default. */
@@ -1215,8 +1215,8 @@ export interface RashiDashaDefinition {
 
 /** What a grid cell always carries: a sign, or a house 1 to 12. */
 export type LayoutHolds =
-  | { readonly kind: 'sign'; readonly value: RashiName }
-  | { readonly kind: 'house'; readonly value: number };
+  | { readonly kind: 'SIGN'; readonly value: RashiName }
+  | { readonly kind: 'HOUSE'; readonly value: number };
 
 /** A sign as a layout row spells it: the bare key, `ARIES`. */
 export type RashiName =
@@ -1252,19 +1252,19 @@ export interface LayoutRing {
   /** The outer radius, at most a half. */
   readonly outer: number;
   /** What the ring counts its first house from. */
-  readonly counts_from: 'lagna' | 'moon' | 'sun' | 'cusps' | 'zodiac';
+  readonly counts_from: 'LAGNA' | 'MOON' | 'SUN' | 'CUSPS' | 'ZODIAC';
 }
 
 /** Twelve cells fixed in the row, or rings computed per chart. */
 export type LayoutShape =
   | {
-      readonly kind: 'grid';
+      readonly kind: 'GRID';
       readonly cells: readonly LayoutCell[];
       readonly frame: readonly Outline[];
       readonly direction: 'clockwise' | 'anticlockwise';
     }
   | {
-      readonly kind: 'radial';
+      readonly kind: 'RADIAL';
       readonly rings: readonly LayoutRing[];
       /** The clock hour house 1 starts at, 1 to 12. */
       readonly starts_at: number;
@@ -1319,9 +1319,9 @@ export interface ThemeStyle {
 /** What a drawing says: every field optional, over the theme it extends. */
 export interface ThemeContent {
   /** The locale form a body is written in. */
-  readonly body_form?: 'short' | 'glyph';
-  /** What a cell's label shows; `auto` is the sign's number, or on a wheel the house and the sign's glyph. */
-  readonly cell_label?: 'auto' | 'sign_number' | 'sign_short' | 'sign_glyph' | 'house' | 'nothing';
+  readonly body_form?: 'SHORT' | 'GLYPH';
+  /** What a cell's label shows; `AUTO` is the sign's number, or on a wheel the house and the sign's glyph. */
+  readonly cell_label?: 'AUTO' | 'SIGN_NUMBER' | 'SIGN_SHORT' | 'SIGN_GLYPH' | 'HOUSE' | 'NOTHING';
   /** Whether the lagna is written first in the cell it stands in. */
   readonly lagna_mark?: boolean;
   /** What is written after a retrograde graha's name, or null for nothing. */
@@ -1331,7 +1331,7 @@ export interface ThemeContent {
 }
 
 /** A set of rules the SDK ships. */
-export type ShippedRules = 'doshas' | 'yogas' | 'gandantas' | 'arishtas' | 'readings' | 'nabhasas';
+export type ShippedRules = 'DOSHAS' | 'YOGAS' | 'GANDANTAS' | 'ARISHTAS' | 'READINGS' | 'NABHASAS';
 
 /**
  * The rules a request asks a chart to answer (`03-design/rules-at-the-boundary.md`):
@@ -1342,8 +1342,8 @@ export interface RuleRequest {
   readonly shipped?: readonly ShippedRules[];
   /** A consumer's own rules, which may name shipped rules by key. */
   readonly rules?: readonly Readonly<Record<string, unknown>>[];
-  /** The readings to evaluate under; `'texts'` by default. */
-  readonly readings?: 'texts' | 'recording-engine';
+  /** The readings to evaluate under; `'TEXTS'` by default. */
+  readonly readings?: 'TEXTS' | 'RECORDING_ENGINE';
   /** Whether to add the twelve house readings. */
   readonly houses?: boolean;
   /** Whether to add the three pairs, the three spans and the marakas. */
@@ -1483,15 +1483,17 @@ export interface Plans {
   readonly ashtakavarga?: readonly PlanItem[];
 }
 
+/** A theme the SDK ships, by its key: dark ink on white, or light on dark. */
+export type ShippedTheme = 'LIGHT' | 'DARK';
+
 /**
- * The theme a request writes its drawings as SVG in: a shipped theme's name,
+ * The theme a request writes its drawings as SVG in: a shipped theme's key,
  * or a record naming only what it changes (`03-design/render-svg.md`).
  */
 export type Theme =
-  | 'light'
-  | 'dark'
+  | ShippedTheme
   | {
-      readonly extends?: 'light' | 'dark';
+      readonly extends?: ShippedTheme;
       readonly style?: ThemeStyle;
       readonly content?: ThemeContent;
     };

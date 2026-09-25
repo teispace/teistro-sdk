@@ -23,7 +23,7 @@ use crate::path::{Path, Point};
 /// What a grid cell carries, which is what the layout keeps fixed.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(tag = "kind", content = "value", rename_all = "lowercase")]
+#[serde(tag = "kind", content = "value", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Holds {
     /// The cell is always this sign; its house moves with the lagna.
     Sign(Rashi),
@@ -35,7 +35,7 @@ pub enum Holds {
 /// The way signs or houses run around a layout, as a reader sees it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Direction {
     /// With the hands of a clock.
     Clockwise,
@@ -72,7 +72,7 @@ pub struct Grid {
 /// What a radial ring counts its first house from.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Reference {
     /// The lagna's sign.
     Lagna,
@@ -121,7 +121,7 @@ pub struct Radial {
 /// The shape of a layout: fixed cells, or rings computed per chart.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(tag = "kind", rename_all = "lowercase")]
+#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Shape {
     /// Twelve cells fixed in the row.
     Grid(Grid),

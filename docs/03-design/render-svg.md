@@ -83,7 +83,7 @@ Document + Context + Content ─compose──▶  Labels
   - the baseline shift, as a fraction of an em.
 - **`Content`** is what the drawing says. The façade reads it to compose
   the labels, and the renderer never sees it:
-  - which form a body is written in: `short` or `glyph`;
+  - which form a body is written in: `SHORT` or `GLYPH`;
   - what a cell's label shows: its sign, its house or nothing;
   - whether a retrograde body is marked, and with which string;
   - whether the degree is written.
@@ -233,9 +233,10 @@ A wheel's bodies are not stacked; each is drawn at its degree (§4).
   found the chart again, or keep documents alive across calls, which the
   ABI does not do.
 - **A theme names what it changes over a shipped one.** An object's
-  `extends` names `light` or `dark`, and the object is laid over it field
-  by field, so a dark theme with another accent is
-  `{"extends": "dark", "style": {"accent": "#ffcc00"}}`. Refusals are named
+  `extends` names `LIGHT` or `DARK` (`ShippedTheme`, a key like every other
+  word a request writes), and the object is laid over it field by field, so
+  a dark theme with another accent is
+  `{"extends": "DARK", "style": {"accent": "#ffcc00"}}`. Refusals are named
   from the theme's root and the boundary calls that root `theme_json`, as
   in `theme.style.ink` and `theme.extends`.
 - **Each binding types the record.**

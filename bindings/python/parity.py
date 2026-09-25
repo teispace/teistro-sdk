@@ -299,7 +299,7 @@ def main() -> None:
         kerala: LayoutRow = {**shipped.chart.layout("SOUTH_INDIAN"), "key": "ACME_KERALA"}
     # A dasha system of the consumer's own, the same definition every runner
     # registers (`03-design/dasha-kernels.md`).
-    parity_dasha: DashaDefinition = json.loads('{"kernel":"udu","key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}')
+    parity_dasha: DashaDefinition = json.loads('{"kernel":"UDU","key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}')
     with teistro.context(
         profile="parashari-classical",
         locale="ne-Deva-NP",
@@ -329,8 +329,8 @@ def main() -> None:
                 (ChartLayout.WESTERN_WHEEL, Varga.D1),
                 ("chart_layout.ACME_KERALA", Varga.D9),
             ],
-            theme="dark",
-            rules={"shipped": ["nabhasas"], "longevity": True},
+            theme="DARK",
+            rules={"shipped": ["NABHASAS"], "longevity": True},
             # Every composer, so the four agree on what every chart *says*
             # and not only on what it computes
             # (`03-design/plans-at-the-boundary.md`).
@@ -500,7 +500,7 @@ def main() -> None:
                     put(f"{where}-start", f"{number(drawn.outline.start.x)},{number(drawn.outline.start.y)}")
                     put(
                         f"{where}-steps",
-                        ",".join(type(step).__name__.removesuffix("Segment").lower() for step in drawn.outline.segments),
+                        ",".join(type(step).__name__.removesuffix("Segment").upper() for step in drawn.outline.segments),
                     )
                 for m, mark in enumerate(drawing.marks):
                     where = f"{key}-mark-{m}"

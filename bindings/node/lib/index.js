@@ -2418,7 +2418,7 @@ function deepFreeze(value) {
  * @returns {string|undefined}
  */
 function rulesJson(rules) {
-  return recordJson(rules, 'rules', 'a rule request record, e.g. { shipped: ["nabhasas"] }');
+  return recordJson(rules, 'rules', 'a rule request record, e.g. { shipped: ["NABHASAS"] }');
 }
 
 /**
@@ -2914,7 +2914,7 @@ function drawingFrom({ varga, placed }, svg) {
 
 /**
  * The theme a request draws its SVGs in, as the JSON the boundary reads: a
- * shipped theme's name, or a record naming only what it changes over the
+ * shipped theme's key, or a record naming only what it changes over the
  * light theme or the one its `extends` names (`03-design/render-svg.md`).
  *
  * @param {string|object|undefined} theme
@@ -2924,7 +2924,7 @@ function themeJson(theme) {
   if (theme === undefined || theme === null) return undefined;
   if (typeof theme === 'string') return JSON.stringify({ extends: theme });
   if (typeof theme === 'object' && !Array.isArray(theme)) return JSON.stringify(theme);
-  throw new TypeError("theme: expected 'light', 'dark' or a theme record");
+  throw new TypeError("theme: expected 'LIGHT', 'DARK' or a theme record");
 }
 
 /**
