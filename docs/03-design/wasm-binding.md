@@ -1,10 +1,11 @@
 # The wasm binding
 
 Status: steps 1 (**one libm**), 2 (**the loader compiled out**), 4
-(**the emitter's backend split**) and 6 (**the host provider**) built
-2026-09-25, with step 7's `check-wasm`; step 3 answered by step 1. The
-package and its loader (step 5), the parity runner and the size gate
-(step 7) remain.
+(**the emitter's backend split**), 5 (**the package and its loaders**)
+and 6 (**the host provider**) built 2026-09-25, with step 7's
+`check-wasm` and its browser check; step 3 answered by step 1. The
+parity runner and the per-profile size gate (step 7) remain, and so does
+publishing, which is a release decision.
 
 The fourth binding the order names (ADR-0004: Node native, wasm, Dart,
 Python) and the last deliverable of Phase 5's list
@@ -230,6 +231,39 @@ Rejected:
    wasm-bindgen's own `free`.
 5. The wasm crate, the package and its loader; `index.js`'s two `Buffer`
    calls made portable.
+   **Built.** The napi loader moved out of `index.js` into `lib/addon.js`,
+   and `index.js` imports its native object from `#native`, the package's
+   own import map (`package.json` `imports`): the Node package maps it to
+   `addon.js`; the wasm package maps it by condition, `node` to a loader
+   that reads the module and compiles it synchronously, `default` to one
+   that instantiates it from `new URL(…, import.meta.url)` behind
+   top-level `await` — the form every mainstream bundler ships as an
+   asset. So `index.js` names no Node built-in, and the layer is one file
+   for both. Bytes cross as `Uint8Array` (napi's glue takes one, and a
+   `Buffer` is one), hex is a loop, and `loadPack` takes an
+   `ArrayBuffer` too, which is what `fetch` gives. A plugin on wasm is
+   refused **per entry**, by what the loaded module can do
+   (`native.Provider`) rather than a flag, with the build's target and
+   what to give instead; so a chain written for both packages —
+   `[{ plugin }, 'BUILTIN']` — falls back in a browser as it does where
+   the file is missing.
+
+   The package is **staged, not kept**: `cargo xtask check-wasm` writes
+   it to `target/wasm/package` from the Node package's own `lib/` (every
+   file but its loader), the two wasm loaders, the module bound with
+   `--target web`, and a manifest *derived* from the Node package's with
+   only the name, description, directory, import map and files
+   overridden, so no export, version or engine can drift. It is not
+   added to `cargo xtask package stage`: the release publishes every
+   `target/dist/npm/@teistro/sdk-*`, and `@teistro/sdk-wasm` matches that
+   glob, so staging it there would publish it at the next tag without
+   anyone having decided to.
+
+   Found on the way: `check-node` passed its fixture directory as an
+   argument after `node --test`, which reads arguments as test files and
+   gives a test file none, so the suite had only ever found its fixtures
+   by running from the repository root. It is `TEISTRO_FIXTURES` now,
+   which the staged run needed.
 6. The host provider adapter.
    **Built**, and shared rather than copied: the policy Node's adapter
    held — the declared defaults, the answer's length checks, the thrown
@@ -241,9 +275,16 @@ Rejected:
 7. `check-wasm`, the parity runner, the size gate.
    **`check-wasm` built**, and stronger than planned: rather than a
    portable half of the Node suite, it runs **the whole Node binding
-   suite, unchanged**, against the wasm module — `index.js` loads what
-   `TEISTRO_ADDON` names with `require`, which reads wasm-bindgen's Node
-   glue as readily as a `.node` file. 69 of 69 pass: charts, almanacs,
+   suite, unchanged**, from inside the staged package, so the suite's
+   `../lib/index.js` is the package's and its `#native` resolves through
+   the package's own `node` condition — the wasm glue *and* the loader a
+   consumer gets. Then **a headless Chrome** loads the staged package
+   unbundled, `#native` mapped to the web loader by an import map as a
+   bundler maps it, runs a probe and posts the answer back; the same
+   probe under Node must give the same answer **to the bit** (longitudes
+   as exact text, the settings hash, the plugin refusal). A Node built-in
+   put on the browser path makes the page fail to load, which the gate
+   reports: proved red. 70 of 70 pass: charts, almanacs,
    positions, the locale engine and packs, rules, drawings, providers
    written in JavaScript, refusals with their records, `dispose`. The
    `wasm-bindgen` CLI is pinned to the lockfile's library version, read

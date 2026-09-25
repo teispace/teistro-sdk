@@ -34,6 +34,7 @@ import {
   TeistroError,
   ZoneKind,
   abiVersion,
+  buildInfo,
   canonicalFrame,
   catalogueVersion,
   defaultProfile,
@@ -46,10 +47,12 @@ import {
 import * as catalogue from '../lib/catalogue.js';
 
 /**
- * The fixture directory `cargo xtask check-node` passes, and a reader for
- * the files in it — the same convention `blob.test.mjs` follows.
+ * The fixture directory the gate names in `TEISTRO_FIXTURES`, and a reader
+ * for the files in it — the same convention `blob.test.mjs` follows. An
+ * environment variable and not an argument: `node --test` reads its
+ * arguments as test files and hands a test file none of them.
  */
-const fixtures = process.argv[2] ?? 'target/tsrb';
+const fixtures = process.env.TEISTRO_FIXTURES ?? 'target/tsrb';
 const read = (name) => new Uint8Array(readFileSync(join(fixtures, name)));
 
 /** A context with the analytic test provider; every test builds its own. */
@@ -118,6 +121,13 @@ test('a pack loads at runtime and lays its record over the one standing', () => 
   assert.equal(after.forms.phala, 'a reading of the Sun');
   assert.equal(after.name, before.name);
   assert.equal(after.forms.name, before.name, 'the map carries the named ones too');
+
+  // Bytes are bytes whatever holds them: a browser has no `Buffer`, and
+  // `fetch` hands back an `ArrayBuffer`.
+  const file = read('overlay.tpack');
+  const buffer = file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength);
+  assert.equal(ctx.intl.loadPack(buffer).entries, 1);
+  assert.throws(() => ctx.intl.loadPack('overlay.tpack'), /bytes: expected bytes/u);
 });
 
 test('a chart handed out alone carries its own hash, and the batch the list\'s', () => {
@@ -833,6 +843,27 @@ test('an ephemeris chain is tried in order and refuses naming each', () => {
   // default; and a descriptor without a `plugin` is not a descriptor.
   assert.throws(() => new Context({ ephemeris: [] }), /names nothing/u);
   assert.throws(() => new Context({ ephemeris: [{ config: {} }] }), /descriptor/u);
+});
+
+/**
+ * A wasm build cannot open a shared library, so a plugin there is refused
+ * by name with what to give instead, and a chain falls past it as it
+ * falls past a missing file.
+ */
+test('a plugin is refused by name where the build cannot open one', (t) => {
+  if (!buildInfo.target.startsWith('wasm32')) {
+    t.skip('this build loads plugins; the test above opens one');
+    return;
+  }
+  assert.throws(
+    () => new Context({ ephemeris: { plugin: '/any/adapter.so' } }),
+    (error) =>
+      error instanceof TypeError &&
+      /cannot; give `provider`/u.test(error.message) &&
+      error.message.includes(buildInfo.target),
+  );
+  const fellBack = new Context({ ephemeris: [{ plugin: '/any/adapter.so' }, 'BUILTIN'] });
+  fellBack.dispose();
 });
 
 /**

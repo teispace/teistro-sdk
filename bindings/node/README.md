@@ -2,10 +2,12 @@
 
 Status: `generated`, 2026-09-06.
 
-Everything but two files is rendered from `idl/api.json` by `cargo xtask
-gen ffi` and held equal to the boundary crates by `cargo xtask check-ffi`.
-The two are `lib/index.js` and its declarations, the ergonomic layer,
-which is thin on purpose.
+Everything but the ergonomic layer is rendered from `idl/api.json` by
+`cargo xtask gen ffi` and held equal to the boundary crates by `cargo
+xtask check-ffi`. The layer — `lib/index.js` and its declarations, and
+the addon's loader — is thin on purpose. For a browser, a worker or a
+host no prebuilt addon covers, the same layer ships over a wasm module as
+[`@teistro/sdk-wasm`](../wasm/README.md).
 
 | file | what it is | written by |
 |---|---|---|
@@ -14,7 +16,8 @@ which is thin on purpose.
 | `lib/types.d.ts` | every boundary struct as a readonly interface, with each member's documentation, unit, range and example | the generator |
 | `lib/blob.d.ts`, `lib/blob.js` | one decoder per result blob, reading the `TSRB` layout into typed-array views over the blob's own bytes | the generator |
 | `lib/messages.js`, `lib/messages.d.ts` | the typed accessors: every message of the SDK's locale as a function of its parameters, every catalogued entity as its forms (`cargo xtask gen intl`) | the generator |
-| `lib/index.js`, `lib/index.d.ts` | the layer a consumer uses: where the addon is, validation at the door, defaults, errors with their field and hint, results decoded on first use | by hand |
+| `lib/index.js`, `lib/index.d.ts` | the layer a consumer uses: validation at the door, defaults, errors with their field and hint, results decoded on first use; the same file in the wasm package, which is why it names no Node built-in | by hand |
+| `lib/addon.js` | where the addon is: the one file of the layer that is Node's, reached through the package's `#native` import, which the wasm package maps to its own loader ([`../wasm`](../wasm/README.md)) | by hand |
 | `native/src/provider.rs` | the port adapter: an ephemeris written in JavaScript bound into the port's vtable | by hand |
 | `test/` | the decoders against blobs the library produced, and the whole surface through the layer | by hand |
 | `typecheck/` | a consumer, the layer's declarations and the typed accessors at maximum strictness, where every wrong usage is a compile error the file asserts, a swapped latitude and longitude among them; its `package.json` pins the compiler every type-check gate in this repository runs | by hand |

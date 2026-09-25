@@ -11,6 +11,9 @@
   },
   "type": "module",
   "sideEffects": false,
+  "imports": {
+    "#native": "./lib/addon.js"
+  },
   "engines": {
     "node": ">=20"
   },

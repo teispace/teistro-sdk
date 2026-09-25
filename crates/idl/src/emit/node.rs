@@ -78,6 +78,16 @@ impl Backend {
         }
     }
 
+    /// The Rust type bytes are *taken* as. napi's `Buffer` is Node's
+    /// alone; a `Uint8Array` is what both runtimes have, and a `Buffer`
+    /// is one, so the layer passes bytes without naming `Buffer`.
+    fn bytes_in(self) -> &'static str {
+        match self {
+            Backend::Napi => "Uint8Array",
+            Backend::WasmBindgen => "Vec<u8>",
+        }
+    }
+
     /// Bytes owned as a `Vec<u8>`, as the crossing type.
     fn bytes_from(self, vec: &str) -> String {
         match self {
@@ -1254,7 +1264,7 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>, b: Backend) ->
                 args.push(format!("{name}.as_ptr()"));
             }
             Role::BytesIn => {
-                params.push(format!("{name}: {}", b.bytes()));
+                params.push(format!("{name}: {}", b.bytes_in()));
                 last_pointer.clone_from(&name);
                 args.push(format!("{name}.as_ptr()"));
             }
