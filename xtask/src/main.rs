@@ -137,7 +137,8 @@
 //!   classification.
 //! - `bench` and `compare-bench`: how many instructions the same
 //!   scenario costs, counted under callgrind, and two such runs compared
-//!   (fail above 3%, warn above 1%).
+//!   (fail above 3%, warn above 1%), with the costs a change's commits
+//!   accepted in `Instruction-cost` trailers.
 //! - `hashes`: what this build computes for a fixed scenario, hashed per
 //!   section, so two architectures can be compared; with a path, every
 //!   value's bits are written there too.
@@ -438,7 +439,10 @@ fn main() {
         },
         Some("bench") => bench::report(&repo_root(), args.get(1).map(Path::new)),
         Some("compare-bench") => match args.as_slice() {
-            [_, base, head] => bench::compare(Path::new(base), Path::new(head)),
+            [_, base, head] => bench::compare(Path::new(base), Path::new(head), None),
+            [_, base, head, accepted] => {
+                bench::compare(Path::new(base), Path::new(head), Some(Path::new(accepted)))
+            }
             _ => usage(),
         },
         Some("hashes") => hashes::report(args.get(1).map(Path::new)),
@@ -482,7 +486,7 @@ fn usage() -> i32 {
          check-versions | \
          check-package | check-site | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package stage [--partial] | bench [FILE] | \
-         compare-bench BASE HEAD | hashes [VALUES] | compare-hashes A B | accuracy | \
+         compare-bench BASE HEAD [ACCEPTED] | hashes [VALUES] | compare-hashes A B | accuracy | \
          calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi",
         passes.join("\n  ")
     );

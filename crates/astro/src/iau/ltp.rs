@@ -9,6 +9,7 @@
 
 use super::vector::{Matrix3, Vector3, pn, pxp};
 use super::{D2PI, DAS2R};
+use teistro_core::math;
 
 /// Julian centuries since J2000.0 from a Julian epoch.
 fn centuries_from_epoch(epj: f64) -> f64 {
@@ -22,7 +23,7 @@ fn series(t: f64, periodic: &[[f64; 5]], polynomial: [&[f64]; 2]) -> (f64, f64) 
     let mut first = 0.0;
     let mut second = 0.0;
     for term in periodic {
-        let (sine, cosine) = (turn / term[0]).sin_cos();
+        let (sine, cosine) = math::sin_cos(turn / term[0]);
         first += cosine * term[1] + sine * term[3];
         second += cosine * term[2] + sine * term[4];
     }
@@ -85,7 +86,7 @@ pub fn ltpecl(epj: f64) -> Vector3 {
     );
     let third = 1.0 - p * p - q * q;
     let third = if third < 0.0 { 0.0 } else { third.sqrt() };
-    let (sine, cosine) = EPS0.sin_cos();
+    let (sine, cosine) = math::sin_cos(EPS0);
     [p, -q * cosine - third * sine, -q * sine + third * cosine]
 }
 

@@ -5,6 +5,7 @@
 //! every body because the elements carry none.
 
 use teistro_core::angle::normalise_deg;
+use teistro_core::math;
 
 use crate::body::Body;
 use crate::capabilities::{Astronomy, Capabilities, DistanceUnit, Identity, Overrides, SpeedModel};
@@ -122,10 +123,10 @@ impl TestProvider {
     fn cell(elements: &Elements, jd: f64, speeds: bool) -> Cell {
         let t = jd - J2000;
         let mean = elements.longitude_at_j2000 + elements.rate * t;
-        let (sin_mean, cos_mean) = (mean * DEG2RAD).sin_cos();
+        let (sin_mean, cos_mean) = math::sin_cos(mean * DEG2RAD);
         Cell {
             lon: normalise_deg(mean + elements.amplitude * sin_mean),
-            lat: 0.05 * elements.amplitude * (mean * DEG2RAD * 0.5).cos(),
+            lat: 0.05 * elements.amplitude * math::cos(mean * DEG2RAD * 0.5),
             dist: 1.0,
             lon_speed: if speeds {
                 elements.rate + elements.amplitude * elements.rate * DEG2RAD * cos_mean

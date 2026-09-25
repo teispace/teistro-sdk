@@ -16,6 +16,7 @@
 
 use super::vector::Vector3;
 use super::{DJ00, DJY};
+use teistro_core::math;
 
 /// A position (au) and velocity (au/day) in the Barycentric Celestial
 /// Reference System.
@@ -94,24 +95,24 @@ fn component(
         // T^0 terms.
         for &[a, b, c] in t0 {
             let p = b + c * t;
-            xyz += a * p.cos();
-            xyzd -= a * c * p.sin();
+            xyz += a * math::cos(p);
+            xyzd -= a * c * math::sin(p);
         }
         // T^1 terms.
         for &[a, b, c] in t1 {
             let ct = c * t;
             let p = b + ct;
-            let cp = p.cos();
+            let cp = math::cos(p);
             xyz += a * t * cp;
-            xyzd += a * (cp - ct * p.sin());
+            xyzd += a * (cp - ct * math::sin(p));
         }
         // T^2 terms.
         for &[a, b, c] in t2_terms {
             let ct = c * t;
             let p = b + ct;
-            let cp = p.cos();
+            let cp = math::cos(p);
             xyz += a * t2 * cp;
-            xyzd += a * t * (2.0 * cp - ct * p.sin());
+            xyzd += a * t * (2.0 * cp - ct * math::sin(p));
         }
         (xyz, xyzd)
     };

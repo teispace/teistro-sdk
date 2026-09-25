@@ -13,6 +13,7 @@ use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::key::KeyId;
+use teistro_core::math;
 use teistro_vargas::chart::VargaChart;
 
 use crate::clock;
@@ -256,8 +257,8 @@ fn point(radius: f64, bearing: Bearing) -> Point {
             let angle = degrees.to_radians();
             let grain = |v: f64| (v / GRAIN).round() * GRAIN;
             Point::new(
-                grain(CENTRE.x + radius * angle.sin()),
-                grain(CENTRE.y - radius * angle.cos()),
+                grain(CENTRE.x + radius * math::sin(angle)),
+                grain(CENTRE.y - radius * math::cos(angle)),
             )
         }
     }

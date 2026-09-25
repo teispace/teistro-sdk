@@ -56,6 +56,7 @@
 //! Nothing here reads a clock or allocates; every function is a pure
 //! computation on its arguments.
 
+use teistro_core::math;
 pub mod apparent;
 pub mod earth;
 pub mod epv00;
@@ -253,7 +254,7 @@ pub fn nut00b(date1: f64, date2: f64) -> Nutation {
             + f64::from(term.nd) * d
             + f64::from(term.nom) * om)
             % D2PI;
-        let (sarg, carg) = arg.sin_cos();
+        let (sarg, carg) = math::sin_cos(arg);
         // Term.
         dp += (term.ps + term.pst * t) * sarg + term.pc * carg;
         de += (term.ec + term.ect * t) * carg + term.es * sarg;
@@ -398,7 +399,7 @@ fn eect_sum(terms: &[EectTerm], fa: &[f64; 8]) -> f64 {
             .iter()
             .zip(fa)
             .fold(0.0, |acc, (n, value)| acc + f64::from(*n) * value);
-        sum += term.s * a.sin() + term.c * a.cos();
+        sum += term.s * math::sin(a) + term.c * math::cos(a);
     }
     sum
 }
@@ -431,7 +432,7 @@ pub fn eect00(date1: f64, date2: f64) -> f64 {
 /// of `eraEe00`.
 #[must_use]
 pub fn ee00(date1: f64, date2: f64, epsa: f64, dpsi: f64) -> f64 {
-    dpsi * epsa.cos() + eect00(date1, date2)
+    dpsi * math::cos(epsa) + eect00(date1, date2)
 }
 
 /// The equation of the equinoxes, compatible with IAU 2000 resolutions
@@ -506,7 +507,7 @@ pub fn refco(phpa: f64, tc: f64, rh: f64, wl: f64) -> (f64, f64) {
     let w = restrict(wl, 0.1, 1e6);
     // Water vapour pressure at the observer.
     let pw = if p > 0.0 {
-        let ps = 10f64.powf((0.7859 + 0.03477 * t) / (1.0 + 0.00412 * t))
+        let ps = math::powf(10f64, (0.7859 + 0.03477 * t) / (1.0 + 0.00412 * t))
             * (1.0 + p * (4.5e-6 + 6e-10 * t * t));
         r * ps / (1.0 - (1.0 - r) * ps / p)
     } else {

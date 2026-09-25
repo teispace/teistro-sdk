@@ -24,6 +24,7 @@
 use teistro_core::angle::normalise_deg;
 use teistro_core::catalogue::{Nakshatra, Star};
 use teistro_core::error::Error;
+use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Tt};
 
 use crate::iau::apparent::{ab, ldsun, numat, pmpx};
@@ -305,7 +306,7 @@ pub fn place(
     };
     let years = ((date1 - astrometry.epoch.get()) + date2) / DJY;
     let dec = astrometry.dec_deg * DEG2RAD;
-    let ra_rate = astrometry.pm_ra_mas_yr * DMAS2R / dec.cos();
+    let ra_rate = astrometry.pm_ra_mas_yr * DMAS2R / math::cos(dec);
     let mut direction = pmpx(
         astrometry.ra_deg * DEG2RAD,
         dec,
@@ -441,10 +442,10 @@ mod tests {
         );
         let moving = place(&Astrometry::of(Star::Arcturus), later, &Options::GEOMETRIC).unwrap();
         let still = place(&fixed, later, &Options::GEOMETRIC).unwrap();
-        let drift = ((difference_deg(moving.ra_deg, still.ra_deg)
-            * moving.dec_deg.to_radians().cos())
-        .powi(2)
-            + (moving.dec_deg - still.dec_deg).powi(2))
+        let drift = (math::powi(
+            difference_deg(moving.ra_deg, still.ra_deg) * math::cos(moving.dec_deg.to_radians()),
+            2,
+        ) + math::powi(moving.dec_deg - still.dec_deg, 2))
         .sqrt()
             * 3600.0;
         assert!((225.0..=232.0).contains(&drift), "{drift}″ a century");
@@ -465,10 +466,11 @@ mod tests {
         let march = JulianDay::<Tt>::literal(2_451_623.5);
         let with_parallax = place(&alpha_cen, march, &with).unwrap();
         let without = place(&alpha_cen, march, &Options::GEOMETRIC).unwrap();
-        let shift = ((difference_deg(with_parallax.ra_deg, without.ra_deg)
-            * without.dec_deg.to_radians().cos())
-        .powi(2)
-            + (with_parallax.dec_deg - without.dec_deg).powi(2))
+        let shift = (math::powi(
+            difference_deg(with_parallax.ra_deg, without.ra_deg)
+                * math::cos(without.dec_deg.to_radians()),
+            2,
+        ) + math::powi(with_parallax.dec_deg - without.dec_deg, 2))
         .sqrt()
             * 3600.0;
         assert!((0.3..=0.75).contains(&shift), "{shift}″");

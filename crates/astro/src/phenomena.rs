@@ -27,6 +27,7 @@
 
 use teistro_core::angle::normalise_deg;
 use teistro_core::error::{Error, Status};
+use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Tt};
 use teistro_port_ephemeris::{
     Body, Cell, Centre, DistanceUnit, EphemerisProvider, Frame, PositionRequest, ProviderError,
@@ -188,7 +189,7 @@ impl Phenomena {
             let angle_deg = angle_deg(&geometry.body.vector(), &from_sun);
             Phase {
                 angle_deg,
-                illuminated_fraction: f64::midpoint(1.0, (angle_deg * DEG2RAD).cos()),
+                illuminated_fraction: f64::midpoint(1.0, math::cos(angle_deg * DEG2RAD)),
             }
         });
         let magnitude = magnitude(body, geometry, phase, &from_sun, tt);
@@ -209,7 +210,7 @@ fn angle_deg(a: &Vector3, b: &Vector3) -> f64 {
     if ma == 0.0 || mb == 0.0 {
         return 0.0;
     }
-    (pdp(a, b) / (ma * mb)).clamp(-1.0, 1.0).acos() * RAD2DEG
+    math::acos((pdp(a, b) / (ma * mb)).clamp(-1.0, 1.0)) * RAD2DEG
 }
 
 /// The Sun's mean visual magnitude at one astronomical unit (the
@@ -239,8 +240,8 @@ fn magnitude(
         // one astronomical unit, squared.
         let disc = Disc::of(Body::Sun, delta).semidiameter_deg;
         let at_unit = Disc::of(Body::Sun, 1.0).semidiameter_deg;
-        let fac = (disc / at_unit).powi(2);
-        return Some(SUN_MAGNITUDE_AT_1_AU - 2.5 * fac.log10());
+        let fac = math::powi(disc / at_unit, 2);
+        return Some(SUN_MAGNITUDE_AT_1_AU - 2.5 * math::log10(fac));
     }
     let phase = phase?;
     let r = pm(from_sun);
@@ -250,16 +251,16 @@ fn magnitude(
     let a = phase.angle_deg;
     let a2 = a * a;
     // The 5 log(rΔ) distance term every model shares, au.
-    let distance_term = 5.0 * (r * delta).log10();
+    let distance_term = 5.0 * math::log10(r * delta);
     let value = match body {
         Body::Moon => {
             // Allen (1976) with the Earth-Moon distance in Earth radii, and
             // Samaha's cubic for the crescent beyond the stitch.
-            let distances = 5.0 * (delta * r * AU_KM / EARTH_EQUATORIAL_RADIUS_KM).log10();
+            let distances = 5.0 * math::log10(delta * r * AU_KM / EARTH_EQUATORIAL_RADIUS_KM);
             if a <= LUNAR_STITCH_DEG {
-                -21.62 + 0.026 * a.abs() + 4e-9 * a.powi(4) + distances
+                -21.62 + 0.026 * a.abs() + 4e-9 * math::powi(a, 4) + distances
             } else {
-                -4.5444 - 2.5 * (180.0 - a).powi(3).log10() + distances
+                -4.5444 - 2.5 * math::log10(math::powi(180.0 - a, 3)) + distances
             }
         }
         // Mallama and Hilton (2018), sixth order in the phase angle.
@@ -303,15 +304,18 @@ fn magnitude(
             let node = (169.508_470 + 1.394_681 * t + 0.000_412 * t * t) * DEG2RAD;
             let tilt = |lon_deg: f64, lat_deg: f64| {
                 let (lon, lat) = (lon_deg * DEG2RAD, lat_deg * DEG2RAD);
-                (inclination.sin() * lat.cos() * (lon - node).sin() - inclination.cos() * lat.sin())
-                    .clamp(-1.0, 1.0)
-                    .asin()
+                math::asin(
+                    (math::sin(inclination) * math::cos(lat) * math::sin(lon - node)
+                        - math::cos(inclination) * math::sin(lat))
+                    .clamp(-1.0, 1.0),
+                )
             };
             let (helio_lon, helio_lat) = ecliptic_of(from_sun);
             let from_earth = tilt(geometry.body.lon_deg, geometry.body.lat_deg);
             let from_sun_tilt = tilt(helio_lon, helio_lat);
-            let sin_b = f64::midpoint(from_earth, from_sun_tilt).sin().abs();
-            -8.914 - 1.825 * sin_b + 0.026 * a - 0.378 * sin_b * (-2.25 * a).exp() + distance_term
+            let sin_b = math::sin(f64::midpoint(from_earth, from_sun_tilt)).abs();
+            -8.914 - 1.825 * sin_b + 0.026 * a - 0.378 * sin_b * math::exp(-2.25 * a)
+                + distance_term
         }
         Body::Uranus => {
             // The sub-Earth latitude term is folded into its mean, −0.05.
@@ -590,7 +594,7 @@ mod tests {
         let near =
             Phenomena::from_geometry(Body::Sun, &geometry(10.0, 0.983, 10.0), J2000).unwrap();
         assert!(
-            (near.magnitude.unwrap() - (SUN_MAGNITUDE_AT_1_AU + 5.0 * 0.983f64.log10())).abs()
+            (near.magnitude.unwrap() - (SUN_MAGNITUDE_AT_1_AU + 5.0 * math::log10(0.983f64))).abs()
                 < 1e-6
         );
         let node = Geometry {

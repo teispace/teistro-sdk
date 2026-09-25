@@ -4,6 +4,7 @@
 //! angles in radians. Nothing here allocates.
 
 use core::f64::consts::PI;
+use teistro_core::math;
 
 use super::D2PI;
 
@@ -22,7 +23,7 @@ pub const fn ir() -> Matrix3 {
 /// Rotates the matrix about the x axis by `phi` (`eraRx`): the rotation
 /// is applied after the matrix's own, as ERFA composes them.
 pub fn rx(phi: f64, r: &mut Matrix3) {
-    let (s, c) = phi.sin_cos();
+    let (s, c) = math::sin_cos(phi);
     let a10 = c * r[1][0] + s * r[2][0];
     let a11 = c * r[1][1] + s * r[2][1];
     let a12 = c * r[1][2] + s * r[2][2];
@@ -35,7 +36,7 @@ pub fn rx(phi: f64, r: &mut Matrix3) {
 
 /// Rotates the matrix about the y axis by `theta` (`eraRy`).
 pub fn ry(theta: f64, r: &mut Matrix3) {
-    let (s, c) = theta.sin_cos();
+    let (s, c) = math::sin_cos(theta);
     let a00 = c * r[0][0] - s * r[2][0];
     let a01 = c * r[0][1] - s * r[2][1];
     let a02 = c * r[0][2] - s * r[2][2];
@@ -48,7 +49,7 @@ pub fn ry(theta: f64, r: &mut Matrix3) {
 
 /// Rotates the matrix about the z axis by `psi` (`eraRz`).
 pub fn rz(psi: f64, r: &mut Matrix3) {
-    let (s, c) = psi.sin_cos();
+    let (s, c) = math::sin_cos(psi);
     let a00 = c * r[0][0] + s * r[1][0];
     let a01 = c * r[0][1] + s * r[1][1];
     let a02 = c * r[0][2] + s * r[1][2];
@@ -140,11 +141,15 @@ pub fn pn(p: &Vector3) -> (f64, Vector3) {
 #[must_use]
 pub fn c2s(p: &Vector3) -> (f64, f64) {
     let d2 = p[0] * p[0] + p[1] * p[1];
-    let theta = if d2 == 0.0 { 0.0 } else { p[1].atan2(p[0]) };
+    let theta = if d2 == 0.0 {
+        0.0
+    } else {
+        math::atan2(p[1], p[0])
+    };
     let phi = if p[2] == 0.0 {
         0.0
     } else {
-        p[2].atan2(d2.sqrt())
+        math::atan2(p[2], d2.sqrt())
     };
     (theta, phi)
 }
@@ -152,8 +157,8 @@ pub fn c2s(p: &Vector3) -> (f64, f64) {
 /// Spherical to a unit Cartesian vector (`eraS2c`).
 #[must_use]
 pub fn s2c(theta: f64, phi: f64) -> Vector3 {
-    let cp = phi.cos();
-    [theta.cos() * cp, theta.sin() * cp, phi.sin()]
+    let cp = math::cos(phi);
+    [math::cos(theta) * cp, math::sin(theta) * cp, math::sin(phi)]
 }
 
 /// An angle into `(-π, π]` (`eraAnpm`).

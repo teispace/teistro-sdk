@@ -143,27 +143,86 @@ fn instructions(profile: &str) -> Option<u64> {
 
 // ── compare-bench ──────────────────────────────────────────────────────────
 
-/// Compares two counted runs and says what moved, by how much, and
-/// whether that is a regression.
-pub(crate) fn compare(base: &Path, head: &Path) -> i32 {
-    let (before, after) = (counts(base), counts(head));
-    if before.is_empty() || after.is_empty() {
-        println!(
-            "FAIL  a run has no counts: {} and {}",
-            base.display(),
-            head.display()
-        );
-        return 1;
-    }
-    let mut worst = 0.0_f64;
-    let mut regressions = Vec::new();
-    println!(
+/// A cost a change declared on purpose: a commit's
+/// `Instruction-cost: <section> +<percent>% (<reason>)` trailer.
+///
+/// The gate has one threshold and no memory, so a deliberate price — one
+/// `libm` on every target is the first, ADR-0022 — would otherwise fail it
+/// or be waved past it. The trailer is reviewed with the change, lives in
+/// its history, and belongs to that change alone: the workflow reads only
+/// the pull request's own commits, so an acceptance never outlives its
+/// pull request and never excuses the next one.
+#[derive(Debug, Clone, PartialEq)]
+struct Accepted {
+    section: String,
+    percent: f64,
+    reason: String,
+}
+
+/// The trailers' values, one a line, as `git log --format=
+/// '%(trailers:key=Instruction-cost,valueonly)'` prints them; a line that
+/// does not read as one is an error rather than a silence.
+fn accepted_costs(text: &str) -> Result<Vec<Accepted>, String> {
+    text.lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .map(|line| {
+            let refuse = || {
+                format!(
+                    "`Instruction-cost: {line}` does not read as `<section> +<percent>% (<reason>)`"
+                )
+            };
+            let (section, rest) = line.split_once(' ').ok_or_else(refuse)?;
+            let (percent, reason) = rest.trim().split_once('%').ok_or_else(refuse)?;
+            let percent: f64 = percent
+                .trim()
+                .strip_prefix('+')
+                .and_then(|p| p.parse().ok())
+                .ok_or_else(refuse)?;
+            let reason = reason
+                .trim()
+                .strip_prefix('(')
+                .and_then(|r| r.strip_suffix(')'))
+                .map(str::trim)
+                .filter(|r| !r.is_empty())
+                .ok_or_else(refuse)?;
+            Ok(Accepted {
+                section: section.to_string(),
+                percent,
+                reason: reason.to_string(),
+            })
+        })
+        .collect()
+}
+
+/// What a comparison found: its report, line by line, and its failures.
+#[derive(Debug, Default)]
+struct Judgement {
+    lines: Vec<String>,
+    failures: Vec<String>,
+    worst: f64,
+}
+
+/// Judges two counted runs against the costs the change accepted.
+///
+/// **An acceptance is held both ways.** A section may cost up to what its
+/// trailer says and no more; and a trailer for a section that did not
+/// cost more than the threshold fails too, because an excuse nothing
+/// needed is one that would silently cover the next regression.
+fn judge(
+    before: &BTreeMap<String, u64>,
+    after: &BTreeMap<String, u64>,
+    accepted: &[Accepted],
+) -> Judgement {
+    let mut out = Judgement::default();
+    out.lines.push(format!(
         "{:<12} {:>16} {:>16} {:>9}",
         "section", "base", "head", "change"
-    );
+    ));
     let mut sections: Vec<&String> = before.keys().chain(after.keys()).collect();
     sections.sort_unstable();
     sections.dedup();
+    let mut changes: BTreeMap<&str, f64> = BTreeMap::new();
     for section in sections {
         match (before.get(section), after.get(section)) {
             (Some(&base), Some(&head)) => {
@@ -176,25 +235,84 @@ pub(crate) fn compare(base: &Path, head: &Path) -> i32 {
                 } else {
                     (head as f64 - base as f64) / base as f64 * 100.0
                 };
-                println!("{section:<12} {base:>16} {head:>16} {change:>8.2}%");
-                if change > worst {
-                    worst = change;
-                }
-                if change > FAIL {
-                    regressions.push(format!("{section} costs {change:.2}% more"));
+                out.lines.push(format!(
+                    "{section:<12} {base:>16} {head:>16} {change:>8.2}%"
+                ));
+                changes.insert(section, change);
+                let declared = accepted.iter().find(|a| a.section == *section);
+                match declared {
+                    Some(a) if change > FAIL && change <= a.percent => out.lines.push(format!(
+                        "accepted  {section} costs {change:.2}%, within the {}% its commit accepted: {}",
+                        a.percent, a.reason
+                    )),
+                    Some(a) if change > a.percent && change > FAIL => out.failures.push(format!(
+                        "{section} costs {change:.2}% more, which is more than the {}% its commit accepted",
+                        a.percent
+                    )),
+                    _ if change > FAIL => out.failures.push(format!(
+                        "{section} costs {change:.2}% more, which is more than the {FAIL}% a change may cost"
+                    )),
+                    _ => out.worst = out.worst.max(change),
                 }
             }
-            (None, Some(&head)) => println!("{section:<12} {:>16} {head:>16} {:>9}", "—", "new"),
-            (Some(&base), None) => println!("{section:<12} {base:>16} {:>16} {:>9}", "—", "gone"),
+            (None, Some(&head)) => out
+                .lines
+                .push(format!("{section:<12} {:>16} {head:>16} {:>9}", "—", "new")),
+            (Some(&base), None) => out.lines.push(format!(
+                "{section:<12} {base:>16} {:>16} {:>9}",
+                "—", "gone"
+            )),
             (None, None) => {}
         }
     }
-    if !regressions.is_empty() {
-        for regression in &regressions {
-            println!("FAIL  {regression}, which is more than the {FAIL}% a change may cost");
+    for a in accepted {
+        match changes.get(a.section.as_str()) {
+            None => out.failures.push(format!(
+                "a commit accepts a cost for `{}`, which is not a section both runs counted",
+                a.section
+            )),
+            Some(&change) if change <= FAIL => out.failures.push(format!(
+                "a commit accepts {}% for `{}`, which cost {change:.2}%: the acceptance is not needed and would cover the next regression",
+                a.percent, a.section
+            )),
+            Some(_) => {}
+        }
+    }
+    out
+}
+
+/// Compares two counted runs and says what moved, by how much, and
+/// whether that is a regression; `accepted`, when given, is the file of
+/// `Instruction-cost` trailers the change's own commits carry.
+pub(crate) fn compare(base: &Path, head: &Path, accepted: Option<&Path>) -> i32 {
+    let (before, after) = (counts(base), counts(head));
+    if before.is_empty() || after.is_empty() {
+        println!(
+            "FAIL  a run has no counts: {} and {}",
+            base.display(),
+            head.display()
+        );
+        return 1;
+    }
+    let declared = match accepted.map(|path| accepted_costs(&read(path))) {
+        None => Vec::new(),
+        Some(Ok(declared)) => declared,
+        Some(Err(refusal)) => {
+            println!("FAIL  {refusal}");
+            return 1;
+        }
+    };
+    let judgement = judge(&before, &after, &declared);
+    for line in &judgement.lines {
+        println!("{line}");
+    }
+    if !judgement.failures.is_empty() {
+        for failure in &judgement.failures {
+            println!("FAIL  {failure}");
         }
         return 1;
     }
+    let worst = judgement.worst;
     if worst > WARN {
         println!(
             "warn  the worst section costs {worst:.2}% more, which is over {WARN}% and under {FAIL}%: worth a look, not a failure"
@@ -218,7 +336,77 @@ fn counts(path: &Path) -> BTreeMap<String, u64> {
 
 #[cfg(test)]
 mod tests {
-    use super::instructions;
+    use super::{Accepted, BTreeMap, accepted_costs, instructions, judge};
+
+    fn run(pairs: &[(&str, u64)]) -> BTreeMap<String, u64> {
+        pairs.iter().map(|(s, n)| ((*s).to_string(), *n)).collect()
+    }
+
+    fn accept(section: &str, percent: f64) -> Accepted {
+        Accepted {
+            section: section.to_string(),
+            percent,
+            reason: "a reason".to_string(),
+        }
+    }
+
+    /// A trailer reads as its section, its percentage and its reason, and
+    /// anything else is refused rather than ignored.
+    #[test]
+    fn a_trailer_reads_or_is_refused() {
+        let read = accepted_costs("astro +12.5% (one libm, ADR-0022)\n\n").unwrap();
+        assert_eq!(
+            read,
+            [Accepted {
+                section: "astro".to_string(),
+                percent: 12.5,
+                reason: "one libm, ADR-0022".to_string(),
+            }]
+        );
+        for wrong in ["astro 12%", "astro +12% ()", "astro +x% (why)", "astro"] {
+            assert!(accepted_costs(wrong).is_err(), "{wrong}");
+        }
+    }
+
+    /// Unaccepted, a section over the threshold fails; accepted, it passes
+    /// up to what was declared and fails beyond it.
+    #[test]
+    fn an_acceptance_covers_what_it_declares_and_no_more() {
+        let before = run(&[("astro", 1000), ("houses", 1000)]);
+        let after = run(&[("astro", 1100), ("houses", 1005)]);
+        assert_eq!(judge(&before, &after, &[]).failures.len(), 1);
+        assert!(
+            judge(&before, &after, &[accept("astro", 10.0)])
+                .failures
+                .is_empty()
+        );
+        assert_eq!(
+            judge(&before, &after, &[accept("astro", 9.5)])
+                .failures
+                .len(),
+            1
+        );
+    }
+
+    /// An acceptance nothing needed fails, and so does one for a section
+    /// that is not there.
+    #[test]
+    fn an_unneeded_acceptance_fails() {
+        let before = run(&[("astro", 1000)]);
+        let after = run(&[("astro", 1010)]);
+        assert_eq!(
+            judge(&before, &after, &[accept("astro", 5.0)])
+                .failures
+                .len(),
+            1
+        );
+        assert_eq!(
+            judge(&before, &after, &[accept("nowhere", 5.0)])
+                .failures
+                .len(),
+            1
+        );
+    }
 
     #[test]
     fn a_profile_reports_its_total() {

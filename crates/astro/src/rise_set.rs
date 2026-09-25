@@ -22,6 +22,7 @@
 //! altitude of the convention when a caller wants one.
 
 use core::fmt;
+use teistro_core::math;
 
 use serde::Serialize;
 use teistro_core::angle::difference_deg;
@@ -182,8 +183,8 @@ impl Disc {
         }
         let distance_km = distance_au * AU_KM;
         Disc {
-            semidiameter_deg: (radius_km(body) / distance_km).min(1.0).asin() * RAD2DEG,
-            parallax_deg: (EARTH_EQUATORIAL_RADIUS_KM / distance_km).min(1.0).asin() * RAD2DEG,
+            semidiameter_deg: math::asin((radius_km(body) / distance_km).min(1.0)) * RAD2DEG,
+            parallax_deg: math::asin((EARTH_EQUATORIAL_RADIUS_KM / distance_km).min(1.0)) * RAD2DEG,
         }
     }
 }
@@ -446,11 +447,11 @@ impl<'a> Solver<'a> {
         let (tt, _) = tt_of(ut1, self.delta_t)?;
         let sidereal = sidereal_time_deg(ut1, tt, self.place.longitude);
         let hour_angle_deg = difference_deg(sidereal, apparent.ra_deg);
-        let (sin_phi, cos_phi) = (self.place.latitude.get() * DEG2RAD).sin_cos();
-        let (sin_dec, cos_dec) = (apparent.dec_deg * DEG2RAD).sin_cos();
-        let sin_alt = sin_phi * sin_dec + cos_phi * cos_dec * (hour_angle_deg * DEG2RAD).cos();
+        let (sin_phi, cos_phi) = math::sin_cos(self.place.latitude.get() * DEG2RAD);
+        let (sin_dec, cos_dec) = math::sin_cos(apparent.dec_deg * DEG2RAD);
+        let sin_alt = sin_phi * sin_dec + cos_phi * cos_dec * math::cos(hour_angle_deg * DEG2RAD);
         Ok(Sample {
-            altitude_deg: sin_alt.clamp(-1.0, 1.0).asin() * RAD2DEG,
+            altitude_deg: math::asin(sin_alt.clamp(-1.0, 1.0)) * RAD2DEG,
             target_deg: centre_altitude_deg(
                 &self.horizon,
                 &Disc::of(self.body, apparent.distance_au),
@@ -468,17 +469,18 @@ impl<'a> Solver<'a> {
             HorizonEventKind::Transit => Some(0.0),
             HorizonEventKind::Antitransit => Some(180.0),
             HorizonEventKind::Rise | HorizonEventKind::Set => {
-                let (sin_phi, cos_phi) = (self.place.latitude.get() * DEG2RAD).sin_cos();
-                let (sin_dec, cos_dec) = (sample.dec_deg * DEG2RAD).sin_cos();
+                let (sin_phi, cos_phi) = math::sin_cos(self.place.latitude.get() * DEG2RAD);
+                let (sin_dec, cos_dec) = math::sin_cos(sample.dec_deg * DEG2RAD);
                 let denominator = cos_phi * cos_dec;
                 if denominator.abs() < f64::EPSILON {
                     return None;
                 }
-                let cos_h = ((sample.target_deg * DEG2RAD).sin() - sin_phi * sin_dec) / denominator;
+                let cos_h =
+                    (math::sin(sample.target_deg * DEG2RAD) - sin_phi * sin_dec) / denominator;
                 if !(-1.0..=1.0).contains(&cos_h) {
                     return None;
                 }
-                let h = cos_h.acos() * RAD2DEG;
+                let h = math::acos(cos_h) * RAD2DEG;
                 Some(if kind == HorizonEventKind::Rise {
                     -h
                 } else {
@@ -644,9 +646,9 @@ impl<'a> Solver<'a> {
                         / HOUR_ANGLE_RATE_DEG_PER_DAY
                 }
                 HorizonEventKind::Rise | HorizonEventKind::Set => {
-                    let (_, cos_phi) = (self.place.latitude.get() * DEG2RAD).sin_cos();
-                    let cos_dec = (sample.dec_deg * DEG2RAD).cos();
-                    let factor = cos_dec * cos_phi * (sample.hour_angle_deg * DEG2RAD).sin();
+                    let (_, cos_phi) = math::sin_cos(self.place.latitude.get() * DEG2RAD);
+                    let cos_dec = math::cos(sample.dec_deg * DEG2RAD);
+                    let factor = cos_dec * cos_phi * math::sin(sample.hour_angle_deg * DEG2RAD);
                     if factor.abs() < MIN_RATE_FACTOR {
                         return Ok(None);
                     }

@@ -14,6 +14,7 @@
 
 use super::vector::{self, Matrix3, Vector3};
 use super::{D2PI, DAS2R, DAYSEC, DJ00, DJC};
+use teistro_core::math;
 
 /// A reference ellipsoid the geodetic coordinates of a place are measured
 /// against (`eraEform`'s identifiers, whose invalid values cannot be
@@ -81,8 +82,8 @@ impl Ellipsoid {
 )]
 pub fn gd2gce(a: f64, f: f64, elong: f64, phi: f64, height: f64) -> Option<Vector3> {
     // Functions of geodetic latitude.
-    let sp = phi.sin();
-    let cp = phi.cos();
+    let sp = math::sin(phi);
+    let cp = math::cos(phi);
     let w = 1.0 - f;
     let w = w * w;
     let d = cp * cp + w * sp * sp;
@@ -93,7 +94,11 @@ pub fn gd2gce(a: f64, f: f64, elong: f64, phi: f64, height: f64) -> Option<Vecto
     let as_ = w * ac;
     // Geocentric vector.
     let r = (ac + height) * cp;
-    Some([r * elong.cos(), r * elong.sin(), (as_ + height) * sp])
+    Some([
+        r * math::cos(elong),
+        r * math::sin(elong),
+        (as_ + height) * sp,
+    ])
 }
 
 /// Geodetic coordinates to a geocentric vector on a named ellipsoid
@@ -166,7 +171,7 @@ pub fn pvtob(elong: f64, phi: f64, hm: f64, xp: f64, yp: f64, sp: f64, theta: f6
     let rpm = pom00(xp, yp, sp);
     let [x, y, z] = vector::trxp(&rpm, &xyzm);
     // Functions of ERA.
-    let (sin, cos) = theta.sin_cos();
+    let (sin, cos) = math::sin_cos(theta);
     [
         // Position.
         [cos * x - sin * y, sin * x + cos * y, z],

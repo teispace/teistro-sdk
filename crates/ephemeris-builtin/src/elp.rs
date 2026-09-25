@@ -41,6 +41,7 @@
 )]
 
 use crate::series::J2000;
+use teistro_core::math;
 
 /// Arcseconds in a radian, as the Fortran computes it: `648000/π`.
 const RAD: f64 = 648000.0 / std::f64::consts::PI;
@@ -481,7 +482,7 @@ fn main_amplitude_and_angle(term: &MainTerm, file: u8, arguments: &Arguments) ->
 #[must_use]
 pub fn main_contribution(term: &MainTerm, file: u8, arguments: &Arguments) -> f64 {
     let (amplitude, angle) = main_amplitude_and_angle(term, file, arguments);
-    amplitude * angle.sin()
+    amplitude * math::sin(angle)
 }
 
 /// The main problem's contribution to a coordinate's **rate**, per
@@ -493,7 +494,7 @@ pub fn main_contribution(term: &MainTerm, file: u8, arguments: &Arguments) -> f6
 pub fn main_rate(term: &MainTerm, file: u8, arguments: &Arguments) -> f64 {
     let (amplitude, angle) = main_amplitude_and_angle(term, file, arguments);
     let rate = argument_rate(&term.multipliers, arguments, 5);
-    amplitude * angle.cos() * rate
+    amplitude * math::cos(angle) * rate
 }
 
 /// A perturbation term's contribution to a coordinate.
@@ -583,7 +584,7 @@ fn perturbation_amplitude_and_angle(
 #[must_use]
 pub fn perturbation_contribution(term: &PerturbationTerm, file: u8, arguments: &Arguments) -> f64 {
     let (amplitude, angle) = perturbation_amplitude_and_angle(term, file, arguments);
-    amplitude * angle.sin()
+    amplitude * math::sin(angle)
 }
 
 /// The multipliers that go with Delaunay's arguments for a file, which
@@ -639,7 +640,7 @@ pub fn perturbation_rate(term: &PerturbationTerm, file: u8, arguments: &Argument
     let (amplitude, angle) = perturbation_amplitude_and_angle(term, file, arguments);
     // Only the first two powers of time enter a perturbation's argument.
     let turning = argument_rate(argument_multipliers(term, file), arguments, 2);
-    let from_argument = amplitude * angle.cos() * turning;
+    let from_argument = amplitude * math::cos(angle) * turning;
     if power == 0 {
         return from_argument;
     }
@@ -651,7 +652,7 @@ pub fn perturbation_rate(term: &PerturbationTerm, file: u8, arguments: &Argument
     //  to  is exact; no expectation is needed and one that is
     // never met is noise a reader has to check.
     let power = f64::from(power);
-    from_argument + power * previous * term.amplitude * angle.sin()
+    from_argument + power * previous * term.amplitude * math::sin(angle)
 }
 
 /// The three summed coordinates, turned into a geocentric rectangular
@@ -767,10 +768,10 @@ pub fn to_rectangular(sums: [f64; 3], jd: f64) -> [f64; 3] {
     let latitude = sum_latitude / RAD;
     let distance = sum_distance * A0 / ATH;
 
-    let in_plane = distance * latitude.cos();
-    let x1 = in_plane * longitude.cos();
-    let x2 = in_plane * longitude.sin();
-    let x3 = distance * latitude.sin();
+    let in_plane = distance * math::cos(latitude);
+    let x1 = in_plane * math::cos(longitude);
+    let x2 = in_plane * math::sin(longitude);
+    let x3 = distance * math::sin(latitude);
 
     // The rotation to J2000, as the published reader writes it.
     let pw = (0.10180391e-4 + 0.47020439e-6 * t1 - 0.5417367e-9 * t2 - 0.2507948e-11 * t3
@@ -814,8 +815,8 @@ pub fn to_rectangular_and_rate(sums: [f64; 3], rates: [f64; 3], jd: f64) -> ([f6
     let d_latitude = rate_latitude / RAD / DAYS_PER_CENTURY;
     let d_distance = rate_distance * A0 / ATH / DAYS_PER_CENTURY;
 
-    let (sin_lat, cos_lat) = latitude.sin_cos();
-    let (sin_lon, cos_lon) = longitude.sin_cos();
+    let (sin_lat, cos_lat) = math::sin_cos(latitude);
+    let (sin_lon, cos_lon) = math::sin_cos(longitude);
     let position = [
         distance * cos_lat * cos_lon,
         distance * cos_lat * sin_lon,
@@ -887,7 +888,11 @@ mod tests {
         let out = to_rectangular(sums, J2000);
         let arguments = Arguments::at(J2000);
         let longitude = arguments.w1[0];
-        let expected = [A0 / ATH * longitude.cos(), A0 / ATH * longitude.sin(), 0.0];
+        let expected = [
+            A0 / ATH * math::cos(longitude),
+            A0 / ATH * math::sin(longitude),
+            0.0,
+        ];
         for (got, want) in out.iter().zip(expected) {
             assert!((got - want).abs() < 1e-12, "{got} against {want}");
         }

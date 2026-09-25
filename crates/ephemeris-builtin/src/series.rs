@@ -5,6 +5,7 @@
 //! type and one evaluator serve both, and a tier is a prefix of the
 //! terms rather than a different kind of table.
 
+use teistro_core::math;
 /// One term of a coordinate's series: `amplitude · cos(phase +
 /// frequency · t)`, scaled by `t` raised to [`Term::power`].
 ///
@@ -49,7 +50,9 @@ impl Term {
     pub fn at(self, t: f64) -> f64 {
         // `powi` rather than `powf`: the power is a small integer and
         // `powi` is exact for one, which the great majority of terms are.
-        self.amplitude * f64::cos(self.phase + self.frequency * t) * t.powi(i32::from(self.power))
+        self.amplitude
+            * f64::cos(self.phase + self.frequency * t)
+            * math::powi(t, i32::from(self.power))
     }
 
     /// The term's rate of change at `t`, per Julian millennium.
@@ -75,14 +78,14 @@ impl Term {
     #[must_use]
     pub fn rate_at(self, t: f64) -> f64 {
         let angle = self.phase + self.frequency * t;
-        let (sin, cos) = angle.sin_cos();
+        let (sin, cos) = math::sin_cos(angle);
         let power = i32::from(self.power);
         let from_power = if self.power == 0 {
             0.0
         } else {
-            f64::from(self.power) * t.powi(power - 1) * cos
+            f64::from(self.power) * math::powi(t, power - 1) * cos
         };
-        let from_phase = self.frequency * t.powi(power) * sin;
+        let from_phase = self.frequency * math::powi(t, power) * sin;
         self.amplitude * (from_power - from_phase)
     }
 }
@@ -180,13 +183,13 @@ mod tests {
             (0.0, -1.0),
             (-0.3, -0.7),
         ] {
-            let amplitude = sine.hypot(cosine);
-            let phase = (-sine).atan2(cosine);
+            let amplitude = math::hypot(sine, cosine);
+            let phase = math::atan2(-sine, cosine);
             let frequency = 6_283.075_849_991_40;
             let term = Term::new(amplitude, phase, frequency, 0);
             for t in [-1.5, -0.2, 0.0, 0.13, 2.4] {
                 let angle = frequency * t;
-                let expected = sine * angle.sin() + cosine * angle.cos();
+                let expected = sine * math::sin(angle) + cosine * math::cos(angle);
                 assert!(
                     (term.at(t) - expected).abs() < 1e-12,
                     "S={sine} K={cosine} t={t}: {} against {expected}",

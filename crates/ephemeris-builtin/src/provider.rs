@@ -49,6 +49,7 @@
 
 use teistro_astro::DeltaTModel;
 use teistro_astro::scale::tt_of;
+use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Ut1};
 use teistro_core::settings::Tier;
 use teistro_port_ephemeris::{
@@ -220,7 +221,7 @@ impl Builtin {
         let longitude_at = |at: f64| {
             let (place, speed) = self.moon(at);
             let (apogee, _) = osculating_apogee(place, speed);
-            apogee[1].atan2(apogee[0])
+            math::atan2(apogee[1], apogee[0])
         };
         let mut moved = longitude_at(jd + STEP) - longitude_at(jd - STEP);
         while moved > std::f64::consts::PI {
@@ -287,7 +288,7 @@ impl Builtin {
             .iter()
             .enumerate()
             .map(|(power, coefficient)| {
-                coefficient * century.powi(i32::try_from(power).unwrap_or(0))
+                coefficient * math::powi(century, i32::try_from(power).unwrap_or(0))
             })
             .sum();
         (arcsec / ARCSEC_PER_DEGREE).to_radians()
@@ -296,7 +297,7 @@ impl Builtin {
 
 /// A direction on the ecliptic at a longitude, as a unit vector.
 fn on_the_ecliptic(longitude: f64) -> [f64; 3] {
-    let (sin, cos) = longitude.sin_cos();
+    let (sin, cos) = math::sin_cos(longitude);
     [cos, sin, 0.0]
 }
 
@@ -318,8 +319,8 @@ fn on_the_ecliptic(longitude: f64) -> [f64; 3] {
 fn direction_cell(direction: [f64; 3], rate: f64, source: Source) -> Cell {
     let [x, y, z] = direction;
     Cell {
-        lon: y.atan2(x).to_degrees().rem_euclid(360.0),
-        lat: z.atan2(x.hypot(y)).to_degrees(),
+        lon: math::atan2(y, x).to_degrees().rem_euclid(360.0),
+        lat: math::atan2(z, math::hypot(x, y)).to_degrees(),
         dist: 0.0,
         lon_speed: rate.to_degrees(),
         lat_speed: 0.0,
@@ -428,7 +429,7 @@ fn ecliptic_pole_of_date(jd: f64) -> [f64; 3] {
 /// Turns a vector about the ecliptic pole, which is what adjusting a
 /// mean longitude does.
 fn rotate_about_pole(v: [f64; 3], angle: f64) -> [f64; 3] {
-    let (sin, cos) = angle.sin_cos();
+    let (sin, cos) = math::sin_cos(angle);
     [v[0] * cos - v[1] * sin, v[0] * sin + v[1] * cos, v[2]]
 }
 
@@ -458,8 +459,8 @@ fn to_cell(position: [f64; 3], rate: [f64; 3], source: Source) -> Cell {
         dz.mul_add(flat, -(z * (x * dx + y * dy))) / (distance * distance * flat_length)
     };
     Cell {
-        lon: y.atan2(x).to_degrees().rem_euclid(360.0),
-        lat: (z / distance).asin().to_degrees(),
+        lon: math::atan2(y, x).to_degrees().rem_euclid(360.0),
+        lat: math::asin(z / distance).to_degrees(),
         dist: distance,
         lon_speed: lon_speed.to_degrees(),
         lat_speed: lat_speed.to_degrees(),
@@ -605,7 +606,7 @@ impl EphemerisProvider for Builtin {
                         let at = |jd: f64| {
                             let (p, v) = self.moon(jd);
                             let node = true_node(p, v, ecliptic_pole_of_date(jd));
-                            node[1].atan2(node[0])
+                            math::atan2(node[1], node[0])
                         };
                         let before = at(dynamical - STEP);
                         let after = at(dynamical + STEP);

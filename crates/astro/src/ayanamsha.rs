@@ -33,6 +33,7 @@
 use teistro_core::angle::normalise_deg;
 use teistro_core::catalogue::{Ayanamsha, Star};
 use teistro_core::error::{Error, Status};
+use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
 pub use teistro_core::settings::AyanamshaBasis as Basis;
 use teistro_core::settings::AyanamshaChoice;
@@ -352,7 +353,7 @@ fn anchored_value_deg(
 /// meets the ecliptic: the midheaven of that right ascension.
 fn meridian_longitude_deg(ra_deg: f64, obliquity_rad: f64) -> f64 {
     let ra = ra_deg * DEG2RAD;
-    normalise_deg(ra.sin().atan2(ra.cos() * obliquity_rad.cos()) * RAD2DEG)
+    normalise_deg(math::atan2(math::sin(ra), math::cos(ra) * math::cos(obliquity_rad)) * RAD2DEG)
 }
 
 /// The mean ayanamsha at a TT instant, degrees: the offset a sidereal

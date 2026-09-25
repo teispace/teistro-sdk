@@ -32,6 +32,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::catalogue::{Degeneracy, HouseSystem};
 use teistro_core::error::{Error, Status};
+use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Place, Tt, Ut1};
 use teistro_core::settings::PolarPolicy;
 
@@ -142,9 +143,9 @@ pub fn is_polar(latitude_deg: f64, obliquity_deg: f64) -> bool {
 /// gives the ascendant, an hour circle the midheaven.
 #[must_use]
 pub fn circle_point(ra_deg: f64, pole_deg: f64, eps: &Obliquity) -> f64 {
-    let (sin_ra, cos_ra) = (ra_deg * DEG2RAD).sin_cos();
-    let denominator = eps.cos * cos_ra - eps.sin * (pole_deg * DEG2RAD).tan();
-    let value = normalise_deg(sin_ra.atan2(denominator) * RAD2DEG);
+    let (sin_ra, cos_ra) = math::sin_cos(ra_deg * DEG2RAD);
+    let denominator = eps.cos * cos_ra - eps.sin * math::tan(pole_deg * DEG2RAD);
+    let value = normalise_deg(math::atan2(sin_ra, denominator) * RAD2DEG);
     snap_cardinal(value)
 }
 
@@ -172,7 +173,7 @@ pub struct Obliquity {
 
 impl Obliquity {
     fn new(deg: f64) -> Obliquity {
-        let (sin, cos) = (deg * DEG2RAD).sin_cos();
+        let (sin, cos) = math::sin_cos(deg * DEG2RAD);
         Obliquity {
             deg,
             sin,
@@ -183,53 +184,53 @@ impl Obliquity {
 }
 
 fn sind(x: f64) -> f64 {
-    (x * DEG2RAD).sin()
+    math::sin(x * DEG2RAD)
 }
 fn cosd(x: f64) -> f64 {
-    (x * DEG2RAD).cos()
+    math::cos(x * DEG2RAD)
 }
 fn tand(x: f64) -> f64 {
-    (x * DEG2RAD).tan()
+    math::tan(x * DEG2RAD)
 }
 fn asind(x: f64) -> f64 {
-    x.clamp(-1.0, 1.0).asin() * RAD2DEG
+    math::asin(x.clamp(-1.0, 1.0)) * RAD2DEG
 }
 fn acosd(x: f64) -> f64 {
-    x.clamp(-1.0, 1.0).acos() * RAD2DEG
+    math::acos(x.clamp(-1.0, 1.0)) * RAD2DEG
 }
 fn atand(x: f64) -> f64 {
-    x.atan() * RAD2DEG
+    math::atan(x) * RAD2DEG
 }
 
 /// The ecliptic longitude of a point on the equator at right ascension
 /// `ra_deg` (the Morinus projection, along circles through the ecliptic
 /// poles).
 fn equator_point_longitude(ra_deg: f64, eps: &Obliquity) -> f64 {
-    let (sin_ra, cos_ra) = (ra_deg * DEG2RAD).sin_cos();
-    normalise_deg((sin_ra * eps.cos).atan2(cos_ra) * RAD2DEG)
+    let (sin_ra, cos_ra) = math::sin_cos(ra_deg * DEG2RAD);
+    normalise_deg(math::atan2(sin_ra * eps.cos, cos_ra) * RAD2DEG)
 }
 
 /// The right ascension of a point on the ecliptic at longitude `lon_deg`.
 fn ecliptic_point_right_ascension(lon_deg: f64, eps: &Obliquity) -> f64 {
-    let (sin_lon, cos_lon) = (lon_deg * DEG2RAD).sin_cos();
-    normalise_deg((sin_lon * eps.cos).atan2(cos_lon) * RAD2DEG)
+    let (sin_lon, cos_lon) = math::sin_cos(lon_deg * DEG2RAD);
+    normalise_deg(math::atan2(sin_lon * eps.cos, cos_lon) * RAD2DEG)
 }
 
 /// A spherical point rotated about the x axis by `angle_deg`: longitude and
 /// latitude in, longitude and latitude out, degrees.
 fn rotate_x(lon_deg: f64, lat_deg: f64, angle_deg: f64) -> (f64, f64) {
-    let (sin_lon, cos_lon) = (lon_deg * DEG2RAD).sin_cos();
-    let (sin_lat, cos_lat) = (lat_deg * DEG2RAD).sin_cos();
-    let (sin_a, cos_a) = (angle_deg * DEG2RAD).sin_cos();
+    let (sin_lon, cos_lon) = math::sin_cos(lon_deg * DEG2RAD);
+    let (sin_lat, cos_lat) = math::sin_cos(lat_deg * DEG2RAD);
+    let (sin_a, cos_a) = math::sin_cos(angle_deg * DEG2RAD);
     let x = cos_lat * cos_lon;
     let y = cos_lat * sin_lon * cos_a + sin_lat * sin_a;
     let z = -cos_lat * sin_lon * sin_a + sin_lat * cos_a;
     let rxy = (x * x + y * y).sqrt();
-    let lon = normalise_deg(y.atan2(x) * RAD2DEG);
+    let lon = normalise_deg(math::atan2(y, x) * RAD2DEG);
     let lat = if rxy == 0.0 {
         if z >= 0.0 { 90.0 } else { -90.0 }
     } else {
-        (z / rxy).atan() * RAD2DEG
+        math::atan(z / rxy) * RAD2DEG
     };
     (lon, lat)
 }
@@ -651,22 +652,22 @@ fn apc(frame: &Frame) -> [f64; 12] {
     let ph = frame.latitude * DEG2RAD;
     let e = frame.eps.deg * DEG2RAD;
     let az = frame.armc * DEG2RAD;
-    let tan_ph = ph.tan();
-    let (sin_az, cos_az) = az.sin_cos();
-    let (sin_e, cos_e) = e.sin_cos();
+    let tan_ph = math::tan(ph);
+    let (sin_az, cos_az) = math::sin_cos(az);
+    let (sin_e, cos_e) = math::sin_cos(e);
     let (kv, dasc) = if frame.latitude.abs() > 90.0 - VERY_SMALL {
         (0.0, 0.0)
     } else {
-        let tpte = tan_ph * e.tan();
-        let kv = (tpte * cos_az / (1.0 + tpte * sin_az)).atan();
+        let tpte = tan_ph * math::tan(e);
+        let kv = math::atan(tpte * cos_az / (1.0 + tpte * sin_az));
         let dasc = if frame.latitude.abs() < VERY_SMALL {
             ((90.0 - VERY_SMALL) * DEG2RAD).copysign(ph)
         } else {
-            (kv.sin() / tan_ph).atan()
+            math::atan(math::sin(kv) / tan_ph)
         };
         (kv, dasc)
     };
-    let tdtp = dasc.tan() * tan_ph;
+    let tdtp = math::tan(dasc) * tan_ph;
     let setp = sin_e * tan_ph;
     let mut cusps = [0.0; 12];
     let mut n = 0.0f64;
@@ -686,8 +687,10 @@ fn apc(frame: &Frame) -> [f64; 12] {
         if a < 0.0 {
             a += core::f64::consts::TAU;
         }
-        let value = (tdtp * sin_az + a.sin())
-            .atan2(cos_e * (tdtp * cos_az + a.cos()) + setp * (az - a).sin());
+        let value = math::atan2(
+            tdtp * sin_az + math::sin(a),
+            cos_e * (tdtp * cos_az + math::cos(a)) + setp * math::sin(az - a),
+        );
         *cusp = normalise_deg(value * RAD2DEG);
     }
     // The construction's midheaven drifts near the pole; the true one stands.
@@ -768,9 +771,9 @@ fn pullen_sinusoidal_ratio(frame: &Frame) -> [f64; 12] {
         (0.0, 0.0, 0.0, 180.0)
     } else {
         let third = 1.0 / 3.0;
-        let two23 = 4f64.powf(third);
+        let two23 = math::powf(4f64, third);
         let cc = (180.0 - q) / q;
-        let ccr = (cc * cc - cc).powf(third);
+        let ccr = math::powf(cc * cc - cc, third);
         let cqx = (two23 * ccr + 1.0).sqrt();
         let r1 = 0.5 * cqx;
         let r2 = 0.5 * (-2.0 * (1.0 - 2.0 * cc) / cqx - two23 * ccr + 2.0).sqrt();

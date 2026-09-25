@@ -32,6 +32,7 @@
 //! speeds alone would be wrong by more than it corrected.
 
 use teistro_core::angle::normalise_deg;
+use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Place, Tt, Ut1};
 use teistro_port_ephemeris::{Body, Cell, Corrections};
 
@@ -97,7 +98,7 @@ impl Station {
     /// date, for columns that are ecliptic.
     #[must_use]
     pub fn in_ecliptic(self, obliquity_deg: f64) -> Station {
-        let (se, ce) = (obliquity_deg * DEG2RAD).sin_cos();
+        let (se, ce) = math::sin_cos(obliquity_deg * DEG2RAD);
         let turn = |v: Vector3| [v[0], v[1] * ce + v[2] * se, -v[1] * se + v[2] * ce];
         Station {
             position_au: turn(self.position_au),
@@ -222,8 +223,8 @@ fn natural_direction(apparent_direction: &Vector3, beta: &Vector3, sun_au: f64) 
 /// A cell's velocity as a Cartesian rate, the same units and coordinates
 /// its position is in.
 fn rate_of(cell: Cell) -> Vector3 {
-    let (sl, cl) = (cell.lon * DEG2RAD).sin_cos();
-    let (sb, cb) = (cell.lat * DEG2RAD).sin_cos();
+    let (sl, cl) = math::sin_cos(cell.lon * DEG2RAD);
+    let (sb, cb) = math::sin_cos(cell.lat * DEG2RAD);
     let (dl, db) = (cell.lon_speed * DEG2RAD, cell.lat_speed * DEG2RAD);
     [
         cell.dist_speed

@@ -7,6 +7,7 @@
 
 use super::vector::{Matrix3, Vector3, ir, pdp, pn, pxp, rx, rz};
 use super::{AULT, DAS2R, DAU, DAYSEC, DJM, DJY, SRS};
+use teistro_core::math;
 
 /// Km/s to au/year.
 const VF: f64 = DAYSEC * DJM / DAU;
@@ -38,8 +39,8 @@ pub fn pmpx(
     pmt: f64,
     pob: &Vector3,
 ) -> Vector3 {
-    let (sr, cr) = rc.sin_cos();
-    let (sd, cd) = dc.sin_cos();
+    let (sr, cr) = math::sin_cos(rc);
+    let (sd, cd) = math::sin_cos(dc);
     let x = cr * cd;
     let y = sr * cd;
     let z = sd;

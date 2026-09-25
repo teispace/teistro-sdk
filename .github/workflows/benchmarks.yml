@@ -80,14 +80,23 @@ jobs:
 
       - name: What moved
         if: github.event_name == 'pull_request'
+        # A cost the change meant to pay is declared in its own commits, as
+        # an `Instruction-cost: <section> +<percent>% (<reason>)` trailer,
+        # and only this pull request's commits are read: an acceptance
+        # never outlives the change it was reviewed with. `compare-bench`
+        # holds each both ways — no more than it says, and not for a
+        # section that did not need it.
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
         run: |
           set -u
           {
             echo "### Instruction counts"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          git log --format='%(trailers:key=Instruction-cost,valueonly)' "$BASE..HEAD" > accepted.txt
           if [ -f base.tsv ]; then
-            cargo xtask compare-bench base.tsv head.tsv | tee -a "$GITHUB_STEP_SUMMARY"
+            cargo xtask compare-bench base.tsv head.tsv accepted.txt | tee -a "$GITHUB_STEP_SUMMARY"
             status=${PIPESTATUS[0]}
           else
             cat head.txt >> "$GITHUB_STEP_SUMMARY"

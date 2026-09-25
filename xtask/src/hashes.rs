@@ -44,17 +44,11 @@ pub(crate) fn hex(bytes: &[u8]) -> String {
 }
 
 /// Every value as its bits, so two machines that disagree can be told how
-/// far apart they are rather than only that they are.
+/// far apart they are rather than only that they are; the format is the
+/// scenario's own, which the wasm32 run writes too.
 fn values_file(sections: &[Section], path: &Path) -> std::io::Result<()> {
-    let mut out = String::new();
-    for section in sections {
-        for (index, value) in section.values.iter().enumerate() {
-            // As a number, not as its bytes: a byte-reversed hex string
-            // reads back as a value nowhere near the one written, and
-            // every distance taken over it is meaningless.
-            let _ = writeln!(out, "{}\t{index}\t{value:016x}", section.name);
-        }
-    }
+    let mut out = Vec::new();
+    teistro_scenario::write_values(sections, &mut out)?;
     std::fs::write(path, out)
 }
 

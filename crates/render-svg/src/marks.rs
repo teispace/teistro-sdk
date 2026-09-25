@@ -12,6 +12,7 @@
 //! [`GRAIN`], so no platform difference reaches the drawing, and the hash
 //! matrix checks it.
 
+use teistro_core::math;
 use teistro_geometry::place::GRAIN;
 use teistro_geometry::{Mark, Placed, Point};
 
@@ -190,8 +191,7 @@ fn clusters(laid: &[f64], separation: f64) -> Vec<Vec<usize>> {
 /// degrees from 0 up to 360, on the grain.
 fn bearing(at: Point) -> f64 {
     grain(
-        (at.x - CENTRE.x)
-            .atan2(CENTRE.y - at.y)
+        math::atan2(at.x - CENTRE.x, CENTRE.y - at.y)
             .to_degrees()
             .rem_euclid(360.0),
     )
@@ -200,8 +200,8 @@ fn bearing(at: Point) -> f64 {
 fn at_bearing(radius: f64, degrees: f64) -> Point {
     let angle = degrees.to_radians();
     Point::new(
-        grain(CENTRE.x + radius * angle.sin()),
-        grain(CENTRE.y - radius * angle.cos()),
+        grain(CENTRE.x + radius * math::sin(angle)),
+        grain(CENTRE.y - radius * math::cos(angle)),
     )
 }
 

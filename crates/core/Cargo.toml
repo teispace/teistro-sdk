@@ -48,6 +48,10 @@ serde_json = { version = "1", features = ["float_roundtrip"] }
 # wrote wrongly (`strict`). dtolnay's, over serde's own `Deserializer`.
 serde_path_to_error = "0.1"
 sha2 = "0.11"
+# The transcendental functions, one implementation on every target
+# (`math`): the platform's C library differs by an ulp between macOS,
+# Linux, Windows and wasm32, and a byte-identical document cannot.
+libm = "0.2"
 schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]

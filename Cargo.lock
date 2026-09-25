@@ -1555,6 +1555,7 @@ name = "teistro-core"
 version = "0.0.0"
 dependencies = [
  "criterion",
+ "libm",
  "proptest",
  "schemars",
  "serde",
