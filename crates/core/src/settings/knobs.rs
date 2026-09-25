@@ -291,6 +291,14 @@ knob!(
         Repeat = "REPEAT" }
 );
 knob!(
+    /// How Ashtottari's eight lords share the nakshatras (crux C5).
+    AshtottariGrouping { /// Three each from Ardra over twenty-four, the three before it
+        /// outside the cycle, as the recording engine runs it.
+        ThreeEach = "THREE_EACH", /// Four and three alternately from Ardra over the twenty-eight with
+        /// Abhijit, as BPHS ch. 46 vv. 17 to 20 count them.
+        FourAndThree = "FOUR_AND_THREE" }
+);
+knob!(
     /// A seed outside a conditional dasha's cycle.
     SeedOverflow { /// Wrap to the start, flagged.
         WrapToStart = "WRAP_TO_START", /// Refuse.

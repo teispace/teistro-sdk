@@ -23,7 +23,9 @@ use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra, Rashi};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Depth, JulianDay, Utc};
-use teistro_core::settings::{AfterCycle, Balance, BirthPeriod, SeedOverflow, YearLength};
+use teistro_core::settings::{
+    AfterCycle, AshtottariGrouping, Balance, BirthPeriod, SeedOverflow, YearLength,
+};
 
 use crate::balance::{BalanceAtBirth, Written, spatial, temporal};
 use crate::row::{Seat, UduRow};
@@ -72,6 +74,15 @@ pub struct Rules {
     pub after_cycle: AfterCycle,
     /// What a seed outside a conditional cycle does.
     pub seed_overflow: SeedOverflow,
+    /// How Ashtottari's lords share the nakshatras, which chooses its row.
+    /// A document written before it was a choice ran the recording
+    /// engine's, and reads back as that.
+    #[serde(default = "three_each")]
+    pub ashtottari_grouping: AshtottariGrouping,
+}
+
+const fn three_each() -> AshtottariGrouping {
+    AshtottariGrouping::ThreeEach
 }
 
 impl Rules {
@@ -89,6 +100,7 @@ impl Rules {
             birth_period: settings.birth_period,
             after_cycle: settings.after_cycle,
             seed_overflow: settings.seed_overflow,
+            ashtottari_grouping: settings.ashtottari_grouping,
         }
     }
 
@@ -106,6 +118,7 @@ impl Rules {
             birth_period: settings.birth_period,
             after_cycle: settings.after_cycle,
             seed_overflow: settings.seed_overflow,
+            ashtottari_grouping: settings.ashtottari_grouping,
         }
     }
 }
@@ -408,7 +421,7 @@ impl Dasha {
     pub fn new(row: &UduRow, birth: &Birth, rules: Rules) -> Result<Dasha, Error> {
         row.validate()?;
         let seed = birth.moon.nakshatra();
-        let seat = row.seat(birth.moon.nakshatra_index().get());
+        let seat = row.seat(row.wheel.segment(birth.moon).place);
         if seat.overflow && rules.seed_overflow == SeedOverflow::Reject {
             return Err(Error::invalid_arg(format!(
                 "the Moon's nakshatra is outside the nakshatras {} covers",
@@ -660,6 +673,7 @@ mod tests {
             birth_period: BirthPeriod::Compressed,
             after_cycle: AfterCycle::End,
             seed_overflow: SeedOverflow::WrapToStart,
+            ashtottari_grouping: teistro_core::settings::AshtottariGrouping::ThreeEach,
         }
     }
 

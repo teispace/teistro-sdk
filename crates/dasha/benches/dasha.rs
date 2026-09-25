@@ -40,6 +40,7 @@ const RULES: Rules = Rules {
     birth_period: BirthPeriod::Compressed,
     after_cycle: AfterCycle::Repeat,
     seed_overflow: SeedOverflow::WrapToStart,
+    ashtottari_grouping: teistro_core::settings::AshtottariGrouping::ThreeEach,
 };
 
 fn chart() -> RashiChart {

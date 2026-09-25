@@ -16,7 +16,7 @@ and reads the source for what the values cannot say about themselves.
 
 The sample is built rather than recorded, by `cargo run -p
 teistro-serial --example documents`: 3 documents over the analytic test
-provider, 296 distinct paths between them. A recorded sample would go
+provider, 297 distinct paths between them. A recorded sample would go
 stale the first time a section gained a field and the pass would not
 notice.
 
@@ -28,12 +28,12 @@ Sections 3 and 4 decide it.
 
 | sample | what it holds | sections | paths |
 |---|---|---|---|
-| `whole` | every section the layer can produce | 9 | 296 |
+| `whole` | every section the layer can produce | 9 | 297 |
 | `day` | a foundation and the almanac of its day | 2 | 156 |
 | `bare` | a foundation alone, the smallest document there is | 1 | 72 |
 
 Across all three, by the type a schema would give the value:
-11 boolean, 55 integer, 6 null, 118 number, 119 string.
+11 boolean, 55 integer, 6 null, 118 number, 120 string.
 
 ## 3. A whole double is written as an integer
 
@@ -76,9 +76,9 @@ the schema comes from.
 
 | string paths | drawn from the catalogue | free text |
 |---|---|---|
-| 119 | 113 | 6 |
+| 120 | 114 | 6 |
 
-A schema would constrain each of those 113 with an `enum`, and it cannot
+A schema would constrain each of those 114 with an `enum`, and it cannot
 get the members from the documents: the widest of them shows 12 values,
 where the catalogue's own list is longer for every one. A sample proves
 a member exists; it never proves a member does not.
@@ -98,7 +98,7 @@ samples:
 
 | paths in every sample | paths in some | top-level sections |
 |---|---|---|
-| 72 | 224 | 9 |
+| 72 | 225 | 9 |
 
 The top-level sections of the widest document are `aspects`, `dashas`,
 `drawings`, `foundation`, `houses`, `panchanga`, `points`, `state`,
@@ -164,11 +164,11 @@ chart at all. It can now publish one and read it back.
 A schema's `enum` has to spell a member the way the document really
 writes it. Reading every `enum` and `const` in the document's own schema
 — a closed enum's members and a tagged union's tags, from whichever
-crate holds the value — 571 words are written:
+crate holds the value — 575 words are written:
 
 | spelt | words |
 |---|---|
-| as a key, `[A-Z][A-Z0-9_]*` | 571 |
+| as a key, `[A-Z][A-Z0-9_]*` | 575 |
 | otherwise | 0 |
 
 **Every one is a key**, so a consumer reading a document meets one

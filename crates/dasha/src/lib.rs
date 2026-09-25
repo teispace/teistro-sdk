@@ -56,6 +56,7 @@ pub mod reading;
 pub mod registry;
 pub mod row;
 pub mod tree;
+pub mod wheel;
 
 pub use annual::{Clock, Share, YearDasha, YearRing};
 pub use balance::{BalanceAtBirth, Written};
@@ -67,8 +68,12 @@ pub use rashi::{
 };
 pub use reading::{DashaCursor, DashaReading, PeriodRow};
 pub use registry::DashaSystems;
-pub use row::{Count, DashaName, Lord, ROWS, Scale, Seat, UduDefinition, UduRow, VIMSHOTTARI, row};
+pub use row::{
+    ASHTOTTARI_BPHS, Count, DashaName, Lord, ROWS, SHASHTIHAYANI, Scale, Seat, UduDefinition,
+    UduRow, VIMSHOTTARI, row,
+};
 pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules, Timeline};
+pub use wheel::{Segment, Wheel};
 
 /// Every dasha system this build computes, in the catalogue's order within
 /// each kernel: the nakshatra-seeded rows, the sign-based rows, and the

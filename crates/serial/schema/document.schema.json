@@ -120,6 +120,21 @@
       ],
       "type": "object"
     },
+    "AshtottariGrouping": {
+      "description": "How Ashtottari's eight lords share the nakshatras (crux C5).",
+      "oneOf": [
+        {
+          "const": "THREE_EACH",
+          "description": "Three each from Ardra over twenty-four, the three before it outside the cycle, as the recording engine runs it.",
+          "type": "string"
+        },
+        {
+          "const": "FOUR_AND_THREE",
+          "description": "Four and three alternately from Ardra over the twenty-eight with Abhijit, as BPHS ch. 46 vv. 17 to 20 count them.",
+          "type": "string"
+        }
+      ]
+    },
     "AspectPlaced": {
       "description": "Where a body stands, as this module needs it.",
       "properties": {
@@ -4827,6 +4842,11 @@
           "$ref": "#/$defs/AfterCycle",
           "description": "What is answered past the end of the cycle."
         },
+        "ashtottari_grouping": {
+          "$ref": "#/$defs/AshtottariGrouping",
+          "default": "THREE_EACH",
+          "description": "How Ashtottari's lords share the nakshatras, which chooses its row. A document written before it was a choice ran the recording engine's, and reads back as that."
+        },
         "balance": {
           "$ref": "#/$defs/Balance",
           "description": "How the balance is measured."
@@ -5579,6 +5599,16 @@
           "default": 3,
           "description": "How many levels of periods a reading carries; three by default."
         },
+        "groups": {
+          "description": "How many nakshatras each lord covers, lord by lord, when they differ; none by default, when every lord covers `span`.",
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": "array"
+        },
         "key": {
           "description": "The key it is registered under, in the key grammar and not one the catalogue has.",
           "type": "string"
@@ -5630,6 +5660,10 @@
           "maximum": 255,
           "minimum": 0,
           "type": "integer"
+        },
+        "wheel": {
+          "$ref": "#/$defs/Wheel",
+          "description": "The circle the seed is counted round: the twenty-seven nakshatras by default, or the twenty-eight with Abhijit."
         },
         "year_length": {
           "$ref": "#/$defs/YearLength",
@@ -5902,6 +5936,21 @@
         "apart_deg"
       ],
       "type": "object"
+    },
+    "Wheel": {
+      "description": "Which circle a system counts over.",
+      "oneOf": [
+        {
+          "const": "NAKSHATRAS",
+          "description": "The twenty-seven nakshatras, each 13°20′.",
+          "type": "string"
+        },
+        {
+          "const": "WITH_ABHIJIT",
+          "description": "The twenty-eight with Abhijit, cut from Uttarashadha's last pada and Shravana's first fifteenth (BPHS ch. 46, the note to v. 22).",
+          "type": "string"
+        }
+      ]
     },
     "Written": {
       "description": "A balance written as years, months, days, hours and minutes.",

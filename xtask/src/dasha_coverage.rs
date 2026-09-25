@@ -109,7 +109,7 @@ impl Blocker {
 /// quietly stop being exhaustive.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-const NOT_BUILT: [(&str, Blocker, &str); 19] = [
+const NOT_BUILT: [(&str, Blocker, &str); 18] = [
     (
         "SHODASHOTTARI",
         Blocker::Text,
@@ -122,13 +122,6 @@ const NOT_BUILT: [(&str, Blocker, &str); 19] = [
         "the same verse numbers to confirm. Its table is Yogini's, lord for lord \
          and year for year, differing only in the reference nakshatra and the \
          offset — so shipping it on a guess would ship Yogini twice",
-    ),
-    (
-        "SHASHTIHAYANI",
-        Blocker::Text,
-        "the received text gives Jupiter 13, Sun 13, Mars 13 and then six each, \
-         which sums to 69 and not to the 60 the name states. A row cannot be \
-         written from a text that disagrees with itself",
     ),
     (
         "TITHI_ASHTOTTARI",
@@ -257,10 +250,9 @@ const NOT_BUILT: [(&str, Blocker, &str); 19] = [
 /// reference that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA`
 /// ask the chart for their periods; `YOGARDHA` and `SUDARSHANA_CHAKRA` are
 /// compositions of systems rather than systems.
-const REGISTRABLE: [(&str, Kernel); 5] = [
+const REGISTRABLE: [(&str, Kernel); 4] = [
     ("SHODASHOTTARI", Kernel::Udu),
     ("SHATTRIMSHA_SAMA", Kernel::Udu),
-    ("SHASHTIHAYANI", Kernel::Udu),
     ("STHIRA", Kernel::Rashi),
     ("VARNADA", Kernel::Rashi),
 ];

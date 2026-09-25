@@ -2784,6 +2784,8 @@ final class UduDashaDefinition extends DashaDefinition {
     this.sources = const <String>[],
     this.count,
     this.span,
+    this.groups = const <int>[],
+    this.wheel,
     this.offset,
     this.repeats,
     this.yearLength,
@@ -2808,6 +2810,13 @@ final class UduDashaDefinition extends DashaDefinition {
   /// How many nakshatras each lord covers; one by default.
   final int? span;
 
+  /// How many nakshatras each lord covers, lord by lord, when they differ:
+  /// BPHS's Ashtottari is `[4, 3, 4, 3, 4, 3, 4, 3]`. None by default.
+  final List<int> groups;
+
+  /// The circle the seed is counted round; the 27 nakshatras by default.
+  final DashaWheel? wheel;
+
   /// What is added after the division, before the modulo; none by default.
   final int? offset;
 
@@ -2829,6 +2838,8 @@ final class UduDashaDefinition extends DashaDefinition {
     if (sources.isNotEmpty) 'sources': sources,
     if (count != null) 'count': count,
     if (span != null) 'span': span,
+    if (groups.isNotEmpty) 'groups': groups,
+    if (wheel case final wheel?) 'wheel': wheel.key,
     if (offset != null) 'offset': offset,
     if (repeats != null) 'repeats': repeats,
     if (yearLength != null) 'year_length': yearLength,
@@ -2896,6 +2907,22 @@ final class RashiDashaDefinition extends DashaDefinition {
     if (yearLength != null) 'year_length': yearLength,
     if (depth != null) 'depth': depth,
   };
+}
+
+/// The circle a nakshatra-seeded system counts its seed round.
+enum DashaWheel {
+  /// The twenty-seven nakshatras.
+  nakshatras('NAKSHATRAS'),
+
+  /// The twenty-eight with Abhijit, cut from Uttarashadha's last pada and
+  /// Shravana's first fifteenth, as BPHS counts Ashtottari and
+  /// Shashtihayani.
+  withAbhijit('WITH_ABHIJIT');
+
+  const DashaWheel(this.key);
+
+  /// The key a definition spells it with.
+  final String key;
 }
 
 /// Where a sign-based system starts.

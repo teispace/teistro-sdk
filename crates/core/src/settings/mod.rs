@@ -32,10 +32,10 @@ use crate::envelope::Hash;
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
-    AfterCycle, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules,
-    BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik,
-    DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning, HoraReckoning, IshtaKashta,
-    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    AfterCycle, AshtottariGrouping, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti,
+    BhavaSpecialRules, BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras,
+    Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning, HoraReckoning,
+    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
     LuminaryCheshta, LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
     NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
     PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes,
@@ -275,10 +275,13 @@ group!(
         /// The default depth per system.
         depth: BTreeMap<DashaSystem, Depth>,
         /// A seed outside a conditional cycle.
-        /// lint: knob-has-a-reader — `dasha`, Phase 5 (ADR-0017).
+        /// lint: knob-has-a-reader — `teistro_dasha::Rules::of`, which is handed the `dasha` group and reads it as `settings.seed_overflow`.
         seed_overflow: SeedOverflow,
+        /// How Ashtottari's lords share the nakshatras (crux C5).
+        /// lint: knob-has-a-reader — `teistro_dasha::Rules::of`, which is handed the `dasha` group and reads it as `settings.ashtottari_grouping`.
+        ashtottari_grouping: AshtottariGrouping,
         /// How the birth period is divided among its sub-periods (crux C48).
-        /// lint: knob-has-a-reader — `dasha`, Phase 5.
+        /// lint: knob-has-a-reader — `teistro_dasha::Rules::of`, which is handed the `dasha` group and reads it as `settings.birth_period`.
         birth_period: BirthPeriod,
         /// What a dasha answers past the end of its cycle (crux C48).
         after_cycle: AfterCycle,

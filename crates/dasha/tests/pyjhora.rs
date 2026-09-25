@@ -69,6 +69,7 @@ fn the_kernel_answers_pyjhora_s_vimshottari_from_its_moon() {
                     birth_period: BirthPeriod::Elapsed,
                     after_cycle: AfterCycle::End,
                     seed_overflow: SeedOverflow::WrapToStart,
+                    ashtottari_grouping: teistro_core::settings::AshtottariGrouping::ThreeEach,
                 },
             )
             .unwrap();

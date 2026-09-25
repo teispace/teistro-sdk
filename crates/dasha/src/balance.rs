@@ -92,28 +92,23 @@ impl Written {
 }
 
 /// What remains of a lord's window when the Moon is `elapsed` (0 to 1) of
-/// the way through its own nakshatra.
+/// the way through its own segment of the row's wheel.
 ///
-/// The window is the lord's `span` of nakshatras, so for a lord of three
+/// The window is the lord's own count of nakshatras, so for a lord of three
 /// the fraction is of the three and not of the one the Moon is in, which is
-/// the correction `dasha-kernels.md` records for Ashtottari.
+/// the correction `dasha-kernels.md` records for Ashtottari; every segment
+/// of the window is an equal share of it, Abhijit's shorter arc included
+/// (BPHS ch. 46 v. 21).
 fn window(row: &UduRow, seat: Seat, elapsed: f64) -> f64 {
-    let span = f64::from(row.span.max(1));
+    let span = f64::from(row.window_of(seat.lord));
     ((span - f64::from(seat.within) - elapsed) / span).clamp(0.0, 1.0)
 }
 
-/// What remains of the Moon's window of nakshatras, spatially.
+/// What remains of the Moon's window of nakshatras, spatially: how far by
+/// longitude it is through its segment of the row's wheel.
 #[must_use]
-#[expect(
-    clippy::cast_precision_loss,
-    reason = "both are below a nakshatra's nanoarcseconds, 4.8e13, far inside the 2^53 a double holds exactly"
-)]
 pub fn spatial(row: &UduRow, moon: Nas, seat: Seat) -> f64 {
-    window(
-        row,
-        seat,
-        moon.in_nakshatra().get() as f64 / Nas::PER_NAKSHATRA as f64,
-    )
+    window(row, seat, row.wheel.segment(moon).elapsed())
 }
 
 /// What remains of the Moon's window of nakshatras, temporally: the time
@@ -167,6 +162,22 @@ mod tests {
 
     use super::*;
     use crate::row::VIMSHOTTARI;
+
+    /// A window's share is by segment, whatever its arc: the Moon at the
+    /// start of Mrigashira has a third of Venus's Ashtottari left (BPHS
+    /// ch. 46, note 2 to v. 23), and halfway through Abhijit's short arc
+    /// half of Saturn's first Shashtihayani segment is gone.
+    #[test]
+    fn a_window_on_the_texts_wheel_is_shared_segment_by_segment() {
+        use crate::row::{ASHTOTTARI_BPHS, SHASHTIHAYANI};
+        let at = |degrees: f64| Nas::from_degrees(Degrees::try_new(degrees).unwrap());
+        let mrigashira = at(4.0 * 360.0 / 27.0);
+        let seat = ASHTOTTARI_BPHS.seat(ASHTOTTARI_BPHS.wheel.segment(mrigashira).place);
+        assert!((spatial(&ASHTOTTARI_BPHS, mrigashira, seat) - 1.0 / 3.0).abs() < 1e-12);
+        let abhijit_middle = at(276.0 + 40.0 / 60.0 + (4.0 + 13.0 / 60.0 + 20.0 / 3600.0) / 2.0);
+        let seat = SHASHTIHAYANI.seat(SHASHTIHAYANI.wheel.segment(abhijit_middle).place);
+        assert!((spatial(&SHASHTIHAYANI, abhijit_middle, seat) - 2.5 / 3.0).abs() < 1e-9);
+    }
 
     #[test]
     fn a_balance_is_written_with_its_minutes_rounded() {

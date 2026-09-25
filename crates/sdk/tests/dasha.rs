@@ -155,10 +155,19 @@ fn a_temporal_balance_searches_the_moon_s_nakshatra_in_the_chart_s_frame() {
 #[test]
 fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
     let recorded = fixture("dasha-systems/charts/c001-kathmandu-1990-04-14.json");
+    // Every built system the corpus records; Shashtihayani is built from
+    // the text alone, and the recording engine has none.
     let systems: Vec<DashaSystem> = teistro::dasha::ROWS
         .iter()
         .filter_map(|row| row.system.catalogued())
+        .filter(|system| {
+            *system == DashaSystem::Vimshottari
+                || recorded["systems"]
+                    .get(system.key().to_ascii_lowercase())
+                    .is_some()
+        })
         .collect();
+    assert_eq!(systems.len(), teistro::dasha::ROWS.len() - 1);
     for (patch, method, fraction) in [
         ("{}", "spatial", SPATIAL_FRACTION),
         (
@@ -392,4 +401,99 @@ fn a_rashi_dasha_records_its_readings_and_rebuilds_under_them() {
             assert_eq!(rebuilt, carried, "{patch} {}", dasha.system);
         }
     }
+}
+
+/// A system BPHS counts over the twenty-eight nakshatras with Abhijit reads
+/// the Moon across its own segment of that wheel, and a document keeps the
+/// grouping it was read under (`docs/03-design/dasha-kernels.md`, "The
+/// 28-nakshatra wheel"; cruxes C1, C5).
+#[test]
+fn a_system_counted_with_abhijit_reads_the_moon_across_its_own_segment() {
+    use teistro::quantity::{Altitude, Latitude, Longitude, Place, Utc};
+    use teistro::{Ephemeris, catalogue::ChartKind};
+
+    let sdk = Context::builder()
+        .profile("conformance-baseline")
+        .settings_json(
+            r#"{"dasha": {"balance": "TEMPORAL", "ashtottari_grouping": "FOUR_AND_THREE"}}"#,
+        )
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = Place::new(
+        Latitude::try_new(27.7172).unwrap(),
+        Longitude::try_new(85.324).unwrap(),
+        Altitude::try_new(1400.0).unwrap(),
+    );
+    let offset = UtcOffset::try_from_seconds(20_700).unwrap();
+    let moon_at = |jd: f64| {
+        sdk.chart()
+            .found(
+                JulianDay::<Utc>::literal(jd),
+                &place,
+                offset,
+                ChartKind::Natal,
+            )
+            .unwrap()
+            .value
+            .graha(Graha::Moon)
+            .unwrap()
+            .longitude_deg
+    };
+    let (abhijit_from, abhijit_to) = (276.0 + 40.0 / 60.0, 280.0 + 53.0 / 60.0 + 20.0 / 3600.0);
+    // A birth whose Moon stands well inside Abhijit's four degrees.
+    let birth = (0..400)
+        .map(|step| 2_447_995.5 + f64::from(step) * 0.1)
+        .find(|jd| (abhijit_from + 0.5..abhijit_to - 0.5).contains(&moon_at(*jd)))
+        .expect("the Moon passes Abhijit within forty days");
+
+    let systems = [
+        DashaSystem::Vimshottari,
+        DashaSystem::Ashtottari,
+        DashaSystem::Shashtihayani,
+    ];
+    let document = sdk
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(birth),
+            &ChartRequest::at(place, offset).with_dashas(systems),
+        )
+        .unwrap()
+        .value;
+    let [vimshottari, ashtottari, shashtihayani] = &document.dashas[..] else {
+        panic!("three dashas");
+    };
+    // Both texts' systems give Abhijit to Saturn; the seed is still the
+    // catalogue's Uttarashadha, since Abhijit is a segment and no member.
+    assert_eq!(ashtottari.first_lord, Graha::Saturn);
+    assert_eq!(shashtihayani.first_lord, Graha::Saturn);
+    assert_eq!(shashtihayani.seed, Some(Nakshatra::UttaraAshadha));
+    // The twenty-eight's systems read the Moon across Abhijit itself, from
+    // where it entered at 276°40′ to where it leaves at 280°53′20″;
+    // Vimshottari reads it across Uttarashadha.
+    for dasha in [ashtottari, shashtihayani] {
+        let span = dasha.moon_span.expect("a temporal balance's span");
+        assert!(span.contains_inclusive(JulianDay::<Utc>::literal(birth)));
+        for (at, bound) in [(span.from.get(), abhijit_from), (span.to.get(), abhijit_to)] {
+            let off = (moon_at(at) - bound + 180.0).rem_euclid(360.0) - 180.0;
+            let off = off.abs();
+            assert!(off < 1e-5, "{}: {off}° from {bound}", dasha.system);
+        }
+    }
+    let nakshatra = vimshottari.moon_span.expect("Vimshottari's span");
+    let abhijit = ashtottari.moon_span.unwrap();
+    assert!(nakshatra.from.get() < abhijit.from.get() && nakshatra.to.get() < abhijit.to.get());
+    // The grouping travels with the document, and the cursor rebuilt from a
+    // stored copy gives the text's Ashtottari back.
+    assert_eq!(
+        ashtottari.rules.ashtottari_grouping,
+        teistro::settings::AshtottariGrouping::FourAndThree
+    );
+    let stored: Document =
+        serde_json::from_str(&serde_json::to_string(&document).unwrap()).unwrap();
+    let cursor = sdk.chart().dasha(&stored, DashaSystem::Ashtottari).unwrap();
+    assert_eq!(
+        cursor.mahadashas().next().unwrap().interval,
+        ashtottari.periods[0].interval
+    );
 }

@@ -52,14 +52,14 @@ use teistro_core::catalogue::{Ayanamsha, Calendar, Dignity, Graha, HouseSystem, 
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro_core::quantity::{Degrees, Depth, JulianDay, Tt, Ut1, Utc};
 use teistro_core::settings::{
-    AfterCycle, AyanamshaChoice, Balance, BirthPeriod, KalachakraAfterNinth, KalachakraBalance,
-    KalachakraMembership, PolarPolicy, SeedOverflow, YearLength,
+    AfterCycle, AshtottariGrouping, AyanamshaChoice, Balance, BirthPeriod, KalachakraAfterNinth,
+    KalachakraBalance, KalachakraMembership, PolarPolicy, SeedOverflow, YearLength,
 };
 use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::{
-    Birth, Dasha, KalachakraDasha, KalachakraRules, RASHI_ROWS, ROWS, RashiChart, RashiDasha,
-    Rules as DashaRules, Timeline,
+    ASHTOTTARI_BPHS, Birth, Dasha, KalachakraDasha, KalachakraRules, RASHI_ROWS, ROWS, RashiChart,
+    RashiDasha, Rules as DashaRules, Timeline,
 };
 use teistro_geometry::{Body, Placements, Point, place, rows};
 use teistro_panchanga::Almanac;
@@ -511,6 +511,7 @@ fn dashas() -> Section {
         birth_period: BirthPeriod::Compressed,
         after_cycle: AfterCycle::Repeat,
         seed_overflow: SeedOverflow::WrapToStart,
+        ashtottari_grouping: AshtottariGrouping::ThreeEach,
     };
     let birth_jd = 2_447_995.489_583_333_5;
     let instants: Vec<JulianDay<Utc>> = (0..300)
@@ -525,7 +526,9 @@ fn dashas() -> Section {
             }
         }
     };
-    for moon in [3.7, 101.25, 221.786_980_828_370_36, 347.9] {
+    // The last inside Abhijit, which only the twenty-eight-nakshatra rows
+    // count as its own segment.
+    for moon in [3.7, 101.25, 221.786_980_828_370_36, 347.9, 278.0] {
         let Ok(degrees) = Degrees::try_new(moon) else {
             continue;
         };
@@ -534,7 +537,7 @@ fn dashas() -> Section {
             moon: Nas::from_degrees(degrees),
             moon_span: None,
         };
-        for row in ROWS {
+        for row in ROWS.iter().chain([&ASHTOTTARI_BPHS]) {
             if let Ok(dasha) = Dasha::new(row, &birth, rules) {
                 chains(&|at| dasha.at(at, depth));
             }
