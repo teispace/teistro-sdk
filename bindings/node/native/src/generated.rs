@@ -3376,7 +3376,7 @@ impl Context {
     /// giving every nakshatra a `phala` leaves its `name` standing. A file that
     /// does not verify is `PACK`.
     #[napi]
-    pub fn intl_load_pack(&self, env: Env, bytes: Buffer) -> Result<IntlLoaded> {
+    pub fn intl_load_pack(&self, env: Env, bytes: Uint8Array) -> Result<IntlLoaded> {
         // SAFETY: every field is a plain integer, float or pointer, so
         // all-zero is a valid value; a size, where the struct has one, is set
         // before the call reads it.

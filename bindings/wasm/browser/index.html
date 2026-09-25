@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Teistro wasm check</title>
+<!--
+  The staged package, unbundled: `#native` is mapped to the web loader as
+  a bundler maps it from the package's `default` import condition. A Node
+  built-in anywhere on this path could not resolve here, so loading at all
+  is the check that there is none.
+-->
+<script type="importmap">
+  {
+    "imports": {
+      "@teistro/sdk-wasm": "/lib/index.js",
+      "#native": "/lib/native.web.js"
+    }
+  }
+</script>
+<script type="module">
+  const report = (body) =>
+    fetch('/result', { method: 'POST', body: JSON.stringify(body) });
+  try {
+    const sdk = await import('@teistro/sdk-wasm');
+    const { probe } = await import('/check/probe.mjs');
+    await report({ answer: probe(sdk) });
+  } catch (error) {
+    await report({ error: String(error?.stack ?? error) });
+  }
+</script>

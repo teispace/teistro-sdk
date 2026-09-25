@@ -1,19 +1,23 @@
 /**
- * The Teistro SDK for Node: the layer a consumer uses.
+ * The Teistro SDK for JavaScript: the layer a consumer uses, over the
+ * Node addon or the wasm module alike.
  *
  * HAND-WRITTEN, and thin on purpose. Everything beneath it is generated
- * from the API description: the addon (`native/src/generated.rs`), the
+ * from the API description: the glue (`native/src/generated.rs`), the
  * types (`catalogue.d.ts`, `types.d.ts`, `blob.d.ts`), the catalogue's
  * tables (`catalogue.js`) and the result-blob decoders (`blob.js`). What
  * this file adds is what a generator cannot know: where the addon is,
  * validation at the door, defaults, errors with their field and hint, and
- * results decoded on first use rather than eagerly.
+ * results decoded on first use rather than eagerly. Where the native half
+ * lives is the loader's business (`addon.js` here), so nothing in this
+ * file is Node's alone.
  */
 
-import { createRequire } from 'node:module';
-import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+// The native surface: the napi addon in the Node package, the wasm
+// module in the wasm package. `#native` is this package's own import map
+// (`package.json` `imports`), so the layer below is one file for both and
+// names no Node built-in itself (03-design/wasm-binding.md §3).
+import { native, named as wasNamed, platformPackage } from '#native';
 
 import {
   ABI_VERSION,
@@ -89,63 +93,6 @@ import { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from
 import { entityForms, messages } from './messages.js';
 import { decodeProvenance, decodeStep } from './records.js';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const require = createRequire(import.meta.url);
-
-/**
- * The npm package that carries this host's prebuilt addon.
- *
- * A release publishes one package per platform and this package depends
- * on all of them as optional dependencies, so npm installs the one that
- * matches and skips the rest. The name is built from Node's own words for
- * the host, which are the same words npm matched `os` and `cpu` against.
- */
-export function platformPackage() {
-  return `@teistro/sdk-${process.platform}-${process.arch}`;
-}
-
-/**
- * The addon's path inside its platform package, or `null` when npm did not
- * install one: on a host no release covers, under `--no-optional`, or in
- * a lockfile written on another platform.
- */
-function packagedAddon() {
-  try {
-    return require.resolve(`${platformPackage()}/teistro.node`);
-  } catch {
-    return null;
-  }
-}
-
-/**
- * The addon: the one a path names, then the one npm installed for this
- * host, then this repository's own build.
- *
- * A consumer only ever has the second; a contributor only ever has the
- * third, because the platform packages are published rather than checked
- * in. The order matters anyway for the case where someone has both and
- * wants the release they installed.
- */
-function loadAddon() {
-  const named = process.env.TEISTRO_ADDON;
-  const candidates = [
-    named,
-    packagedAddon(),
-    join(HERE, '..', 'native', 'index.node'),
-    join(HERE, '..', '..', '..', 'target', 'release', addonName()),
-    join(HERE, '..', '..', '..', 'target', 'debug', addonName()),
-  ].filter(Boolean);
-  const found = candidates.find((path) => existsSync(path));
-  if (!found) {
-    throw new Error(
-      `no Teistro addon for ${process.platform}-${process.arch}. Looked in:\n  ${candidates.join(
-        '\n  ',
-      )}\nInstall the prebuilt addon with \`npm install ${platformPackage()}\` (npm normally does that for you), build it with \`cargo build --release -p teistro-node\`, or set TEISTRO_ADDON to its path.`,
-    );
-  }
-  return [require(found), found === named];
-}
-
 /**
  * Whether a build may be loaded, as a sentence when it may not.
  *
@@ -185,13 +132,11 @@ function readBuildInfo(addon) {
   }
 }
 
-function addonName() {
-  if (process.platform === 'darwin') return 'libteistro_node.dylib';
-  if (process.platform === 'win32') return 'teistro_node.dll';
-  return 'libteistro_node.so';
-}
-
-const [native, wasNamed] = loadAddon();
+/**
+ * The npm package that carries this host's native half: the platform's
+ * prebuilt addon, or the wasm module's own package.
+ */
+export { platformPackage };
 
 /** What the loaded addon says about its own build (ADR-0007). */
 export const buildInfo = Object.freeze(readBuildInfo(native));
@@ -1834,7 +1779,8 @@ export class IntlArea extends Area {
 
   /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
   loadPack(bytes) {
-    return run(this, (inner) => inner.intlLoadPack(Buffer.from(bytes)));
+    const pack = bytesOf(bytes, 'bytes');
+    return run(this, (inner) => inner.intlLoadPack(pack));
   }
 }
 
@@ -3272,7 +3218,7 @@ export class Context {
   /** The SHA-256 of the canonical settings, in hex; every result carries it. */
   get settingsHash() {
     const hash = this.#call(() => this.#inner.settingsHash());
-    return Buffer.from(hash.bytes).toString('hex');
+    return hex(hash.bytes);
   }
 
   /**
@@ -3354,6 +3300,37 @@ export class Context {
  * @param {boolean} testProvider the older spelling of `'TEST'`
  * @returns {readonly EphemerisChoice[]}
  */
+/**
+ * Bytes as the native half takes them: a `Uint8Array` as it is (a Node
+ * `Buffer` is one), any other view or an `ArrayBuffer` over the same
+ * memory, and an array of byte values copied. Written without `Buffer`,
+ * which a browser does not have.
+ *
+ * @param {Uint8Array|ArrayBuffer|ArrayBufferView|number[]} value
+ * @param {string} field what the value was passed as, for the refusal
+ * @returns {Uint8Array}
+ */
+function bytesOf(value, field) {
+  if (value instanceof Uint8Array) return value;
+  if (ArrayBuffer.isView(value)) {
+    return new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+  }
+  if (value instanceof ArrayBuffer) return new Uint8Array(value);
+  if (Array.isArray(value)) return Uint8Array.from(value);
+  throw new TypeError(
+    `${field}: expected bytes (a Uint8Array, an ArrayBuffer or an array of byte values); got ${
+      value === null ? 'null' : typeof value
+    }`,
+  );
+}
+
+/** Bytes as lower-case hex, two digits each. */
+function hex(bytes) {
+  let out = '';
+  for (const byte of bytes) out += byte.toString(16).padStart(2, '0');
+  return out;
+}
+
 function ephemerisChain(ephemeris, testProvider) {
   // One rule, written once: a named ephemeris wins, and the older flag
   // decides only when none was named (ADR-0028).
@@ -3411,6 +3388,18 @@ function open(chain, settled, info, positions) {
 function attempt(entry, settled, info, positions) {
   if (typeof entry === 'string') {
     return new native.Context({ ...settled, ephemeris: entry }, info, positions);
+  }
+  // A plugin is a shared library, which a wasm module cannot open
+  // (ADR-0029). Asked of the loaded native half rather than of a flag, so
+  // it is true of whatever build this is; and refused here, as an entry
+  // that cannot open, so a chain written for both — a plugin, then
+  // 'BUILTIN' — falls back in a browser as it does where the file is
+  // missing.
+  if (typeof native.Provider !== 'function') {
+    throw new TypeError(
+      `\`ephemeris.plugin\` opens a shared library, which this build (${buildInfo.target}) ` +
+        "cannot; give `provider`, an ephemeris written in JavaScript, or 'BUILTIN'",
+    );
   }
   // The context takes its own reference to the adapter, so the handle
   // this loads is freed at once: what keeps the library loaded is the

@@ -123,7 +123,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         step(
             Command::new("node")
                 .args(["--test", TESTS])
-                .arg(&fixtures)
+                .env("TEISTRO_FIXTURES", &fixtures)
                 .current_dir(root),
             &format!("{TESTS} decodes what the library produced"),
             &format!("{TESTS} did not pass"),

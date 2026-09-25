@@ -4121,9 +4121,17 @@ on pub.dev (checked 2026-09-07).
    the crate, and the host provider's policy is shared by both bindings
    from `teistro_port_ephemeris::host`. `cargo xtask check-wasm` (verify's
    `wasm` job) runs **the whole Node binding suite unchanged** against the
-   wasm module: 69 of 69. Next, step 5: the package and its browser
-   loader (`index.js`'s `Buffer` calls and the plugin option refused by
-   name on wasm), then step 7's parity runner and profile size gate.
+   wasm module. Step 5 is **built** too: `index.js` takes its native
+   object from the package's `#native` import, the napi loader is
+   `lib/addon.js`, and `@teistro/sdk-wasm` is staged from the same
+   `lib/` with a node and a web loader and a manifest derived from the
+   Node one. `check-wasm` runs the Node suite unchanged through the
+   staged package's own loader (70 of 70) and loads it in headless
+   Chrome, whose answer must equal Node's to the bit. Next, step 7's
+   parity runner and the per-profile size gate; **publishing
+   `@teistro/sdk-wasm` awaits the maintainer**, and must not be done by
+   staging it under `target/dist/npm`, whose `@teistro/sdk-*` glob the
+   release publishes.
 9. A second baseline export (the same script, more sections) for the
    seventeen other dasha systems, aspects, yogas and doshas, strengths,
    Ashtakavarga, the Jaimini slice, KP and milan, once the design pages

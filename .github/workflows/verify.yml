@@ -81,11 +81,13 @@ jobs:
         if: matrix.platform == 'linux-x64'
         run: cargo xtask check-site
 
-  # The wasm module against the Node binding's own suite, unchanged
-  # (03-design/wasm-binding.md §5). One platform is enough: the module is
-  # one artefact for every host, and the hash matrix already holds wasm32's
-  # arithmetic to Linux's bit for bit. The gate installs the `wasm-bindgen`
-  # CLI the lockfile pins under `target/tools`, which the cache keeps.
+  # The staged wasm package against the Node binding's own suite,
+  # unchanged, and in headless Chrome, whose answer must equal Node's to
+  # the bit (03-design/wasm-binding.md §5). One platform is enough: the
+  # module is one artefact for every host, and the hash matrix already
+  # holds wasm32's arithmetic to Linux's bit for bit. The runner image
+  # carries Chrome; the gate installs the `wasm-bindgen` CLI the lockfile
+  # pins under `target/tools`, which the cache keeps.
   wasm:
     name: wasm (nodejs)
     runs-on: ubuntu-latest
@@ -100,7 +102,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: The wasm module passes the Node binding's suite, unchanged
+      - name: The wasm package passes the Node suite unchanged, and in a browser as in Node
         run: cargo xtask check-wasm
 
   # Phase 3's exit asks for the conformance kit against **every tier**,

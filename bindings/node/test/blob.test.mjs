@@ -13,7 +13,8 @@ import { test } from 'node:test';
 import { decodePositions, decodeIntlRender } from '../lib/blob.js';
 import { Body, Graha, Kind, Status, TimeScale } from '../lib/catalogue.js';
 
-const dir = process.argv[2] ?? 'target/tsrb';
+// Named by the gate in `TEISTRO_FIXTURES`; see `binding.test.mjs`.
+const dir = process.env.TEISTRO_FIXTURES ?? 'target/tsrb';
 const read = (name) => new Uint8Array(readFileSync(join(dir, name)));
 
 test('a positions blob decodes into views over its own bytes', () => {
