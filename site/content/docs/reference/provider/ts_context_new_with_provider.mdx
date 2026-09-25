@@ -9,6 +9,8 @@ The same as `ts_context_new` in every other respect — `options` may be null fo
 
 The context takes its own reference to the adapter, so this handle may be freed immediately afterwards or kept to found another context; the library is unloaded when the last of them goes.
 
+<Callout type="info">Native builds only: a wasm module cannot open a shared library, so the wasm build has the built-in ephemeris and a host provider instead (ADR-0029), and this function is not in it.</Callout>
+
 <Tabs items={['C', 'Node', 'Dart']}>
 <Tab value="C">
 

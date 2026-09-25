@@ -9,6 +9,8 @@ Opens an adapter and the provider inside it.
 
 `UNSUPPORTED` when the file is not an adapter of this version, `DATA_MISSING` when it is and its data is not there, `INVALID_ARG` when its configuration is wrong — each of them the adapter's own judgement, passed through with its message rather than replaced.
 
+<Callout type="info">Native builds only: a wasm module cannot open a shared library, so the wasm build has the built-in ephemeris and a host provider instead (ADR-0029), and this function is not in it.</Callout>
+
 <Tabs items={['C', 'Node', 'Dart']}>
 <Tab value="C">
 

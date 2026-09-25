@@ -510,6 +510,12 @@ pub struct FunctionDef {
     /// The blob schema and version metadata.
     #[serde(default)]
     pub meta: Meta,
+    /// Compiled for native targets only (`cfg(not(target_family =
+    /// "wasm"))`): the plugin loader, which a wasm build has no use for
+    /// (ADR-0029). The C header guards it and a wasm binding emits
+    /// nothing for it.
+    #[serde(default, skip_serializing_if = "core::ops::Not::not")]
+    pub native_only: bool,
     /// The repository-relative source.
     pub source: String,
 }

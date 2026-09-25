@@ -190,7 +190,14 @@ fn render_functions(out: &mut String, api: &Api) {
         if let Some(safety) = &f.safety {
             let _ = write!(doc, "\nSafety: {safety}");
         }
-        let _ = writeln!(out, "{}{}\n", block_comment(&doc, ""), c_signature(api, f));
+        let declaration = format!("{}{}", block_comment(&doc, ""), c_signature(api, f));
+        // The loader is not in a wasm build (ADR-0029), so a wasm
+        // toolchain reading this header does not see it either.
+        if f.native_only {
+            let _ = writeln!(out, "#ifndef __wasm__\n{declaration}\n#endif\n");
+        } else {
+            let _ = writeln!(out, "{declaration}\n");
+        }
     }
 }
 
@@ -370,11 +377,19 @@ mod tests {
                 ],
                 returns: Some(TypeRef::scalar(Scalar::I32)),
                 meta: Meta::default(),
+                native_only: false,
                 source: String::new(),
             }],
             blobs: vec![],
             records: Vec::new(),
         };
+        let mut native = api.clone();
+        native
+            .functions
+            .iter_mut()
+            .for_each(|f| f.native_only = true);
+        assert!(render(&native).contains("#ifndef __wasm__\n/**\n * Creates a context."));
+        assert!(!render(&api).contains("__wasm__"));
         let header = render(&api);
         for expected in [
             "#define TS_ABI_VERSION ((uint32_t)1)",

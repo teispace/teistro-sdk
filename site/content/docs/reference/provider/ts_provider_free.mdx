@@ -7,6 +7,8 @@ Frees a loaded provider; null is ignored.
 
 The library is unloaded when the last reference goes, so a context still using it keeps it alive and the order of these calls does not matter.
 
+<Callout type="info">Native builds only: a wasm module cannot open a shared library, so the wasm build has the built-in ephemeris and a host provider instead (ADR-0029), and this function is not in it.</Callout>
+
 <Tabs items={['C', 'Node', 'Dart']}>
 <Tab value="C">
 

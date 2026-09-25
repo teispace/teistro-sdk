@@ -41,8 +41,13 @@ teistro-serial = { path = "../serial" }
 teistro-geometry = { path = "../geometry" }
 teistro-state = { path = "../state" }
 teistro-vargas = { path = "../vargas" }
-libloading = "0.8"
 teistro-time = { path = "../time" }
+
+# The plugin loader (ADR-0029), which a wasm build has no use for: a wasm
+# module cannot open a shared library, so there it has the built-in and a
+# host provider, and `src/provider.rs` is compiled out.
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+libloading = "0.8"
 
 # The SDK's own ephemeris, so a consumer who installs nothing else still
 # computes a chart (ADR-0008, ADR-0028). It is a feature because a shared

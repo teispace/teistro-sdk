@@ -244,6 +244,13 @@ fn function_page(api: &Api, f: &FunctionDef) -> String {
         frontmatter(&summary(&f.doc)),
         text(&f.doc)
     );
+    if f.native_only {
+        out.push_str(
+            "<Callout type=\"info\">Native builds only: a wasm module cannot open a shared \
+             library, so the wasm build has the built-in ephemeris and a host provider instead \
+             (ADR-0029), and this function is not in it.</Callout>\n\n",
+        );
+    }
     let _ = write!(
         out,
         "<Tabs items={{['C', 'Node', 'Dart']}}>\n<Tab value=\"C\">\n\n```c\n{}\n```\n\n</Tab>\n",

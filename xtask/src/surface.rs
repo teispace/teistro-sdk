@@ -924,6 +924,7 @@ mod tests {
             params: Vec::new(),
             returns: None,
             meta: teistro_idl::model::Meta::default(),
+            native_only: false,
             source: String::new(),
         };
         assert_eq!(call_name(&api, &f), "abi_version");

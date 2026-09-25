@@ -188,6 +188,9 @@ pub struct TsContext {
     /// **Declared last on purpose**: fields drop in declaration order, so
     /// `provider` — whose vtable is a table of function pointers into
     /// that library — is gone before the library can be unloaded.
+    ///
+    /// Absent on wasm, which has no loader.
+    #[cfg(not(target_family = "wasm"))]
     loaded: Option<crate::provider::Keepalive>,
 }
 
@@ -443,12 +446,14 @@ impl TsContext {
         Ok(TsContext {
             inner,
             scratch: RefCell::new(Scratch::default()),
+            #[cfg(not(target_family = "wasm"))]
             loaded: None,
         })
     }
 
     /// The same context, keeping a loaded adapter's library alive for as
     /// long as it lives (ADR-0029).
+    #[cfg(not(target_family = "wasm"))]
     #[must_use]
     pub(crate) fn keeping(mut self, loaded: crate::provider::Keepalive) -> TsContext {
         self.loaded = Some(loaded);
@@ -722,15 +727,17 @@ fn dashas_of(json: &str) -> Result<Vec<teistro::dasha::DashaDefinition>, Error> 
         .collect()
 }
 
-/// The strings an options record carries, checked and borrowed.
+/// The strings an options record carries, checked and borrowed, for the
+/// loader's constructor (`ts_context_new_with_provider`).
 ///
-/// Shared by both ways of making a context, so a field added here reaches
-/// each of them and neither can forget one.
+/// Both ways of making a context read the strings through `texts_of`, so
+/// a field added there reaches each of them and neither can forget one.
 ///
 /// # Safety
 ///
 /// `options` must be null or a readable record whose strings stay valid
 /// for the returned lifetime.
+#[cfg(not(target_family = "wasm"))]
 pub(crate) unsafe fn read_options<'a>(
     options: *const TsContextOptions,
 ) -> Result<OptionTexts<'a>, Error> {
