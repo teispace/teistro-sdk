@@ -161,6 +161,24 @@ pub enum Chosen {
 }
 
 impl Chosen {
+    /// The member's key, as serde writes it and every binding reads it
+    /// back: `STRONGEST`.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Chosen::Strongest => "STRONGEST",
+            Chosen::MostPortfolios => "MOST_PORTFOLIOS",
+            Chosen::MunthaLordUnaspected => "MUNTHA_LORD_UNASPECTED",
+            Chosen::MunthaLordAllWeak => "MUNTHA_LORD_ALL_WEAK",
+            Chosen::MunthaLordTied => "MUNTHA_LORD_TIED",
+            Chosen::DinaRatriTied => "DINA_RATRI_TIED",
+            Chosen::AnnualLagnaLordUnaspected => "ANNUAL_LAGNA_LORD_UNASPECTED",
+            Chosen::StrongestUnaspected => "STRONGEST_UNASPECTED",
+            Chosen::MoonsIthasala => "MOONS_ITHASALA",
+            Chosen::MoonsSignLord => "MOONS_SIGN_LORD",
+        }
+    }
+
     /// Every step, in the chain's order.
     pub const ALL: [Chosen; 10] = [
         Chosen::Strongest,

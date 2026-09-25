@@ -85,6 +85,13 @@ pub struct PeriodRow {
 }
 
 impl PeriodRow {
+    /// How deep it sits: 1 for a mahadasha, 2 for an antardasha — the
+    /// number of places in its [`path`](PeriodRow::path).
+    #[must_use]
+    pub fn level(&self) -> usize {
+        self.path.split('/').count()
+    }
+
     /// A period as a row.
     #[must_use]
     pub fn of(period: &Period) -> PeriodRow {

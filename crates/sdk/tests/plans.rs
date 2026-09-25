@@ -892,3 +892,61 @@ fn the_other_two_weights_are_said() {
         Some("vimshopaka")
     );
 }
+
+/// `phala` says each limb of the panchanga, so asking for it alone asks for
+/// that section. It did not: `PlanRequest::sections` gave it the states and
+/// nothing else, so a chart asked for its phala and nothing else said its
+/// grahas and lagna and fell silent on the day — ten subjects of twenty,
+/// and no way for a reader to tell that from a corpus with no words for
+/// the rest. Found when the bindings' `phala` example printed twice as many
+/// items as Rust's, which had composed over a bare reading.
+#[test]
+fn a_phala_asked_for_alone_says_the_day_as_well() {
+    let sdk = Context::builder()
+        .profile("nepali-default")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a context");
+    let states = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/states");
+    let tree = teistro::Tree::load(&states).expect("the states corpus");
+    let english = tree.locales.get("en-Latn").expect("an English corpus");
+    let bytes = teistro::pack::build(english, "sdk.entity").expect("a pack");
+    sdk.intl().load_pack(&bytes).expect("the pack loads");
+
+    let request = ChartRequest::at(
+        Place::new(
+            Latitude::try_new(27.7172).unwrap(),
+            Longitude::try_new(85.324).unwrap(),
+            Altitude::try_new(1400.0).unwrap(),
+        ),
+        UtcOffset::try_from_seconds(20_700).unwrap(),
+    );
+    let read = sdk
+        .chart()
+        .interpreted(
+            &[JulianDay::<Utc>::literal(2_447_995.489_583_333_5)],
+            &request,
+            None,
+            PlanRequest::default().with_phala(),
+        )
+        .expect("a phala");
+    let plan = read.value[0].plans.phala.as_ref().expect("asked for");
+    let said: Vec<&str> = plan.items.iter().map(|item| item.key.as_str()).collect();
+    for limb in [
+        "sdk.phala.tithi",
+        "sdk.phala.vara",
+        "sdk.phala.nakshatra",
+        "sdk.phala.yoga",
+    ] {
+        assert!(said.contains(&limb), "{limb} missing from {said:?}");
+    }
+
+    // A document with its states and no panchanga is refused by the
+    // section's name, not said by halves.
+    let (without, unread) = common::reading("{}", |request| {
+        request.with_rule_inputs(shipped::nabhasas())
+    });
+    assert!(unread.panchanga.is_none(), "the nabhasas read no limb");
+    let refused = without.interpret().phala(&unread).unwrap_err();
+    assert_eq!(refused.field(), Some("panchanga"));
+}

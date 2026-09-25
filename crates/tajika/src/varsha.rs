@@ -69,6 +69,22 @@ pub enum Reading {
     Mean,
 }
 
+impl Reading {
+    /// Every reading, the tradition's first.
+    pub const ALL: [Reading; 3] = [Reading::Sidereal, Reading::Tropical, Reading::Mean];
+
+    /// The member's key, as serde writes it and every binding reads it
+    /// back: `SIDEREAL`.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Reading::Sidereal => "SIDEREAL",
+            Reading::Tropical => "TROPICAL",
+            Reading::Mean => "MEAN",
+        }
+    }
+}
+
 /// What a return is computed from: the birth, and the Sun where it stood.
 ///
 /// Both longitudes are taken rather than one and an ayanamsha, because

@@ -45,7 +45,7 @@ made, four spikes measured, repository live).
 Apache-2.0, created 2026-09-04). `main` is protected: pull requests with
 the `fast-check` status, linear history. Changes land by branch, pull
 request (the `dco` and `fast-check` jobs), rebase merge.
-**Last updated:** 2026-09-25 (**one spelling of a key and of a field in every binding**: `idl/api.json` records every member's key, `SCREAMING_SNAKE_CASE`, and a test holds each boundary enum's keys to its Rust type's serde; the Tajika crate and the provenance record joined the SDK's one spelling, a completion step is `positions:NATIVE` everywhere, and a refusal names the record the caller wrote (`varsha.through`), so five of the eight excused example differences are gone. Before it, **one `LocalDay` in every binding's chart and almanac**, whose date is the one `calendar.convert` takes; building it fixed Python's reading of a calendar with no era, made a chart in a polar day refuse by naming its policy, and gave Node's declarations the eight helpers they lacked, now gated both ways. Before it, **the Rust façade's examples join the comparison**: `check-parity` compares four sets of the shared examples, and asking why Rust's printed differently made the port validate and reckon coverage for every provider, gave Rust's positions their provenance, moved the plans' one call into the façade, and named a chart's ayanamsha in every binding; eight differences are excused by name until 2f and 2g remove them. Before it, **the shared examples print alike in every binding**, gated by `check-parity`, and building it fixed coverage for a consumer's own provider, Python's exports and a stale Node union. Before that, **the Harsha bala, a saham's strength and
+**Last updated:** 2026-09-25 (**the year's chart in one Rust call, and the corpus examples in every binding**: `sdk.chart().varsha` composes the annual chart once, in the façade, from the `VarshaRequest` every binding writes, and the boundary only encodes it; Rust's `annual_chart` and the bindings' `phala` and `readings` complete the shared examples, 13 printing alike in four languages with nothing excused; and writing them found `phala` asked for alone saying half a chart, because it was never given the panchanga it says. Before it, **one spelling of a key and of a field in every binding**: `idl/api.json` records every member's key, `SCREAMING_SNAKE_CASE`, and a test holds each boundary enum's keys to its Rust type's serde; the Tajika crate and the provenance record joined the SDK's one spelling, a completion step is `positions:NATIVE` everywhere, and a refusal names the record the caller wrote (`varsha.through`), so five of the eight excused example differences are gone. Before it, **one `LocalDay` in every binding's chart and almanac**, whose date is the one `calendar.convert` takes; building it fixed Python's reading of a calendar with no era, made a chart in a polar day refuse by naming its policy, and gave Node's declarations the eight helpers they lacked, now gated both ways. Before it, **the Rust façade's examples join the comparison**: `check-parity` compares four sets of the shared examples, and asking why Rust's printed differently made the port validate and reckon coverage for every provider, gave Rust's positions their provenance, moved the plans' one call into the façade, and named a chart's ayanamsha in every binding; eight differences are excused by name until 2f and 2g remove them. Before it, **the shared examples print alike in every binding**, gated by `check-parity`, and building it fixed coverage for a consumer's own provider, Python's exports and a stale Node union. Before that, **the Harsha bala, a saham's strength and
 the birth's own sahams cross to all four bindings**: every saham carries
 its clauses as bits over two generated enums and seven rows of facts, every
 founded year its Harsha bala, and every chart its own sahams, which now
@@ -3835,17 +3835,55 @@ on pub.dev (checked 2026-09-07).
      examples print serde's spelling through one `wire_key` rather than a
      kebab-cased `Debug`.
    Five of `EXCUSED` are gone; three remain, all 2g's.
-2g. **The year's chart in one Rust call, and the corpus examples in
-   every binding.** The annual chart — each year's return, its Muntha,
-   office-bearers, year lord, Tajika yogas by matter, sahams, Harsha
-   bala and annual dashas — is composed in `crates/ffi/src/chart.rs`
-   (`VarshaRequest`, `praveshas_of`, `annual_year`, about 300 lines),
-   not in the façade, so Rust has the parts and not the call, and no
-   `annual_chart.rs`. Move it as `ChartArea::interpreted` moved the
-   plans, then write the eleventh Rust example. And Rust's `phala.rs`
-   and `readings.rs`, which load the reading corpora from `packs/`,
-   have no binding counterpart though every binding has `loadPack` and
-   the `phala` plan: write them in the three. Three of `EXCUSED` go.
+2g. ~~The year's chart in one Rust call, and the corpus examples in
+   every binding~~ — **done** (2026-09-25). The annual chart was composed
+   in `crates/ffi/src/chart.rs` and nowhere else, so Rust had the parts
+   and not the call. Now:
+   - `teistro::VarshaRequest` is the record Rust and every binding write
+     as `varsha`, with `VarshaRequest::from_json` (the boundary's reader,
+     moved) and `check` naming a refusal under `varsha` as the bindings
+     do; `sdk.chart().varsha(&birth, clock, &request)` answers a `Varsha`
+     — its `VarshaYear`s, each with its `AnnualChart` where the request
+     named an `AnnualPlace`, and the birth's own sahams. `Asked<T>` is
+     public over a sealed `Askable`, and the request has a builder
+     (`VarshaRequest::through(40).at(AnnualPlace::Birth).with_sahams(Asked::All)`).
+     The boundary reads the text with the façade's reader and maps
+     `varsha` over its batch, adding which chart a refusal was for; about
+     640 lines left `crates/ffi`. The saham refusal's example still said
+     `"punya"`, which 2f's respelling missed; it says `"PUNYA"`.
+   - `annual_chart.rs` is Rust's eleventh shared example and prints what
+     the three print, line for line. Printing it needed a key for six
+     Tajika enums (`YearYoga`, `Saham`, `StrongClause`, `WeakClause`,
+     `Chosen`, `Reading`), each a `const fn key()` held to serde by
+     `crates/tajika/tests/keys.rs`, plus `Reading::ALL` and
+     `PeriodRow::level`.
+   - `phala` and `readings` in the three bindings. The packs are built,
+     not committed, so the example gate builds both corpora into
+     `target/packs` once a run, with the file-name rule
+     `teistro-intl build` uses (`teistro_intl::pack::file_name`, now one
+     function), and names the directory in `TEISTRO_PACKS`; Rust's two
+     read those files too, rather than building packs in the process, so
+     all four load the bytes a consumer would. A passage is cut by
+     characters in every binding (`Array.from`, `runes`), not UTF-16
+     units, or a Devanagari line would differ.
+   - **What writing them found: `phala` asked for alone said half the
+     chart.** It says each limb of the panchanga, and `PlanRequest::sections`
+     gave it the states and not the panchanga, so a chart asked for its
+     phala and nothing else said the nine grahas and the lagna and fell
+     silent on the day — 10 subjects of 20, indistinguishable from a
+     corpus with no words for the rest. A probe that asked for rules
+     beside it printed twenty, because the rules had asked for the
+     section; Rust's example, over a bare reading, printed ten.
+     `phala` now asks for the panchanga, and `sdk.interpret().phala`
+     refuses a document without one by `panchanga` rather than saying it
+     by halves; held by `a_phala_asked_for_alone_says_the_day_as_well`,
+     proved red.
+   - Stale prose the move exposed: the three bindings' `annual_chart`
+     headers and README rows said the boundary answers the instant and
+     not the chart, and spelt the readings lowercase; three READMEs said
+     dashas do not cross.
+   `EXCUSED` is empty; the machinery stays, so a difference found later
+   is a defect or an entry naming what removes it.
 2h. **What a binding hands back is typed, and its own.** A result's
    provenance is an untyped map in all three bindings
    (`Record<string, unknown>`, a `dict`, a `Map<String, Object?>`), and
@@ -3893,6 +3931,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-25 | **The year's chart in one Rust call, and a composer that said half a chart.** The annual chart was composed at the C boundary alone (`VarshaRequest`, `praveshas_of`, `annual_year`), so Rust had its parts and not its call. The request and the composition moved into the façade as `teistro::VarshaRequest` and `sdk.chart().varsha(&birth, clock, &request)`, refusals named under `varsha` as the bindings name them, and about 640 lines left `crates/ffi`; the move caught a saham refusal still spelling `"punya"`. Rust's `annual_chart` printed what Node prints on its first run, once six Tajika enums had a `key()` held to serde. The bindings' `phala` and `readings` needed built packs, so the example gate builds both corpora into `target/packs` with the one file-name rule `teistro-intl build` uses, and all four languages load those bytes — Rust stopped building packs in the process. Writing them found that **`phala` asked for alone gave the chart no panchanga**, so it said ten subjects of twenty with nothing to tell that from a corpus without words; it asks for the section now, and the composer refuses a document without one, proved red. Also fixed: three bindings' README rows and example headers that said the boundary answers the instant and not the chart, and that dashas do not cross. `EXCUSED` is empty: 13 shared examples print alike in Node, Python, Dart and Rust, and the four parity runners agree on 12,987 values (Rust 12,979). Next: 2h. |
 | 2026-09-25 | **One spelling of a key and of a field, and what the one spelling found.** The bindings spelt a closed enum's member in kebab case and everything else in `SCREAMING_SNAKE_CASE`; `idl/api.json` now records every member's key, the generators read it with no inference (`names::kebab` deleted, the C header byte-identical), and `crates/ffi/tests/keys.rs` reads each key through the Rust type's serde and the boundary's conversion, every member reached, five unserialised enums excused both ways, proved red. Holding the keys to serde found the Tajika crate and the provenance record spelling lowercase, so the same varsha request took `'MUDDA'` and `'punya'` and every stored document held two conventions — `schema-measured.md`'s one-convention claim went from falsified to holds, and its prose now names the minority instead of asserting it. A chart's steps were a `Debug` (`positions:Native`), now `Step::key`; a refusal names the record the caller wrote (`varsha.through`), not the C argument; the ephemeris names are keys too (`'BUILTIN'`), and the boundary's duplicate "no ephemeris" refusal is gone. The regex sweep that respelt the bindings also uppercased dictionary keys and subscripts, caught by reading its diff and by `tsc` on a `Record` key no regex could see. Five of `EXCUSED` gone, three left for 2g. Found and filed: **2i**, the lowercase words inside four other request records. Next: 2g. |
 | 2026-09-24 | **One day record in every binding, and three things it found.** A chart's day was a row of ids under the blob's names in Node and a weekday and a sunrise flattened onto the chart in Python and Dart, so two parity runners read raw columns. `LocalDay` is the record in all three, for a chart's day and an almanac's alike — the date the calendar area returns, the weekday, the sunrises, `polar` as Rust's `DayState` shapes it and the convention — and each runner prints it through one helper (seven new values a day, all four agreeing). Probing it rather than assuming found: Python's generated reader turned a missing era (`0xFFFF`) into a member and wrote `None` as `0`, a real era's id, which one shared `NO_MEMBER` sentinel now fixes in the generator; a chart at Tromsø's midsummer under the default `NEAREST_EVENT` was given a day a month away and refused by the ghati reckoning in words that named no knob, and now `chart_day` refuses by `day.polar_day_policy` with `CIVIL_MIDNIGHT` as the hint (a synthetic midnight-sun model in the chart crate's tests, and the real place in all three bindings'); and the façade could not name `LocalDay`, now re-exported with `DayState`, `PolarKind` and `ChartDay`. And an example reading a removed field, which `tsc` never sees, led to Node's declarations lacking eight exports (`date`, `at`, the zone helpers, `messages`) and declaring ten the module did not export — `surface.mjs` now measures the module's exports both ways, and the areas on real instances. Next: 2f. |
 | 2026-09-24 | **The Rust façade's examples join the comparison, and six of their differences were the SDK's.** One of Rust's ten examples printed what the bindings print. Asking why, example by example, found the SDK again: a **Rust provider** was asked for instants outside its coverage and had to validate its own requests, where a foreign one had both done for it — `ask_positions` now validates a request and reckons its coverage for every provider, and `Completion` asks through it, so the foreign adapter's own check is gone and the Rust example's provider was asked for one cell, not two; Rust's **positions carried no provenance**, so `positions` answers in an envelope stamped by `Context::positions_provenance`, which the boundary now calls too, and the parity gate compares `provenance-fnv` for Rust (absences nine to eight, Rust 12,950 values, all agreeing); the **plans** a chart says were composed only in `crates/ffi`, so `ChartArea::interpreted` founds, reads and composes in one call and the boundary only encodes; the bindings' `birth_chart` read **raw positions** and so missed the profile's topocentric Moon (8.4455° against the founded 9.1738°), and all four found the chart now; **no binding could name a chart's ayanamsha**, which the blob carried — `Chart.ayanamsha`, on the chart because Dart's generated `Charts.ayanamsha` is the raw id, and the Node typecheck fixture's negative case caught that `index.d.ts` had not imported the type; and `Detail`, `CellStatus` and `ZoneSource` gained the `key()` their serde spelling implies, each tested against it, which retired the Rust parity runner's `screaming` helper. `examples.rs` runs Rust as the fourth set and `check-rust` runs its examples through it; what is left is `EXCUSED`, eight entries naming the item that removes each, refused both ways (the gate caught my own wrong line number from both sides) and printed every run. Found and filed: **2f** a closed enum's key is kebab in the bindings and SCREAMING everywhere else, and a binding's refusal names the C argument; **2g** the year's chart is composed only at the boundary, and the corpus examples are Rust's alone; **2h** provenance is an untyped map in every binding, and a binding's `found(one)` carries its batch's content hash. Next: 2e. |

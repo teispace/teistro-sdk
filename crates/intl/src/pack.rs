@@ -39,6 +39,14 @@ impl fmt::Display for PackError {
 
 impl std::error::Error for PackError {}
 
+/// The file a pack of one namespace of a locale is written to and read
+/// from: `en-Latn.sdk.entity.tpack`. One rule, so the command line that
+/// writes a pack and whatever reads it back cannot disagree.
+#[must_use]
+pub fn file_name(locale: &str, namespace: &str) -> String {
+    format!("{locale}.{namespace}.tpack")
+}
+
 /// Builds the pack of one namespace of a locale.
 ///
 /// # Errors

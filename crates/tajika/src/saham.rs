@@ -157,6 +157,55 @@ pub enum Saham {
 pub const CANCER_15_DEG: f64 = 105.0;
 
 impl Saham {
+    /// The member's key, as serde writes it and every binding reads it
+    /// back: `PUNYA`.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            Saham::Punya => "PUNYA",
+            Saham::Guru => "GURU",
+            Saham::Vidya => "VIDYA",
+            Saham::Yasha => "YASHA",
+            Saham::Mitra => "MITRA",
+            Saham::Mahatmya => "MAHATMYA",
+            Saham::Asha => "ASHA",
+            Saham::Samarthya => "SAMARTHYA",
+            Saham::Bhratri => "BHRATRI",
+            Saham::Gaurava => "GAURAVA",
+            Saham::Pitri => "PITRI",
+            Saham::Raja => "RAJA",
+            Saham::Matri => "MATRI",
+            Saham::Putra => "PUTRA",
+            Saham::Jeeva => "JEEVA",
+            Saham::Roga => "ROGA",
+            Saham::Karma => "KARMA",
+            Saham::Manmatha => "MANMATHA",
+            Saham::Kali => "KALI",
+            Saham::Kshama => "KSHAMA",
+            Saham::Shastra => "SHASTRA",
+            Saham::Bandhu => "BANDHU",
+            Saham::Mrityu => "MRITYU",
+            Saham::Deshantara => "DESHANTARA",
+            Saham::Artha => "ARTHA",
+            Saham::Paradara => "PARADARA",
+            Saham::AnyaKarma => "ANYA_KARMA",
+            Saham::Vanika => "VANIKA",
+            Saham::KaryaSiddhi => "KARYA_SIDDHI",
+            Saham::Vivaha => "VIVAHA",
+            Saham::Prasava => "PRASAVA",
+            Saham::Santaapa => "SANTAAPA",
+            Saham::Shraddha => "SHRADDHA",
+            Saham::Preeti => "PREETI",
+            Saham::Jadya => "JADYA",
+            Saham::Vyapara => "VYAPARA",
+            Saham::PaneeyaPaata => "PANEEYA_PAATA",
+            Saham::Shatru => "SHATRU",
+            Saham::Jalapatha => "JALAPATHA",
+            Saham::Bandhana => "BANDHANA",
+            Saham::Labha => "LABHA",
+        }
+    }
+
     /// Every saham the source gives, in its order.
     pub const ALL: [Saham; 41] = [
         Saham::Punya,

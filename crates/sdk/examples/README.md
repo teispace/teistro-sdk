@@ -30,14 +30,15 @@ enough to notice.
 | [`almanac.rs`](almanac.rs) | a week's panchangam: the five limbs of each day, and its periods | a limb is a **span**, not a name — most days have two tithis, and the SDK gives both with the instant each gives way; a span carries its own bounds as well as the clipped ones; and a value a day may not have is `Option`, which the compiler will not let you ignore |
 | [`chart_reading.rs`](chart_reading.rs) | the same birth record read in full: divisional charts, houses, states, drishti and derived points | every section is **asked for** and off by default, and all of them come from one founded chart in one call; vargottama is a comparison of two signs, not a flag; a dignity and a house are different sections answering different questions; and the drishti are ragged, because relations depend on where the grahas stand. Its output is the other three bindings' `chart_reading`, line for line |
 | [`interpretation.rs`](interpretation.rs) | the same birth record said in English and in Nepali | a composer returns a **plan**, not prose: an ordered list of message keys and slots that holds no words, so one plan renders in every locale and the consumer may reorder or drop items first. `sdk.chart().interpreted` founds the chart, answers its rules and composes the plans in one call. `Rendered` says which locale answered, so a fallback cannot pass unnoticed; and `readings` without rules is refused rather than answered empty |
+| [`annual_chart.rs`](annual_chart.rs) | the years a 1990 birth opens, and the chart of its thirtieth | the **Varsha Pravesha**: the Sun's return to where it stood at birth, which everything in Tajika is read from. `sdk.chart().varsha` answers a `VarshaRequest` in **one call** — each year's instant and Muntha, and where it names a place, the year's own chart with its office-bearers, year lord, yogas by matter, sahams, Harsha bala and annual dashas — because whether that chart is cast for the birthplace or a residence is a question the schools answer differently, so `AnnualPlace` is a choice you write and never a default; the reading is a name (`SIDEREAL`, `TROPICAL`, `MEAN`) and never a fallback; and a refusal names the field every binding writes, `varsha.through` |
+| [`readings.rs`](readings.rs) | the same birth record's yogas and doshas said in each language's own words | the reading corpus is **loaded, not embedded**: a pack is bytes, read here, as in every binding, from the files `teistro-intl build` writes (`cargo xtask check-parity` builds them into `target/packs`, or name another directory with `TEISTRO_PACKS`), and `sdk.intl().load_pack` is the one call whatever the bytes came from. Loading changes what the `readings` composer says and not how it is called, and the record holds the whole passage and its named facets beside the sentence the plan carries |
+| [`phala.rs`](phala.rs) | what the chart *is*, read aloud: a graha in a bhava, the lagna's sign, each limb of the day | two corpora, one engine: a pack **merges** into a record rather than replacing it, so `nakshatra.ASHWINI` keeps its name and gains the two corpora's forms, read through `form`; the `phala` composer says only what a loaded pack has words for, and asking for it founds the chart with what it reads, the panchanga's limbs among them |
 | [`your_own_ephemeris.rs`](your_own_ephemeris.rs) | putting your own engine behind the SDK | the port in full — one call per grid, a body you did not declare refused before you are asked, an instant outside your coverage **never asked for** and its cells marked, refusing a frame so the SDK completes it, a `ProviderError` whose sentence reaches the caller, and an `Arc` newtype for a provider you keep a handle on |
 
-There are three further files. [`phala.rs`](phala.rs) and
-[`readings.rs`](readings.rs) load the reading corpora from `packs/`, and
-have no binding counterpart yet (`docs/STATUS.md` 2g). And
-[`parity.rs`](parity.rs) is not an example at all: it prints one scenario
-as `key<TAB>value` lines so that `cargo xtask check-parity` can compare
-the four bindings value for value, and no other gate runs it.
+There is one further file, [`parity.rs`](parity.rs), and it is not an
+example at all: it prints one scenario as `key<TAB>value` lines so that
+`cargo xtask check-parity` can compare the four bindings value for value,
+and no other gate runs it.
 
 ## Why they repeat themselves
 
@@ -57,9 +58,6 @@ under its own licence (ADR-0029). Do that, or hand in an ephemeris of
 your own as [`your_own_ephemeris.rs`](your_own_ephemeris.rs) shows, and
 every one of these programs is unchanged, which is what the port is for.
 
-They also stop where the façade does: the year's chart has its parts
-here and not yet its one call, so the eleventh shared example,
-`annual_chart`, is the bindings' alone for now (`docs/STATUS.md` 2g). A Rust consumer *can* also depend on
-the crates directly, which the other three bindings cannot, and
+A Rust consumer *can* also depend on the crates directly, which the other three bindings cannot, and
 [`03-design/rust-consumer-surface.md`](../../../docs/03-design/rust-consumer-surface.md)
 §6 says what the surface deliberately leaves out.

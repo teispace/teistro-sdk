@@ -16,9 +16,8 @@
 //!
 //! 1. **A pack is bytes.** `intl.load_pack` takes them from wherever you
 //!    got them — a file beside your binary, a download, an asset in your
-//!    application bundle. This example builds them from the SDK's own
-//!    source root so it has no file to fetch; a shipped consumer reads a
-//!    `.tpack` and passes the bytes to the same call.
+//!    application bundle. This example reads the files `teistro-intl build`
+//!    wrote from the SDK's own source root, as every binding's does.
 //! 2. **Loading changes what a composer says**, not how it is called.
 //!    `readings` asks the base locale whether it carries a reading of each
 //!    rule: with the pack, the item is the locale's own reading; without
@@ -28,21 +27,48 @@
 //!    is one call on an engine you already have.
 //!
 //! ```sh
+//! cargo run -p teistro-intl -- --root packs/readings build --out target/packs/readings
 //! cargo run --release -p teistro --example readings
 //! ```
 
 #![expect(clippy::print_stdout, reason = "an example is a program that prints")]
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
 use teistro::{
-    ChartRequest, Context, Ephemeris, Error, RuleRequest, ShippedRules, Tree, UtcOffset, pack,
+    ChartRequest, Context, Ephemeris, Error, PlanRequest, RuleRequest, ShippedRules, UtcOffset,
 };
 
-/// Where the SDK keeps the readings' sources. A consumer ships the built
-/// `.tpack` instead and never sees this directory.
-const READINGS: &str = "packs/readings";
+/// Where the built packs are: `TEISTRO_PACKS`, or the repository's
+/// `target/packs`, which `cargo xtask check-parity` builds before it runs
+/// any example.
+fn packs() -> PathBuf {
+    std::env::var_os("TEISTRO_PACKS").map_or_else(
+        || Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/packs"),
+        PathBuf::from,
+    )
+}
+
+/// Every pack a corpus built, one a locale, in name order.
+fn packs_of(corpus: &str) -> Result<Vec<PathBuf>, Error> {
+    let directory = packs().join(corpus);
+    let unbuilt = |why: std::io::Error| {
+        Error::invalid_arg(format!("no packs in {}: {why}", directory.display())).with_hint(
+            format!(
+                "build them: cargo run -p teistro-intl -- --root packs/{corpus} build --out target/packs/{corpus}"
+            ),
+        )
+    };
+    let mut found: Vec<PathBuf> = std::fs::read_dir(&directory)
+        .map_err(unbuilt)?
+        .flatten()
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|kind| kind == "tpack"))
+        .collect();
+    found.sort();
+    Ok(found)
+}
 
 fn main() -> Result<(), Error> {
     let sdk = Context::builder()
@@ -53,13 +79,9 @@ fn main() -> Result<(), Error> {
     // ── The pack ───────────────────────────────────────────────────────
     // One pack a locale, because a Nepali application wants Nepali and its
     // fallback and not four languages' worth of prose.
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join(READINGS);
-    let tree = Tree::load(&root).map_err(|why| Error::invalid_arg(why.to_string()))?;
-    for locale in tree.locales.values() {
-        let bytes =
-            pack::build(locale, "sdk.entity").map_err(|why| Error::invalid_arg(why.to_string()))?;
+    for file in packs_of("readings")? {
+        let bytes = std::fs::read(&file)
+            .map_err(|why| Error::invalid_arg(format!("{}: {why}", file.display())))?;
         // This is the call a consumer makes, whatever the bytes came from.
         let loaded = sdk.intl().load_pack(&bytes)?;
         println!(
@@ -80,20 +102,20 @@ fn main() -> Result<(), Error> {
     // for; the nabhasas are the kernel's own and have none, which is the
     // gap `interpret-measured.md` counts.
     let set = RuleRequest::shipped([ShippedRules::Yogas, ShippedRules::Doshas]).rule_set()?;
-    let request =
-        ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_rule_inputs(set.rules());
-    let reading = sdk.chart().readings_with_rules(
+    let read = sdk.chart().interpreted(
         &[JulianDay::literal(2_447_995.489_583_333_5)],
-        &request,
-        &set,
+        &ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?),
+        Some(&set),
+        PlanRequest::default().with_readings(),
     )?;
-    let Some((_, held)) = reading.value.first() else {
-        println!("\nno chart was read");
-        return Ok(());
-    };
+    let plan = read
+        .value
+        .into_iter()
+        .next()
+        .and_then(|chart| chart.plans.readings)
+        .ok_or_else(|| Error::internal("one chart asked for its readings"))?;
 
     // ── The plan, said twice ───────────────────────────────────────────
-    let plan = sdk.interpret().readings(held);
     println!("\n{} items", plan.len());
     for locale in ["en-Latn", "ne-Deva-NP"] {
         sdk.intl().set_locale(locale)?;

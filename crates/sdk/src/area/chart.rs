@@ -58,6 +58,7 @@ use crate::plan_request::PlanRequest;
 use crate::reading::{ChartRequest, Sections};
 use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
+use crate::varsha::{AnnualChart, AnnualPlace, VARSHA, Varsha, VarshaRequest, VarshaYear};
 use teistro_rules::longevity::{AyurdayaRules, ThreePairsRules};
 
 /// `sdk.chart`: the foundation every reading is built on — the lagna,
@@ -848,6 +849,156 @@ impl<'a> ChartArea<'a> {
             })?
             .at;
         self.reading(at, request)
+    }
+
+    /// The **annual charts** a request asks of one birth: each year's
+    /// return and Muntha, and — where [`VarshaRequest::place`] asks for the
+    /// charts — each year's own chart read down to its office-bearers,
+    /// year lord, yogas by matter, sahams, Harsha bala and annual dashas
+    /// (`03-design/annual-chart.md`).
+    ///
+    /// The one call every binding's `varsha` makes, so a year is composed
+    /// once, here; the parts are each a method of their own for a caller
+    /// who wants one.
+    ///
+    /// `clock` is the one the birth was cast under, which
+    /// [`AnnualPlace::Birth`] casts each year's chart under too.
+    ///
+    /// ```no_run
+    /// # use teistro::{AnnualPlace, Asked, ChartRequest, Context, Document, Ephemeris, VarshaRequest};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let (birth, request): (Document, ChartRequest) = todo!();
+    /// let asked = VarshaRequest::through(40)
+    ///     .at(AnnualPlace::Birth)
+    ///     .with_sahams(Asked::All);
+    /// let varsha = sdk.chart().varsha(&birth, request.offset(), &asked)?;
+    /// let fortieth = varsha.years.last().and_then(|year| year.annual.as_ref());
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A request [`VarshaRequest::check`] refuses; no ephemeris; whatever
+    /// the provider refuses while searching or founding. Each is named
+    /// under `varsha`, the record's name in every binding.
+    pub fn varsha(
+        self,
+        birth: &Document,
+        clock: UtcOffset,
+        asked: &VarshaRequest,
+    ) -> Result<Varsha, Error> {
+        asked.check()?;
+        self.varsha_of(birth, clock, asked)
+            .map_err(|error| error.under(VARSHA))
+    }
+
+    /// [`ChartArea::varsha`] for a request already checked, its refusals
+    /// named as the parts name them.
+    fn varsha_of(
+        self,
+        birth: &Document,
+        clock: UtcOffset,
+        asked: &VarshaRequest,
+    ) -> Result<Varsha, Error> {
+        let years = self
+            .praveshas(birth, asked.reading, asked.through)?
+            .into_iter()
+            .map(|pravesha| {
+                // The Muntha is progressed by the years the return
+                // *completes*, which is exactly what `year` counts.
+                let muntha = self.muntha(birth, pravesha.year, asked.muntha)?;
+                let annual = asked
+                    .place
+                    .map(|place| self.annual_chart(birth, clock, place, asked, pravesha))
+                    .transpose()?;
+                Ok(VarshaYear {
+                    pravesha,
+                    muntha,
+                    annual,
+                })
+            })
+            .collect::<Result<Vec<VarshaYear>, Error>>()?;
+        // The birth's own sahams, which have no year lord.
+        let natal_sahams = match &asked.sahams {
+            Some(sahams) => self.saham_strength_with_rules(
+                birth,
+                sahams.members(),
+                None,
+                asked.strength_rules(),
+            )?,
+            None => Vec::new(),
+        };
+        Ok(Varsha {
+            years,
+            natal_sahams,
+        })
+    }
+
+    /// A year's own chart, founded where the caller said and read down to
+    /// what Tajika reads from it.
+    ///
+    /// Founded with a bare request — the foundation and nothing else —
+    /// because a year's chart asked for the birth's sections too would cost
+    /// each year a whole reading nobody requested.
+    fn annual_chart(
+        self,
+        birth: &Document,
+        clock: UtcOffset,
+        place: AnnualPlace,
+        asked: &VarshaRequest,
+        pravesha: Pravesha,
+    ) -> Result<AnnualChart, Error> {
+        let request = match place {
+            AnnualPlace::Birth => ChartRequest::at(birth.foundation.place, clock),
+            AnnualPlace::At { place, offset } => ChartRequest::at(place, offset),
+        };
+        let annual = self.reading(pravesha.at, &request)?.value;
+        let bearers = self.office_bearers(birth, &annual, pravesha.year)?;
+        let year_lord = self.varshesha(birth, &annual, pravesha.year, asked.varshesha)?;
+        let yogas = self
+            .drishtis(&annual)?
+            .into_iter()
+            .filter(|pair| pair.yoga.is_some())
+            .collect();
+        let matters = match &asked.matters {
+            Some(matters) => self.tajika_yogas_many(&annual, matters.members(), asked.yogas)?,
+            None => Vec::new(),
+        };
+        let sahams = match &asked.sahams {
+            Some(sahams) => self.saham_strength_with_rules(
+                &annual,
+                sahams.members(),
+                Some(year_lord.graha),
+                asked.strength_rules(),
+            )?,
+            None => Vec::new(),
+        };
+        let harsha = self.harsha_with_rules(&annual, asked.harsha_rules)?;
+        // One call for every system asked, so the Sun is read over the year
+        // once however many divide it.
+        let dashas = match &asked.dashas {
+            Some(dashas) => self.annual_dashas(
+                birth,
+                &annual,
+                pravesha.year,
+                dashas.members(),
+                asked.dasha_rules,
+            )?,
+            None => Vec::new(),
+        };
+        Ok(AnnualChart {
+            lagna_deg: annual.foundation.lagna_deg,
+            bearers,
+            year_lord,
+            yogas,
+            states: self.annual_states(&annual)?,
+            matters,
+            sahams,
+            harsha,
+            dashas,
+        })
     }
 
     /// The **Muntha** at one of a birth's returns: the lagna's sign

@@ -38,6 +38,7 @@
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::OnceLock;
 
 /// A binding that carries the shared examples.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -80,27 +81,52 @@ impl Excused {
 /// Every difference [`differences`] excuses. Exhaustive and refused both
 /// ways: a difference not listed fails, and so does an entry that no
 /// longer excuses one.
-pub(crate) const EXCUSED: [Excused; 3] = [
-    Excused {
-        example: "annual_chart",
-        binding: Binding::Rust,
-        line: None,
-        reason: "the year's chart, its office-bearers, sahams and dashas are composed at the C boundary \
-                 and not in the façade, so Rust has no one call to write it with (STATUS 2g)",
-    },
-    Excused {
-        example: "phala",
-        binding: Binding::Rust,
-        line: None,
-        reason: "loading the readings corpus from disk is shown in Rust alone (STATUS 2g)",
-    },
-    Excused {
-        example: "readings",
-        binding: Binding::Rust,
-        line: None,
-        reason: "loading the readings corpus from disk is shown in Rust alone (STATUS 2g)",
-    },
-];
+///
+/// **Empty**, and the machinery kept: the four sets print alike, and a
+/// difference found later is either a defect to fix or an entry here
+/// naming the item that removes it.
+pub(crate) const EXCUSED: [Excused; 0] = [];
+
+/// The reading corpora under `packs/` the `phala` and `readings` examples
+/// load, each built into a directory of its own under [`PACKS`].
+pub(crate) const CORPORA: [&str; 2] = ["readings", "states"];
+
+/// Where the corpora's packs are built, relative to the repository, and
+/// where an example looks for them when `TEISTRO_PACKS` does not say.
+pub(crate) const PACKS: &str = "target/packs";
+
+/// The one namespace a corpus carries.
+const ENTITY: &str = "sdk.entity";
+
+/// Builds every corpus's packs, once a run, and answers where they are.
+///
+/// Built here and not committed, as `packs/README.md` says: a pack is
+/// barely smaller than its source. Every binding's example reads the same
+/// files, so the four load the same bytes, as a consumer would, rather
+/// than Rust building its own in the process.
+fn packs(root: &Path) -> Result<PathBuf, ()> {
+    static BUILT: OnceLock<Result<PathBuf, String>> = OnceLock::new();
+    BUILT
+        .get_or_init(|| {
+            let out = root.join(PACKS);
+            for corpus in CORPORA {
+                let tree = teistro_intl::source::Tree::load(&root.join("packs").join(corpus))
+                    .map_err(|why| format!("packs/{corpus}: {why}"))?;
+                let into = out.join(corpus);
+                std::fs::create_dir_all(&into).map_err(|why| format!("{PACKS}/{corpus}: {why}"))?;
+                for locale in tree.locales.values() {
+                    let bytes = teistro_intl::pack::build(locale, ENTITY)
+                        .map_err(|why| format!("packs/{corpus} {}: {why}", locale.tag))?;
+                    let file = teistro_intl::pack::file_name(&locale.tag, ENTITY);
+                    std::fs::write(into.join(&file), bytes)
+                        .map_err(|why| format!("{PACKS}/{corpus}/{file}: {why}"))?;
+                }
+            }
+            Ok(out)
+        })
+        .clone()
+        .map_err(|why| println!("FAIL  the reading packs did not build: {why}"))
+}
 
 /// What an example needs from the machine to run: the library the build
 /// produced and the interpreter Python is run with. Node's examples load
@@ -220,8 +246,16 @@ impl Binding {
 
     /// The command that runs one example against the library this build
     /// produced, from where the binding expects to be run.
-    fn command(self, root: &Path, example: &Path, runtime: &Runtime) -> Command {
+    fn command(self, root: &Path, example: &Path, runtime: &Runtime, packs: &Path) -> Command {
         let package = root.join(self.package());
+        let mut command = self.program(root, example, runtime, &package);
+        command.env("TEISTRO_PACKS", packs);
+        command
+    }
+
+    /// The program that runs one example, before what every example is
+    /// told.
+    fn program(self, root: &Path, example: &Path, runtime: &Runtime, package: &Path) -> Command {
         match self {
             Binding::Node => {
                 let mut command = Command::new("node");
@@ -233,8 +267,8 @@ impl Binding {
                 command
                     .arg(example)
                     .env("TEISTRO_LIBRARY", &runtime.library)
-                    .env("PYTHONPATH", &package)
-                    .current_dir(&package);
+                    .env("PYTHONPATH", package)
+                    .current_dir(package);
                 command
             }
             Binding::Dart => {
@@ -243,7 +277,7 @@ impl Binding {
                     .arg("run")
                     .arg(example)
                     .env("TEISTRO_LIBRARY", &runtime.library)
-                    .current_dir(&package);
+                    .current_dir(package);
                 command
             }
             // Release, because the built-in ephemeris is a truncated VSOP87
@@ -270,12 +304,13 @@ impl Binding {
     /// would bury it.
     pub(crate) fn run(self, root: &Path, runtime: &Runtime) -> Result<Vec<Ran>, ()> {
         let directory = self.directory();
+        let packs = packs(root)?;
         let mut ran = Vec::new();
         for example in self.examples(root)? {
             let name = example
                 .file_stem()
                 .map_or_else(String::new, |stem| stem.to_string_lossy().into_owned());
-            let mut command = self.command(root, &example, runtime);
+            let mut command = self.command(root, &example, runtime, &packs);
             let output = command.output().map_err(|e| {
                 println!(
                     "FAIL  {directory}/{name} did not start (`{}`): {e}",

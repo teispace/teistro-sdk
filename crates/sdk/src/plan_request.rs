@@ -72,9 +72,10 @@ pub struct PlanRequest {
     pub chalit: bool,
     /// What a loaded corpus of state readings says of this chart's
     /// subjects: a graha in a bhava, the lagna's sign, each limb of the
-    /// panchanga, and what the birth nakshatra is. It costs no section,
-    /// and it says **nothing** until a pack carrying those readings is
-    /// loaded (`03-design/state-readings.md`).
+    /// panchanga, and what the birth nakshatra is. It reads the states and
+    /// the panchanga, so it costs the panchanga section the rules read, and
+    /// it says **nothing** until a pack carrying those readings is loaded
+    /// (`03-design/state-readings.md`).
     pub phala: bool,
     /// Each bhava's strength in virupas, the first house first. It reads
     /// `Document.bhava_bala`, so it costs that section, and it says the
@@ -364,8 +365,9 @@ impl PlanRequest {
             request
         };
         // The almanac is the one section a composer shares with the rules
-        // rather than owning: a rule reading the panchanga asks for it too.
-        let request = if self.panchanga {
+        // rather than owning: a rule reading the panchanga asks for it too,
+        // and so does `phala`, which says each of its limbs.
+        let request = if self.panchanga || self.phala {
             request.with_panchanga()
         } else {
             request

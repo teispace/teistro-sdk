@@ -7,13 +7,14 @@ birthday itself (`docs/03-design/annual-chart.md`).
 
 What it teaches:
 
-1. **The boundary answers the instant, not the chart.** Whether the annual
-   chart is cast for the birthplace or for where you live now is a
-   question the schools answer differently, so the SDK hands you the
-   instant and you found the chart with the place you mean.
-2. **Which longitude is a choice with a name.** `sidereal` is the
-   tradition's; `tropical` is the Western solar return and is most of a
-   circle of lagna away by the fortieth year; `mean` is the older
+1. **The instant, then the chart.** Whether the annual chart is cast
+   for the birthplace or for where you live now is a question the
+   schools answer differently, so the SDK answers the instant and casts
+   the year's chart only where you name a place — `'birth'` or a
+   residence — in the same `varsha` request.
+2. **Which longitude is a choice with a name.** `SIDEREAL` is the
+   tradition's; `TROPICAL` is the Western solar return and is most of a
+   circle of lagna away by the fortieth year; `MEAN` is the older
    arithmetic and needs no ephemeris at all. None of them is a fallback
    for another.
 3. **Fewer than you asked for is the answer**, not a refusal: an ephemeris
