@@ -170,7 +170,8 @@ Rejected:
 
 - `check-wasm` (verify): builds the profile binaries, runs the Node test
   suite's portable half against the wasm package in Node, and loads the
-  package in a headless browser bundle with no Node built-ins resolved.
+  package in a headless browser bundle with no Node built-ins resolved
+  and, bundled by Wrangler, in Cloudflare's workerd (step 8).
 - `check-parity` gains a fifth runner, so the wasm surface is held value
   for value against Rust, Node, Python and Dart.
 - The hash matrix gains its wasm column (ADR-0022): the scenario's
@@ -327,6 +328,38 @@ Rejected:
    module families no binding has yet, so the gate has one entry and the
    file names the module it measures, ready for the rest.
 
+8. **Edge runtimes: Cloudflare Workers, built** (2026-09-26).
+   **Researched first.** A Worker compiles no WebAssembly at run time —
+   `instantiate` takes only a module compiled ahead of time — and has no
+   `import.meta.url` to fetch one from; what it has is the import of a
+   `.wasm` file, which Wrangler turns into a `WebAssembly.Module` at
+   deploy. Wrangler resolves package conditions with `workerd` first.
+   **Proved red before it was built**: the package without a `workerd`
+   condition bundles with no warning, ships no `.wasm` at all, and the
+   Worker dies at start with `Invalid URL string` — so a Workers consumer
+   would have found out at deploy.
+
+   `lib/native.workerd.js` imports the module and instantiates it with
+   `initSync`: no `await`, no I/O, which is what a Worker may do while its
+   script is evaluated. The conditions are one list in
+   `xtask/src/wasm_binding.rs` (`LOADERS`), in the order a resolver tries
+   them — `workerd`, `node`, `default` — and a test holds the manifest to
+   that order, since the first match wins.
+
+   **Checked as a consumer deploys it.** `check-wasm` writes a Worker that
+   imports the *installed* package by name, bundles it with the pinned
+   Wrangler's `deploy --dry-run` (the exact upload, with no account and no
+   network), and runs the bundle with `workerd test`, which needs no port.
+   Its answer must equal Node's to the bit, as the browser's must. The
+   tools are pinned in `bindings/wasm/workerd/package.json` and its lock
+   file, installed by the same helper as the TypeScript compiler, which
+   now reinstalls when the pin moves rather than only when the tool is
+   missing. The bundle is 4,970 KiB, 1,365 KiB gzipped, under the 3 MB
+   Workers' free plan allows. Wrangler needs Node 22, and Node 20 had left
+   support in April, so the packages' floor rose to 22 before their first
+   release, and `node-is-tested-at-its-floor` now holds every package's
+   `engines` and every workflow's Node to one value.
+
 ## 7. What is left
 
 - **ADR-0005's module profiles**, for every binding at once; the wasm
@@ -351,6 +384,11 @@ Rejected:
   shown to pay for a pinned tool and 7–18 s a build. Measure again if
   the module's code comes to outweigh its compressibility, and by the
   gzipped size.
-- **Edge runtimes** that forbid `fetch` of the module's own URL
-  (Cloudflare Workers import a module instead); a loader for them is a
-  third `#native` condition, `workerd`.
+- **The other edge runtimes.** Vercel's Edge runtime and Next.js's edge
+  routes set `edge-light` and import a compiled module as
+  `import m from './x.wasm?module'`, a spelling Wrangler accepts too; so
+  the Workers loader could serve both, but no check runs a Next.js build,
+  and an unchecked host is not claimed. Deno Deploy and Netlify's edge
+  functions take the `node` or `default` loader and are unchecked for the
+  same reason. Each is a condition in `LOADERS` and a step in
+  `check-wasm` when a consumer needs it.

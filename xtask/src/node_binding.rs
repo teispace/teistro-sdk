@@ -11,7 +11,7 @@
 use std::path::Path;
 use std::process::Command;
 
-use crate::binding::{blob_fixtures, build, present, step, tool};
+use crate::binding::{blob_fixtures, build, pinned_npm_tool, present, step, tool};
 use crate::examples::{Binding, Runtime};
 use crate::platform::Platform;
 
@@ -75,23 +75,13 @@ fn typescript(root: &Path) -> Option<(String, Vec<String>)> {
     if let Ok(tsc) = std::env::var("TSC") {
         return Some((tsc, Vec::new()));
     }
-    let dir = root.join(TYPECHECK);
-    let local = dir.join("node_modules/typescript/bin/tsc");
-    // Installed from the lock file beside it when it is not there yet,
-    // which is what the site's gate does with its own: a version pinned
-    // in the repository means every machine and every runner type-checks
-    // with the same compiler, rather than whichever one a runner image
-    // happens to carry.
-    if !local.is_file()
-        && let Some(npm) = tool("npm", "--version")
-    {
-        let _ = Command::new(&npm)
-            .args(["ci", "--silent", "--no-audit", "--no-fund"])
-            .current_dir(&dir)
-            .status();
-    }
-    if local.is_file() {
-        return Some((String::from("node"), vec![local.display().to_string()]));
+    // Installed from the lock file beside it, which is what the site's
+    // gate does with its own: a version pinned in the repository means
+    // every machine and every runner type-checks with the same compiler,
+    // rather than whichever one a runner image happens to carry.
+    if let Some(installed) = pinned_npm_tool(&root.join(TYPECHECK), "typescript") {
+        let tsc = installed.join("bin/tsc");
+        return Some((String::from("node"), vec![tsc.display().to_string()]));
     }
     let npx = tool("npx", "--version")?;
     let fetched = Command::new(&npx)
