@@ -137,3 +137,10 @@ opt-level = 3
 # the same at every level, as above.
 [profile.dev.package.libm]
 opt-level = 3
+
+# And the built-in ephemeris's series, which is where those functions are
+# called from: a planet is a few thousand terms, each a cosine and a power
+# of time. Unoptimised, it was a seventh of the annual chart's gate (31.6 s
+# of CPU to 27.1 s on this machine), and the bits are the same.
+[profile.dev.package.teistro-ephemeris-builtin]
+opt-level = 3

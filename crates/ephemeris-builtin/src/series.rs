@@ -51,7 +51,7 @@ impl Term {
         // `powi` rather than `powf`: the power is a small integer and
         // `powi` is exact for one, which the great majority of terms are.
         self.amplitude
-            * f64::cos(self.phase + self.frequency * t)
+            * math::cos(self.phase + self.frequency * t)
             * math::powi(t, i32::from(self.power))
     }
 
@@ -77,16 +77,40 @@ impl Term {
     /// ```
     #[must_use]
     pub fn rate_at(self, t: f64) -> f64 {
-        let angle = self.phase + self.frequency * t;
-        let (sin, cos) = math::sin_cos(angle);
+        self.at_and_rate(t).1
+    }
+
+    /// The term's contribution and its rate together, from one
+    /// `sin_cos` of the angle rather than a cosine for the one and a
+    /// sine and cosine for the other. A position and its speed are asked
+    /// for together, and the argument reduction is most of what a term
+    /// costs.
+    ///
+    /// The same bits as [`Term::at`] and [`Term::rate_at`] separately:
+    /// `sin_cos`'s cosine is `cos`'s, and the products are in the same
+    /// order.
+    ///
+    /// ```
+    /// use teistro_ephemeris_builtin::series::Term;
+    ///
+    /// let term = Term::new(0.5, 1.25, 6283.0758, 2);
+    /// assert_eq!(term.at_and_rate(0.024), (term.at(0.024), term.rate_at(0.024)));
+    /// ```
+    #[must_use]
+    pub fn at_and_rate(self, t: f64) -> (f64, f64) {
+        let (sin, cos) = math::sin_cos(self.phase + self.frequency * t);
         let power = i32::from(self.power);
+        let scale = math::powi(t, power);
         let from_power = if self.power == 0 {
             0.0
         } else {
             f64::from(self.power) * math::powi(t, power - 1) * cos
         };
-        let from_phase = self.frequency * math::powi(t, power) * sin;
-        self.amplitude * (from_power - from_phase)
+        let from_phase = self.frequency * scale * sin;
+        (
+            self.amplitude * cos * scale,
+            self.amplitude * (from_power - from_phase),
+        )
     }
 }
 
@@ -114,6 +138,28 @@ pub fn sum(terms: &[Term], t: f64) -> f64 {
 #[must_use]
 pub fn rate(terms: &[Term], t: f64) -> f64 {
     terms.iter().map(|term| term.rate_at(t)).sum()
+}
+
+/// The sum of a coordinate's terms and of their rates at `t`, as
+/// [`sum`] and [`rate`] would give them, from one argument reduction per
+/// term ([`Term::at_and_rate`]).
+///
+/// ```
+/// use teistro_ephemeris_builtin::series::{Term, rate, sum, sum_and_rate};
+///
+/// let terms = [Term::new(1.0, 0.5, 84.3, 0), Term::new(0.5, 2.0, 529.7, 1)];
+/// assert_eq!(sum_and_rate(&terms, 0.3), (sum(&terms, 0.3), rate(&terms, 0.3)));
+/// ```
+#[must_use]
+pub fn sum_and_rate(terms: &[Term], t: f64) -> (f64, f64) {
+    terms
+        .iter()
+        .map(|term| term.at_and_rate(t))
+        // From negative zero, as `Sum` for `f64` starts, so an empty
+        // coordinate is the same zero [`sum`] gives.
+        .fold((-0.0, -0.0), |(value, speed), (at, rate)| {
+            (value + at, speed + rate)
+        })
 }
 
 /// Julian days in the millennium the time argument counts.
@@ -250,5 +296,28 @@ mod rate_tests {
     #[test]
     fn an_empty_series_has_no_rate() {
         assert!(rate(&[], 1.0).abs() < 1e-15);
+    }
+
+    /// One reduction gives the bits two did, for every coordinate of
+    /// every planet the tier carries, before, at and after the epoch, and
+    /// for the empty coordinate too.
+    #[test]
+    fn a_position_and_its_rate_together_are_the_same_bits() {
+        let bits = |(value, speed): (f64, f64)| (value.to_bits(), speed.to_bits());
+        for (body, coordinates) in &crate::tables::PLANETS {
+            for terms in coordinates {
+                for t in [-0.31, -0.05, 0.0, 0.024_7, 0.2] {
+                    assert_eq!(
+                        bits(sum_and_rate(terms, t)),
+                        bits((sum(terms, t), rate(terms, t))),
+                        "{body} at t = {t}"
+                    );
+                }
+            }
+        }
+        assert_eq!(
+            bits(sum_and_rate(&[], 0.5)),
+            bits((sum(&[], 0.5), rate(&[], 0.5)))
+        );
     }
 }
