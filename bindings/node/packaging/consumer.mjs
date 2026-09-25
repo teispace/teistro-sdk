@@ -9,11 +9,16 @@
 //
 // It asserts the four facts the C smoke test prints, so that a package
 // that loads but answers differently fails here rather than in the field.
+//
+// The wasm package is the same layer over another native half, so it runs
+// this same file: `TEISTRO_PACKAGE` names the package to import, and every
+// answer asserted below is the same for both.
 
 import assert from 'node:assert/strict';
 
-import { Context, buildInfo, platformPackage, sdkVersion } from '@teistro/sdk';
-import { Body, Calendar, Resolution, ZoneKind } from '@teistro/sdk/catalogue';
+const PACKAGE = process.env.TEISTRO_PACKAGE ?? '@teistro/sdk';
+const { Context, buildInfo, platformPackage, sdkVersion } = await import(PACKAGE);
+const { Body, Calendar, Resolution, ZoneKind } = await import(`${PACKAGE}/catalogue`);
 
 const gregorian = (year, month, day) => ({
   calendar: Calendar.Gregorian,
@@ -26,11 +31,11 @@ const gregorian = (year, month, day) => ({
   computedDay: 0,
 });
 
-console.log(`the addon came from ${platformPackage()}`);
+console.log(`the native half came from ${platformPackage()}`);
 console.log(`abi ${buildInfo.abi}, sdk ${sdkVersion()}, ${buildInfo.target}, ${buildInfo.profile}`);
 assert.equal(buildInfo.sdk, sdkVersion());
-assert.equal(buildInfo.optimised, true, 'a published addon is an optimised build');
-assert.equal(buildInfo.sanitizer, '', 'a published addon carries no sanitizer');
+assert.equal(buildInfo.optimised, true, 'a published build is optimised');
+assert.equal(buildInfo.sanitizer, '', 'a published build carries no sanitizer');
 
 const ctx = new Context({ testProvider: true, profile: 'nepali-default', locale: 'ne-Deva-NP' });
 
@@ -59,4 +64,4 @@ const sun = positions.at(0, 0);
 console.log(`the Sun at J2000 is at ${sun.longitude.toFixed(4)} degrees, ${positions.cells.length} cells`);
 assert.equal(sun.longitude.toFixed(4), '278.5768');
 
-console.log('the published Node package answers as the library does');
+console.log(`the published ${PACKAGE} answers as the library does`);

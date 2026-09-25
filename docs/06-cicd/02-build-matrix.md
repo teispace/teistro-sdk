@@ -43,6 +43,7 @@ in release for that target and writes:
 | `libteistro_ffi-<version>-<platform>.<ext>.gz` | the shared library, gzipped and nothing else | the Dart installer, and anyone who `dlopen`s it |
 | `teistro-c-<version>-<platform>.tar.gz` | `include/teistro.h`, the shared and the static library, the terms | a C, C++, Swift, Kotlin or Java consumer |
 | `npm/@teistro/sdk-<platform>/` | the prebuilt addon, with `os`, `cpu` and `libc` for npm to match | npm, which installs exactly one of them |
+| `npm/@teistro/sdk-wasm/` | the same layer over the wasm module, one package for every host; built once by the release's `wasm` job, not per platform (`cargo xtask package wasm`) | a browser, a worker, a bundler, or a host no addon covers |
 | `teistro-<version>-<platform>.json` | every file above with its size and its SHA-256, and the library's digest uncompressed | the merge, and anyone checking a download |
 
 Gzip alone, rather than an archive, for the library a binding fetches:

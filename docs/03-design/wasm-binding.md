@@ -4,8 +4,8 @@ Status: steps 1 (**one libm**), 2 (**the loader compiled out**), 4
 (**the emitter's backend split**), 5 (**the package and its loaders**)
 and 6 (**the host provider**) built 2026-09-25, with step 7's
 `check-wasm` and its browser check; step 3 answered by step 1. The
-parity runner and the per-profile size gate (step 7) remain, and so does
-publishing, which is a release decision.
+parity runner and the per-profile size gate (step 7) remain; the package
+is released with the others.
 
 The fourth binding the order names (ADR-0004: Node native, wasm, Dart,
 Python) and the last deliverable of Phase 5's list
@@ -253,11 +253,20 @@ Rejected:
    file but its loader), the two wasm loaders, the module bound with
    `--target web`, and a manifest *derived* from the Node package's with
    only the name, description, directory, import map and files
-   overridden, so no export, version or engine can drift. It is not
-   added to `cargo xtask package stage`: the release publishes every
-   `target/dist/npm/@teistro/sdk-*`, and `@teistro/sdk-wasm` matches that
-   glob, so staging it there would publish it at the next tag without
-   anyone having decided to.
+   overridden, so no export, version or engine can drift.
+
+   **Released like the others** (maintainer, 2026-09-25: "wasm also
+   should be published/handled as others"). `cargo xtask package wasm`
+   stages it into `target/dist/npm/@teistro/sdk-wasm`, beside the
+   platform packages; the release's own `wasm` job builds it once — it is
+   one artefact for every host — and runs `check-wasm`, whose last step
+   packs it as `npm publish` would, installs it into an empty project and
+   runs the Node package's own consumer against it (`TEISTRO_PACKAGE`
+   names which package that file imports, and every answer it asserts is
+   the same for both). `package stage` refuses a release without it, as
+   it refuses one missing a platform, and `publish` sends it with the
+   platform packages. Its manifest is derived from the Node one, so
+   `cargo xtask version`'s edits reach it without a line of its own.
 
    Found on the way: `check-node` passed its fixture directory as an
    argument after `node --test`, which reads arguments as test files and

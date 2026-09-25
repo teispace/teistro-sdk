@@ -193,6 +193,12 @@ impl Platform {
 /// name with the platform appended, which is what the loader resolves.
 pub(crate) const NPM_SCOPE: &str = "@teistro/sdk";
 
+/// The scoped name of the wasm package: the same layer over the wasm
+/// module, one package for every host. It matches the release's
+/// `@teistro/sdk-*` glob like a platform package, and is published with
+/// them (`03-design/wasm-binding.md`).
+pub(crate) const NPM_WASM: &str = "@teistro/sdk-wasm";
+
 #[cfg(test)]
 mod tests {
     use super::{PLATFORMS, Platform};

@@ -59,8 +59,9 @@ It is the one command that has to know the list; nobody else does.
 |---|---|
 | `gate` | `check-tag` (the tag is the version the repository carries), `check-versions`, the documentation, FFI and determinism gates, and the changelog's entry for this version |
 | `build` | five runners, each `cargo xtask package <platform>` then `cargo xtask check-package`, each uploading its own artefacts and manifest |
-| `stage` | downloads all five, `cargo xtask package stage`, and publishes the checksum list into the run's summary |
-| `publish` | the GitHub release with every archive and `checksums.txt`; then the five platform packages to npm, then the one that depends on them; then the Dart package |
+| `wasm` | one runner, `cargo xtask package wasm` then `cargo xtask check-wasm` (the Node suite through the package's own loader, headless Chrome held to Node bit for bit, the package installed and run), uploading `@teistro/sdk-wasm` |
+| `stage` | downloads all six, `cargo xtask package stage` (which refuses a release missing the wasm package as it refuses one missing a platform), and publishes the checksum list into the run's summary |
+| `publish` | the GitHub release with every archive and `checksums.txt`; then the five platform packages and `@teistro/sdk-wasm` to npm, then the one that depends on the platform packages; then the Dart package |
 
 The platform packages are published **before** the package that depends on
 them, because npm resolves an optional dependency at install time and a

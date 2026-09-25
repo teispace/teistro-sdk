@@ -1,4 +1,4 @@
-# The release: one tag, five platforms, four packages.
+# The release: one tag, five platforms, five packages.
 #
 # A tag `vX.Y.Z` is pushed at a commit whose workspace already declares
 # X.Y.Z (`cargo xtask version` moves it, `check-versions` holds it, and
@@ -8,6 +8,7 @@
 #
 #   gate     the tag is the version, and the version is releasable
 #   build    each platform builds its own artefacts and manifest
+#   wasm     the wasm package, one artefact for every host, built once
 #   stage    the manifests are merged and the two published packages staged
 #   publish  the GitHub release, then npm, pub.dev and PyPI
 #
@@ -105,9 +106,45 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  # The wasm package is the same layer over a wasm module, one artefact
+  # for every host, so it is built here once rather than by each platform.
+  # `check-wasm` is the gate that proves it: the Node suite through its own
+  # loader, headless Chrome held to Node bit for bit, and the package
+  # installed and run as a consumer would. The staged package goes to the
+  # `stage` job beside the platform packages, and `package stage` refuses
+  # a release without it.
+  wasm:
+    name: wasm
+    needs: gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: The wasm package, staged
+        run: cargo xtask package wasm
+      - name: The package through the Node suite, a browser and an install
+        run: cargo xtask check-wasm
+      - uses: actions/upload-artifact@v4
+        with:
+          # Not `dist-*`: the platforms' artefacts are merged into
+          # `target/dist` by that pattern, and this one holds a package's
+          # files at its root.
+          name: wasm-package
+          path: target/dist/npm/@teistro/sdk-wasm
+          if-no-files-found: error
+          retention-days: 7
+
   stage:
     name: stage
-    needs: [gate, build]
+    needs: [gate, build, wasm]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -120,6 +157,12 @@ jobs:
           pattern: dist-*
           merge-multiple: true
           path: target/dist
+      # An artefact holds the files under the path it was uploaded from,
+      # so the wasm package is fetched on its own, into its own directory.
+      - uses: actions/download-artifact@v4
+        with:
+          name: wasm-package
+          path: target/dist/npm/@teistro/sdk-wasm
       - name: Every platform, merged and staged
         run: cargo xtask package stage
       - name: What is being published
@@ -177,11 +220,14 @@ jobs:
             --notes-file notes.md \
             dist/*.gz dist/checksums.txt dist/manifest.json
 
-      - name: The platform packages, then the one that depends on them
+      - name: The platform packages and the wasm one, then the one that depends on the platforms
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -eu
+          # `sdk-*` is the five platform packages and `sdk-wasm`, which
+          # depends on none of them; `package stage` refused to stage a
+          # release missing any of the six.
           for package in dist/npm/@teistro/sdk-*; do
             npm publish --provenance --access public "${package}"
           done
