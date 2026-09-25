@@ -13270,6 +13270,7 @@
         "name": "Status"
       },
       "meta": {},
+      "native_only": true,
       "source": "crates/ffi/src/provider.rs"
     },
     {
@@ -13339,6 +13340,7 @@
         "name": "Status"
       },
       "meta": {},
+      "native_only": true,
       "source": "crates/ffi/src/provider.rs"
     },
     {
@@ -13361,6 +13363,7 @@
         }
       ],
       "meta": {},
+      "native_only": true,
       "source": "crates/ffi/src/provider.rs"
     }
   ],

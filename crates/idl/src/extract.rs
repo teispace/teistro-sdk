@@ -120,6 +120,9 @@ pub fn extract(sources: &[Source], inputs: &Inputs) -> Result<Api, ExtractError>
     for source in sources {
         let file: File = syn::parse_file(&source.text)
             .map_err(|e| ExtractError::new(&source.relative, e.to_string()))?;
+        let native_file =
+            native_only(&file.attrs).map_err(|e| ExtractError::new(&source.relative, e))?;
+        let first = api.functions.len();
         for item in &file.items {
             collect(
                 item,
@@ -129,6 +132,11 @@ pub fn extract(sources: &[Source], inputs: &Inputs) -> Result<Api, ExtractError>
                 &inputs.abi_version_constant,
                 &mut abi_version,
             )?;
+        }
+        if native_file {
+            for f in api.functions.iter_mut().skip(first) {
+                f.native_only = true;
+            }
         }
     }
     api.abi_version = abi_version.ok_or_else(|| {
@@ -350,6 +358,8 @@ fn collect_callback(t: &syn::ItemType, source: &Source, api: &mut Api) -> Result
 fn collect_function(f: &syn::ItemFn, source: &Source, api: &mut Api) -> Result<(), ExtractError> {
     let (doc, meta, flags) = doc_of(&f.attrs);
     let (doc, safety) = split_safety(&doc);
+    let native_only = native_only(&f.attrs)
+        .map_err(|e| ExtractError::new(&source.relative, format!("`{}`: {e}", f.sig.ident)))?;
     let params = f
         .sig
         .inputs
@@ -383,9 +393,46 @@ fn collect_function(f: &syn::ItemFn, source: &Source, api: &mut Api) -> Result<(
         params,
         returns,
         meta,
+        native_only,
         source: source.relative.clone(),
     });
     Ok(())
+}
+
+/// The one condition an exported function may be compiled under:
+/// `not(target_family = "wasm")`, which a wasm build has no use for
+/// (ADR-0029: wasm gets the built-in and a host provider, not the
+/// loader). Read from the function's attributes or its file's.
+///
+/// Any other `cfg` is refused rather than ignored: a symbol present in
+/// some builds and absent from others would be in the header and missing
+/// from the library, and no binding could say which.
+const NATIVE_ONLY: &str = r#"not(target_family="wasm")"#;
+
+/// Whether the attributes compile the item for native targets only.
+fn native_only(attrs: &[Attribute]) -> Result<bool, String> {
+    let mut native = false;
+    for attr in attrs {
+        let SynMeta::List(list) = &attr.meta else {
+            continue;
+        };
+        if !list.path.is_ident("cfg") {
+            continue;
+        }
+        let condition: String = list
+            .tokens
+            .to_string()
+            .chars()
+            .filter(|c| !c.is_whitespace())
+            .collect();
+        if condition != NATIVE_ONLY {
+            return Err(format!(
+                "`cfg({condition})` is not a condition the description can state; an exported item is in every build, or under `cfg({NATIVE_ONLY})`"
+            ));
+        }
+        native = true;
+    }
+    Ok(native)
 }
 
 /// The opaque candidates that some function or struct points at; a private
@@ -1109,6 +1156,67 @@ pub bearing_deg: f64 }
             "{}",
             refused.detail
         );
+    }
+
+    /// A loader a wasm build cannot have is marked, whether the function
+    /// or its whole file says so, and every other function is not.
+    #[test]
+    fn a_native_only_function_is_marked_from_its_own_or_its_files_cfg() {
+        let abi = Source {
+            relative: "lib.rs".into(),
+            text: "/// `api: constant`\npub const TS_ABI_VERSION: u32 = 1;\n#[unsafe(no_mangle)] pub extern \"C\" fn ts_everywhere() {}\n#[cfg(not(target_family = \"wasm\"))]\n#[unsafe(no_mangle)] pub extern \"C\" fn ts_own() {}".into(),
+        };
+        let file = Source {
+            relative: "loader.rs".into(),
+            text: "#![cfg(not(target_family = \"wasm\"))]\n#[unsafe(no_mangle)] pub extern \"C\" fn ts_filed() {}".into(),
+        };
+        let api = extract(&[abi, file], &inputs()).unwrap();
+        let marked: Vec<(&str, bool)> = api
+            .functions
+            .iter()
+            .map(|f| (f.name.as_str(), f.native_only))
+            .collect();
+        assert_eq!(
+            marked,
+            [
+                ("ts_everywhere", false),
+                ("ts_own", true),
+                ("ts_filed", true)
+            ]
+        );
+    }
+
+    /// Any other condition is refused, on a function or on a file, since
+    /// the description could not say which builds hold the symbol.
+    #[test]
+    fn any_other_cfg_on_an_export_is_refused() {
+        let abi = "/// `api: constant`\npub const TS_ABI_VERSION: u32 = 1;\n";
+        for (text, where_) in [
+            (
+                format!(
+                    "{abi}#[cfg(feature = \"x\")]\n#[unsafe(no_mangle)] pub extern \"C\" fn ts_x() {{}}"
+                ),
+                "a.rs",
+            ),
+            (
+                format!("#![cfg(unix)]\n{abi}#[unsafe(no_mangle)] pub extern \"C\" fn ts_x() {{}}"),
+                "a.rs",
+            ),
+        ] {
+            let refused = extract(
+                &[Source {
+                    relative: where_.into(),
+                    text,
+                }],
+                &inputs(),
+            )
+            .unwrap_err();
+            assert!(
+                refused.detail.contains("not a condition"),
+                "{}",
+                refused.detail
+            );
+        }
     }
 
     /// And one name used once is not.

@@ -1,6 +1,7 @@
 # The wasm binding
 
-Status: step 1 (**one libm**) built 2026-09-25; the binding, steps 2
+Status: steps 1 (**one libm**) and 2 (**the loader compiled out**)
+built 2026-09-25, and step 3 answered by step 1; the binding, steps 4
 to 7, designed.
 
 The fourth binding the order names (ADR-0004: Node native, wasm, Dart,
@@ -186,9 +187,24 @@ Rejected:
 2. `libloading` behind `cfg(not(target_family = "wasm"))`, the loader's
    entry points marked native-only in the description, and a wasm32
    `cargo check` in fast-check so the target cannot rot.
-3. The hash matrix's wasm column: the scenario under
-   `wasm32-unknown-unknown` in Node. It needs no binding and answers the
-   determinism question first.
+   **Built.** Measured first: of the whole boundary only
+   `src/provider.rs` failed to build for `wasm32-unknown-unknown`, and of
+   the workspace only `teistro-node`, the napi addon. The file carries
+   `#![cfg(not(target_family = "wasm"))]` and the extractor reads that
+   condition off it, so `idl/api.json` marks its three functions
+   `native_only`, the C header guards them with `#ifndef __wasm__` and
+   their reference pages say so; any other `cfg` on an export is refused,
+   since no binding could say which builds hold the symbol. The fast
+   check runs **clippy** for wasm32 over every library but the addon, not
+   `check`: what a `cfg` breaks is code left unused, which is a warning —
+   and the first run found one, `read_options`, whose only caller is the
+   loader.
+3. The hash matrix's wasm column. **Answered by step 1**, whose column
+   runs the scenario as `wasm32-wasip1` under Node. The browser target
+   is the same instruction set with another system interface, and float
+   arithmetic is IEEE in both; the scenario's maths comes from the same
+   `libm` compiled for the same architecture. What `wasm32-unknown-unknown`
+   adds — the binding's own build — step 7's parity runner exercises.
 4. The emitter's backend split, napi output byte-identical before and
    after (the generated file is gated).
 5. The wasm crate, the package and its loader; `index.js`'s two `Buffer`

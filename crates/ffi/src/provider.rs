@@ -28,7 +28,16 @@
 //! the adapter's own `close` has run. Dropping it sooner would leave a
 //! vtable of function pointers into an address space that no longer has
 //! the code.
+//!
+//! # Not on wasm
+//!
+//! A wasm module cannot open a shared library, so a wasm build has the
+//! built-in ephemeris and a host provider and not this (ADR-0029). The
+//! whole module is compiled out there, and the description reads that
+//! condition off this file: its three functions are marked native-only,
+//! the C header guards them, and a wasm binding emits nothing for them.
 
+#![cfg(not(target_family = "wasm"))]
 #![allow(unsafe_code, reason = "the loader: dlopen and a C entry point")]
 
 use core::ffi::{c_char, c_void};

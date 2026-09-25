@@ -4111,9 +4111,13 @@ on pub.dev (checked 2026-09-07).
    from Linux in a nightly that reported it and did not fail. Through
    `teistro_core::math` native and wasm32 agree on all 481 539 values, the
    `uses-one-libm` lint holds every crate to it, and the hash matrix fails
-   on macOS and gains Windows and wasm32. Next: the plugin loader compiled
-   out on wasm, then the emitter's wasm-bindgen backend behind the same
-   `native` object.
+   on macOS and gains Windows and wasm32. Step 2 is **built** too: the
+   plugin loader is compiled out on wasm, the description marks its three
+   functions `native_only` (read off the file's `cfg`, any other `cfg` on
+   an export refused), and the fast check lints every library but the
+   napi addon for `wasm32-unknown-unknown`. Next, step 4: the emitter's
+   wasm-bindgen backend behind the same `native` object, the napi output
+   byte-identical before and after.
 9. A second baseline export (the same script, more sections) for the
    seventeen other dasha systems, aspects, yogas and doshas, strengths,
    Ashtakavarga, the Jaimini slice, KP and milan, once the design pages

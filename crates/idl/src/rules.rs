@@ -669,6 +669,7 @@ mod tests {
                 ],
                 returns: None,
                 meta: Meta::default(),
+                native_only: false,
                 source: String::new(),
             },
             FunctionDef {
@@ -682,6 +683,7 @@ mod tests {
                 )],
                 returns: None,
                 meta: Meta::default(),
+                native_only: false,
                 source: String::new(),
             },
             FunctionDef {
@@ -711,6 +713,7 @@ mod tests {
                 ],
                 returns: None,
                 meta: Meta::default(),
+                native_only: false,
                 source: String::new(),
             },
             FunctionDef {
@@ -729,6 +732,7 @@ mod tests {
                 )],
                 returns: None,
                 meta: Meta::default(),
+                native_only: false,
                 source: String::new(),
             },
         ];

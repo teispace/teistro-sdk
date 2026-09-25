@@ -7349,6 +7349,7 @@ ts_status ts_ephemeris_manifest(const ts_context * context, ts_string * out_json
  */
 ts_status ts_ephemeris_call(const ts_context * context, const char * function, const char * arguments_json, ts_string * out_json);
 
+#ifndef __wasm__
 /**
  * Opens an adapter and the provider inside it.
  *
@@ -7365,7 +7366,9 @@ ts_status ts_ephemeris_call(const ts_context * context, const char * function, c
  * initialisers, so `path` must be a file the caller trusts.
  */
 ts_status ts_provider_load(const char * path, const char * config_json, ts_provider * * out_provider, ts_error * out_error);
+#endif
 
+#ifndef __wasm__
 /**
  * Creates a context that computes with a **loaded** provider.
  *
@@ -7381,7 +7384,9 @@ ts_status ts_provider_load(const char * path, const char * config_json, ts_provi
  * describes, for the duration of the call.
  */
 ts_status ts_context_new_with_provider(const ts_context_options * options, const ts_provider * provider, ts_context * * out_context, ts_error * out_error);
+#endif
 
+#ifndef __wasm__
 /**
  * Frees a loaded provider; null is ignored.
  *
@@ -7392,6 +7397,7 @@ ts_status ts_context_new_with_provider(const ts_context_options * options, const
  * not used again.
  */
 void ts_provider_free(ts_provider * provider);
+#endif
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L && UINTPTR_MAX == 0xffffffffffffffffu
 /* The sizes the library was built with; a mismatch means a different
