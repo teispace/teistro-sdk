@@ -1,7 +1,7 @@
 //! The API description and everything rendered from it, generated from
 //! the boundary crates: `gen ffi` extracts `idl/api.json` and renders the
-//! C header, the Node binding's TypeScript surface, catalogue tables and
-//! blob decoders, the Dart binding's layer, the Python binding's `ctypes`
+//! C header, the Node addon's and the wasm module's glue, the Node
+//! binding's TypeScript surface, catalogue tables and blob decoders, the Dart binding's layer, the Python binding's `ctypes`
 //! layer, and the documentation site's reference; `check-ffi` regenerates
 //! them all in memory and fails on any difference, so a new entry point, a
 //! changed field or a reworded doc comment can never leave a binding — or
@@ -24,6 +24,7 @@ const TS_TYPES: &str = "bindings/node/lib/types.d.ts";
 const TS_BLOB_TYPES: &str = "bindings/node/lib/blob.d.ts";
 const TS_DECODERS: &str = "bindings/node/lib/blob.js";
 const NAPI_GLUE: &str = "bindings/node/native/src/generated.rs";
+const WASM_GLUE: &str = "bindings/wasm/native/src/generated.rs";
 const DART_CATALOGUE: &str = "bindings/dart/lib/src/catalogue.dart";
 const DART_FFI: &str = "bindings/dart/lib/src/ffi.dart";
 const DART_BLOB: &str = "bindings/dart/lib/src/blob.dart";
@@ -149,7 +150,11 @@ fn outputs(root: &Path) -> Vec<Output> {
             // Formatted here rather than by `cargo fmt`, because napi's
             // derive macro reads the source file and a `rustfmt::skip` on
             // the module stops it finding the class before its `impl`.
-            rustfmt(&node::render(&api)),
+            rustfmt(&node::render(&api, node::Backend::Napi)),
+        ),
+        Output::new(
+            WASM_GLUE,
+            rustfmt(&node::render(&api, node::Backend::WasmBindgen)),
         ),
     ];
     outputs.extend(

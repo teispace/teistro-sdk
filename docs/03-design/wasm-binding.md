@@ -1,8 +1,10 @@
 # The wasm binding
 
-Status: steps 1 (**one libm**) and 2 (**the loader compiled out**)
-built 2026-09-25, and step 3 answered by step 1; the binding, steps 4
-to 7, designed.
+Status: steps 1 (**one libm**), 2 (**the loader compiled out**), 4
+(**the emitter's backend split**) and 6 (**the host provider**) built
+2026-09-25, with step 7's `check-wasm`; step 3 answered by step 1. The
+package and its loader (step 5), the parity runner and the size gate
+(step 7) remain.
 
 The fourth binding the order names (ADR-0004: Node native, wasm, Dart,
 Python) and the last deliverable of Phase 5's list
@@ -207,7 +209,45 @@ Rejected:
    adds — the binding's own build — step 7's parity runner exercises.
 4. The emitter's backend split, napi output byte-identical before and
    after (the generated file is gated).
+   **Built.** `emit/node.rs` renders for a `Backend`, napi or
+   wasm-bindgen, and every spelling that differs is one method of it, so
+   the table in §3 is that `impl`. Three differences the table did not
+   foresee, each met there: a **64-bit integer** crosses as a number in
+   napi and would cross as a `BigInt` in wasm-bindgen, so the wasm
+   signatures carry `f64` and cast (a test reads every exported wasm
+   signature and finds none wide, and finds napi's, which proves the
+   reading); a **refusal** needs napi's environment to build an error
+   object, so the wasm prelude gives the glue napi's own `Result` and
+   `Error::from_reason` and a `thrown` that sets `lastError` on a
+   JavaScript `Error`, which leaves the enum conversions and every
+   `Held*` body the same text for both; and the **native-only**
+   functions are left out of what the wasm backend renders, with a handle
+   only they take. `check-ffi` held the napi glue byte for byte through
+   the change, and gates the new `bindings/wasm/native/src/generated.rs`
+   the same way. A test over the real description finds both backends
+   exporting the same members but `newWithProvider`; built and loaded,
+   the two modules show the same 42 members but the loader's, and
+   wasm-bindgen's own `free`.
 5. The wasm crate, the package and its loader; `index.js`'s two `Buffer`
    calls made portable.
 6. The host provider adapter.
+   **Built**, and shared rather than copied: the policy Node's adapter
+   held — the declared defaults, the answer's length checks, the thrown
+   sentence kept for the layer above — moved into
+   `teistro_port_ephemeris::host` with its wording unchanged, Node's
+   adapter was rewritten over it, and the wasm one is the same over a
+   `js_sys::Function` (no environment to lend, so no call can find itself
+   without one).
 7. `check-wasm`, the parity runner, the size gate.
+   **`check-wasm` built**, and stronger than planned: rather than a
+   portable half of the Node suite, it runs **the whole Node binding
+   suite, unchanged**, against the wasm module — `index.js` loads what
+   `TEISTRO_ADDON` names with `require`, which reads wasm-bindgen's Node
+   glue as readily as a `.node` file. 69 of 69 pass: charts, almanacs,
+   positions, the locale engine and packs, rules, drawings, providers
+   written in JavaScript, refusals with their records, `dispose`. The
+   `wasm-bindgen` CLI is pinned to the lockfile's library version, read
+   from `Cargo.lock`, and installed under `target/tools` when the machine
+   has no such version. It runs in verify's `wasm` job. The module is 8.6
+   MB unoptimised at the default tier, which is what step 7's profile
+   binaries and size gate are for.

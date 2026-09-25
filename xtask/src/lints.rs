@@ -41,15 +41,17 @@ const COMPUTATION: [&str; 8] = [
 
 /// The crates that may hold `unsafe` code, and so may downgrade the
 /// workspace's `forbid` on it: the port's C vtable, the boundary crate,
-/// the Node addon, and the counting allocator the tests install, which is
-/// never published. Everything else inherits `forbid`, which the compiler
+/// the Node addon and the wasm module (each binding's glue calls the C
+/// ABI), and the counting allocator the tests install, which is never
+/// published. Everything else inherits `forbid`, which the compiler
 /// then enforces; what this rule watches is a manifest quietly changing
 /// its mind.
-const UNSAFE_CRATES: [&str; 6] = [
+const UNSAFE_CRATES: [&str; 7] = [
     "crates/port-ephemeris",
     "crates/ffi",
     "crates/test-allocator",
     "bindings/node/native",
+    "bindings/wasm/native",
     // The adapters call a C engine directly. They are outside the
     // workspace, which is why they were outside this inventory until
     // 2026-09-12 — and being outside the workspace is no reason to be

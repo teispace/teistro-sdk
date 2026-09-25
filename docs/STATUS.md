@@ -4115,9 +4115,15 @@ on pub.dev (checked 2026-09-07).
    plugin loader is compiled out on wasm, the description marks its three
    functions `native_only` (read off the file's `cfg`, any other `cfg` on
    an export refused), and the fast check lints every library but the
-   napi addon for `wasm32-unknown-unknown`. Next, step 4: the emitter's
-   wasm-bindgen backend behind the same `native` object, the napi output
-   byte-identical before and after.
+   napi addon for `wasm32-unknown-unknown`. Steps 4 and 6 are **built**:
+   the glue emitter has a wasm-bindgen backend beside napi's (napi's
+   output byte-identical through the change), `bindings/wasm/native` is
+   the crate, and the host provider's policy is shared by both bindings
+   from `teistro_port_ephemeris::host`. `cargo xtask check-wasm` (verify's
+   `wasm` job) runs **the whole Node binding suite unchanged** against the
+   wasm module: 69 of 69. Next, step 5: the package and its browser
+   loader (`index.js`'s `Buffer` calls and the plugin option refused by
+   name on wasm), then step 7's parity runner and profile size gate.
 9. A second baseline export (the same script, more sections) for the
    seventeen other dasha systems, aspects, yogas and doshas, strengths,
    Ashtakavarga, the Jaimini slice, KP and milan, once the design pages

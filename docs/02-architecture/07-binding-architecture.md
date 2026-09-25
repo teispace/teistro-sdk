@@ -146,6 +146,14 @@ copies them into its own string on the way out.
   trampolines (napi callbacks on the calling thread, `ctypes`
   `CFUNCTYPE` trampolines in Python, Dart `NativeCallable.isolateLocal`)
   that receive grids as typed arrays and return columnar buffers.
+- The two JavaScript bindings go further and share the **adapter**:
+  `teistro_port_ephemeris::host` turns what a provider declares into
+  capabilities with their defaults, reads the columns it answers with
+  their length checks, and keeps what its callback threw in the words a
+  binding throws. The napi addon and the wasm module each supply only a
+  `HostCallback` — a napi function reference with its environment lent, a
+  `js_sys::Function` — so a JavaScript provider behaves the same in both
+  by construction.
 - What a request may ask of a provider is checked on **this** side of the
   boundary, in `VtableProvider::positions`, and not in each binding: only
   a code crosses back, so a refusal raised out in the binding would

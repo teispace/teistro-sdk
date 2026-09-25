@@ -47,6 +47,7 @@ pub mod crossing;
 pub mod error;
 pub mod frame;
 pub mod horizon;
+pub mod host;
 pub mod native;
 pub mod plugin;
 pub mod provider;
