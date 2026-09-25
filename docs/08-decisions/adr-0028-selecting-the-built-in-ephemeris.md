@@ -62,9 +62,18 @@ Three reasons the selector and not a second flag bit:
    Dart enum — where `flags: u32` is an untyped integer with a comment.
 
 **The built-in is a cargo feature of `teistro-ffi`, on by default.**
-`builtin-ephemeris` pulls the crate in at the `standard` tier;
-`builtin-compact` and `builtin-full` select another, additively, the
-richest winning as the crate's own `cfg` already does. A consumer
+The default is `builtin-standard`; `builtin-compact` and `builtin-full`
+select another, additively, the richest winning as the crate's own `cfg`
+already does. `builtin-ephemeris` is the built-in at whichever tier those
+name, and names none itself.
+
+*Amended 2026-09-25.* As first written, `builtin-ephemeris` itself pulled
+the crate in at `standard`. Every tier feature turns it on, and the
+richest wins, so `compact` could never be built: a wasm module that asked
+for it was 3 KB from `standard`, and the tier job in `verify.yml` passed
+because nothing asked which tier had been compiled. `crates/ffi/tests/tier.rs`
+now asks, at every tier, and the built-in crate refuses by name to build
+with none. A consumer
 building their own shared library for a platform that counts kilobytes
 turns the feature off and keeps the vtable path. That is what ADR-0008's
 "removable" means for an artefact that cannot be tree-shaken.

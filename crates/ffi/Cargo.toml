@@ -58,7 +58,7 @@ libloading = "0.8"
 # own rule, so asking for `builtin-full` beside the default leaves `full`
 # in force rather than a conflict.
 [features]
-default = ["builtin-ephemeris"]
+default = ["builtin-standard"]
 # Forwarded to the façade, which is where the built-in is now reached
 # from: the boundary no longer holds that crate, so a tier is a feature
 # of one crate rather than of two that could disagree.
@@ -69,6 +69,8 @@ default = ["builtin-ephemeris"]
 # had a built-in, so `ts_context_new` refused `TsEphemeris::Builtin` as
 # `UNSUPPORTED` — a library built at a tier that could not be asked for
 # the tier it was built at.
+# The built-in at whatever tier the features below name; alone it names
+# none, and the built-in crate refuses to build without one.
 builtin-ephemeris = ["teistro/builtin-ephemeris"]
 builtin-compact = ["builtin-ephemeris", "teistro/builtin-compact"]
 builtin-standard = ["builtin-ephemeris", "teistro/builtin-standard"]
