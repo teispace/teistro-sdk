@@ -1747,6 +1747,182 @@ fn platform_runners(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// The manifest whose `engines.node` is the oldest Node the packages
+/// support, and so the one Node every package gate runs on.
+const NODE_FLOOR: &str = "bindings/node/package.json";
+
+/// Workflows whose Node is not the floor, each with why: none of them
+/// tests a package, so no promise to a consumer rides on its version.
+/// An entry that no longer differs from the floor is refused, so the
+/// list cannot outlive its reason.
+const NODE_OFF_FLOOR: [(&str, &str); 1] = [(
+    "hash-matrix.yml",
+    "runs the scenario binary under WASI to compare architectures; no package is installed",
+)];
+
+/// Directories never searched for a manifest: installed, built or
+/// borrowed, and none of it the project's to declare.
+const NOT_OURS: [&str; 4] = ["node_modules", "target", ".git", "fixtures"];
+
+/// The package gates run on the oldest Node the packages support, and
+/// every package states the same floor.
+///
+/// The floor was written in two manifests and six workflow steps, and
+/// nothing held them together: `engines` said Node 20 and the adapter
+/// said 20.11, and Node 20 went out of support with CI still testing
+/// there. A floor nobody tests is a guess, and a test on a Node the
+/// floor does not name proves nothing a consumer is promised.
+fn node_is_tested_at_its_floor(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "node-is-tested-at-its-floor";
+    let mut fail = |file: String, line: usize, text: String| {
+        outcome.failures.push(Finding {
+            file,
+            line,
+            text,
+            rule: RULE,
+        });
+    };
+    let engines_of = |path: &Path| -> Option<String> {
+        let text = std::fs::read_to_string(path).ok()?;
+        let manifest: serde_json::Value = serde_json::from_str(&text).ok()?;
+        manifest["engines"]["node"].as_str().map(str::to_owned)
+    };
+    let Some(stated) = engines_of(&root.join(NODE_FLOOR)) else {
+        fail(
+            NODE_FLOOR.into(),
+            1,
+            "states no `engines.node`, so the packages have no floor".into(),
+        );
+        return;
+    };
+    let Some(floor) = node_floor(&stated) else {
+        fail(
+            NODE_FLOOR.into(),
+            1,
+            format!("`engines.node` is `{stated}`; state the floor as `>=N`, a major version"),
+        );
+        return;
+    };
+    for manifest in manifests(root) {
+        let shown = manifest
+            .strip_prefix(root)
+            .unwrap_or(&manifest)
+            .display()
+            .to_string()
+            .replace('\\', "/");
+        match engines_of(&manifest) {
+            Some(engines) if engines != stated => fail(
+                shown,
+                1,
+                format!(
+                    "`engines.node` is `{engines}`; every package states `{stated}` ({NODE_FLOOR})"
+                ),
+            ),
+            _ => {}
+        }
+    }
+    for path in workflows(root) {
+        let name = path
+            .file_name()
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        let Ok(text) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        let Ok(doc) = serde_yaml_ng::from_str::<serde_yaml_ng::Value>(&text) else {
+            continue;
+        };
+        let excused = NODE_OFF_FLOOR.iter().any(|(file, _)| *file == name);
+        let versions = node_versions(&doc);
+        let shown = format!(".github/workflows/{name}");
+        if excused {
+            if versions.iter().all(|version| *version == floor) {
+                fail(
+                    shown,
+                    1,
+                    format!(
+                        "is excused from Node {floor} but runs it; drop it from `NODE_OFF_FLOOR`"
+                    ),
+                );
+            }
+            continue;
+        }
+        for version in versions.iter().filter(|version| **version != floor) {
+            let line = text
+                .lines()
+                .position(|line| line.contains("node-version") && line.contains(version.as_str()))
+                .map_or(0, |at| at + 1);
+            fail(
+                shown.clone(),
+                line,
+                format!(
+                    "sets up Node {version}; the package gates run on the floor, Node {floor} ({NODE_FLOOR})"
+                ),
+            );
+        }
+    }
+}
+
+/// The major version an `engines.node` of the form `>=N` names.
+fn node_floor(engines: &str) -> Option<String> {
+    let major = engines.strip_prefix(">=")?.trim();
+    (!major.is_empty() && major.bytes().all(|byte| byte.is_ascii_digit())).then(|| major.to_owned())
+}
+
+/// The Node version each `actions/setup-node` step of a workflow asks
+/// for, as written (`22`, `"22"` and `22.x` are three spellings; only the
+/// first two are the floor).
+fn node_versions(doc: &serde_yaml_ng::Value) -> Vec<String> {
+    let mut out = Vec::new();
+    let Some(jobs) = doc.get("jobs").and_then(serde_yaml_ng::Value::as_mapping) else {
+        return out;
+    };
+    for (_, job) in jobs {
+        let steps = job.get("steps").and_then(serde_yaml_ng::Value::as_sequence);
+        for step in steps.into_iter().flatten() {
+            let sets_up_node = step
+                .get("uses")
+                .and_then(serde_yaml_ng::Value::as_str)
+                .is_some_and(|uses| uses.starts_with("actions/setup-node@"));
+            if !sets_up_node {
+                continue;
+            }
+            let version = step.get("with").and_then(|with| with.get("node-version"));
+            out.push(match version {
+                Some(serde_yaml_ng::Value::String(text)) => text.clone(),
+                Some(serde_yaml_ng::Value::Number(number)) => number.to_string(),
+                // No version is whatever the runner has, which is no floor.
+                _ => String::from("(unset)"),
+            });
+        }
+    }
+    out
+}
+
+/// Every `package.json` in the repository that is the project's own.
+fn manifests(root: &Path) -> Vec<PathBuf> {
+    let mut out = Vec::new();
+    let mut stack = vec![root.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        let Ok(entries) = std::fs::read_dir(&dir) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let name = entry.file_name();
+            if path.is_dir() {
+                if !NOT_OURS.iter().any(|skip| name == *skip) {
+                    stack.push(path);
+                }
+            } else if name == "package.json" {
+                out.push(path);
+            }
+        }
+    }
+    out.sort();
+    out
+}
+
 /// Every `strategy.matrix.include` entry of every job of a workflow.
 fn matrix_rows(doc: &serde_yaml_ng::Value) -> Vec<&serde_yaml_ng::Value> {
     let mut out = Vec::new();
@@ -1997,6 +2173,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     gate_runners(root, &mut outcome);
     python_in_utf8(root, &mut outcome);
     platform_runners(root, &mut outcome);
+    node_is_tested_at_its_floor(root, &mut outcome);
     targets_declare_their_features(root, &mut outcome);
     serialised_types_describe_themselves(root, &mut outcome);
     words_are_spelt_as_keys(root, &mut outcome);
@@ -2020,6 +2197,7 @@ pub(crate) fn check(root: &Path) -> i32 {
         "entry-point-is-reachable",
         "python-runs-in-utf8-mode",
         "runner-matches-the-platform-table",
+        "node-is-tested-at-its-floor",
         "target-declares-the-feature-it-needs",
         "a-tier-turns-on-its-base",
         "serialised-type-describes-itself",
@@ -2211,5 +2389,122 @@ mod serialised_type_describes_itself {
              #[derive(Debug, Clone)]\npub struct NotSerialised;\n",
         );
         assert!(found.is_empty(), "{found:?}");
+    }
+
+    /// A repository of manifests and workflows, written under a fresh
+    /// directory, and the Node floor rule run over it.
+    fn floor_findings(tag: &str, files: &[(&str, &str)]) -> Vec<String> {
+        let root = std::env::temp_dir().join(format!("teistro-floor-{}-{tag}", std::process::id()));
+        for (path, text) in files {
+            let path = root.join(path);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, text).unwrap();
+        }
+        let mut outcome = Outcome::default();
+        node_is_tested_at_its_floor(&root, &mut outcome);
+        std::fs::remove_dir_all(&root).unwrap();
+        outcome
+            .failures
+            .iter()
+            .map(|f| format!("{}:{} {}", f.file, f.line, f.text))
+            .collect()
+    }
+
+    const FLOOR: (&str, &str) = (
+        "bindings/node/package.json",
+        r#"{"engines":{"node":">=22"}}"#,
+    );
+
+    fn setup(version: &str) -> String {
+        format!(
+            "jobs:\n  a:\n    steps:\n      - uses: actions/setup-node@v4\n        with:\n          node-version: {version}\n"
+        )
+    }
+
+    #[test]
+    fn a_floor_is_a_bare_major() {
+        assert_eq!(node_floor(">=22").as_deref(), Some("22"));
+        for loose in [">=20.11", "^22", "22", ">=", ">= 22.x"] {
+            assert_eq!(node_floor(loose), None, "{loose}");
+        }
+    }
+
+    #[test]
+    fn every_setup_node_is_read_in_every_spelling() {
+        let doc: serde_yaml_ng::Value = serde_yaml_ng::from_str(
+            "jobs:\n  a:\n    steps:\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 22\n\
+             \x20     - uses: actions/checkout@v4\n  b:\n    steps:\n      - uses: actions/setup-node@v4\n        with:\n          node-version: \"24\"\n\
+             \x20     - uses: actions/setup-node@v4\n",
+        )
+        .unwrap();
+        assert_eq!(node_versions(&doc), ["22", "24", "(unset)"]);
+    }
+
+    #[test]
+    fn the_gates_on_the_floor_and_one_floor_everywhere_pass() {
+        let workflow = setup("\"22\"");
+        let found = floor_findings(
+            "pass",
+            &[
+                FLOOR,
+                ("adapters/x/package.json", r#"{"engines":{"node":">=22"}}"#),
+                ("site/package.json", r#"{"private":true}"#),
+                (
+                    "node_modules/dep/package.json",
+                    r#"{"engines":{"node":">=8"}}"#,
+                ),
+                (".github/workflows/verify.yml", &workflow),
+                (".github/workflows/hash-matrix.yml", &setup("24")),
+            ],
+        );
+        assert!(found.is_empty(), "{found:?}");
+    }
+
+    #[test]
+    fn a_gate_off_the_floor_a_second_floor_and_a_stale_excuse_are_each_refused() {
+        let found = floor_findings(
+            "fail",
+            &[
+                FLOOR,
+                (
+                    "adapters/x/package.json",
+                    r#"{"engines":{"node":">=20.11"}}"#,
+                ),
+                (".github/workflows/verify.yml", &setup("20")),
+                (".github/workflows/hash-matrix.yml", &setup("22")),
+            ],
+        );
+        assert_eq!(found.len(), 3, "{found:?}");
+        assert!(
+            found
+                .iter()
+                .any(|f| f.starts_with("adapters/x/package.json:1 `engines.node` is `>=20.11`")),
+            "{found:?}"
+        );
+        assert!(
+            found
+                .iter()
+                .any(|f| f.starts_with(".github/workflows/verify.yml:6 sets up Node 20")),
+            "{found:?}"
+        );
+        assert!(
+            found
+                .iter()
+                .any(|f| f.contains("hash-matrix.yml:1 is excused from Node 22 but runs it")),
+            "{found:?}"
+        );
+    }
+
+    #[test]
+    fn a_floor_that_is_not_a_major_is_refused_at_the_source() {
+        let found = floor_findings(
+            "loose",
+            &[(
+                "bindings/node/package.json",
+                r#"{"engines":{"node":">=20.11"}}"#,
+            )],
+        );
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert!(found[0].contains("state the floor as `>=N`"), "{found:?}");
     }
 }
