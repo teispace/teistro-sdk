@@ -1,0 +1,6 @@
+{
+  "why": "The budget `cargo xtask check-wasm` holds the shipped module to, both ways: over it fails, and so does more than 5% under it. `bytes` is what a browser compiles, `gzip` what it downloads. The module is the `compact` tier built with the workspace's `wasm` profile, its name section removed. Measured 2026-09-25 at 4 760 590 and 1 321 434; each budget is 2% over.",
+  "module": "compact",
+  "bytes": 4860000,
+  "gzip": 1350000
+}

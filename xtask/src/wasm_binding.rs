@@ -30,6 +30,10 @@
 //!    out of `files` or a loader the tarball lacks fails here and not in
 //!    the field.
 //!
+//! 5. **Held to its size budget** (`bindings/wasm/size.json`), both ways:
+//!    over it fails, and so does more than 5% under it, since a budget
+//!    that loose would let the saving go unnoticed.
+//!
 //! Run by hand (`cargo xtask check-wasm`) and in the nightly matrix. The
 //! browser step needs Chrome (`CHROME`, or where it installs) and prints
 //! `skip` without it.
@@ -46,9 +50,12 @@ use crate::platform::NPM_WASM;
 
 /// The crate the module is built from, and the file Cargo names it.
 const PACKAGE: &str = "teistro-wasm";
-const MODULE: &str = "target/wasm32-unknown-unknown/release/teistro_wasm.wasm";
+/// The Cargo profile the module is built with: `release`, optimised for
+/// size with fat LTO, as the workspace manifest measures.
+const PROFILE: &str = "wasm";
+const MODULE: &str = "target/wasm32-unknown-unknown/wasm/teistro_wasm.wasm";
 /// Where the package is staged.
-const STAGED: &str = "target/wasm/package";
+pub(crate) const STAGED: &str = "target/wasm/package";
 /// Where the throwaway project that installs it is built.
 const CONSUMER: &str = "target/wasm/consumer";
 /// The Node package, whose layer and manifest the wasm package is made of.
@@ -208,7 +215,7 @@ pub(crate) fn stage(root: &Path, directory: &Path) -> Result<(), ()> {
     let cli = wasm_bindgen(root, &wanted)?;
     step(
         Command::new(cargo())
-            .args(["build", "--quiet", "--release", "-p", PACKAGE])
+            .args(["build", "--quiet", "--profile", PROFILE, "-p", PACKAGE])
             .args(["--target", "wasm32-unknown-unknown"])
             .current_dir(root),
         "",
@@ -220,10 +227,14 @@ pub(crate) fn stage(root: &Path, directory: &Path) -> Result<(), ()> {
     }
     // `web` output instantiates from a URL or from bytes, which is what
     // both loaders need; the layer's own declarations are the package's
-    // types, so the glue's are not written.
+    // types, so the glue's are not written. The name section is a debugger's
+    // and was 47% of the module; a refusal reaches the caller as a
+    // `TeistroError` with its record, not as a stack of function names.
     step(
         Command::new(cli)
-            .args(["--target", "web", "--no-typescript", "--out-dir"])
+            .args(["--target", "web", "--no-typescript"])
+            .args(["--remove-name-section", "--remove-producers-section"])
+            .arg("--out-dir")
             .arg(directory.join("wasm"))
             .arg(MODULE)
             .current_dir(root),
@@ -232,6 +243,23 @@ pub(crate) fn stage(root: &Path, directory: &Path) -> Result<(), ()> {
     )?;
     assemble(root, directory)
         .map_err(|e| println!("FAIL  the wasm package could not be staged: {e}"))
+}
+
+/// Whether the toolchain can build for the module's target: its standard
+/// library is where `rustc` says a target's libraries go.
+pub(crate) fn target_installed() -> bool {
+    Command::new("rustc")
+        .args([
+            "--print",
+            "target-libdir",
+            "--target",
+            "wasm32-unknown-unknown",
+        ])
+        .output()
+        .ok()
+        .filter(|output| output.status.success())
+        .and_then(|output| String::from_utf8(output.stdout).ok())
+        .is_some_and(|dir| Path::new(dir.trim()).is_dir())
 }
 
 /// Chrome, when the machine has it: `CHROME`, then where each platform
@@ -396,15 +424,82 @@ pub(crate) fn check(root: &Path) -> i32 {
     if outcome.is_err() {
         return 1;
     }
-    if let Ok(meta) = fs::metadata(staged.join("wasm/teistro_wasm_bg.wasm")) {
-        let tenths = meta.len() / 100_000;
-        println!(
-            "info  the module is {}.{} MB unoptimised; the profile binaries and their size gate are step 7",
-            tenths / 10,
-            tenths % 10
-        );
+    i32::from(size(root, &staged).is_err())
+}
+
+/// The budget file: what the shipped module may weigh.
+const BUDGET: &str = "bindings/wasm/size.json";
+
+/// How far under its budget a module may fall before the budget is too
+/// loose to protect anything: 5%, which a toolchain's own drift stays
+/// inside and a real saving does not.
+const SLACK: f64 = 0.95;
+
+/// A size as a reader reads it: megabytes to two places.
+fn megabytes(bytes: u64) -> String {
+    let hundredths = bytes.div_ceil(10_000);
+    format!("{}.{:02} MB", hundredths / 100, hundredths % 100)
+}
+
+/// The shipped module held to its budget, both ways: over it is a
+/// regression, and more than 5% under it is a budget that no longer
+/// protects the saving, so the gate says what to write instead. Gzip is
+/// the proxy for what a browser downloads; the raw size is what it
+/// compiles.
+fn size(root: &Path, staged: &Path) -> Result<(), ()> {
+    use std::io::Write as _;
+    let module = fs::read(staged.join("wasm/teistro_wasm_bg.wasm"))
+        .map_err(|e| println!("FAIL  the staged module could not be read: {e}"))?;
+    let mut encoder = flate2::write::GzEncoder::new(Vec::new(), flate2::Compression::best());
+    let gzip = encoder
+        .write_all(&module)
+        .and_then(|()| encoder.finish())
+        .map_err(|e| println!("FAIL  the module could not be compressed: {e}"))?;
+    let budget: Value = fs::read_to_string(root.join(BUDGET))
+        .ok()
+        .and_then(|text| serde_json::from_str(&text).ok())
+        .ok_or_else(|| println!("FAIL  {BUDGET} is missing or not JSON"))?;
+    let mut failed = false;
+    for (name, measured) in [("bytes", module.len()), ("gzip", gzip.len())] {
+        let measured = u64::try_from(measured).unwrap_or(u64::MAX);
+        let Some(allowed) = budget[name].as_u64().filter(|allowed| *allowed > 0) else {
+            println!("FAIL  {BUDGET} sets no `{name}`; the module measures {measured}");
+            failed = true;
+            continue;
+        };
+        #[allow(
+            clippy::cast_precision_loss,
+            reason = "a ratio of two sizes under a gigabyte, read to a percent"
+        )]
+        let ratio = measured as f64 / allowed as f64;
+        // The budget to write: 2% over what was measured, to the next
+        // ten kilobytes, so a toolchain's drift does not fail the next run.
+        let suggested = (measured + measured / 50).div_ceil(10_000) * 10_000;
+        if measured > allowed {
+            println!(
+                "FAIL  the module's {name} is {} ({measured}), over its budget of {} by {:.1}%; if the growth is wanted, set `{name}` in {BUDGET} to {suggested}",
+                megabytes(measured),
+                megabytes(allowed),
+                (ratio - 1.0) * 100.0
+            );
+            failed = true;
+        } else if ratio < SLACK {
+            println!(
+                "FAIL  the module's {name} is {} ({measured}), {:.1}% under its budget of {}; lower `{name}` in {BUDGET} to {suggested} so the saving is kept",
+                megabytes(measured),
+                (1.0 - ratio) * 100.0,
+                megabytes(allowed)
+            );
+            failed = true;
+        } else {
+            println!(
+                "ok    the module's {name} is {} of its {} budget",
+                megabytes(measured),
+                megabytes(allowed)
+            );
+        }
     }
-    0
+    if failed { Err(()) } else { Ok(()) }
 }
 
 #[cfg(test)]

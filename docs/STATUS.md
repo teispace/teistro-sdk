@@ -4127,8 +4127,15 @@ on pub.dev (checked 2026-09-07).
    `lib/` with a node and a web loader and a manifest derived from the
    Node one. `check-wasm` runs the Node suite unchanged through the
    staged package's own loader (70 of 70) and loads it in headless
-   Chrome, whose answer must equal Node's to the bit. Next, step 7's
-   parity runner and the per-profile size gate. `@teistro/sdk-wasm` is
+   Chrome, whose answer must equal Node's to the bit. Step 7 is **built**:
+   the wasm runner joins `check-parity`, and the module — now truly the
+   `compact` tier, which **no build had been able to select** until the
+   façade's base feature stopped pulling in `standard` (ADR-0028 amended,
+   `crates/ffi/tests/tier.rs`) — ships from a size-measured `wasm` profile
+   without its name section: 8.6 MB to 4.77 MB, 1.33 MB gzipped, held to
+   `bindings/wasm/size.json` both ways. What is left is in the design
+   page's §7: ADR-0005's module profiles, `wasm-opt`, edge runtimes.
+   `@teistro/sdk-wasm` is
    **released with the others** (maintainer, 2026-09-25): the release's
    `wasm` job stages and checks it, `package stage` refuses a release
    without it, and `publish` sends it with the platform packages.

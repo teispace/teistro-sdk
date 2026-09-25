@@ -21,9 +21,22 @@ serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.6"
 serde_bytes = "0.11"
 teistro-core = { path = "../../../crates/core" }
-teistro-ffi = { path = "../../../crates/ffi" }
+# Without the boundary's default tier, so the module is built at the one
+# chosen below and not at `standard` whatever is asked: tiers are additive
+# and the richest wins.
+teistro-ffi = { path = "../../../crates/ffi", default-features = false }
 teistro-port-ephemeris = { path = "../../../crates/port-ephemeris" }
 wasm-bindgen = "0.2"
+
+# The built-in ephemeris's tier, forwarded to the boundary, which forwards
+# it to the façade: a tier is additive and the richest wins. The module a
+# package ships is built at one of them, which is most of its size.
+[features]
+# ADR-0029: a browser runs on `compact` unless it brings a provider.
+default = ["builtin-compact"]
+builtin-compact = ["teistro-ffi/builtin-compact"]
+builtin-standard = ["teistro-ffi/builtin-standard"]
+builtin-full = ["teistro-ffi/builtin-full"]
 
 # The module's boundary: the generated glue holds the unsafe calls into the
 # C ABI, each with a SAFETY comment, so unsafe is `deny` rather than the

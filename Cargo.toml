@@ -145,3 +145,25 @@ opt-level = 3
 # of CPU to 27.1 s on this machine), and the bits are the same.
 [profile.dev.package.teistro-ephemeris-builtin]
 opt-level = 3
+
+# The wasm module a package ships: built for its size, since a browser
+# downloads it, and measured before it was chosen (2026-09-25, the compact
+# module bound by wasm-bindgen with its name section removed, and a
+# workload of 20 000 position cells and 300 charts through the package):
+#
+# |                                | shipped | gzip    | positions | charts |
+# |--------------------------------|---------|---------|-----------|--------|
+# | release (opt-level 3)          | 6.80 MB | 1.95 MB | 547 ms    | 155 ms |
+# | opt-level `s`                  | 5.33 MB | 1.63 MB | 574 ms    | 174 ms |
+# | fat LTO, one codegen unit, `s` | 5.24 MB | 1.61 MB | 508 ms    | 160 ms |
+# | fat LTO, one codegen unit, 3   | 6.25 MB | 1.94 MB | 461 ms    | 148 ms |
+#
+# The third is 23% smaller than the release build and as fast. Rust does
+# not reorder or contract floats at any of these settings, so the bits are
+# the ones every other build computes; `check-wasm` holds the browser's to
+# Node's. The native builds keep `release`.
+[profile.wasm]
+inherits = "release"
+opt-level = "s"
+lto = "fat"
+codegen-units = 1
