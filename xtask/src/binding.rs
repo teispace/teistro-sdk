@@ -151,6 +151,38 @@ pub(crate) fn present(tool_name: &str, version: &str) -> bool {
     tool(tool_name, version).is_some()
 }
 
+/// A JavaScript tool a gate runs, pinned in a `package.json` and its lock
+/// file in `dir` and installed there: the directory of the installed
+/// package, or `None` when npm cannot be run or the install failed.
+///
+/// **Installed when it is not the version pinned**, not only when it is
+/// missing. A tool installed once and never compared goes on running on a
+/// machine after the pin moves, so a bump would be checked by CI and by
+/// nobody's machine, or by every machine but CI's.
+pub(crate) fn pinned_npm_tool(dir: &Path, package: &str) -> Option<PathBuf> {
+    let version_of = |manifest: &Path, field: &str| -> Option<String> {
+        let text = std::fs::read_to_string(manifest).ok()?;
+        let json: serde_json::Value = serde_json::from_str(&text).ok()?;
+        let value = if field.is_empty() {
+            &json["version"]
+        } else {
+            &json[field][package]
+        };
+        value.as_str().map(str::to_owned)
+    };
+    let pinned = version_of(&dir.join("package.json"), "devDependencies")?;
+    let installed = dir.join("node_modules").join(package);
+    let current = || version_of(&installed.join("package.json"), "").as_deref() == Some(&pinned);
+    if !current() {
+        let npm = tool("npm", "--version")?;
+        let _ = Command::new(&npm)
+            .args(["ci", "--silent", "--no-audit", "--no-fund"])
+            .current_dir(dir)
+            .status();
+    }
+    current().then_some(installed)
+}
+
 /// Runs a step and reports it: `Ok(())` when it passed, `Err(())` when it
 /// did not, with the line the gate prints either way.
 pub(crate) fn step(command: &mut Command, passed: &str, failed: &str) -> Result<(), ()> {

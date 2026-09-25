@@ -1,0 +1,10 @@
+{
+  "name": "teistro-wasm-workerd-check",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The Cloudflare tools the wasm package's edge check runs: Wrangler, which bundles a Worker as a consumer's build does, and the workerd runtime it depends on. Pinned here so every machine and every runner checks with the same pair.",
+  "devDependencies": {
+    "wrangler": "4.141.0"
+  }
+}

@@ -9,7 +9,7 @@
 //! cannot drift; `#native` in `index.js` is the seam, mapped to the addon
 //! in one manifest and to the module in the other.
 //!
-//! **The gate** runs the staged package three ways:
+//! **The gate** runs the staged package these ways:
 //!
 //! 1. **The Node binding's whole suite, unchanged**, from inside the
 //!    staged package, so `../lib/index.js` is the package's and its
@@ -30,13 +30,19 @@
 //!    out of `files` or a loader the tarball lacks fails here and not in
 //!    the field.
 //!
-//! 5. **Held to its size budget** (`bindings/wasm/size.json`), both ways:
+//! 5. **In Cloudflare's workerd**, from the installed package: a Worker
+//!    that imports it by name, bundled by the pinned Wrangler as a
+//!    deploy bundles it (which resolves `#native` through the `workerd`
+//!    condition) and run by `workerd test`. Its answer too must equal
+//!    Node's to the bit.
+//! 6. **Held to its size budget** (`bindings/wasm/size.json`), both ways:
 //!    over it fails, and so does more than 5% under it, since a budget
 //!    that loose would let the saving go unnoticed.
 //!
 //! Run by hand (`cargo xtask check-wasm`) and in the nightly matrix. The
 //! browser step needs Chrome (`CHROME`, or where it installs) and prints
-//! `skip` without it.
+//! `skip` without it; the Workers step installs its own tools and skips
+//! only without npm.
 
 use std::fs;
 use std::io;
@@ -45,7 +51,7 @@ use std::process::Command;
 
 use serde_json::{Value, json};
 
-use crate::binding::{blob_fixtures, cargo, present, step, tool};
+use crate::binding::{blob_fixtures, cargo, pinned_npm_tool, present, step, tool};
 use crate::platform::NPM_WASM;
 
 /// The crate the module is built from, and the file Cargo names it.
@@ -58,6 +64,8 @@ const MODULE: &str = "target/wasm32-unknown-unknown/wasm/teistro_wasm.wasm";
 pub(crate) const STAGED: &str = "target/wasm/package";
 /// Where the throwaway project that installs it is built.
 const CONSUMER: &str = "target/wasm/consumer";
+/// The Workers check: its Worker, its runner, and the pinned tools.
+const WORKERD: &str = "bindings/wasm/workerd";
 /// The Node package, whose layer and manifest the wasm package is made of.
 const NODE: &str = "bindings/node";
 /// The Node package's loader, the one file of its layer the wasm package
@@ -71,6 +79,16 @@ const WASM: &str = "bindings/wasm";
 /// touched and a cache of `target/` keeps it.
 const TOOLS: &str = "target/tools";
 const FIXTURES: &str = "target/tsrb";
+/// The package's loaders by the import condition that picks each, **in
+/// the order a resolver tries them**: the first condition a host sets
+/// wins, so the Workers one comes before `node` (a Worker bundled with
+/// Node compatibility sets both) and `default` is last, since it matches
+/// everything.
+const LOADERS: [(&str, &str); 3] = [
+    ("workerd", "native.workerd.js"),
+    ("node", "native.node.js"),
+    ("default", "native.web.js"),
+];
 /// The files every package carries whatever else is in it.
 const LEGAL: [&str; 2] = ["LICENSE", "NOTICE"];
 
@@ -148,10 +166,11 @@ fn manifest(node: &Value) -> Value {
             "description".into(),
             json!("Teistro SDK as WebAssembly: the same layer as @teistro/sdk over a wasm module, for browsers, workers and any JavaScript host without a prebuilt addon."),
         );
-        fields.insert(
-            "imports".into(),
-            json!({ "#native": { "node": "./lib/native.node.js", "default": "./lib/native.web.js" } }),
-        );
+        let loaders: serde_json::Map<String, Value> = LOADERS
+            .iter()
+            .map(|(condition, file)| ((*condition).to_owned(), json!(format!("./lib/{file}"))))
+            .collect();
+        fields.insert("imports".into(), json!({ "#native": loaders }));
         fields.insert(
             "files".into(),
             json!(["lib/", "wasm/", "README.md", "LICENSE", "NOTICE"]),
@@ -290,47 +309,88 @@ fn answer_of(printed: &[u8]) -> Result<Value, String> {
         .ok_or_else(|| report["error"].as_str().unwrap_or("no answer").to_string())
 }
 
-/// The probe in a headless browser and under Node, held equal.
-fn browser(root: &Path, staged: &Path) -> Result<(), ()> {
+/// A probe script under `bindings/wasm`, run by Node: what it printed,
+/// read as the probe's answer or the error it reported.
+fn probe_by(root: &Path, script: &str, args: &[&std::ffi::OsStr]) -> Result<Value, String> {
+    Command::new("node")
+        .arg(root.join(WASM).join(script))
+        .args(args)
+        .current_dir(root)
+        .output()
+        .map_err(|e| e.to_string())
+        .and_then(|output| answer_of(&output.stdout))
+}
+
+/// The probe under Node, through the staged package's own `node` loader:
+/// the answer every other host is held to.
+fn node_answer(root: &Path, staged: &Path) -> Result<Value, ()> {
+    probe_by(root, "browser/node.mjs", &[staged.as_os_str()])
+        .map_err(|error| println!("FAIL  the probe did not run under Node: {error}"))
+}
+
+/// A host's answer held equal to Node's, to the bit.
+fn held_to_node(
+    host: &str,
+    proof: &str,
+    answer: Result<Value, String>,
+    node: &Value,
+) -> Result<(), ()> {
+    match answer {
+        Ok(answer) if answer == *node => {
+            println!(
+                "ok    {proof}, and answers as Node does to the bit ({})",
+                answer["target"].as_str().unwrap_or_default()
+            );
+            Ok(())
+        }
+        Ok(answer) => {
+            println!("FAIL  {host} and Node answer differently:\n  {host} {answer}\n  node {node}");
+            Err(())
+        }
+        Err(error) => {
+            println!("FAIL  the package did not run in {host}: {error}");
+            Err(())
+        }
+    }
+}
+
+/// The probe in a headless browser, unbundled.
+fn browser(root: &Path, staged: &Path, node: &Value) -> Result<(), ()> {
     let Some(chrome) = chrome() else {
         println!("skip  the browser check needs Chrome (set CHROME to its binary)");
         return Ok(());
     };
-    let check = root.join(WASM).join("browser");
-    let run = |script: &str, args: &[&std::ffi::OsStr]| {
-        Command::new("node")
-            .arg(check.join(script))
-            .args(args)
-            .current_dir(root)
-            .output()
-            .map_err(|e| e.to_string())
-            .and_then(|output| answer_of(&output.stdout))
-    };
-    let in_browser = run("run.mjs", &[staged.as_os_str(), chrome.as_os_str()]);
-    let in_node = run("node.mjs", &[staged.as_os_str()]);
-    match (in_browser, in_node) {
-        (Ok(browser), Ok(node)) if browser == node => {
-            println!(
-                "ok    the package loads in a headless browser with no Node built-in, and answers as Node does to the bit ({})",
-                browser["target"].as_str().unwrap_or_default()
-            );
-            Ok(())
-        }
-        (Ok(browser), Ok(node)) => {
-            println!(
-                "FAIL  the browser and Node answer differently:\n  browser {browser}\n  node    {node}"
-            );
-            Err(())
-        }
-        (Err(error), _) => {
-            println!("FAIL  the package did not run in the browser: {error}");
-            Err(())
-        }
-        (_, Err(error)) => {
-            println!("FAIL  the probe did not run under Node: {error}");
-            Err(())
-        }
+    held_to_node(
+        "the browser",
+        "the package loads in a headless browser with no Node built-in",
+        probe_by(
+            root,
+            "browser/run.mjs",
+            &[staged.as_os_str(), chrome.as_os_str()],
+        ),
+        node,
+    )
+}
+
+/// The probe in Cloudflare's workerd, from the **installed** package,
+/// bundled by the pinned Wrangler as a consumer's deploy bundles it.
+///
+/// The tools are pinned in `bindings/wasm/workerd/package.json` and
+/// installed from its lock file, so this runs wherever npm does; it skips
+/// only where the install cannot happen, and says so.
+fn workerd(root: &Path, node: &Value) -> Result<(), ()> {
+    if pinned_npm_tool(&root.join(WORKERD), "wrangler").is_none() {
+        println!(
+            "skip  the Workers check: the pinned Wrangler is not installed and could not be (needs `npm`)"
+        );
+        return Ok(());
     }
+    held_to_node(
+        "workerd",
+        "the installed package bundles with Wrangler and runs in workerd through its `workerd` loader",
+        probe_by(root, "workerd/run.mjs", &[root.join(CONSUMER).as_os_str()]),
+        node,
+    )
 }
 
 /// The staged package packed, installed into an empty project, and run by
@@ -416,8 +476,12 @@ pub(crate) fn check(root: &Path) -> i32 {
                 &format!("{NODE}/test/ did not pass against the staged wasm package"),
             )
         })
-        .and_then(|()| browser(root, &staged))
-        .and_then(|()| consumer(root, &staged));
+        .and_then(|()| node_answer(root, &staged))
+        .and_then(|node| {
+            browser(root, &staged, &node)
+                .and_then(|()| consumer(root, &staged))
+                .and_then(|()| workerd(root, &node))
+        });
     // The suite was copied in to run from inside the package; it is not
     // part of what a consumer installs.
     let _ = fs::remove_dir_all(&tests);
@@ -506,7 +570,7 @@ fn size(root: &Path, staged: &Path) -> Result<(), ()> {
 mod tests {
     #![allow(clippy::indexing_slicing, reason = "a test fails by panicking")]
 
-    use serde_json::json;
+    use serde_json::{Value, json};
 
     use super::{locked_version, manifest};
 
@@ -530,16 +594,29 @@ mod tests {
             assert_eq!(wasm[kept], node[kept], "{kept}");
         }
         assert_eq!(wasm["repository"]["directory"], "bindings/wasm");
+        let conditions: Vec<(&String, &Value)> = wasm["imports"]["#native"]
+            .as_object()
+            .map(|loaders| loaders.iter().collect())
+            .unwrap_or_default();
+        let order: Vec<&str> = conditions
+            .iter()
+            .map(|(condition, _)| condition.as_str())
+            .collect();
+        assert_eq!(
+            order,
+            ["workerd", "node", "default"],
+            "the order a resolver tries them"
+        );
         assert_eq!(wasm["imports"]["#native"]["default"], "./lib/native.web.js");
         assert!(wasm.get("optionalDependencies").is_none() && wasm.get("scripts").is_none());
     }
 
-    /// Each loader's `platformPackage()` names the package the manifest
-    /// is published as.
+    /// Each loader the manifest names exists and its `platformPackage()`
+    /// names the package the manifest is published as.
     #[test]
     fn the_loaders_name_the_package_they_are_in() {
         let lib = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../bindings/wasm/lib");
-        for loader in ["native.web.js", "native.node.js"] {
+        for (_, loader) in super::LOADERS {
             let text = std::fs::read_to_string(lib.join(loader)).unwrap_or_default();
             assert!(
                 text.contains(&format!("return '{}';", super::NPM_WASM)),
