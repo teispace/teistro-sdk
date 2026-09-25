@@ -20,7 +20,9 @@ use teistro_core::catalogue::{DashaSystem, Graha, Nakshatra};
 use teistro_core::error::Error;
 use teistro_core::key::is_key_name;
 use teistro_core::quantity::Depth;
-use teistro_core::settings::YearLength;
+use teistro_core::settings::{AshtottariGrouping, YearLength};
+
+use crate::wheel::Wheel;
 
 /// How many nakshatras a seed is counted over.
 pub const NAKSHATRAS: u8 = 27;
@@ -215,8 +217,19 @@ pub struct UduRow {
     /// Which way the seed is counted.
     pub count: Count,
     /// How many nakshatras each lord covers: 1 for most systems, 3 for
-    /// Ashtottari. The balance is the elapsed part of this window.
+    /// the recording engine's Ashtottari. The balance is the elapsed part of
+    /// this window. A row with [`groups`](UduRow::groups) reads those
+    /// instead.
     pub span: u8,
+    /// How many nakshatras each lord covers, lord by lord, when they are not
+    /// all alike: BPHS's Ashtottari gives four and three alternately from
+    /// Ardra. Empty for a row whose every lord covers
+    /// [`span`](UduRow::span).
+    pub groups: Cow<'static, [u8]>,
+    /// The circle the seed is counted round: the twenty-seven nakshatras,
+    /// or the twenty-eight with Abhijit that BPHS counts Ashtottari and
+    /// Shashtihayani over.
+    pub wheel: Wheel,
     /// What is added after the division, before the modulo: 3 for Yogini.
     pub offset: u8,
     /// Whether the lords run round the nakshatras again once they are all
@@ -266,24 +279,53 @@ impl UduRow {
             .map_or(0.0, |lord| f64::from(lord.years) * self.scale.factor())
     }
 
-    /// The lord a seed nakshatra starts with, and where it sits in that
-    /// lord's window.
+    /// How many nakshatras the lord at `index` covers: its own group, or
+    /// the row's span when every lord covers alike.
     #[must_use]
-    pub fn seat(&self, nakshatra: u8) -> Seat {
-        let cycle = i16::from(NAKSHATRAS);
-        let (seed, reference) = (i16::from(nakshatra), i16::from(self.reference));
+    pub fn window_of(&self, index: usize) -> u8 {
+        self.groups
+            .get(index % self.lords.len().max(1))
+            .copied()
+            .unwrap_or(self.span)
+            .max(1)
+    }
+
+    /// How many nakshatras one round of the lords covers.
+    fn covered(&self) -> u16 {
+        (0..self.lords.len())
+            .map(|index| u16::from(self.window_of(index)))
+            .sum()
+    }
+
+    /// The lord a seed starts with, and where it sits in that lord's
+    /// window. `place` is the seed's place on the row's
+    /// [`wheel`](UduRow::wheel), which on the twenty-seven is the
+    /// nakshatra's own index.
+    #[must_use]
+    pub fn seat(&self, place: u8) -> Seat {
+        let cycle = i16::from(self.wheel.size());
+        let reference = i16::from(self.wheel.place_of(self.reference));
+        let seed = i16::from(place);
         let counted = match self.count {
             Count::FromReference => (seed - reference).rem_euclid(cycle),
             Count::ToReference => (reference - seed).rem_euclid(cycle),
         };
         let counted = u16::try_from(counted).unwrap_or_default();
-        let span = u16::from(self.span.max(1));
-        let lords = u16::try_from(self.lords.len().max(1)).unwrap_or(u16::MAX);
-        let group = counted / span;
+        let lords = self.lords.len().max(1);
+        let covered = self.covered().max(1);
+        let overflow = !self.repeats && counted >= covered;
+        // Round and round the lords' windows until the seed falls in one; a
+        // row that repeats covers the wheel as often as it takes.
+        let mut left = if overflow { counted } else { counted % covered };
+        let mut group = 0_usize;
+        while left >= u16::from(self.window_of(group)) {
+            left -= u16::from(self.window_of(group));
+            group += 1;
+        }
         Seat {
-            lord: usize::from((group + u16::from(self.offset)) % lords),
-            within: u8::try_from(counted % span).unwrap_or_default(),
-            overflow: !self.repeats && group >= lords,
+            lord: (group + usize::from(self.offset)) % lords,
+            within: u8::try_from(left).unwrap_or_default(),
+            overflow,
         }
     }
 
@@ -318,14 +360,34 @@ impl UduRow {
         if self.span == 0 {
             return refuse("span", String::from("a lord covers at least one nakshatra"));
         }
-        let covered = usize::from(self.span) * self.lords.len();
-        if covered > usize::from(NAKSHATRAS) {
+        if !self.groups.is_empty() && self.groups.len() != self.lords.len() {
             return refuse(
-                "span",
+                "groups",
                 format!(
-                    "{} lords of {} nakshatras cover {covered}, past 27",
-                    self.lords.len(),
-                    self.span
+                    "{} groups for {} lords: one each, or none for a span",
+                    self.groups.len(),
+                    self.lords.len()
+                ),
+            );
+        }
+        if let Some(at) = self.groups.iter().position(|count| *count == 0) {
+            return refuse(
+                &format!("groups[{at}]"),
+                String::from("a lord covers at least one nakshatra"),
+            );
+        }
+        let covered = self.covered();
+        let size = self.wheel.size();
+        if covered > u16::from(size) {
+            return refuse(
+                if self.groups.is_empty() {
+                    "span"
+                } else {
+                    "groups"
+                },
+                format!(
+                    "{} lords cover {covered} nakshatras, past the {size} of the wheel",
+                    self.lords.len()
                 ),
             );
         }
@@ -376,6 +438,8 @@ pub const VIMSHOTTARI: UduRow = UduRow {
     offset: 0,
     repeats: true,
     scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
 };
 
 /// Ashtottari: eight lords over 108 years, counted from Ardra, three
@@ -401,6 +465,8 @@ pub const ASHTOTTARI: UduRow = UduRow {
     offset: 0,
     repeats: false,
     scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
 };
 
 /// Dwadashottari: eight lords over 112 years, counted from the seed back to
@@ -423,6 +489,8 @@ pub const DWADASHOTTARI: UduRow = UduRow {
     offset: 0,
     repeats: true,
     scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
 };
 
 /// Panchottari: seven lords over 105 years, counted from Anuradha.
@@ -443,6 +511,8 @@ pub const PANCHOTTARI: UduRow = UduRow {
     offset: 0,
     repeats: true,
     scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
 };
 
 /// Shatabdika: seven lords over 100 years, counted from Revati.
@@ -463,6 +533,8 @@ pub const SHATABDIKA: UduRow = UduRow {
     offset: 0,
     repeats: true,
     scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
 };
 
 /// Chaturashiti-sama: seven lords of twelve years each, 84 in all, counted
@@ -484,6 +556,8 @@ pub const CHATURASHITI_SAMA: UduRow = UduRow {
     offset: 0,
     repeats: true,
     scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
 };
 
 /// Dwisaptati-sama: eight lords of nine years each, 72 in all, counted from
@@ -506,6 +580,8 @@ pub const DWISAPTATI_SAMA: UduRow = UduRow {
     offset: 0,
     repeats: true,
     scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
 };
 
 /// Yogini: the eight yoginis' lords over 36 years, counted from Ashwini
@@ -528,6 +604,8 @@ pub const YOGINI: UduRow = UduRow {
     offset: 3,
     repeats: true,
     scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
 };
 
 /// Tribhagi: Vimshottari's lords at two thirds of their years, the sequence
@@ -545,6 +623,48 @@ pub const TRIBHAGI: UduRow = UduRow {
         denominator: 3,
         rounds: 2,
     },
+    groups: Cow::Borrowed(&[]),
+    wheel: Wheel::Nakshatras,
+};
+
+/// Ashtottari as BPHS ch. 46 vv. 17 to 20 count it: the same eight lords
+/// and years, from Ardra in groups of four and three alternately over the
+/// twenty-eight nakshatras with Abhijit, so every seed has a lord and none
+/// lies outside the cycle (crux C5). A nakshatra is a quarter of a
+/// malefic's dasha and a third of a benefic's (v. 21), an equal share of
+/// its lord's window either way.
+pub const ASHTOTTARI_BPHS: UduRow = UduRow {
+    groups: Cow::Borrowed(&[4, 3, 4, 3, 4, 3, 4, 3]),
+    wheel: Wheel::WithAbhijit,
+    ..ASHTOTTARI
+};
+
+/// Shashtihayani, BPHS ch. 46 vv. 40 and 41: Jupiter, the Sun and Mars ten
+/// years each and the Moon, Mercury, Venus, Saturn and Rahu six, which is
+/// the sixty the name states, from Ashvini in groups of three and four
+/// alternately over the twenty-eight with Abhijit (crux C1). The received
+/// English's "13 years" is contradicted by its own worked example and by
+/// the verse, दशा दश दशाब्दकाः.
+pub const SHASHTIHAYANI: UduRow = UduRow {
+    system: DashaName::Catalogued(DashaSystem::Shashtihayani),
+    lords: Cow::Borrowed(&[
+        lord(Graha::Jupiter, 10),
+        lord(Graha::Sun, 10),
+        lord(Graha::Mars, 10),
+        lord(Graha::Moon, 6),
+        lord(Graha::Mercury, 6),
+        lord(Graha::Venus, 6),
+        lord(Graha::Saturn, 6),
+        lord(Graha::Rahu, 6),
+    ]),
+    reference: 0,
+    count: Count::FromReference,
+    span: 1,
+    offset: 0,
+    repeats: false,
+    scale: Scale::WHOLE,
+    groups: Cow::Borrowed(&[3, 4, 3, 4, 3, 4, 3, 4]),
+    wheel: Wheel::WithAbhijit,
 };
 
 /// Every row this build implements, in the catalogue's order. A system
@@ -559,11 +679,16 @@ pub const ROWS: &[UduRow] = &[
     DWISAPTATI_SAMA,
     YOGINI,
     TRIBHAGI,
+    SHASHTIHAYANI,
 ];
 
-/// The row of a system, when this build implements one.
+/// The row of a system, when this build implements one: Ashtottari's
+/// is the one `grouping` names, and every other system has one.
 #[must_use]
-pub fn row(system: DashaSystem) -> Option<&'static UduRow> {
+pub fn row(system: DashaSystem, grouping: AshtottariGrouping) -> Option<&'static UduRow> {
+    if system == DashaSystem::Ashtottari && grouping == AshtottariGrouping::FourAndThree {
+        return Some(&ASHTOTTARI_BPHS);
+    }
     ROWS.iter().find(|row| row.system == system)
 }
 
@@ -614,6 +739,14 @@ pub struct UduDefinition {
     /// How many nakshatras each lord covers; one by default.
     #[serde(default = "one")]
     pub span: u8,
+    /// How many nakshatras each lord covers, lord by lord, when they differ;
+    /// none by default, when every lord covers `span`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub groups: Vec<u8>,
+    /// The circle the seed is counted round: the twenty-seven nakshatras by
+    /// default, or the twenty-eight with Abhijit.
+    #[serde(default, skip_serializing_if = "is_nakshatras")]
+    pub wheel: Wheel,
     /// What is added after the division, before the modulo; none by default.
     #[serde(default)]
     pub offset: u8,
@@ -635,6 +768,14 @@ pub struct UduDefinition {
 
 const fn one() -> u8 {
     1
+}
+
+#[expect(
+    clippy::trivially_copy_pass_by_ref,
+    reason = "serde's `skip_serializing_if` hands the field by reference"
+)]
+fn is_nakshatras(wheel: &Wheel) -> bool {
+    *wheel == Wheel::Nakshatras
 }
 
 const fn yes() -> bool {
@@ -661,6 +802,8 @@ impl UduDefinition {
             reference,
             count: Count::FromReference,
             span: one(),
+            groups: Vec::new(),
+            wheel: Wheel::Nakshatras,
             offset: 0,
             repeats: yes(),
             scale: Scale::WHOLE,
@@ -681,6 +824,8 @@ impl UduDefinition {
             offset: self.offset,
             repeats: self.repeats,
             scale: self.scale,
+            groups: Cow::Owned(self.groups.clone()),
+            wheel: self.wheel,
         }
     }
 }
@@ -713,7 +858,9 @@ mod tests {
             row.validate().unwrap();
         }
         let totals: Vec<u32> = ROWS.iter().map(UduRow::total_years).collect();
-        assert_eq!(totals, [120, 108, 112, 105, 100, 84, 72, 36, 120]);
+        assert_eq!(totals, [120, 108, 112, 105, 100, 84, 72, 36, 120, 60]);
+        ASHTOTTARI_BPHS.validate().unwrap();
+        assert_eq!(ASHTOTTARI_BPHS.total_years(), 108);
         assert_eq!(TRIBHAGI.mahadashas(), 18);
         assert!((TRIBHAGI.scaled_years(0) - 7.0 * 2.0 / 3.0).abs() < 1e-12);
         // In the catalogue's order, one row a system.
@@ -727,15 +874,19 @@ mod tests {
 
     #[test]
     fn every_row_seats_every_nakshatra_and_only_ashtottari_overflows() {
-        for row in ROWS {
-            for nakshatra in 0..NAKSHATRAS {
-                let seat = row.seat(nakshatra);
+        for row in ROWS.iter().chain([&ASHTOTTARI_BPHS]) {
+            for place in 0..row.wheel.size() {
+                let seat = row.seat(place);
                 assert!(seat.lord < row.lords.len());
-                assert!(seat.within < row.span);
+                assert!(seat.within < row.window_of(seat.lord));
+                // Only the recording engine's Ashtottari, three each over
+                // twenty-four, leaves seeds outside its cycle.
                 assert_eq!(
                     seat.overflow,
-                    row.system == DashaSystem::Ashtottari && (2..5).contains(&nakshatra),
-                    "{:?} at {nakshatra}",
+                    row.system == DashaSystem::Ashtottari
+                        && row.wheel == Wheel::Nakshatras
+                        && (2..5).contains(&place),
+                    "{:?} at {place}",
                     row.system
                 );
             }
@@ -745,6 +896,84 @@ mod tests {
         assert_eq!(YOGINI.lords[YOGINI.seat(0).lord].graha, Graha::Mars);
         assert_eq!(DWADASHOTTARI.seat(26).lord, 0);
         assert_eq!(DWADASHOTTARI.seat(25).lord, 1);
+    }
+
+    /// BPHS ch. 46, the translation's note 2 to v. 23: a birth in
+    /// Mrigashira falls in Venus's Ashtottari, Krittika and Rohini behind
+    /// it, and Mrigashira is a third of Venus's 21 years.
+    #[test]
+    fn the_texts_ashtottari_seats_mrigashira_where_bphs_does() {
+        let row = &ASHTOTTARI_BPHS;
+        let mrigashira = row.wheel.place_of(4);
+        let seat = row.seat(mrigashira);
+        assert_eq!(row.lords[seat.lord].graha, Graha::Venus);
+        assert_eq!((seat.within, row.window_of(seat.lord)), (2, 3));
+        assert!(!seat.overflow);
+        // The whole table, place by place on the twenty-eight: the Sun from
+        // Ardra, Saturn's four taking Abhijit, Rahu's running past Revati
+        // into Ashvini and Bharani.
+        let lords: Vec<Graha> = (0..28)
+            .map(|place| row.lords[row.seat(place).lord].graha)
+            .collect();
+        let (su, mo, ma, me, sa, ju, ra, ve) = (
+            Graha::Sun,
+            Graha::Moon,
+            Graha::Mars,
+            Graha::Mercury,
+            Graha::Saturn,
+            Graha::Jupiter,
+            Graha::Rahu,
+            Graha::Venus,
+        );
+        assert_eq!(
+            lords,
+            [
+                ra, ra, ve, ve, ve, su, su, su, su, mo, mo, mo, ma, ma, ma, ma, me, me, me, sa, sa,
+                sa, sa, ju, ju, ju, ra, ra
+            ]
+        );
+    }
+
+    /// BPHS ch. 46 vv. 40 and 41 and the translation's example beside them:
+    /// from Ashvini in threes and fours, Mrigashira is the Sun's with Rohini
+    /// behind it, four nakshatras of ten years, thirty months each.
+    #[test]
+    fn shashtihayani_counts_sixty_years_as_the_verse_does() {
+        let row = &SHASHTIHAYANI;
+        assert_eq!(row.total_years(), 60);
+        let seat = row.seat(row.wheel.place_of(4));
+        assert_eq!(row.lords[seat.lord].graha, Graha::Sun);
+        assert_eq!((seat.within, row.window_of(seat.lord)), (1, 4));
+        assert_eq!(row.lords[seat.lord].years, 10);
+        assert_eq!(row.lords[row.seat(0).lord].graha, Graha::Jupiter);
+        assert_eq!(row.lords[row.seat(21).lord].graha, Graha::Saturn, "Abhijit");
+        assert_eq!(row.lords[row.seat(27).lord].graha, Graha::Rahu, "Revati");
+    }
+
+    #[test]
+    fn a_group_count_that_does_not_fit_is_refused_by_its_field() {
+        let refused = |row: UduRow| row.validate().unwrap_err().field().map(str::to_owned);
+        let short = UduRow {
+            groups: Cow::Borrowed(&[4, 3]),
+            ..ASHTOTTARI_BPHS
+        };
+        assert_eq!(refused(short).as_deref(), Some("groups"));
+        let empty = UduRow {
+            groups: Cow::Borrowed(&[4, 3, 4, 3, 4, 3, 4, 0]),
+            ..ASHTOTTARI_BPHS
+        };
+        assert_eq!(refused(empty).as_deref(), Some("groups[7]"));
+        let over = UduRow {
+            groups: Cow::Borrowed(&[4, 4, 4, 4, 4, 4, 4, 4]),
+            ..ASHTOTTARI_BPHS
+        };
+        assert_eq!(refused(over).as_deref(), Some("groups"));
+        // Twenty-eight is too many on the twenty-seven.
+        let unwheeled = UduRow {
+            wheel: Wheel::Nakshatras,
+            ..ASHTOTTARI_BPHS
+        };
+        assert_eq!(refused(unwheeled).as_deref(), Some("groups"));
     }
 
     #[test]

@@ -24,11 +24,11 @@ use teistro_core::settings::Balance;
 use teistro_core::time::UtcOffset;
 use teistro_dasha::{
     Birth, Dasha, DashaCursor, DashaName, DashaReading, KalachakraDasha, KalachakraRules,
-    RashiChart, RashiDasha, RashiRules, Rules as DashaRules, YearDasha, YearRing,
+    RashiChart, RashiDasha, RashiRules, Rules as DashaRules, Wheel, YearDasha, YearRing,
 };
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
-use teistro_panchanga::limb::{Zodiac as LimbZodiac, nakshatra_at};
+use teistro_panchanga::limb::{Zodiac as LimbZodiac, moon_between, nakshatra_at};
 use teistro_points::Points;
 use teistro_points::arudha::arudha;
 use teistro_port_ephemeris::EphemerisProvider;
@@ -562,7 +562,7 @@ impl<'a> ChartArea<'a> {
                 return Err(Error::internal("a definition names one of the two kernels"));
             };
             let moon_span = match rules.balance {
-                Balance::Temporal => Some(self.moon_span(foundation)?),
+                Balance::Temporal => Some(self.moon_span(foundation, udu.wheel)?),
                 _ => None,
             };
             let dasha = Dasha::new(&udu.row(), &Self::birth_of(foundation, moon_span)?, rules)?;
@@ -580,15 +580,26 @@ impl<'a> ChartArea<'a> {
             let dasha = self.rashi_dasha_of(foundation, system, rules, RashiRules::of(settings))?;
             return Ok(DashaReading::of_rashi(&dasha, rules, depth));
         }
-        let moon_span = match rules.balance {
-            Balance::Temporal => Some(self.moon_span(foundation)?),
-            _ => None,
-        };
+        let temporal = rules.balance == Balance::Temporal;
         if system == DashaSystem::Kalachakra {
+            let moon_span = if temporal {
+                Some(self.moon_span(foundation, Wheel::Nakshatras)?)
+            } else {
+                None
+            };
             let dasha = Self::kalachakra_of(foundation, KalachakraRules::of(settings), moon_span)?;
             return Ok(DashaReading::of_kalachakra(&dasha, rules, depth, moon_span));
         }
-        let dasha = Self::dasha_of(foundation, system, rules, moon_span)?;
+        let row = teistro_dasha::row(system, rules.ashtottari_grouping)
+            .ok_or_else(|| Self::not_built(system))?;
+        // A system counted over its own wheel is read across its own
+        // segment, Abhijit's included, not across the nakshatra.
+        let moon_span = if temporal {
+            Some(self.moon_span(foundation, row.wheel)?)
+        } else {
+            None
+        };
+        let dasha = Dasha::new(row, &Self::birth_of(foundation, moon_span)?, rules)?;
         Ok(DashaReading::of(&dasha, depth, moon_span))
     }
 
@@ -651,14 +662,16 @@ impl<'a> ChartArea<'a> {
         })
     }
 
-    /// The nakshatra-seeded dasha of a founded chart, from its Moon.
+    /// The nakshatra-seeded dasha of a founded chart, from its Moon, on the
+    /// row its rules choose.
     fn dasha_of(
         foundation: &ChartFoundation,
         system: DashaSystem,
         rules: DashaRules,
         moon_span: Option<Interval>,
     ) -> Result<Dasha, Error> {
-        let row = teistro_dasha::row(system).ok_or_else(|| Self::not_built(system))?;
+        let row = teistro_dasha::row(system, rules.ashtottari_grouping)
+            .ok_or_else(|| Self::not_built(system))?;
         Dasha::new(row, &Self::birth_of(foundation, moon_span)?, rules)
     }
 
@@ -1811,7 +1824,7 @@ impl<'a> ChartArea<'a> {
                 Some(match rules.measure() {
                     Balance::Temporal => teistro_tajika::remaining_by_time(
                         foundation.instant,
-                        self.moon_span(foundation)?,
+                        self.moon_span(foundation, Wheel::Nakshatras)?,
                     )?,
                     _ => teistro_tajika::remaining_by_arc(moon_of(foundation)?),
                 })
@@ -1891,13 +1904,21 @@ impl<'a> ChartArea<'a> {
         search(&longitudes, zodiac)
     }
 
-    /// The Moon's stay in its nakshatra around the birth, searched in the
-    /// chart's own frame and zodiac: topocentric when the chart is, since a
-    /// topocentric Moon can stand a degree from the geocentric one and move
-    /// the nakshatra's edge by hours.
-    fn moon_span(self, foundation: &ChartFoundation) -> Result<Interval, Error> {
-        self.in_chart_sky(foundation, |longitudes, zodiac| {
-            Ok(nakshatra_at(longitudes, foundation.instant, zodiac)?.whole)
+    /// The Moon's stay in its segment of a wheel around the birth: its
+    /// nakshatra on the twenty-seven, or its segment of the twenty-eight
+    /// with Abhijit. Searched in the chart's own frame and zodiac:
+    /// topocentric when the chart is, since a topocentric Moon can stand a
+    /// degree from the geocentric one and move a segment's edge by hours.
+    fn moon_span(self, foundation: &ChartFoundation, wheel: Wheel) -> Result<Interval, Error> {
+        let moon = Self::birth_of(foundation, None)?.moon;
+        self.in_chart_sky(foundation, |longitudes, zodiac| match wheel {
+            Wheel::Nakshatras => Ok(nakshatra_at(longitudes, foundation.instant, zodiac)?.whole),
+            Wheel::WithAbhijit => moon_between(
+                longitudes,
+                foundation.instant,
+                zodiac,
+                wheel.segment(moon).degrees(),
+            ),
         })
     }
 

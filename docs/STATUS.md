@@ -4061,8 +4061,41 @@ on pub.dev (checked 2026-09-07).
    **done**. The repository exists under CC0-1.0 and `fixtures/` is a
    submodule of it, pinned to `v0.11.0` (ADR-0022). This item outlived
    the work by several releases.
-7. Close the cruxes that block Phase 5 (C6 year length per system, C1,
-   C2, C3, C8) by reading the texts; tradition reviewers as they appear.
+7. Close the cruxes that block Phase 5 by reading the texts; tradition
+   reviewers as they appear. **Four of the six closed** (2026-09-25). They
+   were read in BPHS ch. 46 and ch. 27, in R. Santhanam's translation and
+   Girish Chand Sharma's, both with the Sanskrit:
+   - **C1.** Shashtihayani's lords are ten years and six, sixty in all. The
+     verse says दशा दश दशाब्दकाः, and the translation's own worked example
+     contradicts its English "13".
+   - **C3.** Ashtottari applies with Rahu in a kendra or trikona from the
+     lagna's lord and not in the lagna (v. 17), or for a day birth in the
+     dark fortnight or a night birth in the bright one (v. 23).
+   - **C5.** The text's Ashtottari has no seed outside its cycle. It counts
+     four and three alternately from Ardra over the twenty-eight with
+     Abhijit, and the translation's note 2 is the worked check.
+   - **C8.** The Sun needs 390 virupas, 6.5 rupas. Raman's 5.0 is Sripati's,
+     and both were already built.
+
+   What they built:
+   - a wheel of 28 with Abhijit, cut exactly: Uttarashadha keeps three
+     padas, and Shravana's first fifteenth goes to Abhijit;
+   - per-lord groups in the K-udu kernel;
+   - `SHASHTIHAYANI`, computed at last;
+   - Ashtottari as the text counts it, under `dasha.ashtottari_grouping`.
+     It is the root profile's choice; the conformance profile keeps the
+     recording engine's three each;
+   - a temporal balance read across the Moon's own segment of the wheel,
+     searched at its own bounds;
+   - the same wheel and groups for a consumer's definition, in every
+     binding.
+
+   **Still open:**
+   - **C6**, which year each dasha counts. BPHS states none for the
+     nakshatra dashas; the translation's savana note concerns the longevity
+     periods.
+   - **C2**, Narayana's antardasha tables. Jaimini's question, which BPHS
+     does not name.
 8. The rest of Phase 1's test-only infrastructure: instruction-count
    benchmarks (`iai-callgrind`, which needs Linux, so they belong to the
    nightly matrix rather than a laptop), and the docs site skeleton with
@@ -4077,6 +4110,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-25 | **Four cruxes closed by reading the text, and the wheel they needed.** I read BPHS ch. 46 and ch. 27 in two translations with their Sanskrit. C1 closed: the verse gives Shashtihayani ten years and six, sixty in all, where the English printed "13" and contradicted its own example. C3 closed: Ashtottari's conditions are verses 17 and 23. C5 closed: the text counts Ashtottari four and three alternately over twenty-eight nakshatras with Abhijit, so no seed falls outside it. C8 closed: the Sun needs 6.5 rupas, already built beside Raman's 5. The kernel gained the 28-nakshatra wheel with Abhijit cut exactly, and per-lord groups. On it, Shashtihayani is built at last and the text's Ashtottari is a knob: the default takes it, the conformance profile keeps the engine's. The temporal balance reads the Moon across its own segment, and a consumer's definition takes the same wheel in every binding. Tests hold the text's own worked answers and the whole Ashtottari table. C6 and C2 remain, with what was searched recorded. Next: 7's remainder, else 8. |
 | 2026-09-25 | **An instant in a zone, and the precedence of what an engine holds.** STATUS 4 listed three pieces left of spike 4, and one had been done for three weeks: a locale's own parts of the day. The other two are built now. A message value may be an instant, the SDK's Julian day in UTC, and the date and time functions read it in the zone `timeZone` names: UTC, an offset, an IANA name, or a variable. The zone comes from the embedded database the context's own resolutions use, reached through the zone port, so the engine carries none. It is typed as an instant in every binding's accessors, and `sdk.calendar.datetime.inZone` ships and is tested in all four languages, daylight saving included. Two defects surfaced while building it: 07:00 read as 06:59, and a zone given as a variable went unseen. Pack precedence is decided and held by one test: the build, then each pack in load order, then the overrides, which keep standing over later packs. Next: 7. |
 | 2026-09-25 | **The corpus check, built, found six defects before it measured anything.** Spike 3 left two checks unbuilt; both go through the façade and every kit binary runs them. `sdk-only` byte identity holds a provider's chart to its native frame's alone, and proved non-vacuous against a provider declaring four hostile overrides. Over the Surya Siddhanta provider it found `prefer-native` refusing a whole chart for an ayanamsha the provider did not list, now chosen per member. The corpus check founds the 55 recorded births over a provider and compares every position under the corpus's own band for its class, in the corpus's report format, with every known divergence listed and held both ways. Its first run failed every chart at every tier, and mostly not by the tier. The causes, each fixed and tested: a sidereal chart's speeds were tropical; Ketu had no distance; the built-in's nodes left the ecliptic of date; light time kept the geometric distance; the centre step, given the native frame after the corrections had run, dropped diurnal aberration; and a carried speed missed each step's own rate. Reported speeds are now the derivative of the completed places, and searches keep the cheap carried rate. Teimeris, the corpus's own ephemeris, now passes 50 of 55; the built-in tiers pass 53, 32 and 1, every miss explained by the list. Left to the maintainer: two provisional corpus bands tighter than any implementation's own consistency (3a), and the adapter's move (3b). Next: 3a/3b decisions, else 4. |
 | 2026-09-25 | **The last lowercase words, a field every binding offered and none could use, and a claim that measured the wrong thing.** Four request records still spelt their words in serde's lowercase: a rule request's sets, a theme's forms and names, a layout's shape, and a consumer's dasha definition. Each came back in an answer or a stored document, so each is a key now, request and answer alike; the themes and sets are typed with one key list each. The sentinels `'all'`, `'birth'` and `'unknown'` stay lowercase on purpose, because a key never is, and §3.7 of the API description page records the rule. Measuring found `RashiDefinition` camel-cased, so the `year_length` all three bindings declared was refused at the boundary. It also found Python's unions half-respelt by 2f's regex sweep, and Python and Dart reading an unknown outline step as a line or an arc. Last, `schema-measured.md`'s "one casing convention" claim held only because it counted attributes in a crate list that left out the two crates at fault; it now reads the document schema's 571 words. The lint `a-word-is-spelt-as-a-key` holds the class, with four format exceptions that fail both ways. Parity: 12,992 values, 13 examples alike. Next: 3. |

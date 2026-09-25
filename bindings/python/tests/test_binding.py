@@ -1187,6 +1187,38 @@ class AnEngine(WithLibrary):
             for score in (g.shadvarga, g.saptavarga, g.dashavarga, g.shodashavarga):
                 self.assertTrue(5.0 <= score <= 20.0, f"{g.graha}: {score}")
 
+    def test_a_consumer_system_counted_with_abhijit_reads_as_the_text_row(self) -> None:
+        """A consumer's system may count over the twenty-eight nakshatras
+        with Abhijit in groups of its own: Shashtihayani stated as BPHS
+        states it reads as the catalogued one (crux C1)."""
+        years = (("JUPITER", 10), ("SUN", 10), ("MARS", 10), ("MOON", 6), ("MERCURY", 6),
+                 ("VENUS", 6), ("SATURN", 6), ("RAHU", 6))
+        shashti: UduDashaDefinition = {
+            "kernel": "UDU",
+            "key": "ACME_SHASHTI",
+            "lords": [{"graha": graha, "years": count} for graha, count in years],
+            "reference": "ASHWINI",
+            "groups": [3, 4, 3, 4, 3, 4, 3, 4],
+            "wheel": "WITH_ABHIJIT",
+            "repeats": False,
+        }
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        with self.teistro.context(test_provider=True, dasha_systems=[shashti]) as ctx:
+            consumer, shipped = ctx.chart.found(
+                instant=2451545.0,
+                place=observer,
+                utc_offset_seconds=20700,
+                dashas=["dasha_system.ACME_SHASHTI", DashaSystem.SHASHTIHAYANI],
+            ).dashas
+            self.assertEqual(consumer.periods, shipped.periods)
+            self.assertEqual(consumer.balance, shipped.balance)
+        short: UduDashaDefinition = {**shashti, "groups": [3, 4]}
+        with self.assertRaises(TeistroError) as refused:
+            self.teistro.context(test_provider=True, dasha_systems=[short])
+        self.assertEqual(refused.exception.field, "options.dashas_json[0].groups")
+
     def test_a_consumer_dasha_system_registers_is_asked_for_by_key_and_reads_as_its_twin(self) -> None:
         """A consumer's own dasha system crosses: registered on the context,
         asked for by its key, named by it in the answer, and every period its

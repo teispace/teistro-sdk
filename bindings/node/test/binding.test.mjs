@@ -1210,6 +1210,38 @@ const VIMSHOTTARI_TWIN = {
 const CHARA_TWIN = { kernel: 'RASHI', key: 'ACME_CHARA' };
 
 /**
+ * A consumer's system may count over the twenty-eight nakshatras with Abhijit
+ * in groups of its own: Shashtihayani stated as BPHS states it reads as the
+ * catalogued one (`docs/03-design/dasha-kernels.md`, crux C1).
+ */
+test('a consumer system counted over the wheel with Abhijit reads as the text row', () => {
+  const shashti = {
+    kernel: 'UDU',
+    key: 'ACME_SHASHTI',
+    lords: [['JUPITER', 10], ['SUN', 10], ['MARS', 10], ['MOON', 6], ['MERCURY', 6], ['VENUS', 6], ['SATURN', 6], ['RAHU', 6]]
+      .map(([graha, years]) => ({ graha, years })),
+    reference: 'ASHWINI',
+    groups: [3, 4, 3, 4, 3, 4, 3, 4],
+    wheel: 'WITH_ABHIJIT',
+    repeats: false,
+  };
+  const ctx = context({ dashaSystems: [shashti] });
+  const [consumer, shipped] = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    dashas: ['dasha_system.ACME_SHASHTI', DashaSystem.Shashtihayani],
+  }).dashas;
+  assert.deepEqual(consumer.periods, shipped.periods);
+  assert.deepEqual(consumer.balance, shipped.balance);
+  assert.throws(
+    () => context({ dashaSystems: [{ ...shashti, groups: [3, 4] }] }),
+    (error) => error instanceof TeistroError && error.field === 'options.dashas_json[0].groups',
+  );
+  ctx.dispose();
+});
+
+/**
  * A consumer's own dasha system crosses: registered on the context, asked for
  * by its key, named by it in the answer, and every period its catalogued
  * twin's; a definition the checks refuse is named by its place and field.

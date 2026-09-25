@@ -66,6 +66,7 @@ fn dasha(json: &Value, method: &str, recorded: &Value) -> Dasha {
         birth_period: BirthPeriod::Compressed,
         after_cycle: AfterCycle::End,
         seed_overflow: SeedOverflow::WrapToStart,
+        ashtottari_grouping: teistro_core::settings::AshtottariGrouping::ThreeEach,
     };
     Dasha::new(&VIMSHOTTARI, &birth, rules).unwrap()
 }
@@ -241,6 +242,7 @@ fn a_registered_row_with_vimshottari_s_table_is_vimshottari() {
             birth_period: BirthPeriod::Compressed,
             after_cycle: AfterCycle::End,
             seed_overflow: SeedOverflow::WrapToStart,
+            ashtottari_grouping: teistro_core::settings::AshtottariGrouping::ThreeEach,
         };
         let shipped = Dasha::new(&VIMSHOTTARI, &birth, rules).unwrap();
         let consumer = Dasha::new(&registered, &birth, rules).unwrap();

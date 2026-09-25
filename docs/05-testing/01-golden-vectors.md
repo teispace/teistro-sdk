@@ -144,7 +144,9 @@ emit the report schema.
   aspects, the yogas and doshas, the strengths, Ashtakavarga, the
   Jaimini slice, KP and milan, once the corresponding design pages exist
   and say what the fixture must carry (the same script, more sections).
-- Rank-1 vectors for the cruxes that block Phase 5 (C1, C2, C3, C6, C8).
+- Rank-1 vectors for the cruxes that still block Phase 5 (C2, C6); C1,
+  C3, C5 and C8 were closed from BPHS itself on 2026-09-25, and the
+  worked answers the text gives are held as tests.
 - The tolerance bands are provisional until measured against Teimeris
   and the built-in tiers.
 

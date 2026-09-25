@@ -1461,6 +1461,52 @@ void _engineTests() {
   /// for by its key, named by it in the answer, and every period its
   /// catalogued twin's; a definition the checks refuse is named by its place
   /// and field.
+  /// A consumer's system may count over the twenty-eight nakshatras with
+  /// Abhijit in groups of its own: Shashtihayani stated as BPHS states it
+  /// reads as the catalogued one (crux C1).
+  test('a consumer system counted with Abhijit reads as the text row', () {
+    const shashti = UduDashaDefinition(
+      key: 'ACME_SHASHTI',
+      lords: [
+        DashaLord(Graha.jupiter, 10),
+        DashaLord(Graha.sun, 10),
+        DashaLord(Graha.mars, 10),
+        DashaLord(Graha.moon, 6),
+        DashaLord(Graha.mercury, 6),
+        DashaLord(Graha.venus, 6),
+        DashaLord(Graha.saturn, 6),
+        DashaLord(Graha.rahu, 6),
+      ],
+      reference: Nakshatra.ashwini,
+      groups: [3, 4, 3, 4, 3, 4, 3, 4],
+      wheel: DashaWheel.withAbhijit,
+      repeats: false,
+    );
+    final ctx = teistro.context(testProvider: true, dashaSystems: [shashti]);
+    addTearDown(ctx.dispose);
+    final [consumer, shipped] =
+        ctx.chart
+            .found(
+              instant: 2451545.0,
+              place: Observer(
+                latitudeDeg: Latitude(27.7172),
+                longitudeDeg: Longitude(85.324),
+                altitudeM: Altitude(1400),
+              ),
+              utcOffsetSeconds: 20700,
+              dashas: [
+                DashaSystem.registered('ACME_SHASHTI'),
+                DashaSystem.shashtihayani,
+              ],
+            )
+            .dashas;
+    expect(consumer.periods.length, shipped.periods.length);
+    for (var i = 0; i < shipped.periods.length; i++) {
+      final (a, b) = (consumer.periods[i], shipped.periods[i]);
+      expect((a.path, a.lord, a.from, a.to), (b.path, b.lord, b.from, b.to));
+    }
+  });
+
   test('a consumer dasha system registers and reads as its twin', () {
     final twin = UduDashaDefinition(
       key: 'ACME_VIMSHOTTARI',

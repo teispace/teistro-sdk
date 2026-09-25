@@ -9,10 +9,10 @@ use crate::catalogue::{
 };
 
 use super::knobs::{
-    AfterCycle, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti, BhavaSpecialRules,
-    BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik,
-    DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning, HoraReckoning, IshtaKashta,
-    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    AfterCycle, AshtottariGrouping, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti,
+    BhavaSpecialRules, BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras,
+    Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning, HoraReckoning,
+    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
     LuminaryCheshta, LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
     NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
     PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes,
@@ -155,6 +155,9 @@ pub fn root() -> Settings {
                 .collect(),
             depth: depth_all(3),
             seed_overflow: SeedOverflow::WrapToStart,
+            // BPHS ch. 46 vv. 17 to 20: four and three alternately from
+            // Ardra over the twenty-eight with Abhijit (crux C5).
+            ashtottari_grouping: AshtottariGrouping::FourAndThree,
             // The corpus's readings, measured on every recorded answer
             // (`03-design/dasha-measured.md`); the others are knob values
             // because neither reading has a rank-1 text (crux C48).
@@ -413,6 +416,9 @@ fn conformance_baseline() -> Profile {
     patch.panchanga.moon_events = Some(MoonEvents::CivilDay);
     // The engine's Ashtakavarga reductions and pindas (cruxes C59, C60).
     patch.strength.ekadhipatya = Some(Ekadhipatya::EmptyToZero);
+    // The recording engine's Ashtottari: three nakshatras each, the three
+    // before Ardra wrapped to the start (crux C5).
+    patch.dasha.ashtottari_grouping = Some(AshtottariGrouping::ThreeEach);
     patch.strength.shodhana = Some(Shodhana::Sarva);
     patch.strength.vimshopaka = Some(Vimshopaka::SaptavargajaVirupas);
     // The engine's Shadbala, component by component (cruxes C64 to C71).

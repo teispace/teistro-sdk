@@ -308,6 +308,58 @@ seventeen.
   that read a chart), and the Kalachakra is its own kernel. Registering
   either waits for a consumer who needs it.
 
+## The 28-nakshatra wheel and a lord's own group (2026-09-25; cruxes C1, C5)
+
+Read 2026-09-25 in BPHS ch. 46: R. Santhanam's translation (Ranjan, 1992) and
+Girish Chand Sharma's, both with the Sanskrit. They agree verse for verse.
+
+**Ashtottari** (vv. 17–22) counts **from Ardra in groups of four and three
+alternately**: the Sun four nakshatras, the Moon three, Mars four, Mercury
+three, Saturn four, Jupiter three, Rahu four and Venus three. That is
+twenty-eight nakshatras, Abhijit among them. A malefic's nakshatra is a
+quarter of its dasha and a benefic's a third (v. 21), so every nakshatra of
+a window is an equal share of it.
+
+The translator's note fixes Abhijit's extent: Uttarashadha's fourth pada
+and the first fifteenth of Shravana. Uttarashadha keeps its first three
+padas, and Shravana the rest. On the wheel, Uttarashadha is 266°40′ to
+276°40′, Abhijit is 276°40′ to 280°53′20″ (4°13′20″), and Shravana is
+280°53′20″ to 293°20′.
+
+Note 2 of the translation is a worked answer. A birth in Mrigashira falls
+in Venus's dasha of 21 years, and Mrigashira holds 7 of them.
+
+So the text leaves **no seed outside the cycle**, and crux C5 is closed:
+the three-each Ashtottari over twenty-four nakshatras, with its
+`seed_overflow`, is the recording engine's convention and not the text's.
+Both ship. The engine's stays the conformance profile's, because the
+corpus records it; the text's is the default's. They are chosen by
+`dasha.ashtottari_grouping`: `THREE_EACH` or `FOUR_AND_THREE`.
+
+**Shashtihayani** (vv. 40–41) counts from Ashvini (दास्रात्) in groups of
+three and four alternately, over the same twenty-eight nakshatras. Its
+lords are Jupiter, the Sun, Mars, the Moon, Mercury, Venus, Saturn and
+Rahu. Verse 41 gives the first three दशा दश दशाब्दकाः, ten years each,
+and the other five रसाब्दकाः, six each. Three tens and five sixes make
+the sixty the name states, so crux C1 is closed. The translation's English
+says "13 years", but its own worked example on the same page contradicts
+it: the Sun's four nakshatras take thirty months each, and the balance is
+deducted from ten years. The text's condition (the Sun in the lagna) is a
+rule a reading may apply, like Ashtottari's (crux C3). The row computes
+for any chart.
+
+**What the kernel gains.** A row states its **wheel**, the 27 nakshatras
+or the 28 with Abhijit. It may also state its **groups**, one count of
+nakshatras for each lord, in place of one span for them all. A seed is
+seated on the row's wheel, and its window is its lord's group. The Moon's
+elapsed part of its own segment is read the way the row's balance method
+reads it:
+- spatially, from its longitude against the segment's bounds;
+- temporally, from its time across those same bounds, found by the same
+  crossing search the 27-nakshatra span uses.
+
+A consumer's definition may state both, in every binding.
+
 ## Kernels
 
 | kernel | family | shape |
@@ -343,7 +395,9 @@ pub struct UduDashaDef {
 pub struct SeedToLord {
     pub reference: u16,              // seed index that maps to lord 0
     pub direction: CountDir,         // FromReference | ToReference (Dwadashottari counts to Revati)
-    pub span: u8,                    // seed units per lord: 1 for most, 3 for Ashtottari
+    pub span: u8,                    // seed units per lord: 1 for most, 3 for the engine's Ashtottari
+    pub groups: Vec<u8>,             // seed units lord by lord when they differ: BPHS's Ashtottari 4, 3, 4, 3, …
+    pub wheel: Wheel,                // Nakshatras (27) | WithAbhijit (28), the circle the seed is counted round
     pub offset: u8,                  // added after the modulo: 3 for Yogini
     pub repeats: bool,               // the lords run round the nakshatras again (Vimshottari, Yogini) or cover them once (Ashtottari)
     pub overflow: Overflow,          // WrapToStart | Reject, explicit when span × lords < cycle
@@ -382,7 +436,7 @@ Abbreviations: Su Mo Ma Me Ju Ve Sa Ra Ke. All rows below use
 | system | seed | reference | dir | span | off | lords → years | total | mark |
 |---|---|---|---|---|---|---|---|---|
 | Vimshottari | nakshatra | Ashwini 0 | from | 1 | 0 | Ke 7, Ve 20, Su 6, Mo 10, Ma 7, Ra 18, Ju 16, Sa 19, Me 17 | 120 | V (baseline constants) |
-| Ashtottari | nakshatra | Ardra 5 | from | 3 | 0 | Su 6, Mo 15, Ma 8, Me 17, Sa 10, Ju 19, Ra 12, Ve 21 | 108 | V (baseline; `overflow: WrapToStart`) |
+| Ashtottari | nakshatra | Ardra 5 | from | 3 | 0 | Su 6, Mo 15, Ma 8, Me 17, Sa 10, Ju 19, Ra 12, Ve 21 | 108 | V (baseline; `overflow: WrapToStart`); BPHS ch. 46 vv. 17–20 counts `groups` 4, 3, 4, 3, 4, 3, 4, 3 over the `WITH_ABHIJIT` wheel (`ASHTOTTARI_BPHS`), chosen by `dasha.ashtottari_grouping` (crux C5) |
 | Dwadashottari | nakshatra | Revati 26 | to | 1 | 0 | Su 7, Ju 9, Ke 11, Me 13, Ra 15, Ma 17, Sa 19, Mo 21 | 112 | V (baseline) |
 | Panchottari | nakshatra | Anuradha 16 | from | 1 | 0 | Su 12, Me 13, Sa 14, Ma 15, Ve 16, Mo 17, Ju 18 | 105 | V (baseline) |
 | Shatabdika | nakshatra | Revati 26 | from | 1 | 0 | Su 5, Mo 5, Ve 10, Me 10, Ju 20, Ma 20, Sa 30 | 100 | V (baseline, Chaukhamba edition); `shatabdika-alt` swaps Mars 30 and Saturn 20 as a second row, T |
@@ -392,7 +446,7 @@ Abbreviations: Su Mo Ma Me Ju Ve Sa Ra Ke. All rows below use
 | Tribhagi | nakshatra | Ashwini 0 | from | 1 | 0 | Vimshottari with `scale { factor: 2/3, rounds: 2 }` | 80 × 2 | V (baseline) |
 | Shodashottari | nakshatra | Pushya 7 | from | 1 | 0 | Su 11, Ma 12, Ju 13, Sa 14, Ke 15, Mo 16, Me 17, Ve 18 | 116 | T (BPHS ch. 46; verse numbers to confirm before shipping) |
 | Shattrimsha-sama | nakshatra | Shravana 21 | from | 1 | 0 | Mo 1, Su 2, Ju 3, Ma 4, Me 5, Sa 6, Ve 7, Ra 8 | 36 | T (BPHS ch. 46; verse numbers to confirm) |
-| Shashtihayani | nakshatra | to confirm | | 1 | 0 | received text gives Ju 13, Su 13, Ma 13, then 6 each, which sums to 69, not 60 | 60? | S; see the cruxes page |
+| Shashtihayani | nakshatra | Ashvini 0 | from | `groups` 3, 4, 3, 4, 3, 4, 3, 4 over the `WITH_ABHIJIT` wheel | 0 | Ju 10, Su 10, Ma 10, Mo 6, Me 6, Ve 6, Sa 6, Ra 6 | 60 | V (BPHS ch. 46 vv. 40–41, the Sanskrit and the translation's own example; crux C1) |
 | Tithi-Ashtottari | tithi | to confirm | | 1 | | as Ashtottari | 108 | T |
 | Tithi-Yogini | tithi | to confirm | | 1 | | as Yogini | 36 | T |
 | Yoga-Vimshottari | yoga | to confirm | | 1 | | as Vimshottari | 120 | T |

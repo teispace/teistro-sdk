@@ -42,6 +42,7 @@ fn dasha_of(row: &'static UduRow, after_cycle: AfterCycle) -> Dasha {
         birth_period: BirthPeriod::Compressed,
         after_cycle,
         seed_overflow: SeedOverflow::WrapToStart,
+        ashtottari_grouping: teistro_core::settings::AshtottariGrouping::ThreeEach,
     };
     Dasha::new(row, &birth, rules).unwrap()
 }

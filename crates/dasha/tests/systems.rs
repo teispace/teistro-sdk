@@ -28,12 +28,17 @@ use teistro_core::catalogue::DashaSystem;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Degrees, Depth, JulianDay};
 use teistro_core::settings::{AfterCycle, Balance, BirthPeriod, SeedOverflow, YearLength};
-use teistro_dasha::{Birth, Count, Dasha, ROWS, Rules, Timeline, UduRow, row};
+use teistro_dasha::{Birth, Count, Dasha, DashaName, ROWS, Rules, Timeline, UduRow, row};
 
 /// The row the corpus's key names, held to the rule data it states.
 fn the_row(key: &str, stated: &Value) -> &'static UduRow {
     let system = DashaSystem::from_key(&key.to_ascii_uppercase()).expect("a catalogue system");
-    let row = row(system).unwrap_or_else(|| panic!("no row implements {key}"));
+    // The corpus records the recording engine's rows, Ashtottari three each.
+    let row = row(
+        system,
+        teistro_core::settings::AshtottariGrouping::ThreeEach,
+    )
+    .unwrap_or_else(|| panic!("no row implements {key}"));
     let lords: Vec<(String, u64)> = row
         .lords
         .iter()
@@ -134,6 +139,7 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
                     birth_period: BirthPeriod::Compressed,
                     after_cycle: AfterCycle::End,
                     seed_overflow: SeedOverflow::WrapToStart,
+                    ashtottari_grouping: teistro_core::settings::AshtottariGrouping::ThreeEach,
                 };
                 assert_eq!(
                     file["year_length_days"].as_f64(),
@@ -223,6 +229,14 @@ fn every_other_nakshatra_seeded_system_is_reproduced() {
     );
     assert_eq!(answers, 1184);
     assert!(worst < BOUND_DAYS, "worst boundary {worst:e} days");
-    // Every row this build ships is measured, Vimshottari by its own test.
-    assert_eq!(seen.len() + 1, ROWS.len());
+    // Every row this build ships is measured here but two: Vimshottari by
+    // its own test, and Shashtihayani, which the corpus does not record and
+    // the row's tests hold to BPHS ch. 46's worked answers.
+    let elsewhere = [DashaSystem::Vimshottari, DashaSystem::Shashtihayani].map(DashaName::from);
+    let unmeasured: Vec<_> = ROWS
+        .iter()
+        .map(|row| row.system.clone())
+        .filter(|system| !seen.contains(system))
+        .collect();
+    assert_eq!(unmeasured, elsewhere);
 }

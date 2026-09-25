@@ -1165,6 +1165,10 @@ export interface UduDashaDefinition {
   readonly count?: 'FROM_REFERENCE' | 'TO_REFERENCE';
   /** How many nakshatras each lord covers; one by default. */
   readonly span?: number;
+  /** How many nakshatras each lord covers, lord by lord, when they differ: BPHS's Ashtottari is `[4, 3, 4, 3, 4, 3, 4, 3]`. None by default. */
+  readonly groups?: readonly number[];
+  /** The circle the seed is counted round: the 27 nakshatras by default, or the 28 with Abhijit. */
+  readonly wheel?: 'NAKSHATRAS' | 'WITH_ABHIJIT';
   /** What is added after the division, before the modulo; none by default. */
   readonly offset?: number;
   /** Whether the lords run round the nakshatras again; true by default. */

@@ -163,6 +163,67 @@ pub fn nakshatra_at<S: Longitudes + ?Sized>(
         })
 }
 
+/// The Moon's stay between two sidereal longitudes around an instant: from
+/// its last crossing of `from_deg` at or before `at` to its first crossing
+/// of `to_deg` after it.
+///
+/// What a temporal dasha balance reads when a system counts over a wheel of
+/// its own: the twenty-eight with Abhijit cut Uttarashadha and Shravana
+/// where no nakshatra boundary falls, so the span is searched at the
+/// segment's own bounds rather than read off the nakshatras
+/// (`03-design/dasha-kernels.md`, "The 28-nakshatra wheel").
+///
+/// # Errors
+///
+/// The source's own refusal, or `INTERNAL` should the Moon not cross a bound
+/// within a nakshatra's longest stay either side, which it cannot fail to.
+pub fn moon_between<S: Longitudes + ?Sized>(
+    tropical: &S,
+    at: JulianDay<Utc>,
+    zodiac: Zodiac,
+    (from_deg, to_deg): (f64, f64),
+) -> Result<Interval, Error> {
+    let source = Sidereal {
+        tropical,
+        ayanamsha: zodiac.ayanamsha,
+        basis: zodiac.basis,
+        precession: zodiac.precession,
+        delta_t: zodiac.delta_t,
+    };
+    let crossing = |bound_deg: f64, from: f64, to: f64| {
+        let lattice = Lattice {
+            origin_deg: bound_deg.rem_euclid(360.0),
+            step_deg: 0.0,
+        };
+        Search::new(&source, Limb::Nakshatra.quantity(), lattice).between(
+            JulianDay::<Ut1>::literal(from),
+            JulianDay::<Ut1>::literal(to),
+        )
+    };
+    let instant = at.get();
+    let entered = crossing(from_deg, instant - LONGEST_SPAN_DAYS, instant)?
+        .iter()
+        .map(|event| event.instant.get())
+        .filter(|jd| *jd <= instant)
+        .fold(None, |last: Option<f64>, jd| {
+            Some(last.map_or(jd, |last| last.max(jd)))
+        });
+    let left = crossing(to_deg, instant, instant + LONGEST_SPAN_DAYS)?
+        .iter()
+        .map(|event| event.instant.get())
+        .find(|jd| *jd >= instant);
+    let (Some(entered), Some(left)) = (entered, left) else {
+        return Err(Error::new(
+            Status::Internal,
+            format!("the Moon crossed no bound of {from_deg}° to {to_deg}° around {at}"),
+        ));
+    };
+    Interval::new(
+        JulianDay::<Utc>::literal(entered),
+        JulianDay::<Utc>::literal(left),
+    )
+}
+
 /// The four limbs of a window.
 ///
 /// # Errors

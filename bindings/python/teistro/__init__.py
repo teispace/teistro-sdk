@@ -3386,6 +3386,8 @@ class UduDashaDefinition(_UduDashaDefinitionRequired, total=False):
     sources: List[str]
     count: str
     span: int
+    groups: List[int]
+    wheel: Literal["NAKSHATRAS", "WITH_ABHIJIT"]
     offset: int
     repeats: bool
     scale: Dict[str, int]
