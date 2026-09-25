@@ -97,6 +97,23 @@ every platform now and gains Windows and wasm32. `compare-bench` accepts a
 cost only as an `Instruction-cost: <section> +<percent>% (<reason>)`
 trailer on the pull request's own commits, held both ways.
 
+**What the matrix did not see.** Profiling the fast check's slowest
+pages afterwards found one platform cosine left, in the built-in
+ephemeris's series term: written `f64::cos(x)`, the path form, which a
+lint looking for `.cos(` cannot see, and which the 481 539 values
+happened not to separate. The lint now reads both forms of all 27 float
+functions that reach a C library, the thirteen in use and the fourteen
+not yet (`exp2`, `ln_1p`, the hyperbolics and the rest), and was proved
+red on the line it missed. The same profile priced the change on CI: the
+Muntha page 205 s → 251 s and the annual chart 40 s → 50 s, `libm`'s
+argument reduction being slower than the platform's. Two changes that
+move no bit take most of it back: the built-in ephemeris builds
+optimised in dev like `teistro-astro`, and a planet's position and rate
+come from one `sin_cos` per term rather than a cosine and then a sine
+and cosine (`series::sum_and_rate`, tested bit for bit against the two
+sums over every table), 31.6 s → 25.4 s of CPU for the annual chart
+locally.
+
 ## 3. The binding: a second backend of the Node glue emitter
 
 `emit/node.rs` gains a backend: **napi** (today's) or **wasm-bindgen**.

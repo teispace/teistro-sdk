@@ -200,8 +200,9 @@ impl Builtin {
         let mut position = [0.0; 3];
         let mut rate = [0.0; 3];
         for ((slot, speed), terms) in position.iter_mut().zip(&mut rate).zip(coordinates) {
-            *slot = series::sum(terms, t);
-            *speed = series::rate(terms, t) / DAYS_PER_MILLENNIUM;
+            let (value, per_millennium) = series::sum_and_rate(terms, t);
+            *slot = value;
+            *speed = per_millennium / DAYS_PER_MILLENNIUM;
         }
         Some((position, rate))
     }

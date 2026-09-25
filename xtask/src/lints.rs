@@ -145,25 +145,37 @@ fn excused(line: &str, rule: &str) -> bool {
     line.contains(&format!("lint: {rule}"))
 }
 
-/// The `f64` methods that reach the platform's C library, whose last place
-/// differs between macOS, Linux, Windows and wasm32; `teistro_core::math`
-/// has each of them from one `libm` (ADR-0022).
-const PLATFORM_MATHS: [&str; 14] = [
-    ".sin(",
-    ".cos(",
-    ".sin_cos(",
-    ".tan(",
-    ".asin(",
-    ".acos(",
-    ".atan(",
-    ".atan2(",
-    ".exp(",
-    ".ln(",
-    ".log10(",
-    ".powf(",
-    ".powi(",
-    ".hypot(",
+/// The float functions that reach the platform's C library, whose last
+/// place differs between macOS, Linux, Windows and wasm32;
+/// `teistro_core::math` has the ones the SDK uses from one `libm`
+/// (ADR-0022). The rest are listed so that a first use is caught too.
+///
+/// What is exact everywhere is not here: `sqrt`, `mul_add`, `abs`, the
+/// roundings, `rem_euclid` and `%`.
+const PLATFORM_MATHS: [&str; 27] = [
+    "sin", "cos", "sin_cos", "tan", "asin", "acos", "atan", "atan2", "sinh", "cosh", "tanh",
+    "asinh", "acosh", "atanh", "exp", "exp2", "exp_m1", "ln", "ln_1p", "log", "log2", "log10",
+    "powf", "powi", "cbrt", "hypot", "gamma",
 ];
+
+/// Each of [`PLATFORM_MATHS`] in every form a call takes: the method
+/// (`x.cos()`) and the path (`f64::cos(x)`, or `f64::cos` handed to a
+/// `map`). The path form is how a platform cosine hid in the built-in
+/// ephemeris's series after every method call had moved.
+fn platform_maths() -> Vec<String> {
+    PLATFORM_MATHS
+        .iter()
+        .flat_map(|name| {
+            [
+                format!(".{name}("),
+                format!("f64::{name}("),
+                format!("f64::{name})"),
+                format!("f32::{name}("),
+                format!("f32::{name})"),
+            ]
+        })
+        .collect()
+}
 
 /// Every crate under `crates/`, read from the tree rather than listed, so
 /// a crate added tomorrow is held by a rule over all of them without
@@ -1967,7 +1979,10 @@ pub(crate) fn check(root: &Path) -> i32 {
         root,
         &every_crate(root),
         "uses-one-libm",
-        &PLATFORM_MATHS,
+        &platform_maths()
+            .iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>(),
         &mut outcome,
     );
     unsafe_inventory(root, &mut outcome);
