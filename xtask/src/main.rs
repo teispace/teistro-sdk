@@ -147,6 +147,9 @@
 //! - `check-node`: the Node binding's decoders read blobs the library
 //!   produced and its types pass a consumer's strict type-check (needs
 //!   Node, and TypeScript for the second half).
+//! - `check-wasm`: the wasm module, bound by the `wasm-bindgen` CLI the
+//!   lockfile pins, passes the Node binding's own suite unchanged (needs
+//!   Node and the `wasm32-unknown-unknown` target).
 //!
 //! Each gate exists because the failure it catches is easy to make and
 //! invisible to a reader; the comment on each one names that failure.
@@ -236,6 +239,7 @@ mod vargas;
 mod varshaphala;
 mod vimshopaka;
 mod vsop;
+mod wasm_binding;
 mod yogas;
 
 use std::env;
@@ -400,6 +404,7 @@ fn main() {
         Some("check-ffi") => ffi::check_generated(&repo_root()),
         Some("check-c") => c_binding::check(&repo_root()),
         Some("check-node") => node_binding::check(&repo_root()),
+        Some("check-wasm") => wasm_binding::check(&repo_root()),
         Some("check-dart") => dart_binding::check(&repo_root()),
         Some("check-python") => python_binding::check(&repo_root()),
         Some("check-rust") => rust_binding::check(&repo_root()),
@@ -481,7 +486,7 @@ fn usage() -> i32 {
          rule-doc PACK|CATEGORY|KEY | \
          vsop [DIR] | moon | chebyshev [DIR] | ephemgen VSOP ELP | check-docs | \
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
-         check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | \
+         check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-wasm | \
          check-dart | check-python | check-rust | check-parity | check-lints | \
          check-versions | \
          check-package | check-site | check-tag TAG | version [X] | changelog-entry X | \

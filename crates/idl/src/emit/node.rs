@@ -1,6 +1,11 @@
-//! The Node addon's glue: a napi module rendered from the description, so
-//! a new entry point in the boundary crate reaches JavaScript by running
-//! the generator and nothing else (ADR-0007).
+//! The JavaScript glue: a Rust module rendered from the description, so a
+//! new entry point in the boundary crate reaches JavaScript by running the
+//! generator and nothing else (ADR-0007). Two [`Backend`]s render it: napi
+//! for the Node addon and wasm-bindgen for the wasm package
+//! (`03-design/wasm-binding.md` §3). The marshalling is emitted once and
+//! the backend supplies only the spellings that differ, so both expose
+//! **the same `native` object**, member for member, and one `index.js`
+//! serves both.
 //!
 //! Every decision is driven by a parameter's or a field's role, never by a
 //! function's name: a handle becomes the class, a struct in an object the
@@ -22,7 +27,7 @@ use crate::emit::{DocStyle, field_doc_with, line_comment};
 use crate::model::{
     Api, EnumDef, FieldDef, FunctionDef, OpaqueDef, Role, Scalar, StructDef, StructRole, TypeRef,
 };
-use crate::names::{binding_type_name, pascal, snake};
+use crate::names::{binding_type_name, camel, pascal, snake};
 use crate::rules::{
     FieldRole, Handed, constructor, destructor, field_roles, has_handshake, method_name, methods,
     pointee_opaque, pointee_struct, results, returns_status, status_enum,
@@ -38,39 +43,281 @@ const CRATES: [(&str, &str); 3] = [
     ("core", "core_"),
 ];
 
-/// Renders `generated.rs` for the napi crate.
+/// The toolkit the glue is written for. Everything that differs between
+/// the two is a method here, so the table in `03-design/wasm-binding.md`
+/// §3 is this `impl` and nowhere else.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Backend {
+    /// napi-rs, for the Node addon (`bindings/node/native`).
+    Napi,
+    /// wasm-bindgen, for the wasm package (`bindings/wasm/native`).
+    ///
+    /// Plain objects cross through `serde-wasm-bindgen` with camel-cased
+    /// fields, as napi's `#[napi(object)]` crosses them; a 64-bit integer
+    /// crosses as a number, as napi's does, where wasm-bindgen's own
+    /// mapping would make it a `BigInt`; and a refusal is an `Error` with
+    /// the call's record as `lastError`, as napi's is.
+    WasmBindgen,
+}
+
+impl Backend {
+    /// The `use` lines naming the toolkit.
+    fn prelude(self) -> &'static str {
+        match self {
+            Backend::Napi => "use napi::bindgen_prelude::*;\nuse napi_derive::napi;\n",
+            Backend::WasmBindgen => "use wasm_bindgen::prelude::*;\n",
+        }
+    }
+
+    /// The Rust type bytes cross as: a `Buffer`, or the `Uint8Array`
+    /// wasm-bindgen makes of a `Vec<u8>`.
+    fn bytes(self) -> &'static str {
+        match self {
+            Backend::Napi => "Buffer",
+            Backend::WasmBindgen => "Vec<u8>",
+        }
+    }
+
+    /// Bytes owned as a `Vec<u8>`, as the crossing type.
+    fn bytes_from(self, vec: &str) -> String {
+        match self {
+            Backend::Napi => format!("Buffer::from({vec})"),
+            Backend::WasmBindgen => vec.to_string(),
+        }
+    }
+
+    /// A scalar as a JavaScript number. napi crosses a 64-bit integer as a
+    /// number; wasm-bindgen would cross it as a `BigInt`, so it is an
+    /// `f64` here and the glue casts. A JavaScript number holds every
+    /// value the SDK produces at those sizes exactly; one needing more
+    /// would need the description to say so.
+    fn scalar(self, scalar: Scalar) -> &'static str {
+        match (self, scalar) {
+            (_, Scalar::Bool) => "bool",
+            (_, Scalar::I8 | Scalar::I16 | Scalar::I32) => "i32",
+            (_, Scalar::U8 | Scalar::U16 | Scalar::U32) => "u32",
+            (Backend::Napi, Scalar::I64 | Scalar::Isize | Scalar::U64 | Scalar::Usize) => "i64",
+            (_, _) => "f64",
+        }
+    }
+
+    /// The attributes of a plain object. napi's `Buffer` is neither
+    /// `Clone` nor `Debug`, so a napi object holding one derives neither.
+    fn object(self, plain: bool) -> &'static str {
+        match (self, plain) {
+            (Backend::Napi, true) => "#[napi(object)]\n#[derive(Clone, Debug)]\n",
+            (Backend::Napi, false) => "#[napi(object)]\n",
+            (Backend::WasmBindgen, _) => {
+                "#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]\n#[serde(rename_all = \"camelCase\")]\n"
+            }
+        }
+    }
+
+    /// A field's own attributes in an object: none for napi; for serde,
+    /// an absent value is left out rather than written as `undefined`, as
+    /// napi leaves it out, and bytes cross as a `Uint8Array`.
+    fn field(self, ty: &str) -> &'static str {
+        match self {
+            Backend::WasmBindgen if ty.starts_with("Option<") => {
+                "    #[serde(skip_serializing_if = \"Option::is_none\")]\n"
+            }
+            Backend::WasmBindgen if ty == "Vec<u8>" => "    #[serde(with = \"serde_bytes\")]\n",
+            Backend::Napi | Backend::WasmBindgen => "",
+        }
+    }
+
+    /// The attribute on a class, and on its `impl`.
+    fn class(self) -> &'static str {
+        match self {
+            Backend::Napi => "#[napi]",
+            Backend::WasmBindgen => "#[wasm_bindgen]",
+        }
+    }
+
+    /// The attribute on an exported function or method. napi camel-cases
+    /// the Rust name itself; wasm-bindgen is told the name.
+    fn export(self, rust_name: &str) -> String {
+        match self {
+            Backend::Napi => String::from("#[napi]"),
+            Backend::WasmBindgen => format!("#[wasm_bindgen(js_name = {})]", camel(rust_name)),
+        }
+    }
+
+    /// The attribute on the class's constructor.
+    fn constructor(self) -> &'static str {
+        match self {
+            Backend::Napi => "#[napi(constructor)]",
+            Backend::WasmBindgen => "#[wasm_bindgen(constructor)]",
+        }
+    }
+
+    /// The attribute on a second way to build the class: a static method.
+    fn factory(self, rust_name: &str) -> String {
+        match self {
+            Backend::Napi => String::from("#[napi(factory)]"),
+            Backend::WasmBindgen => self.export(rust_name),
+        }
+    }
+
+    /// Whether a call takes napi's environment. It is how napi builds an
+    /// error object and lends the host provider its callback; wasm has
+    /// neither need.
+    fn env(self) -> bool {
+        self == Backend::Napi
+    }
+
+    /// A parameter that is a plain object as the exported function takes
+    /// it, and the line making the object of it. napi converts the
+    /// argument itself; wasm-bindgen is handed a `JsValue`, which serde
+    /// reads.
+    fn object_param(self, name: &str, ty: &str) -> (String, String) {
+        match self {
+            Backend::Napi => (format!("{name}: {ty}"), String::new()),
+            Backend::WasmBindgen => (
+                format!("{name}: JsValue"),
+                format!("        let {name}: {ty} = from_js({name})?;\n"),
+            ),
+        }
+    }
+
+    /// The type an object is returned as, and the expression returning
+    /// it.
+    fn returned_object(self, ty: &str, value: &str) -> (String, String) {
+        match self {
+            Backend::Napi => (ty.to_string(), value.to_string()),
+            Backend::WasmBindgen => (String::from("JsValue"), format!("to_js(&{value})?")),
+        }
+    }
+
+    /// How an error carrying a record is made, from `message` and
+    /// `record` in scope: napi builds it in the environment; the wasm
+    /// prelude's `thrown` sets `lastError` on a JavaScript `Error`.
+    ///
+    /// `err` wraps the error in `Err(…)`, for a body that returns it.
+    fn thrown(self, indent: &str, err: bool) -> String {
+        let (open, close) = if err { ("Err(", ")") } else { ("", "") };
+        match self {
+            Backend::Napi => format!(
+                "{indent}let thrown = env.create_error(Error::from_reason(message)).and_then(|mut error| {{\n{indent}    error.set_named_property(\"lastError\", record)?;\n{indent}    Ok(Error::from(error.to_unknown()))\n{indent}}});\n{indent}{open}thrown.unwrap_or_else(|failed| failed){close}"
+            ),
+            Backend::WasmBindgen => format!("{indent}{open}thrown(message, &record){close}"),
+        }
+    }
+}
+
+/// Renders `generated.rs` for a backend's crate.
 #[must_use]
-pub fn render(api: &Api) -> String {
+pub fn render(api: &Api, backend: Backend) -> String {
+    let b = backend;
+    let built = built_for(api, b);
+    let api = &built;
     let mut out = String::new();
     let _ = writeln!(
         out,
-        "//! Generated by `cargo xtask gen ffi` from the Teistro SDK's boundary\n//! crates; do not edit. ABI version {}, SDK {}.\n//!\n//! The `unsafe` calls into the C ABI live here, each with a SAFETY\n//! comment; the contract is `idl/api.json`.\n#![allow(\n    unsafe_code,\n    missing_docs,\n    missing_debug_implementations,\n    unreachable_pub,\n    dead_code,\n    unused_mut,\n    clippy::all,\n    clippy::pedantic,\n    reason = \"generated glue; the contract is the API description\"\n)]\n\nuse core::ffi::c_char;\nuse core::ffi::CStr;\nuse core::ptr;\n\nuse napi::bindgen_prelude::*;\nuse napi_derive::napi;\nuse teistro_core as core_;\nuse teistro_ffi as ffi;\nuse teistro_port_ephemeris as port;\n",
-        api.abi_version, api.sdk_version
+        "//! Generated by `cargo xtask gen ffi` from the Teistro SDK's boundary\n//! crates; do not edit. ABI version {}, SDK {}.\n//!\n//! The `unsafe` calls into the C ABI live here, each with a SAFETY\n//! comment; the contract is `idl/api.json`.\n#![allow(\n    unsafe_code,\n    missing_docs,\n    missing_debug_implementations,\n    unreachable_pub,\n    dead_code,\n    unused_mut,\n    clippy::all,\n    clippy::pedantic,\n    reason = \"generated glue; the contract is the API description\"\n)]\n\nuse core::ffi::c_char;\nuse core::ffi::CStr;\nuse core::ptr;\n\n{}use teistro_core as core_;\nuse teistro_ffi as ffi;\nuse teistro_port_ephemeris as port;\n",
+        api.abi_version,
+        api.sdk_version,
+        b.prelude()
     );
+    if b == Backend::WasmBindgen {
+        out.push_str(WASM_PRELUDE);
+    }
     out.push_str(HELPERS);
+    render_blob_helper(&mut out, b);
+    out.push_str(STRING_HELPER);
     let enums = enums_at_the_boundary(api);
     for e in api.enums.iter().filter(|e| enums.contains(&e.name)) {
         render_enum_conversions(&mut out, e);
     }
     let objects = objects_at_the_boundary(api);
     for s in api.structs.iter().filter(|s| objects.contains(&s.name)) {
-        render_object(&mut out, api, s);
+        render_object(&mut out, api, s, b);
     }
-    render_last_error_object(&mut out, api);
-    let _ = &objects;
+    render_last_error_object(&mut out, api, b);
     for f in &api.functions {
         if results(api, f).len() > 1 {
-            render_result_object(&mut out, api, f);
+            render_result_object(&mut out, api, f, b);
         }
     }
     for o in &api.opaques {
-        render_class(&mut out, api, o);
+        render_class(&mut out, api, o, b);
     }
     for f in free_functions(api) {
-        render_free_function(&mut out, api, f);
+        render_free_function(&mut out, api, f, b);
     }
     out
 }
+
+/// The description as the backend's target builds it. A wasm module has
+/// no plugin loader (ADR-0029), so the functions the description marks
+/// native-only are not in it, nor is a handle only they make or take.
+fn built_for(api: &Api, b: Backend) -> Api {
+    let mut api = api.clone();
+    if b == Backend::WasmBindgen {
+        api.functions.retain(|f| !f.native_only);
+        let taken: BTreeSet<String> = api
+            .functions
+            .iter()
+            .flat_map(|f| &f.params)
+            .filter_map(|p| pointee_opaque(&api, p).map(|o| o.name.clone()))
+            .collect();
+        api.opaques.retain(|o| taken.contains(&o.name));
+    }
+    api
+}
+
+/// What the wasm glue needs that napi's prelude has: its `Result` and
+/// `Error::from_reason`, so the marshalling is the same text for both,
+/// and serde's crossing of a plain object each way.
+const WASM_PRELUDE: &str = r#"
+/// A refusal, as JavaScript receives it: an `Error`.
+pub struct Error(JsValue);
+
+/// What every exported call returns.
+pub type Result<T> = core::result::Result<T, Error>;
+
+impl Error {
+    /// An `Error` with the sentence given.
+    pub fn from_reason(reason: impl Into<String>) -> Error {
+        Error(js_sys::Error::new(&reason.into()).into())
+    }
+}
+
+impl From<Error> for JsValue {
+    fn from(error: Error) -> JsValue {
+        error.0
+    }
+}
+
+impl From<serde_wasm_bindgen::Error> for Error {
+    fn from(error: serde_wasm_bindgen::Error) -> Error {
+        Error::from_reason(error.to_string())
+    }
+}
+
+/// A plain object read from JavaScript; an absent optional one is `None`.
+fn from_js<T: serde::de::DeserializeOwned>(value: JsValue) -> Result<T> {
+    Ok(serde_wasm_bindgen::from_value(value)?)
+}
+
+/// A plain object as JavaScript receives it; `None` is `undefined`.
+fn to_js<T: serde::Serialize>(value: &T) -> Result<JsValue> {
+    Ok(serde_wasm_bindgen::to_value(value)?)
+}
+
+/// A refusal carrying the call's whole record as `lastError`, which the
+/// ergonomic layer rethrows as a `TeistroError`.
+fn thrown(message: String, record: &LastError) -> Error {
+    let error = js_sys::Error::new(&message);
+    // A record that cannot be written leaves the sentence, which is the
+    // part a reader needs; `LastError` is strings and integers, so it
+    // always can.
+    if let Ok(record) = to_js(record) {
+        let _ = js_sys::Reflect::set(&error, &JsValue::from_str("lastError"), &record);
+    }
+    Error(error.into())
+}
+"#;
 
 /// What every call shares: reading the library's strings and buffers.
 const HELPERS: &str = r"
@@ -102,16 +349,23 @@ unsafe fn slice_or_empty<'a, T>(ptr: *const T, len: usize) -> &'a [T] {
     }
 }
 
-/// The bytes of a blob the library filled, copied into a Buffer and the
-/// blob freed, so nothing of the library's outlives the call.
-fn take_blob(blob: &mut ffi::blob::TsBlob) -> Buffer {
-    // SAFETY: the library wrote `len` bytes at `data`, or left it null.
-    let bytes = unsafe { slice_or_empty(blob.data.cast_const(), blob.len) }.to_vec();
-    // SAFETY: a descriptor this call passed to the library, freed once.
-    unsafe { ffi::blob::ts_blob_free(&raw mut *blob) };
-    Buffer::from(bytes)
+";
+
+/// The blob reader, in the backend's bytes.
+fn render_blob_helper(out: &mut String, b: Backend) {
+    let _ = writeln!(
+        out,
+        "/// The bytes of a blob the library filled, copied into a {} and the\n/// blob freed, so nothing of the library's outlives the call.\nfn take_blob(blob: &mut ffi::blob::TsBlob) -> {} {{\n    // SAFETY: the library wrote `len` bytes at `data`, or left it null.\n    let bytes = unsafe {{ slice_or_empty(blob.data.cast_const(), blob.len) }}.to_vec();\n    // SAFETY: a descriptor this call passed to the library, freed once.\n    unsafe {{ ffi::blob::ts_blob_free(&raw mut *blob) }};\n    {}\n}}",
+        match b {
+            Backend::Napi => "Buffer",
+            Backend::WasmBindgen => "byte array",
+        },
+        b.bytes(),
+        b.bytes_from("bytes")
+    );
 }
 
+const STRING_HELPER: &str = r"
 /// The text of a string the library allocated, copied and the string freed.
 fn take_string(string: &mut ffi::string::TsString) -> String {
     // SAFETY: the library wrote a NUL-terminated string, or left it null.
@@ -324,17 +578,17 @@ fn last_error_struct(api: &Api) -> Option<&StructDef> {
 // ── Results ────────────────────────────────────────────────────────────────
 
 impl Handed<'_> {
-    fn napi_type(&self, api: &Api) -> String {
+    fn js_type(&self, api: &Api, b: Backend) -> String {
         match self {
-            Handed::Returned(scalar) => napi_scalar(*scalar).to_string(),
+            Handed::Returned(scalar) => b.scalar(*scalar).to_string(),
             Handed::Struct(p) => pointee_struct(api, p)
                 .map_or_else(|| String::from("Unknown"), |s| binding_type_name(&s.name)),
-            Handed::Blob(_) => String::from("Buffer"),
+            Handed::Blob(_) => b.bytes().to_string(),
             Handed::Owned(_) | Handed::Lent(_) => String::from("String"),
             Handed::Scalar(p) => {
                 p.ty.pointee()
                     .and_then(TypeRef::as_scalar)
-                    .map_or_else(|| String::from("f64"), |s| napi_scalar(s).to_string())
+                    .map_or_else(|| String::from("f64"), |s| b.scalar(s).to_string())
             }
         }
     }
@@ -364,20 +618,6 @@ impl Handed<'_> {
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-/// The napi spelling of a scalar. A count and a day cross as `f64` and
-/// `i64`, both of which JavaScript numbers hold exactly at the sizes the
-/// SDK produces; a value needing more would need a `BigInt`, and the
-/// description would have to say so.
-fn napi_scalar(scalar: Scalar) -> &'static str {
-    match scalar {
-        Scalar::Bool => "bool",
-        Scalar::F32 | Scalar::F64 => "f64",
-        Scalar::I8 | Scalar::I16 | Scalar::I32 => "i32",
-        Scalar::U8 | Scalar::U16 | Scalar::U32 => "u32",
-        Scalar::I64 | Scalar::Isize | Scalar::U64 | Scalar::Usize => "i64",
-    }
-}
-
 /// The element of an array field.
 fn element(field: &FieldDef) -> Scalar {
     field
@@ -387,8 +627,8 @@ fn element(field: &FieldDef) -> Scalar {
         .unwrap_or(Scalar::U8)
 }
 
-/// The napi type of a struct field, from its role.
-fn napi_field(field: &FieldDef, role: &FieldRole) -> String {
+/// The crossing type of a struct field, from its role.
+fn js_field(field: &FieldDef, role: &FieldRole, b: Backend) -> String {
     let base = match role {
         FieldRole::Flag => String::from("bool"),
         FieldRole::BitSet { .. } => String::from("Vec<String>"),
@@ -396,17 +636,17 @@ fn napi_field(field: &FieldDef, role: &FieldRole) -> String {
             if field.meta.enum_name.is_some() {
                 String::from("Vec<String>")
             } else {
-                format!("Vec<{}>", napi_scalar(element(field)))
+                format!("Vec<{}>", b.scalar(element(field)))
             }
         }
-        FieldRole::FixedBytes { .. } => String::from("Buffer"),
+        FieldRole::FixedBytes { .. } => b.bytes().to_string(),
         FieldRole::Text => String::from("String"),
         FieldRole::Nested { name } => binding_type_name(name),
         FieldRole::Optional { .. } => match &field.ty {
             TypeRef::Struct { name } => format!("Option<{}>", binding_type_name(name)),
-            _ => format!("Option<{}>", plain_napi(field)),
+            _ => format!("Option<{}>", plain(field, b)),
         },
-        _ => plain_napi(field),
+        _ => plain(field, b),
     };
     if field.meta.nullable && !base.starts_with("Option<") {
         format!("Option<{base}>")
@@ -415,12 +655,12 @@ fn napi_field(field: &FieldDef, role: &FieldRole) -> String {
     }
 }
 
-fn plain_napi(field: &FieldDef) -> String {
+fn plain(field: &FieldDef, b: Backend) -> String {
     if field.meta.enum_name.is_some() {
         return String::from("String");
     }
     match &field.ty {
-        TypeRef::Scalar { scalar } => napi_scalar(*scalar).to_string(),
+        TypeRef::Scalar { scalar } => b.scalar(*scalar).to_string(),
         TypeRef::Enum { .. } => String::from("String"),
         TypeRef::Pointer { to, .. } if matches!(**to, TypeRef::Char) => String::from("String"),
         _ => String::from("u32"),
@@ -490,43 +730,38 @@ fn doc(text: &str, indent: &str) -> String {
     line_comment(text, indent, "/// ")
 }
 
-fn render_object(out: &mut String, api: &Api, s: &StructDef) {
+fn render_object(out: &mut String, api: &Api, s: &StructDef, b: Backend) {
     let name = binding_type_name(&s.name);
     let roles = field_roles(api, s);
     let c = struct_path(api, &s.name);
-    // `Buffer` is neither `Clone` nor `Debug`, so an object holding one
-    // derives neither; nothing in the glue needs them.
     let plain = roles
         .iter()
         .all(|r| !matches!(r, FieldRole::FixedBytes { .. }));
-    let derives = if plain {
-        "#[derive(Clone, Debug)]\n"
-    } else {
-        ""
-    };
     let _ = writeln!(
         out,
-        "{}#[napi(object)]\n{derives}pub struct {name} {{",
-        doc(&s.doc, "")
+        "{}{}pub struct {name} {{",
+        doc(&s.doc, ""),
+        b.object(plain)
     );
     for (f, role) in s.fields.iter().zip(&roles) {
         if !role.is_shown() {
             continue;
         }
+        let ty = js_field(f, role, b);
         let _ = writeln!(
             out,
-            "{}    pub {}: {},",
+            "{}{}    pub {}: {ty},",
             doc(
                 &field_doc_with(f, DocStyle::Prose, f.meta.enum_name.as_deref()),
                 "    "
             ),
+            b.field(&ty),
             snake(&f.name),
-            napi_field(f, role)
         );
     }
     let _ = writeln!(out, "}}\n");
     render_held(out, api, s, &roles, &name, &c);
-    render_read_write(out, api, s, &roles, &name, &c);
+    render_read_write(out, api, s, &roles, &name, &c, b);
 }
 
 /// The value that owns whatever the C struct points at.
@@ -623,6 +858,7 @@ fn render_read_write(
     roles: &[FieldRole],
     name: &str,
     c: &str,
+    b: Backend,
 ) {
     let _ = writeln!(
         out,
@@ -673,7 +909,11 @@ fn render_read_write(
             FieldRole::Nested { .. } => format!("self.{field}.read()?"),
             FieldRole::Column => format!("self.{field}.iter().map(|v| *v as _).collect()"),
             FieldRole::FixedBytes { len } => format!(
-                "self.{field}\n                .as_ref()\n                .try_into()\n                .map_err(|_| Error::from_reason(\"`{field}` takes exactly {len} bytes\"))?"
+                "self.{field}\n                .{}()\n                .try_into()\n                .map_err(|_| Error::from_reason(\"`{field}` takes exactly {len} bytes\"))?",
+                match b {
+                    Backend::Napi => "as_ref",
+                    Backend::WasmBindgen => "as_slice",
+                }
             ),
             FieldRole::Value => {
                 if let Some(enum_name) = &f.meta.enum_name {
@@ -707,13 +947,13 @@ fn render_read_write(
             out,
             "            {}: {},",
             snake(&f.name),
-            write_value(api, f, role)
+            write_value(api, f, role, b)
         );
     }
     let _ = writeln!(out, "        }}\n    }}\n}}\n");
 }
 
-fn write_value(api: &Api, f: &FieldDef, role: &FieldRole) -> String {
+fn write_value(api: &Api, f: &FieldDef, role: &FieldRole, b: Backend) -> String {
     let field = &f.name;
     match role {
         FieldRole::Flag => format!("raw.{field} != 0"),
@@ -744,7 +984,7 @@ fn write_value(api: &Api, f: &FieldDef, role: &FieldRole) -> String {
             )
         }
         FieldRole::Column => format!("Vec::new() /* `{field}` is filled by the caller */"),
-        FieldRole::FixedBytes { .. } => format!("Buffer::from(raw.{field}.to_vec())"),
+        FieldRole::FixedBytes { .. } => b.bytes_from(&format!("raw.{field}.to_vec()")),
         FieldRole::Text => {
             let read = format!("unsafe {{ lent_text(raw.{field}) }}");
             if f.meta.nullable {
@@ -790,7 +1030,19 @@ fn write_value(api: &Api, f: &FieldDef, role: &FieldRole) -> String {
     }
 }
 
-fn render_last_error_object(out: &mut String, api: &Api) {
+/// The fields of `LastError`, as the ergonomic layer reads them.
+const LAST_ERROR_FIELDS: [(&str, &str); 8] = [
+    ("status", "String"),
+    ("code", "i32"),
+    ("provider_code", "i32"),
+    ("message", "Option<String>"),
+    ("detail", "Option<String>"),
+    ("field", "Option<String>"),
+    ("hint", "Option<String>"),
+    ("message_key", "Option<String>"),
+];
+
+fn render_last_error_object(out: &mut String, api: &Api, b: Backend) {
     let Some(status) = status_enum(api) else {
         return;
     };
@@ -799,32 +1051,43 @@ fn render_last_error_object(out: &mut String, api: &Api) {
         return;
     };
     let c = struct_path(api, &error.name);
+    let fields = LAST_ERROR_FIELDS
+        .iter()
+        .fold(String::new(), |mut fields, (name, ty)| {
+            let _ = writeln!(fields, "{}    pub {name}: {ty},", b.field(ty));
+            fields
+        });
     let _ = writeln!(
         out,
-        "/// The outcome of the last call on a context, as the ergonomic layer\n/// rethrows it: the status by name and by code, the provider's own code,\n/// and the message, detail, field, hint and message key the library gave.\n#[napi(object)]\n#[derive(Clone, Debug)]\npub struct LastError {{\n    pub status: String,\n    pub code: i32,\n    pub provider_code: i32,\n    pub message: Option<String>,\n    pub detail: Option<String>,\n    pub field: Option<String>,\n    pub hint: Option<String>,\n    pub message_key: Option<String>,\n}}\n\nimpl LastError {{\n    /// # Safety\n    ///\n    /// Every pointer in `raw` must be a string the context lent for this\n    /// call, or null.\n    unsafe fn of(raw: &{c}) -> Self {{\n        // SAFETY: the caller's contract.\n        unsafe {{\n            LastError {{\n                status: {to}(raw.status),\n                code: raw.status,\n                provider_code: raw.provider_code,\n                message: lent_text(raw.message),\n                detail: lent_text(raw.detail),\n                field: lent_text(raw.field),\n                hint: lent_text(raw.hint),\n                message_key: lent_text(raw.key),\n            }}\n        }}\n    }}\n}}\n"
+        "/// The outcome of the last call on a context, as the ergonomic layer\n/// rethrows it: the status by name and by code, the provider's own code,\n/// and the message, detail, field, hint and message key the library gave.\n{}pub struct LastError {{\n{fields}}}\n\nimpl LastError {{\n    /// # Safety\n    ///\n    /// Every pointer in `raw` must be a string the context lent for this\n    /// call, or null.\n    unsafe fn of(raw: &{c}) -> Self {{\n        // SAFETY: the caller's contract.\n        unsafe {{\n            LastError {{\n                status: {to}(raw.status),\n                code: raw.status,\n                provider_code: raw.provider_code,\n                message: lent_text(raw.message),\n                detail: lent_text(raw.detail),\n                field: lent_text(raw.field),\n                hint: lent_text(raw.hint),\n                message_key: lent_text(raw.key),\n            }}\n        }}\n    }}\n}}\n",
+        b.object(true)
     );
     let Some(free) = crate::rules::error_free(api) else {
         return;
     };
     let _ = writeln!(
         out,
-        "/// A refusal to build a handle, as the error this addon throws: the\n/// library's own sentence, with its whole record kept as `lastError` so\n/// the ergonomic layer rethrows it as the same `TeistroError` a context's\n/// refusal becomes. The record's strings are the library's, released here.\nfn refused(env: &Env, raw: &mut {c}) -> Error {{\n    // SAFETY: a record the library wrote for this call, or left zeroed.\n    let record = unsafe {{ LastError::of(raw) }};\n    // SAFETY: the same record, released once; a lent or zeroed one is ignored.\n    {};\n    let message = record.message.clone().unwrap_or_else(|| {{\n        // SAFETY: the library returns a static NUL-terminated string.\n        unsafe {{ lent_text(ffi::ts_status_message(record.code)) }}.unwrap_or_default()\n    }});\n    let thrown = env.create_error(Error::from_reason(message)).and_then(|mut error| {{\n        error.set_named_property(\"lastError\", record)?;\n        Ok(Error::from(error.to_unknown()))\n    }});\n    thrown.unwrap_or_else(|failed| failed)\n}}\n",
-        call_expression(free, "&raw mut *raw")
+        "/// A refusal to build a handle, as the error this addon throws: the\n/// library's own sentence, with its whole record kept as `lastError` so\n/// the ergonomic layer rethrows it as the same `TeistroError` a context's\n/// refusal becomes. The record's strings are the library's, released here.\nfn refused({}raw: &mut {c}) -> Error {{\n    // SAFETY: a record the library wrote for this call, or left zeroed.\n    let record = unsafe {{ LastError::of(raw) }};\n    // SAFETY: the same record, released once; a lent or zeroed one is ignored.\n    {};\n    let message = record.message.clone().unwrap_or_else(|| {{\n        // SAFETY: the library returns a static NUL-terminated string.\n        unsafe {{ lent_text(ffi::ts_status_message(record.code)) }}.unwrap_or_default()\n    }});\n{}\n}}\n",
+        if b.env() { "env: &Env, " } else { "" },
+        call_expression(free, "&raw mut *raw"),
+        b.thrown("    ", false)
     );
 }
 
-fn render_result_object(out: &mut String, api: &Api, f: &FunctionDef) {
+fn render_result_object(out: &mut String, api: &Api, f: &FunctionDef, b: Backend) {
     let name = format!(
         "{}Result",
         pascal(f.name.strip_prefix(&api.prefix).unwrap_or(&f.name))
     );
     let _ = writeln!(
         out,
-        "/// What `{}` hands back.\n#[napi(object)]\n#[derive(Clone, Debug)]\npub struct {name} {{",
-        f.name
+        "/// What `{}` hands back.\n{}pub struct {name} {{",
+        f.name,
+        b.object(true)
     );
     for r in results(api, f) {
-        let _ = writeln!(out, "    pub {}: {},", r.name(), r.napi_type(api));
+        let ty = r.js_type(api, b);
+        let _ = writeln!(out, "{}    pub {}: {ty},", b.field(&ty), r.name());
     }
     let _ = writeln!(out, "}}\n");
 }
@@ -844,7 +1107,7 @@ struct Call {
     clippy::too_many_lines,
     reason = "one arm per parameter role; splitting the table would hide it"
 )]
-fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>) -> Call {
+fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>, b: Backend) -> Call {
     let mut params = Vec::new();
     let mut setup = String::new();
     let mut args = Vec::new();
@@ -900,7 +1163,7 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>) -> Call {
                         args.push(name);
                     }
                     (None, TypeRef::Scalar { scalar }) => {
-                        params.push(format!("{name}: {}", napi_scalar(*scalar)));
+                        params.push(format!("{name}: {}", b.scalar(*scalar)));
                         args.push(format!("{name} as {}", scalar.rust_name()));
                     }
                     _ => {}
@@ -912,13 +1175,17 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>) -> Call {
                 };
                 let ty = binding_type_name(&s.name);
                 if optional_struct {
-                    params.push(format!("{name}: Option<{ty}>"));
+                    let (param, read) = b.object_param(&name, &format!("Option<{ty}>"));
+                    params.push(param);
+                    setup.push_str(&read);
                     let _ = writeln!(
                         setup,
                         "        let held_{name} = {name}.map(|v| v.read()).transpose()?;\n        let raw_{name} = held_{name}.as_ref().map(Held{ty}::as_c);\n        let {name} = raw_{name}.as_ref().map_or(ptr::null(), |v| &raw const *v);"
                     );
                 } else {
-                    params.push(format!("{name}: {ty}"));
+                    let (param, read) = b.object_param(&name, &ty);
+                    params.push(param);
+                    setup.push_str(&read);
                     let _ = writeln!(
                         setup,
                         "        let held_{name} = {name}.read()?;\n        let raw_{name} = held_{name}.as_c();\n        let {name} = &raw const raw_{name};"
@@ -987,7 +1254,7 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>) -> Call {
                 args.push(format!("{name}.as_ptr()"));
             }
             Role::BytesIn => {
-                params.push(format!("{name}: Buffer"));
+                params.push(format!("{name}: {}", b.bytes()));
                 last_pointer.clone_from(&name);
                 args.push(format!("{name}.as_ptr()"));
             }
@@ -998,12 +1265,14 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>) -> Call {
             }
             Role::Length => args.push(format!("{last_pointer}.len()")),
             Role::VtableIn => {
-                params.push(String::from(
-                    "provider: Option<crate::provider::ProviderInfo>",
-                ));
-                params.push(String::from(
-                    "provider_positions: Option<Function<FnArgs<(PositionRequest,)>, Option<PositionColumns>>>",
-                ));
+                let (info, read) =
+                    b.object_param("provider", "Option<crate::provider::ProviderInfo>");
+                params.push(info);
+                params.push(String::from(match b {
+                    Backend::Napi => "provider_positions: Option<Function<FnArgs<(PositionRequest,)>, Option<PositionColumns>>>",
+                    Backend::WasmBindgen => "provider_positions: Option<js_sys::Function>",
+                }));
+                setup.push_str(&read);
                 let _ = writeln!(
                     setup,
                     "        let host = match (provider, provider_positions) {{\n            (Some(info), Some(callback)) => Some(crate::provider::Host::bind(info, &callback)?),\n            (None, None) => None,\n            _ => {{\n                return Err(Error::from_reason(\n                    \"a provider needs both its description and its positions callback\",\n                ));\n            }}\n        }};\n        let (host_vtable, user_data) = crate::provider::parts(host.as_ref());\n        let {name} = host_vtable.as_ref().map_or(ptr::null(), |v| &raw const *v);"
@@ -1014,7 +1283,7 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>) -> Call {
             Role::BlobFree | Role::StringFree | Role::ErrorFree => {}
         }
     }
-    let (returns, finish) = call_outputs(api, f);
+    let (returns, finish) = call_outputs(api, f, b);
     Call {
         params,
         setup,
@@ -1026,35 +1295,47 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>) -> Call {
 
 /// What a call hands back, and the lines that build it: nothing, the one
 /// value it produces, or an object of the several it produces.
-fn call_outputs(api: &Api, f: &FunctionDef) -> (String, String) {
+fn call_outputs(api: &Api, f: &FunctionDef, b: Backend) -> (String, String) {
     let handed = results(api, f);
     let single = if handed.len() == 1 {
         handed.first()
     } else {
         None
     };
-    let returns = match (handed.is_empty(), single) {
-        (true, _) => String::from("()"),
-        (false, Some(one)) => one.napi_type(api),
-        (false, None) => format!(
-            "{}Result",
-            pascal(f.name.strip_prefix(&api.prefix).unwrap_or(&f.name))
-        ),
-    };
     let mut finish = String::new();
-    match (handed.is_empty(), single) {
-        (true, _) => finish.push_str("        Ok(())\n"),
+    let returns = match (handed.is_empty(), single) {
+        (true, _) => {
+            finish.push_str("        Ok(())\n");
+            String::from("()")
+        }
+        (false, Some(one @ Handed::Struct(_))) => {
+            let (returns, value) = b.returned_object(&one.js_type(api, b), &one.expression(api));
+            let _ = writeln!(finish, "        Ok({value})");
+            returns
+        }
         (false, Some(one)) => {
             let _ = writeln!(finish, "        Ok({})", one.expression(api));
+            one.js_type(api, b)
         }
         (false, None) => {
-            let _ = writeln!(finish, "        Ok({returns} {{");
+            let object = format!(
+                "{}Result",
+                pascal(f.name.strip_prefix(&api.prefix).unwrap_or(&f.name))
+            );
+            let mut built = format!("{object} {{\n");
             for r in &handed {
-                let _ = writeln!(finish, "            {}: {},", r.name(), r.expression(api));
+                let _ = writeln!(built, "            {}: {},", r.name(), r.expression(api));
             }
-            let _ = writeln!(finish, "        }})");
+            built.push_str("        }");
+            let (returns, value) = b.returned_object(&object, "handed");
+            if b == Backend::Napi {
+                let _ = writeln!(finish, "        Ok({built})");
+            } else {
+                let _ = writeln!(finish, "        let handed = {built};\n        Ok({value})");
+            }
+            returns
         }
-    }
+    };
     (returns, finish)
 }
 
@@ -1080,7 +1361,7 @@ fn zeroed(path: &str, binding: &str, handshake: bool) -> String {
     )
 }
 
-fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef) {
+fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef, b: Backend) {
     let name = binding_type_name(&opaque.name);
     let c = struct_path(api, &opaque.name);
     let host = takes_host(api, opaque);
@@ -1096,25 +1377,26 @@ fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     };
     let _ = writeln!(
         out,
-        "{}#[napi]\npub struct {name} {{\n    handle: *mut {c},{field}\n}}\n\n// SAFETY: a context is used by one thread at a time, which is the contract\n// the boundary documents; a worker thread builds its own.\nunsafe impl Send for {name} {{}}\n\n#[napi]\nimpl {name} {{",
-        doc(&opaque.doc, "")
+        "{}{class}\npub struct {name} {{\n    handle: *mut {c},{field}\n}}\n\n// SAFETY: a context is used by one thread at a time, which is the contract\n// the boundary documents; a worker thread builds its own.\nunsafe impl Send for {name} {{}}\n\n{class}\nimpl {name} {{",
+        doc(&opaque.doc, ""),
+        class = b.class()
     );
     if let Some(ctor) = constructor(api, opaque) {
-        render_constructor(out, api, ctor, &name, host);
+        render_constructor(out, api, ctor, &name, host, b);
     }
     for factory in crate::rules::factories(api, opaque) {
-        render_factory(out, api, factory, opaque, &name, host);
+        render_factory(out, api, factory, opaque, &name, host, b);
     }
-    render_last_error_method(out, api, opaque);
-    render_check(out, api, opaque);
+    render_last_error_method(out, api, opaque, b);
+    render_check(out, api, opaque, b);
     if host {
-        render_host_helpers(out);
+        render_host_helpers(out, b);
     }
     for m in methods(api, opaque) {
-        render_method(out, api, opaque, m, host);
+        render_method(out, api, opaque, m, host, b);
     }
     if let Some(free) = destructor(api, opaque) {
-        render_dispose(out, free);
+        render_dispose(out, free, b);
     }
     let _ = writeln!(out, "}}\n");
     if let Some(free) = destructor(api, opaque) {
@@ -1136,26 +1418,43 @@ fn render_class(out: &mut String, api: &Api, opaque: &OpaqueDef) {
 /// only when the garbage collector gets to it. The handle is nulled
 /// rather than left dangling, and the boundary refuses a null handle with
 /// `INVALID_ARG`, so a call after `dispose` is a clean refusal.
-fn render_dispose(out: &mut String, free: &FunctionDef) {
+fn render_dispose(out: &mut String, free: &FunctionDef, b: Backend) {
     let _ = writeln!(
         out,
-        "\n    /// Frees the handle's native memory now, rather than when the\n    /// collector gets to it. Calling it twice is allowed, and a call on a\n    /// disposed handle is refused with `INVALID_ARG`.\n    #[napi]\n    pub fn dispose(&mut self) {{\n        if self.handle.is_null() {{\n            return;\n        }}\n        // SAFETY: the handle came from the constructor and is freed once;\n        // nulling it here is what makes that true.\n        {};\n        self.handle = std::ptr::null_mut();\n    }}",
+        "\n    /// Frees the handle's native memory now, rather than when the\n    /// collector gets to it. Calling it twice is allowed, and a call on a\n    /// disposed handle is refused with `INVALID_ARG`.\n    {}\n    pub fn dispose(&mut self) {{\n        if self.handle.is_null() {{\n            return;\n        }}\n        // SAFETY: the handle came from the constructor and is freed once;\n        // nulling it here is what makes that true.\n        {};\n        self.handle = std::ptr::null_mut();\n    }}",
+        b.export("dispose"),
         call_expression(free, "self.handle")
     );
 }
 
-fn render_constructor(out: &mut String, api: &Api, ctor: &FunctionDef, name: &str, host: bool) {
-    let mut call = build_call(api, ctor, None);
-    call.params.insert(0, String::from("env: Env"));
+fn render_constructor(
+    out: &mut String,
+    api: &Api,
+    ctor: &FunctionDef,
+    name: &str,
+    host: bool,
+    b: Backend,
+) {
+    let mut call = build_call(api, ctor, None, b);
+    if b.env() {
+        call.params.insert(0, String::from("env: Env"));
+    }
     let built = if host { ", host" } else { "" };
     let _ = writeln!(
         out,
-        "{}    #[napi(constructor)]\n    pub fn new({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            return Err(refused(&env, &mut out_error));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
+        "{}    {}\n    pub fn new({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            return Err(refused({}&mut out_error));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
         doc(&ctor.doc, "    "),
+        b.constructor(),
         call.params.join(", "),
         call.setup,
-        call_expression(ctor, &call.args.join(", "))
+        call_expression(ctor, &call.args.join(", ")),
+        refused_env(b)
     );
+}
+
+/// The environment `refused` takes, where the backend has one.
+fn refused_env(b: Backend) -> &'static str {
+    if b.env() { "&env, " } else { "" }
 }
 
 /// A second way to build the class: a static factory.
@@ -1172,9 +1471,12 @@ fn render_factory(
     opaque: &OpaqueDef,
     name: &str,
     host: bool,
+    b: Backend,
 ) {
-    let mut call = build_call(api, f, Some(&opaque.name));
-    call.params.insert(0, String::from("env: Env"));
+    let mut call = build_call(api, f, Some(&opaque.name), b);
+    if b.env() {
+        call.params.insert(0, String::from("env: Env"));
+    }
     // A factory does not bind a host-implemented port: the provider it is
     // given is already a handle the boundary owns. The field is still on
     // the struct, so it is filled with nothing.
@@ -1182,11 +1484,13 @@ fn render_factory(
     let method = crate::rules::method_name(api, opaque, f);
     let _ = writeln!(
         out,
-        "{}    #[napi(factory)]\n    pub fn {method}({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            return Err(refused(&env, &mut out_error));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
+        "{}    {}\n    pub fn {method}({}) -> Result<Self> {{\n{}        // SAFETY: every pointer is valid for the call; the handle is owned\n        // from here and freed once, in `Drop`.\n        let status = {};\n        if status != core_::Status::Ok {{\n            return Err(refused({}&mut out_error));\n        }}\n        Ok({name} {{ handle{built} }})\n    }}\n",
         doc(&f.doc, "    "),
+        b.factory(&method),
         call.params.join(", "),
         call.setup,
-        call_expression(f, &call.args.join(", "))
+        call_expression(f, &call.args.join(", ")),
+        refused_env(b)
     );
 }
 
@@ -1199,14 +1503,20 @@ fn takes_host(api: &Api, opaque: &OpaqueDef) -> bool {
 /// The two lines every call of a class with a host runs: the environment
 /// is lent for the length of the call and taken back after it, so a
 /// callback that escaped finds nothing to call into.
-fn render_host_helpers(out: &mut String) {
+fn render_host_helpers(out: &mut String, b: Backend) {
+    let (param, arg) = if b.env() {
+        ("env: Env", "env")
+    } else {
+        ("", "")
+    };
     let _ = writeln!(
         out,
-        "    /// Lends the environment to the host provider for one call.\n    fn enter(&self, env: Env) {{\n        if let Some(host) = self.host.as_ref() {{\n            host.enter(env);\n        }}\n    }}\n\n    /// Takes it back, and reports what the provider threw.\n    fn leave(&self) -> Result<()> {{\n        match self.host.as_ref() {{\n            Some(host) => host.leave(),\n            None => Ok(()),\n        }}\n    }}\n"
+        "    /// Lends the environment to the host provider for one call.\n    fn enter(&self{}{param}) {{\n        if let Some(host) = self.host.as_ref() {{\n            host.enter({arg});\n        }}\n    }}\n\n    /// Takes it back, and reports what the provider threw.\n    fn leave(&self) -> Result<()> {{\n        match self.host.as_ref() {{\n            Some(host) => host.leave(),\n            None => Ok(()),\n        }}\n    }}\n",
+        if b.env() { ", " } else { "" }
     );
 }
 
-fn render_last_error_method(out: &mut String, api: &Api, opaque: &OpaqueDef) {
+fn render_last_error_method(out: &mut String, api: &Api, opaque: &OpaqueDef, b: Backend) {
     // This opaque's own reader, matched by the handle it takes: a second
     // opaque type without one must not inherit the first's.
     let Some(reader) = crate::rules::last_error(api, opaque) else {
@@ -1222,15 +1532,28 @@ fn render_last_error_method(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     };
     let _ = writeln!(
         out,
-        "    /// The outcome of the last call on this context, which the layer\n    /// above rethrows with its field, its hint and its code.\n    #[napi]\n    pub fn last_error(&self) -> Option<LastError> {{\n{}\n        // SAFETY: a live handle and a valid struct with its size set.\n        let status = {};\n        if status != core_::Status::Ok || raw.status == 0 {{\n            return None;\n        }}\n        // SAFETY: the strings are the ones this context lent just now.\n        Some(unsafe {{ LastError::of(&raw) }})\n    }}\n",
+        "    /// The outcome of the last call on this context, which the layer\n    /// above rethrows with its field, its hint and its code.\n    {}fn last_error(&self) -> Option<LastError> {{\n{}\n        // SAFETY: a live handle and a valid struct with its size set.\n        let status = {};\n        if status != core_::Status::Ok || raw.status == 0 {{\n            return None;\n        }}\n        // SAFETY: the strings are the ones this context lent just now.\n        Some(unsafe {{ LastError::of(&raw) }})\n    }}\n{}",
+        match b {
+            Backend::Napi => "#[napi]\n    pub ",
+            Backend::WasmBindgen => "",
+        },
         zeroed(&struct_path(api, &s.name), "raw", has_handshake(s)),
-        call_expression(reader, "self.handle, &raw mut raw")
+        call_expression(reader, "self.handle, &raw mut raw"),
+        // wasm-bindgen exports what a method returns as it is, so the
+        // record goes out through serde from a method of its own; the
+        // Rust one stays, for `check`.
+        match b {
+            Backend::Napi => "",
+            Backend::WasmBindgen => {
+                "\n    /// The same, as JavaScript reads it: `undefined` when the last call\n    /// succeeded.\n    #[wasm_bindgen(js_name = lastError)]\n    pub fn last_error_js(&self) -> Result<JsValue> {\n        to_js(&self.last_error())\n    }\n"
+            }
+        }
     );
 }
 
 /// The check every method runs: a status other than `Ok` becomes an error
 /// carrying the library's own sentence.
-fn render_check(out: &mut String, api: &Api, opaque: &OpaqueDef) {
+fn render_check(out: &mut String, api: &Api, opaque: &OpaqueDef, b: Backend) {
     // An opaque type with a last-error reader gets the library's own
     // sentence; one without gets the status's, because there is nothing
     // to read it from and inventing a reader is what stopped the addon
@@ -1242,44 +1565,68 @@ fn render_check(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     // whatever the library had refused last. An error that carries the record
     // of the call that failed cannot be confused with one that has none.
     let body = if crate::rules::last_error(api, opaque).is_some() {
-        "        let record = self.last_error();\n        let message = record\n            .as_ref()\n            .and_then(|e| e.message.clone())\n            .unwrap_or_else(|| {\n                // SAFETY: the library returns a static NUL-terminated string.\n                unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default()\n            });\n        let Some(record) = record else {\n            return Err(Error::from_reason(message));\n        };\n        let thrown = env.create_error(Error::from_reason(message)).and_then(|mut error| {\n            error.set_named_property(\"lastError\", record)?;\n            Ok(Error::from(error.to_unknown()))\n        });\n        Err(thrown.unwrap_or_else(|failed| failed))"
+        format!(
+            "        let record = self.last_error();\n        let message = record\n            .as_ref()\n            .and_then(|e| e.message.clone())\n            .unwrap_or_else(|| {{\n                // SAFETY: the library returns a static NUL-terminated string.\n                unsafe {{ lent_text(ffi::ts_status_message(status.code())) }}.unwrap_or_default()\n            }});\n        let Some(record) = record else {{\n            return Err(Error::from_reason(message));\n        }};\n{}",
+            b.thrown("        ", true)
+        )
     } else {
-        "        let _ = env;\n        // SAFETY: the library returns a static NUL-terminated string.\n        let message =\n            unsafe { lent_text(ffi::ts_status_message(status.code())) }.unwrap_or_default();\n        Err(Error::from_reason(message))"
+        format!(
+            "{}        // SAFETY: the library returns a static NUL-terminated string.\n        let message =\n            unsafe {{ lent_text(ffi::ts_status_message(status.code())) }}.unwrap_or_default();\n        Err(Error::from_reason(message))",
+            if b.env() {
+                "        let _ = env;\n"
+            } else {
+                ""
+            }
+        )
     };
     let _ = writeln!(
         out,
-        "    /// Turns a failed call into an error whose message is the library's\n    /// own sentence, with the call's record attached as `lastError`.\n    fn check(&self, env: &Env, status: core_::Status) -> Result<()> {{\n        if status == core_::Status::Ok {{\n            return Ok(());\n        }}\n{body}\n    }}\n"
+        "    /// Turns a failed call into an error whose message is the library's\n    /// own sentence, with the call's record attached as `lastError`.\n    fn check(&self, {}status: core_::Status) -> Result<()> {{\n        if status == core_::Status::Ok {{\n            return Ok(());\n        }}\n{body}\n    }}\n",
+        if b.env() { "env: &Env, " } else { "" }
     );
 }
 
-fn render_method(out: &mut String, api: &Api, opaque: &OpaqueDef, m: &FunctionDef, host: bool) {
+fn render_method(
+    out: &mut String,
+    api: &Api,
+    opaque: &OpaqueDef,
+    m: &FunctionDef,
+    host: bool,
+    b: Backend,
+) {
     if m.name.ends_with("_last_error") {
         return;
     }
     let method = snake(&method_name(api, opaque, m));
-    let call = build_call(api, m, Some(&opaque.name));
+    let call = build_call(api, m, Some(&opaque.name), b);
     let called = call_expression(m, &call.args.join(", "));
     // A call that may reach the host provider brackets itself: the
     // environment is lent before it and taken back after, and what the
     // provider threw is reported in place of the status it turned into.
-    let (lend, take) = if host {
-        ("        self.enter(env);\n", "        self.leave()?;\n")
-    } else {
-        ("", "")
+    let (lend, take) = match (host, b.env()) {
+        (true, true) => ("        self.enter(env);\n", "        self.leave()?;\n"),
+        (true, false) => ("        self.enter();\n", "        self.leave()?;\n"),
+        (false, _) => ("", ""),
     };
     // The environment is taken by a call that lends it to the provider, and
     // by one that can fail, whose error carries its own record.
     let status = returns_status(api, m);
-    let env_param = if host || status { "env: Env, " } else { "" };
+    let env_param = if b.env() && (host || status) {
+        "env: Env, "
+    } else {
+        ""
+    };
+    let env_arg = if b.env() { "&env, " } else { "" };
     let body = if status {
-        format!("        let status = {called};\n{take}        self.check(&env, status)?;")
+        format!("        let status = {called};\n{take}        self.check({env_arg}status)?;")
     } else {
         format!("        let value = {called};\n{take}")
     };
     let _ = writeln!(
         out,
-        "{}    #[napi]\n    pub fn {method}(&self, {env_param}{}) -> Result<{}> {{\n{}{lend}        // SAFETY: the handle is live and every pointer is valid for the call.\n{body}\n{}    }}\n",
+        "{}    {}\n    pub fn {method}(&self, {env_param}{}) -> Result<{}> {{\n{}{lend}        // SAFETY: the handle is live and every pointer is valid for the call.\n{body}\n{}    }}\n",
         doc(&m.doc, "    "),
+        b.export(&method),
         call.params.join(", "),
         call.returns,
         call.setup,
@@ -1287,15 +1634,16 @@ fn render_method(out: &mut String, api: &Api, opaque: &OpaqueDef, m: &FunctionDe
     );
 }
 
-fn render_free_function(out: &mut String, api: &Api, f: &FunctionDef) {
+fn render_free_function(out: &mut String, api: &Api, f: &FunctionDef, b: Backend) {
     let name = snake(f.name.strip_prefix(&api.prefix).unwrap_or(&f.name));
-    let call = build_call(api, f, None);
+    let call = build_call(api, f, None, b);
     let called = call_expression(f, &call.args.join(", "));
     if matches!(&f.returns, Some(TypeRef::Pointer { to, .. }) if matches!(**to, TypeRef::Char)) {
         let _ = writeln!(
             out,
-            "{}#[napi]\npub fn {name}({}) -> Result<String> {{\n{}    // SAFETY: the library returns a static NUL-terminated string.\n    Ok(unsafe {{ lent_text({called}) }}.unwrap_or_default())\n}}\n",
+            "{}{}\npub fn {name}({}) -> Result<String> {{\n{}    // SAFETY: the library returns a static NUL-terminated string.\n    Ok(unsafe {{ lent_text({called}) }}.unwrap_or_default())\n}}\n",
             doc(&f.doc, ""),
+            b.export(&name),
             call.params.join(", "),
             call.setup.replace("        ", "    ")
         );
@@ -1313,9 +1661,122 @@ fn render_free_function(out: &mut String, api: &Api, f: &FunctionDef) {
     };
     let _ = writeln!(
         out,
-        "{}#[napi]\npub fn {name}({}) -> Result<{}> {{\n{setup}    // SAFETY: every pointer is valid for the call.\n{body}\n{finish}}}\n",
+        "{}{}\npub fn {name}({}) -> Result<{}> {{\n{setup}    // SAFETY: every pointer is valid for the call.\n{body}\n{finish}}}\n",
         doc(&f.doc, ""),
+        b.export(&name),
         call.params.join(", "),
         call.returns
     );
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "a test fails by panicking")]
+
+    use std::collections::BTreeSet;
+
+    use super::{Backend, render};
+    use crate::model::Api;
+    use crate::names::camel;
+
+    /// The description the bindings are generated from.
+    fn api() -> Api {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+        serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()
+    }
+
+    /// The JavaScript name of every function and method a rendering
+    /// exports: napi's camel-cased from the Rust name after `#[napi]` or
+    /// `#[napi(factory)]`, wasm-bindgen's as its `js_name` states it.
+    fn exported(glue: &str) -> BTreeSet<String> {
+        let mut names = BTreeSet::new();
+        let mut lines = glue.lines().map(str::trim);
+        while let Some(line) = lines.next() {
+            if let Some(name) = line
+                .strip_prefix("#[wasm_bindgen(js_name = ")
+                .and_then(|rest| rest.strip_suffix(")]"))
+            {
+                names.insert(name.to_string());
+            } else if matches!(line, "#[napi]" | "#[napi(factory)]") {
+                let next = lines.next().unwrap_or_default();
+                if let Some(rest) = next.strip_prefix("pub fn ") {
+                    let rust = rest.split('(').next().unwrap_or_default();
+                    names.insert(camel(rust));
+                }
+            }
+        }
+        names
+    }
+
+    /// The design's one promise: both backends expose the same members,
+    /// so one `index.js` serves both. The only difference is the plugin
+    /// loader, which a wasm module cannot have (ADR-0029).
+    #[test]
+    fn both_backends_export_the_same_members_but_the_loader() {
+        let api = api();
+        let napi = exported(&render(&api, Backend::Napi));
+        let wasm = exported(&render(&api, Backend::WasmBindgen));
+        let only_napi: Vec<&String> = napi.difference(&wasm).collect();
+        let only_wasm: Vec<&String> = wasm.difference(&napi).collect();
+        assert_eq!(only_napi, ["newWithProvider"]);
+        assert!(only_wasm.is_empty(), "{only_wasm:?}");
+        assert!(napi.len() > 40, "{} members read", napi.len());
+    }
+
+    /// No native-only symbol reaches the wasm glue, and every one reaches
+    /// napi's.
+    #[test]
+    fn a_native_only_function_is_left_out_of_the_wasm_glue_alone() {
+        let api = api();
+        let napi = render(&api, Backend::Napi);
+        let wasm = render(&api, Backend::WasmBindgen);
+        let native: Vec<&str> = api
+            .functions
+            .iter()
+            .filter(|f| f.native_only)
+            .map(|f| f.name.as_str())
+            .collect();
+        assert_eq!(native.len(), 3);
+        for name in native {
+            assert!(napi.contains(name), "{name} missing from napi");
+            assert!(!wasm.contains(name), "{name} in the wasm glue");
+        }
+    }
+
+    /// The signatures after an attribute starting `attribute` that name a
+    /// 64-bit integer, each read up to and including its opening brace.
+    fn wide_signatures(glue: &str, attribute: &str) -> Vec<String> {
+        let mut found = Vec::new();
+        let mut lines = glue.lines().map(str::trim);
+        while let Some(line) = lines.next() {
+            if !line.starts_with(attribute) {
+                continue;
+            }
+            let mut signature = String::new();
+            for part in lines.by_ref() {
+                signature.push_str(part);
+                if part.ends_with('{') || part.ends_with(';') {
+                    break;
+                }
+            }
+            if ["i64", "u64", "isize", "usize"].iter().any(|wide| {
+                signature.contains(&format!(": {wide}")) || signature.contains(&format!("<{wide}>"))
+            }) {
+                found.push(signature);
+            }
+        }
+        found
+    }
+
+    /// wasm-bindgen would cross a 64-bit integer as a `BigInt`, where napi
+    /// and `index.js` use a number, so no exported wasm signature names
+    /// one. napi's do, which is what proves the reading sees them.
+    #[test]
+    fn no_wasm_signature_crosses_a_bigint() {
+        let api = api();
+        let wasm = wide_signatures(&render(&api, Backend::WasmBindgen), "#[wasm_bindgen(");
+        assert!(wasm.is_empty(), "{wasm:#?}");
+        let napi = wide_signatures(&render(&api, Backend::Napi), "#[napi");
+        assert!(!napi.is_empty(), "the reading found no napi `i64` either");
+    }
 }

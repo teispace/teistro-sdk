@@ -1,0 +1,49 @@
+[package]
+name = "teistro-wasm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+publish = false
+description = "The Teistro SDK's wasm module: wasm-bindgen glue over the C ABI, generated from the API description"
+
+# `cdylib` is the module wasm-bindgen reads; `rlib` lets the workspace's
+# native lint and test runs build it too, so the glue is checked on every
+# target and not only when a module is made (03-design/wasm-binding.md).
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+js-sys = "0.3"
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+serde_bytes = "0.11"
+teistro-core = { path = "../../../crates/core" }
+teistro-ffi = { path = "../../../crates/ffi" }
+teistro-port-ephemeris = { path = "../../../crates/port-ephemeris" }
+wasm-bindgen = "0.2"
+
+# The module's boundary: the generated glue holds the unsafe calls into the
+# C ABI, each with a SAFETY comment, so unsafe is `deny` rather than the
+# workspace's `forbid`; the rest of the workspace table is kept, as the
+# Node addon keeps it.
+[lints.rust]
+unsafe_code = "deny"
+missing_docs = "warn"
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+unwrap_used = "warn"
+expect_used = "warn"
+panic = "warn"
+unimplemented = "warn"
+todo = "warn"
+dbg_macro = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+indexing_slicing = "warn"
