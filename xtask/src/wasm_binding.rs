@@ -24,6 +24,11 @@
 //! 3. **The same probe under Node**, whose answer the browser's must equal
 //!    to the bit: longitudes as exact text, the settings hash, the
 //!    refusal of a plugin.
+//! 4. **As a consumer installs it**: packed as `npm publish` would pack
+//!    it, installed into an empty project, and asked the four facts the
+//!    Node package's consumer asks, by the same file — so an export left
+//!    out of `files` or a loader the tarball lacks fails here and not in
+//!    the field.
 //!
 //! Run by hand (`cargo xtask check-wasm`) and in the nightly matrix. The
 //! browser step needs Chrome (`CHROME`, or where it installs) and prints
@@ -36,13 +41,16 @@ use std::process::Command;
 
 use serde_json::{Value, json};
 
-use crate::binding::{blob_fixtures, cargo, present, step};
+use crate::binding::{blob_fixtures, cargo, present, step, tool};
+use crate::platform::NPM_WASM;
 
 /// The crate the module is built from, and the file Cargo names it.
 const PACKAGE: &str = "teistro-wasm";
 const MODULE: &str = "target/wasm32-unknown-unknown/release/teistro_wasm.wasm";
 /// Where the package is staged.
 const STAGED: &str = "target/wasm/package";
+/// Where the throwaway project that installs it is built.
+const CONSUMER: &str = "target/wasm/consumer";
 /// The Node package, whose layer and manifest the wasm package is made of.
 const NODE: &str = "bindings/node";
 /// The Node package's loader, the one file of its layer the wasm package
@@ -128,7 +136,7 @@ fn wasm_bindgen(root: &Path, wanted: &str) -> Result<PathBuf, ()> {
 fn manifest(node: &Value) -> Value {
     let mut manifest = node.clone();
     if let Some(fields) = manifest.as_object_mut() {
-        fields.insert("name".into(), json!("@teistro/sdk-wasm"));
+        fields.insert("name".into(), json!(NPM_WASM));
         fields.insert(
             "description".into(),
             json!("Teistro SDK as WebAssembly: the same layer as @teistro/sdk over a wasm module, for browsers, workers and any JavaScript host without a prebuilt addon."),
@@ -297,6 +305,61 @@ fn browser(root: &Path, staged: &Path) -> Result<(), ()> {
     }
 }
 
+/// The staged package packed, installed into an empty project, and run by
+/// the Node package's own consumer.
+fn consumer(root: &Path, staged: &Path) -> Result<(), ()> {
+    let Some(npm) = tool("npm", "--version") else {
+        println!("skip  the installed wasm package: no `npm` on this machine");
+        return Ok(());
+    };
+    let project = root.join(CONSUMER);
+    if project.exists() {
+        fs::remove_dir_all(&project).map_err(|e| println!("FAIL  {CONSUMER}: {e}"))?;
+    }
+    fs::create_dir_all(&project).map_err(|e| println!("FAIL  {CONSUMER}: {e}"))?;
+    step(
+        Command::new(&npm)
+            .args(["pack", "--silent", "--pack-destination"])
+            .arg(&project)
+            .arg(staged)
+            .current_dir(root),
+        "",
+        "the wasm package did not pack",
+    )?;
+    let tarball = fs::read_dir(&project)
+        .map_err(|e| println!("FAIL  {CONSUMER}: {e}"))?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .find(|path| path.extension().is_some_and(|ext| ext == "tgz"))
+        .ok_or_else(|| println!("FAIL  npm packed no tarball of the wasm package"))?;
+    fs::write(
+        project.join("package.json"),
+        "{\n  \"name\": \"teistro-wasm-packaging-check\",\n  \"private\": true,\n  \"type\": \"module\"\n}\n",
+    )
+    .map_err(|e| println!("FAIL  {CONSUMER}: {e}"))?;
+    step(
+        Command::new(&npm)
+            .args(["install", "--silent", "--no-audit", "--no-fund"])
+            .arg(&tarball)
+            .current_dir(&project),
+        "",
+        "the wasm package did not install",
+    )?;
+    // Copied rather than run where it lives: a script inside the
+    // repository would resolve the package to the repository itself.
+    let script = project.join("consumer.mjs");
+    fs::copy(root.join(NODE).join("packaging/consumer.mjs"), &script)
+        .map_err(|e| println!("FAIL  the consumer did not copy: {e}"))?;
+    step(
+        Command::new("node")
+            .arg(&script)
+            .env("TEISTRO_PACKAGE", NPM_WASM)
+            .current_dir(&project),
+        "the installed wasm package answers as the library does",
+        "the installed wasm package did not answer",
+    )
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("node", "--version") {
         eprintln!("no `node` on this machine; the wasm binding's tests need it");
@@ -325,7 +388,8 @@ pub(crate) fn check(root: &Path) -> i32 {
                 &format!("{NODE}/test/ did not pass against the staged wasm package"),
             )
         })
-        .and_then(|()| browser(root, &staged));
+        .and_then(|()| browser(root, &staged))
+        .and_then(|()| consumer(root, &staged));
     // The suite was copied in to run from inside the package; it is not
     // part of what a consumer installs.
     let _ = fs::remove_dir_all(&tests);
@@ -373,6 +437,20 @@ mod tests {
         assert_eq!(wasm["repository"]["directory"], "bindings/wasm");
         assert_eq!(wasm["imports"]["#native"]["default"], "./lib/native.web.js");
         assert!(wasm.get("optionalDependencies").is_none() && wasm.get("scripts").is_none());
+    }
+
+    /// Each loader's `platformPackage()` names the package the manifest
+    /// is published as.
+    #[test]
+    fn the_loaders_name_the_package_they_are_in() {
+        let lib = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../bindings/wasm/lib");
+        for loader in ["native.web.js", "native.node.js"] {
+            let text = std::fs::read_to_string(lib.join(loader)).unwrap_or_default();
+            assert!(
+                text.contains(&format!("return '{}';", super::NPM_WASM)),
+                "{loader}"
+            );
+        }
     }
 
     /// The version comes from the lockfile the workspace builds with, so

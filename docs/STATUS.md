@@ -4128,10 +4128,10 @@ on pub.dev (checked 2026-09-07).
    Node one. `check-wasm` runs the Node suite unchanged through the
    staged package's own loader (70 of 70) and loads it in headless
    Chrome, whose answer must equal Node's to the bit. Next, step 7's
-   parity runner and the per-profile size gate; **publishing
-   `@teistro/sdk-wasm` awaits the maintainer**, and must not be done by
-   staging it under `target/dist/npm`, whose `@teistro/sdk-*` glob the
-   release publishes.
+   parity runner and the per-profile size gate. `@teistro/sdk-wasm` is
+   **released with the others** (maintainer, 2026-09-25): the release's
+   `wasm` job stages and checks it, `package stage` refuses a release
+   without it, and `publish` sends it with the platform packages.
 9. A second baseline export (the same script, more sections) for the
    seventeen other dasha systems, aspects, yogas and doshas, strengths,
    Ashtakavarga, the Jaimini slice, KP and milan, once the design pages

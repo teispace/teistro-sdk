@@ -10,6 +10,9 @@
 //! fetches it verifies the bits they will load rather than the framing
 //! they arrived in.
 //!
+//! `cargo xtask package wasm` stages the wasm package, which is one
+//! artefact for every host and so is built once rather than per platform.
+//!
 //! `cargo xtask package stage` runs once, after the matrix has produced
 //! every platform's manifest: it merges them, writes the digest table the
 //! Dart installer holds downloads to, and stages the two packages that
@@ -33,7 +36,7 @@ use sha2::{Digest, Sha256};
 use crate::binding::{LIBRARY_STEM, cargo, step};
 use crate::hashes::hex;
 use crate::node_binding::ADDON_STEM;
-use crate::platform::{NPM_SCOPE, PLATFORMS, Platform};
+use crate::platform::{NPM_SCOPE, NPM_WASM, PLATFORMS, Platform};
 use crate::release;
 use crate::{read, rel};
 
@@ -358,11 +361,35 @@ fn described(platform: &Platform) -> String {
 /// missing a row would tell that platform's users to build from source
 /// after they had installed a release built for them. `partial` is for
 /// trying the packaging on one machine, and says so in what it prints.
+/// Builds the wasm module and stages its package where the release
+/// collects the npm packages, beside the platform ones.
+pub(crate) fn wasm(root: &Path) -> i32 {
+    let directory = wasm_package(root);
+    match crate::wasm_binding::stage(root, &directory) {
+        Ok(()) => {
+            println!("wrote {}", rel(root, &directory));
+            0
+        }
+        Err(()) => 1,
+    }
+}
+
+/// Where the wasm package is staged.
+fn wasm_package(root: &Path) -> PathBuf {
+    root.join(DIST).join("npm").join(NPM_WASM)
+}
+
 pub(crate) fn stage(root: &Path, partial: bool) -> i32 {
     let version = release::version(root);
     let dist = root.join(DIST);
     let mut platforms = Map::new();
     let mut missing = Vec::new();
+    // The wasm package is built by its own job, not a platform's, so it is
+    // checked for here as a platform's manifest is: a release without it
+    // would publish every package but one.
+    if !wasm_package(root).join("package.json").is_file() {
+        missing.push(rel(root, &wasm_package(root)));
+    }
     for platform in PLATFORMS {
         let path = dist.join(manifest_name(&version, &platform.name()));
         match fs::read_to_string(&path)
@@ -378,7 +405,7 @@ pub(crate) fn stage(root: &Path, partial: bool) -> i32 {
     if !missing.is_empty() {
         for path in &missing {
             println!(
-                "{}  no manifest at {path}",
+                "{}  {path} is missing",
                 if partial { "note" } else { "FAIL" }
             );
         }

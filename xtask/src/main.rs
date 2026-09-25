@@ -428,6 +428,7 @@ fn main() {
         },
         Some("package") => match args.get(1).map(String::as_str) {
             Some("stage") => package::stage(&repo_root(), args.iter().any(|a| a == "--partial")),
+            Some("wasm") => package::wasm(&repo_root()),
             target => package::build(&repo_root(), target),
         },
         Some("version") => match args.as_slice() {
@@ -490,7 +491,7 @@ fn usage() -> i32 {
          check-dart | check-python | check-rust | check-parity | check-lints | \
          check-versions | \
          check-package | check-site | check-tag TAG | version [X] | changelog-entry X | \
-         package [TARGET] | package stage [--partial] | bench [FILE] | \
+         package [TARGET] | package wasm | package stage [--partial] | bench [FILE] | \
          compare-bench BASE HEAD [ACCEPTED] | hashes [VALUES] | compare-hashes A B | accuracy | \
          calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi",
         passes.join("\n  ")
