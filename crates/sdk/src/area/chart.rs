@@ -346,7 +346,11 @@ impl<'a> ChartArea<'a> {
         rules: Option<&'r RuleSet>,
         asked: PlanRequest,
     ) -> Result<Envelope<Vec<Interpreted<'r>>>, Error> {
-        asked.check(rules.is_some())?;
+        // Named from the record every binding calls `interpret`, so a
+        // refusal reads the same in Rust as in the language that wrote it.
+        asked
+            .check(rules.is_some())
+            .map_err(|error| error.under("interpret"))?;
         let wanted = asked.sections(request.clone());
         let (read, provenance): (Vec<(Document, Option<RulesReading<'r>>)>, _) = match rules {
             None => {

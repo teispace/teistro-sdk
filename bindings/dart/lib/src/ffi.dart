@@ -953,14 +953,14 @@ final class ChartRequestStruct extends ffi.Struct {
   external ffi.Pointer<ffi.Char> interpretJson;
 
   /// The annual charts to answer for every chart in the batch, as a JSON
-  /// object: `reading` — `"sidereal"` (the tradition's), `"tropical"`
-  /// (the Western solar return) or `"mean"` (a whole sidereal year each
+  /// object: `reading` — `"SIDEREAL"` (the tradition's), `"TROPICAL"`
+  /// (the Western solar return) or `"MEAN"` (a whole sidereal year each
   /// time) — and `through`, the last year of life wanted, 1 to 200. The
   /// instants come back in the `praveshas` section, ragged by
   /// `cast.pravesha_count`; an ephemeris that ends first answers fewer
   /// than asked for rather than refusing. Null for none
-  /// (`03-design/annual-chart.md`). Refusals are named from this root,
-  /// as `varsha_json.through`. May be null.
+  /// (`03-design/annual-chart.md`). Refusals are named from the record
+  /// every binding calls `varsha`, as `varsha.through`. May be null.
   external ffi.Pointer<ffi.Char> varshaJson;
 
 }
@@ -1801,7 +1801,7 @@ final class TeistroException implements Exception {
   /// The localisable message key.
   final String? messageKey;
 
-  /// The provider's own code when the status is `provider`.
+  /// The provider's own code when the status is `PROVIDER`.
   final int providerCode;
 
   /// The stable numeric code.
@@ -2902,14 +2902,14 @@ final class ChartRequest {
   final String? interpretJson;
 
   /// The annual charts to answer for every chart in the batch, as a JSON
-  /// object: `reading` — `"sidereal"` (the tradition's), `"tropical"`
-  /// (the Western solar return) or `"mean"` (a whole sidereal year each
+  /// object: `reading` — `"SIDEREAL"` (the tradition's), `"TROPICAL"`
+  /// (the Western solar return) or `"MEAN"` (a whole sidereal year each
   /// time) — and `through`, the last year of life wanted, 1 to 200. The
   /// instants come back in the `praveshas` section, ragged by
   /// `cast.pravesha_count`; an ephemeris that ends first answers fewer
   /// than asked for rather than refusing. Null for none
-  /// (`03-design/annual-chart.md`). Refusals are named from this root,
-  /// as `varsha_json.through`. May be null.
+  /// (`03-design/annual-chart.md`). Refusals are named from the record
+  /// every binding calls `varsha`, as `varsha.through`. May be null.
   final String? varshaJson;
 
   /// Writes this value into a C struct the call takes by pointer.

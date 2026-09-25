@@ -388,9 +388,13 @@ pub struct EnumValue {
     pub value: i64,
     /// The doc comment.
     pub doc: String,
-    /// The catalogue key, for a catalogue member.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub key: Option<String>,
+    /// The key every binding, pack and serialised value spells the member
+    /// with, recorded here so no generator infers one: a catalogue
+    /// member's own key (`SUN`), a kind's name (`graha`), and a closed
+    /// enum's variant in `SCREAMING_SNAKE_CASE` (`INVALID_ARG`) — the
+    /// spelling serde gives the Rust type the member mirrors, which the
+    /// boundary crate's tests hold it to.
+    pub key: String,
     /// Whether the member is deprecated.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub deprecated: bool,

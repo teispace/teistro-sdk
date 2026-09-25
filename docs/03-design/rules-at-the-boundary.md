@@ -107,7 +107,7 @@ per chart in the order asked for.
 ## 5. Errors and degenerate states
 
 - A rule that does not read strictly is `INVALID_ARG`, the field named from
-  the root as `theme_json` names its own: `rules_json.rules[3].conditions[0].type`.
+  the request's root, as the theme names its own: `rules.rules[3].conditions[0].type`.
 - An unknown shipped set is `INVALID_ARG` naming the ones there are.
 - **A rule whose section was never asked for is the dead end this design
   nearly shipped.** `RuleInputs::of` built the chart with `panchanga:
@@ -170,7 +170,7 @@ The JSON is written once per chart.
    so a house reading does not repeat whole rules; an ABI test founds two charts
    with `{"shipped": ["nabhasas"], "longevity": true}`, reads each chart's
    present rules and Pindayu from the bytes, finds the section empty without
-   rules, and a rule that does not read refused as `rules_json.rules[0]`.
+   rules, and a rule that does not read refused as `rules.rules[0]`.
 3. Node, Dart and Python: the option and the parsed section, each binding's
    own test, and the parity runners printing each chart's present keys, so
    `check-parity` holds the four to one answer. **Built**: Node's `rules`
@@ -179,7 +179,7 @@ The JSON is written once per chart.
    `TypedDict`s), Dart's `RuleRequest` with `ShippedRules` and `RuleReadings`
    and `chart.rules`; each binding's test answers the Nabhasa set, finds a
    consumer's rule naming a shipped one by key present, and sees a malformed
-   rule refused as `rules_json.rules[0]`. The four parity runners ask for the
+   rule refused as `rules.rules[0]`. The four parity runners ask for the
    Nabhasa set with longevity and print each chart's present keys and its
    Pindayu; **all four agree on every one of 6 758 values** (the Rust runner
    reading with `readings_with_rules`, as the boundary does).

@@ -8,6 +8,8 @@
 
 import type {
   Ayanamsha,
+  Balance,
+  Ephemeris,
   AvasthaBaladi,
   AvasthaDeeptadi,
   AvasthaSayanadi,
@@ -99,7 +101,7 @@ export type * from './blob.js';
 /**
  * A date in a calendar, without naming the fields a call fills in: the era
  * and the era year are what the call resolves them to, and the resolution
- * is `defined`, which is what a date a caller states means.
+ * is `DEFINED`, which is what a date a caller states means.
  *
  * @example date(Calendar.Gregorian, 2015, 4, 14)
  */
@@ -157,7 +159,7 @@ export declare class TeistroError extends Error {
   readonly hint: string | null;
   /** The localisable message key. */
   readonly messageKey: string | null;
-  /** The provider's own code when the status is `provider`. */
+  /** The provider's own code when the status is `PROVIDER`. */
   readonly providerCode: number;
 }
 
@@ -370,7 +372,7 @@ export interface Dasha {
   /** What remained of the first period at birth; `null` for a sign-based dasha, whose first period runs whole from birth. */
   readonly balance: {
     /** How it was measured. */
-    readonly method: 'spatial' | 'temporal';
+    readonly method: Balance | 'unknown';
     /** The fraction still to run, 0 to 1. */
     readonly remaining: number;
     /** That fraction of the first lord's years, in days. */
@@ -619,11 +621,11 @@ export type LayoutKey = `chart_layout.${string}`;
 /** Which longitude an annual chart's Sun returns to (`03-design/annual-chart.md`). */
 export type VarshaReading =
   /** The natal sidereal longitude, read on the chart's own ayanamsha basis: the tradition's. */
-  | 'sidereal'
+  | 'SIDEREAL'
   /** The natal tropical longitude: the Western solar return. Forty years on it is most of a circle of lagna from the sidereal one, so it is a choice and never a fallback. */
-  | 'tropical'
+  | 'TROPICAL'
   /** A whole sidereal year for each year of life, from birth: the older arithmetic, and the only reading that needs no ephemeris. */
-  | 'mean';
+  | 'MEAN';
 
 /**
  * Where the Muntha stands inside the sign it has reached (crux C107).
@@ -633,17 +635,17 @@ export type VarshaReading =
  */
 export type MunthaDegree =
   /** It enters each year at its sign's first degree and crosses the sign during the year: the source's own reading. */
-  | 'sign_start'
+  | 'SIGN_START'
   /** It carries the natal lagna's degree into each new sign. */
-  | 'natal_degree';
+  | 'NATAL_DEGREE';
 
 /** The annual charts a request asks for. */
 export interface VarshaRequest {
-  /** Which longitude the Sun returns to; `sidereal` by default. */
+  /** Which longitude the Sun returns to; `SIDEREAL` by default. */
   readonly reading?: VarshaReading;
   /** The last year of life wanted, 1 to 200. */
   readonly through: number;
-  /** Where the Muntha stands inside its sign; `sign_start` by default. */
+  /** Where the Muntha stands inside its sign; `SIGN_START` by default. */
   readonly muntha?: MunthaDegree;
   /**
    * Where each year's own chart is cast, when you want the charts and not
@@ -671,7 +673,7 @@ export interface VarshaRequest {
    * the source's order, or their keys in the order you want them answered.
    * **Needs `place`**; absent, none is read.
    *
-   * @example { through: 40, place: 'birth', sahams: ['punya', 'vivaha'] }
+   * @example { through: 40, place: 'birth', sahams: ['PUNYA', 'VIVAHA'] }
    */
   readonly sahams?: 'all' | readonly Saham[];
   /** The readings the sahams part on, where the sources differ. */
@@ -704,18 +706,18 @@ export type AnnualDashaSystem = 'dasha_system.PATYAYINI' | 'dasha_system.MUDDA' 
 export interface AnnualDashaRules {
   /**
    * What a unit of the year is (crux C122): the Sun's motion through one
-   * degree, `'sun_degrees'`, the source's own, so the year closes on the
-   * next return; an `'even'` share of the time between the returns; or
-   * `{ days: n }`, the whole year as so many civil days from the return,
+   * degree, `'SUN_DEGREES'`, the source's own, so the year closes on the
+   * next return; an `'EVEN'` share of the time between the returns; or
+   * `{ DAYS: n }`, the whole year as so many civil days from the return,
    * the printed durations (360, and 365 for the Patyayini).
    */
-  readonly clock?: 'sun_degrees' | 'even' | { readonly days: number };
+  readonly clock?: 'SUN_DEGREES' | 'EVEN' | { readonly DAYS: number };
   /**
    * Where a nakshatra year's balance comes from (crux C123): what remained
-   * of the birth Moon's nakshatra, `'natal_moon'`, the source's own; the
-   * Moon's at the return, `'entry_moon'`; or `'whole'`, none.
+   * of the birth Moon's nakshatra, `'NATAL_MOON'`, the source's own; the
+   * Moon's at the return, `'ENTRY_MOON'`; or `'WHOLE'`, none.
    */
-  readonly balance?: 'natal_moon' | 'entry_moon' | 'whole';
+  readonly balance?: 'NATAL_MOON' | 'ENTRY_MOON' | 'WHOLE';
   /**
    * How the balance is measured, `'SPATIAL'` by arc or `'TEMPORAL'` by
    * time; absent, each balance's source's own: by arc for the birth Moon,
@@ -759,7 +761,7 @@ export interface AnnualDasha {
     /**
      * How much of the first lord's share was still to run at the return, 0
      * to 1, the rest closing the year; `null` when it runs whole from the
-     * return: the Patyayini, and a `'whole'` balance.
+     * return: the Patyayini, and a `'WHOLE'` balance.
      */
     readonly remaining: number | null;
   };
@@ -774,44 +776,44 @@ export interface AnnualDasha {
 /** Where the sources differ on a saham's strength (`03-design/tajika-saham-strength.md`). */
 export interface SahamStrengthReadings {
   /**
-   * Which planets are benefic and malefic: the `'chapter'`'s own, the Sun
-   * a malefic among them, or the catalogue's `'parashari'` natures.
+   * Which planets are benefic and malefic: the `'CHAPTER'`'s own, the Sun
+   * a malefic among them, or the catalogue's `'PARASHARI'` natures.
    */
-  readonly natures?: 'chapter' | 'parashari';
-  /** Tajika's `'positional'` friendship, the source's, or the catalogue's `'natural'` one. */
-  readonly friendship?: 'positional' | 'natural';
+  readonly natures?: 'CHAPTER' | 'PARASHARI';
+  /** Tajika's `'POSITIONAL'` friendship, the source's, or the catalogue's `'NATURAL'` one. */
+  readonly friendship?: 'POSITIONAL' | 'NATURAL';
   /** The Vishwa bala below which a saham's lord is weak, in **sub-sub units**: `5 * 3600` by default. */
   readonly weakBelow?: number;
 }
 
 /** Where the sources differ on the Harsha bala (`03-design/tajika-harsha.md`). */
 export interface HarshaRules {
-  /** Venus's house of joy: the verse's `'fifth'`, or the `'twelfth'` a widely used program reads. */
-  readonly venus?: 'fifth' | 'twelfth';
+  /** Venus's house of joy: the verse's `'FIFTH'`, or the `'TWELFTH'` a widely used program reads. */
+  readonly venus?: 'FIFTH' | 'TWELFTH';
 }
 
 /** Where the sources differ on a saham, each a named reading (`03-design/tajika-sahams.md`). */
 export interface SahamRules {
   /**
    * When a saham is carried a sign further: when c does not fall between b
-   * and a by `'degrees'`, the source's own; by whole `'signs'`, as a widely
-   * used program reads it; or `'never'`.
+   * and a by `'DEGREES'`, the source's own; by whole `'SIGNS'`, as a widely
+   * used program reads it; or `'NEVER'`.
    */
-  readonly addSign?: 'degrees' | 'signs' | 'never';
+  readonly addSign?: 'DEGREES' | 'SIGNS' | 'NEVER';
   /**
-   * Where a house's point stands: `'sripati'`'s mid-point built from the
-   * angles, the source's own; the chart's `'chalit'` under its profile; or
-   * `'equal'` houses from the lagna's degree.
+   * Where a house's point stands: `'SRIPATI'`'s mid-point built from the
+   * angles, the source's own; the chart's `'CHALIT'` under its profile; or
+   * `'EQUAL'` houses from the lagna's degree.
    */
-  readonly houses?: 'sripati' | 'chalit' | 'equal';
-  /** Roga's formula: lagna − Moon + lagna, `'lagna'`, or the other authority's `'saturn'`. */
-  readonly roga?: 'lagna' | 'saturn';
+  readonly houses?: 'SRIPATI' | 'CHALIT' | 'EQUAL';
+  /** Roga's formula: lagna − Moon + lagna, `'LAGNA'`, or the other authority's `'SATURN'`. */
+  readonly roga?: 'LAGNA' | 'SATURN';
 }
 
 /** Where the source leaves the sixteen Tajika yogas a choice, each a named reading. */
 export interface YogaRules {
-  /** How a pair less than a degree past reads; `'poorna'` by default (crux C112). */
-  readonly drishti?: { readonly subDegree?: 'poorna' | 'ishrafa' };
+  /** How a pair less than a degree past reads; `'POORNA'` by default (crux C112). */
+  readonly drishti?: { readonly subDegree?: 'POORNA' | 'ISHRAFA' };
   /**
    * The strength below which a planet with no dignity is weak, in **sub-sub
    * units**, 3600 to a unit: `5 * 3600` by default (crux C116).
@@ -821,15 +823,15 @@ export interface YogaRules {
   readonly strongFrom?: number;
   /**
    * Which lord a Tambira lets reach the next sign: the definition's
-   * `'karyesha'` by default, or `'either_lord'`, the source's "some
+   * `'KARYESHA'` by default, or `'EITHER_LORD'`, the source's "some
    * authorities".
    */
-  readonly tambira?: 'karyesha' | 'either_lord';
+  readonly tambira?: 'KARYESHA' | 'EITHER_LORD';
   /**
-   * When the Moon counts among Kuttha's benefics: `'always'` by default,
-   * Charak's list, or `'waxing'`, the commentary's "full Moon" (crux C117).
+   * When the Moon counts among Kuttha's benefics: `'ALWAYS'` by default,
+   * Charak's list, or `'WAXING'`, the commentary's "full Moon" (crux C117).
    */
-  readonly moonBenefic?: 'always' | 'waxing';
+  readonly moonBenefic?: 'ALWAYS' | 'WAXING';
 }
 
 /** Where the sources differ on the lord of the year, each a named reading. */
@@ -838,19 +840,19 @@ export interface VarsheshaRules {
    * Who takes the year when nobody aspects the lagna: the Muntha's lord by
    * default, the annual lagna's lord, or the Nilakanthi's strongest of the five.
    */
-  readonly noneAspects?: 'muntha_lord' | 'annual_lagna_lord' | 'strongest';
+  readonly noneAspects?: 'MUNTHA_LORD' | 'ANNUAL_LAGNA_LORD' | 'STRONGEST';
   /** Who takes it on an outright tie; the Muntha's lord by default. */
-  readonly tied?: 'muntha_lord' | 'dina_ratri_pati';
+  readonly tied?: 'MUNTHA_LORD' | 'DINA_RATRI_PATI';
   /**
-   * Whether the Moon may hold it: `'passed_over'` by default, stepping down
-   * to the next claimant and else to its Ithasala successor; `'ithasala'`,
-   * the Nilakanthi's successor at once; or `'like_any_other'`.
+   * Whether the Moon may hold it: `'PASSED_OVER'` by default, stepping down
+   * to the next claimant and else to its Ithasala successor; `'ITHASALA'`,
+   * the Nilakanthi's successor at once; or `'LIKE_ANY_OTHER'`.
    */
-  readonly moon?: 'passed_over' | 'ithasala' | 'like_any_other';
+  readonly moon?: 'PASSED_OVER' | 'ITHASALA' | 'LIKE_ANY_OTHER';
   /** Who may succeed the Moon: any planet by default, or only an office-bearer. */
-  readonly moonPartner?: 'any_planet' | 'office_bearer';
+  readonly moonPartner?: 'ANY_PLANET' | 'OFFICE_BEARER';
   /** How the Ithasala the Moon's successor needs is read, as for the yogas. */
-  readonly drishti?: { readonly subDegree?: 'poorna' | 'ishrafa' };
+  readonly drishti?: { readonly subDegree?: 'POORNA' | 'ISHRAFA' };
 }
 
 /** A residence to cast each year's chart for, in `found`'s own place shape. */
@@ -1932,7 +1934,7 @@ export declare const MoonEvent: typeof import('./catalogue.js').MoonEvent;
 /** A moonrise or a moonset. */
 export interface MoonEvent {
   /** Which it was. */
-  readonly kind: 'rise' | 'set';
+  readonly kind: import('./catalogue.js').MoonEvent | 'unknown';
   /** When, as a Julian day (UTC). */
   readonly instant: number;
 }
@@ -1944,7 +1946,7 @@ export interface HeldYoga extends Interval {
   /** What made it, so a reader can see why. */
   readonly because: {
     /** Which cause it is. */
-    readonly kind: 'vara-nakshatra' | 'vara-tithi-nakshatra';
+    readonly kind: 'VARA_NAKSHATRA' | 'VARA_TITHI_NAKSHATRA';
     /** The vara that makes it; every cause has one. */
     readonly vara: Vara | 'unknown';
     /** The tithi, when the cause has one; `null` otherwise. */
@@ -2189,7 +2191,7 @@ export interface PositionsRequest {
   readonly instants: readonly number[] | Float64Array;
   /** The bodies, by their catalogue key. */
   readonly bodies: readonly Body[];
-  /** The scale the instants are on; `ut1` by default. */
+  /** The scale the instants are on; `UT1` by default. */
   readonly scale?: TimeScale;
   /** The frame the positions are wanted in; the canonical one by default. */
   readonly frame?: Frame;
@@ -2336,12 +2338,12 @@ export interface PluginEphemeris {
  * One entry of an ephemeris chain: one of the SDK's own by name, or an
  * adapter's descriptor.
  *
- * `builtin` is the analytic ephemeris the SDK carries, which needs no
- * files, no network and no licence beyond the SDK's own; `test` is the
+ * `BUILTIN` is the analytic ephemeris the SDK carries, which needs no
+ * files, no network and no licence beyond the SDK's own; `TEST` is the
  * test provider, whose positions are **not astronomy**. Those are the
  * **fallback** — in most cases a consumer plugs a real engine.
  */
-export type EphemerisChoice = 'none' | 'builtin' | 'test' | PluginEphemeris;
+export type EphemerisChoice = Ephemeris | PluginEphemeris;
 
 /**
  * A context: settings resolved from a profile and a patch, a locale, and

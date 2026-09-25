@@ -409,7 +409,7 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
         Ctx::new(0, None, Some(r#"{"frame": {"zodiacs": "TROPICAL"}}"#), None).unwrap_err();
     assert_eq!(
         (status, field.as_deref()),
-        (Status::InvalidArg, Some("settings_json.frame.zodiacs"))
+        (Status::InvalidArg, Some("settings.frame.zodiacs"))
     );
     assert!(message.contains("unknown field `zodiacs`"), "{message}");
     let (status, _, field, hint, _) = Ctx::new(0, None, None, Some("xx-Latn")).unwrap_err();
@@ -819,7 +819,7 @@ fn positions_come_back_as_a_blob_with_steps_and_provenance() {
     assert!(message.contains("has no ephemeris"), "{message}");
     let hint = hint.expect("the refusal hints at what to pass");
     assert!(
-        hint.contains("`builtin`") && hint.contains("descriptor"),
+        hint.contains("`BUILTIN`") && hint.contains("descriptor"),
         "{hint}"
     );
     // A request with a wrong size, and a null request.
@@ -1732,7 +1732,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
     )
     .unwrap();
     let instants = [2_447_995.489_583_333_5, 2_451_545.0];
-    let varsha = CString::new(r#"{"reading":"sidereal","through":12}"#).unwrap();
+    let varsha = CString::new(r#"{"reading":"SIDEREAL","through":12}"#).unwrap();
     let request = sized(
         TsChartRequest {
             struct_size: 0,
@@ -1837,9 +1837,9 @@ fn a_chart_request_answers_the_annual_charts_instants() {
         assert_eq!(status, Status::InvalidArg, "{json}");
         ctx.last_error()
     };
-    let wide = refused(r#"{"reading":"sidereal","through":0}"#);
-    assert_eq!(wide.2.as_deref(), Some("varsha_json.through"), "{wide:?}");
-    let typo = refused(r#"{"readng":"sidereal","through":4}"#);
+    let wide = refused(r#"{"reading":"SIDEREAL","through":0}"#);
+    assert_eq!(wide.2.as_deref(), Some("varsha.through"), "{wide:?}");
+    let typo = refused(r#"{"readng":"SIDEREAL","through":4}"#);
     assert!(
         typo.1.contains("readng") || typo.1.contains("reading"),
         "{typo:?}"
@@ -1962,9 +1962,9 @@ fn a_chart_request_founds_each_years_chart_where_it_is_told() {
     assert!(extra.1.contains("zone"), "{extra:?}");
     // Each is named where it was written: the place, or the key in it.
     for (error, field) in [
-        (&word, "varsha_json.place"),
-        (&far, "varsha_json.place"),
-        (&extra, "varsha_json.place.zone"),
+        (&word, "varsha.place"),
+        (&far, "varsha.place"),
+        (&extra, "varsha.place.zone"),
     ] {
         assert_eq!(error.2.as_deref(), Some(field), "{error:?}");
     }
@@ -2193,7 +2193,7 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
             .count()
     };
     let either =
-        ask(r#"{"through":2,"place":"birth","matters":"all","yogas":{"tambira":"either_lord"}}"#)
+        ask(r#"{"through":2,"place":"birth","matters":"all","yogas":{"tambira":"EITHER_LORD"}}"#)
             .unwrap();
     assert!(tambira(&either) >= tambira(&all));
     // And the Moon's: read only as waxing, it can only take a Kuttha away.
@@ -2204,7 +2204,7 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
             .count()
     };
     let waxing =
-        ask(r#"{"through":2,"place":"birth","matters":"all","yogas":{"moonBenefic":"waxing"}}"#)
+        ask(r#"{"through":2,"place":"birth","matters":"all","yogas":{"moonBenefic":"WAXING"}}"#)
             .unwrap();
     assert!(kuttha(&waxing) <= kuttha(&all));
 
@@ -2221,7 +2221,7 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
     assert!(ints(&empty, "year_matters", "house").is_empty());
 
     // Both rule records read the boundary's one casing.
-    ask(r#"{"through":2,"place":"birth","varshesha":{"noneAspects":"annual_lagna_lord"}}"#)
+    ask(r#"{"through":2,"place":"birth","varshesha":{"noneAspects":"ANNUAL_LAGNA_LORD"}}"#)
         .unwrap();
     ask(r#"{"through":2,"place":"birth","matters":[7],"yogas":{"weakBelow":14400,"strongFrom":43200}}"#)
         .unwrap();
@@ -2232,39 +2232,35 @@ fn a_years_chart_answers_the_matters_it_was_asked_about() {
         assert_eq!(error.2.as_deref(), Some(field), "{error:?}");
         assert!(error.1.contains(says), "{error:?}");
     };
-    refused(
-        r#"{"through":2,"matters":[7]}"#,
-        "varsha_json.matters",
-        "place",
-    );
+    refused(r#"{"through":2,"matters":[7]}"#, "varsha.matters", "place");
     refused(
         r#"{"through":2,"place":"birth","matters":[7,7]}"#,
-        "varsha_json.matters",
+        "varsha.matters",
         "twice",
     );
     refused(
         r#"{"through":2,"place":"birth","matters":[13]}"#,
-        "varsha_json.matters",
+        "varsha.matters",
         "13",
     );
     refused(
         r#"{"through":2,"place":"birth","matters":"some"}"#,
-        "varsha_json.matters",
+        "varsha.matters",
         "\"all\"",
     );
     refused(
         r#"{"through":2,"place":"birth","matters":[7],"yogas":{"weakBelow":43200,"strongFrom":14400}}"#,
-        "varsha_json.yogas.strongFrom",
+        "varsha.yogas.strongFrom",
         "both",
     );
     refused(
         r#"{"through":2,"place":"birth","matters":[7],"yogas":{"moonBenefic":"full"}}"#,
-        "varsha_json.yogas.moonBenefic",
+        "varsha.yogas.moonBenefic",
         "full",
     );
     refused(
-        r#"{"through":2,"place":"birth","varshesha":{"none_aspects":"annual_lagna_lord"}}"#,
-        "varsha_json.varshesha.none_aspects",
+        r#"{"through":2,"place":"birth","varshesha":{"none_aspects":"ANNUAL_LAGNA_LORD"}}"#,
+        "varsha.varshesha.none_aspects",
         "none_aspects",
     );
 }
@@ -2296,20 +2292,13 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
             .collect::<Vec<usize>>()
     };
 
-    // A request names a saham by the key every binding reads it back as,
-    // so a caller can hand back what it was given: the wire's spelling is
-    // the catalogue's, member for member.
-    for saham in teistro::Saham::ALL {
-        let wire = serde_json::to_value(saham).unwrap();
-        let catalogue = teistro_idl::names::kebab(&format!("{:?}", TsSaham::from(saham)));
-        assert_eq!(wire.as_str(), Some(catalogue.as_str()), "{saham:?}");
-    }
-
-    // Three sahams, in the caller's order, for each of two births' three
+    // A request names a saham by the key every binding reads it back as
+    // (`tests/keys.rs` holds the two to one spelling), so a caller can
+    // hand back what it was given. Three sahams, in the caller's order, for each of two births' three
     // years.
     let order = [TsSaham::Raja, TsSaham::KaryaSiddhi, TsSaham::Mrityu].map(|one| one as usize);
     let asked =
-        ask(r#"{"through":3,"place":"birth","sahams":["raja","karya-siddhi","mrityu"]}"#).unwrap();
+        ask(r#"{"through":3,"place":"birth","sahams":["RAJA","KARYA_SIDDHI","MRITYU"]}"#).unwrap();
     assert_eq!(ints(&asked, "annual_charts", "saham_count"), vec![3; 6]);
     assert_eq!(ints(&asked, "year_sahams", "saham"), order.repeat(6));
     let longitudes = cells(&asked, "year_sahams", "longitude_deg");
@@ -2353,14 +2342,14 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
 
     // The rules are read: never adding a sign adds none.
     let never =
-        ask(r#"{"through":2,"place":"birth","sahams":"all","sahamRules":{"addSign":"never"}}"#)
+        ask(r#"{"through":2,"place":"birth","sahams":"all","sahamRules":{"addSign":"NEVER"}}"#)
             .unwrap();
     assert!(
         ints(&never, "year_sahams", "added_sign")
             .iter()
             .all(|flag| *flag == 0)
     );
-    ask(r#"{"through":2,"place":"birth","sahams":["mrityu"],"sahamRules":{"houses":"equal","roga":"saturn"}}"#)
+    ask(r#"{"through":2,"place":"birth","sahams":["MRITYU"],"sahamRules":{"houses":"EQUAL","roga":"SATURN"}}"#)
         .unwrap();
 
     // Not asked, nothing answered; an empty list asks for nothing.
@@ -2384,35 +2373,35 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
         assert!(error.1.contains(says), "{error:?}");
     };
     refused(
-        r#"{"through":2,"place":"birth","sahams":["punya","punya"]}"#,
-        "varsha_json.sahams",
+        r#"{"through":2,"place":"birth","sahams":["PUNYA","PUNYA"]}"#,
+        "varsha.sahams",
         "twice",
     );
     refused(
         r#"{"through":2,"place":"birth","sahams":["pnya"]}"#,
-        "varsha_json.sahams[0]",
+        "varsha.sahams[0]",
         "pnya",
     );
     refused(
         r#"{"through":2,"place":"birth","sahams":"some"}"#,
-        "varsha_json.sahams",
+        "varsha.sahams",
         "\"all\"",
     );
     refused(
-        r#"{"through":2,"place":"birth","sahams":["punya"],"sahamRules":{"add_sign":"never"}}"#,
-        "varsha_json.sahamRules.add_sign",
+        r#"{"through":2,"place":"birth","sahams":["PUNYA"],"sahamRules":{"add_sign":"NEVER"}}"#,
+        "varsha.sahamRules.add_sign",
         "add_sign",
     );
     refused(
-        r#"{"through":2,"place":"birth","sahams":["punya"],"sahamRules":{"houses":"placidus"}}"#,
-        "varsha_json.sahamRules.houses",
+        r#"{"through":2,"place":"birth","sahams":["PUNYA"],"sahamRules":{"houses":"placidus"}}"#,
+        "varsha.sahamRules.houses",
         "placidus",
     );
 
     // Each saham carries its strength, clause by clause, over the enums
     // the generator reads, and seven rows under it, one per planet.
     let asked =
-        ask(r#"{"through":3,"place":"birth","sahams":["raja","karya-siddhi","mrityu"]}"#).unwrap();
+        ask(r#"{"through":3,"place":"birth","sahams":["RAJA","KARYA_SIDDHI","MRITYU"]}"#).unwrap();
     let lords = ints(&asked, "year_sahams", "lord");
     let strong = ints(&asked, "year_sahams", "strong");
     let weak = ints(&asked, "year_sahams", "weak");
@@ -2453,7 +2442,7 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
     // without one they are all that is answered.
     assert_eq!(ints(&asked, "cast", "natal_saham_count"), vec![3, 3]);
     assert_eq!(ints(&asked, "natal_sahams", "saham"), order.repeat(2));
-    let births = ask(r#"{"through":2,"sahams":["punya"]}"#).unwrap();
+    let births = ask(r#"{"through":2,"sahams":["PUNYA"]}"#).unwrap();
     assert_eq!(ints(&births, "cast", "natal_saham_count"), vec![1, 1]);
     assert_eq!(ints(&births, "natal_saham_seven", "graha").len(), 14);
     assert!(ints(&births, "year_sahams", "saham").is_empty());
@@ -2465,16 +2454,16 @@ fn a_years_chart_answers_the_sahams_it_was_asked_for() {
             .all(|bits| bits & with_year_lord == 0)
     );
     // Their readings are named and read.
-    ask(r#"{"through":1,"place":"birth","sahams":"all","sahamStrength":{"natures":"parashari","friendship":"natural","weakBelow":14400},"harshaRules":{"venus":"twelfth"}}"#)
+    ask(r#"{"through":1,"place":"birth","sahams":"all","sahamStrength":{"natures":"PARASHARI","friendship":"NATURAL","weakBelow":14400},"harshaRules":{"venus":"TWELFTH"}}"#)
         .unwrap();
     refused(
-        r#"{"through":1,"sahams":["punya"],"sahamStrength":{"natures":"vedic"}}"#,
-        "varsha_json.sahamStrength.natures",
+        r#"{"through":1,"sahams":["PUNYA"],"sahamStrength":{"natures":"vedic"}}"#,
+        "varsha.sahamStrength.natures",
         "vedic",
     );
     refused(
         r#"{"through":1,"place":"birth","harshaRules":{"venus":"sixth"}}"#,
-        "varsha_json.harshaRules.venus",
+        "varsha.harshaRules.venus",
         "sixth",
     );
 }
@@ -2613,7 +2602,7 @@ fn a_years_chart_answers_the_annual_dashas_it_was_asked_for() {
     // The rules are read: a year of 360 days is exactly that long, and one
     // level lists the mahadashas alone.
     let days = ask(
-        r#"{"through":1,"place":"birth","dashas":["MUDDA"],"dashaRules":{"clock":{"days":360},"depth":1}}"#,
+        r#"{"through":1,"place":"birth","dashas":["MUDDA"],"dashaRules":{"clock":{"DAYS":360},"depth":1}}"#,
     )
     .unwrap();
     let (opens, closes) = (
@@ -2629,7 +2618,7 @@ fn a_years_chart_answers_the_annual_dashas_it_was_asked_for() {
             .all(|level| *level == 1)
     );
     let whole =
-        ask(r#"{"through":1,"place":"birth","dashas":["MUDDA"],"dashaRules":{"balance":"whole"}}"#)
+        ask(r#"{"through":1,"place":"birth","dashas":["MUDDA"],"dashaRules":{"balance":"WHOLE"}}"#)
             .unwrap();
     assert!(
         cells(&whole, "year_dashas", "remaining")
@@ -2638,8 +2627,8 @@ fn a_years_chart_answers_the_annual_dashas_it_was_asked_for() {
     );
     // Every reading the rules name is accepted as a binding spells it.
     for rules in [
-        r#"{"clock":"even","balance":"entry_moon","measure":"SPATIAL","birthPeriod":"ELAPSED","depth":3}"#,
-        r#"{"clock":"sun_degrees","balance":"natal_moon","measure":"TEMPORAL","birthPeriod":"COMPRESSED"}"#,
+        r#"{"clock":"EVEN","balance":"ENTRY_MOON","measure":"SPATIAL","birthPeriod":"ELAPSED","depth":3}"#,
+        r#"{"clock":"SUN_DEGREES","balance":"NATAL_MOON","measure":"TEMPORAL","birthPeriod":"COMPRESSED"}"#,
     ] {
         let json =
             format!(r#"{{"through":1,"place":"birth","dashas":"all","dashaRules":{rules}}}"#);
@@ -2672,42 +2661,42 @@ fn a_years_chart_answers_the_annual_dashas_it_was_asked_for() {
     };
     refused(
         r#"{"through":2,"dashas":["MUDDA"]}"#,
-        "varsha_json.dashas",
+        "varsha.dashas",
         "place",
     );
     refused(
         r#"{"through":2,"place":"birth","dashas":["MUDDA","dasha_system.MUDDA"]}"#,
-        "varsha_json.dashas",
+        "varsha.dashas",
         "twice",
     );
     refused(
         r#"{"through":2,"place":"birth","dashas":["VIMSHOTTARI"]}"#,
-        "varsha_json.dashas",
+        "varsha.dashas",
         "not an annual dasha",
     );
     refused(
         r#"{"through":2,"place":"birth","dashas":["MUDA"]}"#,
-        "varsha_json.dashas",
+        "varsha.dashas",
         "did you mean `MUDDA`",
     );
     refused(
         r#"{"through":2,"place":"birth","dashas":["graha.MUDDA"]}"#,
-        "varsha_json.dashas",
+        "varsha.dashas",
         "graha.MUDDA",
     );
     refused(
         r#"{"through":2,"place":"birth","dashas":"some"}"#,
-        "varsha_json.dashas",
+        "varsha.dashas",
         "\"all\"",
     );
     refused(
-        r#"{"through":2,"place":"birth","dashas":["MUDDA"],"dashaRules":{"clock":{"days":0}}}"#,
-        "varsha_json.dashaRules.clock",
+        r#"{"through":2,"place":"birth","dashas":["MUDDA"],"dashaRules":{"clock":{"DAYS":0}}}"#,
+        "varsha.dashaRules.clock",
         "more than none",
     );
     refused(
-        r#"{"through":2,"place":"birth","dashas":["MUDDA"],"dashaRules":{"clok":"even"}}"#,
-        "varsha_json.dashaRules.clok",
+        r#"{"through":2,"place":"birth","dashas":["MUDDA"],"dashaRules":{"clok":"EVEN"}}"#,
+        "varsha.dashaRules.clok",
         "clok",
     );
 }
@@ -2908,11 +2897,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
     let status = unsafe { ts_chart_found(ctx.handle, &raw const refused, &raw mut nothing) };
     assert_eq!(status, Status::InvalidArg);
     let record = ctx.last_error();
-    assert_eq!(
-        record.2.as_deref(),
-        Some("rules_json.rules[0]"),
-        "{record:?}"
-    );
+    assert_eq!(record.2.as_deref(), Some("rules.rules[0]"), "{record:?}");
 }
 
 /// A chart request composes narrative plans in the same crossing: the
@@ -3113,7 +3098,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     let record = ctx.last_error();
     assert_eq!(
         record.2.as_deref(),
-        Some("interpret_json.readings"),
+        Some("interpret.readings"),
         "{record:?}"
     );
 
@@ -3129,7 +3114,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     let status = unsafe { ts_chart_found(ctx.handle, &raw const wrong, &raw mut never) };
     assert_eq!(status, Status::InvalidArg);
     let record = ctx.last_error();
-    assert_eq!(record.2.as_deref(), Some("interpret_json"), "{record:?}");
+    assert_eq!(record.2.as_deref(), Some("interpret"), "{record:?}");
     assert!(
         record.1.contains("placements")
             && record.1.contains("readings")

@@ -17,7 +17,7 @@
 //    steps applied and a provenance envelope with the settings hash —
 //    the two things a cache key and an audit trail are made of.
 //
-// `ephemeris: 'builtin'` computes with the analytic ephemeris the SDK
+// `ephemeris: 'BUILTIN'` computes with the analytic ephemeris the SDK
 // carries, so this file runs anywhere with nothing installed. It is the
 // fallback rather than the intended path — most consumers should be on a
 // real engine — but it is astronomy: the scans below find sign ingresses
@@ -83,7 +83,7 @@ function stations(speeds, dayCount, stride, column) {
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
-  ephemeris: 'builtin',
+  ephemeris: 'BUILTIN',
 });
 
 // The binding already refuses a library that is not the build it was

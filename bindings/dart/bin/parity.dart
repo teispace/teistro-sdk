@@ -974,7 +974,7 @@ void main() {
     put('day-$i-muhurta-last-daylight', muhurtas.last.daylight);
     final moon = day.moonEvents;
     for (var j = 0; j < moon.length; j += 1) {
-      put('day-$i-moon-$j-kind', moon[j].rise ? 'rise' : 'set');
+      put('day-$i-moon-$j-kind', moon[j].rise ? 'RISE' : 'SET');
       put('day-$i-moon-$j-instant', moon[j].instant);
     }
     final held = day.muhurtaYogas;
@@ -982,7 +982,7 @@ void main() {
       put('day-$i-yoga-held-$j', held[j].yoga.fullKey);
       put(
         'day-$i-yoga-held-$j-cause',
-        held[j].tithi == null ? 'vara-nakshatra' : 'vara-tithi-nakshatra',
+        held[j].tithi == null ? 'VARA_NAKSHATRA' : 'VARA_TITHI_NAKSHATRA',
       );
       put('day-$i-yoga-held-$j-tithi', held[j].tithi?.fullKey ?? 'none');
     }

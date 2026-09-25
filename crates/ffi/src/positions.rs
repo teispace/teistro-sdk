@@ -46,7 +46,7 @@ pub unsafe extern "C" fn ts_positions(
         // SAFETY: non-null; the caller promises a readable request whose
         // arrays hold the counts it states.
         let decoded = unsafe { (*request).decode() }?;
-        let provider = ctx.provider().ok_or_else(crate::support::no_ephemeris)?;
+        let provider = ctx.provider().ok_or_else(teistro::Ephemeris::missing)?;
         let completion =
             Completion::new(provider, ctx.settings().provider.overrides, ctx.delta_t());
         let completed = match completion.positions(&decoded.request()) {

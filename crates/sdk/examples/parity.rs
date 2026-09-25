@@ -39,7 +39,6 @@ use teistro::{
     TimeScale, Timeline,
 };
 use teistro::{DayState, LocalDay};
-use teistro_core::envelope::CalendarResolution;
 use teistro_core::envelope::Envelope;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
@@ -65,34 +64,6 @@ fn fnv(text: &str) -> String {
         hash = hash.wrapping_mul(0x0100_0193);
     }
     format!("{hash:08x}")
-}
-
-/// A variant's name in kebab case, which is how every generated
-/// catalogue spells one: `LeapSeconds` is `leap-seconds`.
-fn kebab(variant: &str) -> String {
-    let mut out = String::with_capacity(variant.len() + 2);
-    for (at, letter) in variant.chars().enumerate() {
-        if letter.is_ascii_uppercase() {
-            if at != 0 {
-                out.push('-');
-            }
-            out.extend(letter.to_lowercase());
-        } else {
-            out.push(letter);
-        }
-    }
-    out
-}
-
-/// How a resolution's kind is spelled, which is the tag its JSON
-/// carries.
-fn resolution(of: &CalendarResolution) -> &'static str {
-    match of {
-        CalendarResolution::Defined => "defined",
-        CalendarResolution::Tabular { .. } => "tabular",
-        CalendarResolution::Computed { .. } => "computed",
-        CalendarResolution::Divergent { .. } => "divergent",
-    }
 }
 
 /// What every chart answers by rule, as the report prints it: the rules of the
@@ -242,11 +213,7 @@ fn the_calendars(report: &mut Report, sdk: &Context) {
     let era = bs.era.expect("Bikram Sambat has an era");
     put(report, "bs-era", era.era.full_key().to_owned());
     put(report, "bs-era-year", era.year.to_string());
-    put(
-        report,
-        "bs-resolution",
-        resolution(&bs.resolution).to_owned(),
-    );
+    put(report, "bs-resolution", wire_key(&bs.resolution));
     let fixed = sdk.calendar().fixed_of(&date).expect("a Gregorian date");
     put(report, "fixed", fixed.get().to_string());
     put(
@@ -292,16 +259,8 @@ fn time(report: &mut Report, sdk: &Context) {
         "resolve-offset",
         resolved.zone.offset.seconds().to_string(),
     );
-    put(
-        report,
-        "resolve-era",
-        format!("{:?}", resolved.zone.era).to_lowercase(),
-    );
-    put(
-        report,
-        "resolve-source",
-        format!("{:?}", resolved.zone.source).to_lowercase(),
-    );
+    put(report, "resolve-era", wire_key(&resolved.zone.era));
+    put(report, "resolve-source", wire_key(&resolved.zone.source));
     put(
         report,
         "resolve-time-known",
@@ -335,22 +294,14 @@ fn time(report: &mut Report, sdk: &Context) {
     put(report, "tt-jd", number(tt.jd));
     let applied = tt.delta_t.expect("UTC to TT needs a ΔT");
     put(report, "tt-delta-t", number(applied.seconds));
-    put(
-        report,
-        "tt-delta-t-source",
-        kebab(&format!("{:?}", applied.source)),
-    );
+    put(report, "tt-delta-t-source", wire_key(&applied.source));
     put(report, "tt-delta-t-model", applied.model.key().to_owned());
     let delta = sdk
         .time()
         .delta_t(teistro::quantity::JulianDay::try_new(2_451_544.5).expect("a Julian day"))
         .expect("inside the model's range");
     put(report, "delta-t-seconds", number(delta.seconds));
-    put(
-        report,
-        "delta-t-source",
-        kebab(&format!("{:?}", delta.source)),
-    );
+    put(report, "delta-t-source", wire_key(&delta.source));
 }
 
 /// Keys, as the report prints it.
@@ -359,11 +310,7 @@ fn keys(report: &mut Report, sdk: &Context) {
     put(report, "key-id", id.bits().to_string());
     put(report, "key-name", sdk.keys().name(id).expect("a live id"));
     let refusal = sdk.keys().id("graha.SUNN").expect_err("no such key");
-    put(
-        report,
-        "refusal-status",
-        format!("{:?}", refusal.status).to_lowercase(),
-    );
+    put(report, "refusal-status", wire_key(&refusal.status));
     put(
         report,
         "refusal-detail",
@@ -391,19 +338,11 @@ fn positions(report: &mut Report, sdk: &Context) {
     let stamped = sdk.positions(&request).expect("the test provider");
     let sky = &stamped.value;
     put(report, "cells", sky.columns.len().to_string());
-    put(
-        report,
-        "positions-scale",
-        kebab(&format!("{:?}", request.scale)),
-    );
+    put(report, "positions-scale", wire_key(&request.scale));
     put(
         report,
         "positions-bodies",
-        bodies
-            .iter()
-            .map(|body| kebab(&format!("{body:?}")))
-            .collect::<Vec<_>>()
-            .join(","),
+        bodies.iter().map(wire_key).collect::<Vec<_>>().join(","),
     );
     for index in 0..sky.columns.len() {
         let instant = index / bodies.len();
@@ -575,15 +514,11 @@ fn the_locale(report: &mut Report, sdk: &Context) {
 /// The frame, as the report prints it.
 fn the_frame(report: &mut Report, sdk: &Context) {
     let canonical = sdk.frame().canonical();
-    put(
-        report,
-        "frame-centre",
-        kebab(&format!("{:?}", canonical.centre)),
-    );
+    put(report, "frame-centre", wire_key(&canonical.centre));
     put(
         report,
         "frame-coordinates",
-        kebab(&format!("{:?}", canonical.coordinates)),
+        wire_key(&canonical.coordinates),
     );
     put(
         report,
@@ -628,7 +563,7 @@ fn one_chart(
     put(
         report,
         &format!("chart-{index}-day-part"),
-        kebab(&format!("{:?}", chart.day.part)),
+        wire_key(&chart.day.part),
     );
     put(
         report,
@@ -1256,7 +1191,7 @@ fn the_states(report: &mut Report, index: usize, document: &teistro::Document) {
         put(
             report,
             &key("-burning"),
-            kebab(&format!("{:?}", state.combustion.burning)),
+            wire_key(&state.combustion.burning),
         );
         put(
             report,
@@ -1316,11 +1251,7 @@ fn the_bhavas(report: &mut Report, index: usize, document: &teistro::Document) {
         let key = |what: &str| format!("chart-{index}-bhava-{number}{what}");
         put(report, &key("-sign"), bhava.sign.full_key().to_owned());
         put(report, &key("-lord"), bhava.lord.full_key().to_owned());
-        put(
-            report,
-            &key("-quadrant"),
-            kebab(&format!("{:?}", bhava.quadrant)),
-        );
+        put(report, &key("-quadrant"), wire_key(&bhava.quadrant));
     }
 }
 
@@ -1355,9 +1286,8 @@ fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &te
         depth: teistro::quantity::Depth::try_new(3).expect("three levels"),
         ..teistro::AnnualDashaRules::default()
     };
-    for (name, reading, asked) in [
+    for (reading, asked) in [
         (
-            "sidereal",
             teistro::VarshaReading::Sidereal,
             Asked {
                 matters: Some(teistro::YogaRules::default()),
@@ -1366,7 +1296,6 @@ fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &te
             },
         ),
         (
-            "tropical",
             teistro::VarshaReading::Tropical,
             Asked {
                 matters: Some(either),
@@ -1374,8 +1303,9 @@ fn the_praveshas(report: &mut Report, sdk: &Context, index: usize, document: &te
                 dashas: Some(rival_dashas),
             },
         ),
-        ("mean", teistro::VarshaReading::Mean, Asked::default()),
+        (teistro::VarshaReading::Mean, Asked::default()),
     ] {
+        let name = wire_key(&reading);
         let Ok(years) = sdk.chart().praveshas(document, reading, PARITY_YEARS) else {
             continue;
         };
@@ -1718,13 +1648,16 @@ fn the_harsha(
     );
 }
 
-/// A member as the bindings' catalogues key it: serde's own spelling with
-/// the catalogue's hyphens, which is the generator's kebab case for every
-/// member these runners print.
+/// A member as every binding keys it, which is serde's own spelling: a
+/// unit variant's string, or a tagged one's `kind` (`LEAP_SECONDS`,
+/// `TABULAR`).
 fn wire_key<T: serde::Serialize>(member: &T) -> String {
     serde_json::to_value(member)
         .ok()
-        .and_then(|key| key.as_str().map(|word| word.replace('_', "-")))
+        .and_then(|value| match value {
+            serde_json::Value::String(key) => Some(key),
+            tagged => tagged.get("kind")?.as_str().map(String::from),
+        })
         .unwrap_or_default()
 }
 
@@ -1938,8 +1871,8 @@ fn held_said(held: &teistro::Held) -> String {
     )
 }
 
-/// One lord's afflictions as the boundary spells its clauses, `+`-joined,
-/// or `none`.
+/// One lord's afflictions as the boundary spells its clauses (its
+/// `TsAffliction` keys), `+`-joined, or `none`.
 fn affliction_said(affliction: teistro::Affliction) -> String {
     let teistro::Affliction {
         graha: _,
@@ -1950,11 +1883,11 @@ fn affliction_said(affliction: teistro::Affliction) -> String {
         under_malefic,
     } = affliction;
     let said: Vec<&str> = [
-        ("retrograde", retrograde),
-        ("combust", combust),
-        ("debilitated", debilitated),
-        ("trika", trika),
-        ("under-malefic", under_malefic),
+        ("RETROGRADE", retrograde),
+        ("COMBUST", combust),
+        ("DEBILITATED", debilitated),
+        ("TRIKA", trika),
+        ("UNDER_MALEFIC", under_malefic),
     ]
     .into_iter()
     .filter_map(|(name, holds)| holds.then_some(name))
@@ -2122,7 +2055,7 @@ fn the_dasha_phala(report: &mut Report, index: usize, document: &teistro::Docume
                 "{} {} {} {} {}",
                 graha.subhankas.map(number).join(","),
                 graha.nature.full_key(),
-                kebab(&format!("{:?}", graha.phase)),
+                wire_key(&graha.phase),
                 graha.favourable,
                 graha.unfavourable
             ),
@@ -2139,7 +2072,7 @@ fn the_vimshopaka(report: &mut Report, index: usize, document: &teistro::Documen
     put(
         report,
         &format!("chart-{index}-vimshopaka"),
-        kebab(&format!("{:?}", vs.scoring)),
+        wire_key(&vs.scoring),
     );
     for graha in &vs.grahas {
         put(
@@ -2175,8 +2108,8 @@ fn the_ashtakavarga(report: &mut Report, index: usize, document: &teistro::Docum
         &format!("chart-{index}-ashtakavarga"),
         format!(
             "{} {}",
-            kebab(&format!("{:?}", av.rules.shodhana)),
-            kebab(&format!("{:?}", av.rules.ekadhipatya))
+            wire_key(&av.rules.shodhana),
+            wire_key(&av.rules.ekadhipatya)
         ),
     );
     for graha in &av.grahas {
@@ -2237,7 +2170,7 @@ fn the_dashas(report: &mut Report, sdk: &Context, index: usize, document: &teist
         put(
             report,
             &key("-balance"),
-            balance.map_or_else(null, |b| kebab(&format!("{:?}", b.method))),
+            balance.map_or_else(null, |b| wire_key(&b.method)),
         );
         put(
             report,
@@ -2329,11 +2262,7 @@ fn the_drishti(report: &mut Report, index: usize, document: &teistro::Document) 
             format!("{}>{}", drishti.from.full_key(), drishti.to.full_key()),
         );
         put(report, &key("-houses"), drishti.houses.to_string());
-        put(
-            report,
-            &key("-strength"),
-            kebab(&format!("{:?}", drishti.strength)),
-        );
+        put(report, &key("-strength"), wire_key(&drishti.strength));
         put(
             report,
             &key("-from-sign"),
@@ -2373,28 +2302,22 @@ fn put_day(report: &mut Report, prefix: &str, day: &LocalDay) {
         &key("era-year"),
         day.date.era.map_or(0, |era| era.year).to_string(),
     );
-    put(
-        report,
-        &key("resolution"),
-        resolution(&day.date.resolution).to_owned(),
-    );
+    put(report, &key("resolution"), wire_key(&day.date.resolution));
     put(
         report,
         &key("polar"),
         match day.state {
             DayState::Normal => String::from("none"),
-            DayState::Polar { kind, policy } => format!(
-                "{}/{}",
-                kebab(&format!("{kind:?}")),
-                kebab(&format!("{policy:?}"))
-            ),
+            DayState::Polar { kind, policy } => {
+                format!("{}/{}", wire_key(&kind), wire_key(&policy))
+            }
         },
     );
     put(
         report,
         &key("convention"),
         match day.convention {
-            SunriseConvention::Named { which } => kebab(&format!("{which:?}")),
+            SunriseConvention::Named { which } => wire_key(&which),
             SunriseConvention::Custom { altitude_deg } => {
                 format!("custom {}", number(altitude_deg))
             }
@@ -2446,12 +2369,12 @@ fn one_day_shape(report: &mut Report, index: usize, day: &teistro_panchanga::alm
     put(
         report,
         &format!("day-{index}-convention"),
-        kebab(&format!("{:?}", day.month.convention)),
+        wire_key(&day.month.convention),
     );
     put(
         report,
         &format!("day-{index}-month-kind"),
-        kebab(&format!("{:?}", day.month.kind)),
+        wire_key(&day.month.kind),
     );
     put(
         report,
@@ -2598,8 +2521,8 @@ fn one_day_items(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         .moon
         .rises
         .iter()
-        .map(|at| ("rise", at))
-        .chain(day.moon.sets.iter().map(|at| ("set", at)))
+        .map(|at| ("RISE", at))
+        .chain(day.moon.sets.iter().map(|at| ("SET", at)))
         .enumerate()
     {
         put(

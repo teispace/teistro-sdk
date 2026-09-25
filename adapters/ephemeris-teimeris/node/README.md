@@ -11,7 +11,7 @@ the fallback rather than the intended path (ADR-0029).
 import { Context } from '@teistro/sdk';
 import teimeris, { engine } from '@teistro/ephemeris-teimeris';
 
-const sdk = new Context({ ephemeris: [teimeris({ dataDir: './ephe' }), 'builtin'] });
+const sdk = new Context({ ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'] });
 engine(sdk.engine).tmBodyName({ body: 0 });   // 'Sun'
 ```
 

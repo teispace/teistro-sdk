@@ -188,7 +188,7 @@ mod tests {
                     name: "Ok".into(),
                     value: 0,
                     doc: String::new(),
-                    key: None,
+                    key: "OK".into(),
                     deprecated: false,
                 }],
                 source: String::new(),

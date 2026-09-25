@@ -302,7 +302,7 @@ chart answers, in the same `varsha_json`:
   misspelt one with the catalogue's "did you mean", and one named twice
   as a mistake.
 - `dashaRules` is `AnnualDashaRules`, in the boundary's casing. A clock
-  of no length is refused at `varsha_json.dashaRules.clock` by the same
+  of no length is refused at `varsha.dashaRules.clock` by the same
   `YearClock::check` the kernel runs, so the request and the call cannot
   disagree about what a year is.
 - **It needs `place`**, as the matters do: a year's dasha opens at its

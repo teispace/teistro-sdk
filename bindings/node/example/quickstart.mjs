@@ -21,7 +21,7 @@ console.log(`Teistro ${sdkVersion()}`);
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
-  ephemeris: 'builtin',
+  ephemeris: 'BUILTIN',
 });
 
 // 14 April 2015 is 1 Baisakh 2072 BS.

@@ -144,11 +144,11 @@ test('a refusal carries its status, its field and its hint', () => {
     () => ctx.keys.id('graha.SUNN'),
     (error) => {
       assert.ok(error instanceof TeistroError, 'a TeistroError, not a bare Error');
-      assert.equal(error.status, 'unsupported');
+      assert.equal(error.status, 'UNSUPPORTED');
       assert.equal(error.code, -6);
       assert.equal(error.detail, 'UNKNOWN_KEY');
       assert.match(error.hint, /did you mean `SUN`/u);
-      assert.match(String(error), /TeistroError \[unsupported\]/u);
+      assert.match(String(error), /TeistroError \[UNSUPPORTED\]/u);
       return true;
     },
   );
@@ -158,7 +158,7 @@ test('a refusal carries its status, its field and its hint', () => {
     () => new Context({ profile: 'vedic-classic' }),
     (error) => {
       assert.ok(error instanceof TeistroError, 'a TeistroError, not a bare Error');
-      assert.equal(error.status, 'unsupported');
+      assert.equal(error.status, 'UNSUPPORTED');
       assert.match(error.message, /no shipped profile `vedic-classic`/u);
       assert.equal(error.field, 'profile');
       assert.match(error.hint, /parashari-classical/u);
@@ -171,7 +171,7 @@ test('a refusal carries its status, its field and its hint', () => {
   );
   assert.throws(
     () => ctx.calendar.fixedOf(gregorian(2023, 2, 29)),
-    (error) => error.detail === 'NONEXISTENT_DATE' && error.status === 'invalid-arg',
+    (error) => error.detail === 'NONEXISTENT_DATE' && error.status === 'INVALID_ARG',
   );
 });
 
@@ -206,8 +206,8 @@ test('a Nepali birth time resolves with the metadata a stored chart keeps', () =
   const resolved = ctx.time.resolve(civil, zone);
   assert.ok(Math.abs(resolved.instantJdUtc - 2446431.2743056) < 1e-6);
   assert.equal(resolved.offsetSeconds, 20700, '+05:45, the offset that began that midnight');
-  assert.equal(resolved.era, 'current');
-  assert.equal(resolved.source, 'iana');
+  assert.equal(resolved.era, 'CURRENT');
+  assert.equal(resolved.source, 'IANA');
   assert.equal(resolved.timeKnown, true);
   assert.deepEqual(resolved.warnings, []);
   assert.match(resolved.tzdbVersion, /^20\d\d[a-z]$/u);
@@ -226,7 +226,7 @@ test('the time scales convert with what they applied', () => {
   const ctx = context();
   const tt = ctx.time.convert(2451544.5, Scale.Utc, Scale.Tt);
   assert.ok(Math.abs(tt.deltaTSeconds - 64.184) < 1e-9, 'exact through the leap-second table');
-  assert.equal(tt.deltaTSource, 'leap-seconds');
+  assert.equal(tt.deltaTSource, 'LEAP_SECONDS');
   assert.equal(tt.deltaTModel, 'TABLE_THEN_MODEL');
   assert.ok(Math.abs(tt.jd - (2451544.5 + 64.184 / 86400)) < 1e-12);
   const back = ctx.time.convert(tt.jd, Scale.Tt, Scale.Utc);
@@ -234,15 +234,15 @@ test('the time scales convert with what they applied', () => {
 
   const delta = ctx.time.deltaT(2451544.5);
   assert.ok(Math.abs(delta.seconds - 63.83) < 0.02);
-  assert.equal(delta.source, 'table');
+  assert.equal(delta.source, 'TABLE');
   assert.throws(() => ctx.time.deltaT(Number.NaN), /expected a finite number/u);
 });
 
 test('positions come back in the frame asked for, decoded on first use', () => {
   const ctx = context();
   const frame = ctx.frame.canonical();
-  assert.equal(frame.centre, 'geocentric');
-  assert.equal(frame.coordinates, 'ecliptic');
+  assert.equal(frame.centre, 'GEOCENTRIC');
+  assert.equal(frame.coordinates, 'ECLIPTIC');
   assert.equal(frame.sidereal, false);
   assert.equal(frame.ayanamsha, undefined, 'a tropical frame carries none');
   assert.deepEqual(unpackFrame(packFrame(frame)), frame, 'the packing round-trips');
@@ -255,9 +255,9 @@ test('positions come back in the frame asked for, decoded on first use', () => {
     instants: [2451545.0, 2451546.0],
     bodies: [Body.Sun, Body.Moon, Body.Mars],
   });
-  assert.deepEqual(positions.bodies, ['sun', 'moon', 'mars']);
+  assert.deepEqual(positions.bodies, ['SUN', 'MOON', 'MARS']);
   assert.deepEqual(Array.from(positions.instants), [2451545, 2451546]);
-  assert.equal(positions.scale, 'ut1');
+  assert.equal(positions.scale, 'UT1');
   assert.equal(positions.cells.length, 6, 'two instants by three bodies');
 
   const sun = positions.at(0, 0);
@@ -293,9 +293,9 @@ test('positions come back in the frame asked for, decoded on first use', () => {
   assert.throws(
     () => bare.positions({ instants: [2451545.0], bodies: [Body.Sun] }),
     (error) =>
-      error.status === 'capability' &&
+      error.status === 'CAPABILITY' &&
       error.field === 'ephemeris' &&
-      error.hint.includes('builtin'),
+      error.hint.includes('BUILTIN'),
   );
   assert.throws(() => ctx.positions({ instants: [], bodies: [Body.Sun] }), TypeError);
   assert.throws(() => ctx.positions({ instants: [Number.NaN], bodies: [Body.Sun] }), TypeError);
@@ -334,7 +334,7 @@ test('the locale engine renders typed parameters, and says where from', () => {
   }, /sa-Deva/u);
   assert.throws(
     () => ctx.intl.render('sdk.reason.grahaInBhava', 'not an object'),
-    (error) => error.status === 'invalid-arg' && error.field === 'params_json',
+    (error) => error.status === 'INVALID_ARG' && error.field === 'params_json',
   );
 });
 
@@ -399,7 +399,7 @@ test('a catalogue key packs to an id and back', () => {
   assert.equal(id, (1 << 16) | 0, 'the kind in the high half, the member in the low');
   assert.equal(ctx.keys.name(id), 'graha.SUN');
   assert.equal(ctx.keys.name(ctx.keys.id('nakshatra.ASHWINI')), 'nakshatra.ASHWINI');
-  assert.throws(() => ctx.keys.name(0xffffffff), (error) => error.status === 'unsupported');
+  assert.throws(() => ctx.keys.name(0xffffffff), (error) => error.status === 'UNSUPPORTED');
 });
 
 /** An ephemeris written in JavaScript: a straight line per body. */
@@ -442,8 +442,8 @@ test('an ephemeris written in JavaScript answers the SDK', () => {
   assert.equal(calls.length, 1);
   const asked = calls[0];
   assert.deepEqual(Array.from(asked.jds), [2451545, 2451546]);
-  assert.deepEqual(asked.bodies, ['sun', 'moon']);
-  assert.equal(asked.scale, 'ut1');
+  assert.deepEqual(asked.bodies, ['SUN', 'MOON']);
+  assert.equal(asked.scale, 'UT1');
   assert.equal(asked.speeds, true);
   assert.equal(asked.observer, undefined, 'a geocentric frame needs none');
 
@@ -472,7 +472,7 @@ test('an instant outside its coverage is a cell, and never asked for', () => {
 });
 
 test('a provider that refuses a frame is completed by the SDK', () => {
-  const equatorial = { ...canonicalFrame(), coordinates: 'equatorial' };
+  const equatorial = { ...canonicalFrame(), coordinates: 'EQUATORIAL' };
   const asked = [];
   const provider = {
     name: 'equatorial-provider',
@@ -525,7 +525,7 @@ test('a provider that fails says so in its own words', () => {
     (error) => {
       assert.equal(error.message, 'no data for that instant');
       assert.equal(error.status, undefined, 'the provider threw an Error, not a TeistroError');
-      assert.equal(error.cause?.status, 'provider', "the library's own refusal, kept as the cause");
+      assert.equal(error.cause?.status, 'PROVIDER', "the library's own refusal, kept as the cause");
       return true;
     },
   );
@@ -547,7 +547,7 @@ test('a provider that fails says so in its own words', () => {
   assert.throws(
     () => new Context({ provider: onlySun }).positions({ instants: [2451545.0], bodies: [Body.Mars] }),
     (error) => {
-      assert.equal(error.status, 'unsupported');
+      assert.equal(error.status, 'UNSUPPORTED');
       assert.match(error.message, /MARS; it answers SUN/u);
       return true;
     },
@@ -568,7 +568,7 @@ test('a provider answers only the bodies it declared', () => {
   const ctx = new Context({ provider });
   assert.throws(
     () => ctx.positions({ instants: [2451545.0], bodies: [Body.Sun, Body.Mars] }),
-    (error) => error.status === 'unsupported' || error.status === 'capability',
+    (error) => error.status === 'UNSUPPORTED' || error.status === 'CAPABILITY',
   );
 });
 
@@ -667,7 +667,7 @@ test('a birth with no time is refused, or reported, but never guessed', () => {
   });
   const resolved = noon.time.resolve(whenUnknown(day), zone);
   assert.equal(resolved.timeKnown, false);
-  assert.ok(resolved.warnings.includes('time-unknown-fallback'), 'the fallback is warned about');
+  assert.ok(resolved.warnings.includes('TIME_UNKNOWN_FALLBACK'), 'the fallback is warned about');
   assert.ok(Number.isFinite(resolved.instantJdUtc));
   noon.dispose();
 
@@ -794,7 +794,7 @@ test('an ephemeris chain is tried in order and refuses naming each', () => {
   // caller wrote down.
   const fellBack = new Context({
     profile: 'parashari-classical',
-    ephemeris: [{ plugin: '/nowhere/adapter.so' }, 'builtin'],
+    ephemeris: [{ plugin: '/nowhere/adapter.so' }, 'BUILTIN'],
   });
   try {
     const sky = fellBack.positions({ instants: [2451545.0], bodies: [Body.Sun] });
@@ -823,7 +823,7 @@ test('a provider and a named ephemeris together are refused', () => {
   assert.throws(
     () =>
       new Context({
-        ephemeris: 'builtin',
+        ephemeris: 'BUILTIN',
         provider: { name: 'x', bodies: [], positions: () => null },
       }),
     /give one of them/u,
@@ -896,7 +896,7 @@ test('rules are answered in the same crossing, and a wrong one is refused by its
 
   assert.throws(
     () => ctx.chart.found({ ...request, rules: { rules: [{ key: 'X', category: 'raja' }] } }),
-    (error) => error instanceof TeistroError && error.field === 'rules_json.rules[0]',
+    (error) => error instanceof TeistroError && error.field === 'rules.rules[0]',
   );
   assert.throws(() => ctx.chart.found({ ...request, rules: ['nabhasas'] }), /rules: expected/u);
   ctx.dispose();
@@ -1015,12 +1015,12 @@ test('plans compose in the same crossing, and render with nothing in between', (
   // A reading says what the rules answered, so it needs rules beside it.
   assert.throws(
     () => ctx.chart.found({ ...request, interpret: { readings: true } }),
-    (error) => error instanceof TeistroError && error.field === 'interpret_json.readings',
+    (error) => error instanceof TeistroError && error.field === 'interpret.readings',
   );
   // And a composer that is not one is refused beside the ones that are.
   assert.throws(
     () => ctx.chart.found({ ...request, interpret: { readigns: true } }),
-    (error) => error instanceof TeistroError && error.field === 'interpret_json',
+    (error) => error instanceof TeistroError && error.field === 'interpret',
   );
   assert.throws(() => ctx.chart.found({ ...request, interpret: ['placements'] }), /interpret: expected/u);
   ctx.dispose();
@@ -1077,11 +1077,11 @@ test('a theme writes each drawing as SVG, and a wrong one is refused by its fiel
 
   assert.throws(
     () => ctx.chart.found({ ...request, theme: { style: { ink: 'black' } } }),
-    (error) => error instanceof TeistroError && error.field === 'theme_json.style.ink',
+    (error) => error instanceof TeistroError && error.field === 'theme.style.ink',
   );
   assert.throws(
     () => ctx.chart.found({ ...request, theme: 'sepia' }),
-    (error) => error instanceof TeistroError && error.field === 'theme_json.extends',
+    (error) => error instanceof TeistroError && error.field === 'theme.extends',
   );
   assert.throws(() => ctx.chart.found({ ...request, theme: 7 }), /theme: expected/u);
   ctx.dispose();
@@ -1157,7 +1157,7 @@ test('a chart carries its Ashtakavarga, each graha\'s bindus and their reduction
   const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, ashtakavarga: true });
   assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).ashtakavarga, null);
   const { shodhana, ekadhipatya, grahas, sarva, reduced } = chart.ashtakavarga;
-  assert.deepEqual([shodhana, ekadhipatya], ['each-graha', 'bphs']);
+  assert.deepEqual([shodhana, ekadhipatya], ['EACH_GRAHA', 'BPHS']);
   assert.deepEqual(
     grahas.map((g) => g.bindus.reduce((a, b) => a + b, 0)),
     [48, 49, 39, 54, 56, 52, 39],
@@ -1250,7 +1250,7 @@ test('a chart carries the annual charts its birth opens', () => {
     instant: 2447995.4895833335,
     place,
     utcOffsetSeconds: 20700,
-    varsha: { reading: 'sidereal', through: 12 },
+    varsha: { reading: 'SIDEREAL', through: 12 },
   });
   const years = chart.praveshas;
   assert.equal(years.length, 12);
@@ -1278,7 +1278,7 @@ test('a chart carries the annual charts its birth opens', () => {
     instant: 2447995.4895833335,
     place,
     utcOffsetSeconds: 20700,
-    varsha: { through: 12, muntha: 'natal_degree' },
+    varsha: { through: 12, muntha: 'NATAL_DEGREE' },
   }).praveshas;
   assert.deepEqual(carried.map((one) => one.muntha.sign), signs);
   assert.ok(
@@ -1313,7 +1313,7 @@ test('a chart carries the annual charts its birth opens', () => {
     assert.ok(lord.claims.length >= 1 && lord.claims.length <= 5);
     // Among its own claimants, unless it succeeds the Moon, whose Ithasala
     // may be with any planet.
-    const succeedsTheMoon = ['moons-ithasala', 'moons-sign-lord'].includes(lord.chosen);
+    const succeedsTheMoon = ['MOONS_ITHASALA', 'MOONS_SIGN_LORD'].includes(lord.chosen);
     assert.ok(succeedsTheMoon || lord.claims.some((claim) => claim.graha === lord.graha));
     if (succeedsTheMoon) assert.equal(lord.moonPassedOver, true);
     // Ranked strongest first, and the strength reads as the sources write it.
@@ -1333,14 +1333,14 @@ test('a chart carries the annual charts its birth opens', () => {
   const kinds = new Set();
   for (const one of cast) {
     for (const pair of one.annual.yogas) {
-      assert.notEqual(pair.drishti, 'none', 'a neutral pair makes no yoga');
+      assert.notEqual(pair.drishti, 'NONE', 'a neutral pair makes no yoga');
       assert.ok(pair.orbDeg > 0);
       kinds.add(pair.yoga);
-      if (pair.yoga === 'ithasala-vartamana') assert.ok(pair.apartDeg >= 1);
-      if (pair.yoga === 'ithasala-poorna') assert.ok(Math.abs(pair.apartDeg) < 1);
-      if (pair.yoga === 'ishrafa') assert.ok(pair.apartDeg <= -1);
+      if (pair.yoga === 'ITHASALA_VARTAMANA') assert.ok(pair.apartDeg >= 1);
+      if (pair.yoga === 'ITHASALA_POORNA') assert.ok(Math.abs(pair.apartDeg) < 1);
+      if (pair.yoga === 'ISHRAFA') assert.ok(pair.apartDeg <= -1);
       assert.ok(
-        Math.abs(pair.apartDeg) <= pair.orbDeg || pair.yoga === 'ithasala-bhavishyat',
+        Math.abs(pair.apartDeg) <= pair.orbDeg || pair.yoga === 'ITHASALA_BHAVISHYAT',
       );
     }
   }
@@ -1349,7 +1349,7 @@ test('a chart carries the annual charts its birth opens', () => {
   // the enum's member count.
   assert.deepEqual(
     [...kinds].sort(),
-    ['ishrafa', 'ithasala-bhavishyat', 'ithasala-poorna', 'ithasala-vartamana'],
+    ['ISHRAFA', 'ITHASALA_BHAVISHYAT', 'ITHASALA_POORNA', 'ITHASALA_VARTAMANA'],
   );
 
   // At a residence, in the place shape `found` takes, the lagnas move.
@@ -1370,7 +1370,7 @@ test('a chart carries the annual charts its birth opens', () => {
       utcOffsetSeconds: 20700,
       varsha: { through: 12, place: 'home' },
     }),
-    (error) => error.field === 'varsha_json.place' && /"birth"/.test(error.message),
+    (error) => error.field === 'varsha.place' && /"birth"/.test(error.message),
   );
 
   // The instant founds as a chart of its own; the place is the caller's.
@@ -1388,7 +1388,7 @@ test('a chart carries the annual charts its birth opens', () => {
     instant: 2447995.4895833335,
     place,
     utcOffsetSeconds: 20700,
-    varsha: { reading: 'tropical', through: 12 },
+    varsha: { reading: 'TROPICAL', through: 12 },
   }).praveshas;
   assert.notEqual(tropical[11].instant, years[11].instant);
 
@@ -1397,9 +1397,9 @@ test('a chart carries the annual charts its birth opens', () => {
       instant: 2447995.4895833335,
       place,
       utcOffsetSeconds: 20700,
-      varsha: { reading: 'sidereal', through: 0 },
+      varsha: { reading: 'SIDEREAL', through: 0 },
     }),
-    (error) => error instanceof TeistroError && error.field === 'varsha_json.through',
+    (error) => error instanceof TeistroError && error.field === 'varsha.through',
   );
   ctx.dispose();
 });
@@ -1425,25 +1425,25 @@ test("a year's chart answers the Tajika yogas for the matters asked", () => {
       // The build computes all sixteen, and the façade reads the states,
       // so every one answers true or false and none is left unanswered.
       assert.deepEqual(matter.unanswered, []);
-      assert.equal(typeof matter.holds('kuttha'), 'boolean');
-      assert.equal(typeof matter.holds('ithasala'), 'boolean');
+      assert.equal(typeof matter.holds('KUTTHA'), 'boolean');
+      assert.equal(typeof matter.holds('ITHASALA'), 'boolean');
       assert.equal(matter.karyesha !== matter.lagnesha, !matter.sameLord);
       for (const held of matter.held) {
         // A yoga made by the pair carries the matter's own pair.
         if (held.between !== null) assert.equal(held.between, matter.between);
         if (held.legs !== null) assert.equal(held.legs.length, 2);
-        assert.equal(held.afflictions !== null, ['rudda', 'durapha'].includes(held.yoga));
+        assert.equal(held.afflictions !== null, ['RUDDA', 'DURAPHA'].includes(held.yoga));
       }
       // An Ithasala holds exactly where the pair make one.
       const pairYoga = matter.between?.yoga ?? null;
-      assert.equal(matter.holds('ithasala'), pairYoga !== null && pairYoga.startsWith('ithasala'));
+      assert.equal(matter.holds('ITHASALA'), pairYoga !== null && pairYoga.startsWith('ITHASALA'));
     }
     // The first house's lord is the lagnesha: no pair, and only the two
     // facts about the chart can hold.
     const [, first] = matters;
     assert.ok(first.sameLord);
     assert.equal(first.between, null);
-    assert.ok(first.held.every((held) => ['ikabala', 'induvara'].includes(held.yoga)));
+    assert.ok(first.held.every((held) => ['IKABALA', 'INDUVARA'].includes(held.yoga)));
   }
 
   // `'all'` is the twelve, first to twelfth; unasked is none.
@@ -1452,33 +1452,33 @@ test("a year's chart answers the Tajika yogas for the matters asked", () => {
   assert.deepEqual(years({ through: 2, place: 'birth' })[0].annual.matters, []);
   // Tambira's "some authorities" can only add.
   const tambiras = (found) =>
-    found.flatMap((one) => one.annual.matters).filter((matter) => matter.holds('tambira')).length;
-  const either = years({ through: 2, place: 'birth', matters: 'all', yogas: { tambira: 'either_lord' } });
+    found.flatMap((one) => one.annual.matters).filter((matter) => matter.holds('TAMBIRA')).length;
+  const either = years({ through: 2, place: 'birth', matters: 'all', yogas: { tambira: 'EITHER_LORD' } });
   assert.ok(tambiras(either) >= tambiras(every));
   // The commentary's full Moon can only take a Kuttha away.
   const kutthas = (found) =>
-    found.flatMap((one) => one.annual.matters).filter((matter) => matter.holds('kuttha')).length;
-  const waxing = years({ through: 2, place: 'birth', matters: 'all', yogas: { moonBenefic: 'waxing' } });
+    found.flatMap((one) => one.annual.matters).filter((matter) => matter.holds('KUTTHA')).length;
+  const waxing = years({ through: 2, place: 'birth', matters: 'all', yogas: { moonBenefic: 'WAXING' } });
   assert.ok(kutthas(waxing) <= kutthas(every));
 
   // The rule records read in the casing these types declare.
-  years({ through: 2, place: 'birth', varshesha: { noneAspects: 'annual_lagna_lord' } });
+  years({ through: 2, place: 'birth', varshesha: { noneAspects: 'ANNUAL_LAGNA_LORD' } });
   years({
     through: 2,
     place: 'birth',
-    varshesha: { noneAspects: 'strongest', moon: 'ithasala', moonPartner: 'office_bearer', drishti: { subDegree: 'ishrafa' } },
+    varshesha: { noneAspects: 'STRONGEST', moon: 'ITHASALA', moonPartner: 'OFFICE_BEARER', drishti: { subDegree: 'ISHRAFA' } },
   });
   years({ through: 2, place: 'birth', matters: [10], yogas: { weakBelow: 4 * 3600, strongFrom: 12 * 3600 } });
 
   // Each refusal names the field written.
   const refused = (varsha, field) =>
     assert.throws(() => years(varsha), (error) => error instanceof TeistroError && error.field === field);
-  refused({ through: 2, matters: [7] }, 'varsha_json.matters');
-  refused({ through: 2, place: 'birth', matters: [7, 7] }, 'varsha_json.matters');
-  refused({ through: 2, place: 'birth', matters: [13] }, 'varsha_json.matters');
+  refused({ through: 2, matters: [7] }, 'varsha.matters');
+  refused({ through: 2, place: 'birth', matters: [7, 7] }, 'varsha.matters');
+  refused({ through: 2, place: 'birth', matters: [13] }, 'varsha.matters');
   refused(
     { through: 2, place: 'birth', matters: [7], yogas: { weakBelow: 12 * 3600, strongFrom: 4 * 3600 } },
-    'varsha_json.yogas.strongFrom',
+    'varsha.yogas.strongFrom',
   );
   ctx.dispose();
 });
@@ -1541,7 +1541,7 @@ test("a year's chart answers the annual dashas asked for", () => {
     through: 1,
     place: 'birth',
     dashas: ['dasha_system.MUDDA'],
-    dashaRules: { clock: { days: 360 }, depth: 1, birthPeriod: 'ELAPSED', measure: 'TEMPORAL' },
+    dashaRules: { clock: { DAYS: 360 }, depth: 1, birthPeriod: 'ELAPSED', measure: 'TEMPORAL' },
   })[0].annual.dashas[0];
   assert.equal(days.year.to - days.year.from, 360);
   assert.ok(days.periods.every((period) => period.level === 1));
@@ -1549,11 +1549,11 @@ test("a year's chart answers the annual dashas asked for", () => {
   // Each refusal names the field written.
   const refused = (varsha, field) =>
     assert.throws(() => years(varsha), (error) => error instanceof TeistroError && error.field === field);
-  refused({ through: 2, dashas: [DashaSystem.Mudda] }, 'varsha_json.dashas');
-  refused({ through: 2, place: 'birth', dashas: [DashaSystem.Vimshottari] }, 'varsha_json.dashas');
-  refused({ through: 2, place: 'birth', dashas: ['MUDDA', DashaSystem.Mudda] }, 'varsha_json.dashas');
-  refused({ through: 2, place: 'birth', dashas: 'all', dashaRules: { clock: { days: -1 } } }, 'varsha_json.dashaRules.clock');
-  refused({ through: 2, place: 'birth', dashas: 'all', dashaRules: { birth_period: 'ELAPSED' } }, 'varsha_json.dashaRules.birth_period');
+  refused({ through: 2, dashas: [DashaSystem.Mudda] }, 'varsha.dashas');
+  refused({ through: 2, place: 'birth', dashas: [DashaSystem.Vimshottari] }, 'varsha.dashas');
+  refused({ through: 2, place: 'birth', dashas: ['MUDDA', DashaSystem.Mudda] }, 'varsha.dashas');
+  refused({ through: 2, place: 'birth', dashas: 'all', dashaRules: { clock: { DAYS: -1 } } }, 'varsha.dashaRules.clock');
+  refused({ through: 2, place: 'birth', dashas: 'all', dashaRules: { birth_period: 'ELAPSED' } }, 'varsha.dashaRules.birth_period');
   ctx.dispose();
 });
 
@@ -1569,9 +1569,9 @@ test("a year's chart answers the sahams asked for", () => {
       .praveshas;
   const signs = [...RashiById.values()];
 
-  const asked = years({ through: 4, place: 'birth', sahams: ['vivaha', 'punya'] });
+  const asked = years({ through: 4, place: 'birth', sahams: ['VIVAHA', 'PUNYA'] });
   for (const { annual } of asked) {
-    assert.deepEqual(annual.sahams.map((one) => one.saham), ['vivaha', 'punya']);
+    assert.deepEqual(annual.sahams.map((one) => one.saham), ['VIVAHA', 'PUNYA']);
     const lagna = Math.floor(annual.lagnaDeg / 30);
     for (const one of annual.sahams) {
       assert.ok(one.longitudeDeg >= 0 && one.longitudeDeg < 360);
@@ -1588,33 +1588,33 @@ test("a year's chart answers the sahams asked for", () => {
   assert.deepEqual(every.map((one) => one.saham), [...SahamById.values()]);
   assert.deepEqual(years({ through: 1, place: 'birth' })[0].annual.sahams, []);
   // The rules read in the casing these types declare.
-  const never = years({ through: 2, place: 'birth', sahams: 'all', sahamRules: { addSign: 'never' } });
+  const never = years({ through: 2, place: 'birth', sahams: 'all', sahamRules: { addSign: 'NEVER' } });
   assert.ok(never.every(({ annual }) => annual.sahams.every((one) => !one.addedSign)));
-  years({ through: 1, place: 'birth', sahams: ['mrityu'], sahamRules: { houses: 'equal', roga: 'saturn' } });
+  years({ through: 1, place: 'birth', sahams: ['MRITYU'], sahamRules: { houses: 'EQUAL', roga: 'SATURN' } });
 
   // Each refusal names the field written.
   const refused = (varsha, field) =>
     assert.throws(() => years(varsha), (error) => error instanceof TeistroError && error.field === field);
-  refused({ through: 2, place: 'birth', sahams: ['punya', 'punya'] }, 'varsha_json.sahams');
-  refused({ through: 2, place: 'birth', sahams: ['pnya'] }, 'varsha_json.sahams[0]');
-  refused({ through: 2, place: 'birth', sahams: ['punya'], sahamRules: { add_sign: 'never' } }, 'varsha_json.sahamRules.add_sign');
-  refused({ through: 1, sahams: ['punya'], sahamStrength: { natures: 'vedic' } }, 'varsha_json.sahamStrength.natures');
-  refused({ through: 1, place: 'birth', harshaRules: { venus: 'sixth' } }, 'varsha_json.harshaRules.venus');
+  refused({ through: 2, place: 'birth', sahams: ['PUNYA', 'PUNYA'] }, 'varsha.sahams');
+  refused({ through: 2, place: 'birth', sahams: ['pnya'] }, 'varsha.sahams[0]');
+  refused({ through: 2, place: 'birth', sahams: ['PUNYA'], sahamRules: { add_sign: 'NEVER' } }, 'varsha.sahamRules.add_sign');
+  refused({ through: 1, sahams: ['PUNYA'], sahamStrength: { natures: 'vedic' } }, 'varsha.sahamStrength.natures');
+  refused({ through: 1, place: 'birth', harshaRules: { venus: 'sixth' } }, 'varsha.harshaRules.venus');
 
   // Each saham carries its strength, clause by clause and never weighed.
   const found = ctx.chart.found({
     instant: 2447995.4895833335,
     place,
     utcOffsetSeconds: 20700,
-    varsha: { through: 2, place: 'birth', sahams: 'all', harshaRules: { venus: 'twelfth' } },
+    varsha: { through: 2, place: 'birth', sahams: 'all', harshaRules: { venus: 'TWELFTH' } },
   });
   for (const { annual } of found.praveshas) {
     for (const one of annual.sahams) {
       // The two (c) clauses negate each other: exactly one holds.
-      const near = one.strong.includes('lord-conjoins') || one.strong.includes('lord-aspects-saham');
-      assert.notEqual(near, one.weak.includes('lord-apart'));
+      const near = one.strong.includes('LORD_CONJOINS') || one.strong.includes('LORD_ASPECTS_SAHAM');
+      assert.notEqual(near, one.weak.includes('LORD_APART'));
       assert.equal(one.seven.length, 7);
-      assert.equal(one.seven.find((s) => s.graha === one.lord)?.company, one.strong.includes('lord-conjoins'));
+      assert.equal(one.seven.find((s) => s.graha === one.lord)?.company, one.strong.includes('LORD_CONJOINS'));
       assert.equal(typeof one.inNodeAxis, 'boolean');
       assert.equal(one.handicapped, [6, 8, 12].includes(one.house));
       assert.ok(one.lordVishwa.total >= 0);
@@ -1628,9 +1628,9 @@ test("a year's chart answers the sahams asked for", () => {
   }
   // The birth's own sahams come beside the years', and need no place.
   assert.equal(found.sahams.length, 41);
-  assert.ok(found.sahams.every((one) => !one.strong.includes('with-year-lord')));
-  const natal = ctx.chart.found({ instant: 2447995.4895833335, place, utcOffsetSeconds: 20700, varsha: { through: 1, sahams: ['punya'] } });
-  assert.deepEqual(natal.sahams.map((one) => one.saham), ['punya']);
+  assert.ok(found.sahams.every((one) => !one.strong.includes('WITH_YEAR_LORD')));
+  const natal = ctx.chart.found({ instant: 2447995.4895833335, place, utcOffsetSeconds: 20700, varsha: { through: 1, sahams: ['PUNYA'] } });
+  assert.deepEqual(natal.sahams.map((one) => one.saham), ['PUNYA']);
   assert.equal(natal.praveshas[0].annual, null);
   ctx.dispose();
 });
@@ -1653,7 +1653,7 @@ test('a chart carries its dasha phala, and the Shadbala its rays', () => {
     g.subhankas.forEach((points, k) => assert.ok(points >= 0 && points <= (k === 0 ? 60 : 30), `${g.graha} ${k}`));
     assert.ok(Math.abs(g.subhanka + g.asubhanka - 240) < 1e-9, g.graha);
     assert.match(g.nature, /^nature\./);
-    assert.ok(['commencement', 'middle', 'end'].includes(g.phase), g.graha);
+    assert.ok(['COMMENCEMENT', 'MIDDLE', 'END'].includes(g.phase), g.graha);
     assert.equal(typeof g.favourable, 'boolean');
   }
   for (const g of chart.shadbala.grahas) {
@@ -1752,7 +1752,7 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   assert.equal(day.vara, 'vara.SHANIVARA');
   assert.ok(day.sunrise < day.sunset && day.sunset < 2451545 && 2451545 < day.nextSunrise);
   assert.equal(day.polar, null);
-  assert.equal(day.convention, 'centre-no-refraction');
+  assert.equal(day.convention, 'CENTRE_NO_REFRACTION');
   assert.equal(day.customAltitudeDeg, null);
   ctx.dispose();
 
@@ -1768,7 +1768,7 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   const tromso = { latitude: 69.65, longitude: 18.96, altitude: 0 };
   const midsummer = { instant: 2451716.5, place: tromso, utcOffsetSeconds: 7200 };
   const civil = context({ settings: { day: { polar_day_policy: 'CIVIL_MIDNIGHT' } } });
-  assert.deepEqual(civil.chart.found(midsummer).day.polar, { kind: 'day', policy: 'civil-midnight' });
+  assert.deepEqual(civil.chart.found(midsummer).day.polar, { kind: 'DAY', policy: 'CIVIL_MIDNIGHT' });
   civil.dispose();
   const nearest = context({ settings: { day: { polar_day_policy: 'NEAREST_EVENT' } } });
   assert.throws(
@@ -1784,7 +1784,7 @@ test('a chart carries its Vimshopaka, each graha\'s four scores', () => {
   const chart = ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700, vimshopaka: true });
   assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).vimshopaka, null);
   const { scoring, grahas } = chart.vimshopaka;
-  assert.equal(scoring, 'bphs');
+  assert.equal(scoring, 'BPHS');
   assert.deepEqual(
     grahas.map((g) => g.graha),
     ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN'].map((key) => `graha.${key}`),
@@ -1853,7 +1853,7 @@ test('a chart carries its dashas, their periods, and the chain at an instant', (
   assert.equal(ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0 }).dashas.length, 0);
   const [dasha, chara] = chart.dashas;
   assert.equal(dasha.system, DashaSystem.Vimshottari);
-  assert.equal(dasha.balance.method, 'spatial');
+  assert.equal(dasha.balance.method, 'SPATIAL');
   assert.ok(dasha.balance.remaining > 0 && dasha.balance.remaining <= 1);
   assert.equal(dasha.moonSpan, null);
   assert.equal(dasha.depth, 3);

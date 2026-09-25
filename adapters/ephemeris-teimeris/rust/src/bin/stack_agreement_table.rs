@@ -229,7 +229,7 @@ fn apart(a: f64, b: f64) -> f64 {
 ///
 /// **The two sides are not the same pipeline, and cannot be made so.**
 /// The engine answers the whole frame in a single native call — its step
-/// list is `positions:Native` and nothing else — while the built-in
+/// list is `positions:NATIVE` and nothing else — while the built-in
 /// ephemeris is completed by seven of the SDK's own steps. `SDK_ONLY`
 /// looks like the fix and is not: the engine's native positions are
 /// *apparent*, the SDK can add corrections and never remove them, so
@@ -557,7 +557,7 @@ fn main() -> ExitCode {
         step_days: STEP,
         samples: jds.len(),
         engine_profile: profile_key(profile_from_env()).to_string(),
-        note: "the engine answers the whole frame natively (`positions:Native` alone) \
+        note: "the engine answers the whole frame natively (`positions:NATIVE` alone) \
                and the built-in ephemeris is completed by the SDK's own steps, so these \
                are two pipelines and not one; geocentric isolates the ephemeris because \
                the instants are TT and nothing in that path needs Delta T, while \

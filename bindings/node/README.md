@@ -23,7 +23,8 @@ which is thin on purpose.
 
 A catalogue member is its full key everywhere a string names it
 (`'graha.SUN'`), which is what packs, fixtures and serialised results
-carry; any other enum member is its name in kebab case (`'invalid-arg'`).
+carry; any other enum member is its key, the spelling a stored document
+and a settings patch hold (`'INVALID_ARG'`, `'TIME_UNKNOWN_FALLBACK'`).
 A field the library may not fill is an optional property, which is what
 the addon carries on both sides.
 
@@ -63,7 +64,7 @@ import { Body, Calendar, Context, at, date, ianaZone } from '@teistro/sdk';
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
-  ephemeris: 'builtin',
+  ephemeris: 'BUILTIN',
 });
 const bs = ctx.calendar.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
 const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun, Body.Moon] });
@@ -96,14 +97,14 @@ import teimeris from '@teistro/ephemeris-teimeris';
 
 const ctx = new Context({
   // A real engine, and the SDK's own only if it is not there.
-  ephemeris: [teimeris({ dataDir: './ephe' }), 'builtin'],
+  ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'],
 });
 ```
 
 **That is the intended path.** In most cases a consumer should be on a
 real engine — Teimeris, Swiss Ephemeris — installed as its own package
-under its own licence, and the SDK's `'builtin'` is the fallback that
-makes a chart compute with nothing else installed. `'test'` (or the older
+under its own licence, and the SDK's `'BUILTIN'` is the fallback that
+makes a chart compute with nothing else installed. `'TEST'` (or the older
 `{ testProvider: true }`) selects the analytic test provider, whose
 positions are **not astronomy**.
 

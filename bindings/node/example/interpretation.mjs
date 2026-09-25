@@ -33,7 +33,7 @@ import { Calendar, Context, TeistroError, at, date, ianaZone } from '../lib/inde
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'en-Latn',
-  ephemeris: 'builtin',
+  ephemeris: 'BUILTIN',
 });
 
 const born = date(Calendar.BikramSambat, 2042, 9, 17);

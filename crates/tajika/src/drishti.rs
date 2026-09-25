@@ -56,7 +56,7 @@ pub const RASHYANTA_DEG: f64 = 29.0;
 /// do not, so it is carried rather than collapsed.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Drishti {
     /// **Pratyaksha Mitra**, at houses 5 and 9: openly friendly.
     Friendly,
@@ -174,7 +174,7 @@ pub const POORNA_DEG: f64 = 1.0;
 /// Ithasala of any kind.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Yoga {
     /// **Vartamana Ithasala**, the present one: the faster planet is
     /// behind the slower by [`POORNA_DEG`] or more, inside the orb, and
@@ -236,7 +236,7 @@ impl Yoga {
 /// argument.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SubDegree {
     /// **Poorna**, the default: the table's two rows read so that they
     /// interlock — a pair within a degree either way is complete, and

@@ -49,7 +49,7 @@ pub const YEAR_UNITS: u16 = 360;
 /// What a unit of the year is (crux C122).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum YearClock {
     /// The Sun's motion through one degree from where it stood at the
     /// return: Charak's definition of the 360 "solar days", and the
@@ -68,7 +68,7 @@ pub enum YearClock {
 /// Where the balance a nakshatra year opens with comes from (crux C123).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MuddaBalance {
     /// What remained of the birth Moon's nakshatra: the same every year.
     /// Charak's worked year.
@@ -1018,7 +1018,7 @@ mod tests {
     #[test]
     fn the_rules_read_camel_case_and_fill_the_rest() {
         let rules: AnnualDashaRules = serde_json::from_str(
-            r#"{"clock":{"days":365},"balance":"entry_moon","birthPeriod":"ELAPSED"}"#,
+            r#"{"clock":{"DAYS":365},"balance":"ENTRY_MOON","birthPeriod":"ELAPSED"}"#,
         )
         .unwrap();
         assert_eq!(rules.clock, YearClock::Days(365.0));

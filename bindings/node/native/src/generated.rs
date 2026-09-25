@@ -338,17 +338,17 @@ pub fn era_to_str(value: u16) -> String {
 /// A `Status` from the string `catalogue.js` names it by.
 pub fn status_from_str(value: &str) -> Result<i32> {
     match value {
-        "ok" => Ok(0),
-        "invalid-arg" => Ok(-1),
-        "out-of-range" => Ok(-2),
-        "capability" => Ok(-3),
-        "provider" => Ok(-4),
-        "not-converged" => Ok(-5),
-        "unsupported" => Ok(-6),
-        "pack" => Ok(-7),
-        "limit" => Ok(-8),
-        "schema-version" => Ok(-9),
-        "internal" => Ok(-10),
+        "OK" => Ok(0),
+        "INVALID_ARG" => Ok(-1),
+        "OUT_OF_RANGE" => Ok(-2),
+        "CAPABILITY" => Ok(-3),
+        "PROVIDER" => Ok(-4),
+        "NOT_CONVERGED" => Ok(-5),
+        "UNSUPPORTED" => Ok(-6),
+        "PACK" => Ok(-7),
+        "LIMIT" => Ok(-8),
+        "SCHEMA_VERSION" => Ok(-9),
+        "INTERNAL" => Ok(-10),
         other => Err(Error::from_reason(format!("`{other}` is not a Status"))),
     }
 }
@@ -357,17 +357,17 @@ pub fn status_from_str(value: &str) -> Result<i32> {
 /// `unknown`.
 pub fn status_to_str(value: i32) -> String {
     match value {
-        0 => "ok",
-        -1 => "invalid-arg",
-        -2 => "out-of-range",
-        -3 => "capability",
-        -4 => "provider",
-        -5 => "not-converged",
-        -6 => "unsupported",
-        -7 => "pack",
-        -8 => "limit",
-        -9 => "schema-version",
-        -10 => "internal",
+        0 => "OK",
+        -1 => "INVALID_ARG",
+        -2 => "OUT_OF_RANGE",
+        -3 => "CAPABILITY",
+        -4 => "PROVIDER",
+        -5 => "NOT_CONVERGED",
+        -6 => "UNSUPPORTED",
+        -7 => "PACK",
+        -8 => "LIMIT",
+        -9 => "SCHEMA_VERSION",
+        -10 => "INTERNAL",
         _ => "unknown",
     }
     .to_string()
@@ -376,20 +376,20 @@ pub fn status_to_str(value: i32) -> String {
 /// A `Body` from the string `catalogue.js` names it by.
 pub fn body_from_str(value: &str) -> Result<u16> {
     match value {
-        "sun" => Ok(0),
-        "moon" => Ok(1),
-        "mercury" => Ok(2),
-        "venus" => Ok(3),
-        "mars" => Ok(4),
-        "jupiter" => Ok(5),
-        "saturn" => Ok(6),
-        "uranus" => Ok(7),
-        "neptune" => Ok(8),
-        "pluto" => Ok(9),
-        "mean-node" => Ok(10),
-        "true-node" => Ok(11),
-        "mean-apogee" => Ok(12),
-        "osculating-apogee" => Ok(13),
+        "SUN" => Ok(0),
+        "MOON" => Ok(1),
+        "MERCURY" => Ok(2),
+        "VENUS" => Ok(3),
+        "MARS" => Ok(4),
+        "JUPITER" => Ok(5),
+        "SATURN" => Ok(6),
+        "URANUS" => Ok(7),
+        "NEPTUNE" => Ok(8),
+        "PLUTO" => Ok(9),
+        "MEAN_NODE" => Ok(10),
+        "TRUE_NODE" => Ok(11),
+        "MEAN_APOGEE" => Ok(12),
+        "OSCULATING_APOGEE" => Ok(13),
         other => Err(Error::from_reason(format!("`{other}` is not a Body"))),
     }
 }
@@ -398,20 +398,20 @@ pub fn body_from_str(value: &str) -> Result<u16> {
 /// `unknown`.
 pub fn body_to_str(value: u16) -> String {
     match value {
-        0 => "sun",
-        1 => "moon",
-        2 => "mercury",
-        3 => "venus",
-        4 => "mars",
-        5 => "jupiter",
-        6 => "saturn",
-        7 => "uranus",
-        8 => "neptune",
-        9 => "pluto",
-        10 => "mean-node",
-        11 => "true-node",
-        12 => "mean-apogee",
-        13 => "osculating-apogee",
+        0 => "SUN",
+        1 => "MOON",
+        2 => "MERCURY",
+        3 => "VENUS",
+        4 => "MARS",
+        5 => "JUPITER",
+        6 => "SATURN",
+        7 => "URANUS",
+        8 => "NEPTUNE",
+        9 => "PLUTO",
+        10 => "MEAN_NODE",
+        11 => "TRUE_NODE",
+        12 => "MEAN_APOGEE",
+        13 => "OSCULATING_APOGEE",
         _ => "unknown",
     }
     .to_string()
@@ -420,8 +420,8 @@ pub fn body_to_str(value: u16) -> String {
 /// A `TimeScale` from the string `catalogue.js` names it by.
 pub fn time_scale_from_str(value: &str) -> Result<u32> {
     match value {
-        "ut1" => Ok(0),
-        "tt" => Ok(1),
+        "UT1" => Ok(0),
+        "TT" => Ok(1),
         other => Err(Error::from_reason(format!("`{other}` is not a TimeScale"))),
     }
 }
@@ -430,8 +430,8 @@ pub fn time_scale_from_str(value: &str) -> Result<u32> {
 /// `unknown`.
 pub fn time_scale_to_str(value: u32) -> String {
     match value {
-        0 => "ut1",
-        1 => "tt",
+        0 => "UT1",
+        1 => "TT",
         _ => "unknown",
     }
     .to_string()
@@ -440,10 +440,10 @@ pub fn time_scale_to_str(value: u32) -> String {
 /// A `Centre` from the string `catalogue.js` names it by.
 pub fn centre_from_str(value: &str) -> Result<u8> {
     match value {
-        "geocentric" => Ok(0),
-        "topocentric" => Ok(1),
-        "heliocentric" => Ok(2),
-        "barycentric" => Ok(3),
+        "GEOCENTRIC" => Ok(0),
+        "TOPOCENTRIC" => Ok(1),
+        "HELIOCENTRIC" => Ok(2),
+        "BARYCENTRIC" => Ok(3),
         other => Err(Error::from_reason(format!("`{other}` is not a Centre"))),
     }
 }
@@ -452,10 +452,10 @@ pub fn centre_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn centre_to_str(value: u8) -> String {
     match value {
-        0 => "geocentric",
-        1 => "topocentric",
-        2 => "heliocentric",
-        3 => "barycentric",
+        0 => "GEOCENTRIC",
+        1 => "TOPOCENTRIC",
+        2 => "HELIOCENTRIC",
+        3 => "BARYCENTRIC",
         _ => "unknown",
     }
     .to_string()
@@ -464,8 +464,8 @@ pub fn centre_to_str(value: u8) -> String {
 /// A `Equinox` from the string `catalogue.js` names it by.
 pub fn equinox_from_str(value: &str) -> Result<u8> {
     match value {
-        "of-date" => Ok(0),
-        "j2000" => Ok(1),
+        "OF_DATE" => Ok(0),
+        "J2000" => Ok(1),
         other => Err(Error::from_reason(format!("`{other}` is not a Equinox"))),
     }
 }
@@ -474,8 +474,8 @@ pub fn equinox_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn equinox_to_str(value: u8) -> String {
     match value {
-        0 => "of-date",
-        1 => "j2000",
+        0 => "OF_DATE",
+        1 => "J2000",
         _ => "unknown",
     }
     .to_string()
@@ -484,8 +484,8 @@ pub fn equinox_to_str(value: u8) -> String {
 /// A `Coordinates` from the string `catalogue.js` names it by.
 pub fn coordinates_from_str(value: &str) -> Result<u8> {
     match value {
-        "ecliptic" => Ok(0),
-        "equatorial" => Ok(1),
+        "ECLIPTIC" => Ok(0),
+        "EQUATORIAL" => Ok(1),
         other => Err(Error::from_reason(format!(
             "`{other}` is not a Coordinates"
         ))),
@@ -496,8 +496,8 @@ pub fn coordinates_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn coordinates_to_str(value: u8) -> String {
     match value {
-        0 => "ecliptic",
-        1 => "equatorial",
+        0 => "ECLIPTIC",
+        1 => "EQUATORIAL",
         _ => "unknown",
     }
     .to_string()
@@ -506,9 +506,9 @@ pub fn coordinates_to_str(value: u8) -> String {
 /// A `Ephemeris` from the string `catalogue.js` names it by.
 pub fn ephemeris_from_str(value: &str) -> Result<u8> {
     match value {
-        "none" => Ok(0),
-        "builtin" => Ok(1),
-        "test" => Ok(2),
+        "NONE" => Ok(0),
+        "BUILTIN" => Ok(1),
+        "TEST" => Ok(2),
         other => Err(Error::from_reason(format!("`{other}` is not a Ephemeris"))),
     }
 }
@@ -517,9 +517,9 @@ pub fn ephemeris_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn ephemeris_to_str(value: u8) -> String {
     match value {
-        0 => "none",
-        1 => "builtin",
-        2 => "test",
+        0 => "NONE",
+        1 => "BUILTIN",
+        2 => "TEST",
         _ => "unknown",
     }
     .to_string()
@@ -528,10 +528,10 @@ pub fn ephemeris_to_str(value: u8) -> String {
 /// A `Resolution` from the string `catalogue.js` names it by.
 pub fn resolution_from_str(value: &str) -> Result<u8> {
     match value {
-        "defined" => Ok(0),
-        "tabular" => Ok(1),
-        "computed" => Ok(2),
-        "divergent" => Ok(3),
+        "DEFINED" => Ok(0),
+        "TABULAR" => Ok(1),
+        "COMPUTED" => Ok(2),
+        "DIVERGENT" => Ok(3),
         other => Err(Error::from_reason(format!("`{other}` is not a Resolution"))),
     }
 }
@@ -540,10 +540,10 @@ pub fn resolution_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn resolution_to_str(value: u8) -> String {
     match value {
-        0 => "defined",
-        1 => "tabular",
-        2 => "computed",
-        3 => "divergent",
+        0 => "DEFINED",
+        1 => "TABULAR",
+        2 => "COMPUTED",
+        3 => "DIVERGENT",
         _ => "unknown",
     }
     .to_string()
@@ -552,9 +552,9 @@ pub fn resolution_to_str(value: u8) -> String {
 /// A `Scale` from the string `catalogue.js` names it by.
 pub fn scale_from_str(value: &str) -> Result<u32> {
     match value {
-        "ut1" => Ok(0),
-        "tt" => Ok(1),
-        "utc" => Ok(2),
+        "UT1" => Ok(0),
+        "TT" => Ok(1),
+        "UTC" => Ok(2),
         other => Err(Error::from_reason(format!("`{other}` is not a Scale"))),
     }
 }
@@ -563,9 +563,9 @@ pub fn scale_from_str(value: &str) -> Result<u32> {
 /// `unknown`.
 pub fn scale_to_str(value: u32) -> String {
     match value {
-        0 => "ut1",
-        1 => "tt",
-        2 => "utc",
+        0 => "UT1",
+        1 => "TT",
+        2 => "UTC",
         _ => "unknown",
     }
     .to_string()
@@ -574,9 +574,9 @@ pub fn scale_to_str(value: u32) -> String {
 /// A `ZoneKind` from the string `catalogue.js` names it by.
 pub fn zone_kind_from_str(value: &str) -> Result<u8> {
     match value {
-        "iana" => Ok(0),
-        "fixed" => Ok(1),
-        "local-mean" => Ok(2),
+        "IANA" => Ok(0),
+        "FIXED" => Ok(1),
+        "LOCAL_MEAN" => Ok(2),
         other => Err(Error::from_reason(format!("`{other}` is not a ZoneKind"))),
     }
 }
@@ -585,9 +585,9 @@ pub fn zone_kind_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn zone_kind_to_str(value: u8) -> String {
     match value {
-        0 => "iana",
-        1 => "fixed",
-        2 => "local-mean",
+        0 => "IANA",
+        1 => "FIXED",
+        2 => "LOCAL_MEAN",
         _ => "unknown",
     }
     .to_string()
@@ -596,9 +596,9 @@ pub fn zone_kind_to_str(value: u8) -> String {
 /// A `ZoneSource` from the string `catalogue.js` names it by.
 pub fn zone_source_from_str(value: &str) -> Result<u8> {
     match value {
-        "iana" => Ok(0),
-        "local-mean" => Ok(1),
-        "manual" => Ok(2),
+        "IANA" => Ok(0),
+        "LOCAL_MEAN" => Ok(1),
+        "MANUAL" => Ok(2),
         other => Err(Error::from_reason(format!("`{other}` is not a ZoneSource"))),
     }
 }
@@ -607,9 +607,9 @@ pub fn zone_source_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn zone_source_to_str(value: u8) -> String {
     match value {
-        0 => "iana",
-        1 => "local-mean",
-        2 => "manual",
+        0 => "IANA",
+        1 => "LOCAL_MEAN",
+        2 => "MANUAL",
         _ => "unknown",
     }
     .to_string()
@@ -618,9 +618,9 @@ pub fn zone_source_to_str(value: u8) -> String {
 /// A `ZoneEra` from the string `catalogue.js` names it by.
 pub fn zone_era_from_str(value: &str) -> Result<u8> {
     match value {
-        "current" => Ok(0),
-        "historical" => Ok(1),
-        "before-rules" => Ok(2),
+        "CURRENT" => Ok(0),
+        "HISTORICAL" => Ok(1),
+        "BEFORE_RULES" => Ok(2),
         other => Err(Error::from_reason(format!("`{other}` is not a ZoneEra"))),
     }
 }
@@ -629,9 +629,9 @@ pub fn zone_era_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn zone_era_to_str(value: u8) -> String {
     match value {
-        0 => "current",
-        1 => "historical",
-        2 => "before-rules",
+        0 => "CURRENT",
+        1 => "HISTORICAL",
+        2 => "BEFORE_RULES",
         _ => "unknown",
     }
     .to_string()
@@ -640,9 +640,9 @@ pub fn zone_era_to_str(value: u8) -> String {
 /// A `Dst` from the string `catalogue.js` names it by.
 pub fn dst_from_str(value: &str) -> Result<u8> {
     match value {
-        "none" => Ok(0),
-        "gap" => Ok(1),
-        "overlap" => Ok(2),
+        "NONE" => Ok(0),
+        "GAP" => Ok(1),
+        "OVERLAP" => Ok(2),
         other => Err(Error::from_reason(format!("`{other}` is not a Dst"))),
     }
 }
@@ -651,9 +651,9 @@ pub fn dst_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn dst_to_str(value: u8) -> String {
     match value {
-        0 => "none",
-        1 => "gap",
-        2 => "overlap",
+        0 => "NONE",
+        1 => "GAP",
+        2 => "OVERLAP",
         _ => "unknown",
     }
     .to_string()
@@ -662,8 +662,8 @@ pub fn dst_to_str(value: u8) -> String {
 /// A `Chosen` from the string `catalogue.js` names it by.
 pub fn chosen_from_str(value: &str) -> Result<u8> {
     match value {
-        "earlier" => Ok(0),
-        "later" => Ok(1),
+        "EARLIER" => Ok(0),
+        "LATER" => Ok(1),
         other => Err(Error::from_reason(format!("`{other}` is not a Chosen"))),
     }
 }
@@ -672,8 +672,8 @@ pub fn chosen_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn chosen_to_str(value: u8) -> String {
     match value {
-        0 => "earlier",
-        1 => "later",
+        0 => "EARLIER",
+        1 => "LATER",
         _ => "unknown",
     }
     .to_string()
@@ -682,12 +682,12 @@ pub fn chosen_to_str(value: u8) -> String {
 /// A `ZoneWarning` from the string `catalogue.js` names it by.
 pub fn zone_warning_from_str(value: &str) -> Result<u8> {
     match value {
-        "offset-differs-from-current-rules" => Ok(0),
-        "dst-ambiguous" => Ok(1),
-        "dst-gap-shifted" => Ok(2),
-        "leap-second-folded" => Ok(3),
-        "leap-table-expired" => Ok(4),
-        "time-unknown-fallback" => Ok(5),
+        "OFFSET_DIFFERS_FROM_CURRENT_RULES" => Ok(0),
+        "DST_AMBIGUOUS" => Ok(1),
+        "DST_GAP_SHIFTED" => Ok(2),
+        "LEAP_SECOND_FOLDED" => Ok(3),
+        "LEAP_TABLE_EXPIRED" => Ok(4),
+        "TIME_UNKNOWN_FALLBACK" => Ok(5),
         other => Err(Error::from_reason(format!(
             "`{other}` is not a ZoneWarning"
         ))),
@@ -698,12 +698,12 @@ pub fn zone_warning_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn zone_warning_to_str(value: u8) -> String {
     match value {
-        0 => "offset-differs-from-current-rules",
-        1 => "dst-ambiguous",
-        2 => "dst-gap-shifted",
-        3 => "leap-second-folded",
-        4 => "leap-table-expired",
-        5 => "time-unknown-fallback",
+        0 => "OFFSET_DIFFERS_FROM_CURRENT_RULES",
+        1 => "DST_AMBIGUOUS",
+        2 => "DST_GAP_SHIFTED",
+        3 => "LEAP_SECOND_FOLDED",
+        4 => "LEAP_TABLE_EXPIRED",
+        5 => "TIME_UNKNOWN_FALLBACK",
         _ => "unknown",
     }
     .to_string()
@@ -712,10 +712,10 @@ pub fn zone_warning_to_str(value: u8) -> String {
 /// A `DeltaTSource` from the string `catalogue.js` names it by.
 pub fn delta_t_source_from_str(value: &str) -> Result<u8> {
     match value {
-        "table" => Ok(0),
-        "model" => Ok(1),
-        "leap-seconds" => Ok(2),
-        "custom" => Ok(3),
+        "TABLE" => Ok(0),
+        "MODEL" => Ok(1),
+        "LEAP_SECONDS" => Ok(2),
+        "CUSTOM" => Ok(3),
         other => Err(Error::from_reason(format!(
             "`{other}` is not a DeltaTSource"
         ))),
@@ -726,10 +726,10 @@ pub fn delta_t_source_from_str(value: &str) -> Result<u8> {
 /// `unknown`.
 pub fn delta_t_source_to_str(value: u8) -> String {
     match value {
-        0 => "table",
-        1 => "model",
-        2 => "leap-seconds",
-        3 => "custom",
+        0 => "TABLE",
+        1 => "MODEL",
+        2 => "LEAP_SECONDS",
+        3 => "CUSTOM",
         _ => "unknown",
     }
     .to_string()
@@ -1873,14 +1873,14 @@ pub struct ChartRequest {
     /// Example: {"placements":true}. May be null.
     pub interpret_json: Option<String>,
     /// The annual charts to answer for every chart in the batch, as a JSON
-    /// object: `reading` — `"sidereal"` (the tradition's), `"tropical"`
-    /// (the Western solar return) or `"mean"` (a whole sidereal year each
+    /// object: `reading` — `"SIDEREAL"` (the tradition's), `"TROPICAL"`
+    /// (the Western solar return) or `"MEAN"` (a whole sidereal year each
     /// time) — and `through`, the last year of life wanted, 1 to 200. The
     /// instants come back in the `praveshas` section, ragged by
     /// `cast.pravesha_count`; an ephemeris that ends first answers fewer
     /// than asked for rather than refusing. Null for none
-    /// (`03-design/annual-chart.md`). Refusals are named from this root,
-    /// as `varsha_json.through`. May be null.
+    /// (`03-design/annual-chart.md`). Refusals are named from the record
+    /// every binding calls `varsha`, as `varsha.through`. May be null.
     pub varsha_json: Option<String>,
 }
 

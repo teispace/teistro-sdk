@@ -38,7 +38,7 @@ use crate::model::{
     Api, BlobSchema, EnumDef, EnumValue, FieldDef, FunctionDef, OpaqueDef, ParamDef, Role, Scalar,
     SectionKind, SectionSchema, StructDef, StructRole, TypeRef,
 };
-use crate::names::{binding_type_name, c_type_name, kebab, method_name, pascal, screaming, snake};
+use crate::names::{binding_type_name, c_type_name, method_name, pascal, snake};
 use crate::rules::{
     FieldRole, Handed, constant_key, constants, constructor, destructor, field_roles,
     has_handshake, is_free_function, methods, pointee_struct, results, returned_scalar,
@@ -51,15 +51,14 @@ fn identifier(name: &str) -> String {
     reserved::renamed(&snake(name), reserved::PYTHON, "_")
 }
 
-/// A Python name for an enum member: its catalogue key upper-cased where
-/// it has one, its variant in screaming snake case otherwise. Every
+/// A Python name for an enum member: its key, which is its variant in
+/// screaming snake case unless the catalogue gave it one. Every
 /// Python keyword is lower-case, so this spelling cannot collide today;
 /// the rule is applied anyway, because a member added later might be
 /// spelled another way and a silent collision is a file that will not
 /// parse.
 fn member(value: &EnumValue) -> String {
-    let spelled = value.key.clone().unwrap_or_else(|| screaming(&value.name));
-    reserved::renamed(&spelled, reserved::PYTHON, "_")
+    reserved::renamed(&value.key, reserved::PYTHON, "_")
 }
 
 /// The member a value from a newer library falls into.
@@ -249,8 +248,7 @@ fn render_key_tables(out: &mut String, api: &Api) {
     for e in &api.enums {
         let _ = writeln!(out, "    \"{}\": {{", binding_type_name(&e.name));
         for value in &e.values {
-            let key = value.key.clone().unwrap_or_else(|| kebab(&value.name));
-            let _ = writeln!(out, "        {}: \"{key}\",", value.value);
+            let _ = writeln!(out, "        {}: \"{}\",", value.value, value.key);
         }
         if e.kind.is_some() {
             let _ = writeln!(out, "        -1: \"{UNKNOWN}\",");
@@ -1980,12 +1978,12 @@ mod tests {
     use super::{ctypes_scalar, format_code, identifier, member, python_scalar, struct_name};
     use crate::model::{EnumValue, Scalar};
 
-    fn value(name: &str, key: Option<&str>) -> EnumValue {
+    fn value(name: &str, key: &str) -> EnumValue {
         EnumValue {
             name: name.to_string(),
             value: 0,
             doc: String::new(),
-            key: key.map(str::to_string),
+            key: key.to_string(),
             deprecated: false,
         }
     }
@@ -1997,9 +1995,9 @@ mod tests {
         assert_eq!(identifier("longitudeDeg"), "longitude_deg");
         // A member is its key upper-cased, and no Python keyword is, so
         // the member rule never fires where Dart's does.
-        assert_eq!(member(&value("Return", Some("RETURN"))), "RETURN");
-        assert_eq!(member(&value("None", Some("NONE"))), "NONE");
-        assert_eq!(member(&value("InvalidArg", None)), "INVALID_ARG");
+        assert_eq!(member(&value("Return", "RETURN")), "RETURN");
+        assert_eq!(member(&value("None", "NONE")), "NONE");
+        assert_eq!(member(&value("InvalidArg", "INVALID_ARG")), "INVALID_ARG");
     }
 
     #[test]

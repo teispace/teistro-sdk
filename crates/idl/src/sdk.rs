@@ -95,7 +95,7 @@ pub fn kinds_from_catalogue(json: &str) -> Result<Vec<EnumDef>, ExtractError> {
                 name: pascal(&k.kind),
                 value: i64::from(k.number),
                 doc: k.doc.clone(),
-                key: Some(k.kind.clone()),
+                key: k.kind.clone(),
                 deprecated: false,
             })
             .collect(),
@@ -117,7 +117,7 @@ pub fn kinds_from_catalogue(json: &str) -> Result<Vec<EnumDef>, ExtractError> {
                 name: pascal(&m.key.to_ascii_lowercase()),
                 value: i64::from(m.id),
                 doc: m.doc.clone(),
-                key: Some(m.key.clone()),
+                key: m.key.clone(),
                 deprecated: m.deprecated,
             })
             .collect(),
@@ -193,7 +193,7 @@ mod tests {
             ("Graha", Scalar::U16, Some("graha"))
         );
         assert_eq!(graha.values[1].name, "PurvaPhalguni");
-        assert_eq!(graha.values[1].key.as_deref(), Some("PURVA_PHALGUNI"));
+        assert_eq!(graha.values[1].key, "PURVA_PHALGUNI");
         assert!(graha.values[1].deprecated);
         assert!(kinds_from_catalogue("{}").is_err());
     }

@@ -463,7 +463,7 @@ fn enum_section(api: &Api, e: &EnumDef) -> String {
         let _ = writeln!(
             out,
             "| `{}` | {} | {} |",
-            c_enum_member(&api.prefix, &e.name, &value.name, value.key.as_deref()),
+            c_enum_member(&api.prefix, &e.name, &value.key),
             value.value,
             one_line(&text(&value.doc))
         );

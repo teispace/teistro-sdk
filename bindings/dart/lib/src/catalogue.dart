@@ -4149,27 +4149,27 @@ enum AvasthaCheshta implements KeyOf<AvasthaCheshta> {
 /// The status of a call, with the code it has at the C boundary.
 enum Status {
   /// Success.
-  ok(0, 'ok'),
+  ok(0, 'OK'),
   /// A value refused at construction, or a request that contradicts itself.
-  invalidArg(-1, 'invalid-arg'),
+  invalidArg(-1, 'INVALID_ARG'),
   /// An instant or place outside the provider's or the calendar's coverage.
-  outOfRange(-2, 'out-of-range'),
+  outOfRange(-2, 'OUT_OF_RANGE'),
   /// The settings need something the provider does not declare.
-  capability(-3, 'capability'),
+  capability(-3, 'CAPABILITY'),
   /// The provider failed; its own code and message are carried.
-  provider(-4, 'provider'),
+  provider(-4, 'PROVIDER'),
   /// A search hit its iteration cap.
-  notConverged(-5, 'not-converged'),
+  notConverged(-5, 'NOT_CONVERGED'),
   /// A registered but unimplemented variant, or an unknown key.
-  unsupported(-6, 'unsupported'),
+  unsupported(-6, 'UNSUPPORTED'),
   /// A pack failed validation or targets another catalogue version.
-  pack(-7, 'pack'),
+  pack(-7, 'PACK'),
   /// A batch, range or cache limit was exceeded.
-  limit(-8, 'limit'),
+  limit(-8, 'LIMIT'),
   /// A struct or blob from an incompatible version.
-  schemaVersion(-9, 'schema-version'),
+  schemaVersion(-9, 'SCHEMA_VERSION'),
   /// A panic caught at the boundary; never expected.
-  internal(-10, 'internal');
+  internal(-10, 'INTERNAL');
 
   const Status(this.id, this.key);
 
@@ -4205,33 +4205,33 @@ enum Status {
 /// under the node knob (Rahu is the mean or the true node).
 enum Body {
   /// The Sun.
-  sun(0, 'sun'),
+  sun(0, 'SUN'),
   /// The Moon.
-  moon(1, 'moon'),
+  moon(1, 'MOON'),
   /// Mercury.
-  mercury(2, 'mercury'),
+  mercury(2, 'MERCURY'),
   /// Venus.
-  venus(3, 'venus'),
+  venus(3, 'VENUS'),
   /// Mars.
-  mars(4, 'mars'),
+  mars(4, 'MARS'),
   /// Jupiter.
-  jupiter(5, 'jupiter'),
+  jupiter(5, 'JUPITER'),
   /// Saturn.
-  saturn(6, 'saturn'),
+  saturn(6, 'SATURN'),
   /// Uranus.
-  uranus(7, 'uranus'),
+  uranus(7, 'URANUS'),
   /// Neptune.
-  neptune(8, 'neptune'),
+  neptune(8, 'NEPTUNE'),
   /// Pluto.
-  pluto(9, 'pluto'),
+  pluto(9, 'PLUTO'),
   /// The mean ascending lunar node.
-  meanNode(10, 'mean-node'),
+  meanNode(10, 'MEAN_NODE'),
   /// The true (osculating) ascending lunar node.
-  trueNode(11, 'true-node'),
+  trueNode(11, 'TRUE_NODE'),
   /// The mean lunar apogee.
-  meanApogee(12, 'mean-apogee'),
+  meanApogee(12, 'MEAN_APOGEE'),
   /// The osculating lunar apogee.
-  osculatingApogee(13, 'osculating-apogee');
+  osculatingApogee(13, 'OSCULATING_APOGEE');
 
   const Body(this.id, this.key);
 
@@ -4263,9 +4263,9 @@ enum Body {
 /// The time scale of the instants in a request.
 enum TimeScale {
   /// Universal Time (UT1), the scale of civil time and of rise and set.
-  ut1(0, 'ut1'),
+  ut1(0, 'UT1'),
   /// Terrestrial Time, the scale of the ephemerides.
-  tt(1, 'tt');
+  tt(1, 'TT');
 
   const TimeScale(this.id, this.key);
 
@@ -4297,10 +4297,10 @@ enum TimeScale {
 /// What a cell's distance is measured in.
 enum DistanceUnit {
   /// Astronomical units: an ephemeris.
-  astronomicalUnits(0, 'astronomical-units'),
+  astronomicalUnits(0, 'ASTRONOMICAL_UNITS'),
   /// The body's mean distance, so 1 is the mean: a classical model,
   /// whose hypotenuse is on the radius.
-  meanDistances(1, 'mean-distances');
+  meanDistances(1, 'MEAN_DISTANCES');
 
   const DistanceUnit(this.id, this.key);
 
@@ -4333,10 +4333,10 @@ enum DistanceUnit {
 enum SpeedModel {
   /// The rate of the position: a central difference over a short step
   /// agrees with it, which the kit checks.
-  derivative(0, 'derivative'),
+  derivative(0, 'DERIVATIVE'),
   /// A text's rule for the daily motion, which its tradition uses as
   /// the speed and which need not be the derivative of its places.
-  rule(1, 'rule');
+  rule(1, 'RULE');
 
   const SpeedModel(this.id, this.key);
 
@@ -4369,12 +4369,12 @@ enum SpeedModel {
 enum Astronomy {
   /// The sky as observed: an ephemeris, whose overrides the kit holds
   /// to the SDK's IAU routines.
-  modern(0, 'modern'),
+  modern(0, 'MODERN'),
   /// A classical text's model, whose obliquity, precession, daily
   /// motions and sunrise are the text's own definitions; the kit
   /// measures their distance from modern astronomy and publishes it
   /// rather than gating it.
-  classical(1, 'classical');
+  classical(1, 'CLASSICAL');
 
   const Astronomy(this.id, this.key);
 
@@ -4406,13 +4406,13 @@ enum Astronomy {
 /// Where a position is seen from.
 enum Centre {
   /// The centre of the Earth.
-  geocentric(0, 'geocentric'),
+  geocentric(0, 'GEOCENTRIC'),
   /// An observer on the Earth; the request carries the place.
-  topocentric(1, 'topocentric'),
+  topocentric(1, 'TOPOCENTRIC'),
   /// The centre of the Sun.
-  heliocentric(2, 'heliocentric'),
+  heliocentric(2, 'HELIOCENTRIC'),
   /// The solar-system barycentre.
-  barycentric(3, 'barycentric');
+  barycentric(3, 'BARYCENTRIC');
 
   const Centre(this.id, this.key);
 
@@ -4444,9 +4444,9 @@ enum Centre {
 /// The equinox and equator the coordinates refer to.
 enum Equinox {
   /// The equinox of date.
-  ofDate(0, 'of-date'),
+  ofDate(0, 'OF_DATE'),
   /// The J2000.0 equinox.
-  j2000(1, 'j2000');
+  j2000(1, 'J2000');
 
   const Equinox(this.id, this.key);
 
@@ -4478,9 +4478,9 @@ enum Equinox {
 /// The coordinate system of a position.
 enum Coordinates {
   /// Ecliptic longitude and latitude.
-  ecliptic(0, 'ecliptic'),
+  ecliptic(0, 'ECLIPTIC'),
   /// Right ascension and declination.
-  equatorial(1, 'equatorial');
+  equatorial(1, 'EQUATORIAL');
 
   const Coordinates(this.id, this.key);
 
@@ -4515,20 +4515,20 @@ enum Coordinates {
 /// provider need never write a number.
 enum ProviderCode {
   /// The call succeeded.
-  ok(0, 'ok'),
+  ok(0, 'OK'),
   /// The operation, the frame or the option is not implemented by this
   /// provider. A provider that cannot answer in the frame asked for
   /// says so with this, and the SDK asks again in the provider's own
   /// frame and completes the rest itself.
-  unsupported(-1, 'unsupported'),
+  unsupported(-1, 'UNSUPPORTED'),
   /// The instant is outside the provider's coverage.
-  outOfRange(-2, 'out-of-range'),
+  outOfRange(-2, 'OUT_OF_RANGE'),
   /// A data file the provider needs is missing.
-  dataMissing(-3, 'data-missing'),
+  dataMissing(-3, 'DATA_MISSING'),
   /// The provider refused rather than answer with something else.
-  refused(-4, 'refused'),
+  refused(-4, 'REFUSED'),
   /// The request is malformed.
-  invalid(-5, 'invalid');
+  invalid(-5, 'INVALID');
 
   const ProviderCode(this.id, this.key);
 
@@ -4567,15 +4567,15 @@ enum Ephemeris {
   /// None. Positions are `CAPABILITY`, and so is anything built on
   /// them. The zero value, and what a caller who passes a vtable
   /// leaves this at.
-  none(0, 'none'),
+  none(0, 'NONE'),
   /// The SDK's own built-in analytic ephemeris: no files, no network,
   /// no licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming
   /// the feature if this library was built without it.
-  builtin(1, 'builtin'),
+  builtin(1, 'BUILTIN'),
   /// The analytic test provider. For tests and examples only — its
   /// positions are **not astronomy**, and a chart cast from them is a
   /// shape rather than a sky.
-  test(2, 'test');
+  test(2, 'TEST');
 
   const Ephemeris(this.id, this.key);
 
@@ -4607,14 +4607,14 @@ enum Ephemeris {
 /// How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
 enum Resolution {
   /// A mathematical definition; exact by construction.
-  defined(0, 'defined'),
+  defined(0, 'DEFINED'),
   /// From the authority's published table.
-  tabular(1, 'tabular'),
+  tabular(1, 'TABULAR'),
   /// Computed by the SDK's engine outside the table's range.
-  computed(2, 'computed'),
+  computed(2, 'COMPUTED'),
   /// Inside the range and the table and the engine disagree; the table
   /// was followed and the engine's month and day are reported beside it.
-  divergent(3, 'divergent');
+  divergent(3, 'DIVERGENT');
 
   const Resolution(this.id, this.key);
 
@@ -4646,9 +4646,9 @@ enum Resolution {
 /// Which bound of a bhava a placement was read against.
 enum Reading {
   /// From one sandhi to the next: the bhava as a span between cusps.
-  sandhi(0, 'sandhi'),
+  sandhi(0, 'SANDHI'),
   /// From one madhya to the next: the bhava as a span between centres.
-  madhya(1, 'madhya');
+  madhya(1, 'MADHYA');
 
   const Reading(this.id, this.key);
 
@@ -4680,11 +4680,11 @@ enum Reading {
 /// How badly the Sun burns a body.
 enum Burning {
   /// Far enough from the Sun to be itself.
-  none(0, 'none'),
+  none(0, 'NONE'),
   /// Combust.
-  combust(1, 'combust'),
+  combust(1, 'COMBUST'),
   /// Deeply combust; only a table that gives a deeper orb reaches it.
-  deep(2, 'deep');
+  deep(2, 'DEEP');
 
   const Burning(this.id, this.key);
 
@@ -4720,11 +4720,11 @@ enum Burning {
 /// so it crosses as this boundary's own enum, as `TsStrength` does.
 enum Quadrant {
   /// Angular: the 1st, 4th, 7th and 10th.
-  kendra(0, 'kendra'),
+  kendra(0, 'KENDRA'),
   /// Succedent: the 2nd, 5th, 8th and 11th.
-  panapara(1, 'panapara'),
+  panapara(1, 'PANAPARA'),
   /// Cadent: the 3rd, 6th, 9th and 12th.
-  apoklima(2, 'apoklima');
+  apoklima(2, 'APOKLIMA');
 
   const Quadrant(this.id, this.key);
 
@@ -4761,15 +4761,15 @@ enum Quadrant {
 /// do.
 enum Strength {
   /// No aspect at all.
-  none(0, 'none'),
+  none(0, 'NONE'),
   /// A quarter aspect: the third and tenth.
-  quarter(1, 'quarter'),
+  quarter(1, 'QUARTER'),
   /// A half aspect: the fifth and ninth.
-  half(2, 'half'),
+  half(2, 'HALF'),
   /// A three-quarter aspect: the fourth and eighth.
-  threeQuarters(3, 'three-quarters'),
+  threeQuarters(3, 'THREE_QUARTERS'),
   /// A full aspect: the seventh, and a special graha's own two houses.
-  full(4, 'full');
+  full(4, 'FULL');
 
   const Strength(this.id, this.key);
 
@@ -4804,9 +4804,9 @@ enum Strength {
 /// so it crosses as this boundary's own enum, as `TsStrength` does.
 enum Balance {
   /// By the elapsed part of the Moon's window of nakshatras.
-  spatial(0, 'spatial'),
+  spatial(0, 'SPATIAL'),
   /// By the elapsed part of the Moon's stay in its nakshatra.
-  temporal(1, 'temporal');
+  temporal(1, 'TEMPORAL');
 
   const Balance(this.id, this.key);
 
@@ -4839,9 +4839,9 @@ enum Balance {
 /// own `Shodhana`, which is a knob and not a catalogue member.
 enum Shodhana {
   /// In each graha's own Ashtakavarga (BPHS chs. 67 to 69).
-  eachGraha(0, 'each-graha'),
+  eachGraha(0, 'EACH_GRAHA'),
   /// On the sum of the seven, as the conformance corpus's engine makes them.
-  sarva(1, 'sarva');
+  sarva(1, 'SARVA');
 
   const Shodhana(this.id, this.key);
 
@@ -4874,9 +4874,9 @@ enum Shodhana {
 /// an occupied one: the settings' own `Ekadhipatya`.
 enum Ekadhipatya {
   /// BPHS ch. 68: an empty sign keeps a difference.
-  bphs(0, 'bphs'),
+  bphs(0, 'BPHS'),
   /// The empty sign always goes to zero.
-  emptyToZero(1, 'empty-to-zero');
+  emptyToZero(1, 'EMPTY_TO_ZERO');
 
   const Ekadhipatya(this.id, this.key);
 
@@ -4910,10 +4910,10 @@ enum Ekadhipatya {
 enum VimshopakaScoring {
   /// BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
   /// relationship with the sign's lord.
-  bphs(0, 'bphs'),
+  bphs(0, 'BPHS'),
   /// The conformance corpus's engine: the Saptavargaja virupas over 45 by
   /// natural friendship, rounded to hundredths.
-  saptavargajaVirupas(1, 'saptavargaja-virupas');
+  saptavargajaVirupas(1, 'SAPTAVARGAJA_VIRUPAS');
 
   const VimshopakaScoring(this.id, this.key);
 
@@ -4945,11 +4945,11 @@ enum VimshopakaScoring {
 /// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
 enum DashaPhase {
   /// At its commencement.
-  commencement(0, 'commencement'),
+  commencement(0, 'COMMENCEMENT'),
   /// In its middle.
-  middle(1, 'middle'),
+  middle(1, 'MIDDLE'),
   /// At its end.
-  end(2, 'end');
+  end(2, 'END');
 
   const DashaPhase(this.id, this.key);
 
@@ -4981,9 +4981,9 @@ enum DashaPhase {
 /// Which arc of its day an instant falls in.
 enum DayPart {
   /// Between sunrise and sunset.
-  daylight(0, 'daylight'),
+  daylight(0, 'DAYLIGHT'),
   /// Between sunset and the next sunrise.
-  night(1, 'night');
+  night(1, 'NIGHT');
 
   const DayPart(this.id, this.key);
 
@@ -5021,11 +5021,11 @@ enum DayPart {
 /// §8).
 enum Sunrise {
   /// The centre of the disc on the geometric horizon.
-  centreNoRefraction(0, 'centre-no-refraction'),
+  centreNoRefraction(0, 'CENTRE_NO_REFRACTION'),
   /// The upper limb with refraction.
-  upperLimbRefraction(1, 'upper-limb-refraction'),
+  upperLimbRefraction(1, 'UPPER_LIMB_REFRACTION'),
   /// The lower limb with refraction.
-  lowerLimbRefraction(2, 'lower-limb-refraction');
+  lowerLimbRefraction(2, 'LOWER_LIMB_REFRACTION');
 
   const Sunrise(this.id, this.key);
 
@@ -5057,9 +5057,9 @@ enum Sunrise {
 /// How the sixty ghatis of a day are measured.
 enum GhatiReckoning {
   /// Twenty-four minutes each, from sunrise.
-  civil(0, 'civil'),
+  civil(0, 'CIVIL'),
   /// Thirty over the actual daylight and thirty over the actual night.
-  proportional(1, 'proportional');
+  proportional(1, 'PROPORTIONAL');
 
   const GhatiReckoning(this.id, this.key);
 
@@ -5091,9 +5091,9 @@ enum GhatiReckoning {
 /// How the twenty-four horas of a day are measured.
 enum HoraReckoning {
   /// Twelve over the daylight and twelve over the night.
-  proportional(0, 'proportional'),
+  proportional(0, 'PROPORTIONAL'),
   /// Twenty-four of sixty minutes, from sunrise.
-  equal(1, 'equal');
+  equal(1, 'EQUAL');
 
   const HoraReckoning(this.id, this.key);
 
@@ -5130,9 +5130,9 @@ enum HoraReckoning {
 /// cannot be an id (`03-design/chart-at-the-boundary.md` §8).
 enum DayState {
   /// Sunrise and sunset occurred; the two fields beside this are zero.
-  normal(0, 'normal'),
+  normal(0, 'NORMAL'),
   /// No horizon crossing, and the policy synthesised the bounds.
-  polar(1, 'polar');
+  polar(1, 'POLAR');
 
   const DayState(this.id, this.key);
 
@@ -5164,9 +5164,9 @@ enum DayState {
 /// Which polar state a day without a sunrise was in.
 enum PolarKind {
   /// The Sun stayed up.
-  day(0, 'day'),
+  day(0, 'DAY'),
   /// The Sun stayed down.
-  night(1, 'night');
+  night(1, 'NIGHT');
 
   const PolarKind(this.id, this.key);
 
@@ -5198,11 +5198,11 @@ enum PolarKind {
 /// What the settings say a day without a sunrise is.
 enum PolarDayPolicy {
   /// An undefined state: the day has no bounds.
-  undefined(0, 'undefined'),
+  undefined(0, 'UNDEFINED'),
   /// The nearest rise or set stands in for the missing one.
-  nearestEvent(1, 'nearest-event'),
+  nearestEvent(1, 'NEAREST_EVENT'),
   /// Civil midnight stands in for it.
-  civilMidnight(2, 'civil-midnight');
+  civilMidnight(2, 'CIVIL_MIDNIGHT');
 
   const PolarDayPolicy(this.id, this.key);
 
@@ -5240,30 +5240,30 @@ enum PolarDayPolicy {
 enum VarsheshaChosen {
   /// The strongest office-bearer that aspects the annual lagna: the
   /// ordinary answer.
-  strongest(0, 'strongest'),
+  strongest(0, 'STRONGEST'),
   /// Tied on strength, and this one holds more portfolios.
-  mostPortfolios(1, 'most-portfolios'),
+  mostPortfolios(1, 'MOST_PORTFOLIOS'),
   /// The Muntha's lord, because no office-bearer aspects the lagna.
-  munthaLordUnaspected(2, 'muntha-lord-unaspected'),
+  munthaLordUnaspected(2, 'MUNTHA_LORD_UNASPECTED'),
   /// The Muntha's lord, because every office-bearer is under five units.
-  munthaLordAllWeak(3, 'muntha-lord-all-weak'),
+  munthaLordAllWeak(3, 'MUNTHA_LORD_ALL_WEAK'),
   /// The Muntha's lord, on an outright tie of strength, aspect and
   /// portfolios.
-  munthaLordTied(4, 'muntha-lord-tied'),
+  munthaLordTied(4, 'MUNTHA_LORD_TIED'),
   /// The Dina-Ratri Pati, on that same tie, under the other reading.
-  dinaRatriTied(5, 'dina-ratri-tied'),
+  dinaRatriTied(5, 'DINA_RATRI_TIED'),
   /// The annual lagna's lord, because nobody aspects and the rules ask
   /// for that reading.
-  annualLagnaLordUnaspected(6, 'annual-lagna-lord-unaspected'),
+  annualLagnaLordUnaspected(6, 'ANNUAL_LAGNA_LORD_UNASPECTED'),
   /// The strongest of the five, because nobody aspects and the rules ask
   /// for the *Nilakanthi*'s reading.
-  strongestUnaspected(7, 'strongest-unaspected'),
+  strongestUnaspected(7, 'STRONGEST_UNASPECTED'),
   /// The planet in Ithasala with the Moon, the strongest of several, in
   /// the Moon's place.
-  moonsIthasala(8, 'moons-ithasala'),
+  moonsIthasala(8, 'MOONS_ITHASALA'),
   /// The lord of the Moon's sign, in the Moon's place: the Moon itself
   /// where it stands in Cancer.
-  moonsSignLord(9, 'moons-sign-lord');
+  moonsSignLord(9, 'MOONS_SIGN_LORD');
 
   const VarsheshaChosen(this.id, this.key);
 
@@ -5298,16 +5298,16 @@ enum VarsheshaChosen {
 /// relation between signs, and its neutral houses give no aspect at all.
 enum TajikaDrishti {
   /// Pratyaksha Mitra, at houses 5 and 9: openly friendly.
-  friendly(0, 'friendly'),
+  friendly(0, 'FRIENDLY'),
   /// Gupta Mitra, at houses 3 and 11: secretly friendly.
-  secretlyFriendly(1, 'secretly-friendly'),
+  secretlyFriendly(1, 'SECRETLY_FRIENDLY'),
   /// Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an
   /// aspect.
-  inimical(2, 'inimical'),
+  inimical(2, 'INIMICAL'),
   /// Gupta Shatru, at houses 4 and 10: secretly inimical.
-  secretlyInimical(3, 'secretly-inimical'),
+  secretlyInimical(3, 'SECRETLY_INIMICAL'),
   /// Sama, at houses 2, 6, 8 and 12: no aspect at all.
-  none(4, 'none');
+  none(4, 'NONE');
 
   const TajikaDrishti(this.id, this.key);
 
@@ -5343,16 +5343,16 @@ enum TajikaDrishti {
 enum TajikaYoga {
   /// Vartamana Ithasala: the faster is behind the slower by a degree or
   /// more, inside the orb, and coming to it.
-  ithasalaVartamana(0, 'ithasala-vartamana'),
+  ithasalaVartamana(0, 'ITHASALA_VARTAMANA'),
   /// Poorna Ithasala: as Vartamana but within a single degree, which
   /// the source marks as immediate fulfilment.
-  ithasalaPoorna(1, 'ithasala-poorna'),
+  ithasalaPoorna(1, 'ITHASALA_POORNA'),
   /// Bhavishyat Ithasala: the faster is past but stands at 29° or
   /// beyond, so it acts from the next sign, where it is behind again.
-  ithasalaBhavishyat(2, 'ithasala-bhavishyat'),
+  ithasalaBhavishyat(2, 'ITHASALA_BHAVISHYAT'),
   /// Ishrafa: the faster is a degree or more past the slower and
   /// drawing away.
-  ishrafa(3, 'ishrafa');
+  ishrafa(3, 'ISHRAFA');
 
   const TajikaYoga(this.id, this.key);
 
@@ -5389,42 +5389,42 @@ enum TajikaYoga {
 /// Its ids are also the bit positions of `year_matters.unanswered`.
 enum YearYoga {
   /// Every planet in a kendra or a panaphara: a fact about the chart.
-  ikabala(0, 'ikabala'),
+  ikabala(0, 'IKABALA'),
   /// Every planet in an apoklima: a fact about the chart.
-  induvara(1, 'induvara'),
+  induvara(1, 'INDUVARA'),
   /// The lagnesha and the karyesha are coming together, in one of the
   /// three kinds `TsTajikaYoga` enumerates.
-  ithasala(2, 'ithasala'),
+  ithasala(2, 'ITHASALA'),
   /// The pair are drawing apart.
-  ishrafa(3, 'ishrafa'),
+  ishrafa(3, 'ISHRAFA'),
   /// The two do not aspect, and a planet faster than both carries the
   /// light between them: past one, coming to the other.
-  nakta(4, 'nakta'),
+  nakta(4, 'NAKTA'),
   /// The two do not aspect, and a planet slower than both gathers their
   /// light: both are coming to it.
-  yamaya(5, 'yamaya'),
+  yamaya(5, 'YAMAYA'),
   /// An Ithasala a malefic destroys.
-  manau(6, 'manau'),
+  manau(6, 'MANAU'),
   /// An Ithasala the Moon joins.
-  kamboola(7, 'kamboola'),
+  kamboola(7, 'KAMBOOLA'),
   /// An Ithasala an unqualified Moon completes on entering the next sign.
-  gairiKamboola(8, 'gairi-kamboola'),
+  gairiKamboola(8, 'GAIRI_KAMBOOLA'),
   /// An Ithasala an unqualified Moon negates by standing apart from it.
-  khallasara(9, 'khallasara'),
+  khallasara(9, 'KHALLASARA'),
   /// An Ithasala where either of the pair is afflicted.
-  rudda(10, 'rudda'),
+  rudda(10, 'RUDDA'),
   /// An Ithasala where the slower is strong and the faster weak.
-  duhphaliKuttha(11, 'duhphali-kuttha'),
+  duhphaliKuttha(11, 'DUHPHALI_KUTTHA'),
   /// Both weak, and one in Ithasala with a third, strong planet.
-  dutthotthaDavira(12, 'dutthottha-davira'),
+  dutthotthaDavira(12, 'DUTTHOTTHA_DAVIRA'),
   /// No aspect and no Ithasala, the karyesha completing one from the
   /// next sign.
-  tambira(13, 'tambira'),
+  tambira(13, 'TAMBIRA'),
   /// Both powerful, in a kendra or a panaphara, under a benefic's aspect
   /// and no malefic's (crux C117).
-  kuttha(14, 'kuttha'),
+  kuttha(14, 'KUTTHA'),
   /// Both weak, in the trika houses, combust or retrograde.
-  durapha(15, 'durapha');
+  durapha(15, 'DURAPHA');
 
   const YearYoga(this.id, this.key);
 
@@ -5461,87 +5461,87 @@ enum YearYoga {
 /// added there stops this crate compiling rather than crossing as another.
 enum Saham {
   /// **Punya**, general auspiciousness.
-  punya(0, 'punya'),
+  punya(0, 'PUNYA'),
   /// **Guru**, the preceptor.
-  guru(1, 'guru'),
+  guru(1, 'GURU'),
   /// **Vidya** (Jnana), knowledge.
-  vidya(2, 'vidya'),
+  vidya(2, 'VIDYA'),
   /// **Yasha**, fame.
-  yasha(3, 'yasha'),
+  yasha(3, 'YASHA'),
   /// **Mitra**, friends.
-  mitra(4, 'mitra'),
+  mitra(4, 'MITRA'),
   /// **Mahatmya**, the fruits of virtuous living.
-  mahatmya(5, 'mahatmya'),
+  mahatmya(5, 'MAHATMYA'),
   /// **Asha**, hope.
-  asha(6, 'asha'),
+  asha(6, 'ASHA'),
   /// **Samarthya**, capability.
-  samarthya(7, 'samarthya'),
+  samarthya(7, 'SAMARTHYA'),
   /// **Bhratri**, siblings.
-  bhratri(8, 'bhratri'),
+  bhratri(8, 'BHRATRI'),
   /// **Gaurava**, dignity.
-  gaurava(9, 'gaurava'),
+  gaurava(9, 'GAURAVA'),
   /// **Pitri** (Taata), the father.
-  pitri(10, 'pitri'),
+  pitri(10, 'PITRI'),
   /// **Raja**, royal dignity.
-  raja(11, 'raja'),
+  raja(11, 'RAJA'),
   /// **Matri**, the mother.
-  matri(12, 'matri'),
+  matri(12, 'MATRI'),
   /// **Putra**, progeny.
-  putra(13, 'putra'),
+  putra(13, 'PUTRA'),
   /// **Jeeva**, life.
-  jeeva(14, 'jeeva'),
+  jeeva(14, 'JEEVA'),
   /// **Roga**, disease.
-  roga(15, 'roga'),
+  roga(15, 'ROGA'),
   /// **Karma**, profession.
-  karma(16, 'karma'),
+  karma(16, 'KARMA'),
   /// **Manmatha**, infatuation.
-  manmatha(17, 'manmatha'),
+  manmatha(17, 'MANMATHA'),
   /// **Kali**, strife.
-  kali(18, 'kali'),
+  kali(18, 'KALI'),
   /// **Kshama**, forgiveness.
-  kshama(19, 'kshama'),
+  kshama(19, 'KSHAMA'),
   /// **Shastra**, scriptures.
-  shastra(20, 'shastra'),
+  shastra(20, 'SHASTRA'),
   /// **Bandhu**, relatives.
-  bandhu(21, 'bandhu'),
+  bandhu(21, 'BANDHU'),
   /// **Mrityu**, death.
-  mrityu(22, 'mrityu'),
+  mrityu(22, 'MRITYU'),
   /// **Deshantara**, foreign travel.
-  deshantara(23, 'deshantara'),
+  deshantara(23, 'DESHANTARA'),
   /// **Artha** (Dhana), wealth.
-  artha(24, 'artha'),
+  artha(24, 'ARTHA'),
   /// **Paradara**, adultery.
-  paradara(25, 'paradara'),
+  paradara(25, 'PARADARA'),
   /// **Anya-karma**, an additional vocation.
-  anyaKarma(26, 'anya-karma'),
+  anyaKarma(26, 'ANYA_KARMA'),
   /// **Vanika**, trade.
-  vanika(27, 'vanika'),
+  vanika(27, 'VANIKA'),
   /// **Karya-siddhi**, success in a venture.
-  karyaSiddhi(28, 'karya-siddhi'),
+  karyaSiddhi(28, 'KARYA_SIDDHI'),
   /// **Vivaha**, marriage.
-  vivaha(29, 'vivaha'),
+  vivaha(29, 'VIVAHA'),
   /// **Prasava**, the delivery of a child.
-  prasava(30, 'prasava'),
+  prasava(30, 'PRASAVA'),
   /// **Santaapa**, sorrow.
-  santaapa(31, 'santaapa'),
+  santaapa(31, 'SANTAAPA'),
   /// **Shraddha**, devotion.
-  shraddha(32, 'shraddha'),
+  shraddha(32, 'SHRADDHA'),
   /// **Preeti**, love.
-  preeti(33, 'preeti'),
+  preeti(33, 'PREETI'),
   /// **Jadya**, stupidity.
-  jadya(34, 'jadya'),
+  jadya(34, 'JADYA'),
   /// **Vyapara**, business.
-  vyapara(35, 'vyapara'),
+  vyapara(35, 'VYAPARA'),
   /// **Paneeya-paata**, falling into water.
-  paneeyaPaata(36, 'paneeya-paata'),
+  paneeyaPaata(36, 'PANEEYA_PAATA'),
   /// **Shatru**, enemies.
-  shatru(37, 'shatru'),
+  shatru(37, 'SHATRU'),
   /// **Jalapatha**, a sea voyage.
-  jalapatha(38, 'jalapatha'),
+  jalapatha(38, 'JALAPATHA'),
   /// **Bandhana**, imprisonment.
-  bandhana(39, 'bandhana'),
+  bandhana(39, 'BANDHANA'),
   /// **Labha**, monetary gain.
-  labha(40, 'labha');
+  labha(40, 'LABHA');
 
   const Saham(this.id, this.key);
 
@@ -5576,13 +5576,13 @@ enum Saham {
 /// Mirrors `teistro::TajikaRelation` through an **exhaustive** match.
 enum TajikaRelation {
   /// The planet is the other: its own.
-  own(0, 'own'),
+  own(0, 'OWN'),
   /// A friend.
-  friend(1, 'friend'),
+  friend(1, 'FRIEND'),
   /// Neither.
-  neutral(2, 'neutral'),
+  neutral(2, 'NEUTRAL'),
   /// An enemy.
-  enemy(3, 'enemy');
+  enemy(3, 'ENEMY');
 
   const TajikaRelation(this.id, this.key);
 
@@ -5617,15 +5617,15 @@ enum TajikaRelation {
 /// Mirrors `teistro::HarshaGrade` through an **exhaustive** match.
 enum HarshaGrade {
   /// No part: without strength.
-  nirbala(0, 'nirbala'),
+  nirbala(0, 'NIRBALA'),
   /// One part, five units: weak.
-  alpabali(1, 'alpabali'),
+  alpabali(1, 'ALPABALI'),
   /// Two parts, ten units: of medium strength.
-  madhyaBali(2, 'madhya-bali'),
+  madhyaBali(2, 'MADHYA_BALI'),
   /// Three parts, fifteen units: fully strong.
-  poornaBali(3, 'poorna-bali'),
+  poornaBali(3, 'POORNA_BALI'),
   /// All four, twenty units: extraordinarily strong, and rare.
-  extraordinary(4, 'extraordinary');
+  extraordinary(4, 'EXTRAORDINARY');
 
   const HarshaGrade(this.id, this.key);
 
@@ -5661,29 +5661,29 @@ enum HarshaGrade {
 /// Mirrors `teistro::StrongClause` through an **exhaustive** match.
 enum SahamStrong {
   /// Its lord is exalted.
-  lordExalted(0, 'lord-exalted'),
+  lordExalted(0, 'LORD_EXALTED'),
   /// Its lord is in its own sign.
-  lordOwnSign(1, 'lord-own-sign'),
+  lordOwnSign(1, 'LORD_OWN_SIGN'),
   /// Its lord is in its own Hudda.
-  lordOwnHudda(2, 'lord-own-hudda'),
+  lordOwnHudda(2, 'LORD_OWN_HUDDA'),
   /// Its lord is in its own Drekkana.
-  lordOwnDrekkana(3, 'lord-own-drekkana'),
+  lordOwnDrekkana(3, 'LORD_OWN_DREKKANA'),
   /// Its lord is in its own Navamsha.
-  lordOwnNavamsha(4, 'lord-own-navamsha'),
+  lordOwnNavamsha(4, 'LORD_OWN_NAVAMSHA'),
   /// Its lord is in a friend's sign.
-  lordInFriendsSign(5, 'lord-in-friends-sign'),
+  lordInFriendsSign(5, 'LORD_IN_FRIENDS_SIGN'),
   /// It is with a friend of its lord.
-  withFriend(6, 'with-friend'),
+  withFriend(6, 'WITH_FRIEND'),
   /// It is with a natural benefic.
-  withBenefic(7, 'with-benefic'),
+  withBenefic(7, 'WITH_BENEFIC'),
   /// It is with the year lord.
-  withYearLord(8, 'with-year-lord'),
+  withYearLord(8, 'WITH_YEAR_LORD'),
   /// Its lord conjoins it.
-  lordConjoins(9, 'lord-conjoins'),
+  lordConjoins(9, 'LORD_CONJOINS'),
   /// Its lord aspects it.
-  lordAspectsSaham(10, 'lord-aspects-saham'),
+  lordAspectsSaham(10, 'LORD_ASPECTS_SAHAM'),
   /// Its lord aspects the lagna.
-  lordAspectsLagna(11, 'lord-aspects-lagna');
+  lordAspectsLagna(11, 'LORD_ASPECTS_LAGNA');
 
   const SahamStrong(this.id, this.key);
 
@@ -5718,15 +5718,15 @@ enum SahamStrong {
 /// Mirrors `teistro::WeakClause` through an **exhaustive** match.
 enum SahamWeak {
   /// Its lord is under the Panchavargiya floor.
-  lordWeakVishwa(0, 'lord-weak-vishwa'),
+  lordWeakVishwa(0, 'LORD_WEAK_VISHWA'),
   /// Its lord has no Harsha bala.
-  lordLacksHarsha(1, 'lord-lacks-harsha'),
+  lordLacksHarsha(1, 'LORD_LACKS_HARSHA'),
   /// Its lord neither aspects nor conjoins it.
-  lordApart(2, 'lord-apart'),
+  lordApart(2, 'LORD_APART'),
   /// It is with an enemy of its lord.
-  withEnemy(3, 'with-enemy'),
+  withEnemy(3, 'WITH_ENEMY'),
   /// It is with a natural malefic.
-  withMalefic(4, 'with-malefic');
+  withMalefic(4, 'WITH_MALEFIC');
 
   const SahamWeak(this.id, this.key);
 
@@ -5760,15 +5760,15 @@ enum SahamWeak {
 /// `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.
 enum Affliction {
   /// Going backwards through the zodiac.
-  retrograde(0, 'retrograde'),
+  retrograde(0, 'RETROGRADE'),
   /// Burnt by the Sun.
-  combust(1, 'combust'),
+  combust(1, 'COMBUST'),
   /// In its sign of debilitation.
-  debilitated(2, 'debilitated'),
+  debilitated(2, 'DEBILITATED'),
   /// In the 6th, 8th or 12th house from the annual lagna.
-  trika(3, 'trika'),
+  trika(3, 'TRIKA'),
   /// Conjunct or inimically aspected by one of Tajika's malefics.
-  underMalefic(4, 'under-malefic');
+  underMalefic(4, 'UNDER_MALEFIC');
 
   const Affliction(this.id, this.key);
 
@@ -5800,12 +5800,12 @@ enum Affliction {
 /// A time scale of the conversions; the first two ids are the port's.
 enum Scale {
   /// Universal Time (UT1).
-  ut1(0, 'ut1'),
+  ut1(0, 'UT1'),
   /// Terrestrial Time.
-  tt(1, 'tt'),
+  tt(1, 'TT'),
   /// Coordinated Universal Time, through the leap-second table from
   /// 1972 and read as UT1 before it.
-  utc(2, 'utc');
+  utc(2, 'UTC');
 
   const Scale(this.id, this.key);
 
@@ -5837,11 +5837,11 @@ enum Scale {
 /// What a zone specification names.
 enum ZoneKind {
   /// A zone of the embedded database, by IANA name.
-  iana(0, 'iana'),
+  iana(0, 'IANA'),
   /// A fixed offset from UTC.
-  fixed(1, 'fixed'),
+  fixed(1, 'FIXED'),
   /// Local mean time at a longitude.
-  localMean(2, 'local-mean');
+  localMean(2, 'LOCAL_MEAN');
 
   const ZoneKind(this.id, this.key);
 
@@ -5873,11 +5873,11 @@ enum ZoneKind {
 /// Where a resolution's offset came from.
 enum ZoneSource {
   /// The zone database.
-  iana(0, 'iana'),
+  iana(0, 'IANA'),
   /// Local mean time from the longitude.
-  localMean(1, 'local-mean'),
+  localMean(1, 'LOCAL_MEAN'),
   /// A fixed offset the consumer stated.
-  manual(2, 'manual');
+  manual(2, 'MANUAL');
 
   const ZoneSource(this.id, this.key);
 
@@ -5909,11 +5909,11 @@ enum ZoneSource {
 /// Which rules produced the offset.
 enum ZoneEra {
   /// An offset the zone applies in the database's own year.
-  current(0, 'current'),
+  current(0, 'CURRENT'),
   /// An offset from the zone's earlier rules.
-  historical(1, 'historical'),
+  historical(1, 'HISTORICAL'),
   /// Before the zone's first rule: the database's local-mean-time stub.
-  beforeRules(2, 'before-rules');
+  beforeRules(2, 'BEFORE_RULES');
 
   const ZoneEra(this.id, this.key);
 
@@ -5945,11 +5945,11 @@ enum ZoneEra {
 /// What the daylight-saving policy did.
 enum Dst {
   /// The civil time was unambiguous.
-  none(0, 'none'),
+  none(0, 'NONE'),
   /// The civil time fell in a gap and was shifted forward past it.
-  gap(1, 'gap'),
+  gap(1, 'GAP'),
   /// The civil time fell in an overlap and one occurrence was chosen.
-  overlap(2, 'overlap');
+  overlap(2, 'OVERLAP');
 
   const Dst(this.id, this.key);
 
@@ -5981,9 +5981,9 @@ enum Dst {
 /// Which occurrence an overlap resolved to.
 enum Chosen {
   /// The first occurrence, the earlier instant.
-  earlier(0, 'earlier'),
+  earlier(0, 'EARLIER'),
   /// The second occurrence, the later instant.
-  later(1, 'later');
+  later(1, 'LATER');
 
   const Chosen(this.id, this.key);
 
@@ -6016,17 +6016,17 @@ enum Chosen {
 /// bit `n` for the warning with value `n`.
 enum ZoneWarning {
   /// The offset is not one the zone applies today.
-  offsetDiffersFromCurrentRules(0, 'offset-differs-from-current-rules'),
+  offsetDiffersFromCurrentRules(0, 'OFFSET_DIFFERS_FROM_CURRENT_RULES'),
   /// The civil time occurred twice; the policy chose.
-  dstAmbiguous(1, 'dst-ambiguous'),
+  dstAmbiguous(1, 'DST_AMBIGUOUS'),
   /// The civil time did not exist; the policy shifted it forward.
-  dstGapShifted(2, 'dst-gap-shifted'),
+  dstGapShifted(2, 'DST_GAP_SHIFTED'),
   /// A leap second (23:59:60) was folded onto the following midnight.
-  leapSecondFolded(3, 'leap-second-folded'),
+  leapSecondFolded(3, 'LEAP_SECOND_FOLDED'),
   /// The instant lies beyond the leap-second table's word.
-  leapTableExpired(4, 'leap-table-expired'),
+  leapTableExpired(4, 'LEAP_TABLE_EXPIRED'),
   /// The time was not given; the policy supplied one.
-  timeUnknownFallback(5, 'time-unknown-fallback');
+  timeUnknownFallback(5, 'TIME_UNKNOWN_FALLBACK');
 
   const ZoneWarning(this.id, this.key);
 
@@ -6058,13 +6058,13 @@ enum ZoneWarning {
 /// What produced a Delta T value.
 enum DeltaTSource {
   /// Interpolated in the IERS table.
-  table(0, 'table'),
+  table(0, 'TABLE'),
   /// From a model, outside the table.
-  model(1, 'model'),
+  model(1, 'MODEL'),
   /// Through the leap-second table: TT less UTC, exact.
-  leapSeconds(2, 'leap-seconds'),
+  leapSeconds(2, 'LEAP_SECONDS'),
   /// Supplied by the consumer.
-  custom(3, 'custom');
+  custom(3, 'CUSTOM');
 
   const DeltaTSource(this.id, this.key);
 
@@ -6096,9 +6096,9 @@ enum DeltaTSource {
 /// Which lunar-month convention a day's month leads with.
 enum LunarMonth {
   /// New moon to new moon.
-  amanta(0, 'amanta'),
+  amanta(0, 'AMANTA'),
   /// Full moon to full moon.
-  purnimanta(1, 'purnimanta');
+  purnimanta(1, 'PURNIMANTA');
 
   const LunarMonth(this.id, this.key);
 
@@ -6135,9 +6135,9 @@ enum LunarMonth {
 /// each would be two counts, two offsets and two types for it.
 enum MoonEvent {
   /// The Moon crossed the horizon upward.
-  rise(0, 'rise'),
+  rise(0, 'RISE'),
   /// The Moon crossed it downward.
-  set(1, 'set');
+  set(1, 'SET');
 
   const MoonEvent(this.id, this.key);
 
@@ -6174,9 +6174,9 @@ enum MoonEvent {
 /// `because_tithi` at zero.
 enum YogaCause {
   /// The vara and the nakshatra the Moon was in.
-  varaNakshatra(0, 'vara-nakshatra'),
+  varaNakshatra(0, 'VARA_NAKSHATRA'),
   /// The vara, the tithi's class and the nakshatra's number of feet.
-  varaTithiNakshatra(1, 'vara-tithi-nakshatra');
+  varaTithiNakshatra(1, 'VARA_TITHI_NAKSHATRA');
 
   const YogaCause(this.id, this.key);
 
@@ -6214,11 +6214,11 @@ enum YogaCause {
 /// silently crossing as whatever came first.
 enum MonthKind {
   /// One sankranti: the ordinary month.
-  nija(0, 'nija'),
+  nija(0, 'NIJA'),
   /// None: intercalary, and the name repeats.
-  adhika(1, 'adhika'),
+  adhika(1, 'ADHIKA'),
   /// Two: the next name is skipped this year.
-  kshaya(2, 'kshaya');
+  kshaya(2, 'KSHAYA');
 
   const MonthKind(this.id, this.key);
 

@@ -25,7 +25,7 @@
 
 import { Calendar, Context, DashaSystem, TeistroError, at, date, ianaZone } from '../lib/index.js';
 
-const ctx = new Context({ profile: 'nepali-default', ephemeris: 'builtin' });
+const ctx = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
 const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
 const birthDay = date(Calendar.Gregorian, 1990, 4, 14);
 const when = ctx.time.resolve(at(birthDay, { hour: 5, minute: 30 }), ianaZone('Asia/Kathmandu'));
@@ -35,7 +35,7 @@ const chart = ctx.chart.found({
   instant: when.instantJdUtc,
   place,
   utcOffsetSeconds: when.offsetSeconds,
-  varsha: { reading: 'sidereal', through: 40 },
+  varsha: { reading: 'SIDEREAL', through: 40 },
 });
 const years = chart.praveshas;
 console.log(`returns computed: ${years.length}`);
@@ -104,7 +104,7 @@ const points = ctx.chart.found({
   instant: when.instantJdUtc,
   place,
   utcOffsetSeconds: when.offsetSeconds,
-  varsha: { through: 30, place: 'birth', sahams: ['punya', 'vivaha', 'karya-siddhi'] },
+  varsha: { through: 30, place: 'birth', sahams: ['PUNYA', 'VIVAHA', 'KARYA_SIDDHI'] },
 }).praveshas[29].annual;
 for (const one of points.sahams) {
   console.log(
@@ -135,7 +135,7 @@ for (const dasha of dashas) {
 }
 
 // ── The readings are named, and they are not each other ────────────────
-for (const reading of ['sidereal', 'tropical', 'mean']) {
+for (const reading of ['SIDEREAL', 'TROPICAL', 'MEAN']) {
   const one = ctx.chart.found({
     instant: when.instantJdUtc,
     place,
@@ -152,7 +152,7 @@ try {
     instant: when.instantJdUtc,
     place,
     utcOffsetSeconds: when.offsetSeconds,
-    varsha: { reading: 'sidereal', through: 0 },
+    varsha: { reading: 'SIDEREAL', through: 0 },
   });
 } catch (error) {
   if (!(error instanceof TeistroError)) throw error;

@@ -33,6 +33,17 @@ pub enum TsResolution {
     Divergent = 3,
 }
 
+impl From<&CalendarResolution> for TsResolution {
+    fn from(resolution: &CalendarResolution) -> TsResolution {
+        match resolution {
+            CalendarResolution::Defined => TsResolution::Defined,
+            CalendarResolution::Tabular { .. } => TsResolution::Tabular,
+            CalendarResolution::Computed { .. } => TsResolution::Computed,
+            CalendarResolution::Divergent { .. } => TsResolution::Divergent,
+        }
+    }
+}
+
 /// A date in a calendar. Years are astronomical (1 BCE is 0); the era view
 /// is presentation only and is filled by the library, ignored on input.
 #[repr(C)]
@@ -76,13 +87,10 @@ impl TsCalendarDate {
     /// The boundary form of a date.
     #[must_use]
     pub fn of(date: &CalendarDate) -> TsCalendarDate {
-        let (resolution, computed) = match &date.resolution {
-            CalendarResolution::Defined => (TsResolution::Defined, None),
-            CalendarResolution::Tabular { .. } => (TsResolution::Tabular, None),
-            CalendarResolution::Computed { .. } => (TsResolution::Computed, None),
-            CalendarResolution::Divergent { computed, .. } => {
-                (TsResolution::Divergent, Some(*computed))
-            }
+        let resolution = TsResolution::from(&date.resolution);
+        let computed = match &date.resolution {
+            CalendarResolution::Divergent { computed, .. } => Some(*computed),
+            _ => None,
         };
         TsCalendarDate {
             struct_size: 0,

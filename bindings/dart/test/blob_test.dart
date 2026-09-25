@@ -159,9 +159,9 @@ void main() {
       reason: "a kind names itself as a key's first segment does",
     );
     expect(Kind.avasthaBaladi.key, 'avastha_baladi');
-    expect(Status.invalidArg.key, 'invalid-arg');
-    expect(Body.meanNode.key, 'mean-node');
-    expect(TimeScale.ut1.key, 'ut1');
+    expect(Status.invalidArg.key, 'INVALID_ARG');
+    expect(Body.meanNode.key, 'MEAN_NODE');
+    expect(TimeScale.ut1.key, 'UT1');
     expect(Graha.byKey('graha.SUN'), Graha.sun);
     expect(
       Graha.values.map((g) => g.key).toSet().length,

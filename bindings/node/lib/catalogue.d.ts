@@ -5362,64 +5362,64 @@ export declare const AvasthaCheshtaById: ReadonlyMap<number, AvasthaCheshta>;
  * The status of a call, with the code it has at the C boundary.
  */
 export type Status =
-  | 'ok'
-  | 'invalid-arg'
-  | 'out-of-range'
-  | 'capability'
-  | 'provider'
-  | 'not-converged'
-  | 'unsupported'
-  | 'pack'
-  | 'limit'
-  | 'schema-version'
-  | 'internal';
+  | 'OK'
+  | 'INVALID_ARG'
+  | 'OUT_OF_RANGE'
+  | 'CAPABILITY'
+  | 'PROVIDER'
+  | 'NOT_CONVERGED'
+  | 'UNSUPPORTED'
+  | 'PACK'
+  | 'LIMIT'
+  | 'SCHEMA_VERSION'
+  | 'INTERNAL';
 
 /** Every Status by name; the values are the strings the union accepts. */
 export declare const Status: {
   /**
    * Success.
    */
-  readonly Ok: 'ok';
+  readonly Ok: 'OK';
   /**
    * A value refused at construction, or a request that contradicts itself.
    */
-  readonly InvalidArg: 'invalid-arg';
+  readonly InvalidArg: 'INVALID_ARG';
   /**
    * An instant or place outside the provider's or the calendar's coverage.
    */
-  readonly OutOfRange: 'out-of-range';
+  readonly OutOfRange: 'OUT_OF_RANGE';
   /**
    * The settings need something the provider does not declare.
    */
-  readonly Capability: 'capability';
+  readonly Capability: 'CAPABILITY';
   /**
    * The provider failed; its own code and message are carried.
    */
-  readonly Provider: 'provider';
+  readonly Provider: 'PROVIDER';
   /**
    * A search hit its iteration cap.
    */
-  readonly NotConverged: 'not-converged';
+  readonly NotConverged: 'NOT_CONVERGED';
   /**
    * A registered but unimplemented variant, or an unknown key.
    */
-  readonly Unsupported: 'unsupported';
+  readonly Unsupported: 'UNSUPPORTED';
   /**
    * A pack failed validation or targets another catalogue version.
    */
-  readonly Pack: 'pack';
+  readonly Pack: 'PACK';
   /**
    * A batch, range or cache limit was exceeded.
    */
-  readonly Limit: 'limit';
+  readonly Limit: 'LIMIT';
   /**
    * A struct or blob from an incompatible version.
    */
-  readonly SchemaVersion: 'schema-version';
+  readonly SchemaVersion: 'SCHEMA_VERSION';
   /**
    * A panic caught at the boundary; never expected.
    */
-  readonly Internal: 'internal';
+  readonly Internal: 'INTERNAL';
 };
 
 /**
@@ -5436,79 +5436,79 @@ export declare const StatusById: ReadonlyMap<number, Status>;
  * under the node knob (Rahu is the mean or the true node).
  */
 export type Body =
-  | 'sun'
-  | 'moon'
-  | 'mercury'
-  | 'venus'
-  | 'mars'
-  | 'jupiter'
-  | 'saturn'
-  | 'uranus'
-  | 'neptune'
-  | 'pluto'
-  | 'mean-node'
-  | 'true-node'
-  | 'mean-apogee'
-  | 'osculating-apogee';
+  | 'SUN'
+  | 'MOON'
+  | 'MERCURY'
+  | 'VENUS'
+  | 'MARS'
+  | 'JUPITER'
+  | 'SATURN'
+  | 'URANUS'
+  | 'NEPTUNE'
+  | 'PLUTO'
+  | 'MEAN_NODE'
+  | 'TRUE_NODE'
+  | 'MEAN_APOGEE'
+  | 'OSCULATING_APOGEE';
 
 /** Every Body by name; the values are the strings the union accepts. */
 export declare const Body: {
   /**
    * The Sun.
    */
-  readonly Sun: 'sun';
+  readonly Sun: 'SUN';
   /**
    * The Moon.
    */
-  readonly Moon: 'moon';
+  readonly Moon: 'MOON';
   /**
    * Mercury.
    */
-  readonly Mercury: 'mercury';
+  readonly Mercury: 'MERCURY';
   /**
    * Venus.
    */
-  readonly Venus: 'venus';
+  readonly Venus: 'VENUS';
   /**
    * Mars.
    */
-  readonly Mars: 'mars';
+  readonly Mars: 'MARS';
   /**
    * Jupiter.
    */
-  readonly Jupiter: 'jupiter';
+  readonly Jupiter: 'JUPITER';
   /**
    * Saturn.
    */
-  readonly Saturn: 'saturn';
+  readonly Saturn: 'SATURN';
   /**
    * Uranus.
    */
-  readonly Uranus: 'uranus';
+  readonly Uranus: 'URANUS';
   /**
    * Neptune.
    */
-  readonly Neptune: 'neptune';
+  readonly Neptune: 'NEPTUNE';
   /**
    * Pluto.
    */
-  readonly Pluto: 'pluto';
+  readonly Pluto: 'PLUTO';
   /**
    * The mean ascending lunar node.
    */
-  readonly MeanNode: 'mean-node';
+  readonly MeanNode: 'MEAN_NODE';
   /**
    * The true (osculating) ascending lunar node.
    */
-  readonly TrueNode: 'true-node';
+  readonly TrueNode: 'TRUE_NODE';
   /**
    * The mean lunar apogee.
    */
-  readonly MeanApogee: 'mean-apogee';
+  readonly MeanApogee: 'MEAN_APOGEE';
   /**
    * The osculating lunar apogee.
    */
-  readonly OsculatingApogee: 'osculating-apogee';
+  readonly OsculatingApogee: 'OSCULATING_APOGEE';
 };
 
 /**
@@ -5520,18 +5520,18 @@ export declare const BodyById: ReadonlyMap<number, Body>;
 /**
  * The time scale of the instants in a request.
  */
-export type TimeScale = 'ut1' | 'tt';
+export type TimeScale = 'UT1' | 'TT';
 
 /** Every TimeScale by name; the values are the strings the union accepts. */
 export declare const TimeScale: {
   /**
    * Universal Time (UT1), the scale of civil time and of rise and set.
    */
-  readonly Ut1: 'ut1';
+  readonly Ut1: 'UT1';
   /**
    * Terrestrial Time, the scale of the ephemerides.
    */
-  readonly Tt: 'tt';
+  readonly Tt: 'TT';
 };
 
 /**
@@ -5543,19 +5543,19 @@ export declare const TimeScaleById: ReadonlyMap<number, TimeScale>;
 /**
  * What a cell's distance is measured in.
  */
-export type DistanceUnit = 'astronomical-units' | 'mean-distances';
+export type DistanceUnit = 'ASTRONOMICAL_UNITS' | 'MEAN_DISTANCES';
 
 /** Every DistanceUnit by name; the values are the strings the union accepts. */
 export declare const DistanceUnit: {
   /**
    * Astronomical units: an ephemeris.
    */
-  readonly AstronomicalUnits: 'astronomical-units';
+  readonly AstronomicalUnits: 'ASTRONOMICAL_UNITS';
   /**
    * The body's mean distance, so 1 is the mean: a classical model,
    * whose hypotenuse is on the radius.
    */
-  readonly MeanDistances: 'mean-distances';
+  readonly MeanDistances: 'MEAN_DISTANCES';
 };
 
 /**
@@ -5567,7 +5567,7 @@ export declare const DistanceUnitById: ReadonlyMap<number, DistanceUnit>;
 /**
  * How a provider's speeds are defined.
  */
-export type SpeedModel = 'derivative' | 'rule';
+export type SpeedModel = 'DERIVATIVE' | 'RULE';
 
 /** Every SpeedModel by name; the values are the strings the union accepts. */
 export declare const SpeedModel: {
@@ -5575,12 +5575,12 @@ export declare const SpeedModel: {
    * The rate of the position: a central difference over a short step
    * agrees with it, which the kit checks.
    */
-  readonly Derivative: 'derivative';
+  readonly Derivative: 'DERIVATIVE';
   /**
    * A text's rule for the daily motion, which its tradition uses as
    * the speed and which need not be the derivative of its places.
    */
-  readonly Rule: 'rule';
+  readonly Rule: 'RULE';
 };
 
 /**
@@ -5592,7 +5592,7 @@ export declare const SpeedModelById: ReadonlyMap<number, SpeedModel>;
 /**
  * Which astronomy a provider computes.
  */
-export type Astronomy = 'modern' | 'classical';
+export type Astronomy = 'MODERN' | 'CLASSICAL';
 
 /** Every Astronomy by name; the values are the strings the union accepts. */
 export declare const Astronomy: {
@@ -5600,14 +5600,14 @@ export declare const Astronomy: {
    * The sky as observed: an ephemeris, whose overrides the kit holds
    * to the SDK's IAU routines.
    */
-  readonly Modern: 'modern';
+  readonly Modern: 'MODERN';
   /**
    * A classical text's model, whose obliquity, precession, daily
    * motions and sunrise are the text's own definitions; the kit
    * measures their distance from modern astronomy and publishes it
    * rather than gating it.
    */
-  readonly Classical: 'classical';
+  readonly Classical: 'CLASSICAL';
 };
 
 /**
@@ -5619,26 +5619,26 @@ export declare const AstronomyById: ReadonlyMap<number, Astronomy>;
 /**
  * Where a position is seen from.
  */
-export type Centre = 'geocentric' | 'topocentric' | 'heliocentric' | 'barycentric';
+export type Centre = 'GEOCENTRIC' | 'TOPOCENTRIC' | 'HELIOCENTRIC' | 'BARYCENTRIC';
 
 /** Every Centre by name; the values are the strings the union accepts. */
 export declare const Centre: {
   /**
    * The centre of the Earth.
    */
-  readonly Geocentric: 'geocentric';
+  readonly Geocentric: 'GEOCENTRIC';
   /**
    * An observer on the Earth; the request carries the place.
    */
-  readonly Topocentric: 'topocentric';
+  readonly Topocentric: 'TOPOCENTRIC';
   /**
    * The centre of the Sun.
    */
-  readonly Heliocentric: 'heliocentric';
+  readonly Heliocentric: 'HELIOCENTRIC';
   /**
    * The solar-system barycentre.
    */
-  readonly Barycentric: 'barycentric';
+  readonly Barycentric: 'BARYCENTRIC';
 };
 
 /**
@@ -5650,18 +5650,18 @@ export declare const CentreById: ReadonlyMap<number, Centre>;
 /**
  * The equinox and equator the coordinates refer to.
  */
-export type Equinox = 'of-date' | 'j2000';
+export type Equinox = 'OF_DATE' | 'J2000';
 
 /** Every Equinox by name; the values are the strings the union accepts. */
 export declare const Equinox: {
   /**
    * The equinox of date.
    */
-  readonly OfDate: 'of-date';
+  readonly OfDate: 'OF_DATE';
   /**
    * The J2000.0 equinox.
    */
-  readonly J2000: 'j2000';
+  readonly J2000: 'J2000';
 };
 
 /**
@@ -5673,18 +5673,18 @@ export declare const EquinoxById: ReadonlyMap<number, Equinox>;
 /**
  * The coordinate system of a position.
  */
-export type Coordinates = 'ecliptic' | 'equatorial';
+export type Coordinates = 'ECLIPTIC' | 'EQUATORIAL';
 
 /** Every Coordinates by name; the values are the strings the union accepts. */
 export declare const Coordinates: {
   /**
    * Ecliptic longitude and latitude.
    */
-  readonly Ecliptic: 'ecliptic';
+  readonly Ecliptic: 'ECLIPTIC';
   /**
    * Right ascension and declination.
    */
-  readonly Equatorial: 'equatorial';
+  readonly Equatorial: 'EQUATORIAL';
 };
 
 /**
@@ -5699,37 +5699,37 @@ export declare const CoordinatesById: ReadonlyMap<number, Coordinates>;
  * (`ProviderError::RESERVED_CODES`), so a binding that implements a
  * provider need never write a number.
  */
-export type ProviderCode = 'ok' | 'unsupported' | 'out-of-range' | 'data-missing' | 'refused' | 'invalid';
+export type ProviderCode = 'OK' | 'UNSUPPORTED' | 'OUT_OF_RANGE' | 'DATA_MISSING' | 'REFUSED' | 'INVALID';
 
 /** Every ProviderCode by name; the values are the strings the union accepts. */
 export declare const ProviderCode: {
   /**
    * The call succeeded.
    */
-  readonly Ok: 'ok';
+  readonly Ok: 'OK';
   /**
    * The operation, the frame or the option is not implemented by this
    * provider. A provider that cannot answer in the frame asked for
    * says so with this, and the SDK asks again in the provider's own
    * frame and completes the rest itself.
    */
-  readonly Unsupported: 'unsupported';
+  readonly Unsupported: 'UNSUPPORTED';
   /**
    * The instant is outside the provider's coverage.
    */
-  readonly OutOfRange: 'out-of-range';
+  readonly OutOfRange: 'OUT_OF_RANGE';
   /**
    * A data file the provider needs is missing.
    */
-  readonly DataMissing: 'data-missing';
+  readonly DataMissing: 'DATA_MISSING';
   /**
    * The provider refused rather than answer with something else.
    */
-  readonly Refused: 'refused';
+  readonly Refused: 'REFUSED';
   /**
    * The request is malformed.
    */
-  readonly Invalid: 'invalid';
+  readonly Invalid: 'INVALID';
 };
 
 /**
@@ -5746,7 +5746,7 @@ export declare const ProviderCodeById: ReadonlyMap<number, ProviderCode>;
  * this is ignored. The states are exclusive, which is why they are an
  * enum and not flag bits (ADR-0028).
  */
-export type Ephemeris = 'none' | 'builtin' | 'test';
+export type Ephemeris = 'NONE' | 'BUILTIN' | 'TEST';
 
 /** Every Ephemeris by name; the values are the strings the union accepts. */
 export declare const Ephemeris: {
@@ -5755,19 +5755,19 @@ export declare const Ephemeris: {
    * them. The zero value, and what a caller who passes a vtable
    * leaves this at.
    */
-  readonly None: 'none';
+  readonly None: 'NONE';
   /**
    * The SDK's own built-in analytic ephemeris: no files, no network,
    * no licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming
    * the feature if this library was built without it.
    */
-  readonly Builtin: 'builtin';
+  readonly Builtin: 'BUILTIN';
   /**
    * The analytic test provider. For tests and examples only — its
    * positions are **not astronomy**, and a chart cast from them is a
    * shape rather than a sky.
    */
-  readonly Test: 'test';
+  readonly Test: 'TEST';
 };
 
 /**
@@ -5779,27 +5779,27 @@ export declare const EphemerisById: ReadonlyMap<number, Ephemeris>;
 /**
  * How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
  */
-export type Resolution = 'defined' | 'tabular' | 'computed' | 'divergent';
+export type Resolution = 'DEFINED' | 'TABULAR' | 'COMPUTED' | 'DIVERGENT';
 
 /** Every Resolution by name; the values are the strings the union accepts. */
 export declare const Resolution: {
   /**
    * A mathematical definition; exact by construction.
    */
-  readonly Defined: 'defined';
+  readonly Defined: 'DEFINED';
   /**
    * From the authority's published table.
    */
-  readonly Tabular: 'tabular';
+  readonly Tabular: 'TABULAR';
   /**
    * Computed by the SDK's engine outside the table's range.
    */
-  readonly Computed: 'computed';
+  readonly Computed: 'COMPUTED';
   /**
    * Inside the range and the table and the engine disagree; the table
    * was followed and the engine's month and day are reported beside it.
    */
-  readonly Divergent: 'divergent';
+  readonly Divergent: 'DIVERGENT';
 };
 
 /**
@@ -5811,18 +5811,18 @@ export declare const ResolutionById: ReadonlyMap<number, Resolution>;
 /**
  * Which bound of a bhava a placement was read against.
  */
-export type Reading = 'sandhi' | 'madhya';
+export type Reading = 'SANDHI' | 'MADHYA';
 
 /** Every Reading by name; the values are the strings the union accepts. */
 export declare const Reading: {
   /**
    * From one sandhi to the next: the bhava as a span between cusps.
    */
-  readonly Sandhi: 'sandhi';
+  readonly Sandhi: 'SANDHI';
   /**
    * From one madhya to the next: the bhava as a span between centres.
    */
-  readonly Madhya: 'madhya';
+  readonly Madhya: 'MADHYA';
 };
 
 /**
@@ -5834,22 +5834,22 @@ export declare const ReadingById: ReadonlyMap<number, Reading>;
 /**
  * How badly the Sun burns a body.
  */
-export type Burning = 'none' | 'combust' | 'deep';
+export type Burning = 'NONE' | 'COMBUST' | 'DEEP';
 
 /** Every Burning by name; the values are the strings the union accepts. */
 export declare const Burning: {
   /**
    * Far enough from the Sun to be itself.
    */
-  readonly None: 'none';
+  readonly None: 'NONE';
   /**
    * Combust.
    */
-  readonly Combust: 'combust';
+  readonly Combust: 'COMBUST';
   /**
    * Deeply combust; only a table that gives a deeper orb reaches it.
    */
-  readonly Deep: 'deep';
+  readonly Deep: 'DEEP';
 };
 
 /**
@@ -5865,22 +5865,22 @@ export declare const BurningById: ReadonlyMap<number, Burning>;
  * it is a classification of a number rather than a thing with a key —
  * so it crosses as this boundary's own enum, as `TsStrength` does.
  */
-export type Quadrant = 'kendra' | 'panapara' | 'apoklima';
+export type Quadrant = 'KENDRA' | 'PANAPARA' | 'APOKLIMA';
 
 /** Every Quadrant by name; the values are the strings the union accepts. */
 export declare const Quadrant: {
   /**
    * Angular: the 1st, 4th, 7th and 10th.
    */
-  readonly Kendra: 'kendra';
+  readonly Kendra: 'KENDRA';
   /**
    * Succedent: the 2nd, 5th, 8th and 11th.
    */
-  readonly Panapara: 'panapara';
+  readonly Panapara: 'PANAPARA';
   /**
    * Cadent: the 3rd, 6th, 9th and 12th.
    */
-  readonly Apoklima: 'apoklima';
+  readonly Apoklima: 'APOKLIMA';
 };
 
 /**
@@ -5897,30 +5897,30 @@ export declare const QuadrantById: ReadonlyMap<number, Quadrant>;
  * crosses as this boundary's own enum, as `TsReading` and `TsDayPart`
  * do.
  */
-export type Strength = 'none' | 'quarter' | 'half' | 'three-quarters' | 'full';
+export type Strength = 'NONE' | 'QUARTER' | 'HALF' | 'THREE_QUARTERS' | 'FULL';
 
 /** Every Strength by name; the values are the strings the union accepts. */
 export declare const Strength: {
   /**
    * No aspect at all.
    */
-  readonly None: 'none';
+  readonly None: 'NONE';
   /**
    * A quarter aspect: the third and tenth.
    */
-  readonly Quarter: 'quarter';
+  readonly Quarter: 'QUARTER';
   /**
    * A half aspect: the fifth and ninth.
    */
-  readonly Half: 'half';
+  readonly Half: 'HALF';
   /**
    * A three-quarter aspect: the fourth and eighth.
    */
-  readonly ThreeQuarters: 'three-quarters';
+  readonly ThreeQuarters: 'THREE_QUARTERS';
   /**
    * A full aspect: the seventh, and a special graha's own two houses.
    */
-  readonly Full: 'full';
+  readonly Full: 'FULL';
 };
 
 /**
@@ -5935,18 +5935,18 @@ export declare const StrengthById: ReadonlyMap<number, Strength>;
  * The settings' own `Balance`, which is a knob and not a catalogue member,
  * so it crosses as this boundary's own enum, as `TsStrength` does.
  */
-export type Balance = 'spatial' | 'temporal';
+export type Balance = 'SPATIAL' | 'TEMPORAL';
 
 /** Every Balance by name; the values are the strings the union accepts. */
 export declare const Balance: {
   /**
    * By the elapsed part of the Moon's window of nakshatras.
    */
-  readonly Spatial: 'spatial';
+  readonly Spatial: 'SPATIAL';
   /**
    * By the elapsed part of the Moon's stay in its nakshatra.
    */
-  readonly Temporal: 'temporal';
+  readonly Temporal: 'TEMPORAL';
 };
 
 /**
@@ -5959,18 +5959,18 @@ export declare const BalanceById: ReadonlyMap<number, Balance>;
  * Where an Ashtakavarga's reductions and pindas were made: the settings'
  * own `Shodhana`, which is a knob and not a catalogue member.
  */
-export type Shodhana = 'each-graha' | 'sarva';
+export type Shodhana = 'EACH_GRAHA' | 'SARVA';
 
 /** Every Shodhana by name; the values are the strings the union accepts. */
 export declare const Shodhana: {
   /**
    * In each graha's own Ashtakavarga (BPHS chs. 67 to 69).
    */
-  readonly EachGraha: 'each-graha';
+  readonly EachGraha: 'EACH_GRAHA';
   /**
    * On the sum of the seven, as the conformance corpus's engine makes them.
    */
-  readonly Sarva: 'sarva';
+  readonly Sarva: 'SARVA';
 };
 
 /**
@@ -5983,18 +5983,18 @@ export declare const ShodhanaById: ReadonlyMap<number, Shodhana>;
  * How an Ashtakavarga's Ekadhipatya reduction treated a co-ruled sign beside
  * an occupied one: the settings' own `Ekadhipatya`.
  */
-export type Ekadhipatya = 'bphs' | 'empty-to-zero';
+export type Ekadhipatya = 'BPHS' | 'EMPTY_TO_ZERO';
 
 /** Every Ekadhipatya by name; the values are the strings the union accepts. */
 export declare const Ekadhipatya: {
   /**
    * BPHS ch. 68: an empty sign keeps a difference.
    */
-  readonly Bphs: 'bphs';
+  readonly Bphs: 'BPHS';
   /**
    * The empty sign always goes to zero.
    */
-  readonly EmptyToZero: 'empty-to-zero';
+  readonly EmptyToZero: 'EMPTY_TO_ZERO';
 };
 
 /**
@@ -6007,7 +6007,7 @@ export declare const EkadhipatyaById: ReadonlyMap<number, Ekadhipatya>;
  * How a Vimshopaka scored a graha in a varga: the settings' own
  * `Vimshopaka`.
  */
-export type VimshopakaScoring = 'bphs' | 'saptavargaja-virupas';
+export type VimshopakaScoring = 'BPHS' | 'SAPTAVARGAJA_VIRUPAS';
 
 /** Every VimshopakaScoring by name; the values are the strings the union accepts. */
 export declare const VimshopakaScoring: {
@@ -6015,12 +6015,12 @@ export declare const VimshopakaScoring: {
    * BPHS ch. 7: 20 in exaltation or the own sign, else by the compound
    * relationship with the sign's lord.
    */
-  readonly Bphs: 'bphs';
+  readonly Bphs: 'BPHS';
   /**
    * The conformance corpus's engine: the Saptavargaja virupas over 45 by
    * natural friendship, rounded to hundredths.
    */
-  readonly SaptavargajaVirupas: 'saptavargaja-virupas';
+  readonly SaptavargajaVirupas: 'SAPTAVARGAJA_VIRUPAS';
 };
 
 /**
@@ -6032,22 +6032,22 @@ export declare const VimshopakaScoringById: ReadonlyMap<number, VimshopakaScorin
 /**
  * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
  */
-export type DashaPhase = 'commencement' | 'middle' | 'end';
+export type DashaPhase = 'COMMENCEMENT' | 'MIDDLE' | 'END';
 
 /** Every DashaPhase by name; the values are the strings the union accepts. */
 export declare const DashaPhase: {
   /**
    * At its commencement.
    */
-  readonly Commencement: 'commencement';
+  readonly Commencement: 'COMMENCEMENT';
   /**
    * In its middle.
    */
-  readonly Middle: 'middle';
+  readonly Middle: 'MIDDLE';
   /**
    * At its end.
    */
-  readonly End: 'end';
+  readonly End: 'END';
 };
 
 /**
@@ -6059,18 +6059,18 @@ export declare const DashaPhaseById: ReadonlyMap<number, DashaPhase>;
 /**
  * Which arc of its day an instant falls in.
  */
-export type DayPart = 'daylight' | 'night';
+export type DayPart = 'DAYLIGHT' | 'NIGHT';
 
 /** Every DayPart by name; the values are the strings the union accepts. */
 export declare const DayPart: {
   /**
    * Between sunrise and sunset.
    */
-  readonly Daylight: 'daylight';
+  readonly Daylight: 'DAYLIGHT';
   /**
    * Between sunset and the next sunrise.
    */
-  readonly Night: 'night';
+  readonly Night: 'NIGHT';
 };
 
 /**
@@ -6088,22 +6088,22 @@ export declare const DayPartById: ReadonlyMap<number, DayPart>;
  * with a payload cannot be an id (`03-design/chart-at-the-boundary.md`
  * §8).
  */
-export type Sunrise = 'centre-no-refraction' | 'upper-limb-refraction' | 'lower-limb-refraction';
+export type Sunrise = 'CENTRE_NO_REFRACTION' | 'UPPER_LIMB_REFRACTION' | 'LOWER_LIMB_REFRACTION';
 
 /** Every Sunrise by name; the values are the strings the union accepts. */
 export declare const Sunrise: {
   /**
    * The centre of the disc on the geometric horizon.
    */
-  readonly CentreNoRefraction: 'centre-no-refraction';
+  readonly CentreNoRefraction: 'CENTRE_NO_REFRACTION';
   /**
    * The upper limb with refraction.
    */
-  readonly UpperLimbRefraction: 'upper-limb-refraction';
+  readonly UpperLimbRefraction: 'UPPER_LIMB_REFRACTION';
   /**
    * The lower limb with refraction.
    */
-  readonly LowerLimbRefraction: 'lower-limb-refraction';
+  readonly LowerLimbRefraction: 'LOWER_LIMB_REFRACTION';
 };
 
 /**
@@ -6115,18 +6115,18 @@ export declare const SunriseById: ReadonlyMap<number, Sunrise>;
 /**
  * How the sixty ghatis of a day are measured.
  */
-export type GhatiReckoning = 'civil' | 'proportional';
+export type GhatiReckoning = 'CIVIL' | 'PROPORTIONAL';
 
 /** Every GhatiReckoning by name; the values are the strings the union accepts. */
 export declare const GhatiReckoning: {
   /**
    * Twenty-four minutes each, from sunrise.
    */
-  readonly Civil: 'civil';
+  readonly Civil: 'CIVIL';
   /**
    * Thirty over the actual daylight and thirty over the actual night.
    */
-  readonly Proportional: 'proportional';
+  readonly Proportional: 'PROPORTIONAL';
 };
 
 /**
@@ -6138,18 +6138,18 @@ export declare const GhatiReckoningById: ReadonlyMap<number, GhatiReckoning>;
 /**
  * How the twenty-four horas of a day are measured.
  */
-export type HoraReckoning = 'proportional' | 'equal';
+export type HoraReckoning = 'PROPORTIONAL' | 'EQUAL';
 
 /** Every HoraReckoning by name; the values are the strings the union accepts. */
 export declare const HoraReckoning: {
   /**
    * Twelve over the daylight and twelve over the night.
    */
-  readonly Proportional: 'proportional';
+  readonly Proportional: 'PROPORTIONAL';
   /**
    * Twenty-four of sixty minutes, from sunrise.
    */
-  readonly Equal: 'equal';
+  readonly Equal: 'EQUAL';
 };
 
 /**
@@ -6166,18 +6166,18 @@ export declare const HoraReckoningById: ReadonlyMap<number, HoraReckoning>;
  * `state_polar_policy` beside it, because a variant with a payload
  * cannot be an id (`03-design/chart-at-the-boundary.md` §8).
  */
-export type DayState = 'normal' | 'polar';
+export type DayState = 'NORMAL' | 'POLAR';
 
 /** Every DayState by name; the values are the strings the union accepts. */
 export declare const DayState: {
   /**
    * Sunrise and sunset occurred; the two fields beside this are zero.
    */
-  readonly Normal: 'normal';
+  readonly Normal: 'NORMAL';
   /**
    * No horizon crossing, and the policy synthesised the bounds.
    */
-  readonly Polar: 'polar';
+  readonly Polar: 'POLAR';
 };
 
 /**
@@ -6189,18 +6189,18 @@ export declare const DayStateById: ReadonlyMap<number, DayState>;
 /**
  * Which polar state a day without a sunrise was in.
  */
-export type PolarKind = 'day' | 'night';
+export type PolarKind = 'DAY' | 'NIGHT';
 
 /** Every PolarKind by name; the values are the strings the union accepts. */
 export declare const PolarKind: {
   /**
    * The Sun stayed up.
    */
-  readonly Day: 'day';
+  readonly Day: 'DAY';
   /**
    * The Sun stayed down.
    */
-  readonly Night: 'night';
+  readonly Night: 'NIGHT';
 };
 
 /**
@@ -6212,22 +6212,22 @@ export declare const PolarKindById: ReadonlyMap<number, PolarKind>;
 /**
  * What the settings say a day without a sunrise is.
  */
-export type PolarDayPolicy = 'undefined' | 'nearest-event' | 'civil-midnight';
+export type PolarDayPolicy = 'UNDEFINED' | 'NEAREST_EVENT' | 'CIVIL_MIDNIGHT';
 
 /** Every PolarDayPolicy by name; the values are the strings the union accepts. */
 export declare const PolarDayPolicy: {
   /**
    * An undefined state: the day has no bounds.
    */
-  readonly Undefined: 'undefined';
+  readonly Undefined: 'UNDEFINED';
   /**
    * The nearest rise or set stands in for the missing one.
    */
-  readonly NearestEvent: 'nearest-event';
+  readonly NearestEvent: 'NEAREST_EVENT';
   /**
    * Civil midnight stands in for it.
    */
-  readonly CivilMidnight: 'civil-midnight';
+  readonly CivilMidnight: 'CIVIL_MIDNIGHT';
 };
 
 /**
@@ -6245,16 +6245,16 @@ export declare const PolarDayPolicyById: ReadonlyMap<number, PolarDayPolicy>;
  * rather than silently crossing as whatever was first.
  */
 export type VarsheshaChosen =
-  | 'strongest'
-  | 'most-portfolios'
-  | 'muntha-lord-unaspected'
-  | 'muntha-lord-all-weak'
-  | 'muntha-lord-tied'
-  | 'dina-ratri-tied'
-  | 'annual-lagna-lord-unaspected'
-  | 'strongest-unaspected'
-  | 'moons-ithasala'
-  | 'moons-sign-lord';
+  | 'STRONGEST'
+  | 'MOST_PORTFOLIOS'
+  | 'MUNTHA_LORD_UNASPECTED'
+  | 'MUNTHA_LORD_ALL_WEAK'
+  | 'MUNTHA_LORD_TIED'
+  | 'DINA_RATRI_TIED'
+  | 'ANNUAL_LAGNA_LORD_UNASPECTED'
+  | 'STRONGEST_UNASPECTED'
+  | 'MOONS_ITHASALA'
+  | 'MOONS_SIGN_LORD';
 
 /** Every VarsheshaChosen by name; the values are the strings the union accepts. */
 export declare const VarsheshaChosen: {
@@ -6262,48 +6262,48 @@ export declare const VarsheshaChosen: {
    * The strongest office-bearer that aspects the annual lagna: the
    * ordinary answer.
    */
-  readonly Strongest: 'strongest';
+  readonly Strongest: 'STRONGEST';
   /**
    * Tied on strength, and this one holds more portfolios.
    */
-  readonly MostPortfolios: 'most-portfolios';
+  readonly MostPortfolios: 'MOST_PORTFOLIOS';
   /**
    * The Muntha's lord, because no office-bearer aspects the lagna.
    */
-  readonly MunthaLordUnaspected: 'muntha-lord-unaspected';
+  readonly MunthaLordUnaspected: 'MUNTHA_LORD_UNASPECTED';
   /**
    * The Muntha's lord, because every office-bearer is under five units.
    */
-  readonly MunthaLordAllWeak: 'muntha-lord-all-weak';
+  readonly MunthaLordAllWeak: 'MUNTHA_LORD_ALL_WEAK';
   /**
    * The Muntha's lord, on an outright tie of strength, aspect and
    * portfolios.
    */
-  readonly MunthaLordTied: 'muntha-lord-tied';
+  readonly MunthaLordTied: 'MUNTHA_LORD_TIED';
   /**
    * The Dina-Ratri Pati, on that same tie, under the other reading.
    */
-  readonly DinaRatriTied: 'dina-ratri-tied';
+  readonly DinaRatriTied: 'DINA_RATRI_TIED';
   /**
    * The annual lagna's lord, because nobody aspects and the rules ask
    * for that reading.
    */
-  readonly AnnualLagnaLordUnaspected: 'annual-lagna-lord-unaspected';
+  readonly AnnualLagnaLordUnaspected: 'ANNUAL_LAGNA_LORD_UNASPECTED';
   /**
    * The strongest of the five, because nobody aspects and the rules ask
    * for the *Nilakanthi*'s reading.
    */
-  readonly StrongestUnaspected: 'strongest-unaspected';
+  readonly StrongestUnaspected: 'STRONGEST_UNASPECTED';
   /**
    * The planet in Ithasala with the Moon, the strongest of several, in
    * the Moon's place.
    */
-  readonly MoonsIthasala: 'moons-ithasala';
+  readonly MoonsIthasala: 'MOONS_ITHASALA';
   /**
    * The lord of the Moon's sign, in the Moon's place: the Moon itself
    * where it stands in Cancer.
    */
-  readonly MoonsSignLord: 'moons-sign-lord';
+  readonly MoonsSignLord: 'MOONS_SIGN_LORD';
 };
 
 /**
@@ -6318,31 +6318,31 @@ export declare const VarsheshaChosenById: ReadonlyMap<number, VarsheshaChosen>;
  * Not the Parashari drishti, which crosses elsewhere: this one is a
  * relation between signs, and its neutral houses give no aspect at all.
  */
-export type TajikaDrishti = 'friendly' | 'secretly-friendly' | 'inimical' | 'secretly-inimical' | 'none';
+export type TajikaDrishti = 'FRIENDLY' | 'SECRETLY_FRIENDLY' | 'INIMICAL' | 'SECRETLY_INIMICAL' | 'NONE';
 
 /** Every TajikaDrishti by name; the values are the strings the union accepts. */
 export declare const TajikaDrishti: {
   /**
    * Pratyaksha Mitra, at houses 5 and 9: openly friendly.
    */
-  readonly Friendly: 'friendly';
+  readonly Friendly: 'FRIENDLY';
   /**
    * Gupta Mitra, at houses 3 and 11: secretly friendly.
    */
-  readonly SecretlyFriendly: 'secretly-friendly';
+  readonly SecretlyFriendly: 'SECRETLY_FRIENDLY';
   /**
    * Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an
    * aspect.
    */
-  readonly Inimical: 'inimical';
+  readonly Inimical: 'INIMICAL';
   /**
    * Gupta Shatru, at houses 4 and 10: secretly inimical.
    */
-  readonly SecretlyInimical: 'secretly-inimical';
+  readonly SecretlyInimical: 'SECRETLY_INIMICAL';
   /**
    * Sama, at houses 2, 6, 8 and 12: no aspect at all.
    */
-  readonly None: 'none';
+  readonly None: 'NONE';
 };
 
 /**
@@ -6357,7 +6357,7 @@ export declare const TajikaDrishtiById: ReadonlyMap<number, TajikaDrishti>;
  * Three of the four are kinds of Ithasala, the coming-together, which is
  * how the source's Table X-3 enumerates them.
  */
-export type TajikaYoga = 'ithasala-vartamana' | 'ithasala-poorna' | 'ithasala-bhavishyat' | 'ishrafa';
+export type TajikaYoga = 'ITHASALA_VARTAMANA' | 'ITHASALA_POORNA' | 'ITHASALA_BHAVISHYAT' | 'ISHRAFA';
 
 /** Every TajikaYoga by name; the values are the strings the union accepts. */
 export declare const TajikaYoga: {
@@ -6365,22 +6365,22 @@ export declare const TajikaYoga: {
    * Vartamana Ithasala: the faster is behind the slower by a degree or
    * more, inside the orb, and coming to it.
    */
-  readonly IthasalaVartamana: 'ithasala-vartamana';
+  readonly IthasalaVartamana: 'ITHASALA_VARTAMANA';
   /**
    * Poorna Ithasala: as Vartamana but within a single degree, which
    * the source marks as immediate fulfilment.
    */
-  readonly IthasalaPoorna: 'ithasala-poorna';
+  readonly IthasalaPoorna: 'ITHASALA_POORNA';
   /**
    * Bhavishyat Ithasala: the faster is past but stands at 29° or
    * beyond, so it acts from the next sign, where it is behind again.
    */
-  readonly IthasalaBhavishyat: 'ithasala-bhavishyat';
+  readonly IthasalaBhavishyat: 'ITHASALA_BHAVISHYAT';
   /**
    * Ishrafa: the faster is a degree or more past the slower and
    * drawing away.
    */
-  readonly Ishrafa: 'ishrafa';
+  readonly Ishrafa: 'ISHRAFA';
 };
 
 /**
@@ -6398,94 +6398,94 @@ export declare const TajikaYogaById: ReadonlyMap<number, TajikaYoga>;
  * Its ids are also the bit positions of `year_matters.unanswered`.
  */
 export type YearYoga =
-  | 'ikabala'
-  | 'induvara'
-  | 'ithasala'
-  | 'ishrafa'
-  | 'nakta'
-  | 'yamaya'
-  | 'manau'
-  | 'kamboola'
-  | 'gairi-kamboola'
-  | 'khallasara'
-  | 'rudda'
-  | 'duhphali-kuttha'
-  | 'dutthottha-davira'
-  | 'tambira'
-  | 'kuttha'
-  | 'durapha';
+  | 'IKABALA'
+  | 'INDUVARA'
+  | 'ITHASALA'
+  | 'ISHRAFA'
+  | 'NAKTA'
+  | 'YAMAYA'
+  | 'MANAU'
+  | 'KAMBOOLA'
+  | 'GAIRI_KAMBOOLA'
+  | 'KHALLASARA'
+  | 'RUDDA'
+  | 'DUHPHALI_KUTTHA'
+  | 'DUTTHOTTHA_DAVIRA'
+  | 'TAMBIRA'
+  | 'KUTTHA'
+  | 'DURAPHA';
 
 /** Every YearYoga by name; the values are the strings the union accepts. */
 export declare const YearYoga: {
   /**
    * Every planet in a kendra or a panaphara: a fact about the chart.
    */
-  readonly Ikabala: 'ikabala';
+  readonly Ikabala: 'IKABALA';
   /**
    * Every planet in an apoklima: a fact about the chart.
    */
-  readonly Induvara: 'induvara';
+  readonly Induvara: 'INDUVARA';
   /**
    * The lagnesha and the karyesha are coming together, in one of the
    * three kinds `TsTajikaYoga` enumerates.
    */
-  readonly Ithasala: 'ithasala';
+  readonly Ithasala: 'ITHASALA';
   /**
    * The pair are drawing apart.
    */
-  readonly Ishrafa: 'ishrafa';
+  readonly Ishrafa: 'ISHRAFA';
   /**
    * The two do not aspect, and a planet faster than both carries the
    * light between them: past one, coming to the other.
    */
-  readonly Nakta: 'nakta';
+  readonly Nakta: 'NAKTA';
   /**
    * The two do not aspect, and a planet slower than both gathers their
    * light: both are coming to it.
    */
-  readonly Yamaya: 'yamaya';
+  readonly Yamaya: 'YAMAYA';
   /**
    * An Ithasala a malefic destroys.
    */
-  readonly Manau: 'manau';
+  readonly Manau: 'MANAU';
   /**
    * An Ithasala the Moon joins.
    */
-  readonly Kamboola: 'kamboola';
+  readonly Kamboola: 'KAMBOOLA';
   /**
    * An Ithasala an unqualified Moon completes on entering the next sign.
    */
-  readonly GairiKamboola: 'gairi-kamboola';
+  readonly GairiKamboola: 'GAIRI_KAMBOOLA';
   /**
    * An Ithasala an unqualified Moon negates by standing apart from it.
    */
-  readonly Khallasara: 'khallasara';
+  readonly Khallasara: 'KHALLASARA';
   /**
    * An Ithasala where either of the pair is afflicted.
    */
-  readonly Rudda: 'rudda';
+  readonly Rudda: 'RUDDA';
   /**
    * An Ithasala where the slower is strong and the faster weak.
    */
-  readonly DuhphaliKuttha: 'duhphali-kuttha';
+  readonly DuhphaliKuttha: 'DUHPHALI_KUTTHA';
   /**
    * Both weak, and one in Ithasala with a third, strong planet.
    */
-  readonly DutthotthaDavira: 'dutthottha-davira';
+  readonly DutthotthaDavira: 'DUTTHOTTHA_DAVIRA';
   /**
    * No aspect and no Ithasala, the karyesha completing one from the
    * next sign.
    */
-  readonly Tambira: 'tambira';
+  readonly Tambira: 'TAMBIRA';
   /**
    * Both powerful, in a kendra or a panaphara, under a benefic's aspect
    * and no malefic's (crux C117).
    */
-  readonly Kuttha: 'kuttha';
+  readonly Kuttha: 'KUTTHA';
   /**
    * Both weak, in the trika houses, combust or retrograde.
    */
-  readonly Durapha: 'durapha';
+  readonly Durapha: 'DURAPHA';
 };
 
 /**
@@ -6503,214 +6503,214 @@ export declare const YearYogaById: ReadonlyMap<number, YearYoga>;
  * added there stops this crate compiling rather than crossing as another.
  */
 export type Saham =
-  | 'punya'
-  | 'guru'
-  | 'vidya'
-  | 'yasha'
-  | 'mitra'
-  | 'mahatmya'
-  | 'asha'
-  | 'samarthya'
-  | 'bhratri'
-  | 'gaurava'
-  | 'pitri'
-  | 'raja'
-  | 'matri'
-  | 'putra'
-  | 'jeeva'
-  | 'roga'
-  | 'karma'
-  | 'manmatha'
-  | 'kali'
-  | 'kshama'
-  | 'shastra'
-  | 'bandhu'
-  | 'mrityu'
-  | 'deshantara'
-  | 'artha'
-  | 'paradara'
-  | 'anya-karma'
-  | 'vanika'
-  | 'karya-siddhi'
-  | 'vivaha'
-  | 'prasava'
-  | 'santaapa'
-  | 'shraddha'
-  | 'preeti'
-  | 'jadya'
-  | 'vyapara'
-  | 'paneeya-paata'
-  | 'shatru'
-  | 'jalapatha'
-  | 'bandhana'
-  | 'labha';
+  | 'PUNYA'
+  | 'GURU'
+  | 'VIDYA'
+  | 'YASHA'
+  | 'MITRA'
+  | 'MAHATMYA'
+  | 'ASHA'
+  | 'SAMARTHYA'
+  | 'BHRATRI'
+  | 'GAURAVA'
+  | 'PITRI'
+  | 'RAJA'
+  | 'MATRI'
+  | 'PUTRA'
+  | 'JEEVA'
+  | 'ROGA'
+  | 'KARMA'
+  | 'MANMATHA'
+  | 'KALI'
+  | 'KSHAMA'
+  | 'SHASTRA'
+  | 'BANDHU'
+  | 'MRITYU'
+  | 'DESHANTARA'
+  | 'ARTHA'
+  | 'PARADARA'
+  | 'ANYA_KARMA'
+  | 'VANIKA'
+  | 'KARYA_SIDDHI'
+  | 'VIVAHA'
+  | 'PRASAVA'
+  | 'SANTAAPA'
+  | 'SHRADDHA'
+  | 'PREETI'
+  | 'JADYA'
+  | 'VYAPARA'
+  | 'PANEEYA_PAATA'
+  | 'SHATRU'
+  | 'JALAPATHA'
+  | 'BANDHANA'
+  | 'LABHA';
 
 /** Every Saham by name; the values are the strings the union accepts. */
 export declare const Saham: {
   /**
    * **Punya**, general auspiciousness.
    */
-  readonly Punya: 'punya';
+  readonly Punya: 'PUNYA';
   /**
    * **Guru**, the preceptor.
    */
-  readonly Guru: 'guru';
+  readonly Guru: 'GURU';
   /**
    * **Vidya** (Jnana), knowledge.
    */
-  readonly Vidya: 'vidya';
+  readonly Vidya: 'VIDYA';
   /**
    * **Yasha**, fame.
    */
-  readonly Yasha: 'yasha';
+  readonly Yasha: 'YASHA';
   /**
    * **Mitra**, friends.
    */
-  readonly Mitra: 'mitra';
+  readonly Mitra: 'MITRA';
   /**
    * **Mahatmya**, the fruits of virtuous living.
    */
-  readonly Mahatmya: 'mahatmya';
+  readonly Mahatmya: 'MAHATMYA';
   /**
    * **Asha**, hope.
    */
-  readonly Asha: 'asha';
+  readonly Asha: 'ASHA';
   /**
    * **Samarthya**, capability.
    */
-  readonly Samarthya: 'samarthya';
+  readonly Samarthya: 'SAMARTHYA';
   /**
    * **Bhratri**, siblings.
    */
-  readonly Bhratri: 'bhratri';
+  readonly Bhratri: 'BHRATRI';
   /**
    * **Gaurava**, dignity.
    */
-  readonly Gaurava: 'gaurava';
+  readonly Gaurava: 'GAURAVA';
   /**
    * **Pitri** (Taata), the father.
    */
-  readonly Pitri: 'pitri';
+  readonly Pitri: 'PITRI';
   /**
    * **Raja**, royal dignity.
    */
-  readonly Raja: 'raja';
+  readonly Raja: 'RAJA';
   /**
    * **Matri**, the mother.
    */
-  readonly Matri: 'matri';
+  readonly Matri: 'MATRI';
   /**
    * **Putra**, progeny.
    */
-  readonly Putra: 'putra';
+  readonly Putra: 'PUTRA';
   /**
    * **Jeeva**, life.
    */
-  readonly Jeeva: 'jeeva';
+  readonly Jeeva: 'JEEVA';
   /**
    * **Roga**, disease.
    */
-  readonly Roga: 'roga';
+  readonly Roga: 'ROGA';
   /**
    * **Karma**, profession.
    */
-  readonly Karma: 'karma';
+  readonly Karma: 'KARMA';
   /**
    * **Manmatha**, infatuation.
    */
-  readonly Manmatha: 'manmatha';
+  readonly Manmatha: 'MANMATHA';
   /**
    * **Kali**, strife.
    */
-  readonly Kali: 'kali';
+  readonly Kali: 'KALI';
   /**
    * **Kshama**, forgiveness.
    */
-  readonly Kshama: 'kshama';
+  readonly Kshama: 'KSHAMA';
   /**
    * **Shastra**, scriptures.
    */
-  readonly Shastra: 'shastra';
+  readonly Shastra: 'SHASTRA';
   /**
    * **Bandhu**, relatives.
    */
-  readonly Bandhu: 'bandhu';
+  readonly Bandhu: 'BANDHU';
   /**
    * **Mrityu**, death.
    */
-  readonly Mrityu: 'mrityu';
+  readonly Mrityu: 'MRITYU';
   /**
    * **Deshantara**, foreign travel.
    */
-  readonly Deshantara: 'deshantara';
+  readonly Deshantara: 'DESHANTARA';
   /**
    * **Artha** (Dhana), wealth.
    */
-  readonly Artha: 'artha';
+  readonly Artha: 'ARTHA';
   /**
    * **Paradara**, adultery.
    */
-  readonly Paradara: 'paradara';
+  readonly Paradara: 'PARADARA';
   /**
    * **Anya-karma**, an additional vocation.
    */
-  readonly AnyaKarma: 'anya-karma';
+  readonly AnyaKarma: 'ANYA_KARMA';
   /**
    * **Vanika**, trade.
    */
-  readonly Vanika: 'vanika';
+  readonly Vanika: 'VANIKA';
   /**
    * **Karya-siddhi**, success in a venture.
    */
-  readonly KaryaSiddhi: 'karya-siddhi';
+  readonly KaryaSiddhi: 'KARYA_SIDDHI';
   /**
    * **Vivaha**, marriage.
    */
-  readonly Vivaha: 'vivaha';
+  readonly Vivaha: 'VIVAHA';
   /**
    * **Prasava**, the delivery of a child.
    */
-  readonly Prasava: 'prasava';
+  readonly Prasava: 'PRASAVA';
   /**
    * **Santaapa**, sorrow.
    */
-  readonly Santaapa: 'santaapa';
+  readonly Santaapa: 'SANTAAPA';
   /**
    * **Shraddha**, devotion.
    */
-  readonly Shraddha: 'shraddha';
+  readonly Shraddha: 'SHRADDHA';
   /**
    * **Preeti**, love.
    */
-  readonly Preeti: 'preeti';
+  readonly Preeti: 'PREETI';
   /**
    * **Jadya**, stupidity.
    */
-  readonly Jadya: 'jadya';
+  readonly Jadya: 'JADYA';
   /**
    * **Vyapara**, business.
    */
-  readonly Vyapara: 'vyapara';
+  readonly Vyapara: 'VYAPARA';
   /**
    * **Paneeya-paata**, falling into water.
    */
-  readonly PaneeyaPaata: 'paneeya-paata';
+  readonly PaneeyaPaata: 'PANEEYA_PAATA';
   /**
    * **Shatru**, enemies.
    */
-  readonly Shatru: 'shatru';
+  readonly Shatru: 'SHATRU';
   /**
    * **Jalapatha**, a sea voyage.
    */
-  readonly Jalapatha: 'jalapatha';
+  readonly Jalapatha: 'JALAPATHA';
   /**
    * **Bandhana**, imprisonment.
    */
-  readonly Bandhana: 'bandhana';
+  readonly Bandhana: 'BANDHANA';
   /**
    * **Labha**, monetary gain.
    */
-  readonly Labha: 'labha';
+  readonly Labha: 'LABHA';
 };
 
 /**
@@ -6725,26 +6725,26 @@ export declare const SahamById: ReadonlyMap<number, Saham>;
  *
  * Mirrors `teistro::TajikaRelation` through an **exhaustive** match.
  */
-export type TajikaRelation = 'own' | 'friend' | 'neutral' | 'enemy';
+export type TajikaRelation = 'OWN' | 'FRIEND' | 'NEUTRAL' | 'ENEMY';
 
 /** Every TajikaRelation by name; the values are the strings the union accepts. */
 export declare const TajikaRelation: {
   /**
    * The planet is the other: its own.
    */
-  readonly Own: 'own';
+  readonly Own: 'OWN';
   /**
    * A friend.
    */
-  readonly Friend: 'friend';
+  readonly Friend: 'FRIEND';
   /**
    * Neither.
    */
-  readonly Neutral: 'neutral';
+  readonly Neutral: 'NEUTRAL';
   /**
    * An enemy.
    */
-  readonly Enemy: 'enemy';
+  readonly Enemy: 'ENEMY';
 };
 
 /**
@@ -6759,30 +6759,30 @@ export declare const TajikaRelationById: ReadonlyMap<number, TajikaRelation>;
  *
  * Mirrors `teistro::HarshaGrade` through an **exhaustive** match.
  */
-export type HarshaGrade = 'nirbala' | 'alpabali' | 'madhya-bali' | 'poorna-bali' | 'extraordinary';
+export type HarshaGrade = 'NIRBALA' | 'ALPABALI' | 'MADHYA_BALI' | 'POORNA_BALI' | 'EXTRAORDINARY';
 
 /** Every HarshaGrade by name; the values are the strings the union accepts. */
 export declare const HarshaGrade: {
   /**
    * No part: without strength.
    */
-  readonly Nirbala: 'nirbala';
+  readonly Nirbala: 'NIRBALA';
   /**
    * One part, five units: weak.
    */
-  readonly Alpabali: 'alpabali';
+  readonly Alpabali: 'ALPABALI';
   /**
    * Two parts, ten units: of medium strength.
    */
-  readonly MadhyaBali: 'madhya-bali';
+  readonly MadhyaBali: 'MADHYA_BALI';
   /**
    * Three parts, fifteen units: fully strong.
    */
-  readonly PoornaBali: 'poorna-bali';
+  readonly PoornaBali: 'POORNA_BALI';
   /**
    * All four, twenty units: extraordinarily strong, and rare.
    */
-  readonly Extraordinary: 'extraordinary';
+  readonly Extraordinary: 'EXTRAORDINARY';
 };
 
 /**
@@ -6799,69 +6799,69 @@ export declare const HarshaGradeById: ReadonlyMap<number, HarshaGrade>;
  * Mirrors `teistro::StrongClause` through an **exhaustive** match.
  */
 export type SahamStrong =
-  | 'lord-exalted'
-  | 'lord-own-sign'
-  | 'lord-own-hudda'
-  | 'lord-own-drekkana'
-  | 'lord-own-navamsha'
-  | 'lord-in-friends-sign'
-  | 'with-friend'
-  | 'with-benefic'
-  | 'with-year-lord'
-  | 'lord-conjoins'
-  | 'lord-aspects-saham'
-  | 'lord-aspects-lagna';
+  | 'LORD_EXALTED'
+  | 'LORD_OWN_SIGN'
+  | 'LORD_OWN_HUDDA'
+  | 'LORD_OWN_DREKKANA'
+  | 'LORD_OWN_NAVAMSHA'
+  | 'LORD_IN_FRIENDS_SIGN'
+  | 'WITH_FRIEND'
+  | 'WITH_BENEFIC'
+  | 'WITH_YEAR_LORD'
+  | 'LORD_CONJOINS'
+  | 'LORD_ASPECTS_SAHAM'
+  | 'LORD_ASPECTS_LAGNA';
 
 /** Every SahamStrong by name; the values are the strings the union accepts. */
 export declare const SahamStrong: {
   /**
    * Its lord is exalted.
    */
-  readonly LordExalted: 'lord-exalted';
+  readonly LordExalted: 'LORD_EXALTED';
   /**
    * Its lord is in its own sign.
    */
-  readonly LordOwnSign: 'lord-own-sign';
+  readonly LordOwnSign: 'LORD_OWN_SIGN';
   /**
    * Its lord is in its own Hudda.
    */
-  readonly LordOwnHudda: 'lord-own-hudda';
+  readonly LordOwnHudda: 'LORD_OWN_HUDDA';
   /**
    * Its lord is in its own Drekkana.
    */
-  readonly LordOwnDrekkana: 'lord-own-drekkana';
+  readonly LordOwnDrekkana: 'LORD_OWN_DREKKANA';
   /**
    * Its lord is in its own Navamsha.
    */
-  readonly LordOwnNavamsha: 'lord-own-navamsha';
+  readonly LordOwnNavamsha: 'LORD_OWN_NAVAMSHA';
   /**
    * Its lord is in a friend's sign.
    */
-  readonly LordInFriendsSign: 'lord-in-friends-sign';
+  readonly LordInFriendsSign: 'LORD_IN_FRIENDS_SIGN';
   /**
    * It is with a friend of its lord.
    */
-  readonly WithFriend: 'with-friend';
+  readonly WithFriend: 'WITH_FRIEND';
   /**
    * It is with a natural benefic.
    */
-  readonly WithBenefic: 'with-benefic';
+  readonly WithBenefic: 'WITH_BENEFIC';
   /**
    * It is with the year lord.
    */
-  readonly WithYearLord: 'with-year-lord';
+  readonly WithYearLord: 'WITH_YEAR_LORD';
   /**
    * Its lord conjoins it.
    */
-  readonly LordConjoins: 'lord-conjoins';
+  readonly LordConjoins: 'LORD_CONJOINS';
   /**
    * Its lord aspects it.
    */
-  readonly LordAspectsSaham: 'lord-aspects-saham';
+  readonly LordAspectsSaham: 'LORD_ASPECTS_SAHAM';
   /**
    * Its lord aspects the lagna.
    */
-  readonly LordAspectsLagna: 'lord-aspects-lagna';
+  readonly LordAspectsLagna: 'LORD_ASPECTS_LAGNA';
 };
 
 /**
@@ -6876,30 +6876,30 @@ export declare const SahamStrongById: ReadonlyMap<number, SahamStrong>;
  *
  * Mirrors `teistro::WeakClause` through an **exhaustive** match.
  */
-export type SahamWeak = 'lord-weak-vishwa' | 'lord-lacks-harsha' | 'lord-apart' | 'with-enemy' | 'with-malefic';
+export type SahamWeak = 'LORD_WEAK_VISHWA' | 'LORD_LACKS_HARSHA' | 'LORD_APART' | 'WITH_ENEMY' | 'WITH_MALEFIC';
 
 /** Every SahamWeak by name; the values are the strings the union accepts. */
 export declare const SahamWeak: {
   /**
    * Its lord is under the Panchavargiya floor.
    */
-  readonly LordWeakVishwa: 'lord-weak-vishwa';
+  readonly LordWeakVishwa: 'LORD_WEAK_VISHWA';
   /**
    * Its lord has no Harsha bala.
    */
-  readonly LordLacksHarsha: 'lord-lacks-harsha';
+  readonly LordLacksHarsha: 'LORD_LACKS_HARSHA';
   /**
    * Its lord neither aspects nor conjoins it.
    */
-  readonly LordApart: 'lord-apart';
+  readonly LordApart: 'LORD_APART';
   /**
    * It is with an enemy of its lord.
    */
-  readonly WithEnemy: 'with-enemy';
+  readonly WithEnemy: 'WITH_ENEMY';
   /**
    * It is with a natural malefic.
    */
-  readonly WithMalefic: 'with-malefic';
+  readonly WithMalefic: 'WITH_MALEFIC';
 };
 
 /**
@@ -6913,30 +6913,30 @@ export declare const SahamWeakById: ReadonlyMap<number, SahamWeak>;
  * and Durapha read. Its ids are the bit positions of
  * `matter_yogas.lagnesha_afflictions` and `karyesha_afflictions`.
  */
-export type Affliction = 'retrograde' | 'combust' | 'debilitated' | 'trika' | 'under-malefic';
+export type Affliction = 'RETROGRADE' | 'COMBUST' | 'DEBILITATED' | 'TRIKA' | 'UNDER_MALEFIC';
 
 /** Every Affliction by name; the values are the strings the union accepts. */
 export declare const Affliction: {
   /**
    * Going backwards through the zodiac.
    */
-  readonly Retrograde: 'retrograde';
+  readonly Retrograde: 'RETROGRADE';
   /**
    * Burnt by the Sun.
    */
-  readonly Combust: 'combust';
+  readonly Combust: 'COMBUST';
   /**
    * In its sign of debilitation.
    */
-  readonly Debilitated: 'debilitated';
+  readonly Debilitated: 'DEBILITATED';
   /**
    * In the 6th, 8th or 12th house from the annual lagna.
    */
-  readonly Trika: 'trika';
+  readonly Trika: 'TRIKA';
   /**
    * Conjunct or inimically aspected by one of Tajika's malefics.
    */
-  readonly UnderMalefic: 'under-malefic';
+  readonly UnderMalefic: 'UNDER_MALEFIC';
 };
 
 /**
@@ -6948,23 +6948,23 @@ export declare const AfflictionById: ReadonlyMap<number, Affliction>;
 /**
  * A time scale of the conversions; the first two ids are the port's.
  */
-export type Scale = 'ut1' | 'tt' | 'utc';
+export type Scale = 'UT1' | 'TT' | 'UTC';
 
 /** Every Scale by name; the values are the strings the union accepts. */
 export declare const Scale: {
   /**
    * Universal Time (UT1).
    */
-  readonly Ut1: 'ut1';
+  readonly Ut1: 'UT1';
   /**
    * Terrestrial Time.
    */
-  readonly Tt: 'tt';
+  readonly Tt: 'TT';
   /**
    * Coordinated Universal Time, through the leap-second table from
    * 1972 and read as UT1 before it.
    */
-  readonly Utc: 'utc';
+  readonly Utc: 'UTC';
 };
 
 /**
@@ -6976,22 +6976,22 @@ export declare const ScaleById: ReadonlyMap<number, Scale>;
 /**
  * What a zone specification names.
  */
-export type ZoneKind = 'iana' | 'fixed' | 'local-mean';
+export type ZoneKind = 'IANA' | 'FIXED' | 'LOCAL_MEAN';
 
 /** Every ZoneKind by name; the values are the strings the union accepts. */
 export declare const ZoneKind: {
   /**
    * A zone of the embedded database, by IANA name.
    */
-  readonly Iana: 'iana';
+  readonly Iana: 'IANA';
   /**
    * A fixed offset from UTC.
    */
-  readonly Fixed: 'fixed';
+  readonly Fixed: 'FIXED';
   /**
    * Local mean time at a longitude.
    */
-  readonly LocalMean: 'local-mean';
+  readonly LocalMean: 'LOCAL_MEAN';
 };
 
 /**
@@ -7003,22 +7003,22 @@ export declare const ZoneKindById: ReadonlyMap<number, ZoneKind>;
 /**
  * Where a resolution's offset came from.
  */
-export type ZoneSource = 'iana' | 'local-mean' | 'manual';
+export type ZoneSource = 'IANA' | 'LOCAL_MEAN' | 'MANUAL';
 
 /** Every ZoneSource by name; the values are the strings the union accepts. */
 export declare const ZoneSource: {
   /**
    * The zone database.
    */
-  readonly Iana: 'iana';
+  readonly Iana: 'IANA';
   /**
    * Local mean time from the longitude.
    */
-  readonly LocalMean: 'local-mean';
+  readonly LocalMean: 'LOCAL_MEAN';
   /**
    * A fixed offset the consumer stated.
    */
-  readonly Manual: 'manual';
+  readonly Manual: 'MANUAL';
 };
 
 /**
@@ -7030,22 +7030,22 @@ export declare const ZoneSourceById: ReadonlyMap<number, ZoneSource>;
 /**
  * Which rules produced the offset.
  */
-export type ZoneEra = 'current' | 'historical' | 'before-rules';
+export type ZoneEra = 'CURRENT' | 'HISTORICAL' | 'BEFORE_RULES';
 
 /** Every ZoneEra by name; the values are the strings the union accepts. */
 export declare const ZoneEra: {
   /**
    * An offset the zone applies in the database's own year.
    */
-  readonly Current: 'current';
+  readonly Current: 'CURRENT';
   /**
    * An offset from the zone's earlier rules.
    */
-  readonly Historical: 'historical';
+  readonly Historical: 'HISTORICAL';
   /**
    * Before the zone's first rule: the database's local-mean-time stub.
    */
-  readonly BeforeRules: 'before-rules';
+  readonly BeforeRules: 'BEFORE_RULES';
 };
 
 /**
@@ -7057,22 +7057,22 @@ export declare const ZoneEraById: ReadonlyMap<number, ZoneEra>;
 /**
  * What the daylight-saving policy did.
  */
-export type Dst = 'none' | 'gap' | 'overlap';
+export type Dst = 'NONE' | 'GAP' | 'OVERLAP';
 
 /** Every Dst by name; the values are the strings the union accepts. */
 export declare const Dst: {
   /**
    * The civil time was unambiguous.
    */
-  readonly None: 'none';
+  readonly None: 'NONE';
   /**
    * The civil time fell in a gap and was shifted forward past it.
    */
-  readonly Gap: 'gap';
+  readonly Gap: 'GAP';
   /**
    * The civil time fell in an overlap and one occurrence was chosen.
    */
-  readonly Overlap: 'overlap';
+  readonly Overlap: 'OVERLAP';
 };
 
 /**
@@ -7084,18 +7084,18 @@ export declare const DstById: ReadonlyMap<number, Dst>;
 /**
  * Which occurrence an overlap resolved to.
  */
-export type Chosen = 'earlier' | 'later';
+export type Chosen = 'EARLIER' | 'LATER';
 
 /** Every Chosen by name; the values are the strings the union accepts. */
 export declare const Chosen: {
   /**
    * The first occurrence, the earlier instant.
    */
-  readonly Earlier: 'earlier';
+  readonly Earlier: 'EARLIER';
   /**
    * The second occurrence, the later instant.
    */
-  readonly Later: 'later';
+  readonly Later: 'LATER';
 };
 
 /**
@@ -7108,34 +7108,34 @@ export declare const ChosenById: ReadonlyMap<number, Chosen>;
  * A warning of a resolution; `warnings` in the resolution is a bit set,
  * bit `n` for the warning with value `n`.
  */
-export type ZoneWarning = 'offset-differs-from-current-rules' | 'dst-ambiguous' | 'dst-gap-shifted' | 'leap-second-folded' | 'leap-table-expired' | 'time-unknown-fallback';
+export type ZoneWarning = 'OFFSET_DIFFERS_FROM_CURRENT_RULES' | 'DST_AMBIGUOUS' | 'DST_GAP_SHIFTED' | 'LEAP_SECOND_FOLDED' | 'LEAP_TABLE_EXPIRED' | 'TIME_UNKNOWN_FALLBACK';
 
 /** Every ZoneWarning by name; the values are the strings the union accepts. */
 export declare const ZoneWarning: {
   /**
    * The offset is not one the zone applies today.
    */
-  readonly OffsetDiffersFromCurrentRules: 'offset-differs-from-current-rules';
+  readonly OffsetDiffersFromCurrentRules: 'OFFSET_DIFFERS_FROM_CURRENT_RULES';
   /**
    * The civil time occurred twice; the policy chose.
    */
-  readonly DstAmbiguous: 'dst-ambiguous';
+  readonly DstAmbiguous: 'DST_AMBIGUOUS';
   /**
    * The civil time did not exist; the policy shifted it forward.
    */
-  readonly DstGapShifted: 'dst-gap-shifted';
+  readonly DstGapShifted: 'DST_GAP_SHIFTED';
   /**
    * A leap second (23:59:60) was folded onto the following midnight.
    */
-  readonly LeapSecondFolded: 'leap-second-folded';
+  readonly LeapSecondFolded: 'LEAP_SECOND_FOLDED';
   /**
    * The instant lies beyond the leap-second table's word.
    */
-  readonly LeapTableExpired: 'leap-table-expired';
+  readonly LeapTableExpired: 'LEAP_TABLE_EXPIRED';
   /**
    * The time was not given; the policy supplied one.
    */
-  readonly TimeUnknownFallback: 'time-unknown-fallback';
+  readonly TimeUnknownFallback: 'TIME_UNKNOWN_FALLBACK';
 };
 
 /**
@@ -7147,26 +7147,26 @@ export declare const ZoneWarningById: ReadonlyMap<number, ZoneWarning>;
 /**
  * What produced a Delta T value.
  */
-export type DeltaTSource = 'table' | 'model' | 'leap-seconds' | 'custom';
+export type DeltaTSource = 'TABLE' | 'MODEL' | 'LEAP_SECONDS' | 'CUSTOM';
 
 /** Every DeltaTSource by name; the values are the strings the union accepts. */
 export declare const DeltaTSource: {
   /**
    * Interpolated in the IERS table.
    */
-  readonly Table: 'table';
+  readonly Table: 'TABLE';
   /**
    * From a model, outside the table.
    */
-  readonly Model: 'model';
+  readonly Model: 'MODEL';
   /**
    * Through the leap-second table: TT less UTC, exact.
    */
-  readonly LeapSeconds: 'leap-seconds';
+  readonly LeapSeconds: 'LEAP_SECONDS';
   /**
    * Supplied by the consumer.
    */
-  readonly Custom: 'custom';
+  readonly Custom: 'CUSTOM';
 };
 
 /**
@@ -7178,18 +7178,18 @@ export declare const DeltaTSourceById: ReadonlyMap<number, DeltaTSource>;
 /**
  * Which lunar-month convention a day's month leads with.
  */
-export type LunarMonth = 'amanta' | 'purnimanta';
+export type LunarMonth = 'AMANTA' | 'PURNIMANTA';
 
 /** Every LunarMonth by name; the values are the strings the union accepts. */
 export declare const LunarMonth: {
   /**
    * New moon to new moon.
    */
-  readonly Amanta: 'amanta';
+  readonly Amanta: 'AMANTA';
   /**
    * Full moon to full moon.
    */
-  readonly Purnimanta: 'purnimanta';
+  readonly Purnimanta: 'PURNIMANTA';
 };
 
 /**
@@ -7206,18 +7206,18 @@ export declare const LunarMonthById: ReadonlyMap<number, LunarMonth>;
  * events are one question asked twice, and two sections of one column
  * each would be two counts, two offsets and two types for it.
  */
-export type MoonEvent = 'rise' | 'set';
+export type MoonEvent = 'RISE' | 'SET';
 
 /** Every MoonEvent by name; the values are the strings the union accepts. */
 export declare const MoonEvent: {
   /**
    * The Moon crossed the horizon upward.
    */
-  readonly Rise: 'rise';
+  readonly Rise: 'RISE';
   /**
    * The Moon crossed it downward.
    */
-  readonly Set: 'set';
+  readonly Set: 'SET';
 };
 
 /**
@@ -7234,18 +7234,18 @@ export declare const MoonEventById: ReadonlyMap<number, MoonEvent>;
  * and a nakshatra; only the second carries a tithi, and the first leaves
  * `because_tithi` at zero.
  */
-export type YogaCause = 'vara-nakshatra' | 'vara-tithi-nakshatra';
+export type YogaCause = 'VARA_NAKSHATRA' | 'VARA_TITHI_NAKSHATRA';
 
 /** Every YogaCause by name; the values are the strings the union accepts. */
 export declare const YogaCause: {
   /**
    * The vara and the nakshatra the Moon was in.
    */
-  readonly VaraNakshatra: 'vara-nakshatra';
+  readonly VaraNakshatra: 'VARA_NAKSHATRA';
   /**
    * The vara, the tithi's class and the nakshatra's number of feet.
    */
-  readonly VaraTithiNakshatra: 'vara-tithi-nakshatra';
+  readonly VaraTithiNakshatra: 'VARA_TITHI_NAKSHATRA';
 };
 
 /**
@@ -7263,22 +7263,22 @@ export declare const YogaCauseById: ReadonlyMap<number, YogaCause>;
  * match, so a kind added to the calendar breaks this build rather than
  * silently crossing as whatever came first.
  */
-export type MonthKind = 'nija' | 'adhika' | 'kshaya';
+export type MonthKind = 'NIJA' | 'ADHIKA' | 'KSHAYA';
 
 /** Every MonthKind by name; the values are the strings the union accepts. */
 export declare const MonthKind: {
   /**
    * One sankranti: the ordinary month.
    */
-  readonly Nija: 'nija';
+  readonly Nija: 'NIJA';
   /**
    * None: intercalary, and the name repeats.
    */
-  readonly Adhika: 'adhika';
+  readonly Adhika: 'ADHIKA';
   /**
    * Two: the next name is skipped this year.
    */
-  readonly Kshaya: 'kshaya';
+  readonly Kshaya: 'KSHAYA';
 };
 
 /**

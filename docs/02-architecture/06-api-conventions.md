@@ -19,10 +19,15 @@ typed surfaces in every binding.
 4. Errors are structured (`ts_status` plus `ts_error` on the context);
    a successful call never writes a message. A refusal of JSON the caller
    wrote names the path to the value that failed, down to the key or the
-   index — `varsha_json.sahamRules.houses`, `settings_json.frame.zodiacs`,
-   `varsha_json.sahams[0]` — and not only the record it sits in; inside an
+   index — `varsha.sahamRules.houses`, `settings.frame.zodiacs`,
+   `varsha.sahams[0]` — and not only the record it sits in; inside an
    internally tagged enum it names the enum, because serde reads a
    buffered copy there and not the caller's keys (`teistro_core::strict`).
+   The path starts at the **record**, as every binding and the façade name
+   it (`interpret`, `varsha`, `rules`, `theme`, `settings`), never at the
+   C argument that carries it (`interpret_json`), so a binding's caller
+   reads back the field they wrote; only a refusal of the argument itself
+   (a string that is not UTF-8) names the argument.
 5. Batch is the primary shape; scalar calls exist only in ergonomic layers.
 6. Results are named fields, never positional array offsets; large results
    are returned as columnar arrays or as a length-prefixed result blob
@@ -101,6 +106,14 @@ silent fallback.
   checked by the parity gate.
 - Field names follow the C header's names in every binding (Teimeris rule:
   renaming 365,000 fields costs more than the computation).
+- A member has **one key, spelled one way everywhere**: its variant in
+  `SCREAMING_SNAKE_CASE` (`INVALID_ARG`, `TIME_UNKNOWN_FALLBACK`), which
+  is serde's spelling of the Rust type, the C constant's last word, what a
+  stored document and a settings patch hold, and what every binding reads
+  back and accepts; a catalogue member is its kind and its key
+  (`graha.SUN`). `idl/api.json` records each key rather than letting a
+  generator infer one, and `crates/ffi/tests/keys.rs` holds every closed
+  enum's keys to its Rust type's serde spelling.
 
 ## Signatures
 

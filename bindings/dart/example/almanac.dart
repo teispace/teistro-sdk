@@ -139,7 +139,7 @@ void main() {
       );
     }
     final moon = day.moonEvents
-        .map((e) => '${e.rise ? 'rise' : 'set'} ${clock(e.instant)}')
+        .map((e) => '${e.rise ? 'RISE' : 'SET'} ${clock(e.instant)}')
         .join('  ');
     print(
       '  ${'moon'.padRight(10)} '

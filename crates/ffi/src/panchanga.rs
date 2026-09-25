@@ -37,6 +37,7 @@ use teistro_core::settings::LunarMonth;
 use teistro_core::time::UtcOffset;
 use teistro_idl::blob::{FixedValue, Writer};
 use teistro_panchanga::almanac::Panchanga;
+use teistro_panchanga::omen::YogaCause;
 use teistro_panchanga::span::Span;
 
 use crate::blob::TsBlob;
@@ -95,6 +96,15 @@ pub enum TsYogaCause {
     VaraNakshatra = 0,
     /// The vara, the tithi's class and the nakshatra's number of feet.
     VaraTithiNakshatra = 1,
+}
+
+impl From<YogaCause> for TsYogaCause {
+    fn from(cause: YogaCause) -> TsYogaCause {
+        match cause {
+            YogaCause::VaraNakshatra { .. } => TsYogaCause::VaraNakshatra,
+            YogaCause::VaraTithiNakshatra { .. } => TsYogaCause::VaraTithiNakshatra,
+        }
+    }
 }
 
 /// Whether a lunar month is ordinary, intercalary or omitted.
@@ -388,21 +398,14 @@ fn periods(days: &[Panchanga]) -> Periods {
         .iter()
         .flat_map(|day| day.omens.yogas.iter())
         .map(|held| {
-            use teistro_panchanga::omen::YogaCause;
-            let (kind, vara, tithi, nakshatra) = match held.because {
-                YogaCause::VaraNakshatra { vara, nakshatra } => {
-                    (TsYogaCause::VaraNakshatra, vara.id(), 0, nakshatra.id())
-                }
+            let kind = TsYogaCause::from(held.because);
+            let (vara, tithi, nakshatra) = match held.because {
+                YogaCause::VaraNakshatra { vara, nakshatra } => (vara.id(), 0, nakshatra.id()),
                 YogaCause::VaraTithiNakshatra {
                     vara,
                     tithi,
                     nakshatra,
-                } => (
-                    TsYogaCause::VaraTithiNakshatra,
-                    vara.id(),
-                    tithi.id(),
-                    nakshatra.id(),
-                ),
+                } => (vara.id(), tithi.id(), nakshatra.id()),
             };
             let mut row = vec![u64::from(held.yoga.id()).into()];
             row.extend(interval(held.at));

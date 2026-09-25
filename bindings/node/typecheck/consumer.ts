@@ -25,19 +25,19 @@ const wrongKind: Graha = 'rashi.ARIES';
 const bareName: Graha = 'SUN';
 
 // Any other enum is its name in kebab case.
-const ok: Status = 'ok';
-const refused: Status = 'invalid-arg';
-const ut1: TimeScale = 'ut1';
-const node: Body = 'mean-node';
+const ok: Status = 'OK';
+const refused: Status = 'INVALID_ARG';
+const ut1: TimeScale = 'UT1';
+const node: Body = 'MEAN_NODE';
 // @ts-expect-error not a status
 const notAStatus: Status = 'invalid_arg';
 
 /** Exhaustive over a closed union: adding a member breaks this on purpose. */
 function scaleName(scale: TimeScale): string {
   switch (scale) {
-    case 'ut1':
+    case 'UT1':
       return 'Universal Time';
-    case 'tt':
+    case 'TT':
       return 'Terrestrial Time';
     default: {
       const unreachable: never = scale;
@@ -86,15 +86,15 @@ function rendered(message: IntlRender): string {
  * boundary's business, not a consumer's.
  */
 function request(instants: readonly number[], bodies: readonly Body[]): PositionRequest {
-  return { scale: 'ut1', frameBits: 0, speeds: true, jds: instants, bodies };
+  return { scale: 'UT1', frameBits: 0, speeds: true, jds: instants, bodies };
 }
 
 // @ts-expect-error `jdCount` is the boundary's bookkeeping, not a field
-const withCount: PositionRequest = { scale: 'ut1', frameBits: 0, speeds: true, jds: [], bodies: [], jdCount: 0 };
+const withCount: PositionRequest = { scale: 'UT1', frameBits: 0, speeds: true, jds: [], bodies: [], jdCount: 0 };
 // @ts-expect-error a body is named by its key, not its id
-const byId: PositionRequest = { scale: 'ut1', frameBits: 0, speeds: true, jds: [], bodies: [0] };
+const byId: PositionRequest = { scale: 'UT1', frameBits: 0, speeds: true, jds: [], bodies: [0] };
 // @ts-expect-error `speeds` is a boolean, not the integer the C struct holds
-const byInteger: PositionRequest = { scale: 'ut1', frameBits: 0, speeds: 1, jds: [], bodies: [] };
+const byInteger: PositionRequest = { scale: 'UT1', frameBits: 0, speeds: 1, jds: [], bodies: [] };
 
 export {
   abbreviation,

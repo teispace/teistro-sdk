@@ -50,7 +50,7 @@ const isClass = (value) =>
  */
 function instances() {
   const { Calendar, ChartKind, Context, TeistroError, Body, date } = layer;
-  const ctx = new Context({ profile: 'parashari-classical', ephemeris: 'builtin' });
+  const ctx = new Context({ profile: 'parashari-classical', ephemeris: 'BUILTIN' });
   const engined = new Context({ profile: 'parashari-classical', testProvider: true });
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
   const charts = ctx.chart.foundMany({ instants: [2460482.5], place, utcOffsetSeconds: 20700, kind: ChartKind.Natal });

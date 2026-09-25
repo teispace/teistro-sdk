@@ -7,7 +7,7 @@ use core::fmt::Write as _;
 use std::io::Read;
 use std::path::Path;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::envelope::{Hash, ProviderStamp};
@@ -242,7 +242,7 @@ impl fmt::Display for Identity {
 
 /// What a cell's distance is measured in.
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DistanceUnit {
@@ -283,7 +283,7 @@ impl DistanceUnit {
 
 /// How a provider's speeds are defined.
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SpeedModel {
@@ -316,7 +316,7 @@ impl SpeedModel {
 
 /// Which astronomy a provider computes.
 #[repr(u8)]
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Astronomy {

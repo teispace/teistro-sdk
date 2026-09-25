@@ -5927,57 +5927,68 @@
         {
           "name": "Ok",
           "value": 0,
-          "doc": "Success."
+          "doc": "Success.",
+          "key": "OK"
         },
         {
           "name": "InvalidArg",
           "value": -1,
-          "doc": "A value refused at construction, or a request that contradicts itself."
+          "doc": "A value refused at construction, or a request that contradicts itself.",
+          "key": "INVALID_ARG"
         },
         {
           "name": "OutOfRange",
           "value": -2,
-          "doc": "An instant or place outside the provider's or the calendar's coverage."
+          "doc": "An instant or place outside the provider's or the calendar's coverage.",
+          "key": "OUT_OF_RANGE"
         },
         {
           "name": "Capability",
           "value": -3,
-          "doc": "The settings need something the provider does not declare."
+          "doc": "The settings need something the provider does not declare.",
+          "key": "CAPABILITY"
         },
         {
           "name": "Provider",
           "value": -4,
-          "doc": "The provider failed; its own code and message are carried."
+          "doc": "The provider failed; its own code and message are carried.",
+          "key": "PROVIDER"
         },
         {
           "name": "NotConverged",
           "value": -5,
-          "doc": "A search hit its iteration cap."
+          "doc": "A search hit its iteration cap.",
+          "key": "NOT_CONVERGED"
         },
         {
           "name": "Unsupported",
           "value": -6,
-          "doc": "A registered but unimplemented variant, or an unknown key."
+          "doc": "A registered but unimplemented variant, or an unknown key.",
+          "key": "UNSUPPORTED"
         },
         {
           "name": "Pack",
           "value": -7,
-          "doc": "A pack failed validation or targets another catalogue version."
+          "doc": "A pack failed validation or targets another catalogue version.",
+          "key": "PACK"
         },
         {
           "name": "Limit",
           "value": -8,
-          "doc": "A batch, range or cache limit was exceeded."
+          "doc": "A batch, range or cache limit was exceeded.",
+          "key": "LIMIT"
         },
         {
           "name": "SchemaVersion",
           "value": -9,
-          "doc": "A struct or blob from an incompatible version."
+          "doc": "A struct or blob from an incompatible version.",
+          "key": "SCHEMA_VERSION"
         },
         {
           "name": "Internal",
           "value": -10,
-          "doc": "A panic caught at the boundary; never expected."
+          "doc": "A panic caught at the boundary; never expected.",
+          "key": "INTERNAL"
         }
       ],
       "source": "crates/core/src/error.rs"
@@ -5990,72 +6001,86 @@
         {
           "name": "Sun",
           "value": 0,
-          "doc": "The Sun."
+          "doc": "The Sun.",
+          "key": "SUN"
         },
         {
           "name": "Moon",
           "value": 1,
-          "doc": "The Moon."
+          "doc": "The Moon.",
+          "key": "MOON"
         },
         {
           "name": "Mercury",
           "value": 2,
-          "doc": "Mercury."
+          "doc": "Mercury.",
+          "key": "MERCURY"
         },
         {
           "name": "Venus",
           "value": 3,
-          "doc": "Venus."
+          "doc": "Venus.",
+          "key": "VENUS"
         },
         {
           "name": "Mars",
           "value": 4,
-          "doc": "Mars."
+          "doc": "Mars.",
+          "key": "MARS"
         },
         {
           "name": "Jupiter",
           "value": 5,
-          "doc": "Jupiter."
+          "doc": "Jupiter.",
+          "key": "JUPITER"
         },
         {
           "name": "Saturn",
           "value": 6,
-          "doc": "Saturn."
+          "doc": "Saturn.",
+          "key": "SATURN"
         },
         {
           "name": "Uranus",
           "value": 7,
-          "doc": "Uranus."
+          "doc": "Uranus.",
+          "key": "URANUS"
         },
         {
           "name": "Neptune",
           "value": 8,
-          "doc": "Neptune."
+          "doc": "Neptune.",
+          "key": "NEPTUNE"
         },
         {
           "name": "Pluto",
           "value": 9,
-          "doc": "Pluto."
+          "doc": "Pluto.",
+          "key": "PLUTO"
         },
         {
           "name": "MeanNode",
           "value": 10,
-          "doc": "The mean ascending lunar node."
+          "doc": "The mean ascending lunar node.",
+          "key": "MEAN_NODE"
         },
         {
           "name": "TrueNode",
           "value": 11,
-          "doc": "The true (osculating) ascending lunar node."
+          "doc": "The true (osculating) ascending lunar node.",
+          "key": "TRUE_NODE"
         },
         {
           "name": "MeanApogee",
           "value": 12,
-          "doc": "The mean lunar apogee."
+          "doc": "The mean lunar apogee.",
+          "key": "MEAN_APOGEE"
         },
         {
           "name": "OsculatingApogee",
           "value": 13,
-          "doc": "The osculating lunar apogee."
+          "doc": "The osculating lunar apogee.",
+          "key": "OSCULATING_APOGEE"
         }
       ],
       "source": "crates/port-ephemeris/src/body.rs"
@@ -6068,12 +6093,14 @@
         {
           "name": "Ut1",
           "value": 0,
-          "doc": "Universal Time (UT1), the scale of civil time and of rise and set."
+          "doc": "Universal Time (UT1), the scale of civil time and of rise and set.",
+          "key": "UT1"
         },
         {
           "name": "Tt",
           "value": 1,
-          "doc": "Terrestrial Time, the scale of the ephemerides."
+          "doc": "Terrestrial Time, the scale of the ephemerides.",
+          "key": "TT"
         }
       ],
       "source": "crates/port-ephemeris/src/body.rs"
@@ -6086,12 +6113,14 @@
         {
           "name": "AstronomicalUnits",
           "value": 0,
-          "doc": "Astronomical units: an ephemeris."
+          "doc": "Astronomical units: an ephemeris.",
+          "key": "ASTRONOMICAL_UNITS"
         },
         {
           "name": "MeanDistances",
           "value": 1,
-          "doc": "The body's mean distance, so 1 is the mean: a classical model,\nwhose hypotenuse is on the radius."
+          "doc": "The body's mean distance, so 1 is the mean: a classical model,\nwhose hypotenuse is on the radius.",
+          "key": "MEAN_DISTANCES"
         }
       ],
       "source": "crates/port-ephemeris/src/capabilities.rs"
@@ -6104,12 +6133,14 @@
         {
           "name": "Derivative",
           "value": 0,
-          "doc": "The rate of the position: a central difference over a short step\nagrees with it, which the kit checks."
+          "doc": "The rate of the position: a central difference over a short step\nagrees with it, which the kit checks.",
+          "key": "DERIVATIVE"
         },
         {
           "name": "Rule",
           "value": 1,
-          "doc": "A text's rule for the daily motion, which its tradition uses as\nthe speed and which need not be the derivative of its places."
+          "doc": "A text's rule for the daily motion, which its tradition uses as\nthe speed and which need not be the derivative of its places.",
+          "key": "RULE"
         }
       ],
       "source": "crates/port-ephemeris/src/capabilities.rs"
@@ -6122,12 +6153,14 @@
         {
           "name": "Modern",
           "value": 0,
-          "doc": "The sky as observed: an ephemeris, whose overrides the kit holds\nto the SDK's IAU routines."
+          "doc": "The sky as observed: an ephemeris, whose overrides the kit holds\nto the SDK's IAU routines.",
+          "key": "MODERN"
         },
         {
           "name": "Classical",
           "value": 1,
-          "doc": "A classical text's model, whose obliquity, precession, daily\nmotions and sunrise are the text's own definitions; the kit\nmeasures their distance from modern astronomy and publishes it\nrather than gating it."
+          "doc": "A classical text's model, whose obliquity, precession, daily\nmotions and sunrise are the text's own definitions; the kit\nmeasures their distance from modern astronomy and publishes it\nrather than gating it.",
+          "key": "CLASSICAL"
         }
       ],
       "source": "crates/port-ephemeris/src/capabilities.rs"
@@ -6140,22 +6173,26 @@
         {
           "name": "Geocentric",
           "value": 0,
-          "doc": "The centre of the Earth."
+          "doc": "The centre of the Earth.",
+          "key": "GEOCENTRIC"
         },
         {
           "name": "Topocentric",
           "value": 1,
-          "doc": "An observer on the Earth; the request carries the place."
+          "doc": "An observer on the Earth; the request carries the place.",
+          "key": "TOPOCENTRIC"
         },
         {
           "name": "Heliocentric",
           "value": 2,
-          "doc": "The centre of the Sun."
+          "doc": "The centre of the Sun.",
+          "key": "HELIOCENTRIC"
         },
         {
           "name": "Barycentric",
           "value": 3,
-          "doc": "The solar-system barycentre."
+          "doc": "The solar-system barycentre.",
+          "key": "BARYCENTRIC"
         }
       ],
       "source": "crates/port-ephemeris/src/frame.rs"
@@ -6168,12 +6205,14 @@
         {
           "name": "OfDate",
           "value": 0,
-          "doc": "The equinox of date."
+          "doc": "The equinox of date.",
+          "key": "OF_DATE"
         },
         {
           "name": "J2000",
           "value": 1,
-          "doc": "The J2000.0 equinox."
+          "doc": "The J2000.0 equinox.",
+          "key": "J2000"
         }
       ],
       "source": "crates/port-ephemeris/src/frame.rs"
@@ -6186,12 +6225,14 @@
         {
           "name": "Ecliptic",
           "value": 0,
-          "doc": "Ecliptic longitude and latitude."
+          "doc": "Ecliptic longitude and latitude.",
+          "key": "ECLIPTIC"
         },
         {
           "name": "Equatorial",
           "value": 1,
-          "doc": "Right ascension and declination."
+          "doc": "Right ascension and declination.",
+          "key": "EQUATORIAL"
         }
       ],
       "source": "crates/port-ephemeris/src/frame.rs"
@@ -6204,32 +6245,38 @@
         {
           "name": "Ok",
           "value": 0,
-          "doc": "The call succeeded."
+          "doc": "The call succeeded.",
+          "key": "OK"
         },
         {
           "name": "Unsupported",
           "value": -1,
-          "doc": "The operation, the frame or the option is not implemented by this\nprovider. A provider that cannot answer in the frame asked for\nsays so with this, and the SDK asks again in the provider's own\nframe and completes the rest itself."
+          "doc": "The operation, the frame or the option is not implemented by this\nprovider. A provider that cannot answer in the frame asked for\nsays so with this, and the SDK asks again in the provider's own\nframe and completes the rest itself.",
+          "key": "UNSUPPORTED"
         },
         {
           "name": "OutOfRange",
           "value": -2,
-          "doc": "The instant is outside the provider's coverage."
+          "doc": "The instant is outside the provider's coverage.",
+          "key": "OUT_OF_RANGE"
         },
         {
           "name": "DataMissing",
           "value": -3,
-          "doc": "A data file the provider needs is missing."
+          "doc": "A data file the provider needs is missing.",
+          "key": "DATA_MISSING"
         },
         {
           "name": "Refused",
           "value": -4,
-          "doc": "The provider refused rather than answer with something else."
+          "doc": "The provider refused rather than answer with something else.",
+          "key": "REFUSED"
         },
         {
           "name": "Invalid",
           "value": -5,
-          "doc": "The request is malformed."
+          "doc": "The request is malformed.",
+          "key": "INVALID"
         }
       ],
       "source": "crates/port-ephemeris/src/vtable.rs"
@@ -6242,17 +6289,20 @@
         {
           "name": "None",
           "value": 0,
-          "doc": "None. Positions are `CAPABILITY`, and so is anything built on\nthem. The zero value, and what a caller who passes a vtable\nleaves this at."
+          "doc": "None. Positions are `CAPABILITY`, and so is anything built on\nthem. The zero value, and what a caller who passes a vtable\nleaves this at.",
+          "key": "NONE"
         },
         {
           "name": "Builtin",
           "value": 1,
-          "doc": "The SDK's own built-in analytic ephemeris: no files, no network,\nno licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming\nthe feature if this library was built without it."
+          "doc": "The SDK's own built-in analytic ephemeris: no files, no network,\nno licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming\nthe feature if this library was built without it.",
+          "key": "BUILTIN"
         },
         {
           "name": "Test",
           "value": 2,
-          "doc": "The analytic test provider. For tests and examples only — its\npositions are **not astronomy**, and a chart cast from them is a\nshape rather than a sky."
+          "doc": "The analytic test provider. For tests and examples only — its\npositions are **not astronomy**, and a chart cast from them is a\nshape rather than a sky.",
+          "key": "TEST"
         }
       ],
       "source": "crates/ffi/src/context.rs"
@@ -6265,22 +6315,26 @@
         {
           "name": "Defined",
           "value": 0,
-          "doc": "A mathematical definition; exact by construction."
+          "doc": "A mathematical definition; exact by construction.",
+          "key": "DEFINED"
         },
         {
           "name": "Tabular",
           "value": 1,
-          "doc": "From the authority's published table."
+          "doc": "From the authority's published table.",
+          "key": "TABULAR"
         },
         {
           "name": "Computed",
           "value": 2,
-          "doc": "Computed by the SDK's engine outside the table's range."
+          "doc": "Computed by the SDK's engine outside the table's range.",
+          "key": "COMPUTED"
         },
         {
           "name": "Divergent",
           "value": 3,
-          "doc": "Inside the range and the table and the engine disagree; the table\nwas followed and the engine's month and day are reported beside it."
+          "doc": "Inside the range and the table and the engine disagree; the table\nwas followed and the engine's month and day are reported beside it.",
+          "key": "DIVERGENT"
         }
       ],
       "source": "crates/ffi/src/calendar.rs"
@@ -6293,12 +6347,14 @@
         {
           "name": "Sandhi",
           "value": 0,
-          "doc": "From one sandhi to the next: the bhava as a span between cusps."
+          "doc": "From one sandhi to the next: the bhava as a span between cusps.",
+          "key": "SANDHI"
         },
         {
           "name": "Madhya",
           "value": 1,
-          "doc": "From one madhya to the next: the bhava as a span between centres."
+          "doc": "From one madhya to the next: the bhava as a span between centres.",
+          "key": "MADHYA"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6311,17 +6367,20 @@
         {
           "name": "None",
           "value": 0,
-          "doc": "Far enough from the Sun to be itself."
+          "doc": "Far enough from the Sun to be itself.",
+          "key": "NONE"
         },
         {
           "name": "Combust",
           "value": 1,
-          "doc": "Combust."
+          "doc": "Combust.",
+          "key": "COMBUST"
         },
         {
           "name": "Deep",
           "value": 2,
-          "doc": "Deeply combust; only a table that gives a deeper orb reaches it."
+          "doc": "Deeply combust; only a table that gives a deeper orb reaches it.",
+          "key": "DEEP"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6334,17 +6393,20 @@
         {
           "name": "Kendra",
           "value": 0,
-          "doc": "Angular: the 1st, 4th, 7th and 10th."
+          "doc": "Angular: the 1st, 4th, 7th and 10th.",
+          "key": "KENDRA"
         },
         {
           "name": "Panapara",
           "value": 1,
-          "doc": "Succedent: the 2nd, 5th, 8th and 11th."
+          "doc": "Succedent: the 2nd, 5th, 8th and 11th.",
+          "key": "PANAPARA"
         },
         {
           "name": "Apoklima",
           "value": 2,
-          "doc": "Cadent: the 3rd, 6th, 9th and 12th."
+          "doc": "Cadent: the 3rd, 6th, 9th and 12th.",
+          "key": "APOKLIMA"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6357,27 +6419,32 @@
         {
           "name": "None",
           "value": 0,
-          "doc": "No aspect at all."
+          "doc": "No aspect at all.",
+          "key": "NONE"
         },
         {
           "name": "Quarter",
           "value": 1,
-          "doc": "A quarter aspect: the third and tenth."
+          "doc": "A quarter aspect: the third and tenth.",
+          "key": "QUARTER"
         },
         {
           "name": "Half",
           "value": 2,
-          "doc": "A half aspect: the fifth and ninth."
+          "doc": "A half aspect: the fifth and ninth.",
+          "key": "HALF"
         },
         {
           "name": "ThreeQuarters",
           "value": 3,
-          "doc": "A three-quarter aspect: the fourth and eighth."
+          "doc": "A three-quarter aspect: the fourth and eighth.",
+          "key": "THREE_QUARTERS"
         },
         {
           "name": "Full",
           "value": 4,
-          "doc": "A full aspect: the seventh, and a special graha's own two houses."
+          "doc": "A full aspect: the seventh, and a special graha's own two houses.",
+          "key": "FULL"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6390,12 +6457,14 @@
         {
           "name": "Spatial",
           "value": 0,
-          "doc": "By the elapsed part of the Moon's window of nakshatras."
+          "doc": "By the elapsed part of the Moon's window of nakshatras.",
+          "key": "SPATIAL"
         },
         {
           "name": "Temporal",
           "value": 1,
-          "doc": "By the elapsed part of the Moon's stay in its nakshatra."
+          "doc": "By the elapsed part of the Moon's stay in its nakshatra.",
+          "key": "TEMPORAL"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6408,12 +6477,14 @@
         {
           "name": "EachGraha",
           "value": 0,
-          "doc": "In each graha's own Ashtakavarga (BPHS chs. 67 to 69)."
+          "doc": "In each graha's own Ashtakavarga (BPHS chs. 67 to 69).",
+          "key": "EACH_GRAHA"
         },
         {
           "name": "Sarva",
           "value": 1,
-          "doc": "On the sum of the seven, as the conformance corpus's engine makes them."
+          "doc": "On the sum of the seven, as the conformance corpus's engine makes them.",
+          "key": "SARVA"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6426,12 +6497,14 @@
         {
           "name": "Bphs",
           "value": 0,
-          "doc": "BPHS ch. 68: an empty sign keeps a difference."
+          "doc": "BPHS ch. 68: an empty sign keeps a difference.",
+          "key": "BPHS"
         },
         {
           "name": "EmptyToZero",
           "value": 1,
-          "doc": "The empty sign always goes to zero."
+          "doc": "The empty sign always goes to zero.",
+          "key": "EMPTY_TO_ZERO"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6444,12 +6517,14 @@
         {
           "name": "Bphs",
           "value": 0,
-          "doc": "BPHS ch. 7: 20 in exaltation or the own sign, else by the compound\nrelationship with the sign's lord."
+          "doc": "BPHS ch. 7: 20 in exaltation or the own sign, else by the compound\nrelationship with the sign's lord.",
+          "key": "BPHS"
         },
         {
           "name": "SaptavargajaVirupas",
           "value": 1,
-          "doc": "The conformance corpus's engine: the Saptavargaja virupas over 45 by\nnatural friendship, rounded to hundredths."
+          "doc": "The conformance corpus's engine: the Saptavargaja virupas over 45 by\nnatural friendship, rounded to hundredths.",
+          "key": "SAPTAVARGAJA_VIRUPAS"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6462,17 +6537,20 @@
         {
           "name": "Commencement",
           "value": 0,
-          "doc": "At its commencement."
+          "doc": "At its commencement.",
+          "key": "COMMENCEMENT"
         },
         {
           "name": "Middle",
           "value": 1,
-          "doc": "In its middle."
+          "doc": "In its middle.",
+          "key": "MIDDLE"
         },
         {
           "name": "End",
           "value": 2,
-          "doc": "At its end."
+          "doc": "At its end.",
+          "key": "END"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6485,12 +6563,14 @@
         {
           "name": "Daylight",
           "value": 0,
-          "doc": "Between sunrise and sunset."
+          "doc": "Between sunrise and sunset.",
+          "key": "DAYLIGHT"
         },
         {
           "name": "Night",
           "value": 1,
-          "doc": "Between sunset and the next sunrise."
+          "doc": "Between sunset and the next sunrise.",
+          "key": "NIGHT"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6503,17 +6583,20 @@
         {
           "name": "CentreNoRefraction",
           "value": 0,
-          "doc": "The centre of the disc on the geometric horizon."
+          "doc": "The centre of the disc on the geometric horizon.",
+          "key": "CENTRE_NO_REFRACTION"
         },
         {
           "name": "UpperLimbRefraction",
           "value": 1,
-          "doc": "The upper limb with refraction."
+          "doc": "The upper limb with refraction.",
+          "key": "UPPER_LIMB_REFRACTION"
         },
         {
           "name": "LowerLimbRefraction",
           "value": 2,
-          "doc": "The lower limb with refraction."
+          "doc": "The lower limb with refraction.",
+          "key": "LOWER_LIMB_REFRACTION"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6526,12 +6609,14 @@
         {
           "name": "Civil",
           "value": 0,
-          "doc": "Twenty-four minutes each, from sunrise."
+          "doc": "Twenty-four minutes each, from sunrise.",
+          "key": "CIVIL"
         },
         {
           "name": "Proportional",
           "value": 1,
-          "doc": "Thirty over the actual daylight and thirty over the actual night."
+          "doc": "Thirty over the actual daylight and thirty over the actual night.",
+          "key": "PROPORTIONAL"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6544,12 +6629,14 @@
         {
           "name": "Proportional",
           "value": 0,
-          "doc": "Twelve over the daylight and twelve over the night."
+          "doc": "Twelve over the daylight and twelve over the night.",
+          "key": "PROPORTIONAL"
         },
         {
           "name": "Equal",
           "value": 1,
-          "doc": "Twenty-four of sixty minutes, from sunrise."
+          "doc": "Twenty-four of sixty minutes, from sunrise.",
+          "key": "EQUAL"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6562,12 +6649,14 @@
         {
           "name": "Normal",
           "value": 0,
-          "doc": "Sunrise and sunset occurred; the two fields beside this are zero."
+          "doc": "Sunrise and sunset occurred; the two fields beside this are zero.",
+          "key": "NORMAL"
         },
         {
           "name": "Polar",
           "value": 1,
-          "doc": "No horizon crossing, and the policy synthesised the bounds."
+          "doc": "No horizon crossing, and the policy synthesised the bounds.",
+          "key": "POLAR"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6580,12 +6669,14 @@
         {
           "name": "Day",
           "value": 0,
-          "doc": "The Sun stayed up."
+          "doc": "The Sun stayed up.",
+          "key": "DAY"
         },
         {
           "name": "Night",
           "value": 1,
-          "doc": "The Sun stayed down."
+          "doc": "The Sun stayed down.",
+          "key": "NIGHT"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6598,17 +6689,20 @@
         {
           "name": "Undefined",
           "value": 0,
-          "doc": "An undefined state: the day has no bounds."
+          "doc": "An undefined state: the day has no bounds.",
+          "key": "UNDEFINED"
         },
         {
           "name": "NearestEvent",
           "value": 1,
-          "doc": "The nearest rise or set stands in for the missing one."
+          "doc": "The nearest rise or set stands in for the missing one.",
+          "key": "NEAREST_EVENT"
         },
         {
           "name": "CivilMidnight",
           "value": 2,
-          "doc": "Civil midnight stands in for it."
+          "doc": "Civil midnight stands in for it.",
+          "key": "CIVIL_MIDNIGHT"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6621,52 +6715,62 @@
         {
           "name": "Strongest",
           "value": 0,
-          "doc": "The strongest office-bearer that aspects the annual lagna: the\nordinary answer."
+          "doc": "The strongest office-bearer that aspects the annual lagna: the\nordinary answer.",
+          "key": "STRONGEST"
         },
         {
           "name": "MostPortfolios",
           "value": 1,
-          "doc": "Tied on strength, and this one holds more portfolios."
+          "doc": "Tied on strength, and this one holds more portfolios.",
+          "key": "MOST_PORTFOLIOS"
         },
         {
           "name": "MunthaLordUnaspected",
           "value": 2,
-          "doc": "The Muntha's lord, because no office-bearer aspects the lagna."
+          "doc": "The Muntha's lord, because no office-bearer aspects the lagna.",
+          "key": "MUNTHA_LORD_UNASPECTED"
         },
         {
           "name": "MunthaLordAllWeak",
           "value": 3,
-          "doc": "The Muntha's lord, because every office-bearer is under five units."
+          "doc": "The Muntha's lord, because every office-bearer is under five units.",
+          "key": "MUNTHA_LORD_ALL_WEAK"
         },
         {
           "name": "MunthaLordTied",
           "value": 4,
-          "doc": "The Muntha's lord, on an outright tie of strength, aspect and\nportfolios."
+          "doc": "The Muntha's lord, on an outright tie of strength, aspect and\nportfolios.",
+          "key": "MUNTHA_LORD_TIED"
         },
         {
           "name": "DinaRatriTied",
           "value": 5,
-          "doc": "The Dina-Ratri Pati, on that same tie, under the other reading."
+          "doc": "The Dina-Ratri Pati, on that same tie, under the other reading.",
+          "key": "DINA_RATRI_TIED"
         },
         {
           "name": "AnnualLagnaLordUnaspected",
           "value": 6,
-          "doc": "The annual lagna's lord, because nobody aspects and the rules ask\nfor that reading."
+          "doc": "The annual lagna's lord, because nobody aspects and the rules ask\nfor that reading.",
+          "key": "ANNUAL_LAGNA_LORD_UNASPECTED"
         },
         {
           "name": "StrongestUnaspected",
           "value": 7,
-          "doc": "The strongest of the five, because nobody aspects and the rules ask\nfor the *Nilakanthi*'s reading."
+          "doc": "The strongest of the five, because nobody aspects and the rules ask\nfor the *Nilakanthi*'s reading.",
+          "key": "STRONGEST_UNASPECTED"
         },
         {
           "name": "MoonsIthasala",
           "value": 8,
-          "doc": "The planet in Ithasala with the Moon, the strongest of several, in\nthe Moon's place."
+          "doc": "The planet in Ithasala with the Moon, the strongest of several, in\nthe Moon's place.",
+          "key": "MOONS_ITHASALA"
         },
         {
           "name": "MoonsSignLord",
           "value": 9,
-          "doc": "The lord of the Moon's sign, in the Moon's place: the Moon itself\nwhere it stands in Cancer."
+          "doc": "The lord of the Moon's sign, in the Moon's place: the Moon itself\nwhere it stands in Cancer.",
+          "key": "MOONS_SIGN_LORD"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6679,27 +6783,32 @@
         {
           "name": "Friendly",
           "value": 0,
-          "doc": "Pratyaksha Mitra, at houses 5 and 9: openly friendly."
+          "doc": "Pratyaksha Mitra, at houses 5 and 9: openly friendly.",
+          "key": "FRIENDLY"
         },
         {
           "name": "SecretlyFriendly",
           "value": 1,
-          "doc": "Gupta Mitra, at houses 3 and 11: secretly friendly."
+          "doc": "Gupta Mitra, at houses 3 and 11: secretly friendly.",
+          "key": "SECRETLY_FRIENDLY"
         },
         {
           "name": "Inimical",
           "value": 2,
-          "doc": "Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an\naspect."
+          "doc": "Pratyaksha Shatru, at houses 1 and 7: openly inimical, and an\naspect.",
+          "key": "INIMICAL"
         },
         {
           "name": "SecretlyInimical",
           "value": 3,
-          "doc": "Gupta Shatru, at houses 4 and 10: secretly inimical."
+          "doc": "Gupta Shatru, at houses 4 and 10: secretly inimical.",
+          "key": "SECRETLY_INIMICAL"
         },
         {
           "name": "None",
           "value": 4,
-          "doc": "Sama, at houses 2, 6, 8 and 12: no aspect at all."
+          "doc": "Sama, at houses 2, 6, 8 and 12: no aspect at all.",
+          "key": "NONE"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6712,22 +6821,26 @@
         {
           "name": "IthasalaVartamana",
           "value": 0,
-          "doc": "Vartamana Ithasala: the faster is behind the slower by a degree or\nmore, inside the orb, and coming to it."
+          "doc": "Vartamana Ithasala: the faster is behind the slower by a degree or\nmore, inside the orb, and coming to it.",
+          "key": "ITHASALA_VARTAMANA"
         },
         {
           "name": "IthasalaPoorna",
           "value": 1,
-          "doc": "Poorna Ithasala: as Vartamana but within a single degree, which\nthe source marks as immediate fulfilment."
+          "doc": "Poorna Ithasala: as Vartamana but within a single degree, which\nthe source marks as immediate fulfilment.",
+          "key": "ITHASALA_POORNA"
         },
         {
           "name": "IthasalaBhavishyat",
           "value": 2,
-          "doc": "Bhavishyat Ithasala: the faster is past but stands at 29° or\nbeyond, so it acts from the next sign, where it is behind again."
+          "doc": "Bhavishyat Ithasala: the faster is past but stands at 29° or\nbeyond, so it acts from the next sign, where it is behind again.",
+          "key": "ITHASALA_BHAVISHYAT"
         },
         {
           "name": "Ishrafa",
           "value": 3,
-          "doc": "Ishrafa: the faster is a degree or more past the slower and\ndrawing away."
+          "doc": "Ishrafa: the faster is a degree or more past the slower and\ndrawing away.",
+          "key": "ISHRAFA"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6740,82 +6853,98 @@
         {
           "name": "Ikabala",
           "value": 0,
-          "doc": "Every planet in a kendra or a panaphara: a fact about the chart."
+          "doc": "Every planet in a kendra or a panaphara: a fact about the chart.",
+          "key": "IKABALA"
         },
         {
           "name": "Induvara",
           "value": 1,
-          "doc": "Every planet in an apoklima: a fact about the chart."
+          "doc": "Every planet in an apoklima: a fact about the chart.",
+          "key": "INDUVARA"
         },
         {
           "name": "Ithasala",
           "value": 2,
-          "doc": "The lagnesha and the karyesha are coming together, in one of the\nthree kinds `TsTajikaYoga` enumerates."
+          "doc": "The lagnesha and the karyesha are coming together, in one of the\nthree kinds `TsTajikaYoga` enumerates.",
+          "key": "ITHASALA"
         },
         {
           "name": "Ishrafa",
           "value": 3,
-          "doc": "The pair are drawing apart."
+          "doc": "The pair are drawing apart.",
+          "key": "ISHRAFA"
         },
         {
           "name": "Nakta",
           "value": 4,
-          "doc": "The two do not aspect, and a planet faster than both carries the\nlight between them: past one, coming to the other."
+          "doc": "The two do not aspect, and a planet faster than both carries the\nlight between them: past one, coming to the other.",
+          "key": "NAKTA"
         },
         {
           "name": "Yamaya",
           "value": 5,
-          "doc": "The two do not aspect, and a planet slower than both gathers their\nlight: both are coming to it."
+          "doc": "The two do not aspect, and a planet slower than both gathers their\nlight: both are coming to it.",
+          "key": "YAMAYA"
         },
         {
           "name": "Manau",
           "value": 6,
-          "doc": "An Ithasala a malefic destroys."
+          "doc": "An Ithasala a malefic destroys.",
+          "key": "MANAU"
         },
         {
           "name": "Kamboola",
           "value": 7,
-          "doc": "An Ithasala the Moon joins."
+          "doc": "An Ithasala the Moon joins.",
+          "key": "KAMBOOLA"
         },
         {
           "name": "GairiKamboola",
           "value": 8,
-          "doc": "An Ithasala an unqualified Moon completes on entering the next sign."
+          "doc": "An Ithasala an unqualified Moon completes on entering the next sign.",
+          "key": "GAIRI_KAMBOOLA"
         },
         {
           "name": "Khallasara",
           "value": 9,
-          "doc": "An Ithasala an unqualified Moon negates by standing apart from it."
+          "doc": "An Ithasala an unqualified Moon negates by standing apart from it.",
+          "key": "KHALLASARA"
         },
         {
           "name": "Rudda",
           "value": 10,
-          "doc": "An Ithasala where either of the pair is afflicted."
+          "doc": "An Ithasala where either of the pair is afflicted.",
+          "key": "RUDDA"
         },
         {
           "name": "DuhphaliKuttha",
           "value": 11,
-          "doc": "An Ithasala where the slower is strong and the faster weak."
+          "doc": "An Ithasala where the slower is strong and the faster weak.",
+          "key": "DUHPHALI_KUTTHA"
         },
         {
           "name": "DutthotthaDavira",
           "value": 12,
-          "doc": "Both weak, and one in Ithasala with a third, strong planet."
+          "doc": "Both weak, and one in Ithasala with a third, strong planet.",
+          "key": "DUTTHOTTHA_DAVIRA"
         },
         {
           "name": "Tambira",
           "value": 13,
-          "doc": "No aspect and no Ithasala, the karyesha completing one from the\nnext sign."
+          "doc": "No aspect and no Ithasala, the karyesha completing one from the\nnext sign.",
+          "key": "TAMBIRA"
         },
         {
           "name": "Kuttha",
           "value": 14,
-          "doc": "Both powerful, in a kendra or a panaphara, under a benefic's aspect\nand no malefic's (crux C117)."
+          "doc": "Both powerful, in a kendra or a panaphara, under a benefic's aspect\nand no malefic's (crux C117).",
+          "key": "KUTTHA"
         },
         {
           "name": "Durapha",
           "value": 15,
-          "doc": "Both weak, in the trika houses, combust or retrograde."
+          "doc": "Both weak, in the trika houses, combust or retrograde.",
+          "key": "DURAPHA"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -6828,207 +6957,248 @@
         {
           "name": "Punya",
           "value": 0,
-          "doc": "**Punya**, general auspiciousness."
+          "doc": "**Punya**, general auspiciousness.",
+          "key": "PUNYA"
         },
         {
           "name": "Guru",
           "value": 1,
-          "doc": "**Guru**, the preceptor."
+          "doc": "**Guru**, the preceptor.",
+          "key": "GURU"
         },
         {
           "name": "Vidya",
           "value": 2,
-          "doc": "**Vidya** (Jnana), knowledge."
+          "doc": "**Vidya** (Jnana), knowledge.",
+          "key": "VIDYA"
         },
         {
           "name": "Yasha",
           "value": 3,
-          "doc": "**Yasha**, fame."
+          "doc": "**Yasha**, fame.",
+          "key": "YASHA"
         },
         {
           "name": "Mitra",
           "value": 4,
-          "doc": "**Mitra**, friends."
+          "doc": "**Mitra**, friends.",
+          "key": "MITRA"
         },
         {
           "name": "Mahatmya",
           "value": 5,
-          "doc": "**Mahatmya**, the fruits of virtuous living."
+          "doc": "**Mahatmya**, the fruits of virtuous living.",
+          "key": "MAHATMYA"
         },
         {
           "name": "Asha",
           "value": 6,
-          "doc": "**Asha**, hope."
+          "doc": "**Asha**, hope.",
+          "key": "ASHA"
         },
         {
           "name": "Samarthya",
           "value": 7,
-          "doc": "**Samarthya**, capability."
+          "doc": "**Samarthya**, capability.",
+          "key": "SAMARTHYA"
         },
         {
           "name": "Bhratri",
           "value": 8,
-          "doc": "**Bhratri**, siblings."
+          "doc": "**Bhratri**, siblings.",
+          "key": "BHRATRI"
         },
         {
           "name": "Gaurava",
           "value": 9,
-          "doc": "**Gaurava**, dignity."
+          "doc": "**Gaurava**, dignity.",
+          "key": "GAURAVA"
         },
         {
           "name": "Pitri",
           "value": 10,
-          "doc": "**Pitri** (Taata), the father."
+          "doc": "**Pitri** (Taata), the father.",
+          "key": "PITRI"
         },
         {
           "name": "Raja",
           "value": 11,
-          "doc": "**Raja**, royal dignity."
+          "doc": "**Raja**, royal dignity.",
+          "key": "RAJA"
         },
         {
           "name": "Matri",
           "value": 12,
-          "doc": "**Matri**, the mother."
+          "doc": "**Matri**, the mother.",
+          "key": "MATRI"
         },
         {
           "name": "Putra",
           "value": 13,
-          "doc": "**Putra**, progeny."
+          "doc": "**Putra**, progeny.",
+          "key": "PUTRA"
         },
         {
           "name": "Jeeva",
           "value": 14,
-          "doc": "**Jeeva**, life."
+          "doc": "**Jeeva**, life.",
+          "key": "JEEVA"
         },
         {
           "name": "Roga",
           "value": 15,
-          "doc": "**Roga**, disease."
+          "doc": "**Roga**, disease.",
+          "key": "ROGA"
         },
         {
           "name": "Karma",
           "value": 16,
-          "doc": "**Karma**, profession."
+          "doc": "**Karma**, profession.",
+          "key": "KARMA"
         },
         {
           "name": "Manmatha",
           "value": 17,
-          "doc": "**Manmatha**, infatuation."
+          "doc": "**Manmatha**, infatuation.",
+          "key": "MANMATHA"
         },
         {
           "name": "Kali",
           "value": 18,
-          "doc": "**Kali**, strife."
+          "doc": "**Kali**, strife.",
+          "key": "KALI"
         },
         {
           "name": "Kshama",
           "value": 19,
-          "doc": "**Kshama**, forgiveness."
+          "doc": "**Kshama**, forgiveness.",
+          "key": "KSHAMA"
         },
         {
           "name": "Shastra",
           "value": 20,
-          "doc": "**Shastra**, scriptures."
+          "doc": "**Shastra**, scriptures.",
+          "key": "SHASTRA"
         },
         {
           "name": "Bandhu",
           "value": 21,
-          "doc": "**Bandhu**, relatives."
+          "doc": "**Bandhu**, relatives.",
+          "key": "BANDHU"
         },
         {
           "name": "Mrityu",
           "value": 22,
-          "doc": "**Mrityu**, death."
+          "doc": "**Mrityu**, death.",
+          "key": "MRITYU"
         },
         {
           "name": "Deshantara",
           "value": 23,
-          "doc": "**Deshantara**, foreign travel."
+          "doc": "**Deshantara**, foreign travel.",
+          "key": "DESHANTARA"
         },
         {
           "name": "Artha",
           "value": 24,
-          "doc": "**Artha** (Dhana), wealth."
+          "doc": "**Artha** (Dhana), wealth.",
+          "key": "ARTHA"
         },
         {
           "name": "Paradara",
           "value": 25,
-          "doc": "**Paradara**, adultery."
+          "doc": "**Paradara**, adultery.",
+          "key": "PARADARA"
         },
         {
           "name": "AnyaKarma",
           "value": 26,
-          "doc": "**Anya-karma**, an additional vocation."
+          "doc": "**Anya-karma**, an additional vocation.",
+          "key": "ANYA_KARMA"
         },
         {
           "name": "Vanika",
           "value": 27,
-          "doc": "**Vanika**, trade."
+          "doc": "**Vanika**, trade.",
+          "key": "VANIKA"
         },
         {
           "name": "KaryaSiddhi",
           "value": 28,
-          "doc": "**Karya-siddhi**, success in a venture."
+          "doc": "**Karya-siddhi**, success in a venture.",
+          "key": "KARYA_SIDDHI"
         },
         {
           "name": "Vivaha",
           "value": 29,
-          "doc": "**Vivaha**, marriage."
+          "doc": "**Vivaha**, marriage.",
+          "key": "VIVAHA"
         },
         {
           "name": "Prasava",
           "value": 30,
-          "doc": "**Prasava**, the delivery of a child."
+          "doc": "**Prasava**, the delivery of a child.",
+          "key": "PRASAVA"
         },
         {
           "name": "Santaapa",
           "value": 31,
-          "doc": "**Santaapa**, sorrow."
+          "doc": "**Santaapa**, sorrow.",
+          "key": "SANTAAPA"
         },
         {
           "name": "Shraddha",
           "value": 32,
-          "doc": "**Shraddha**, devotion."
+          "doc": "**Shraddha**, devotion.",
+          "key": "SHRADDHA"
         },
         {
           "name": "Preeti",
           "value": 33,
-          "doc": "**Preeti**, love."
+          "doc": "**Preeti**, love.",
+          "key": "PREETI"
         },
         {
           "name": "Jadya",
           "value": 34,
-          "doc": "**Jadya**, stupidity."
+          "doc": "**Jadya**, stupidity.",
+          "key": "JADYA"
         },
         {
           "name": "Vyapara",
           "value": 35,
-          "doc": "**Vyapara**, business."
+          "doc": "**Vyapara**, business.",
+          "key": "VYAPARA"
         },
         {
           "name": "PaneeyaPaata",
           "value": 36,
-          "doc": "**Paneeya-paata**, falling into water."
+          "doc": "**Paneeya-paata**, falling into water.",
+          "key": "PANEEYA_PAATA"
         },
         {
           "name": "Shatru",
           "value": 37,
-          "doc": "**Shatru**, enemies."
+          "doc": "**Shatru**, enemies.",
+          "key": "SHATRU"
         },
         {
           "name": "Jalapatha",
           "value": 38,
-          "doc": "**Jalapatha**, a sea voyage."
+          "doc": "**Jalapatha**, a sea voyage.",
+          "key": "JALAPATHA"
         },
         {
           "name": "Bandhana",
           "value": 39,
-          "doc": "**Bandhana**, imprisonment."
+          "doc": "**Bandhana**, imprisonment.",
+          "key": "BANDHANA"
         },
         {
           "name": "Labha",
           "value": 40,
-          "doc": "**Labha**, monetary gain."
+          "doc": "**Labha**, monetary gain.",
+          "key": "LABHA"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -7041,22 +7211,26 @@
         {
           "name": "Own",
           "value": 0,
-          "doc": "The planet is the other: its own."
+          "doc": "The planet is the other: its own.",
+          "key": "OWN"
         },
         {
           "name": "Friend",
           "value": 1,
-          "doc": "A friend."
+          "doc": "A friend.",
+          "key": "FRIEND"
         },
         {
           "name": "Neutral",
           "value": 2,
-          "doc": "Neither."
+          "doc": "Neither.",
+          "key": "NEUTRAL"
         },
         {
           "name": "Enemy",
           "value": 3,
-          "doc": "An enemy."
+          "doc": "An enemy.",
+          "key": "ENEMY"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -7069,27 +7243,32 @@
         {
           "name": "Nirbala",
           "value": 0,
-          "doc": "No part: without strength."
+          "doc": "No part: without strength.",
+          "key": "NIRBALA"
         },
         {
           "name": "Alpabali",
           "value": 1,
-          "doc": "One part, five units: weak."
+          "doc": "One part, five units: weak.",
+          "key": "ALPABALI"
         },
         {
           "name": "MadhyaBali",
           "value": 2,
-          "doc": "Two parts, ten units: of medium strength."
+          "doc": "Two parts, ten units: of medium strength.",
+          "key": "MADHYA_BALI"
         },
         {
           "name": "PoornaBali",
           "value": 3,
-          "doc": "Three parts, fifteen units: fully strong."
+          "doc": "Three parts, fifteen units: fully strong.",
+          "key": "POORNA_BALI"
         },
         {
           "name": "Extraordinary",
           "value": 4,
-          "doc": "All four, twenty units: extraordinarily strong, and rare."
+          "doc": "All four, twenty units: extraordinarily strong, and rare.",
+          "key": "EXTRAORDINARY"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -7102,62 +7281,74 @@
         {
           "name": "LordExalted",
           "value": 0,
-          "doc": "Its lord is exalted."
+          "doc": "Its lord is exalted.",
+          "key": "LORD_EXALTED"
         },
         {
           "name": "LordOwnSign",
           "value": 1,
-          "doc": "Its lord is in its own sign."
+          "doc": "Its lord is in its own sign.",
+          "key": "LORD_OWN_SIGN"
         },
         {
           "name": "LordOwnHudda",
           "value": 2,
-          "doc": "Its lord is in its own Hudda."
+          "doc": "Its lord is in its own Hudda.",
+          "key": "LORD_OWN_HUDDA"
         },
         {
           "name": "LordOwnDrekkana",
           "value": 3,
-          "doc": "Its lord is in its own Drekkana."
+          "doc": "Its lord is in its own Drekkana.",
+          "key": "LORD_OWN_DREKKANA"
         },
         {
           "name": "LordOwnNavamsha",
           "value": 4,
-          "doc": "Its lord is in its own Navamsha."
+          "doc": "Its lord is in its own Navamsha.",
+          "key": "LORD_OWN_NAVAMSHA"
         },
         {
           "name": "LordInFriendsSign",
           "value": 5,
-          "doc": "Its lord is in a friend's sign."
+          "doc": "Its lord is in a friend's sign.",
+          "key": "LORD_IN_FRIENDS_SIGN"
         },
         {
           "name": "WithFriend",
           "value": 6,
-          "doc": "It is with a friend of its lord."
+          "doc": "It is with a friend of its lord.",
+          "key": "WITH_FRIEND"
         },
         {
           "name": "WithBenefic",
           "value": 7,
-          "doc": "It is with a natural benefic."
+          "doc": "It is with a natural benefic.",
+          "key": "WITH_BENEFIC"
         },
         {
           "name": "WithYearLord",
           "value": 8,
-          "doc": "It is with the year lord."
+          "doc": "It is with the year lord.",
+          "key": "WITH_YEAR_LORD"
         },
         {
           "name": "LordConjoins",
           "value": 9,
-          "doc": "Its lord conjoins it."
+          "doc": "Its lord conjoins it.",
+          "key": "LORD_CONJOINS"
         },
         {
           "name": "LordAspectsSaham",
           "value": 10,
-          "doc": "Its lord aspects it."
+          "doc": "Its lord aspects it.",
+          "key": "LORD_ASPECTS_SAHAM"
         },
         {
           "name": "LordAspectsLagna",
           "value": 11,
-          "doc": "Its lord aspects the lagna."
+          "doc": "Its lord aspects the lagna.",
+          "key": "LORD_ASPECTS_LAGNA"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -7170,27 +7361,32 @@
         {
           "name": "LordWeakVishwa",
           "value": 0,
-          "doc": "Its lord is under the Panchavargiya floor."
+          "doc": "Its lord is under the Panchavargiya floor.",
+          "key": "LORD_WEAK_VISHWA"
         },
         {
           "name": "LordLacksHarsha",
           "value": 1,
-          "doc": "Its lord has no Harsha bala."
+          "doc": "Its lord has no Harsha bala.",
+          "key": "LORD_LACKS_HARSHA"
         },
         {
           "name": "LordApart",
           "value": 2,
-          "doc": "Its lord neither aspects nor conjoins it."
+          "doc": "Its lord neither aspects nor conjoins it.",
+          "key": "LORD_APART"
         },
         {
           "name": "WithEnemy",
           "value": 3,
-          "doc": "It is with an enemy of its lord."
+          "doc": "It is with an enemy of its lord.",
+          "key": "WITH_ENEMY"
         },
         {
           "name": "WithMalefic",
           "value": 4,
-          "doc": "It is with a natural malefic."
+          "doc": "It is with a natural malefic.",
+          "key": "WITH_MALEFIC"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -7203,27 +7399,32 @@
         {
           "name": "Retrograde",
           "value": 0,
-          "doc": "Going backwards through the zodiac."
+          "doc": "Going backwards through the zodiac.",
+          "key": "RETROGRADE"
         },
         {
           "name": "Combust",
           "value": 1,
-          "doc": "Burnt by the Sun."
+          "doc": "Burnt by the Sun.",
+          "key": "COMBUST"
         },
         {
           "name": "Debilitated",
           "value": 2,
-          "doc": "In its sign of debilitation."
+          "doc": "In its sign of debilitation.",
+          "key": "DEBILITATED"
         },
         {
           "name": "Trika",
           "value": 3,
-          "doc": "In the 6th, 8th or 12th house from the annual lagna."
+          "doc": "In the 6th, 8th or 12th house from the annual lagna.",
+          "key": "TRIKA"
         },
         {
           "name": "UnderMalefic",
           "value": 4,
-          "doc": "Conjunct or inimically aspected by one of Tajika's malefics."
+          "doc": "Conjunct or inimically aspected by one of Tajika's malefics.",
+          "key": "UNDER_MALEFIC"
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -7236,17 +7437,20 @@
         {
           "name": "Ut1",
           "value": 0,
-          "doc": "Universal Time (UT1)."
+          "doc": "Universal Time (UT1).",
+          "key": "UT1"
         },
         {
           "name": "Tt",
           "value": 1,
-          "doc": "Terrestrial Time."
+          "doc": "Terrestrial Time.",
+          "key": "TT"
         },
         {
           "name": "Utc",
           "value": 2,
-          "doc": "Coordinated Universal Time, through the leap-second table from\n1972 and read as UT1 before it."
+          "doc": "Coordinated Universal Time, through the leap-second table from\n1972 and read as UT1 before it.",
+          "key": "UTC"
         }
       ],
       "source": "crates/ffi/src/time.rs"
@@ -7259,17 +7463,20 @@
         {
           "name": "Iana",
           "value": 0,
-          "doc": "A zone of the embedded database, by IANA name."
+          "doc": "A zone of the embedded database, by IANA name.",
+          "key": "IANA"
         },
         {
           "name": "Fixed",
           "value": 1,
-          "doc": "A fixed offset from UTC."
+          "doc": "A fixed offset from UTC.",
+          "key": "FIXED"
         },
         {
           "name": "LocalMean",
           "value": 2,
-          "doc": "Local mean time at a longitude."
+          "doc": "Local mean time at a longitude.",
+          "key": "LOCAL_MEAN"
         }
       ],
       "source": "crates/ffi/src/time.rs"
@@ -7282,17 +7489,20 @@
         {
           "name": "Iana",
           "value": 0,
-          "doc": "The zone database."
+          "doc": "The zone database.",
+          "key": "IANA"
         },
         {
           "name": "LocalMean",
           "value": 1,
-          "doc": "Local mean time from the longitude."
+          "doc": "Local mean time from the longitude.",
+          "key": "LOCAL_MEAN"
         },
         {
           "name": "Manual",
           "value": 2,
-          "doc": "A fixed offset the consumer stated."
+          "doc": "A fixed offset the consumer stated.",
+          "key": "MANUAL"
         }
       ],
       "source": "crates/ffi/src/time.rs"
@@ -7305,17 +7515,20 @@
         {
           "name": "Current",
           "value": 0,
-          "doc": "An offset the zone applies in the database's own year."
+          "doc": "An offset the zone applies in the database's own year.",
+          "key": "CURRENT"
         },
         {
           "name": "Historical",
           "value": 1,
-          "doc": "An offset from the zone's earlier rules."
+          "doc": "An offset from the zone's earlier rules.",
+          "key": "HISTORICAL"
         },
         {
           "name": "BeforeRules",
           "value": 2,
-          "doc": "Before the zone's first rule: the database's local-mean-time stub."
+          "doc": "Before the zone's first rule: the database's local-mean-time stub.",
+          "key": "BEFORE_RULES"
         }
       ],
       "source": "crates/ffi/src/time.rs"
@@ -7328,17 +7541,20 @@
         {
           "name": "None",
           "value": 0,
-          "doc": "The civil time was unambiguous."
+          "doc": "The civil time was unambiguous.",
+          "key": "NONE"
         },
         {
           "name": "Gap",
           "value": 1,
-          "doc": "The civil time fell in a gap and was shifted forward past it."
+          "doc": "The civil time fell in a gap and was shifted forward past it.",
+          "key": "GAP"
         },
         {
           "name": "Overlap",
           "value": 2,
-          "doc": "The civil time fell in an overlap and one occurrence was chosen."
+          "doc": "The civil time fell in an overlap and one occurrence was chosen.",
+          "key": "OVERLAP"
         }
       ],
       "source": "crates/ffi/src/time.rs"
@@ -7351,12 +7567,14 @@
         {
           "name": "Earlier",
           "value": 0,
-          "doc": "The first occurrence, the earlier instant."
+          "doc": "The first occurrence, the earlier instant.",
+          "key": "EARLIER"
         },
         {
           "name": "Later",
           "value": 1,
-          "doc": "The second occurrence, the later instant."
+          "doc": "The second occurrence, the later instant.",
+          "key": "LATER"
         }
       ],
       "source": "crates/ffi/src/time.rs"
@@ -7369,32 +7587,38 @@
         {
           "name": "OffsetDiffersFromCurrentRules",
           "value": 0,
-          "doc": "The offset is not one the zone applies today."
+          "doc": "The offset is not one the zone applies today.",
+          "key": "OFFSET_DIFFERS_FROM_CURRENT_RULES"
         },
         {
           "name": "DstAmbiguous",
           "value": 1,
-          "doc": "The civil time occurred twice; the policy chose."
+          "doc": "The civil time occurred twice; the policy chose.",
+          "key": "DST_AMBIGUOUS"
         },
         {
           "name": "DstGapShifted",
           "value": 2,
-          "doc": "The civil time did not exist; the policy shifted it forward."
+          "doc": "The civil time did not exist; the policy shifted it forward.",
+          "key": "DST_GAP_SHIFTED"
         },
         {
           "name": "LeapSecondFolded",
           "value": 3,
-          "doc": "A leap second (23:59:60) was folded onto the following midnight."
+          "doc": "A leap second (23:59:60) was folded onto the following midnight.",
+          "key": "LEAP_SECOND_FOLDED"
         },
         {
           "name": "LeapTableExpired",
           "value": 4,
-          "doc": "The instant lies beyond the leap-second table's word."
+          "doc": "The instant lies beyond the leap-second table's word.",
+          "key": "LEAP_TABLE_EXPIRED"
         },
         {
           "name": "TimeUnknownFallback",
           "value": 5,
-          "doc": "The time was not given; the policy supplied one."
+          "doc": "The time was not given; the policy supplied one.",
+          "key": "TIME_UNKNOWN_FALLBACK"
         }
       ],
       "source": "crates/ffi/src/time.rs"
@@ -7407,22 +7631,26 @@
         {
           "name": "Table",
           "value": 0,
-          "doc": "Interpolated in the IERS table."
+          "doc": "Interpolated in the IERS table.",
+          "key": "TABLE"
         },
         {
           "name": "Model",
           "value": 1,
-          "doc": "From a model, outside the table."
+          "doc": "From a model, outside the table.",
+          "key": "MODEL"
         },
         {
           "name": "LeapSeconds",
           "value": 2,
-          "doc": "Through the leap-second table: TT less UTC, exact."
+          "doc": "Through the leap-second table: TT less UTC, exact.",
+          "key": "LEAP_SECONDS"
         },
         {
           "name": "Custom",
           "value": 3,
-          "doc": "Supplied by the consumer."
+          "doc": "Supplied by the consumer.",
+          "key": "CUSTOM"
         }
       ],
       "source": "crates/ffi/src/time.rs"
@@ -7435,12 +7663,14 @@
         {
           "name": "Amanta",
           "value": 0,
-          "doc": "New moon to new moon."
+          "doc": "New moon to new moon.",
+          "key": "AMANTA"
         },
         {
           "name": "Purnimanta",
           "value": 1,
-          "doc": "Full moon to full moon."
+          "doc": "Full moon to full moon.",
+          "key": "PURNIMANTA"
         }
       ],
       "source": "crates/ffi/src/panchanga.rs"
@@ -7453,12 +7683,14 @@
         {
           "name": "Rise",
           "value": 0,
-          "doc": "The Moon crossed the horizon upward."
+          "doc": "The Moon crossed the horizon upward.",
+          "key": "RISE"
         },
         {
           "name": "Set",
           "value": 1,
-          "doc": "The Moon crossed it downward."
+          "doc": "The Moon crossed it downward.",
+          "key": "SET"
         }
       ],
       "source": "crates/ffi/src/panchanga.rs"
@@ -7471,12 +7703,14 @@
         {
           "name": "VaraNakshatra",
           "value": 0,
-          "doc": "The vara and the nakshatra the Moon was in."
+          "doc": "The vara and the nakshatra the Moon was in.",
+          "key": "VARA_NAKSHATRA"
         },
         {
           "name": "VaraTithiNakshatra",
           "value": 1,
-          "doc": "The vara, the tithi's class and the nakshatra's number of feet."
+          "doc": "The vara, the tithi's class and the nakshatra's number of feet.",
+          "key": "VARA_TITHI_NAKSHATRA"
         }
       ],
       "source": "crates/ffi/src/panchanga.rs"
@@ -7489,17 +7723,20 @@
         {
           "name": "Nija",
           "value": 0,
-          "doc": "One sankranti: the ordinary month."
+          "doc": "One sankranti: the ordinary month.",
+          "key": "NIJA"
         },
         {
           "name": "Adhika",
           "value": 1,
-          "doc": "None: intercalary, and the name repeats."
+          "doc": "None: intercalary, and the name repeats.",
+          "key": "ADHIKA"
         },
         {
           "name": "Kshaya",
           "value": 2,
-          "doc": "Two: the next name is skipped this year."
+          "doc": "Two: the next name is skipped this year.",
+          "key": "KSHAYA"
         }
       ],
       "source": "crates/ffi/src/panchanga.rs"
@@ -10115,7 +10352,7 @@
             },
             "mutable": false
           },
-          "doc": "The annual charts to answer for every chart in the batch, as a JSON\nobject: `reading` — `\"sidereal\"` (the tradition's), `\"tropical\"`\n(the Western solar return) or `\"mean\"` (a whole sidereal year each\ntime) — and `through`, the last year of life wanted, 1 to 200. The\ninstants come back in the `praveshas` section, ragged by\n`cast.pravesha_count`; an ephemeris that ends first answers fewer\nthan asked for rather than refusing. Null for none\n(`03-design/annual-chart.md`). Refusals are named from this root,\nas `varsha_json.through`.",
+          "doc": "The annual charts to answer for every chart in the batch, as a JSON\nobject: `reading` — `\"SIDEREAL\"` (the tradition's), `\"TROPICAL\"`\n(the Western solar return) or `\"MEAN\"` (a whole sidereal year each\ntime) — and `through`, the last year of life wanted, 1 to 200. The\ninstants come back in the `praveshas` section, ragged by\n`cast.pravesha_count`; an ephemeris that ends first answers fewer\nthan asked for rather than refusing. Null for none\n(`03-design/annual-chart.md`). Refusals are named from the record\nevery binding calls `varsha`, as `varsha.through`.",
           "meta": {
             "nullable": true
           }

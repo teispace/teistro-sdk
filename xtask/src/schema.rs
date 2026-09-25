@@ -226,8 +226,11 @@ fn collect_rust(directory: &Path, into: &mut Vec<std::path::PathBuf>) {
 /// The casing conventions the layer's own types serialise under, counted
 /// from the source: a schema's `enum` has to spell a member the way the
 /// document really writes it.
-fn casings(root: &Path) -> BTreeMap<String, usize> {
-    let mut found: BTreeMap<String, usize> = BTreeMap::new();
+/// Every `rename_all` convention the layer and the crates it holds values
+/// from declare, with the types declaring each, outside test modules: a
+/// test's own fixture is in no document.
+fn casings(root: &Path) -> BTreeMap<String, Vec<String>> {
+    let mut found: BTreeMap<String, Vec<String>> = BTreeMap::new();
     let mut files = Vec::new();
     for crate_name in LAYER.iter().chain(["core", "calendar", "astro"].iter()) {
         collect_rust(
@@ -239,13 +242,29 @@ fn casings(root: &Path) -> BTreeMap<String, usize> {
         let Ok(text) = std::fs::read_to_string(file) else {
             continue;
         };
-        for line in text.lines() {
+        let mut lines = text
+            .lines()
+            .take_while(|line| line.trim() != "#[cfg(test)]");
+        while let Some(line) = lines.next() {
             let Some(rest) = line.trim().split("rename_all = \"").nth(1) else {
                 continue;
             };
-            if let Some(name) = rest.split('"').next() {
-                *found.entry(name.to_string()).or_default() += 1;
-            }
+            let Some(convention) = rest.split('"').next() else {
+                continue;
+            };
+            // The item the attribute stands on, after any others.
+            let named = lines.by_ref().find_map(|next| {
+                let words: Vec<&str> = next.split_whitespace().collect();
+                words
+                    .iter()
+                    .position(|word| matches!(*word, "enum" | "struct"))
+                    .and_then(|at| words.get(at + 1))
+                    .map(|name| name.trim_end_matches(['{', '<']).to_string())
+            });
+            found
+                .entry(convention.to_string())
+                .or_default()
+                .push(named.unwrap_or_default());
         }
     }
     found
@@ -701,23 +720,44 @@ fn round_trip(root: &Path) -> String {
 
 fn spelling(root: &Path) -> String {
     let found = casings(root);
-    let total: usize = found.values().sum();
+    let total: usize = found.values().map(Vec::len).sum();
     let mut rows = String::new();
-    for (convention, n) in &found {
-        let _ = writeln!(rows, "| `{convention}` | {n} |");
+    for (convention, types) in &found {
+        let _ = writeln!(rows, "| `{convention}` | {} |", types.len());
     }
+    // The minority by name, since a count alone cannot say whether a
+    // document meets it; one convention needs no such list.
+    let majority = found.values().map(Vec::len).max().unwrap_or_default();
+    let minority: Vec<String> = found
+        .iter()
+        .filter(|(_, types)| types.len() < majority)
+        .flat_map(|(convention, types)| {
+            types
+                .iter()
+                .map(move |name| format!("`{name}` ({convention})"))
+        })
+        .collect();
+    let verdict = if found.len() <= 1 {
+        String::from(
+            "**One convention**, so a consumer reading a document meets one\n\
+             spelling of a member everywhere, and a generated schema may\n\
+             still take each spelling from its type rather than assume it.\n\n",
+        )
+    } else {
+        format!(
+            "The minority, by name: {}. A consumer reading a document that\n\
+             holds one meets both conventions, so a generated schema must take\n\
+             the spelling from each type rather than assume the majority's.\n\n",
+            minority.join(", ")
+        )
+    };
     format!(
-        "## 8. Two spellings, in one document\n\n\
+        "## 8. One spelling, in one document\n\n\
          A schema's `enum` has to spell a member the way the document\n\
          really writes it. Counting `rename_all` over the layer and the\n\
-         crates it holds values from, {total} types declare one:\n\n\
-         | convention | types |\n|---|---|\n{rows}\n\
-         The minority is not unreached: `CalendarResolution` is one of\n\
-         them, and it appears in every document there is — a chart's\n\
-         foundation carries the resolution of its own date. So a consumer\n\
-         reading one document meets both conventions, and a generated\n\
-         schema must take the spelling from each type rather than assume\n\
-         the majority's.\n\n",
+         crates it holds values from, outside their tests, {total} types\n\
+         declare one:\n\n\
+         | convention | types |\n|---|---|\n{rows}\n{verdict}",
     )
 }
 
@@ -741,6 +781,7 @@ fn decides(
         .values()
         .filter(|(types, _)| types.len() == 1 && types.contains("integer"))
         .count();
+    let conventions = casings(root).len();
     let claims = [
         Claim {
             rule: String::from("the schema can be derived from the documents"),
@@ -759,8 +800,11 @@ fn decides(
         },
         Claim {
             rule: String::from("one casing convention covers every enum in a document"),
-            verdict: verdict_of(casings(root).len() <= 1),
-            measured: format!("{} conventions declared", casings(root).len()),
+            verdict: verdict_of(conventions <= 1),
+            measured: format!(
+                "{conventions} convention{} declared",
+                if conventions == 1 { "" } else { "s" }
+            ),
         },
         Claim {
             rule: String::from("every number the form writes reads back as the same double"),

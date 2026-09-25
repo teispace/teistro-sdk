@@ -458,7 +458,7 @@ fn render_enum_conversions(out: &mut String, e: &EnumDef) {
         let _ = writeln!(
             out,
             "        {:?} => Ok({}),",
-            member_value(e.kind.as_deref(), &v.name, v.key.as_deref()),
+            member_value(e.kind.as_deref(), &v.key),
             v.value
         );
     }
@@ -475,7 +475,7 @@ fn render_enum_conversions(out: &mut String, e: &EnumDef) {
             out,
             "        {} => {:?},",
             v.value,
-            member_value(e.kind.as_deref(), &v.name, v.key.as_deref())
+            member_value(e.kind.as_deref(), &v.key)
         );
     }
     let _ = writeln!(

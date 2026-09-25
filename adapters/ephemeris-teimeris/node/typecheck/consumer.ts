@@ -13,7 +13,7 @@ import teimeris, { engine, binary, platformPackage, type TmDatetime, type TmPosi
 // The descriptor is what an `ephemeris` chain takes.
 const sdk = new Context({
   profile: 'parashari-classical',
-  ephemeris: [teimeris({ dataDir: './ephe' }), 'builtin'],
+  ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'],
 });
 
 const typed = engine(sdk.engine);

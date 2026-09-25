@@ -20,7 +20,7 @@
 // - **Say what you cover.** `bodies` is checked *before* the provider is
 //   called, so a body it does not answer is refused by name rather than by
 //   a wrong answer. An instant outside `jdMin`..`jdMax` is never asked
-//   for: its cells come back `out-of-range` and the rest are answered,
+//   for: its cells come back `OUT_OF_RANGE` and the rest are answered,
 //   as they would be from any engine.
 // - **Throwing is allowed.** What it threw reaches the caller, so the
 //   sentence is not lost; only a code crosses the C ABI.

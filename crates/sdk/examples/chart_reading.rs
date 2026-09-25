@@ -41,11 +41,6 @@ use teistro::{
     VargaChart, ZoneSpec,
 };
 
-/// A key as the bindings print a member no locale names: `three-quarters`.
-fn plain(key: &str) -> String {
-    key.to_lowercase().replace('_', "-")
-}
-
 /// A catalogue member's name in the context's locale.
 fn name(sdk: &Context, key: &str) -> Result<String, Error> {
     Ok(sdk.intl().entity(key)?.name().to_owned())
@@ -155,7 +150,7 @@ fn grahas(sdk: &Context, document: &Document, navamsha: &VargaChart) -> Result<(
             name(sdk, state.age.full_key())?,
             name(sdk, at.sign.full_key())?,
             if at.sign == at.rashi { "yes" } else { "no" },
-            plain(state.combustion.burning.key()),
+            state.combustion.burning.key(),
         );
     }
     Ok(())
@@ -173,7 +168,7 @@ fn houses(sdk: &Context, document: &Document) -> Result<(), Error> {
         "bhava 10 {}, ruled by {} ({})",
         name(sdk, tenth.sign.full_key())?,
         name(sdk, tenth.lord.full_key())?,
-        plain(tenth.quadrant.key()),
+        tenth.quadrant.key(),
     );
     Ok(())
 }
@@ -192,7 +187,7 @@ fn drishti(sdk: &Context, document: &Document) -> Result<(), Error> {
             "         {:<12} house {:>2} from it  {}",
             name(sdk, drishti.from.full_key())?,
             drishti.houses,
-            plain(drishti.strength.key()),
+            drishti.strength.key(),
         );
     }
     Ok(())

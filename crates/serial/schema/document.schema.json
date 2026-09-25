@@ -865,7 +865,7 @@
           "description": "A mathematical definition; exact by construction.",
           "properties": {
             "kind": {
-              "const": "defined",
+              "const": "DEFINED",
               "type": "string"
             }
           },
@@ -886,7 +886,7 @@
               "type": "string"
             },
             "kind": {
-              "const": "tabular",
+              "const": "TABULAR",
               "type": "string"
             }
           },
@@ -901,7 +901,7 @@
           "description": "Computed outside the table's range.",
           "properties": {
             "kind": {
-              "const": "computed",
+              "const": "COMPUTED",
               "type": "string"
             },
             "model": {
@@ -923,7 +923,7 @@
               "description": "The computed month and day."
             },
             "kind": {
-              "const": "divergent",
+              "const": "DIVERGENT",
               "type": "string"
             },
             "model": {
@@ -1227,12 +1227,12 @@
       "description": "Whether every row that took part is verified (ADR-0018).",
       "oneOf": [
         {
-          "const": "verified",
+          "const": "VERIFIED",
           "description": "Every table row used is verified.",
           "type": "string"
         },
         {
-          "const": "unverified",
+          "const": "UNVERIFIED",
           "description": "At least one traditional row took part.",
           "type": "string"
         }

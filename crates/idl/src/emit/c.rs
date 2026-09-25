@@ -83,7 +83,7 @@ fn render_enums(out: &mut String, api: &Api) {
                 out,
                 "{}    {} = {},",
                 block_comment(&doc, "    "),
-                c_enum_member(&api.prefix, &e.name, &v.name, v.key.as_deref()),
+                c_enum_member(&api.prefix, &e.name, &v.key),
                 v.value
             );
         }
@@ -91,7 +91,7 @@ fn render_enums(out: &mut String, api: &Api) {
             let _ = writeln!(
                 out,
                 "    /** A member this build does not know: from a newer library or a runtime registration. */\n    {} = -1,",
-                c_enum_member(&api.prefix, &e.name, "Unknown", None)
+                c_enum_member(&api.prefix, &e.name, "UNKNOWN")
             );
         }
         let _ = writeln!(out, "}} {name};\n");
@@ -294,7 +294,7 @@ mod tests {
                     name: "Sun".into(),
                     value: 0,
                     doc: "The Sun".into(),
-                    key: Some("SUN".into()),
+                    key: "SUN".into(),
                     deprecated: false,
                 }],
                 source: String::new(),

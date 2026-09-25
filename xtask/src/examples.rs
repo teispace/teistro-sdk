@@ -80,7 +80,7 @@ impl Excused {
 /// Every difference [`differences`] excuses. Exhaustive and refused both
 /// ways: a difference not listed fails, and so does an entry that no
 /// longer excuses one.
-pub(crate) const EXCUSED: [Excused; 8] = [
+pub(crate) const EXCUSED: [Excused; 3] = [
     Excused {
         example: "annual_chart",
         binding: Binding::Rust,
@@ -99,38 +99,6 @@ pub(crate) const EXCUSED: [Excused; 8] = [
         binding: Binding::Rust,
         line: None,
         reason: "loading the readings corpus from disk is shown in Rust alone (STATUS 2g)",
-    },
-    Excused {
-        example: "birth_chart",
-        binding: Binding::Rust,
-        line: Some(2),
-        reason: "a zone's source is `iana` in the bindings and `IANA` in Rust (STATUS 2f)",
-    },
-    Excused {
-        example: "birth_chart",
-        binding: Binding::Rust,
-        line: Some(23),
-        reason: "a zone warning is `time-unknown-fallback` in the bindings and `TIME_UNKNOWN_FALLBACK` \
-                 in Rust (STATUS 2f)",
-    },
-    Excused {
-        example: "your_own_ephemeris",
-        binding: Binding::Rust,
-        line: Some(10),
-        reason: "a cell's status is `out-of-range` in the bindings and `OUT_OF_RANGE` in Rust (STATUS 2f)",
-    },
-    Excused {
-        example: "your_own_ephemeris",
-        binding: Binding::Rust,
-        line: Some(20),
-        reason: "a status is `unsupported` in the bindings and `UNSUPPORTED` in Rust (STATUS 2f)",
-    },
-    Excused {
-        example: "interpretation",
-        binding: Binding::Rust,
-        line: Some(465),
-        reason: "a binding's refusal names the C argument, `interpret_json.readings`, where the \
-                 caller wrote `interpret.readings` (STATUS 2f)",
     },
 ];
 
