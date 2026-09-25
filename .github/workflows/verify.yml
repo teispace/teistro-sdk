@@ -30,8 +30,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # The one row that builds the wasm package too, so
+          # `check-parity` compares its runner with the other five. The
+          # module is one artefact for every host, so one row is enough.
           - os: ubuntu-latest
             platform: linux-x64
+            targets: wasm32-unknown-unknown
           - os: ubuntu-24.04-arm
             platform: linux-arm64
           - os: macos-latest
@@ -51,6 +55,8 @@ jobs:
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.targets }}
       - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
@@ -71,7 +77,7 @@ jobs:
         run: cargo xtask check-python
       - name: The Rust facade's examples and its own tests
         run: cargo xtask check-rust
-      - name: The four bindings against each other, value by value
+      - name: The bindings against each other, value by value (and the wasm package, where built)
         run: cargo xtask check-parity
       - name: The packages installed into throwaway projects and run
         run: cargo xtask check-package

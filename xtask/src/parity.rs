@@ -4,7 +4,8 @@
 //! (`02-architecture/07-binding-architecture.md`).
 //!
 //! Each runner (`bindings/node/parity.mjs`,
-//! `bindings/dart/bin/parity.dart`, `bindings/python/parity.py`) walks the
+//! `bindings/dart/bin/parity.dart`, `bindings/python/parity.py`, and the
+//! Node runner again from inside the staged wasm package) walks the
 //! same scenario through its own ergonomic layer and prints
 //! `key<TAB>value` lines sorted by key. Nothing here says what a value
 //! should be: the point is that the bindings agree with **each other**, so
@@ -88,7 +89,15 @@ struct Report {
     /// absence that stops being deliberate is now a failure rather than
     /// a number that stopped shrinking.
     absences: &'static [&'static str],
+    /// The keys whose value is this build's own and not the SDK's, each
+    /// with what it must say instead of agreeing: the wasm runner's
+    /// `build-target` names wasm32 where every other names the host.
+    own: &'static [(&'static str, &'static str)],
 }
+
+/// The wasm runner's own values: its build's target, which must be a
+/// wasm32 one, and is the one line it may not share.
+const WASM_OWN: [(&str, &str); 1] = [("build-target", "wasm32-")];
 
 /// Every key the Rust runner does not print, and why each one is not a
 /// gap.
@@ -117,7 +126,12 @@ const RUST_ABSENCES: [&str; 8] = [
 ];
 
 impl Report {
-    fn read(binding: &'static str, output: &str, absences: &'static [&'static str]) -> Report {
+    fn read(
+        binding: &'static str,
+        output: &str,
+        absences: &'static [&'static str],
+        own: &'static [(&'static str, &'static str)],
+    ) -> Report {
         let lines = output
             .lines()
             .filter_map(|line| line.split_once('\t'))
@@ -127,6 +141,7 @@ impl Report {
             binding,
             lines,
             absences,
+            own,
         }
     }
 }
@@ -203,6 +218,18 @@ fn compare(left: &Report, right: &Report) -> usize {
         let Some((_, other)) = right.lines.iter().find(|(k, _)| k == key) else {
             continue;
         };
+        // A build's own value is held to what it must say, not to the
+        // other report: it is the one line that is meant to differ.
+        if let Some((_, prefix)) = right.own.iter().find(|(own, _)| own == key) {
+            if !other.starts_with(prefix) {
+                println!(
+                    "      {key}: {} says `{other}`, which is not its own build's (`{prefix}…`)",
+                    right.binding
+                );
+                differences += 1;
+            }
+            continue;
+        }
         if !agree(value, other) {
             println!(
                 "      {key}: {} says `{value}`, {} says `{other}`",
@@ -220,11 +247,12 @@ fn run(
     binding: &'static str,
     command: &mut Command,
     absences: &'static [&'static str],
+    own: &'static [(&'static str, &'static str)],
 ) -> Option<Report> {
     match command.output() {
         Ok(output) if output.status.success() => {
             let text = String::from_utf8_lossy(&output.stdout).to_string();
-            let report = Report::read(binding, &text, absences);
+            let report = Report::read(binding, &text, absences, own);
             if report.lines.is_empty() {
                 println!("FAIL  the {binding} runner printed no report");
                 return None;
@@ -279,6 +307,7 @@ fn collect(
             "Node",
             Command::new("node").arg(NODE).current_dir(root),
             &[],
+            &[],
         ));
     } else {
         println!("skip  {NODE}: no `node` on this machine");
@@ -292,6 +321,7 @@ fn collect(
                 .args(["run", "bin/parity.dart"])
                 .env("TEISTRO_LIBRARY", &library)
                 .current_dir(root.join("bindings/dart")),
+            &[],
             &[],
         ));
     } else {
@@ -308,6 +338,7 @@ fn collect(
                 .env("PYTHONPATH", root.join("bindings/python"))
                 .current_dir(root.join("bindings/python")),
             &[],
+            &[],
         ));
     } else {
         println!("skip  {PYTHON}: no `{python}` on this machine");
@@ -323,7 +354,31 @@ fn collect(
             .args(["run", "--quiet", "-p", "teistro", "--example", "parity"])
             .current_dir(root),
         &RUST_ABSENCES,
+        &[],
     ));
+    // The wasm package, when this machine can build one: the Node runner
+    // again, from inside the staged package, so its `./lib/index.js` is
+    // the package's and its native half the wasm module. Tried and failed
+    // counts as the others do.
+    if has_node && crate::wasm_binding::target_installed() {
+        let staged = root.join(crate::wasm_binding::STAGED);
+        attempted += 1;
+        let ran = crate::wasm_binding::stage(root, &staged).and_then(|()| {
+            std::fs::copy(root.join(NODE), staged.join("parity.mjs"))
+                .map(|_| ())
+                .map_err(|e| println!("FAIL  the parity runner did not copy: {e}"))
+        });
+        if ran.is_ok() {
+            reports.extend(run(
+                "wasm",
+                Command::new("node").arg("parity.mjs").current_dir(&staged),
+                &[],
+                &WASM_OWN,
+            ));
+        }
+    } else {
+        println!("skip  the wasm runner: needs `node` and the `wasm32-unknown-unknown` target");
+    }
 
     Some((reports, attempted))
 }
@@ -463,5 +518,40 @@ fn examples_agree(root: &Path, present: impl Fn(Binding) -> bool) -> i32 {
             );
             1
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Report, WASM_OWN, compare};
+
+    fn report(binding: &'static str, target: &str, own: bool) -> Report {
+        Report::read(
+            binding,
+            &format!("build-target\t{target}\nsun\t280.368919\n"),
+            &[],
+            if own { &WASM_OWN } else { &[] },
+        )
+    }
+
+    /// A build's own line is held to what it must name, and to nothing
+    /// else: a wasm target is no difference, a host target is one, and
+    /// the value lines beside it are compared as ever.
+    #[test]
+    fn a_builds_own_line_is_held_to_its_own_build() {
+        let node = report("Node", "aarch64-apple-darwin", false);
+        assert_eq!(
+            compare(&node, &report("wasm", "wasm32-unknown-unknown", true)),
+            0
+        );
+        assert_eq!(
+            compare(&node, &report("wasm", "aarch64-apple-darwin", true)),
+            1
+        );
+        assert_eq!(
+            compare(&node, &report("Dart", "wasm32-unknown-unknown", false)),
+            1,
+            "only a report that declares the line its own may differ on it"
+        );
     }
 }

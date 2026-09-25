@@ -61,17 +61,23 @@ napi-rs's own wasm target (`docs/03-design/wasm-binding.md`).
 
 ## Size
 
-The module is built at the default ephemeris tier and is not yet
-optimised with `wasm-opt`. Per-profile binaries, with the `compact` tier a
-browser runs on, and a size gate for each are the design's last step.
+The module is **4.8 MB, 1.3 MB gzipped**. It carries the `compact` tier of
+the built-in ephemeris, which is one arcminute and what ADR-0029 names for
+a browser. It is built for size (fat LTO, `opt-level = "s"`, measured to
+be as fast as the release build) and ships without its debug names.
+`bindings/wasm/size.json` is its budget, and `check-wasm` fails the build
+if it grows. For the arcsecond tiers, bring a provider.
 
 ## Checked
 
-`cargo xtask check-wasm` stages this package and runs it three ways:
+`cargo xtask check-wasm` stages this package and checks it four ways:
 
 - the Node binding's whole test suite, unchanged, through this package's
   own loader;
 - in headless Chrome, unbundled;
-- the same probe under Node.
+- the same probe under Node;
+- packed, installed into an empty project and run as a consumer.
 
-The browser's answer must equal Node's bit for bit.
+The browser's answer must equal Node's bit for bit, and the module must
+stay within its size budget. `cargo xtask check-parity` also compares this
+package with the Node, Dart, Python and Rust bindings, value by value.

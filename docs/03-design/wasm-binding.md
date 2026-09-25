@@ -1,11 +1,8 @@
 # The wasm binding
 
-Status: steps 1 (**one libm**), 2 (**the loader compiled out**), 4
-(**the emitter's backend split**), 5 (**the package and its loaders**)
-and 6 (**the host provider**) built 2026-09-25, with step 7's
-`check-wasm` and its browser check; step 3 answered by step 1. The
-parity runner and the per-profile size gate (step 7) remain; the package
-is released with the others.
+Status: **built**, 2026-09-25: steps 1 to 7, step 3 answered by step 1.
+The package is released with the others. What remains is ADR-0005's
+module profiles, which no binding has yet (§7).
 
 The fourth binding the order names (ADR-0004: Node native, wasm, Dart,
 Python) and the last deliverable of Phase 5's list
@@ -301,3 +298,43 @@ Rejected:
    has no such version. It runs in verify's `wasm` job. The module is 8.6
    MB unoptimised at the default tier, which is what step 7's profile
    binaries and size gate are for.
+
+   **The parity runner and the size gate, built.** `check-parity` runs
+   the Node runner a second time from inside the staged package, so the
+   wasm module joins the value-for-value comparison with Node, Dart,
+   Python and Rust; the one line it may not share, `build-target`, is
+   held to naming a wasm32 target instead (verify's Linux row builds it).
+
+   **Measured before a size was chosen**, and the measurement overturned
+   two assumptions. First, the tier was not what made the module large:
+   with no built-in at all it was 8.65 MB raw, and `compact` added 0.6
+   MB. Second, `compact` and `standard` were 3 KB apart because `compact`
+   **could not be built** — the façade's `builtin-ephemeris` pulled in
+   `standard`, every tier feature turns it on, and the richest wins
+   (ADR-0028, amended; `crates/ffi/tests/tier.rs` now asks which tier was
+   compiled, and was proved red on the old features). Of what remained,
+   47% was the `name` section, which only a debugger reads. The module
+   ships without it, from a Cargo profile of its own (`wasm`: fat LTO,
+   one codegen unit, `opt-level = "s"`), chosen over three others by size
+   and by a timed workload — as fast as the release build and 23%
+   smaller. **From 8.6 MB to 4.77 MB, 1.95 MB to 1.33 MB gzipped**, the
+   `compact` tier ADR-0029 names for a browser.
+
+   `bindings/wasm/size.json` is the budget, held both ways: over it fails,
+   and so does more than 5% under it, with the value to write, because a
+   budget that loose would let the saving go unnoticed. One module, not
+   one per profile: ADR-0005's profiles (`panchanga`, `kundali`, …) are
+   module families no binding has yet, so the gate has one entry and the
+   file names the module it measures, ready for the rest.
+
+## 7. What is left
+
+- **ADR-0005's module profiles**, for every binding at once; the wasm
+  package then ships one module per profile and the size file gains an
+  entry each.
+- **`wasm-opt`** (Binaryen), which typically takes a further tenth off a
+  wasm-bindgen module. It is one more pinned tool, so it waits until a
+  measurement says the tenth is worth it.
+- **Edge runtimes** that forbid `fetch` of the module's own URL
+  (Cloudflare Workers import a module instead); a loader for them is a
+  third `#native` condition, `workerd`.
