@@ -201,12 +201,26 @@ impl Context {
     /// SDK cannot complete, or the provider's own refusal, which crosses
     /// back as itself.
     pub fn positions(&self, request: &PositionRequest<'_>) -> Result<Envelope<Completed>, Error> {
-        let provider = self.provider.as_deref().ok_or_else(no_ephemeris)?;
-        let completion =
-            Completion::new(provider, self.settings().provider.overrides, self.delta_t);
-        let completed = completion.positions(request).map_err(Error::from)?;
+        let completed = self.completion()?.positions(request).map_err(Error::from)?;
         let provenance = self.positions_provenance(request, &completed);
         Ok(Envelope::new(completed, provenance))
+    }
+
+    /// The completion a positions answer is made through: this context's
+    /// ephemeris, override policy and Delta T model, with the speeds it
+    /// reports derived from the places it reports
+    /// ([`Completion::deriving_speeds`]). One place, so the façade and the
+    /// C boundary's `ts_positions` cannot complete a grid two ways.
+    ///
+    /// # Errors
+    ///
+    /// A context with no ephemeris.
+    pub fn completion(&self) -> Result<Completion<'_, dyn EphemerisProvider>, Error> {
+        let provider = self.provider.as_deref().ok_or_else(no_ephemeris)?;
+        Ok(
+            Completion::new(provider, self.settings().provider.overrides, self.delta_t)
+                .deriving_speeds(),
+        )
     }
 
     /// The provenance [`Context::positions`] stamps its answer with: this

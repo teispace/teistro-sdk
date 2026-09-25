@@ -22,6 +22,10 @@ path = "src/bin/kit.rs"
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# The façade, for the two checks that found a chart. Without its default
+# features, so a kit run never brings a built-in tier with it: the tier a
+# test measures is the one that test compiled.
+teistro = { path = "../sdk", default-features = false }
 teistro-astro = { path = "../astro" }
 teistro-core = { path = "../core" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }

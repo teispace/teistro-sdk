@@ -188,8 +188,8 @@ fn ketu_is_rahus_opposite_point_in_the_same_frame() {
             "the nodes move together"
         );
         assert!(
-            ketu.distance_au.abs() < f64::EPSILON,
-            "a node has no distance of its own (entry 6)"
+            (ketu.distance_au - rahu.distance_au).abs() < f64::EPSILON,
+            "Ketu is the node line's other end, as far as Rahu is"
         );
         // And it is placed like any other graha, not copied from Rahu.
         assert_eq!(ketu.placement.method, chart.chalit.chalit.method);

@@ -342,14 +342,88 @@ answers, not approximations of the sky's.
 The Delta T row is the engines' own table against the IERS series the
 SDK carries: they agree to a few hundredths of a second inside the
 engines' table and part by a third of a second at the series' last rows
-(2026), where the engines extrapolate. Still to come: the corpus checks
-(positions against fixtures per tier, ADR-0022) and an `sdk-only`
-cross-provider byte-identity check. CI runs the kit against the test
+(2026), where the engines extrapolate. CI runs the kit against the test
 provider on every change (`cargo test -p teistro-ephemeris-kit`) and
-will run it against the built-in provider at every tier when it exists;
-the adapters are run by hand with the engines present. Unit tests cover
-the bit packings, the ERFA ports against ERFA's own reference values,
-the vtable round trip and the `.se1` name decoding.
+against the built-in provider at every tier; the adapters are run by
+hand with the engines present. Unit tests cover the bit packings, the
+ERFA ports against ERFA's own reference values, the vtable round trip
+and the `.se1` name decoding.
+
+### 9a. Two checks made through the façade
+
+What these two measure is a **chart**, not a position, so they found one
+through the façade (`teistro` without its default features, so a kit run
+never brings a built-in tier with it) and every kit binary runs both
+(`runner::charts`).
+
+**`sdk-only`: a chart is its native positions.** ADR-0009 promises
+cross-provider byte identity under `sdk-only`: two providers that agree
+on their native positions give the same bytes whatever else each
+declares. `kit::sdk_only` holds a provider to it by founding every
+section the façade makes twice under that policy, once over the provider
+and once over `NativeFrameOnly` of it — the same provider reduced to its
+native frame, every override, ayanamsha and engine operation taken away
+— and requiring the sealed envelopes identical, provenance included, a
+difference named by the first field it reaches. A check that cannot fail
+proves nothing, so the same comparison runs under `prefer-native` and
+the report says where the provider's overrides part the two; a test
+provider declaring four overrides that disagree with the SDK on purpose
+holds both halves (`crates/ephemeris-kit/tests/sdk_only.rs`). It holds
+over the test provider, the built-in (trivially: no overrides) and the
+Surya Siddhanta provider, whose sunrise reaches a chart under
+`prefer-native` and none under `sdk-only`. Writing it found that
+**`prefer-native` refused a whole chart** when a provider declared the
+ayanamsha override and did not list the member asked for: the text's
+provider knows only its own, and a chart in Lahiri was refused where the
+policy means the SDK's value when there is no native one. The choice is
+now made per member, against `Capabilities::ayanamshas`, and each side of
+a shift between two sidereal zodiacs is chosen for itself.
+
+**The corpus check: positions against the recorded charts, per class.**
+`kit::corpus` founds each of the corpus's 55 recorded births under the
+`conformance-baseline` profile over the provider, compares every
+position both carry — each graha's sidereal and tropical longitude,
+latitude, speed and distance, and the lagna — under the band
+`tolerances.json` gives the provider's class, and writes the corpus's
+own report (`schema/report.schema.json`), every field listed with how far
+it missed. The nodes' distance is not compared: the port calls a node a
+direction, and a distance an engine gives one is a convention. The kit's
+`KNOWN` lists every way the SDK parts from corpus 0.11.0, each measured
+and explained, and `CorpusReport::against` holds it both ways — a miss no
+entry explains fails, and so does an entry that explains nothing in a run
+it applies to. The built-in tiers run it in CI (`tests/conformance.rs`,
+one tier per verify job); Teimeris, the corpus's own ephemeris, by hand
+(`--corpus fixtures --class same-ephemeris`), and `--native-frame-only`
+founds the charts over its native frame alone, which measures the SDK's
+completion rather than the engine's.
+
+Run first, the check failed all 55 charts at every tier, and the tier
+made no difference to most of what failed — a residual that does not
+scale with what should scale it is a different kind of term. What it
+found, each now fixed and held by a test:
+
+| found | how far | the cause |
+|---|---:|---|
+| every speed in a sidereal chart | 1e-4 °/day, the same in every body | a graha's speed was the tropical rate beside a sidereal longitude; it is now the rate of the longitude it sits beside, the ayanamsha's own rate taken out (`ChartZodiac::rate_deg_per_day`) |
+| Ketu's distance | 0 against Rahu's | Ketu is the node line's other end and now takes Rahu's distance |
+| the built-in's nodes | 0.017° of latitude in 1800, 0.04° in 2399 | the node's J2000 direction was kept without its latitude, so it came back off the ecliptic of date |
+| every planet's distance | 1e-4 AU; the Sun's within 6e-8 | the light time moved the direction and kept the geometric distance |
+| every speed over a geometric provider | ±5e-4 °/day, body by body | the centre step was told the provider's native frame after the corrections had made the columns apparent, and dropped the diurnal aberration, 0.3″ turning once a day |
+| Mercury's speed near a station | 7e-4 °/day | a speed carried through the equinox, the light's path and the observer's place missed each step's own rate; a reported speed is now the derivative of the completed places (`Completion::deriving_speeds`), which a search, stepping by a rate, does not pay for |
+
+After them, measured 2026-09-25 (outside the two far-future charts):
+
+| run | charts passing | what is left, and why |
+|---|---:|---|
+| built-in, compact | 53 of 55 | the two charts of 2350 and 2399, whose Delta T the SDK and the engine extrapolate minutes apart |
+| built-in, standard | 32 of 55 | the Moon's topocentric speed, up to 3e-3 °/day: the engine's is not the derivative of its own topocentric places (1.1e-3 to 1.6e-3 apart, measured over Teimeris), and the SDK's is |
+| built-in, full | 1 of 55 | the same, the outer planets' distances to 4e-6 AU (0.09″ at Saturn) against a band of 1e-6, and the Moon in 1800 to 1850, where the SDK's Delta T is 1.8 to 5.2 seconds below the engine's |
+| Teimeris, `same-ephemeris` | 50 of 55 | the far-future pair, the lagna of 1800 and 1830 (the Earth's rotation before the modern era, 0.8″) and at 65°N (1.08e-6° against 1e-6) |
+
+The corpus calls its bands provisional until a harness measures them;
+this is that measurement, and where a band is tighter than any
+implementation's own consistency — the Moon's topocentric speed, the full
+tier's distances — the corpus is the place that changes.
 
 ## 10. Delta T
 

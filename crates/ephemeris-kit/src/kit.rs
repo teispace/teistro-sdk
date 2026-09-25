@@ -105,7 +105,7 @@ pub struct Check {
 }
 
 impl Check {
-    fn pass(name: &'static str, detail: impl Into<String>) -> Check {
+    pub(crate) fn pass(name: &'static str, detail: impl Into<String>) -> Check {
         Check {
             name,
             passed: true,
@@ -116,7 +116,7 @@ impl Check {
         }
     }
 
-    fn fail(name: &'static str, detail: impl Into<String>) -> Check {
+    pub(crate) fn fail(name: &'static str, detail: impl Into<String>) -> Check {
         Check {
             passed: false,
             ..Check::pass(name, detail)
@@ -247,7 +247,7 @@ impl Results {
 /// The instants the kit uses: spread over the provider's coverage,
 /// clipped to 1900 to 2100 so every provider class is exercised where it
 /// is meant to be accurate.
-fn instants(capabilities: &Capabilities) -> Vec<f64> {
+pub(crate) fn instants(capabilities: &Capabilities) -> Vec<f64> {
     let (lo, hi) = capabilities.jd_range;
     let lo = lo.max(2_415_020.5);
     let hi = hi.min(2_488_069.5);
@@ -266,7 +266,7 @@ fn instants(capabilities: &Capabilities) -> Vec<f64> {
 /// with the observer's height (at Kathmandu's 1400 m the two differ by
 /// half a minute of time), and the kit compares conventions both sides
 /// implement.
-fn places() -> [(&'static str, Place); 3] {
+pub(crate) fn places() -> [(&'static str, Place); 3] {
     [
         (
             "Kathmandu",

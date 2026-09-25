@@ -37,8 +37,8 @@ number, but where it puts the **lagna**, which is what a reader reads.
 
 | rival | worst apart | where that puts the lagna | worst at |
 |---|---|---|---|
-| the **tropical** return: the Sun to its natal tropical longitude | 14.24 hours | 176.90° | `c040-buenos-aires-1986-06-22`, year 40 |
-| the **mean** return: birth plus a whole sidereal year each time | 14.5 minutes | 5.60° | `c035-new-york-2021-03-14`, year 40 |
+| the **tropical** return: the Sun to its natal tropical longitude | 14.24 hours | 176.87° | `c040-buenos-aires-1986-06-22`, year 40 |
+| the **mean** return: birth plus a whole sidereal year each time | 14.3 minutes | 5.55° | `c035-new-york-2021-03-14`, year 40 |
 
 Neither is a rounding error. A lagna 177° from the one a reader would
 have read is a different sign, a different lord and a different chart,

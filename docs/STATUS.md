@@ -3980,10 +3980,55 @@ on pub.dev (checked 2026-09-07).
      - the API description's model;
      - a pack's CLDR fields;
      - an engine manifest.
-3. Spike 3's remaining consequences: the kit's corpus checks (positions
-   against fixtures per tier) and the `sdk-only` cross-provider
-   byte-identity check; the Teimeris adapter as the Teimeris package's
-   own crate.
+3. ~~Spike 3's remaining consequences: the kit's corpus checks and the
+   `sdk-only` cross-provider byte-identity check~~ — **done**
+   (2026-09-25). Both go through the façade, because what they measure
+   is a chart, and every kit binary runs them (`runner::charts`):
+   - **`kit::sdk_only`**: under `sdk-only` a chart is its provider's
+     native positions and nothing else, byte for byte against the same
+     provider reduced to its native frame (`NativeFrameOnly`), provenance
+     included; under `prefer-native` the report says where the overrides
+     part them, so a pass is not vacuous. Holds over the test provider,
+     one declaring four hostile overrides, the built-in and the Surya
+     Siddhanta provider. It found **`prefer-native` refusing a whole
+     chart** when a provider declared the ayanamsha override without
+     listing the member asked for; the choice is now per member.
+   - **`kit::corpus`**: the corpus's 55 recorded charts founded under
+     `conformance-baseline` over the provider, every position compared
+     under `tolerances.json`'s band for its class, reported in the
+     corpus's own format; `corpus::KNOWN` lists the six ways the SDK
+     parts from corpus 0.11.0, each measured, and the list is held both
+     ways. CI runs it per tier; Teimeris by hand (`--corpus fixtures
+     --class same-ephemeris`, and `--native-frame-only` to measure the
+     SDK's completion from its positions).
+   - **What the first run found**, all 55 charts failing at every tier
+     and mostly not scaling with the tier: a sidereal chart's speeds were
+     the tropical rate; Ketu had no distance; the built-in's nodes came
+     back 0.017° off the ecliptic of date in 1800; the light time kept
+     the geometric distance (1e-4 AU); the centre step, told the native
+     frame after the corrections had run, dropped the diurnal aberration
+     (±5e-4 °/day in every speed); and a speed carried through the
+     completion missed each step's own rate (7e-4 °/day in Mercury at a
+     station) — a reported speed is now the derivative of the completed
+     places, which a search does not pay for. After them: compact 53 of
+     55, standard 32, full 1, Teimeris 50; what is left is the engine's
+     topocentric Moon speed (not the derivative of its own places), the
+     full tier's outer distances against a band of 1e-6 AU, and Delta T
+     before 1880 and after the table (§9a of
+     `03-design/ephemeris-port-and-adapters.md`).
+3a. **The corpus's provisional bands, measured.** `tolerances.json`
+   calls its bands provisional until a harness measures them, and 3 is
+   that harness. Two are tighter than any implementation's own
+   consistency: the Moon's topocentric speed (the recording engine's is
+   1.1e-3 to 1.6e-3 °/day from the derivative of its own places) and the
+   full tier's distances (4e-6 AU, 0.09″ at Saturn). Settling them is a
+   corpus release, which needs the maintainer's yes; until then
+   `corpus::KNOWN` carries both, each with its measurement.
+3b. **The Teimeris adapter as the Teimeris package's own crate.** Moving
+   `adapters/ephemeris-teimeris/rust` into the engine's repository is the
+   same question as publishing the adapter packages — an Apache-2.0
+   source linking AGPL code, with the licence decision open — so it waits
+   on the maintainer rather than being done here.
 4. Spike 4's consequences in Phase 1 are built but for three: day-period
    ranges a locale states for itself (the four parts are the same ranges
    everywhere today), the `zone` option on the date functions (it waits
@@ -4009,6 +4054,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-25 | **The corpus check, built, found six defects before it measured anything.** Spike 3 left two checks unbuilt; both go through the façade and every kit binary runs them. `sdk-only` byte identity holds a provider's chart to its native frame's alone, and proved non-vacuous against a provider declaring four hostile overrides. Over the Surya Siddhanta provider it found `prefer-native` refusing a whole chart for an ayanamsha the provider did not list, now chosen per member. The corpus check founds the 55 recorded births over a provider and compares every position under the corpus's own band for its class, in the corpus's report format, with every known divergence listed and held both ways. Its first run failed every chart at every tier, and mostly not by the tier. The causes, each fixed and tested: a sidereal chart's speeds were tropical; Ketu had no distance; the built-in's nodes left the ecliptic of date; light time kept the geometric distance; the centre step, given the native frame after the corrections had run, dropped diurnal aberration; and a carried speed missed each step's own rate. Reported speeds are now the derivative of the completed places, and searches keep the cheap carried rate. Teimeris, the corpus's own ephemeris, now passes 50 of 55; the built-in tiers pass 53, 32 and 1, every miss explained by the list. Left to the maintainer: two provisional corpus bands tighter than any implementation's own consistency (3a), and the adapter's move (3b). Next: 3a/3b decisions, else 4. |
 | 2026-09-25 | **The last lowercase words, a field every binding offered and none could use, and a claim that measured the wrong thing.** Four request records still spelt their words in serde's lowercase: a rule request's sets, a theme's forms and names, a layout's shape, and a consumer's dasha definition. Each came back in an answer or a stored document, so each is a key now, request and answer alike; the themes and sets are typed with one key list each. The sentinels `'all'`, `'birth'` and `'unknown'` stay lowercase on purpose, because a key never is, and §3.7 of the API description page records the rule. Measuring found `RashiDefinition` camel-cased, so the `year_length` all three bindings declared was refused at the boundary. It also found Python's unions half-respelt by 2f's regex sweep, and Python and Dart reading an unknown outline step as a line or an arc. Last, `schema-measured.md`'s "one casing convention" claim held only because it counted attributes in a crate list that left out the two crates at fault; it now reads the document schema's 571 words. The lint `a-word-is-spelt-as-a-key` holds the class, with four format exceptions that fail both ways. Parity: 12,992 values, 13 examples alike. Next: 3. |
 | 2026-09-25 | **Typed provenance, a member's own hash, and a hash of nothing.** A result's provenance crossed as JSON every binding read as an untyped map, and a binding's `found(one)` carried its batch's hash. `idl/api.json` now describes the JSON records (`Provenance`, `Step` and twelve they reach) from serde's own schema, refusing any construct outside a closed subset, and `emit::records` types and decodes them in Node, Python and Dart, each refusing a key the SDK does not write; `provenance` is the record and `provenanceJson` the canonical text (the blob section renamed to say so). `content_hashes` gives a batch's hash and every member's from one serialisation, every façade call seals once where three serialised twice, and the charts and panchanga blobs carry each member's hash, printed by all four parity runners. Comparing a batch's hash computed two ways found **every rules batch sealed with SHA-256 of ""**: `Map::Listed` and `Spans::Degrees` were tagged newtypes holding a list, which serde cannot write, and the canonical writer mapped the error to the empty string — now struct variants, the port's `Quantity` crosses through a wire mirror, the writer stops on such a value in a debug build, and the widest document is held to serialise whole. The parity gate compares 12,992 values in four languages, 13 examples alike. Next: 2i. |
 | 2026-09-25 | **The year's chart in one Rust call, and a composer that said half a chart.** The annual chart was composed at the C boundary alone (`VarshaRequest`, `praveshas_of`, `annual_year`), so Rust had its parts and not its call. The request and the composition moved into the façade as `teistro::VarshaRequest` and `sdk.chart().varsha(&birth, clock, &request)`, refusals named under `varsha` as the bindings name them, and about 640 lines left `crates/ffi`; the move caught a saham refusal still spelling `"punya"`. Rust's `annual_chart` printed what Node prints on its first run, once six Tajika enums had a `key()` held to serde. The bindings' `phala` and `readings` needed built packs, so the example gate builds both corpora into `target/packs` with the one file-name rule `teistro-intl build` uses, and all four languages load those bytes — Rust stopped building packs in the process. Writing them found that **`phala` asked for alone gave the chart no panchanga**, so it said ten subjects of twenty with nothing to tell that from a corpus without words; it asks for the section now, and the composer refuses a document without one, proved red. Also fixed: three bindings' README rows and example headers that said the boundary answers the instant and not the chart, and that dashas do not cross. `EXCUSED` is empty: 13 shared examples print alike in Node, Python, Dart and Rust, and the four parity runners agree on 12,987 values (Rust 12,979). Next: 2h. |

@@ -2,7 +2,12 @@
 //! provider is measured on, and the run that prints the report and the
 //! rows, writes the results and turns the verdict into an exit code. An
 //! adapter's binary opens its provider, adds its direct-binding row and
-//! calls [`run`].
+//! calls [`run`], then [`charts`] for the two checks made through the
+//! façade: `sdk-only` always, and the conformance corpus when
+//! `--corpus DIR --class CLASS` names it. `--native-frame-only` founds the
+//! corpus's charts over the provider reduced to its native frame, so what
+//! is measured is the SDK's completion from that provider's positions
+//! rather than the engine's own frames.
 
 use std::path::Path;
 use std::process::ExitCode;
@@ -14,7 +19,9 @@ use teistro_port_ephemeris::{
 };
 
 use crate::bench::{self, Row};
+use crate::corpus::{self, Corpus};
 use crate::kit::{self, Bounds, Refusing, Results};
+use crate::sdk_only::{self, NativeFrameOnly, Open};
 
 /// Timed calls per round.
 pub const ITERATIONS: usize = 200;
@@ -111,6 +118,79 @@ pub fn out_dir(args: &[String]) -> Option<&Path> {
         .map(Path::new)
 }
 
+/// The `--corpus DIR --class CLASS` arguments of a kit binary, when both
+/// are given: the corpus's root and the provider class to hold it to.
+#[must_use]
+pub fn corpus_args(args: &[String]) -> Option<(&Path, &str)> {
+    let value = |flag: &str| {
+        args.iter()
+            .position(|a| a == flag)
+            .and_then(|i| args.get(i + 1))
+    };
+    Some((Path::new(value("--corpus")?), value("--class")?.as_str()))
+}
+
+/// Runs the checks made through the façade: the `sdk-only` identity, and
+/// the corpus when [`corpus_args`] names one, writing
+/// `<out>/<name>-corpus.json` in the corpus's report format when a
+/// directory is given. Answers whether both passed.
+#[allow(
+    clippy::print_stdout,
+    clippy::print_stderr,
+    reason = "the shared body of the kit binaries"
+)]
+pub fn charts(name: &str, open: Open<'_>, args: &[String]) -> bool {
+    let identity = sdk_only::check(open);
+    println!(
+        "{}: {}; {}\n",
+        identity.name,
+        if identity.passed { "pass" } else { "FAIL" },
+        identity.detail
+    );
+    let Some((root, class)) = corpus_args(args) else {
+        return identity.passed;
+    };
+    let reduced = || -> Box<dyn EphemerisProvider> { Box::new(NativeFrameOnly::new(open())) };
+    let (open, name): (Open<'_>, String) = if args.iter().any(|a| a == "--native-frame-only") {
+        (&reduced, format!("{name}-native-frame"))
+    } else {
+        (open, name.to_owned())
+    };
+    let report = match Corpus::open(root).and_then(|corpus| corpus::run(&corpus, open, class)) {
+        Ok(report) => report,
+        Err(why) => {
+            eprintln!("the corpus check did not run: {why}");
+            return false;
+        }
+    };
+    println!("{}", report.markdown());
+    let judged = report.against(&corpus::KNOWN);
+    println!(
+        "{} misses explained by the known divergences; unexplained: {:?}; idle: {:?}",
+        judged.explained,
+        judged.unexplained,
+        judged
+            .idle
+            .iter()
+            .map(|divergence| divergence.name)
+            .collect::<Vec<_>>()
+    );
+    if let Some(dir) = out_dir(args) {
+        match report.write(dir, &format!("{name}-corpus")) {
+            Ok(path) => println!("written {}", path.display()),
+            Err(error) => {
+                eprintln!("cannot write the corpus report: {error}");
+                return false;
+            }
+        }
+    }
+    // Reduced to its native frame the run measures the SDK's completion,
+    // which the known divergences do not describe: it is reported, and
+    // only the provider's own run is judged.
+    let reduced_run = args.iter().any(|a| a == "--native-frame-only");
+    identity.passed && (reduced_run || judged.holds())
+}
+
 /// Runs the kit against `provider`, prints the report, runs and prints
 /// the rows `bench` produces, writes `<out>/<name>.json` when a directory
 /// is given, and returns success when the kit passed.
@@ -163,5 +243,11 @@ mod tests {
         let args = [String::from("--out"), String::from("target/kit")];
         assert_eq!(out_dir(&args), Some(Path::new("target/kit")));
         assert_eq!(out_dir(&[]), None);
+        let corpus = ["--corpus", "fixtures", "--class", "builtin-full"].map(String::from);
+        assert_eq!(
+            corpus_args(&corpus),
+            Some((Path::new("fixtures"), "builtin-full"))
+        );
+        assert_eq!(corpus_args(&corpus[..2]), None);
     }
 }

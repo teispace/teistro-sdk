@@ -1759,7 +1759,12 @@ fn predicates_are_listed(root: &Path, outcome: &mut Outcome) {
 /// their own, each with why. A path is a file or a crate's `src`; it
 /// excuses what is under it and must still excuse something, so an entry
 /// outlives nothing it was written for.
-const SPELT_OTHERWISE: [(&str, &str); 4] = [
+const SPELT_OTHERWISE: [(&str, &str); 5] = [
+    (
+        "crates/ephemeris-kit/src/corpus.rs",
+        "the conformance corpus's report format, whose outcomes the corpus \
+         spells (`schema/report.schema.json`)",
+    ),
     (
         "crates/rules/src",
         "the rule format, a language of its own that pack authors write, \

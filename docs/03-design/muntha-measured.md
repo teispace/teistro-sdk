@@ -114,7 +114,7 @@ modulo a week — so that is the reading held here.
 | the Sun, Leo 3°50′ | -0.8′ | -0.6′ |
 | the Moon, Taurus 9°40′ | -2.7′ | **-57.6′** |
 | the office-bearers, Jupiter, Sun, Mars, Mars, Sun | all five as printed | all five as printed |
-| the true return, after the mean one | +0.83 min | +4.84 min |
+| the true return, after the mean one | +0.83 min | +4.75 min |
 
 The source prints whole arcminutes and seconds. On the default profile
 the worst of its three positions is 2.7′ out and its return 1.5 s,
@@ -200,16 +200,16 @@ of which 29 166 stand in signs that aspect at all — through
 | kind | what puts a pair there | pairs | of those that aspect |
 |---|---|---|---|
 | **Vartamana** | behind by a degree or more, inside the orb | 6668 | 22.9% |
-| **Poorna** | behind by less than a degree | 940 | 3.2% |
+| **Poorna** | behind by less than a degree | 941 | 3.2% |
 | **Bhavishyat** | outside the orb, reaching from a sign's end | 322 | 1.1% |
 | **Ishrafa** | past by a degree or more, inside the orb | 6565 | 22.5% |
-| *the contested band* | past by less than a degree | **934** | **3.2%** |
+| *the contested band* | past by less than a degree | **933** | **3.2%** |
 
 ### What turns on the last row
 
 The last row is the one thing the source's two accounts do not settle
 (crux C112), and the count is why it is carried as a reading rather than
-decided quietly. Under the chapter's prose those 934 pairs are
+decided quietly. Under the chapter's prose those 933 pairs are
 **Ishrafa**, generally unfavourable and drawing apart. Under Table X-3
 read so that its rows interlock they are **Poorna**, the most fulfilled
 thing a pair can be. Under the table read at its narrowest they are
@@ -219,7 +219,7 @@ other.
 Two things about the size of it. It is 3.2% of every pair that aspects
 — not a rounding margin, and about a twelfth of every Ishrafa. And it
 is almost exactly the size of the **Poorna the table states outright**
-beside it, 940 against 934: the two sit symmetrically either side of an
+beside it, 941 against 933: the two sit symmetrically either side of an
 exact aspect, which is the argument for reading Poorna as covering both.
 A reading on which one side of exactness is immediate fulfilment and the
 other side is nothing would have to explain the asymmetry, and the book
@@ -243,7 +243,7 @@ out before those births reach their fortieth year, and the SDK answers
 the years it covers rather than refusing the whole request. A further
 **1 year** returned but could not be **founded**, belonging to 1 birth:
 `c028-troms-1988-06-21`. The SDK refuses rather than inventing a day —
-*unsupported: JD 2448064.4323329213 UTC falls in a polar day at
+*unsupported: JD 2448064.432396872 UTC falls in a polar day at
 69.6492°N 18.9553°E 10 m, and under NEAREST_EVENT its day runs from JD
 2448098.4552060068 UTC to JD 2448099.477145168 UTC, which does not hold
 it (field `day.polar_day_policy`); choose CIVIL_MIDNIGHT, which reckons
@@ -367,8 +367,8 @@ Of the 15 113 readings, seven to each of the 2159 charts, **3207**
 | [8, 10) | 3321 | 22.0% |
 | [10, 12) | 3929 | 26.0% |
 | [12, 14) | 3116 | 20.6% |
-| [14, 16) | 1951 | 12.9% |
-| [16, 18) | 488 | 3.2% |
+| [14, 16) | 1952 | 12.9% |
+| [16, 18) | 487 | 3.2% |
 | [18, 20] | 19 | 0.1% |
 
 The weakest reading anywhere in the corpus is **03:45:15**, on a scale
@@ -517,13 +517,13 @@ reading no other moves when no sign is ever added exactly as often as it
 took one, and a saham that reads no house never moves under equal houses
 — Samarthya and Manmatha among them, which read only the lagna's lord.
 The five that read another saham also move with it: with no sign ever
-added they move in 6756 placements to the 5322 in which they took a sign
+added they move in 6755 placements to the 5321 in which they took a sign
 themselves, because Punya, Guru and Vidya lose theirs. Over all
 forty-one, 40 628 of 88 519 placements took the sign. The three pairs
 the source gives one formula each — Vidya and Guru, Raja and Pitri,
 Kshama and Kali — agree in every column.
 
-**Counting "between" in whole signs moves 11 790 placements in all
+**Counting "between" in whole signs moves 11 798 placements in all
 (13.3%).** That is the reading a widely used program applies; the
 source's own birth-chart Punya refutes it, the Sun, lagna and Moon all
 in Leo. **Equal houses from the lagna put 23.0%** of the placements of
@@ -545,39 +545,39 @@ column was zero. **Roga's second reading** stands in another sign in
 | 6 Mahatmya | 43.4% | 22.0% | no house past the first |
 | 7 Asha | 34.8% | 12.2% | no house past the first |
 | 8 Samarthya | 39.1% | 13.0% | no house past the first |
-| 9 Bhratri | 50.5% | 10.7% | no house past the first |
+| 9 Bhratri | 50.5% | 10.8% | no house past the first |
 | 10 Gaurava | 50.5% | 11.9% | no house past the first |
 | 11 Pitri | 27.7% | 11.7% | no house past the first |
 | 12 Raja | 27.7% | 11.7% | no house past the first |
 | 13 Matri | 34.1% | 12.4% | no house past the first |
 | 14 Putra | 50.3% | 12.6% | no house past the first |
-| 15 Jeeva | 49.0% | 10.7% | no house past the first |
+| 15 Jeeva | 49.1% | 10.7% | no house past the first |
 | 16 Roga | 0.0% | 7.8% | no house past the first |
 | 17 Karma | 35.9% | 14.5% | no house past the first |
 | 18 Manmatha | 34.8% | 11.3% | no house past the first |
-| 19 Kali | 45.3% | 12.4% | no house past the first |
-| 20 Kshama | 45.3% | 12.4% | no house past the first |
+| 19 Kali | 45.2% | 12.5% | no house past the first |
+| 20 Kshama | 45.2% | 12.5% | no house past the first |
 | 21 Shastra | 50.3% | 12.8% | no house past the first |
 | 22 Bandhu | 52.0% | 12.2% | no house past the first |
-| 23 Mrityu | 50.6% | 11.8% | 13.7% |
-| 24 Deshantara | 69.2% | 8.7% | 33.1% |
-| 25 Artha | 8.6% | 6.9% | 19.5% |
+| 23 Mrityu | 50.6% | 11.8% | 13.6% |
+| 24 Deshantara | 69.2% | 8.7% | 33.0% |
+| 25 Artha | 8.6% | 6.9% | 19.6% |
 | 26 Paradara | 50.4% | 16.4% | no house past the first |
 | 27 AnyaKarma | 50.1% | 11.9% | no house past the first |
 | 28 Vanika | 48.0% | 11.3% | no house past the first |
 | 29 KaryaSiddhi | 37.9% | 21.5% | no house past the first |
 | 30 Vivaha | 50.3% | 12.0% | no house past the first |
 | 31 Prasava | 32.2% | 13.2% | no house past the first |
-| 32 Santaapa | 49.2% | 12.4% | 14.0% |
+| 32 Santaapa | 49.2% | 12.4% | 13.9% |
 | 33 Shraddha | 50.2% | 14.4% | no house past the first |
-| 34 Preeti | 52.3% | 17.3% | no house past the first |
+| 34 Preeti | 52.3% | 17.4% | no house past the first |
 | 35 Jadya | 51.9% | 13.7% | no house past the first |
 | 36 Vyapara | 49.7% | 15.0% | no house past the first |
 | 37 PaneeyaPaata | 49.9% | 12.3% | no house past the first |
 | 38 Shatru | 56.3% | 11.4% | no house past the first |
 | 39 Jalapatha | 45.8% | 12.5% | no house past the first |
 | 40 Bandhana | 50.1% | 21.6% | no house past the first |
-| 41 Labha | 84.4% | 8.0% | 34.6% |
+| 41 Labha | 84.4% | 8.1% | 34.6% |
 
 ## 15. The Harsha bala
 
@@ -621,8 +621,8 @@ judges its worked sahams in words, never by a score
 read in every chart through `sdk.chart().saham_strength`, under the
 year's own lord.
 
-**The two lists are not two verdicts.** Of 88 519 placements, 32 209
-meet a strong clause and no weak one, 1805 a weak clause and no strong
+**The two lists are not two verdicts.** Of 88 519 placements, 32 207
+meet a strong clause and no weak one, 1807 a weak clause and no strong
 one, and **54 505 meet clauses on both lists** (61.6%). A score would
 have to weigh one list against the other, which is a rule the source
 does not state; the report gives the clauses. **None meets neither, and
@@ -642,14 +642,14 @@ and the pass fails if one does.
 | strong | its lord is in its own Drekkana | 13.9% |
 | strong | its lord is in its own Navamsha | 15.4% |
 | strong | its lord is in a friend's sign | 28.5% |
-| strong | it is with a friend of its lord | 12.7% |
+| strong | it is with a friend of its lord | 12.8% |
 | strong | it is with a natural benefic | 28.9% |
 | strong | it is with the year lord | 8.9% |
 | strong | its lord conjoins it | 8.6% |
 | strong | its lord aspects it | 67.9% |
 | strong | its lord aspects the lagna | 66.8% |
 | weak | its lord is under the Panchavargiya floor | 1.1% |
-| weak | its lord has no Harsha bala | 18.8% |
+| weak | its lord has no Harsha bala | 18.9% |
 | weak | its lord neither aspects nor conjoins it | 32.1% |
 | weak | it is with an enemy of its lord | 13.0% |
 | weak | it is with a natural malefic | 23.9% |
@@ -723,7 +723,7 @@ Moon did not lead, or if a reading not asked is ever counted.
 The Mudda, the Varsha Yogini and the Patyayini of every recorded year,
 through `sdk.chart().annual_dashas` under the default readings
 (`03-design/annual-dashas.md`): the Sun's clock and the birth Moon's
-balance. 2159 years were read, 546 227 periods listed to the antardasha.
+balance. 2159 years were read, 546 159 periods listed to the antardasha.
 
 Every one of them opens on its return. In every one, the mahadashas run
 end to end from the return to the year's close, and each mahadasha's
@@ -744,4 +744,4 @@ period's end by days.
 The Patyayini's tie rule decided the order in **0** years: no two of the
 eight shared a krishamsha to the nanoarcsecond. The rule is built
 because the verse states it, and a chart of a consumer's may be the one
-where it holds. The year opened with the lagna in 250.
+where it holds. The year opened with the lagna in 249.

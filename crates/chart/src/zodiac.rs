@@ -111,6 +111,44 @@ impl ChartZodiac {
         })
     }
 
+    /// How fast the chart's zodiac turns against the tropical one at an
+    /// instant, degrees a day: the ayanamsha's own rate, which is the
+    /// precession's and, under the true basis, the nutation's too; zero for
+    /// a tropical chart.
+    ///
+    /// A graha's motion **in the chart's zodiac** is its tropical motion
+    /// less this, which is what a sidereal speed means and what an engine
+    /// asked for sidereal positions reports: over the conformance corpus
+    /// the tropical rate stood 1e-4 degrees a day from the recorded one in
+    /// every body of a chart at once. Taken by a central difference over a
+    /// hundredth of a day, far inside the shortest nutation term's period.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartZodiac::of`], at either side of the instant.
+    pub fn rate_deg_per_day(
+        settings: &Settings,
+        at: JulianDay<Tt>,
+        precession: PrecessionModel,
+        delta_t: DeltaTModel,
+    ) -> Result<f64, Error> {
+        const STEP_DAYS: f64 = 0.01;
+        let frame = &settings.frame;
+        if frame.zodiac == ZodiacKnob::Tropical {
+            return Ok(0.0);
+        }
+        let value = |days: f64| {
+            ayanamsha::value_deg(
+                &frame.ayanamsha,
+                JulianDay::<Tt>::literal(at.get() + days),
+                frame.ayanamsha_basis,
+                precession,
+                delta_t,
+            )
+        };
+        Ok((value(STEP_DAYS)? - value(-STEP_DAYS)?) / (2.0 * STEP_DAYS))
+    }
+
     /// A tropical longitude in the chart's zodiac.
     ///
     /// ```

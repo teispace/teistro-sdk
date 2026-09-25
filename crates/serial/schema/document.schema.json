@@ -2358,7 +2358,7 @@
           "description": "Where it falls under the chart's chalit."
         },
         "speed_deg_per_day": {
-          "description": "Motion in longitude, degrees a day; negative when retrograde.",
+          "description": "Motion in the chart's longitude, degrees a day; negative when retrograde. In a sidereal chart it is the tropical motion less the ayanamsha's own rate, so it is the rate of `longitude_deg` and not of `tropical_deg`.",
           "format": "double",
           "type": "number"
         },

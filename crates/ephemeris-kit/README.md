@@ -14,4 +14,21 @@ cargo run --release -p teistro-ephemeris-kit -- --out target/kit
 ```
 
 An adapter's binary opens its provider, adds its direct-binding row and
-calls `runner::run` (`adapters/ephemeris-teimeris/rust`).
+calls `runner::run` (`adapters/ephemeris-teimeris/rust`), then
+`runner::charts` for the two checks made through the façade:
+
+- `sdk_only`: under the `sdk-only` policy a chart is the provider's
+  native positions and nothing else it offers, byte for byte;
+- `corpus`: the conformance corpus's recorded charts founded over the
+  provider, under the band its class is given, in the corpus's own report
+  format, every miss one of `corpus::KNOWN` and every entry of it used.
+
+```sh
+cargo run --release --manifest-path adapters/ephemeris-teimeris/rust/Cargo.toml \
+  --bin teistro-ephemeris-teimeris-kit -- \
+  --corpus fixtures --class same-ephemeris --out target/kit
+```
+
+`--native-frame-only` founds the charts over the provider reduced to its
+native frame, which measures the SDK's completion from its positions
+rather than the engine's own frames.

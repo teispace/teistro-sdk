@@ -17,13 +17,14 @@ use core::fmt;
 
 use serde::Serialize;
 use teistro_core::angle::{difference_deg, normalise_deg};
+use teistro_core::catalogue::Ayanamsha;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
     Body, Capabilities, Cell, Centre, Coordinates, Corrections, EphemerisProvider, Equinox, Frame,
-    Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, TimeScale, Zodiac,
-    ask_positions,
+    Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, SpeedModel, TimeScale,
+    Zodiac, ask_positions,
 };
 
 use crate::ayanamsha::{self, Basis};
@@ -205,6 +206,7 @@ pub struct Completion<'p, P: EphemerisProvider + ?Sized> {
     delta_t: DeltaTModel,
     precession: PrecessionModel,
     ayanamsha_basis: Basis,
+    derived_speeds: bool,
 }
 
 impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
@@ -221,7 +223,28 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             delta_t,
             precession: PrecessionModel::default(),
             ayanamsha_basis: Basis::Mean,
+            derived_speeds: false,
         }
+    }
+
+    /// Speeds that are **reported** rather than stepped by: through a
+    /// step that is more than a rotation — the equinox, the light's path,
+    /// the observer's place — each speed is the derivative of the completed
+    /// places, taken across the places completed either side of the
+    /// instant in one more request.
+    ///
+    /// Without it a speed is the provider's rate carried through each
+    /// step, which is what a search wants of a rate — a Newton step
+    /// converges on the place whatever its derivative's last digits — at a
+    /// third of the cost. With it a chart's speed is the rate of the
+    /// longitude it sits beside: carried, it missed the aberration's and
+    /// the light time's own rates, which the conformance corpus found as
+    /// 7e-4 degrees a day in Mercury at a station. A provider whose speeds
+    /// follow a rule keeps its rule's either way.
+    #[must_use]
+    pub const fn deriving_speeds(mut self) -> Self {
+        self.derived_speeds = true;
+        self
     }
 
     /// The precession model the SDK's ayanamshas are carried by.
@@ -356,6 +379,35 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         }
     }
 
+    /// Who gives an ayanamsha's value: the provider when the policy lets
+    /// it and it **lists that member**, the SDK's catalogue otherwise.
+    ///
+    /// The override is declared once and the members it covers are listed
+    /// beside it (`Capabilities::ayanamshas`), so a provider that knows only
+    /// its own — a classical text's — declares the override and lists one.
+    /// Chosen by the declaration alone, `prefer-native` asked it for
+    /// Lahiri and refused the whole chart, where the policy's meaning is to
+    /// use the native value when there is one and the SDK's when there is
+    /// not; the kit's `sdk-only` check found it over the Surya Siddhanta
+    /// provider. `native-only` still refuses, naming the step.
+    fn choose_ayanamsha(
+        &self,
+        member: Option<Ayanamsha>,
+    ) -> Result<Implementation, CompletionError> {
+        let chosen = self.choose(Overrides::AYANAMSHA, "ayanamsha")?;
+        let listed = member.is_none_or(|member| self.capabilities.ayanamshas.contains(&member));
+        match (chosen, listed, self.policy) {
+            (Implementation::Native, false, OverridePolicy::NativeOnly) => {
+                Err(CompletionError::PolicyRefused {
+                    step: "ayanamsha",
+                    policy: self.policy,
+                })
+            }
+            (Implementation::Native, false, _) => Ok(Implementation::Sdk),
+            (chosen, _, _) => Ok(chosen),
+        }
+    }
+
     /// The obliquity at an instant, by the policy.
     fn obliquity(
         &self,
@@ -443,6 +495,92 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             }
         }
 
+        // A reported speed through a step that is more than a rotation is
+        // the derivative of the completed places
+        // ([`Completion::deriving_speeds`]); a provider whose speeds
+        // follow a rule keeps its rule's, which is its tradition's answer
+        // and not an approximation of the sky's.
+        let moving = wanted.equinox != native.equinox
+            || wanted.corrections != native.corrections
+            || wanted.centre != native.centre;
+        if self.derived_speeds
+            && request.speeds
+            && moving
+            && self.capabilities.speed_model == SpeedModel::Derivative
+        {
+            return self.differenced(request, native);
+        }
+        self.complete(request, native)
+    }
+
+    /// The places completed, and their speeds taken across the places
+    /// completed either side of each instant, in one more request.
+    ///
+    /// Both are completed **with** the provider's own rates, because the
+    /// light time steps back along the body's velocity: completed without
+    /// it, the Sun stood 21 arcseconds from itself. Only the speed the
+    /// steps carry is replaced.
+    fn differenced(
+        &self,
+        request: &PositionRequest<'_>,
+        native: Frame,
+    ) -> Result<Completed, CompletionError> {
+        let mut completed = self.complete(request, native)?;
+        let around: Vec<f64> = request
+            .jds
+            .iter()
+            .flat_map(|jd| [jd - SPEED_STEP_DAYS, jd + SPEED_STEP_DAYS])
+            .collect();
+        let either_side = self.complete(
+            &PositionRequest {
+                jds: &around,
+                ..*request
+            },
+            native,
+        )?;
+        for jd_index in 0..completed.columns.jd_count {
+            for body_index in 0..completed.columns.body_count {
+                let cells = (
+                    completed.columns.at(jd_index, body_index),
+                    either_side.columns.at(2 * jd_index, body_index),
+                    either_side.columns.at(2 * jd_index + 1, body_index),
+                );
+                let (Some(here), Some(behind), Some(ahead)) = cells else {
+                    continue;
+                };
+                if !(here.is_ok() && behind.is_ok() && ahead.is_ok()) {
+                    continue;
+                }
+                let span = 2.0 * SPEED_STEP_DAYS;
+                completed.columns.set_at(
+                    jd_index,
+                    body_index,
+                    Cell {
+                        lon_speed: difference_deg(ahead.lon, behind.lon) / span,
+                        lat_speed: (ahead.lat - behind.lat) / span,
+                        dist_speed: (ahead.dist - behind.dist) / span,
+                        ..here
+                    },
+                );
+            }
+        }
+        push_once(
+            &mut completed.steps,
+            Step {
+                name: "speeds",
+                implementation: Implementation::Sdk,
+            },
+        );
+        Ok(completed)
+    }
+
+    /// The steps from the provider's native frame to the requested one.
+    fn complete(
+        &self,
+        request: &PositionRequest<'_>,
+        native: Frame,
+    ) -> Result<Completed, CompletionError> {
+        let wanted = request.frame;
         let mut steps = vec![Step {
             name: "positions",
             implementation: Implementation::Native,
@@ -458,8 +596,20 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         // topocentric correction applied to J2000 columns would subtract
         // an of-date vector from a J2000 one, which is a wrong answer
         // rather than a refused one.
+        //
+        // `held` is the frame the columns are in as each step finishes, and
+        // a later step is given that rather than the provider's native
+        // frame: the centre step reads which corrections the columns carry
+        // to decide how to take the observer's own displacement and
+        // aberration. Given the native frame after the corrections step
+        // had made the columns apparent, it took a geometric provider's
+        // columns as still geometric and dropped the diurnal aberration,
+        // 0.3 arcseconds turning once a day, which the conformance corpus
+        // found as half a thousandth of a degree a day in every speed.
+        let mut held = native;
         if wanted.equinox != native.equinox {
             self.precess(&mut columns, request, native, &mut steps)?;
+            held.equinox = wanted.equinox;
         }
         // The corrections next, while the columns are still geocentric:
         // light time, deflection and aberration are all about the path
@@ -467,9 +617,10 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         // displacement is a separate question that comes after them.
         if wanted.corrections != native.corrections {
             self.correct(&mut columns, request, native, &mut steps)?;
+            held.corrections = wanted.corrections;
         }
         if wanted.centre != native.centre {
-            self.recentre(&mut columns, request, native, &mut steps)?;
+            self.recentre(&mut columns, request, held, &mut steps)?;
         }
         // The zodiac is a shift of ecliptic longitude, so it is applied
         // while the columns are ecliptic: before a rotation out of the
@@ -794,30 +945,41 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         // one; otherwise the SDK's catalogue, carried by the precession
         // model in force, which every epoch-defined ayanamsha has, on the
         // basis the frame asked for.
-        let implementation = self.choose(Overrides::AYANAMSHA, "ayanamsha")?;
+        // Each side's member is chosen for itself: a provider native in its
+        // own sidereal zodiac, asked for another, gives its own value and
+        // takes the SDK's for the other.
+        let sides = [from, to].map(|zodiac| match zodiac {
+            Zodiac::Sidereal { ayanamsha } => self
+                .choose_ayanamsha(Some(ayanamsha))
+                .map(|implementation| Some((ayanamsha, implementation))),
+            Zodiac::Tropical => Ok(None),
+        });
+        let [from_side, to_side] = sides;
+        let (from_side, to_side) = (from_side?, to_side?);
         let mut ayanamsha_steps = Vec::new();
-        let mut value = |zodiac: Zodiac, jd: f64| -> Result<f64, CompletionError> {
-            match zodiac {
-                Zodiac::Tropical => Ok(0.0),
-                Zodiac::Sidereal { ayanamsha } => match implementation {
-                    Implementation::Native => {
-                        Ok(self.provider.ayanamsha_deg(jd, request.scale, ayanamsha)?)
-                    }
-                    Implementation::Sdk | Implementation::PassThrough => {
-                        let tt = self.tt_at(jd, request.scale, &mut ayanamsha_steps)?;
-                        Ok(ayanamsha::value_deg(
-                            &ayanamsha.into(),
-                            tt,
-                            self.ayanamsha_basis,
-                            self.precession,
-                            self.delta_t,
-                        )?)
-                    }
-                },
-            }
-        };
+        let mut value =
+            |side: Option<(Ayanamsha, Implementation)>, jd: f64| -> Result<f64, CompletionError> {
+                match side {
+                    None => Ok(0.0),
+                    Some((ayanamsha, implementation)) => match implementation {
+                        Implementation::Native => {
+                            Ok(self.provider.ayanamsha_deg(jd, request.scale, ayanamsha)?)
+                        }
+                        Implementation::Sdk | Implementation::PassThrough => {
+                            let tt = self.tt_at(jd, request.scale, &mut ayanamsha_steps)?;
+                            Ok(ayanamsha::value_deg(
+                                &ayanamsha.into(),
+                                tt,
+                                self.ayanamsha_basis,
+                                self.precession,
+                                self.delta_t,
+                            )?)
+                        }
+                    },
+                }
+            };
         for (jd_index, jd) in request.jds.iter().enumerate() {
-            let shift = value(from, *jd)? - value(to, *jd)?;
+            let shift = value(from_side, *jd)? - value(to_side, *jd)?;
             for body_index in 0..columns.body_count {
                 let Some(cell) = columns.at(jd_index, body_index) else {
                     continue;
@@ -837,13 +999,15 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         for step in ayanamsha_steps {
             push_once(steps, step);
         }
-        push_once(
-            steps,
-            Step {
-                name: "ayanamsha",
-                implementation,
-            },
-        );
+        for (_, implementation) in [from_side, to_side].into_iter().flatten() {
+            push_once(
+                steps,
+                Step {
+                    name: "ayanamsha",
+                    implementation,
+                },
+            );
+        }
         push_once(
             steps,
             Step {
@@ -1018,32 +1182,46 @@ fn precess_cell(
     speeds: bool,
 ) -> Cell {
     let (from_obliquity, to_obliquity) = obliquities;
-    let carry = |p: Spherical| -> Spherical {
+    // The frame of date moves, so a place carried into it is carried with
+    // the matrix and the obliquity **of its own instant**: a speed taken
+    // through the matrix of the middle instant alone is the speed in a
+    // frame that stood still, and lost the precession's own 50 arcseconds
+    // a year from every body, which the conformance corpus found as
+    // 3.8e-5 degrees a day in each.
+    let carry = |p: Spherical, at: JulianDay<Tt>, to_obliquity: f64| -> Spherical {
         let equatorial = match coordinates {
             Coordinates::Ecliptic => sky::ecliptic_to_equatorial(p, from_obliquity),
             Coordinates::Equatorial => p,
         };
-        let moved = precession::to_date(model, tt, to_vector(equatorial));
+        let moved = precession::to_date(model, at, to_vector(equatorial));
         let of_date = to_spherical(moved);
         match coordinates {
             Coordinates::Ecliptic => sky::equatorial_to_ecliptic(of_date, to_obliquity),
             Coordinates::Equatorial => of_date,
         }
     };
-    let here = carry(Spherical {
-        lon_deg: cell.lon,
-        lat_deg: cell.lat,
-    });
+    let here = carry(
+        Spherical {
+            lon_deg: cell.lon,
+            lat_deg: cell.lat,
+        },
+        tt,
+        to_obliquity,
+    );
     let (lon_speed, lat_speed) = if speeds {
         let h = 1e-3;
-        let ahead = carry(Spherical {
-            lon_deg: cell.lon + cell.lon_speed * h,
-            lat_deg: cell.lat + cell.lat_speed * h,
-        });
-        let behind = carry(Spherical {
-            lon_deg: cell.lon - cell.lon_speed * h,
-            lat_deg: cell.lat - cell.lat_speed * h,
-        });
+        let step = |days: f64| {
+            let at = JulianDay::<Tt>::literal(tt.get() + days);
+            carry(
+                Spherical {
+                    lon_deg: cell.lon + cell.lon_speed * days,
+                    lat_deg: cell.lat + cell.lat_speed * days,
+                },
+                at,
+                precession::mean_obliquity_deg(model, at),
+            )
+        };
+        let (ahead, behind) = (step(h), step(-h));
         (
             difference_deg(ahead.lon_deg, behind.lon_deg) / (2.0 * h),
             (ahead.lat_deg - behind.lat_deg) / (2.0 * h),
@@ -1059,6 +1237,11 @@ fn precess_cell(
         ..cell
     }
 }
+
+/// The half-width a completed speed is differenced across, days: short
+/// enough that the Moon's topocentric curvature, its fastest, costs under
+/// 1e-6 degrees a day, and long enough that a place's last bits cost less.
+const SPEED_STEP_DAYS: f64 = 1e-4;
 
 /// Light's own speed, astronomical units a day.
 const AU_PER_DAY_LIGHT: f64 = 173.144_632_674_240_5;
@@ -1111,6 +1294,12 @@ fn correct_cell(
         lon_deg: cell.lon,
         lat_deg: cell.lat,
     }));
+    // The distance is the light-time corrected one as well: the body is
+    // as far away as where it was seen, not as where it is now. Keeping the
+    // geometric distance put a planet 1e-4 AU from the corpus's apparent
+    // one, as far out as its radial speed times the light time, and the
+    // Sun, which hardly moves about the barycentre, within 6e-8.
+    let mut distance = cell.dist;
     if wanted.light_time && body.is_placed() && cell.dist > 0.0 {
         let tau = cell.dist / AU_PER_DAY_LIGHT;
         let rate = rectangular_rate(cell, coordinates, mean_deg);
@@ -1120,6 +1309,7 @@ fn correct_cell(
                 + earth.velocity_au_per_day.get(index).copied().unwrap_or(0.0);
             *slot -= barycentric * tau;
         }
+        distance = geocentric.iter().map(|c| c * c).sum::<f64>().sqrt();
         direction = unit(geocentric);
     }
 
@@ -1212,6 +1402,7 @@ fn correct_cell(
     Cell {
         lon: here.lon_deg,
         lat: here.lat_deg,
+        dist: distance,
         ..cell
     }
 }

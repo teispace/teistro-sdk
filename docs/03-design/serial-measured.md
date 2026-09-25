@@ -39,7 +39,7 @@ envelope exists to carry.
 | producer | fills |
 |---|---|
 | `crates/chart/src/foundation.rs` | `provider`, `time.delta_t_model`, `time.leap_table` |
-| `crates/ffi/src/positions.rs` | `provider` |
+| `crates/ffi/src/positions.rs` | — |
 | `crates/panchanga/src/almanac.rs` | `provider`, `time.delta_t_model`, `time.leap_table` |
 | `crates/serial/src/seal.rs` | `content_hash` |
 

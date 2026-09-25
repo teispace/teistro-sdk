@@ -94,7 +94,12 @@ Instants, places and bodies with expected values and tolerance bands per
 tier; determinism; capability honesty (declared overrides must work and
 agree with `astro` within the published bound); a report. CI runs it
 against the Teimeris adapter, the built-in provider at every tier, and the
-test provider. The spike's kit has thirteen checks under one published
+test provider. Two checks go through the façade, because what they
+measure is a chart: `sdk-only` byte identity (a provider's chart against
+its native frame's alone), and the corpus check (the recorded charts
+under the corpus's own band for the provider's class, with every known
+divergence listed and held both ways;
+`03-design/ephemeris-port-and-adapters.md` §9a). The spike's kit has thirteen checks under one published
 set of bounds; a native Delta T is held to the SDK's fit only inside the
 fit's measured era (1900 to 2005), because the fit is 5 s high by 2025
 and Phase 1's Delta T is a table plus a model.
