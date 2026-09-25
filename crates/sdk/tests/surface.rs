@@ -433,7 +433,7 @@ fn positions_without_an_ephemeris_refuse_by_capability() {
     // whichever language they forgot it in.
     assert_eq!(refusal.field(), Some("ephemeris"));
     assert!(
-        refusal.hint().is_some_and(|hint| hint.contains("builtin")),
+        refusal.hint().is_some_and(|hint| hint.contains("BUILTIN")),
         "{refusal:?}"
     );
 }

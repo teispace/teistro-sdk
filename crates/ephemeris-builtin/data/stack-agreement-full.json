@@ -59,8 +59,8 @@
       "moon_arcsec": 2.469086095311468,
       "mars_arcsec": 4.018507422961193,
       "builtin_steps": [
-        "positions:Native",
-        "equinox:Sdk"
+        "positions:NATIVE",
+        "equinox:SDK"
       ]
     },
     {
@@ -70,10 +70,10 @@
       "moon_arcsec": 2.468972102860789,
       "mars_arcsec": 4.018441234984493,
       "builtin_steps": [
-        "positions:Native",
-        "equinox:Sdk",
-        "obliquity:Sdk",
-        "corrections:Sdk"
+        "positions:NATIVE",
+        "equinox:SDK",
+        "obliquity:SDK",
+        "corrections:SDK"
       ]
     },
     {
@@ -83,10 +83,10 @@
       "moon_arcsec": 2.4690871911388967,
       "mars_arcsec": 4.018483743880097,
       "builtin_steps": [
-        "positions:Native",
-        "equinox:Sdk",
-        "obliquity:Sdk",
-        "corrections:Sdk"
+        "positions:NATIVE",
+        "equinox:SDK",
+        "obliquity:SDK",
+        "corrections:SDK"
       ]
     },
     {
@@ -96,10 +96,10 @@
       "moon_arcsec": 23.029129381518487,
       "mars_arcsec": 21.327167278491288,
       "builtin_steps": [
-        "positions:Native",
-        "equinox:Sdk",
-        "obliquity:Sdk",
-        "corrections:Sdk"
+        "positions:NATIVE",
+        "equinox:SDK",
+        "obliquity:SDK",
+        "corrections:SDK"
       ]
     },
     {
@@ -109,10 +109,10 @@
       "moon_arcsec": 2.4770821657284614,
       "mars_arcsec": 4.009560475151375,
       "builtin_steps": [
-        "positions:Native",
-        "equinox:Sdk",
-        "obliquity:Sdk",
-        "corrections:Sdk"
+        "positions:NATIVE",
+        "equinox:SDK",
+        "obliquity:SDK",
+        "corrections:SDK"
       ]
     },
     {
@@ -122,10 +122,10 @@
       "moon_arcsec": 2.4772153135700137,
       "mars_arcsec": 4.0095628955896245,
       "builtin_steps": [
-        "positions:Native",
-        "equinox:Sdk",
-        "obliquity:Sdk",
-        "corrections:Sdk"
+        "positions:NATIVE",
+        "equinox:SDK",
+        "obliquity:SDK",
+        "corrections:SDK"
       ]
     },
     {
@@ -135,12 +135,12 @@
       "moon_arcsec": 2.46921924315302,
       "mars_arcsec": 4.018509843604079,
       "builtin_steps": [
-        "positions:Native",
-        "equinox:Sdk",
-        "obliquity:Sdk",
-        "corrections:Sdk",
-        "ayanamsha:Sdk",
-        "zodiac-shift:Sdk"
+        "positions:NATIVE",
+        "equinox:SDK",
+        "obliquity:SDK",
+        "corrections:SDK",
+        "ayanamsha:SDK",
+        "zodiac-shift:SDK"
       ]
     }
   ],

@@ -19,7 +19,7 @@ The contract is small and worth reading carefully:
 - **Say what you cover.** `bodies` is checked *before* the provider is
   called, so a body it does not answer is refused by name rather than by
   a wrong answer. An instant outside `jd_min`..`jd_max` is never asked
-  for: its cells come back `out-of-range` and the rest are answered, as
+  for: its cells come back `OUT_OF_RANGE` and the rest are answered, as
   they would be from any engine.
 - **Raising is allowed.** An exception is carried across the boundary as
   a refusal code and re-raised on the caller's side, so the sentence is

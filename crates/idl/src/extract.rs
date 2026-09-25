@@ -19,7 +19,7 @@ use crate::model::{
     Api, BlobSchema, CallbackDef, ConstantDef, EnumDef, EnumValue, FieldDef, FunctionDef, Meta,
     OpaqueDef, ParamDef, Role, SCHEMA, Scalar, StructDef, StructRole, TypeRef,
 };
-use crate::names::clean_doc;
+use crate::names::{clean_doc, screaming};
 use crate::rules::infer_role;
 
 /// One Rust source file to read.
@@ -227,11 +227,12 @@ fn collect_enum(e: &syn::ItemEnum, source: &Source, api: &mut Api) {
                 .and_then(|(_, expr)| int_value(expr))
                 .unwrap_or(next);
             next = value + 1;
+            let name = v.ident.to_string();
             EnumValue {
-                name: v.ident.to_string(),
+                key: screaming(&name),
+                name,
                 value,
                 doc,
-                key: None,
                 deprecated: flags.deprecated,
             }
         })

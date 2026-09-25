@@ -309,7 +309,7 @@ fn tier_section(tier: &Recorded, richest: &Recorded) -> String {
     let _ = writeln!(out, "## `{}`\n", tier.tier);
     let _ = writeln!(
         out,
-        "**The two sides are not one pipeline, and cannot be made one.** The engine answers the whole frame in a single native call — its step list is `positions:Native` and nothing else — while the built-in ephemeris is completed by the SDK's own steps. Forcing the SDK's everywhere was tried and is refused: the engine's native positions are *apparent*, the SDK can add corrections and never remove them, so a geometric frame comes back `Unsupported {{ step: \"corrections\" }}`.\n"
+        "**The two sides are not one pipeline, and cannot be made one.** The engine answers the whole frame in a single native call — its step list is `positions:NATIVE` and nothing else — while the built-in ephemeris is completed by the SDK's own steps. Forcing the SDK's everywhere was tried and is refused: the engine's native positions are *apparent*, the SDK can add corrections and never remove them, so a geometric frame comes back `Unsupported {{ step: \"corrections\" }}`.\n"
     );
     let _ = writeln!(
         out,
@@ -692,7 +692,7 @@ fn ladder_section(tiers: &[Recorded]) -> String {
     {
         let _ = writeln!(
             out,
-            "The last row runs the whole completion: `{steps}`. Each names who did the work — `Native` is the provider's own answer, `Sdk` is this crate's.\n"
+            "The last row runs the whole completion: `{steps}`. Each names who did the work — `NATIVE` is the provider's own answer, `SDK` is this crate's.\n"
         );
     }
     out

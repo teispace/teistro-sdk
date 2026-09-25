@@ -60,14 +60,31 @@ impl core::fmt::Debug for Ephemeris {
 }
 
 impl Ephemeris {
+    /// The refusal a call that needs an ephemeris gives when the context
+    /// has none: `CAPABILITY`, naming the `ephemeris` option and the three
+    /// kinds of answer it takes.
+    ///
+    /// ```
+    /// use teistro::{Ephemeris, Status};
+    ///
+    /// let refusal = Ephemeris::missing();
+    /// assert_eq!(refusal.status, Status::Capability);
+    /// assert_eq!(refusal.field(), Some("ephemeris"));
+    /// ```
+    #[must_use]
+    pub fn missing() -> Error {
+        no_ephemeris()
+    }
+
     /// What this entry is called in a refusal, so a chain that opens
-    /// nothing can say which entries it tried.
+    /// nothing can say which entries it tried: the SDK's own by the key
+    /// every binding names them with (`BUILTIN`).
     pub(crate) fn name(&self) -> String {
         match self {
-            Ephemeris::None => String::from("none"),
+            Ephemeris::None => String::from("NONE"),
             #[cfg(feature = "builtin-ephemeris")]
-            Ephemeris::Builtin => String::from("builtin"),
-            Ephemeris::Test => String::from("test"),
+            Ephemeris::Builtin => String::from("BUILTIN"),
+            Ephemeris::Test => String::from("TEST"),
             // The provider's own name, because a chain of two adapters
             // that both refused has to say which was which, and neither
             // of them is called `provider`.
@@ -165,12 +182,13 @@ pub(crate) fn open(chain: Vec<Ephemeris>) -> Result<Option<Box<dyn EphemerisProv
 
 /// `CAPABILITY` when a call needs an ephemeris and the context has none.
 ///
-/// **The same sentence as `crates/ffi`'s `support::no_ephemeris`**, and
-/// the duplication is an inventory rather than an accident: the
-/// composition is written twice until
-/// `03-design/rust-consumer-surface.md`'s third step has the boundary
-/// depend on this crate, and a refusal is part of a composition. That
-/// step deletes the boundary's copy; it does not add a third.
+/// One sentence in one place, which the boundary reaches through
+/// [`Ephemeris::missing`]. Four entry points refuse this -- positions, a
+/// chart, a panchanga and the engine passthrough -- and three of them once
+/// carried a sentence written for a C caller (*pass a provider vtable to
+/// `ts_context_new`*), which a Node, Dart or Python consumer has no way to
+/// do. It names the **option**, which every binding spells `ephemeris`,
+/// and the hint gives the three kinds of answer it takes.
 pub(crate) fn no_ephemeris() -> Error {
     Error::new(
         Status::Capability,
@@ -178,7 +196,7 @@ pub(crate) fn no_ephemeris() -> Error {
     )
     .with_field("ephemeris")
     .with_hint(
-        "name one when the context is built: `builtin` for the ephemeris the SDK carries, \
+        "name one when the context is built: `BUILTIN` for the ephemeris the SDK carries, \
          an adapter's descriptor for a real engine, or a provider of your own",
     )
 }

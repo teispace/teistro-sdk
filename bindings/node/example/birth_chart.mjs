@@ -20,7 +20,7 @@
 //    catalogue's own members and the locale's own names.
 //
 // What it does not need: an ephemeris of your own, a data file, a
-// network, or a second library. `ephemeris: 'builtin'` selects the one
+// network, or a second library. `ephemeris: 'BUILTIN'` selects the one
 // the SDK carries, so every position below is a real sky and this file
 // runs anywhere the package installs.
 
@@ -54,7 +54,7 @@ const two = (value) => String(value).padStart(2, '0');
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
-  ephemeris: 'builtin',
+  ephemeris: 'BUILTIN',
 });
 
 // ── 1. The record, as it would be written on a form ────────────────────
@@ -145,7 +145,7 @@ for (const policy of [undefined, 'NOON', 'MIDNIGHT']) {
   const scoped = new Context({
     profile: 'nepali-default',
     locale: 'ne-Deva-NP',
-    ephemeris: 'builtin',
+    ephemeris: 'BUILTIN',
     settings: policy ? { time: { unknown_time: policy } } : undefined,
   });
   try {
@@ -166,5 +166,5 @@ for (const policy of [undefined, 'NOON', 'MIDNIGHT']) {
 // happened in Kathmandu. A chart cast on a guessed midnight would have
 // been cast on a time that does not exist.
 // NOON answers, and says so twice — `timeKnown` is false and the
-// resolution carries a `time-unknown-fallback` warning — so a stored
+// resolution carries a `TIME_UNKNOWN_FALLBACK` warning — so a stored
 // chart can never quietly claim a birth time it never had.

@@ -258,7 +258,7 @@ application does not use:
 
 | file | what it holds |
 |---|---|
-| `catalogue.d.ts` | every enum as a string union with the `const` table beside it: a catalogued member is its full key (`'graha.SUN'`), which is what packs, fixtures and serialised results carry, plus the `'unknown'` arm the design's §3.6 requires; any other member is its name in kebab case (`'invalid-arg'`); the `Kind` enum's members are the kind names themselves (`'avastha_baladi'`) |
+| `catalogue.d.ts` | every enum as a string union with the `const` table beside it: a catalogued member is its full key (`'graha.SUN'`), which is what packs, fixtures and serialised results carry, plus the `'unknown'` arm the design's §3.6 requires; any other member is its key as `idl/api.json` records it, serde's spelling of the Rust type (`'INVALID_ARG'`); the `Kind` enum's members are the kind names themselves (`'avastha_baladi'`) |
 | `catalogue.js` | those tables, one frozen constant per enum |
 | `types.d.ts` | every boundary struct as a readonly interface, importing exactly the enums it names, with each member's documentation, unit, range and example as JSDoc; the `TeistroError` class |
 | `blob.d.ts` | each result blob's decoded shape: a column section is one typed array per column plus a `length` |

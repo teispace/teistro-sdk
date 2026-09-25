@@ -10,7 +10,7 @@ The frame is `OF_DATE/ECLIPTIC/SIDEREAL(LAHIRI)/APPARENT, from both centres`, on
 
 ## `compact`
 
-**The two sides are not one pipeline, and cannot be made one.** The engine answers the whole frame in a single native call — its step list is `positions:Native` and nothing else — while the built-in ephemeris is completed by the SDK's own steps. Forcing the SDK's everywhere was tried and is refused: the engine's native positions are *apparent*, the SDK can add corrections and never remove them, so a geometric frame comes back `Unsupported { step: "corrections" }`.
+**The two sides are not one pipeline, and cannot be made one.** The engine answers the whole frame in a single native call — its step list is `positions:NATIVE` and nothing else — while the built-in ephemeris is completed by the SDK's own steps. Forcing the SDK's everywhere was tried and is refused: the engine's native positions are *apparent*, the SDK can add corrections and never remove them, so a geometric frame comes back `Unsupported { step: "corrections" }`.
 
 So both centres are recorded, and the pair is the point. **Geocentric isolates the ephemeris**: the instants are TT, so nothing in that path needs Delta T. **Topocentric is what a chart receives**, and it carries the two sides' Delta T models as well, through the observer's own rotation.
 
@@ -123,7 +123,7 @@ Their **latitudes** are a convention and not an error. This SDK answers a mean a
 
 ## `standard`
 
-**The two sides are not one pipeline, and cannot be made one.** The engine answers the whole frame in a single native call — its step list is `positions:Native` and nothing else — while the built-in ephemeris is completed by the SDK's own steps. Forcing the SDK's everywhere was tried and is refused: the engine's native positions are *apparent*, the SDK can add corrections and never remove them, so a geometric frame comes back `Unsupported { step: "corrections" }`.
+**The two sides are not one pipeline, and cannot be made one.** The engine answers the whole frame in a single native call — its step list is `positions:NATIVE` and nothing else — while the built-in ephemeris is completed by the SDK's own steps. Forcing the SDK's everywhere was tried and is refused: the engine's native positions are *apparent*, the SDK can add corrections and never remove them, so a geometric frame comes back `Unsupported { step: "corrections" }`.
 
 So both centres are recorded, and the pair is the point. **Geocentric isolates the ephemeris**: the instants are TT, so nothing in that path needs Delta T. **Topocentric is what a chart receives**, and it carries the two sides' Delta T models as well, through the observer's own rotation.
 
@@ -236,7 +236,7 @@ Their **latitudes** are a convention and not an error. This SDK answers a mean a
 
 ## `full`
 
-**The two sides are not one pipeline, and cannot be made one.** The engine answers the whole frame in a single native call — its step list is `positions:Native` and nothing else — while the built-in ephemeris is completed by the SDK's own steps. Forcing the SDK's everywhere was tried and is refused: the engine's native positions are *apparent*, the SDK can add corrections and never remove them, so a geometric frame comes back `Unsupported { step: "corrections" }`.
+**The two sides are not one pipeline, and cannot be made one.** The engine answers the whole frame in a single native call — its step list is `positions:NATIVE` and nothing else — while the built-in ephemeris is completed by the SDK's own steps. Forcing the SDK's everywhere was tried and is refused: the engine's native positions are *apparent*, the SDK can add corrections and never remove them, so a geometric frame comes back `Unsupported { step: "corrections" }`.
 
 So both centres are recorded, and the pair is the point. **Geocentric isolates the ephemeris**: the instants are TT, so nothing in that path needs Delta T. **Topocentric is what a chart receives**, and it carries the two sides' Delta T models as well, through the observer's own rotation.
 
@@ -365,7 +365,7 @@ The first column is the check that makes the rest mean anything: **how far the e
 
 Of the four single corrections the engine distinguishes `light time` and `nutation` — asking for `deflection` and `aberration` moves its own answer not at all. So those rows do not measure agreement: they measure the SDK applying a correction the engine did not, and are here to be read that way rather than mistaken for accuracy. **Only the rows the engine honours, and the two whole-frame rows at the foot, compare like with like.**
 
-The last row runs the whole completion: `positions:Native`, `equinox:Sdk`, `obliquity:Sdk`, `corrections:Sdk`, `ayanamsha:Sdk`, `zodiac-shift:Sdk`. Each names who did the work — `Native` is the provider's own answer, `Sdk` is this crate's.
+The last row runs the whole completion: `positions:NATIVE`, `equinox:SDK`, `obliquity:SDK`, `corrections:SDK`, `ayanamsha:SDK`, `zodiac-shift:SDK`. Each names who did the work — `NATIVE` is the provider's own answer, `SDK` is this crate's.
 
 ## The claims this decides
 

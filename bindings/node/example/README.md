@@ -26,7 +26,7 @@ node example/birth_chart.mjs
 
 ## What these examples do not do
 
-They all name `ephemeris: 'builtin'`, the analytic ephemeris the SDK
+They all name `ephemeris: 'BUILTIN'`, the analytic ephemeris the SDK
 carries, so that they run anywhere with nothing to install. It is the
 fallback and not the intended path: in most cases a consumer belongs on a
 real engine — Teimeris, Swiss Ephemeris — installed as its own package under

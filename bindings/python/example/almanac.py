@@ -147,7 +147,7 @@ def main() -> None:
                     f"{clock(day.sankranti)}"
                 )
             moon = "  ".join(
-                f"{'rise' if e.rise else 'set'} {clock(e.instant)}"
+                f"{'RISE' if e.rise else 'SET'} {clock(e.instant)}"
                 for e in day.moon_events
             )
             print(f"  {'moon':<10} {moon or '(neither rise nor set inside the window)'}")

@@ -32,10 +32,10 @@ import { Calendar, ChartLayout, Context, Graha, Point, RashiById, Varga, at, dat
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
-  ephemeris: 'builtin',
+  ephemeris: 'BUILTIN',
 });
 const name = (key) => ctx.intl.entity(key).name;
-/** The last part of a key, for a member no locale names: `kendra`, `half`. */
+/** The last part of a key, for a member no locale names: a layout's `north`. */
 const plain = (key) => String(key).split('.').pop().toLowerCase();
 
 const born = date(Calendar.BikramSambat, 2042, 9, 17);
@@ -71,7 +71,7 @@ chart.states.forEach((state, j) => {
     `${name(state.graha).padEnd(12)} ${String(state.house).padStart(5)}  ` +
       `${name(state.dignity).padEnd(16)} ${name(state.age).padEnd(14)} ` +
       `${name(inNavamsha.sign).padEnd(12)} ${(inNavamsha.sign === inNavamsha.rashi ? 'yes' : 'no').padEnd(11)} ` +
-      `${plain(state.combustion.burning)}`,
+      `${state.combustion.burning}`,
   );
 });
 
@@ -81,7 +81,7 @@ chart.states.forEach((state, j) => {
 const tenth = chart.bhavas[9];
 console.log('');
 console.log(
-  `bhava 10 ${name(tenth.sign)}, ruled by ${name(tenth.lord)} (${plain(tenth.quadrant)})`,
+  `bhava 10 ${name(tenth.sign)}, ruled by ${name(tenth.lord)} (${tenth.quadrant})`,
 );
 
 // ── Which grahas look at the Moon ──────────────────────────────────────
@@ -90,7 +90,7 @@ console.log(
 const onMoon = chart.aspects.filter((drishti) => drishti.to === Graha.Moon);
 console.log(`drishti  ${chart.aspects.length} under ${chart.batch.drishtiTable}; on the Moon:`);
 for (const drishti of onMoon) {
-  console.log(`         ${name(drishti.from).padEnd(12)} house ${String(drishti.houses).padStart(2)} from it  ${plain(drishti.strength)}`);
+  console.log(`         ${name(drishti.from).padEnd(12)} house ${String(drishti.houses).padStart(2)} from it  ${drishti.strength}`);
 }
 
 // ── The derived points ─────────────────────────────────────────────────

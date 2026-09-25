@@ -53,7 +53,7 @@ use crate::bala::{AnnualSky, finite_longitude, sign_of_longitude};
 /// request exactly as an answer spelt it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "kebab-case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Saham {
     /// No. 1, **Punya**, general auspiciousness: Moon − Sun + lagna by day,
     /// reversed by night. The one the rest defer to.
@@ -326,7 +326,7 @@ impl Saham {
 /// One factor of a saham: a point the chart supplies.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SahamTerm {
     /// The lagna — "the mid-point of the ascendant".
     Lagna,
@@ -439,7 +439,7 @@ pub struct SahamRules {
 /// consideration".
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum AddSign {
     /// **When c is not between b and a by degrees**, counted in the
     /// order of the signs from b: the default. All seven worked sahams
@@ -464,7 +464,7 @@ pub enum AddSign {
 /// Where a house's point stands, for the sahams that read one.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum HousePoints {
     /// **Sripati's mid-points**, the default, and the source's own recipe:
     /// the lagna, the midheaven and their opposites are the mid-points of
@@ -489,7 +489,7 @@ pub enum HousePoints {
 /// Which of the source's two Roga sahams is meant.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RogaReading {
     /// **Lagna − Moon + lagna**, day and night: the formula the source
     /// gives as the saham, and the default.
@@ -1301,10 +1301,10 @@ mod tests {
         let json = serde_json::to_value(SahamRules::default()).unwrap();
         assert_eq!(
             json,
-            serde_json::json!({"addSign": "degrees", "houses": "sripati", "roga": "lagna"})
+            serde_json::json!({"addSign": "DEGREES", "houses": "SRIPATI", "roga": "LAGNA"})
         );
         let read: SahamRules =
-            serde_json::from_value(serde_json::json!({"addSign": "signs"})).unwrap();
+            serde_json::from_value(serde_json::json!({"addSign": "SIGNS"})).unwrap();
         assert_eq!(read.add_sign, AddSign::Signs);
         assert_eq!(read.houses, HousePoints::Sripati);
     }

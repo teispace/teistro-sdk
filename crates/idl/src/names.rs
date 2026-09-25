@@ -36,21 +36,16 @@ pub fn c_type_name(prefix: &str, rust_name: &str) -> String {
     format!("{prefix}{}", snake(&binding_type_name(rust_name)))
 }
 
-/// The C name of an enum member: `TS_STATUS_INVALID_ARG`; a catalogued
-/// member's own key names it, upper-cased (`TS_GRAHA_PURVA_PHALGUNI`,
-/// `TS_KIND_GRAHA`).
+/// The C name of an enum member: its key upper-cased, so the C name and
+/// the key are the same word (`TS_STATUS_INVALID_ARG`,
+/// `TS_GRAHA_PURVA_PHALGUNI`, `TS_KIND_GRAHA`).
 #[must_use]
-pub fn c_enum_member(
-    prefix: &str,
-    enum_rust_name: &str,
-    variant: &str,
-    key: Option<&str>,
-) -> String {
-    let member = key.map_or_else(|| screaming(variant), str::to_ascii_uppercase);
+pub fn c_enum_member(prefix: &str, enum_rust_name: &str, key: &str) -> String {
     format!(
-        "{}{}_{member}",
+        "{}{}_{}",
         prefix.to_ascii_uppercase(),
-        screaming(&binding_type_name(enum_rust_name))
+        screaming(&binding_type_name(enum_rust_name)),
+        key.to_ascii_uppercase()
     )
 }
 
@@ -84,12 +79,6 @@ pub fn method_name(prefix: &str, opaque_rust_name: &str, symbol: &str) -> String
 #[must_use]
 pub fn snake(name: &str) -> String {
     separate(name, '_')
-}
-
-/// `PascalCase` to `kebab-case`.
-#[must_use]
-pub fn kebab(name: &str) -> String {
-    separate(name, '-')
 }
 
 /// `PascalCase` to `SCREAMING_SNAKE_CASE`.
@@ -203,19 +192,16 @@ mod tests {
     #[test]
     fn members_constants_and_methods_follow_the_rules() {
         assert_eq!(
-            c_enum_member("ts_", "Status", "InvalidArg", None),
+            c_enum_member("ts_", "Status", "INVALID_ARG"),
             "TS_STATUS_INVALID_ARG"
         );
         assert_eq!(
-            c_enum_member("ts_", "Graha", "PurvaPhalguni", Some("PURVA_PHALGUNI")),
+            c_enum_member("ts_", "Graha", "PURVA_PHALGUNI"),
             "TS_GRAHA_PURVA_PHALGUNI"
         );
+        assert_eq!(c_enum_member("ts_", "Kind", "graha"), "TS_KIND_GRAHA");
         assert_eq!(
-            c_enum_member("ts_", "Kind", "Graha", Some("graha")),
-            "TS_KIND_GRAHA"
-        );
-        assert_eq!(
-            c_enum_member("ts_", "TimeScale", "Ut1", None),
+            c_enum_member("ts_", "TimeScale", "UT1"),
             "TS_TIME_SCALE_UT1"
         );
         assert_eq!(c_constant_name("ts_", "TS_ABI_VERSION"), "TS_ABI_VERSION");
@@ -236,7 +222,6 @@ mod tests {
         assert_eq!(snake("Ut1"), "ut1");
         assert_eq!(snake("ABIVersion"), "abi_version");
         assert_eq!(snake("jdUt1"), "jd_ut1");
-        assert_eq!(kebab("MeanNode"), "mean-node");
         assert_eq!(screaming("OsculatingApogee"), "OSCULATING_APOGEE");
         assert_eq!(camel("dasha_depth"), "dashaDepth");
         assert_eq!(pascal("dasha_depth"), "DashaDepth");

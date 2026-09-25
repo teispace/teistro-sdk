@@ -124,7 +124,7 @@ void main() {
             .having((e) => e.status.id, 'code', -6)
             .having((e) => e.detail, 'detail', 'UNKNOWN_KEY')
             .having((e) => e.hint, 'hint', contains('did you mean `SUN`'))
-            .having((e) => e.toString(), 'toString', contains('unsupported')),
+            .having((e) => e.toString(), 'toString', contains('UNSUPPORTED')),
       ),
     );
     // No context exists to keep these refusals, so the record crosses
@@ -300,7 +300,7 @@ void main() {
         isA<TeistroException>()
             .having((e) => e.status, 'status', Status.capability)
             .having((e) => e.field, 'field', 'ephemeris')
-            .having((e) => e.hint, 'hint', contains('builtin')),
+            .having((e) => e.hint, 'hint', contains('BUILTIN')),
       ),
     );
     expect(
@@ -496,7 +496,7 @@ void main() {
     expect(resolved.timeKnown, isFalse);
     expect(
       resolved.warnings.map((w) => w.key),
-      contains('time-unknown-fallback'),
+      contains('TIME_UNKNOWN_FALLBACK'),
     );
     expect(resolved.instantJdUtc.isFinite, isTrue);
 
@@ -695,7 +695,7 @@ void _engineTests() {
         isA<TeistroException>().having(
           (e) => e.field,
           'field',
-          'theme_json.style.ink',
+          'theme.style.ink',
         ),
       ),
     );
@@ -770,7 +770,7 @@ void _engineTests() {
         isA<TeistroException>().having(
           (e) => e.field,
           'field',
-          'rules_json.rules[0]',
+          'rules.rules[0]',
         ),
       ),
     );
@@ -913,7 +913,7 @@ void _engineTests() {
         isA<TeistroException>().having(
           (e) => e.field,
           'field',
-          'interpret_json.readings',
+          'interpret.readings',
         ),
       ),
     );
@@ -1746,7 +1746,7 @@ void _engineTests() {
         isA<TeistroException>().having(
           (e) => e.field,
           'field',
-          'varsha_json.through',
+          'varsha.through',
         ),
       ),
     );
@@ -1905,7 +1905,7 @@ void _engineTests() {
           sahams: Sahams.these([Saham.punya, Saham.punya]),
         ),
       ),
-      refusedBy('varsha_json.sahams'),
+      refusedBy('varsha.sahams'),
     );
     ctx.dispose();
   });
@@ -2034,7 +2034,7 @@ void _engineTests() {
           dashas: AnnualDashas.these([DashaSystem.mudda]),
         ),
       ),
-      refusedBy('varsha_json.dashas'),
+      refusedBy('varsha.dashas'),
     );
     expect(
       () => years(
@@ -2044,7 +2044,7 @@ void _engineTests() {
           dashas: AnnualDashas.these([DashaSystem.vimshottari]),
         ),
       ),
-      refusedBy('varsha_json.dashas'),
+      refusedBy('varsha.dashas'),
     );
     expect(
       () => years(
@@ -2055,7 +2055,7 @@ void _engineTests() {
           dashaRules: AnnualDashaRules(clock: YearClock.days(0)),
         ),
       ),
-      refusedBy('varsha_json.dashaRules.clock'),
+      refusedBy('varsha.dashaRules.clock'),
     );
     ctx.dispose();
   });
@@ -2189,7 +2189,7 @@ void _engineTests() {
     expect(
       () =>
           years(const VarshaRequest(through: 2, matters: Matters.houses([7]))),
-      refusedBy('varsha_json.matters'),
+      refusedBy('varsha.matters'),
     );
     expect(
       () => years(
@@ -2199,7 +2199,7 @@ void _engineTests() {
           matters: Matters.houses([7, 7]),
         ),
       ),
-      refusedBy('varsha_json.matters'),
+      refusedBy('varsha.matters'),
     );
     expect(
       () => years(
@@ -2210,7 +2210,7 @@ void _engineTests() {
           yogas: YogaRules(weakBelow: 12 * 3600, strongFrom: 4 * 3600),
         ),
       ),
-      refusedBy('varsha_json.yogas.strongFrom'),
+      refusedBy('varsha.yogas.strongFrom'),
     );
     ctx.dispose();
   });

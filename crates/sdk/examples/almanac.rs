@@ -213,8 +213,8 @@ fn print_day(sdk: &Context, day: &Panchanga) {
         .moon
         .rises
         .iter()
-        .map(|at| format!("rise {}", clock(*at)))
-        .chain(day.moon.sets.iter().map(|at| format!("set {}", clock(*at))))
+        .map(|at| format!("RISE {}", clock(*at)))
+        .chain(day.moon.sets.iter().map(|at| format!("SET {}", clock(*at))))
         .collect();
     println!(
         "  {:<10} {}",

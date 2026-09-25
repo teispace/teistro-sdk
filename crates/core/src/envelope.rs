@@ -384,7 +384,7 @@ pub struct TimeStamp {
 /// whatever another calendar wants to say.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(tag = "kind", rename_all = "lowercase")]
+#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CalendarResolution {
     /// A mathematical definition; exact by construction.
     Defined,
@@ -452,7 +452,7 @@ pub struct Convention {
 /// Whether every row that took part is verified (ADR-0018).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Confidence {
     /// Every table row used is verified.
     #[default]
@@ -696,7 +696,7 @@ mod tests {
         assert_eq!(back, envelope);
         assert_eq!(back.provenance.cache_key(), (hash, hash, 1));
         assert_eq!(envelope.map(|v| v * 2).value, 84);
-        assert!(json.contains("\"kind\":\"divergent\""));
+        assert!(json.contains("\"kind\":\"DIVERGENT\""));
     }
 
     #[test]

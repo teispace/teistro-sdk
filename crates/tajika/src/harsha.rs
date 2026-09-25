@@ -60,7 +60,7 @@ pub struct HarshaRules {
 /// Venus's house of joy, which the Sthana part is read from.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum VenusPlace {
     /// The 5th: the *Tajika Nilakanthi*'s verse (*putra*, the house of
     /// children) and the source's own.
@@ -75,7 +75,7 @@ pub enum VenusPlace {
 /// What the source calls a planet by its Harsha bala.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum HarshaGrade {
     /// No part: without strength.
     Nirbala,
@@ -597,13 +597,13 @@ mod tests {
 
     #[test]
     fn the_rules_read_camel_case_and_fill_the_rest() {
-        let rules: HarshaRules = serde_json::from_str(r#"{"venus":"twelfth"}"#).unwrap();
+        let rules: HarshaRules = serde_json::from_str(r#"{"venus":"TWELFTH"}"#).unwrap();
         assert_eq!(rules.venus, VenusPlace::Twelfth);
         let empty: HarshaRules = serde_json::from_str("{}").unwrap();
         assert_eq!(empty, HarshaRules::default());
         assert_eq!(
             serde_json::to_string(&HarshaRules::default()).unwrap(),
-            r#"{"venus":"fifth"}"#
+            r#"{"venus":"FIFTH"}"#
         );
     }
 }

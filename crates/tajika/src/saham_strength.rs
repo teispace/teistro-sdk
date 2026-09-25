@@ -38,7 +38,7 @@ use crate::yoga::{BENEFICS, qualification};
 /// Which planets a saham's clauses call benefic and malefic.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SahamNatures {
     /// The chapter's own: the Moon, Mercury, Jupiter and Venus benefic,
     /// the Sun, Mars and Saturn malefic — its forty-seventh year calls the
@@ -78,7 +78,7 @@ fn nature(graha: Graha) -> Option<Nature> {
 /// Whose friendship the "friend" and "inimical planet" clauses read.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Friendship {
     /// Tajika's positional friendship, the only one the source defines
     /// (ch. VI): friends at houses 3, 5, 9 and 11 from each other, enemies
@@ -215,7 +215,7 @@ pub struct SahamStrength {
 /// A clause of the source's **strong** list (ch. XI, 1 A), in its order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StrongClause {
     /// (a) Its lord is exalted.
     LordExalted,
@@ -283,7 +283,7 @@ impl StrongClause {
 /// A clause of the source's **weak** list (ch. XI, 2), in its order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum WeakClause {
     /// (a) Its lord is under the Panchavargiya floor.
     LordWeakVishwa,
@@ -668,7 +668,7 @@ mod tests {
     #[test]
     fn the_rules_read_camel_case_and_fill_the_rest() {
         let rules: SahamStrengthRules =
-            serde_json::from_str(r#"{"natures":"parashari","weakBelow":14400}"#).unwrap();
+            serde_json::from_str(r#"{"natures":"PARASHARI","weakBelow":14400}"#).unwrap();
         assert_eq!(rules.natures, SahamNatures::Parashari);
         assert_eq!(rules.weak_below.units(), 4);
         assert_eq!(rules.friendship, Friendship::Positional);

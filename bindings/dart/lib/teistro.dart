@@ -1238,7 +1238,7 @@ extension CivilDateTimes on CalendarDate {
   /// Nothing guesses one. Unless the profile sets `time.unknown_time`, a
   /// resolution refuses it by name and the hint says what to choose;
   /// under `NOON` it resolves with [ZoneResolution.timeKnown] false and a
-  /// `time-unknown-fallback` warning, and under `SUNRISE` it needs the
+  /// `TIME_UNKNOWN_FALLBACK` warning, and under `SUNRISE` it needs the
   /// place and a solar model.
   CivilDateTime get whenUnknown => CivilDateTime(
     date: this,
@@ -3680,16 +3680,16 @@ final class RuleRequest {
 enum VarshaReading {
   /// The natal sidereal longitude, read on the chart's own ayanamsha
   /// basis: the tradition's, and the default.
-  sidereal('sidereal'),
+  sidereal('SIDEREAL'),
 
   /// The natal tropical longitude: the Western solar return. Forty years
   /// on it is most of a circle of lagna from the sidereal one, so it is a
   /// choice and never a fallback.
-  tropical('tropical'),
+  tropical('TROPICAL'),
 
   /// A whole sidereal year for each year of life, from birth: the older
   /// arithmetic, and the only reading that needs no ephemeris.
-  mean('mean');
+  mean('MEAN');
 
   const VarshaReading(this.key);
 
@@ -3850,10 +3850,10 @@ sealed class YearClock {
 
   /// The Sun's motion through one degree from where it stood at the return:
   /// the source's own, so the year closes on the next return.
-  static const YearClock sunDegrees = _NamedClock('sun_degrees');
+  static const YearClock sunDegrees = _NamedClock('SUN_DEGREES');
 
   /// An equal share of the time from this return to the next.
-  static const YearClock even = _NamedClock('even');
+  static const YearClock even = _NamedClock('EVEN');
 
   /// The whole year as this many civil days from the return: the printed
   /// durations, 360 for the Mudda and the Yogini and 365 for the Patyayini.
@@ -3877,19 +3877,19 @@ final class _DaysClock extends YearClock {
   final double days;
 
   @override
-  Object get _json => {'days': days};
+  Object get _json => {'DAYS': days};
 }
 
 /// Where the balance a nakshatra year opens with comes from (crux C123).
 enum MuddaBalance {
   /// What remained of the birth Moon's nakshatra: the source's own.
-  natalMoon('natal_moon'),
+  natalMoon('NATAL_MOON'),
 
   /// How far the Moon at the return is through its own nakshatra.
-  entryMoon('entry_moon'),
+  entryMoon('ENTRY_MOON'),
 
   /// None: the first lord runs its whole share from the return.
-  whole('whole');
+  whole('WHOLE');
 
   const MuddaBalance(this.key);
 
@@ -3960,10 +3960,10 @@ final class AnnualDashaRules {
 /// Which planets a saham's strength calls benefic and malefic.
 enum SahamNatures {
   /// The chapter's own: the Sun a malefic among them.
-  chapter('chapter'),
+  chapter('CHAPTER'),
 
   /// The catalogue's Parashari natures.
-  parashari('parashari');
+  parashari('PARASHARI');
 
   const SahamNatures(this.key);
 
@@ -3974,10 +3974,10 @@ enum SahamNatures {
 /// Whose friendship a saham's "friend" and "inimical" clauses read.
 enum SahamFriendship {
   /// Tajika's positional friendship, the only one the source defines.
-  positional('positional'),
+  positional('POSITIONAL'),
 
   /// The catalogue's natural friendships.
-  natural('natural');
+  natural('NATURAL');
 
   const SahamFriendship(this.key);
 
@@ -4011,10 +4011,10 @@ final class SahamStrengthReadings {
 /// Venus's house of joy, which the Harsha bala's first part reads.
 enum VenusPlace {
   /// The fifth: the verse's, and the default.
-  fifth('fifth'),
+  fifth('FIFTH'),
 
   /// The twelfth, as a widely used program reads it.
-  twelfth('twelfth');
+  twelfth('TWELFTH');
 
   const VenusPlace(this.key);
 
@@ -4069,13 +4069,13 @@ final class _TheseSahams extends Sahams {
 /// When a saham is carried a sign further (`03-design/tajika-sahams.md`).
 enum AddSign {
   /// When c does not fall between b and a by degrees: the source's own.
-  degrees('degrees'),
+  degrees('DEGREES'),
 
   /// By whole signs, as a widely used program reads it.
-  signs('signs'),
+  signs('SIGNS'),
 
   /// Never: a − b + c alone.
-  never('never');
+  never('NEVER');
 
   const AddSign(this.key);
 
@@ -4086,13 +4086,13 @@ enum AddSign {
 /// Where a house's point stands, for the sahams that read one.
 enum HousePoints {
   /// Sripati's mid-point, built from the angles: the source's own.
-  sripati('sripati'),
+  sripati('SRIPATI'),
 
   /// The chart's own chalit middles, under whatever its profile names.
-  chalit('chalit'),
+  chalit('CHALIT'),
 
   /// Equal houses from the lagna's degree.
-  equal('equal');
+  equal('EQUAL');
 
   const HousePoints(this.key);
 
@@ -4103,10 +4103,10 @@ enum HousePoints {
 /// Roga's formula: the source gives two.
 enum RogaReading {
   /// Lagna − Moon + lagna: the saham as given.
-  lagna('lagna'),
+  lagna('LAGNA'),
 
   /// Saturn − Moon + lagna: the other authority's.
-  saturn('saturn');
+  saturn('SATURN');
 
   const RogaReading(this.key);
 
@@ -4168,10 +4168,10 @@ final class _Houses extends Matters {
 /// How the Tajika aspects read a pair less than a degree past (crux C112).
 enum SubDegree {
   /// Poorna, the default: an Ithasala fulfilled.
-  poorna('poorna'),
+  poorna('POORNA'),
 
   /// Ishrafa: already drawing apart.
-  ishrafa('ishrafa');
+  ishrafa('ISHRAFA');
 
   const SubDegree(this.key);
 
@@ -4182,10 +4182,10 @@ enum SubDegree {
 /// Which lord a Tambira lets reach the next sign.
 enum TambiraMover {
   /// The karyesha: the definition's, and the default.
-  karyesha('karyesha'),
+  karyesha('KARYESHA'),
 
   /// Either lord: the source's "some authorities".
-  eitherLord('either_lord');
+  eitherLord('EITHER_LORD');
 
   const TambiraMover(this.key);
 
@@ -4196,10 +4196,10 @@ enum TambiraMover {
 /// When the Moon counts among Kuttha's benefics (crux C117).
 enum MoonBenefic {
   /// Always: Charak's list, and the default.
-  always('always'),
+  always('ALWAYS'),
 
   /// Waxing only: the commentary's "full Moon", read as the bright half.
-  waxing('waxing');
+  waxing('WAXING');
 
   const MoonBenefic(this.key);
 
@@ -4315,13 +4315,13 @@ final class OfficeBearers {
 /// Who takes the year when no office-bearer aspects the lagna.
 enum NoneAspects {
   /// The Muntha's lord: Charak's rule, and the default.
-  munthaLord('muntha_lord'),
+  munthaLord('MUNTHA_LORD'),
 
   /// The annual lagna's lord, which "some authorities" give.
-  annualLagnaLord('annual_lagna_lord'),
+  annualLagnaLord('ANNUAL_LAGNA_LORD'),
 
   /// The strongest of the five: the Nilakanthi's Varshatantra v. 11.
-  strongest('strongest');
+  strongest('STRONGEST');
 
   const NoneAspects(this.key);
 
@@ -4332,10 +4332,10 @@ enum NoneAspects {
 /// Who takes the year when the office-bearers tie outright.
 enum VarsheshaTied {
   /// The Muntha's lord: the source's rule, and the default.
-  munthaLord('muntha_lord'),
+  munthaLord('MUNTHA_LORD'),
 
   /// The Dina-Ratri Pati, which "still others" give.
-  dinaRatriPati('dina_ratri_pati');
+  dinaRatriPati('DINA_RATRI_PATI');
 
   const VarsheshaTied(this.key);
 
@@ -4347,13 +4347,13 @@ enum VarsheshaTied {
 enum MoonMayRule {
   /// Passed over for the next claimant that aspects, and else for its
   /// Ithasala successor: Charak's two steps, and the default.
-  passedOver('passed_over'),
+  passedOver('PASSED_OVER'),
 
   /// Its Ithasala successor at once: the Nilakanthi's own view.
-  ithasala('ithasala'),
+  ithasala('ITHASALA'),
 
   /// It holds the year like any other office-bearer.
-  likeAnyOther('like_any_other');
+  likeAnyOther('LIKE_ANY_OTHER');
 
   const MoonMayRule(this.key);
 
@@ -4364,10 +4364,10 @@ enum MoonMayRule {
 /// Which planets may succeed the Moon through an Ithasala.
 enum MoonPartner {
   /// Any of the seven: the default.
-  anyPlanet('any_planet'),
+  anyPlanet('ANY_PLANET'),
 
   /// Only an office-bearer, as one commentary reads the verse.
-  officeBearer('office_bearer');
+  officeBearer('OFFICE_BEARER');
 
   const MoonPartner(this.key);
 
@@ -4968,10 +4968,10 @@ List<Graha> _seven(int bits) => _members(bits, _theSeven, (g) => g.id);
 enum MunthaDegree {
   /// It enters each year at its sign's first degree and crosses the whole
   /// sign during the year: the source's own reading.
-  signStart('sign_start'),
+  signStart('SIGN_START'),
 
   /// It carries the natal lagna's degree into each new sign.
-  natalDegree('natal_degree');
+  natalDegree('NATAL_DEGREE');
 
   const MunthaDegree(this.key);
 

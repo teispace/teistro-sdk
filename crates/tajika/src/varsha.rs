@@ -48,7 +48,7 @@ pub const MOST_YEARS: u16 = 200;
 /// Which longitude a return returns to.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Reading {
     /// The natal **sidereal** longitude, read on the chart's own ayanamsha
     /// basis: the tradition's, and the default.
@@ -343,9 +343,9 @@ mod tests {
     fn the_default_reading_is_the_tradition_s() {
         assert_eq!(Reading::default(), Reading::Sidereal);
         let json = serde_json::to_string(&Reading::Sidereal).unwrap();
-        assert_eq!(json, r#""sidereal""#);
+        assert_eq!(json, r#""SIDEREAL""#);
         assert_eq!(
-            serde_json::from_str::<Reading>(r#""tropical""#).unwrap(),
+            serde_json::from_str::<Reading>(r#""TROPICAL""#).unwrap(),
             Reading::Tropical
         );
     }

@@ -97,9 +97,9 @@ test('the catalogue tables are the keys every pack and fixture carries', () => {
   assert.equal(Graha.Ketu, 'graha.KETU');
   assert.equal(Kind.Nakshatra, 'nakshatra', "a kind names itself as a key's first segment does");
   assert.equal(Kind.AvasthaBaladi, 'avastha_baladi');
-  assert.equal(Status.InvalidArg, 'invalid-arg');
-  assert.equal(Body.MeanNode, 'mean-node');
-  assert.equal(TimeScale.Ut1, 'ut1');
+  assert.equal(Status.InvalidArg, 'INVALID_ARG');
+  assert.equal(Body.MeanNode, 'MEAN_NODE');
+  assert.equal(TimeScale.Ut1, 'UT1');
   assert.equal(Object.isFrozen(Graha), true, 'the tables cannot be edited');
   const values = new Set(Object.values(Graha));
   assert.equal(values.size, Object.keys(Graha).length, 'no two members share a value');

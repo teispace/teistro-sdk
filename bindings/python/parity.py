@@ -670,23 +670,23 @@ def main() -> None:
                 seven,
             ])
 
-        for reading in ("sidereal", "tropical", "mean"):
+        for reading in ("SIDEREAL", "TROPICAL", "MEAN"):
             varsha: VarshaRequest = {"reading": reading, "through": 12, "place": "birth"}
             # The sahams likewise: every one under the source's rules,
             # every one under each rival rule, and none.
             # And the annual dashas: every one under the sources' readings,
             # every one under a rival clock, balance and birth period three
             # levels deep, and none.
-            if reading != "mean":
+            if reading != "MEAN":
                 varsha["matters"] = "all"
                 varsha["sahams"] = "all"
                 varsha["dashas"] = "all"
-            if reading == "tropical":
-                varsha["yogas"] = {"tambira": "either_lord"}
-                varsha["saham_rules"] = {"add_sign": "signs", "houses": "equal", "roga": "saturn"}
+            if reading == "TROPICAL":
+                varsha["yogas"] = {"tambira": "EITHER_LORD"}
+                varsha["saham_rules"] = {"add_sign": "SIGNS", "houses": "EQUAL", "roga": "SATURN"}
                 varsha["dasha_rules"] = {
-                    "clock": "even",
-                    "balance": "entry_moon",
+                    "clock": "EVEN",
+                    "balance": "ENTRY_MOON",
                     "birth_period": "ELAPSED",
                     "depth": 3,
                 }
@@ -881,15 +881,15 @@ def main() -> None:
             put(f"day-{i}-muhurta-0-from", muhurtas[0].at.from_jd)
             put(f"day-{i}-muhurta-last-daylight", muhurtas[-1].daylight)
             for j, event in enumerate(almanac_day.moon_events):
-                put(f"day-{i}-moon-{j}-kind", "rise" if event.rise else "set")
+                put(f"day-{i}-moon-{j}-kind", "RISE" if event.rise else "SET")
                 put(f"day-{i}-moon-{j}-instant", event.instant)
             for j, held in enumerate(almanac_day.muhurta_yogas):
                 put(f"day-{i}-yoga-held-{j}", held.yoga.full_key)
                 put(
                     f"day-{i}-yoga-held-{j}-cause",
-                    "vara-nakshatra"
+                    "VARA_NAKSHATRA"
                     if held.tithi is None
-                    else "vara-tithi-nakshatra",
+                    else "VARA_TITHI_NAKSHATRA",
                 )
                 put(
                     f"day-{i}-yoga-held-{j}-tithi",

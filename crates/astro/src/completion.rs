@@ -70,6 +70,16 @@ pub struct Step {
     pub implementation: Implementation,
 }
 
+impl Step {
+    /// The step as a stamp spells it, `positions:NATIVE`: its name and
+    /// who computed it by [`Implementation::key`], so a chart's steps and
+    /// a positions result's read alike in every binding.
+    #[must_use]
+    pub fn key(&self) -> String {
+        format!("{}:{}", self.name, self.implementation.key())
+    }
+}
+
 /// A completed response: the columns in the requested frame and the
 /// steps that produced them, in order.
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -82,13 +92,11 @@ pub struct Completed {
 }
 
 impl Completed {
-    /// The steps as `name:IMPLEMENTATION` for a stamp.
+    /// The steps as `name:IMPLEMENTATION` for a stamp, each its
+    /// [`Step::key`].
     #[must_use]
     pub fn step_keys(&self) -> Vec<String> {
-        self.steps
-            .iter()
-            .map(|s| format!("{}:{:?}", s.name, s.implementation))
-            .collect()
+        self.steps.iter().map(Step::key).collect()
     }
 }
 
@@ -1276,7 +1284,7 @@ mod tests {
             done.steps.first().map(|s| s.implementation),
             Some(Implementation::PassThrough)
         );
-        assert_eq!(done.step_keys(), vec!["positions:PassThrough"]);
+        assert_eq!(done.step_keys(), vec!["positions:PASS_THROUGH"]);
         assert!(completion.describe().starts_with("test-provider"));
         assert_eq!(completion.policy(), OverridePolicy::PreferNative);
         assert_eq!(completion.capabilities().bodies.len(), 8);
@@ -1397,8 +1405,8 @@ mod tests {
                 .with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)),
         );
         let done = completion.positions(&turned).unwrap();
-        assert!(done.step_keys().contains(&String::from("centre:Sdk")));
-        assert!(done.step_keys().contains(&String::from("zodiac-shift:Sdk")));
+        assert!(done.step_keys().contains(&String::from("centre:SDK")));
+        assert!(done.step_keys().contains(&String::from("zodiac-shift:SDK")));
     }
 
     #[test]
@@ -1451,19 +1459,19 @@ mod tests {
             DeltaTModel::TableThenModel,
         );
         let done = native.positions(&placed).unwrap();
-        assert_eq!(done.step_keys(), vec!["positions:Native"]);
+        assert_eq!(done.step_keys(), vec!["positions:NATIVE"]);
         let sdk = Completion::new(
             &OBLIGING,
             OverridePolicy::SdkOnly,
             DeltaTModel::TableThenModel,
         );
         let done = sdk.positions(&placed).unwrap();
-        assert!(done.step_keys().contains(&String::from("centre:Sdk")));
+        assert!(done.step_keys().contains(&String::from("centre:SDK")));
         // A frame that needs nothing still passes through under either.
         let plain = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, Frame::CANONICAL);
         assert_eq!(
             sdk.positions(&plain).unwrap().step_keys(),
-            vec!["positions:PassThrough"]
+            vec!["positions:PASS_THROUGH"]
         );
     }
 
@@ -1544,7 +1552,7 @@ mod tests {
         let request = PositionRequest::new(&jds, TimeScale::Tt, &[Body::Sun], Frame::CANONICAL);
         let done = completion.positions(&request).unwrap();
         assert!(
-            done.step_keys().iter().any(|key| key == "equinox:Sdk"),
+            done.step_keys().iter().any(|key| key == "equinox:SDK"),
             "the step must say who did it: {:?}",
             done.step_keys()
         );

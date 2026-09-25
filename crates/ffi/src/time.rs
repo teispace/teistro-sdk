@@ -122,6 +122,16 @@ pub enum TsDst {
     Overlap = 2,
 }
 
+impl From<DstOutcome> for TsDst {
+    fn from(outcome: DstOutcome) -> TsDst {
+        match outcome {
+            DstOutcome::None => TsDst::None,
+            DstOutcome::Gap { .. } => TsDst::Gap,
+            DstOutcome::Overlap { .. } => TsDst::Overlap,
+        }
+    }
+}
+
 /// Which occurrence an overlap resolved to.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -130,6 +140,15 @@ pub enum TsChosen {
     Earlier = 0,
     /// The second occurrence, the later instant.
     Later = 1,
+}
+
+impl From<Chosen> for TsChosen {
+    fn from(chosen: Chosen) -> TsChosen {
+        match chosen {
+            Chosen::Earlier => TsChosen::Earlier,
+            Chosen::Later => TsChosen::Later,
+        }
+    }
 }
 
 /// A warning of a resolution; `warnings` in the resolution is a bit set,
@@ -455,19 +474,11 @@ impl TsZoneResolution {
         resolution: &ZoneResolution,
         instant: JulianDay<Utc>,
     ) -> TsZoneResolution {
-        let (dst, chosen, shift) = match resolution.dst {
-            DstOutcome::None => (TsDst::None, TsChosen::Earlier, 0),
-            DstOutcome::Gap { shifted_by_seconds } => {
-                (TsDst::Gap, TsChosen::Earlier, shifted_by_seconds)
-            }
-            DstOutcome::Overlap { chosen } => (
-                TsDst::Overlap,
-                match chosen {
-                    Chosen::Earlier => TsChosen::Earlier,
-                    Chosen::Later => TsChosen::Later,
-                },
-                0,
-            ),
+        let dst = TsDst::from(resolution.dst);
+        let (chosen, shift) = match resolution.dst {
+            DstOutcome::None => (TsChosen::Earlier, 0),
+            DstOutcome::Gap { shifted_by_seconds } => (TsChosen::Earlier, shifted_by_seconds),
+            DstOutcome::Overlap { chosen } => (TsChosen::from(chosen), 0),
         };
         let warnings = resolution
             .warnings

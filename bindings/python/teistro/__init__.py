@@ -2404,7 +2404,7 @@ class DashaRing:
     remaining: Optional[float]
     """How much of the first lord's share was still to run at the return, 0
     to 1, the rest closing the year; None when it runs whole from the
-    return: the Patyayini, and a `"whole"` balance."""
+    return: the Patyayini, and a `"WHOLE"` balance."""
 
 
 @dataclass(frozen=True)
@@ -2710,20 +2710,20 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
     """The annual charts a request asks for: how many years, and which
     longitude the Sun returns to (`03-design/annual-chart.md`).
 
-    `reading` is `"sidereal"` (the tradition's, and the default),
-    `"tropical"` (the Western solar return, most of a circle of lagna away
-    at forty years, so a choice and never a fallback) or `"mean"` (a whole
+    `reading` is `"SIDEREAL"` (the tradition's, and the default),
+    `"TROPICAL"` (the Western solar return, most of a circle of lagna away
+    at forty years, so a choice and never a fallback) or `"MEAN"` (a whole
     sidereal year each time, the older arithmetic).
 
-    >>> asked: VarshaRequest = {"reading": "sidereal", "through": 40}
+    >>> asked: VarshaRequest = {"reading": "SIDEREAL", "through": 40}
     """
 
-    reading: Literal["sidereal", "tropical", "mean"]
+    reading: Literal["SIDEREAL", "TROPICAL", "MEAN"]
 
-    muntha: Literal["sign_start", "natal_degree"]
+    muntha: Literal["SIGN_START", "NATAL_DEGREE"]
     """Where the Muntha stands inside the sign it has reached (crux C107).
-    `"sign_start"` (the default, and the source's own reading) enters each
-    year at the sign's first degree; `"natal_degree"` carries the natal
+    `"SIGN_START"` (the default, and the source's own reading) enters each
+    year at the sign's first degree; `"NATAL_DEGREE"` carries the natal
     lagna's degree across. Both give the same sign."""
 
     place: Union[Literal["birth"], "VarshaPlace"]
@@ -2749,7 +2749,7 @@ class VarshaRequest(_VarshaRequestRequired, total=False):
 
     sahams: Union[Literal["all"], List[Union["Saham", str]]]
     """The sahams each year's chart is read for: `"all"`, the forty-one in
-    the source's order, or `Saham` members (or their keys, `"punya"`) in
+    the source's order, or `Saham` members (or their keys, `"PUNYA"`) in
     the order you want them answered. **Needs `place`**; absent, none is
     read."""
 
@@ -2780,17 +2780,17 @@ class AnnualDashaRules(TypedDict, total=False):
     """Where the sources differ on an annual dasha, each a named reading
     (`03-design/annual-dashas.md`).
 
-    >>> rules: AnnualDashaRules = {"clock": {"days": 360}, "depth": 1}
+    >>> rules: AnnualDashaRules = {"clock": {"DAYS": 360}, "depth": 1}
     """
 
-    clock: Union[Literal["sun_degrees", "even"], "YearOfDays"]
-    """What a unit of the year is (crux C122): `"sun_degrees"`, the Sun's
+    clock: Union[Literal["SUN_DEGREES", "EVEN"], "YearOfDays"]
+    """What a unit of the year is (crux C122): `"SUN_DEGREES"`, the Sun's
     motion through one degree and the source's own, so the year closes on
-    the next return; an `"even"` share of the time between the returns; or
-    `{"days": n}`, the whole year as so many civil days from the return,
+    the next return; an `"EVEN"` share of the time between the returns; or
+    `{"DAYS": n}`, the whole year as so many civil days from the return,
     the printed durations (360, and 365 for the Patyayini)."""
 
-    balance: Literal["natal_moon", "entry_moon", "whole"]
+    balance: Literal["NATAL_MOON", "ENTRY_MOON", "WHOLE"]
     """Where a nakshatra year's balance comes from (crux C123): what
     remained of the birth Moon's nakshatra, the source's own; the Moon's at
     the return; or none."""
@@ -2810,23 +2810,24 @@ class AnnualDashaRules(TypedDict, total=False):
 
 
 class YearOfDays(TypedDict):
-    """A year of so many civil days from the return."""
+    """A year of so many civil days from the return, keyed as every
+    variant is: `{"DAYS": 360}`."""
 
-    days: float
+    DAYS: float
 
 
 class SahamStrengthReadings(TypedDict, total=False):
     """Where the sources differ on a saham's strength
     (`03-design/tajika-saham-strength.md`).
 
-    >>> readings: SahamStrengthReadings = {"natures": "parashari"}
+    >>> readings: SahamStrengthReadings = {"natures": "PARASHARI"}
     """
 
-    natures: Literal["chapter", "parashari"]
+    natures: Literal["CHAPTER", "PARASHARI"]
     """Which planets are benefic and malefic: the chapter's own, the Sun a
     malefic among them, or the catalogue's Parashari natures."""
 
-    friendship: Literal["positional", "natural"]
+    friendship: Literal["POSITIONAL", "NATURAL"]
     """Tajika's positional friendship, the source's, or the catalogue's
     natural one."""
 
@@ -2839,7 +2840,7 @@ class HarshaRules(TypedDict, total=False):
     """Where the sources differ on the Harsha bala
     (`03-design/tajika-harsha.md`)."""
 
-    venus: Literal["fifth", "twelfth"]
+    venus: Literal["FIFTH", "TWELFTH"]
     """Venus's house of joy: the verse's fifth, or the twelfth a widely
     used program reads."""
 
@@ -2848,20 +2849,20 @@ class SahamRules(TypedDict, total=False):
     """Where the sources differ on a saham, each a named reading
     (`03-design/tajika-sahams.md`).
 
-    >>> rules: SahamRules = {"add_sign": "signs", "houses": "equal"}
+    >>> rules: SahamRules = {"add_sign": "SIGNS", "houses": "EQUAL"}
     """
 
-    add_sign: Literal["degrees", "signs", "never"]
+    add_sign: Literal["DEGREES", "SIGNS", "NEVER"]
     """When a saham is carried a sign further: when c does not fall between
     b and a by degrees, the source's own; by whole signs, as a widely used
     program reads it; or never."""
 
-    houses: Literal["sripati", "chalit", "equal"]
+    houses: Literal["SRIPATI", "CHALIT", "EQUAL"]
     """Where a house's point stands: Sripati's mid-point built from the
     angles, the source's own; the chart's chalit under its profile; or
     equal houses from the lagna's degree."""
 
-    roga: Literal["lagna", "saturn"]
+    roga: Literal["LAGNA", "SATURN"]
     """Roga's formula: lagna − Moon + lagna, or the other authority's
     Saturn − Moon + lagna."""
 
@@ -2870,7 +2871,7 @@ class YogaRules(TypedDict, total=False):
     """Where the source leaves the sixteen Tajika yogas a choice, each a
     named reading (`03-design/tajika-yogas.md`).
 
-    >>> rules: YogaRules = {"tambira": "either_lord", "strong_from": 12 * 3600}
+    >>> rules: YogaRules = {"tambira": "EITHER_LORD", "strong_from": 12 * 3600}
     """
 
     drishti: "DrishtiRules"
@@ -2884,11 +2885,11 @@ class YogaRules(TypedDict, total=False):
     """The strength from which a planet is strong, sub-sub units; `10 * 3600`
     by default."""
 
-    tambira: Literal["karyesha", "either_lord"]
+    tambira: Literal["KARYESHA", "EITHER_LORD"]
     """Which lord a Tambira lets reach the next sign: the definition's
     karyesha by default, or either, the source's "some authorities"."""
 
-    moon_benefic: Literal["always", "waxing"]
+    moon_benefic: Literal["ALWAYS", "WAXING"]
     """When the Moon counts among Kuttha's benefics: always by default,
     Charak's list, or waxing, the commentary's "full Moon" (crux C117)."""
 
@@ -2896,7 +2897,7 @@ class YogaRules(TypedDict, total=False):
 class DrishtiRules(TypedDict, total=False):
     """How the Tajika aspects read a pair less than a degree past."""
 
-    sub_degree: Literal["poorna", "ishrafa"]
+    sub_degree: Literal["POORNA", "ISHRAFA"]
     """Poorna, the default, or Ishrafa (crux C112)."""
 
 
@@ -2904,23 +2905,23 @@ class VarsheshaRules(TypedDict, total=False):
     """Where the sources differ on the lord of the year, each a named
     reading (`03-design/varshesha.md`).
 
-    >>> rules: VarsheshaRules = {"moon": "like_any_other"}
+    >>> rules: VarsheshaRules = {"moon": "LIKE_ANY_OTHER"}
     """
 
-    none_aspects: Literal["muntha_lord", "annual_lagna_lord", "strongest"]
+    none_aspects: Literal["MUNTHA_LORD", "ANNUAL_LAGNA_LORD", "STRONGEST"]
     """Who takes the year when nobody aspects the lagna: the Muntha's lord
     by default, the annual lagna's lord, or the Nilakanthi's strongest of
     the five."""
 
-    tied: Literal["muntha_lord", "dina_ratri_pati"]
+    tied: Literal["MUNTHA_LORD", "DINA_RATRI_PATI"]
     """Who takes it on an outright tie."""
 
-    moon: Literal["passed_over", "ithasala", "like_any_other"]
+    moon: Literal["PASSED_OVER", "ITHASALA", "LIKE_ANY_OTHER"]
     """Whether the Moon may hold it: passed over by default, stepping down
     to the next claimant and else to its Ithasala successor; the
     Nilakanthi's successor at once; or like any other."""
 
-    moon_partner: Literal["any_planet", "office_bearer"]
+    moon_partner: Literal["ANY_PLANET", "OFFICE_BEARER"]
     """Who may succeed the Moon: any planet by default, or only an
     office-bearer."""
 
@@ -3393,7 +3394,7 @@ class RashiDashaDefinition(_RashiDashaDefinitionRequired, total=False):
     """
 
     sources: List[str]
-    start: Literal["lagna", "arudha_lagna", "navamsa_lagna"]
+    start: Literal["LAGNA", "arudha_lagna", "navamsa_lagna"]
     order: Literal["consecutive", "trine_groups", "drishti_chain", "leap"]
     length: Union[str, Dict[str, object]]
     namedLord: Literal["stronger", "first"]
@@ -3449,7 +3450,7 @@ class ThemeContent(TypedDict, total=False):
     """What a drawing says: every field optional, over the theme it extends."""
 
     body_form: Literal["short", "glyph"]
-    cell_label: Literal["auto", "sign_number", "sign_short", "sign_glyph", "house", "nothing"]
+    cell_label: Literal["auto", "sign_number", "sign_short", "sign_glyph", "HOUSE", "nothing"]
     lagna_mark: bool
     retrograde_mark: Optional[str]
     degrees: bool
@@ -3583,7 +3584,7 @@ def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
     boundary's words; a word crosses as written, so a wrong one is refused
     by the SDK, by `varsha_json.place`, as in every binding."""
     if not isinstance(varsha, Mapping):
-        return _record_json(varsha, "varsha", "{'reading': 'sidereal', 'through': 40}")
+        return _record_json(varsha, "varsha", "{'reading': 'SIDEREAL', 'through': 40}")
     written: Dict[str, Any] = dict(varsha)
     place = written.get("place")
     if isinstance(place, Mapping):
@@ -5575,7 +5576,7 @@ def when_unknown(day: CalendarDate) -> CivilDateTime:
     Nothing guesses one. Unless the profile sets ``time.unknown_time``, a
     resolution refuses it by name and the hint says what to choose; under
     ``NOON`` it resolves with ``time_known`` false and a
-    ``time-unknown-fallback`` warning, and under ``SUNRISE`` it needs the
+    ``TIME_UNKNOWN_FALLBACK`` warning, and under ``SUNRISE`` it needs the
     place and a solar model.
     """
     return CivilDateTime(

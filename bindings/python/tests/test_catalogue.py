@@ -102,7 +102,7 @@ class TheCatalogue(unittest.TestCase):
         with self.assertRaises(ValueError):
             catalogue.Status(4242)
         self.assertEqual(catalogue.Status.OK, 0)
-        self.assertEqual(catalogue.Status.OK.key, "ok")
+        self.assertEqual(catalogue.Status.OK.key, "OK")
 
     def test_every_member_is_truthy_whatever_its_id(self) -> None:
         # `IntEnum` inherits `int.__bool__`, so the member with id zero

@@ -24,7 +24,7 @@ use crate::muntha::{MunthaDegree, muntha};
 /// The five portfolios, in the order the source lists them.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Office {
     /// The **Munthesha**: the lord of the Muntha's sign.
     Muntha,

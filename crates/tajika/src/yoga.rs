@@ -51,7 +51,7 @@ use crate::states::AnnualStates;
 /// fourteen are judgements about the lagnesha and the karyesha.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum YearYoga {
     /// Every planet in a kendra or a panaphara.
     Ikabala,
@@ -430,7 +430,7 @@ impl Default for YogaRules {
 /// complete the Ithasala from the next.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TambiraMover {
     /// **The karyesha**, the default: the definition and Table X-3.
     #[default]
@@ -446,7 +446,7 @@ pub enum TambiraMover {
 /// commentary names the **full** Moon, which needs a reading of *full*.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MoonBenefic {
     /// **Always**, the default: Charak's four natural benefics.
     #[default]
@@ -2981,23 +2981,23 @@ mod tests {
     #[test]
     fn the_rules_read_camel_case_and_fill_the_rest() {
         let read: YogaRules =
-            serde_json::from_str(r#"{"strongFrom": 43200, "tambira": "either_lord"}"#).unwrap();
+            serde_json::from_str(r#"{"strongFrom": 43200, "tambira": "EITHER_LORD"}"#).unwrap();
         assert_eq!(read.strong_from, Bala::of_sub_sub(43_200));
         assert_eq!(read.weak_below, YOGA_WEAK_BELOW);
         assert_eq!(read.tambira, TambiraMover::EitherLord);
         assert_eq!(read.moon_benefic, MoonBenefic::Always);
-        let waxing: YogaRules = serde_json::from_str(r#"{"moonBenefic": "waxing"}"#).unwrap();
+        let waxing: YogaRules = serde_json::from_str(r#"{"moonBenefic": "WAXING"}"#).unwrap();
         assert_eq!(waxing.moon_benefic, MoonBenefic::Waxing);
-        assert!(serde_json::from_str::<YogaRules>(r#"{"moonBenefic": "full"}"#).is_err());
+        assert!(serde_json::from_str::<YogaRules>(r#"{"moonBenefic": "FULL"}"#).is_err());
         let written = serde_json::to_value(YogaRules::default()).unwrap();
         assert_eq!(
             written,
             serde_json::json!({
-                "drishti": {"subDegree": "poorna"},
+                "drishti": {"subDegree": "POORNA"},
                 "weakBelow": 18_000,
                 "strongFrom": 36_000,
-                "tambira": "karyesha",
-                "moonBenefic": "always",
+                "tambira": "KARYESHA",
+                "moonBenefic": "ALWAYS",
             })
         );
     }

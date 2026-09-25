@@ -43,7 +43,7 @@ pub const DAILY_DEG: f64 = MONTHLY_DEG / 30.0;
 /// house-by-house readings want — is the same either way.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MunthaDegree {
     /// It enters each year at its sign's first degree and crosses the
     /// whole sign during the year.

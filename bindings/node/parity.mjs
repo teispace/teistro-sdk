@@ -90,7 +90,7 @@ const gregorian = (year, month, day) => ({
   eraYear: 0,
   month,
   day,
-  resolution: 'defined',
+  resolution: 'DEFINED',
   computedMonth: 0,
   computedDay: 0,
 });
@@ -117,7 +117,7 @@ const civil = {
   date: gregorian(1986, 1, 1),
   time: { hour: 0, minute: 20, second: 0, hasTime: true, nanos: 0 },
 };
-const zone = { kind: 'iana', offsetSeconds: 0, longitudeDeg: 0, zone: 'Asia/Kathmandu' };
+const zone = { kind: 'IANA', offsetSeconds: 0, longitudeDeg: 0, zone: 'Asia/Kathmandu' };
 const resolved = ctx.time.resolve(civil, zone);
 put('resolve-jd', resolved.instantJdUtc);
 put('resolve-offset', resolved.offsetSeconds);
@@ -539,16 +539,16 @@ for (const chart of charts) {
 // the sources' readings, every one under a rival clock, balance and birth
 // period three levels deep, and none.
 const MATTERS = {
-  sidereal: { matters: 'all', sahams: 'all', dashas: 'all' },
-  tropical: {
+  SIDEREAL: { matters: 'all', sahams: 'all', dashas: 'all' },
+  TROPICAL: {
     matters: 'all',
-    yogas: { tambira: 'either_lord' },
+    yogas: { tambira: 'EITHER_LORD' },
     sahams: 'all',
-    sahamRules: { addSign: 'signs', houses: 'equal', roga: 'saturn' },
+    sahamRules: { addSign: 'SIGNS', houses: 'EQUAL', roga: 'SATURN' },
     dashas: 'all',
-    dashaRules: { clock: 'even', balance: 'entry_moon', birthPeriod: 'ELAPSED', depth: 3 },
+    dashaRules: { clock: 'EVEN', balance: 'ENTRY_MOON', birthPeriod: 'ELAPSED', depth: 3 },
   },
-  mean: {},
+  MEAN: {},
 };
 // One annual dasha as every runner prints it: its seed, ring and year on
 // one line, and its periods on another.
@@ -585,7 +585,7 @@ const heldSaid = (h) =>
           .map((clauses) => (clauses.length === 0 ? 'none' : clauses.join('+')))
           .join('/'),
   ].join(':');
-for (const reading of ['sidereal', 'tropical', 'mean']) {
+for (const reading of ['SIDEREAL', 'TROPICAL', 'MEAN']) {
   const years = geo.chart.foundMany({
     instants: [2460482.5, 2460600.25],
     place,

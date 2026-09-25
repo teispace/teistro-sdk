@@ -62,7 +62,7 @@ def main() -> None:
             instant=when.instant_jd_utc,
             place=place,
             utc_offset_seconds=when.offset_seconds,
-            varsha={"reading": "sidereal", "through": 40},
+            varsha={"reading": "SIDEREAL", "through": 40},
         )
         years = chart.praveshas
         print(f"returns computed: {len(years)}")
@@ -176,7 +176,7 @@ def main() -> None:
             print(f"{dasha.system.key}: {days}")
 
         # ── The readings are named, and they are not each other ──────
-        for reading in ("sidereal", "tropical", "mean"):
+        for reading in ("SIDEREAL", "TROPICAL", "MEAN"):
             one = ctx.chart.found(
                 instant=when.instant_jd_utc,
                 place=place,
@@ -192,7 +192,7 @@ def main() -> None:
                 instant=when.instant_jd_utc,
                 place=place,
                 utc_offset_seconds=when.offset_seconds,
-                varsha={"reading": "sidereal", "through": 0},
+                varsha={"reading": "SIDEREAL", "through": 0},
             )
         except TeistroError as error:
             print(f"refused  {error.field}: {error.message}")

@@ -424,10 +424,10 @@ impl ContextBuilder {
                 ))
         })?;
         let patch: SettingsPatch = match self.settings_json.as_deref() {
-            // Named down to the knob, `settings_json.houses.chalit_system`,
-            // and not only the patch; the patch refuses an unknown key
-            // itself.
-            Some(json) => teistro_core::strict::deserialize_str(json, "settings_json")?,
+            // Named down to the knob, `settings.houses.chalit_system`, and
+            // not only the patch — `settings` being what every binding
+            // calls it; the patch refuses an unknown key itself.
+            Some(json) => teistro_core::strict::deserialize_str(json, "settings")?,
             None => SettingsPatch::default(),
         };
         let settings = profile.resolve(&patch)?;

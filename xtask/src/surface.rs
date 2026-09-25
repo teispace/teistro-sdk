@@ -37,7 +37,7 @@ use std::path::Path;
 use teistro_idl::emit::reserved;
 use teistro_idl::layout::{Target as LayoutTarget, struct_layout};
 use teistro_idl::model::{Api, EnumValue, FunctionDef, Role, Scalar, StructRole, TypeRef};
-use teistro_idl::names::{camel, method_name, screaming, snake};
+use teistro_idl::names::{camel, method_name, snake};
 use teistro_idl::rules::{constants, has_handshake, is_visible, methods};
 use teistro_idl::sdk::describe;
 
@@ -122,7 +122,7 @@ fn dart_member(v: &EnumValue) -> String {
 }
 
 fn python_member(v: &EnumValue) -> String {
-    v.key.clone().unwrap_or_else(|| screaming(&v.name))
+    v.key.clone()
 }
 
 fn dart_lower(name: &str) -> String {

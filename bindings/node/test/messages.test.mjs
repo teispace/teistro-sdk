@@ -52,7 +52,7 @@ test('an entity the locale does not carry is refused by name', () => {
   const ctx = context();
   assert.throws(
     () => ctx.intl.entity('graha.PLUTO'),
-    (error) => error.status === 'unsupported' && error.field === 'key',
+    (error) => error.status === 'UNSUPPORTED' && error.field === 'key',
   );
 });
 
@@ -63,11 +63,11 @@ test('a term written in one script reads in the other', () => {
   assert.equal(ctx.intl.transliterate('Jupiter'), 'Jupiter', 'what is not the script passes through');
   assert.throws(
     () => ctx.intl.transliterate('x', 'iast', 'deva'),
-    (error) => error.status === 'unsupported',
+    (error) => error.status === 'UNSUPPORTED',
   );
   assert.throws(
     () => ctx.intl.transliterate('x', 'deva', 'taml'),
-    (error) => error.status === 'unsupported' && error.field === 'to',
+    (error) => error.status === 'UNSUPPORTED' && error.field === 'to',
   );
 });
 

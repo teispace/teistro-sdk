@@ -49,7 +49,7 @@ pub const WEAK_BELOW: Bala = Bala::new(5, 0, 0);
 /// What to do when no office-bearer aspects the annual lagna (crux C106).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum NoneAspects {
     /// The Muntha's lord takes the year: the source's own rule.
     #[default]
@@ -64,7 +64,7 @@ pub enum NoneAspects {
 /// Who takes the year when the office-bearers tie outright (crux C106).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Tied {
     /// The Muntha's lord: the source's own rule.
     #[default]
@@ -76,7 +76,7 @@ pub enum Tied {
 /// Whether the Moon may hold the year, and who takes it when it may not.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MoonMayRule {
     /// It is passed over and the next one down that aspects takes the
     /// year; where nobody is next, its **Ithasala successor** does.
@@ -96,7 +96,7 @@ pub enum MoonMayRule {
 /// Which planets may succeed the Moon through an Ithasala.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MoonPartner {
     /// Any of the seven, the default: Charak's "the planet with which
     /// this Moon establishes an Ithasala", and the *Nilakanthi*'s verse.
@@ -128,7 +128,7 @@ pub struct VarsheshaRules {
 /// Which step of the chain decided the year's lord.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Chosen {
     /// The strongest office-bearer that aspects the annual lagna: the
     /// ordinary answer.
@@ -875,7 +875,7 @@ mod tests {
     #[test]
     fn the_rules_read_camel_case_and_fill_the_rest() {
         let read: VarsheshaRules = serde_json::from_str(
-            r#"{"moon": "ithasala", "moonPartner": "office_bearer", "noneAspects": "strongest"}"#,
+            r#"{"moon": "ITHASALA", "moonPartner": "OFFICE_BEARER", "noneAspects": "STRONGEST"}"#,
         )
         .unwrap();
         assert_eq!(read.moon, MoonMayRule::Ithasala);
@@ -883,7 +883,7 @@ mod tests {
         assert_eq!(read.none_aspects, NoneAspects::Strongest);
         assert_eq!(read.tied, Tied::MunthaLord);
         assert_eq!(read.drishti, crate::DrishtiRules::default());
-        assert!(serde_json::from_str::<VarsheshaRules>(r#"{"moonPartner": "any"}"#).is_err());
+        assert!(serde_json::from_str::<VarsheshaRules>(r#"{"moonPartner": "ANY"}"#).is_err());
     }
 
     /// The Tajika aspect is the houses 3, 5, 9, 11 and the kendras; the

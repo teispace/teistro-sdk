@@ -237,7 +237,7 @@ A wheel's bodies are not stacked; each is drawn at its degree (§4).
   by field, so a dark theme with another accent is
   `{"extends": "dark", "style": {"accent": "#ffcc00"}}`. Refusals are named
   from the theme's root and the boundary calls that root `theme_json`, as
-  in `theme_json.style.ink` and `theme_json.extends`.
+  in `theme.style.ink` and `theme.extends`.
 - **Each binding types the record.**
   - Node: a `Theme` union of the names and a record of `ThemeStyle` and
     `ThemeContent`.

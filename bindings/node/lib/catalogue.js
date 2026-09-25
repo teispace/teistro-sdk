@@ -2512,17 +2512,17 @@ export const AvasthaCheshtaById = new Map([
 
 /** Every Status by name. */
 export const Status = Object.freeze({
-  Ok: 'ok',
-  InvalidArg: 'invalid-arg',
-  OutOfRange: 'out-of-range',
-  Capability: 'capability',
-  Provider: 'provider',
-  NotConverged: 'not-converged',
-  Unsupported: 'unsupported',
-  Pack: 'pack',
-  Limit: 'limit',
-  SchemaVersion: 'schema-version',
-  Internal: 'internal',
+  Ok: 'OK',
+  InvalidArg: 'INVALID_ARG',
+  OutOfRange: 'OUT_OF_RANGE',
+  Capability: 'CAPABILITY',
+  Provider: 'PROVIDER',
+  NotConverged: 'NOT_CONVERGED',
+  Unsupported: 'UNSUPPORTED',
+  Pack: 'PACK',
+  Limit: 'LIMIT',
+  SchemaVersion: 'SCHEMA_VERSION',
+  Internal: 'INTERNAL',
 });
 
 /**
@@ -2530,35 +2530,35 @@ export const Status = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const StatusById = new Map([
-  [0, 'ok'],
-  [-1, 'invalid-arg'],
-  [-2, 'out-of-range'],
-  [-3, 'capability'],
-  [-4, 'provider'],
-  [-5, 'not-converged'],
-  [-6, 'unsupported'],
-  [-7, 'pack'],
-  [-8, 'limit'],
-  [-9, 'schema-version'],
-  [-10, 'internal'],
+  [0, 'OK'],
+  [-1, 'INVALID_ARG'],
+  [-2, 'OUT_OF_RANGE'],
+  [-3, 'CAPABILITY'],
+  [-4, 'PROVIDER'],
+  [-5, 'NOT_CONVERGED'],
+  [-6, 'UNSUPPORTED'],
+  [-7, 'PACK'],
+  [-8, 'LIMIT'],
+  [-9, 'SCHEMA_VERSION'],
+  [-10, 'INTERNAL'],
 ]);
 
 /** Every Body by name. */
 export const Body = Object.freeze({
-  Sun: 'sun',
-  Moon: 'moon',
-  Mercury: 'mercury',
-  Venus: 'venus',
-  Mars: 'mars',
-  Jupiter: 'jupiter',
-  Saturn: 'saturn',
-  Uranus: 'uranus',
-  Neptune: 'neptune',
-  Pluto: 'pluto',
-  MeanNode: 'mean-node',
-  TrueNode: 'true-node',
-  MeanApogee: 'mean-apogee',
-  OsculatingApogee: 'osculating-apogee',
+  Sun: 'SUN',
+  Moon: 'MOON',
+  Mercury: 'MERCURY',
+  Venus: 'VENUS',
+  Mars: 'MARS',
+  Jupiter: 'JUPITER',
+  Saturn: 'SATURN',
+  Uranus: 'URANUS',
+  Neptune: 'NEPTUNE',
+  Pluto: 'PLUTO',
+  MeanNode: 'MEAN_NODE',
+  TrueNode: 'TRUE_NODE',
+  MeanApogee: 'MEAN_APOGEE',
+  OsculatingApogee: 'OSCULATING_APOGEE',
 });
 
 /**
@@ -2566,26 +2566,26 @@ export const Body = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const BodyById = new Map([
-  [0, 'sun'],
-  [1, 'moon'],
-  [2, 'mercury'],
-  [3, 'venus'],
-  [4, 'mars'],
-  [5, 'jupiter'],
-  [6, 'saturn'],
-  [7, 'uranus'],
-  [8, 'neptune'],
-  [9, 'pluto'],
-  [10, 'mean-node'],
-  [11, 'true-node'],
-  [12, 'mean-apogee'],
-  [13, 'osculating-apogee'],
+  [0, 'SUN'],
+  [1, 'MOON'],
+  [2, 'MERCURY'],
+  [3, 'VENUS'],
+  [4, 'MARS'],
+  [5, 'JUPITER'],
+  [6, 'SATURN'],
+  [7, 'URANUS'],
+  [8, 'NEPTUNE'],
+  [9, 'PLUTO'],
+  [10, 'MEAN_NODE'],
+  [11, 'TRUE_NODE'],
+  [12, 'MEAN_APOGEE'],
+  [13, 'OSCULATING_APOGEE'],
 ]);
 
 /** Every TimeScale by name. */
 export const TimeScale = Object.freeze({
-  Ut1: 'ut1',
-  Tt: 'tt',
+  Ut1: 'UT1',
+  Tt: 'TT',
 });
 
 /**
@@ -2593,14 +2593,14 @@ export const TimeScale = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const TimeScaleById = new Map([
-  [0, 'ut1'],
-  [1, 'tt'],
+  [0, 'UT1'],
+  [1, 'TT'],
 ]);
 
 /** Every DistanceUnit by name. */
 export const DistanceUnit = Object.freeze({
-  AstronomicalUnits: 'astronomical-units',
-  MeanDistances: 'mean-distances',
+  AstronomicalUnits: 'ASTRONOMICAL_UNITS',
+  MeanDistances: 'MEAN_DISTANCES',
 });
 
 /**
@@ -2608,14 +2608,14 @@ export const DistanceUnit = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const DistanceUnitById = new Map([
-  [0, 'astronomical-units'],
-  [1, 'mean-distances'],
+  [0, 'ASTRONOMICAL_UNITS'],
+  [1, 'MEAN_DISTANCES'],
 ]);
 
 /** Every SpeedModel by name. */
 export const SpeedModel = Object.freeze({
-  Derivative: 'derivative',
-  Rule: 'rule',
+  Derivative: 'DERIVATIVE',
+  Rule: 'RULE',
 });
 
 /**
@@ -2623,14 +2623,14 @@ export const SpeedModel = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const SpeedModelById = new Map([
-  [0, 'derivative'],
-  [1, 'rule'],
+  [0, 'DERIVATIVE'],
+  [1, 'RULE'],
 ]);
 
 /** Every Astronomy by name. */
 export const Astronomy = Object.freeze({
-  Modern: 'modern',
-  Classical: 'classical',
+  Modern: 'MODERN',
+  Classical: 'CLASSICAL',
 });
 
 /**
@@ -2638,16 +2638,16 @@ export const Astronomy = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const AstronomyById = new Map([
-  [0, 'modern'],
-  [1, 'classical'],
+  [0, 'MODERN'],
+  [1, 'CLASSICAL'],
 ]);
 
 /** Every Centre by name. */
 export const Centre = Object.freeze({
-  Geocentric: 'geocentric',
-  Topocentric: 'topocentric',
-  Heliocentric: 'heliocentric',
-  Barycentric: 'barycentric',
+  Geocentric: 'GEOCENTRIC',
+  Topocentric: 'TOPOCENTRIC',
+  Heliocentric: 'HELIOCENTRIC',
+  Barycentric: 'BARYCENTRIC',
 });
 
 /**
@@ -2655,16 +2655,16 @@ export const Centre = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const CentreById = new Map([
-  [0, 'geocentric'],
-  [1, 'topocentric'],
-  [2, 'heliocentric'],
-  [3, 'barycentric'],
+  [0, 'GEOCENTRIC'],
+  [1, 'TOPOCENTRIC'],
+  [2, 'HELIOCENTRIC'],
+  [3, 'BARYCENTRIC'],
 ]);
 
 /** Every Equinox by name. */
 export const Equinox = Object.freeze({
-  OfDate: 'of-date',
-  J2000: 'j2000',
+  OfDate: 'OF_DATE',
+  J2000: 'J2000',
 });
 
 /**
@@ -2672,14 +2672,14 @@ export const Equinox = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const EquinoxById = new Map([
-  [0, 'of-date'],
-  [1, 'j2000'],
+  [0, 'OF_DATE'],
+  [1, 'J2000'],
 ]);
 
 /** Every Coordinates by name. */
 export const Coordinates = Object.freeze({
-  Ecliptic: 'ecliptic',
-  Equatorial: 'equatorial',
+  Ecliptic: 'ECLIPTIC',
+  Equatorial: 'EQUATORIAL',
 });
 
 /**
@@ -2687,18 +2687,18 @@ export const Coordinates = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const CoordinatesById = new Map([
-  [0, 'ecliptic'],
-  [1, 'equatorial'],
+  [0, 'ECLIPTIC'],
+  [1, 'EQUATORIAL'],
 ]);
 
 /** Every ProviderCode by name. */
 export const ProviderCode = Object.freeze({
-  Ok: 'ok',
-  Unsupported: 'unsupported',
-  OutOfRange: 'out-of-range',
-  DataMissing: 'data-missing',
-  Refused: 'refused',
-  Invalid: 'invalid',
+  Ok: 'OK',
+  Unsupported: 'UNSUPPORTED',
+  OutOfRange: 'OUT_OF_RANGE',
+  DataMissing: 'DATA_MISSING',
+  Refused: 'REFUSED',
+  Invalid: 'INVALID',
 });
 
 /**
@@ -2706,19 +2706,19 @@ export const ProviderCode = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const ProviderCodeById = new Map([
-  [0, 'ok'],
-  [-1, 'unsupported'],
-  [-2, 'out-of-range'],
-  [-3, 'data-missing'],
-  [-4, 'refused'],
-  [-5, 'invalid'],
+  [0, 'OK'],
+  [-1, 'UNSUPPORTED'],
+  [-2, 'OUT_OF_RANGE'],
+  [-3, 'DATA_MISSING'],
+  [-4, 'REFUSED'],
+  [-5, 'INVALID'],
 ]);
 
 /** Every Ephemeris by name. */
 export const Ephemeris = Object.freeze({
-  None: 'none',
-  Builtin: 'builtin',
-  Test: 'test',
+  None: 'NONE',
+  Builtin: 'BUILTIN',
+  Test: 'TEST',
 });
 
 /**
@@ -2726,17 +2726,17 @@ export const Ephemeris = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const EphemerisById = new Map([
-  [0, 'none'],
-  [1, 'builtin'],
-  [2, 'test'],
+  [0, 'NONE'],
+  [1, 'BUILTIN'],
+  [2, 'TEST'],
 ]);
 
 /** Every Resolution by name. */
 export const Resolution = Object.freeze({
-  Defined: 'defined',
-  Tabular: 'tabular',
-  Computed: 'computed',
-  Divergent: 'divergent',
+  Defined: 'DEFINED',
+  Tabular: 'TABULAR',
+  Computed: 'COMPUTED',
+  Divergent: 'DIVERGENT',
 });
 
 /**
@@ -2744,16 +2744,16 @@ export const Resolution = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const ResolutionById = new Map([
-  [0, 'defined'],
-  [1, 'tabular'],
-  [2, 'computed'],
-  [3, 'divergent'],
+  [0, 'DEFINED'],
+  [1, 'TABULAR'],
+  [2, 'COMPUTED'],
+  [3, 'DIVERGENT'],
 ]);
 
 /** Every Reading by name. */
 export const Reading = Object.freeze({
-  Sandhi: 'sandhi',
-  Madhya: 'madhya',
+  Sandhi: 'SANDHI',
+  Madhya: 'MADHYA',
 });
 
 /**
@@ -2761,15 +2761,15 @@ export const Reading = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const ReadingById = new Map([
-  [0, 'sandhi'],
-  [1, 'madhya'],
+  [0, 'SANDHI'],
+  [1, 'MADHYA'],
 ]);
 
 /** Every Burning by name. */
 export const Burning = Object.freeze({
-  None: 'none',
-  Combust: 'combust',
-  Deep: 'deep',
+  None: 'NONE',
+  Combust: 'COMBUST',
+  Deep: 'DEEP',
 });
 
 /**
@@ -2777,16 +2777,16 @@ export const Burning = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const BurningById = new Map([
-  [0, 'none'],
-  [1, 'combust'],
-  [2, 'deep'],
+  [0, 'NONE'],
+  [1, 'COMBUST'],
+  [2, 'DEEP'],
 ]);
 
 /** Every Quadrant by name. */
 export const Quadrant = Object.freeze({
-  Kendra: 'kendra',
-  Panapara: 'panapara',
-  Apoklima: 'apoklima',
+  Kendra: 'KENDRA',
+  Panapara: 'PANAPARA',
+  Apoklima: 'APOKLIMA',
 });
 
 /**
@@ -2794,18 +2794,18 @@ export const Quadrant = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const QuadrantById = new Map([
-  [0, 'kendra'],
-  [1, 'panapara'],
-  [2, 'apoklima'],
+  [0, 'KENDRA'],
+  [1, 'PANAPARA'],
+  [2, 'APOKLIMA'],
 ]);
 
 /** Every Strength by name. */
 export const Strength = Object.freeze({
-  None: 'none',
-  Quarter: 'quarter',
-  Half: 'half',
-  ThreeQuarters: 'three-quarters',
-  Full: 'full',
+  None: 'NONE',
+  Quarter: 'QUARTER',
+  Half: 'HALF',
+  ThreeQuarters: 'THREE_QUARTERS',
+  Full: 'FULL',
 });
 
 /**
@@ -2813,17 +2813,17 @@ export const Strength = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const StrengthById = new Map([
-  [0, 'none'],
-  [1, 'quarter'],
-  [2, 'half'],
-  [3, 'three-quarters'],
-  [4, 'full'],
+  [0, 'NONE'],
+  [1, 'QUARTER'],
+  [2, 'HALF'],
+  [3, 'THREE_QUARTERS'],
+  [4, 'FULL'],
 ]);
 
 /** Every Balance by name. */
 export const Balance = Object.freeze({
-  Spatial: 'spatial',
-  Temporal: 'temporal',
+  Spatial: 'SPATIAL',
+  Temporal: 'TEMPORAL',
 });
 
 /**
@@ -2831,14 +2831,14 @@ export const Balance = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const BalanceById = new Map([
-  [0, 'spatial'],
-  [1, 'temporal'],
+  [0, 'SPATIAL'],
+  [1, 'TEMPORAL'],
 ]);
 
 /** Every Shodhana by name. */
 export const Shodhana = Object.freeze({
-  EachGraha: 'each-graha',
-  Sarva: 'sarva',
+  EachGraha: 'EACH_GRAHA',
+  Sarva: 'SARVA',
 });
 
 /**
@@ -2846,14 +2846,14 @@ export const Shodhana = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const ShodhanaById = new Map([
-  [0, 'each-graha'],
-  [1, 'sarva'],
+  [0, 'EACH_GRAHA'],
+  [1, 'SARVA'],
 ]);
 
 /** Every Ekadhipatya by name. */
 export const Ekadhipatya = Object.freeze({
-  Bphs: 'bphs',
-  EmptyToZero: 'empty-to-zero',
+  Bphs: 'BPHS',
+  EmptyToZero: 'EMPTY_TO_ZERO',
 });
 
 /**
@@ -2861,14 +2861,14 @@ export const Ekadhipatya = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const EkadhipatyaById = new Map([
-  [0, 'bphs'],
-  [1, 'empty-to-zero'],
+  [0, 'BPHS'],
+  [1, 'EMPTY_TO_ZERO'],
 ]);
 
 /** Every VimshopakaScoring by name. */
 export const VimshopakaScoring = Object.freeze({
-  Bphs: 'bphs',
-  SaptavargajaVirupas: 'saptavargaja-virupas',
+  Bphs: 'BPHS',
+  SaptavargajaVirupas: 'SAPTAVARGAJA_VIRUPAS',
 });
 
 /**
@@ -2876,15 +2876,15 @@ export const VimshopakaScoring = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const VimshopakaScoringById = new Map([
-  [0, 'bphs'],
-  [1, 'saptavargaja-virupas'],
+  [0, 'BPHS'],
+  [1, 'SAPTAVARGAJA_VIRUPAS'],
 ]);
 
 /** Every DashaPhase by name. */
 export const DashaPhase = Object.freeze({
-  Commencement: 'commencement',
-  Middle: 'middle',
-  End: 'end',
+  Commencement: 'COMMENCEMENT',
+  Middle: 'MIDDLE',
+  End: 'END',
 });
 
 /**
@@ -2892,15 +2892,15 @@ export const DashaPhase = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const DashaPhaseById = new Map([
-  [0, 'commencement'],
-  [1, 'middle'],
-  [2, 'end'],
+  [0, 'COMMENCEMENT'],
+  [1, 'MIDDLE'],
+  [2, 'END'],
 ]);
 
 /** Every DayPart by name. */
 export const DayPart = Object.freeze({
-  Daylight: 'daylight',
-  Night: 'night',
+  Daylight: 'DAYLIGHT',
+  Night: 'NIGHT',
 });
 
 /**
@@ -2908,15 +2908,15 @@ export const DayPart = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const DayPartById = new Map([
-  [0, 'daylight'],
-  [1, 'night'],
+  [0, 'DAYLIGHT'],
+  [1, 'NIGHT'],
 ]);
 
 /** Every Sunrise by name. */
 export const Sunrise = Object.freeze({
-  CentreNoRefraction: 'centre-no-refraction',
-  UpperLimbRefraction: 'upper-limb-refraction',
-  LowerLimbRefraction: 'lower-limb-refraction',
+  CentreNoRefraction: 'CENTRE_NO_REFRACTION',
+  UpperLimbRefraction: 'UPPER_LIMB_REFRACTION',
+  LowerLimbRefraction: 'LOWER_LIMB_REFRACTION',
 });
 
 /**
@@ -2924,15 +2924,15 @@ export const Sunrise = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const SunriseById = new Map([
-  [0, 'centre-no-refraction'],
-  [1, 'upper-limb-refraction'],
-  [2, 'lower-limb-refraction'],
+  [0, 'CENTRE_NO_REFRACTION'],
+  [1, 'UPPER_LIMB_REFRACTION'],
+  [2, 'LOWER_LIMB_REFRACTION'],
 ]);
 
 /** Every GhatiReckoning by name. */
 export const GhatiReckoning = Object.freeze({
-  Civil: 'civil',
-  Proportional: 'proportional',
+  Civil: 'CIVIL',
+  Proportional: 'PROPORTIONAL',
 });
 
 /**
@@ -2940,14 +2940,14 @@ export const GhatiReckoning = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const GhatiReckoningById = new Map([
-  [0, 'civil'],
-  [1, 'proportional'],
+  [0, 'CIVIL'],
+  [1, 'PROPORTIONAL'],
 ]);
 
 /** Every HoraReckoning by name. */
 export const HoraReckoning = Object.freeze({
-  Proportional: 'proportional',
-  Equal: 'equal',
+  Proportional: 'PROPORTIONAL',
+  Equal: 'EQUAL',
 });
 
 /**
@@ -2955,14 +2955,14 @@ export const HoraReckoning = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const HoraReckoningById = new Map([
-  [0, 'proportional'],
-  [1, 'equal'],
+  [0, 'PROPORTIONAL'],
+  [1, 'EQUAL'],
 ]);
 
 /** Every DayState by name. */
 export const DayState = Object.freeze({
-  Normal: 'normal',
-  Polar: 'polar',
+  Normal: 'NORMAL',
+  Polar: 'POLAR',
 });
 
 /**
@@ -2970,14 +2970,14 @@ export const DayState = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const DayStateById = new Map([
-  [0, 'normal'],
-  [1, 'polar'],
+  [0, 'NORMAL'],
+  [1, 'POLAR'],
 ]);
 
 /** Every PolarKind by name. */
 export const PolarKind = Object.freeze({
-  Day: 'day',
-  Night: 'night',
+  Day: 'DAY',
+  Night: 'NIGHT',
 });
 
 /**
@@ -2985,15 +2985,15 @@ export const PolarKind = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const PolarKindById = new Map([
-  [0, 'day'],
-  [1, 'night'],
+  [0, 'DAY'],
+  [1, 'NIGHT'],
 ]);
 
 /** Every PolarDayPolicy by name. */
 export const PolarDayPolicy = Object.freeze({
-  Undefined: 'undefined',
-  NearestEvent: 'nearest-event',
-  CivilMidnight: 'civil-midnight',
+  Undefined: 'UNDEFINED',
+  NearestEvent: 'NEAREST_EVENT',
+  CivilMidnight: 'CIVIL_MIDNIGHT',
 });
 
 /**
@@ -3001,23 +3001,23 @@ export const PolarDayPolicy = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const PolarDayPolicyById = new Map([
-  [0, 'undefined'],
-  [1, 'nearest-event'],
-  [2, 'civil-midnight'],
+  [0, 'UNDEFINED'],
+  [1, 'NEAREST_EVENT'],
+  [2, 'CIVIL_MIDNIGHT'],
 ]);
 
 /** Every VarsheshaChosen by name. */
 export const VarsheshaChosen = Object.freeze({
-  Strongest: 'strongest',
-  MostPortfolios: 'most-portfolios',
-  MunthaLordUnaspected: 'muntha-lord-unaspected',
-  MunthaLordAllWeak: 'muntha-lord-all-weak',
-  MunthaLordTied: 'muntha-lord-tied',
-  DinaRatriTied: 'dina-ratri-tied',
-  AnnualLagnaLordUnaspected: 'annual-lagna-lord-unaspected',
-  StrongestUnaspected: 'strongest-unaspected',
-  MoonsIthasala: 'moons-ithasala',
-  MoonsSignLord: 'moons-sign-lord',
+  Strongest: 'STRONGEST',
+  MostPortfolios: 'MOST_PORTFOLIOS',
+  MunthaLordUnaspected: 'MUNTHA_LORD_UNASPECTED',
+  MunthaLordAllWeak: 'MUNTHA_LORD_ALL_WEAK',
+  MunthaLordTied: 'MUNTHA_LORD_TIED',
+  DinaRatriTied: 'DINA_RATRI_TIED',
+  AnnualLagnaLordUnaspected: 'ANNUAL_LAGNA_LORD_UNASPECTED',
+  StrongestUnaspected: 'STRONGEST_UNASPECTED',
+  MoonsIthasala: 'MOONS_ITHASALA',
+  MoonsSignLord: 'MOONS_SIGN_LORD',
 });
 
 /**
@@ -3025,25 +3025,25 @@ export const VarsheshaChosen = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const VarsheshaChosenById = new Map([
-  [0, 'strongest'],
-  [1, 'most-portfolios'],
-  [2, 'muntha-lord-unaspected'],
-  [3, 'muntha-lord-all-weak'],
-  [4, 'muntha-lord-tied'],
-  [5, 'dina-ratri-tied'],
-  [6, 'annual-lagna-lord-unaspected'],
-  [7, 'strongest-unaspected'],
-  [8, 'moons-ithasala'],
-  [9, 'moons-sign-lord'],
+  [0, 'STRONGEST'],
+  [1, 'MOST_PORTFOLIOS'],
+  [2, 'MUNTHA_LORD_UNASPECTED'],
+  [3, 'MUNTHA_LORD_ALL_WEAK'],
+  [4, 'MUNTHA_LORD_TIED'],
+  [5, 'DINA_RATRI_TIED'],
+  [6, 'ANNUAL_LAGNA_LORD_UNASPECTED'],
+  [7, 'STRONGEST_UNASPECTED'],
+  [8, 'MOONS_ITHASALA'],
+  [9, 'MOONS_SIGN_LORD'],
 ]);
 
 /** Every TajikaDrishti by name. */
 export const TajikaDrishti = Object.freeze({
-  Friendly: 'friendly',
-  SecretlyFriendly: 'secretly-friendly',
-  Inimical: 'inimical',
-  SecretlyInimical: 'secretly-inimical',
-  None: 'none',
+  Friendly: 'FRIENDLY',
+  SecretlyFriendly: 'SECRETLY_FRIENDLY',
+  Inimical: 'INIMICAL',
+  SecretlyInimical: 'SECRETLY_INIMICAL',
+  None: 'NONE',
 });
 
 /**
@@ -3051,19 +3051,19 @@ export const TajikaDrishti = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const TajikaDrishtiById = new Map([
-  [0, 'friendly'],
-  [1, 'secretly-friendly'],
-  [2, 'inimical'],
-  [3, 'secretly-inimical'],
-  [4, 'none'],
+  [0, 'FRIENDLY'],
+  [1, 'SECRETLY_FRIENDLY'],
+  [2, 'INIMICAL'],
+  [3, 'SECRETLY_INIMICAL'],
+  [4, 'NONE'],
 ]);
 
 /** Every TajikaYoga by name. */
 export const TajikaYoga = Object.freeze({
-  IthasalaVartamana: 'ithasala-vartamana',
-  IthasalaPoorna: 'ithasala-poorna',
-  IthasalaBhavishyat: 'ithasala-bhavishyat',
-  Ishrafa: 'ishrafa',
+  IthasalaVartamana: 'ITHASALA_VARTAMANA',
+  IthasalaPoorna: 'ITHASALA_POORNA',
+  IthasalaBhavishyat: 'ITHASALA_BHAVISHYAT',
+  Ishrafa: 'ISHRAFA',
 });
 
 /**
@@ -3071,30 +3071,30 @@ export const TajikaYoga = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const TajikaYogaById = new Map([
-  [0, 'ithasala-vartamana'],
-  [1, 'ithasala-poorna'],
-  [2, 'ithasala-bhavishyat'],
-  [3, 'ishrafa'],
+  [0, 'ITHASALA_VARTAMANA'],
+  [1, 'ITHASALA_POORNA'],
+  [2, 'ITHASALA_BHAVISHYAT'],
+  [3, 'ISHRAFA'],
 ]);
 
 /** Every YearYoga by name. */
 export const YearYoga = Object.freeze({
-  Ikabala: 'ikabala',
-  Induvara: 'induvara',
-  Ithasala: 'ithasala',
-  Ishrafa: 'ishrafa',
-  Nakta: 'nakta',
-  Yamaya: 'yamaya',
-  Manau: 'manau',
-  Kamboola: 'kamboola',
-  GairiKamboola: 'gairi-kamboola',
-  Khallasara: 'khallasara',
-  Rudda: 'rudda',
-  DuhphaliKuttha: 'duhphali-kuttha',
-  DutthotthaDavira: 'dutthottha-davira',
-  Tambira: 'tambira',
-  Kuttha: 'kuttha',
-  Durapha: 'durapha',
+  Ikabala: 'IKABALA',
+  Induvara: 'INDUVARA',
+  Ithasala: 'ITHASALA',
+  Ishrafa: 'ISHRAFA',
+  Nakta: 'NAKTA',
+  Yamaya: 'YAMAYA',
+  Manau: 'MANAU',
+  Kamboola: 'KAMBOOLA',
+  GairiKamboola: 'GAIRI_KAMBOOLA',
+  Khallasara: 'KHALLASARA',
+  Rudda: 'RUDDA',
+  DuhphaliKuttha: 'DUHPHALI_KUTTHA',
+  DutthotthaDavira: 'DUTTHOTTHA_DAVIRA',
+  Tambira: 'TAMBIRA',
+  Kuttha: 'KUTTHA',
+  Durapha: 'DURAPHA',
 });
 
 /**
@@ -3102,67 +3102,67 @@ export const YearYoga = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const YearYogaById = new Map([
-  [0, 'ikabala'],
-  [1, 'induvara'],
-  [2, 'ithasala'],
-  [3, 'ishrafa'],
-  [4, 'nakta'],
-  [5, 'yamaya'],
-  [6, 'manau'],
-  [7, 'kamboola'],
-  [8, 'gairi-kamboola'],
-  [9, 'khallasara'],
-  [10, 'rudda'],
-  [11, 'duhphali-kuttha'],
-  [12, 'dutthottha-davira'],
-  [13, 'tambira'],
-  [14, 'kuttha'],
-  [15, 'durapha'],
+  [0, 'IKABALA'],
+  [1, 'INDUVARA'],
+  [2, 'ITHASALA'],
+  [3, 'ISHRAFA'],
+  [4, 'NAKTA'],
+  [5, 'YAMAYA'],
+  [6, 'MANAU'],
+  [7, 'KAMBOOLA'],
+  [8, 'GAIRI_KAMBOOLA'],
+  [9, 'KHALLASARA'],
+  [10, 'RUDDA'],
+  [11, 'DUHPHALI_KUTTHA'],
+  [12, 'DUTTHOTTHA_DAVIRA'],
+  [13, 'TAMBIRA'],
+  [14, 'KUTTHA'],
+  [15, 'DURAPHA'],
 ]);
 
 /** Every Saham by name. */
 export const Saham = Object.freeze({
-  Punya: 'punya',
-  Guru: 'guru',
-  Vidya: 'vidya',
-  Yasha: 'yasha',
-  Mitra: 'mitra',
-  Mahatmya: 'mahatmya',
-  Asha: 'asha',
-  Samarthya: 'samarthya',
-  Bhratri: 'bhratri',
-  Gaurava: 'gaurava',
-  Pitri: 'pitri',
-  Raja: 'raja',
-  Matri: 'matri',
-  Putra: 'putra',
-  Jeeva: 'jeeva',
-  Roga: 'roga',
-  Karma: 'karma',
-  Manmatha: 'manmatha',
-  Kali: 'kali',
-  Kshama: 'kshama',
-  Shastra: 'shastra',
-  Bandhu: 'bandhu',
-  Mrityu: 'mrityu',
-  Deshantara: 'deshantara',
-  Artha: 'artha',
-  Paradara: 'paradara',
-  AnyaKarma: 'anya-karma',
-  Vanika: 'vanika',
-  KaryaSiddhi: 'karya-siddhi',
-  Vivaha: 'vivaha',
-  Prasava: 'prasava',
-  Santaapa: 'santaapa',
-  Shraddha: 'shraddha',
-  Preeti: 'preeti',
-  Jadya: 'jadya',
-  Vyapara: 'vyapara',
-  PaneeyaPaata: 'paneeya-paata',
-  Shatru: 'shatru',
-  Jalapatha: 'jalapatha',
-  Bandhana: 'bandhana',
-  Labha: 'labha',
+  Punya: 'PUNYA',
+  Guru: 'GURU',
+  Vidya: 'VIDYA',
+  Yasha: 'YASHA',
+  Mitra: 'MITRA',
+  Mahatmya: 'MAHATMYA',
+  Asha: 'ASHA',
+  Samarthya: 'SAMARTHYA',
+  Bhratri: 'BHRATRI',
+  Gaurava: 'GAURAVA',
+  Pitri: 'PITRI',
+  Raja: 'RAJA',
+  Matri: 'MATRI',
+  Putra: 'PUTRA',
+  Jeeva: 'JEEVA',
+  Roga: 'ROGA',
+  Karma: 'KARMA',
+  Manmatha: 'MANMATHA',
+  Kali: 'KALI',
+  Kshama: 'KSHAMA',
+  Shastra: 'SHASTRA',
+  Bandhu: 'BANDHU',
+  Mrityu: 'MRITYU',
+  Deshantara: 'DESHANTARA',
+  Artha: 'ARTHA',
+  Paradara: 'PARADARA',
+  AnyaKarma: 'ANYA_KARMA',
+  Vanika: 'VANIKA',
+  KaryaSiddhi: 'KARYA_SIDDHI',
+  Vivaha: 'VIVAHA',
+  Prasava: 'PRASAVA',
+  Santaapa: 'SANTAAPA',
+  Shraddha: 'SHRADDHA',
+  Preeti: 'PREETI',
+  Jadya: 'JADYA',
+  Vyapara: 'VYAPARA',
+  PaneeyaPaata: 'PANEEYA_PAATA',
+  Shatru: 'SHATRU',
+  Jalapatha: 'JALAPATHA',
+  Bandhana: 'BANDHANA',
+  Labha: 'LABHA',
 });
 
 /**
@@ -3170,55 +3170,55 @@ export const Saham = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const SahamById = new Map([
-  [0, 'punya'],
-  [1, 'guru'],
-  [2, 'vidya'],
-  [3, 'yasha'],
-  [4, 'mitra'],
-  [5, 'mahatmya'],
-  [6, 'asha'],
-  [7, 'samarthya'],
-  [8, 'bhratri'],
-  [9, 'gaurava'],
-  [10, 'pitri'],
-  [11, 'raja'],
-  [12, 'matri'],
-  [13, 'putra'],
-  [14, 'jeeva'],
-  [15, 'roga'],
-  [16, 'karma'],
-  [17, 'manmatha'],
-  [18, 'kali'],
-  [19, 'kshama'],
-  [20, 'shastra'],
-  [21, 'bandhu'],
-  [22, 'mrityu'],
-  [23, 'deshantara'],
-  [24, 'artha'],
-  [25, 'paradara'],
-  [26, 'anya-karma'],
-  [27, 'vanika'],
-  [28, 'karya-siddhi'],
-  [29, 'vivaha'],
-  [30, 'prasava'],
-  [31, 'santaapa'],
-  [32, 'shraddha'],
-  [33, 'preeti'],
-  [34, 'jadya'],
-  [35, 'vyapara'],
-  [36, 'paneeya-paata'],
-  [37, 'shatru'],
-  [38, 'jalapatha'],
-  [39, 'bandhana'],
-  [40, 'labha'],
+  [0, 'PUNYA'],
+  [1, 'GURU'],
+  [2, 'VIDYA'],
+  [3, 'YASHA'],
+  [4, 'MITRA'],
+  [5, 'MAHATMYA'],
+  [6, 'ASHA'],
+  [7, 'SAMARTHYA'],
+  [8, 'BHRATRI'],
+  [9, 'GAURAVA'],
+  [10, 'PITRI'],
+  [11, 'RAJA'],
+  [12, 'MATRI'],
+  [13, 'PUTRA'],
+  [14, 'JEEVA'],
+  [15, 'ROGA'],
+  [16, 'KARMA'],
+  [17, 'MANMATHA'],
+  [18, 'KALI'],
+  [19, 'KSHAMA'],
+  [20, 'SHASTRA'],
+  [21, 'BANDHU'],
+  [22, 'MRITYU'],
+  [23, 'DESHANTARA'],
+  [24, 'ARTHA'],
+  [25, 'PARADARA'],
+  [26, 'ANYA_KARMA'],
+  [27, 'VANIKA'],
+  [28, 'KARYA_SIDDHI'],
+  [29, 'VIVAHA'],
+  [30, 'PRASAVA'],
+  [31, 'SANTAAPA'],
+  [32, 'SHRADDHA'],
+  [33, 'PREETI'],
+  [34, 'JADYA'],
+  [35, 'VYAPARA'],
+  [36, 'PANEEYA_PAATA'],
+  [37, 'SHATRU'],
+  [38, 'JALAPATHA'],
+  [39, 'BANDHANA'],
+  [40, 'LABHA'],
 ]);
 
 /** Every TajikaRelation by name. */
 export const TajikaRelation = Object.freeze({
-  Own: 'own',
-  Friend: 'friend',
-  Neutral: 'neutral',
-  Enemy: 'enemy',
+  Own: 'OWN',
+  Friend: 'FRIEND',
+  Neutral: 'NEUTRAL',
+  Enemy: 'ENEMY',
 });
 
 /**
@@ -3226,19 +3226,19 @@ export const TajikaRelation = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const TajikaRelationById = new Map([
-  [0, 'own'],
-  [1, 'friend'],
-  [2, 'neutral'],
-  [3, 'enemy'],
+  [0, 'OWN'],
+  [1, 'FRIEND'],
+  [2, 'NEUTRAL'],
+  [3, 'ENEMY'],
 ]);
 
 /** Every HarshaGrade by name. */
 export const HarshaGrade = Object.freeze({
-  Nirbala: 'nirbala',
-  Alpabali: 'alpabali',
-  MadhyaBali: 'madhya-bali',
-  PoornaBali: 'poorna-bali',
-  Extraordinary: 'extraordinary',
+  Nirbala: 'NIRBALA',
+  Alpabali: 'ALPABALI',
+  MadhyaBali: 'MADHYA_BALI',
+  PoornaBali: 'POORNA_BALI',
+  Extraordinary: 'EXTRAORDINARY',
 });
 
 /**
@@ -3246,27 +3246,27 @@ export const HarshaGrade = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const HarshaGradeById = new Map([
-  [0, 'nirbala'],
-  [1, 'alpabali'],
-  [2, 'madhya-bali'],
-  [3, 'poorna-bali'],
-  [4, 'extraordinary'],
+  [0, 'NIRBALA'],
+  [1, 'ALPABALI'],
+  [2, 'MADHYA_BALI'],
+  [3, 'POORNA_BALI'],
+  [4, 'EXTRAORDINARY'],
 ]);
 
 /** Every SahamStrong by name. */
 export const SahamStrong = Object.freeze({
-  LordExalted: 'lord-exalted',
-  LordOwnSign: 'lord-own-sign',
-  LordOwnHudda: 'lord-own-hudda',
-  LordOwnDrekkana: 'lord-own-drekkana',
-  LordOwnNavamsha: 'lord-own-navamsha',
-  LordInFriendsSign: 'lord-in-friends-sign',
-  WithFriend: 'with-friend',
-  WithBenefic: 'with-benefic',
-  WithYearLord: 'with-year-lord',
-  LordConjoins: 'lord-conjoins',
-  LordAspectsSaham: 'lord-aspects-saham',
-  LordAspectsLagna: 'lord-aspects-lagna',
+  LordExalted: 'LORD_EXALTED',
+  LordOwnSign: 'LORD_OWN_SIGN',
+  LordOwnHudda: 'LORD_OWN_HUDDA',
+  LordOwnDrekkana: 'LORD_OWN_DREKKANA',
+  LordOwnNavamsha: 'LORD_OWN_NAVAMSHA',
+  LordInFriendsSign: 'LORD_IN_FRIENDS_SIGN',
+  WithFriend: 'WITH_FRIEND',
+  WithBenefic: 'WITH_BENEFIC',
+  WithYearLord: 'WITH_YEAR_LORD',
+  LordConjoins: 'LORD_CONJOINS',
+  LordAspectsSaham: 'LORD_ASPECTS_SAHAM',
+  LordAspectsLagna: 'LORD_ASPECTS_LAGNA',
 });
 
 /**
@@ -3274,27 +3274,27 @@ export const SahamStrong = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const SahamStrongById = new Map([
-  [0, 'lord-exalted'],
-  [1, 'lord-own-sign'],
-  [2, 'lord-own-hudda'],
-  [3, 'lord-own-drekkana'],
-  [4, 'lord-own-navamsha'],
-  [5, 'lord-in-friends-sign'],
-  [6, 'with-friend'],
-  [7, 'with-benefic'],
-  [8, 'with-year-lord'],
-  [9, 'lord-conjoins'],
-  [10, 'lord-aspects-saham'],
-  [11, 'lord-aspects-lagna'],
+  [0, 'LORD_EXALTED'],
+  [1, 'LORD_OWN_SIGN'],
+  [2, 'LORD_OWN_HUDDA'],
+  [3, 'LORD_OWN_DREKKANA'],
+  [4, 'LORD_OWN_NAVAMSHA'],
+  [5, 'LORD_IN_FRIENDS_SIGN'],
+  [6, 'WITH_FRIEND'],
+  [7, 'WITH_BENEFIC'],
+  [8, 'WITH_YEAR_LORD'],
+  [9, 'LORD_CONJOINS'],
+  [10, 'LORD_ASPECTS_SAHAM'],
+  [11, 'LORD_ASPECTS_LAGNA'],
 ]);
 
 /** Every SahamWeak by name. */
 export const SahamWeak = Object.freeze({
-  LordWeakVishwa: 'lord-weak-vishwa',
-  LordLacksHarsha: 'lord-lacks-harsha',
-  LordApart: 'lord-apart',
-  WithEnemy: 'with-enemy',
-  WithMalefic: 'with-malefic',
+  LordWeakVishwa: 'LORD_WEAK_VISHWA',
+  LordLacksHarsha: 'LORD_LACKS_HARSHA',
+  LordApart: 'LORD_APART',
+  WithEnemy: 'WITH_ENEMY',
+  WithMalefic: 'WITH_MALEFIC',
 });
 
 /**
@@ -3302,20 +3302,20 @@ export const SahamWeak = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const SahamWeakById = new Map([
-  [0, 'lord-weak-vishwa'],
-  [1, 'lord-lacks-harsha'],
-  [2, 'lord-apart'],
-  [3, 'with-enemy'],
-  [4, 'with-malefic'],
+  [0, 'LORD_WEAK_VISHWA'],
+  [1, 'LORD_LACKS_HARSHA'],
+  [2, 'LORD_APART'],
+  [3, 'WITH_ENEMY'],
+  [4, 'WITH_MALEFIC'],
 ]);
 
 /** Every Affliction by name. */
 export const Affliction = Object.freeze({
-  Retrograde: 'retrograde',
-  Combust: 'combust',
-  Debilitated: 'debilitated',
-  Trika: 'trika',
-  UnderMalefic: 'under-malefic',
+  Retrograde: 'RETROGRADE',
+  Combust: 'COMBUST',
+  Debilitated: 'DEBILITATED',
+  Trika: 'TRIKA',
+  UnderMalefic: 'UNDER_MALEFIC',
 });
 
 /**
@@ -3323,18 +3323,18 @@ export const Affliction = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const AfflictionById = new Map([
-  [0, 'retrograde'],
-  [1, 'combust'],
-  [2, 'debilitated'],
-  [3, 'trika'],
-  [4, 'under-malefic'],
+  [0, 'RETROGRADE'],
+  [1, 'COMBUST'],
+  [2, 'DEBILITATED'],
+  [3, 'TRIKA'],
+  [4, 'UNDER_MALEFIC'],
 ]);
 
 /** Every Scale by name. */
 export const Scale = Object.freeze({
-  Ut1: 'ut1',
-  Tt: 'tt',
-  Utc: 'utc',
+  Ut1: 'UT1',
+  Tt: 'TT',
+  Utc: 'UTC',
 });
 
 /**
@@ -3342,16 +3342,16 @@ export const Scale = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const ScaleById = new Map([
-  [0, 'ut1'],
-  [1, 'tt'],
-  [2, 'utc'],
+  [0, 'UT1'],
+  [1, 'TT'],
+  [2, 'UTC'],
 ]);
 
 /** Every ZoneKind by name. */
 export const ZoneKind = Object.freeze({
-  Iana: 'iana',
-  Fixed: 'fixed',
-  LocalMean: 'local-mean',
+  Iana: 'IANA',
+  Fixed: 'FIXED',
+  LocalMean: 'LOCAL_MEAN',
 });
 
 /**
@@ -3359,16 +3359,16 @@ export const ZoneKind = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const ZoneKindById = new Map([
-  [0, 'iana'],
-  [1, 'fixed'],
-  [2, 'local-mean'],
+  [0, 'IANA'],
+  [1, 'FIXED'],
+  [2, 'LOCAL_MEAN'],
 ]);
 
 /** Every ZoneSource by name. */
 export const ZoneSource = Object.freeze({
-  Iana: 'iana',
-  LocalMean: 'local-mean',
-  Manual: 'manual',
+  Iana: 'IANA',
+  LocalMean: 'LOCAL_MEAN',
+  Manual: 'MANUAL',
 });
 
 /**
@@ -3376,16 +3376,16 @@ export const ZoneSource = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const ZoneSourceById = new Map([
-  [0, 'iana'],
-  [1, 'local-mean'],
-  [2, 'manual'],
+  [0, 'IANA'],
+  [1, 'LOCAL_MEAN'],
+  [2, 'MANUAL'],
 ]);
 
 /** Every ZoneEra by name. */
 export const ZoneEra = Object.freeze({
-  Current: 'current',
-  Historical: 'historical',
-  BeforeRules: 'before-rules',
+  Current: 'CURRENT',
+  Historical: 'HISTORICAL',
+  BeforeRules: 'BEFORE_RULES',
 });
 
 /**
@@ -3393,16 +3393,16 @@ export const ZoneEra = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const ZoneEraById = new Map([
-  [0, 'current'],
-  [1, 'historical'],
-  [2, 'before-rules'],
+  [0, 'CURRENT'],
+  [1, 'HISTORICAL'],
+  [2, 'BEFORE_RULES'],
 ]);
 
 /** Every Dst by name. */
 export const Dst = Object.freeze({
-  None: 'none',
-  Gap: 'gap',
-  Overlap: 'overlap',
+  None: 'NONE',
+  Gap: 'GAP',
+  Overlap: 'OVERLAP',
 });
 
 /**
@@ -3410,15 +3410,15 @@ export const Dst = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const DstById = new Map([
-  [0, 'none'],
-  [1, 'gap'],
-  [2, 'overlap'],
+  [0, 'NONE'],
+  [1, 'GAP'],
+  [2, 'OVERLAP'],
 ]);
 
 /** Every Chosen by name. */
 export const Chosen = Object.freeze({
-  Earlier: 'earlier',
-  Later: 'later',
+  Earlier: 'EARLIER',
+  Later: 'LATER',
 });
 
 /**
@@ -3426,18 +3426,18 @@ export const Chosen = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const ChosenById = new Map([
-  [0, 'earlier'],
-  [1, 'later'],
+  [0, 'EARLIER'],
+  [1, 'LATER'],
 ]);
 
 /** Every ZoneWarning by name. */
 export const ZoneWarning = Object.freeze({
-  OffsetDiffersFromCurrentRules: 'offset-differs-from-current-rules',
-  DstAmbiguous: 'dst-ambiguous',
-  DstGapShifted: 'dst-gap-shifted',
-  LeapSecondFolded: 'leap-second-folded',
-  LeapTableExpired: 'leap-table-expired',
-  TimeUnknownFallback: 'time-unknown-fallback',
+  OffsetDiffersFromCurrentRules: 'OFFSET_DIFFERS_FROM_CURRENT_RULES',
+  DstAmbiguous: 'DST_AMBIGUOUS',
+  DstGapShifted: 'DST_GAP_SHIFTED',
+  LeapSecondFolded: 'LEAP_SECOND_FOLDED',
+  LeapTableExpired: 'LEAP_TABLE_EXPIRED',
+  TimeUnknownFallback: 'TIME_UNKNOWN_FALLBACK',
 });
 
 /**
@@ -3445,20 +3445,20 @@ export const ZoneWarning = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const ZoneWarningById = new Map([
-  [0, 'offset-differs-from-current-rules'],
-  [1, 'dst-ambiguous'],
-  [2, 'dst-gap-shifted'],
-  [3, 'leap-second-folded'],
-  [4, 'leap-table-expired'],
-  [5, 'time-unknown-fallback'],
+  [0, 'OFFSET_DIFFERS_FROM_CURRENT_RULES'],
+  [1, 'DST_AMBIGUOUS'],
+  [2, 'DST_GAP_SHIFTED'],
+  [3, 'LEAP_SECOND_FOLDED'],
+  [4, 'LEAP_TABLE_EXPIRED'],
+  [5, 'TIME_UNKNOWN_FALLBACK'],
 ]);
 
 /** Every DeltaTSource by name. */
 export const DeltaTSource = Object.freeze({
-  Table: 'table',
-  Model: 'model',
-  LeapSeconds: 'leap-seconds',
-  Custom: 'custom',
+  Table: 'TABLE',
+  Model: 'MODEL',
+  LeapSeconds: 'LEAP_SECONDS',
+  Custom: 'CUSTOM',
 });
 
 /**
@@ -3466,16 +3466,16 @@ export const DeltaTSource = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const DeltaTSourceById = new Map([
-  [0, 'table'],
-  [1, 'model'],
-  [2, 'leap-seconds'],
-  [3, 'custom'],
+  [0, 'TABLE'],
+  [1, 'MODEL'],
+  [2, 'LEAP_SECONDS'],
+  [3, 'CUSTOM'],
 ]);
 
 /** Every LunarMonth by name. */
 export const LunarMonth = Object.freeze({
-  Amanta: 'amanta',
-  Purnimanta: 'purnimanta',
+  Amanta: 'AMANTA',
+  Purnimanta: 'PURNIMANTA',
 });
 
 /**
@@ -3483,14 +3483,14 @@ export const LunarMonth = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const LunarMonthById = new Map([
-  [0, 'amanta'],
-  [1, 'purnimanta'],
+  [0, 'AMANTA'],
+  [1, 'PURNIMANTA'],
 ]);
 
 /** Every MoonEvent by name. */
 export const MoonEvent = Object.freeze({
-  Rise: 'rise',
-  Set: 'set',
+  Rise: 'RISE',
+  Set: 'SET',
 });
 
 /**
@@ -3498,14 +3498,14 @@ export const MoonEvent = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const MoonEventById = new Map([
-  [0, 'rise'],
-  [1, 'set'],
+  [0, 'RISE'],
+  [1, 'SET'],
 ]);
 
 /** Every YogaCause by name. */
 export const YogaCause = Object.freeze({
-  VaraNakshatra: 'vara-nakshatra',
-  VaraTithiNakshatra: 'vara-tithi-nakshatra',
+  VaraNakshatra: 'VARA_NAKSHATRA',
+  VaraTithiNakshatra: 'VARA_TITHI_NAKSHATRA',
 });
 
 /**
@@ -3513,15 +3513,15 @@ export const YogaCause = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const YogaCauseById = new Map([
-  [0, 'vara-nakshatra'],
-  [1, 'vara-tithi-nakshatra'],
+  [0, 'VARA_NAKSHATRA'],
+  [1, 'VARA_TITHI_NAKSHATRA'],
 ]);
 
 /** Every MonthKind by name. */
 export const MonthKind = Object.freeze({
-  Nija: 'nija',
-  Adhika: 'adhika',
-  Kshaya: 'kshaya',
+  Nija: 'NIJA',
+  Adhika: 'ADHIKA',
+  Kshaya: 'KSHAYA',
 });
 
 /**
@@ -3529,8 +3529,8 @@ export const MonthKind = Object.freeze({
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export const MonthKindById = new Map([
-  [0, 'nija'],
-  [1, 'adhika'],
-  [2, 'kshaya'],
+  [0, 'NIJA'],
+  [1, 'ADHIKA'],
+  [2, 'KSHAYA'],
 ]);
 

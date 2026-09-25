@@ -133,10 +133,10 @@ that were asked for.
 
 - `interpret_json` that does not read is `INVALID_ARG`, the field named from
   the request's root as `theme_json` and `rules_json` name theirs:
-  `interpret_json.readings`.
+  `interpret.readings`.
 - An unknown composer is `INVALID_ARG` naming the ones there are.
 - **`readings` without `rules_json` is refused**, `INVALID_ARG` on
-  `interpret_json.readings`, saying that a reading composes what rules
+  `interpret.readings`, saying that a reading composes what rules
   answered and naming `rules_json`. A set that names rules none of which hold
   is not this case: it answers `[]`.
 - A chart that cannot be read for a plan's inputs is not refused for the plan

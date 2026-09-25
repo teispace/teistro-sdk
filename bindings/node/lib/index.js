@@ -23,6 +23,7 @@ import {
   CONTEXT_TEST_PROVIDER,
   CalendarById,
   DayStateById,
+  MoonEventById,
   EraById,
   PolarDayPolicyById,
   PolarKindById,
@@ -268,7 +269,7 @@ function guarded(context, call, thrown) {
     // A provider that failed inside the addon rather than in JavaScript —
     // a column of the wrong length read by the native adapter — leaves
     // its sentence in the caught message rather than in `thrown`.
-    const fromProvider = record.status === 'provider' && cause?.message;
+    const fromProvider = record.status === 'PROVIDER' && cause?.message;
     throw new TeistroError(fromProvider ? { ...record, message: cause.message } : record);
   }
 }
@@ -488,7 +489,7 @@ function localDay(section, index) {
     sunset: r.sunset,
     nextSunrise: r.nextSunrise,
     polar:
-      DayStateById.get(r.stateKind) === 'polar'
+      DayStateById.get(r.stateKind) === 'POLAR'
         ? {
             kind: PolarKindById.get(r.statePolarKind) ?? 'unknown',
             policy: PolarDayPolicyById.get(r.statePolarPolicy) ?? 'unknown',
@@ -1381,7 +1382,7 @@ export class AlmanacDay {
   get moonEvents() {
     const c = this.#batch.decoded.moonEvents;
     return this.#rows('moonEvents', (i) => ({
-      kind: c.kind[i] === 0 ? 'rise' : 'set',
+      kind: MoonEventById.get(c.kind[i]) ?? 'unknown',
       instant: c.instant[i],
     }));
   }
@@ -1394,9 +1395,9 @@ export class AlmanacDay {
       from: c.from[i],
       to: c.to[i],
       because: {
-        kind: c.becauseKind[i] === 0 ? 'vara-nakshatra' : 'vara-tithi-nakshatra',
+        kind: c.becauseKind[i] === 0 ? 'VARA_NAKSHATRA' : 'VARA_TITHI_NAKSHATRA',
         vara: VaraById.get(c.becauseVara[i]) ?? 'unknown',
-        // A `vara-nakshatra` cause has no tithi, and the blob leaves the
+        // A `VARA_NAKSHATRA` cause has no tithi, and the blob leaves the
         // column at nought rather than at a tithi that did not make it.
         tithi: c.becauseKind[i] === 0 ? null : (TithiById.get(c.becauseTithi[i]) ?? 'unknown'),
         nakshatra: NakshatraById.get(c.becauseNakshatra[i]) ?? 'unknown',
@@ -2101,7 +2102,7 @@ function ashtakavargasOf(batch) {
     decoded = Array.from({ length: rows.length / 7 }, (_, chart) => {
       const grahas = Array.from({ length: 7 }, (_, g) => {
         const row = chart * 7 + g;
-        const eachGraha = ShodhanaById.get(rows.shodhana[row]) === 'each-graha';
+        const eachGraha = ShodhanaById.get(rows.shodhana[row]) === 'EACH_GRAHA';
         return Object.freeze({
           graha: GrahaById.get(rows.graha[row]) ?? 'unknown',
           bindus: twelve(bins.bindus, row * 12),
@@ -2418,7 +2419,7 @@ function varshaJson(varsha) {
   return recordJson(
     varsha,
     'varsha',
-    'an annual-chart request record, e.g. { reading: "sidereal", through: 40 }',
+    'an annual-chart request record, e.g. { reading: "SIDEREAL", through: 40 }',
   );
 }
 
@@ -3130,16 +3131,16 @@ export class Context {
    *   An entry is an adapter's own descriptor — what
    *   `@teistro/ephemeris-teimeris` and its like export, carrying the
    *   platform binary they ship and their own configuration — or one of
-   *   the SDK's own by name: `builtin` is the analytic ephemeris the SDK
+   *   the SDK's own by name: `BUILTIN` is the analytic ephemeris the SDK
    *   carries, which needs no files, no network and no licence beyond
-   *   the SDK's own; `test` is the test provider, whose positions are
+   *   the SDK's own; `TEST` is the test provider, whose positions are
    *   **not astronomy**.
    *
    *   A chain is a caller **saying** they will accept the fallback. One
    *   entry is one entry: a context asked for an engine and given the
    *   built-in without being told is the silence this refuses.
    * @param {boolean} [options.testProvider] the older spelling of
-   *   `ephemeris: 'test'`; `ephemeris` wins when both are given
+   *   `ephemeris: 'TEST'`; `ephemeris` wins when both are given
    * @param {object} [options.provider] an ephemeris of your own: `name`,
    *   `bodies` (their catalogue keys) and `positions(request)`, which
    *   answers with the columns; everything else has a default
@@ -3253,7 +3254,7 @@ export class Context {
    * @param {object} request
    * @param {readonly number[]|Float64Array} request.instants Julian days
    * @param {readonly string[]} request.bodies the bodies, by key
-   * @param {string} [request.scale] `ut1` or `tt`; `ut1` by default
+   * @param {string} [request.scale] `UT1` or `TT`; `UT1` by default
    * @param {object} [request.frame] a frame; the canonical one by default
    * @param {boolean} [request.speeds] whether speeds are wanted
    * @param {object} [request.observer] the place a topocentric frame needs
@@ -3263,7 +3264,7 @@ export class Context {
     const bytes = this.#call(() =>
       this.#inner.positions(
         clean({
-          scale: request.scale ?? 'ut1',
+          scale: request.scale ?? 'UT1',
           frameBits: native.framePack(clean(frame)),
           speeds: request.speeds ?? true,
           observer: request.observer,
@@ -3307,7 +3308,7 @@ export class Context {
  * One entry of an ephemeris chain, normalised: either a name of the
  * SDK's own or a loaded adapter.
  *
- * @typedef {'none'|'builtin'|'test'|{ plugin: string, config?: object }} EphemerisChoice
+ * @typedef {'NONE'|'BUILTIN'|'TEST'|{ plugin: string, config?: object }} EphemerisChoice
  */
 
 /**
@@ -3317,14 +3318,14 @@ export class Context {
  * fallback down, which is what ADR-0029 means by never automatic.
  *
  * @param {EphemerisChoice|readonly EphemerisChoice[]|undefined} ephemeris
- * @param {boolean} testProvider the older spelling of `'test'`
+ * @param {boolean} testProvider the older spelling of `'TEST'`
  * @returns {readonly EphemerisChoice[]}
  */
 function ephemerisChain(ephemeris, testProvider) {
   // One rule, written once: a named ephemeris wins, and the older flag
   // decides only when none was named (ADR-0028).
   if (ephemeris === undefined) {
-    return [testProvider ? 'test' : 'none'];
+    return [testProvider ? 'TEST' : 'NONE'];
   }
   const entries = Array.isArray(ephemeris) ? ephemeris : [ephemeris];
   if (entries.length === 0) {
@@ -3334,7 +3335,7 @@ function ephemerisChain(ephemeris, testProvider) {
     const named = typeof entry === 'string';
     if (!named && (entry === null || typeof entry.plugin !== 'string')) {
       throw new TypeError(
-        "an ephemeris is a name ('none', 'builtin', 'test') or an adapter's descriptor, " +
+        "an ephemeris is a name ('NONE', 'BUILTIN', 'TEST') or an adapter's descriptor, " +
           "which carries a `plugin` path; got " +
           JSON.stringify(entry),
       );
@@ -3383,7 +3384,7 @@ function attempt(entry, settled, info, positions) {
   // context, and a consumer never holds either.
   const loaded = new native.Provider(entry.plugin, JSON.stringify(entry.config ?? {}));
   try {
-    return native.Context.newWithProvider({ ...settled, ephemeris: 'none' }, loaded);
+    return native.Context.newWithProvider({ ...settled, ephemeris: 'NONE' }, loaded);
   } finally {
     loaded.dispose();
   }
@@ -3412,7 +3413,7 @@ export const unpackFrame = (bits) => native.frameUnpack(bits);
  * A date in a calendar, without naming the fields a call fills in.
  *
  * The era and the era year are what the call resolves them to, and the
- * resolution is `defined`, which is what a date a caller states means.
+ * resolution is `DEFINED`, which is what a date a caller states means.
  * The Dart and Python bindings have the same helper, so the three read
  * alike.
  *
@@ -3424,7 +3425,7 @@ export const date = (calendar, year, month, day) => ({
   eraYear: 0,
   month,
   day,
-  resolution: 'defined',
+  resolution: 'DEFINED',
   computedMonth: 0,
   computedDay: 0,
 });
@@ -3445,7 +3446,7 @@ export const at = (day, { hour = 0, minute = 0, second = 0, nanos = 0 } = {}) =>
  * Nothing guesses one. Unless the profile sets `time.unknown_time`, a
  * resolution refuses it by name and the hint says what to choose; under
  * `NOON` it resolves with `timeKnown` false and a
- * `time-unknown-fallback` warning, and under `SUNRISE` it needs the
+ * `TIME_UNKNOWN_FALLBACK` warning, and under `SUNRISE` it needs the
  * place and a solar model.
  *
  * @example whenUnknown(date(Calendar.Gregorian, 1986, 1, 1))
@@ -3457,7 +3458,7 @@ export const whenUnknown = (day) => ({
 
 /** A zone of the embedded database, by its IANA name. */
 export const ianaZone = (name) => ({
-  kind: 'iana',
+  kind: 'IANA',
   offsetSeconds: 0,
   longitudeDeg: 0,
   zone: name,
@@ -3465,7 +3466,7 @@ export const ianaZone = (name) => ({
 
 /** A fixed offset from UTC, in seconds east. */
 export const fixedZone = (offsetSeconds) => ({
-  kind: 'fixed',
+  kind: 'FIXED',
   offsetSeconds,
   longitudeDeg: 0,
 });
@@ -3475,7 +3476,7 @@ export const fixedZone = (offsetSeconds) => ({
  * from before the zone existed is cast in.
  */
 export const localMeanZone = (longitudeDeg) => ({
-  kind: 'local-mean',
+  kind: 'LOCAL_MEAN',
   offsetSeconds: 0,
   longitudeDeg,
 });

@@ -2,7 +2,7 @@
 
 Status: built — 2026-09-23. `crates/tajika/src/saham.rs`, reached at
 `sdk.chart().sahams`, `sahams_with_rules` and `saham_point`, and across
-the boundary since the same day as `varsha_json.sahams` (see "Crossing the
+the boundary since the same day as `varsha.sahams` (see "Crossing the
 boundary"). What each reading moves is measured over every recorded
 birth's forty years in [`muntha-measured.md`](muntha-measured.md) §14,
 where the counts are generated and cannot go stale; none are written here.
@@ -158,18 +158,20 @@ Each year's `annual_charts` row counts its sahams in `saham_count`, and
 sign, lord and house, and whether a sign was added. Whether the year
 opened by day is `annual_charts.daylight`, which is not repeated.
 
-**A saham is named by its catalogue key**, the kebab-case `karya-siddhi`
-every binding reads one back as, so a caller can hand back what an answer
-gave it. The first cut spelt the wire in serde's snake case, as the rule
-words are, and a Node caller writing the `Saham` type's own
-`'karya-siddhi'` would have been refused — the `noneAspects` trap of the
-yogas' crossing in another shape. The ABI test holds the two spellings
-equal member for member.
+**A saham is named by its key**, `KARYA_SIDDHI`, which every binding
+reads one back as, so a caller can hand back what an answer gave it. The
+first cut spelt the wire in serde's snake case and the bindings in kebab
+case, and a Node caller writing the `Saham` type's own `'karya-siddhi'`
+would have been refused — the `noneAspects` trap of the yogas' crossing
+in another shape. Since 2026-09-25 every Tajika word, the sahams and the
+rule words alike, is serde's `SCREAMING_SNAKE_CASE`, the SDK's one
+spelling of a member, and `crates/ffi/tests/keys.rs` holds each boundary
+enum's keys to it member for member.
 
 `matters` and `sahams` are one reader, `Asked<T>`: `"all"` or these, none
 twice, each member read as its field reads it — a house by number, a
 saham by key. A refusal names where it was written: a misspelt saham is
-`varsha_json.sahams[0]`, a rule word `varsha_json.sahamRules.houses`.
+`varsha.sahams[0]`, a rule word `varsha.sahamRules.houses`.
 
 **Not across**: a caller's own `SahamFormula`, which Rust has at
 `saham_point`, and the birth chart's sahams, which the source reads beside
@@ -189,7 +191,7 @@ saham strength, which needs it.
 ## The order of work
 
 1. **Done**: the arithmetic, the table, the three readings, the façade.
-2. **Done**: the crossing, `varsha_json.sahams` and `sahamRules`, into
+2. **Done**: the crossing, `varsha.sahams` and `sahamRules`, into
    every binding with its parity keys.
 3. **Done**: the Harsha bala (Charak ch. VI, `tajika-harsha.md`). Next a
    saham's strength over it and the Panchavargiya bala, crossing with the birth chart's

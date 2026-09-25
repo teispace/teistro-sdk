@@ -180,7 +180,7 @@ void main() {
   // happened in Kathmandu. A chart cast on a guessed midnight would have
   // been cast on a time that does not exist.
   // NOON answers, and says so twice — `timeKnown` is false and the
-  // resolution carries a `time-unknown-fallback` warning — so a stored
+  // resolution carries a `TIME_UNKNOWN_FALLBACK` warning — so a stored
   // chart can never quietly claim a birth time it never had.
 }
 

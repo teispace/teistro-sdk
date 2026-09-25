@@ -79,7 +79,7 @@ part inside the year, so a Tajika aspect taken to the Muntha does.
 | **decided** | the natal lagna's sign advanced by the years **completed**; the sign's lord as the Munthesha; the argument named `completed_years`; zero as the birth itself, where the Muntha sits on the lagna |
 | **a setting** | `MunthaDegree` — `SignStart`, the source's own reading and the default, or `NatalDegree`; each answer carries the reading that made it |
 | **not decided** | the Muntha's longitude inside its sign between the two readings (crux C107), which waits on a text that gives a longitude rather than a sign |
-| **across the boundary** | `varsha_json.muntha` names the reading; `muntha_sign`, `muntha_lord` and `muntha_deg` ride in the `praveshas` section beside the return they stand at, so no second call can disagree about which year it is. Node, Dart and Python each read `pravesha.muntha`, each binding's test asserts the rule, and all four parity runners print it under all three return readings — which also holds the Muntha's independence of the reading |
+| **across the boundary** | `varsha.muntha` names the reading; `muntha_sign`, `muntha_lord` and `muntha_deg` ride in the `praveshas` section beside the return they stand at, so no second call can disagree about which year it is. Node, Dart and Python each read `pravesha.muntha`, each binding's test asserts the rule, and all four parity runners print it under all three return readings — which also holds the Muntha's independence of the reading |
 | **built** | `teistro_tajika::muntha` and `Muntha::during`, the progression a fraction through the year; `sdk.chart().muntha`, which needs **no ephemeris**, being the founded chart's own lagna and a count |
 | **not built** | the Tajika aspects with their deeptamsha orbs, which the sixteen yogas need (built since, [`tajika-aspects.md`](tajika-aspects.md)); the sahams are [`tajika-sahams.md`](tajika-sahams.md)'s. The year lord is built and crosses ([`varshesha.md`](varshesha.md)) |
 
@@ -119,7 +119,7 @@ Three of the five need an annual chart founded **at a place**, and the
 boundary answered only the return's instant precisely so that it would not
 choose that place. The decision, taken 2026-09-22:
 
-- **`varsha_json.place` is optional, and absent means no chart is
+- **`varsha.place` is optional, and absent means no chart is
   founded** — the instants and the Muntha, exactly as before, at no extra
   cost. A caller who wants the charts says where.
 - **`"birth"` is a word the caller writes, not a default the caller
@@ -132,7 +132,7 @@ choose that place. The decision, taken 2026-09-22:
   an `Observer` and an offset in Python and Dart — and each layer writes
   it in the boundary's words. A word crosses as written, so a wrong one is
   refused by the SDK in the same words everywhere.
-- **The place is read on its own**, under the root `varsha_json.place`,
+- **The place is read on its own**, under the root `varsha.place`,
   so every refusal of it names that field — a word that is not `"birth"`,
   a latitude out of range, a key it does not read — where the strict
   reader handed the whole record could name only the record.

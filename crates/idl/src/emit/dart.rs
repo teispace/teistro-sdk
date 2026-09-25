@@ -22,7 +22,7 @@ use crate::model::{
     Api, BlobSchema, EnumDef, FieldDef, FunctionDef, OpaqueDef, ParamDef, Role, Scalar,
     SectionKind, SectionSchema, StructDef, StructRole, TypeRef,
 };
-use crate::names::{binding_type_name, camel, kebab, method_name, pascal, snake};
+use crate::names::{binding_type_name, camel, method_name, pascal, snake};
 use crate::rules::{
     FieldRole, Handed, constant_key, constants, constructor, destructor, field_roles,
     has_handshake, methods, pointee_opaque, pointee_struct, results, returned_scalar,
@@ -109,10 +109,9 @@ fn render_enum(out: &mut String, e: &EnumDef) {
     let _ = writeln!(out, "{}enum {name}{implements} {{", doc(&e.doc, ""));
     let last = e.values.len().saturating_sub(1);
     for (i, v) in e.values.iter().enumerate() {
-        // The same string the TypeScript surface uses, so a member is
-        // spelled once across the bindings: its catalogue key when it has
-        // one, its variant in kebab case otherwise (`invalid-arg`).
-        let key = v.key.clone().unwrap_or_else(|| kebab(&v.name));
+        // The key the description records, so a member is spelled once
+        // across the bindings (`INVALID_ARG`, a catalogue member's `SUN`).
+        let key = &v.key;
         let end = if i == last && !catalogued { ";" } else { "," };
         let doc_text = if v.deprecated {
             format!("{}\n\nDeprecated.", v.doc)
@@ -386,7 +385,7 @@ fn render_exception(out: &mut String, api: &Api) {
     let name = binding_type_name(&status.name);
     let _ = writeln!(
         out,
-        "/// A failed call: the status and its stable code, the same in every\n/// binding, with the message, field and hint the library gave.\nfinal class TeistroException implements Exception {{\n  /// A failure as the library described it.\n  const TeistroException(\n    this.status,\n    this.message, {{\n    this.detail,\n    this.field,\n    this.hint,\n    this.messageKey,\n    this.providerCode = 0,\n  }});\n\n  /// What to branch on.\n  final {name} status;\n\n  /// The library's own sentence.\n  final String message;\n\n  /// What, more precisely, went wrong.\n  final String? detail;\n\n  /// The field involved.\n  final String? field;\n\n  /// A suggestion (`did you mean ...`).\n  final String? hint;\n\n  /// The localisable message key.\n  final String? messageKey;\n\n  /// The provider's own code when the status is `provider`.\n  final int providerCode;\n\n  /// The stable numeric code.\n  int get code => status.id;\n\n  @override\n  String toString() {{\n    final where = field == null ? '' : ' (field `$field`)';\n    final why = hint == null ? '' : '; $hint';\n    return 'TeistroException [${{status.key}}]: $message$where$why';\n  }}\n}}\n"
+        "/// A failed call: the status and its stable code, the same in every\n/// binding, with the message, field and hint the library gave.\nfinal class TeistroException implements Exception {{\n  /// A failure as the library described it.\n  const TeistroException(\n    this.status,\n    this.message, {{\n    this.detail,\n    this.field,\n    this.hint,\n    this.messageKey,\n    this.providerCode = 0,\n  }});\n\n  /// What to branch on.\n  final {name} status;\n\n  /// The library's own sentence.\n  final String message;\n\n  /// What, more precisely, went wrong.\n  final String? detail;\n\n  /// The field involved.\n  final String? field;\n\n  /// A suggestion (`did you mean ...`).\n  final String? hint;\n\n  /// The localisable message key.\n  final String? messageKey;\n\n  /// The provider's own code when the status is `PROVIDER`.\n  final int providerCode;\n\n  /// The stable numeric code.\n  int get code => status.id;\n\n  @override\n  String toString() {{\n    final where = field == null ? '' : ' (field `$field`)';\n    final why = hint == null ? '' : '; $hint';\n    return 'TeistroException [${{status.key}}]: $message$where$why';\n  }}\n}}\n"
     );
 }
 

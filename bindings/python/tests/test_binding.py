@@ -277,7 +277,7 @@ class Time(WithLibrary):
         # the wrong one would convert from the wrong scale in silence.
         converted = self.ctx.time.convert(2451544.5, Scale.UTC, Scale.TT)
         self.assertGreater(converted.jd, 2451544.5, "TT runs ahead of UTC")
-        self.assertEqual(converted.delta_t_source.key, "leap-seconds")
+        self.assertEqual(converted.delta_t_source.key, "LEAP_SECONDS")
         self.assertAlmostEqual(converted.delta_t_seconds, 64.184, places=3)
 
     def test_ut1_to_tt_is_the_delta_t_the_model_gives(self) -> None:
@@ -459,7 +459,7 @@ class Positions(WithLibrary):
             # not the C entry point it has no access to -- the same pair
             # Node, Dart and C are held to.
             self.assertEqual(caught.exception.field, "ephemeris")
-            self.assertIn("builtin", caught.exception.hint or "")
+            self.assertIn("BUILTIN", caught.exception.hint or "")
 
     def test_a_birth_with_no_time_is_refused_or_reported_never_guessed(self) -> None:
         day = date(Calendar.BIKRAM_SAMBAT, 2042, 9, 17)
@@ -493,7 +493,7 @@ class Positions(WithLibrary):
             resolved = noon.time.resolve(when_unknown(day), zone)
             self.assertFalse(resolved.time_known)
             self.assertIn(
-                "time-unknown-fallback", [w.key for w in resolved.warnings]
+                "TIME_UNKNOWN_FALLBACK", [w.key for w in resolved.warnings]
             )
 
     def test_settings_given_twice_is_refused(self) -> None:
@@ -852,10 +852,10 @@ class AnEngine(WithLibrary):
 
         with self.assertRaises(TeistroError) as wrong:
             found({"style": {"ink": "black"}})
-        self.assertEqual(wrong.exception.field, "theme_json.style.ink")
+        self.assertEqual(wrong.exception.field, "theme.style.ink")
         with self.assertRaises(TeistroError) as unknown:
             found("sepia")  # type: ignore[arg-type]
-        self.assertEqual(unknown.exception.field, "theme_json.extends")
+        self.assertEqual(unknown.exception.field, "theme.extends")
 
     def test_rules_are_answered_in_the_same_crossing_and_a_wrong_one_is_refused(self) -> None:
         """A request's rules come back as each chart's `rules`, a consumer's own
@@ -889,7 +889,7 @@ class AnEngine(WithLibrary):
 
         with self.assertRaises(TeistroError) as wrong:
             found({"rules": [{"key": "X", "category": "raja"}]})
-        self.assertEqual(wrong.exception.field, "rules_json.rules[0]")
+        self.assertEqual(wrong.exception.field, "rules.rules[0]")
 
     def test_plans_compose_in_the_same_crossing_and_render_with_nothing_in_between(self) -> None:
         """A request's plans come back as each chart's `plans`, holding no
@@ -999,11 +999,11 @@ class AnEngine(WithLibrary):
         # A reading says what the rules answered, so it needs rules beside it.
         with self.assertRaises(TeistroError) as alone:
             found({"readings": True})
-        self.assertEqual(alone.exception.field, "interpret_json.readings")
+        self.assertEqual(alone.exception.field, "interpret.readings")
         # And a composer that is not one is refused beside the ones that are.
         with self.assertRaises(TeistroError) as typo:
             found({"readigns": True})  # type: ignore[arg-type]
-        self.assertEqual(typo.exception.field, "interpret_json")
+        self.assertEqual(typo.exception.field, "interpret")
 
     def test_a_chart_carries_its_ashtakavarga_and_each_graha_s_reductions(self) -> None:
         """A chart's Ashtakavarga crosses whole: each graha's bindus holding the
@@ -1226,7 +1226,7 @@ class AnEngine(WithLibrary):
             instant=birth,
             place=observer,
             utc_offset_seconds=20700,
-            varsha={"reading": "sidereal", "through": 12},
+            varsha={"reading": "SIDEREAL", "through": 12},
         )
         years = chart.praveshas
         self.assertEqual([one.year for one in years], list(range(1, 13)))
@@ -1253,7 +1253,7 @@ class AnEngine(WithLibrary):
             instant=birth,
             place=observer,
             utc_offset_seconds=20700,
-            varsha={"through": 12, "muntha": "natal_degree"},
+            varsha={"through": 12, "muntha": "NATAL_DEGREE"},
         ).praveshas
         self.assertEqual(
             [one.muntha.sign for one in carried], [one.muntha.sign for one in years]
@@ -1357,7 +1357,7 @@ class AnEngine(WithLibrary):
                 utc_offset_seconds=20700,
                 varsha={"through": 12, "place": "home"},  # type: ignore[arg-type]
             )
-        self.assertEqual(wrong.exception.field, "varsha_json.place")
+        self.assertEqual(wrong.exception.field, "varsha.place")
 
         # The instant founds as a chart of its own; the place is the caller's.
         annual = self.ctx.chart.found(
@@ -1378,7 +1378,7 @@ class AnEngine(WithLibrary):
             instant=birth,
             place=observer,
             utc_offset_seconds=20700,
-            varsha={"reading": "tropical", "through": 12},
+            varsha={"reading": "TROPICAL", "through": 12},
         ).praveshas
         self.assertNotEqual(tropical[11].instant, years[11].instant)
 
@@ -1387,9 +1387,9 @@ class AnEngine(WithLibrary):
                 instant=birth,
                 place=observer,
                 utc_offset_seconds=20700,
-                varsha={"reading": "sidereal", "through": 0},
+                varsha={"reading": "SIDEREAL", "through": 0},
             )
-        self.assertEqual(wide.exception.field, "varsha_json.through")
+        self.assertEqual(wide.exception.field, "varsha.through")
 
     def test_a_years_chart_answers_the_tajika_yogas_for_the_matters_asked(self) -> None:
         """The sixteen Tajika yogas cross for the matters `varsha=` names, in
@@ -1446,22 +1446,22 @@ class AnEngine(WithLibrary):
         self.assertEqual(unasked[0].annual.matters, [])
 
         # The rule records are written in Python's own keys.
-        years({"through": 2, "place": "birth", "varshesha": {"none_aspects": "annual_lagna_lord"}})
+        years({"through": 2, "place": "birth", "varshesha": {"none_aspects": "ANNUAL_LAGNA_LORD"}})
         years({
             "through": 2,
             "place": "birth",
             "varshesha": {
-                "none_aspects": "strongest",
-                "moon": "ithasala",
-                "moon_partner": "office_bearer",
-                "drishti": {"sub_degree": "ishrafa"},
+                "none_aspects": "STRONGEST",
+                "moon": "ITHASALA",
+                "moon_partner": "OFFICE_BEARER",
+                "drishti": {"sub_degree": "ISHRAFA"},
             },
         })
         years({
             "through": 2,
             "place": "birth",
             "matters": [10],
-            "yogas": {"weak_below": 4 * 3600, "strong_from": 12 * 3600, "drishti": {"sub_degree": "ishrafa"}},
+            "yogas": {"weak_below": 4 * 3600, "strong_from": 12 * 3600, "drishti": {"sub_degree": "ISHRAFA"}},
         })
 
         # The commentary's full Moon can only take a Kuttha away.
@@ -1473,17 +1473,17 @@ class AnEngine(WithLibrary):
             )
 
         every = years({"through": 2, "place": "birth", "matters": "all"})
-        waxing = years({"through": 2, "place": "birth", "matters": "all", "yogas": {"moon_benefic": "waxing"}})
+        waxing = years({"through": 2, "place": "birth", "matters": "all", "yogas": {"moon_benefic": "WAXING"}})
         self.assertLessEqual(kutthas(waxing), kutthas(every))
 
         for varsha, field in [
-            ({"through": 2, "matters": [7]}, "varsha_json.matters"),
-            ({"through": 2, "place": "birth", "matters": [7, 7]}, "varsha_json.matters"),
-            ({"through": 2, "place": "birth", "matters": [13]}, "varsha_json.matters"),
+            ({"through": 2, "matters": [7]}, "varsha.matters"),
+            ({"through": 2, "place": "birth", "matters": [7, 7]}, "varsha.matters"),
+            ({"through": 2, "place": "birth", "matters": [13]}, "varsha.matters"),
             (
                 {"through": 2, "place": "birth", "matters": [7],
                  "yogas": {"weak_below": 12 * 3600, "strong_from": 4 * 3600}},
-                "varsha_json.yogas.strongFrom",
+                "varsha.yogas.strongFrom",
             ),
         ]:
             with self.subTest(field=field, varsha=varsha):
@@ -1507,7 +1507,7 @@ class AnEngine(WithLibrary):
             ).praveshas
 
         # A member or its key, as the caller has it.
-        asked = years({"through": 4, "place": "birth", "sahams": [Saham.KARYA_SIDDHI, "punya"]})
+        asked = years({"through": 4, "place": "birth", "sahams": [Saham.KARYA_SIDDHI, "PUNYA"]})
         for one in asked:
             annual = one.annual
             assert annual is not None
@@ -1533,24 +1533,24 @@ class AnEngine(WithLibrary):
         self.assertEqual(unasked.sahams, [])
 
         # The rules are written in Python's own keys.
-        never = years({"through": 2, "place": "birth", "sahams": "all", "saham_rules": {"add_sign": "never"}})
+        never = years({"through": 2, "place": "birth", "sahams": "all", "saham_rules": {"add_sign": "NEVER"}})
         self.assertTrue(all(not p.added_sign for one in never for p in one.annual.sahams))
-        years({"through": 1, "place": "birth", "sahams": ["mrityu"], "saham_rules": {"houses": "equal", "roga": "saturn"}})
+        years({"through": 1, "place": "birth", "sahams": ["MRITYU"], "saham_rules": {"houses": "EQUAL", "roga": "SATURN"}})
 
         for varsha, field in [
-            ({"through": 2, "place": "birth", "sahams": ["punya", Saham.PUNYA]}, "varsha_json.sahams"),
-            ({"through": 2, "place": "birth", "sahams": ["pnya"]}, "varsha_json.sahams[0]"),
+            ({"through": 2, "place": "birth", "sahams": ["PUNYA", Saham.PUNYA]}, "varsha.sahams"),
+            ({"through": 2, "place": "birth", "sahams": ["pnya"]}, "varsha.sahams[0]"),
             (
-                {"through": 2, "place": "birth", "sahams": ["punya"], "saham_rules": {"add_sgn": "never"}},
-                "varsha_json.sahamRules.addSgn",
+                {"through": 2, "place": "birth", "sahams": ["PUNYA"], "saham_rules": {"add_sgn": "NEVER"}},
+                "varsha.sahamRules.addSgn",
             ),
             (
-                {"through": 1, "sahams": ["punya"], "saham_strength": {"natures": "vedic"}},
-                "varsha_json.sahamStrength.natures",
+                {"through": 1, "sahams": ["PUNYA"], "saham_strength": {"natures": "vedic"}},
+                "varsha.sahamStrength.natures",
             ),
             (
                 {"through": 1, "place": "birth", "harsha_rules": {"venus": "sixth"}},
-                "varsha_json.harshaRules.venus",
+                "varsha.harshaRules.venus",
             ),
         ]:
             with self.subTest(field=field, varsha=varsha):
@@ -1627,22 +1627,22 @@ class AnEngine(WithLibrary):
             "through": 1,
             "place": "birth",
             "dashas": ["MUDDA"],
-            "dasha_rules": {"clock": {"days": 360}, "depth": 1, "birth_period": "ELAPSED", "measure": "TEMPORAL"},
+            "dasha_rules": {"clock": {"DAYS": 360}, "depth": 1, "birth_period": "ELAPSED", "measure": "TEMPORAL"},
         })[0].annual.dashas[0]
         self.assertEqual(days.year.to_jd - days.year.from_jd, 360)
         self.assertTrue(all(p.level == 1 for p in days.periods))
 
         for varsha, field in [
-            ({"through": 2, "dashas": [DashaSystem.MUDDA]}, "varsha_json.dashas"),
-            ({"through": 2, "place": "birth", "dashas": [DashaSystem.VIMSHOTTARI]}, "varsha_json.dashas"),
-            ({"through": 2, "place": "birth", "dashas": ["MUDDA", DashaSystem.MUDDA]}, "varsha_json.dashas"),
+            ({"through": 2, "dashas": [DashaSystem.MUDDA]}, "varsha.dashas"),
+            ({"through": 2, "place": "birth", "dashas": [DashaSystem.VIMSHOTTARI]}, "varsha.dashas"),
+            ({"through": 2, "place": "birth", "dashas": ["MUDDA", DashaSystem.MUDDA]}, "varsha.dashas"),
             (
-                {"through": 2, "place": "birth", "dashas": "all", "dasha_rules": {"clock": {"days": 0}}},
-                "varsha_json.dashaRules.clock",
+                {"through": 2, "place": "birth", "dashas": "all", "dasha_rules": {"clock": {"DAYS": 0}}},
+                "varsha.dashaRules.clock",
             ),
             (
                 {"through": 2, "place": "birth", "dashas": "all", "dasha_rules": {"birth_perod": "ELAPSED"}},
-                "varsha_json.dashaRules.birthPerod",
+                "varsha.dashaRules.birthPerod",
             ),
         ]:
             with self.subTest(field=field, varsha=varsha):
@@ -1670,8 +1670,8 @@ class AnEngine(WithLibrary):
             "through": 2,
             "place": "birth",
             "sahams": "all",
-            "saham_strength": {"natures": "chapter", "friendship": "positional", "weak_below": 5 * 3600},
-            "harsha_rules": {"venus": "twelfth"},
+            "saham_strength": {"natures": "CHAPTER", "friendship": "POSITIONAL", "weak_below": 5 * 3600},
+            "harsha_rules": {"venus": "TWELFTH"},
         })
         for one in chart.praveshas:
             annual = one.annual

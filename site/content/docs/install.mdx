@@ -32,13 +32,13 @@ import { Body } from '@teistro/sdk/catalogue';
 const ctx = new Context({
   profile: 'nepali-default',
   locale: 'ne-Deva-NP',
-  ephemeris: 'builtin',
+  ephemeris: 'BUILTIN',
 });
 const sun = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun] }).at(0, 0);
 ```
 
 `ephemeris` is not optional and there is no default: a context with none
-computes calendars, time and text, and refuses a position. `'builtin'` is
+computes calendars, time and text, and refuses a position. `'BUILTIN'` is
 the analytic ephemeris the SDK carries — enough to cast a chart with
 nothing else installed, and a fallback rather than the intended path.
 [Choosing an ephemeris](#choosing-an-ephemeris) says what to put
@@ -152,7 +152,7 @@ positions need one, and there is no default. `ephemeris` names it, or
 names an **ordered chain** tried in order.
 
 An entry is one of three things: a **name** of an ephemeris the SDK
-carries (`builtin`, `test`, `none`), a **descriptor** exported by an
+carries (`BUILTIN`, `TEST`, `NONE`), a **descriptor** exported by an
 adapter's own package, or a **provider you write yourself** — a
 JavaScript, Dart or Python object the SDK calls into.
 
@@ -161,7 +161,7 @@ import { Context } from '@teistro/sdk';
 import teimeris from '@teistro/ephemeris-teimeris';
 
 // A real engine, and the SDK's own only if it is not there.
-const ctx = new Context({ ephemeris: [teimeris({ dataDir: './ephe' }), 'builtin'] });
+const ctx = new Context({ ephemeris: [teimeris({ dataDir: './ephe' }), 'BUILTIN'] });
 ```
 
 ```dart
@@ -180,7 +180,7 @@ ctx = sdk.context(ephemeris=[teimeris(data_dir="./ephe"), Ephemeris.BUILTIN])
 
 **A real engine is the intended path.** In most cases a consumer belongs
 on Teimeris or Swiss Ephemeris, each installed as its own package under
-its own licence, and the SDK's `builtin` is the fallback that makes a
+its own licence, and the SDK's `BUILTIN` is the fallback that makes a
 chart compute with nothing else installed. It is real astronomy —
 VSOP87A and ELP2000-82B — and it is still the fallback. `test` selects
 the analytic test provider, whose positions are **not astronomy**.

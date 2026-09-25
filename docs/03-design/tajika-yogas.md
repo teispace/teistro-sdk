@@ -342,7 +342,7 @@ positively now, and tested with a middling pair.
 The sixteen answer a **matter**, so a binding cannot simply receive
 "the yogas" the way it receives a year's lord: someone has to say which
 matters. That is the same shape as the residence question
-`varsha_json.place` already answers — the SDK does not decide it for the
+`varsha.place` already answers — the SDK does not decide it for the
 caller, and absent, nothing is computed.
 
 ### What a caller asks
@@ -360,7 +360,7 @@ caller, and absent, nothing is computed.
   ask to pay.
 - **`matters` needs `place`**: the sixteen are read from a year's own
   chart, and without a place no chart is founded. Refused by
-  `varsha_json.matters` with that remedy, rather than answered empty.
+  `varsha.matters` with that remedy, rather than answered empty.
 - **`yogas`** carries `YogaRules` whole — the aspects' `subDegree`, the
   two strength floors and Tambira's mover — as `varshesha` carries the
   year lord's readings. The floors cross as `Bala` does everywhere at
@@ -476,7 +476,7 @@ Dutthottha-Davira live under.
 | **decided by the source** | that a Moon completing a Gairi-Kamboola is not also a Khallasara (C121, the source's comment against its own table) |
 | **decided by two sources** | Kuttha's benefics (C117): the four the *Nilakanthi*'s commentary and Charak's saham chapter both name, with the commentary's *full* Moon a `YogaRules::moon_benefic` away |
 | **not decided** | how *under malefic influence* and Durapha's list read (C118, C119), each shipped as one reading with every clause carried; what *on entering the next sign* means (C120), shipped as the instant projection with a retrograde lord entering nothing; which lord Tambira moves, shipped as the definition's karyesha with the source's "some authorities" a `YogaRules::tambira` away |
-| **built** | every one `YearYoga::awaiting` does not name, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**, and `tajika_yogas_many` for several matters at once, which judges the chart's rules, states and strengths once; the crossing, `varsha_json.matters` and `varsha_json.yogas`, in all four bindings; `sdk.chart().qualification`, `strength`, `affliction` and `favour` for the four clause-carrying verdicts, and `annual_states` for what the longitudes cannot say; `YearYoga::ALL` names all sixteen, `awaiting` says what each unbuilt one needs, matched exhaustively so a yoga cannot be added without a decision, and `judges_an_ithasala`, `needs_a_weak_pair`, `needs_no_aspect` and `is_chart_fact` describe the structure the measured page holds every count to |
+| **built** | every one `YearYoga::awaiting` does not name, through `sdk.chart().tajika_yogas(&annual, house)` and its `_with_rules` twin, which need **no ephemeris**, and `tajika_yogas_many` for several matters at once, which judges the chart's rules, states and strengths once; the crossing, `varsha.matters` and `varsha.yogas`, in all four bindings; `sdk.chart().qualification`, `strength`, `affliction` and `favour` for the four clause-carrying verdicts, and `annual_states` for what the longitudes cannot say; `YearYoga::ALL` names all sixteen, `awaiting` says what each unbuilt one needs, matched exhaustively so a yoga cannot be added without a decision, and `judges_an_ithasala`, `needs_a_weak_pair`, `needs_no_aspect` and `is_chart_fact` describe the structure the measured page holds every count to |
 | **not built** | nothing: `unanswered` is empty wherever `AnnualStates` were given, and still lists the four that read them where they were not |
 
 ## Why this page exists before the code

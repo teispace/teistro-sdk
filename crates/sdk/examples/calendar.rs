@@ -33,13 +33,13 @@ const WEEK: [&str; 7] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 /// How a date says it was decided — a `match` rather than a string, so a
 /// resolution the SDK gains is a compile error here rather than a
-/// surprise at run time.
+/// surprise at run time — spelt as every binding and document spells it.
 fn decided(how: &CalendarResolution) -> &'static str {
     match how {
-        CalendarResolution::Defined => "defined",
-        CalendarResolution::Tabular { .. } => "tabular",
-        CalendarResolution::Computed { .. } => "computed",
-        CalendarResolution::Divergent { .. } => "divergent",
+        CalendarResolution::Defined => "DEFINED",
+        CalendarResolution::Tabular { .. } => "TABULAR",
+        CalendarResolution::Computed { .. } => "COMPUTED",
+        CalendarResolution::Divergent { .. } => "DIVERGENT",
     }
 }
 

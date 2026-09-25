@@ -567,14 +567,14 @@ pub struct TsChartRequest {
     /// `api: nullable example={"placements":true}`
     pub interpret_json: *const c_char,
     /// The annual charts to answer for every chart in the batch, as a JSON
-    /// object: `reading` — `"sidereal"` (the tradition's), `"tropical"`
-    /// (the Western solar return) or `"mean"` (a whole sidereal year each
+    /// object: `reading` — `"SIDEREAL"` (the tradition's), `"TROPICAL"`
+    /// (the Western solar return) or `"MEAN"` (a whole sidereal year each
     /// time) — and `through`, the last year of life wanted, 1 to 200. The
     /// instants come back in the `praveshas` section, ragged by
     /// `cast.pravesha_count`; an ephemeris that ends first answers fewer
     /// than asked for rather than refusing. Null for none
-    /// (`03-design/annual-chart.md`). Refusals are named from this root,
-    /// as `varsha_json.through`.
+    /// (`03-design/annual-chart.md`). Refusals are named from the record
+    /// every binding calls `varsha`, as `varsha.through`.
     /// `api: nullable`
     pub varsha_json: *const c_char,
 }
@@ -3034,18 +3034,23 @@ pub unsafe extern "C" fn ts_chart_layout_row(
     })
 }
 
-/// A refusal a record made from its own root, named from the request's
-/// instead: `readings` becomes `interpret_json.readings`, and a record that
-/// named no field names the whole one.
-fn field_under(root: &str, error: &Error) -> Error {
-    let field = error
-        .field()
-        .map_or_else(|| String::from(root), |inner| format!("{root}.{inner}"));
-    error.clone().with_field(field)
-}
+/// The name a refusal gives a chart request's plans: the record every
+/// binding and the façade call `interpret`, not the C argument
+/// (`interpret_json`) that carries it, so a caller reads back the field
+/// they wrote (`interpret.readings`). Only a C caller can hand the
+/// argument itself something unreadable, and that refusal names it.
+const INTERPRET: &str = "interpret";
+
+/// The name a refusal gives a chart request's annual charts, as
+/// [`INTERPRET`] (`varsha.through`, not `varsha_json.through`).
+const VARSHA: &str = "varsha";
+
+/// The name a refusal gives a chart request's rule set, as [`INTERPRET`]
+/// (`rules.rules[0]`, not `rules_json.rules[0]`).
+const RULES: &str = "rules";
 
 /// The plans a request's `interpret_json` asks for, none of them for null; a
-/// refusal is named from the request's root, `interpret_json.readings`.
+/// refusal is named from the request's root, `interpret.readings`.
 ///
 /// # Safety
 ///
@@ -3056,7 +3061,7 @@ unsafe fn plan_request_of(interpret_json: *const c_char) -> Result<PlanRequest, 
     let Some(text) = text else {
         return Ok(PlanRequest::default());
     };
-    PlanRequest::from_json(text).map_err(|error| field_under("interpret_json", &error))
+    PlanRequest::from_json(text).map_err(|error| error.under(INTERPRET))
 }
 
 /// What a request's `varsha_json` asks for, or none for null.
@@ -4004,7 +4009,7 @@ pub struct ChartVarsha {
 }
 
 /// One field of the varsha record read on its own, under its own path, so
-/// a refusal names `varsha_json.<field>` — the field the caller wrote —
+/// a refusal names `varsha.<field>` — the field the caller wrote —
 /// where the strict reader, handed the whole record, could only name the
 /// record. Removed from `given`, so the record's own read does not see it.
 fn take_field<T: serde::Serialize + serde::de::DeserializeOwned>(
@@ -4014,12 +4019,12 @@ fn take_field<T: serde::Serialize + serde::de::DeserializeOwned>(
     given
         .as_object_mut()
         .and_then(|fields| fields.remove(field))
-        .map(|value| teistro_core::strict::read_value::<T>(&value, &format!("varsha_json.{field}")))
+        .map(|value| teistro_core::strict::read_value::<T>(&value, &format!("{VARSHA}.{field}")))
         .transpose()
 }
 
 /// The annual charts a request's `varsha_json` asks for, none for null; a
-/// refusal is named from the request's root, `varsha_json.through`.
+/// refusal is named from the request's root, `varsha.through`.
 ///
 /// # Safety
 ///
@@ -4030,14 +4035,14 @@ unsafe fn varsha_request_of(varsha_json: *const c_char) -> Result<Option<VarshaR
     let Some(text) = text else {
         return Ok(None);
     };
-    let mut given: serde_json::Value = teistro_core::strict::read(text, "varsha_json")?;
+    let mut given: serde_json::Value = teistro_core::strict::read(text, VARSHA)?;
     let place = take_field::<AnnualPlace>(&mut given, "place")?;
     let matters = take_field::<Asked<teistro::House>>(&mut given, "matters")?;
     let sahams = take_field::<Asked<teistro::Saham>>(&mut given, "sahams")?;
     let saham_rules = take_field::<teistro::SahamRules>(&mut given, "sahamRules")?;
     let dashas = take_field::<Asked<teistro::catalogue::DashaSystem>>(&mut given, "dashas")?;
     let dasha_rules = take_field::<teistro::AnnualDashaRules>(&mut given, "dashaRules")?;
-    let mut asked: VarshaRequest = teistro_core::strict::read_value(&given, "varsha_json")?;
+    let mut asked: VarshaRequest = teistro_core::strict::read_value(&given, VARSHA)?;
     asked.place = place;
     asked.matters = matters;
     asked.sahams = sahams;
@@ -4058,29 +4063,29 @@ unsafe fn varsha_request_of(varsha_json: *const c_char) -> Result<Option<VarshaR
             return Err(Error::invalid_arg(format!(
                 "{what} read from each year's own chart, and no chart is founded without a place"
             ))
-            .with_field(format!("varsha_json.{field}"))
-            .with_hint("add varsha_json.place: \"birth\", or a residence"));
+            .with_field(format!("{VARSHA}.{field}"))
+            .with_hint(format!("add {VARSHA}.place: \"birth\", or a residence")));
         }
     }
     asked
         .dasha_rules
         .clock
         .check()
-        .map_err(|error| error.with_field("varsha_json.dashaRules.clock"))?;
+        .map_err(|error| error.with_field(format!("{VARSHA}.dashaRules.clock")))?;
     // Checked here, where the caller's own casing is known, so the refusal
     // names the key they wrote rather than the Rust field behind it.
     asked.yogas.check().map_err(|error| {
         let field = if error.field() == Some("strong_from") {
-            "varsha_json.yogas.strongFrom"
+            "yogas.strongFrom"
         } else {
-            "varsha_json.yogas"
+            "yogas"
         };
-        error.with_field(field)
+        error.with_field(format!("{VARSHA}.{field}"))
     })?;
     // The year is checked here as well as inside, so a caller learns it
     // from the field they wrote rather than from a later refusal naming
     // `through` with no path to it.
-    teistro::tajika::years(asked.through).map_err(|error| field_under("varsha_json", &error))?;
+    teistro::tajika::years(asked.through).map_err(|error| error.under(VARSHA))?;
     Ok(Some(asked))
 }
 
@@ -4245,9 +4250,7 @@ fn praveshas_of(
                 })
                 // A refusal names the request field the caller wrote and
                 // the chart it was refused for, so a batch says which one.
-                .map_err(|error| {
-                    field_under("varsha_json", &error).with_hint(format!("chart {at}"))
-                })
+                .map_err(|error| error.under(VARSHA).with_hint(format!("chart {at}")))
         })
         .collect()
 }
@@ -4324,7 +4327,7 @@ fn annual_year(
 }
 
 /// The rule set a request's `rules_json` names, or none for null; a refusal is
-/// named from the request's root, `rules_json.rules[0]`.
+/// named from the request's root, `rules.rules[0]`.
 ///
 /// # Safety
 ///
@@ -4334,15 +4337,7 @@ unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Erro
     unsafe { optional_text(rules_json, "rules_json") }?
         .map(|text| RuleRequest::from_json(text).and_then(|request| request.rule_set()))
         .transpose()
-        .map_err(|error| {
-            // The request names its fields from its own root; the chart
-            // request calls that root `rules_json`.
-            let field = error.field().map_or_else(
-                || String::from("rules_json"),
-                |inner| format!("rules_json.{inner}"),
-            );
-            error.with_field(field)
-        })
+        .map_err(|error| error.under(RULES))
 }
 
 /// The charts a request asks for, the canonical JSON of what they answer by
@@ -4477,27 +4472,17 @@ pub unsafe extern "C" fn ts_chart_found(
         // but encode what it was given.
         // SAFETY: the entry point's contract — null, or a NUL-terminated
         // string.
+        // The theme names its fields from its own root, `theme.style.ink`,
+        // which is what every binding calls it, so its refusal stands.
         let theme = unsafe { optional_text(asked.theme_json, "theme_json") }?
             .map(Theme::from_json)
-            .transpose()
-            .map_err(|error| {
-                // The theme names its fields from its own root; the request
-                // calls that root `theme_json`.
-                let field = error.field().map_or_else(
-                    || String::from("theme_json"),
-                    |inner| format!("theme_json{}", inner.strip_prefix("theme").unwrap_or(inner)),
-                );
-                error.with_field(field)
-            })?;
+            .transpose()?;
         // SAFETY: the entry point's contract.
         let rules = unsafe { rule_set_of(asked.rules_json) }?;
         // SAFETY: the entry point's contract.
         let plans = unsafe { plan_request_of(asked.interpret_json) }?;
         // SAFETY: the entry point's contract.
         let varsha = unsafe { varsha_request_of(asked.varsha_json) }?;
-        plans
-            .check(rules.is_some())
-            .map_err(|error| field_under("interpret_json", &error))?;
         let (founded, rules_json, plans_json) =
             read_charts(ctx.sdk(), &instants, &request, rules.as_ref(), plans)?;
         let svgs = match &theme {

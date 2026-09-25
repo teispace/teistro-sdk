@@ -18,7 +18,7 @@ use crate::emit::{DocStyle, block_comment, field_doc_with};
 use crate::model::{
     Api, BlobSchema, EnumDef, FieldDef, Scalar, SectionKind, StructDef, StructRole, TypeRef,
 };
-use crate::names::{binding_type_name, camel, kebab, pascal, screaming};
+use crate::names::{binding_type_name, camel, pascal, screaming};
 use crate::rules::{FieldRole, constant_key, constants, field_roles, is_read_by_host, status_enum};
 
 /// The header every generated file carries.
@@ -31,16 +31,12 @@ fn preamble(api: &Api, comment: &str) -> String {
 
 /// The string a binding uses for an enum member: a catalogued member is
 /// its full key (`graha.SUN`), which is what every pack, fixture and
-/// serialised result carries; a member with a key of its own but no kind
-/// is that key (the `Kind` enum's `avastha_baladi`); anything else is its
-/// variant in kebab case (`invalid-arg`).
+/// serialised result carries; any other member is its key as the
+/// description records it (`INVALID_ARG`, and the `Kind` enum's
+/// `avastha_baladi`).
 #[must_use]
-pub fn member_value(kind: Option<&str>, variant: &str, key: Option<&str>) -> String {
-    match (kind, key) {
-        (Some(kind), Some(key)) => format!("{kind}.{key}"),
-        (None, Some(key)) => key.to_string(),
-        (_, None) => kebab(variant),
-    }
+pub fn member_value(kind: Option<&str>, key: &str) -> String {
+    kind.map_or_else(|| key.to_string(), |kind| format!("{kind}.{key}"))
 }
 
 /// The member a value from a newer library or a runtime registration
@@ -292,12 +288,7 @@ fn render_enum_type(out: &mut String, e: &EnumDef) {
     let mut values: Vec<String> = e
         .values
         .iter()
-        .map(|v| {
-            format!(
-                "'{}'",
-                member_value(e.kind.as_deref(), &v.name, v.key.as_deref())
-            )
-        })
+        .map(|v| format!("'{}'", member_value(e.kind.as_deref(), &v.key)))
         .collect();
     if e.kind.is_some() {
         values.push(format!("'{UNKNOWN_MEMBER}'"));
@@ -328,7 +319,7 @@ fn render_enum_type(out: &mut String, e: &EnumDef) {
             out,
             "{}  readonly {member}: '{}';",
             block_comment(&doc, "  "),
-            member_value(e.kind.as_deref(), &v.name, v.key.as_deref())
+            member_value(e.kind.as_deref(), &v.key)
         );
     }
     let _ = writeln!(out, "}};\n");
@@ -628,7 +619,7 @@ pub fn tables(api: &Api) -> String {
                 out,
                 "  {}: '{}',",
                 pascal(&crate::names::snake(&v.name)),
-                member_value(e.kind.as_deref(), &v.name, v.key.as_deref())
+                member_value(e.kind.as_deref(), &v.key)
             );
         }
         let _ = writeln!(out, "}});\n");
@@ -641,7 +632,7 @@ pub fn tables(api: &Api) -> String {
                 out,
                 "  [{}, '{}'],",
                 v.value,
-                member_value(e.kind.as_deref(), &v.name, v.key.as_deref())
+                member_value(e.kind.as_deref(), &v.key)
             );
         }
         let _ = writeln!(out, "]);\n");
@@ -866,14 +857,14 @@ mod tests {
                             name: "Ok".into(),
                             value: 0,
                             doc: "Fine.".into(),
-                            key: None,
+                            key: "OK".into(),
                             deprecated: false,
                         },
                         EnumValue {
                             name: "InvalidArg".into(),
                             value: -1,
                             doc: "Bad.".into(),
-                            key: None,
+                            key: "INVALID_ARG".into(),
                             deprecated: false,
                         },
                     ],
@@ -888,7 +879,7 @@ mod tests {
                         name: "PurvaPhalguni".into(),
                         value: 0,
                         doc: "A nakshatra-named member.".into(),
-                        key: Some("PURVA_PHALGUNI".into()),
+                        key: "PURVA_PHALGUNI".into(),
                         deprecated: true,
                     }],
                     source: String::new(),
@@ -967,8 +958,8 @@ mod tests {
         let api = api();
         let catalogue = catalogue_declarations(&api);
         for expected in [
-            "export type Status = 'ok' | 'invalid-arg';",
-            "readonly Ok: 'ok';",
+            "export type Status = 'OK' | 'INVALID_ARG';",
+            "readonly Ok: 'OK';",
             "export type Graha = 'graha.PURVA_PHALGUNI' | 'unknown';",
             "readonly PurvaPhalguni: 'graha.PURVA_PHALGUNI';",
             "@deprecated",
@@ -1023,14 +1014,13 @@ mod tests {
     }
 
     #[test]
-    fn a_member_is_its_key_where_it_has_one_and_kebab_elsewhere() {
-        assert_eq!(member_value(Some("graha"), "Sun", Some("SUN")), "graha.SUN");
+    fn a_member_is_its_full_key_where_catalogued_and_its_key_elsewhere() {
+        assert_eq!(member_value(Some("graha"), "SUN"), "graha.SUN");
         assert_eq!(
-            member_value(None, "AvasthaBaladi", Some("avastha_baladi")),
+            member_value(None, "avastha_baladi"),
             "avastha_baladi",
             "a kind names itself as a key's first segment does"
         );
-        assert_eq!(member_value(None, "InvalidArg", None), "invalid-arg");
-        assert_eq!(member_value(None, "Ut1", None), "ut1");
+        assert_eq!(member_value(None, "INVALID_ARG"), "INVALID_ARG");
     }
 }
