@@ -54,7 +54,12 @@ jobs:
           version=$(cargo xtask version)
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "releasing ${version}" >> "$GITHUB_STEP_SUMMARY"
+      # Skipped only for a rehearsal at the unreleased version, which by
+      # definition has no entry: without the exception a dispatch stopped
+      # here and never reached `build`, `wasm` or `stage`, so the chain the
+      # header promises to rehearse could not be. A tag always checks it.
       - name: The changelog answers whether any number moved
+        if: github.event_name == 'push' || steps.version.outputs.version != '0.0.0'
         run: cargo xtask changelog-entry "$(cargo xtask version)"
 
   build:
