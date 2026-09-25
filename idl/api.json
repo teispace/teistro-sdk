@@ -9693,7 +9693,7 @@
             },
             "mutable": false
           },
-          "doc": "Dasha systems of the consumer's own, as a JSON array of definitions,\neach naming the `kernel` that runs it. `\"kernel\": \"udu\"` is the\nnakshatra-seeded kind: a key the catalogue does not have, its lords\nand their years in order, the reference nakshatra, and optionally\n`count`, `span`, `offset`, `repeats`, `scale`, `year_length`, `depth`\nand `sources`. `\"kernel\": \"rashi\"` is the sign-based kind: a key, and\noptionally `start`, `order`, `length`, `namedLord`, `strongerOf`,\n`year_length`, `depth` and `sources` (the document schema's\n`DashaDefinition`). The kernel is **stated** and never inferred from\nwhich fields are present, so a typo is refused by the field the\ncaller wrote rather than by one they did not. Every one is checked\nby the rules a shipped row passes and refused by its place in the\narray and its own field, as `options.dashas_json`, the index, then\nthe field.\nA request asks for one by the id\n`ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in\nregistration order. Null for none (`03-design/dasha-kernels.md`).",
+          "doc": "Dasha systems of the consumer's own, as a JSON array of definitions,\neach naming the `kernel` that runs it. `\"kernel\": \"UDU\"` is the\nnakshatra-seeded kind: a key the catalogue does not have, its lords\nand their years in order, the reference nakshatra, and optionally\n`count`, `span`, `offset`, `repeats`, `scale`, `year_length`, `depth`\nand `sources`. `\"kernel\": \"RASHI\"` is the sign-based kind: a key, and\noptionally `start`, `order`, `length`, `named_lord`, `stronger_of`,\n`year_length`, `depth` and `sources` (the document schema's\n`DashaDefinition`). The kernel is **stated** and never inferred from\nwhich fields are present, so a typo is refused by the field the\ncaller wrote rather than by one they did not. Every one is checked\nby the rules a shipped row passes and refused by its place in the\narray and its own field, as `options.dashas_json`, the index, then\nthe field.\nA request asks for one by the id\n`ts_key_parse` gives `dasha_system.<KEY>`, `0x8000` and up in\nregistration order. Null for none (`03-design/dasha-kernels.md`).",
           "meta": {
             "nullable": true
           }
@@ -10307,9 +10307,9 @@
             },
             "mutable": false
           },
-          "doc": "A theme to write every drawing as SVG in, as JSON: an object of\n`style` and `content` naming only what it changes, over the light\ntheme or the shipped one its `extends` names (`{\"extends\": \"dark\"}`).\nThe SVGs come back in the blob's `svgs` section, in the context's\nlocale. Null for none, which costs nothing\n(`03-design/render-svg.md`).",
+          "doc": "A theme to write every drawing as SVG in, as JSON: an object of\n`style` and `content` naming only what it changes, over the light\ntheme or the shipped one its `extends` names (`{\"extends\": \"DARK\"}`).\nThe SVGs come back in the blob's `svgs` section, in the context's\nlocale. Null for none, which costs nothing\n(`03-design/render-svg.md`).",
           "meta": {
-            "example": "{\"extends\":\"dark\"}",
+            "example": "{\"extends\":\"DARK\"}",
             "nullable": true
           }
         },
@@ -10324,7 +10324,7 @@
           },
           "doc": "Rules to answer over every chart, as JSON: `shipped` names the\nkernel's sets, `rules` a consumer's own in the rule format, with\n`readings`, `houses` and `longevity` choosing what else comes back\n(`03-design/rules-at-the-boundary.md`). The answers come back in the\nblob's `rules` section, and the sections the rules read are computed\nwhether or not `sections` asked for them. Null for none, which costs\nnothing.",
           "meta": {
-            "example": "{\"shipped\":[\"nabhasas\"]}",
+            "example": "{\"shipped\":[\"NABHASAS\"]}",
             "nullable": true
           }
         },

@@ -79,7 +79,7 @@ const plan = ctx.chart.found({
   instant: 2447995.4895833335,
   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
   utcOffsetSeconds: 20700,
-  rules: { shipped: ['yogas', 'doshas'] },
+  rules: { shipped: ['YOGAS', 'DOSHAS'] },
   interpret: { readings: true },
 }).plans.readings;
 

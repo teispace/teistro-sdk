@@ -83,7 +83,7 @@ def main() -> None:
                 altitude_m=Altitude(1400),
             ),
             utc_offset_seconds=20700,
-            rules={"shipped": ["yogas", "doshas"]},
+            rules={"shipped": ["YOGAS", "DOSHAS"]},
             interpret={"readings": True},
         )
         assert chart.plans is not None

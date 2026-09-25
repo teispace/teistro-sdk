@@ -73,7 +73,7 @@ pub struct Content {
 /// The locale form a body is written in.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum BodyForm {
     /// The locale's abbreviation: `Su`, `सू`.
     #[default]
@@ -85,7 +85,7 @@ pub enum BodyForm {
 /// What a cell's label shows.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum CellLabel {
     /// The sign's number in a square chart or the chakra; on a wheel, the
     /// house in the ring its bodies are marked in and the sign's glyph in
@@ -102,6 +102,57 @@ pub enum CellLabel {
     House,
     /// Nothing.
     Nothing,
+}
+
+/// A theme the SDK ships, by the key a request names it with.
+///
+/// ```
+/// use teistro_render_svg::{ShippedTheme, Theme};
+///
+/// assert_eq!(ShippedTheme::Dark.key(), "DARK");
+/// assert_eq!(Theme::shipped("DARK"), Some(ShippedTheme::Dark.theme()));
+/// assert_eq!(Theme::shipped("dark"), None);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ShippedTheme {
+    /// Dark ink on white, as a printed patrika.
+    Light,
+    /// Light ink on a dark page.
+    Dark,
+}
+
+impl ShippedTheme {
+    /// Every shipped theme.
+    pub const ALL: [ShippedTheme; 2] = [ShippedTheme::Light, ShippedTheme::Dark];
+
+    /// Its key, as serde writes it and a request names it.
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            ShippedTheme::Light => "LIGHT",
+            ShippedTheme::Dark => "DARK",
+        }
+    }
+
+    /// The theme.
+    #[must_use]
+    pub fn theme(self) -> Theme {
+        match self {
+            ShippedTheme::Light => Theme::light(),
+            ShippedTheme::Dark => Theme::dark(),
+        }
+    }
+
+    /// What a refusal of a name suggests: every key, from the one list.
+    fn hint() -> String {
+        let keys: Vec<String> = ShippedTheme::ALL
+            .iter()
+            .map(|shipped| format!("\"{}\"", shipped.key()))
+            .collect();
+        format!("extend {}", keys.join(" or "))
+    }
 }
 
 /// A whole theme: one [`Style`] and one [`Content`].
@@ -232,14 +283,13 @@ impl Theme {
         }
     }
 
-    /// A shipped theme by name: `light` or `dark`.
+    /// A shipped theme by its key: `LIGHT` or `DARK`.
     #[must_use]
-    pub fn shipped(name: &str) -> Option<Theme> {
-        match name {
-            "light" => Some(Theme::light()),
-            "dark" => Some(Theme::dark()),
-            _ => None,
-        }
+    pub fn shipped(key: &str) -> Option<Theme> {
+        ShippedTheme::ALL
+            .into_iter()
+            .find(|shipped| shipped.key() == key)
+            .map(ShippedTheme::theme)
     }
 
     /// Reads a theme from JSON, refusing an unknown field or a style that
@@ -261,7 +311,7 @@ impl Theme {
     /// assert_eq!(theme.style.ink, "#333333");
     /// assert_eq!(theme.style.background, Theme::light().style.background);
     ///
-    /// let dark = Theme::from_json(r##"{"extends": "dark", "style": {"accent": "#ffcc00"}}"##)?;
+    /// let dark = Theme::from_json(r##"{"extends": "DARK", "style": {"accent": "#ffcc00"}}"##)?;
     /// assert_eq!(dark.style.background, Theme::dark().style.background);
     /// assert_eq!(dark.style.accent, "#ffcc00");
     ///
@@ -288,14 +338,14 @@ impl Theme {
                 refused(
                     "theme.extends",
                     format!("{name:?} is not a shipped theme"),
-                    "extend \"light\" or \"dark\"",
+                    &ShippedTheme::hint(),
                 )
             })?,
             Some(other) => {
                 return Err(refused(
                     "theme.extends",
                     format!("{other} is not a theme's name"),
-                    "extend \"light\" or \"dark\"",
+                    &ShippedTheme::hint(),
                 ));
             }
         };
@@ -374,6 +424,18 @@ mod tests {
     use super::*;
 
     #[test]
+    fn a_shipped_theme_is_named_by_the_key_serde_writes() {
+        for shipped in ShippedTheme::ALL {
+            let written = serde_json::to_value(shipped).unwrap();
+            assert_eq!(written, shipped.key(), "{shipped:?}");
+            let read: ShippedTheme = serde_json::from_value(written).unwrap();
+            assert_eq!(read, shipped);
+            assert_eq!(Theme::shipped(shipped.key()), Some(shipped.theme()));
+        }
+        assert_eq!(ShippedTheme::hint(), r#"extend "LIGHT" or "DARK""#);
+    }
+
+    #[test]
     fn the_shipped_styles_are_valid() {
         Style::light().validate().unwrap();
         Style::dark().validate().unwrap();
@@ -404,7 +466,7 @@ mod tests {
         let text = serde_json::to_string(&dark).unwrap();
         assert_eq!(Theme::from_json(&text).unwrap(), dark);
         assert_eq!(Theme::from_json("{}").unwrap(), Theme::light());
-        let partial = Theme::from_json(r#"{"content": {"body_form": "glyph"}}"#).unwrap();
+        let partial = Theme::from_json(r#"{"content": {"body_form": "GLYPH"}}"#).unwrap();
         assert_eq!(partial.content.body_form, BodyForm::Glyph);
         assert_eq!(partial.style, Style::light());
     }
@@ -426,7 +488,7 @@ mod tests {
     #[test]
     fn a_theme_extends_a_shipped_one_and_changes_only_what_it_names() {
         let theme = Theme::from_json(
-            r##"{"extends": "dark", "style": {"accent": "#ffcc00"}, "content": {"degrees": true}}"##,
+            r##"{"extends": "DARK", "style": {"accent": "#ffcc00"}, "content": {"degrees": true}}"##,
         )
         .unwrap();
         let mut expected = Theme::dark();

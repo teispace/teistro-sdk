@@ -248,7 +248,8 @@ the count on that page moved from three and nineteen to five and
 seventeen.
 
 - **The kernel is stated, not guessed.** A definition crosses as a
-  `DashaDefinition`, internally tagged by `kernel` — `udu` or `rashi`. The
+  `DashaDefinition`, internally tagged by `kernel` — `UDU` or `RASHI`, keys like every word a
+  request writes. The
   two rows are structurally disjoint, so a reader *could* tell them apart
   by which fields are present; it would then read a row with a typo in
   `lords` as sign-based and refuse it by a field the caller never wrote,
@@ -268,7 +269,12 @@ seventeen.
 - **The sign-based definition** is `teistro_dasha::RashiDefinition`, the
   same shape for the other kernel: `key`, `sources`, `start`, `order`,
   `length`, `named_lord` and `stronger_of`, plus its own `year_length` and
-  `depth`. Everything unsaid is Chara's, which is the family's ordinary
+  `depth`, each word a key (`ARUDHA_LAGNA`, `{"BY_MODALITY": {…}}`) and each
+  field spelt as the document spells it. Until 2i its fields were camel case
+  (`namedLord`, `yearLength`) beside the seeded row's snake case, and all
+  three bindings declared `year_length`, which the boundary's strict reader
+  refused as a field it does not read: a sign-based system's own year was a
+  field every binding offered and none could use. Everything unsaid is Chara's, which is the family's ordinary
   row, so the smallest useful definition is a key. `RashiRow::validate` is
   its validation, and a sign-based row has no lords and no seed to get
   wrong, so what it checks is the two places a number can be: a length of

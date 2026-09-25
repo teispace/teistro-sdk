@@ -953,6 +953,12 @@ void _engineTests() {
     final row = base.chart.layout(ChartLayout.southIndian);
     expect(row.key, 'SOUTH_INDIAN');
     expect(row.shape, isA<GridShape>());
+    expect(row.shape.direction, LayoutDirection.clockwise);
+    expect(
+      (row.toJson()['shape']! as Map<String, Object?>)['direction'],
+      'CLOCKWISE',
+      reason: 'the words a row answers are keys',
+    );
     expect(
       row.toJson(),
       LayoutRow.fromJson(row.toJson()).toJson(),
@@ -1559,6 +1565,39 @@ void _engineTests() {
         ),
       ),
     );
+    // Every word a definition writes is a key, and its fields are spelt
+    // as the document spells them; the SDK reads it back as written.
+    const sthira = RashiDashaDefinition(
+      key: 'ACME_STHIRA',
+      start: RashiStart.arudhaLagna,
+      order: RashiOrder.trineGroups,
+      length: RashiLength.byModality(movable: 7, fixed: 8, dual: 9),
+      namedLord: RashiNamedLord.first,
+      strongerOf: [1, 7],
+    );
+    expect(sthira.toJson(), {
+      'kernel': 'RASHI',
+      'key': 'ACME_STHIRA',
+      'start': 'ARUDHA_LAGNA',
+      'order': 'TRINE_GROUPS',
+      'length': {
+        'BY_MODALITY': {'movable': 7, 'fixed': 8, 'dual': 9},
+      },
+      'named_lord': 'FIRST',
+      'stronger_of': [1, 7],
+    });
+    teistro
+        .context(
+          testProvider: true,
+          dashaSystems: [
+            sthira,
+            const RashiDashaDefinition(
+              key: 'ACME_NAVA',
+              length: RashiLength.fixed(9),
+            ),
+          ],
+        )
+        .dispose();
   });
 
   /// The annual charts cross: a request's `varsha` answers each chart's

@@ -20,7 +20,11 @@ import type {
   LayoutKey,
   LayoutRow,
   PositionsRequest,
+  RashiDashaDefinition,
+  RuleRequest,
   Scale,
+  ShippedTheme,
+  Theme,
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
 import type { Ayanamsha, Graha, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
@@ -222,7 +226,7 @@ function reading(): string {
   });
   const drawn = read.drawings[0];
   const firstStep = drawn?.cells[0]?.outline.segments[0];
-  const curved: boolean = firstStep?.kind === 'arc' && firstStep.clockwise;
+  const curved: boolean = firstStep?.kind === 'ARC' && firstStep.clockwise;
   const markLon: number = read.drawings[1]?.marks[0]?.longitudeDeg ?? 0;
   // @ts-expect-error a drawing names a layout from the catalogue, not a word
   ctx.chart.found({ instant: 2460482.5, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, drawings: [{ layout: 'lotus', varga: Varga.D1 }] });
@@ -295,11 +299,11 @@ function ownLayout(): string {
     utcOffsetSeconds: 20700,
     drawings: [{ layout: key, varga: Varga.D1 }],
   }).drawings[0]!;
-  const rings: number = row.shape.kind === 'radial' ? row.shape.rings.length : row.shape.cells.length;
+  const rings: number = row.shape.kind === 'RADIAL' ? row.shape.rings.length : row.shape.cells.length;
   // @ts-expect-error a layout key names its kind
   own.chart.found({ instant: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, drawings: [{ layout: 'ACME_KERALA', varga: Varga.D1 }] });
   // @ts-expect-error a cell holds a sign by its bare key, not a number
-  const wrong: LayoutHolds = { kind: 'sign', value: 1 };
+  const wrong: LayoutHolds = { kind: 'SIGN', value: 1 };
   return `${drawn.layout} ${rings} ${wrong.kind} ${options?.layouts?.length}`;
 }
 
@@ -492,3 +496,28 @@ function theProvenance(ctx: Context): string {
 }
 
 void theProvenance;
+
+// The words a request writes are keys, as every answer spells them; the
+// lowercase ones they replaced are refused here, before a run.
+function theWordsAreKeys(): string {
+  const dark: ShippedTheme = 'DARK';
+  const glyphs: Theme = { extends: dark, content: { body_form: 'GLYPH', cell_label: 'SIGN_NUMBER' } };
+  // @ts-expect-error a shipped theme is named by its key
+  const lower: Theme = 'dark';
+  const rules: RuleRequest = { shipped: ['NABHASAS'], readings: 'RECORDING_ENGINE' };
+  // @ts-expect-error a shipped set is named by its key
+  const set: RuleRequest = { shipped: ['nabhasas'] };
+  const sthira: RashiDashaDefinition = {
+    kernel: 'RASHI',
+    key: 'ACME_STHIRA',
+    start: 'ARUDHA_LAGNA',
+    length: { BY_MODALITY: { movable: 7, fixed: 8, dual: 9 } },
+    named_lord: 'FIRST',
+    year_length: 'SAVANA_360',
+  };
+  // @ts-expect-error a field is spelt as the document spells it
+  const camel: RashiDashaDefinition = { kernel: 'RASHI', key: 'ACME_STHIRA', namedLord: 'FIRST' };
+  return `${String(glyphs)} ${String(lower)} ${String(rules)} ${String(set)} ${sthira.key} ${String(camel)}`;
+}
+
+void theWordsAreKeys;

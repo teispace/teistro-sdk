@@ -538,11 +538,11 @@ pub struct TsChartRequest {
     pub dasha_count: usize,
     /// A theme to write every drawing as SVG in, as JSON: an object of
     /// `style` and `content` naming only what it changes, over the light
-    /// theme or the shipped one its `extends` names (`{"extends": "dark"}`).
+    /// theme or the shipped one its `extends` names (`{"extends": "DARK"}`).
     /// The SVGs come back in the blob's `svgs` section, in the context's
     /// locale. Null for none, which costs nothing
     /// (`03-design/render-svg.md`).
-    /// `api: nullable example={"extends":"dark"}`
+    /// `api: nullable example={"extends":"DARK"}`
     pub theme_json: *const c_char,
     /// Rules to answer over every chart, as JSON: `shipped` names the
     /// kernel's sets, `rules` a consumer's own in the rule format, with
@@ -551,7 +551,7 @@ pub struct TsChartRequest {
     /// blob's `rules` section, and the sections the rules read are computed
     /// whether or not `sections` asked for them. Null for none, which costs
     /// nothing.
-    /// `api: nullable example={"shipped":["nabhasas"]}`
+    /// `api: nullable example={"shipped":["NABHASAS"]}`
     pub rules_json: *const c_char,
     /// Narrative plans to compose over every chart, as JSON: an object
     /// naming the composers to run — `placements`, `readings`, `strength`,

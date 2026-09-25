@@ -1548,7 +1548,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
     // is refused as the field it is missing.
     let extra = kerala.replacen(
         "\"direction\"",
-        "\"heading\":\"clockwise\",\"direction\"",
+        "\"heading\":\"CLOCKWISE\",\"direction\"",
         1,
     );
     let typo = refused(format!("[{extra}]"));
@@ -1582,7 +1582,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
 /// definition the row's checks refuse is named by its place and field.
 #[test]
 fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
-    let saptaka = r#"{"kernel":"udu","key":"ACME_SAPTAKA","lords":[
+    let saptaka = r#"{"kernel":"UDU","key":"ACME_SAPTAKA","lords":[
         {"graha":"SUN","years":10},{"graha":"MOON","years":10},{"graha":"MARS","years":10},
         {"graha":"MERCURY","years":10},{"graha":"JUPITER","years":10},{"graha":"VENUS","years":10},
         {"graha":"SATURN","years":10}],"reference":"KRITTIKA"}"#;
@@ -1712,7 +1712,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
     // field rather than by one the caller never wrote.
     let unstated = refused(format!(
         "[{}]",
-        saptaka.replacen("\"kernel\":\"udu\",", "", 1)
+        saptaka.replacen("\"kernel\":\"UDU\",", "", 1)
     ));
     assert!(unstated.1.contains("kernel"), "{unstated:?}");
 }
@@ -2702,13 +2702,13 @@ fn a_years_chart_answers_the_annual_dashas_it_was_asked_for() {
 }
 
 /// A consumer's **sign-based** system crosses the same way: registered
-/// through `options.dashas_json` under `"kernel":"rashi"`, asked for by the
+/// through `options.dashas_json` under `"kernel":"RASHI"`, asked for by the
 /// id `ts_key_parse` gives, and answered in the `dashas` section with the
 /// periods the catalogued row it copies would give
 /// (`03-design/dasha-coverage-measured.md`).
 #[test]
 fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
-    let chara = r#"{"kernel":"rashi","key":"ACME_CHARA","start":"lagna","order":"consecutive","length":"count_to_lord","namedLord":"stronger"}"#;
+    let chara = r#"{"kernel":"RASHI","key":"ACME_CHARA","start":"LAGNA","order":"CONSECUTIVE","length":"COUNT_TO_LORD","named_lord":"STRONGER"}"#;
     let ctx = Ctx::with_dashas(&format!("[{chara}]")).expect("a sign-based system registers");
     let full = CString::new("dasha_system.ACME_CHARA").unwrap();
     let mut id = 0u32;
@@ -2780,8 +2780,8 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
     let thirteenth = refused(format!(
         "[{}]",
         chara.replacen(
-            "\"namedLord\":\"stronger\"",
-            "\"namedLord\":\"stronger\",\"strongerOf\":[1,13]",
+            "\"named_lord\":\"STRONGER\"",
+            "\"named_lord\":\"STRONGER\",\"stronger_of\":[1,13]",
             1
         )
     ));
@@ -2789,6 +2789,17 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
         thirteenth.2.as_deref(),
         Some("options.dashas_json[0].stronger_of[1]"),
         "{thirteenth:?}"
+    );
+    // A field is spelt as the document spells it, and a misspelt one is
+    // refused by name rather than read as its default.
+    let camel = refused(format!(
+        "[{}]",
+        chara.replacen("\"named_lord\"", "\"namedLord\"", 1)
+    ));
+    assert_eq!(
+        camel.2.as_deref(),
+        Some("options.dashas_json[0].namedLord"),
+        "{camel:?}"
     );
 }
 
@@ -2807,7 +2818,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
     )
     .unwrap();
     let instants = [2_447_995.489_583_333_5, 2_451_545.0];
-    let rules = CString::new(r#"{"shipped": ["nabhasas"], "longevity": true}"#).unwrap();
+    let rules = CString::new(r#"{"shipped": ["NABHASAS"], "longevity": true}"#).unwrap();
     let request = sized(
         TsChartRequest {
             struct_size: 0,
@@ -2963,7 +2974,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
     )
     .unwrap();
     let instants = [2_447_995.489_583_333_5, 2_451_545.0];
-    let rules = CString::new(r#"{"shipped": ["nabhasas"]}"#).unwrap();
+    let rules = CString::new(r#"{"shipped": ["NABHASAS"]}"#).unwrap();
     let plans = CString::new(
         r#"{"placements": true, "readings": true, "strength": true, "houses": true,
             "positions": true, "aspects": true, "conditions": true, "karakas": true,
@@ -3218,7 +3229,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
     )
     .unwrap();
     let instants = [2_447_995.489_583_333_5];
-    let rules = CString::new(r#"{"shipped": ["nabhasas"]}"#).unwrap();
+    let rules = CString::new(r#"{"shipped": ["NABHASAS"]}"#).unwrap();
     let silent: std::collections::BTreeMap<&str, &str> = SILENT.iter().copied().collect();
 
     for member in teistro::PlanRequest::MEMBERS {

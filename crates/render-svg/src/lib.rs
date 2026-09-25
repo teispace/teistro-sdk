@@ -50,7 +50,7 @@ mod marks;
 mod svg;
 
 pub use labels::Labels;
-pub use theme::{BodyForm, CellLabel, Content, Style, Theme};
+pub use theme::{BodyForm, CellLabel, Content, ShippedTheme, Style, Theme};
 
 use teistro_core::error::Error;
 use teistro_geometry::{Placed, PlacedCell, Point};

@@ -65,7 +65,7 @@ def main() -> None:
             # The rules whose answers the readings composer will say. The
             # sections they read are computed whether or not they are
             # asked for here.
-            rules={"shipped": ["nabhasas", "arishtas"]},
+            rules={"shipped": ["NABHASAS", "ARISHTAS"]},
             interpret={
                 "placements": True,
                 "readings": True,

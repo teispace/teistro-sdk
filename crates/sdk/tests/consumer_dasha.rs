@@ -191,7 +191,7 @@ fn a_stored_sign_based_document_rebuilds_without_its_registration() {
         .unwrap()
         .value;
     let stored = serde_json::to_string(&document).unwrap();
-    assert!(stored.contains(r#""kernel":"rashi""#), "the kernel, stated");
+    assert!(stored.contains(r#""kernel":"RASHI""#), "the kernel, stated");
     let restored: Document = serde_json::from_str(&stored).unwrap();
     assert_eq!(restored.dashas, document.dashas);
 

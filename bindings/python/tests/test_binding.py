@@ -860,14 +860,14 @@ class AnEngine(WithLibrary):
             ).drawings
 
         self.assertIsNone(found(None)[0].svg, "no theme, no SVG")
-        north, wheel = found("dark")
+        north, wheel = found("DARK")
         assert north.svg is not None and wheel.svg is not None
         self.assertTrue(north.svg.startswith('<svg xmlns="http://www.w3.org/2000/svg"'))
         self.assertIn('data-body="graha.SUN">सू', north.svg)
         self.assertIn('fill="#121212"', north.svg)
         self.assertIn("<line ", wheel.svg)
 
-        glyphs = found({"extends": "light", "style": {"size": 600}, "content": {"body_form": "glyph"}})[0].svg
+        glyphs = found({"extends": "LIGHT", "style": {"size": 600}, "content": {"body_form": "GLYPH"}})[0].svg
         assert glyphs is not None
         self.assertIn('viewBox="0 0 600 600"', glyphs)
         self.assertIn('data-body="graha.SUN">☉', glyphs)
@@ -875,9 +875,13 @@ class AnEngine(WithLibrary):
         with self.assertRaises(TeistroError) as wrong:
             found({"style": {"ink": "black"}})
         self.assertEqual(wrong.exception.field, "theme.style.ink")
-        with self.assertRaises(TeistroError) as unknown:
-            found("sepia")  # type: ignore[arg-type]
-        self.assertEqual(unknown.exception.field, "theme.extends")
+        # A theme is named by its key, as every other word is; the lowercase
+        # name is refused with the keys it could have been.
+        for name in ("sepia", "dark"):
+            with self.assertRaises(TeistroError) as unknown:
+                found(name)  # type: ignore[arg-type]
+            self.assertEqual(unknown.exception.field, "theme.extends")
+            self.assertIn('"DARK"', unknown.exception.hint or "")
 
     def test_rules_are_answered_in_the_same_crossing_and_a_wrong_one_is_refused(self) -> None:
         """A request's rules come back as each chart's `rules`, a consumer's own
@@ -894,7 +898,7 @@ class AnEngine(WithLibrary):
             ).rules
 
         self.assertIsNone(found(None), "no rules, no answers")
-        answered = found({"shipped": ["nabhasas"], "longevity": True})
+        answered = found({"shipped": ["NABHASAS"], "longevity": True})
         assert answered is not None
         present = answered["present"]
         self.assertTrue(present)
@@ -905,7 +909,7 @@ class AnEngine(WithLibrary):
 
         mine = {"key": "MINE", "category": "raja", "source": {"text": "BPHS"},
                 "conditions": [{"type": "rule", "key": present[0]["rule"]}]}
-        with_mine = found({"shipped": ["nabhasas"], "rules": [mine]})
+        with_mine = found({"shipped": ["NABHASAS"], "rules": [mine]})
         assert with_mine is not None
         self.assertTrue(any(held["rule"] == "MINE" for held in with_mine["present"]))
 
@@ -951,7 +955,7 @@ class AnEngine(WithLibrary):
                 "dashaPhala": True,
                 "ashtakavarga": True,
             },
-            {"shipped": ["nabhasas"]},
+            {"shipped": ["NABHASAS"]},
         )
         assert plans is not None
         self.assertTrue(plans["placements"], "every chart places its grahas")
@@ -1177,12 +1181,12 @@ class AnEngine(WithLibrary):
         years = (("KETU", 7), ("VENUS", 20), ("SUN", 6), ("MOON", 10), ("MARS", 7),
                  ("RAHU", 18), ("JUPITER", 16), ("SATURN", 19), ("MERCURY", 17))
         twin: DashaDefinition = {
-            "kernel": "udu",
+            "kernel": "UDU",
             "key": "ACME_VIMSHOTTARI",
             "lords": [{"graha": graha, "years": count} for graha, count in years],
             "reference": "ASHWINI",
         }
-        sign_twin: DashaDefinition = {"kernel": "rashi", "key": "ACME_CHARA"}
+        sign_twin: DashaDefinition = {"kernel": "RASHI", "key": "ACME_CHARA"}
         observer = Observer(
             latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
         )
@@ -1218,7 +1222,7 @@ class AnEngine(WithLibrary):
                 )
             self.assertEqual(stray.exception.field, "dashas[0]")
         too_narrow: UduDashaDefinition = {
-            "kernel": "udu",
+            "kernel": "UDU",
             "key": "ACME_VIMSHOTTARI",
             "lords": [{"graha": graha, "years": count} for graha, count in years],
             "reference": "ASHWINI",
@@ -1228,13 +1232,19 @@ class AnEngine(WithLibrary):
             self.teistro.context(test_provider=True, dasha_systems=[too_narrow])
         self.assertEqual(narrow.exception.field, "options.dashas_json[0].span")
         thirteenth: RashiDashaDefinition = {
-            "kernel": "rashi",
+            "kernel": "RASHI",
             "key": "ACME_THIRTEEN",
-            "strongerOf": [1, 13],
+            "stronger_of": [1, 13],
         }
         with self.assertRaises(TeistroError) as houses:
             self.teistro.context(test_provider=True, dasha_systems=[thirteenth])
         self.assertEqual(houses.exception.field, "options.dashas_json[0].stronger_of[1]")
+        # A field in another spelling is refused by name, not read as its
+        # default.
+        camel = {"kernel": "RASHI", "key": "ACME_CAMEL", "namedLord": "FIRST"}
+        with self.assertRaises(TeistroError) as misspelt:
+            self.teistro.context(test_provider=True, dasha_systems=[camel])  # type: ignore[list-item]
+        self.assertEqual(misspelt.exception.field, "options.dashas_json[0].namedLord")
 
     def test_a_chart_carries_the_annual_charts_its_birth_opens(self) -> None:
         """The annual charts cross: a request's `varsha=` answers each chart's
@@ -1782,6 +1792,7 @@ class AnEngine(WithLibrary):
         (`03-design/chart-geometry.md` §7f)."""
         row = self.ctx.chart.layout("SOUTH_INDIAN")
         self.assertEqual(self.ctx.chart.layout(ChartLayout.SOUTH_INDIAN), row, "bare or full")
+        self.assertEqual((row["shape"]["kind"], row["shape"]["direction"]), ("GRID", "CLOCKWISE"))
         with self.assertRaises(TeistroError) as unknown:
             self.ctx.chart.layout("ACME_KERALA")
         self.assertEqual(unknown.exception.field, "key")
@@ -1817,7 +1828,7 @@ class AnEngine(WithLibrary):
             return caught.exception.field
 
         self.assertEqual(refused([kerala, row]), "options.layouts_json[1].key")
-        misspelt = {**kerala, "shape": {**kerala["shape"], "heading": "clockwise"}}
+        misspelt = {**kerala, "shape": {**kerala["shape"], "heading": "CLOCKWISE"}}
         self.assertEqual(refused([misspelt]), "options.layouts_json[0].shape.heading")  # type: ignore[list-item]
 
 

@@ -600,6 +600,26 @@ fn a_reading_with_rules_answers_as_the_kernel_does_on_every_corpus_chart() {
     );
 }
 
+/// A shipped set and the readings are named by the key serde writes, in the
+/// spelling every other word a request carries takes, and the old lowercase
+/// spelling is refused with the keys it could have been.
+#[test]
+fn a_rule_request_names_a_set_by_its_key() {
+    use teistro::{RuleReadings, RuleRequest, ShippedRules};
+
+    for set in ShippedRules::ALL {
+        let written = serde_json::to_value(set).unwrap();
+        assert_eq!(written, set.key(), "{set:?}");
+        let request =
+            RuleRequest::from_json(&format!(r#"{{"shipped": ["{}"]}}"#, set.key())).unwrap();
+        assert_eq!(request.shipped, [set]);
+    }
+    let engine = RuleRequest::from_json(r#"{"readings": "RECORDING_ENGINE"}"#).unwrap();
+    assert_eq!(engine.readings, RuleReadings::RecordingEngine);
+    let old = RuleRequest::from_json(r#"{"shipped": ["nabhasas"]}"#).unwrap_err();
+    assert!(old.message.contains("NABHASAS"), "{}", old.message);
+}
+
 /// A rule request refuses what it cannot evaluate, naming where.
 #[test]
 fn a_rule_request_refuses_a_set_it_cannot_evaluate_by_name() {

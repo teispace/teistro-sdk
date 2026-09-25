@@ -76,9 +76,9 @@ the schema comes from.
 
 | string paths | drawn from the catalogue | free text |
 |---|---|---|
-| 119 | 111 | 8 |
+| 119 | 113 | 6 |
 
-A schema would constrain each of those 111 with an `enum`, and it cannot
+A schema would constrain each of those 113 with an `enum`, and it cannot
 get the members from the documents: the widest of them shows 12 values,
 where the catalogue's own list is longer for every one. A sample proves
 a member exists; it never proves a member does not.
@@ -162,16 +162,18 @@ chart at all. It can now publish one and read it back.
 ## 8. One spelling, in one document
 
 A schema's `enum` has to spell a member the way the document really
-writes it. Counting `rename_all` over the layer and the crates it holds
-values from, outside their tests, 36 types declare one:
+writes it. Reading every `enum` and `const` in the document's own schema
+— a closed enum's members and a tagged union's tags, from whichever
+crate holds the value — 571 words are written:
 
-| convention | types |
+| spelt | words |
 |---|---|
-| `SCREAMING_SNAKE_CASE` | 36 |
+| as a key, `[A-Z][A-Z0-9_]*` | 571 |
+| otherwise | 0 |
 
-**One convention**, so a consumer reading a document meets one spelling
-of a member everywhere, and a generated schema may still take each
-spelling from its type rather than assume it.
+**Every one is a key**, so a consumer reading a document meets one
+spelling of a member everywhere, the spelling a request takes and every
+binding reads back.
 
 ## 9. The grammar is a fixed point, and the parser had to be told
 
@@ -228,7 +230,7 @@ for, and that is where a fixed count of decimals ran out.
 | the schema can be derived from the documents | falsified | 44 of 162 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
 | the layer's types read back, so a round trip can gate the schema | **holds** | 63 types derive `Deserialize` |
-| one casing convention covers every enum in a document | **holds** | 1 convention declared |
+| every word a document writes is spelt as a key | **holds** | 0 of the schema's words are not |
 | every number the form writes reads back as the same double | **holds** | 0 of 5474 move under a correct parser |
 | this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5474 |
 

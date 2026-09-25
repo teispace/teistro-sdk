@@ -34,7 +34,7 @@ use crate::row::UduDefinition;
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(tag = "kernel", rename_all = "snake_case")]
+#[serde(tag = "kernel", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum DashaDefinition {
     /// The nakshatra-seeded kernel: lords for years, seeded by the Moon's
     /// nakshatra.
@@ -136,11 +136,51 @@ mod tests {
     fn a_kernel_is_stated_and_not_guessed() {
         let rashi: DashaDefinition = RashiDefinition::of("ACME_STHIRA").into();
         let json = serde_json::to_string(&rashi).unwrap();
-        assert!(json.contains(r#""kernel":"rashi""#), "{json}");
+        assert!(json.contains(r#""kernel":"RASHI""#), "{json}");
         assert_eq!(
             serde_json::from_str::<DashaDefinition>(&json).unwrap(),
             rashi
         );
+    }
+
+    #[test]
+    fn a_definition_spells_its_words_as_keys_and_its_fields_as_the_document() {
+        let text = r#"{"kernel":"RASHI","key":"ACME_STHIRA","start":"ARUDHA_LAGNA",
+            "order":"TRINE_GROUPS","length":{"BY_MODALITY":{"movable":7,"fixed":8,"dual":9}},
+            "named_lord":"FIRST","stronger_of":[1,7],"year_length":"SAVANA_360"}"#;
+        let read: DashaDefinition = serde_json::from_str(text).unwrap();
+        let written = serde_json::to_value(&read).unwrap();
+        let expected: serde_json::Value = serde_json::from_str(text).unwrap();
+        for field in [
+            "kernel",
+            "start",
+            "order",
+            "length",
+            "named_lord",
+            "stronger_of",
+            "year_length",
+        ] {
+            assert_eq!(written.get(field), expected.get(field), "{field}");
+        }
+        let fixed = serde_json::to_value(Length::Fixed(7)).unwrap();
+        assert_eq!(fixed, serde_json::json!({"FIXED": 7}));
+        // A field in another spelling is refused by its path, through the
+        // tag, rather than read as its default: the strict reader the
+        // boundary reads a definition with.
+        for (misspelt, field) in [
+            (
+                r#"{"kernel":"RASHI","key":"ACME_STHIRA","namedLord":"FIRST"}"#,
+                "dashas[0].namedLord",
+            ),
+            (
+                r#"{"kernel":"UDU","key":"ACME_TRAYA","lords":[],"reference":"ASHWINI","yearLength":"SAVANA_360"}"#,
+                "dashas[0].yearLength",
+            ),
+        ] {
+            let why =
+                teistro_core::strict::read::<DashaDefinition>(misspelt, "dashas[0]").unwrap_err();
+            assert_eq!(why.field(), Some(field), "{why:?}");
+        }
     }
 
     #[test]

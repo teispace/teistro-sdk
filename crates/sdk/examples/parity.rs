@@ -962,7 +962,7 @@ fn the_geo_context() -> Context {
 /// enough to keep the report a report.
 const PARITY_YEARS: u16 = 12;
 
-const PARITY_DASHA: &str = r#"{"kernel":"udu","key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}"#;
+const PARITY_DASHA: &str = r#"{"kernel":"UDU","key":"ACME_PARITY","sources":["the parity scenario"],"lords":[{"graha":"SUN","years":5},{"graha":"MOON","years":10},{"graha":"MARS","years":7},{"graha":"MERCURY","years":12}],"reference":"MULA","count":"TO_REFERENCE","span":2,"offset":1,"repeats":true,"year_length":"SAVANA_360","depth":2}"#;
 
 fn parity_dasha() -> teistro::dasha::UduDefinition {
     serde_json::from_str(PARITY_DASHA).expect("the parity definition")
@@ -1013,7 +1013,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartReq
 /// sign, house, anchors, outline start and the kinds of its steps, and each
 /// mark, as the other three print them.
 fn the_drawings(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
-    use teistro::geometry::{Point, Segment};
+    use teistro::geometry::Point;
     let pair = |point: Point| format!("{},{}", number(point.x), number(point.y));
     for (d, drawing) in document.drawings.iter().enumerate() {
         let key = format!("chart-{index}-drawing-{d}");
@@ -1068,16 +1068,7 @@ fn the_drawings(report: &mut Report, sdk: &Context, index: usize, document: &tei
             put(report, &format!("{at}-label"), pair(cell.label));
             put(report, &format!("{at}-anchor"), pair(cell.anchor));
             put(report, &format!("{at}-start"), pair(cell.outline.start));
-            let steps: Vec<&str> = cell
-                .outline
-                .segments
-                .iter()
-                .map(|step| match step {
-                    Segment::Line { .. } => "line",
-                    Segment::Quad { .. } => "quad",
-                    Segment::Arc { .. } => "arc",
-                })
-                .collect();
+            let steps: Vec<String> = cell.outline.segments.iter().map(wire_key).collect();
             put(report, &format!("{at}-steps"), steps.join(","));
         }
         for (m, mark) in placed.marks.iter().enumerate() {

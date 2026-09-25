@@ -1327,7 +1327,7 @@
           "description": "The nakshatra-seeded kernel: lords for years, seeded by the Moon's nakshatra.",
           "properties": {
             "kernel": {
-              "const": "udu",
+              "const": "UDU",
               "type": "string"
             }
           },
@@ -1341,7 +1341,7 @@
           "description": "The sign-based kernel: the twelve signs in an order, each for a number of years.",
           "properties": {
             "kernel": {
-              "const": "rashi",
+              "const": "RASHI",
               "type": "string"
             }
           },
@@ -3149,12 +3149,12 @@
       "description": "How long a sign's period runs.",
       "oneOf": [
         {
-          "const": "count_to_lord",
+          "const": "COUNT_TO_LORD",
           "description": "The count to the sign's stronger lord.",
           "type": "string"
         },
         {
-          "const": "count_to_lord_by_dignity",
+          "const": "COUNT_TO_LORD_BY_DIGNITY",
           "description": "The same, a year more when that lord is exalted and a year less when debilitated, from one year to twelve.",
           "type": "string"
         },
@@ -3162,7 +3162,7 @@
           "additionalProperties": false,
           "description": "The same years for every sign.",
           "properties": {
-            "fixed": {
+            "FIXED": {
               "format": "uint8",
               "maximum": 255,
               "minimum": 0,
@@ -3170,7 +3170,7 @@
             }
           },
           "required": [
-            "fixed"
+            "FIXED"
           ],
           "type": "object"
         },
@@ -3178,7 +3178,7 @@
           "additionalProperties": false,
           "description": "By the sign's modality.",
           "properties": {
-            "by_modality": {
+            "BY_MODALITY": {
               "properties": {
                 "dual": {
                   "description": "A dual sign's years.",
@@ -3211,7 +3211,7 @@
             }
           },
           "required": [
-            "by_modality"
+            "BY_MODALITY"
           ],
           "type": "object"
         }
@@ -3724,12 +3724,12 @@
       "description": "Which lord a mahadasha names.",
       "oneOf": [
         {
-          "const": "stronger",
+          "const": "STRONGER",
           "description": "The stronger of a dual-lorded sign's two.",
           "type": "string"
         },
         {
-          "const": "first",
+          "const": "FIRST",
           "description": "The first, Ketu or Rahu.",
           "type": "string"
         }
@@ -3793,22 +3793,22 @@
       "description": "The order a system visits the signs in.",
       "oneOf": [
         {
-          "const": "consecutive",
+          "const": "CONSECUTIVE",
           "description": "Every sign in turn from the start, forward from an odd start and back from an even one.",
           "type": "string"
         },
         {
-          "const": "trine_groups",
+          "const": "TRINE_GROUPS",
           "description": "The trine groups from the start's, forward, each group's three signs forward from an odd start and reversed from an even one.",
           "type": "string"
         },
         {
-          "const": "drishti_chain",
+          "const": "DRISHTI_CHAIN",
           "description": "The ninth, tenth and eleventh houses from the start, each followed by the signs it aspects in the zodiac's order, then any sign left out in the zodiac's order (crux C52).",
           "type": "string"
         },
         {
-          "const": "leap",
+          "const": "LEAP",
           "description": "Back two signs at a time from the start, six times, then the same from the sign before the start.",
           "type": "string"
         }
@@ -4676,17 +4676,17 @@
         },
         "length": {
           "$ref": "#/$defs/Length",
-          "default": "count_to_lord",
+          "default": "COUNT_TO_LORD",
           "description": "How long a sign's period runs; the count to its stronger lord by default, which is what most of the family does."
         },
-        "namedLord": {
+        "named_lord": {
           "$ref": "#/$defs/NamedLord",
-          "default": "stronger",
+          "default": "STRONGER",
           "description": "Which lord a mahadasha names; the stronger of a dual-lorded sign's two by default."
         },
         "order": {
           "$ref": "#/$defs/Order",
-          "default": "consecutive",
+          "default": "CONSECUTIVE",
           "description": "The order it visits the signs in; every sign in turn by default."
         },
         "sources": {
@@ -4698,10 +4698,10 @@
         },
         "start": {
           "$ref": "#/$defs/Start",
-          "default": "lagna",
+          "default": "LAGNA",
           "description": "Where it starts; the lagna by default."
         },
-        "strongerOf": {
+        "stronger_of": {
           "description": "The houses from the lagna to start from the strongest of, under `RashiStart::Stronger`; none by default, which starts from `RashiDefinition::start` itself.",
           "items": {
             "format": "uint8",
@@ -4711,7 +4711,7 @@
           },
           "type": "array"
         },
-        "yearLength": {
+        "year_length": {
           "$ref": "#/$defs/YearLength",
           "default": "JULIAN_365_25",
           "description": "The length of its year; the Julian year by default, as every catalogued system takes unless the settings say otherwise."
@@ -4985,7 +4985,7 @@
           "description": "A straight line to a point.",
           "properties": {
             "kind": {
-              "const": "line",
+              "const": "LINE",
               "type": "string"
             },
             "to": {
@@ -5007,7 +5007,7 @@
               "description": "The control point."
             },
             "kind": {
-              "const": "quad",
+              "const": "QUAD",
               "type": "string"
             },
             "to": {
@@ -5034,7 +5034,7 @@
               "type": "boolean"
             },
             "kind": {
-              "const": "arc",
+              "const": "ARC",
               "type": "string"
             },
             "to": {
@@ -5269,17 +5269,17 @@
       "description": "Where a system starts.",
       "oneOf": [
         {
-          "const": "lagna",
+          "const": "LAGNA",
           "description": "The lagna.",
           "type": "string"
         },
         {
-          "const": "arudha_lagna",
+          "const": "ARUDHA_LAGNA",
           "description": "The arudha lagna.",
           "type": "string"
         },
         {
-          "const": "navamsa_lagna",
+          "const": "NAVAMSA_LAGNA",
           "description": "The navamsa lagna.",
           "type": "string"
         }

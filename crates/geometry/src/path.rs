@@ -48,7 +48,7 @@ impl Point {
 /// One step of an outline, from wherever the previous step ended.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(tag = "kind", rename_all = "lowercase")]
+#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Segment {
     /// A straight line to a point.
     Line {
