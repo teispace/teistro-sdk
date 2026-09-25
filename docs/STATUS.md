@@ -3621,8 +3621,8 @@ on pub.dev (checked 2026-09-07).
    is what a rich renderer is written against. Left: a musl row in the
    platform table; a
    Flutter plugin that carries the library into an Android or iOS build,
-   which belongs with the mobile targets; the wasm binding from the same
-   description. The **Python binding is built** (`bindings/python`), so
+   which belongs with the mobile targets. The wasm binding from the same
+   description is built (item 8a). The **Python binding is built** (`bindings/python`), so
    the parity gate now compares three reports rather than two and the
    packaging gate installs four packages rather than three; per-platform
    wheels remain, and are a change to the release matrix rather than to
@@ -4134,7 +4134,8 @@ on pub.dev (checked 2026-09-07).
    `crates/ffi/tests/tier.rs`) — ships from a size-measured `wasm` profile
    without its name section: 8.6 MB to 4.77 MB, 1.33 MB gzipped, held to
    `bindings/wasm/size.json` both ways. What is left is in the design
-   page's §7: ADR-0005's module profiles, `wasm-opt`, edge runtimes.
+   page's §7: ADR-0005's module profiles and edge runtimes; `wasm-opt`
+   was measured and declined, since it grows the gzipped module 6%.
    `@teistro/sdk-wasm` is
    **released with the others** (maintainer, 2026-09-25): the release's
    `wasm` job stages and checks it, `package stage` refuses a release
