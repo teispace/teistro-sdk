@@ -32,6 +32,9 @@ pub enum ParamType {
     DateTime,
     /// A ghati-pala count (`:ghati`).
     Ghati,
+    /// An instant, a Julian day in UTC, that a date or time function reads
+    /// in the zone its `timeZone` option names.
+    Instant,
 }
 
 impl ParamType {
@@ -188,6 +191,9 @@ impl Collector<'_> {
         let kind = match function.name.to_string().as_str() {
             "integer" => ParamType::Integer,
             "number" | "dms" | "zodiac" | "duration" => ParamType::Number,
+            // A zone moves an instant, so a date or time function that names
+            // one takes an instant and not a civil value.
+            "date" | "time" | "datetime" if function.has_option("timeZone") => ParamType::Instant,
             "date" => ParamType::Date,
             "time" => ParamType::Time,
             "datetime" => ParamType::DateTime,

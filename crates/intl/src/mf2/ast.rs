@@ -260,4 +260,11 @@ impl Function {
             _ => None,
         })
     }
+
+    /// Whether the function names an option at all, as a literal or as a
+    /// variable the caller supplies at render time.
+    #[must_use]
+    pub fn has_option(&self, name: &str) -> bool {
+        self.options.iter().any(|o| o.name.is(name))
+    }
 }

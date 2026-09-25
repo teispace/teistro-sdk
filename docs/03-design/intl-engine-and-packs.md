@@ -1,6 +1,8 @@
 # Teistro Intl: the engine, the sources and the packs
 
-Status: `draft`, revised 2026-09-06 when the parts of the day became a
+Status: `draft`, revised 2026-09-25 when an instant became a value read
+in the zone `timeZone` names (§5) and the precedence of what an engine
+holds was decided (§8); revised 2026-09-06 when the parts of the day became a
 locale's own (`_meta.json`'s `dayPeriods`) and `:duration` learnt to
 break a count into several units (§5); revised the same day when XLIFF export and import were
 added (§3); revised the same day when transliteration and the derived
@@ -284,6 +286,33 @@ negative once, on its first part, rather than on each. The bars are the
 grammar's: a comma cannot sit in an option value unless the value is
 quoted.
 
+**An instant in a zone.** A value may be an instant, the SDK's own (a
+Julian day in UTC, `{"$instant": 2460000.25}` on the wire), and `:date`,
+`:time` and `:datetime` read it in the zone their `timeZone` option names:
+- `UTC`;
+- an offset, `+05:45`, `-0300` or `+09`;
+- a zone's IANA name;
+- a variable the caller supplies at render time, `timeZone=$zone`.
+
+The instant is moved to the zone and read as the Gregorian date and time
+it was there. From then on it is a civil value like any other, so
+`calendar=`, the patterns and the parts of the day apply to it unchanged.
+A zone's name is answered by the zone database the engine is given
+(`Intl::set_time_zones`). The SDK's context gives it the embedded database
+its own birth-time resolutions use, so a message reads an instant as the
+SDK resolved it. The engine alone carries no zone data, and a name with no
+database to answer it warns by name rather than guessing. Two other cases
+also warn, and say why:
+- an instant with no `timeZone` is read in UTC;
+- a `timeZone` on a value already civil is left as it is, because there
+  is no instant to move.
+
+The name is MF2's own (`timeZone`), because it is what a translator
+reading the specification writes. A date or time function that names a
+zone types its value as an instant in every binding's accessors, and
+`sdk.calendar.datetime.inZone` (`{$at :datetime timeZone=$zone}`) is the
+shipped message for it.
+
 A locale that declares no pattern gets the built-in default (the ISO
 order for a date, `HH:MM` for a time or `H:MM am` on a twelve-hour
 clock, `GG-PP` for a ghati, the number and the unit's name for a
@@ -411,6 +440,22 @@ locale is already known; an engine over packs renders the same bits as
 one over sources (tested). Per-namespace slicing stays a build option
 (`build` against `build --bundle`). Interpretation packs use the same
 container with citation fields and a licence.
+
+**What stands, wherever it came from** (decided 2026-09-25). An engine
+holds, from the bottom:
+- the locales it was built over (the SDK's embedded bundles);
+- every pack or bundle loaded at runtime, **in the order it was loaded**,
+  each laid over what stands. A message replaces, because it is one
+  string. An entity record merges its forms, because a record's forms are
+  an open set;
+- the overrides, which stand before all of that and keep standing when a
+  pack loaded after them replaces the entry beneath.
+
+A binding reads a pack from a blob, a file or a bundle of its own and
+hands the engine bytes either way, so where a pack came from is not a
+rule. The order the consumer loaded it in is, and `Intl::report` lists it
+with each file's hash. Held by
+`what_stands_is_the_build_then_each_pack_in_load_order_then_the_overrides`.
 
 ## 9. Typed accessors
 
@@ -555,15 +600,13 @@ here.
   (the grammar's bidi marks are accepted; rendering policy is open).
 - Whether `:entity` form names are a closed set per catalogue kind or
   open per locale (open in the spike).
-- The composite provider's precedence rules once a binding loads packs
-  from several places (baked, blob, filesystem): the Rust runtime API
-  loads in call order, later entries replacing earlier ones.
 - The twenty baseline entity types without a catalogue kind, and the
   synonyms the engine's names carry (not a form yet).
-- The date functions' next steps: abbreviated month names for Nepali
-  (the locale links the full names) and the `zone` option once the time
-  crate's zoned instants cross the port. Day-period ranges per locale and
-  `:duration` over several units are done (§5).
+- The date functions' next step: abbreviated month names for Nepali (the
+  locale links the full names). Day-period ranges per locale, `:duration`
+  over several units and an instant read in a zone (`timeZone`) are done
+  (§5), and the precedence of packs loaded from several places is decided
+  (§8).
 - The reverse transliteration
   (IAST to Devanagari) and the other scripts of §"Axes that are not the
   language" (Tamil, Bengali).

@@ -10,8 +10,12 @@
 //!   "born":  {"$date": {"calendar": "GREGORIAN", "year": 2026, "month": 9, "day": 6}},
 //!   "at":    {"$time": {"hour": 6, "minute": 15, "second": 0}},
 //!   "when":  {"$datetime": {"date": {…}, "time": {…}}},
-//!   "since": {"$ghati": {"ghati": 12, "pala": 30, "vipala": 0}} }
+//!   "since": {"$ghati": {"ghati": 12, "pala": 30, "vipala": 0}},
+//!   "rose":  {"$instant": 2460000.25} }
 //! ```
+//!
+//! An instant is the SDK's own, a Julian day in UTC; `:date`, `:time` and
+//! `:datetime` read it in the zone their `timeZone` option names.
 //!
 //! One shape and one parser: the C boundary's `ts_intl_render` reads its
 //! `params_json` through this, so a consumer writing parameters and a
@@ -34,12 +38,13 @@ use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use teistro_calendar::CalendarDate;
 use teistro_core::catalogue::Calendar;
+use teistro_core::quantity::JulianDay;
 
 use crate::mf2::ast::MarkupKind;
 use crate::render::{ClockTime, OutPart, Rendered, Value};
 
 /// The tags an object may carry, for the sentence a refusal ends with.
-const TAGS: &str = "$entity, $date, $time, $datetime, $ghati";
+const TAGS: &str = "$entity, $date, $time, $datetime, $ghati, $instant";
 
 /// A date as a parameter carries it: the four fields that define it. An era
 /// and a resolution are a *reading* of a date and not one, and the boundary
@@ -114,6 +119,7 @@ impl Serialize for Value {
                 },
             ),
             Value::Ghati(ghati) => tagged(serializer, "$ghati", ghati),
+            Value::Instant(instant) => tagged(serializer, "$instant", &instant.get()),
         }
     }
 }
@@ -184,6 +190,10 @@ impl<'de> Visitor<'de> for Read {
                 Value::DateTime(date.date()?, time)
             }
             "$ghati" => Value::Ghati(entries.next_value()?),
+            "$instant" => Value::Instant(
+                JulianDay::try_new(entries.next_value::<f64>()?)
+                    .map_err(|why| de::Error::custom(format!("`$instant`: {why}")))?,
+            ),
             other => {
                 return Err(de::Error::custom(format!(
                     "`{other}` is not a tag; the tags are {TAGS}"
@@ -360,6 +370,7 @@ mod tests {
             Value::Time(time),
             Value::DateTime(date, time),
             Value::Ghati(Ghati::new(12, 30, 0)),
+            Value::Instant(teistro_core::quantity::JulianDay::literal(2_460_000.25)),
         ] {
             assert_eq!(round(&value), value);
         }

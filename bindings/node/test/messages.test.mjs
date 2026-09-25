@@ -33,6 +33,17 @@ test('a message is spelled by its accessor, never by its key', () => {
   );
 });
 
+test('an instant reads in the zone a message is given, through the context', () => {
+  const ctx = context();
+  ctx.intl.locale = 'en-Latn';
+  // Noon at Greenwich on 24 February 2023, and noon on 1 July.
+  assert.equal(ctx.intl.messages.sdk.calendar.datetime.inZone({ at: 2460000, zone: 'Asia/Kathmandu' }), '2023-02-24, 17:45');
+  assert.equal(ctx.intl.messages.sdk.calendar.datetime.inZone({ at: 2460127, zone: 'America/New_York' }), '2023-07-01, 08:00');
+  assert.equal(ctx.intl.messages.sdk.calendar.datetime.inZone({ at: 2460000, zone: '-03:00' }), '2023-02-24, 09:00');
+  const unknown = ctx.intl.render('sdk.calendar.datetime.inZone', { at: { $instant: 2460000 }, zone: 'Asia/Kathmandoo' });
+  assert.ok(unknown.warnings.some((w) => w.includes('Asia/Kathmandu')), 'the nearest zone is named');
+});
+
 test("an entity's forms come from the locale, not from the caller", () => {
   const ctx = context();
   const sun = ctx.intl.entity('graha.SUN');

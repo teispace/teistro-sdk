@@ -512,6 +512,59 @@ mod tests {
         assert_eq!((loaded.replaced, loaded.merged), (1, 0));
     }
 
+    /// The precedence of what an engine holds, wherever each part came
+    /// from (`03-design/intl-engine-and-packs.md` §8): the locales it was
+    /// built over, then every pack or bundle loaded at runtime **in the
+    /// order it was loaded**, each laid over what stands, then the
+    /// overrides, which stand before all of them and keep standing when a
+    /// pack loaded later replaces the entry beneath. A binding that reads a
+    /// pack from a blob, a file or its own bundle hands the engine bytes
+    /// either way, so the place a pack came from is not a rule; the order
+    /// the consumer loaded it in is, and the report lists it.
+    #[test]
+    fn what_stands_is_the_build_then_each_pack_in_load_order_then_the_overrides() {
+        let mut intl = engine("ne-Deva-NP");
+        let nepali = intl.locales.get("ne-Deva-NP").unwrap().clone();
+        let pack_saying = |text: &str| {
+            let mut patched = nepali.clone();
+            patched.namespaces = [(String::from("sdk.reason"), namespace(&[("appName", text)]))]
+                .into_iter()
+                .collect();
+            pack::build(&patched, "sdk.reason").unwrap()
+        };
+        let said = |intl: &Intl| intl.render("sdk.reason.appName", &params([])).text;
+        let built = said(&intl);
+
+        let first = intl.load_pack(&pack_saying("पहिलो")).unwrap();
+        assert_eq!(said(&intl), "पहिलो", "a pack stands over the build");
+        let second = intl.load_pack(&pack_saying("दोस्रो")).unwrap();
+        assert_eq!(
+            said(&intl),
+            "दोस्रो",
+            "the later pack stands over the earlier"
+        );
+
+        intl.set_override("ne-Deva-NP", "sdk.reason.appName", "मेरो")
+            .unwrap();
+        intl.load_pack(&pack_saying("तेस्रो")).unwrap();
+        assert_eq!(
+            said(&intl),
+            "मेरो",
+            "an override stands over a pack loaded after it"
+        );
+        intl.clear_override("ne-Deva-NP", "sdk.reason.appName");
+        assert_eq!(said(&intl), "तेस्रो", "and the last pack beneath it returns");
+        assert_ne!(built, said(&intl));
+
+        // The report lists what was loaded in the order it was loaded.
+        let hashes: Vec<&str> = intl.loaded().iter().map(|l| l.sha256.as_str()).collect();
+        assert_eq!(hashes.len(), 3);
+        assert_eq!(
+            &hashes[..2],
+            [first.sha256.as_str(), second.sha256.as_str()]
+        );
+    }
+
     #[test]
     fn a_pack_loaded_at_runtime_adds_a_namespace_and_replaces_entries() {
         let mut intl = engine("ne-Deva-NP");

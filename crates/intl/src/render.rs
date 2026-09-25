@@ -21,8 +21,11 @@ use crate::mf2::ast::{
     Opt, OptValue, Part, Pattern,
 };
 use crate::mf2::{ParseError, parse};
-use teistro_calendar::{CalendarDate, shipped};
+use teistro_calendar::{CalendarDate, FixedDay, shipped};
 use teistro_core::catalogue::{Calendar, Catalogued, Kind, Rashi};
+use teistro_core::quantity::{JulianDay, Utc};
+use teistro_core::time::UtcOffset;
+use teistro_port_timezone::TimeZoneProvider;
 
 use crate::source::{BASE_LOCALE, Entity, Entry, LocaleSource, Meta, Tree};
 
@@ -82,7 +85,8 @@ impl Ghati {
 /// It reads and writes as the JSON the boundary has always taken: text, a
 /// number and a list as themselves, and everything else as a single
 /// `$`-tagged object — `{"$entity": "graha.SUN"}`, `{"$date": {…}}`,
-/// `{"$time": {…}}`, `{"$datetime": {…}}`, `{"$ghati": {…}}`. One shape, so
+/// `{"$time": {…}}`, `{"$datetime": {…}}`, `{"$ghati": {…}}`,
+/// `{"$instant": 2451545.25}`. One shape, so
 /// a narrative plan that crosses the boundary carries slots a binding can
 /// hand straight back to `render` (`03-design/interpret-composers.md`).
 #[derive(Clone, Debug, PartialEq)]
@@ -105,6 +109,16 @@ pub enum Value {
     DateTime(CalendarDate, ClockTime),
     /// A ghati-pala count, for `:ghati`.
     Ghati(Ghati),
+    /// An instant, the SDK's own: a Julian day in UTC. `:date`, `:time`
+    /// and `:datetime` read it in the zone their `timeZone` option names
+    /// and then as the civil date and time it was there.
+    Instant(JulianDay<Utc>),
+}
+
+impl From<JulianDay<Utc>> for Value {
+    fn from(instant: JulianDay<Utc>) -> Value {
+        Value::Instant(instant)
+    }
 }
 
 impl From<CalendarDate> for Value {
@@ -321,6 +335,68 @@ fn convert(date: &CalendarDate, target: &str) -> Result<CalendarDate, String> {
         shipped(to).ok_or_else(|| format!("`calendar={target}` is not a shipped calendar"))?;
     let fixed = from_system.fixed_of(date).map_err(|e| e.to_string())?;
     to_system.date_of(fixed).map_err(|e| e.to_string())
+}
+
+/// An instant read on a clock at an offset from UTC: the Gregorian date and
+/// the time of day, the seconds truncated as a clock shows them. `None`
+/// for an instant too far for the calendar to place.
+fn civil_at(instant: JulianDay<Utc>, offset: UtcOffset) -> Option<(CalendarDate, ClockTime)> {
+    const MS_PER_DAY: i64 = 86_400_000;
+    // Counted in whole milliseconds from the fixed epoch, rounded, so a
+    // local seven o'clock is seven and not 06:59:59.999 of a day fraction
+    // that fell a hair short of it; the second is then truncated as a
+    // clock shows it.
+    let local = (instant.get() + offset.days() - FixedDay::JD_EPOCH) * 86_400_000.0;
+    if !local.is_finite() || local.abs() > 9.0e15 {
+        return None;
+    }
+    #[allow(
+        clippy::cast_possible_truncation,
+        reason = "a finite count of milliseconds bounded just above"
+    )]
+    let ms = local.round() as i64;
+    let date = shipped(Calendar::Gregorian)?
+        .date_of(FixedDay::new(ms.div_euclid(MS_PER_DAY)))
+        .ok()?;
+    let seconds = ms.rem_euclid(MS_PER_DAY) / 1000;
+    let time = ClockTime::new(
+        u8::try_from(seconds / 3600).ok()?,
+        u8::try_from(seconds / 60 % 60).ok()?,
+        u8::try_from(seconds % 60).ok()?,
+    );
+    Some((date, time))
+}
+
+/// A zone as a `timeZone` option writes it when it is not a database's:
+/// `UTC`, `Z`, or an offset `+05:45`, `-0300`, `+09`. `None` for a name
+/// the zone database must answer.
+fn fixed_offset(zone: &str) -> Option<Result<UtcOffset, String>> {
+    if matches!(zone, "UTC" | "Z" | "Etc/UTC" | "GMT") {
+        return Some(Ok(UtcOffset::UTC));
+    }
+    let (sign, rest) = match zone.as_bytes().first() {
+        Some(b'+') => (1, &zone[1..]),
+        Some(b'-') => (-1, &zone[1..]),
+        _ => return None,
+    };
+    let digits: String = rest.chars().filter(|c| *c != ':').collect();
+    let refused = || format!("`timeZone={zone}` is not an offset; write it `+05:45`");
+    if !(digits.len() == 2 || digits.len() == 4) || !digits.chars().all(|c| c.is_ascii_digit()) {
+        return Some(Err(refused()));
+    }
+    let hours: i32 = digits[..2].parse().ok()?;
+    let minutes: i32 = digits
+        .get(2..)
+        .filter(|m| !m.is_empty())
+        .map_or(Ok(0), str::parse)
+        .ok()?;
+    if minutes >= 60 {
+        return Some(Err(refused()));
+    }
+    Some(
+        UtcOffset::try_from_seconds(sign * (hours * 3600 + minutes * 60))
+            .map_err(|why| why.to_string()),
+    )
 }
 
 /// Zero-pads the integer part of an ASCII decimal to a width.
@@ -617,6 +693,9 @@ pub struct Intl {
     pub(crate) overrides: BTreeMap<String, BTreeMap<String, Entry>>,
     /// The packs and bundles loaded after construction, in order.
     pub(crate) loaded: Vec<crate::runtime::Loaded>,
+    /// The zone database a `timeZone` option's name is answered from;
+    /// none until [`Intl::set_time_zones`], and then only offsets and UTC.
+    pub(crate) zones: Option<Arc<dyn TimeZoneProvider>>,
 }
 
 /// Where a key resolved: the locale in the chain that answered, its
@@ -704,7 +783,58 @@ impl Intl {
             parsed: RwLock::new(HashMap::new()),
             overrides: BTreeMap::new(),
             loaded: Vec::new(),
+            zones: None,
         })
+    }
+
+    /// Gives the engine a zone database, so a `timeZone` option may name
+    /// a zone (`Asia/Kathmandu`) as well as an offset (`+05:45`) or UTC.
+    ///
+    /// The SDK's context gives it the embedded database its own zone
+    /// resolutions use, so a message reads an instant in a zone exactly as
+    /// the SDK resolved it; the engine alone carries no zone data.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_intl::{Intl, Value, params, sdk_root};
+    /// use teistro_intl::source::Tree;
+    ///
+    /// let tree = Tree::load(&sdk_root()).expect("the SDK's sources");
+    /// let intl = Intl::from_tree(&tree).expect("plural rules for every locale");
+    /// let noon = params([("at", Value::from(JulianDay::literal(2_460_000.0)))]);
+    /// // An offset needs no database; a zone's name does.
+    /// let at = intl.render_source("{$at :time timeZone=|+05:45|}", &noon)?;
+    /// assert_eq!(at.text, "17:45");
+    /// let named = intl.render_source("{$at :time timeZone=|Asia/Kathmandu|}", &noon)?;
+    /// assert!(named.warnings[0].contains("no zone database"));
+    /// # Ok::<(), teistro_intl::mf2::ParseError>(())
+    /// ```
+    pub fn set_time_zones(&mut self, zones: Arc<dyn TimeZoneProvider>) {
+        self.zones = Some(zones);
+    }
+
+    /// The offset from UTC a `timeZone` option's zone stood at an instant:
+    /// UTC and an offset by themselves, and a zone's name through the zone
+    /// database, refused by name when there is none or it does not know it.
+    ///
+    /// # Errors
+    ///
+    /// A malformed offset, a name with no database to answer it, or a name
+    /// the database does not know, with the nearest it does.
+    pub fn offset_in(&self, zone: &str, instant: JulianDay<Utc>) -> Result<UtcOffset, String> {
+        if let Some(fixed) = fixed_offset(zone) {
+            return fixed;
+        }
+        let Some(zones) = &self.zones else {
+            return Err(format!(
+                "`timeZone={zone}` names a zone and this engine has no zone database; \
+                 give it one with `set_time_zones`, or write the offset (`+05:45`)"
+            ));
+        };
+        zones
+            .offset_at(zone, instant)
+            .map(|info| info.offset)
+            .map_err(|why| format!("`timeZone={zone}`: {why}"))
     }
 
     /// An engine over a loaded source tree.
@@ -1215,7 +1345,66 @@ impl<'a> Eval<'a> {
                 default_time(&self.style, *time, false)
             ),
             Value::Ghati(ghati) => default_ghati(&self.style, *ghati, false),
+            // An instant with no zone named is read in UTC, as the
+            // functions read one, so the fallback agrees with them.
+            Value::Instant(instant) => match civil_at(*instant, UtcOffset::UTC) {
+                Some((date, time)) => format!(
+                    "{} {}",
+                    default_date(&self.style, &date),
+                    default_time(&self.style, time, false)
+                ),
+                None => self.style.localise(&ascii_decimal(instant.get(), 0, 6)),
+            },
         }
+    }
+
+    /// The civil value a date or time function formats: an instant moved to
+    /// the zone its `timeZone` names and read as the Gregorian date and the
+    /// time of day it was there, and anything else as it came.
+    ///
+    /// An instant with no zone named is read in UTC, and warns, because a
+    /// reader's clock is never UTC by default and a message that meant a
+    /// place should say which. A zone named for a value that is already
+    /// civil warns too: a civil date carries no instant to move.
+    fn civil(
+        &mut self,
+        source: Option<Value>,
+        options: &BTreeMap<String, String>,
+        function: &str,
+    ) -> Option<Value> {
+        let zone = options.get("timeZone");
+        let Some(Value::Instant(instant)) = source else {
+            if zone.is_some() && source.is_some() {
+                self.warn(format!(
+                    "`:{function}` has `timeZone` but its value is already a civil date or time; \
+                     the zone moves an instant, `{{\"$instant\": …}}`"
+                ));
+            }
+            return source;
+        };
+        let offset = match zone {
+            None => {
+                self.warn(format!(
+                    "`:{function}` reads an instant in UTC because it names no `timeZone`"
+                ));
+                UtcOffset::UTC
+            }
+            Some(zone) => match self.intl.offset_in(zone, instant) {
+                Ok(offset) => offset,
+                Err(why) => {
+                    self.warn(why);
+                    UtcOffset::UTC
+                }
+            },
+        };
+        let placed = civil_at(instant, offset);
+        if placed.is_none() {
+            self.warn(format!(
+                "`:{function}` cannot place the instant {}",
+                instant.get()
+            ));
+        }
+        placed.map(|(date, time)| Value::DateTime(date, time))
     }
 
     fn entity_form(&mut self, key: &str, form: &str) -> String {
@@ -1448,12 +1637,12 @@ impl<'a> Eval<'a> {
         options: &BTreeMap<String, String>,
         with_time: bool,
     ) -> Formatted {
-        let source = Self::source_value(operand);
+        let function = if with_time { "datetime" } else { "date" };
+        let source = self.civil(Self::source_value(operand), options, function);
         let (mut date, time) = match &source {
             Some(Value::Date(date)) => (date.clone(), None),
             Some(Value::DateTime(date, time)) => (date.clone(), Some(*time)),
             _ => {
-                let function = if with_time { "datetime" } else { "date" };
                 self.warn(format!("`:{function}` needs a date"));
                 return Formatted {
                     value: None,
@@ -1559,7 +1748,7 @@ impl<'a> Eval<'a> {
     /// `:time`: a time of day through the locale's pattern for the style
     /// (`numeric` hours and minutes, `long` with seconds).
     fn time(&mut self, operand: Option<&Val>, options: &BTreeMap<String, String>) -> Formatted {
-        let source = Self::source_value(operand);
+        let source = self.civil(Self::source_value(operand), options, "time");
         let Some(Value::Time(time) | Value::DateTime(_, time)) = &source else {
             self.warn(String::from("`:time` needs a time of day"));
             return Formatted {

@@ -65,6 +65,7 @@ from teistro import (
     intl,
     local_mean_zone,
     message_parts,
+    message_warnings,
     when_unknown,
 )
 from teistro._ffi import Longitude
@@ -350,6 +351,19 @@ class TheLocaleEngine(WithLibrary):
             {"graha": {"$entity": "graha.JUPITER"}, "bhava": 7},
         ).text
         self.assertEqual(typed, loose)
+
+    def test_an_instant_reads_in_the_zone_a_message_is_given(self) -> None:
+        self.ctx.intl.locale = "en-Latn"
+        in_zone = self.ctx.intl.messages.sdk.calendar.datetime.in_zone
+        # Noon at Greenwich on 24 February 2023, and noon on 1 July.
+        self.assertEqual(in_zone(at=2460000.0, zone="Asia/Kathmandu"), "2023-02-24, 17:45")
+        self.assertEqual(in_zone(at=2460127.0, zone="America/New_York"), "2023-07-01, 08:00")
+        self.assertEqual(in_zone(at=2460000.0, zone="-03:00"), "2023-02-24, 09:00")
+        unknown = self.ctx.intl.render(
+            "sdk.calendar.datetime.inZone",
+            {"at": {"$instant": 2460000.0}, "zone": "Asia/Kathmandoo"},
+        )
+        self.assertTrue(any("Asia/Kathmandu" in w for w in message_warnings(unknown)))
 
     def test_a_rendered_message_carries_its_markup_in_parts(self) -> None:
         self.ctx.intl.locale = "en-Latn"

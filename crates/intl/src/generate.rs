@@ -272,6 +272,7 @@ fn ts_type(kind: &ParamType) -> String {
         ParamType::Time => String::from("TimeValue"),
         ParamType::DateTime => String::from("DateTimeValue"),
         ParamType::Ghati => String::from("GhatiValue"),
+        ParamType::Instant => String::from("InstantValue"),
     }
 }
 
@@ -283,6 +284,8 @@ export interface DateValue { readonly calendar: string; readonly year: number; r
 export interface TimeValue { readonly hour: number; readonly minute: number; readonly second: number; }
 export interface DateTimeValue { readonly date: DateValue; readonly time: TimeValue; }
 export interface GhatiValue { readonly ghati: number; readonly pala: number; readonly vipala: number; }
+/** An instant, the SDK's own: a Julian day in UTC, read in the zone a message's `timeZone` names. */
+export type InstantValue = number;
 ";
 
 const DART_VALUE_TYPES: &str = "\
@@ -555,14 +558,17 @@ fn dart_type(kind: &ParamType) -> String {
         ParamType::Time => String::from("TimeValue"),
         ParamType::DateTime => String::from("DateTimeValue"),
         ParamType::Ghati => String::from("GhatiValue"),
+        // An instant is a Julian day in UTC, as every instant is here.
+        ParamType::Instant => String::from("double"),
     }
 }
 
 /// A parameter as the renderer's JSON takes it: a tagged object for an
-/// entity, a date, a time, a date and time or a ghati count, the key for
-/// a context or a catalogued entity, and the value itself otherwise. The
-/// tags are the engine's own (`$entity`, `$date`, `$time`, `$datetime`,
-/// `$ghati`), so the accessors need no help from the layer above.
+/// entity, a date, a time, a date and time, a ghati count or an instant,
+/// the key for a context or a catalogued entity, and the value itself
+/// otherwise. The tags are the engine's own (`$entity`, `$date`, `$time`,
+/// `$datetime`, `$ghati`, `$instant`), so the accessors need no help from
+/// the layer above.
 fn dart_value(name: &str, kind: &ParamType) -> String {
     match kind {
         ParamType::Context(_) => format!("{name}.key"),
@@ -574,6 +580,7 @@ fn dart_value(name: &str, kind: &ParamType) -> String {
         ParamType::Time => format!("{{r'$time': {name}.json}}"),
         ParamType::DateTime => format!("{{r'$datetime': {name}.json}}"),
         ParamType::Ghati => format!("{{r'$ghati': {name}.json}}"),
+        ParamType::Instant => format!("{{r'$instant': {name}}}"),
         _ => name.to_string(),
     }
 }
@@ -586,6 +593,7 @@ fn js_value(name: &str, kind: &ParamType) -> String {
         ParamType::Time => "$time",
         ParamType::DateTime => "$datetime",
         ParamType::Ghati => "$ghati",
+        ParamType::Instant => "$instant",
         _ => return format!("p.{name}"),
     };
     format!("{{ '{tag}': p.{name} }}")
@@ -784,7 +792,8 @@ fn python_type(kind: &ParamType) -> String {
     match kind {
         ParamType::Context(context) => pascal(context),
         ParamType::Integer => String::from("int"),
-        ParamType::Number => String::from("float"),
+        // An instant is a Julian day in UTC, as every instant is here.
+        ParamType::Number | ParamType::Instant => String::from("float"),
         ParamType::Entity(Some(kind)) if closed_catalogue_kind(kind) => {
             format!("{}Key", pascal(kind))
         }
@@ -800,10 +809,10 @@ fn python_type(kind: &ParamType) -> String {
 }
 
 /// A parameter as the renderer's JSON takes it: a tagged object for an
-/// entity, a date, a time, a date and time or a ghati count, the key for
-/// a context or a catalogued entity, and the value itself otherwise. The
-/// tags are the engine's own, so the accessors need no help from the
-/// layer above.
+/// entity, a date, a time, a date and time, a ghati count or an instant,
+/// the key for a context or a catalogued entity, and the value itself
+/// otherwise. The tags are the engine's own, so the accessors need no help
+/// from the layer above.
 fn python_value(name: &str, kind: &ParamType) -> String {
     let tag = match kind {
         ParamType::Context(_) => return format!("{name}.value"),
@@ -815,6 +824,7 @@ fn python_value(name: &str, kind: &ParamType) -> String {
         ParamType::Time => "$time",
         ParamType::DateTime => "$datetime",
         ParamType::Ghati => "$ghati",
+        ParamType::Instant => "$instant",
         _ => return name.to_string(),
     };
     format!("{{\"{tag}\": {name}}}")
@@ -1073,6 +1083,9 @@ fn rust_type(kind: &ParamType, paths: RustPaths<'_>) -> String {
             )
         }
         ParamType::Ghati => format!("{}::Ghati", paths.intl),
+        ParamType::Instant => {
+            String::from("teistro_core::quantity::JulianDay<teistro_core::quantity::Utc>")
+        }
         // Text, and an entity of an open kind or of no kind: its key as text.
         ParamType::String | ParamType::Entity(_) => String::from("String"),
     }
@@ -1097,6 +1110,7 @@ fn rust_value(name: &str, kind: &ParamType, paths: RustPaths<'_>) -> String {
             format!("{value}::DateTime(self.{field}.0.clone(), self.{field}.1)")
         }
         ParamType::Ghati => format!("{value}::Ghati(self.{field})"),
+        ParamType::Instant => format!("{value}::Instant(self.{field})"),
     }
 }
 
