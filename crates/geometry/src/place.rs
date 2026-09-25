@@ -256,9 +256,10 @@ fn point(radius: f64, bearing: Bearing) -> Point {
         Bearing::Degrees(degrees) => {
             let angle = degrees.to_radians();
             let grain = |v: f64| (v / GRAIN).round() * GRAIN;
+            let (sin, cos) = math::sin_cos(angle);
             Point::new(
-                grain(CENTRE.x + radius * math::sin(angle)),
-                grain(CENTRE.y - radius * math::cos(angle)),
+                grain(CENTRE.x + radius * sin),
+                grain(CENTRE.y - radius * cos),
             )
         }
     }
