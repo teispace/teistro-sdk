@@ -291,6 +291,7 @@ __all__ = [
     "library_file_name",
     "local_mean_zone",
     "message_parts",
+    "message_warnings",
     "when_unknown",
     # The divisional charts: the catalogue member a caller names and the
     # three shapes a chart's `vargas` answers with.
@@ -1116,6 +1117,19 @@ class MessagePart:
 
     def __str__(self) -> str:
         return self.value if self.is_text else f"<{self.kind} {self.name}>"
+
+
+def message_warnings(rendered: IntlRender) -> List[str]:
+    """Every problem a render met, in order; rendering continued past each.
+    The list Node's `warnings` and Dart's `warningList` read.
+
+    ```python
+    rendered = ctx.intl.render("sdk.calendar.datetime.inZone", {"at": {"$instant": 2460000.0}, "zone": "Asia/Kathmandoo"})
+    assert any("Asia/Kathmandu" in w for w in message_warnings(rendered))
+    ```
+    """
+    written: List[str] = json.loads(rendered.warnings or "[]")
+    return written
 
 
 def message_parts(rendered: IntlRender) -> List[MessagePart]:

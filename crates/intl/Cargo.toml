@@ -43,9 +43,13 @@ serde_json = { version = "1", features = ["preserve_order"] }
 sha2 = "0.11"
 teistro-calendar = { path = "../calendar" }
 teistro-core = { path = "../core" }
+teistro-port-timezone = { path = "../port-timezone" }
 
 [dev-dependencies]
 criterion = { version = "0.5", default-features = false }
+# The embedded zone database, for the tests of a `timeZone` that names a
+# zone: the engine takes one through the port and carries none itself.
+teistro-time = { path = "../time" }
 teistro-test-allocator = { path = "../test-allocator" }
 proptest = "1"
 

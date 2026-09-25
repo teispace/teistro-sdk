@@ -400,7 +400,7 @@ is what someone has to read. The parser decides which, so a message
 rewritten from one into the other moves this list by itself. `en-Latn`
 is left out: it is the base and its words are the source.
 
-**`ne-Deva-NP`** — 80 messages to read, 38 that render a value and
+**`ne-Deva-NP`** — 80 messages to read, 39 that render a value and
 need no reading.
 
 | namespace | messages with words of their own |
@@ -434,10 +434,10 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 1512 | 162 |
-| `ne-Deva-NP` | 1512 | 8 |
-| `sa-Deva` | 1512 | 162 |
-| `sa-Latn` | 1512 | 162 |
+| `hi-Deva-IN` | 1513 | 163 |
+| `ne-Deva-NP` | 1513 | 8 |
+| `sa-Deva` | 1513 | 163 |
+| `sa-Latn` | 1513 | 163 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

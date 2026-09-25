@@ -348,6 +348,27 @@ fn the_locale_renders_a_message_by_its_typed_accessor() {
     assert!(sdk.intl().has("sdk.reason.grahaInBhava"));
 }
 
+/// An instant is read in a zone through the context's own zone database,
+/// the one its birth-time resolutions use: `sdk.calendar.datetime.inZone`
+/// in every binding, typed as an instant and a zone.
+#[test]
+fn an_instant_reads_in_a_zone_the_context_knows() {
+    let sdk = context();
+    let noon_utc = teistro::quantity::JulianDay::literal(2_460_000.0);
+    let rendered = sdk
+        .intl()
+        .render_typed(&teistro::messages::sdk::calendar::datetime::InZone {
+            at: noon_utc,
+            zone: String::from("Asia/Kathmandu"),
+        });
+    assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+    assert!(
+        rendered.text.contains("१७:४५"),
+        "noon in Greenwich is a quarter to six in Kathmandu: {}",
+        rendered.text
+    );
+}
+
 #[test]
 fn an_entity_carries_its_forms_in_the_locale() {
     let sdk = context();

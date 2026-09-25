@@ -488,6 +488,25 @@ pub mod sdk {
 
         /// The `datetime` group.
         pub mod datetime {
+            /// The message `sdk.calendar.datetime.inZone`.
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct InZone {
+                /// The `at` parameter.
+                pub at: teistro_core::quantity::JulianDay<teistro_core::quantity::Utc>,
+                /// The `zone` parameter.
+                pub zone: String,
+            }
+
+            impl crate::TypedMessage for InZone {
+                const KEY: &'static str = "sdk.calendar.datetime.inZone";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("at", crate::Value::Instant(self.at)),
+                        ("zone", crate::Value::Str(self.zone.clone())),
+                    ])
+                }
+            }
+
             /// The message `sdk.calendar.datetime.join`.
             #[derive(Clone, Debug, PartialEq)]
             pub struct Join {

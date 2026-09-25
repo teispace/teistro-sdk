@@ -929,6 +929,8 @@ final class MessagesSdkCalendarDatetime {
 
   final Renderer _r;
 
+  String inZone({required double at, required String zone}) =>
+      _r.render('sdk.calendar.datetime.inZone', {'at': {r'$instant': at}, 'zone': zone});
   String join({required String date, required String time}) =>
       _r.render('sdk.calendar.datetime.join', {'date': date, 'time': time});
 }

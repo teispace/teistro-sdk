@@ -12,11 +12,15 @@
     reason = "tests fail by panicking"
 )]
 
+use std::sync::Arc;
+
 use teistro_calendar::{CalendarDate, shipped};
 use teistro_core::catalogue::{Calendar, Era};
+use teistro_core::quantity::JulianDay;
 use teistro_intl::analysis::{ParamType, signature};
 use teistro_intl::source::{DayPeriod, Entry, Tree};
 use teistro_intl::{ClockTime, Ghati, Intl, Value, params, sdk_root};
+use teistro_time::EmbeddedTzdb;
 
 fn engine(locale: &str) -> Intl {
     let tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
@@ -547,4 +551,185 @@ fn a_duration_breaks_into_the_units_a_message_names() {
         text(&english, "{$v :duration unit=hour}", Value::Int(3)),
         "3 hours"
     );
+}
+
+/// The civil value an instant should read as, in the Gregorian calendar.
+fn civil(year: i32, month: u8, day: u8, time: ClockTime) -> Value {
+    Value::DateTime(
+        CalendarDate::defined(Calendar::Gregorian, year, month, day),
+        time,
+    )
+}
+
+/// An instant, the SDK's own, is read in the zone a `timeZone` option
+/// names and then exactly as the civil date and time it was there: the
+/// same text the civil value gives, through the same patterns and the same
+/// calendar conversion.
+#[test]
+fn an_instant_reads_as_the_civil_time_it_was_in_the_zone_named() {
+    let english = engine("en-Latn");
+    let noon_utc = Value::Instant(JulianDay::literal(2_460_000.0));
+    for (zone, expected) in [
+        ("UTC", civil(2023, 2, 24, ClockTime::new(12, 0, 0))),
+        ("+05:45", civil(2023, 2, 24, ClockTime::new(17, 45, 0))),
+        ("-0300", civil(2023, 2, 24, ClockTime::new(9, 0, 0))),
+        ("+14", civil(2023, 2, 25, ClockTime::new(2, 0, 0))),
+    ] {
+        for function in ["date", "time", "datetime"] {
+            assert_eq!(
+                text(
+                    &english,
+                    &format!("{{$v :{function} timeZone=|{zone}|}}"),
+                    noon_utc.clone()
+                ),
+                text(&english, &format!("{{$v :{function}}}"), expected.clone()),
+                "{function} in {zone}"
+            );
+        }
+    }
+    // Moved first and then converted: the Bikram Sambat date of the day
+    // it was in Kathmandu, not of the day it was in Greenwich.
+    let nepali = engine("ne-Deva-NP");
+    assert_eq!(
+        text(
+            &nepali,
+            "{$v :date timeZone=|+14| calendar=BIKRAM_SAMBAT}",
+            noon_utc.clone()
+        ),
+        text(
+            &nepali,
+            "{$v :date calendar=BIKRAM_SAMBAT}",
+            civil(2023, 2, 25, ClockTime::new(2, 0, 0))
+        ),
+    );
+    // A zone given by the caller at render time.
+    let rendered = english
+        .render_source(
+            "{$v :time timeZone=$zone}",
+            &params([("v", noon_utc), ("zone", Value::from("+05:45"))]),
+        )
+        .unwrap();
+    assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+    assert_eq!(
+        rendered.text,
+        text(
+            &english,
+            "{$v :time}",
+            Value::Time(ClockTime::new(17, 45, 0))
+        )
+    );
+}
+
+/// A zone's name is answered by the zone database the engine is given, the
+/// SDK's embedded one here, daylight saving and all; without one it warns
+/// by name rather than guessing.
+#[test]
+fn a_named_zone_is_answered_by_the_database_and_refused_without_one() {
+    let mut english = engine("en-Latn");
+    let july = Value::Instant(JulianDay::literal(2_460_127.0));
+    let january = Value::Instant(JulianDay::literal(2_459_946.0));
+    let unanswered = english
+        .render_source(
+            "{$v :time timeZone=|America/New_York|}",
+            &params([("v", july.clone())]),
+        )
+        .unwrap();
+    assert!(
+        unanswered
+            .warnings
+            .iter()
+            .any(|w| w.contains("no zone database")),
+        "{:?}",
+        unanswered.warnings
+    );
+    english.set_time_zones(Arc::new(EmbeddedTzdb::shared()));
+    let hour = |value: Value| text(&english, "{$v :time timeZone=|America/New_York|}", value);
+    assert_eq!(
+        hour(july),
+        text(&english, "{$v :time}", Value::Time(ClockTime::new(8, 0, 0))),
+        "daylight saving"
+    );
+    assert_eq!(
+        hour(january),
+        text(&english, "{$v :time}", Value::Time(ClockTime::new(7, 0, 0))),
+        "standard time"
+    );
+    let misspelt = english
+        .render_source(
+            "{$v :time timeZone=|Asia/Kathmandoo|}",
+            &params([("v", Value::Instant(JulianDay::literal(2_460_000.0)))]),
+        )
+        .unwrap();
+    assert!(
+        misspelt
+            .warnings
+            .iter()
+            .any(|w| w.contains("Asia/Kathmandu")),
+        "the nearest name is suggested: {:?}",
+        misspelt.warnings
+    );
+}
+
+/// What is not an instant in a zone warns and says why: an instant with
+/// no zone (read in UTC), a zone on a value already civil (left as it is),
+/// and an offset that is not one.
+#[test]
+fn an_instant_without_a_zone_and_a_zone_without_an_instant_warn() {
+    let english = engine("en-Latn");
+    let instant = Value::Instant(JulianDay::literal(2_460_000.0));
+    let unzoned = english
+        .render_source("{$v :time}", &params([("v", instant.clone())]))
+        .unwrap();
+    assert!(
+        unzoned
+            .warnings
+            .iter()
+            .any(|w| w.contains("names no `timeZone`"))
+    );
+    assert_eq!(
+        unzoned.text,
+        text(
+            &english,
+            "{$v :time}",
+            Value::Time(ClockTime::new(12, 0, 0))
+        )
+    );
+    let civil_time = Value::Time(ClockTime::new(6, 15, 0));
+    let moved = english
+        .render_source(
+            "{$v :time timeZone=|+05:45|}",
+            &params([("v", civil_time.clone())]),
+        )
+        .unwrap();
+    assert!(moved.warnings.iter().any(|w| w.contains("already a civil")));
+    assert_eq!(moved.text, text(&english, "{$v :time}", civil_time));
+    for bad in ["+5:4", "+2500", "+05:60"] {
+        let refused = english
+            .render_source(
+                &format!("{{$v :time timeZone=|{bad}|}}"),
+                &params([("v", instant.clone())]),
+            )
+            .unwrap();
+        assert!(!refused.warnings.is_empty(), "{bad}");
+    }
+}
+
+/// A date or time function that names a zone takes an instant, and the
+/// typed accessors every binding generates say so.
+#[test]
+fn a_zone_types_the_value_as_an_instant() {
+    let tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
+    let meta = &tree.base().unwrap().meta;
+    let sig = signature(
+        &teistro_intl::mf2::parse(
+            "{$at :time timeZone=$zone} {$on :date timeZone=|UTC|} {$when :datetime timeZone=|+05:45|} {$civil :time}",
+        )
+        .unwrap(),
+        meta,
+    );
+    assert_eq!(sig.params["at"], ParamType::Instant);
+    assert_eq!(sig.params["on"], ParamType::Instant);
+    assert_eq!(sig.params["when"], ParamType::Instant);
+    assert_eq!(sig.params["zone"], ParamType::String);
+    assert_eq!(sig.params["civil"], ParamType::Time);
 }

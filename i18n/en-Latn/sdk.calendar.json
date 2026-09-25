@@ -51,7 +51,8 @@
   "long12": "{$hour12 :integer}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2} {$meridiem}"
  },
  "datetime": {
-  "join": "{$date}, {$time}"
+  "join": "{$date}, {$time}",
+  "inZone": "{$at :datetime timeZone=$zone}"
  },
  "ghati": {
   "numeric": "{$ghati :integer minimumIntegerDigits=2}-{$pala :integer minimumIntegerDigits=2}",

@@ -4029,11 +4029,34 @@ on pub.dev (checked 2026-09-07).
    same question as publishing the adapter packages — an Apache-2.0
    source linking AGPL code, with the licence decision open — so it waits
    on the maintainer rather than being done here.
-4. Spike 4's consequences in Phase 1 are built but for three: day-period
-   ranges a locale states for itself (the four parts are the same ranges
-   everywhere today), the `zone` option on the date functions (it waits
-   on zoned instants crossing the port), and the composite provider's
-   precedence once a binding loads packs from several places.
+4. ~~Spike 4's consequences in Phase 1~~ — **done** (2026-09-25). Of the
+   three this item listed, one had been done since 2026-09-06 and the
+   item never said so: a locale states its own parts of the day
+   (`_meta.json`'s `dayPeriods`). The other two:
+   - **An instant read in a zone.** A value may be an instant
+     (`{"$instant": jd}`), and `:date`, `:time` and `:datetime` read it in
+     the zone `timeZone` names: UTC, an offset, an IANA name, or a
+     variable given at render time. The zone moves the instant, and it is
+     then a civil value, so the calendar conversion and the patterns
+     apply unchanged. The engine takes a zone database through the
+     `port-timezone` trait rather than carrying one; the context gives it
+     the embedded database its own resolutions use. A function naming a
+     zone types its value as an instant in every binding, and
+     `sdk.calendar.datetime.inZone` is the shipped message for it, tested
+     through Node, Python, Dart and Rust with Kathmandu and New York's
+     daylight saving. The name is MF2's `timeZone`, not the `zone` this
+     item used, because a translator reads the specification. Building it
+     found two defects:
+     - a day fraction put 07:00 at 06:59, so the clock now counts whole
+       milliseconds;
+     - `Function::option` answered only literals, so a zone given as a
+       variable was not seen; `has_option` answers both.
+     Python gained `message_warnings`, the list Node and Dart already
+     read.
+   - **Precedence, decided and held.** The build first, then every pack
+     in the order it was loaded, then the overrides, which stand even over
+     a pack loaded after them. Where a pack came from is not a rule,
+     because a binding hands the engine bytes either way.
 5. ~~Before Phase 1 exits: create `teispace/teistro-conformance`~~ —
    **done**. The repository exists under CC0-1.0 and `fixtures/` is a
    submodule of it, pinned to `v0.11.0` (ADR-0022). This item outlived
@@ -4054,6 +4077,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-25 | **An instant in a zone, and the precedence of what an engine holds.** STATUS 4 listed three pieces left of spike 4, and one had been done for three weeks: a locale's own parts of the day. The other two are built now. A message value may be an instant, the SDK's Julian day in UTC, and the date and time functions read it in the zone `timeZone` names: UTC, an offset, an IANA name, or a variable. The zone comes from the embedded database the context's own resolutions use, reached through the zone port, so the engine carries none. It is typed as an instant in every binding's accessors, and `sdk.calendar.datetime.inZone` ships and is tested in all four languages, daylight saving included. Two defects surfaced while building it: 07:00 read as 06:59, and a zone given as a variable went unseen. Pack precedence is decided and held by one test: the build, then each pack in load order, then the overrides, which keep standing over later packs. Next: 7. |
 | 2026-09-25 | **The corpus check, built, found six defects before it measured anything.** Spike 3 left two checks unbuilt; both go through the façade and every kit binary runs them. `sdk-only` byte identity holds a provider's chart to its native frame's alone, and proved non-vacuous against a provider declaring four hostile overrides. Over the Surya Siddhanta provider it found `prefer-native` refusing a whole chart for an ayanamsha the provider did not list, now chosen per member. The corpus check founds the 55 recorded births over a provider and compares every position under the corpus's own band for its class, in the corpus's report format, with every known divergence listed and held both ways. Its first run failed every chart at every tier, and mostly not by the tier. The causes, each fixed and tested: a sidereal chart's speeds were tropical; Ketu had no distance; the built-in's nodes left the ecliptic of date; light time kept the geometric distance; the centre step, given the native frame after the corrections had run, dropped diurnal aberration; and a carried speed missed each step's own rate. Reported speeds are now the derivative of the completed places, and searches keep the cheap carried rate. Teimeris, the corpus's own ephemeris, now passes 50 of 55; the built-in tiers pass 53, 32 and 1, every miss explained by the list. Left to the maintainer: two provisional corpus bands tighter than any implementation's own consistency (3a), and the adapter's move (3b). Next: 3a/3b decisions, else 4. |
 | 2026-09-25 | **The last lowercase words, a field every binding offered and none could use, and a claim that measured the wrong thing.** Four request records still spelt their words in serde's lowercase: a rule request's sets, a theme's forms and names, a layout's shape, and a consumer's dasha definition. Each came back in an answer or a stored document, so each is a key now, request and answer alike; the themes and sets are typed with one key list each. The sentinels `'all'`, `'birth'` and `'unknown'` stay lowercase on purpose, because a key never is, and §3.7 of the API description page records the rule. Measuring found `RashiDefinition` camel-cased, so the `year_length` all three bindings declared was refused at the boundary. It also found Python's unions half-respelt by 2f's regex sweep, and Python and Dart reading an unknown outline step as a line or an arc. Last, `schema-measured.md`'s "one casing convention" claim held only because it counted attributes in a crate list that left out the two crates at fault; it now reads the document schema's 571 words. The lint `a-word-is-spelt-as-a-key` holds the class, with four format exceptions that fail both ways. Parity: 12,992 values, 13 examples alike. Next: 3. |
 | 2026-09-25 | **Typed provenance, a member's own hash, and a hash of nothing.** A result's provenance crossed as JSON every binding read as an untyped map, and a binding's `found(one)` carried its batch's hash. `idl/api.json` now describes the JSON records (`Provenance`, `Step` and twelve they reach) from serde's own schema, refusing any construct outside a closed subset, and `emit::records` types and decodes them in Node, Python and Dart, each refusing a key the SDK does not write; `provenance` is the record and `provenanceJson` the canonical text (the blob section renamed to say so). `content_hashes` gives a batch's hash and every member's from one serialisation, every façade call seals once where three serialised twice, and the charts and panchanga blobs carry each member's hash, printed by all four parity runners. Comparing a batch's hash computed two ways found **every rules batch sealed with SHA-256 of ""**: `Map::Listed` and `Spans::Degrees` were tagged newtypes holding a list, which serde cannot write, and the canonical writer mapped the error to the empty string — now struct variants, the port's `Quantity` crosses through a wire mirror, the writer stops on such a value in a debug build, and the widest document is held to serialise whole. The parity gate compares 12,992 values in four languages, 13 examples alike. Next: 2i. |

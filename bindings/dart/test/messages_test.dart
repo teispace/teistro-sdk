@@ -55,6 +55,31 @@ void main() {
     );
   });
 
+  test(
+    'an instant reads in the zone a message is given, through the context',
+    () {
+      final ctx = context();
+      addTearDown(ctx.dispose);
+      ctx.intl.locale = 'en-Latn';
+      // Noon at Greenwich on 24 February 2023, and noon on 1 July.
+      final inZone = ctx.intl.messages.sdk.calendar.datetime.inZone;
+      expect(inZone(at: 2460000, zone: 'Asia/Kathmandu'), '2023-02-24, 17:45');
+      expect(
+        inZone(at: 2460127, zone: 'America/New_York'),
+        '2023-07-01, 08:00',
+      );
+      expect(inZone(at: 2460000, zone: '-03:00'), '2023-02-24, 09:00');
+      final unknown = ctx.intl.render('sdk.calendar.datetime.inZone', {
+        'at': {r'$instant': 2460000.0},
+        'zone': 'Asia/Kathmandoo',
+      });
+      expect(
+        unknown.warningList.any((w) => w.contains('Asia/Kathmandu')),
+        isTrue,
+      );
+    },
+  );
+
   test("an entity's forms come from the locale, not from the caller", () {
     final ctx = context();
     addTearDown(ctx.dispose);

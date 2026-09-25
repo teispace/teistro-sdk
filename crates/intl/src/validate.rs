@@ -631,12 +631,16 @@ fn check_selectors(
                     }
                 }
             }
-            ParamType::Date | ParamType::Time | ParamType::DateTime | ParamType::Ghati => {
+            ParamType::Date
+            | ParamType::Time
+            | ParamType::DateTime
+            | ParamType::Ghati
+            | ParamType::Instant => {
                 findings.error(
                     tag,
                     key,
                     format!(
-                        "`${}` is a date, time or ghati value, which offers no selection keys",
+                        "`${}` is a date, time, instant or ghati value, which offers no selection keys",
                         selector.variable
                     ),
                 );

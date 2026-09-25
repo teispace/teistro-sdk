@@ -4218,6 +4218,13 @@ class MessagesSdkCalendarDatetime:
         self._r = renderer
 
 
+    def in_zone(self, *, at: float, zone: str) -> str:
+        """`sdk.calendar.datetime.inZone`"""
+        return self._r.render(
+            "sdk.calendar.datetime.inZone",
+            {"at": {"$instant": at}, "zone": zone},
+        )
+
     def join(self, *, date: str, time: str) -> str:
         """`sdk.calendar.datetime.join`"""
         return self._r.render(

@@ -455,6 +455,9 @@ impl ContextBuilder {
         })?;
         let mut intl = Intl::new(locales)
             .map_err(|e| Error::internal(format!("the locale engine did not start: {e}")))?;
+        // A message's `timeZone` reads an instant in a zone through the
+        // same database the context's own zone resolutions use.
+        intl.set_time_zones(std::sync::Arc::new(EmbeddedTzdb::shared()));
         if let Some(tag) = &self.locale {
             intl.set_locale(tag).map_err(|e| {
                 // The same refusal the boundary gives, because a

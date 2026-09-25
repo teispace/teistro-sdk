@@ -54,6 +54,7 @@ export function messages(r) {
           monthShort: () => r.render('sdk.calendar.MIXED.monthShort'),
         },
         datetime: {
+          inZone: (p) => r.render('sdk.calendar.datetime.inZone', { at: { '$instant': p.at }, zone: p.zone }),
           join: (p) => r.render('sdk.calendar.datetime.join', { date: p.date, time: p.time }),
         },
         dayPeriod: {
