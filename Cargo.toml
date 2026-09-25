@@ -128,3 +128,12 @@ debug = false
 # Stepping through `teistro-astro` in a debugger is what it costs.
 [profile.dev.package.teistro-astro]
 opt-level = 3
+
+# The transcendental functions, for the same reason: `teistro_core::math`
+# takes them from `libm`, which a dev build otherwise compiles unoptimised,
+# where the platform's C library it replaced was always optimised. Left at
+# the default, it nearly doubled the fast check's two slowest pages (the
+# Muntha's 205 s to 386 s, the annual chart's 40 s to 71 s). The bits are
+# the same at every level, as above.
+[profile.dev.package.libm]
+opt-level = 3
