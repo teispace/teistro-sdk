@@ -116,7 +116,8 @@ function tableEphemeris({ wantedFrame = null, broken = false } = {}) {
   );
   // The provider's own name and data version are stamped on the answer,
   // which is how a stored chart says what computed it.
-  console.log(`  stamped as ${JSON.stringify(sky.provenance.provider)}`);
+  const stamp = sky.provenance.provider;
+  console.log(`  stamped as ${stamp.name} ${stamp.version}, data ${stamp.dataVersion}`);
   ctx.dispose();
 }
 

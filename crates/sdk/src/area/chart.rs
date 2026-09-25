@@ -12,7 +12,7 @@ use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
     Ayanamsha, ChartKind, DashaSystem, Graha, Nakshatra, Rashi, Vara, Varga,
 };
-use teistro_core::envelope::Envelope;
+use teistro_core::envelope::{Envelope, Hash};
 use teistro_core::error::Error;
 use teistro_core::house::House;
 use teistro_core::interval::Interval;
@@ -145,8 +145,21 @@ impl<'a> ChartArea<'a> {
         // canonical serialisation for a field many discard, and the
         // instruction-count gate put `panchanga` 8.8% over its base
         // (`serial-and-the-envelope.md` §8).
-        let founded = self.founding(offset, |founder| founder.found(instants, place, kind))?;
+        let founded = self.founded(instants, place, offset, kind)?;
         Ok(Envelope::sealing(founded.value, founded.provenance))
+    }
+
+    /// The charts founded, **not yet sealed**: every public call seals
+    /// once, over the value it publishes, and none pays for a hash a
+    /// second call would replace.
+    fn founded(
+        self,
+        instants: &[JulianDay<Utc>],
+        place: &Place,
+        offset: UtcOffset,
+        kind: ChartKind,
+    ) -> Result<Envelope<Vec<ChartFoundation>>, Error> {
+        self.founding(offset, |founder| founder.found(instants, place, kind))
     }
 
     /// Builds the founder this context's settings describe and hands it
@@ -209,18 +222,16 @@ impl<'a> ChartArea<'a> {
         offset: UtcOffset,
         kind: ChartKind,
     ) -> Result<Envelope<ChartFoundation>, Error> {
-        let many = self.found_many(&[instant], place, offset, kind)?;
-        let Envelope { value, provenance } = many;
+        let Envelope { value, provenance } = self.founded(&[instant], place, offset, kind)?;
         let Some(one) = value.into_iter().next() else {
             return Err(Error::internal(
                 "a batch of one instant founded no chart, which cannot happen",
             ));
         };
-        // **Re-sealed**, because the hash is the hash of *this*
-        // envelope's value. The batch's provenance claims the hash of a
-        // list of one, and this envelope holds a chart -- so `found` and
-        // `found_many([one])` carry different content hashes, which is
-        // right: they carry different values.
+        // Sealed over the chart, because the hash is the hash of *this*
+        // envelope's value: `found` and `found_many([one])` carry
+        // different content hashes, which is right, since they carry
+        // different values — and the list of one is never hashed at all.
         Ok(Envelope::sealing(one, provenance))
     }
 
@@ -246,16 +257,25 @@ impl<'a> ChartArea<'a> {
         instants: &[JulianDay<Utc>],
         request: &ChartRequest,
     ) -> Result<Envelope<Vec<Document>>, Error> {
+        let read = self.read(instants, request)?;
+        Ok(Envelope::sealing(read.value, read.provenance))
+    }
+
+    /// The readings, **not yet sealed**, as [`ChartArea::founded`].
+    fn read(
+        self,
+        instants: &[JulianDay<Utc>],
+        request: &ChartRequest,
+    ) -> Result<Envelope<Vec<Document>>, Error> {
         let place = request.place();
-        let founded = self.founding(request.offset(), |founder| {
+        self.founding(request.offset(), |founder| {
             let founded = founder.found(instants, place, request.kind())?;
             let mut documents = Vec::with_capacity(founded.value.len());
             for foundation in &founded.value {
                 documents.push(self.sections_of(founder, foundation, request)?);
             }
             Ok(Envelope::new(documents, founded.provenance))
-        })?;
-        Ok(Envelope::sealing(founded.value, founded.provenance))
+        })
     }
 
     /// Readings asked to answer a set of rules as well: each document with
@@ -276,8 +296,20 @@ impl<'a> ChartArea<'a> {
         request: &ChartRequest,
         set: &'r RuleSet,
     ) -> Result<Envelope<Vec<(Document, RulesReading<'r>)>>, Error> {
+        let answered = self.answered(instants, request, set)?;
+        Ok(Envelope::sealing(answered.value, answered.provenance))
+    }
+
+    /// The readings with what they answer by rule, **not yet sealed**, as
+    /// [`ChartArea::founded`].
+    fn answered<'r>(
+        self,
+        instants: &[JulianDay<Utc>],
+        request: &ChartRequest,
+        set: &'r RuleSet,
+    ) -> Result<Envelope<Vec<(Document, RulesReading<'r>)>>, Error> {
         let asked = request.clone().rule_inputs(set.rules(), true);
-        let (documents, provenance, unreadable) = match self.readings(instants, &asked) {
+        let (documents, provenance, unreadable) = match self.read(instants, &asked) {
             Ok(read) => (read.value, read.provenance, false),
             // Only the points a rule named, never ones the caller asked for.
             Err(error)
@@ -287,7 +319,7 @@ impl<'a> ChartArea<'a> {
                         .is_some_and(|field| field.starts_with("points")) =>
             {
                 let without = request.clone().rule_inputs(set.rules(), false);
-                let read = self.readings(instants, &without)?;
+                let read = self.read(instants, &without)?;
                 (read.value, read.provenance, true)
             }
             Err(error) => return Err(error),
@@ -323,7 +355,7 @@ impl<'a> ChartArea<'a> {
             };
             answered.push((document, reading));
         }
-        Ok(Envelope::sealing(answered, provenance))
+        Ok(Envelope::new(answered, provenance))
     }
 
     /// Charts founded, read and **said**, in one call: each chart's
@@ -353,36 +385,47 @@ impl<'a> ChartArea<'a> {
             .check(rules.is_some())
             .map_err(|error| error.under("interpret"))?;
         let wanted = asked.sections(request.clone());
-        let (read, provenance): (Vec<(Document, Option<RulesReading<'r>>)>, _) = match rules {
+        // Sealed once, over what the batch publishes — the documents, and
+        // what each answers by rule where rules were asked — with each
+        // chart's own hash beside the batch's, from the same serialisation,
+        // so a caller handing out one chart stamps it with its own.
+        let (read, provenance): (Vec<SealedChart<'r>>, _) = match rules {
             None => {
-                let read = self.readings(instants, &wanted)?;
+                let Envelope { value, provenance } = self.read(instants, &wanted)?;
+                let (read, each) = Envelope::sealing_each(value, provenance);
+                let Envelope { value, provenance } = read;
                 (
-                    read.value
+                    value
                         .into_iter()
-                        .map(|document| (document, None))
+                        .zip(each)
+                        .map(|(document, hash)| (document, None, hash))
                         .collect(),
-                    read.provenance,
+                    provenance,
                 )
             }
             Some(set) => {
-                let read = self.readings_with_rules(instants, &wanted, set)?;
+                let Envelope { value, provenance } = self.answered(instants, &wanted, set)?;
+                let (read, each) = Envelope::sealing_each(value, provenance);
+                let Envelope { value, provenance } = read;
                 (
-                    read.value
+                    value
                         .into_iter()
-                        .map(|(document, reading)| (document, Some(reading)))
+                        .zip(each)
+                        .map(|((document, reading), hash)| (document, Some(reading), hash))
                         .collect(),
-                    read.provenance,
+                    provenance,
                 )
             }
         };
         let interpret = self.context.interpret();
         let mut charts = Vec::with_capacity(read.len());
-        for (document, reading) in read {
+        for (document, reading, content_hash) in read {
             let plans = interpret.plans(&document, reading.as_ref(), asked)?;
             charts.push(Interpreted {
                 document,
                 reading,
                 plans,
+                content_hash,
             });
         }
         Ok(Envelope::new(charts, provenance))
@@ -398,8 +441,7 @@ impl<'a> ChartArea<'a> {
         instant: JulianDay<Utc>,
         request: &ChartRequest,
     ) -> Result<Envelope<Document>, Error> {
-        let many = self.readings(&[instant], request)?;
-        let Envelope { value, provenance } = many;
+        let Envelope { value, provenance } = self.read(&[instant], request)?;
         let Some(one) = value.into_iter().next() else {
             return Err(Error::internal(
                 "a batch of one instant read no document, which cannot happen",
@@ -2248,6 +2290,10 @@ impl<'a> ChartArea<'a> {
     }
 }
 
+/// One chart of a batch [`ChartArea::interpreted`] sealed: its document,
+/// what it answers by rule, and its own content hash.
+type SealedChart<'r> = (Document, Option<RulesReading<'r>>, Hash);
+
 /// One chart as [`ChartArea::interpreted`] answers it: the reading, what
 /// it answers by rule when rules were asked for, and what it says.
 #[derive(Clone, Debug, PartialEq)]
@@ -2260,4 +2306,9 @@ pub struct Interpreted<'r> {
     pub reading: Option<RulesReading<'r>>,
     /// The plans asked for, each `None` where it was not.
     pub plans: Plans,
+    /// The hash of this chart's own value — its document, with what it
+    /// answers by rule where rules were asked — which the batch's
+    /// provenance, hashing the list, does not carry: what a caller holding
+    /// this chart alone stamps it with.
+    pub content_hash: Hash,
 }

@@ -24,7 +24,8 @@ import type {
 } from '../lib/index.js';
 import { ChartLayout, Point, Varga, altitude, latitude, longitude } from '../lib/catalogue.js';
 import type { Ayanamsha, Graha, Saham, SahamStrong, SahamWeak } from '../lib/catalogue.js';
-import type { CalendarDate, PolarDay } from '../lib/index.js';
+import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
+import { decodeProvenance } from '../lib/index.js';
 
 declare const build: BuildInfo;
 declare function refuse(info: BuildInfo, named: boolean): string | null;
@@ -462,3 +463,32 @@ function theBirthsSahams(ctx: Context): string {
 void theBirthsSahams;
 
 void theYearsSahams;
+
+/**
+ * What computed a result, read typed all the way down (STATUS 2h): the
+ * provenance was a `Record<string, unknown>` a consumer read by string.
+ */
+function theProvenance(ctx: Context): string {
+  const chart = ctx.chart.found({ instant: 2451545, place: { latitude: 27.7, longitude: 85.3 }, utcOffsetSeconds: 20700 });
+  const provenance: Provenance = chart.provenance;
+  const hash: string = provenance.contentHash;
+  const major: number = provenance.sdkVersion.major;
+  const frame: string = provenance.provider.frame;
+  const tier: string | null = provenance.provider.tier;
+  // A tagged union narrows by its `kind`.
+  const edition: string =
+    provenance.calendar?.kind === 'TABULAR' ? provenance.calendar.edition : 'none';
+  const sure: Confidence = provenance.confidence;
+  // @ts-expect-error a confidence is one of two keys
+  const unsure: Confidence = 'MAYBE';
+  // @ts-expect-error the wire's snake case is decoded away
+  const wire: string = provenance.settings_hash;
+  const steps = ctx.positions({ instants: [2451545], bodies: ['SUN'] }).steps;
+  const native: boolean = steps.some((step: Step) => step.implementation === 'NATIVE');
+  // @ts-expect-error an implementation is one of three keys
+  const guessed: boolean = steps.some((step) => step.implementation === 'native');
+  const stored: Provenance = decodeProvenance(JSON.parse(chart.batch.provenanceJson));
+  return `${hash} ${major} ${frame} ${tier ?? ''} ${edition} ${sure} ${String(unsure)} ${wire} ${native} ${guessed} ${stored.profile}`;
+}
+
+void theProvenance;

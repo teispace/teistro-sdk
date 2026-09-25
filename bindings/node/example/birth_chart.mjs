@@ -131,7 +131,7 @@ console.log(`steps applied  ${chart.steps.join(', ')}`);
 // The provenance envelope stamps the settings, the provider and the
 // time layer; it is what a stored chart keeps in order to say what
 // computed it.
-console.log(`settings hash  ${chart.provenance.settings_hash.slice(0, 16)}…`);
+console.log(`settings hash  ${chart.provenance.settingsHash.slice(0, 16)}…`);
 ctx.dispose();
 
 // ── A birth with no recorded time ──────────────────────────────────────

@@ -835,6 +835,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         .chart()
         .readings_with_rules(&instants, &asked, &rules)
         .expect("the test provider");
+    let own: Vec<teistro::Hash> = answered.value.iter().map(teistro::content_hash).collect();
     let (documents, by_rule): (Vec<_>, Vec<_>) = answered.value.into_iter().unzip();
     let read = Envelope::new(documents, answered.provenance);
     put(
@@ -905,6 +906,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     for (index, chart) in founded.value.iter().enumerate() {
         one_chart(report, index, chart);
     }
+    own_hashes(report, "chart", &own);
 
     // `found` is the batch of one unwrapped, and must agree with the
     // batch -- which is the property the other three assert too.
@@ -2596,6 +2598,20 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
     }
 }
 
+/// Each member's own content hash, as a member of a batch handed out alone
+/// carries it: the hash of what the batch lists for it — a chart's document
+/// with what it answers by rule, a day's panchanga — which the other three
+/// read off the blob's `content_hashes` section.
+fn own_hashes(report: &mut Report, what: &str, hashes: &[teistro::Hash]) {
+    for (index, hash) in hashes.iter().enumerate() {
+        put(
+            report,
+            &format!("{what}-{index}-content-hash"),
+            hash.to_string(),
+        );
+    }
+}
+
 /// An almanac over three days, as the report prints it.
 ///
 /// Three, because a day's lists are ragged and two consecutive days with
@@ -2604,9 +2620,9 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
 fn an_almanac(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
     let from = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 17);
     let to = CalendarDate::defined(Calendar::Gregorian, 2024, 6, 19);
-    let week = geo
+    let (week, own) = geo
         .almanac()
-        .of(&from, &to, place, offset)
+        .of_each(&from, &to, place, offset)
         .expect("the test provider");
     put(report, "almanac-days", week.value.len().to_string());
     if let Some(first) = week.value.first() {
@@ -2627,6 +2643,7 @@ fn an_almanac(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffs
     for (index, day) in week.value.iter().enumerate() {
         one_day(report, index, day);
     }
+    own_hashes(report, "day", &own);
 
     // `day` is the range of one, unwrapped, and must agree with it.
     let one = geo

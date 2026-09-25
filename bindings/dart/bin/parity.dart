@@ -234,17 +234,13 @@ void main() {
   put(
     'steps',
     positions.stepsApplied
-        .cast<Map<String, Object?>>()
-        .map((step) => '${step['name']}:${step['implementation']}')
+        .map((step) => '${step.name}:${step.implementation.key}')
         .join(','),
   );
-  put('provenance-fnv', fnv(positions.provenance));
-  put('provenance-profile', positions.provenanceOf['profile']);
-  put('provenance-settings-hash', positions.provenanceOf['settings_hash']);
-  put(
-    'provenance-provider-frame',
-    (positions.provenanceOf['provider']! as Map<String, Object?>)['frame'],
-  );
+  put('provenance-fnv', fnv(positions.provenanceJson));
+  put('provenance-profile', positions.provenance.profile);
+  put('provenance-settings-hash', positions.provenance.settingsHash);
+  put('provenance-provider-frame', positions.provenance.provider.frame);
 
   // ── The chart the topocentric profile founds ─────────────────────────
   // The scenario above runs under `nepali-default`, whose frame is
@@ -375,15 +371,13 @@ void main() {
   put('chart-place-lon', charts.longitudeDeg);
   put('chart-model-fnv', fnv(charts.model));
   put('chart-steps', charts.stepsApplied.join(','));
-  put('chart-provenance-fnv', fnv(charts.provenance));
-  put(
-    'chart-provenance-profile',
-    (jsonDecode(charts.provenance) as Map<String, Object?>)['profile'],
-  );
+  put('chart-provenance-fnv', fnv(charts.provenanceJson));
+  put('chart-provenance-profile', charts.provenance.profile);
   put('chart-graha-count', charts.grahaCount);
 
   for (final chart in charts.each) {
     final i = chart.index;
+    put('chart-$i-content-hash', chart.provenance.contentHash);
     put('chart-$i-instant', chart.instant);
     put('chart-$i-lagna', chart.lagnaDeg);
     put('chart-$i-day-lagna', chart.dayLagnaDeg);
@@ -902,10 +896,11 @@ void main() {
   put('almanac-calendar', week.calendar.fullKey);
   put('almanac-place-lat', week.decoded.latitudeDeg);
   put('almanac-model-fnv', fnv(week.model));
-  put('almanac-provenance-fnv', fnv(week.decoded.provenance));
+  put('almanac-provenance-fnv', fnv(week.provenanceJson));
 
   for (final day in week.each) {
     final i = day.index;
+    put('day-$i-content-hash', day.provenance.contentHash);
     putDay('day-$i', day.day);
     put('day-$i-window-from', day.window.from);
     put('day-$i-window-to', day.window.to);

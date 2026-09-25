@@ -23,7 +23,6 @@
 // real engine — but it is astronomy: the scans below find sign ingresses
 // and retrograde stations because the sky has them.
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:teistro/teistro.dart';
@@ -163,24 +162,24 @@ void main() {
   // ── What the answer says about itself ──────────────────────────────
   print('');
   final steps = sky.stepsApplied
-      .cast<Map<String, Object?>>()
-      .map((step) => '${step['name']}:${step['implementation']}')
+      .map((step) => '${step.name}:${step.implementation.key}')
       .join(', ');
   print('steps    $steps');
-  final provenance = sky.provenanceOf;
-  print('profile  ${provenance['profile']}');
-  print('hash     ${provenance['settings_hash']}');
+  final provenance = sky.provenance;
+  print('profile  ${provenance.profile}');
+  print('hash     ${provenance.settingsHash}');
   print(
     '         two contexts with the same settings hash compute the same'
     ' numbers, so it is the cache key',
   );
-  // The whole envelope is canonical JSON: byte-identical across every
-  // binding, which is what makes it safe to hash and store.
-  print('envelope ${jsonEncode(provenance).length} bytes of canonical JSON');
-  final provider = provenance['provider']! as Map<String, Object?>;
+  // The value's content hash is taken over its canonical JSON,
+  // byte-identical in every binding, which is what makes a stored result
+  // checkable.
+  print('content  ${provenance.contentHash.substring(0, 16)}…');
+  final provider = provenance.provider;
   print(
-    'provider ${provider['name']} ${provider['version']}'
-    ' (data ${provider['data_version']})',
+    'provider ${provider.name} ${provider.version}'
+    ' (data ${provider.dataVersion})',
   );
 
   ctx.dispose();

@@ -239,6 +239,7 @@ mod tests {
             ],
             functions: vec![],
             blobs: vec![],
+            records: Vec::new(),
         }
     }
 

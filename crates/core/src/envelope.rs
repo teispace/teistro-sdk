@@ -58,7 +58,7 @@ pub enum Digits {
 /// and therefore on the hash (ADR-0022).
 ///
 /// Two things are explicit here rather than left to the JSON layer, and
-/// both were measured (`03-design/serial-measured.md`).
+/// both were measured (`03-design/serial-and-the-envelope.md` §3).
 ///
 /// The **sort** is explicit because the JSON layer's map ordering
 /// changes with the `preserve_order` feature that any crate in a build
@@ -95,15 +95,64 @@ pub fn canonical_json_at<T: serde::Serialize + ?Sized>(value: &T, decimals: u8) 
 
 /// The canonical bytes of a value with its numbers written one way or
 /// the other. Both entry points above are this with their own choice.
+///
+/// A value serde cannot write is a type defect and never a runtime
+/// condition, so it is not an error a caller handles: in a debug build —
+/// every test — it stops there, naming what serde said, and a release
+/// build writes the empty string. It is loud because it was once silent:
+/// a varga scheme serde could not write sealed every document carrying it
+/// with the hash of nothing, and nothing noticed.
 fn written<T: serde::Serialize + ?Sized>(value: &T, digits: Digits) -> String {
-    serde_json::to_value(value)
-        .map_or_else(|_| String::new(), |value| write_canonical(&value, digits))
+    match serde_json::to_value(value) {
+        Ok(value) => write_canonical(&value, digits),
+        Err(error) => {
+            debug_assert!(false, "a value serde cannot write: {error}");
+            String::new()
+        }
+    }
 }
 
 /// The hash of a value's canonical JSON.
 #[must_use]
 pub fn content_hash<T: serde::Serialize + ?Sized>(value: &T) -> Hash {
     Hash::of(canonical_json(value).as_bytes())
+}
+
+/// The hash of a list's canonical JSON **and** of each item's, from one
+/// serialisation.
+///
+/// A list's canonical form is `[`, its items' canonical forms joined by
+/// `,`, and `]`, so the list's hash can be taken over the items' own bytes
+/// as they are written: the first is exactly [`content_hash`] of the
+/// slice, and each of the rest is exactly [`content_hash`] of its item.
+/// What a batch answers with this is its own hash and every member's,
+/// for the price of the batch's — which is what a caller holding one
+/// member of a batch needs to stamp it with its own value's hash
+/// (`03-design/serial-and-the-envelope.md` §3).
+///
+/// ```
+/// use teistro_core::envelope::{content_hash, content_hashes};
+///
+/// let items = [1.5_f64, 2.0, -0.25];
+/// let (list, each) = content_hashes(&items);
+/// assert_eq!(list, content_hash(&items[..]));
+/// assert_eq!(each[2], content_hash(&-0.25_f64));
+/// ```
+#[must_use]
+pub fn content_hashes<T: serde::Serialize>(items: &[T]) -> (Hash, Vec<Hash>) {
+    let mut list = Sha256::new();
+    list.update(b"[");
+    let mut each = Vec::with_capacity(items.len());
+    for (index, item) in items.iter().enumerate() {
+        if index > 0 {
+            list.update(b",");
+        }
+        let written = canonical_json(item);
+        list.update(written.as_bytes());
+        each.push(Hash::of(written.as_bytes()));
+    }
+    list.update(b"]");
+    (Hash(list.finalize().into()), each)
 }
 
 /// A value in the canonical form, at a given number of decimals.
@@ -472,8 +521,13 @@ pub struct Fallback {
 }
 
 /// A warning: a code, and a message key with slots for localisation.
+///
+/// Its schema is named `ProvenanceWarning`, because every binding types it
+/// by that name and Python's own `Warning` is a builtin a module should not
+/// shadow; the wire is unchanged.
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ProvenanceWarning"))]
 pub struct Warning {
     /// The stable code (`DEPRECATED_KEY`).
     pub code: String,
@@ -639,6 +693,26 @@ impl<T> Envelope<T> {
         }
     }
 
+    /// A batch sealed with its own hash, and every member's hash beside
+    /// it, from one serialisation ([`content_hashes`]): what a caller that
+    /// hands out members one at a time stamps each with.
+    #[must_use]
+    pub fn sealing_each<I>(value: T, provenance: Provenance) -> (Envelope<T>, Vec<Hash>)
+    where
+        T: AsRef<[I]>,
+        I: serde::Serialize,
+    {
+        let (content_hash, each) = content_hashes(value.as_ref());
+        let sealed = Envelope {
+            value,
+            provenance: Provenance {
+                content_hash,
+                ..provenance
+            },
+        };
+        (sealed, each)
+    }
+
     /// Maps the value, keeping the provenance.
     pub fn map<U>(self, f: impl FnOnce(T) -> U) -> Envelope<U> {
         Envelope {
@@ -658,6 +732,32 @@ mod tests {
     )]
 
     use super::*;
+
+    /// The list's hash and each item's, from one serialisation, are the
+    /// hashes the items would have alone — for an empty list, one item,
+    /// and records whose keys and numbers the canonical form reorders and
+    /// respells.
+    #[test]
+    fn a_batch_hashes_as_its_list_and_each_member_as_itself() {
+        let empty: [serde_json::Value; 0] = [];
+        let (list, each) = content_hashes(&empty);
+        assert_eq!(list, content_hash(&empty[..]));
+        assert!(each.is_empty());
+
+        let records = [
+            serde_json::json!({"b": 1e-7, "a": [1.0, -0.0], "c": "é\n"}),
+            serde_json::json!(null),
+            serde_json::json!({"z": {"y": 2, "x": true}}),
+        ];
+        for count in 1..=records.len() {
+            let some = &records[..count];
+            let (list, each) = content_hashes(some);
+            assert_eq!(list, content_hash(some), "{count} records");
+            for (item, hash) in some.iter().zip(&each) {
+                assert_eq!(*hash, content_hash(item));
+            }
+        }
+    }
 
     #[test]
     fn hashes_versions_and_the_envelope_round_trip() {

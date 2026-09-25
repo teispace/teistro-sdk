@@ -43,7 +43,7 @@ use teistro::catalogue::Ayanamsha;
 use teistro::{
     Body, Capabilities, Cell, CellStatus, Context, Ephemeris, EphemerisKind, EphemerisProvider,
     Error, Frame, Identity, PositionColumns, PositionRequest, ProviderError, Source, TimeScale,
-    Zodiac, canonical_json,
+    Zodiac,
 };
 
 /// J2000.0, which this toy measures from.
@@ -259,7 +259,11 @@ fn the_happy_path() -> Result<(), Error> {
     );
     // The provider's own name and data version are stamped on the answer,
     // which is how a stored chart says what computed it.
-    println!("  stamped as {}", canonical_json(&sky.provenance.provider));
+    let stamp = &sky.provenance.provider;
+    println!(
+        "  stamped as {} {}, data {}",
+        stamp.name, stamp.version, stamp.data_version
+    );
     Ok(())
 }
 

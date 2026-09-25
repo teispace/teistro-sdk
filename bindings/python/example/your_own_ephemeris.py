@@ -36,7 +36,6 @@ Run it:
 from __future__ import annotations
 
 import dataclasses
-import json
 from typing import Optional, Sequence
 
 from teistro import (
@@ -155,8 +154,8 @@ def main() -> None:
         )
         # The provider's own name and data version are stamped on the
         # answer, which is how a stored chart says what computed it.
-        stamp = json.dumps(sky.provenance_of["provider"], separators=(",", ":"))
-        print(f"  stamped as {stamp}")
+        stamp = sky.provenance.provider
+        print(f"  stamped as {stamp.name} {stamp.version}, data {stamp.data_version}")
 
     # ── A body it never declared ──────────────────────────────────────
     provider = TableEphemeris()
@@ -197,7 +196,7 @@ def main() -> None:
             ),
         )
         steps = ", ".join(
-            f"{step['name']}:{step['implementation']}"
+            f"{step.name}:{step.implementation}"
             for step in sidereal.steps_applied
         )
         print()

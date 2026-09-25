@@ -87,6 +87,7 @@ import {
 } from './catalogue.js';
 import { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
+import { decodeProvenance, decodeStep } from './records.js';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
@@ -440,6 +441,44 @@ class Decoded {
   }
 }
 
+/**
+ * A decoded result the library stamped with a provenance envelope: the
+ * positions, a batch of charts, an almanac. A rendered message is decoded
+ * too and carries none, so the envelope's getters live here and not on
+ * `Decoded`.
+ */
+class Stamped extends Decoded {
+  #provenance = null;
+
+  /**
+   * The provenance envelope: what computed these, and under what. Its
+   * `contentHash` is the whole batch's.
+   */
+  get provenance() {
+    this.#provenance ??= Object.freeze(decodeProvenance(JSON.parse(this.provenanceJson)));
+    return this.#provenance;
+  }
+
+  /**
+   * The provenance envelope as the canonical JSON the library stamped:
+   * the bytes to store beside the result, byte-identical in every binding.
+   */
+  get provenanceJson() {
+    return this.decoded.provenanceJson;
+  }
+}
+
+/**
+ * The provenance of one member of a batch handed out alone: the batch's,
+ * with that member's own `contentHash` from the blob's `content_hashes`
+ * section — so a chart founded alone carries the hash of its own value and
+ * not of a list of one.
+ */
+function memberProvenance(batch, index) {
+  const own = batch.decoded.contentHashes.slice(64 * index, 64 * index + 64);
+  return Object.freeze({ ...batch.provenance, contentHash: own });
+}
+
 /** Positions over a grid, with the cells readable one at a time. */
 /**
  * One row of a decoded column section, as a plain object.
@@ -509,7 +548,7 @@ function localDay(section, index) {
  * fetched and stored costs nothing until something reads it, and the
  * charts in it are views over those bytes rather than copies.
  */
-export class Charts extends Decoded {
+export class Charts extends Stamped {
   /** The full key of each dasha system a context registered, by its id. */
   #dashaNames;
 
@@ -583,10 +622,6 @@ export class Charts extends Decoded {
     return this.decoded.model;
   }
 
-  /** The provenance envelope: what computed these, and under what. */
-  get provenance() {
-    return JSON.parse(this.decoded.provenance);
-  }
 }
 
 /**
@@ -1110,14 +1145,17 @@ export class Chart {
     }));
   }
 
-  /** The steps the SDK applied, each `{ name, implementation }`. */
+  /** The steps the SDK applied, in order, each `name:IMPLEMENTATION`. */
   get steps() {
     return this.#batch.steps;
   }
 
-  /** The provenance envelope of the batch this chart came from. */
+  /**
+   * What computed this chart, and under what: the batch's provenance
+   * stamped with this chart's own `contentHash`.
+   */
   get provenance() {
-    return this.#batch.provenance;
+    return memberProvenance(this.#batch, this.#index);
   }
 }
 
@@ -1131,7 +1169,7 @@ export class Chart {
  * quadratic over a year of days, which is the shape an almanac is
  * actually asked for.
  */
-export class Almanac extends Decoded {
+export class Almanac extends Stamped {
   #starts = null;
 
   constructor(bytes) {
@@ -1159,10 +1197,6 @@ export class Almanac extends Decoded {
     return this.decoded.model;
   }
 
-  /** The provenance envelope: what computed these, and under what. */
-  get provenance() {
-    return JSON.parse(this.decoded.provenance);
-  }
 
   /**
    * One day of the batch, by index.
@@ -1405,9 +1439,12 @@ export class AlmanacDay {
     }));
   }
 
-  /** The completion steps and the settings, as the batch stamped them. */
+  /**
+   * What computed this day, and under what: the batch's provenance
+   * stamped with this day's own `contentHash`.
+   */
   get provenance() {
-    return this.#batch.provenance;
+    return memberProvenance(this.#batch, this.#index);
   }
 
   #rows(list, build) {
@@ -1425,7 +1462,7 @@ export class AlmanacDay {
   }
 }
 
-export class Positions extends Decoded {
+export class Positions extends Stamped {
   constructor(bytes) {
     super(bytes, decodePositions);
   }
@@ -1471,13 +1508,9 @@ export class Positions extends Decoded {
 
   /** The completion steps the SDK applied, in order. */
   get steps() {
-    return JSON.parse(this.decoded.steps);
+    return JSON.parse(this.decoded.steps).map(decodeStep);
   }
 
-  /** Everything that reproduces this result (ADR-0020). */
-  get provenance() {
-    return JSON.parse(this.decoded.provenance);
-  }
 
   /**
    * One cell as a plain object, built on demand; the columns stay where
@@ -3484,3 +3517,4 @@ export const localMeanZone = (longitudeDeg) => ({
 export { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
 export * from './catalogue.js';
+export * from './records.js';

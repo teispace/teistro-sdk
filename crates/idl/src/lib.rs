@@ -9,6 +9,8 @@
 //! type, a unit or a field's documentation.
 //!
 //! - [`model`]: the description itself, serialised as `idl/api.json`;
+//! - [`records`]: the JSON records that cross as text (provenance, steps),
+//!   read from serde's own schema of them;
 //! - [`names`]: the one set of naming rules (Rust, C and binding names);
 //! - [`layout`]: C layout of every boundary type, so the header can assert
 //!   sizes and the tests can hold Rust and C to the same bytes;
@@ -50,6 +52,7 @@ pub mod extract;
 pub mod layout;
 pub mod model;
 pub mod names;
+pub mod records;
 pub mod rules;
 #[cfg(feature = "extract")]
 pub mod sdk;

@@ -153,8 +153,8 @@ export function decodePositions(bytes) {
     out.steps = text(blob, at);
   }
   {
-    const at = section(blob, 6, 'provenance');
-    out.provenance = text(blob, at);
+    const at = section(blob, 6, 'provenance_json');
+    out.provenanceJson = text(blob, at);
   }
   return out;
 }
@@ -326,8 +326,8 @@ export function decodeCharts(bytes) {
     out.steps = text(blob, at);
   }
   {
-    const at = section(blob, 12, 'provenance');
-    out.provenance = text(blob, at);
+    const at = section(blob, 12, 'provenance_json');
+    out.provenanceJson = text(blob, at);
   }
   {
     const at = section(blob, 13, 'vargas');
@@ -821,6 +821,10 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 50, 'content_hashes');
+    out.contentHashes = text(blob, at);
+  }
   return out;
 }
 
@@ -1052,8 +1056,12 @@ export function decodePanchanga(bytes) {
     out.model = text(blob, at);
   }
   {
-    const at = section(blob, 19, 'provenance');
-    out.provenance = text(blob, at);
+    const at = section(blob, 19, 'provenance_json');
+    out.provenanceJson = text(blob, at);
+  }
+  {
+    const at = section(blob, 20, 'content_hashes');
+    out.contentHashes = text(blob, at);
   }
   return out;
 }

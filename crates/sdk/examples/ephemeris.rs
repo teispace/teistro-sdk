@@ -40,7 +40,6 @@
 use teistro::catalogue::{Ayanamsha, Graha, Rashi};
 use teistro::{
     Body, Context, Envelope, Ephemeris, Error, Frame, PositionRequest, TimeScale, Zodiac,
-    canonical_json,
 };
 
 /// A year from the start of 2025, one sample a day at noon UTC.
@@ -163,12 +162,10 @@ fn what_it_says(sky: &Envelope<teistro::Completed>) {
         "         two contexts with the same settings hash compute the same numbers, \
          so it is the cache key"
     );
-    // The whole envelope is canonical JSON: byte-identical across every
-    // binding, which is what makes it safe to hash and store.
-    println!(
-        "envelope {} bytes of canonical JSON",
-        canonical_json(provenance).len()
-    );
+    // The value's content hash is taken over its canonical JSON,
+    // byte-identical in every binding, which is what makes a stored result
+    // checkable.
+    println!("content  {}…", &provenance.content_hash.to_string()[..16]);
     let provider = &provenance.provider;
     println!(
         "provider {} {} (data {})",

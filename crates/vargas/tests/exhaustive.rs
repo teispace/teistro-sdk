@@ -57,7 +57,7 @@ fn the_spans_fill_a_sign_and_the_groups_match_the_classifier() {
             scheme.key()
         );
         for group in scheme.groups {
-            if let Spans::Degrees(widths) = group.spans {
+            if let Spans::Degrees { widths } = group.spans {
                 let total: u16 = widths.iter().map(|width| u16::from(*width)).sum();
                 assert_eq!(total, 30, "{}: the spans fill a sign", scheme.key());
                 assert!(
@@ -66,7 +66,7 @@ fn the_spans_fill_a_sign_and_the_groups_match_the_classifier() {
                     scheme.key()
                 );
             }
-            if let Map::Listed(signs) = group.map {
+            if let Map::Listed { signs } = group.map {
                 assert_eq!(
                     u16::try_from(signs.len()).unwrap(),
                     group.parts(scheme.divisions),
@@ -231,7 +231,7 @@ fn first_nas_of(scheme: &Scheme, rashi: Rashi, part: u16) -> Nas {
             let divisions = i64::from(scheme.divisions);
             (i64::from(part) * Nas::PER_SIGN + divisions - 1) / divisions
         }
-        Spans::Degrees(widths) => widths
+        Spans::Degrees { widths } => widths
             .iter()
             .take(usize::from(part))
             .map(|width| i64::from(*width) * Nas::PER_DEGREE)

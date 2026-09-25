@@ -94,8 +94,10 @@ import type {
 // answers with them: the flat surface had both members and declared
 // neither, which the areas made visible.
 import type { EntityForms, Messages } from './messages.js';
+import type { Provenance, Step } from './records.js';
 
 export * from './catalogue.js';
+export * from './records.js';
 export type * from './types.js';
 export type * from './blob.js';
 /**
@@ -191,14 +193,6 @@ export interface Cell {
   readonly source: number;
 }
 
-/** One step of the frame completion, and who did it. */
-export interface Step {
-  /** The step's name. */
-  readonly name: string;
-  /** `NATIVE`, `SDK` or `PASS_THROUGH`. */
-  readonly implementation: string;
-}
-
 /** Positions over a grid, with the cells readable one at a time. */
 export declare class Positions extends Decoded<DecodedPositions> {
   /** The instants of the request, in order. */
@@ -222,7 +216,9 @@ export declare class Positions extends Decoded<DecodedPositions> {
   /** The completion steps the SDK applied, in order. */
   readonly steps: readonly Step[];
   /** Everything that reproduces this result (ADR-0020). */
-  readonly provenance: Record<string, unknown>;
+  readonly provenance: Provenance;
+  /** The provenance envelope as the canonical JSON the library stamped: the bytes to store beside the result, byte-identical in every binding. */
+  readonly provenanceJson: string;
   /** One cell as a plain object; the columns stay where they are. */
   at(instant: number, body: number): Cell;
 }
@@ -1685,7 +1681,9 @@ export declare class Charts extends Decoded<DecodedCharts> {
   /** The solar model that reckoned the days, as it describes itself. */
   readonly model: string;
   /** Everything that reproduces this result (ADR-0020). */
-  readonly provenance: Record<string, unknown>;
+  readonly provenance: Provenance;
+  /** The provenance envelope as the canonical JSON the library stamped: the bytes to store beside the result, byte-identical in every binding. */
+  readonly provenanceJson: string;
   /** One chart of the batch, by index. */
   at(index: number): Chart;
   /** Every chart, in the order the instants were asked for. */
@@ -1790,8 +1788,8 @@ export declare class Chart {
   readonly chalit: readonly Bhava[];
   /** The completion steps the SDK applied, in order. */
   readonly steps: readonly string[];
-  /** The provenance envelope of the batch this chart came from. */
-  readonly provenance: Record<string, unknown>;
+  /** What computed this chart, and under what: the batch's provenance stamped with this chart's own `contentHash`. */
+  readonly provenance: Provenance;
 }
 
 /** A span of time, as every almanac row carries one. */
@@ -1976,7 +1974,9 @@ export declare class Almanac extends Decoded<DecodedAlmanac> {
   /** The solar model that reckoned the days, as it describes itself. */
   readonly model: string;
   /** Everything that reproduces this result (ADR-0020). */
-  readonly provenance: Record<string, unknown>;
+  readonly provenance: Provenance;
+  /** The provenance envelope as the canonical JSON the library stamped: the bytes to store beside the result, byte-identical in every binding. */
+  readonly provenanceJson: string;
   /** One day of the batch, by index. */
   at(index: number): AlmanacDay;
   /** Every day, in the order the range runs. */
@@ -2036,8 +2036,8 @@ export declare class AlmanacDay {
   readonly moonEvents: readonly MoonEvent[];
   /** The muhurta yogas that held. */
   readonly muhurtaYogas: readonly HeldYoga[];
-  /** The provenance envelope of the batch this day came from. */
-  readonly provenance: Record<string, unknown>;
+  /** What computed this day, and under what: the batch's provenance stamped with this day's own `contentHash`. */
+  readonly provenance: Provenance;
 }
 
 /** What `Context.almanac` needs: a range of days at one place. */

@@ -125,7 +125,15 @@ pub enum Map {
         offset: u8,
     },
     /// One sign per part, listed in order.
-    Listed(&'static [u8]),
+    ///
+    /// A struct variant, not a newtype: the enum is tagged by `map`, and
+    /// serde cannot write a tagged newtype holding a list — which it did
+    /// not, and every document carrying a listed scheme failed to
+    /// serialise and was sealed with the hash of nothing.
+    Listed {
+        /// The signs, 0 for Aries, a part each.
+        signs: &'static [u8],
+    },
 }
 
 /// Where the parts of a sign begin.
@@ -138,7 +146,13 @@ pub enum Spans {
     /// Whole-degree widths, summing to thirty. Only the trimshamsha
     /// needs them, and every attested variant of it is whole degrees
     /// too.
-    Degrees(&'static [u8]),
+    ///
+    /// A struct variant, as [`Map::Listed`] is and for its reason: serde
+    /// cannot write a tagged newtype holding a list.
+    Degrees {
+        /// The parts' widths in degrees, in order.
+        widths: &'static [u8],
+    },
 }
 
 /// One classifier group's rule: how wide its parts are, and where each
@@ -165,7 +179,7 @@ impl Group {
     pub const fn parts(&self, divisions: u16) -> u16 {
         match self.spans {
             Spans::Equal => divisions,
-            Spans::Degrees(widths) => widths.len() as u16,
+            Spans::Degrees { widths } => widths.len() as u16,
         }
     }
 }
@@ -255,7 +269,7 @@ const fn step(base: SignBase, step: u8, offset: u8) -> Group {
 const fn listed(signs: &'static [u8]) -> Group {
     Group {
         spans: Spans::Equal,
-        map: Map::Listed(signs),
+        map: Map::Listed { signs },
     }
 }
 
@@ -322,12 +336,16 @@ const PANCHAMSHA: [Group; 2] = [listed(&FIVE_ODD), listed(&FIVE_EVEN)];
 /// between the parities.
 const TRIMSHAMSHA: [Group; 2] = [
     Group {
-        spans: Spans::Degrees(&[5, 5, 8, 7, 5]),
-        map: Map::Listed(&FIVE_ODD),
+        spans: Spans::Degrees {
+            widths: &[5, 5, 8, 7, 5],
+        },
+        map: Map::Listed { signs: &FIVE_ODD },
     },
     Group {
-        spans: Spans::Degrees(&[5, 7, 8, 5, 5]),
-        map: Map::Listed(&FIVE_EVEN),
+        spans: Spans::Degrees {
+            widths: &[5, 7, 8, 5, 5],
+        },
+        map: Map::Listed { signs: &FIVE_EVEN },
     },
 ];
 
@@ -505,7 +523,7 @@ pub fn target(group: &Group, sign: Rashi, part: u16, divisions: u16) -> Option<R
             let along = u32::from(step) * u32::from(part);
             (from + along + u32::from(offset)) % u32::from(SIGNS)
         }
-        Map::Listed(signs) => u32::from(*signs.get(usize::from(part))?),
+        Map::Listed { signs } => u32::from(*signs.get(usize::from(part))?),
     };
     Rashi::from_id(u16::try_from(index).ok()?)
 }
@@ -526,7 +544,7 @@ pub fn part_of(group: &Group, longitude: Nas, divisions: u16) -> u16 {
                 .unwrap_or(0)
                 .min(divisions.saturating_sub(1))
         }
-        Spans::Degrees(widths) => {
+        Spans::Degrees { widths } => {
             let inside = longitude.in_sign().get();
             let mut edge = 0_i64;
             for (index, width) in widths.iter().enumerate() {
@@ -600,7 +618,7 @@ mod tests {
     fn a_listed_group_lists_one_sign_per_part() {
         for scheme in SCHEMES {
             for group in scheme.groups {
-                if let Map::Listed(signs) = group.map {
+                if let Map::Listed { signs } = group.map {
                     assert_eq!(
                         u16::try_from(signs.len()).unwrap(),
                         group.parts(scheme.divisions),
@@ -609,7 +627,7 @@ mod tests {
                     );
                     assert!(signs.iter().all(|sign| *sign < 12), "{:?}", scheme.varga);
                 }
-                if let Spans::Degrees(widths) = group.spans {
+                if let Spans::Degrees { widths } = group.spans {
                     let total: u16 = widths.iter().map(|width| u16::from(*width)).sum();
                     assert_eq!(total, 30, "{:?}: the spans fill a sign", scheme.varga);
                 }

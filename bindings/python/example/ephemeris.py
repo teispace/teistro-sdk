@@ -32,7 +32,6 @@ Run it:
 from __future__ import annotations
 
 import dataclasses
-import json
 
 from teistro import Body, Context, Ephemeris, Teistro
 from teistro.catalogue import Ayanamsha, Graha, Rashi
@@ -140,21 +139,22 @@ def main() -> None:
         # ── What the answer says about itself ─────────────────────────
         print()
         steps = ", ".join(
-            f"{step['name']}:{step['implementation']}" for step in sky.steps_applied
+            f"{step.name}:{step.implementation}" for step in sky.steps_applied
         )
         print(f"steps    {steps}")
-        provenance = sky.provenance_of
-        print(f"profile  {provenance['profile']}")
-        print(f"hash     {provenance['settings_hash']}")
+        provenance = sky.provenance
+        print(f"profile  {provenance.profile}")
+        print(f"hash     {provenance.settings_hash}")
         print(
             "         two contexts with the same settings hash compute the"
             " same numbers, so it is the cache key"
         )
-        # The whole envelope is canonical JSON: byte-identical across
-        # every binding, which is what makes it safe to hash and store.
-        print(f"envelope {len(json.dumps(provenance, separators=(',', ':')))} bytes of canonical JSON")
-        provider = provenance["provider"]
-        print(f"provider {provider['name']} {provider['version']} (data {provider['data_version']})")
+        # The value's content hash is taken over its canonical JSON,
+        # byte-identical in every binding, which is what makes a stored
+        # result checkable.
+        print(f"content  {provenance.content_hash[:16]}…")
+        provider = provenance.provider
+        print(f"provider {provider.name} {provider.version} (data {provider.data_version})")
 
 
 if __name__ == "__main__":

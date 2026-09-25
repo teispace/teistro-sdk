@@ -39,7 +39,6 @@ use teistro_idl::layout::{Target as LayoutTarget, struct_layout};
 use teistro_idl::model::{Api, EnumValue, FunctionDef, Role, Scalar, StructRole, TypeRef};
 use teistro_idl::names::{camel, method_name, snake};
 use teistro_idl::rules::{constants, has_handshake, is_visible, methods};
-use teistro_idl::sdk::describe;
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, Verdict, count, fill, plural, table, verdict_of};
@@ -816,13 +815,7 @@ fn metadata(out: &mut String, api: &Api) {
 // ── the task ───────────────────────────────────────────────────────────────
 
 fn outputs(root: &Path) -> Vec<Output> {
-    let api = describe(
-        root,
-        teistro_ffi::schemas::schemas(),
-        teistro_ffi::SDK_VERSION,
-    )
-    .unwrap_or_else(|e| panic!("the boundary does not describe: {e}"));
-    vec![Output::new(PAGE, page(&api))]
+    vec![Output::new(PAGE, page(&crate::ffi::api(root)))]
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {
@@ -855,6 +848,7 @@ mod tests {
             structs: Vec::new(),
             functions: Vec::new(),
             blobs: Vec::new(),
+            records: Vec::new(),
         }
     }
 

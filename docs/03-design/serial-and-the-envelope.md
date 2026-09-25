@@ -96,6 +96,49 @@ stamp, which a module builds as it goes. `Sealed<T>` is what a value
 becomes when it leaves: `Sealed::from_envelope` takes one and seals it.
 So a producer does not change, and nothing can be *published* unsealed.
 
+### A batch, and a member handed out alone
+
+A batch's provenance hashes the **list**. A binding hands a batch out one
+member at a time — `found(one)` is a chart of a batch of one, an almanac's
+day a member of its range — so until 2h a binding's single chart carried
+the hash of a list of one, a value it was not. Rust's `found` re-sealed
+around the chart, which was right, and paid a second full serialisation
+to do it.
+
+A list's canonical form is `[`, its items' canonical forms joined by `,`,
+and `]`. So `content_hashes(items)` writes each item once, hashes it, and
+streams the same bytes into the list's hash: the list's hash is exactly
+`content_hash(&items)`, each item's exactly `content_hash(item)`, for the
+price of the list's. `Envelope::sealing_each` seals a batch with it and
+hands back every member's hash beside the envelope.
+
+- **Every façade call seals once.** `readings`, `readings_with_rules`,
+  `found_many` and `almanac().of` each read unsealed and seal the value
+  they publish; `found(one)`, `reading(one)` and `almanac().day` seal the
+  member and never hash the list at all; `readings_with_rules` no longer
+  seals its documents and then its answers.
+- **A member's hash is what the batch lists for it**: a chart's document,
+  with what it answers by rule where rules were asked. `Interpreted`
+  carries it as `content_hash`, and `almanac().of_each` answers the days'.
+- **The boundary carries them.** The charts and panchanga blobs have a
+  `content_hashes` section, sixty-four hex digits a member with nothing
+  between, and every binding's single chart and day stamps its
+  provenance with its own. The parity runners print `chart-{i}-content-hash`
+  and `day-{i}-content-hash`, so four languages are held to one value.
+
+### A value serde cannot write
+
+Building the above found every rules batch sealed with the hash of the
+empty string. Two varga schemes were tagged newtypes holding a list
+(`Map::Listed`, `Spans::Degrees`), which serde cannot write, and the
+canonical writer turned the error into `""`. Both are struct variants now
+(`{"map": "LISTED", "signs": [...]}`), the port's `Quantity` crosses
+through a wire form with the same shape (`{"kind": "LONGITUDE", "body":
+"SUN"}`), and the writer **stops** on such a value in a debug build, so
+every test is a check that nothing it reaches is unwritable. The widest
+document the SDK produces — every section, every varga, every shipped
+rule's inputs — is held to serialise whole.
+
 ## 4. Two forms, and why they are two
 
 A canonical form has two jobs that pull apart, so the module has two

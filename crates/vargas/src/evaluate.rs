@@ -181,7 +181,7 @@ mod tests {
                 let width = 30.0 / f64::from(scheme.divisions);
                 (f64::from(part) * width, f64::from(part + 1) * width)
             }
-            Spans::Degrees(widths) => {
+            Spans::Degrees { widths } => {
                 let before: u16 = widths
                     .iter()
                     .take(usize::from(part))

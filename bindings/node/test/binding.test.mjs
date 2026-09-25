@@ -11,6 +11,7 @@ import { test } from 'node:test';
 
 import {
   Body,
+  decodeProvenance,
   Calendar,
   ProviderCode,
   ProviderCodeById,
@@ -117,6 +118,25 @@ test('a pack loads at runtime and lays its record over the one standing', () => 
   assert.equal(after.forms.phala, 'a reading of the Sun');
   assert.equal(after.name, before.name);
   assert.equal(after.forms.name, before.name, 'the map carries the named ones too');
+});
+
+test('a chart handed out alone carries its own hash, and the batch the list\'s', () => {
+  // STATUS 2h: a batch's provenance hashes the list, and a chart of it the
+  // value it holds, which is what a stored chart is checked against.
+  const ctx = context();
+  const batch = ctx.chart.foundMany({
+    instants: [2451545.0, 2451546.0],
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  });
+  const [first, second] = [batch.at(0).provenance, batch.at(1).provenance];
+  assert.equal(new Set([first.contentHash, second.contentHash, batch.provenance.contentHash]).size, 3);
+  assert.equal(first.settingsHash, batch.provenance.settingsHash);
+  assert.deepEqual(decodeProvenance(JSON.parse(batch.provenanceJson)), { ...batch.provenance });
+  assert.throws(
+    () => decodeProvenance({ ...JSON.parse(batch.provenanceJson), confidence: 'MAYBE' }),
+    TypeError,
+  );
 });
 
 test('an almanac keeps each day\'s rows of a per-day list by range', () => {
@@ -271,8 +291,8 @@ test('positions come back in the frame asked for, decoded on first use', () => {
 
   assert.ok(positions.steps.every((step) => typeof step.name === 'string'));
   assert.equal(positions.provenance.profile, 'nepali-default');
-  assert.equal(positions.provenance.calculation_version, 1);
-  assert.equal(positions.provenance.settings_hash, ctx.settingsHash);
+  assert.equal(positions.provenance.calculationVersion, 1);
+  assert.equal(positions.provenance.settingsHash, ctx.settingsHash);
   assert.equal(
     positions.provenance.provider.frame,
     'GEOCENTRIC/OF_DATE/ECLIPTIC/TROPICAL/APPARENT',

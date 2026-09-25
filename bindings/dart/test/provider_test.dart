@@ -91,10 +91,9 @@ void main() {
     expect(positions.cells.length, 4);
     expect(positions.at(0, 0).longitude, closeTo(2451545 % 360, 1e-9));
     expect(positions.at(0, 1).longitudeSpeed, 13.176);
-    final provenance =
-        positions.provenanceOf['provider']! as Map<String, Object?>;
-    expect(provenance['name'], 'a-provider-in-dart');
-    expect(provenance['version'], '1.2.3');
+    final stamp = positions.provenance.provider;
+    expect(stamp.name, 'a-provider-in-dart');
+    expect(stamp.version, '1.2.3');
     expect(ctx.provider, same(provider));
   });
 
@@ -127,8 +126,8 @@ void main() {
       reason: "the canonical frame, then the provider's own",
     );
     expect(
-      positions.stepsApplied.cast<Map<String, Object?>>().map(
-        (step) => '${step['name']}:${step['implementation']}',
+      positions.stepsApplied.map(
+        (step) => '${step.name}:${step.implementation.key}',
       ),
       [
         'positions:NATIVE',

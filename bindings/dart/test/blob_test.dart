@@ -57,22 +57,19 @@ void main() {
     // The steps and the provenance are the JSON the library wrote.
     final steps = positions.stepsApplied;
     expect(steps, isNotEmpty);
-    for (final step in steps.cast<Map<String, Object?>>()) {
-      expect(step['name'], isA<String>());
-      expect(step['implementation'], isA<String>());
+    for (final step in steps) {
+      expect(step.name, isNotEmpty);
+      expect(Implementation.values, contains(step.implementation));
     }
-    final provenance = positions.provenanceOf;
-    expect(provenance['profile'], 'nepali-default');
-    expect(provenance['calculation_version'], 1);
-    expect((provenance['settings_hash']! as String).length, 64);
+    final provenance = positions.provenance;
+    expect(provenance.profile, 'nepali-default');
+    expect(provenance.calculationVersion, 1);
+    expect(provenance.settingsHash.length, 64);
     expect(
-      (provenance['provider']! as Map<String, Object?>)['frame'],
+      provenance.provider.frame,
       'GEOCENTRIC/OF_DATE/ECLIPTIC/TROPICAL/APPARENT',
     );
-    expect(
-      (provenance['time']! as Map<String, Object?>)['delta_t_model'],
-      'TABLE_THEN_MODEL',
-    );
+    expect(provenance.time.deltaTModel, 'TABLE_THEN_MODEL');
   });
 
   test('a render blob decodes its text, its locale and its warnings', () {

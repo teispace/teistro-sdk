@@ -177,7 +177,7 @@ pub fn positions() -> BlobSchema {
             ),
             SectionSchema::bytes(
                 6,
-                "provenance",
+                "provenance_json",
                 "UTF-8 JSON: the provenance envelope of the result, canonical.",
             ),
         ],
@@ -554,7 +554,7 @@ pub fn charts() -> BlobSchema {
             ),
             SectionSchema::bytes(
                 12,
-                "provenance",
+                "provenance_json",
                 "UTF-8 JSON: the provenance envelope of the result, canonical.",
             ),
             chart_vargas_section(13),
@@ -594,8 +594,30 @@ pub fn charts() -> BlobSchema {
         ]
         .into_iter()
         .chain(chart_annual_sections())
+        .chain([chart_content_hashes_section(50)])
         .collect(),
     }
+}
+
+/// Each chart's own content hash.
+fn chart_content_hashes_section(id: u32) -> SectionSchema {
+    content_hashes_section(
+        id,
+        "chart",
+        "its document, with what it answers by rule where rules were asked",
+    )
+}
+
+/// Each item's own content hash, where a batch's provenance hashes the
+/// list: what an item handed out alone is stamped with.
+fn content_hashes_section(id: u32, item: &str, hashed: &str) -> SectionSchema {
+    SectionSchema::bytes(
+        id,
+        "content_hashes",
+        &format!(
+            "UTF-8 text: each {item}'s own content hash — {hashed}, canonical — as sixty-four lowercase hex digits, a {item} after the other in the batch's order with nothing between them, so {item} `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a {item} handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3)."
+        ),
+    )
 }
 
 /// The annual charts a batch's births open and everything Tajika reads
@@ -2342,9 +2364,10 @@ pub fn panchanga() -> BlobSchema {
             ),
             SectionSchema::bytes(
                 19,
-                "provenance",
+                "provenance_json",
                 "UTF-8 JSON: the provenance envelope of the result, canonical.",
             ),
+            content_hashes_section(20, "day", "its panchanga"),
         ],
     }
 }

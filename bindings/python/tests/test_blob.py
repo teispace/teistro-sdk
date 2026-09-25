@@ -71,7 +71,7 @@ class APositionsBlob(unittest.TestCase):
         for step in steps:
             self.assertIn("name", step)
             self.assertIn("implementation", step)
-        provenance = json.loads(self.decoded.provenance)
+        provenance = json.loads(self.decoded.provenance_json)
         self.assertIn("settings_hash", provenance)
 
 
