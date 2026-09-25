@@ -257,12 +257,12 @@ def main() -> None:
         put(f"cell-{index}-status", cell.status)
     put(
         "steps",
-        ",".join(f"{step['name']}:{step['implementation']}" for step in sky.steps_applied),
+        ",".join(f"{step.name}:{step.implementation}" for step in sky.steps_applied),
     )
-    put("provenance-fnv", fnv(sky.provenance))
-    put("provenance-profile", sky.provenance_of["profile"])
-    put("provenance-settings-hash", sky.provenance_of["settings_hash"])
-    put("provenance-provider-frame", sky.provenance_of["provider"]["frame"])
+    put("provenance-fnv", fnv(sky.provenance_json))
+    put("provenance-profile", sky.provenance.profile)
+    put("provenance-settings-hash", sky.provenance.settings_hash)
+    put("provenance-provider-frame", sky.provenance.provider.frame)
 
     # ── The chart the topocentric profile founds ──────────────────────
     # The scenario above runs under `nepali-default`, whose frame is
@@ -363,12 +363,13 @@ def main() -> None:
         put("chart-place-lon", charts.place.longitude_deg)
         put("chart-model-fnv", fnv(charts.model))
         put("chart-steps", ",".join(charts.steps_applied))
-        put("chart-provenance-fnv", fnv(charts.provenance))
-        put("chart-provenance-profile", json.loads(charts.provenance)["profile"])
+        put("chart-provenance-fnv", fnv(charts.provenance_json))
+        put("chart-provenance-profile", charts.provenance.profile)
         put("chart-graha-count", charts.decoded.graha_count)
 
         for chart in charts:
             i = chart.index
+            put(f"chart-{i}-content-hash", chart.provenance.content_hash)
             put(f"chart-{i}-instant", chart.instant)
             put(f"chart-{i}-lagna", chart.lagna_deg)
             put(f"chart-{i}-day-lagna", chart.day_lagna_deg)
@@ -805,10 +806,11 @@ def main() -> None:
         put("almanac-calendar", week.calendar.full_key)
         put("almanac-place-lat", week.decoded.latitude_deg)
         put("almanac-model-fnv", fnv(week.model))
-        put("almanac-provenance-fnv", fnv(week.decoded.provenance))
+        put("almanac-provenance-fnv", fnv(week.provenance_json))
 
         for almanac_day in week:
             i = almanac_day.index
+            put(f"day-{i}-content-hash", almanac_day.provenance.content_hash)
             put_day(f"day-{i}", almanac_day.day)
             put(f"day-{i}-window-from", almanac_day.window.from_jd)
             put(f"day-{i}-window-to", almanac_day.window.to_jd)

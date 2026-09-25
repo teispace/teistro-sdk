@@ -5,7 +5,7 @@ use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::CalendarDate;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_core::catalogue::Ayanamsha;
-use teistro_core::envelope::Envelope;
+use teistro_core::envelope::{Envelope, Hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::Place;
 use teistro_core::settings::AyanamshaChoice;
@@ -55,6 +55,38 @@ impl<'a> AlmanacArea<'a> {
         place: &Place,
         offset: UtcOffset,
     ) -> Result<Envelope<Vec<Panchanga>>, Error> {
+        let days = self.unsealed(from, to, place, offset)?;
+        Ok(Envelope::sealing(days.value, days.provenance))
+    }
+
+    /// As [`AlmanacArea::of`], with **each day's own content hash** beside
+    /// the range's, from the one serialisation that seals the range: what
+    /// a caller handing out one day at a time stamps it with, since the
+    /// range's provenance hashes the list.
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::of`].
+    pub fn of_each(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<(Envelope<Vec<Panchanga>>, Vec<Hash>), Error> {
+        let days = self.unsealed(from, to, place, offset)?;
+        Ok(Envelope::sealing_each(days.value, days.provenance))
+    }
+
+    /// The days, **not yet sealed**: each public call seals once, over the
+    /// value it publishes.
+    fn unsealed(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<Envelope<Vec<Panchanga>>, Error> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let resolved = self.context.resolved();
         let settings = &resolved.settings;
@@ -70,9 +102,7 @@ impl<'a> AlmanacArea<'a> {
             settings.provider.overrides,
             self.context.delta_t(),
         );
-        // Sealed here, as the chart area seals, and for the reason it
-        // gives: the join belongs where the value is published.
-        let founded = Almanac::new(
+        Almanac::new(
             provider,
             resolved,
             &model,
@@ -81,8 +111,7 @@ impl<'a> AlmanacArea<'a> {
             PrecessionModel::default(),
             self.context.delta_t(),
         )
-        .between(from, to, place)?;
-        Ok(Envelope::sealing(founded.value, founded.provenance))
+        .between(from, to, place)
     }
 
     /// One day: the run of one, unwrapped.
@@ -96,15 +125,15 @@ impl<'a> AlmanacArea<'a> {
         place: &Place,
         offset: UtcOffset,
     ) -> Result<Envelope<Panchanga>, Error> {
-        let Envelope { value, provenance } = self.of(date, date, place, offset)?;
+        let Envelope { value, provenance } = self.unsealed(date, date, place, offset)?;
         let Some(one) = value.into_iter().next() else {
             return Err(Error::internal(
                 "a range of one day answered no panchanga, which cannot happen",
             ));
         };
-        // Re-sealed, as `chart().found` is and for the same reason: the
-        // hash belongs to the value this envelope holds, and a day is
-        // not a range of one.
+        // Sealed over the day, as `chart().found` is and for the same
+        // reason: the hash belongs to the value this envelope holds, and a
+        // day is not a range of one — which is never hashed at all.
         Ok(Envelope::sealing(one, provenance))
     }
 }

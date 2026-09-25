@@ -13483,7 +13483,7 @@
         },
         {
           "id": 6,
-          "name": "provenance",
+          "name": "provenance_json",
           "doc": "UTF-8 JSON: the provenance envelope of the result, canonical.",
           "kind": "bytes",
           "fields": []
@@ -14025,7 +14025,7 @@
         },
         {
           "id": 12,
-          "name": "provenance",
+          "name": "provenance_json",
           "doc": "UTF-8 JSON: the provenance envelope of the result, canonical.",
           "kind": "bytes",
           "fields": []
@@ -15804,6 +15804,13 @@
               "doc": "When it ends, a Julian day (UTC)."
             }
           ]
+        },
+        {
+          "id": 50,
+          "name": "content_hashes",
+          "doc": "UTF-8 text: each chart's own content hash — its document, with what it answers by rule where rules were asked, canonical — as sixty-four lowercase hex digits, a chart after the other in the batch's order with nothing between them, so chart `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a chart handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3).",
+          "kind": "bytes",
+          "fields": []
         }
       ]
     },
@@ -16572,12 +16579,695 @@
         },
         {
           "id": 19,
-          "name": "provenance",
+          "name": "provenance_json",
           "doc": "UTF-8 JSON: the provenance envelope of the result, canonical.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 20,
+          "name": "content_hashes",
+          "doc": "UTF-8 text: each day's own content hash — its panchanga, canonical — as sixty-four lowercase hex digits, a day after the other in the batch's order with nothing between them, so day `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a day handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3).",
           "kind": "bytes",
           "fields": []
         }
       ]
+    }
+  ],
+  "records": [
+    {
+      "name": "Provenance",
+      "doc": "Everything that reproduces a result.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "applied_conventions",
+            "doc": "The conventions applied.",
+            "ty": {
+              "kind": "LIST",
+              "of": {
+                "kind": "RECORD",
+                "name": "Convention"
+              }
+            },
+            "nullable": false
+          },
+          {
+            "name": "calculation_version",
+            "doc": "The calculation version (ADR-0020).",
+            "ty": {
+              "kind": "INTEGER"
+            },
+            "nullable": false
+          },
+          {
+            "name": "calendar",
+            "doc": "The calendar resolution, when a calendar took part.",
+            "ty": {
+              "kind": "RECORD",
+              "name": "CalendarResolution"
+            },
+            "nullable": true
+          },
+          {
+            "name": "catalogue_version",
+            "doc": "The catalogue version.",
+            "ty": {
+              "kind": "INTEGER"
+            },
+            "nullable": false
+          },
+          {
+            "name": "confidence",
+            "doc": "The confidence.",
+            "ty": {
+              "kind": "RECORD",
+              "name": "Confidence"
+            },
+            "nullable": false
+          },
+          {
+            "name": "content_hash",
+            "doc": "The hash of the canonical serialisation of the value.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "deviation",
+            "doc": "A classical model's deviation, when one answered.",
+            "ty": {
+              "kind": "RECORD",
+              "name": "Deviation"
+            },
+            "nullable": true
+          },
+          {
+            "name": "fallbacks_used",
+            "doc": "The fallbacks used.",
+            "ty": {
+              "kind": "LIST",
+              "of": {
+                "kind": "RECORD",
+                "name": "Fallback"
+              }
+            },
+            "nullable": false
+          },
+          {
+            "name": "input_hash",
+            "doc": "The hash of the input.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "module_versions",
+            "doc": "The versions of the modules that took part.",
+            "ty": {
+              "kind": "LIST",
+              "of": {
+                "kind": "PAIR",
+                "first": {
+                  "kind": "TEXT"
+                },
+                "second": {
+                  "kind": "RECORD",
+                  "name": "Version"
+                }
+              }
+            },
+            "nullable": false
+          },
+          {
+            "name": "packs",
+            "doc": "The packs.",
+            "ty": {
+              "kind": "LIST",
+              "of": {
+                "kind": "RECORD",
+                "name": "PackStamp"
+              }
+            },
+            "nullable": false
+          },
+          {
+            "name": "profile",
+            "doc": "The profile id.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "provider",
+            "doc": "The provider.",
+            "ty": {
+              "kind": "RECORD",
+              "name": "ProviderStamp"
+            },
+            "nullable": false
+          },
+          {
+            "name": "sdk_version",
+            "doc": "The SDK's version.",
+            "ty": {
+              "kind": "RECORD",
+              "name": "Version"
+            },
+            "nullable": false
+          },
+          {
+            "name": "settings_hash",
+            "doc": "The hash of the resolved settings.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "time",
+            "doc": "What the time layer applied.",
+            "ty": {
+              "kind": "RECORD",
+              "name": "TimeStamp"
+            },
+            "nullable": false
+          },
+          {
+            "name": "warnings",
+            "doc": "The warnings.",
+            "ty": {
+              "kind": "LIST",
+              "of": {
+                "kind": "RECORD",
+                "name": "ProvenanceWarning"
+              }
+            },
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Step",
+      "doc": "One completion step and who did it.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "implementation",
+            "doc": "Who computed it.",
+            "ty": {
+              "kind": "RECORD",
+              "name": "Implementation"
+            },
+            "nullable": false
+          },
+          {
+            "name": "name",
+            "doc": "The step's name.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Convention",
+      "doc": "A convention the SDK had to choose to terminate.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "knob",
+            "doc": "The knob.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "reason",
+            "doc": "Why.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "value",
+            "doc": "The value applied.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "CalendarResolution",
+      "doc": "How a calendar date was resolved (`docs/03-design/calendar-bikram-sambat.md`).",
+      "shape": {
+        "kind": "TAGGED",
+        "tag": "kind",
+        "variants": [
+          {
+            "key": "DEFINED",
+            "doc": "A mathematical definition; exact by construction.",
+            "fields": []
+          },
+          {
+            "key": "TABULAR",
+            "doc": "From the authority's published table.",
+            "fields": [
+              {
+                "name": "authority",
+                "doc": "The authority.",
+                "ty": {
+                  "kind": "TEXT"
+                },
+                "nullable": false
+              },
+              {
+                "name": "edition",
+                "doc": "The table's edition.",
+                "ty": {
+                  "kind": "TEXT"
+                },
+                "nullable": false
+              }
+            ]
+          },
+          {
+            "key": "COMPUTED",
+            "doc": "Computed outside the table's range.",
+            "fields": [
+              {
+                "name": "model",
+                "doc": "The rule or model.",
+                "ty": {
+                  "kind": "TEXT"
+                },
+                "nullable": false
+              }
+            ]
+          },
+          {
+            "key": "DIVERGENT",
+            "doc": "Inside the range and the two disagree; the table was followed.",
+            "fields": [
+              {
+                "name": "computed",
+                "doc": "The computed month and day.",
+                "ty": {
+                  "kind": "RECORD",
+                  "name": "MonthDay"
+                },
+                "nullable": false
+              },
+              {
+                "name": "model",
+                "doc": "The rule or model that computed the other answer.",
+                "ty": {
+                  "kind": "TEXT"
+                },
+                "nullable": false
+              },
+              {
+                "name": "tabular",
+                "doc": "The table's month and day.",
+                "ty": {
+                  "kind": "RECORD",
+                  "name": "MonthDay"
+                },
+                "nullable": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Confidence",
+      "doc": "Whether every row that took part is verified (ADR-0018).",
+      "shape": {
+        "kind": "KEYS",
+        "values": [
+          {
+            "key": "VERIFIED",
+            "doc": "Every table row used is verified."
+          },
+          {
+            "key": "UNVERIFIED",
+            "doc": "At least one traditional row took part."
+          }
+        ]
+      }
+    },
+    {
+      "name": "Deviation",
+      "doc": "A classical model answered rather than the modern one.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "detail",
+            "doc": "What it changed.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "model",
+            "doc": "The model (`SURYA_SIDDHANTA`).",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Fallback",
+      "doc": "A fallback that was used.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "reason",
+            "doc": "Why.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "what",
+            "doc": "What fell back.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Version",
+      "doc": "A semantic version.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "major",
+            "doc": "Major.",
+            "ty": {
+              "kind": "INTEGER"
+            },
+            "nullable": false
+          },
+          {
+            "name": "minor",
+            "doc": "Minor.",
+            "ty": {
+              "kind": "INTEGER"
+            },
+            "nullable": false
+          },
+          {
+            "name": "patch",
+            "doc": "Patch.",
+            "ty": {
+              "kind": "INTEGER"
+            },
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "PackStamp",
+      "doc": "A pack that took part.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "hash",
+            "doc": "Its content hash.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "id",
+            "doc": "The pack id.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "version",
+            "doc": "Its version.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProviderStamp",
+      "doc": "What the provider was.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "data_hashes",
+            "doc": "The hashes of the data files it read.",
+            "ty": {
+              "kind": "LIST",
+              "of": {
+                "kind": "PAIR",
+                "first": {
+                  "kind": "TEXT"
+                },
+                "second": {
+                  "kind": "TEXT"
+                }
+              }
+            },
+            "nullable": false
+          },
+          {
+            "name": "data_version",
+            "doc": "What identifies its data.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "flags_used",
+            "doc": "The flags actually used, as names.",
+            "ty": {
+              "kind": "LIST",
+              "of": {
+                "kind": "TEXT"
+              }
+            },
+            "nullable": false
+          },
+          {
+            "name": "frame",
+            "doc": "The frame it returned, as its key.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "name",
+            "doc": "The provider's name.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "tier",
+            "doc": "The tier, when the provider has tiers.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": true
+          },
+          {
+            "name": "version",
+            "doc": "Its version.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "TimeStamp",
+      "doc": "What the time layer applied.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "delta_t_model",
+            "doc": "The Delta T model's key.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "delta_t_seconds",
+            "doc": "Delta T in seconds at the instant.",
+            "ty": {
+              "kind": "NUMBER"
+            },
+            "nullable": false
+          },
+          {
+            "name": "leap_table",
+            "doc": "The leap-second table version.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "time_basis_applied",
+            "doc": "What was applied when tzdb had no rule (`LMT before 1880` and the like).",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": true
+          },
+          {
+            "name": "tzdb_version",
+            "doc": "The tzdb version.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "uncertainty_seconds",
+            "doc": "Delta T's uncertainty in seconds for deep-time instants.",
+            "ty": {
+              "kind": "NUMBER"
+            },
+            "nullable": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProvenanceWarning",
+      "doc": "A warning: a code, and a message key with slots for localisation.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "code",
+            "doc": "The stable code (`DEPRECATED_KEY`).",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          },
+          {
+            "name": "key",
+            "doc": "The message key, when there is one.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": true
+          },
+          {
+            "name": "slots",
+            "doc": "The slots.",
+            "ty": {
+              "kind": "LIST",
+              "of": {
+                "kind": "PAIR",
+                "first": {
+                  "kind": "TEXT"
+                },
+                "second": {
+                  "kind": "TEXT"
+                }
+              }
+            },
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "Implementation",
+      "doc": "Who computed a step.",
+      "shape": {
+        "kind": "KEYS",
+        "values": [
+          {
+            "key": "NATIVE",
+            "doc": "The provider's declared override."
+          },
+          {
+            "key": "SDK",
+            "doc": "The SDK's own routine."
+          },
+          {
+            "key": "PASS_THROUGH",
+            "doc": "Nothing to do: the provider returned the requested frame."
+          }
+        ]
+      }
+    },
+    {
+      "name": "MonthDay",
+      "doc": "A month and a day inside a year, for a divergence report.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "day",
+            "doc": "The day, 1-based.",
+            "ty": {
+              "kind": "INTEGER"
+            },
+            "nullable": false
+          },
+          {
+            "name": "month",
+            "doc": "The month, 1-based.",
+            "ty": {
+              "kind": "INTEGER"
+            },
+            "nullable": false
+          }
+        ]
+      }
     }
   ]
 }

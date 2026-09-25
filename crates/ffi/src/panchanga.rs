@@ -490,7 +490,9 @@ pub fn encode(
     place: &Place,
     calendar: Calendar,
     provenance: &Provenance,
+    hashes: &[teistro::Hash],
 ) -> Result<Vec<u8>, Error> {
+    let hashes = crate::support::hashes_text(hashes, days.len())?;
     let schema = crate::schemas::panchanga();
     let mut writer = Writer::new(&schema);
     let day_count = u64::try_from(days.len()).unwrap_or(u64::MAX);
@@ -538,9 +540,10 @@ pub fn encode(
         writer.rows("muhurta_yogas", &ragged.muhurta_yogas)?;
         writer.bytes("model", model.as_bytes())?;
         writer.bytes(
-            "provenance",
+            "provenance_json",
             teistro_core::envelope::canonical_json(provenance).as_bytes(),
         )?;
+        writer.bytes("content_hashes", hashes.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -615,8 +618,14 @@ pub unsafe extern "C" fn ts_panchanga_days(
         // takes from the range's own `from.calendar` — which is
         // `asked_calendar`, so the two agreed by construction and by
         // nothing enforcing it.
-        let founded = ctx.sdk().almanac().of(&from, &to, &place, clock)?;
-        let encoded = encode(&founded.value, &place, asked_calendar, &founded.provenance)?;
+        let (founded, hashes) = ctx.sdk().almanac().of_each(&from, &to, &place, clock)?;
+        let encoded = encode(
+            &founded.value,
+            &place,
+            asked_calendar,
+            &founded.provenance,
+            &hashes,
+        )?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(encoded)) }
     })
@@ -713,8 +722,14 @@ mod tests {
         use teistro_idl::blob::Reader;
 
         let (days, provenance) = founded();
-        let bytes =
-            super::encode(&days, &place(), Calendar::Gregorian, &provenance).expect("it encodes");
+        let bytes = super::encode(
+            &days,
+            &place(),
+            Calendar::Gregorian,
+            &provenance,
+            &teistro_core::envelope::content_hashes(&days).1,
+        )
+        .expect("it encodes");
         let schema = crate::schemas::panchanga();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
 
@@ -794,8 +809,14 @@ mod tests {
 
         let (days, provenance) = founded();
         let one = &days[..1];
-        let bytes =
-            super::encode(one, &place(), Calendar::Gregorian, &provenance).expect("it encodes");
+        let bytes = super::encode(
+            one,
+            &place(),
+            Calendar::Gregorian,
+            &provenance,
+            &teistro_core::envelope::content_hashes(one).1,
+        )
+        .expect("it encodes");
         let schema = crate::schemas::panchanga();
         let reader = Reader::parse(&bytes, &schema).expect("a well-formed blob");
         assert_eq!(reader.fixed("summary").expect("the summary")[0].as_i64(), 1);

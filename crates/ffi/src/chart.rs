@@ -2840,6 +2840,10 @@ pub struct Composed<'a> {
     /// Every chart's annual charts and its own sahams, in the batch's
     /// order (`annual-chart.md`); empty when none were asked for.
     pub praveshas: &'a [teistro::Varsha],
+    /// Every chart's own content hash, in the batch's order: what a chart
+    /// handed out alone is stamped with, where the provenance hashes the
+    /// list.
+    pub hashes: &'a [teistro::Hash],
 }
 
 /// counts saying so.
@@ -2873,7 +2877,9 @@ pub fn encode(
         rules,
         plans,
         praveshas,
+        hashes,
     } = composed;
+    let hashes = crate::support::hashes_text(hashes, documents.len())?;
     let charts: Vec<&ChartFoundation> = documents.iter().map(|d| &d.foundation).collect();
     let charts = charts.as_slice();
     let schema = crate::schemas::charts();
@@ -2926,7 +2932,7 @@ pub fn encode(
         writer.bytes("model", once.model.as_bytes())?;
         writer.bytes("steps", once.steps.as_bytes())?;
         writer.bytes(
-            "provenance",
+            "provenance_json",
             teistro_core::envelope::canonical_json(provenance).as_bytes(),
         )?;
         by.vargas.write(&mut writer)?;
@@ -2946,6 +2952,7 @@ pub fn encode(
         by.bhava_bala.write(&mut writer)?;
         by.vaiseshikamsa.write(&mut writer)?;
         by.dasha_phala.write(&mut writer)?;
+        writer.bytes("content_hashes", hashes.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -3734,9 +3741,22 @@ unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Erro
         .map_err(|error| error.under(RULES))
 }
 
-/// The charts a request asks for, the canonical JSON of what they answer by
-/// rule, and the canonical JSON of the plans they were asked to say — each
-/// empty when the request asked for none.
+/// What [`read_charts`] answers, ready to encode.
+struct ReadCharts {
+    /// The documents, the batch's provenance sealed over the list.
+    founded: Envelope<Vec<Document>>,
+    /// Each chart's own content hash, in the batch's order.
+    hashes: Vec<teistro::Hash>,
+    /// What every chart answered by rule, canonical JSON; empty for none.
+    rules: String,
+    /// What every chart has to say, canonical JSON; empty for none.
+    plans: String,
+}
+
+/// The charts a request asks for, each chart's own content hash, the
+/// canonical JSON of what they answer by rule, and the canonical JSON of the
+/// plans they were asked to say — the last two empty when the request asked
+/// for none.
 ///
 /// The reading and the composing are the façade's
 /// ([`teistro::ChartArea::interpreted`]), so a plan is composed in one place
@@ -3747,8 +3767,9 @@ fn read_charts(
     request: &ChartRequest,
     rules: Option<&RuleSet>,
     asked: PlanRequest,
-) -> Result<(Envelope<Vec<Document>>, String, String), Error> {
+) -> Result<ReadCharts, Error> {
     let read = sdk.chart().interpreted(instants, request, rules, asked)?;
+    let hashes = read.value.iter().map(|chart| chart.content_hash).collect();
     let rules_json = if rules.is_some() {
         let readings: Vec<_> = read
             .value
@@ -3766,11 +3787,12 @@ fn read_charts(
         String::new()
     };
     let documents = read.value.into_iter().map(|chart| chart.document).collect();
-    Ok((
-        Envelope::new(documents, read.provenance),
-        rules_json,
-        plans_json,
-    ))
+    Ok(ReadCharts {
+        founded: Envelope::new(documents, read.provenance),
+        hashes,
+        rules: rules_json,
+        plans: plans_json,
+    })
 }
 
 /// Founds a chart at an instant and a place and answers with its blob:
@@ -3877,8 +3899,12 @@ pub unsafe extern "C" fn ts_chart_found(
         let plans = unsafe { plan_request_of(asked.interpret_json) }?;
         // SAFETY: the entry point's contract.
         let varsha = unsafe { varsha_request_of(asked.varsha_json) }?;
-        let (founded, rules_json, plans_json) =
-            read_charts(ctx.sdk(), &instants, &request, rules.as_ref(), plans)?;
+        let ReadCharts {
+            founded,
+            hashes,
+            rules: rules_json,
+            plans: plans_json,
+        } = read_charts(ctx.sdk(), &instants, &request, rules.as_ref(), plans)?;
         let svgs = match &theme {
             Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
             None => String::new(),
@@ -3894,6 +3920,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 rules: &rules_json,
                 plans: &plans_json,
                 praveshas: &praveshas,
+                hashes: &hashes,
             },
             ctx.sdk().dashas(),
         )?;
@@ -3940,12 +3967,16 @@ mod tests {
         place: &Place,
         provenance: &Provenance,
     ) -> Result<Vec<u8>, teistro_core::error::Error> {
+        let (_, hashes) = teistro_core::envelope::content_hashes(documents);
         super::encode(
             documents,
             place,
             ChartKind::Natal,
             provenance,
-            super::Composed::default(),
+            super::Composed {
+                hashes: &hashes,
+                ..super::Composed::default()
+            },
             &teistro::dasha::DashaSystems::new(),
         )
     }
@@ -4277,7 +4308,10 @@ mod tests {
         assert!(reader.column("day", "sunrise").expect("empty").is_empty());
         assert_eq!(reader.bytes("model").expect("the model"), b"");
         assert!(
-            !reader.bytes("provenance").expect("the envelope").is_empty(),
+            !reader
+                .bytes("provenance_json")
+                .expect("the envelope")
+                .is_empty(),
             "the settings that founded nothing are still stamped"
         );
     }

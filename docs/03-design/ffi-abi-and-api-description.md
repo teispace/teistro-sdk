@@ -189,6 +189,32 @@ So `ts_position_request` reaches JavaScript as `{ scale, frameBits,
 speeds: boolean, observer?, jds: number[], bodies: Body[] }`: no counts,
 no presence flag, and the bodies by their catalogue keys.
 
+### 3.6 The records that cross as JSON
+
+Two things a blob carries are JSON text rather than columns: a result's
+provenance (the `provenance_json` section) and a positions result's
+completion steps. Until 2h every binding parsed them into an untyped map
+(`Record<string, unknown>`, a `dict`, a `Map<String, Object?>`), so a
+consumer read `provenance["settings_hash"]` with nothing to say the field
+existed. The description's `records` are the JSON's shape, read from
+serde's own schema of `Provenance` and `Step` (schemars, the source the
+document schema already reads) by `teistro_idl::records::from_schema`,
+which reads a closed subset — objects, key unions, unions tagged by one
+constant field, lists, pairs, scalars — and refuses anything else by its
+path. Fields are in name order, the canonical wire's, because a map's
+order is a feature of the JSON library and a generated file must not move
+with a build's features.
+
+Every binding renders them the same way (`emit::records`): an object as a
+typed value with its fields in the language's case (`settingsHash`,
+`settings_hash`), a key union as the language's closed set of strings, a
+tagged union as one type per variant narrowed by `kind`, a pair as the
+language's pair — and a decoder beside each that refuses a key the SDK
+does not write. Each binding's `provenance` is that record, and
+`provenanceJson` keeps the canonical text, the bytes to store and re-hash.
+A record's name is held against `reserved::PYTHON_BUILTINS`, which is why
+the provenance's warning is `ProvenanceWarning` in the schema.
+
 ## 4. Algorithms
 
 - **Extraction.** Every source file is parsed with `syn`; public

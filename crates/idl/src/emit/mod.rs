@@ -11,7 +11,9 @@
 //! - [`python`]: the Python binding's `ctypes` layer, its typed classes
 //!   and its decoders;
 //! - [`mdx`]: the documentation site's reference pages, one per entry
-//!   point.
+//!   point;
+//! - [`records`]: the JSON records that cross as text, typed and decoded
+//!   in TypeScript, Python and Dart.
 //!
 //! [`reserved`] holds each target's reserved words, so an emitter's
 //! renaming rule and the pass that measures it read one list.
@@ -21,6 +23,7 @@ pub mod dart;
 pub mod mdx;
 pub mod node;
 pub mod python;
+pub mod records;
 pub mod reserved;
 pub mod ts;
 

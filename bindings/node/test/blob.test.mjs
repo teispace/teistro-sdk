@@ -54,7 +54,7 @@ test('a positions blob decodes into views over its own bytes', () => {
   const steps = JSON.parse(positions.steps);
   assert.ok(Array.isArray(steps) && steps.length > 0);
   assert.ok(steps.every((s) => typeof s.name === 'string' && typeof s.implementation === 'string'));
-  const provenance = JSON.parse(positions.provenance);
+  const provenance = JSON.parse(positions.provenanceJson);
   assert.equal(provenance.profile, 'nepali-default');
   assert.equal(provenance.calculation_version, 1);
   assert.equal(provenance.settings_hash.length, 64);

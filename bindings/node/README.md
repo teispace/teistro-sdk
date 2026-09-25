@@ -68,7 +68,7 @@ const ctx = new Context({
 });
 const bs = ctx.calendar.convert(date(Calendar.Gregorian, 2015, 4, 14), Calendar.BikramSambat);
 const sky = ctx.positions({ instants: [2451545.0], bodies: [Body.Sun, Body.Moon] });
-console.log(bs.year, sky.at(0, 0).longitude, sky.provenance.settings_hash);
+console.log(bs.year, sky.at(0, 0).longitude, sky.provenance.settingsHash);
 ctx.dispose();
 ```
 

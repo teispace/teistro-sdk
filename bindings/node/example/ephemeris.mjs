@@ -143,15 +143,15 @@ console.log(
 );
 const provenance = sky.provenance;
 console.log(`profile  ${provenance.profile}`);
-console.log(`hash     ${provenance.settings_hash}`);
+console.log(`hash     ${provenance.settingsHash}`);
 console.log(
   '         two contexts with the same settings hash compute the same' +
     ' numbers, so it is the cache key',
 );
-// The whole envelope is canonical JSON: byte-identical across every
-// binding, which is what makes it safe to hash and store.
-console.log(`envelope ${JSON.stringify(provenance).length} bytes of canonical JSON`);
+// The value's content hash is taken over its canonical JSON, byte-identical
+// in every binding, which is what makes a stored result checkable.
+console.log(`content  ${provenance.contentHash.slice(0, 16)}…`);
 const provider = provenance.provider;
-console.log(`provider ${provider.name} ${provider.version} (data ${provider.data_version})`);
+console.log(`provider ${provider.name} ${provider.version} (data ${provider.dataVersion})`);
 
 ctx.dispose();

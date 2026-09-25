@@ -34,6 +34,58 @@ pub const PYTHON: &[&str] = &[
     "with", "yield",
 ];
 
+/// Python's builtin names a module should not shadow: a generated type
+/// called `Warning` is legal, and silently replaces the builtin exception
+/// for anything that imports the module's names. A record's schema name is
+/// held against this list by the generator, which refuses a clash.
+pub const PYTHON_BUILTINS: &[&str] = &[
+    "ArithmeticError",
+    "AssertionError",
+    "BaseException",
+    "BytesWarning",
+    "DeprecationWarning",
+    "Ellipsis",
+    "Exception",
+    "FutureWarning",
+    "ImportWarning",
+    "LookupError",
+    "NotImplemented",
+    "PendingDeprecationWarning",
+    "ResourceWarning",
+    "RuntimeError",
+    "RuntimeWarning",
+    "SyntaxWarning",
+    "TypeError",
+    "UnicodeWarning",
+    "UserWarning",
+    "ValueError",
+    "Warning",
+    "bool",
+    "bytes",
+    "dict",
+    "float",
+    "format",
+    "hash",
+    "id",
+    "input",
+    "int",
+    "iter",
+    "list",
+    "map",
+    "object",
+    "open",
+    "property",
+    "range",
+    "set",
+    "slice",
+    "str",
+    "super",
+    "tuple",
+    "type",
+    "vars",
+    "zip",
+];
+
 /// Python's soft keywords, which are legal identifiers but read as
 /// keywords in the one grammar each belongs to; an emitter may use them
 /// and a reader should be told.

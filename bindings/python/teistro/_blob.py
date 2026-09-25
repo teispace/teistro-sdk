@@ -197,7 +197,7 @@ class Positions:
     steps: str
     """UTF-8 JSON: the completion steps applied, in order, each `{"name", "implementation"}`."""
 
-    provenance: str
+    provenance_json: str
     """UTF-8 JSON: the provenance envelope of the result, canonical."""
 
 
@@ -214,7 +214,7 @@ def decode_positions(raw: bytes) -> Positions:
     at_bodies = blob.section(3, "bodies")
     at_cells = blob.section(4, "cells")
     at_steps = blob.section(5, "steps")
-    at_provenance = blob.section(6, "provenance")
+    at_provenance_json = blob.section(6, "provenance_json")
     return Positions(
         frame_bits=int(blob.fixed(at_summary, 0, "I")),
         jd_count=int(blob.fixed(at_summary, 1, "I")),
@@ -240,7 +240,7 @@ def decode_positions(raw: bytes) -> Positions:
             length=at_cells.count,
         ),
         steps=blob.text(at_steps),
-        provenance=blob.text(at_provenance),
+        provenance_json=blob.text(at_provenance_json),
     )
 
 
@@ -1845,7 +1845,7 @@ class Charts:
     steps: str
     """UTF-8 JSON: an array of strings, the completion steps applied in order, each `name:Implementation`. The positions blob carries the same steps as objects and spells the implementation differently (`PASS_THROUGH` against `PassThrough`); which of the two every blob should use is an open question (`03-design/chart-at-the-boundary.md` §8)."""
 
-    provenance: str
+    provenance_json: str
     """UTF-8 JSON: the provenance envelope of the result, canonical."""
 
     vargas: ChartsVargas
@@ -1962,6 +1962,9 @@ class Charts:
     year_dasha_periods: ChartsYearDashaPeriods
     """Every annual dasha's periods, concatenated in the `year_dashas` section's order and **ragged** by its `period_count`, each depth first in time order from the year's return to its close: a mahadasha, then its antardashas, then the next mahadasha, to `varsha_json.dashaRules.depth` levels. A period that runs for no time is not listed, and its place is kept in the others' `index`."""
 
+    content_hashes: str
+    """UTF-8 text: each chart's own content hash — its document, with what it answers by rule where rules were asked, canonical — as sixty-four lowercase hex digits, a chart after the other in the batch's order with nothing between them, so chart `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a chart handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3)."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -1982,7 +1985,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_timing = blob.section(9, "timing")
     at_model = blob.section(10, "model")
     at_steps = blob.section(11, "steps")
-    at_provenance = blob.section(12, "provenance")
+    at_provenance_json = blob.section(12, "provenance_json")
     at_vargas = blob.section(13, "vargas")
     at_varga_grahas = blob.section(14, "varga_grahas")
     at_aspects = blob.section(15, "aspects")
@@ -2020,6 +2023,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_year_dashas = blob.section(47, "year_dashas")
     at_year_dasha_shares = blob.section(48, "year_dasha_shares")
     at_year_dasha_periods = blob.section(49, "year_dasha_periods")
+    at_content_hashes = blob.section(50, "content_hashes")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -2155,7 +2159,7 @@ def decode_charts(raw: bytes) -> Charts:
         ),
         model=blob.text(at_model),
         steps=blob.text(at_steps),
-        provenance=blob.text(at_provenance),
+        provenance_json=blob.text(at_provenance_json),
         vargas=ChartsVargas(
             varga=blob.column(at_vargas, 0, 2, at_vargas.count).cast("H"),
             lagna_rashi=blob.column(
@@ -2981,6 +2985,7 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("d"),
             length=at_year_dasha_periods.count,
         ),
+        content_hashes=blob.text(at_content_hashes),
     )
 
 
@@ -3516,8 +3521,11 @@ class Panchanga:
     model: str
     """UTF-8 text: the solar model that reckoned the days, as it describes itself."""
 
-    provenance: str
+    provenance_json: str
     """UTF-8 JSON: the provenance envelope of the result, canonical."""
+
+    content_hashes: str
+    """UTF-8 text: each day's own content hash — its panchanga, canonical — as sixty-four lowercase hex digits, a day after the other in the batch's order with nothing between them, so day `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a day handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3)."""
 
 
 def decode_panchanga(raw: bytes) -> Panchanga:
@@ -3546,7 +3554,8 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_moon_events = blob.section(16, "moon_events")
     at_muhurta_yogas = blob.section(17, "muhurta_yogas")
     at_model = blob.section(18, "model")
-    at_provenance = blob.section(19, "provenance")
+    at_provenance_json = blob.section(19, "provenance_json")
+    at_content_hashes = blob.section(20, "content_hashes")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -3797,7 +3806,8 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             length=at_muhurta_yogas.count,
         ),
         model=blob.text(at_model),
-        provenance=blob.text(at_provenance),
+        provenance_json=blob.text(at_provenance_json),
+        content_hashes=blob.text(at_content_hashes),
     )
 
 

@@ -35,10 +35,12 @@ import 'src/install.dart';
 // catalogue uses too. A consumer that wants them imports
 // `package:teistro/messages.dart`.
 import 'src/messages.dart' as intl;
+import 'src/records.dart';
 
 export 'src/blob.dart';
 export 'src/catalogue.dart';
 export 'src/ffi.dart';
+export 'src/records.dart';
 export 'src/host.dart';
 export 'src/install.dart'
     show hostPlatform, install, installedLibrary, InstallException, Installed;
@@ -1305,11 +1307,14 @@ extension PositionsResult on Positions {
   Frame frame(Teistro teistro) => teistro.unpackFrame(frameBits);
 
   /// The completion steps the SDK applied, in order.
-  List<Object?> get stepsApplied => jsonDecode(steps) as List<Object?>;
+  List<Step> get stepsApplied => [
+    for (final step in jsonDecode(steps) as List<Object?>)
+      Step.fromJson(step! as Map<String, Object?>),
+  ];
 
-  /// Everything that reproduces this result.
-  Map<String, Object?> get provenanceOf =>
-      jsonDecode(provenance) as Map<String, Object?>;
+  /// Everything that reproduces this result: what computed it, and under
+  /// what.
+  Provenance get provenance => _provenanceOf(this, provenanceJson);
 
   /// One cell of the grid, by the indices of its instant and its body.
   Cell at(int instant, int body) {
@@ -5405,6 +5410,11 @@ final class Chart {
   /// Where in that batch it sits.
   final int index;
 
+  /// What computed this chart, and under what: the batch's provenance
+  /// stamped with this chart's own `contentHash`.
+  Provenance get provenance =>
+      _memberProvenance(batch.provenanceJson, batch.contentHashes, index);
+
   /// The instant the chart is cast for, as a Julian day (UTC).
   double get instant => batch.cast.instant[index];
 
@@ -6091,6 +6101,10 @@ extension ChartsByIndex on Charts {
   List<String> get stepsApplied =>
       (jsonDecode(steps) as List<dynamic>).cast<String>();
 
+  /// What computed these charts, and under what; its `contentHash` is the
+  /// whole batch's.
+  Provenance get provenance => _provenanceOf(this, provenanceJson);
+
   /// Every chart, in the order the instants were asked for.
   Iterable<Chart> get each sync* {
     for (var i = 0; i < chartCount; i += 1) {
@@ -6286,6 +6300,17 @@ final class Almanac {
   final Panchanga decoded;
   final Map<String, Uint32List> _starts;
 
+  /// What computed these days, and under what; its `contentHash` is the
+  /// whole range's.
+  late final Provenance provenance = Provenance.fromJson(
+    jsonDecode(decoded.provenanceJson) as Map<String, Object?>,
+  );
+
+  /// The provenance envelope as the canonical JSON the library stamped:
+  /// the bytes to store beside the result, byte-identical in every
+  /// binding.
+  String get provenanceJson => decoded.provenanceJson;
+
   /// How many days the batch holds.
   int get length => decoded.dayCount;
 
@@ -6358,6 +6383,14 @@ final class AlmanacDay {
 
   /// Where in that batch it sits.
   final int index;
+
+  /// What computed this day, and under what: the batch's provenance
+  /// stamped with this day's own `contentHash`.
+  Provenance get provenance => _memberProvenance(
+    batch.decoded.provenanceJson,
+    batch.decoded.contentHashes,
+    index,
+  );
 
   /// The day itself: its date, weekday and sunrises.
   LocalDay get day => LocalDay._of(batch.decoded.day, index);
@@ -6610,3 +6643,23 @@ final class AlmanacDay {
     ),
   );
 }
+
+/// Each result's provenance, decoded once: an extension cannot hold a
+/// field, so the generated result classes keep theirs here.
+final Expando<Provenance> _provenances = Expando<Provenance>('provenance');
+
+/// A result's provenance from its canonical JSON, decoded once.
+Provenance _provenanceOf(Object result, String json) =>
+    _provenances[result] ??= Provenance.fromJson(
+      jsonDecode(json) as Map<String, Object?>,
+    );
+
+/// The provenance of one member of a batch handed out alone: the batch's,
+/// with that member's own `content_hash` from the blob's `content_hashes`
+/// section — so a chart founded alone carries the hash of its own value
+/// and not of a list of one.
+Provenance _memberProvenance(String json, String hashes, int index) =>
+    Provenance.fromJson({
+      ...jsonDecode(json) as Map<String, Object?>,
+      'content_hash': hashes.substring(64 * index, 64 * index + 64),
+    });

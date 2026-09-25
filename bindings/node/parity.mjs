@@ -224,9 +224,9 @@ for (let i = 0; i < positions.cells.length; i += 1) {
   put(`cell-${i}-status`, cell.status);
 }
 put('steps', positions.steps.map((step) => `${step.name}:${step.implementation}`).join(','));
-put('provenance-fnv', fnv(positions.decoded.provenance));
+put('provenance-fnv', fnv(positions.provenanceJson));
 put('provenance-profile', positions.provenance.profile);
-put('provenance-settings-hash', positions.provenance.settings_hash);
+put('provenance-settings-hash', positions.provenance.settingsHash);
 put('provenance-provider-frame', positions.provenance.provider.frame);
 
 // ── The chart the topocentric profile founds ───────────────────────────
@@ -331,12 +331,13 @@ put('chart-place-lat', charts.place.latitude);
 put('chart-place-lon', charts.place.longitude);
 put('chart-model-fnv', fnv(charts.model));
 put('chart-steps', charts.steps.join(','));
-put('chart-provenance-fnv', fnv(charts.decoded.provenance));
+put('chart-provenance-fnv', fnv(charts.provenanceJson));
 put('chart-provenance-profile', charts.provenance.profile);
 put('chart-graha-count', charts.decoded.grahaCount);
 
 for (const chart of charts) {
   const i = chart.index;
+  put(`chart-${i}-content-hash`, chart.provenance.contentHash);
   put(`chart-${i}-instant`, chart.instant);
   put(`chart-${i}-lagna`, chart.lagnaDeg);
   put(`chart-${i}-day-lagna`, chart.dayLagnaDeg);
@@ -665,10 +666,11 @@ put('almanac-days', week.length);
 put('almanac-calendar', week.calendar);
 put('almanac-place-lat', week.place.latitude);
 put('almanac-model-fnv', fnv(week.model));
-put('almanac-provenance-fnv', fnv(week.decoded.provenance));
+put('almanac-provenance-fnv', fnv(week.provenanceJson));
 
 for (const day of week) {
   const i = day.index;
+  put(`day-${i}-content-hash`, day.provenance.contentHash);
   putDay(`day-${i}`, day.day);
   put(`day-${i}-window-from`, day.window.from);
   put(`day-${i}-window-to`, day.window.to);

@@ -26,7 +26,7 @@ import json
 import math
 import os
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import cached_property
 from pathlib import Path
 from types import MappingProxyType, TracebackType
@@ -97,6 +97,9 @@ from ._install import (
     library_file_name,
 )
 from ._prebuilt import PREBUILT_VERSION
+from . import _records
+from ._records import *  # noqa: F403 - the records' own __all__ names them
+from ._records import Provenance, Step, decode_provenance, decode_step
 from .catalogue import (
     AvasthaCheshta,
     AvasthaSayanadi,
@@ -482,6 +485,7 @@ __all__ = [
     "Yoga",
     "Yoni",
 ]
+__all__ += _records.__all__
 
 #: The environment variable that names the shared library, which wins over
 #: every other place it is looked for.
@@ -4203,6 +4207,14 @@ class ChartTiming:
     """When it ends, as a Julian day (UTC)."""
 
 
+def _member_provenance(batch: Provenance, hashes: str, index: int) -> Provenance:
+    """The provenance of one member of a batch handed out alone: the
+    batch's, with that member's own `content_hash` from the blob's
+    `content_hashes` section — so a chart founded alone carries the hash of
+    its own value and not of a list of one."""
+    return replace(batch, content_hash=hashes[64 * index : 64 * index + 64])
+
+
 class Chart:
     """One founded chart: a view over its batch, not a copy.
 
@@ -4216,6 +4228,14 @@ class Chart:
         """The batch this chart belongs to."""
         self.index = index
         """Where in that batch it sits."""
+
+    @property
+    def provenance(self) -> Provenance:
+        """What computed this chart, and under what: the batch's provenance
+        stamped with this chart's own `content_hash`."""
+        return _member_provenance(
+            self.batch.provenance, self.batch.decoded.content_hashes, self.index
+        )
 
     @property
     def instant(self) -> float:
@@ -4957,14 +4977,24 @@ class ChartBatch:
         return self.decoded.model
 
     @property
-    def steps_applied(self) -> Any:
-        """The completion steps the SDK applied, in order."""
-        return json.loads(self.decoded.steps)
+    def steps_applied(self) -> list[str]:
+        """The completion steps the SDK applied, in order, each
+        `name:IMPLEMENTATION`."""
+        result: list[str] = json.loads(self.decoded.steps)
+        return result
+
+    @cached_property
+    def provenance(self) -> Provenance:
+        """What computed these, and under what; its `content_hash` is the
+        whole batch's."""
+        return decode_provenance(json.loads(self.decoded.provenance_json))
 
     @property
-    def provenance(self) -> str:
-        """The provenance envelope, as the canonical JSON it is stamped as."""
-        return self.decoded.provenance
+    def provenance_json(self) -> str:
+        """The provenance envelope as the canonical JSON the library
+        stamped: the bytes to store beside the result, byte-identical in
+        every binding."""
+        return self.decoded.provenance_json
 
 def _dasha(decoded: Charts, row: int, start: int, count: int, names: Mapping[int, str]) -> Dasha:
     """One dasha row and its periods, in this layer's shape.
@@ -5162,6 +5192,14 @@ class AlmanacDay:
         """The batch this day belongs to."""
         self.index = index
         """Where in that batch it sits."""
+
+    @property
+    def provenance(self) -> Provenance:
+        """What computed this day, and under what: the batch's provenance
+        stamped with this day's own `content_hash`."""
+        return _member_provenance(
+            self.batch.provenance, self.batch.decoded.content_hashes, self.index
+        )
 
     @property
     def day(self) -> LocalDay:
@@ -5435,10 +5473,18 @@ class Almanac:
         """The solar model that reckoned the days, as it describes itself."""
         return self.decoded.model
 
+    @cached_property
+    def provenance(self) -> Provenance:
+        """What computed these, and under what; its `content_hash` is the
+        whole batch's."""
+        return decode_provenance(json.loads(self.decoded.provenance_json))
+
     @property
-    def provenance(self) -> str:
-        """The provenance envelope, as the canonical JSON it is stamped as."""
-        return self.decoded.provenance
+    def provenance_json(self) -> str:
+        """The provenance envelope as the canonical JSON the library
+        stamped: the bytes to store beside the result, byte-identical in
+        every binding."""
+        return self.decoded.provenance_json
 
 
 class PositionGrid:
@@ -5474,19 +5520,22 @@ class PositionGrid:
         return [Body(identifier) for identifier in self.decoded.bodies.body]
 
     @property
-    def steps_applied(self) -> Any:
+    def steps_applied(self) -> list[Step]:
         """The completion steps the SDK applied, in order."""
-        return json.loads(self.decoded.steps)
+        return [decode_step(step) for step in json.loads(self.decoded.steps)]
+
+    @cached_property
+    def provenance(self) -> Provenance:
+        """What computed these, and under what; its `content_hash` is the
+        whole batch's."""
+        return decode_provenance(json.loads(self.decoded.provenance_json))
 
     @property
-    def provenance(self) -> str:
-        """The provenance envelope, as the canonical JSON it is stamped as."""
-        return self.decoded.provenance
-
-    @property
-    def provenance_of(self) -> Any:
-        """The provenance envelope, parsed."""
-        return json.loads(self.decoded.provenance)
+    def provenance_json(self) -> str:
+        """The provenance envelope as the canonical JSON the library
+        stamped: the bytes to store beside the result, byte-identical in
+        every binding."""
+        return self.decoded.provenance_json
 
     def frame(self, teistro: Teistro) -> Frame:
         """The frame the values are in."""

@@ -778,7 +778,7 @@ fn positions_come_back_as_a_blob_with_steps_and_provenance() {
         "{steps}"
     );
     let provenance: serde_json::Value =
-        serde_json::from_str(reader.text("provenance").unwrap()).unwrap();
+        serde_json::from_str(reader.text("provenance_json").unwrap()).unwrap();
     assert_eq!(provenance["calculation_version"], 1);
     assert_eq!(provenance["profile"], "parashari-classical");
     assert_eq!(provenance["settings_hash"].as_str().unwrap().len(), 64);
@@ -2864,6 +2864,51 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
         assert!(chart["longevity"]["ayurdaya"]["pindayu"]["years"].is_number());
         assert!(chart.get("houses").is_none(), "houses were not asked for");
     }
+
+    // Each chart's own content hash rides beside the batch's, which hashes
+    // the list: what a binding's `found(one)` stamps its chart with. They
+    // are the hashes the façade seals over each chart, computed here
+    // independently of the boundary.
+    let hashes = reader.text("content_hashes").unwrap();
+    assert_eq!(hashes.len(), 64 * instants.len());
+    let provenance: serde_json::Value =
+        serde_json::from_str(reader.text("provenance_json").unwrap()).unwrap();
+    let sdk = teistro::Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let set = teistro::RuleRequest::from_json(rules.to_str().unwrap())
+        .unwrap()
+        .rule_set()
+        .unwrap();
+    let place = teistro::quantity::Place::new(
+        teistro::quantity::Latitude::try_new(27.7172).unwrap(),
+        teistro::quantity::Longitude::try_new(85.324).unwrap(),
+        teistro::quantity::Altitude::try_new(1400.0).unwrap(),
+    );
+    let read = sdk
+        .chart()
+        .interpreted(
+            &instants.map(teistro::quantity::JulianDay::literal),
+            &teistro::ChartRequest::at(
+                place,
+                teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+            ),
+            Some(&set),
+            teistro::PlanRequest::default(),
+        )
+        .unwrap();
+    assert_eq!(
+        provenance["content_hash"].as_str(),
+        Some(read.provenance.content_hash.to_string().as_str())
+    );
+    for (at, chart) in read.value.iter().enumerate() {
+        let own = &hashes[64 * at..64 * at + 64];
+        assert_eq!(own, chart.content_hash.to_string(), "chart {at}");
+        assert_ne!(Some(own), provenance["content_hash"].as_str());
+    }
+
     // The same request without rules carries an empty section.
     let plain = TsChartRequest {
         rules_json: ptr::null(),

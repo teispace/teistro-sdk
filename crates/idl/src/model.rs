@@ -38,6 +38,11 @@ pub struct Api {
     pub functions: Vec<FunctionDef>,
     /// The result blob schemas, one per blob-returning entry point.
     pub blobs: Vec<BlobSchema>,
+    /// The JSON records that cross as text inside a blob — a result's
+    /// provenance, a positions result's steps — read from serde's own
+    /// schema of them, so every binding types and decodes them alike.
+    #[serde(default)]
+    pub records: Vec<crate::records::RecordDef>,
 }
 
 impl Api {
@@ -63,6 +68,12 @@ impl Api {
     #[must_use]
     pub fn callback_named(&self, name: &str) -> Option<&CallbackDef> {
         self.callbacks.iter().find(|c| c.name == name)
+    }
+
+    /// The record with a name.
+    #[must_use]
+    pub fn record_named(&self, name: &str) -> Option<&crate::records::RecordDef> {
+        self.records.iter().find(|r| r.name == name)
     }
 
     /// The blob schema with a name.

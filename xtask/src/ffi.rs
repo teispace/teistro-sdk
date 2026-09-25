@@ -11,7 +11,7 @@ use std::io::Write as _;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-use teistro_idl::emit::{c, dart, mdx, node, python, ts};
+use teistro_idl::emit::{c, dart, mdx, node, python, records, ts};
 use teistro_idl::sdk::describe;
 
 use crate::generated::{Output, check, prune, strays, write};
@@ -30,6 +30,10 @@ const DART_BLOB: &str = "bindings/dart/lib/src/blob.dart";
 const PYTHON_CATALOGUE: &str = "bindings/python/teistro/catalogue.py";
 const PYTHON_FFI: &str = "bindings/python/teistro/_ffi.py";
 const PYTHON_BLOB: &str = "bindings/python/teistro/_blob.py";
+const TS_RECORDS: &str = "bindings/node/lib/records.d.ts";
+const JS_RECORDS: &str = "bindings/node/lib/records.js";
+const PYTHON_RECORDS: &str = "bindings/python/teistro/_records.py";
+const DART_RECORDS: &str = "bindings/dart/lib/src/records.dart";
 /// Where the site's generated reference lives. Everything under it is
 /// written by this task, and anything else there is a stray.
 const REFERENCE: &str = "site/content/docs/reference";
@@ -62,13 +66,48 @@ fn rustfmt(text: &str) -> String {
     }
 }
 
-fn outputs(root: &Path) -> Vec<Output> {
-    let api = describe(
+/// The records that cross as JSON text inside a blob, named by their
+/// schema: a result's provenance and a positions result's steps. Every
+/// record they reach comes with them.
+const RECORDS: [&str; 2] = ["Provenance", "Step"];
+
+/// serde's own schema of the [`RECORDS`], as schemars writes it: the one
+/// description of their JSON, which the document schema also reads for
+/// the provenance a stored chart carries.
+fn records_schema() -> serde_json::Value {
+    let mut generator = schemars::generate::SchemaSettings::draft2020_12().into_generator();
+    generator.subschema_for::<teistro_core::envelope::Provenance>();
+    generator.subschema_for::<teistro_astro::completion::Step>();
+    serde_json::json!({ "$defs": generator.definitions() })
+}
+
+/// The boundary's description with the JSON records it carries: what every
+/// generated file and every measurement of the surfaces reads.
+pub(crate) fn api(root: &Path) -> teistro_idl::model::Api {
+    let mut api = describe(
         root,
         teistro_ffi::schemas::schemas(),
         teistro_ffi::SDK_VERSION,
     )
     .unwrap_or_else(|e| panic!("the boundary does not describe: {e}"));
+    api.records = teistro_idl::records::from_schema(&records_schema(), &RECORDS)
+        .unwrap_or_else(|e| panic!("the records do not describe: {e}"));
+    let shadowing: Vec<&str> = api
+        .records
+        .iter()
+        .map(|record| record.name.as_str())
+        .filter(|name| teistro_idl::emit::reserved::PYTHON_BUILTINS.contains(name))
+        .collect();
+    assert!(
+        shadowing.is_empty(),
+        "these records would shadow a Python builtin: {shadowing:?}; name each apart with \
+         #[cfg_attr(feature = \"schema\", schemars(rename = \"...\"))]"
+    );
+    api
+}
+
+fn outputs(root: &Path) -> Vec<Output> {
+    let api = api(root);
     // A shape is one type in every binding, so two sections that name it
     // must agree. They cannot be checked at the emitters, which render a
     // shape once and would silently use whichever came first.
@@ -101,6 +140,10 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output::new(PYTHON_CATALOGUE, python::catalogue(&api)),
         Output::new(PYTHON_FFI, python::declarations(&api)),
         Output::new(PYTHON_BLOB, python::decoders(&api)),
+        Output::new(TS_RECORDS, records::typescript_declarations(&api)),
+        Output::new(JS_RECORDS, records::javascript_decoders(&api)),
+        Output::new(PYTHON_RECORDS, records::python_records(&api)),
+        Output::new(DART_RECORDS, records::dart_records(&api)),
         Output::new(
             NAPI_GLUE,
             // Formatted here rather than by `cargo fmt`, because napi's

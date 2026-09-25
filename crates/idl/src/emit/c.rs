@@ -373,6 +373,7 @@ mod tests {
                 source: String::new(),
             }],
             blobs: vec![],
+            records: Vec::new(),
         };
         let header = render(&api);
         for expected in [

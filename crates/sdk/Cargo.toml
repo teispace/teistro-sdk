@@ -77,6 +77,10 @@ workspace = true
 # and the second `Ephemeris::Test`. Neither is gated.
 
 [[test]]
+name = "sealing"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "annual_chart"
 required-features = ["builtin-ephemeris"]
 

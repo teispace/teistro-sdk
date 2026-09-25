@@ -114,7 +114,7 @@ fn encode(
             ],
         )?;
         writer.bytes("steps", steps.as_bytes())?;
-        writer.bytes("provenance", canonical_json(provenance).as_bytes())?;
+        writer.bytes("provenance_json", canonical_json(provenance).as_bytes())?;
         writer.finish()
     })()
     .map_err(|e| Error::internal(format!("the positions blob did not encode: {e}")))

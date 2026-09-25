@@ -26,7 +26,6 @@
 //   boundary and rethrown on the caller's side, so the sentence is not
 //   lost; only a code crosses the C ABI.
 
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:teistro/teistro.dart';
@@ -153,7 +152,10 @@ void main() {
     );
     // The provider's own name and data version are stamped on the
     // answer, which is how a stored chart says what computed it.
-    print('  stamped as ${jsonEncode(sky.provenanceOf['provider'])}');
+    final stamp = sky.provenance.provider;
+    print(
+      '  stamped as ${stamp.name} ${stamp.version}, data ${stamp.dataVersion}',
+    );
     ctx.dispose();
   }
 
@@ -220,8 +222,7 @@ void main() {
       ),
     );
     final steps = sidereal.stepsApplied
-        .cast<Map<String, Object?>>()
-        .map((step) => '${step['name']}:${step['implementation']}')
+        .map((step) => '${step.name}:${step.implementation.key}')
         .join(', ');
     print('');
     print(

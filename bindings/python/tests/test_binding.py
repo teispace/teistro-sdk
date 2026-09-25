@@ -15,6 +15,7 @@ from typing import Any, Optional
 
 from teistro import (
     Altitude,
+    decode_provenance,
     AvasthaSayanadi,
     DashaDefinition,
     RashiDashaDefinition,
@@ -442,9 +443,9 @@ class Positions(WithLibrary):
 
     def test_the_provenance_says_what_computed_it(self) -> None:
         sky = self.ctx.positions(instants=[2451545.0], bodies=[Body.SUN])
-        provenance = sky.provenance_of
-        self.assertEqual(provenance["profile"], PROFILE)
-        self.assertEqual(provenance["settings_hash"], self.ctx.settings_hash)
+        provenance = sky.provenance
+        self.assertEqual(provenance.profile, PROFILE)
+        self.assertEqual(provenance.settings_hash, self.ctx.settings_hash)
         self.assertIsInstance(sky.steps_applied, list)
         self.assertEqual(
             sky.frame(self.teistro).centre, self.teistro.canonical_frame.centre
@@ -679,6 +680,27 @@ class AnEngine(WithLibrary):
                     drawings=[(ChartLayout.SOUTH_INDIAN, Varga.D9), wrong],  # type: ignore[list-item]
                 )
             self.assertEqual(caught.exception.field, "drawings[1]")
+
+    def test_a_chart_handed_out_alone_carries_its_own_hash(self) -> None:
+        """A batch's provenance hashes the list; a chart of it carries the
+        hash of its own value, which is what a stored chart is checked
+        against (STATUS 2h). The provenance is typed, and a key the SDK does
+        not write is refused rather than passed through."""
+        place = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        batch = self.ctx.chart.found_many(
+            instants=[2451545.0, 2451546.0], place=place, utc_offset_seconds=20700
+        )
+        first, second = batch.at(0).provenance, batch.at(1).provenance
+        whole = batch.provenance
+        self.assertEqual(len({first.content_hash, second.content_hash, whole.content_hash}), 3)
+        self.assertEqual(first.settings_hash, whole.settings_hash)
+        self.assertEqual(first.sdk_version, whole.sdk_version)
+        stored = decode_provenance(json.loads(batch.provenance_json))
+        self.assertEqual(stored, whole)
+        with self.assertRaises(ValueError):
+            decode_provenance({**json.loads(batch.provenance_json), "confidence": "MAYBE"})
 
     def test_a_charts_day_is_the_almanacs_and_its_date_converts(self) -> None:
         """A chart's day and an almanac's are one record, and its date is the

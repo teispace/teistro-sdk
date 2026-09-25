@@ -193,7 +193,7 @@ final class Positions {
     required this.bodies,
     required this.cells,
     required this.steps,
-    required this.provenance,
+    required this.provenanceJson,
   });
 
   /// The frame the values are in, packed as the port packs it.
@@ -221,7 +221,7 @@ final class Positions {
   final String steps;
 
   /// UTF-8 JSON: the provenance envelope of the result, canonical.
-  final String provenance;
+  final String provenanceJson;
 
 }
 
@@ -235,7 +235,7 @@ Positions decodePositions(Uint8List bytes) {
   final atBodies = blob.section(3, 'bodies');
   final atCells = blob.section(4, 'cells');
   final atSteps = blob.section(5, 'steps');
-  final atProvenance = blob.section(6, 'provenance');
+  final atProvenanceJson = blob.section(6, 'provenance_json');
   return Positions(
     frameBits: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     jdCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -301,7 +301,7 @@ Positions decodePositions(Uint8List bytes) {
       length: atCells.count,
     ),
     steps: blob.text(atSteps),
-    provenance: blob.text(atProvenance),
+    provenanceJson: blob.text(atProvenanceJson),
   );
 }
 
@@ -2230,7 +2230,7 @@ final class Charts {
     required this.timing,
     required this.model,
     required this.steps,
-    required this.provenance,
+    required this.provenanceJson,
     required this.vargas,
     required this.vargaGrahas,
     required this.aspects,
@@ -2268,6 +2268,7 @@ final class Charts {
     required this.yearDashas,
     required this.yearDashaShares,
     required this.yearDashaPeriods,
+    required this.contentHashes,
   });
 
   /// What kind of chart these are.
@@ -2346,7 +2347,7 @@ final class Charts {
   final String steps;
 
   /// UTF-8 JSON: the provenance envelope of the result, canonical.
-  final String provenance;
+  final String provenanceJson;
 
   /// One row per divisional chart per chart, charts outermost: row `i * varga_count + v` is chart `i`, the `v`th chart asked for. Empty when none were asked for, which is unambiguous because a divisional chart that *was* asked for always has a lagna (`03-design/chart-reading.md` §5).
   final ChartsVargas vargas;
@@ -2461,6 +2462,9 @@ final class Charts {
   /// Every annual dasha's periods, concatenated in the `year_dashas` section's order and **ragged** by its `period_count`, each depth first in time order from the year's return to its close: a mahadasha, then its antardashas, then the next mahadasha, to `varsha_json.dashaRules.depth` levels. A period that runs for no time is not listed, and its place is kept in the others' `index`.
   final ChartsYearDashaPeriods yearDashaPeriods;
 
+  /// UTF-8 text: each chart's own content hash — its document, with what it answers by rule where rules were asked, canonical — as sixty-four lowercase hex digits, a chart after the other in the batch's order with nothing between them, so chart `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a chart handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3).
+  final String contentHashes;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -2479,7 +2483,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atTiming = blob.section(9, 'timing');
   final atModel = blob.section(10, 'model');
   final atSteps = blob.section(11, 'steps');
-  final atProvenance = blob.section(12, 'provenance');
+  final atProvenanceJson = blob.section(12, 'provenance_json');
   final atVargas = blob.section(13, 'vargas');
   final atVargaGrahas = blob.section(14, 'varga_grahas');
   final atAspects = blob.section(15, 'aspects');
@@ -2517,6 +2521,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atYearDashas = blob.section(47, 'year_dashas');
   final atYearDashaShares = blob.section(48, 'year_dasha_shares');
   final atYearDashaPeriods = blob.section(49, 'year_dasha_periods');
+  final atContentHashes = blob.section(50, 'content_hashes');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2830,7 +2835,7 @@ Charts decodeCharts(Uint8List bytes) {
     ),
     model: blob.text(atModel),
     steps: blob.text(atSteps),
-    provenance: blob.text(atProvenance),
+    provenanceJson: blob.text(atProvenanceJson),
     vargas: ChartsVargas(
       varga: Uint16List.sublistView(
         blob.bytes,
@@ -4340,6 +4345,7 @@ Charts decodeCharts(Uint8List bytes) {
       ),
       length: atYearDashaPeriods.count,
     ),
+    contentHashes: blob.text(atContentHashes),
   );
 }
 
@@ -4934,7 +4940,8 @@ final class Panchanga {
     required this.moonEvents,
     required this.muhurtaYogas,
     required this.model,
-    required this.provenance,
+    required this.provenanceJson,
+    required this.contentHashes,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -5007,7 +5014,10 @@ final class Panchanga {
   final String model;
 
   /// UTF-8 JSON: the provenance envelope of the result, canonical.
-  final String provenance;
+  final String provenanceJson;
+
+  /// UTF-8 text: each day's own content hash — its panchanga, canonical — as sixty-four lowercase hex digits, a day after the other in the batch's order with nothing between them, so day `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a day handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3).
+  final String contentHashes;
 
 }
 
@@ -5034,7 +5044,8 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atMoonEvents = blob.section(16, 'moon_events');
   final atMuhurtaYogas = blob.section(17, 'muhurta_yogas');
   final atModel = blob.section(18, 'model');
-  final atProvenance = blob.section(19, 'provenance');
+  final atProvenanceJson = blob.section(19, 'provenance_json');
+  final atContentHashes = blob.section(20, 'content_hashes');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -5641,7 +5652,8 @@ Panchanga decodePanchanga(Uint8List bytes) {
       length: atMuhurtaYogas.count,
     ),
     model: blob.text(atModel),
-    provenance: blob.text(atProvenance),
+    provenanceJson: blob.text(atProvenanceJson),
+    contentHashes: blob.text(atContentHashes),
   );
 }
 

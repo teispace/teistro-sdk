@@ -2240,6 +2240,7 @@ version = "0.0.0"
 dependencies = [
  "flate2",
  "regex",
+ "schemars",
  "serde",
  "serde_json",
  "serde_yaml_ng",

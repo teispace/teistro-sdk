@@ -14,9 +14,14 @@ use crate::body::Body;
 use crate::frame::Frame;
 
 /// What is searched for a boundary.
+///
+/// It crosses as its [`QuantityWire`] form, `{"kind": "LONGITUDE", "body":
+/// "SUN"}`: serde cannot write a variant tagged by `kind` that holds a
+/// bare key, and the tuple variants are what sixty call sites across the
+/// port's providers write, so the wire names the body and the type keeps
+/// its shape.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(from = "QuantityWire", into = "QuantityWire")]
 pub enum Quantity {
     /// A body's ecliptic longitude, degrees.
     Longitude(Body),
@@ -36,6 +41,87 @@ pub enum Quantity {
         /// The second body.
         second: Body,
     },
+}
+
+/// [`Quantity`] as it is written and read: each variant a record, so the
+/// body a single-body quantity names has a field to stand in.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "Quantity"))]
+#[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum QuantityWire {
+    /// A body's ecliptic longitude, degrees.
+    Longitude {
+        /// Whose.
+        body: Body,
+    },
+    /// A body's rate of longitude, degrees a day.
+    Speed {
+        /// Whose.
+        body: Body,
+    },
+    /// `a × longitude(first) + b × longitude(second)`, reduced to a circle.
+    Composite {
+        /// The first body's coefficient.
+        a: f64,
+        /// The first body.
+        first: Body,
+        /// The second body's coefficient.
+        b: f64,
+        /// The second body.
+        second: Body,
+    },
+}
+
+impl From<QuantityWire> for Quantity {
+    fn from(wire: QuantityWire) -> Quantity {
+        match wire {
+            QuantityWire::Longitude { body } => Quantity::Longitude(body),
+            QuantityWire::Speed { body } => Quantity::Speed(body),
+            QuantityWire::Composite {
+                a,
+                first,
+                b,
+                second,
+            } => Quantity::Composite {
+                a,
+                first,
+                b,
+                second,
+            },
+        }
+    }
+}
+
+impl From<Quantity> for QuantityWire {
+    fn from(quantity: Quantity) -> QuantityWire {
+        match quantity {
+            Quantity::Longitude(body) => QuantityWire::Longitude { body },
+            Quantity::Speed(body) => QuantityWire::Speed { body },
+            Quantity::Composite {
+                a,
+                first,
+                b,
+                second,
+            } => QuantityWire::Composite {
+                a,
+                first,
+                b,
+                second,
+            },
+        }
+    }
+}
+
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for Quantity {
+    fn schema_name() -> std::borrow::Cow<'static, str> {
+        QuantityWire::schema_name()
+    }
+
+    fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        QuantityWire::json_schema(generator)
+    }
 }
 
 impl Quantity {
@@ -312,7 +398,18 @@ mod tests {
                 Quantity::from_parts(quantity.kind_id(), first, second, a, b),
                 Some(quantity)
             );
+            // And through JSON, which a tagged tuple variant could not be
+            // written as at all.
+            let written = serde_json::to_string(&quantity).unwrap();
+            assert_eq!(
+                serde_json::from_str::<Quantity>(&written).unwrap(),
+                quantity
+            );
         }
+        assert_eq!(
+            serde_json::to_string(&Quantity::Longitude(Body::Sun)).unwrap(),
+            r#"{"kind":"LONGITUDE","body":"SUN"}"#
+        );
         assert!(Quantity::from_parts(2, Body::Sun, None, 1.0, 1.0).is_none());
         assert!(Quantity::from_parts(9, Body::Sun, None, 1.0, 1.0).is_none());
         assert!(Quantity::ELONGATION.wraps() && !Quantity::Speed(Body::Sun).wraps());

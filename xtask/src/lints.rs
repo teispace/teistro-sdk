@@ -1478,6 +1478,20 @@ fn targets_declare_their_features(root: &Path, outcome: &mut Outcome) {
     }
 }
 
+/// The name an item line declares (`pub enum Quantity {`), if it declares
+/// a struct or an enum.
+fn item_name(line: &str) -> Option<&str> {
+    let rest = line
+        .trim_start_matches("pub(crate) ")
+        .trim_start_matches("pub ");
+    let rest = rest
+        .strip_prefix("enum ")
+        .or_else(|| rest.strip_prefix("struct "))?;
+    rest.split(|c: char| !(c.is_alphanumeric() || c == '_'))
+        .next()
+        .filter(|name| !name.is_empty())
+}
+
 /// Every type a document-carrying crate serialises can describe itself.
 ///
 /// The document schema is generated from `schemars::JsonSchema`, and a
@@ -1556,7 +1570,13 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
                     carries |= next.contains(DERIVE);
                     index += 1;
                 }
-                if !carries {
+                // A derive that writes through another type
+                // (`#[serde(into = "…")]`) is described by that type's
+                // schema, which the crate hands this one: the third form,
+                // held to the same "a schema for the same T" as the second.
+                let item = lines.get(index).map_or("", |next| next.trim_start());
+                let described_by_hand = item_name(item).is_some_and(described);
+                if !carries && !described_by_hand {
                     outcome.failures.push(Finding {
                         file: shown.clone(),
                         line: start + 1,

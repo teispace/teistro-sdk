@@ -193,7 +193,7 @@ fn sampling_step(body: Body, scheme: &Scheme) -> f64 {
         .iter()
         .filter_map(|group| match group.spans {
             Spans::Equal => Some(30.0 / f64::from(scheme.divisions.max(1))),
-            Spans::Degrees(widths) => widths.iter().copied().min().map(f64::from),
+            Spans::Degrees { widths } => widths.iter().copied().min().map(f64::from),
         })
         .fold(f64::INFINITY, f64::min);
     let rate = teistro_astro::events::greatest_rate(body).max(f64::EPSILON);

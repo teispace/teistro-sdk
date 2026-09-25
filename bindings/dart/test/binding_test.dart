@@ -114,6 +114,33 @@ void main() {
     expect(after.forms['name'], before.name);
   });
 
+  test('a chart handed out alone carries its own hash, and the batch the '
+      "list's", () {
+    // STATUS 2h: a batch's provenance hashes the list, and a chart of it the
+    // value it holds, which is what a stored chart is checked against.
+    final ctx = context();
+    final batch = ctx.chart.foundMany(
+      instants: [2451545.0, 2451546.0],
+      place: Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      ),
+      utcOffsetSeconds: 20700,
+    );
+    final first = batch.at(0).provenance;
+    final second = batch.at(1).provenance;
+    expect({
+      first.contentHash,
+      second.contentHash,
+      batch.provenance.contentHash,
+    }, hasLength(3));
+    expect(first.settingsHash, batch.provenance.settingsHash);
+    expect(first.sdkVersion.major, batch.provenance.sdkVersion.major);
+    expect(() => Confidence.fromJson('MAYBE'), throwsA(isA<FormatException>()));
+    ctx.dispose();
+  });
+
   test('a refusal carries its status, its field and its hint', () {
     final ctx = context();
     expect(
@@ -282,11 +309,11 @@ void main() {
     );
     expect(() => positions.at(2, 0), throwsRangeError);
 
-    expect(positions.provenanceOf['profile'], 'nepali-default');
-    expect(positions.provenanceOf['calculation_version'], 1);
-    expect(positions.provenanceOf['settings_hash'], ctx.settingsHash);
+    expect(positions.provenance.profile, 'nepali-default');
+    expect(positions.provenance.calculationVersion, 1);
+    expect(positions.provenance.settingsHash, ctx.settingsHash);
     expect(
-      (positions.provenanceOf['provider']! as Map<String, Object?>)['frame'],
+      positions.provenance.provider.frame,
       'GEOCENTRIC/OF_DATE/ECLIPTIC/TROPICAL/APPARENT',
     );
 

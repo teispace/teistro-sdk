@@ -304,6 +304,28 @@ pub(crate) fn with_context(
     guarded(Some(ctx), || body(ctx))
 }
 
+/// Every item's own content hash as the `content_hashes` section carries
+/// it: sixty-four lowercase hex digits an item, in the batch's order, with
+/// nothing between them — fixed width, so a binding slices item `i` at
+/// `64 * i` and parses nothing.
+///
+/// # Errors
+///
+/// `INTERNAL` when there is not one hash an item, which is a caller of
+/// this crate's mistake and never a consumer's.
+pub(crate) fn hashes_text(
+    hashes: &[teistro_core::envelope::Hash],
+    items: usize,
+) -> Result<String, Error> {
+    if hashes.len() != items {
+        return Err(Error::internal(format!(
+            "{} content hashes for {items} items",
+            hashes.len()
+        )));
+    }
+    Ok(hashes.iter().map(ToString::to_string).collect())
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(

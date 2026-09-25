@@ -617,6 +617,7 @@ mod tests {
             ],
             functions: vec![],
             blobs: vec![],
+            records: Vec::new(),
         };
         let opaque = TypeRef::Opaque {
             name: "TsContext".into(),

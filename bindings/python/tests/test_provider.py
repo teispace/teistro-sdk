@@ -95,7 +95,7 @@ class AProviderWrittenInPython(WithLibrary):
         with self.teistro.context(profile=PROFILE, provider=provider) as ctx:
             sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN])
             self.assertIs(ctx.provider, provider)
-        provenance = sky.provenance_of
+        provenance = sky.provenance
         self.assertIn("straight-line", repr(provenance))
 
     def test_a_body_it_never_declared_is_refused_by_name(self) -> None:

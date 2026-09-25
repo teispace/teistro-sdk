@@ -3410,20 +3410,25 @@
         },
         {
           "description": "One sign per part, listed in order.",
-          "items": {
-            "format": "uint8",
-            "maximum": 255,
-            "minimum": 0,
-            "type": "integer"
-          },
           "properties": {
             "map": {
               "const": "LISTED",
               "type": "string"
+            },
+            "signs": {
+              "description": "The signs, 0 for Aries, a part each.",
+              "items": {
+                "format": "uint8",
+                "maximum": 255,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "type": "array"
             }
           },
           "required": [
-            "map"
+            "map",
+            "signs"
           ],
           "type": "object"
         }
@@ -4495,7 +4500,7 @@
         "warnings": {
           "description": "The warnings.",
           "items": {
-            "$ref": "#/$defs/Warning"
+            "$ref": "#/$defs/ProvenanceWarning"
           },
           "type": "array"
         }
@@ -4516,6 +4521,44 @@
         "fallbacks_used",
         "warnings",
         "content_hash"
+      ],
+      "type": "object"
+    },
+    "ProvenanceWarning": {
+      "description": "A warning: a code, and a message key with slots for localisation.",
+      "properties": {
+        "code": {
+          "description": "The stable code (`DEPRECATED_KEY`).",
+          "type": "string"
+        },
+        "key": {
+          "description": "The message key, when there is one.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "slots": {
+          "description": "The slots.",
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "type": "array"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "code",
+        "slots"
       ],
       "type": "object"
     },
@@ -5171,20 +5214,25 @@
         },
         {
           "description": "Whole-degree widths, summing to thirty. Only the trimshamsha needs them, and every attested variant of it is whole degrees too.",
-          "items": {
-            "format": "uint8",
-            "maximum": 255,
-            "minimum": 0,
-            "type": "integer"
-          },
           "properties": {
             "spans": {
               "const": "DEGREES",
               "type": "string"
+            },
+            "widths": {
+              "description": "The parts' widths in degrees, in order.",
+              "items": {
+                "format": "uint8",
+                "maximum": 255,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "type": "array"
             }
           },
           "required": [
-            "spans"
+            "spans",
+            "widths"
           ],
           "type": "object"
         }
@@ -5852,44 +5900,6 @@
         "opponent",
         "is_winner",
         "apart_deg"
-      ],
-      "type": "object"
-    },
-    "Warning": {
-      "description": "A warning: a code, and a message key with slots for localisation.",
-      "properties": {
-        "code": {
-          "description": "The stable code (`DEPRECATED_KEY`).",
-          "type": "string"
-        },
-        "key": {
-          "description": "The message key, when there is one.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "slots": {
-          "description": "The slots.",
-          "items": {
-            "maxItems": 2,
-            "minItems": 2,
-            "prefixItems": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "string"
-              }
-            ],
-            "type": "array"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "code",
-        "slots"
       ],
       "type": "object"
     },
