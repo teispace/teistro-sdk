@@ -4096,10 +4096,24 @@ on pub.dev (checked 2026-09-07).
      periods.
    - **C2**, Narayana's antardasha tables. Jaimini's question, which BPHS
      does not name.
-8. The rest of Phase 1's test-only infrastructure: instruction-count
-   benchmarks (`iai-callgrind`, which needs Linux, so they belong to the
-   nightly matrix rather than a laptop), and the docs site skeleton with
-   the generated reference.
+8. ~~The rest of Phase 1's test-only infrastructure~~ — **done**, and
+   this item outlived the work. The instruction-count benchmarks run on
+   every pull request under callgrind (`benchmarks.yml`, `cargo xtask
+   bench`), not `iai-callgrind`, and the docs site with its generated
+   reference is built and gated (`site/`, `check-site`). On 2026-09-25 the
+   benchmark gate learned the one thing it lacked, a reviewed way to
+   accept a cost a change means to pay: an `Instruction-cost` trailer on
+   the pull request's own commits, held both ways.
+8a. **The wasm binding** (`03-design/wasm-binding.md`), Phase 5's last
+   deliverable. Its first step is **built**: one `libm` on every target.
+   The whole scenario ran in wasm32 and differed from native only in the
+   last place of the platform's maths library, as macOS already differed
+   from Linux in a nightly that reported it and did not fail. Through
+   `teistro_core::math` native and wasm32 agree on all 481 539 values, the
+   `uses-one-libm` lint holds every crate to it, and the hash matrix fails
+   on macOS and gains Windows and wasm32. Next: the plugin loader compiled
+   out on wasm, then the emitter's wasm-bindgen backend behind the same
+   `native` object.
 9. A second baseline export (the same script, more sections) for the
    seventeen other dasha systems, aspects, yogas and doshas, strengths,
    Ashtakavarga, the Jaimini slice, KP and milan, once the design pages
@@ -4110,6 +4124,7 @@ on pub.dev (checked 2026-09-07).
 
 | date | what happened |
 |---|---|
+| 2026-09-25 | **One libm on every target, found by running the scenario in wasm.** Phase 5's last deliverable is the wasm binding, so I measured before designing it. The ABI crate compiles for wasm32 but for the plugin loader, and the Node layer is portable but for its loader and two `Buffer` calls. napi-rs's own wasm build needs cross-origin isolation, so the design is a wasm-bindgen backend of our Node glue emitter behind the same `native` object. The scenario ran whole in wasm32 under Node's WASI and differed from native in 5 193 values of `astro` and `houses`, by up to 7.9e-14 relative. The nightly matrix had reported the same two sections between Linux and macOS for weeks without failing, so ADR-0022's byte-identical promise held only between the two glibc builds. Over two million inputs the `libm` crate gave the same bits natively and in wasm32 for all thirteen functions the SDK calls; Apple's differed in all thirteen, and wasm's own libc in four. `teistro_core::math` now holds them and 190 call sites use it. The `uses-one-libm` lint reads every crate from the tree and was proved red both ways; `scan` now fails a stale excuse for every rule. Native and wasm32 then agreed on all 481 539 values, and every test of the twelve touched crates passed unchanged. The matrix fails everywhere now and gains Windows and wasm32. The benchmark gate gained an `Instruction-cost` trailer, accepted only from the pull request's own commits and held both ways. Also: STATUS 8 had been done for weeks. Next: the binding, step 2. |
 | 2026-09-25 | **Four cruxes closed by reading the text, and the wheel they needed.** I read BPHS ch. 46 and ch. 27 in two translations with their Sanskrit. C1 closed: the verse gives Shashtihayani ten years and six, sixty in all, where the English printed "13" and contradicted its own example. C3 closed: Ashtottari's conditions are verses 17 and 23. C5 closed: the text counts Ashtottari four and three alternately over twenty-eight nakshatras with Abhijit, so no seed falls outside it. C8 closed: the Sun needs 6.5 rupas, already built beside Raman's 5. The kernel gained the 28-nakshatra wheel with Abhijit cut exactly, and per-lord groups. On it, Shashtihayani is built at last and the text's Ashtottari is a knob: the default takes it, the conformance profile keeps the engine's. The temporal balance reads the Moon across its own segment, and a consumer's definition takes the same wheel in every binding. Tests hold the text's own worked answers and the whole Ashtottari table. C6 and C2 remain, with what was searched recorded. Next: 7's remainder, else 8. |
 | 2026-09-25 | **An instant in a zone, and the precedence of what an engine holds.** STATUS 4 listed three pieces left of spike 4, and one had been done for three weeks: a locale's own parts of the day. The other two are built now. A message value may be an instant, the SDK's Julian day in UTC, and the date and time functions read it in the zone `timeZone` names: UTC, an offset, an IANA name, or a variable. The zone comes from the embedded database the context's own resolutions use, reached through the zone port, so the engine carries none. It is typed as an instant in every binding's accessors, and `sdk.calendar.datetime.inZone` ships and is tested in all four languages, daylight saving included. Two defects surfaced while building it: 07:00 read as 06:59, and a zone given as a variable went unseen. Pack precedence is decided and held by one test: the build, then each pack in load order, then the overrides, which keep standing over later packs. Next: 7. |
 | 2026-09-25 | **The corpus check, built, found six defects before it measured anything.** Spike 3 left two checks unbuilt; both go through the façade and every kit binary runs them. `sdk-only` byte identity holds a provider's chart to its native frame's alone, and proved non-vacuous against a provider declaring four hostile overrides. Over the Surya Siddhanta provider it found `prefer-native` refusing a whole chart for an ayanamsha the provider did not list, now chosen per member. The corpus check founds the 55 recorded births over a provider and compares every position under the corpus's own band for its class, in the corpus's report format, with every known divergence listed and held both ways. Its first run failed every chart at every tier, and mostly not by the tier. The causes, each fixed and tested: a sidereal chart's speeds were tropical; Ketu had no distance; the built-in's nodes left the ecliptic of date; light time kept the geometric distance; the centre step, given the native frame after the corrections had run, dropped diurnal aberration; and a carried speed missed each step's own rate. Reported speeds are now the derivative of the completed places, and searches keep the cheap carried rate. Teimeris, the corpus's own ephemeris, now passes 50 of 55; the built-in tiers pass 53, 32 and 1, every miss explained by the list. Left to the maintainer: two provisional corpus bands tighter than any implementation's own consistency (3a), and the adapter's move (3b). Next: 3a/3b decisions, else 4. |

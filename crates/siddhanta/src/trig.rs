@@ -3,6 +3,7 @@
 //! The table works on a radius of 3438, the number of minutes in a
 //! radian, in steps of 225 minutes (3°45′).
 
+use teistro_core::math;
 /// The radius the table's sines are measured on (3438′).
 pub const RADIUS: f64 = 3438.0;
 /// The step between table entries in minutes of arc (225′ = 3°45′).
@@ -105,7 +106,7 @@ impl Trig {
                 let remainder = position - index;
                 f64::from(lower) + remainder * f64::from(upper - lower)
             }
-            Trig::Exact => RADIUS * arc.to_radians().sin(),
+            Trig::Exact => RADIUS * math::sin(arc.to_radians()),
         }
     }
 
@@ -132,7 +133,7 @@ impl Trig {
                 let position = index + (sine - f64::from(lower)) / span;
                 position * STEP_ARCMIN / 60.0
             }
-            Trig::Exact => (sine / RADIUS).asin().to_degrees(),
+            Trig::Exact => math::asin(sine / RADIUS).to_degrees(),
         }
     }
 
@@ -157,7 +158,7 @@ impl Trig {
                 };
                 f64::from(upper - lower) / STEP_ARCMIN
             }
-            Trig::Exact => arc.to_radians().cos(),
+            Trig::Exact => math::cos(arc.to_radians()),
         }
     }
 }
@@ -235,7 +236,7 @@ mod tests {
     /// conditioning of the true one.
     fn arc_tolerance(arc_deg: f64) -> f64 {
         const ULP_OF_RADIUS: f64 = RADIUS * f64::EPSILON;
-        1e-9 + (ULP_OF_RADIUS / RADIUS / arc_deg.to_radians().cos()).to_degrees()
+        1e-9 + (ULP_OF_RADIUS / RADIUS / math::cos(arc_deg.to_radians())).to_degrees()
     }
 
     proptest! {

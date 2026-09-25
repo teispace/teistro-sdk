@@ -10,6 +10,7 @@
 //! segments, so they are deterministic and the same on every platform.
 
 use serde::{Deserialize, Serialize};
+use teistro_core::math;
 
 /// A point in the unit square, y downwards.
 ///
@@ -142,9 +143,9 @@ impl Path {
                     // With y downwards, a clockwise turn increases the angle
                     // `atan2` measures. The check only reads these points; the
                     // outline itself keeps its exact endpoints.
-                    let radius = (from.x - centre.x).hypot(from.y - centre.y);
-                    let begin = (from.y - centre.y).atan2(from.x - centre.x);
-                    let mut sweep = (to.y - centre.y).atan2(to.x - centre.x) - begin;
+                    let radius = math::hypot(from.x - centre.x, from.y - centre.y);
+                    let begin = math::atan2(from.y - centre.y, from.x - centre.x);
+                    let mut sweep = math::atan2(to.y - centre.y, to.x - centre.x) - begin;
                     if clockwise && sweep <= 0.0 {
                         sweep += std::f64::consts::TAU;
                     } else if !clockwise && sweep >= 0.0 {
@@ -153,8 +154,8 @@ impl Path {
                     for piece in 1..CURVE_PIECES {
                         let angle = begin + sweep * f64::from(piece) / f64::from(CURVE_PIECES);
                         points.push(Point::new(
-                            centre.x + radius * angle.cos(),
-                            centre.y + radius * angle.sin(),
+                            centre.x + radius * math::cos(angle),
+                            centre.y + radius * math::sin(angle),
                         ));
                     }
                     points.push(to);

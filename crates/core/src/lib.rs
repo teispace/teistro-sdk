@@ -10,6 +10,8 @@
 //! - [`angle`]: the canonical nanoarcsecond angle and exact
 //!   classification (ADR-0016);
 //! - [`ratio`]: exact rationals for period arithmetic;
+//! - [`math`]: the transcendental functions, the same bits on every
+//!   target;
 //! - [`interval`]: an interval of time and the equal division every
 //!   period of a day is;
 //! - [`error`] and [`envelope`]: the status codes, the error, and the
@@ -62,6 +64,7 @@ pub mod house;
 pub mod interval;
 pub mod key;
 pub mod limits;
+pub mod math;
 pub mod quantity;
 pub mod ratio;
 pub mod registry;

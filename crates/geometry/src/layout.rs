@@ -17,6 +17,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Rashi;
 use teistro_core::error::Error;
+use teistro_core::math;
 
 use crate::path::{Path, Point};
 
@@ -381,7 +382,7 @@ fn runs_the_declared_way(grid: &Grid) -> Result<(), Error> {
         Direction::Clockwise => 1.0,
         Direction::Anticlockwise => -1.0,
     };
-    let angle = |p: Point| (p.y - 0.5).atan2(p.x - 0.5);
+    let angle = |p: Point| math::atan2(p.y - 0.5, p.x - 0.5);
     let mut turned = 0.0;
     let next = ordered.iter().cycle().skip(1);
     for (step, ((_, a), (_, b))) in ordered.iter().zip(next).enumerate() {

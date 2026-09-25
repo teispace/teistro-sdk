@@ -14,6 +14,7 @@
 //! the first provider that returns a geometric J2000 frame.
 
 use core::fmt;
+use teistro_core::math;
 
 use serde::Serialize;
 use teistro_core::angle::{difference_deg, normalise_deg};
@@ -1113,8 +1114,8 @@ fn rectangular_rate(cell: Cell, coordinates: Coordinates, obliquity_deg: f64) ->
     let lat = cell.lat.to_radians();
     let d_lon = cell.lon_speed.to_radians();
     let d_lat = cell.lat_speed.to_radians();
-    let (sin_lat, cos_lat) = lat.sin_cos();
-    let (sin_lon, cos_lon) = lon.sin_cos();
+    let (sin_lat, cos_lat) = math::sin_cos(lat);
+    let (sin_lon, cos_lon) = math::sin_cos(lon);
     let r = cell.dist;
     let d_r = cell.dist_speed;
     let rate = [
@@ -1154,16 +1155,16 @@ fn unit(v: [f64; 3]) -> [f64; 3] {
 fn to_vector(p: Spherical) -> [f64; 3] {
     let lon = p.lon_deg.to_radians();
     let lat = p.lat_deg.to_radians();
-    let (sin_lon, cos_lon) = lon.sin_cos();
-    let (sin_lat, cos_lat) = lat.sin_cos();
+    let (sin_lon, cos_lon) = math::sin_cos(lon);
+    let (sin_lat, cos_lat) = math::sin_cos(lat);
     [cos_lat * cos_lon, cos_lat * sin_lon, sin_lat]
 }
 
 fn to_spherical(v: [f64; 3]) -> Spherical {
-    let flat = v[0].hypot(v[1]);
+    let flat = math::hypot(v[0], v[1]);
     Spherical {
-        lon_deg: v[1].atan2(v[0]).to_degrees().rem_euclid(360.0),
-        lat_deg: v[2].atan2(flat).to_degrees(),
+        lon_deg: math::atan2(v[1], v[0]).to_degrees().rem_euclid(360.0),
+        lat_deg: math::atan2(v[2], flat).to_degrees(),
     }
 }
 

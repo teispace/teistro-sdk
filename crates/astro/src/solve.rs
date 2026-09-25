@@ -28,6 +28,7 @@
 //! ```
 
 use core::fmt;
+use teistro_core::math;
 
 use teistro_core::angle::difference_deg;
 
@@ -211,7 +212,7 @@ fn narrow<E>(
             mid
         };
         // Project: into the interval a bisection would have reached.
-        let radius = (tolerance * 0.5 * 2f64.powi(budget) - width * 0.5).max(0.0);
+        let radius = (tolerance * 0.5 * math::powi(2f64, budget) - width * 0.5).max(0.0);
         let projected = if (truncated - mid).abs() <= radius {
             truncated
         } else {
@@ -620,7 +621,7 @@ mod tests {
         // A sine from a day-wide bracket to a tenth of a millisecond: two
         // evaluations for the ends and a few steps, where a bisection would
         // take thirty.
-        let curve = |t: f64| -> Result<f64, ()> { Ok(((t - 0.3) * 1.5).sin()) };
+        let curve = |t: f64| -> Result<f64, ()> { Ok(math::sin((t - 0.3) * 1.5)) };
         let c = refine(curve, 0.0, 1.0, 1e-9, Caps::DEFAULT).unwrap();
         assert!((c.instant - 0.3).abs() < 1e-9, "{c:?}");
         assert!(c.evaluations <= 9, "{}", c.evaluations);
@@ -701,7 +702,7 @@ mod tests {
             phase in 0.0f64..core::f64::consts::TAU,
         ) {
             let motion = move |t: f64| -> Result<f64, ()> {
-                Ok((start + rate * t + amplitude * 360.0 / core::f64::consts::TAU * (t * rate / 57.3 + phase).sin()).rem_euclid(360.0))
+                Ok((start + rate * t + amplitude * 360.0 / core::f64::consts::TAU * math::sin(t * rate / 57.3 + phase)).rem_euclid(360.0))
             };
             let c = next_crossing(motion, target, 0.0, rate, 1e-7, Caps::DEFAULT).unwrap();
             let before = gap(motion(c.instant - 2e-7).unwrap(), target);

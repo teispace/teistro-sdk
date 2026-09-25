@@ -5,6 +5,7 @@
 
 use teistro_core::angle::{difference_deg, normalise_deg};
 use teistro_core::error::Error;
+use teistro_core::math;
 use teistro_core::quantity::{JulianDay, Longitude, Place, Tt, Ut1};
 use teistro_port_ephemeris::{Body, Obliquity};
 
@@ -235,11 +236,11 @@ pub fn earth_at(tt: JulianDay<Tt>) -> EarthAt {
 /// declination with an obliquity, all degrees.
 #[must_use]
 pub fn ecliptic_to_equatorial(p: Spherical, obliquity_deg: f64) -> Spherical {
-    let (sl, cl) = (p.lon_deg * DEG2RAD).sin_cos();
-    let (sb, cb) = (p.lat_deg * DEG2RAD).sin_cos();
-    let (se, ce) = (obliquity_deg * DEG2RAD).sin_cos();
-    let ra = (sl * ce - (sb / cb) * se).atan2(cl);
-    let dec = (sb * ce + cb * se * sl).asin();
+    let (sl, cl) = math::sin_cos(p.lon_deg * DEG2RAD);
+    let (sb, cb) = math::sin_cos(p.lat_deg * DEG2RAD);
+    let (se, ce) = math::sin_cos(obliquity_deg * DEG2RAD);
+    let ra = math::atan2(sl * ce - (sb / cb) * se, cl);
+    let dec = math::asin(sb * ce + cb * se * sl);
     Spherical {
         lon_deg: normalise_deg(ra * RAD2DEG),
         lat_deg: dec * RAD2DEG,
@@ -250,11 +251,11 @@ pub fn ecliptic_to_equatorial(p: Spherical, obliquity_deg: f64) -> Spherical {
 /// latitude with an obliquity, all degrees.
 #[must_use]
 pub fn equatorial_to_ecliptic(p: Spherical, obliquity_deg: f64) -> Spherical {
-    let (sa, ca) = (p.lon_deg * DEG2RAD).sin_cos();
-    let (sd, cd) = (p.lat_deg * DEG2RAD).sin_cos();
-    let (se, ce) = (obliquity_deg * DEG2RAD).sin_cos();
-    let lon = (sa * ce + (sd / cd) * se).atan2(ca);
-    let lat = (sd * ce - cd * se * sa).asin();
+    let (sa, ca) = math::sin_cos(p.lon_deg * DEG2RAD);
+    let (sd, cd) = math::sin_cos(p.lat_deg * DEG2RAD);
+    let (se, ce) = math::sin_cos(obliquity_deg * DEG2RAD);
+    let lon = math::atan2(sa * ce + (sd / cd) * se, ca);
+    let lat = math::asin(sd * ce - cd * se * sa);
     Spherical {
         lon_deg: normalise_deg(lon * RAD2DEG),
         lat_deg: lat * RAD2DEG,

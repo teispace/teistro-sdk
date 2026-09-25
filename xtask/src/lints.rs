@@ -5,8 +5,10 @@
 //! off the source: an unordered collection whose iteration could reach an
 //! output, a read of the clock or the environment inside a computation,
 //! an `unsafe` allowance outside the two places that may have one, the
-//! classification functions that must stay integer arithmetic, and a
-//! settings knob that ships and resolves and is read by nobody.
+//! classification functions that must stay integer arithmetic, a
+//! transcendental function taken from the platform's C library rather
+//! than `teistro_core::math`, and a settings knob that ships and resolves
+//! and is read by nobody.
 //!
 //! Two of them are properties of the repository rather than of a crate,
 //! and are here for the same reason: a workflow file that GitHub cannot
@@ -143,11 +145,57 @@ fn excused(line: &str, rule: &str) -> bool {
     line.contains(&format!("lint: {rule}"))
 }
 
-/// A rule over the computation crates' lines.
-fn scan(root: &Path, rule: &'static str, needles: &[&str], outcome: &mut Outcome) {
+/// The `f64` methods that reach the platform's C library, whose last place
+/// differs between macOS, Linux, Windows and wasm32; `teistro_core::math`
+/// has each of them from one `libm` (ADR-0022).
+const PLATFORM_MATHS: [&str; 14] = [
+    ".sin(",
+    ".cos(",
+    ".sin_cos(",
+    ".tan(",
+    ".asin(",
+    ".acos(",
+    ".atan(",
+    ".atan2(",
+    ".exp(",
+    ".ln(",
+    ".log10(",
+    ".powf(",
+    ".powi(",
+    ".hypot(",
+];
+
+/// Every crate under `crates/`, read from the tree rather than listed, so
+/// a crate added tomorrow is held by a rule over all of them without
+/// anyone remembering to add it.
+fn every_crate(root: &Path) -> Vec<String> {
+    let mut out: Vec<String> = std::fs::read_dir(root.join("crates"))
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter(|entry| entry.path().join("src").is_dir())
+        .filter_map(|entry| entry.file_name().into_string().ok())
+        .collect();
+    out.sort();
+    out
+}
+
+/// A rule over the named crates' lines, outside their tests.
+///
+/// An excuse that no longer excuses anything is itself a finding: a line
+/// saying `lint: <rule>` with none of the rule's needles on it is left
+/// over from code that moved, and an inventory that keeps it is one that
+/// cannot be believed.
+fn scan(
+    root: &Path,
+    crates: &[impl AsRef<str>],
+    rule: &'static str,
+    needles: &[&str],
+    outcome: &mut Outcome,
+) {
     let mut seen_files: std::collections::BTreeSet<String> = std::collections::BTreeSet::new();
-    for crate_name in COMPUTATION {
-        let dir = root.join("crates").join(crate_name).join("src");
+    for crate_name in crates {
+        let dir = root.join("crates").join(crate_name.as_ref()).join("src");
         for path in sources(&dir) {
             let Ok(text) = std::fs::read_to_string(&path) else {
                 continue;
@@ -168,6 +216,16 @@ fn scan(root: &Path, rule: &'static str, needles: &[&str], outcome: &mut Outcome
                     continue;
                 }
                 let Some(needle) = needles.iter().find(|needle| line.contains(**needle)) else {
+                    if excused(line, rule) {
+                        outcome.failures.push(Finding {
+                            file: shown.clone(),
+                            line: number,
+                            text: format!(
+                                "says `lint: {rule}` and nothing on it needs excusing; the excuse is stale"
+                            ),
+                            rule,
+                        });
+                    }
                     continue;
                 };
                 let finding = Finding {
@@ -1884,12 +1942,14 @@ pub(crate) fn check(root: &Path) -> i32 {
     let mut outcome = Outcome::default();
     scan(
         root,
+        &COMPUTATION,
         "deterministic-iteration",
         &["HashMap", "HashSet", "hash_map", "hash_set"],
         &mut outcome,
     );
     scan(
         root,
+        &COMPUTATION,
         "ambient-input",
         &[
             "SystemTime::now",
@@ -1899,6 +1959,15 @@ pub(crate) fn check(root: &Path) -> i32 {
             "env::args",
             "std::process::id",
         ],
+        &mut outcome,
+    );
+    // Every crate, not the computation list: the geometry, the renderer
+    // and the strengths call them too, and none of those is on it.
+    scan(
+        root,
+        &every_crate(root),
+        "uses-one-libm",
+        &PLATFORM_MATHS,
         &mut outcome,
     );
     unsafe_inventory(root, &mut outcome);

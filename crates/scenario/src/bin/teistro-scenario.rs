@@ -11,6 +11,7 @@
 //! ```sh
 //! teistro-scenario nothing     # what the process costs before any work
 //! teistro-scenario astro       # that, plus the astronomy section
+//! teistro-scenario values      # every value of every section, as the hash matrix compares them
 //! ```
 
 // A measurement binary: it reports through stdout and exits on a name it
@@ -26,7 +27,7 @@ fn main() {
     let mut args = std::env::args().skip(1);
     let Some(name) = args.next() else {
         eprintln!(
-            "usage: teistro-scenario <nothing | {}>",
+            "usage: teistro-scenario <nothing | values | {}>",
             SECTIONS.join(" | ")
         );
         std::process::exit(2);
@@ -35,6 +36,19 @@ fn main() {
     // is what `cargo xtask bench` subtracts from every other run.
     if name == "nothing" {
         println!("nothing 0");
+        return;
+    }
+    // Every value of every section, in the file the hash matrix compares:
+    // how wasm32, which has no `cargo xtask`, joins the matrix.
+    if name == "values" {
+        let stdout = std::io::stdout();
+        let mut out = std::io::BufWriter::new(stdout.lock());
+        let written = teistro_scenario::write_values(&teistro_scenario::all(), &mut out)
+            .and_then(|()| std::io::Write::flush(&mut out));
+        if let Err(error) = written {
+            eprintln!("the values could not be written: {error}");
+            std::process::exit(1);
+        }
         return;
     }
     let Some(section) = section(&name) else {

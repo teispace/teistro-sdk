@@ -102,6 +102,28 @@ impl Section {
     }
 }
 
+/// Every value of `sections` as its bits, one line each: the section, the
+/// value's index in it, and the bits as sixteen hex digits. This is the
+/// file two machines compare (`cargo xtask compare-hashes`), so every
+/// platform writes it here, natively through `cargo xtask hashes` and in
+/// wasm32 through the scenario binary's `values` mode.
+///
+/// As a number, not as its bytes: a byte-reversed hex string reads back as
+/// a value nowhere near the one written, and every distance taken over it
+/// is meaningless.
+///
+/// # Errors
+///
+/// Whatever writing to `out` refuses.
+pub fn write_values(sections: &[Section], out: &mut impl std::io::Write) -> std::io::Result<()> {
+    for section in sections {
+        for (index, value) in section.values.iter().enumerate() {
+            writeln!(out, "{}\t{index}\t{value:016x}", section.name)?;
+        }
+    }
+    Ok(())
+}
+
 /// The sections in the order every report lists them.
 pub const SECTIONS: [&str; 9] = [
     "calendar",

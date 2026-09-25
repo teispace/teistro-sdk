@@ -3,6 +3,7 @@
 //! and hour, and its declination.
 
 use teistro_core::catalogue::Graha;
+use teistro_core::math;
 use teistro_core::settings::{KaalaLords, Kranti, Nathonnatha, PreDawnNight, SunAyana};
 
 use super::{KaalaBala, ShadbalaChart, ShadbalaRules, elongation, is_benefic, seat, sign_of};
@@ -225,9 +226,9 @@ fn kranti(graha: Graha, chart: &ShadbalaChart, rule: Kranti) -> (f64, f64) {
             latitude.to_radians(),
             at.tropical.to_radians(),
         );
-        let declination = (b.sin() * e.cos() + b.cos() * e.sin() * l.sin())
-            .asin()
-            .to_degrees();
+        let declination =
+            math::asin(math::sin(b) * math::cos(e) + math::cos(b) * math::sin(e) * math::sin(l))
+                .to_degrees();
         (declination, obliquity)
     }
 }
