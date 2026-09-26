@@ -71,6 +71,7 @@ its first line.
 | C137 | whether the nodes obstruct others | yes, as grahas (ग्रहैः, खेचरैः); no | **yes**, a knob for no | the verses say "planets" and name the exceptions; the nodes are not among them |
 | C138 | whether Ketu bears fruit throughout, as Rahu | as Rahu; by no decanate | **as Rahu** | v. 25 names Rahu alone; the nodes are paired everywhere else in the chapter |
 | C139 | what gochar counts from | the natal Moon's sign (v. 1); the lagna (JHora's second reference) | **the Moon**, the request naming another | v. 1 is explicit; the lagna is a consumer's choice, not the text's |
+| C140 | whether the nodes obstruct each other | no; yes, the verses read literally | **no**, a knob value for yes | found while planning the pass: the nodes always stand opposite and the Sun's pairs are opposite houses, so under C136's default each node in a good house has the other in its vedha house; read literally, v. 2's good houses for the nodes are never good, and the text is not read as voiding its own clause |
 
 ## 4. The design
 
@@ -106,6 +107,11 @@ that reads the reference once.
 ## 6. Order of work
 
 1. The crate, the knobs and the façade, with the tests above: **done**.
+   Planning step 2 then found C140: the unit tests placed grahas where no
+   sky puts them (both nodes in one sign), which hid that on the real sky
+   the literal reading never lets a node be good. `node_obstruction`
+   gained the third value before the knob shipped, and a façade test holds
+   it over three years of the real sky.
    `teistro-gochar` depends on `teistro-core` alone; the façade founds the
    transit charts at the natal place in one batch and seals them with the
    founder's provenance. Adding the `gochar` settings group found

@@ -114,3 +114,30 @@ fn the_settings_reach_the_judgement() {
         );
     }
 }
+
+/// On the real sky the nodes stand opposite, in each other's vedha house
+/// whenever one is in a good house: the text's reading spares them each
+/// other (C140), and the literal one leaves them never good.
+#[test]
+fn a_node_in_a_good_house_is_spared_the_other_node() {
+    let text = context("{}");
+    let literal = context(r#"{"gochar": {"node_obstruction": "EACH_OTHER_TOO"}}"#);
+    let natal = natal(&text);
+    let request = GocharRequest::over(
+        (0_u32..36).map(|month| JulianDay::<Utc>::literal(2_460_676.5 + 30.0 * f64::from(month))),
+    );
+    let spared = text.chart().gochar(&natal, &request).unwrap().value;
+    let read = literal.chart().gochar(&natal, &request).unwrap().value;
+    let mut good = 0;
+    for (spared, read) in spared.iter().zip(&read) {
+        for (node, other) in [(Graha::Rahu, Graha::Ketu), (Graha::Ketu, Graha::Rahu)] {
+            let (spared, read) = (&spared.grahas[node as usize], &read.grahas[node as usize]);
+            assert!(!spared.obstructed_by.contains(&other), "{spared:?}");
+            if read.good_house {
+                good += 1;
+                assert!(read.obstructed_by.contains(&other), "{read:?}");
+            }
+        }
+    }
+    assert!(good > 0, "no node stood in a good house over three years");
+}

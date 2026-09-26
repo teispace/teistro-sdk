@@ -333,10 +333,15 @@ knob!(
 );
 knob!(
     /// Whether the nodes obstruct another graha's transit from its vedha
-    /// house (Phaladeepika ch. 26 vv. 3 to 8; crux C137).
-    NodeObstruction { /// As any graha: the verses say "planets" and name their exceptions,
-        /// which are not the nodes.
-        Obstruct = "OBSTRUCT", /// Only the seven obstruct.
+    /// house (Phaladeepika ch. 26 vv. 3 to 8; cruxes C137 and C140).
+    NodeObstruction { /// The seven, as any graha: the verses say "planets" and name their
+        /// exceptions, which are not the nodes; but not each other, since
+        /// they stand opposite and the Sun's vedha pairs, theirs under
+        /// `LIKE_THE_SUN`, are opposite houses, so obstructing each other
+        /// would leave v. 2's good houses for them never good (C140).
+        NotEachOther = "NOT_EACH_OTHER", /// Every graha, each other too: the verses read literally, under
+        /// which a node's transit under `LIKE_THE_SUN` is never good.
+        EachOtherToo = "EACH_OTHER_TOO", /// Only the seven obstruct.
         None = "NONE" }
 );
 knob!(

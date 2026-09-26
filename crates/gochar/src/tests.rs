@@ -20,6 +20,18 @@ const GOOD: [(Graha, &[u8]); 9] = [
     (Graha::Ketu, &[6, 3, 10, 11]),
 ];
 
+/// Who does not obstruct whom under the text's reading, written out on
+/// its own: the verses' exemptions (vv. 3 to 6), and the nodes each other
+/// (C140).
+const SPARED: [(Graha, Graha); 6] = [
+    (Graha::Sun, Graha::Saturn),
+    (Graha::Saturn, Graha::Sun),
+    (Graha::Moon, Graha::Mercury),
+    (Graha::Mercury, Graha::Moon),
+    (Graha::Rahu, Graha::Ketu),
+    (Graha::Ketu, Graha::Rahu),
+];
+
 /// The sign `house` houses from `reference`.
 fn in_house(reference: Rashi, house: u8) -> Rashi {
     Rashi::ALL[(reference as usize + usize::from(house) - 1) % 12]
@@ -78,12 +90,8 @@ fn every_vedha_pair_obstructs_and_every_exemption_does_not() {
                 );
                 let read = &reading.grahas[graha as usize];
                 assert_eq!(read.vedha_house, Some(vedha), "{graha:?} in {good}");
-                if exempt(graha) == Some(other) {
-                    assert_eq!(
-                        read.verdict,
-                        Verdict::Good,
-                        "{other:?} exempt for {graha:?}"
-                    );
+                if SPARED.contains(&(graha, other)) {
+                    assert_eq!(read.verdict, Verdict::Good, "{other:?} spares {graha:?}");
                     assert!(read.obstructed_by.is_empty());
                 } else {
                     assert_eq!(read.verdict, Verdict::Obstructed, "{other:?} for {graha:?}");
@@ -144,9 +152,10 @@ fn the_nodes_follow_the_settings() {
         5,
     );
     let text = gochar(reference, &placed, GocharRules::TEXT);
+    // Mars obstructs Rahu, and Ketu does not (C140).
     assert_eq!(
-        text.grahas[Graha::Rahu as usize].verdict,
-        Verdict::Obstructed
+        text.grahas[Graha::Rahu as usize].obstructed_by,
+        vec![Graha::Mars]
     );
     assert_eq!(
         text.grahas[Graha::Sun as usize].obstructed_by,
@@ -164,6 +173,36 @@ fn the_nodes_follow_the_settings() {
     };
     let sun = &gochar(reference, &placed, seven).grahas[Graha::Sun as usize];
     assert_eq!(sun.obstructed_by, vec![Graha::Mars]);
+}
+
+/// The nodes always stand opposite, and the Sun's vedha pairs, theirs under
+/// `LIKE_THE_SUN`, are opposite houses: so in each good house a node has
+/// the other in its vedha house. The text's reading spares it (C140); the
+/// literal one leaves it never good.
+#[test]
+fn the_nodes_stand_in_each_other_s_vedha_house() {
+    let reference = Rashi::Virgo;
+    let literal = GocharRules {
+        node_obstruction: NodeObstruction::EachOtherToo,
+        ..GocharRules::TEXT
+    };
+    for (node, other) in [(Graha::Rahu, Graha::Ketu), (Graha::Ketu, Graha::Rahu)] {
+        for house in 1..=12_u8 {
+            let opposite = (house + 5) % 12 + 1;
+            // The seven parked with the node, where no pair's vedha is.
+            let placed = transits(reference, &[(node, house), (other, opposite)], house);
+            let text = &gochar(reference, &placed, GocharRules::TEXT).grahas[node as usize];
+            let read = &gochar(reference, &placed, literal).grahas[node as usize];
+            if text.good_house {
+                assert_eq!(text.vedha_house, Some(opposite), "{node:?} in {house}");
+                assert_eq!(text.verdict, Verdict::Good, "{node:?} in {house}");
+                assert_eq!(read.verdict, Verdict::Obstructed, "{node:?} in {house}");
+                assert_eq!(read.obstructed_by, vec![other]);
+            } else {
+                assert_eq!(read.verdict, Verdict::NotGood);
+            }
+        }
+    }
 }
 
 #[test]

@@ -1175,7 +1175,10 @@ the astronomical numbers do not move. Nothing else computes yet.
   transit charts at the natal place in one batch; `counted_from` takes the
   lagna instead of the Moon. A new `gochar` settings group carries the two
   places the text is silent: the nodes' vedha (`node_vedha`, C136) and
-  whether they obstruct (`node_obstruction`, C137).
+  whether they obstruct (`node_obstruction`, C137): the seven, and not
+  each other by default, since they stand opposite and the Sun's vedha
+  pairs are opposite houses, so obstructing each other would leave a node
+  never good (C140; `EACH_OTHER_TOO` for the literal reading).
   `SettingsPatch::is_empty` had left the `panchanga` group out of its
   check, so a patch setting only a panchanga knob called itself empty; it
   now compares with the empty patch.

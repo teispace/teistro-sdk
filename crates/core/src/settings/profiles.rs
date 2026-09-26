@@ -191,7 +191,7 @@ pub fn root() -> Settings {
         // "planets" obstructing (`03-design/gochar.md`, C136 and C137).
         gochar: Gochar {
             node_vedha: NodeVedha::LikeTheSun,
-            node_obstruction: NodeObstruction::Obstruct,
+            node_obstruction: NodeObstruction::NotEachOther,
         },
         aspect: Aspect {
             node_aspects: NodeAspects::None,
