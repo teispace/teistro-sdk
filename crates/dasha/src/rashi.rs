@@ -1408,8 +1408,10 @@ mod tests {
                     assert_eq!(ours, f64::midpoint(printed_chara[k], sthira));
                 }
                 // C51: both of the book's tables count to Mars, alone in
-                // Taurus, where the ladder's modality step takes Ketu, alone
-                // in dual Sagittarius; the kendra reading takes Mars.
+                // fixed Taurus; its own verses (vv. 161 to 163 in the
+                // Sanskrit) rank a dual sign above a fixed one before the
+                // greater count, so they take Ketu, alone in dual
+                // Sagittarius. The kendra reading takes Mars.
                 Rashi::Scorpio => {
                     assert_ne!(ours, printed[k]);
                     assert_eq!(YOGARDHA.years(&chart, *sign, kendra), printed[k]);
