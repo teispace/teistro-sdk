@@ -113,6 +113,50 @@ generator lands early — because a generated surface grows itself as the
 SDK grows — with only the packaged, signed, install-checked server in
 Phase 9.
 
+## Q40. Whether a modern engine's overrides reach a chart's day and zodiac: `open`
+
+Raised 2026-09-26 by building the classical chart
+(`03-design/classical-chart.md` §8). ADR-0013 says `prefer-native` uses a
+declared native computation, "so results agree exactly with
+Swiss-compatible tools through Teimeris". The completion does: a
+sidereal position, the obliquity and a crossing are the engine's own.
+**A chart does not**: its day comes from the SDK's rise and set solver
+and its zodiac from the SDK's catalogue, whatever the engine declares.
+For a classical astronomy that was a defect and is fixed, because the
+text's sunrise and zodiac are definitions with no SDK answer to agree
+with. For a modern engine it is a choice nobody made.
+
+*What is measured* (the conformance kit, `ephemeris-port-and-adapters.md`
+§9, Teimeris 0.1.0): the engine's sunrise stands 0.13 s from the SDK's
+under the geometric convention and **7.3 s** under the refracted one, the
+refraction model's difference (C34: 34.46′ Sinclair against 34.48′
+Bennett at the reference air, parting with the temperature); its
+ayanamsha members sit within 0.011° of the published values. Every figure
+is inside the published bounds, so the choice moves no chart outside
+them — but it moves every Teimeris-backed chart's bits, and a sunrise by
+up to 7 s where the horizon is refracted.
+
+*The options.*
+- **A. The engine's own**, under `prefer-native`, as the completion does.
+  A chart over Teimeris is then Swiss-exact; charts over two modern
+  engines differ by their models, and `sdk-only` is the way back to
+  one definition.
+- **B. The SDK's, as today**, and ADR-0013 amended to say `prefer-native`
+  governs the completion's steps and not a chart's conventions. One
+  definition of a chart's day and zodiac across every modern engine;
+  never Swiss-exact on sunrise.
+- **C. A knob**, `provider.chart_conventions: SDK | PROVIDER`, default
+  `SDK`. B's cross-engine identity by default, A's tool parity for a
+  consumer who asks, and the choice declared rather than implicit, which
+  is the no-dead-ends rule.
+
+*Recommendation: C.* The default keeps what a chart means independent of
+the engine it was cast on, which is the property the `sdk-only`
+byte-identity check guards; the knob gives the consumer who must match
+another tool to the second a way to, stamped in every result. It is a
+maintainer's decision because it amends ADR-0013 and moves no default
+today but names one.
+
 ## Q38. Whether a computed value that is not a catalogue member should become one: `decided`
 
 Raised 2026-09-22 by migrating the baseline engine's state readings.
