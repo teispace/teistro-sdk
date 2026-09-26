@@ -1164,6 +1164,55 @@ the astronomical numbers do not move. Nothing else computes yet.
   answers exactly. Kemadruma is the fourth divergence (crux C94): read whole,
   the verse answers 1 of the 93 charts where the engine answers 57.
 
+- **A chart over the Surya Siddhanta is the text's, not a hybrid.** A
+  chart founded over the text's provider took its planets' positions from
+  the text and everything else from the SDK. A new pass, `cargo xtask
+  classical-chart` (`check-classical-chart`), founds all 55 recorded births
+  over the text and holds each part to the text's own answer, and now
+  every part is the text's: the zodiac, the nine grahas, the Lagna and
+  midheaven (III.46 to 49), the day and its horas
+  (`03-design/classical-chart.md`).
+  - **The zodiac and the places.** `ChartZodiac::defined` takes the
+    ayanamsha and its rate from a classical provider that defines the
+    member. A classical place passes the corrections step, stamped
+    `corrections:NATIVE`, and the step refuses distances not in
+    astronomical units.
+  - **The day and the angles.** The drik solar model asks a classical
+    provider for its own sunrise, and a new port override,
+    `Overrides::ANGLES`, gives the text's Lagna and meridian. The nine
+    house systems built from the two angles
+    (`houses::FROM_ANGLES`) follow them; the thirteen that need the sphere
+    are refused by name.
+  - **The report.** The steps gain `zodiac`, `angles` and `day`; the
+    envelope's `deviation` is filled for the first time; and
+    `sdk.chart().angles` answers a classical chart's angles from its
+    provider.
+  - **Reaching it.** `Ephemeris::SuryaSiddhanta`, and
+    `TS_EPHEMERIS_SURYA_SIDDHANTA` (3) at the C selector, give every
+    binding the text by name, with parity across the four languages.
+  - **A profile.** The new `surya-siddhanta` profile is
+    `parashari-classical` with `frame.siddhanta = SURYA` and the text's own
+    ayanamsha. The `frame.siddhanta` knob, read by nothing since it was
+    added, now holds the context to the provider it opens: a modern
+    engine under it is refused by name, and the text's provider under
+    DRIK settings warns `classical-provider-drik-settings`.
+  - **Warnings reach the result.** Settings warnings, computed and then
+    said to nobody, now reach every result's envelope, which every
+    binding already reads.
+
+  **Numbers:** a chart over the Surya Siddhanta moves. Its zodiac is the
+  text's precession, up to 1.6° from the catalogue's `SURYASIDDHANTA`
+  member, which moves every graha; the Moon's place drops an 8.3-minute
+  light time, about 0.078°; the Lagna is the text's, up to 8° from the
+  spherical one and in another sign on 6 of 53 recorded births; and the
+  sunrise is the text's, up to 24 minutes from the SDK's solver and in
+  another hora on 6 of 53. The midnight both solar models count from is
+  now exact rather than a whole second, which moved a classical sunrise
+  by up to 0.48 s. No modern chart, calendar, lunisolar, panchanga or
+  almanac value moved, and no existing profile's settings changed. A
+  modern engine's own overrides at the chart layer are
+  QUESTIONS.md Q40, awaiting the maintainer.
+
 - **Breaking:** `Rule::outcome` and `RuleResult::outcome` become `outcomes`, a
   list, because a verse may say more than one thing — Saravali ch. 37's Pancha
   Mahapurusha verses describe the native *and* count his years. `life_span()`
