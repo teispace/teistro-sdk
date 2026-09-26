@@ -1048,23 +1048,54 @@ impl<'a> ChartArea<'a> {
         use crate::hit_request::HitKind;
         use teistro_astro::events::{Direction, Lattice, StationKind};
         use teistro_chart::foundation::TransitEventKind;
-        use teistro_gochar::hits::{self, Hit, HitEvent, Motion};
+        use teistro_gochar::hits::{self, Edge, Hit, HitEvent, Motion, NatalPoint};
+
+        /// What a lattice's crossings mean.
+        #[derive(Clone, Copy)]
+        enum Meaning {
+            Sign,
+            Nakshatra,
+            Aspect(NatalPoint, f64, Edge),
+        }
 
         request.check()?;
-        let asked = [
-            (HitKind::SignIngress, Lattice::SIGNS),
-            (HitKind::NakshatraIngress, Lattice::NAKSHATRAS),
-        ];
-        let kinds: Vec<HitKind> = asked
-            .iter()
-            .filter(|(kind, _)| request.asks(*kind))
-            .map(|(kind, _)| *kind)
-            .collect();
-        let lattices: Vec<Lattice> = asked
-            .iter()
-            .filter(|(kind, _)| request.asks(*kind))
-            .map(|(_, lattice)| *lattice)
-            .collect();
+        let mut meanings: Vec<(Meaning, Lattice)> = Vec::new();
+        if request.asks(HitKind::SignIngress) {
+            meanings.push((Meaning::Sign, Lattice::SIGNS));
+        }
+        if request.asks(HitKind::NakshatraIngress) {
+            meanings.push((Meaning::Nakshatra, Lattice::NAKSHATRAS));
+        }
+        let orb = request.orb_deg().unwrap_or(0.0);
+        if request.asks(HitKind::Aspect) {
+            for point in request.points() {
+                let natal_deg = match point {
+                    NatalPoint::Graha { graha } => {
+                        natal.foundation.graha(*graha).map(|at| at.longitude_deg)
+                    }
+                    NatalPoint::Lagna => Some(natal.foundation.lagna_deg),
+                }
+                .ok_or_else(|| {
+                    Error::invalid_arg(format!("the natal chart has no {point:?} to aspect"))
+                        .with_field("points")
+                })?;
+                let edges: &[(Edge, f64)] = if request.orb_deg().is_some() {
+                    &[(Edge::Exact, 0.0), (Edge::Before, -orb), (Edge::Past, orb)]
+                } else {
+                    &[(Edge::Exact, 0.0)]
+                };
+                for (edge, shift) in edges {
+                    meanings.push((
+                        Meaning::Aspect(*point, natal_deg, *edge),
+                        Lattice {
+                            origin_deg: natal_deg + shift,
+                            step_deg: 30.0,
+                        },
+                    ));
+                }
+            }
+        }
+        let lattices: Vec<Lattice> = meanings.iter().map(|(_, lattice)| *lattice).collect();
         let place = natal.foundation.place;
         let found = self.founding(UtcOffset::UTC, |founder| {
             founder.transit_events(
@@ -1088,14 +1119,17 @@ impl<'a> ChartArea<'a> {
                         lattice,
                         boundary_deg,
                         direction,
-                    } => match kinds.get(lattice) {
-                        Some(HitKind::SignIngress) => {
-                            hits::sign_ingress(boundary_deg, motion(direction))
-                        }
-                        Some(HitKind::NakshatraIngress) => {
+                    } => match meanings.get(lattice).map(|(meaning, _)| *meaning)? {
+                        Meaning::Sign => hits::sign_ingress(boundary_deg, motion(direction)),
+                        Meaning::Nakshatra => {
                             hits::nakshatra_ingress(boundary_deg, motion(direction))
                         }
-                        _ => return None,
+                        Meaning::Aspect(point, natal_deg, edge) => hits::aspect_hit(
+                            (point, natal_deg),
+                            (boundary_deg, edge, orb),
+                            motion(direction),
+                            request.aspects(),
+                        )?,
                     },
                     TransitEventKind::Station { kind, .. } => HitEvent::Station {
                         turns: match kind {

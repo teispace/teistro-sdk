@@ -31,6 +31,55 @@ pub enum Motion {
     Retrograde,
 }
 
+/// A natal point a transit can aspect.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(tag = "point", rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum NatalPoint {
+    /// A natal graha.
+    Graha {
+        /// Which.
+        graha: Graha,
+    },
+    /// The natal lagna.
+    Lagna,
+}
+
+impl NatalPoint {
+    /// Its place in a tie's order: the grahas by id, then the lagna.
+    const fn rank(self) -> u8 {
+        match self {
+            NatalPoint::Graha { graha } => graha as u8,
+            NatalPoint::Lagna => u8::MAX,
+        }
+    }
+}
+
+/// Where in an aspect's window a hit falls (C146).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum AspectPhase {
+    /// The transit came within the orb.
+    Entering,
+    /// The aspect is exact.
+    Exact,
+    /// The transit passed out of the orb.
+    Leaving,
+}
+
+/// Which line of an aspect a lattice holds: the exact one, or the orb's
+/// edge before or past it in the zodiac's order.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Edge {
+    /// The exact line.
+    Exact,
+    /// The orb before the line.
+    Before,
+    /// The orb past the line.
+    Past,
+}
+
 /// What a hit was.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -55,6 +104,18 @@ pub enum HitEvent {
         /// The motion it turned to.
         turns: Motion,
     },
+    /// The graha aspected a natal point, or came within or left its orb.
+    Aspect {
+        /// The natal point aspected.
+        to: NatalPoint,
+        /// The aspect's angle, 0 to 180 degrees; the angle past 180 is the
+        /// same aspect from the other side.
+        angle: u16,
+        /// Where in its window.
+        phase: AspectPhase,
+        /// Which way the transit was moving.
+        motion: Motion,
+    },
 }
 
 impl HitEvent {
@@ -65,6 +126,15 @@ impl HitEvent {
             HitEvent::SignIngress { .. } => 0,
             HitEvent::NakshatraIngress { .. } => 1,
             HitEvent::Station { .. } => 2,
+            HitEvent::Aspect { .. } => 3,
+        }
+    }
+
+    /// The natal point's place in a tie's order, for an aspect.
+    const fn point_rank(self) -> u8 {
+        match self {
+            HitEvent::Aspect { to, .. } => to.rank(),
+            _ => 0,
         }
     }
 }
@@ -90,6 +160,7 @@ pub fn sort(hits: &mut [Hit]) {
             .total_cmp(&b.instant.get())
             .then((a.graha as u8).cmp(&(b.graha as u8)))
             .then(a.event.rank().cmp(&b.event.rank()))
+            .then(a.event.point_rank().cmp(&b.event.point_rank()))
     });
 }
 
@@ -137,9 +208,54 @@ pub fn nakshatra_ingress(boundary_deg: f64, motion: Motion) -> HitEvent {
     }
 }
 
+/// The aspect a crossing names, if it is one asked for: the transit reached
+/// the line `boundary_deg` of the lattice of `edge` about a natal point at
+/// `natal_deg`, `orb_deg` either side of the exact line.
+///
+/// Every multiple of 30° from the natal point is a line of the exact
+/// lattice; only the `angles` asked for, from either side, are aspects.
+/// Moving forward, the transit enters an orb at the edge before the line
+/// and leaves at the edge past it; moving back, the reverse.
+#[must_use]
+pub fn aspect_hit(
+    (to, natal_deg): (NatalPoint, f64),
+    (boundary_deg, edge, orb_deg): (f64, Edge, f64),
+    motion: Motion,
+    angles: &[u16],
+) -> Option<HitEvent> {
+    let shift = match edge {
+        Edge::Exact => 0.0,
+        Edge::Before => -orb_deg,
+        Edge::Past => orb_deg,
+    };
+    let from_natal = (boundary_deg - shift - natal_deg).rem_euclid(360.0);
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "a separation over 30 rounds to a line index 0 to 12"
+    )]
+    let line = ((from_natal / 30.0).round() as u16 % 12) * 30;
+    let angle = if line > 180 { 360 - line } else { line };
+    if !angles.contains(&angle) {
+        return None;
+    }
+    let phase = match (edge, motion) {
+        (Edge::Exact, _) => AspectPhase::Exact,
+        (Edge::Before, Motion::Direct) | (Edge::Past, Motion::Retrograde) => AspectPhase::Entering,
+        (Edge::Before | Edge::Past, _) => AspectPhase::Leaving,
+    };
+    Some(HitEvent::Aspect {
+        to,
+        angle,
+        phase,
+        motion,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     #![allow(
+        clippy::panic,
         clippy::unwrap_used,
         clippy::indexing_slicing,
         reason = "tests fail by panicking and index what they built"
@@ -180,6 +296,55 @@ mod tests {
                 into: Nakshatra::ALL[26],
                 motion: Motion::Retrograde
             }
+        );
+    }
+
+    #[test]
+    fn a_crossing_is_the_aspect_asked_for_from_either_side() {
+        let sun = NatalPoint::Graha { graha: Graha::Sun };
+        let conj_opp = [0, 180];
+        let trine = [120];
+        let at = |boundary, edge, motion, angles: &[u16]| {
+            aspect_hit((sun, 100.0), (boundary, edge, 5.0), motion, angles)
+        };
+        for (boundary, angle) in [(100.0, 0), (280.0, 180)] {
+            assert_eq!(
+                at(boundary, Edge::Exact, Motion::Direct, &conj_opp),
+                Some(HitEvent::Aspect {
+                    to: sun,
+                    angle,
+                    phase: AspectPhase::Exact,
+                    motion: Motion::Direct
+                })
+            );
+        }
+        // The trines either side of the natal point.
+        for boundary in [220.0, 340.0] {
+            assert!(at(boundary, Edge::Exact, Motion::Direct, &trine).is_some());
+            assert!(at(boundary, Edge::Exact, Motion::Direct, &conj_opp).is_none());
+        }
+        // A square is no aspect unless asked for.
+        assert!(at(190.0, Edge::Exact, Motion::Direct, &conj_opp).is_none());
+        // The orb's edges: 95° is before the conjunction's line, 105° past it.
+        let phase = |boundary, edge, motion| match at(boundary, edge, motion, &conj_opp) {
+            Some(HitEvent::Aspect { phase, .. }) => phase,
+            other => panic!("{other:?}"),
+        };
+        assert_eq!(
+            phase(95.0, Edge::Before, Motion::Direct),
+            AspectPhase::Entering
+        );
+        assert_eq!(
+            phase(105.0, Edge::Past, Motion::Direct),
+            AspectPhase::Leaving
+        );
+        assert_eq!(
+            phase(105.0, Edge::Past, Motion::Retrograde),
+            AspectPhase::Entering
+        );
+        assert_eq!(
+            phase(95.0, Edge::Before, Motion::Retrograde),
+            AspectPhase::Leaving
         );
     }
 

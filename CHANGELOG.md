@@ -1178,6 +1178,15 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none. No caller asked the completion for the true basis,
   and the chart already took its day and zodiac from the SDK.
 
+- **The hit list's aspects to natal points** (`transit-hit-list.md` §6
+  step 2). `HitKind::Aspect` reports a transit reaching an aspect's angle
+  to a natal graha or the lagna — the conjunction and opposition by
+  default (C145), others by `with_aspects` in multiples of 30° — and,
+  given `with_orb`, the window's opening and closing (C146), each read
+  back through a chart founded at its instant.
+
+  **Numbers:** none.
+
 - **The transit hit list: every ingress and station of a window**
   (`03-design/transit-hit-list.md`). `sdk.chart().hits(&natal,
   &HitRequest::between(from, to))` lists each graha's sign and nakshatra
