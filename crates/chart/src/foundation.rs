@@ -279,6 +279,10 @@ pub struct Founder<'a, P: EphemerisProvider + ?Sized> {
     clock: &'a dyn LocalClock,
     precession: PrecessionModel,
     delta_t: DeltaTModel,
+    /// Whether the provider defines the angles, decided once: a founding
+    /// asks at every cusp set and every Lagna, and deciding each time
+    /// read the provider's capabilities at each.
+    angles_defined: Result<bool, Error>,
 }
 
 impl<P: EphemerisProvider + ?Sized> core::fmt::Debug for Founder<'_, P> {
@@ -293,7 +297,7 @@ impl<P: EphemerisProvider + ?Sized> core::fmt::Debug for Founder<'_, P> {
 impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// A founder over a provider, a solar model for the day's arcs, a
     /// calendar and a clock.
-    pub const fn new(
+    pub fn new(
         provider: &'a P,
         resolved: &'a Resolved,
         model: &'a dyn SolarModel,
@@ -302,6 +306,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         precession: PrecessionModel,
         delta_t: DeltaTModel,
     ) -> Founder<'a, P> {
+        let angles_defined =
+            Completion::new(provider, resolved.settings.provider.overrides, delta_t)
+                .defines(Overrides::ANGLES, "angles")
+                .map_err(Error::from);
         Founder {
             provider,
             resolved,
@@ -310,6 +318,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             clock,
             precession,
             delta_t,
+            angles_defined,
         }
     }
 
@@ -720,8 +729,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// to the sphere under `prefer-native`, as a sunrise it refuses does,
     /// and is refused under `native-only`.
     fn defined_angles(&self, ut1: JulianDay<Ut1>, place: &Place) -> Result<Option<Angles>, Error> {
-        let completion = self.completion();
-        if !completion.defines(Overrides::ANGLES, "angles")? {
+        if !self.angles_defined.clone()? {
             return Ok(None);
         }
         match self.provider.angles(&AnglesRequest {
@@ -731,7 +739,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         }) {
             Ok(angles) => Ok(Some(angles)),
             Err(ProviderError::Unsupported { .. })
-                if completion.policy() != OverridePolicy::NativeOnly =>
+                if self.settings().provider.overrides != OverridePolicy::NativeOnly =>
             {
                 Ok(None)
             }

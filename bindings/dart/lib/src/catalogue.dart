@@ -4575,7 +4575,12 @@ enum Ephemeris {
   /// The analytic test provider. For tests and examples only — its
   /// positions are **not astronomy**, and a chart cast from them is a
   /// shape rather than a sky.
-  test(2, 'TEST');
+  test(2, 'TEST'),
+  /// The Surya Siddhanta, a **classical astronomy**: the text's own
+  /// places, precession, sunrise and Lagna, so a chart founded over it
+  /// is the text's chart throughout (`03-design/classical-chart.md`).
+  /// Name its ayanamsha, `SURYASIDDHANTA`, for the text's zodiac.
+  suryaSiddhanta(3, 'SURYA_SIDDHANTA');
 
   const Ephemeris(this.id, this.key);
 

@@ -114,6 +114,40 @@ void main() {
     expect(after.forms['name'], before.name);
   });
 
+  test('the Surya Siddhanta opens by name, and its chart says which parts '
+      "are the text's", () {
+    // A classical astronomy's chart is the text's throughout
+    // (docs/03-design/classical-chart.md), and the envelope says so, where a
+    // modern chart's says nothing.
+    Chart at(Context ctx) => ctx.chart.found(
+      instant: 2447995.4895833335,
+      place: Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      ),
+      utcOffsetSeconds: 20700,
+    );
+    final text = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+      settings: {
+        'frame': {
+          'ayanamsha': {'kind': 'CATALOGUED', 'id': 'SURYASIDDHANTA'},
+        },
+      },
+    );
+    final deviation = at(text).provenance.deviation!;
+    expect(deviation.model, 'SURYA_SIDDHANTA');
+    expect(
+      deviation.detail,
+      "the zodiac, the places, the angles and the day are the provider's own",
+    );
+    text.dispose();
+    final modern = context();
+    expect(at(modern).provenance.deviation, isNull);
+    modern.dispose();
+  });
+
   test('a chart handed out alone carries its own hash, and the batch the '
       "list's", () {
     // STATUS 2h: a batch's provenance hashes the list, and a chart of it the

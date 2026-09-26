@@ -88,6 +88,7 @@ import {
   TimeScaleById,
   VaraById,
   YogaById,
+  Ephemeris,
 } from './catalogue.js';
 import { decodeCharts, decodeIntlRender, decodePanchanga, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
@@ -3291,7 +3292,7 @@ export class Context {
  * One entry of an ephemeris chain, normalised: either a name of the
  * SDK's own or a loaded adapter.
  *
- * @typedef {'NONE'|'BUILTIN'|'TEST'|{ plugin: string, config?: object }} EphemerisChoice
+ * @typedef {import('./catalogue.js').Ephemeris|{ plugin: string, config?: object }} EphemerisChoice
  */
 
 /**
@@ -3349,7 +3350,8 @@ function ephemerisChain(ephemeris, testProvider) {
     const named = typeof entry === 'string';
     if (!named && (entry === null || typeof entry.plugin !== 'string')) {
       throw new TypeError(
-        "an ephemeris is a name ('NONE', 'BUILTIN', 'TEST') or an adapter's descriptor, " +
+        `an ephemeris is a name (${Object.values(Ephemeris).map((name) => `'${name}'`).join(', ')}) ` +
+          "or an adapter's descriptor, " +
           "which carries a `plugin` path; got " +
           JSON.stringify(entry),
       );

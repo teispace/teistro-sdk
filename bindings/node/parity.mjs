@@ -254,6 +254,22 @@ placed.grahas.forEach((graha, j) => {
   put(`topocentric-graha-${j}-speed`, graha.speedDegPerDay);
 });
 
+// ── A chart founded on a classical astronomy ───────────────────────────
+// The Surya Siddhanta by name: the text's zodiac, places, Lagna and day
+// (docs/03-design/classical-chart.md), which every binding reaches through
+// the selector and must read back alike, deviation and all.
+const classical = new Context({
+  ephemeris: 'SURYA_SIDDHANTA',
+  settings: { frame: { ayanamsha: { kind: 'CATALOGUED', id: 'SURYASIDDHANTA' } } },
+});
+const text = classical.chart.found({ instant: 2447995.4895833335, place, utcOffsetSeconds: 20700 });
+put('classical-steps', text.batch.steps.join(','));
+put('classical-lagna', text.lagnaDeg);
+put('classical-sunrise', text.day.sunrise);
+put('classical-deviation', `${text.provenance.deviation.model}: ${text.provenance.deviation.detail}`);
+text.grahas.forEach((graha, j) => put(`classical-graha-${j}-lon`, graha.longitudeDeg));
+classical.dispose();
+
 // ── A chart and an almanac, under a geocentric profile ─────────────────
 // Everything after this runs on the SDK's own default profile, which is
 // geocentric, so that the two centres are both exercised.

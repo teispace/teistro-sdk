@@ -6303,6 +6303,12 @@
           "value": 2,
           "doc": "The analytic test provider. For tests and examples only — its\npositions are **not astronomy**, and a chart cast from them is a\nshape rather than a sky.",
           "key": "TEST"
+        },
+        {
+          "name": "SuryaSiddhanta",
+          "value": 3,
+          "doc": "The Surya Siddhanta, a **classical astronomy**: the text's own\nplaces, precession, sunrise and Lagna, so a chart founded over it\nis the text's chart throughout (`03-design/classical-chart.md`).\nName its ayanamsha, `SURYASIDDHANTA`, for the text's zodiac.",
+          "key": "SURYA_SIDDHANTA"
         }
       ],
       "source": "crates/ffi/src/context.rs"

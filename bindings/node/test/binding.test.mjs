@@ -130,6 +130,32 @@ test('a pack loads at runtime and lays its record over the one standing', () => 
   assert.throws(() => ctx.intl.loadPack('overlay.tpack'), /bytes: expected bytes/u);
 });
 
+test('the Surya Siddhanta opens by name, and its chart says which parts are the text\'s', () => {
+  // A classical astronomy's chart is the text's throughout
+  // (docs/03-design/classical-chart.md), and the envelope says so, where a
+  // modern chart's says nothing.
+  const at = {
+    instant: 2447995.4895833335,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const text = new Context({
+    ephemeris: catalogue.Ephemeris.SuryaSiddhanta,
+    settings: { frame: { ayanamsha: { kind: 'CATALOGUED', id: 'SURYASIDDHANTA' } } },
+  });
+  assert.deepEqual(
+    { ...text.chart.found(at).provenance.deviation },
+    {
+      model: 'SURYA_SIDDHANTA',
+      detail: "the zodiac, the places, the angles and the day are the provider's own",
+    },
+  );
+  text.dispose();
+  const modern = context();
+  assert.equal(modern.chart.found(at).provenance.deviation, null);
+  modern.dispose();
+});
+
 test('a chart handed out alone carries its own hash, and the batch the list\'s', () => {
   // STATUS 2h: a batch's provenance hashes the list, and a chart of it the
   // value it holds, which is what a stored chart is checked against.
@@ -666,8 +692,8 @@ test('every catalogue enum has a complete id table', () => {
   // 1091 since the sahams crossed: `TsSaham`'s forty-one;
   // 1117 since their strength crossed: `TsSahamStrong`'s twelve clauses,
   // `TsSahamWeak`'s five, `TsHarshaGrade`'s five and `TsTajikaRelation`'s
-  // four.
-  assert.equal(entries, 1120, 'every member of every enum is in a table');
+  // four; 1121 since `TsEphemeris` named the Surya Siddhanta.
+  assert.equal(entries, 1121, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {

@@ -5746,7 +5746,7 @@ export declare const ProviderCodeById: ReadonlyMap<number, ProviderCode>;
  * this is ignored. The states are exclusive, which is why they are an
  * enum and not flag bits (ADR-0028).
  */
-export type Ephemeris = 'NONE' | 'BUILTIN' | 'TEST';
+export type Ephemeris = 'NONE' | 'BUILTIN' | 'TEST' | 'SURYA_SIDDHANTA';
 
 /** Every Ephemeris by name; the values are the strings the union accepts. */
 export declare const Ephemeris: {
@@ -5768,6 +5768,13 @@ export declare const Ephemeris: {
    * shape rather than a sky.
    */
   readonly Test: 'TEST';
+  /**
+   * The Surya Siddhanta, a **classical astronomy**: the text's own
+   * places, precession, sunrise and Lagna, so a chart founded over it
+   * is the text's chart throughout (`03-design/classical-chart.md`).
+   * Name its ayanamsha, `SURYASIDDHANTA`, for the text's zodiac.
+   */
+  readonly SuryaSiddhanta: 'SURYA_SIDDHANTA';
 };
 
 /**

@@ -276,6 +276,35 @@ void main() {
     j += 1;
   }
 
+  // ── A chart founded on a classical astronomy ─────────────────────────
+  // The Surya Siddhanta by name: the text's zodiac, places, Lagna and day
+  // (docs/03-design/classical-chart.md), which every binding reaches
+  // through the selector and must read back alike, deviation and all.
+  final classical = teistro.context(
+    ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    settings: {
+      'frame': {
+        'ayanamsha': {'kind': 'CATALOGUED', 'id': 'SURYASIDDHANTA'},
+      },
+    },
+  );
+  final text = classical.chart.found(
+    instant: 2447995.4895833335,
+    place: place,
+    utcOffsetSeconds: 20700,
+  );
+  put('classical-steps', text.batch.stepsApplied.join(','));
+  put('classical-lagna', text.lagnaDeg);
+  put('classical-sunrise', text.day.sunrise);
+  final deviation = text.provenance.deviation!;
+  put('classical-deviation', '${deviation.model}: ${deviation.detail}');
+  var k = 0;
+  for (final graha in text.grahas) {
+    put('classical-graha-$k-lon', graha.longitudeDeg);
+    k += 1;
+  }
+  classical.dispose();
+
   // ── A chart and an almanac, under a geocentric profile ───────────────
   // Everything after this runs on the SDK's own default profile, which is
   // geocentric, so that the two centres are both exercised.
