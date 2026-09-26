@@ -23,9 +23,9 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt, Ut1};
 use teistro_core::settings::OverridePolicy;
 use teistro_port_ephemeris::{
-    Body, Capabilities, Cell, Centre, Coordinates, Corrections, EphemerisProvider, Equinox, Frame,
-    Obliquity, Overrides, PositionColumns, PositionRequest, ProviderError, SpeedModel, TimeScale,
-    Zodiac, ask_positions,
+    Astronomy, Body, Capabilities, Cell, Centre, Coordinates, Corrections, DistanceUnit,
+    EphemerisProvider, Equinox, Frame, Obliquity, Overrides, PositionColumns, PositionRequest,
+    ProviderError, SpeedModel, TimeScale, Zodiac, ask_positions,
 };
 
 use crate::ayanamsha::{self, Basis};
@@ -380,6 +380,25 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         }
     }
 
+    /// Whether the provider **defines** an ayanamsha member's value,
+    /// rather than approximating the SDK's: a classical astronomy that
+    /// lists the member, under a policy that lets it answer.
+    ///
+    /// A modern provider's ayanamsha is the same quantity computed
+    /// another way, gated to agree with the catalogue's; a classical
+    /// text's is its own definition, with no catalogue value to agree
+    /// with (`03-design/classical-chart.md` §2). So a chart takes its
+    /// zodiac from the provider only here, and the catalogue otherwise.
+    ///
+    /// # Errors
+    ///
+    /// `native-only` over a provider that does not list the member,
+    /// naming the step, as the positions' own shift refuses.
+    pub fn defines_ayanamsha(&self, member: Ayanamsha) -> Result<bool, CompletionError> {
+        Ok(self.capabilities.astronomy == Astronomy::Classical
+            && self.choose_ayanamsha(Some(member))? == Implementation::Native)
+    }
+
     /// Who gives an ayanamsha's value: the provider when the policy lets
     /// it and it **lists that member**, the SDK's catalogue otherwise.
     ///
@@ -616,8 +635,28 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         // light time, deflection and aberration are all about the path
         // light took to the **Earth's centre**, and the observer's own
         // displacement is a separate question that comes after them.
+        //
+        // A classical astronomy's place is its own definition: the text's
+        // true place is the one the tradition reads, and it has no light
+        // time, aberration or nutation to add. Correcting it would move
+        // it by the SDK's Earth and the IAU's nutation, and take the light
+        // time from a distance that is a fraction of the body's mean
+        // rather than astronomical units — the text's Moon moved 0.08°,
+        // its light time read as an astronomical unit's
+        // (`03-design/classical-chart-measured.md`). So the provider's
+        // place stands, stamped as the provider's.
         if wanted.corrections != native.corrections {
-            self.correct(&mut columns, request, native, &mut steps)?;
+            if self.capabilities.astronomy == Astronomy::Classical {
+                push_once(
+                    &mut steps,
+                    Step {
+                        name: "corrections",
+                        implementation: Implementation::Native,
+                    },
+                );
+            } else {
+                self.correct(&mut columns, request, native, &mut steps)?;
+            }
             held.corrections = wanted.corrections;
         }
         if wanted.centre != native.centre {
@@ -759,6 +798,14 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
         if native.corrections != Corrections::GEOMETRIC {
             return Err(CompletionError::Unsupported {
                 step: "corrections",
+            });
+        }
+        // Light time is a distance over the speed of light, so a distance
+        // in any unit but the astronomical one would give a wrong answer
+        // rather than a refused one.
+        if self.capabilities.distance_unit != DistanceUnit::AstronomicalUnits {
+            return Err(CompletionError::Unsupported {
+                step: "corrections over distances not in astronomical units",
             });
         }
         if self.policy == OverridePolicy::NativeOnly {

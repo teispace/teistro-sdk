@@ -186,6 +186,7 @@ mod catalogue;
 mod chalit;
 mod chebyshev;
 mod classical;
+mod classical_chart;
 mod consumer;
 mod dart_binding;
 mod dasha_coverage;
@@ -266,6 +267,11 @@ type Pass = (&'static str, fn(&Path) -> i32, fn(&Path) -> i32);
 /// not an array, so that adding a row is one line and not two.
 const PASSES: &[Pass] = &[
     ("chalit", chalit::generate, chalit::check_generated),
+    (
+        "classical-chart",
+        classical_chart::generate,
+        classical_chart::check_generated,
+    ),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),
     ("state", state::generate, state::check_generated),

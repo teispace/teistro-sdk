@@ -15,7 +15,7 @@
 //! own foundation — each depends on a module that depends on this one.
 
 use serde::{Deserialize, Serialize};
-use teistro_astro::completion::{Completed, Completion};
+use teistro_astro::completion::{Completed, Completion, Implementation};
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::houses::{ChartFrame, houses_at};
 use teistro_astro::precession::PrecessionModel;
@@ -310,9 +310,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     ) -> Result<ChartFoundation, Error> {
         let ut1 = JulianDay::<Ut1>::literal(instant.get());
         let (tt, _) = tt_of(ut1, self.delta_t)?;
-        let zodiac = ChartZodiac::of(self.settings(), tt, self.precession, self.delta_t)?;
-        let turning =
-            ChartZodiac::rate_deg_per_day(self.settings(), tt, self.precession, self.delta_t)?;
+        let completion = self.completion();
+        let (zodiac, turning, zodiac_from) = self.zodiac(&completion, tt)?;
         let day = chart_day(
             self.model,
             self.calendar,
@@ -354,7 +353,15 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let day_lagna_deg = self.lagna(day_ut1, day_tt, place, &zodiac)?;
 
         let timing = self.timing(&day, instant)?;
-        let (grahas, steps) = self.grahas(ut1, place, (&zodiac, turning), &houses, &chalit)?;
+        let (grahas, mut steps) = self.grahas(
+            &completion,
+            ut1,
+            place,
+            (&zodiac, turning),
+            &houses,
+            &chalit,
+        )?;
+        steps.push(format!("zodiac:{}", zodiac_from.key()));
         Ok(ChartFoundation {
             instant,
             place: *place,
@@ -587,10 +594,43 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         angles_in(ut1, tt, place, zodiac, self.settings().houses.polar_policy)
     }
 
+    /// The completion every step of a founding asks the provider
+    /// through, under the profile's override policy.
+    fn completion(&self) -> Completion<'a, P> {
+        Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        )
+        .with_precession(self.precession)
+        // A graha's speed is reported, so it is the derivative of its
+        // place rather than a rate carried through the steps.
+        .deriving_speeds()
+    }
+
+    /// The chart's zodiac at an instant, its rate against the tropical
+    /// one, and who gave it: the provider where it **defines** the
+    /// ayanamsha (a classical astronomy), the catalogue otherwise.
+    fn zodiac(
+        &self,
+        completion: &Completion<'_, P>,
+        tt: JulianDay<Tt>,
+    ) -> Result<(ChartZodiac, f64, Implementation), Error> {
+        if let Some((zodiac, rate)) = ChartZodiac::defined(completion, self.settings(), tt)? {
+            return Ok((zodiac, rate, Implementation::Native));
+        }
+        Ok((
+            ChartZodiac::of(self.settings(), tt, self.precession, self.delta_t)?,
+            ChartZodiac::rate_deg_per_day(self.settings(), tt, self.precession, self.delta_t)?,
+            Implementation::Sdk,
+        ))
+    }
+
     /// The grahas, placed, each moving in the chart's zodiac: the zodiac
     /// comes with its rate against the tropical one.
     fn grahas(
         &self,
+        completion: &Completion<'_, P>,
         ut1: JulianDay<Ut1>,
         place: &Place,
         (zodiac, turning): (&ChartZodiac, f64),
@@ -603,15 +643,6 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         if zodiac.needs_observer() {
             request.observer = Some(*place);
         }
-        let completion = Completion::new(
-            self.provider,
-            self.settings().provider.overrides,
-            self.delta_t,
-        )
-        .with_precession(self.precession)
-        // A graha's speed is reported, so it is the derivative of its
-        // place rather than a rate carried through the steps.
-        .deriving_speeds();
         let completed: Completed = completion.positions(&request)?;
 
         let mut grahas = Vec::with_capacity(bodies.len() + 1);
