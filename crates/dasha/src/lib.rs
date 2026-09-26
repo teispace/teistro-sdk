@@ -50,6 +50,7 @@
 pub mod annual;
 pub mod balance;
 pub mod definition;
+pub mod jaimini;
 pub mod kalachakra;
 pub mod rashi;
 pub mod reading;
