@@ -317,6 +317,49 @@ pub fn brahma(
     }
 }
 
+/// The lord a sign's pada counts to under the co-lordship: its one lord, or
+/// of two the stronger by ch. 46's ladder, as BPHS ch. 29 v. 7 counts a
+/// two-lorded sign (crux C135). Under `NONE`, the default, every sign has one
+/// lord and it is the catalogue's.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_core::settings::NodeCoLordship;
+/// use teistro_dasha::jaimini::pada_lord;
+/// use teistro_dasha::rashi::RashiChart;
+///
+/// // Mars alone in Aries, Ketu with the Sun and the Moon in Gemini.
+/// let mut signs = [Rashi::Taurus; 9];
+/// signs[2] = Rashi::Aries;
+/// for graha in [0, 1, 8] {
+///     signs[graha] = Rashi::Gemini;
+/// }
+/// let chart = RashiChart {
+///     lagna: Rashi::Aries,
+///     arudha_lagna: Rashi::Aries,
+///     navamsa_lagna: Rashi::Aries,
+///     signs,
+///     dignities: [Dignity::Neutral; 9],
+///     brahma: None,
+/// };
+/// assert_eq!(pada_lord(&chart, Rashi::Scorpio, NodeCoLordship::None), Graha::Mars);
+/// // Ketu's Gemini holds more grahas, so it is the stronger lord.
+/// assert_eq!(pada_lord(&chart, Rashi::Scorpio, NodeCoLordship::Both), Graha::Ketu);
+/// ```
+#[must_use]
+pub fn pada_lord(chart: &RashiChart, sign: Rashi, co_lordship: NodeCoLordship) -> Graha {
+    match lords(chart, sign, co_lordship).as_slice() {
+        [one] => *one,
+        _ => stronger_lord(chart, sign, DualLord::Bphs),
+    }
+}
+
+/// Every sign's [`pada_lord`], Aries to Pisces.
+#[must_use]
+pub fn pada_lords(chart: &RashiChart, co_lordship: NodeCoLordship) -> [Graha; SIGNS] {
+    Rashi::ALL.map(|sign| pada_lord(chart, sign, co_lordship))
+}
+
 /// The signs a graha lords under the co-lordship: its own signs, which its
 /// arudha counts to. A node owns Aquarius or Scorpio only as a co-lord, so
 /// under `NONE` it owns none (C133).

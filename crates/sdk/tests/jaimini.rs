@@ -241,3 +241,69 @@ fn the_sthira_dasa_starts_from_brahma_or_refuses_by_name() {
     }
     panic!("200 charts gave found={found} refused={refused}; the test needs both");
 }
+
+/// A pada counts a two-lorded sign to its stronger lord once the settings
+/// make the nodes co-lords (BPHS ch. 29 v. 7; crux C135), and to the
+/// catalogue's lord under the default. Held through the Padanadhamsa dasha,
+/// which starts from the arudha lagna, against the padas counted here from
+/// the chart's own states — and the test needs a chart where the two
+/// readings part, or it proves nothing.
+#[test]
+fn the_arudha_lagna_counts_to_the_stronger_lord_only_under_co_lordship() {
+    use teistro::dasha::jaimini::pada_lord;
+    use teistro::dasha::rashi::RashiChart;
+    use teistro::points::arudha::arudha_by;
+    use teistro::settings::NodeCoLordship;
+
+    let place = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let request = ChartRequest::at(place, UtcOffset::literal(5, 45, 0))
+        .with_state()
+        .with_dashas([DashaSystem::Padanadhamsa]);
+    let mut parted = 0;
+    for step in 0..400 {
+        let at = JulianDay::<Utc>::literal(BIRTH + f64::from(step) * 0.83);
+        let mut first = Vec::new();
+        for (patch, co) in [
+            ("{}", NodeCoLordship::None),
+            (
+                r#"{"jaimini": {"node_co_lordship": "BOTH"}}"#,
+                NodeCoLordship::Both,
+            ),
+        ] {
+            let sdk = context(patch);
+            let document = sdk.chart().reading(at, &request).unwrap().value;
+            let states = document.state.as_deref().unwrap();
+            let placed = |graha: Graha| states.iter().find(|s| s.graha == graha).unwrap();
+            let grahas = &Graha::ALL[..9];
+            let chart = RashiChart {
+                lagna: Rashi::ALL[usize::from(document.foundation.lagna_sign_index())],
+                arudha_lagna: Rashi::Aries,
+                navamsa_lagna: Rashi::Aries,
+                signs: std::array::from_fn(|k| placed(grahas[k]).sign),
+                dignities: std::array::from_fn(|k| placed(grahas[k]).dignity),
+                brahma: None,
+            };
+            let expected = arudha_by(
+                chart.lagna,
+                1,
+                |sign| pada_lord(&chart, sign, co),
+                |graha| placed(graha).sign,
+            )
+            .sign;
+            let started = document.dashas[0].periods[0].sign.unwrap();
+            assert_eq!(started, expected, "{patch} at {step}");
+            first.push(started);
+        }
+        if first[0] != first[1] {
+            parted += 1;
+            if parted >= 3 {
+                return;
+            }
+        }
+    }
+    panic!("400 charts parted the two readings {parted} times; the test needs 3");
+}

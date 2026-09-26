@@ -17,7 +17,11 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use serde_json::Value;
-use teistro_core::catalogue::{Catalogued, Graha, Rashi};
+use teistro::dasha::jaimini::pada_lord;
+use teistro::dasha::rashi::RashiChart;
+use teistro::points::arudha::arudha_by;
+use teistro::settings::NodeCoLordship;
+use teistro_core::catalogue::{Catalogued, Dignity, Graha, Rashi};
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, count, fill, table};
@@ -112,6 +116,10 @@ enum Lords {
     Parashari,
     /// Ketu for Scorpio, Rahu for Aquarius.
     Jaimini,
+    /// BPHS ch. 29 v. 7 with the nodes as co-lords: the stronger of the two
+    /// by ch. 46's ladder (crux C135), as the façade counts under
+    /// `jaimini.node_co_lordship = BOTH`.
+    StrongerOfTwo,
 }
 
 /// What a pada in the house or the seventh from it becomes.
@@ -125,34 +133,71 @@ enum Exception {
     None,
 }
 
-fn lord(sign: usize, lords: Lords) -> Graha {
-    match (lords, sign) {
-        (Lords::Jaimini, 7) => Graha::Ketu,
-        (Lords::Jaimini, 10) => Graha::Rahu,
-        _ => Rashi::ALL[sign].attributes().lord,
+fn rashi(index: usize) -> Rashi {
+    Rashi::ALL[index % 12]
+}
+
+/// The chart as ch. 46's ladder reads it. The corpus records signs and not
+/// dignities, and the ladder's only dignity step is exaltation, which the
+/// sign decides, so a graha in its exaltation sign is exalted and every
+/// other one neutral.
+fn ladder_chart(chart: &Chart) -> RashiChart {
+    let sign_of = |graha: Graha| {
+        chart
+            .signs
+            .iter()
+            .find(|(each, _)| *each == graha)
+            .map_or(rashi(chart.lagna), |(_, at)| rashi(*at))
+    };
+    let grahas: [Graha; 9] = std::array::from_fn(|k| Graha::ALL[k]);
+    RashiChart {
+        lagna: rashi(chart.lagna),
+        arudha_lagna: rashi(chart.lagna),
+        navamsa_lagna: rashi(chart.lagna),
+        signs: grahas.map(sign_of),
+        dignities: grahas.map(|graha| {
+            let exalted = graha
+                .attributes()
+                .exaltation
+                .is_some_and(|at| at.sign == sign_of(graha));
+            if exalted {
+                Dignity::Exalted
+            } else {
+                Dignity::Neutral
+            }
+        }),
+        brahma: None,
     }
 }
 
-/// A house's pada: the count from its sign to its lord, counted again from
-/// the lord; and whether the exception moved it.
+/// A house's pada under a reading of the lords and of the exception, as
+/// `(sign, first counted sign, exception applied)`: the count is the
+/// shipped one (`points::arudha::arudha_by`), so a change to it moves this
+/// page, and the exceptions it does not ship are read off its first count.
 fn pada(chart: &Chart, house: usize, lords: Lords, exception: Exception) -> (usize, usize, bool) {
+    let ladder = ladder_chart(chart);
+    let lord_of = |sign: Rashi| match lords {
+        Lords::Parashari => pada_lord(&ladder, sign, NodeCoLordship::None),
+        Lords::StrongerOfTwo => pada_lord(&ladder, sign, NodeCoLordship::Both),
+        Lords::Jaimini => match sign {
+            Rashi::Scorpio => Graha::Ketu,
+            Rashi::Aquarius => Graha::Rahu,
+            other => other.attributes().lord,
+        },
+    };
+    let shipped = arudha_by(
+        rashi(chart.lagna),
+        u8::try_from(house + 1).unwrap_or(1),
+        lord_of,
+        |graha| ladder.signs[graha as usize],
+    );
     let sign = (chart.lagna + house) % 12;
-    let lord = lord(sign, lords);
-    let at = chart
-        .signs
-        .iter()
-        .find(|(graha, _)| *graha == lord)
-        .map_or(sign, |(_, at)| *at);
-    let first = (at + (at + 12 - sign) % 12) % 12;
-    let from_house = (first + 12 - sign) % 12;
-    if from_house == 0 || from_house == 6 {
-        match exception {
-            Exception::TenthFromPada => ((first + 9) % 12, first, true),
-            Exception::TenthFromHouse => ((sign + 9) % 12, first, true),
-            Exception::None => (first, first, false),
-        }
-    } else {
-        (first, first, false)
+    let first = shipped.counted as usize;
+    let moves = matches!((first + 12 - sign) % 12, 0 | 6);
+    match (moves, exception) {
+        (true, Exception::TenthFromPada) => (shipped.sign as usize, first, shipped.moved),
+        (true, Exception::TenthFromHouse) => ((sign + 9) % 12, first, true),
+        _ => (first, first, false),
     }
 }
 
@@ -192,6 +237,11 @@ fn claims(charts: &[Chart]) -> Vec<Claim> {
         Claim::counted(
             "the same with Ketu for Scorpio and Rahu for Aquarius",
             wrong(charts, Lords::Jaimini, Exception::TenthFromPada),
+            padas,
+        ),
+        Claim::counted(
+            "the same with the stronger of the two lords by ch. 46's ladder, the nodes as co-lords (BPHS ch. 29 v. 7, `jaimini.node_co_lordship = BOTH`)",
+            wrong(charts, Lords::StrongerOfTwo, Exception::TenthFromPada),
             padas,
         ),
         Claim::counted(
@@ -245,7 +295,14 @@ fn page(root: &Path) -> Result<String, String> {
          and in `rashi-dashas-measured.md`.\n\n\
          **The exception counts from the pada**, so a pada in the seventh lands in the \
          fourth house; the tenth from the house is refused wherever the exception applies \
-         to the seventh.\n",
+         to the seventh.\n\n\
+         **v. 7 reaches the padas only through the co-lordship.** Its द्विनाथ, a sign with two \
+         lords, counted up to the stronger, is a question only where a node co-lords Scorpio or \
+         Aquarius. Under `jaimini.node_co_lordship = NONE`, the default, each has one lord and it \
+         is the catalogue's, so the shipped padas are the verse's as well as the corpus's; a \
+         consumer who makes the nodes co-lords gets the stronger lord, and the row above counts \
+         what that moves against a corpus that never does (crux C135). The count itself is the \
+         shipped `points::arudha::arudha_by`, so a change to it moves this page.\n",
     );
     Ok(fill(&out))
 }
