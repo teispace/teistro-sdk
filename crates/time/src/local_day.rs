@@ -9,7 +9,7 @@ use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_core::catalogue::Vara;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::settings::{PolarDayPolicy, SunriseConvention};
+use teistro_core::settings::{Air, PolarDayPolicy, SunriseConvention};
 use teistro_core::time::LocalClock;
 
 /// How far a nearest-event search looks, in days: past half a year the
@@ -79,6 +79,17 @@ impl LocalDay {
     #[must_use]
     pub fn night_days(&self) -> f64 {
         self.next_sunrise.get() - self.sunset.get()
+    }
+
+    /// The air the horizon was refracted through, resolved at the place,
+    /// when the convention named one (`03-design/horizon-atmosphere.md`);
+    /// `None` for the almanac's fixed 34′ or no refraction.
+    #[must_use]
+    pub fn air(&self) -> Option<Air> {
+        match self.convention {
+            SunriseConvention::Atmospheric { air, .. } => Some(air.at(self.place.altitude)),
+            SunriseConvention::Named { .. } | SunriseConvention::Custom { .. } => None,
+        }
     }
 
     /// Whether an instant lies in this day, from its sunrise to the next.

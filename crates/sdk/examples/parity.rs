@@ -2314,6 +2314,15 @@ fn put_day(report: &mut Report, prefix: &str, day: &LocalDay) {
             SunriseConvention::Custom { altitude_deg } => {
                 format!("custom {}", number(altitude_deg))
             }
+            SunriseConvention::Atmospheric { which, air } => {
+                let air = air.at(day.place.altitude);
+                format!(
+                    "{} {} hPa {} C",
+                    wire_key(&which),
+                    number(air.pressure_hpa),
+                    number(air.temperature_c)
+                )
+            }
         },
     );
 }

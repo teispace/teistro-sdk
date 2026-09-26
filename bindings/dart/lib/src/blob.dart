@@ -2139,6 +2139,8 @@ final class Day {
     required this.statePolarPolicy,
     required this.conventionKind,
     required this.conventionValue,
+    required this.airPressureHpa,
+    required this.airTemperatureC,
     required this.length,
   });
 
@@ -2190,11 +2192,17 @@ final class Day {
   /// Which policy synthesised its bounds, when it had none; zero otherwise.
   final Uint8List statePolarPolicy;
 
-  /// Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.
+  /// Which sunrise convention the arc was reckoned by, or the one an atmospheric convention gave its air to; `0xFF` for a custom altitude.
   final Uint8List conventionKind;
 
   /// The altitude in degrees when the convention is custom; zero otherwise.
   final Float64List conventionValue;
+
+  /// The air's pressure the arc was refracted through, hectopascals, resolved at the place, when the convention is atmospheric; zero otherwise.
+  final Float64List airPressureHpa;
+
+  /// The air's temperature the arc was refracted through, degrees Celsius, when the convention is atmospheric; zero otherwise.
+  final Float64List airTemperatureC;
 
   /// The number of rows every column holds.
   final int length;
@@ -2782,6 +2790,16 @@ Charts decodeCharts(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atDay, 17),
         blob.columnOffset(atDay, 17) + atDay.count * 8,
+      ),
+      airPressureHpa: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 18),
+        blob.columnOffset(atDay, 18) + atDay.count * 8,
+      ),
+      airTemperatureC: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 19),
+        blob.columnOffset(atDay, 19) + atDay.count * 8,
       ),
       length: atDay.count,
     ),
@@ -5314,6 +5332,16 @@ Panchanga decodePanchanga(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atDay, 17),
         blob.columnOffset(atDay, 17) + atDay.count * 8,
+      ),
+      airPressureHpa: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 18),
+        blob.columnOffset(atDay, 18) + atDay.count * 8,
+      ),
+      airTemperatureC: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atDay, 19),
+        blob.columnOffset(atDay, 19) + atDay.count * 8,
       ),
       length: atDay.count,
     ),

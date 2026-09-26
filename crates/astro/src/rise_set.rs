@@ -27,7 +27,7 @@ use teistro_core::math;
 use serde::Serialize;
 use teistro_core::angle::difference_deg;
 use teistro_core::error::{Error, Status};
-use teistro_core::quantity::{JulianDay, Place, Ut1};
+use teistro_core::quantity::{Altitude, JulianDay, Place, Ut1};
 use teistro_port_ephemeris::{Body, DiscPoint, Horizon, HorizonEventKind, Refraction};
 
 use crate::delta_t::DeltaTModel;
@@ -189,26 +189,78 @@ impl Disc {
     }
 }
 
+/// The refraction at the horizon, arcminutes, as the SDK's solver
+/// reckons it: none, the almanac's 34′, or Bennett's through a named air
+/// resolved at the observer's height (`03-design/horizon-atmosphere.md`).
+///
+/// Bennett's formula at an apparent altitude of zero is `cot(7.31° / 4.4)`
+/// (Meeus, eq. 16.4), about 34.48′ at the air it was fitted to, 1010 hPa
+/// and 10 °C; another air scales it by `(P / 1010) · (283 / (273 + T))`
+/// (Meeus, ch. 16), Meeus's 273 kept rather than 273.15.
+///
+/// ```
+/// use teistro_astro::rise_set::horizon_refraction_arcmin;
+/// use teistro_core::quantity::Altitude;
+/// use teistro_core::settings::Atmosphere;
+/// use teistro_port_ephemeris::Refraction;
+///
+/// let sea = Altitude::try_new(0.0).unwrap();
+/// let reference = Refraction::Atmosphere(Atmosphere::given(1010.0, 10.0));
+/// assert!((horizon_refraction_arcmin(reference, sea) - 34.4775).abs() < 1e-4);
+/// // The engines' standard air at 1400 m refracts some six arcminutes less.
+/// let kathmandu = Altitude::try_new(1400.0).unwrap();
+/// let standard = Refraction::Atmosphere(Atmosphere::STANDARD);
+/// assert!((horizon_refraction_arcmin(standard, kathmandu) - 28.72).abs() < 0.01);
+/// assert_eq!(horizon_refraction_arcmin(Refraction::Standard, kathmandu), 34.0);
+/// ```
+#[must_use]
+pub fn horizon_refraction_arcmin(refraction: Refraction, height: Altitude) -> f64 {
+    /// The air Bennett's formula was fitted to.
+    const REFERENCE_HPA: f64 = 1010.0;
+    const REFERENCE_K: f64 = 283.0;
+    const CELSIUS_TO_K: f64 = 273.0;
+    match refraction {
+        Refraction::None => 0.0,
+        Refraction::Standard => STANDARD_HORIZON_REFRACTION_ARCMIN,
+        Refraction::Atmosphere(air) => {
+            let air = air.at(height);
+            let bennett = 1.0 / math::tan(7.31 / 4.4 * DEG2RAD);
+            bennett
+                * (air.pressure_hpa / REFERENCE_HPA)
+                * (REFERENCE_K / (CELSIUS_TO_K + air.temperature_c))
+        }
+    }
+}
+
 /// The geocentric altitude of the body's centre at the event under a
-/// convention, degrees: the disc point's target altitude, less the
-/// refraction, less the semidiameter for the upper limb (plus it for the
-/// lower), plus the horizontal parallax.
+/// convention, for an observer at a height, degrees: the disc point's
+/// target altitude, less the refraction ([`horizon_refraction_arcmin`]),
+/// less the semidiameter for the upper limb (plus it for the lower), plus
+/// the horizontal parallax.
 ///
 /// ```
 /// use teistro_astro::rise_set::{centre_altitude_deg, Disc};
+/// use teistro_core::quantity::Altitude;
 /// use teistro_port_ephemeris::{Body, Horizon};
 ///
 /// let sun = Disc::of(Body::Sun, 1.0);
-/// let almanac = centre_altitude_deg(&Horizon::UPPER_LIMB_REFRACTION, &sun);
+/// let sea = Altitude::try_new(0.0).unwrap();
+/// let almanac = centre_altitude_deg(&Horizon::UPPER_LIMB_REFRACTION, &sun, sea);
 /// assert!((almanac + 50.0 / 60.0).abs() < 0.01); // about -0°50′, Meeus's value
-/// assert_eq!(centre_altitude_deg(&Horizon::CENTRE_NO_REFRACTION, &sun), sun.parallax_deg);
+/// assert_eq!(centre_altitude_deg(&Horizon::CENTRE_NO_REFRACTION, &sun, sea), sun.parallax_deg);
 /// ```
 #[must_use]
-pub fn centre_altitude_deg(horizon: &Horizon, disc: &Disc) -> f64 {
-    let refraction = match horizon.refraction {
-        Refraction::Standard => STANDARD_HORIZON_REFRACTION_ARCMIN / 60.0,
-        Refraction::None => 0.0,
-    };
+pub fn centre_altitude_deg(horizon: &Horizon, disc: &Disc, height: Altitude) -> f64 {
+    event_altitude_deg(
+        horizon,
+        disc,
+        horizon_refraction_arcmin(horizon.refraction, height) / 60.0,
+    )
+}
+
+/// [`centre_altitude_deg`] with the refraction already reckoned, degrees,
+/// which the solver does once rather than at every sample.
+fn event_altitude_deg(horizon: &Horizon, disc: &Disc, refraction: f64) -> f64 {
     let limb = match horizon.disc {
         DiscPoint::Centre => 0.0,
         DiscPoint::UpperLimb => -disc.semidiameter_deg,
@@ -319,6 +371,8 @@ pub struct Solver<'a> {
     body: Body,
     place: Place,
     horizon: Horizon,
+    /// The horizon's refraction at the place, degrees, reckoned once.
+    refraction_deg: f64,
     delta_t: DeltaTModel,
     chunk: usize,
     absence_check: bool,
@@ -332,7 +386,8 @@ impl fmt::Debug for Solver<'_> {
 
 impl<'a> Solver<'a> {
     /// A solver.
-    pub const fn new(
+    #[must_use]
+    pub fn new(
         sky: &'a dyn ApparentPositions,
         body: Body,
         place: Place,
@@ -344,6 +399,7 @@ impl<'a> Solver<'a> {
             body,
             place,
             horizon,
+            refraction_deg: horizon_refraction_arcmin(horizon.refraction, place.altitude) / 60.0,
             delta_t,
             chunk: SCAN_CHUNK,
             absence_check: true,
@@ -452,9 +508,10 @@ impl<'a> Solver<'a> {
         let sin_alt = sin_phi * sin_dec + cos_phi * cos_dec * math::cos(hour_angle_deg * DEG2RAD);
         Ok(Sample {
             altitude_deg: math::asin(sin_alt.clamp(-1.0, 1.0)) * RAD2DEG,
-            target_deg: centre_altitude_deg(
+            target_deg: event_altitude_deg(
                 &self.horizon,
                 &Disc::of(self.body, apparent.distance_au),
+                self.refraction_deg,
             ),
             hour_angle_deg,
             dec_deg: apparent.dec_deg,
@@ -967,6 +1024,72 @@ mod tests {
     }
 
     #[test]
+    fn an_air_refracts_the_horizon_by_the_place_and_the_weather() {
+        use teistro_core::settings::{Atmosphere, Sunrise, SunriseConvention};
+        let provider = TestProvider::new();
+        let sky = Completion::new(
+            &provider,
+            OverridePolicy::SdkOnly,
+            DeltaTModel::TableThenModel,
+        );
+        let at = |metres: f64| Place {
+            altitude: Altitude::literal(metres),
+            ..place(27.7172, 85.324)
+        };
+        let midnight = JulianDay::literal(2_460_482.5 - 85.324 / 360.0);
+        let air = |air| {
+            Horizon::from_convention(SunriseConvention::Atmospheric {
+                which: Sunrise::UpperLimbRefraction,
+                air,
+            })
+        };
+        let rise = |horizon: Horizon, place: Place| {
+            Solver::new(&sky, Body::Sun, place, horizon, DeltaTModel::TableThenModel)
+                .day(midnight)
+                .unwrap()
+                .arc()
+                .unwrap()
+                .0
+                .get()
+        };
+        let seconds = |later: f64, earlier: f64| (later - earlier) * 86_400.0;
+        // At 1400 m the standard air is 856 hPa, which refracts 28.7′ and
+        // not the almanac's 34′: the Sun clears the horizon later, by what
+        // the engines' own search moves with the height (26 s measured).
+        let height = at(1400.0);
+        let thin = rise(air(Atmosphere::STANDARD), height);
+        let almanac = rise(Horizon::UPPER_LIMB_REFRACTION, height);
+        assert!(
+            (20.0..35.0).contains(&seconds(thin, almanac)),
+            "{}",
+            seconds(thin, almanac)
+        );
+        // An air given as the standard resolves to is the same air.
+        let resolved = Atmosphere::STANDARD.at(height.altitude);
+        let given = rise(
+            air(Atmosphere::given(
+                resolved.pressure_hpa,
+                resolved.temperature_c,
+            )),
+            height,
+        );
+        assert_eq!(given.to_bits(), thin.to_bits());
+        // At sea level Bennett's air refracts 0.48′ more than the
+        // almanac's: a second or two earlier, never the other way.
+        let sea = at(0.0);
+        let bennett = rise(air(Atmosphere::given(1010.0, 10.0)), sea);
+        let almanac = rise(Horizon::UPPER_LIMB_REFRACTION, sea);
+        assert!(
+            (0.5..4.0).contains(&seconds(almanac, bennett)),
+            "{}",
+            seconds(almanac, bennett)
+        );
+        // Cold dense air refracts more, and the Sun is seen sooner.
+        let cold = rise(air(Atmosphere::given(1040.0, -30.0)), sea);
+        assert!(cold < bennett);
+    }
+
+    #[test]
     fn the_test_providers_sun_gives_a_kathmandu_day_under_every_convention() {
         let provider = TestProvider::new();
         let sky = Completion::new(
@@ -1031,8 +1154,9 @@ mod tests {
         assert_eq!(point.semidiameter_deg, 0.0);
         assert_eq!(Disc::of(Body::Sun, 0.0).parallax_deg, 0.0);
         let sun = Disc::of(Body::Sun, 1.0);
-        let lower = centre_altitude_deg(&Horizon::LOWER_LIMB_REFRACTION, &sun);
-        let upper = centre_altitude_deg(&Horizon::UPPER_LIMB_REFRACTION, &sun);
+        let sea = Altitude::try_new(0.0).unwrap();
+        let lower = centre_altitude_deg(&Horizon::LOWER_LIMB_REFRACTION, &sun, sea);
+        let upper = centre_altitude_deg(&Horizon::UPPER_LIMB_REFRACTION, &sun, sea);
         assert!((lower - upper - 2.0 * sun.semidiameter_deg).abs() < 1e-12);
         assert_eq!(radius_km(Body::MeanApogee), 0.0);
     }

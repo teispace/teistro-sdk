@@ -265,6 +265,19 @@ final class HorizonRequestStruct extends ffi.Struct {
   @ffi.Double()
   external double altitudeDeg;
 
+  /// The air's pressure at the observer, hectopascals, resolved at the
+  /// observer's height when the refraction is an atmosphere; else zero.
+  /// Appended in ABI 4.
+  /// Unit: hPa. Range: [0,1100]. Example: 1013.25.
+  @ffi.Double()
+  external double pressureHpa;
+
+  /// The air's temperature at the observer, degrees Celsius, resolved
+  /// when the refraction is an atmosphere; else zero. Appended in ABI 4.
+  /// Unit: degC. Range: [-90,60]. Example: 15.
+  @ffi.Double()
+  external double temperatureC;
+
 }
 
 /// A C crossings request.
@@ -2141,7 +2154,7 @@ final class Obliquity {
 /// A C horizon-event request.
 final class HorizonRequest {
   /// A HorizonRequest with every field named.
-  const HorizonRequest({required this.body, required this.kind, required this.disc, required this.refraction, required this.observer, required this.fromJdUt1, required this.windowDays, required this.altitudeDeg});
+  const HorizonRequest({required this.body, required this.kind, required this.disc, required this.refraction, required this.observer, required this.fromJdUt1, required this.windowDays, required this.altitudeDeg, required this.pressureHpa, required this.temperatureC});
 
   /// `Body::id`.
   final int body;
@@ -2170,6 +2183,17 @@ final class HorizonRequest {
   /// Unit: deg. Range: [-90,90]. Example: -0.8333.
   final double altitudeDeg;
 
+  /// The air's pressure at the observer, hectopascals, resolved at the
+  /// observer's height when the refraction is an atmosphere; else zero.
+  /// Appended in ABI 4.
+  /// Unit: hPa. Range: [0,1100]. Example: 1013.25.
+  final double pressureHpa;
+
+  /// The air's temperature at the observer, degrees Celsius, resolved
+  /// when the refraction is an atmosphere; else zero. Appended in ABI 4.
+  /// Unit: degC. Range: [-90,60]. Example: 15.
+  final double temperatureC;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -2187,6 +2211,8 @@ final class HorizonRequest {
     raw.fromJdUt1 = fromJdUt1;
     raw.windowDays = windowDays;
     raw.altitudeDeg = altitudeDeg;
+    raw.pressureHpa = pressureHpa;
+    raw.temperatureC = temperatureC;
   }
 
   /// Reads the value a call filled in.
@@ -2202,6 +2228,8 @@ final class HorizonRequest {
         fromJdUt1: raw.fromJdUt1,
         windowDays: raw.windowDays,
         altitudeDeg: raw.altitudeDeg,
+        pressureHpa: raw.pressureHpa,
+        temperatureC: raw.temperatureC,
       );
 }
 

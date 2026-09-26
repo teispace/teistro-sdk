@@ -90,12 +90,149 @@ pub enum SunriseConvention {
         /// The altitude of the centre, degrees; negative below the horizon.
         altitude_deg: f64,
     },
+    /// A named convention that refracts, refracted by the given air rather
+    /// than by the almanac's 34 arcminutes (`03-design/horizon-atmosphere.md`).
+    ///
+    /// ```
+    /// use teistro_core::settings::{Atmosphere, Sunrise, SunriseConvention};
+    ///
+    /// // The engines' own convention: the standard air at the place.
+    /// let engines = SunriseConvention::Atmospheric {
+    ///     which: Sunrise::UpperLimbRefraction,
+    ///     air: Atmosphere::STANDARD,
+    /// };
+    /// // A weather report's.
+    /// let observed = SunriseConvention::Atmospheric {
+    ///     which: Sunrise::UpperLimbRefraction,
+    ///     air: Atmosphere::given(987.0, 4.5),
+    /// };
+    /// # let _ = (engines, observed);
+    /// ```
+    Atmospheric {
+        /// The convention, which must refract.
+        which: Sunrise,
+        /// The air.
+        air: Atmosphere,
+    },
 }
 
 impl From<Sunrise> for SunriseConvention {
     fn from(which: Sunrise) -> SunriseConvention {
         SunriseConvention::Named { which }
     }
+}
+
+impl Sunrise {
+    /// Whether the convention refracts, and so has an air to give it.
+    #[must_use]
+    pub const fn refracts(self) -> bool {
+        matches!(
+            self,
+            Sunrise::UpperLimbRefraction | Sunrise::LowerLimbRefraction
+        )
+    }
+}
+
+/// The air a refracted horizon is seen through, as a convention names it:
+/// each part given, or left to the engines' standard at the place
+/// (`03-design/horizon-atmosphere.md` §5).
+///
+/// Left out, the pressure is the ICAO standard atmosphere's at the
+/// observer's height and the temperature is 15 °C, which is what the
+/// engines assume; so [`Atmosphere::STANDARD`] names their convention, and
+/// a weather report gives both.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
+pub struct Atmosphere {
+    /// The pressure at the observer, hectopascals (millibars); absent for
+    /// the standard atmosphere's at the observer's height.
+    pub pressure_hpa: Option<f64>,
+    /// The temperature at the observer, degrees Celsius; absent for 15 °C.
+    pub temperature_c: Option<f64>,
+}
+
+/// The pressures an air may name, hectopascals: the highest recorded at
+/// sea level is 1084, and 100 is far above any observer.
+pub const AIR_PRESSURE_HPA: core::ops::RangeInclusive<f64> = 100.0..=1100.0;
+
+/// The temperatures an air may name, degrees Celsius: the recorded
+/// extremes at the surface are −89 and 57.
+pub const AIR_TEMPERATURE_C: core::ops::RangeInclusive<f64> = -90.0..=60.0;
+
+/// The standard atmosphere's temperature at sea level, and the engines'
+/// at every height, degrees Celsius.
+pub const STANDARD_TEMPERATURE_C: f64 = 15.0;
+
+impl Atmosphere {
+    /// The engines' standard air at the place: both parts left out.
+    pub const STANDARD: Atmosphere = Atmosphere {
+        pressure_hpa: None,
+        temperature_c: None,
+    };
+
+    /// An air with both parts given, as a weather report gives them.
+    #[must_use]
+    pub const fn given(pressure_hpa: f64, temperature_c: f64) -> Atmosphere {
+        Atmosphere {
+            pressure_hpa: Some(pressure_hpa),
+            temperature_c: Some(temperature_c),
+        }
+    }
+
+    /// The air at a height above sea level: what is given, and the
+    /// standard for what is not.
+    ///
+    /// The pressure is the ICAO standard atmosphere's,
+    /// `1013.25 · (1 − 0.0065 h / 288.15)^5.25588` hPa, whose exponent is
+    /// `g₀M / (R L)`.
+    ///
+    /// ```
+    /// use teistro_core::quantity::Altitude;
+    /// use teistro_core::settings::Atmosphere;
+    ///
+    /// let sea = Atmosphere::STANDARD.at(Altitude::try_new(0.0).unwrap());
+    /// assert_eq!((sea.pressure_hpa, sea.temperature_c), (1013.25, 15.0));
+    /// let kathmandu = Atmosphere::STANDARD.at(Altitude::try_new(1400.0).unwrap());
+    /// assert!((kathmandu.pressure_hpa - 856.0).abs() < 0.5);
+    /// ```
+    #[must_use]
+    pub fn at(self, height: crate::quantity::Altitude) -> Air {
+        const SEA_LEVEL_HPA: f64 = 1013.25;
+        const SEA_LEVEL_K: f64 = 288.15;
+        const LAPSE_K_PER_M: f64 = 0.0065;
+        const EXPONENT: f64 = 5.25588;
+        Air {
+            pressure_hpa: self.pressure_hpa.unwrap_or_else(|| {
+                SEA_LEVEL_HPA
+                    * crate::math::powf(1.0 - LAPSE_K_PER_M * height.get() / SEA_LEVEL_K, EXPONENT)
+            }),
+            temperature_c: self.temperature_c.unwrap_or(STANDARD_TEMPERATURE_C),
+        }
+    }
+
+    /// Whether each part given lies in its range (`AIR_PRESSURE_HPA`,
+    /// `AIR_TEMPERATURE_C`).
+    #[must_use]
+    pub fn is_valid(&self) -> bool {
+        self.pressure_hpa
+            .is_none_or(|p| AIR_PRESSURE_HPA.contains(&p))
+            && self
+                .temperature_c
+                .is_none_or(|t| AIR_TEMPERATURE_C.contains(&t))
+    }
+}
+
+/// An air resolved at a place: the pressure and the temperature a
+/// refraction is computed from.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(deny_unknown_fields)]
+pub struct Air {
+    /// Hectopascals.
+    pub pressure_hpa: f64,
+    /// Degrees Celsius.
+    pub temperature_c: f64,
 }
 
 /// Which Surya Siddhanta model, when the siddhanta knob is classical.
@@ -763,6 +900,46 @@ pub struct Resolved {
 }
 
 /// The coherence rules, every finding returned.
+/// What the settings refuse in a sunrise convention: a custom altitude
+/// that is not one, an air given to a convention that does not refract,
+/// and an air outside what the Earth's surface has seen.
+fn sunrise_coherence(convention: SunriseConvention, out: &mut Vec<Diagnostic>) {
+    if let SunriseConvention::Custom { altitude_deg } = convention {
+        if !altitude_deg.is_finite() || altitude_deg.abs() > 90.0 {
+            out.push(Diagnostic::error(
+                "sunrise-altitude",
+                "a custom sunrise altitude is a finite number of degrees within -90 to 90",
+                &["day.sunrise"],
+            ));
+        }
+    }
+    if let SunriseConvention::Atmospheric { which, air } = convention {
+        if !which.refracts() {
+            out.push(Diagnostic::error(
+                "sunrise-air-refracts",
+                format!(
+                    "{} does not refract, so it has no air to give; name UPPER_LIMB_REFRACTION or LOWER_LIMB_REFRACTION",
+                    which.key()
+                ),
+                &["day.sunrise"],
+            ));
+        }
+        if !air.is_valid() {
+            out.push(Diagnostic::error(
+                "sunrise-air",
+                format!(
+                    "the air's pressure is {} to {} hPa and its temperature {} to {} °C, or left out for the standard at the place",
+                    AIR_PRESSURE_HPA.start(),
+                    AIR_PRESSURE_HPA.end(),
+                    AIR_TEMPERATURE_C.start(),
+                    AIR_TEMPERATURE_C.end()
+                ),
+                &["day.sunrise"],
+            ));
+        }
+    }
+}
+
 fn coherence(s: &Settings) -> Vec<Diagnostic> {
     let mut out = Vec::new();
     if let AyanamshaChoice::Custom {
@@ -779,15 +956,7 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
             ));
         }
     }
-    if let SunriseConvention::Custom { altitude_deg } = s.day.sunrise {
-        if !altitude_deg.is_finite() || altitude_deg.abs() > 90.0 {
-            out.push(Diagnostic::error(
-                "sunrise-altitude",
-                "a custom sunrise altitude is a finite number of degrees within -90 to 90",
-                &["day.sunrise"],
-            ));
-        }
-    }
+    sunrise_coherence(s.day.sunrise, &mut out);
     if s.frame.nakshatra_scheme == NakshatraScheme::TwentyEight {
         let seeded: Vec<&DashaSystem> = s
             .dasha
@@ -888,6 +1057,111 @@ mod tests {
 
     fn shipped(id: &str) -> Profile {
         Profile::shipped(id).unwrap_or_else(|| panic!("{id}"))
+    }
+
+    /// The rules a settings document breaks with this sunrise convention.
+    fn sunrise_rules(convention: SunriseConvention) -> Vec<&'static str> {
+        let mut patch = SettingsPatch::default();
+        patch.day.sunrise = Some(convention);
+        match shipped(DEFAULT_PROFILE).resolve(&patch) {
+            Ok(_) => Vec::new(),
+            Err(diagnostics) => diagnostics.errors().map(|d| d.rule).collect(),
+        }
+    }
+
+    #[test]
+    fn an_air_is_named_in_json_with_either_part_left_to_the_standard() {
+        let atmospheric = |json: &str| -> SunriseConvention {
+            crate::strict::deserialize_str(json, "")
+                .unwrap_or_else(|e| panic!("{json}: {}", e.message))
+        };
+        let standard =
+            atmospheric(r#"{"kind":"ATMOSPHERIC","which":"UPPER_LIMB_REFRACTION","air":{}}"#);
+        assert_eq!(
+            standard,
+            SunriseConvention::Atmospheric {
+                which: Sunrise::UpperLimbRefraction,
+                air: Atmosphere::STANDARD
+            }
+        );
+        let partial = atmospheric(
+            r#"{"kind":"ATMOSPHERIC","which":"LOWER_LIMB_REFRACTION","air":{"temperature_c":-4.5}}"#,
+        );
+        let SunriseConvention::Atmospheric { air, .. } = partial else {
+            panic!("{partial:?}");
+        };
+        assert_eq!((air.pressure_hpa, air.temperature_c), (None, Some(-4.5)));
+        // A part the document does not know is refused, not ignored.
+        assert!(
+            crate::strict::deserialize_str::<SunriseConvention>(
+                r#"{"kind":"ATMOSPHERIC","which":"UPPER_LIMB_REFRACTION","air":{"humidity":0.4}}"#,
+                ""
+            )
+            .is_err()
+        );
+        // And it writes back as it reads.
+        let written = serde_json::to_string(&partial).unwrap();
+        assert_eq!(atmospheric(&written), partial);
+    }
+
+    #[test]
+    fn an_air_resolves_at_the_place_as_the_standard_atmosphere_does() {
+        let at = |metres: f64| crate::quantity::Altitude::try_new(metres).unwrap();
+        let sea = Atmosphere::STANDARD.at(at(0.0));
+        assert_eq!((sea.pressure_hpa, sea.temperature_c), (1013.25, 15.0));
+        // The ICAO atmosphere's tabulated pressures, 898.76 hPa at 1000 m,
+        // 795.01 at 2000 m and 540.48 at 5000 m, are at geopotential
+        // heights; an observer's height is geometric, which puts the
+        // formula a few hundredths under the table at these heights (and
+        // within 0.15 hPa of Teimeris's own to 8848 m, 0.006′ of
+        // refraction).
+        for (metres, hpa) in [(1000.0, 898.76), (2000.0, 795.01), (5000.0, 540.48)] {
+            let air = Atmosphere::STANDARD.at(at(metres));
+            assert!((air.pressure_hpa - hpa).abs() < 0.3, "{metres} m: {air:?}");
+            assert_eq!(
+                air.temperature_c.to_bits(),
+                STANDARD_TEMPERATURE_C.to_bits()
+            );
+        }
+        // What is given is kept at any height.
+        let given = Atmosphere::given(987.0, 4.5).at(at(3000.0));
+        assert_eq!((given.pressure_hpa, given.temperature_c), (987.0, 4.5));
+        let half = Atmosphere {
+            pressure_hpa: None,
+            temperature_c: Some(30.0),
+        }
+        .at(at(0.0));
+        assert_eq!((half.pressure_hpa, half.temperature_c), (1013.25, 30.0));
+    }
+
+    #[test]
+    fn the_settings_refuse_an_air_that_cannot_be_applied() {
+        let air = |which, air| SunriseConvention::Atmospheric { which, air };
+        assert!(sunrise_rules(air(Sunrise::UpperLimbRefraction, Atmosphere::STANDARD)).is_empty());
+        assert!(
+            sunrise_rules(air(
+                Sunrise::LowerLimbRefraction,
+                Atmosphere::given(1100.0, -90.0)
+            ))
+            .is_empty()
+        );
+        assert_eq!(
+            sunrise_rules(air(Sunrise::CentreNoRefraction, Atmosphere::STANDARD)),
+            ["sunrise-air-refracts"]
+        );
+        for wrong in [
+            Atmosphere::given(99.0, 15.0),
+            Atmosphere::given(1101.0, 15.0),
+            Atmosphere::given(1013.25, 61.0),
+            Atmosphere::given(1013.25, -91.0),
+            Atmosphere::given(f64::NAN, 15.0),
+        ] {
+            assert_eq!(
+                sunrise_rules(air(Sunrise::UpperLimbRefraction, wrong)),
+                ["sunrise-air"],
+                "{wrong:?}"
+            );
+        }
     }
 
     #[test]

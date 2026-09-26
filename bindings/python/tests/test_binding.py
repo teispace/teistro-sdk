@@ -14,6 +14,7 @@ import unittest
 from typing import Any, Optional
 
 from teistro import (
+    Air,
     Altitude,
     decode_provenance,
     AvasthaSayanadi,
@@ -750,7 +751,40 @@ class AnEngine(WithLibrary):
             profile=PROFILE, settings=custom, test_provider=True
         ) as ctx:
             own = ctx.chart.found(instant=2451545.0, place=place, utc_offset_seconds=20700).day
-            self.assertEqual((own.convention, own.custom_altitude_deg), (None, -0.5))
+            self.assertEqual((own.convention, own.custom_altitude_deg, own.air), (None, -0.5, None))
+
+        # An air named for a refracted convention: what was left out comes
+        # back resolved at the place, 856 hPa at 1400 m, and the thinner
+        # air lifts the Sun less, so it clears the horizon later than under
+        # the fixed 34 arcminutes.
+        def refracted(sunrise: dict[str, Any]) -> Any:
+            with self.teistro.context(
+                profile=PROFILE, settings={"day": {"sunrise": sunrise}}, test_provider=True
+            ) as each:
+                return each.chart.found(
+                    instant=2451545.0, place=place, utc_offset_seconds=20700
+                ).day
+
+        almanac = refracted({"kind": "NAMED", "which": "UPPER_LIMB_REFRACTION"})
+        standard = refracted(
+            {"kind": "ATMOSPHERIC", "which": "UPPER_LIMB_REFRACTION", "air": {}}
+        )
+        self.assertIsNone(almanac.air)
+        self.assertEqual(standard.convention, Sunrise.UPPER_LIMB_REFRACTION)
+        self.assertAlmostEqual(standard.air.pressure_hpa, 855.99, delta=0.01)
+        self.assertEqual(standard.air.temperature_c, 15.0)
+        later = (standard.sunrise - almanac.sunrise) * 86400.0
+        self.assertTrue(20.0 < later < 35.0, later)
+        weather = refracted(
+            {
+                "kind": "ATMOSPHERIC",
+                "which": "LOWER_LIMB_REFRACTION",
+                "air": {"pressure_hpa": 870.0, "temperature_c": -4.5},
+            }
+        )
+        self.assertEqual(weather.air, Air(pressure_hpa=870.0, temperature_c=-4.5))
+        with self.assertRaisesRegex(TeistroError, "does not refract"):
+            refracted({"kind": "ATMOSPHERIC", "which": "CENTRE_NO_REFRACTION", "air": {}})
 
         # Tromsø at midsummer: civil midnight holds the instant and says so;
         # the nearest real sunrise is weeks away, and the refusal names the

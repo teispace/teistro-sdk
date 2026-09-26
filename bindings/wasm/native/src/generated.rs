@@ -1154,6 +1154,15 @@ pub struct HorizonRequest {
     /// The altitude of the disc point at the event, degrees.
     /// Unit: deg. Range: [-90,90]. Example: -0.8333.
     pub altitude_deg: f64,
+    /// The air's pressure at the observer, hectopascals, resolved at the
+    /// observer's height when the refraction is an atmosphere; else zero.
+    /// Appended in ABI 4.
+    /// Unit: hPa. Range: [0,1100]. Example: 1013.25.
+    pub pressure_hpa: f64,
+    /// The air's temperature at the observer, degrees Celsius, resolved
+    /// when the refraction is an atmosphere; else zero. Appended in ABI 4.
+    /// Unit: degC. Range: [-90,60]. Example: 15.
+    pub temperature_c: f64,
 }
 
 /// What a `HorizonRequest` lends the C struct built from it: the buffers its
@@ -1167,6 +1176,8 @@ pub struct HeldHorizonRequest {
     from_jd_ut1: f64,
     window_days: f64,
     altitude_deg: f64,
+    pressure_hpa: f64,
+    temperature_c: f64,
 }
 
 impl HeldHorizonRequest {
@@ -1183,6 +1194,8 @@ impl HeldHorizonRequest {
             from_jd_ut1: self.from_jd_ut1,
             window_days: self.window_days,
             altitude_deg: self.altitude_deg,
+            pressure_hpa: self.pressure_hpa,
+            temperature_c: self.temperature_c,
         }
     }
 }
@@ -1199,6 +1212,8 @@ impl HorizonRequest {
             from_jd_ut1: self.from_jd_ut1 as f64,
             window_days: self.window_days as f64,
             altitude_deg: self.altitude_deg as f64,
+            pressure_hpa: self.pressure_hpa as f64,
+            temperature_c: self.temperature_c as f64,
         })
     }
 
@@ -1218,6 +1233,8 @@ impl HorizonRequest {
             from_jd_ut1: raw.from_jd_ut1 as _,
             window_days: raw.window_days as _,
             altitude_deg: raw.altitude_deg as _,
+            pressure_hpa: raw.pressure_hpa as _,
+            temperature_c: raw.temperature_c as _,
         }
     }
 }

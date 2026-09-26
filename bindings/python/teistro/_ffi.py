@@ -136,7 +136,7 @@ from .catalogue import (
 )
 
 # The ABI version of the vtable layout.
-VTABLE_ABI_VERSION: Final = 3
+VTABLE_ABI_VERSION: Final = 4
 
 # A context flag: use the SDK's analytic test provider when no provider
 # vtable is given. For tests and examples only; its positions are not
@@ -157,7 +157,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_position_request": 72,
     "ts_position_columns": 80,
     "ts_obliquity": 32,
-    "ts_horizon_request": 64,
+    "ts_horizon_request": 80,
     "ts_crossing_request": 96,
     "ts_crossing_event": 24,
     "ts_data_hash": 24,
@@ -187,7 +187,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_position_request": 56,
     "ts_position_columns": 44,
     "ts_obliquity": 32,
-    "ts_horizon_request": 64,
+    "ts_horizon_request": 80,
     "ts_crossing_request": 96,
     "ts_crossing_event": 24,
     "ts_data_hash": 16,
@@ -329,6 +329,8 @@ class _HorizonRequestStruct(ctypes.Structure):
         ("from_jd_ut1", ctypes.c_double),
         ("window_days", ctypes.c_double),
         ("altitude_deg", ctypes.c_double),
+        ("pressure_hpa", ctypes.c_double),
+        ("temperature_c", ctypes.c_double),
     ]
 
 
@@ -1372,6 +1374,19 @@ class HorizonRequest:
     Unit: deg. Range: [-90,90]. Example: -0.8333.
     """
 
+    pressure_hpa: float
+    """The air's pressure at the observer, hectopascals, resolved at the
+    observer's height when the refraction is an atmosphere; else zero.
+    Appended in ABI 4.
+    Unit: hPa. Range: [0,1100]. Example: 1013.25.
+    """
+
+    temperature_c: float
+    """The air's temperature at the observer, degrees Celsius, resolved
+    when the refraction is an atmosphere; else zero. Appended in ABI 4.
+    Unit: degC. Range: [-90,60]. Example: 15.
+    """
+
     def _into(self, raw: _HorizonRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -1388,6 +1403,8 @@ class HorizonRequest:
         raw.from_jd_ut1 = _c_value(self.from_jd_ut1)
         raw.window_days = _c_value(self.window_days)
         raw.altitude_deg = _c_value(self.altitude_deg)
+        raw.pressure_hpa = _c_value(self.pressure_hpa)
+        raw.temperature_c = _c_value(self.temperature_c)
 
     def _to_c(self, owned: list[Any]) -> _HorizonRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -1412,6 +1429,8 @@ class HorizonRequest:
             from_jd_ut1=float(raw.from_jd_ut1),
             window_days=float(raw.window_days),
             altitude_deg=float(raw.altitude_deg),
+            pressure_hpa=float(raw.pressure_hpa),
+            temperature_c=float(raw.temperature_c),
         )
 
 

@@ -94,12 +94,16 @@ def put_day(prefix: str, day: LocalDay) -> None:
         f"{prefix}-polar",
         "none" if day.polar is None else f"{day.polar.kind.key}/{day.polar.policy.key}",
     )
-    put(
-        f"{prefix}-convention",
-        day.convention.key
-        if day.convention is not None
-        else f"custom {number(day.custom_altitude_deg or 0.0)}",
-    )
+    if day.air is not None and day.convention is not None:
+        convention = (
+            f"{day.convention.key} {number(day.air.pressure_hpa)} hPa"
+            f" {number(day.air.temperature_c)} C"
+        )
+    elif day.convention is not None:
+        convention = day.convention.key
+    else:
+        convention = f"custom {number(day.custom_altitude_deg or 0.0)}"
+    put(f"{prefix}-convention", convention)
 
 
 def main() -> None:

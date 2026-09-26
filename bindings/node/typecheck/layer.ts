@@ -4,6 +4,7 @@
 // application. Every `@ts-expect-error` is a proof, as in `consumer.ts`.
 
 import type {
+  Air,
   Almanac,
   AlmanacDay,
   AnnualDashaSystem,
@@ -180,6 +181,12 @@ function charts(): string {
   const polar: PolarDay | null = one.day.polar;
   // @ts-expect-error a day's polar state is absent on a day the Sun rose
   const kind: string = one.day.polar.kind;
+  // The air a horizon was refracted through, read all the way down, and
+  // absent unless the settings named one.
+  const air: Air | null = one.day.air;
+  const pressure: number | undefined = air?.pressureHpa;
+  // @ts-expect-error a day under the almanac's fixed 34′ has no air
+  const temperature: number = one.day.air.temperatureC;
   // @ts-expect-error a chart's ayanamsha may be absent
   const always: Ayanamsha = one.ayanamsha;
 
@@ -199,7 +206,7 @@ function charts(): string {
   ctx.chart.foundMany({ instant: 2460482.5, place, utcOffsetSeconds: 20700 });
   // @ts-expect-error a chart is a view; its index is not a number to set
   first.index = 2;
-  return `${lagna} ${vara} ${bhava} ${part} ${elapsed} ${madhya} ${ayanamsha} ${custom} ${always} ${date.year} ${polar} ${kind} ${count} ${every.length} ${first.instant}`;
+  return `${lagna} ${vara} ${bhava} ${part} ${elapsed} ${madhya} ${ayanamsha} ${custom} ${always} ${date.year} ${polar} ${kind} ${pressure} ${temperature} ${count} ${every.length} ${first.instant}`;
 }
 
 void charts;

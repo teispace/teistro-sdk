@@ -46,7 +46,7 @@ Ports: the ephemeris port through the completion.
 // the port (crates/port-ephemeris)
 pub enum HorizonEventKind { Rise, Set, Transit, Antitransit }
 pub enum DiscPoint { Centre, UpperLimb, LowerLimb }
-pub enum Refraction { None, Standard }
+pub enum Refraction { None, Standard, Atmosphere(Atmosphere) }                     // the air: horizon-atmosphere.md
 pub struct Horizon { disc: DiscPoint, refraction: Refraction, altitude_deg: f64 }   // from_convention(SunriseConvention), key()
 pub struct HorizonRequest { body, kind, place: Place, from: JulianDay<Ut1>, window_days, horizon }
 trait EphemerisProvider { fn horizon_event(&self, &HorizonRequest) -> Result<Option<JulianDay<Ut1>>, ProviderError>; ... }
@@ -58,7 +58,8 @@ pub struct Solver<'a> { sky: &'a dyn ApparentPositions, body, place, horizon, de
 pub struct HorizonEvent { instant: JulianDay<Ut1>, method: Method /* Iterated | Scanned */, evaluations: u32 }
 pub struct DayEvents { rise: Option<HorizonEvent>, set: Option<HorizonEvent>, above_at_midday: bool }   // arc()
 pub struct Disc { semidiameter_deg, parallax_deg }                                                     // Disc::of(body, distance_au)
-pub fn centre_altitude_deg(&Horizon, &Disc) -> f64
+pub fn horizon_refraction_arcmin(Refraction, Altitude) -> f64                        // 0, 34, or Bennett through the air
+pub fn centre_altitude_deg(&Horizon, &Disc, Altitude) -> f64
 
 // the boundary solver
 pub struct Caps { bracket_steps: u32, refinements: u32 }                                               // DEFAULT: 64 and 64
@@ -99,9 +100,12 @@ refraction is the almanac's 34 arcminutes at sea level (*Astronomical
 Almanac*; Meeus, chapter 15); the semidiameter comes from the body's
 radius (the Sun's IAU 2015 nominal radius, the others from Archinal et
 al. 2018) and the distance; the parallax from the WGS 84 equatorial
-radius and the distance. The observer's height is not applied: the
-almanacs and the panchanga reckon from sea level, the baseline did the
-same, and a dip is a custom altitude when a caller wants one.
+radius and the distance. Under the named conventions the observer's
+height is not applied: the almanacs and the panchanga reckon from sea
+level, the baseline did the same (the fixture test places its charts at
+sea level and meets it within 9.8 s), and a dip is a custom altitude when
+a caller wants one. A convention that names its air refracts through
+that air at the observer's height (`horizon-atmosphere.md`).
 
 A quantity is a longitude (a sign ingress, a nakshatra), a composite
 `a·lon(A) + b·lon(B)` (the tithi and the karana are the elongation,
@@ -382,9 +386,11 @@ the settings' keys.
 
 ## 10. Open questions
 
-1. A settable atmosphere (pressure, temperature, a refraction model such
-   as Bennett's) beside the almanac's 34 arcminutes, so a chart can ask
-   for the engines' convention by name (C34).
+1. Closed: a settable atmosphere (C34), designed and built in
+   [`horizon-atmosphere.md`](horizon-atmosphere.md). A convention names
+   its air, each part defaulting to the engines' standard at the
+   observer's height; the solver refracts by Bennett scaled by it, and a
+   native search is given the same air.
 2. The Moon's rise and set: the semidiameter from the mean radius against
    the eclipse convention (k = 0.2725), a difference under an arcsecond;
    to be pinned when the panchanga day computes moonrise.

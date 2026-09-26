@@ -73,6 +73,8 @@ A C horizon-event request.
 | `from_jd_ut1` | `double` | The search begins here, UT1. Unit `jd`. Example `2451545.0`. |
 | `window_days` | `double` | The search ends this many days later. Unit `d`. Range `(0,366]`. Example `1`. |
 | `altitude_deg` | `double` | The altitude of the disc point at the event, degrees. Unit `deg`. Range `[-90,90]`. Example `-0.8333`. |
+| `pressure_hpa` | `double` | The air's pressure at the observer, hectopascals, resolved at the observer's height when the refraction is an atmosphere; else zero. Appended in ABI 4. Unit `hPa`. Range `[0,1100]`. Example `1013.25`. |
+| `temperature_c` | `double` | The air's temperature at the observer, degrees Celsius, resolved when the refraction is an atmosphere; else zero. Appended in ABI 4. Unit `degC`. Range `[-90,60]`. Example `15`. |
 
 ## ts_crossing_request
 

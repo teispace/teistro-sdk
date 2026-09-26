@@ -655,7 +655,7 @@ fn sections_of(bits: u32, mut request: ChartRequest) -> ChartRequest {
     request
 }
 
-/// The day's seventeen-and-three values, in the order `day_section`
+/// The day's seventeen-and-five values, in the order `day_section`
 /// declares them.
 ///
 /// Declared once in `schemas::day_section` and filled once here, so the
@@ -665,17 +665,21 @@ fn sections_of(bits: u32, mut request: ChartRequest) -> ChartRequest {
 #[must_use]
 pub fn day_values(local: &teistro_time::local_day::LocalDay) -> Vec<FixedValue> {
     let (state, polar_kind, polar_policy) = TsDayState::split(local.state);
+    let named = |which| TsSunrise::of(which).map_or(u64::from(u8::MAX), |s| s as u64);
     let (convention, convention_value) = match local.convention {
-        teistro_core::settings::SunriseConvention::Named { which } => (
-            TsSunrise::of(which).map_or(u64::from(u8::MAX), |s| s as u64),
-            0.0,
-        ),
+        // The convention an air was given to is named as the convention;
+        // the air crosses beside it, as it was applied (`LocalDay::air`).
+        teistro_core::settings::SunriseConvention::Named { which }
+        | teistro_core::settings::SunriseConvention::Atmospheric { which, .. } => {
+            (named(which), 0.0)
+        }
         // No id names a custom convention, so the sentinel says "read the
         // altitude beside this" rather than naming a convention it is not.
         teistro_core::settings::SunriseConvention::Custom { altitude_deg } => {
             (u64::from(u8::MAX), altitude_deg)
         }
     };
+    let air = local.air();
     let era = local.date.era;
     vec![
         local.sunrise.get().into(),
@@ -697,6 +701,8 @@ pub fn day_values(local: &teistro_time::local_day::LocalDay) -> Vec<FixedValue> 
         u64::from(polar_policy).into(),
         convention.into(),
         convention_value.into(),
+        air.map_or(0.0, |air| air.pressure_hpa).into(),
+        air.map_or(0.0, |air| air.temperature_c).into(),
     ]
 }
 

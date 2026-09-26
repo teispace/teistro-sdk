@@ -22,7 +22,7 @@ const String generatedSdkVersion = '0.0.0';
 const int noMember = 0xFFFF;
 
 /// The ABI version of the vtable layout.
-const int vtableAbiVersion = 3;
+const int vtableAbiVersion = 4;
 
 /// A context flag: use the SDK's analytic test provider when no provider
 /// vtable is given. For tests and examples only; its positions are not

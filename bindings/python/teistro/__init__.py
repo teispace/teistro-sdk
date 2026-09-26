@@ -216,6 +216,7 @@ from .catalogue import (
 )
 
 __all__ = [
+    "Air",
     "ChartTiming",
     "LocalDay",
     "PolarDay",
@@ -4126,6 +4127,19 @@ class PolarDay:
 
 
 @dataclass(frozen=True)
+class Air:
+    """An air as it was applied: a part the settings left out is the
+    engines' standard at the place, the ICAO atmosphere's pressure at its
+    height and 15 degrees Celsius."""
+
+    pressure_hpa: float
+    """The pressure at the observer, hectopascals."""
+
+    temperature_c: float
+    """The temperature at the observer, degrees Celsius."""
+
+
+@dataclass(frozen=True)
 class LocalDay:
     """A local day, as a chart and an almanac both read it: the civil date,
     its weekday, the sunrise that opened it, its sunset and the sunrise
@@ -4161,6 +4175,11 @@ class LocalDay:
     custom_altitude_deg: Optional[float]
     """The custom altitude of the Sun's centre, degrees, when `convention`
     is `None`; `None` otherwise."""
+
+    air: Optional[Air]
+    """The air the horizon was refracted through, resolved at the place,
+    when the settings named one (``{"kind": "ATMOSPHERIC", ...}``);
+    `None` for the almanac's fixed 34 arcminutes or no refraction."""
 
 
 #: The convention column's value for a custom sunrise altitude.
@@ -4198,6 +4217,16 @@ def _local_day(section: Any, i: int) -> LocalDay:
         ),
         convention=None if custom else Sunrise(section.convention_kind[i]),
         custom_altitude_deg=section.convention_value[i] if custom else None,
+        # No air has a pressure of zero, so a zero says the convention
+        # named none.
+        air=(
+            Air(
+                pressure_hpa=section.air_pressure_hpa[i],
+                temperature_c=section.air_temperature_c[i],
+            )
+            if section.air_pressure_hpa[i] > 0
+            else None
+        ),
     )
 
 

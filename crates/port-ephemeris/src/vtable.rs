@@ -17,6 +17,7 @@ use std::ffi::CString;
 
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
+use teistro_core::settings::Atmosphere;
 
 use crate::body::{Body, TimeScale};
 use crate::capabilities::{
@@ -32,7 +33,7 @@ use crate::provider::{EphemerisProvider, PositionRequest};
 /// The ABI version of the vtable layout.
 ///
 /// `api: constant`
-pub const VTABLE_ABI_VERSION: u32 = 3;
+pub const VTABLE_ABI_VERSION: u32 = 4;
 
 /// What a vtable function returns: `0` for success, and one of these for
 /// a failure the port names. A provider's own code stays outside them
@@ -301,6 +302,42 @@ pub struct HorizonRequestC {
     /// The altitude of the disc point at the event, degrees.
     /// `api: unit=deg range=[-90,90] example=-0.8333`
     pub altitude_deg: f64,
+    /// The air's pressure at the observer, hectopascals, resolved at the
+    /// observer's height when the refraction is an atmosphere; else zero.
+    /// Appended in ABI 4.
+    /// `api: unit=hPa range=[0,1100] example=1013.25`
+    pub pressure_hpa: f64,
+    /// The air's temperature at the observer, degrees Celsius, resolved
+    /// when the refraction is an atmosphere; else zero. Appended in ABI 4.
+    /// `api: unit=degC range=[-90,60] example=15`
+    pub temperature_c: f64,
+}
+
+impl HorizonRequestC {
+    /// The C form of a request: an atmosphere's air crosses resolved at
+    /// the request's place, so an engine is given exactly the air the
+    /// SDK's own solver would refract by.
+    #[must_use]
+    pub fn of(request: &HorizonRequest) -> HorizonRequestC {
+        let air = match request.horizon.refraction {
+            Refraction::Atmosphere(air) => Some(air.at(request.place.altitude)),
+            Refraction::None | Refraction::Standard => None,
+        };
+        HorizonRequestC {
+            struct_size: size_of_u32::<HorizonRequestC>(),
+            body: request.body.id(),
+            kind: request.kind.id(),
+            disc: request.horizon.disc.id(),
+            refraction: request.horizon.refraction.id(),
+            reserved: [0; 7],
+            observer: ObserverC::of(request.place),
+            from_jd_ut1: request.from.get(),
+            window_days: request.window_days,
+            altitude_deg: request.horizon.altitude_deg,
+            pressure_hpa: air.map_or(0.0, |air| air.pressure_hpa),
+            temperature_c: air.map_or(0.0, |air| air.temperature_c),
+        }
+    }
 }
 
 /// A C crossings request.
@@ -946,18 +983,7 @@ impl EphemerisProvider for VtableProvider {
         let Some(f) = self.vtable.horizon_event else {
             return Err(ProviderError::unsupported("rise_set"));
         };
-        let raw = HorizonRequestC {
-            struct_size: size_of_u32::<HorizonRequestC>(),
-            body: request.body.id(),
-            kind: request.kind.id(),
-            disc: request.horizon.disc.id(),
-            refraction: request.horizon.refraction.id(),
-            reserved: [0; 7],
-            observer: ObserverC::of(request.place),
-            from_jd_ut1: request.from.get(),
-            window_days: request.window_days,
-            altitude_deg: request.horizon.altitude_deg,
-        };
+        let raw = HorizonRequestC::of(request);
         let mut jd = 0.0f64;
         let mut found = 0u8;
         // SAFETY: `raw` outlives the call; the two outs are valid and
@@ -1395,7 +1421,10 @@ unsafe extern "C" fn horizon_event_trampoline<P: EphemerisProvider>(
         Body::from_id(raw.body),
         HorizonEventKind::from_id(raw.kind),
         DiscPoint::from_id(raw.disc),
-        Refraction::from_id(raw.refraction),
+        Refraction::from_id(
+            raw.refraction,
+            Atmosphere::given(raw.pressure_hpa, raw.temperature_c),
+        ),
     ) else {
         return invalid_call();
     };
@@ -1725,6 +1754,91 @@ mod tests {
                 .bit_identical(&via_trait)
         );
         assert!(format!("{through_box:?}").contains("test-provider"));
+    }
+
+    /// The test provider with a horizon override that keeps what it was
+    /// asked, so a test can read the request as it arrived through C.
+    struct KeepsTheHorizon(TestProvider, std::sync::Mutex<Vec<HorizonRequest>>);
+
+    impl EphemerisProvider for KeepsTheHorizon {
+        fn capabilities(&self) -> Capabilities {
+            self.0.capabilities()
+        }
+
+        fn positions(
+            &self,
+            request: &PositionRequest<'_>,
+        ) -> Result<PositionColumns, ProviderError> {
+            self.0.positions(request)
+        }
+
+        fn horizon_event(
+            &self,
+            request: &HorizonRequest,
+        ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
+            self.1
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .push(*request);
+            Ok(Some(request.from))
+        }
+    }
+
+    #[test]
+    fn an_air_crosses_the_vtable_resolved_at_the_place() {
+        let exported = Exported::new(KeepsTheHorizon(
+            TestProvider::new(),
+            std::sync::Mutex::default(),
+        ));
+        // SAFETY: the box outlives the bound provider in this test.
+        let bound = unsafe {
+            VtableProvider::bind(Exported::<KeepsTheHorizon>::vtable(), exported.user_data())
+        }
+        .unwrap();
+        let place = Place::new(
+            Latitude::literal(27.7172),
+            Longitude::literal(85.324),
+            Altitude::literal(1400.0),
+        );
+        let named = [
+            Horizon::CENTRE_NO_REFRACTION,
+            Horizon::UPPER_LIMB_REFRACTION,
+            Horizon::from_convention(teistro_core::settings::SunriseConvention::Atmospheric {
+                which: teistro_core::settings::Sunrise::UpperLimbRefraction,
+                air: Atmosphere::STANDARD,
+            }),
+            Horizon::from_convention(teistro_core::settings::SunriseConvention::Atmospheric {
+                which: teistro_core::settings::Sunrise::LowerLimbRefraction,
+                air: Atmosphere::given(987.0, -4.5),
+            }),
+        ];
+        for horizon in named {
+            let request = HorizonRequest {
+                body: Body::Sun,
+                kind: HorizonEventKind::Rise,
+                place,
+                from: JulianDay::literal(2_460_000.5),
+                window_days: 1.0,
+                horizon,
+            };
+            assert_eq!(bound.horizon_event(&request).unwrap(), Some(request.from));
+            let arrived = exported.provider().1.lock().unwrap().pop().unwrap();
+            assert_eq!(
+                (arrived.body, arrived.kind, arrived.place),
+                (request.body, request.kind, place)
+            );
+            assert_eq!(arrived.horizon.disc, horizon.disc);
+            // What arrives is the air the SDK's solver refracts by: a part
+            // left to the standard comes resolved at the place's height.
+            let expected = match horizon.refraction {
+                Refraction::Atmosphere(air) => {
+                    let air = air.at(place.altitude);
+                    Refraction::Atmosphere(Atmosphere::given(air.pressure_hpa, air.temperature_c))
+                }
+                other => other,
+            };
+            assert_eq!(arrived.horizon.refraction, expected, "{horizon}");
+        }
     }
 
     /// The test provider with a crossings override that answers one event
