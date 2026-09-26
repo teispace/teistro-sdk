@@ -16,15 +16,26 @@
 //! corpus says the recording engine does the same: over its 55 charts and
 //! 550 bodies, `sidereal = tropical - ayanamsha` to the last bit, with one
 //! value per chart.
+//!
+//! The one value comes from the provider instead where a classical
+//! astronomy **defines** it ([`ChartZodiac::defined`]): the text's own
+//! precession has no catalogue value to agree with.
 
 use serde::{Deserialize, Serialize};
 use teistro_astro::ayanamsha;
+use teistro_astro::completion::Completion;
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::precession::PrecessionModel;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt};
 use teistro_core::settings::{AyanamshaChoice, Centre, Positions, Settings, Zodiac as ZodiacKnob};
-use teistro_port_ephemeris::{Centre as FrameCentre, Corrections, Frame, Zodiac};
+use teistro_port_ephemeris::{
+    Centre as FrameCentre, Corrections, EphemerisProvider, Frame, TimeScale, Zodiac,
+};
+
+/// The half-width of the central difference a zodiac's rate is taken
+/// over, days: far inside the shortest nutation term's period.
+const RATE_STEP_DAYS: f64 = 0.01;
 
 /// The port's centre a setting names.
 ///
@@ -36,6 +47,30 @@ const fn centre_of(centre: Centre) -> FrameCentre {
     match centre {
         Centre::Topocentric => FrameCentre::Topocentric,
         _ => FrameCentre::Geocentric,
+    }
+}
+
+/// The frame a chart asks the provider for: the tropical zodiac of date,
+/// whatever the chart's own is, at the centre and with the corrections
+/// the settings name.
+fn request_of(settings: &Settings) -> Frame {
+    let frame = &settings.frame;
+    Frame {
+        centre: centre_of(frame.centre),
+        zodiac: Zodiac::Tropical,
+        corrections: match frame.positions {
+            Positions::Apparent => Corrections::APPARENT,
+            // A true position is the geometric one with the equinox
+            // still of date; the nutation stays because the equinox
+            // does.
+            _ => Corrections {
+                light_time: false,
+                aberration: false,
+                deflection: false,
+                nutation: true,
+            },
+        },
+        ..Frame::CANONICAL
     }
 }
 
@@ -70,24 +105,7 @@ impl ChartZodiac {
         delta_t: DeltaTModel,
     ) -> Result<ChartZodiac, Error> {
         let frame = &settings.frame;
-        let request = Frame {
-            centre: centre_of(frame.centre),
-            // The tropical zodiac of date, whatever the chart's own is.
-            zodiac: Zodiac::Tropical,
-            corrections: match frame.positions {
-                Positions::Apparent => Corrections::APPARENT,
-                // A true position is the geometric one with the equinox
-                // still of date; the nutation stays because the equinox
-                // does.
-                _ => Corrections {
-                    light_time: false,
-                    aberration: false,
-                    deflection: false,
-                    nutation: true,
-                },
-            },
-            ..Frame::CANONICAL
-        };
+        let request = request_of(settings);
         let (offset_deg, ayanamsha) = if frame.zodiac == ZodiacKnob::Tropical {
             (0.0, None)
         } else {
@@ -111,6 +129,54 @@ impl ChartZodiac {
         })
     }
 
+    /// The zodiac a provider **defines**, and its rate, where it does:
+    /// a classical astronomy naming the chart's own ayanamsha member
+    /// (`Completion::defines_ayanamsha`). `None` where the catalogue
+    /// gives the zodiac, which [`ChartZodiac::of`] answers.
+    ///
+    /// Over the Surya Siddhanta naming `SURYASIDDHANTA` this is the
+    /// text's precession (III.9 to 12), not the catalogue member of that
+    /// name, which is zero in the year 499 and carried by modern
+    /// precession: the two stand about 1.6° apart today, and a chart
+    /// whose grahas are the text's must be measured in the text's
+    /// zodiac or every one of them moves by that much
+    /// (`03-design/classical-chart-measured.md`). The rate is the same
+    /// central difference [`ChartZodiac::rate_deg_per_day`] takes, over
+    /// the provider's values.
+    ///
+    /// # Errors
+    ///
+    /// The provider's refusal of an instant, or `native-only` over a
+    /// provider that does not list the member.
+    pub fn defined<P: EphemerisProvider + ?Sized>(
+        completion: &Completion<'_, P>,
+        settings: &Settings,
+        at: JulianDay<Tt>,
+    ) -> Result<Option<(ChartZodiac, f64)>, Error> {
+        let frame = &settings.frame;
+        let AyanamshaChoice::Catalogued { id } = frame.ayanamsha else {
+            return Ok(None);
+        };
+        if frame.zodiac == ZodiacKnob::Tropical || !completion.defines_ayanamsha(id)? {
+            return Ok(None);
+        }
+        let value = |days: f64| {
+            completion
+                .provider()
+                .ayanamsha_deg(at.get() + days, TimeScale::Tt, id)
+                .map_err(Error::from)
+        };
+        let rate = (value(RATE_STEP_DAYS)? - value(-RATE_STEP_DAYS)?) / (2.0 * RATE_STEP_DAYS);
+        Ok(Some((
+            ChartZodiac {
+                request: request_of(settings),
+                offset_deg: value(0.0)?,
+                ayanamsha: Some(frame.ayanamsha),
+            },
+            rate,
+        )))
+    }
+
     /// How fast the chart's zodiac turns against the tropical one at an
     /// instant, degrees a day: the ayanamsha's own rate, which is the
     /// precession's and, under the true basis, the nutation's too; zero for
@@ -132,7 +198,6 @@ impl ChartZodiac {
         precession: PrecessionModel,
         delta_t: DeltaTModel,
     ) -> Result<f64, Error> {
-        const STEP_DAYS: f64 = 0.01;
         let frame = &settings.frame;
         if frame.zodiac == ZodiacKnob::Tropical {
             return Ok(0.0);
@@ -146,7 +211,7 @@ impl ChartZodiac {
                 delta_t,
             )
         };
-        Ok((value(STEP_DAYS)? - value(-STEP_DAYS)?) / (2.0 * STEP_DAYS))
+        Ok((value(RATE_STEP_DAYS)? - value(-RATE_STEP_DAYS)?) / (2.0 * RATE_STEP_DAYS))
     }
 
     /// A tropical longitude in the chart's zodiac.
