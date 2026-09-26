@@ -138,7 +138,8 @@ knob!(
     /// begin: Mandooka, Shoola and Trikona (crux C53).
     RashiStart { /// BPHS ch. 46 vv. 179 to 184: Mandooka from the stronger of the lagna and
         /// the seventh, Shoola of the second and the eighth, Trikona the
-        /// strongest of the trines, by vv. 158 to 166's strength.
+        /// strongest of the trines, by vv. 158 to 166's strength; and v.
+        /// 174, the Yogardha from the stronger of the lagna and the seventh.
         Stronger = "STRONGER", /// The recording engine: each from the lagna.
         Lagna = "LAGNA" }
 );

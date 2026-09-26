@@ -314,7 +314,7 @@ pub fn brahma(
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     #![allow(clippy::unwrap_used, clippy::indexing_slicing, reason = "tests")]
 
     use teistro_core::catalogue::Dignity;
@@ -322,7 +322,7 @@ mod tests {
     use super::*;
 
     /// BPHS ch. 46's worked example after v. 173.
-    fn example() -> (RashiChart, [f64; 9]) {
+    pub(crate) fn example() -> (RashiChart, [f64; 9]) {
         (
             RashiChart {
                 lagna: Rashi::Aquarius,

@@ -422,6 +422,18 @@ pub enum Length {
         /// A dual sign's years.
         dual: u8,
     },
+    /// Half the sum of [`Length::CountToLord`]'s years and the modality's:
+    /// the Yogardha's, "half the sum of the two" (BPHS ch. 46 v. 174), the
+    /// Chara dasa's and the Sthira dasa's, so a sign's period may run a
+    /// half-year.
+    MeanOfCountAndModality {
+        /// A movable sign's years before halving.
+        movable: u8,
+        /// A fixed sign's years before halving.
+        fixed: u8,
+        /// A dual sign's years before halving.
+        dual: u8,
+    },
 }
 
 /// Which lord a mahadasha names.
@@ -556,33 +568,41 @@ impl RashiRow {
         Ok(out)
     }
 
-    /// A sign's period in years for a chart.
+    /// A sign's period in years for a chart: whole years, but for
+    /// [`Length::MeanOfCountAndModality`]'s half-years.
     #[must_use]
-    pub fn years(&self, chart: &RashiChart, sign: Rashi, rules: RashiRules) -> u8 {
+    pub fn years(&self, chart: &RashiChart, sign: Rashi, rules: RashiRules) -> f64 {
+        let by_modality = |movable: u8, fixed: u8, dual: u8| {
+            f64::from(match (sign as usize) % 3 {
+                0 => movable,
+                1 => fixed,
+                _ => dual,
+            })
+        };
+        let lord = stronger_lord(chart, sign, rules.dual_lord);
+        let counted = || f64::from(counted_years(chart, sign, lord));
         match self.length {
-            Length::Fixed(years) => years,
+            Length::Fixed(years) => f64::from(years),
             Length::ByModality {
                 movable,
                 fixed,
                 dual,
-            } => match (sign as usize) % 3 {
-                0 => movable,
-                1 => fixed,
-                _ => dual,
-            },
-            Length::CountToLord => {
-                counted_years(chart, sign, stronger_lord(chart, sign, rules.dual_lord))
-            }
+            } => by_modality(movable, fixed, dual),
+            Length::CountToLord => counted(),
+            Length::MeanOfCountAndModality {
+                movable,
+                fixed,
+                dual,
+            } => f64::midpoint(counted(), by_modality(movable, fixed, dual)),
             Length::CountToLordByDignity => {
-                let lord = stronger_lord(chart, sign, rules.dual_lord);
                 let counted = counted_years(chart, sign, lord);
-                match chart.dignity_of(lord) {
+                f64::from(match chart.dignity_of(lord) {
                     Dignity::Exalted | Dignity::DeepExalted => (counted + 1).min(12),
                     Dignity::Debilitated | Dignity::DeepDebilitated => {
                         counted.saturating_sub(1).max(1)
                     }
                     _ => counted,
-                }
+                })
             }
         }
     }
@@ -929,6 +949,25 @@ pub const STHIRA: RashiRow = row(
     &[],
 );
 
+/// The Yogardha dasa (BPHS ch. 46 v. 174): each sign runs half the sum of
+/// its Chara and Sthira years, from the stronger of the lagna and the 7th.
+/// The Sanskrit states no order; the translation's, forward from an odd
+/// sign and back from an even one, is its own worked example's and
+/// `PyJHora`'s, and this takes it (C131). It needs no Brahma: it takes the
+/// Sthira dasa's years, not its start.
+pub const YOGARDHA: RashiRow = row(
+    DashaSystem::Yogardha,
+    Start::Lagna,
+    Order::Consecutive,
+    Length::MeanOfCountAndModality {
+        movable: 7,
+        fixed: 8,
+        dual: 9,
+    },
+    NamedLord::Stronger,
+    &[1, 7],
+);
+
 /// Every sign-based row this build implements.
 pub const RASHI_ROWS: &[RashiRow] = &[
     CHARA,
@@ -940,6 +979,7 @@ pub const RASHI_ROWS: &[RashiRow] = &[
     NIRYANA_SHOOLA,
     MANDOOKA,
     STHIRA,
+    YOGARDHA,
 ];
 
 /// The sign-based row of a system, when this build implements one.
@@ -987,7 +1027,7 @@ impl RashiDasha {
         let mut total = 0.0;
         for ((lord, sign), end) in lords.iter_mut().zip(signs).zip(offsets.iter_mut().skip(1)) {
             *lord = row.lord(chart, sign, rules);
-            total += f64::from(row.years(chart, sign, rules)) * year_days;
+            total += row.years(chart, sign, rules) * year_days;
             *end = total;
         }
         Ok(RashiDasha {
@@ -1119,7 +1159,9 @@ mod tests {
     #![allow(
         clippy::unwrap_used,
         clippy::indexing_slicing,
-        reason = "tests fail by panicking and index what they built"
+        clippy::float_cmp,
+        reason = "tests fail by panicking, index what they built, and compare \
+                  half-years, which a double holds exactly"
     )]
 
     use super::*;
@@ -1185,7 +1227,7 @@ mod tests {
     }
 
     #[test]
-    fn every_length_is_one_to_twelve_years() {
+    fn every_length_is_one_to_twelve_whole_or_half_years() {
         for row in RASHI_ROWS {
             for lagna in Rashi::ALL {
                 let c = chart(lagna);
@@ -1193,7 +1235,7 @@ mod tests {
                     for rules in [RashiRules::BPHS, RashiRules::RECORDING_ENGINE] {
                         let years = row.years(&c, sign, rules);
                         assert!(
-                            (1..=12).contains(&years),
+                            (1.0..=12.0).contains(&years) && (years * 2.0).fract() == 0.0,
                             "{:?} {sign:?}: {years}",
                             row.system
                         );
@@ -1332,6 +1374,52 @@ mod tests {
             dasha.mahadasha_at(dasha.cycle_end().get()).is_none(),
             "the cycle ends"
         );
+    }
+
+    /// BPHS's own table after v. 174, over the worked example's chart: the
+    /// Yogardha starts from Aquarius, the lagna and the stronger of it and
+    /// the 7th, forward because Aquarius is odd, each sign half its Chara
+    /// and Sthira years. Every printed cell is reproduced but two, each for
+    /// a stated reason, and the test fails if either reason stops holding.
+    #[test]
+    fn yogardha_reproduces_the_printed_table_but_its_two_named_cells() {
+        let (chart, _) = crate::jaimini::tests::example();
+        // Printed after v. 174, Aquarius to Capricorn.
+        let printed = [8.0, 5.0, 4.0, 8.5, 8.5, 4.0, 8.0, 8.0, 5.5, 7.0, 5.5, 4.5];
+        // The same book's Chara table for the chart, after v. 167.
+        let printed_chara = [8.0, 1.0, 1.0, 9.0, 8.0, 1.0, 7.0, 7.0, 4.0, 6.0, 2.0, 5.0];
+        let signs = YOGARDHA.sequence(&chart, RashiRules::BPHS).unwrap();
+        let expected: Vec<Rashi> = (0..SIGNS)
+            .map(|k| step(Rashi::Aquarius, Direction::Forward, k))
+            .collect();
+        assert_eq!(signs.to_vec(), expected);
+        let kendra = RashiRules {
+            dual_lord: DualLord::Kendra,
+            ..RashiRules::BPHS
+        };
+        for (k, sign) in signs.iter().enumerate() {
+            let ours = YOGARDHA.years(&chart, *sign, RashiRules::BPHS);
+            let sthira = STHIRA.years(&chart, *sign, RashiRules::BPHS);
+            match sign {
+                // The book's slip: its own Chara table's 7 and the Sthira's
+                // 8 make 7½, which is what this computes.
+                Rashi::Leo => {
+                    assert_ne!(ours, printed[k]);
+                    assert_eq!(ours, f64::midpoint(printed_chara[k], sthira));
+                }
+                // C51: both of the book's tables count to Mars, alone in
+                // Taurus, where the ladder's modality step takes Ketu, alone
+                // in dual Sagittarius; the kendra reading takes Mars.
+                Rashi::Scorpio => {
+                    assert_ne!(ours, printed[k]);
+                    assert_eq!(YOGARDHA.years(&chart, *sign, kendra), printed[k]);
+                }
+                _ => assert_eq!(ours, printed[k], "{sign:?}"),
+            }
+        }
+        // The Chara table's Capricorn 5 counts nowhere: Saturn stands two
+        // signs back, as the Yogardha table's 4½ takes it.
+        assert_eq!(CHARA.years(&chart, Rashi::Capricorn, RashiRules::BPHS), 2.0);
     }
 
     /// The Sthira dasa's antardashas run forward like its periods, from an

@@ -221,9 +221,9 @@ fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
 }
 
 /// The sign-based rows the corpus does not record: the Sthira dasa (C129),
-/// which a chart with no Brahma graha refuses. Named so a recording of it,
-/// or another unrecorded row, fails.
-const UNRECORDED: [DashaSystem; 1] = [DashaSystem::Sthira];
+/// which a chart with no Brahma graha refuses, and the Yogardha (C131).
+/// Named so a recording of either, or another unrecorded row, fails.
+const UNRECORDED: [DashaSystem; 2] = [DashaSystem::Sthira, DashaSystem::Yogardha];
 
 /// Every sign-based system on the corpus's first chart, founded here with the
 /// built-in ephemeris: the arudha and navamsa lagnas and the dignities the

@@ -109,7 +109,7 @@ impl Blocker {
 /// quietly stop being exhaustive.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-const NOT_BUILT: [(&str, Blocker, &str); 17] = [
+const NOT_BUILT: [(&str, Blocker, &str); 16] = [
     (
         "SHODASHOTTARI",
         Blocker::Text,
@@ -186,16 +186,10 @@ const NOT_BUILT: [(&str, Blocker, &str); 17] = [
          not at all",
     ),
     (
-        "YOGARDHA",
-        Blocker::Kernel,
-        "the mean of two systems, if that is what it is. A composition over \
-         kernels is not an algorithm inside one",
-    ),
-    (
         "SUDARSHANA_CHAKRA",
         Blocker::Kernel,
         "three rashi progressions running at once, from the lagna, the Sun and the \
-         Moon. The same composition, and the reason it is a combinator",
+         Moon. A composition over kernels, and the reason it is a combinator",
     ),
     (
         "AAYU",
@@ -243,8 +237,8 @@ const NOT_BUILT: [(&str, Blocker, &str); 17] = [
 /// not for want of an arm: `SUDASA` starts from the karakamsha, which is a
 /// place `Start` does not name; the tithi, yoga and karana seeds want a
 /// reference that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA`
-/// ask the chart for their periods; `YOGARDHA` and `SUDARSHANA_CHAKRA` are
-/// compositions of systems rather than systems.
+/// ask the chart for their periods; `SUDARSHANA_CHAKRA` is a composition of
+/// systems rather than a system.
 const REGISTRABLE: [(&str, Kernel); 3] = [
     ("SHODASHOTTARI", Kernel::Udu),
     ("SHATTRIMSHA_SAMA", Kernel::Udu),
@@ -642,8 +636,8 @@ fn who_can_supply_one(out: &mut String, walked: &[String]) {
          the karakamsha, which is a place `Start` does not name; the tithi, \
          yoga and karana seeds want a reference that is not a nakshatra; \
          `TARA`, `KARAKA` and `ASHTAKAVARGA` ask the chart for their periods; \
-         `YOGARDHA` and `SUDARSHANA_CHAKRA` are compositions of systems rather \
-         than systems. Those are rows the kernels do not express, which is a \
+         `SUDARSHANA_CHAKRA` is a composition of systems rather than a \
+         system. Those are rows the kernels do not express, which is a \
          different thing from a row nobody has written down — and the \
          difference is what this section exists to keep visible.\n\n",
         count(NOT_BUILT.len() - REGISTRABLE.len()),
