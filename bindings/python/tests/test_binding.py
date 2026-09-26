@@ -731,8 +731,8 @@ class AnEngine(WithLibrary):
             "utc_offset_seconds": 20700,
         }
         with self.teistro.context(
+            profile="surya-siddhanta",
             ephemeris=Ephemeris.SURYA_SIDDHANTA,
-            settings={"frame": {"ayanamsha": {"kind": "CATALOGUED", "id": "SURYASIDDHANTA"}}},
         ) as text:
             deviation = text.chart.found(**at).provenance.deviation
         assert deviation is not None

@@ -298,8 +298,8 @@ def main() -> None:
     # day (docs/03-design/classical-chart.md), which every binding reaches
     # through the selector and must read back alike, deviation and all.
     with teistro.context(
+        profile="surya-siddhanta",
         ephemeris=Ephemeris.SURYA_SIDDHANTA,
-        settings={"frame": {"ayanamsha": {"kind": "CATALOGUED", "id": "SURYASIDDHANTA"}}},
     ) as classical:
         text = classical.chart.found(instant=2447995.4895833335, place=place, utc_offset_seconds=20700)
         put("classical-steps", ",".join(text.batch.steps_applied))

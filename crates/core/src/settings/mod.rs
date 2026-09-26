@@ -28,7 +28,7 @@ use serde::{Deserialize, Serialize};
 use crate::catalogue::{
     Ayanamsha, BalaScheme, Calendar, DashaSystem, Era, HouseSystem, Mark, Source,
 };
-use crate::envelope::Hash;
+use crate::envelope::{CALCULATION_VERSION, Hash, Provenance, Version};
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
@@ -325,11 +325,10 @@ group!(
         centre: Centre,
         /// Apparent or true.
         positions: Positions,
-        /// Modern or classical astronomy.
-        /// lint: knob-has-a-reader — the chart layer takes a provider by
-        /// argument, so `crates/siddhanta` answers as one rather than being
-        /// chosen here; the knob becomes a reader when a caller asks the SDK
-        /// to pick a provider for it (Phase 3, the built-in ephemeris).
+        /// Modern or classical astronomy: which the chart asks for. The
+        /// context holds it to the provider it opens, refusing a modern
+        /// engine under the Surya Siddhanta, since only the text defines
+        /// the text's chart (`03-design/classical-chart.md`).
         siddhanta: Siddhanta,
         /// Twenty-seven or twenty-eight nakshatras.
         /// lint: knob-has-a-reader — `panchanga` and `core::angle` both divide
@@ -893,10 +892,59 @@ impl From<Diagnostics> for Error {
 pub struct Resolved {
     /// The settings.
     pub settings: Settings,
-    /// The warnings, for provenance.
+    /// The warnings, which every result's provenance carries
+    /// ([`Resolved::provenance`]).
     pub warnings: Vec<Diagnostic>,
     /// The profile it came from.
     pub profile: ProfileId,
+}
+
+impl Resolved {
+    /// The provenance every result computed under these settings starts
+    /// from: the versions, the profile, the settings' hash, the input's,
+    /// and **the settings' warnings**.
+    ///
+    /// One constructor, because the warnings were computed at resolution
+    /// and reached no result: each producer built its own stamp from the
+    /// profile and the hash, and none carried them, so a warning such as
+    /// `siddhanta-topocentric` was said to nobody. A warning crosses as
+    /// its rule in the envelope's spelling (`SIDDHANTA_TOPOCENTRIC`), with
+    /// its message and the knobs it names as slots.
+    ///
+    /// ```
+    /// use teistro_core::envelope::{Hash, Version};
+    /// use teistro_core::settings::{Profile, SettingsPatch};
+    ///
+    /// let mut patch = SettingsPatch::default();
+    /// patch.frame.centre = Some(teistro_core::settings::Centre::Topocentric);
+    /// patch.frame.siddhanta = Some(teistro_core::settings::Siddhanta::Surya { bija: false });
+    /// let resolved = Profile::shipped("parashari-classical").unwrap().resolve(&patch).unwrap();
+    /// let stamp = resolved.provenance(Version::new(0, 1, 0), Hash::of(b"input"));
+    /// assert_eq!(stamp.profile, "parashari-classical");
+    /// assert!(stamp.warnings.iter().any(|w| w.code == "SIDDHANTA_TOPOCENTRIC"));
+    /// ```
+    #[must_use]
+    pub fn provenance(&self, sdk_version: Version, input_hash: Hash) -> Provenance {
+        let mut provenance = Provenance::new(
+            sdk_version,
+            CALCULATION_VERSION,
+            crate::catalogue::SCHEMA_VERSION,
+            self.profile.as_str(),
+            self.settings.hash(),
+            input_hash,
+        );
+        for warning in &self.warnings {
+            provenance.warn(
+                &warning.rule.to_uppercase().replace('-', "_"),
+                None,
+                vec![
+                    (String::from("message"), warning.message.clone()),
+                    (String::from("fields"), warning.fields.join(",")),
+                ],
+            );
+        }
+        provenance
+    }
 }
 
 /// The coherence rules, every finding returned.

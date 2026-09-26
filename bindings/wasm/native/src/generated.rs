@@ -1485,7 +1485,8 @@ pub struct ContextOptions {
     /// Example: 0.
     pub flags: u32,
     /// The shipped profile's id (`parashari-classical`, `nepali-default`,
-    /// `kp-default`, `western-tropical-default`, `conformance-baseline`).
+    /// `surya-siddhanta`, `kp-default`, `western-tropical-default`,
+    /// `conformance-baseline`).
     /// Example: parashari-classical. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub profile: Option<String>,

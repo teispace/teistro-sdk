@@ -24,7 +24,7 @@ use teistro_calendar::CalendarSystem;
 use teistro_calendar::solar::SolarModel;
 use teistro_core::catalogue::{ChartKind, Graha, HouseSystem};
 use teistro_core::envelope::Version;
-use teistro_core::envelope::{CALCULATION_VERSION, Deviation, Envelope, Provenance, content_hash};
+use teistro_core::envelope::{Deviation, Envelope, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Tt, Ut1, Utc};
 use teistro_core::settings::{
@@ -458,12 +458,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// so a foundation says which ephemeris placed its grahas, in which
     /// frame, and which steps the SDK completed itself.
     fn provenance(&self, chart: &ChartFoundation) -> Provenance {
-        let mut provenance = Provenance::new(
+        let mut provenance = self.resolved.provenance(
             Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
-            CALCULATION_VERSION,
-            teistro_core::catalogue::SCHEMA_VERSION,
-            self.resolved.profile.as_str(),
-            self.settings().hash(),
             content_hash(&Input {
                 jd_utc: chart.instant.get(),
                 latitude_deg: chart.place.latitude.get(),
@@ -545,12 +541,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// The stamp of a batch that founded nothing, which still says under
     /// which settings nothing was founded.
     fn empty_provenance(&self, place: &Place, kind: ChartKind) -> Provenance {
-        Provenance::new(
+        self.resolved.provenance(
             Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
-            CALCULATION_VERSION,
-            teistro_core::catalogue::SCHEMA_VERSION,
-            self.resolved.profile.as_str(),
-            self.settings().hash(),
             content_hash(&BatchInput {
                 jds_utc: Vec::new(),
                 latitude_deg: place.latitude.get(),

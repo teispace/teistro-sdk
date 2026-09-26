@@ -85,9 +85,10 @@ pub struct Profile {
 pub const DEFAULT_PROFILE: &str = "parashari-classical";
 
 /// The ids of the shipped profiles.
-pub const SHIPPED_PROFILES: [&str; 5] = [
+pub const SHIPPED_PROFILES: [&str; 6] = [
     "nepali-default",
     "parashari-classical",
+    "surya-siddhanta",
     "kp-default",
     "western-tropical-default",
     "conformance-baseline",
@@ -336,6 +337,44 @@ fn parashari_classical() -> Profile {
     }
 }
 
+/// The texts as read, over the **Surya Siddhanta's own astronomy**: the
+/// chart the classical panchangas of Nepal and much of India reckon, in
+/// every part the text defines (`03-design/classical-chart.md`).
+///
+/// Based on `parashari-classical`, whose rules are the texts' and whose
+/// combustion orbs are already the Surya Siddhanta's, it patches only what
+/// the text itself settles: the astronomy, which a context holds to its
+/// provider, and the zodiac, the text's own precession (III.9 to 12)
+/// rather than the catalogue member of that name. Everything else the
+/// text needs the root already has — a geocentric chart, the centre of the
+/// Sun on the geometric horizon, the mean node, whole-sign houses and a
+/// Sripati chalit, which are built from the text's two angles. The
+/// provider is declared, never chosen by the profile (ADR-0029): open the
+/// context over `SURYA_SIDDHANTA`.
+fn surya_siddhanta() -> Profile {
+    let mut patch = SettingsPatch::default();
+    patch.frame.siddhanta = Some(Siddhanta::Surya { bija: false });
+    patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
+    let burgess = |what: &'static str| Source::new("Surya Siddhanta", what);
+    Profile {
+        id: ProfileId::new("surya-siddhanta"),
+        version: 1,
+        base: Some(ProfileId::new("parashari-classical")),
+        patch,
+        sources: vec![
+            Citation::new(
+                "frame.siddhanta",
+                burgess("Burgess 1860, the text's own mean motions and equations, without bija"),
+            ),
+            Citation::new(
+                "frame.ayanamsha",
+                burgess("Burgess 1860, III.9 to 12: the libration of the equinoxes"),
+            ),
+        ],
+        mark: Mark::Traditional,
+    }
+}
+
 fn kp_default() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.ayanamsha = Some(Ayanamsha::Krishnamurti.into());
@@ -524,6 +563,7 @@ impl Profile {
         match id {
             "nepali-default" => Some(nepali_default()),
             "parashari-classical" => Some(parashari_classical()),
+            "surya-siddhanta" => Some(surya_siddhanta()),
             "kp-default" => Some(kp_default()),
             "western-tropical-default" => Some(western_tropical_default()),
             "conformance-baseline" => Some(conformance_baseline()),

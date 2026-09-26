@@ -224,7 +224,11 @@ read it, and so does the pass's midheaven row.
   the Lagna at the day's sunrise through the same founder `angles`, so
   they follow §5 without a decision of their own; the pass does not yet
   hold them to the text.
-- **A `surya-siddhanta` profile.** Whether the settings a classical
-  chart wants (the text's ayanamsha, the geometric sunrise, the text's
-  combustion orbs) are a profile of their own waits for §7 step 5,
-  when a consumer can name the provider at all.
+- ~~**A `surya-siddhanta` profile.**~~ **Decided and built**
+  (2026-09-26). `parashari-classical` with the text's astronomy
+  (`frame.siddhanta: SURYA`) and its own ayanamsha; the profile **asks**
+  and the chain supplies, so it never opens the text itself (ADR-0029),
+  and a modern engine under it is refused at the context rather than
+  answering a hybrid. Researching it found the `frame.siddhanta` knob
+  read by nothing since it was added, and every settings warning said to
+  nobody (`settings-and-profiles.md` §4); both are built with it.

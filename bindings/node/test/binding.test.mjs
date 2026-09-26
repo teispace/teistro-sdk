@@ -140,8 +140,8 @@ test('the Surya Siddhanta opens by name, and its chart says which parts are the 
     utcOffsetSeconds: 20700,
   };
   const text = new Context({
+    profile: 'surya-siddhanta',
     ephemeris: catalogue.Ephemeris.SuryaSiddhanta,
-    settings: { frame: { ayanamsha: { kind: 'CATALOGUED', id: 'SURYASIDDHANTA' } } },
   });
   assert.deepEqual(
     { ...text.chart.found(at).provenance.deviation },

@@ -759,9 +759,7 @@ fn the_constants(report: &mut Report) {
 /// through the selector and must read back alike, deviation and all.
 fn a_classical_chart(report: &mut Report, place: &Place, offset: UtcOffset) {
     let classical = Context::builder()
-        .settings_json(
-            r#"{"frame": {"ayanamsha": {"kind": "CATALOGUED", "id": "SURYASIDDHANTA"}}}"#,
-        )
+        .profile("surya-siddhanta")
         .ephemeris([Ephemeris::SuryaSiddhanta])
         .build()
         .expect("a context over the text");

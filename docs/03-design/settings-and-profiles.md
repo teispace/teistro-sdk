@@ -148,6 +148,7 @@ Shipped in v1, each with its sources in the profile file:
 |---|---|---|
 | `nepali-default` | the product's charts | sidereal, `LAHIRI`, mean node, topocentric, `WHOLE_SIGN` placements, the chalit system the baseline engine measures as (`VEHLOW`; documented as Sripati, measured otherwise, so the profile says what it does), `CENTRE_NO_REFRACTION` sunrise, `SUNRISE` day boundary, `SPATIAL` balance, seven chara karakas, node aspects `NONE`, `AMANTA` months, eras Vikrama, Shaka, Kali, Nepal Sambat |
 | `parashari-classical` **(the default)** | the texts as read | the root with `SRIPATI` chalit (BPHS), `PROPORTIONAL` ghatis, eight chara karakas (Jaimini 1.1.10–18) and `SURYA_SIDDHANTA` orbs where the text gives them; everything else the root's, so geocentric, the Gregorian civil calendar, the three pan-Indic eras and an undefined polar day. It patches the root and not `nepali-default`, which is what makes "nothing of one country's practice" true rather than stated (ADR-0024) |
+| `surya-siddhanta` | the classical panchangas' astronomy | `parashari-classical` with `frame.siddhanta: SURYA` and the text's own ayanamsha, `SURYASIDDHANTA` (III.9 to 12); open the context over `SURYA_SIDDHANTA`, which the profile asks for and never chooses (ADR-0029), and every part of the chart is the text's (`classical-chart.md`) |
 | `kp-default` | Krishnamurti Paddhati | sidereal, `KRISHNAMURTI`, true node, `PLACIDUS` placements with the cusp as the house start, `kp: PLACIDUS` module override, node aspects `NONE`, Vimshottari at 365.25 |
 | `western-tropical-default` | Western and Hellenistic modules | tropical, `PLACIDUS`, true node, `MIDNIGHT` day boundary, geocentric apparent positions |
 | `conformance-baseline` | the golden-vector runs | the baseline engine's defaults exactly, including every convention the deliberate-difference registry records, so the fixtures' settings hashes reproduce |
@@ -194,6 +195,21 @@ Resolution is a fold of patches with `Option::or`; validation is a list
 of rules over the resolved value and the capabilities; hashing is the
 canonical serialiser plus SHA-256. Nothing iterates; nothing depends on
 the request beyond its patch.
+
+**The rules over the capabilities** run when a context opens its
+provider, because only then is there one: the settings ask and the
+chain supplies (ADR-0029). One is built (2026-09-26): `frame.siddhanta`
+naming the Surya Siddhanta over a modern engine is refused, since only
+the text defines the text's chart; the text's provider under settings
+that say modern astronomy is a declared choice and a warning,
+`classical-provider-drik-settings`.
+
+**Every warning reaches every result.** `Resolved::provenance` is the one
+constructor a producer's stamp starts from, and it carries the settings'
+warnings as the envelope's `warnings`, the rule in its spelling
+(`SIDDHANTA_TOPOCENTRIC`) with its message and knobs as slots. Before it,
+each producer built its stamp from the profile and the hash, and the
+warnings computed at resolution were said to nobody.
 
 ## 5. The API
 

@@ -10,6 +10,7 @@
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
+    clippy::panic,
     reason = "tests fail by panicking"
 )]
 
@@ -29,12 +30,12 @@ fn kathmandu() -> Place {
     )
 }
 
-/// The text's own zodiac, and whatever else a test patches in.
-fn over_the_text(extra: &str) -> Context {
+/// The `surya-siddhanta` profile over the text, and whatever else a test
+/// patches in.
+fn over_the_text(patch: &str) -> Context {
     Context::builder()
-        .settings_json(format!(
-            r#"{{"frame": {{"ayanamsha": {{"kind": "CATALOGUED", "id": "SURYASIDDHANTA"}}}}{extra}}}"#
-        ))
+        .profile("surya-siddhanta")
+        .settings_json(format!("{{{patch}}}"))
         .ephemeris([Ephemeris::SuryaSiddhanta])
         .build()
         .unwrap()
@@ -110,7 +111,7 @@ fn the_envelope_says_which_parts_the_text_defined() {
 
 #[test]
 fn sdk_only_is_the_hybrid_asked_for_by_name() {
-    let sdk = over_the_text(r#", "provider": {"overrides": "SDK_ONLY"}"#);
+    let sdk = over_the_text(r#""provider": {"overrides": "SDK_ONLY"}"#);
     let chart = chart(&sdk).unwrap();
     let (lagna, _) = text_lagna();
     assert!(
@@ -124,7 +125,7 @@ fn sdk_only_is_the_hybrid_asked_for_by_name() {
 
 #[test]
 fn a_system_that_needs_the_sphere_is_refused_over_the_texts_angles() {
-    let sdk = over_the_text(r#", "houses": {"placement_system": "PLACIDUS"}"#);
+    let sdk = over_the_text(r#""houses": {"placement_system": "PLACIDUS"}"#);
     let refused = chart(&sdk).unwrap_err();
     assert_eq!(refused.status, Status::Unsupported, "{refused}");
     assert_eq!(refused.field(), Some("houses"));
@@ -149,4 +150,64 @@ fn a_stored_classical_charts_angles_need_its_provider() {
         .unwrap();
     let missing = none.chart().angles(&founded).unwrap_err();
     assert_eq!(missing.field(), Some("ephemeris"), "{missing}");
+}
+
+#[test]
+fn the_profile_asks_for_the_text_and_the_chain_must_supply_it() {
+    // The profile over the text gives the text's chart and says nothing
+    // is amiss.
+    let text = chart(&over_the_text("")).unwrap();
+    assert!((text.foundation.lagna_deg - text_lagna().0).abs() < 1e-9);
+    let request = ChartRequest::at(kathmandu(), UtcOffset::literal(5, 45, 0));
+    let stamp = over_the_text("")
+        .chart()
+        .reading(JulianDay::<Utc>::literal(BIRTH), &request)
+        .unwrap()
+        .provenance;
+    assert!(stamp.warnings.is_empty(), "{:?}", stamp.warnings);
+    assert_eq!(stamp.profile, "surya-siddhanta");
+
+    // A modern engine under it would found neither chart, so it is refused
+    // at the context, naming the knob and what to do.
+    let modern = Context::builder()
+        .profile("surya-siddhanta")
+        .ephemeris([Ephemeris::Test])
+        .build()
+        .unwrap_err();
+    assert_eq!(modern.status, Status::Unsupported, "{modern}");
+    assert_eq!(modern.field(), Some("settings.frame.siddhanta"));
+    assert!(modern.to_string().contains("SURYA_SIDDHANTA"), "{modern}");
+
+    // No ephemeris at all is not a contradiction: calendars need none.
+    Context::builder()
+        .profile("surya-siddhanta")
+        .ephemeris([Ephemeris::None])
+        .build()
+        .unwrap();
+}
+
+#[test]
+fn the_texts_provider_under_modern_settings_is_warned_in_every_result() {
+    let sdk = Context::builder()
+        .ephemeris([Ephemeris::SuryaSiddhanta])
+        .build()
+        .unwrap();
+    let request = ChartRequest::at(kathmandu(), UtcOffset::literal(5, 45, 0));
+    let stamp = sdk
+        .chart()
+        .reading(JulianDay::<Utc>::literal(BIRTH), &request)
+        .unwrap()
+        .provenance;
+    let warning = stamp
+        .warnings
+        .iter()
+        .find(|w| w.code == "CLASSICAL_PROVIDER_DRIK_SETTINGS")
+        .unwrap_or_else(|| panic!("{:?}", stamp.warnings));
+    assert!(
+        warning
+            .slots
+            .contains(&(String::from("fields"), String::from("frame.siddhanta"))),
+        "{:?}",
+        warning.slots
+    );
 }

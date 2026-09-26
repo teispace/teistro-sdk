@@ -6,18 +6,17 @@ use core::cell::{Ref, RefCell, RefMut};
 use serde::Serialize;
 use teistro_astro::DeltaTModel;
 use teistro_astro::completion::{Completed, Completion};
-use teistro_core::envelope::{
-    CALCULATION_VERSION, Envelope, Hash, Provenance, Version, content_hash,
-};
+use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::settings::{
-    DEFAULT_PROFILE, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
+    DEFAULT_PROFILE, Diagnostic, Profile, Resolved, SHIPPED_PROFILES, Settings, SettingsPatch,
+    Severity, Siddhanta,
 };
 use teistro_dasha::{DashaDefinition, DashaSystems};
 use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
-use teistro_port_ephemeris::{CachingProvider, EphemerisProvider, PositionRequest};
+use teistro_port_ephemeris::{Astronomy, CachingProvider, EphemerisProvider, PositionRequest};
 use teistro_time::EmbeddedTzdb;
 
 use crate::BUNDLES;
@@ -239,12 +238,8 @@ impl Context {
         request: &PositionRequest<'_>,
         completed: &Completed,
     ) -> Provenance {
-        let mut provenance = Provenance::new(
+        let mut provenance = self.settings.provenance(
             Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
-            CALCULATION_VERSION,
-            teistro_core::catalogue::SCHEMA_VERSION,
-            self.profile(),
-            self.settings_hash(),
             content_hash(&RequestRecord::of(request)),
         );
         if let Some(provider) = self.provider.as_deref() {
@@ -478,6 +473,8 @@ impl ContextBuilder {
         // than a default: ADR-0029 refuses a context quietly given one.
         let chain = self.chain.unwrap_or_else(|| vec![Ephemeris::None]);
         let opened = ephemeris::open(chain)?;
+        let mut settings = settings;
+        astronomy_coherence(&mut settings, opened.as_deref())?;
         let provider = remembering(opened, settings.settings.provider.cache_cells);
         let mut layouts = Layouts::new();
         for (index, layout) in self.layouts.into_iter().enumerate() {
@@ -502,6 +499,56 @@ impl ContextBuilder {
             layouts,
             dashas,
         })
+    }
+}
+
+/// Holds the settings' astronomy (`frame.siddhanta`) to the provider the
+/// chain opened.
+///
+/// **The settings ask; the chain supplies** (ADR-0029: a provider is
+/// always declared, never chosen quietly). Settings that name the Surya
+/// Siddhanta ask for the text's chart, which only a classical provider
+/// defines (`03-design/classical-chart.md`), so a modern engine under them
+/// is refused rather than answering a hybrid. The other way round is a
+/// declared choice and not a contradiction — the text's provider under
+/// settings that say modern astronomy still gives the text's grahas, day
+/// and Lagna — but its zodiac is then the catalogue's unless the text's
+/// is named, so it is a warning every result carries. No ephemeris at
+/// all is neither: calendars and times need none.
+fn astronomy_coherence(
+    settings: &mut Resolved,
+    provider: Option<&dyn EphemerisProvider>,
+) -> Result<(), Error> {
+    let Some(provider) = provider else {
+        return Ok(());
+    };
+    let capabilities = provider.capabilities();
+    let classical = capabilities.astronomy == Astronomy::Classical;
+    match (settings.settings.frame.siddhanta, classical) {
+        (Siddhanta::Surya { .. }, false) => Err(Error::unsupported(format!(
+            "the settings name the Surya Siddhanta's astronomy and the ephemeris, {}, is a \
+             modern one, so the chart would be neither",
+            capabilities.identity.name
+        ))
+        .with_field("settings.frame.siddhanta")
+        .with_hint(
+            "open the context over 'SURYA_SIDDHANTA', or set frame.siddhanta to DRIK for \
+             modern astronomy",
+        )),
+        (Siddhanta::Drik, true) => {
+            settings.warnings.push(Diagnostic {
+                severity: Severity::Warning,
+                rule: "classical-provider-drik-settings",
+                message: format!(
+                    "{} is a classical astronomy and frame.siddhanta says DRIK; the parts \
+                     it defines are its own, and the rest follow the settings",
+                    capabilities.identity.name
+                ),
+                fields: vec!["frame.siddhanta"],
+            });
+            Ok(())
+        }
+        _ => Ok(()),
     }
 }
 

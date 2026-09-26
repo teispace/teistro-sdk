@@ -281,12 +281,8 @@ void main() {
   // (docs/03-design/classical-chart.md), which every binding reaches
   // through the selector and must read back alike, deviation and all.
   final classical = teistro.context(
+    profile: 'surya-siddhanta',
     ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
-    settings: {
-      'frame': {
-        'ayanamsha': {'kind': 'CATALOGUED', 'id': 'SURYASIDDHANTA'},
-      },
-    },
   );
   final text = classical.chart.found(
     instant: 2447995.4895833335,

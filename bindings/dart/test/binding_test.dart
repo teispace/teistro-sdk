@@ -129,12 +129,8 @@ void main() {
       utcOffsetSeconds: 20700,
     );
     final text = teistro.context(
+      profile: 'surya-siddhanta',
       ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
-      settings: {
-        'frame': {
-          'ayanamsha': {'kind': 'CATALOGUED', 'id': 'SURYASIDDHANTA'},
-        },
-      },
     );
     final deviation = at(text).provenance.deviation!;
     expect(deviation.model, 'SURYA_SIDDHANTA');

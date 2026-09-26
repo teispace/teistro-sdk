@@ -42,10 +42,9 @@ use crate::rules_corpus::read_json;
 
 const PAGE: &str = "docs/03-design/classical-chart-measured.md";
 
-/// The settings a consumer asking for the text's chart would name: the
-/// text's own ayanamsha by its catalogue member. The root profile's
-/// sunrise is already the text's (the centre on the geometric horizon).
-const SETTINGS: &str = r#"{"frame":{"ayanamsha":{"kind":"CATALOGUED","id":"SURYASIDDHANTA"}}}"#;
+/// The profile a consumer asking for the text's chart names: the text's
+/// astronomy and its own zodiac, over `parashari-classical`.
+const PROFILE: &str = "surya-siddhanta";
 
 /// Seconds in a day.
 const SECONDS_PER_DAY: f64 = 86_400.0;
@@ -107,7 +106,7 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
 /// A context over the text, as a consumer opens one.
 fn over_the_text() -> Result<Context, String> {
     Context::builder()
-        .settings_json(SETTINGS)
+        .profile(PROFILE)
         .ephemeris([Ephemeris::SuryaSiddhanta])
         .build()
         .map_err(|why| format!("a context over the text: {why}"))
@@ -497,15 +496,14 @@ fn page(root: &Path) -> Result<String, String> {
         "## 1. What was founded\n\n\
          Every recorded birth of the corpus ({} of them) was founded\n\
          **through the SDK** over `Ephemeris::SuryaSiddhanta`, as a Rust\n\
-         consumer opens it, under the root profile with the text's\n\
-         own ayanamsha named (`SURYASIDDHANTA`); the root profile's\n\
-         sunrise is already the text's, the centre on the geometric\n\
-         horizon. Each chart was then held against what `crates/siddhanta`\n\
+         consumer opens it, under the `surya-siddhanta` profile: the\n\
+         text's astronomy and its own ayanamsha, with the centre of the\n\
+         Sun on the geometric horizon, which is the text's sunrise. Each chart was then held against what `crates/siddhanta`\n\
          answers at the same instant and place: its Lagna (III.46 to 49),\n\
          its ayanamsha, its nine grahas and its own day arc, through which\n\
          the same hora reckoning was counted. The text refuses {}, because\n\
          on the day it has no sunrise to count the Lagna from; the SDK\n\
-         refuses {} under the root profile's polar-day policy, which\n\
+         refuses {} under the profile's polar-day policy, which\n\
          synthesises no day.\n\n\
          The steps the provenance stamps on each chart: `{steps}`.\n",
         spelled(readings.len()),

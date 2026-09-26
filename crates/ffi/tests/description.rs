@@ -153,3 +153,39 @@ fn the_versions_the_status_and_the_entry_points_are_described() {
         ]
     );
 }
+
+/// The profile ids the boundary documents are the shipped ones, both
+/// ways: the list is prose every binding's documentation copies, and a
+/// profile added to the core without it is one no consumer outside Rust
+/// is told exists.
+#[test]
+fn the_documented_profiles_are_the_shipped_ones() {
+    use std::collections::BTreeSet;
+
+    let api = api();
+    let options = api
+        .structs
+        .iter()
+        .find(|s| s.name == "TsContextOptions")
+        .expect("the options record is described");
+    let profile = options
+        .fields
+        .iter()
+        .find(|f| f.name == "profile")
+        .expect("the options record has a profile");
+    let documented: BTreeSet<&str> = profile
+        .doc
+        .split('`')
+        .skip(1)
+        .step_by(2)
+        .filter(|word| word.contains('-'))
+        .collect();
+    let shipped: BTreeSet<&str> = teistro_core::settings::SHIPPED_PROFILES
+        .iter()
+        .copied()
+        .collect();
+    assert_eq!(
+        documented, shipped,
+        "TsContextOptions.profile's documentation"
+    );
+}
