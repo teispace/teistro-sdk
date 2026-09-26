@@ -185,9 +185,17 @@ about a third chart-query field for **periods**, and this is not one.
    table's 5 counts nowhere. PyJHora gives every mahadasha the same
    antardashas, from the dasha's second sign, on 720 of 720; no text
    states that, and the kernel's own (C50) stand.
-5. **Sudasa**, which the coverage page says waits on the karakamsha:
-   confirm from the source which point it starts from before building,
-   because the Sree lagna, which is built, is the other candidate.
+5. **Sudasa**: **not built, and not waiting on this page.** The
+   coverage page said it starts from the karakamsha; no source read says
+   so. BPHS does not name it among its dasas (ch. 46 vv. 6 to 11); the
+   two Sanskrit editions of the Jaimini sutras on the Internet Archive
+   (Sitaram Jha's, Kashi Ram's) state no Sudasa or Sree lagna in plain
+   words, and a sutra in katapayadi is not one to decode from an OCR;
+   PyJHora's signature takes the Sree lagna's house and longitude, so it
+   starts there with a first period set by how far the Sree lagna has
+   gone. The coverage page now files it under the text, its hardest
+   blocker; a Sree-lagna start and a fractional first period are the
+   kernel's part, once a verse is in hand.
 6. **The reading at the boundary**: the karakamsha and Brahma as a
    document section every binding reads, after the pattern of the
    Vaiseshikamsa.

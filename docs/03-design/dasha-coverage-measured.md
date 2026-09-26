@@ -24,7 +24,7 @@ a natal chart asked for one is refused, and 3 of those refusals name
 that call in the hint rather than leaving the caller at a list of the
 natal systems.
 
-## 10 systems: the text is not settled
+## 11 systems: the text is not settled
 
 What closes them is a cited source read by someone who reads it.
 Building is not what is missing: every row here is one line of table
@@ -42,6 +42,7 @@ and all of them are listed.
 | `NAISARGIKA` | the natural order and the lifespan periods it divides are both unsettled here, which is the whole of the row |
 | `PANCHASWARA` | no attested shape at all. It is catalogued because a system by that name is named, which is what a key space is for |
 | `VARNADA` | the Varnada lagna it starts from **is** built (`teistro_points`), so what is missing is not the point but which of five school variants of it the dasha counts from |
+| `SUDASA` | no verse is in hand. BPHS does not name it among its dasas (ch. 46 vv. 6 to 11), and neither Sanskrit edition of the Jaimini sutras read states it in plain words; PyJHora starts it from the Sree lagna with a first period set by its longitude, which the kernel has neither of. It was listed as waiting on the karakamsha, which is built and is not its start in any source read |
 | `VARSHA_NARAYANA` | Narayana read over one year. The solar return it waited on is built and the three annual dashas beside it are computed (`annual-dashas.md`), but neither book read for them gives this one: Charak's chapter V and the *Tajika Nilakanthi* name the Mudda, the Yogini and the Patyayini and stop |
 
 ## 4 systems: the kernel cannot express it
@@ -59,7 +60,7 @@ at a time.
 | `ASHTAKAVARGA` | its periods come from the bindu counts. The three above are one mechanism asked for three ways, and the kernel takes them together or not at all |
 | `SUDARSHANA_CHAKRA` | three rashi progressions running at once, from the lagna, the Sun and the Moon. A composition over kernels, and the reason it is a combinator |
 
-## 2 systems: it waits on a module
+## 1 system: it waits on a module
 
 What closes them is the module itself. Each is the **last** step of one,
 so scheduling the dasha separately would schedule the module twice.
@@ -67,7 +68,6 @@ so scheduling the dasha separately would schedule the module twice.
 | system | why it is not computed |
 |---|---|
 | `AAYU` | the longevity module decides the span this divides, and that span is three methods with a reconciliation between them (`crates/rules` `longevity`). The dasha is what the module ends with |
-| `SUDASA` | it starts from the karakamsha, which is the navamsha of the Atmakaraka and is not built — the Sree lagna beside it in the sources is. Karakamsha belongs to the Jaimini module and this follows it |
 
 ## Asking for one
 
