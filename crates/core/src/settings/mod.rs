@@ -32,15 +32,16 @@ use crate::envelope::{CALCULATION_VERSION, Hash, Provenance, Version};
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
-    AfterCycle, AshtottariGrouping, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti,
-    BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT,
-    DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning,
-    GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth,
-    KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents,
-    Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction,
-    NodeVedha, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
-    RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
-    SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    AfterCycle, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance, Benefics,
+    BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas,
+    Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord,
+    Ekadhipatya, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
+    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
+    LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
+    NodeCoLordship, NodeObstruction, NodeVedha, OverridePolicy, PolarDayPolicy, PolarPolicy,
+    Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis,
+    SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
+    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -462,6 +463,9 @@ group!(
         node_vedha: NodeVedha,
         /// Whether the nodes obstruct another graha's transit (crux C137).
         node_obstruction: NodeObstruction,
+        /// How many bindus in a graha's own Ashtakavarga make its transit
+        /// good (crux C141; `03-design/gochar-ashtakavarga.md`).
+        ashtakavarga_good_from: AshtakavargaGoodFrom,
     }
 );
 

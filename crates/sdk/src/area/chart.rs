@@ -982,7 +982,18 @@ impl<'a> ChartArea<'a> {
         request: &crate::gochar_request::GocharRequest,
     ) -> Result<Envelope<Vec<teistro_gochar::GocharReading>>, Error> {
         let reference = crate::gochar_request::reference(&natal.foundation, request.from())?;
-        let rules = teistro_gochar::GocharRules::of(self.context.settings());
+        let settings = self.context.settings();
+        let rules = teistro_gochar::GocharRules::of(settings);
+        // The natal prastara once for the batch, when the Ashtakavarga's
+        // reading was asked for.
+        let prastara = request
+            .ashtakavarga()
+            .then(|| {
+                Self::ashtakavarga_chart_of(&natal.foundation)
+                    .map(|chart| teistro_strength::ashtakavarga::prastara(&chart))
+            })
+            .transpose()?;
+        let by_bindus = teistro_gochar::ashtakavarga::AshtakavargaRules::of(settings);
         // The grahas' places alone, every instant in one request: a
         // reading reads nothing else of a transit chart, so founding one
         // (its day, houses and lagna) would be work thrown away.
@@ -993,7 +1004,14 @@ impl<'a> ChartArea<'a> {
         let readings = read
             .value
             .iter()
-            .map(|longitudes| crate::gochar_request::reading(longitudes, reference, rules))
+            .map(|longitudes| {
+                crate::gochar_request::reading(
+                    longitudes,
+                    reference,
+                    rules,
+                    prastara.as_ref().map(|prastara| (prastara, by_bindus)),
+                )
+            })
             .collect();
         Ok(Envelope::sealing(readings, read.provenance))
     }
@@ -2282,6 +2300,18 @@ impl<'a> ChartArea<'a> {
         foundation: &ChartFoundation,
         settings: &teistro_core::settings::Settings,
     ) -> Result<AshtakavargaReading, Error> {
+        Ok(AshtakavargaReading::of(
+            &Self::ashtakavarga_chart_of(foundation)?,
+            AshtakavargaRules {
+                shodhana: settings.strength.shodhana,
+                ekadhipatya: settings.strength.ekadhipatya,
+            },
+        ))
+    }
+
+    /// What an Ashtakavarga reads of a founded chart: the lagna's sign and
+    /// the seven's.
+    fn ashtakavarga_chart_of(foundation: &ChartFoundation) -> Result<AshtakavargaChart, Error> {
         let sign = |index: u8| {
             Rashi::from_id(u16::from(index)).ok_or_else(|| Error::internal("a sign past Pisces"))
         };
@@ -2292,17 +2322,10 @@ impl<'a> ChartArea<'a> {
             })?;
             *slot = sign(position.sign_index())?;
         }
-        let chart = AshtakavargaChart {
+        Ok(AshtakavargaChart {
             lagna: sign(foundation.lagna_sign_index())?,
             signs,
-        };
-        Ok(AshtakavargaReading::of(
-            &chart,
-            AshtakavargaRules {
-                shodhana: settings.strength.shodhana,
-                ekadhipatya: settings.strength.ekadhipatya,
-            },
-        ))
+        })
     }
 
     /// The seven strength grahas' signs in each of `vargas`, Sun to Saturn.
