@@ -1056,7 +1056,10 @@ provider's DUT1).
    authority on what is open — this step names the open questions and
    never counts them, because the count was wrong twice in one day and
    `open-question-is-named` now refuses both mistakes. Q35, the MCP
-   server, is deferred by the maintainer to the end of the plan. A
+   server, is deferred by the maintainer to the end of the plan. Q40,
+   whether a modern engine's overrides reach a chart's day and zodiac,
+   is open and waits on the maintainer (the recommendation is a knob
+   defaulting to the SDK's). A
    question that is **decided** may not be named in this step or in
    `## Next` — the same lint refuses it — because a settled question on
    a list of what remains is work someone will go looking for.
@@ -3617,10 +3620,9 @@ on pub.dev (checked 2026-09-07).
    stamp and `sdk.chart().angles`; and every binding opens it by name
    (`'SURYA_SIDDHANTA'`), which the parity gate compares; and the
    `surya-siddhanta` profile asks for it, a modern engine under it
-   refused at the context. Left of this item (`classical-chart.md` §8):
-   whether a **modern** provider's overrides should reach the chart
-   layer, which wants a measurement over the corpus before a default
-   moves. The settable atmosphere for the rise and set solver
+   refused at the context. Left of this item: whether a **modern**
+   provider's overrides should reach the chart layer, measured and put
+   to the maintainer as Q40. The settable atmosphere for the rise and set solver
    (C34) is built (`03-design/horizon-atmosphere.md`); the dip of a
    raised horizon waits for a consumer who asks.
 2. The bindings' remaining work. Built: the Dart binding from the same

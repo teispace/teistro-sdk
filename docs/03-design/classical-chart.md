@@ -217,9 +217,9 @@ read it, and so does the pass's midheaven row.
 
 - **A modern provider's overrides at the chart layer.** ADR-0013 says
   `prefer-native` uses a declared native computation; the chart layer
-  does not for any provider today. Measure Teimeris's native ayanamsha
-  and sunrise against the SDK's over the corpus before changing what a
-  modern chart answers.
+  does not for a modern provider. The kit's measurements (0.13 s and
+  7.3 s of sunrise, 0.011° of ayanamsha) and the three options are in
+  `QUESTIONS.md` Q40, which waits on the maintainer.
 - **The text's own Lagna for the day-lagna and the arudhas.** They read
   the Lagna at the day's sunrise through the same founder `angles`, so
   they follow §5 without a decision of their own; the pass does not yet
