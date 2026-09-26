@@ -1,6 +1,6 @@
 # The transit hit list: every event of a window, against one chart
 
-Status: `draft`, 2026-09-27; §6 step 1 **built** the same day. Written
+Status: `draft`, 2026-09-27; §6 steps 1 and 2 **built** the same day. Written
 before any code; the building is expected to correct it.
 
 Derives from `gochar.md` §6 step 4 and the research page's P0 row "transit
@@ -105,6 +105,15 @@ after stands in the sign the event says it left and entered.
    founder looked only for an instant **before** the civil date's
    sunrise and refused the other side with an `INTERNAL` error. It now
    takes the next day's arc too, with a test on a clock ten hours behind.
-2. Aspects to natal points, with orbs (C145, C146).
+2. Aspects to natal points, with orbs (C145, C146): **done**. Each
+   natal point gets one lattice from its own longitude at 30° steps,
+   which holds every aspect's line on both sides at once, and with an
+   orb two more shifted by it; a crossing is an aspect only at an angle
+   asked for, and its edge and direction say whether the window opened
+   or closed (a retrograde transit enters by the edge past the line).
+   The natal points are the nine grahas and the lagna, the lagna being
+   the one other point every chart has. Every exact hit of a year is
+   exact in a chart founded at its instant, every edge stands the orb
+   from it, and no window opens twice before it closes.
 3. The measured pass and its price; then the boundary and the bindings.
 4. Sade Sati's phases over the ingresses, once its source is in hand.

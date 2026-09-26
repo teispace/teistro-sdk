@@ -151,6 +151,9 @@ pub use teistro_dasha::{
 };
 pub use teistro_gochar as gochar;
 pub use teistro_gochar::GocharFrom;
+// A hit list answers `Hit`s and is asked about `NatalPoint`s, so a consumer
+// names both without reaching into the module.
+pub use teistro_gochar::hits::{Hit, NatalPoint};
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
 pub use teistro_rules as rules;

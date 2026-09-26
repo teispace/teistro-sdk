@@ -13,9 +13,11 @@
 )]
 
 use teistro::catalogue::{ChartKind, Graha, Rashi};
-use teistro::gochar::hits::{HitEvent, Motion};
+use teistro::gochar::hits::{AspectPhase, HitEvent, Motion};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::{ChartRequest, Context, Document, Ephemeris, HitKind, HitRequest, UtcOffset};
+use teistro::{
+    ChartRequest, Context, Document, Ephemeris, Hit, HitKind, HitRequest, NatalPoint, UtcOffset,
+};
 
 fn context(profile: Option<&str>) -> Context {
     let mut builder = Context::builder().ephemeris([Ephemeris::Builtin]);
@@ -111,8 +113,7 @@ fn ketu_enters_the_sign_opposite_rahu_at_the_same_instant() {
     .with_grahas([Graha::Rahu, Graha::Ketu])
     .with_kinds([HitKind::SignIngress]);
     let hits = sdk.chart().hits(&natal, &decade).unwrap().value;
-    let (rahu, ketu): (Vec<&teistro::gochar::hits::Hit>, Vec<_>) =
-        hits.iter().partition(|hit| hit.graha == Graha::Rahu);
+    let (rahu, ketu): (Vec<&Hit>, Vec<_>) = hits.iter().partition(|hit| hit.graha == Graha::Rahu);
     assert!(!rahu.is_empty() && rahu.len() == ketu.len());
     for (r, k) in rahu.iter().zip(&ketu) {
         assert!((r.instant.get() - k.instant.get()).abs() < 1e-6);
@@ -163,7 +164,8 @@ fn stations_alternate_and_bound_the_backward_ingresses() {
                     backward = turns == Motion::Retrograde;
                 }
                 HitEvent::SignIngress { motion, .. }
-                | HitEvent::NakshatraIngress { motion, .. } => {
+                | HitEvent::NakshatraIngress { motion, .. }
+                | HitEvent::Aspect { motion, .. } => {
                     assert_eq!(motion == Motion::Retrograde, backward, "{graha:?} {hit:?}");
                 }
             }
@@ -192,4 +194,105 @@ fn one_order_however_often_it_is_asked_and_a_bad_request_is_named() {
         sdk.chart().hits(&natal, &none).unwrap_err().field(),
         Some("grahas")
     );
+}
+
+/// The separation a founded chart gives at a hit's instant, between the
+/// transiting graha and the natal point, degrees forward from the point.
+fn separation(sdk: &Context, natal: &Document, hit: &Hit, to: NatalPoint) -> f64 {
+    let chart = sdk
+        .chart()
+        .found_many(&[hit.instant], &place(), UtcOffset::UTC, ChartKind::Natal)
+        .unwrap()
+        .value
+        .remove(0);
+    let transit = chart.graha(hit.graha).unwrap().longitude_deg;
+    let natal_deg = match to {
+        NatalPoint::Graha { graha } => natal.foundation.graha(graha).unwrap().longitude_deg,
+        NatalPoint::Lagna => natal.foundation.lagna_deg,
+    };
+    (transit - natal_deg).rem_euclid(360.0)
+}
+
+/// Whether a separation stands `off` degrees from an aspect's angle, from
+/// either side of the natal point.
+fn at_angle(separation: f64, angle: u16, off: f64) -> bool {
+    let near = |target: f64| {
+        let apart = (separation - target).rem_euclid(360.0);
+        apart.min(360.0 - apart) < 1e-3
+    };
+    let angle = f64::from(angle);
+    [
+        angle + off,
+        angle - off,
+        360.0 - angle + off,
+        360.0 - angle - off,
+    ]
+    .into_iter()
+    .any(near)
+}
+
+/// Every exact aspect is exact in a chart founded at its instant, and every
+/// orb's edge stands the orb from it; no window opens twice before it closes.
+#[test]
+fn every_aspect_is_at_its_angle_in_a_founded_chart() {
+    let sdk = context(None);
+    let natal = natal(&sdk);
+    let asked = year()
+        .with_kinds([HitKind::Aspect])
+        .with_grahas([Graha::Sun, Graha::Mars, Graha::Jupiter, Graha::Saturn])
+        .with_aspects([0, 90, 180])
+        .with_orb(3.0);
+    let hits = sdk.chart().hits(&natal, &asked).unwrap().value;
+    let mut phases = [0_usize; 3];
+    let mut open = std::collections::BTreeSet::new();
+    for hit in &hits {
+        let HitEvent::Aspect {
+            to, angle, phase, ..
+        } = hit.event
+        else {
+            panic!("only aspects were asked for: {hit:?}");
+        };
+        let off = if phase == AspectPhase::Exact {
+            0.0
+        } else {
+            3.0
+        };
+        let apart = separation(&sdk, &natal, hit, to);
+        assert!(at_angle(apart, angle, off), "{hit:?}: {apart}");
+        phases[phase as usize] += 1;
+        let point = match to {
+            NatalPoint::Graha { graha } => graha as u8,
+            NatalPoint::Lagna => u8::MAX,
+        };
+        let key = (hit.graha as u8, point, angle);
+        match phase {
+            AspectPhase::Entering => assert!(open.insert(key), "entered twice: {hit:?}"),
+            // A window already open when the year began closes unentered.
+            AspectPhase::Leaving => {
+                open.remove(&key);
+            }
+            AspectPhase::Exact => {}
+        }
+    }
+    assert!(phases.iter().all(|count| *count > 0), "{phases:?}");
+}
+
+#[test]
+fn an_aspect_or_an_orb_that_cannot_be_is_named() {
+    let sdk = context(None);
+    let natal = natal(&sdk);
+    let field = |asked: HitRequest| {
+        sdk.chart()
+            .hits(&natal, &asked)
+            .unwrap_err()
+            .field()
+            .map(String::from)
+    };
+    assert_eq!(field(year().with_aspects([45])).as_deref(), Some("aspects"));
+    assert_eq!(
+        field(year().with_aspects([210])).as_deref(),
+        Some("aspects")
+    );
+    assert_eq!(field(year().with_orb(20.0)).as_deref(), Some("orb_deg"));
+    assert_eq!(field(year().with_points([])).as_deref(), Some("points"));
 }
