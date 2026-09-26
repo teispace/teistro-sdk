@@ -69,7 +69,8 @@ fn every_house_is_the_transit_counted_from_the_natal_reference() {
             .value;
         assert_eq!(batch.len(), instants.len());
         for (reading, at) in batch.iter().zip(&instants) {
-            assert_eq!(reading.reference, reference, "{from:?}");
+            assert_eq!(reading.reference.sign, reference, "{from:?}");
+            assert_eq!(reading.reference.from, from);
             // The transit chart founded on its own, and each graha counted
             // from the reference by hand.
             let transit = sdk

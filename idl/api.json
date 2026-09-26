@@ -6588,6 +6588,130 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsGocharFrom",
+      "doc": "What a gochar reading counted its houses from (crux C139).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Moon",
+          "value": 0,
+          "doc": "The natal Moon's sign, Phaladeepika ch. 26 v. 1's.",
+          "key": "MOON"
+        },
+        {
+          "name": "Lagna",
+          "value": 1,
+          "doc": "The natal lagna's sign.",
+          "key": "LAGNA"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsNodeVedha",
+      "doc": "The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "LikeTheSun",
+          "value": 0,
+          "doc": "The Sun's vedha pairs.",
+          "key": "LIKE_THE_SUN"
+        },
+        {
+          "name": "None",
+          "value": 1,
+          "doc": "None: nothing obstructs a node's transit.",
+          "key": "NONE"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsNodeObstruction",
+      "doc": "Whom the nodes obstruct in transit, the settings' `gochar.node_obstruction`\n(C137, C140).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "NotEachOther",
+          "value": 0,
+          "doc": "The seven, and not each other.",
+          "key": "NOT_EACH_OTHER"
+        },
+        {
+          "name": "EachOtherToo",
+          "value": 1,
+          "doc": "Every graha, each other too: the verses read literally.",
+          "key": "EACH_OTHER_TOO"
+        },
+        {
+          "name": "None",
+          "value": 2,
+          "doc": "Nobody: only the seven obstruct.",
+          "key": "NONE"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsGocharVerdict",
+      "doc": "What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Good",
+          "value": 0,
+          "doc": "In a good house, and nothing stands in its vedha house.",
+          "key": "GOOD"
+        },
+        {
+          "name": "Obstructed",
+          "value": 1,
+          "doc": "In a good house, and another graha stands in its vedha house.",
+          "key": "OBSTRUCTED"
+        },
+        {
+          "name": "NotGood",
+          "value": 2,
+          "doc": "Not in a house v. 2 names good.",
+          "key": "NOT_GOOD"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsFruition",
+      "doc": "Where in a sign a graha's transit bears fruit (v. 25).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "First",
+          "value": 0,
+          "doc": "The first ten degrees: the Sun and Mars.",
+          "key": "FIRST"
+        },
+        {
+          "name": "Middle",
+          "value": 1,
+          "doc": "The middle ten: Jupiter and Venus.",
+          "key": "MIDDLE"
+        },
+        {
+          "name": "Last",
+          "value": 2,
+          "doc": "The last ten: the Moon and Saturn.",
+          "key": "LAST"
+        },
+        {
+          "name": "Throughout",
+          "value": 3,
+          "doc": "The whole sign: Mercury and the nodes.",
+          "key": "THROUGHOUT"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsDashaPhase",
       "doc": "Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).",
       "repr": "u8",
@@ -10438,6 +10562,21 @@
           },
           "doc": "The annual charts to answer for every chart in the batch, as a JSON\nobject: `reading` — `\"SIDEREAL\"` (the tradition's), `\"TROPICAL\"`\n(the Western solar return) or `\"MEAN\"` (a whole sidereal year each\ntime) — and `through`, the last year of life wanted, 1 to 200. The\ninstants come back in the `praveshas` section, ragged by\n`cast.pravesha_count`; an ephemeris that ends first answers fewer\nthan asked for rather than refusing. Null for none\n(`03-design/annual-chart.md`). Refusals are named from the record\nevery binding calls `varsha`, as `varsha.through`.",
           "meta": {
+            "nullable": true
+          }
+        },
+        {
+          "name": "gochar_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "The transits to read against every chart in the batch, as a JSON\nobject: `instants`, UTC Julian days, at least one, and `from` —\n`\"MOON\"` (Phaladeepika ch. 26 v. 1's, the default) or `\"LAGNA\"`.\nEach chart's readings come back in the `gochar` section, a row an\ninstant, and its grahas in `gochar_grahas`, under the settings'\n`gochar` group. Null for none (`03-design/gochar.md`). Refusals are\nnamed from the record every binding calls `gochar`, as\n`gochar.instants`.",
+          "meta": {
+            "example": "{\"instants\":[2460676.5],\"from\":\"MOON\"}",
             "nullable": true
           }
         }
@@ -16001,6 +16140,105 @@
               "name": "arudha_present",
               "scalar": "u8",
               "doc": "1 when it has an arudha; 0 for a node that owns no sign under `jaimini.node_co_lordship` (C133)."
+            }
+          ]
+        },
+        {
+          "id": 53,
+          "name": "gochar",
+          "doc": "Each chart's transits at the instants `gochar_json.instants` named, charts outermost and each chart's in the order asked: with `n` instants, row `i * n + k` is chart `i` at instant `k`. **Fixed, not ragged**: the request settles `n` for every chart, so `n` is this section's rows over `summary.chart_count`. Read under the settings' `gochar` group (Phaladeepika ch. 26). Empty when no transits were asked for.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "instant",
+              "scalar": "f64",
+              "doc": "The instant the transits were read at, a UTC Julian day."
+            },
+            {
+              "name": "reference",
+              "scalar": "u16",
+              "doc": "The sign the houses are counted from: the natal Moon's by v. 1, or the lagna's when `counted_from` says so.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "counted_from",
+              "scalar": "u8",
+              "doc": "Which natal point `reference` is, `gochar_json.from` (C139).",
+              "enum": "TsGocharFrom"
+            },
+            {
+              "name": "node_vedha",
+              "scalar": "u8",
+              "doc": "The nodes' vedha the transits were judged under, `gochar.node_vedha` (C136).",
+              "enum": "TsNodeVedha"
+            },
+            {
+              "name": "node_obstruction",
+              "scalar": "u8",
+              "doc": "Whom the nodes obstruct, `gochar.node_obstruction` (C137, C140).",
+              "enum": "TsNodeObstruction"
+            }
+          ]
+        },
+        {
+          "id": 54,
+          "name": "gochar_grahas",
+          "doc": "Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "sign",
+              "scalar": "u16",
+              "doc": "The sign it transits.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "degrees",
+              "scalar": "f64",
+              "doc": "Its degrees within the sign, 0 to 30."
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "Its house from `gochar.reference`, 1 to 12."
+            },
+            {
+              "name": "good_house",
+              "scalar": "u8",
+              "doc": "1 when v. 2 makes a transit of this house good, else 0."
+            },
+            {
+              "name": "vedha_house",
+              "scalar": "u8",
+              "doc": "The house whose occupant obstructs it (vv. 3 to 8), 1 to 12; 0 when the house is not good or, for a node under `node_vedha = NONE`, nothing obstructs it."
+            },
+            {
+              "name": "obstructed_by",
+              "scalar": "u16",
+              "doc": "The grahas standing in the vedha house that obstruct it, the verses' exemptions left out, a bit set: bit `n` is the graha with id `n`."
+            },
+            {
+              "name": "verdict",
+              "scalar": "u8",
+              "doc": "What the transit comes to.",
+              "enum": "TsGocharVerdict"
+            },
+            {
+              "name": "fruition",
+              "scalar": "u8",
+              "doc": "The decanate in which its transit bears fruit (v. 25).",
+              "enum": "TsFruition"
+            },
+            {
+              "name": "fruitful_now",
+              "scalar": "u8",
+              "doc": "1 when it stands in that decanate now, else 0."
             }
           ]
         }

@@ -1222,6 +1222,87 @@ void _engineTests() {
   /// houses in each chart, the Atmakaraka's own navamsha the first from it,
   /// and the Brahma graha found or its absence named -- never both, never
   /// neither; null unless asked.
+  test(
+    'a chart carries its transits, each verdict its own house and vedha',
+    () {
+      final ctx = context();
+      final place = Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      );
+      const birth = 2447995.4895833335;
+      expect(
+        ctx.chart
+            .found(instant: birth, place: place, utcOffsetSeconds: 20700)
+            .gochar,
+        isEmpty,
+      );
+      final instants = [for (var k = 0; k < 24; k++) 2460676.5 + 30 * k];
+      final verdicts = <GocharVerdict>{};
+      for (final from in GocharFrom.values) {
+        final readings =
+            ctx.chart
+                .found(
+                  instant: birth,
+                  place: place,
+                  utcOffsetSeconds: 20700,
+                  gochar: GocharRequest(instants: instants, from: from),
+                )
+                .gochar;
+        expect(readings, hasLength(instants.length));
+        for (final (k, reading) in readings.indexed) {
+          expect(reading.instant, instants[k]);
+          expect(reading.reference.from, from);
+          expect(reading.rules.nodeVedha, NodeVedha.likeTheSun);
+          expect(reading.rules.nodeObstruction, NodeObstruction.notEachOther);
+          expect(reading.grahas, hasLength(9));
+          for (final g in reading.grahas) {
+            expect(g.house, inInclusiveRange(1, 12));
+            expect(
+              g.transit.degrees,
+              allOf(greaterThanOrEqualTo(0), lessThan(30)),
+            );
+            final expected =
+                !g.goodHouse
+                    ? GocharVerdict.notGood
+                    : g.obstructedBy.isNotEmpty
+                    ? GocharVerdict.obstructed
+                    : GocharVerdict.good;
+            expect(g.verdict, expected, reason: '${g.graha} in ${g.house}');
+            if (!g.goodHouse) expect(g.vedhaHouse, isNull);
+            verdicts.add(g.verdict);
+          }
+          final rahu = reading.grahas[7];
+          final ketu = reading.grahas[8];
+          expect(
+            (ketu.house - rahu.house) % 12,
+            6,
+            reason: 'the nodes stand opposite',
+          );
+          expect(rahu.obstructedBy, isNot(contains(Graha.ketu)));
+        }
+      }
+      expect(verdicts, GocharVerdict.values.toSet());
+      expect(
+        () => ctx.chart.found(
+          instant: birth,
+          place: place,
+          utcOffsetSeconds: 20700,
+          gochar: const GocharRequest(instants: []),
+        ),
+        throwsA(
+          isA<TeistroException>().having(
+            (e) => e.field,
+            'field',
+            'gochar.instants',
+          ),
+        ),
+      );
+      ctx.dispose();
+    },
+  );
+
   test('a chart carries its karakamsha and its Brahma graha, or why not', () {
     final ctx = context();
     final place = Observer(

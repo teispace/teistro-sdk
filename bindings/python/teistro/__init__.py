@@ -30,7 +30,7 @@ from dataclasses import dataclass, replace
 from functools import cached_property
 from pathlib import Path
 from types import MappingProxyType, TracebackType
-from typing import Any, Callable, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Sequence, Tuple, TypedDict, TypeVar, Union
+from typing import Any, Callable, Dict, Generic, Iterator, List, Literal, Mapping, NamedTuple, Optional, Required, Sequence, Tuple, TypedDict, TypeVar, Union
 
 from . import messages as intl
 from ._blob import (
@@ -122,6 +122,11 @@ from .catalogue import (
     Nature,
     BrahmaRule,
     BrahmaOutcome,
+    GocharFrom,
+    NodeVedha,
+    NodeObstruction,
+    GocharVerdict,
+    Fruition,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -354,6 +359,18 @@ __all__ = [
     "BrahmaRule",
     "BrahmaOutcome",
     "JaiminiReading",
+    # Gochar: the transits read against a chart, and their names.
+    "GocharRequest",
+    "GocharReading",
+    "GocharReference",
+    "GocharRules",
+    "GrahaGochar",
+    "Transit",
+    "GocharFrom",
+    "NodeVedha",
+    "NodeObstruction",
+    "GocharVerdict",
+    "Fruition",
     "Nature",
     # The Vaiseshikamsa: what a chart answers with, and its names.
     "GrahaVaiseshikamsa",
@@ -1281,6 +1298,7 @@ class ChartArea(_Area):
         rules: Optional[RuleRequest] = None,
         interpret: Optional[PlanRequest] = None,
         varsha: Optional[VarshaRequest] = None,
+        gochar: Optional[GocharRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1318,6 +1336,7 @@ class ChartArea(_Area):
             rules=rules,
             interpret=interpret,
             varsha=varsha,
+            gochar=gochar,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1345,6 +1364,7 @@ class ChartArea(_Area):
         rules: Optional[RuleRequest] = None,
         interpret: Optional[PlanRequest] = None,
         varsha: Optional[VarshaRequest] = None,
+        gochar: Optional[GocharRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1403,6 +1423,7 @@ class ChartArea(_Area):
             rules_json=_rules_json(rules),
             interpret_json=_interpret_json(interpret),
             varsha_json=_varsha_json(varsha),
+            gochar_json=_gochar_json(gochar),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -2157,6 +2178,99 @@ class GrahaDashaPhala:
 
     unfavourable: bool
     """Whether its placement makes its dasha unfavourable; both can hold."""
+
+
+GocharRequest = TypedDict(
+    "GocharRequest",
+    {"instants": Required[Sequence[float]], "from": Literal["MOON", "LAGNA"]},
+    total=False,
+)
+GocharRequest.__doc__ = """The transits to read against every chart of a request
+(`03-design/gochar.md`): `instants`, UTC Julian days, at least one, and
+`from`, what to count the houses from — `"MOON"` (Phaladeepika ch. 26 v. 1's,
+the default) or `"LAGNA"`. A functional `TypedDict` because `from` is a
+keyword, and the record is spelt as every binding spells it.
+
+>>> asked: GocharRequest = {"instants": [2460676.5], "from": "LAGNA"}
+"""
+
+
+@dataclass(frozen=True)
+class GocharReference:
+    """What a gochar reading counted its houses from, and that point's sign."""
+
+    from_: GocharFrom
+    """The natal Moon (v. 1) or, asked, the lagna (C139); `from_` because
+    `from` is a keyword."""
+
+    sign: Rashi
+    """Its sign."""
+
+
+@dataclass(frozen=True)
+class GocharRules:
+    """The readings of the nodes a transit was judged under, the settings'
+    `gochar` group."""
+
+    node_vedha: NodeVedha
+    """The nodes' vedha (C136)."""
+
+    node_obstruction: NodeObstruction
+    """Whom the nodes obstruct (C137, C140)."""
+
+
+@dataclass(frozen=True)
+class Transit:
+    """A graha in transit: the sign it stands in and its degrees within it."""
+
+    sign: Rashi
+    degrees: float
+    """Degrees within the sign, 0 to 30."""
+
+
+@dataclass(frozen=True)
+class GrahaGochar:
+    """One graha's transit, read from the reference sign."""
+
+    graha: Graha
+    transit: Transit
+    house: int
+    """Its house from the reference sign, 1 to 12."""
+
+    good_house: bool
+    """Whether v. 2 makes a transit of this house good."""
+
+    vedha_house: Optional[int]
+    """The house whose occupant obstructs it (vv. 3 to 8); `None` where
+    nothing can."""
+
+    obstructed_by: Tuple[Graha, ...]
+    """The grahas standing in the vedha house that obstruct it, the verses'
+    exemptions left out, in id order."""
+
+    verdict: GocharVerdict
+    fruition: Fruition
+    """The decanate in which its transit bears fruit (v. 25)."""
+
+    fruitful_now: bool
+    """Whether it stands in that decanate now."""
+
+
+@dataclass(frozen=True)
+class GocharReading:
+    """Every graha's transit at one instant, read from the natal chart.
+
+    >>> # chart = ctx.chart.found(..., gochar={"instants": [2460676.5]})
+    >>> # good = [g.graha for g in chart.gochar[0].grahas if g.verdict is GocharVerdict.GOOD]
+    """
+
+    instant: float
+    """The instant, a UTC Julian day."""
+
+    reference: GocharReference
+    rules: GocharRules
+    grahas: Tuple[GrahaGochar, ...]
+    """Each graha's, the Sun to Ketu."""
 
 
 @dataclass(frozen=True)
@@ -3679,6 +3793,19 @@ def _interpret_json(interpret: Optional[PlanRequest]) -> Optional[str]:
     return _record_json(interpret, "interpret", "{'placements': True}")
 
 
+def _gochar_json(gochar: Optional[GocharRequest]) -> Optional[str]:
+    """The transits as the JSON the boundary reads, or nothing for none. The
+    instants are written as a list whatever sequence held them; the rest — an
+    empty list, an unknown `from` — is refused by the SDK, naming the field
+    from `gochar`, as in every binding."""
+    if not isinstance(gochar, Mapping):
+        return _record_json(gochar, "gochar", "{'instants': [2460676.5], 'from': 'MOON'}")
+    written: Dict[str, Any] = dict(gochar)
+    if "instants" in written and not isinstance(written["instants"], (str, bytes)):
+        written["instants"] = list(written["instants"])
+    return _record_json(written, "gochar", "{'instants': [2460676.5], 'from': 'MOON'}")
+
+
 def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
     """The annual charts as the JSON the boundary reads, or nothing for none.
 
@@ -4679,6 +4806,13 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def gochar(self) -> Tuple[GocharReading, ...]:
+        """The transits read against this chart, one reading an instant in the
+        order `gochar["instants"]` asked; empty unless asked for."""
+        parsed = self.batch._gochars
+        return parsed[self.index] if self.index < len(parsed) else ()
+
+    @property
     def jaimini(self) -> Optional[JaiminiReading]:
         """Jaimini's significators, when `jaimini=True` asked for them."""
         parsed = self.batch._jaiminis
@@ -5041,6 +5175,51 @@ class ChartBatch:
             )
 
         return [reading(chart) for chart in range(c.length)]
+
+    @cached_property
+    def _gochars(self) -> list[Tuple[GocharReading, ...]]:
+        """Every chart's transits, decoded once; empty when none were asked
+        for. Fixed rather than ragged: the request settles how many instants
+        every chart gets, so each chart holds the section's rows over the
+        chart count."""
+        c = self.decoded.gochar
+        g = self.decoded.gochar_grahas
+        charts = self.decoded.chart_count
+        per_chart, left = divmod(c.length, charts) if charts else (0, 0)
+        if left or g.length != c.length * 9:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"gochar has {c.length} rows and {g.length} grahas over {charts} charts;"
+                " it is every chart at every instant, nine grahas each",
+            )
+
+        def graha(at: int) -> GrahaGochar:
+            return GrahaGochar(
+                graha=Graha(g.graha[at]),
+                transit=Transit(sign=Rashi(g.sign[at]), degrees=g.degrees[at]),
+                house=g.house[at],
+                good_house=g.good_house[at] == 1,
+                vedha_house=g.vedha_house[at] or None,
+                obstructed_by=tuple(_members(g.obstructed_by[at], _NINE)),
+                verdict=GocharVerdict(g.verdict[at]),
+                fruition=Fruition(g.fruition[at]),
+                fruitful_now=g.fruitful_now[at] == 1,
+            )
+
+        def reading(row: int) -> GocharReading:
+            return GocharReading(
+                instant=c.instant[row],
+                reference=GocharReference(from_=GocharFrom(c.counted_from[row]), sign=Rashi(c.reference[row])),
+                rules=GocharRules(
+                    node_vedha=NodeVedha(c.node_vedha[row]),
+                    node_obstruction=NodeObstruction(c.node_obstruction[row]),
+                ),
+                grahas=tuple(graha(row * 9 + k) for k in range(9)),
+            )
+
+        return [
+            tuple(reading(chart * per_chart + k) for k in range(per_chart)) for chart in range(charts)
+        ]
 
     @cached_property
     def _vaiseshikamsas(self) -> list[VaiseshikamsaReading]:

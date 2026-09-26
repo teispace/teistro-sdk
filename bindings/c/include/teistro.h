@@ -4588,6 +4588,93 @@ typedef enum ts_brahma_outcome {
 } ts_brahma_outcome;
 
 /**
+ * What a gochar reading counted its houses from (crux C139).
+ */
+typedef enum ts_gochar_from {
+    /**
+     * The natal Moon's sign, Phaladeepika ch. 26 v. 1's.
+     */
+    TS_GOCHAR_FROM_MOON = 0,
+    /**
+     * The natal lagna's sign.
+     */
+    TS_GOCHAR_FROM_LAGNA = 1,
+} ts_gochar_from;
+
+/**
+ * The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).
+ */
+typedef enum ts_node_vedha {
+    /**
+     * The Sun's vedha pairs.
+     */
+    TS_NODE_VEDHA_LIKE_THE_SUN = 0,
+    /**
+     * None: nothing obstructs a node's transit.
+     */
+    TS_NODE_VEDHA_NONE = 1,
+} ts_node_vedha;
+
+/**
+ * Whom the nodes obstruct in transit, the settings' `gochar.node_obstruction`
+ * (C137, C140).
+ */
+typedef enum ts_node_obstruction {
+    /**
+     * The seven, and not each other.
+     */
+    TS_NODE_OBSTRUCTION_NOT_EACH_OTHER = 0,
+    /**
+     * Every graha, each other too: the verses read literally.
+     */
+    TS_NODE_OBSTRUCTION_EACH_OTHER_TOO = 1,
+    /**
+     * Nobody: only the seven obstruct.
+     */
+    TS_NODE_OBSTRUCTION_NONE = 2,
+} ts_node_obstruction;
+
+/**
+ * What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
+ */
+typedef enum ts_gochar_verdict {
+    /**
+     * In a good house, and nothing stands in its vedha house.
+     */
+    TS_GOCHAR_VERDICT_GOOD = 0,
+    /**
+     * In a good house, and another graha stands in its vedha house.
+     */
+    TS_GOCHAR_VERDICT_OBSTRUCTED = 1,
+    /**
+     * Not in a house v. 2 names good.
+     */
+    TS_GOCHAR_VERDICT_NOT_GOOD = 2,
+} ts_gochar_verdict;
+
+/**
+ * Where in a sign a graha's transit bears fruit (v. 25).
+ */
+typedef enum ts_fruition {
+    /**
+     * The first ten degrees: the Sun and Mars.
+     */
+    TS_FRUITION_FIRST = 0,
+    /**
+     * The middle ten: Jupiter and Venus.
+     */
+    TS_FRUITION_MIDDLE = 1,
+    /**
+     * The last ten: the Moon and Saturn.
+     */
+    TS_FRUITION_LAST = 2,
+    /**
+     * The whole sign: Mercury and the nodes.
+     */
+    TS_FRUITION_THROUGHOUT = 3,
+} ts_fruition;
+
+/**
  * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
  */
 typedef enum ts_dasha_phase {
@@ -6598,6 +6685,18 @@ struct ts_chart_request {
      * every binding calls `varsha`, as `varsha.through`. May be null.
      */
     const char * varsha_json;
+    /**
+     * The transits to read against every chart in the batch, as a JSON
+     * object: `instants`, UTC Julian days, at least one, and `from` —
+     * `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`.
+     * Each chart's readings come back in the `gochar` section, a row an
+     * instant, and its grahas in `gochar_grahas`, under the settings'
+     * `gochar` group. Null for none (`03-design/gochar.md`). Refusals are
+     * named from the record every binding calls `gochar`, as
+     * `gochar.instants`.
+     * Example: {"instants":[2460676.5],"from":"MOON"}. May be null.
+     */
+    const char * gochar_json;
 };
 
 /**
@@ -7483,7 +7582,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 144, "ts_chart_request is 144 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 152, "ts_chart_request is 152 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

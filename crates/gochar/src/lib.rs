@@ -10,13 +10,13 @@
 //!
 //! ```
 //! use teistro_core::catalogue::{Graha, Rashi};
-//! use teistro_gochar::{GocharRules, Transit, Verdict, gochar};
+//! use teistro_gochar::{GocharRules, Reference, Transit, Verdict, gochar};
 //!
 //! // The natal Moon in Aries; every graha transiting Taurus but the Sun in
 //! // Gemini, the 3rd from the Moon, where v. 2 makes its transit good.
 //! let mut transits = [Transit::new(Rashi::Taurus, 15.0); 9];
 //! transits[Graha::Sun as usize] = Transit::new(Rashi::Gemini, 5.0);
-//! let reading = gochar(Rashi::Aries, &transits, GocharRules::TEXT);
+//! let reading = gochar(Reference::moon(Rashi::Aries), &transits, GocharRules::TEXT);
 //! let sun = &reading.grahas[Graha::Sun as usize];
 //! assert_eq!(sun.house, 3);
 //! assert_eq!(sun.verdict, Verdict::Good);
@@ -45,6 +45,57 @@ pub const GRAHAS: [Graha; 9] = [
     Graha::Rahu,
     Graha::Ketu,
 ];
+
+/// What gochar counts the houses from (crux C139).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum GocharFrom {
+    /// The natal Moon's sign, as Phaladeepika ch. 26 v. 1 counts them: "of
+    /// all the lagnas, the Moon's".
+    #[default]
+    Moon,
+    /// The natal lagna's sign, a second reference some software offers and
+    /// the verse does not.
+    Lagna,
+}
+
+impl GocharFrom {
+    /// Every reference, for a crossing to hold each to a code of its own.
+    pub const ALL: &'static [GocharFrom] = &[GocharFrom::Moon, GocharFrom::Lagna];
+}
+
+/// The sign the houses are counted from, and which natal point's it is:
+/// a reading says both, so it can be told from one counted otherwise.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Reference {
+    /// Which natal point.
+    pub from: GocharFrom,
+    /// Its sign.
+    pub sign: Rashi,
+}
+
+impl Reference {
+    /// The natal Moon in `sign`, v. 1's reference.
+    #[must_use]
+    pub const fn moon(sign: Rashi) -> Reference {
+        Reference {
+            from: GocharFrom::Moon,
+            sign,
+        }
+    }
+
+    /// The natal lagna in `sign`.
+    #[must_use]
+    pub const fn lagna(sign: Rashi) -> Reference {
+        Reference {
+            from: GocharFrom::Lagna,
+            sign,
+        }
+    }
+}
 
 /// A graha in transit: the sign it stands in and its degrees within it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -194,8 +245,8 @@ pub struct GrahaGochar {
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct GocharReading {
-    /// The sign the houses are counted from: the natal Moon's by v. 1.
-    pub reference: Rashi,
+    /// What the houses are counted from: the natal Moon's sign by v. 1.
+    pub reference: Reference,
     /// The readings under which the transits were judged.
     pub rules: GocharRules,
     /// Each graha's, the Sun to Ketu.
@@ -278,14 +329,14 @@ fn house(reference: Rashi, sign: Rashi) -> u8 {
 /// Every graha's transit read from `reference`, the Sun to Ketu, under the
 /// settings' readings of what the text leaves open.
 #[must_use]
-pub fn gochar(reference: Rashi, transits: &[Transit; 9], rules: GocharRules) -> GocharReading {
-    let houses = transits.map(|transit| house(reference, transit.sign));
+pub fn gochar(reference: Reference, transits: &[Transit; 9], rules: GocharRules) -> GocharReading {
+    let houses = transits.map(|transit| house(reference.sign, transit.sign));
     let grahas = GRAHAS.map(|graha| {
         let index = graha as usize;
         let transit = transits
             .get(index)
             .copied()
-            .unwrap_or(Transit::new(reference, 0.0));
+            .unwrap_or(Transit::new(reference.sign, 0.0));
         let at = houses.get(index).copied().unwrap_or(1);
         let pair = pairs(graha, rules).find(|(good, _)| *good == at);
         let vedha_house = pair.and_then(|(_, vedha)| vedha);

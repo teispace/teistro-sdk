@@ -375,6 +375,7 @@ def main() -> None:
             vaiseshikamsa=True,
             dasha_phala=True,
             jaimini=True,
+            gochar={"instants": [2460676.5, 2460736.5]},
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -612,6 +613,21 @@ def main() -> None:
                 + f" {brahma_graha.passed_from.full_key if brahma_graha.passed_from else '-'}"
                 + f" {brahma_graha.none.key if brahma_graha.none else '-'}",
             )
+            for slot, transit in enumerate(chart.gochar):
+                ref, rules = transit.reference, transit.rules
+                put(
+                    f"chart-{i}-gochar-{slot}",
+                    f"{number(transit.instant)} {ref.from_.key} {ref.sign.full_key}"
+                    + f" {rules.node_vedha.key} {rules.node_obstruction.key}",
+                )
+                for k, moving in enumerate(transit.grahas):
+                    put(
+                        f"chart-{i}-gochar-{slot}-{k}",
+                        f"{moving.graha.full_key} {moving.transit.sign.full_key} {number(moving.transit.degrees)} {moving.house}"
+                        + f" {str(moving.good_house).lower()} {moving.vedha_house if moving.vedha_house is not None else '-'}"
+                        + f" {','.join(o.full_key for o in moving.obstructed_by) or '-'}"
+                        + f" {moving.verdict.key} {moving.fruition.key} {str(moving.fruitful_now).lower()}",
+                    )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

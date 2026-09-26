@@ -25,7 +25,7 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use teistro::catalogue::{Graha, Rashi};
-use teistro::gochar::{GRAHAS, GocharReading, GocharRules, Transit, Verdict, gochar};
+use teistro::gochar::{GRAHAS, GocharReading, GocharRules, Reference, Transit, Verdict, gochar};
 use teistro::quantity::{JulianDay, Utc};
 use teistro::settings::{NodeObstruction, NodeVedha};
 use teistro::{Context, Ephemeris, GocharFrom, GocharRequest};
@@ -275,7 +275,7 @@ fn over_sky(sdk: &Context, born: &[Birth]) -> Result<OverSky, String> {
     for day in &read {
         let transits = transits_of(day);
         for reference in Rashi::ALL {
-            let reading = gochar(reference, &transits, GocharRules::TEXT);
+            let reading = gochar(Reference::moon(reference), &transits, GocharRules::TEXT);
             out.readings += 1;
             tally(&mut out.verdicts, &reading);
             for read in &reading.grahas {
@@ -305,7 +305,7 @@ fn over_sky(sdk: &Context, born: &[Birth]) -> Result<OverSky, String> {
                     }
                 }
             }
-            let literally = gochar(reference, &transits, literal);
+            let literally = gochar(Reference::moon(reference), &transits, literal);
             for (node, other) in [(Graha::Rahu, Graha::Ketu), (Graha::Ketu, Graha::Rahu)] {
                 if let Some(read) = literally.grahas.get(index(node))
                     && read.good_house

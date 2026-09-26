@@ -1493,6 +1493,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             rules_json: ptr::null(),
             interpret_json: ptr::null(),
             varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1627,6 +1628,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             rules_json: ptr::null(),
             interpret_json: ptr::null(),
             varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1717,6 +1719,173 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
     assert!(unstated.1.contains("kernel"), "{unstated:?}");
 }
 
+/// The transits cross: a request's `gochar_json` answers every chart's
+/// readings in the `gochar` section, a row a chart an instant, and their
+/// grahas in `gochar_grahas`, each the façade's own reading of that chart
+/// (`03-design/gochar.md`).
+#[test]
+fn a_chart_request_answers_the_transits() {
+    use teistro::gochar::{Fruition, Verdict};
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    let births = [2_447_995.489_583_333_5, 2_451_545.0];
+    let text = r#"{"instants":[2460676.5,2460706.5,2460736.5],"from":"LAGNA"}"#;
+    let gochar = CString::new(text).unwrap();
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: births.as_ptr(),
+            instant_count: births.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
+            gochar_json: gochar.as_ptr(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let column = |section: &str, name: &str| reader.column(section, name).unwrap();
+
+    // The façade's own readings of the same births, to hold each cell to.
+    let sdk = teistro::Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 1400.0).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &births.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(
+                place,
+                teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+            ),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::GocharRequest::from_json(text).unwrap();
+    let expected: Vec<_> = natal
+        .iter()
+        .flat_map(|document| sdk.chart().gochar(document, &asked).unwrap().value)
+        .collect();
+
+    // Fixed, not ragged: two charts of three instants, nine grahas each.
+    let instant = column("gochar", "instant");
+    assert_eq!(instant.len(), 6);
+    assert_eq!(column("gochar_grahas", "graha").len(), 54);
+    let (reference, from) = (
+        column("gochar", "reference"),
+        column("gochar", "counted_from"),
+    );
+    let grahas = [
+        "graha",
+        "sign",
+        "degrees",
+        "house",
+        "good_house",
+        "vedha_house",
+        "obstructed_by",
+        "verdict",
+        "fruition",
+        "fruitful_now",
+    ]
+    .map(|name| column("gochar_grahas", name));
+    for (row, reading) in expected.iter().enumerate() {
+        assert_eq!(instant[row].as_f64(), asked.instants()[row % 3].get());
+        assert_eq!(
+            reference[row].as_i64(),
+            i64::from(reading.reference.sign.id())
+        );
+        assert_eq!(from[row].as_i64(), 1, "LAGNA");
+        for (g, read) in reading.grahas.iter().enumerate() {
+            let at = row * 9 + g;
+            let cell = |c: usize| grahas[c][at].as_i64();
+            assert_eq!(cell(0), i64::from(read.graha.id()));
+            assert_eq!(cell(1), i64::from(read.transit.sign.id()));
+            assert_eq!(grahas[2][at].as_f64(), read.transit.degrees);
+            assert_eq!(cell(3), i64::from(read.house));
+            assert_eq!(cell(4), i64::from(read.good_house));
+            assert_eq!(cell(5), i64::from(read.vedha_house.unwrap_or(0)));
+            let mask = read
+                .obstructed_by
+                .iter()
+                .fold(0, |bits, graha| bits | 1 << graha.id());
+            assert_eq!(cell(6), mask);
+            let verdict = [Verdict::Good, Verdict::Obstructed, Verdict::NotGood];
+            assert_eq!(verdict[usize::try_from(cell(7)).unwrap()], read.verdict);
+            let fruition = [
+                Fruition::First,
+                Fruition::Middle,
+                Fruition::Last,
+                Fruition::Throughout,
+            ];
+            assert_eq!(fruition[usize::try_from(cell(8)).unwrap()], read.fruition);
+            assert_eq!(cell(9), i64::from(read.fruitful_now));
+        }
+    }
+
+    // A request that names no instant is refused from the field the caller
+    // wrote, and so is a reference nobody counts from.
+    let refused = |json: &str| {
+        let text = CString::new(json).unwrap();
+        let asked = TsChartRequest {
+            gochar_json: text.as_ptr(),
+            ..request
+        };
+        let mut out = TsBlob::empty();
+        // SAFETY: as above.
+        let status = unsafe { ts_chart_found(ctx.handle, &raw const asked, &raw mut out) };
+        assert_eq!(status, Status::InvalidArg, "{json}");
+        ctx.last_error()
+    };
+    let empty = refused(r#"{"instants":[]}"#);
+    assert_eq!(empty.2.as_deref(), Some("gochar.instants"), "{empty:?}");
+    let unknown = refused(r#"{"instants":[2460676.5],"from":"SUN"}"#);
+    assert!(
+        unknown
+            .2
+            .as_deref()
+            .is_some_and(|f| f.starts_with("gochar")),
+        "{unknown:?}"
+    );
+}
+
 /// The annual charts cross: a request's `varsha_json` answers every chart's
 /// returns in the `praveshas` section, ragged by `cast.pravesha_count`, and
 /// the Sun at a return stands where it stood at birth
@@ -1757,6 +1926,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             rules_json: ptr::null(),
             interpret_json: ptr::null(),
             varsha_json: varsha.as_ptr(),
+            gochar_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1877,6 +2047,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             rules_json: ptr::null(),
             interpret_json: ptr::null(),
             varsha_json: text.as_ptr(),
+            gochar_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2002,6 +2173,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             rules_json: ptr::null(),
             interpret_json: ptr::null(),
             varsha_json: varsha.as_ptr(),
+            gochar_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2746,6 +2918,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             rules_json: ptr::null(),
             interpret_json: ptr::null(),
             varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2843,6 +3016,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             rules_json: rules.as_ptr(),
             interpret_json: ptr::null(),
             varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3005,6 +3179,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             rules_json: rules.as_ptr(),
             interpret_json: plans.as_ptr(),
             varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3260,6 +3435,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 rules_json: rules.as_ptr(),
                 interpret_json: plans.as_ptr(),
                 varsha_json: ptr::null(),
+                gochar_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );
