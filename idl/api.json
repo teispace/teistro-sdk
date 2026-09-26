@@ -6608,6 +6608,84 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsHitKind",
+      "doc": "What a hit of the transit hit list was (`03-design/transit-hit-list.md`).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "SignIngress",
+          "value": 0,
+          "doc": "The graha entered a sign.",
+          "key": "SIGN_INGRESS"
+        },
+        {
+          "name": "NakshatraIngress",
+          "value": 1,
+          "doc": "The graha entered a nakshatra.",
+          "key": "NAKSHATRA_INGRESS"
+        },
+        {
+          "name": "Station",
+          "value": 2,
+          "doc": "The graha stood still in longitude.",
+          "key": "STATION"
+        },
+        {
+          "name": "Aspect",
+          "value": 3,
+          "doc": "The graha aspected a natal point, or came within or left its orb.",
+          "key": "ASPECT"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsMotion",
+      "doc": "Which way a graha was moving, through a line or out of a station.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Direct",
+          "value": 0,
+          "doc": "Forward through the zodiac.",
+          "key": "DIRECT"
+        },
+        {
+          "name": "Retrograde",
+          "value": 1,
+          "doc": "Backward.",
+          "key": "RETROGRADE"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsAspectPhase",
+      "doc": "Where in an aspect's window a hit falls (C146).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Entering",
+          "value": 0,
+          "doc": "The transit came within the orb.",
+          "key": "ENTERING"
+        },
+        {
+          "name": "Exact",
+          "value": 1,
+          "doc": "The aspect is exact.",
+          "key": "EXACT"
+        },
+        {
+          "name": "Leaving",
+          "value": 2,
+          "doc": "The transit passed out of the orb.",
+          "key": "LEAVING"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsNodeVedha",
       "doc": "The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).",
       "repr": "u8",
@@ -10681,6 +10759,21 @@
             "example": "{\"instants\":[2460676.5],\"from\":\"MOON\"}",
             "nullable": true
           }
+        },
+        {
+          "name": "hits_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "The transit hit list to search against every chart in the batch,\nas a JSON object: the window `from` and `to`, UTC Julian days, and\noptionally `grahas` (keys, the nine by default), `kinds`\n(`\"SIGN_INGRESS\"`, `\"NAKSHATRA_INGRESS\"`, `\"STATION\"`, `\"ASPECT\"`;\nall by default), `points` (the natal points aspected: a graha's key\nor `\"LAGNA\"`, or an answer's `to`; the nine and the lagna by\ndefault), `aspects` (angles, multiples of 30 to 180; 0 and 180 by\ndefault, C145) and `orbDeg` (more than 0 and under 15, for the\nwindows' edges; exact only by default, C146).\nEach chart's hits come back in the `hits` section, `cast.hit_count`\nrows a chart, the sky searched once for the batch. Null for none\n(`03-design/transit-hit-list.md`). Refusals are named from the\nrecord every binding calls `hits`, as `hits.to`.",
+          "meta": {
+            "example": "{\"from\":2460676.5,\"to\":2461041.5,\"grahas\":[\"SATURN\"]}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -13986,6 +14079,11 @@
               "name": "natal_saham_count",
               "scalar": "u32",
               "doc": "How many rows of the `natal_sahams` section belong to this chart: the sahams `varsha_json.sahams` asked for, 0 to 41."
+            },
+            {
+              "name": "hit_count",
+              "scalar": "u32",
+              "doc": "How many rows of the `hits` section belong to this chart. Zero when no hit list was asked for.\n\nRagged because a chart's aspects are its own: the sky's ingresses and stations are every chart's alike, but how often a transit crosses a natal point depends on where the point stands."
             }
           ]
         },
@@ -16398,6 +16496,63 @@
               "scalar": "u8",
               "doc": "Where it stands against 28 (v. 20; C142).",
               "enum": "TsSarvaStanding"
+            }
+          ]
+        },
+        {
+          "id": 56,
+          "name": "hits",
+          "doc": "Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "instant",
+              "scalar": "f64",
+              "doc": "When, as a Julian day (UTC)."
+            },
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "The transiting graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "kind",
+              "scalar": "u8",
+              "doc": "What happened, which says which columns below mean something.",
+              "enum": "TsHitKind"
+            },
+            {
+              "name": "into",
+              "scalar": "u16",
+              "doc": "The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed."
+            },
+            {
+              "name": "motion",
+              "scalar": "u8",
+              "doc": "Which way the graha was moving through the line, or, for a station, the motion it turned to.",
+              "enum": "TsMotion"
+            },
+            {
+              "name": "to_lagna",
+              "scalar": "u8",
+              "doc": "For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind."
+            },
+            {
+              "name": "to_graha",
+              "scalar": "u16",
+              "doc": "For an aspect to a natal graha, which (a `Graha` id); 0 otherwise."
+            },
+            {
+              "name": "angle",
+              "scalar": "u16",
+              "doc": "For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind."
+            },
+            {
+              "name": "phase",
+              "scalar": "u8",
+              "doc": "For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect.",
+              "enum": "TsAspectPhase"
             }
           ]
         }

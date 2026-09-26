@@ -708,6 +708,7 @@ final class ChartArea extends _Area {
     PlanRequest? interpret,
     VarshaRequest? varsha,
     GocharRequest? gochar,
+    HitRequest? hits,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -732,6 +733,7 @@ final class ChartArea extends _Area {
     interpret: interpret,
     varsha: varsha,
     gochar: gochar,
+    hits: hits,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -776,6 +778,7 @@ final class ChartArea extends _Area {
     PlanRequest? interpret,
     VarshaRequest? varsha,
     GocharRequest? gochar,
+    HitRequest? hits,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -822,6 +825,7 @@ final class ChartArea extends _Area {
             interpretJson: interpret?._json,
             varshaJson: varsha?._json,
             gocharJson: gochar?._json,
+            hitsJson: hits?._json,
           ),
         ),
       ),
@@ -3814,6 +3818,36 @@ List<DashaPhalaReading> _decodeDashaPhalas(Charts batch) {
 }
 
 /// Each batch's transits, decoded once however many charts read them.
+/// One row of the `hits` section as the Rust `Hit` spells it.
+Hit _hitAt(ChartsHits h, int row) {
+  final motion = Motion.byId(h.motion[row]);
+  final HitEvent event = switch (HitKind.byId(h.kind[row])) {
+    HitKind.signIngress => SignIngress(
+      into: Rashi.byId(h.into[row]),
+      motion: motion,
+    ),
+    HitKind.nakshatraIngress => NakshatraIngress(
+      into: Nakshatra.byId(h.into[row]),
+      motion: motion,
+    ),
+    HitKind.station => Station(turns: motion),
+    HitKind.aspect => AspectHit(
+      to:
+          h.toLagna[row] != 0
+              ? const NatalLagna()
+              : NatalGraha(Graha.byId(h.toGraha[row])),
+      angle: h.angle[row],
+      phase: AspectPhase.byId(h.phase[row]),
+      motion: motion,
+    ),
+  };
+  return Hit(
+    instant: h.instant[row],
+    graha: Graha.byId(h.graha[row]),
+    event: event,
+  );
+}
+
 final Expando<List<List<GocharReading>>> _gochars =
     Expando<List<List<GocharReading>>>('gochars');
 
@@ -4245,6 +4279,200 @@ enum VarshaReading {
 
   /// The key the boundary reads.
   final String key;
+}
+
+/// The transit hit list to search against every chart of a request
+/// (`03-design/transit-hit-list.md`): the window, and optionally the grahas,
+/// the kinds of event, the natal points aspected, the aspects' angles and an
+/// orb. Anything left out is the default: every graha, every kind, the nine
+/// grahas and the lagna, the conjunction and opposition (C145), exact only
+/// (C146). The sky is searched once for the whole batch.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ hits: const HitRequest(from: 2460676.5, to: 2461041.5, grahas: [Graha.saturn]),
+/// );
+/// final ingresses = chart.hits.where((h) => h.event is SignIngress);
+/// ```
+final class HitRequest {
+  const HitRequest({
+    required this.from,
+    required this.to,
+    this.grahas,
+    this.kinds,
+    this.points,
+    this.aspects,
+    this.orbDeg,
+  });
+
+  /// The window's start, a UTC Julian day.
+  final double from;
+
+  /// The window's end, after the start, or the SDK refuses it by `hits.to`.
+  final double to;
+
+  /// The grahas to search; the nine by default.
+  final List<Graha>? grahas;
+
+  /// The kinds of event to report; all four by default.
+  final List<HitKind>? kinds;
+
+  /// The natal points aspected; the nine grahas and the lagna by default.
+  final List<NatalPoint>? points;
+
+  /// The aspects' angles, multiples of 30 from 0 to 180; 0 and 180 by default.
+  final List<int>? aspects;
+
+  /// An orb in degrees, more than 0 and under 15, for each window's opening
+  /// and closing; exact only by default.
+  final double? orbDeg;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'from': from,
+    'to': to,
+    if (grahas case final grahas?) 'grahas': [for (final g in grahas) g.key],
+    if (kinds case final kinds?) 'kinds': [for (final k in kinds) k.key],
+    if (points case final points?) 'points': [for (final p in points) p._json],
+    if (aspects case final aspects?) 'aspects': aspects,
+    if (orbDeg case final orbDeg?) 'orbDeg': orbDeg,
+  });
+}
+
+/// A natal point a transit aspects: a natal graha ([NatalGraha]) or the
+/// lagna ([NatalLagna]). It goes into [HitRequest.points] as it comes back
+/// in an aspect's [AspectHit.to].
+sealed class NatalPoint {
+  const NatalPoint();
+
+  /// `'GRAHA'` or `'LAGNA'`, as every binding spells it.
+  String get point;
+
+  Map<String, Object?> get _json;
+}
+
+/// A natal graha, as a point a transit aspects.
+final class NatalGraha extends NatalPoint {
+  const NatalGraha(this.graha);
+
+  /// Which.
+  final Graha graha;
+
+  @override
+  String get point => 'GRAHA';
+
+  @override
+  Map<String, Object?> get _json => {'point': point, 'graha': graha.key};
+
+  @override
+  bool operator ==(Object other) => other is NatalGraha && other.graha == graha;
+
+  @override
+  int get hashCode => graha.hashCode;
+}
+
+/// The natal lagna, as a point a transit aspects.
+final class NatalLagna extends NatalPoint {
+  const NatalLagna();
+
+  @override
+  String get point => 'LAGNA';
+
+  @override
+  Map<String, Object?> get _json => {'point': point};
+
+  @override
+  bool operator ==(Object other) => other is NatalLagna;
+
+  @override
+  int get hashCode => point.hashCode;
+}
+
+/// What a hit was: [SignIngress], [NakshatraIngress], [Station] or
+/// [AspectHit], each carrying only its own fields.
+sealed class HitEvent {
+  const HitEvent();
+
+  /// Which kind, as the event's tag.
+  HitKind get kind;
+}
+
+/// The graha entered a sign; a retrograde ingress enters the one before
+/// the line it crossed.
+final class SignIngress extends HitEvent {
+  const SignIngress({required this.into, required this.motion});
+
+  /// The sign entered.
+  final Rashi into;
+
+  /// Which way it was moving.
+  final Motion motion;
+
+  @override
+  HitKind get kind => HitKind.signIngress;
+}
+
+/// The graha entered a nakshatra.
+final class NakshatraIngress extends HitEvent {
+  const NakshatraIngress({required this.into, required this.motion});
+
+  /// The nakshatra entered.
+  final Nakshatra into;
+
+  /// Which way it was moving.
+  final Motion motion;
+
+  @override
+  HitKind get kind => HitKind.nakshatraIngress;
+}
+
+/// The graha stood still in longitude.
+final class Station extends HitEvent {
+  const Station({required this.turns});
+
+  /// The motion it turned to.
+  final Motion turns;
+
+  @override
+  HitKind get kind => HitKind.station;
+}
+
+/// The graha aspected a natal point, or came within or left its orb.
+final class AspectHit extends HitEvent {
+  const AspectHit({
+    required this.to,
+    required this.angle,
+    required this.phase,
+    required this.motion,
+  });
+
+  /// The natal point aspected.
+  final NatalPoint to;
+
+  /// The angle, 0 to 180 degrees, either side of the natal point (C145).
+  final int angle;
+
+  /// Where in the orb's window (C146); always exact without an orb.
+  final AspectPhase phase;
+
+  /// Which way the transit was moving.
+  final Motion motion;
+
+  @override
+  HitKind get kind => HitKind.aspect;
+}
+
+/// One event of the transit hit list.
+final class Hit {
+  const Hit({required this.instant, required this.graha, required this.event});
+
+  /// When, a UTC Julian day.
+  final double instant;
+
+  /// The transiting graha.
+  final Graha graha;
+
+  /// What happened.
+  final HitEvent event;
 }
 
 /// The transits to read against every chart of a request
@@ -6573,6 +6801,26 @@ final class Chart {
   List<GocharReading> get gochar {
     final all = _gocharsOf(batch);
     return index < all.length ? all[index] : const <GocharReading>[];
+  }
+
+  /// The transit hit list, sorted by instant, then graha, then kind; empty
+  /// unless `hits` asked for it (`03-design/transit-hit-list.md`). The
+  /// section is ragged: a chart's aspects depend on where its points stand.
+  List<Hit> get hits {
+    final counts = batch.cast.hitCount;
+    final h = batch.hits;
+    final total = counts.fold<int>(0, (sum, count) => sum + count);
+    if (total != h.length) {
+      throw StateError(
+        'hits has ${h.length} rows and cast.hit_count sums to $total; '
+        "it is every chart's list, concatenated",
+      );
+    }
+    var from = 0;
+    for (var i = 0; i < index; i += 1) {
+      from += counts[i];
+    }
+    return List<Hit>.generate(counts[index], (k) => _hitAt(h, from + k));
   }
 
   /// The Vaiseshikamsa, when `vaiseshikamsa: true` asked for it.

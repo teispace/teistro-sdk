@@ -342,6 +342,7 @@ const charts = geo.chart.foundMany({
   dashaPhala: true,
   jaimini: true,
   gochar: { instants: [2460676.5, 2460736.5], ashtakavarga: true },
+  hits: { from: 2460676.5, to: 2460736.5, grahas: ['SUN', 'MERCURY', 'SATURN'], aspects: [0, 90, 180], orbDeg: 2 },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -512,6 +513,15 @@ for (const chart of charts) {
           `${g.vedhaHouse ?? '-'} ${g.obstructedBy.join(',') || '-'} ${g.verdict} ${g.fruition} ${g.fruitfulNow}`,
       );
     });
+  });
+  chart.hits.forEach((hit, k) => {
+    const e = hit.event;
+    const to = e.to === undefined ? '-' : e.to.point === 'LAGNA' ? 'LAGNA' : e.to.graha;
+    put(
+      `chart-${i}-hit-${k}`,
+      `${number(hit.instant)} ${hit.graha} ${e.kind} ${e.into ?? '-'} ${e.motion ?? e.turns} ${to} ` +
+        `${e.angle ?? '-'} ${e.phase ?? '-'}`,
+    );
   });
   put(
     `chart-${i}-brahma`,

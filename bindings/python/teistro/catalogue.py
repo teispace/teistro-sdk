@@ -3712,6 +3712,45 @@ class GocharFrom(Member):
     """The natal lagna's sign."""
 
 
+class HitKind(Member):
+    """What a hit of the transit hit list was (`03-design/transit-hit-list.md`)."""
+
+    SIGN_INGRESS = 0
+    """The graha entered a sign."""
+
+    NAKSHATRA_INGRESS = 1
+    """The graha entered a nakshatra."""
+
+    STATION = 2
+    """The graha stood still in longitude."""
+
+    ASPECT = 3
+    """The graha aspected a natal point, or came within or left its orb."""
+
+
+class Motion(Member):
+    """Which way a graha was moving, through a line or out of a station."""
+
+    DIRECT = 0
+    """Forward through the zodiac."""
+
+    RETROGRADE = 1
+    """Backward."""
+
+
+class AspectPhase(Member):
+    """Where in an aspect's window a hit falls (C146)."""
+
+    ENTERING = 0
+    """The transit came within the orb."""
+
+    EXACT = 1
+    """The aspect is exact."""
+
+    LEAVING = 2
+    """The transit passed out of the orb."""
+
+
 class NodeVedha(Member):
     """The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136)."""
 
@@ -5742,6 +5781,21 @@ _KEYS: dict[str, dict[int, str]] = {
     "GocharFrom": {
         0: "MOON",
         1: "LAGNA",
+    },
+    "HitKind": {
+        0: "SIGN_INGRESS",
+        1: "NAKSHATRA_INGRESS",
+        2: "STATION",
+        3: "ASPECT",
+    },
+    "Motion": {
+        0: "DIRECT",
+        1: "RETROGRADE",
+    },
+    "AspectPhase": {
+        0: "ENTERING",
+        1: "EXACT",
+        2: "LEAVING",
     },
     "NodeVedha": {
         0: "LIKE_THE_SUN",

@@ -54,6 +54,9 @@ import type {
   GocharFrom,
   KakshyaLord,
   SarvaStanding,
+  HitKind,
+  Motion,
+  AspectPhase,
   GocharVerdict,
   NodeObstruction,
   NodeVedha,
@@ -716,6 +719,89 @@ export interface AshtakavargaTransit {
   readonly sarva: number;
   /** Where it stands against 28 (v. 20). */
   readonly sarvaStanding: SarvaStanding | 'unknown';
+}
+
+/** A graha named bare (`'SUN'`), as the Rust key spells it, or full (`'graha.SUN'`). */
+export type GrahaName = Exclude<Graha, 'unknown'> | BareKey<Graha>;
+
+/** A catalogue key without its kind: `'graha.SUN'` is `'SUN'`. */
+type BareKey<Full> = Full extends `${string}.${infer Bare}` ? Bare : never;
+
+/**
+ * A natal point a transit aspects: a natal graha or the lagna. The same
+ * spelling goes into `HitRequest.points` and comes back as an aspect's `to`.
+ */
+export type NatalPoint =
+  | { readonly point: 'GRAHA'; readonly graha: Graha | 'unknown' }
+  | { readonly point: 'LAGNA' };
+
+/** What a hit was, tagged by `kind`; each kind carries its own fields. */
+export type HitEvent =
+  | {
+      readonly kind: 'SIGN_INGRESS';
+      /** The sign entered; a retrograde ingress enters the one before its line. */
+      readonly into: Rashi | 'unknown';
+      readonly motion: Motion | 'unknown';
+    }
+  | {
+      readonly kind: 'NAKSHATRA_INGRESS';
+      readonly into: Nakshatra | 'unknown';
+      readonly motion: Motion | 'unknown';
+    }
+  | {
+      readonly kind: 'STATION';
+      /** The motion the graha turned to. */
+      readonly turns: Motion | 'unknown';
+    }
+  | {
+      readonly kind: 'ASPECT';
+      readonly to: NatalPoint;
+      /** The angle, 0 to 180 degrees, either side of the natal point (C145). */
+      readonly angle: number;
+      /** Where in the orb's window (C146); always `'EXACT'` without an orb. */
+      readonly phase: AspectPhase | 'unknown';
+      readonly motion: Motion | 'unknown';
+    };
+
+/**
+ * One event of the transit hit list (`03-design/transit-hit-list.md`).
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, hits: { from: 2460676.5, to: 2461041.5 } });
+ * const saturn = chart.hits.filter((h) => h.graha === 'graha.SATURN' && h.event.kind === 'SIGN_INGRESS');
+ */
+export interface Hit {
+  /** When, as a UTC Julian day. */
+  readonly instant: number;
+  /** The transiting graha. */
+  readonly graha: Graha | 'unknown';
+  readonly event: HitEvent;
+}
+
+/**
+ * The transit hit list to search against every chart of a request; every
+ * field but the window is optional, and an absent one is the default.
+ */
+export interface HitRequest {
+  /** The window's start, a UTC Julian day. */
+  readonly from: number;
+  /** The window's end, after the start. */
+  readonly to: number;
+  /** The grahas to search, bare (`'SUN'`) or full (`'graha.SUN'`); the nine by default. */
+  readonly grahas?: readonly GrahaName[];
+  /** The kinds of event to report; all four by default. */
+  readonly kinds?: readonly HitKind[];
+  /** The natal points aspected: a graha's key, `'LAGNA'`, or an aspect's `to`; the nine and the lagna by default. */
+  readonly points?: readonly (
+    | NatalPoint
+    | { readonly point: 'GRAHA'; readonly graha: GrahaName }
+    | 'LAGNA'
+    | GrahaName
+  )[];
+  /** The aspects' angles, multiples of 30 from 0 to 180; the conjunction and opposition by default (C145). */
+  readonly aspects?: readonly number[];
+  /** An orb in degrees, more than 0 and under 15, for each window's opening and closing; exact only by default (C146). */
+  readonly orbDeg?: number;
 }
 
 /** The transits to read against every chart of a request. */
@@ -1928,6 +2014,11 @@ export declare class Chart {
    */
   readonly gochar: readonly GocharReading[];
   /**
+   * The transit hit list, sorted by instant, then graha, then kind; empty
+   * unless `hits` asked. The sky is searched once for the whole batch.
+   */
+  readonly hits: readonly Hit[];
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -2285,6 +2376,12 @@ export interface ChartRequest {
    * vedha and verdict (`03-design/gochar.md`). None by default.
    */
   readonly gochar?: GocharRequest;
+  /**
+   * The transit hit list to search against every chart, read back as each
+   * chart's `hits`: ingresses, stations and aspects to natal points over a
+   * window (`03-design/transit-hit-list.md`). None by default.
+   */
+  readonly hits?: HitRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

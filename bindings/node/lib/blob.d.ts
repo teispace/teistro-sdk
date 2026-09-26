@@ -225,6 +225,12 @@ export interface ChartsCast {
    * How many rows of the `natal_sahams` section belong to this chart: the sahams `varsha_json.sahams` asked for, 0 to 41.
    */
   readonly natalSahamCount: Uint32Array;
+  /**
+   * How many rows of the `hits` section belong to this chart. Zero when no hit list was asked for.
+   *
+   * Ragged because a chart's aspects are its own: the sky's ingresses and stations are every chart's alike, but how often a transit crosses a natal point depends on where the point stands.
+   */
+  readonly hitCount: Uint32Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2162,6 +2168,57 @@ export interface ChartsGocharAshtakavarga {
 }
 
 /**
+ * The `hits` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none.
+ */
+export interface ChartsHits {
+  /**
+   * When, as a Julian day (UTC).
+   */
+  readonly instant: Float64Array;
+  /**
+   * The transiting graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * What happened, which says which columns below mean something.
+   * The values are `HitKind` ids.
+   */
+  readonly kind: Uint8Array;
+  /**
+   * The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.
+   */
+  readonly into: Uint16Array;
+  /**
+   * Which way the graha was moving through the line, or, for a station, the motion it turned to.
+   * The values are `Motion` ids.
+   */
+  readonly motion: Uint8Array;
+  /**
+   * For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind.
+   */
+  readonly toLagna: Uint8Array;
+  /**
+   * For an aspect to a natal graha, which (a `Graha` id); 0 otherwise.
+   */
+  readonly toGraha: Uint16Array;
+  /**
+   * For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind.
+   */
+  readonly angle: Uint16Array;
+  /**
+   * For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect.
+   * The values are `AspectPhase` ids.
+   */
+  readonly phase: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -2549,6 +2606,10 @@ export interface Charts {
    * Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga.
    */
   readonly gocharAshtakavarga: ChartsGocharAshtakavarga;
+  /**
+   * Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none.
+   */
+  readonly hits: ChartsHits;
 }
 
 /**

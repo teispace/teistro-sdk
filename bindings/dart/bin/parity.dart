@@ -392,6 +392,13 @@ void main() {
       instants: [2460676.5, 2460736.5],
       ashtakavarga: true,
     ),
+    hits: const HitRequest(
+      from: 2460676.5,
+      to: 2460736.5,
+      grahas: [Graha.sun, Graha.mercury, Graha.saturn],
+      aspects: [0, 90, 180],
+      orbDeg: 2,
+    ),
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -679,6 +686,40 @@ void main() {
               '${g.verdict.key} ${g.fruition.key} ${g.fruitfulNow}',
         );
       }
+    }
+    for (final (k, hit) in chart.hits.indexed) {
+      final e = hit.event;
+      final (into, motion, to, angle, phase) = switch (e) {
+        SignIngress(:final into, :final motion) => (
+          into.fullKey,
+          motion.key,
+          '-',
+          '-',
+          '-',
+        ),
+        NakshatraIngress(:final into, :final motion) => (
+          into.fullKey,
+          motion.key,
+          '-',
+          '-',
+          '-',
+        ),
+        Station(:final turns) => ('-', turns.key, '-', '-', '-'),
+        AspectHit(:final to, :final angle, :final phase, :final motion) => (
+          '-',
+          motion.key,
+          switch (to) {
+            NatalLagna() => 'LAGNA',
+            NatalGraha(:final graha) => graha.fullKey,
+          },
+          '$angle',
+          phase.key,
+        ),
+      };
+      put(
+        'chart-$i-hit-$k',
+        '${number(hit.instant)} ${hit.graha.fullKey} ${e.kind.key} $into $motion $to $angle $phase',
+      );
     }
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);

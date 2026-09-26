@@ -337,6 +337,34 @@ fn gochar(api: &Api) -> Vec<&'static str> {
     ]
 }
 
+/// The transit hit list's enums: an event's kind by its tag, and the
+/// motion and aspect phase it carries.
+fn hits(api: &Api) -> Vec<&'static str> {
+    use teistro::gochar::hits::{AspectPhase, HitEvent, Motion};
+    use teistro_ffi::chart::{TsAspectPhase, TsHitKind, TsMotion};
+    let id = |value: u8| Some(i64::from(value));
+    let events: Vec<HitEvent> = read_keys(api, "TsHitKind", "kind", |key| match key {
+        "SIGN_INGRESS" => json!({"into": "ARIES", "motion": "DIRECT"}),
+        "NAKSHATRA_INGRESS" => json!({"into": "ASHWINI", "motion": "RETROGRADE"}),
+        "STATION" => json!({"turns": "DIRECT"}),
+        _ => json!({"to": {"point": "LAGNA"}, "angle": 0, "phase": "EXACT", "motion": "DIRECT"}),
+    });
+    vec![
+        spelled_as(
+            api,
+            "TsHitKind",
+            "kind",
+            &events,
+            |e| id(TsHitKind::from(e) as u8),
+            &[],
+        ),
+        unit(api, "TsMotion", |m: &Motion| id(TsMotion::from(*m) as u8)),
+        unit(api, "TsAspectPhase", |p: &AspectPhase| {
+            id(TsAspectPhase::from(*p) as u8)
+        }),
+    ]
+}
+
 /// A chart's enums, the Tajika ones among them.
 fn chart(api: &Api) -> Vec<&'static str> {
     let id = |value: u8| Some(i64::from(value));
@@ -487,6 +515,7 @@ fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
         tagged(&api),
         chart(&api),
         gochar(&api),
+        hits(&api),
         time_and_calendar(&api),
     ]
     .concat();

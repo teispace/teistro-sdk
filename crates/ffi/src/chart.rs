@@ -314,6 +314,75 @@ impl TsGocharFrom {
     }
 }
 
+/// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsHitKind {
+    /// The graha entered a sign.
+    SignIngress = 0,
+    /// The graha entered a nakshatra.
+    NakshatraIngress = 1,
+    /// The graha stood still in longitude.
+    Station = 2,
+    /// The graha aspected a natal point, or came within or left its orb.
+    Aspect = 3,
+}
+
+impl From<&teistro::gochar::hits::HitEvent> for TsHitKind {
+    fn from(event: &teistro::gochar::hits::HitEvent) -> TsHitKind {
+        use teistro::gochar::hits::HitEvent;
+        match event {
+            HitEvent::SignIngress { .. } => TsHitKind::SignIngress,
+            HitEvent::NakshatraIngress { .. } => TsHitKind::NakshatraIngress,
+            HitEvent::Station { .. } => TsHitKind::Station,
+            HitEvent::Aspect { .. } => TsHitKind::Aspect,
+        }
+    }
+}
+
+/// Which way a graha was moving, through a line or out of a station.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsMotion {
+    /// Forward through the zodiac.
+    Direct = 0,
+    /// Backward.
+    Retrograde = 1,
+}
+
+impl From<teistro::gochar::hits::Motion> for TsMotion {
+    fn from(motion: teistro::gochar::hits::Motion) -> TsMotion {
+        use teistro::gochar::hits::Motion;
+        match motion {
+            Motion::Direct => TsMotion::Direct,
+            Motion::Retrograde => TsMotion::Retrograde,
+        }
+    }
+}
+
+/// Where in an aspect's window a hit falls (C146).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsAspectPhase {
+    /// The transit came within the orb.
+    Entering = 0,
+    /// The aspect is exact.
+    Exact = 1,
+    /// The transit passed out of the orb.
+    Leaving = 2,
+}
+
+impl From<teistro::gochar::hits::AspectPhase> for TsAspectPhase {
+    fn from(phase: teistro::gochar::hits::AspectPhase) -> TsAspectPhase {
+        use teistro::gochar::hits::AspectPhase;
+        match phase {
+            AspectPhase::Entering => TsAspectPhase::Entering,
+            AspectPhase::Exact => TsAspectPhase::Exact,
+            AspectPhase::Leaving => TsAspectPhase::Leaving,
+        }
+    }
+}
+
 /// The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -854,6 +923,21 @@ pub struct TsChartRequest {
     /// `gochar.instants`.
     /// `api: nullable example={"instants":[2460676.5],"from":"MOON"}`
     pub gochar_json: *const c_char,
+    /// The transit hit list to search against every chart in the batch,
+    /// as a JSON object: the window `from` and `to`, UTC Julian days, and
+    /// optionally `grahas` (keys, the nine by default), `kinds`
+    /// (`"SIGN_INGRESS"`, `"NAKSHATRA_INGRESS"`, `"STATION"`, `"ASPECT"`;
+    /// all by default), `points` (the natal points aspected: a graha's key
+    /// or `"LAGNA"`, or an answer's `to`; the nine and the lagna by
+    /// default), `aspects` (angles, multiples of 30 to 180; 0 and 180 by
+    /// default, C145) and `orbDeg` (more than 0 and under 15, for the
+    /// windows' edges; exact only by default, C146).
+    /// Each chart's hits come back in the `hits` section, `cast.hit_count`
+    /// rows a chart, the sky searched once for the batch. Null for none
+    /// (`03-design/transit-hit-list.md`). Refusals are named from the
+    /// record every binding calls `hits`, as `hits.to`.
+    /// `api: nullable example={"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}`
+    pub hits_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -1930,6 +2014,93 @@ impl GocharColumns {
     }
 }
 
+/// Every chart's transit hit list, a row a hit, charts outermost and
+/// **ragged** by `cast.hit_count`; empty when none was asked for.
+#[derive(Default)]
+struct HitColumns {
+    /// Each chart's rows, in the batch's order: zeroes when none asked.
+    counts: Vec<u32>,
+    instant: Vec<f64>,
+    graha: Vec<u16>,
+    kind: Vec<u8>,
+    into: Vec<u16>,
+    motion: Vec<u8>,
+    to_lagna: Vec<u8>,
+    to_graha: Vec<u16>,
+    angle: Vec<u16>,
+    phase: Vec<u8>,
+}
+
+impl HitColumns {
+    /// Each chart's hits in the order the list gives them.
+    fn of(lists: &[Vec<teistro::Hit>], charts: usize) -> Result<HitColumns, Error> {
+        use teistro::gochar::hits::HitEvent;
+        let mut columns = HitColumns {
+            counts: vec![0; charts],
+            ..HitColumns::default()
+        };
+        if lists.is_empty() {
+            return Ok(columns);
+        }
+        if lists.len() != charts {
+            return Err(Error::internal(format!(
+                "{} hit lists for {charts} charts",
+                lists.len()
+            )));
+        }
+        for (count, list) in columns.counts.iter_mut().zip(lists) {
+            *count = u32::try_from(list.len())
+                .map_err(|_| Error::internal("a hit list longer than a section can count"))?;
+        }
+        for hit in lists.iter().flatten() {
+            let (into, motion, to, angle, phase) = match hit.event {
+                HitEvent::SignIngress { into, motion } => (into.id(), motion, None, 0, 0),
+                HitEvent::NakshatraIngress { into, motion } => (into.id(), motion, None, 0, 0),
+                HitEvent::Station { turns } => (0, turns, None, 0, 0),
+                HitEvent::Aspect {
+                    to,
+                    angle,
+                    phase,
+                    motion,
+                } => (0, motion, Some(to), angle, TsAspectPhase::from(phase) as u8),
+            };
+            columns.instant.push(hit.instant.get());
+            columns.graha.push(hit.graha.id());
+            columns.kind.push(TsHitKind::from(&hit.event) as u8);
+            columns.into.push(into);
+            columns.motion.push(TsMotion::from(motion) as u8);
+            columns
+                .to_lagna
+                .push(u8::from(to == Some(teistro::NatalPoint::Lagna)));
+            columns.to_graha.push(match to {
+                Some(teistro::NatalPoint::Graha { graha }) => graha.id(),
+                _ => 0,
+            });
+            columns.angle.push(angle);
+            columns.phase.push(phase);
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "hits",
+            self.instant.len(),
+            &[
+                ColumnData::F64(&self.instant),
+                ColumnData::U16(&self.graha),
+                ColumnData::U8(&self.kind),
+                ColumnData::U16(&self.into),
+                ColumnData::U8(&self.motion),
+                ColumnData::U8(&self.to_lagna),
+                ColumnData::U16(&self.to_graha),
+                ColumnData::U16(&self.angle),
+                ColumnData::U8(&self.phase),
+            ],
+        )
+    }
+}
+
 /// Every chart's Vaiseshikamsa, a row a graha, empty when it was not asked
 /// for.
 struct VaiseshikamsaColumns {
@@ -2927,6 +3098,7 @@ fn chart_rows(
     aspect_counts: &[u32],
     pravesha_counts: &[u32],
     natal_saham_counts: &[u32],
+    hit_counts: &[u32],
 ) -> Vec<Vec<FixedValue>> {
     charts
         .iter()
@@ -2943,6 +3115,7 @@ fn chart_rows(
                 u64::from(aspect_counts.get(at).copied().unwrap_or(0)).into(),
                 u64::from(pravesha_counts.get(at).copied().unwrap_or(0)).into(),
                 u64::from(natal_saham_counts.get(at).copied().unwrap_or(0)).into(),
+                u64::from(hit_counts.get(at).copied().unwrap_or(0)).into(),
             ]
         })
         .collect()
@@ -3395,6 +3568,9 @@ pub struct Composed<'a> {
     pub gochar: &'a [Vec<teistro::gochar::GocharReading>],
     /// The instants every chart's transits were read at.
     pub gochar_instants: &'a [JulianDay<Utc>],
+    /// Every chart's transit hit list, in the batch's order
+    /// (`transit-hit-list.md`); empty when none was asked for.
+    pub hits: &'a [Vec<teistro::Hit>],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -3434,6 +3610,7 @@ pub fn encode(
         praveshas,
         gochar,
         gochar_instants,
+        hits,
         hashes,
     } = composed;
     let hashes = crate::support::hashes_text(hashes, documents.len())?;
@@ -3450,6 +3627,7 @@ pub fn encode(
     let once = BatchOnce::of(charts.first().copied());
     let by = Sections::of(documents, graha_count, registered, praveshas)?;
     let transits = GocharColumns::of(gochar, gochar_instants)?;
+    let hit_columns = HitColumns::of(hits, charts.len())?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -3471,6 +3649,7 @@ pub fn encode(
                 &by.aspects.counts,
                 &by.years.counts,
                 &by.years.natal_counts,
+                &hit_columns.counts,
             ),
         )?;
         columns.write(&mut writer, charts.len() * graha_count)?;
@@ -3513,6 +3692,7 @@ pub fn encode(
         writer.bytes("content_hashes", hashes.as_bytes())?;
         by.jaimini.write(&mut writer)?;
         transits.write(&mut writer)?;
+        hit_columns.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -4179,6 +4359,37 @@ unsafe fn gochar_request_of(
         .transpose()
 }
 
+/// The hit list a request's `hits_json` asks for, none for null; the
+/// façade reads and checks the record ([`teistro::HitRequest::from_json`]),
+/// naming a refusal from its root, `hits.to`.
+///
+/// # Safety
+///
+/// `hits_json` null or a NUL-terminated string.
+unsafe fn hit_request_of(hits_json: *const c_char) -> Result<Option<teistro::HitRequest>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(hits_json, "hits_json") }?
+        .map(teistro::HitRequest::from_json)
+        .transpose()
+}
+
+/// Every chart's hit list, empty when none was asked for: **one batch**
+/// through the façade ([`teistro::ChartArea::hits_many`]), which scans the
+/// sky once for every chart of the request.
+fn hits_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::HitRequest>,
+) -> Result<Vec<Vec<teistro::Hit>>, Error> {
+    match asked {
+        Some(asked) => sdk
+            .chart()
+            .hits_many(documents, asked)
+            .map(|found| found.value),
+        None => Ok(Vec::new()),
+    }
+}
+
 impl GrahaColumns {
     /// The grahas, charts outermost, in the order `grahas` declares them.
     fn write(
@@ -4503,6 +4714,8 @@ pub unsafe extern "C" fn ts_chart_found(
         let varsha = unsafe { varsha_request_of(asked.varsha_json) }?;
         // SAFETY: the entry point's contract.
         let gochar = unsafe { gochar_request_of(asked.gochar_json) }?;
+        // SAFETY: the entry point's contract.
+        let hit_request = unsafe { hit_request_of(asked.hits_json) }?;
         let ReadCharts {
             founded,
             hashes,
@@ -4515,6 +4728,7 @@ pub unsafe extern "C" fn ts_chart_found(
         };
         let praveshas = praveshas_of(ctx.sdk(), &founded.value, request.offset(), varsha.as_ref())?;
         let transits = gochar_of(ctx.sdk(), &founded.value, gochar.as_ref())?;
+        let hits = hits_of(ctx.sdk(), &founded.value, hit_request.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -4529,6 +4743,7 @@ pub unsafe extern "C" fn ts_chart_found(
                 gochar_instants: gochar
                     .as_ref()
                     .map_or(&[], teistro::GocharRequest::instants),
+                hits: &hits,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

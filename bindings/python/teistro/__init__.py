@@ -26,7 +26,7 @@ import json
 import math
 import os
 import sys
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from functools import cached_property
 from pathlib import Path
 from types import MappingProxyType, TracebackType
@@ -102,6 +102,7 @@ from ._records import *  # noqa: F403 - the records' own __all__ names them
 from ._records import Provenance, Step, decode_provenance, decode_step
 from .catalogue import (
     AvasthaCheshta,
+    Member,
     AvasthaSayanadi,
     Ayana,
     Ayanamsha,
@@ -130,6 +131,9 @@ from .catalogue import (
     AshtakavargaGoodFrom,
     KakshyaLord,
     SarvaStanding,
+    HitKind,
+    Motion,
+    AspectPhase,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -362,6 +366,17 @@ __all__ = [
     "BrahmaRule",
     "BrahmaOutcome",
     "JaiminiReading",
+    # The transit hit list, and its names.
+    "HitRequest",
+    "Hit",
+    "NatalPoint",
+    "SignIngress",
+    "NakshatraIngress",
+    "Station",
+    "AspectHit",
+    "HitKind",
+    "Motion",
+    "AspectPhase",
     # Gochar: the transits read against a chart, and their names.
     "GocharRequest",
     "GocharReading",
@@ -1307,6 +1322,7 @@ class ChartArea(_Area):
         interpret: Optional[PlanRequest] = None,
         varsha: Optional[VarshaRequest] = None,
         gochar: Optional[GocharRequest] = None,
+        hits: Optional[HitRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1345,6 +1361,7 @@ class ChartArea(_Area):
             interpret=interpret,
             varsha=varsha,
             gochar=gochar,
+            hits=hits,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1373,6 +1390,7 @@ class ChartArea(_Area):
         interpret: Optional[PlanRequest] = None,
         varsha: Optional[VarshaRequest] = None,
         gochar: Optional[GocharRequest] = None,
+        hits: Optional[HitRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1432,6 +1450,7 @@ class ChartArea(_Area):
             interpret_json=_interpret_json(interpret),
             varsha_json=_varsha_json(varsha),
             gochar_json=_gochar_json(gochar),
+            hits_json=_hits_json(hits),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -2186,6 +2205,105 @@ class GrahaDashaPhala:
 
     unfavourable: bool
     """Whether its placement makes its dasha unfavourable; both can hold."""
+
+
+HitRequest = TypedDict(
+    "HitRequest",
+    {
+        "from": Required[float],
+        "to": Required[float],
+        "grahas": Sequence[Union[Graha, str]],
+        "kinds": Sequence[Union[HitKind, str]],
+        "points": Sequence[Union["NatalPoint", Graha, str]],
+        "aspects": Sequence[int],
+        "orbDeg": float,
+    },
+    total=False,
+)
+HitRequest.__doc__ = """The transit hit list to search against every chart of a
+request (`03-design/transit-hit-list.md`): the window `from` and `to`, UTC
+Julian days, and optionally `grahas` (the nine by default; members or keys,
+bare or full), `kinds` (all four by default), `points` (the natal points
+aspected: a graha, `"LAGNA"` or a `NatalPoint`; the nine and the lagna by
+default), `aspects` (multiples of 30 to 180; 0 and 180 by default, C145) and
+`orbDeg` (more than 0 and under 15; exact only by default, C146). A
+functional `TypedDict` because `from` is a keyword, and the record is spelt as
+every binding spells it.
+
+>>> asked: HitRequest = {"from": 2460676.5, "to": 2461041.5, "grahas": ["SATURN"], "orbDeg": 2}
+"""
+
+
+@dataclass(frozen=True)
+class NatalPoint:
+    """A natal point a transit aspects: a natal graha, or the lagna. It goes
+    into `HitRequest["points"]` as it comes back in an aspect's `to`."""
+
+    point: Literal["GRAHA", "LAGNA"]
+    graha: Optional[Graha] = None
+    """Which graha, for a `"GRAHA"` point; `None` for the lagna."""
+
+
+@dataclass(frozen=True)
+class SignIngress:
+    """The graha entered a sign; a retrograde ingress enters the one before
+    the line it crossed."""
+
+    into: Rashi
+    motion: Motion
+    kind: HitKind = field(default=HitKind.SIGN_INGRESS, init=False)
+
+
+@dataclass(frozen=True)
+class NakshatraIngress:
+    """The graha entered a nakshatra."""
+
+    into: Nakshatra
+    motion: Motion
+    kind: HitKind = field(default=HitKind.NAKSHATRA_INGRESS, init=False)
+
+
+@dataclass(frozen=True)
+class Station:
+    """The graha stood still in longitude."""
+
+    turns: Motion
+    """The motion it turned to."""
+
+    kind: HitKind = field(default=HitKind.STATION, init=False)
+
+
+@dataclass(frozen=True)
+class AspectHit:
+    """The graha aspected a natal point, or came within or left its orb."""
+
+    to: NatalPoint
+    angle: int
+    """The angle, 0 to 180 degrees, either side of the natal point (C145)."""
+
+    phase: AspectPhase
+    """Where in the orb's window (C146); always exact without an orb."""
+
+    motion: Motion
+    kind: HitKind = field(default=HitKind.ASPECT, init=False)
+
+
+@dataclass(frozen=True)
+class Hit:
+    """One event of the transit hit list: `event` is one of `SignIngress`,
+    `NakshatraIngress`, `Station` or `AspectHit`, each with its `kind`.
+
+    >>> # chart = ctx.chart.found(..., hits={"from": 2460676.5, "to": 2461041.5})
+    >>> # saturn = [h for h in chart.hits if h.graha is Graha.SATURN and isinstance(h.event, SignIngress)]
+    """
+
+    instant: float
+    """When, a UTC Julian day."""
+
+    graha: Graha
+    """The transiting graha."""
+
+    event: Union[SignIngress, NakshatraIngress, Station, AspectHit]
 
 
 GocharRequest = TypedDict(
@@ -3857,6 +3975,54 @@ def _gochar_json(gochar: Optional[GocharRequest]) -> Optional[str]:
     return _record_json(written, "gochar", "{'instants': [2460676.5], 'from': 'MOON'}")
 
 
+def _hit_at(columns: Any, row: int) -> Hit:
+    """One row of the `hits` section as the Rust `Hit` spells it."""
+    kind = HitKind(columns.kind[row])
+    motion = Motion(columns.motion[row])
+    event: Union[SignIngress, NakshatraIngress, Station, AspectHit]
+    if kind is HitKind.SIGN_INGRESS:
+        event = SignIngress(into=Rashi(columns.into[row]), motion=motion)
+    elif kind is HitKind.NAKSHATRA_INGRESS:
+        event = NakshatraIngress(into=Nakshatra(columns.into[row]), motion=motion)
+    elif kind is HitKind.STATION:
+        event = Station(turns=motion)
+    else:
+        to = (
+            NatalPoint("LAGNA")
+            if columns.to_lagna[row]
+            else NatalPoint("GRAHA", Graha(columns.to_graha[row]))
+        )
+        event = AspectHit(to=to, angle=columns.angle[row], phase=AspectPhase(columns.phase[row]), motion=motion)
+    return Hit(instant=columns.instant[row], graha=Graha(columns.graha[row]), event=event)
+
+
+def _hits_json(hits: Optional[HitRequest]) -> Optional[str]:
+    """The hit list as the JSON the boundary reads, or nothing for none.
+    Catalogue members are written as their keys and a `NatalPoint` as the
+    answer's `to`, so a caller can hand back what it was given; the rest is
+    refused by the SDK, naming the field from `hits`, as in every binding."""
+    example = "{'from': 2460676.5, 'to': 2461041.5, 'grahas': ['SATURN']}"
+    if not isinstance(hits, Mapping):
+        return _record_json(hits, "hits", example)
+
+    def key(value: Any) -> Any:
+        if isinstance(value, NatalPoint):
+            return {"point": value.point} if value.graha is None else {"point": value.point, "graha": value.graha.full_key}
+        if isinstance(value, Graha):
+            return value.full_key
+        if isinstance(value, Member):
+            return value.key
+        return value
+
+    written: Dict[str, Any] = {}
+    for name, value in hits.items():
+        if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            written[name] = [key(one) for one in value]
+        else:
+            written[name] = value
+    return _record_json(written, "hits", example)
+
+
 def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
     """The annual charts as the JSON the boundary reads, or nothing for none.
 
@@ -4855,6 +5021,23 @@ class Chart:
         """The dasha phala, when `dasha_phala=True` asked for it."""
         parsed = self.batch._dasha_phalas
         return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
+    def hits(self) -> List[Hit]:
+        """The transit hit list, sorted by instant, then graha, then kind;
+        empty unless `hits=` asked for it (`03-design/transit-hit-list.md`).
+        The sky is searched once for the whole batch, and the section is
+        **ragged**: a chart's aspects depend on where its points stand."""
+        decoded = self.batch.decoded
+        counts = decoded.cast.hit_count
+        columns = decoded.hits
+        if sum(counts) != len(columns.instant):
+            raise ValueError(
+                f"hits has {len(columns.instant)} rows and cast.hit_count sums to {sum(counts)}; "
+                "it is every chart's list, concatenated"
+            )
+        start = sum(counts[i] for i in range(self.index))
+        return [_hit_at(columns, i) for i in range(start, start + counts[self.index])]
 
     @property
     def gochar(self) -> Tuple[GocharReading, ...]:

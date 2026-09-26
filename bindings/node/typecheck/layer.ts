@@ -17,6 +17,7 @@ import type {
   Context,
   DashaPeriod,
   EphemerisProvider,
+  HitRequest,
   LayoutHolds,
   LayoutKey,
   LayoutRow,
@@ -562,3 +563,44 @@ function theTransits(ctx: Context): string {
 }
 
 void theTransits;
+
+// The hit list read all the way down, each event narrowed by its kind, and
+// a request that names grahas bare and full and points every way.
+function theHitList(ctx: Context): string {
+  const hits = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    hits: {
+      from: 2460676.5,
+      to: 2461041.5,
+      grahas: ['SATURN', 'graha.JUPITER'],
+      kinds: ['SIGN_INGRESS', 'STATION', 'ASPECT'],
+      points: ['LAGNA', 'MOON', { point: 'GRAHA', graha: 'graha.SUN' }, { point: 'LAGNA' }],
+      aspects: [0, 90, 180],
+      orbDeg: 2,
+    },
+  }).hits;
+  const words: string[] = hits.map((hit) => {
+    const { event } = hit;
+    switch (event.kind) {
+      case 'SIGN_INGRESS':
+        return `${hit.instant} ${hit.graha} ${event.into} ${event.motion}`;
+      case 'NAKSHATRA_INGRESS':
+        return `${event.into} ${event.motion}`;
+      case 'STATION':
+        return `${event.turns}`;
+      case 'ASPECT': {
+        const to = event.to.point === 'GRAHA' ? event.to.graha : event.to.point;
+        return `${to} ${event.angle} ${event.phase} ${event.motion}`;
+      }
+    }
+  });
+  // @ts-expect-error a graha is named by its key, bare or full
+  const pluto: HitRequest = { from: 0, to: 1, grahas: ['saturn'] };
+  // @ts-expect-error a kind is spelt as an event's `kind`
+  const eclipse: HitRequest = { from: 0, to: 1, kinds: ['ECLIPSE'] };
+  return `${words.join()} ${String(pluto)} ${String(eclipse)}`;
+}
+
+void theHitList;

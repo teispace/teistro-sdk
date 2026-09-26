@@ -4602,6 +4602,60 @@ typedef enum ts_gochar_from {
 } ts_gochar_from;
 
 /**
+ * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
+ */
+typedef enum ts_hit_kind {
+    /**
+     * The graha entered a sign.
+     */
+    TS_HIT_KIND_SIGN_INGRESS = 0,
+    /**
+     * The graha entered a nakshatra.
+     */
+    TS_HIT_KIND_NAKSHATRA_INGRESS = 1,
+    /**
+     * The graha stood still in longitude.
+     */
+    TS_HIT_KIND_STATION = 2,
+    /**
+     * The graha aspected a natal point, or came within or left its orb.
+     */
+    TS_HIT_KIND_ASPECT = 3,
+} ts_hit_kind;
+
+/**
+ * Which way a graha was moving, through a line or out of a station.
+ */
+typedef enum ts_motion {
+    /**
+     * Forward through the zodiac.
+     */
+    TS_MOTION_DIRECT = 0,
+    /**
+     * Backward.
+     */
+    TS_MOTION_RETROGRADE = 1,
+} ts_motion;
+
+/**
+ * Where in an aspect's window a hit falls (C146).
+ */
+typedef enum ts_aspect_phase {
+    /**
+     * The transit came within the orb.
+     */
+    TS_ASPECT_PHASE_ENTERING = 0,
+    /**
+     * The aspect is exact.
+     */
+    TS_ASPECT_PHASE_EXACT = 1,
+    /**
+     * The transit passed out of the orb.
+     */
+    TS_ASPECT_PHASE_LEAVING = 2,
+} ts_aspect_phase;
+
+/**
  * The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).
  */
 typedef enum ts_node_vedha {
@@ -6770,6 +6824,23 @@ struct ts_chart_request {
      * Example: {"instants":[2460676.5],"from":"MOON"}. May be null.
      */
     const char * gochar_json;
+    /**
+     * The transit hit list to search against every chart in the batch,
+     * as a JSON object: the window `from` and `to`, UTC Julian days, and
+     * optionally `grahas` (keys, the nine by default), `kinds`
+     * (`"SIGN_INGRESS"`, `"NAKSHATRA_INGRESS"`, `"STATION"`, `"ASPECT"`;
+     * all by default), `points` (the natal points aspected: a graha's key
+     * or `"LAGNA"`, or an answer's `to`; the nine and the lagna by
+     * default), `aspects` (angles, multiples of 30 to 180; 0 and 180 by
+     * default, C145) and `orbDeg` (more than 0 and under 15, for the
+     * windows' edges; exact only by default, C146).
+     * Each chart's hits come back in the `hits` section, `cast.hit_count`
+     * rows a chart, the sky searched once for the batch. Null for none
+     * (`03-design/transit-hit-list.md`). Refusals are named from the
+     * record every binding calls `hits`, as `hits.to`.
+     * Example: {"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}. May be null.
+     */
+    const char * hits_json;
 };
 
 /**
@@ -7655,7 +7726,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 152, "ts_chart_request is 152 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 160, "ts_chart_request is 160 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

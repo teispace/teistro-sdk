@@ -379,6 +379,7 @@ final class ChartsCast {
     required this.aspectCount,
     required this.praveshaCount,
     required this.natalSahamCount,
+    required this.hitCount,
     required this.length,
   });
 
@@ -417,6 +418,11 @@ final class ChartsCast {
 
   /// How many rows of the `natal_sahams` section belong to this chart: the sahams `varsha_json.sahams` asked for, 0 to 41.
   final Uint32List natalSahamCount;
+
+  /// How many rows of the `hits` section belong to this chart. Zero when no hit list was asked for.
+  ///
+  /// Ragged because a chart's aspects are its own: the sky's ingresses and stations are every chart's alike, but how often a transit crosses a natal point depends on where the point stands.
+  final Uint32List hitCount;
 
   /// The number of rows every column holds.
   final int length;
@@ -2332,6 +2338,55 @@ final class ChartsGocharAshtakavarga {
   final int length;
 }
 
+/// The `hits` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none.
+final class ChartsHits {
+  const ChartsHits({
+    required this.instant,
+    required this.graha,
+    required this.kind,
+    required this.into,
+    required this.motion,
+    required this.toLagna,
+    required this.toGraha,
+    required this.angle,
+    required this.phase,
+    required this.length,
+  });
+
+  /// When, as a Julian day (UTC).
+  final Float64List instant;
+
+  /// The transiting graha.
+  final Uint16List graha;
+
+  /// What happened, which says which columns below mean something.
+  final Uint8List kind;
+
+  /// The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.
+  final Uint16List into;
+
+  /// Which way the graha was moving through the line, or, for a station, the motion it turned to.
+  final Uint8List motion;
+
+  /// For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind.
+  final Uint8List toLagna;
+
+  /// For an aspect to a natal graha, which (a `Graha` id); 0 otherwise.
+  final Uint16List toGraha;
+
+  /// For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind.
+  final Uint16List angle;
+
+  /// For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect.
+  final Uint8List phase;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -2499,6 +2554,7 @@ final class Charts {
     required this.gochar,
     required this.gocharGrahas,
     required this.gocharAshtakavarga,
+    required this.hits,
   });
 
   /// What kind of chart these are.
@@ -2710,6 +2766,9 @@ final class Charts {
   /// Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga.
   final ChartsGocharAshtakavarga gocharAshtakavarga;
 
+  /// Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none.
+  final ChartsHits hits;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -2772,6 +2831,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atGochar = blob.section(53, 'gochar');
   final atGocharGrahas = blob.section(54, 'gochar_grahas');
   final atGocharAshtakavarga = blob.section(55, 'gochar_ashtakavarga');
+  final atHits = blob.section(56, 'hits');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2831,6 +2891,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atCast, 9),
         blob.columnOffset(atCast, 9) + atCast.count * 4,
+      ),
+      hitCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 10),
+        blob.columnOffset(atCast, 10) + atCast.count * 4,
       ),
       length: atCast.count,
     ),
@@ -4810,6 +4875,54 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atGocharAshtakavarga, 7) + atGocharAshtakavarga.count * 1,
       ),
       length: atGocharAshtakavarga.count,
+    ),
+    hits: ChartsHits(
+      instant: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 0),
+        blob.columnOffset(atHits, 0) + atHits.count * 8,
+      ),
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 1),
+        blob.columnOffset(atHits, 1) + atHits.count * 2,
+      ),
+      kind: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 2),
+        blob.columnOffset(atHits, 2) + atHits.count * 1,
+      ),
+      into: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 3),
+        blob.columnOffset(atHits, 3) + atHits.count * 2,
+      ),
+      motion: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 4),
+        blob.columnOffset(atHits, 4) + atHits.count * 1,
+      ),
+      toLagna: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 5),
+        blob.columnOffset(atHits, 5) + atHits.count * 1,
+      ),
+      toGraha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 6),
+        blob.columnOffset(atHits, 6) + atHits.count * 2,
+      ),
+      angle: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 7),
+        blob.columnOffset(atHits, 7) + atHits.count * 2,
+      ),
+      phase: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atHits, 8),
+        blob.columnOffset(atHits, 8) + atHits.count * 1,
+      ),
+      length: atHits.count,
     ),
   );
 }

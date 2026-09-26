@@ -85,6 +85,9 @@ import {
   AshtakavargaGoodFromById,
   FruitionById,
   GocharFromById,
+  HitKindById,
+  MotionById,
+  AspectPhaseById,
   KakshyaLordById,
   SarvaStandingById,
   GocharVerdictById,
@@ -924,6 +927,34 @@ export class Chart {
    */
   get gochar() {
     return gocharsOf(this.#batch)[this.#index] ?? [];
+  }
+
+  /**
+   * The transit hit list (`hits: { from, to, grahas, kinds, points,
+   * aspects, orbDeg }`): every ingress, station and aspect to a natal point
+   * of the window, sorted by instant, then graha, then kind; empty unless
+   * asked for (`03-design/transit-hit-list.md`). The sky is searched once
+   * for the whole batch.
+   *
+   * Each is `{ instant, graha, event }`, the event tagged by `kind`:
+   * `{ kind: 'SIGN_INGRESS', into, motion }` with `into` a sign,
+   * `{ kind: 'NAKSHATRA_INGRESS', into, motion }` with `into` a nakshatra,
+   * `{ kind: 'STATION', turns }`, or `{ kind: 'ASPECT', to, angle, phase,
+   * motion }` with `to` either `{ point: 'GRAHA', graha }` or
+   * `{ point: 'LAGNA' }` — the spelling `hits.points` takes back.
+   */
+  get hits() {
+    const d = this.#batch.decoded;
+    const counts = d.cast.hitCount;
+    const starts = startsOf(counts);
+    if (starts[counts.length] !== d.hits.instant.length) {
+      throw new Error(
+        `hits has ${d.hits.instant.length} rows and cast.hit_count sums to ${starts[counts.length]}; ` +
+          'it is every chart\'s list, concatenated',
+      );
+    }
+    const from = starts[this.#index];
+    return Array.from({ length: counts[this.#index] ?? 0 }, (_, k) => hitOf(d.hits, from + k));
   }
 
   /**
@@ -1984,6 +2015,11 @@ export class ChartArea extends Area {
         interpretJson: interpretJson(request.interpret),
         varshaJson: varshaJson(request.varsha),
         gocharJson: gocharJson(request.gochar),
+        hitsJson: recordJson(
+          request.hits,
+          'hits',
+          'a hit list request record, e.g. { from: 2460676.5, to: 2461041.5, grahas: ["SATURN"] }',
+        ),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -2322,6 +2358,51 @@ function gocharsOf(batch) {
     GOCHARS.set(batch, decoded);
   }
   return decoded;
+}
+
+/**
+ * One row of the `hits` section as the Rust `Hit` spells it: the event
+ * tagged by `kind`, carrying only the fields its kind has.
+ *
+ * @param {object} h the decoded section
+ * @param {number} row
+ * @returns {object}
+ */
+function hitOf(h, row) {
+  const kind = HitKindById.get(h.kind[row]) ?? 'unknown';
+  const motion = MotionById.get(h.motion[row]) ?? 'unknown';
+  let event;
+  switch (kind) {
+    case 'SIGN_INGRESS':
+      event = { kind, into: RashiById.get(h.into[row]) ?? 'unknown', motion };
+      break;
+    case 'NAKSHATRA_INGRESS':
+      event = { kind, into: NakshatraById.get(h.into[row]) ?? 'unknown', motion };
+      break;
+    case 'STATION':
+      event = { kind, turns: motion };
+      break;
+    case 'ASPECT':
+      event = {
+        kind,
+        to: Object.freeze(
+          h.toLagna[row] !== 0
+            ? { point: 'LAGNA' }
+            : { point: 'GRAHA', graha: GrahaById.get(h.toGraha[row]) ?? 'unknown' },
+        ),
+        angle: h.angle[row],
+        phase: AspectPhaseById.get(h.phase[row]) ?? 'unknown',
+        motion,
+      };
+      break;
+    default:
+      event = { kind };
+  }
+  return Object.freeze({
+    instant: h.instant[row],
+    graha: GrahaById.get(h.graha[row]) ?? 'unknown',
+    event: Object.freeze(event),
+  });
 }
 
 /** Each batch's dasha phalas, decoded once however many charts read them. */

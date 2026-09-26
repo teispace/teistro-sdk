@@ -447,6 +447,11 @@ fn chart_cast_section(id: u32) -> SectionSchema {
                 Scalar::U32,
                 "How many rows of the `natal_sahams` section belong to this chart: the sahams `varsha_json.sahams` asked for, 0 to 41.",
             ),
+            ColumnDef::new(
+                "hit_count",
+                Scalar::U32,
+                "How many rows of the `hits` section belong to this chart. Zero when no hit list was asked for.\n\nRagged because a chart's aspects are its own: the sky's ingresses and stations are every chart's alike, but how often a transit crosses a natal point depends on where the point stands.",
+            ),
         ],
     )
 }
@@ -595,6 +600,7 @@ pub fn charts() -> BlobSchema {
         .chain([chart_content_hashes_section(50)])
         .chain(chart_jaimini_sections(51))
         .chain(chart_gochar_sections(53))
+        .chain([chart_hits_section(56)])
         .collect(),
     }
 }
@@ -637,6 +643,53 @@ fn chart_gochar_sections(first: u32) -> [SectionSchema; 3] {
         chart_gochar_grahas_section(first + 1),
         chart_gochar_ashtakavarga_section(first + 2),
     ]
+}
+
+/// Every chart's transit hit list, a row a hit.
+fn chart_hits_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "hits",
+        "Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none.",
+        vec![
+            ColumnDef::new("instant", Scalar::F64, "When, as a Julian day (UTC)."),
+            ColumnDef::new("graha", Scalar::U16, "The transiting graha.").of_enum("Graha"),
+            ColumnDef::new("kind", Scalar::U8, "What happened, which says which columns below mean something.")
+                .of_enum("TsHitKind"),
+            ColumnDef::new(
+                "into",
+                Scalar::U16,
+                "The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed.",
+            ),
+            ColumnDef::new(
+                "motion",
+                Scalar::U8,
+                "Which way the graha was moving through the line, or, for a station, the motion it turned to.",
+            )
+            .of_enum("TsMotion"),
+            ColumnDef::new(
+                "to_lagna",
+                Scalar::U8,
+                "For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind.",
+            ),
+            ColumnDef::new(
+                "to_graha",
+                Scalar::U16,
+                "For an aspect to a natal graha, which (a `Graha` id); 0 otherwise.",
+            ),
+            ColumnDef::new(
+                "angle",
+                Scalar::U16,
+                "For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind.",
+            ),
+            ColumnDef::new(
+                "phase",
+                Scalar::U8,
+                "For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect.",
+            )
+            .of_enum("TsAspectPhase"),
+        ],
+    )
 }
 
 /// Every transit's seven judged by the natal Ashtakavarga, a row a graha.

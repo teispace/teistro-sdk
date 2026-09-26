@@ -2931,6 +2931,57 @@ export const GocharFromById = new Map([
   [1, 'LAGNA'],
 ]);
 
+/** Every HitKind by name. */
+export const HitKind = Object.freeze({
+  SignIngress: 'SIGN_INGRESS',
+  NakshatraIngress: 'NAKSHATRA_INGRESS',
+  Station: 'STATION',
+  Aspect: 'ASPECT',
+});
+
+/**
+ * Every HitKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const HitKindById = new Map([
+  [0, 'SIGN_INGRESS'],
+  [1, 'NAKSHATRA_INGRESS'],
+  [2, 'STATION'],
+  [3, 'ASPECT'],
+]);
+
+/** Every Motion by name. */
+export const Motion = Object.freeze({
+  Direct: 'DIRECT',
+  Retrograde: 'RETROGRADE',
+});
+
+/**
+ * Every Motion by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const MotionById = new Map([
+  [0, 'DIRECT'],
+  [1, 'RETROGRADE'],
+]);
+
+/** Every AspectPhase by name. */
+export const AspectPhase = Object.freeze({
+  Entering: 'ENTERING',
+  Exact: 'EXACT',
+  Leaving: 'LEAVING',
+});
+
+/**
+ * Every AspectPhase by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AspectPhaseById = new Map([
+  [0, 'ENTERING'],
+  [1, 'EXACT'],
+  [2, 'LEAVING'],
+]);
+
 /** Every NodeVedha by name. */
 export const NodeVedha = Object.freeze({
   LikeTheSun: 'LIKE_THE_SUN',

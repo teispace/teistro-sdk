@@ -19,6 +19,10 @@ from typing import Any, cast
 import json
 
 from teistro import (
+    AspectHit,
+    NakshatraIngress,
+    SignIngress,
+    Station,
     LocalDay,
     VarshaRequest,
     DashaDefinition,
@@ -376,6 +380,13 @@ def main() -> None:
             dasha_phala=True,
             jaimini=True,
             gochar={"instants": [2460676.5, 2460736.5], "ashtakavarga": True},
+            hits={
+                "from": 2460676.5,
+                "to": 2460736.5,
+                "grahas": ["SUN", "MERCURY", "SATURN"],
+                "aspects": [0, 90, 180],
+                "orbDeg": 2,
+            },
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -635,6 +646,19 @@ def main() -> None:
                         + f" {','.join(o.full_key for o in moving.obstructed_by) or '-'}"
                         + f" {moving.verdict.key} {moving.fruition.key} {str(moving.fruitful_now).lower()}",
                     )
+            for k, hit in enumerate(chart.hits):
+                e = hit.event
+                into = e.into.full_key if isinstance(e, (SignIngress, NakshatraIngress)) else "-"
+                motion = e.turns.key if isinstance(e, Station) else e.motion.key
+                if isinstance(e, AspectHit):
+                    to = "LAGNA" if e.to.graha is None else e.to.graha.full_key
+                    angle, phase = str(e.angle), e.phase.key
+                else:
+                    to, angle, phase = "-", "-", "-"
+                put(
+                    f"chart-{i}-hit-{k}",
+                    f"{number(hit.instant)} {hit.graha.full_key} {e.kind.key} {into} {motion} {to} {angle} {phase}",
+                )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

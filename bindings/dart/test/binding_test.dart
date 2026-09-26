@@ -1222,6 +1222,99 @@ void _engineTests() {
   /// houses in each chart, the Atmakaraka's own navamsha the first from it,
   /// and the Brahma graha found or its absence named -- never both, never
   /// neither; null unless asked.
+  test('a chart carries its hit list, the sky once for the batch', () {
+    // The built-in ephemeris, whose Mercury turns retrograde in the window:
+    // the test provider's planets never stand still.
+    final ctx = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545, place: place, utcOffsetSeconds: 20700)
+          .hits,
+      isEmpty,
+    );
+    const asked = HitRequest(
+      from: 2460676.5,
+      to: 2460866.5,
+      grahas: [Graha.sun, Graha.mercury, Graha.saturn],
+      aspects: [0, 90, 180],
+      orbDeg: 2,
+    );
+    final batch = ctx.chart.foundMany(
+      instants: [2447995.4895833335, 2451545],
+      place: place,
+      utcOffsetSeconds: 20700,
+      hits: asked,
+    );
+    String line(Hit h) => switch (h.event) {
+      SignIngress(:final into, :final motion) =>
+        '${h.instant} ${h.graha.key} ${into.key} ${motion.key}',
+      NakshatraIngress(:final into, :final motion) =>
+        '${h.instant} ${h.graha.key} ${into.key} ${motion.key}',
+      Station(:final turns) => '${h.instant} ${h.graha.key} ${turns.key}',
+      AspectHit(:final to, :final angle, :final phase) =>
+        '${h.instant} ${h.graha.key} ${to.point} $angle ${phase.key}',
+    };
+    final first = batch.at(0).hits;
+    final second = batch.at(1).hits;
+    List<String> sky(List<Hit> hits) => [
+      for (final h in hits)
+        if (h.event is! AspectHit) line(h),
+    ];
+    expect(sky(first), sky(second));
+    expect(first.map(line), isNot(second.map(line)));
+    expect({for (final h in first) h.event.kind}, HitKind.values.toSet());
+    for (final (k, h) in first.indexed) {
+      if (k > 0) expect(first[k - 1].instant, lessThanOrEqualTo(h.instant));
+      expect([Graha.sun, Graha.mercury, Graha.saturn], contains(h.graha));
+      if (h.event case AspectHit(:final angle)) {
+        expect([0, 90, 180], contains(angle));
+      }
+    }
+    // What an aspect names as `to` is what a request takes back.
+    final aspect = first.map((h) => h.event).whereType<AspectHit>().first;
+    final again =
+        ctx.chart
+            .found(
+              instant: 2447995.4895833335,
+              place: place,
+              utcOffsetSeconds: 20700,
+              hits: HitRequest(
+                from: asked.from,
+                to: asked.to,
+                grahas: asked.grahas,
+                kinds: const [HitKind.aspect],
+                points: [aspect.to],
+                aspects: asked.aspects,
+                orbDeg: asked.orbDeg,
+              ),
+            )
+            .hits;
+    expect(again, isNotEmpty);
+    for (final h in again) {
+      expect((h.event as AspectHit).to, aspect.to);
+    }
+    expect(
+      () => ctx.chart.found(
+        instant: 2451545,
+        place: place,
+        utcOffsetSeconds: 20700,
+        hits: const HitRequest(from: 2460676.5, to: 2460600.5),
+      ),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'hits.to'),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test(
     'a chart carries its transits, each verdict its own house and vedha',
     () {

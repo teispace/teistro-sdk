@@ -344,6 +344,12 @@ class ChartsCast:
     natal_saham_count: memoryview[int]
     """How many rows of the `natal_sahams` section belong to this chart: the sahams `varsha_json.sahams` asked for, 0 to 41."""
 
+    hit_count: memoryview[int]
+    """How many rows of the `hits` section belong to this chart. Zero when no hit list was asked for.
+
+    Ragged because a chart's aspects are its own: the sky's ingresses and stations are every chart's alike, but how often a transit crosses a natal point depends on where the point stands.
+    """
+
     length: int
     """The number of rows every column holds."""
 
@@ -1872,6 +1878,45 @@ class ChartsGocharAshtakavarga:
 
 
 @dataclass(frozen=True)
+class ChartsHits:
+    """The `hits` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none.
+    """
+
+    instant: memoryview[float]
+    """When, as a Julian day (UTC)."""
+
+    graha: memoryview[int]
+    """The transiting graha."""
+
+    kind: memoryview[int]
+    """What happened, which says which columns below mean something."""
+
+    into: memoryview[int]
+    """The sign (a `Rashi` id) entered by a sign ingress, or the nakshatra (a `Nakshatra` id) entered by a nakshatra ingress; 0 for any other kind. A retrograde ingress enters the division before the line it crossed."""
+
+    motion: memoryview[int]
+    """Which way the graha was moving through the line, or, for a station, the motion it turned to."""
+
+    to_lagna: memoryview[int]
+    """For an aspect, 1 when the natal point aspected is the lagna, 0 when it is a natal graha; 0 for any other kind."""
+
+    to_graha: memoryview[int]
+    """For an aspect to a natal graha, which (a `Graha` id); 0 otherwise."""
+
+    angle: memoryview[int]
+    """For an aspect, its angle, 0 to 180 degrees, either side of the natal point (C145); 0 for any other kind."""
+
+    phase: memoryview[int]
+    """For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -2160,6 +2205,9 @@ class Charts:
     gochar_ashtakavarga: ChartsGocharAshtakavarga
     """Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga."""
 
+    hits: ChartsHits
+    """Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -2224,6 +2272,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_gochar = blob.section(53, "gochar")
     at_gochar_grahas = blob.section(54, "gochar_grahas")
     at_gochar_ashtakavarga = blob.section(55, "gochar_ashtakavarga")
+    at_hits = blob.section(56, "hits")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -2248,6 +2297,7 @@ def decode_charts(raw: bytes) -> Charts:
             natal_saham_count=blob.column(
                 at_cast, 9, 4, at_cast.count
             ).cast("I"),
+            hit_count=blob.column(at_cast, 10, 4, at_cast.count).cast("I"),
             length=at_cast.count,
         ),
         grahas=ChartsGrahas(
@@ -3312,6 +3362,18 @@ def decode_charts(raw: bytes) -> Charts:
                 at_gochar_ashtakavarga, 7, 1, at_gochar_ashtakavarga.count
             ).cast("B"),
             length=at_gochar_ashtakavarga.count,
+        ),
+        hits=ChartsHits(
+            instant=blob.column(at_hits, 0, 8, at_hits.count).cast("d"),
+            graha=blob.column(at_hits, 1, 2, at_hits.count).cast("H"),
+            kind=blob.column(at_hits, 2, 1, at_hits.count).cast("B"),
+            into=blob.column(at_hits, 3, 2, at_hits.count).cast("H"),
+            motion=blob.column(at_hits, 4, 1, at_hits.count).cast("B"),
+            to_lagna=blob.column(at_hits, 5, 1, at_hits.count).cast("B"),
+            to_graha=blob.column(at_hits, 6, 2, at_hits.count).cast("H"),
+            angle=blob.column(at_hits, 7, 2, at_hits.count).cast("H"),
+            phase=blob.column(at_hits, 8, 1, at_hits.count).cast("B"),
+            length=at_hits.count,
         ),
     )
 

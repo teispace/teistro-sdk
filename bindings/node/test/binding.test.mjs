@@ -697,8 +697,9 @@ test('every catalogue enum has a complete id table', () => {
   // gochar's `TsGocharFrom`, two, `TsNodeVedha`, two, `TsNodeObstruction`,
   // three, `TsGocharVerdict`, three, and `TsFruition`, four; 1154 since the
   // Ashtakavarga's `TsAshtakavargaGoodFrom`, two, `TsKakshyaLord`, eight,
-  // and `TsSarvaStanding`, three.
-  assert.equal(entries, 1154, 'every member of every enum is in a table');
+  // and `TsSarvaStanding`, three; 1163 since the hit list's `TsHitKind`,
+  // four, `TsMotion`, two, and `TsAspectPhase`, three.
+  assert.equal(entries, 1163, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1859,6 +1860,64 @@ test('a chart carries its transits, each verdict its own house and vedha', () =>
     () => ctx.chart.found({ ...birth, gochar: { instants: [] } }),
     (error) => error instanceof TeistroError && error.field === 'gochar.instants',
   );
+  ctx.dispose();
+});
+
+/**
+ * The transit hit list crosses whole: empty unless asked; the sky's events
+ * every chart's alike and the aspects each chart's own; sorted; each event
+ * carrying its kind's fields; an aspect's `to` taken back as a point; and a
+ * bad request refused by the field the caller wrote.
+ */
+test('a chart carries its hit list, the sky once for the batch', () => {
+  // The built-in ephemeris, whose Mercury turns retrograde in the window:
+  // the test provider's planets never stand still.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const at = { place, utcOffsetSeconds: 20700 };
+  assert.deepEqual(ctx.chart.found({ instant: 2451545, ...at }).hits, []);
+  const hits = { from: 2460676.5, to: 2460866.5, grahas: ['SUN', 'graha.MERCURY', 'SATURN'], aspects: [0, 90, 180], orbDeg: 2 };
+  const batch = ctx.chart.foundMany({ instants: [2447995.4895833335, 2451545], ...at, hits });
+  const [first, second] = [batch.at(0).hits, batch.at(1).hits];
+  const sky = (list) => list.filter((h) => h.event.kind !== 'ASPECT');
+  assert.deepEqual(sky(first), sky(second), "the sky's events are every chart's");
+  assert.notDeepEqual(first, second, 'the aspects are each chart\'s own');
+  const kinds = new Set();
+  first.forEach((hit, k) => {
+    if (k > 0) assert.ok(first[k - 1].instant <= hit.instant, 'sorted by instant');
+    assert.ok(['graha.SUN', 'graha.MERCURY', 'graha.SATURN'].includes(hit.graha), hit.graha);
+    const e = hit.event;
+    kinds.add(e.kind);
+    if (e.kind === 'SIGN_INGRESS') assert.match(e.into, /^rashi\./);
+    if (e.kind === 'NAKSHATRA_INGRESS') assert.match(e.into, /^nakshatra\./);
+    if (e.kind === 'STATION') assert.ok(['DIRECT', 'RETROGRADE'].includes(e.turns));
+    if (e.kind === 'ASPECT') {
+      assert.ok([0, 90, 180].includes(e.angle), `${e.angle}`);
+      assert.ok(['ENTERING', 'EXACT', 'LEAVING'].includes(e.phase));
+      assert.ok(e.to.point === 'LAGNA' || /^graha\./.test(e.to.graha), JSON.stringify(e.to));
+    }
+  });
+  assert.deepEqual([...kinds].sort(), ['ASPECT', 'NAKSHATRA_INGRESS', 'SIGN_INGRESS', 'STATION']);
+  // What an aspect names as `to` is what a request takes back as a point.
+  const aspect = first.find((h) => h.event.kind === 'ASPECT');
+  const again = ctx.chart.found({
+    instant: 2447995.4895833335,
+    ...at,
+    hits: { ...hits, kinds: ['ASPECT'], points: [aspect.event.to] },
+  }).hits;
+  assert.ok(again.length > 0 && again.every((h) => JSON.stringify(h.event.to) === JSON.stringify(aspect.event.to)));
+  for (const [asked, field] of [
+    [{ from: 2460676.5, to: 2460600.5 }, 'hits.to'],
+    [{ ...hits, orbDeg: 20 }, 'hits.orbDeg'],
+    [{ ...hits, grahas: ['PLUTO'] }, 'hits.grahas'],
+    [{ ...hits, points: ['ASCENDANT'] }, 'hits.points[0]'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: 2451545, ...at, hits: asked }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
   ctx.dispose();
 });
 

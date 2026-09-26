@@ -72,11 +72,12 @@ class TheCatalogue(unittest.TestCase):
         # `GocharFrom`, two, `NodeVedha`, two, `NodeObstruction`, three,
         # `GocharVerdict`, three, and `Fruition`, four; 123 since the
         # Ashtakavarga's `AshtakavargaGoodFrom`, two, `KakshyaLord`, eight,
-        # and `SarvaStanding`, three.
-        self.assertEqual(len(every_enum()), 123)
+        # and `SarvaStanding`, three; 126 since the hit list's `HitKind`,
+        # four, `Motion`, two, and `AspectPhase`, three.
+        self.assertEqual(len(every_enum()), 126)
         self.assertEqual(
             sum(len(list(found)) for found in every_enum()),
-            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3,
+            946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3 + 4 + 2 + 3,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

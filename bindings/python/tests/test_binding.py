@@ -1164,6 +1164,65 @@ class AnEngine(WithLibrary):
             self.assertAlmostEqual(six, g.virupas, places=9)
             self.assertEqual(g.strong, g.rupas >= g.required_rupas)
 
+    def test_a_chart_carries_its_hit_list_the_sky_once_for_the_batch(self) -> None:
+        """The transit hit list crosses whole: empty unless asked; the sky's
+        events every chart's alike and the aspects each chart's own; sorted;
+        each event its own class; an aspect's `to` taken back as a point; and
+        a bad request refused by the field the caller wrote. On the built-in
+        ephemeris, whose Mercury turns retrograde in the window."""
+        from teistro import AspectHit, Hit, HitKind, HitRequest, NakshatraIngress, NatalPoint, SignIngress, Station
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertEqual(ctx.chart.found(instant=2451545, place=observer, utc_offset_seconds=20700).hits, [])
+            asked: HitRequest = {
+                "from": 2460676.5,
+                "to": 2460866.5,
+                "grahas": [Graha.SUN, "graha.MERCURY", "SATURN"],
+                "aspects": [0, 90, 180],
+                "orbDeg": 2,
+            }
+            batch = ctx.chart.found_many(
+                instants=[2447995.4895833335, 2451545], place=observer, utc_offset_seconds=20700, hits=asked
+            )
+            first, second = batch.at(0).hits, batch.at(1).hits
+
+            def sky(hits: list[Hit]) -> list[Hit]:
+                return [hit for hit in hits if not isinstance(hit.event, AspectHit)]
+
+            self.assertEqual(sky(first), sky(second))
+            self.assertNotEqual(first, second)
+            self.assertEqual(first, sorted(first, key=lambda hit: hit.instant))
+            kinds = {hit.event.kind for hit in first}
+            self.assertEqual(kinds, set(HitKind))
+            for hit in first:
+                self.assertIn(hit.graha, (Graha.SUN, Graha.MERCURY, Graha.SATURN))
+                if isinstance(hit.event, (SignIngress, NakshatraIngress)):
+                    self.assertIsNotNone(hit.event.into)
+                elif isinstance(hit.event, Station):
+                    self.assertIn(hit.event.turns.key, ("DIRECT", "RETROGRADE"))
+                else:
+                    self.assertIn(hit.event.angle, (0, 90, 180))
+            aspect = next(hit.event for hit in first if isinstance(hit.event, AspectHit))
+            to_it: HitRequest = {**asked, "kinds": ["ASPECT"], "points": [aspect.to]}
+            again = ctx.chart.found(
+                instant=2447995.4895833335, place=observer, utc_offset_seconds=20700, hits=to_it
+            ).hits
+            self.assertTrue(again)
+            self.assertTrue(all(isinstance(hit.event, AspectHit) and hit.event.to == aspect.to for hit in again))
+            self.assertIsInstance(aspect.to, NatalPoint)
+            refusals: list[tuple[HitRequest, str]] = [
+                ({"from": 2460676.5, "to": 2460600.5}, "hits.to"),
+                ({**asked, "orbDeg": 20}, "hits.orbDeg"),
+                ({**asked, "grahas": ["PLUTO"]}, "hits.grahas"),
+            ]
+            for bad, field in refusals:
+                with self.assertRaises(TeistroError) as refused:
+                    ctx.chart.found(instant=2451545, place=observer, utc_offset_seconds=20700, hits=bad)
+                self.assertEqual(refused.exception.field, field)
+
     def test_a_chart_carries_its_transits_each_verdict_its_own_house_and_vedha(self) -> None:
         """A chart's transits cross whole: a reading an instant in the order
         asked, counted from what was asked, nine grahas each whose verdict
