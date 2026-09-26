@@ -38,7 +38,7 @@ use teistro_port_ephemeris::{
 };
 
 use crate::completion::{Completed, Completion, CompletionError, Implementation};
-use crate::solve::{Caps, SolveError, first_zero, refine};
+use crate::solve::{Caps, SolveError, first_zero, refine_known};
 
 /// The tolerance a crossing is found to, days: a hundredth of a second,
 /// a hundredth of the target the kernel is held to against the engines.
@@ -688,11 +688,13 @@ pub const SCAN_ANCHOR_JD: f64 = 2_451_545.0;
 /// kilobytes.
 pub const SCAN_CHUNK: usize = 512;
 
-/// A search for the crossings of a quantity over a lattice.
+/// A search for the crossings of a quantity over a lattice, or over
+/// several at once from one scan.
 pub struct Search<'s, S: Longitudes + ?Sized> {
     source: &'s S,
     quantity: Quantity,
-    lattice: Lattice,
+    /// Never empty: every constructor gives at least one.
+    lattices: Vec<Lattice>,
     tolerance_days: f64,
     step_days: Option<f64>,
     caps: Caps,
@@ -704,7 +706,7 @@ impl<S: Longitudes + ?Sized> fmt::Debug for Search<'_, S> {
         f.debug_struct("Search")
             .field("source", &self.source.describe())
             .field("quantity", &self.quantity)
-            .field("lattice", &self.lattice)
+            .field("lattices", &self.lattices)
             .field("tolerance_days", &self.tolerance_days)
             .field("step_days", &self.step_days())
             .field("caps", &self.caps)
@@ -715,11 +717,30 @@ impl<S: Longitudes + ?Sized> fmt::Debug for Search<'_, S> {
 impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     /// A search with the default tolerance, the step rule and caps.
     #[must_use]
-    pub const fn new(source: &'s S, quantity: Quantity, lattice: Lattice) -> Search<'s, S> {
+    pub fn new(source: &'s S, quantity: Quantity, lattice: Lattice) -> Search<'s, S> {
+        Search::each(source, quantity, lattice, [])
+    }
+
+    /// A search over several lattices of one quantity, **scanned once**:
+    /// each sample is tested against every lattice, so a caller asking
+    /// after a body's signs, its nakshatras and its aspects to ten natal
+    /// points pays for one walk over the window and not twelve. The step
+    /// is the finest any of them needs, and only the refinement of a
+    /// crossing found is paid per lattice.
+    ///
+    /// [`Search::between_each`] answers each lattice's crossings apart;
+    /// [`Search::between`], all of them in time order.
+    #[must_use]
+    pub fn each(
+        source: &'s S,
+        quantity: Quantity,
+        first: Lattice,
+        more: impl IntoIterator<Item = Lattice>,
+    ) -> Search<'s, S> {
         Search {
             source,
             quantity,
-            lattice,
+            lattices: std::iter::once(first).chain(more).collect(),
             tolerance_days: TOLERANCE_DAYS,
             step_days: None,
             caps: Caps::DEFAULT,
@@ -752,15 +773,20 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
         self
     }
 
-    /// The step the search samples at: half the lattice spacing at the
-    /// quantity's greatest rate, never more than a day, so no line is
-    /// passed twice between two samples and no retrograde arc is stepped
-    /// over.
+    /// The step the search samples at: half the finest lattice's spacing
+    /// at the quantity's greatest rate, never more than a day, so no line
+    /// is passed twice between two samples and no retrograde arc is
+    /// stepped over.
     #[must_use]
     pub fn step_days(&self) -> f64 {
         self.step_days.unwrap_or_else(|| {
             let rate = quantity_rate_deg_per_day(self.quantity);
-            (spacing_deg(&self.lattice) / rate * 0.5).min(STEP_CAP_DAYS)
+            let finest = self
+                .lattices
+                .iter()
+                .map(spacing_deg)
+                .fold(f64::INFINITY, f64::min);
+            (finest / rate * 0.5).min(STEP_CAP_DAYS)
         })
     }
 
@@ -781,13 +807,19 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     /// reach and lives with the truncation past it.
     #[must_use]
     pub fn longest_dwell_days(&self) -> Option<f64> {
-        longest_dwell_days(self.quantity, &self.lattice)
+        // The longest of any one lattice's, since a caller widens its
+        // window by the most any of them can need.
+        self.lattices
+            .iter()
+            .map(|lattice| longest_dwell_days(self.quantity, lattice))
+            .try_fold(0.0_f64, |longest, dwell| dwell.map(|d| longest.max(d)))
     }
 
     fn check(&self) -> Result<(), Error> {
-        if !(self.lattice.origin_deg.is_finite() && self.lattice.step_deg.is_finite())
-            || self.lattice.step_deg < 0.0
-        {
+        if self.lattices.iter().any(|lattice| {
+            !(lattice.origin_deg.is_finite() && lattice.step_deg.is_finite())
+                || lattice.step_deg < 0.0
+        }) {
             return Err(Error::invalid_arg(
                 "a lattice needs a finite origin and a non-negative step",
             )
@@ -807,7 +839,8 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
         Ok(())
     }
 
-    /// Every crossing between two instants, in time order.
+    /// Every crossing between two instants, of every lattice, in time
+    /// order.
     ///
     /// # Errors
     ///
@@ -815,11 +848,31 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     /// step or lattice; the source's error; `NOT_CONVERGED` should a
     /// bracket fail to narrow.
     pub fn between(&self, from: JulianDay<Ut1>, to: JulianDay<Ut1>) -> Result<Vec<Event>, Error> {
+        let mut each = self.between_each(from, to)?;
+        if each.len() == 1 {
+            return Ok(each.pop().unwrap_or_default());
+        }
+        let mut all: Vec<Event> = each.into_iter().flatten().collect();
+        all.sort_by(|a, b| a.instant.get().total_cmp(&b.instant.get()));
+        Ok(all)
+    }
+
+    /// Every crossing between two instants, lattice by lattice in the
+    /// order they were given, each in time order, from one scan.
+    ///
+    /// # Errors
+    ///
+    /// As [`Search::between`].
+    pub fn between_each(
+        &self,
+        from: JulianDay<Ut1>,
+        to: JulianDay<Ut1>,
+    ) -> Result<Vec<Vec<Event>>, Error> {
         self.check()?;
         check_window("search", from, to)?;
         let step = self.step_days();
         let wraps = self.quantity.wraps();
-        let mut events = Vec::new();
+        let mut events: Vec<Vec<Event>> = vec![Vec::new(); self.lattices.len()];
 
         // The scan visits every instant between the ends, and knows all
         // of them before it asks for the first, so it asks for them a
@@ -889,38 +942,13 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                 };
                 let unwrapped_hi = unwrapped_lo + delta;
                 if delta != 0.0 {
-                    for k in lines_between(&self.lattice, unwrapped_lo, unwrapped_hi) {
-                        let line = line_deg(&self.lattice, k);
-                        let rising = delta > 0.0;
-                        // The signed distance to the line along the unwrapped
-                        // curve, negative before it, so the bracket has the shape
-                        // the solver expects. The curve is unwrapped exactly as
-                        // the samples were, so the bracket's ends carry the
-                        // values the lattice test saw and a line met at a sample
-                        // still brackets.
-                        let gap = |t: f64| -> Result<f64, Error> {
-                            let value =
-                                evaluate(self.quantity, self.source, JulianDay::literal(t))?;
-                            let advance = if wraps {
-                                difference_deg(value, raw_lo)
-                            } else {
-                                value - raw_lo
-                            };
-                            let distance = unwrapped_lo + advance - line;
-                            Ok(if rising { distance } else { -distance })
-                        };
-                        let refined = refine(gap, t_lo, t_hi, self.tolerance_days, self.caps)
-                            .map_err(solve_error)?;
-                        events.push(Event {
-                            instant: JulianDay::literal(refined.instant),
-                            boundary_deg: if wraps { normalise_deg(line) } else { line },
-                            direction: if rising {
-                                Direction::Rising
-                            } else {
-                                Direction::Falling
-                            },
-                            evaluations: refined.evaluations,
-                        });
+                    for (lattice, found) in self.lattices.iter().zip(events.iter_mut()) {
+                        self.cross(
+                            lattice,
+                            (t_lo, raw_lo, unwrapped_lo),
+                            (t_hi, unwrapped_hi),
+                            found,
+                        )?;
                     }
                 }
                 previous = Some((t_hi, raw_hi, unwrapped_hi));
@@ -933,8 +961,67 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
         // ends are lattice points rather than the caller's own instants.
         // A crossing found out there is a real crossing and not this
         // window's, so it is dropped rather than reported.
-        events.retain(|event| event.instant.get() >= from.get() && event.instant.get() <= to.get());
+        for found in &mut events {
+            found.retain(|event| {
+                event.instant.get() >= from.get() && event.instant.get() <= to.get()
+            });
+        }
         Ok(events)
+    }
+
+    /// Every line of one lattice the curve passed between two samples,
+    /// refined and pushed onto `found`: `lo` is the earlier sample's
+    /// instant, raw value and unwrapped value, `hi` the later's instant and
+    /// unwrapped value.
+    fn cross(
+        &self,
+        lattice: &Lattice,
+        (t_lo, raw_lo, unwrapped_lo): (f64, f64, f64),
+        (t_hi, unwrapped_hi): (f64, f64),
+        found: &mut Vec<Event>,
+    ) -> Result<(), Error> {
+        let wraps = self.quantity.wraps();
+        let rising = unwrapped_hi > unwrapped_lo;
+        let signed = |distance: f64| if rising { distance } else { -distance };
+        for k in lines_between(lattice, unwrapped_lo, unwrapped_hi) {
+            let line = line_deg(lattice, k);
+            // The signed distance to the line along the unwrapped curve,
+            // negative before it, so the bracket has the shape the solver
+            // expects. The curve is unwrapped exactly as the samples were,
+            // so the bracket's ends carry the values the lattice test saw
+            // and a line met at a sample still brackets.
+            let gap = |t: f64| -> Result<f64, Error> {
+                let value = evaluate(self.quantity, self.source, JulianDay::literal(t))?;
+                let advance = if wraps {
+                    difference_deg(value, raw_lo)
+                } else {
+                    value - raw_lo
+                };
+                Ok(signed(unwrapped_lo + advance - line))
+            };
+            // The ends are the two samples, whose distances the scan
+            // already holds: the refinement is the same step for step
+            // without asking for them again.
+            let refined = refine_known(
+                gap,
+                (t_lo, signed(unwrapped_lo - line)),
+                (t_hi, signed(unwrapped_hi - line)),
+                self.tolerance_days,
+                self.caps,
+            )
+            .map_err(solve_error)?;
+            found.push(Event {
+                instant: JulianDay::literal(refined.instant),
+                boundary_deg: if wraps { normalise_deg(line) } else { line },
+                direction: if rising {
+                    Direction::Rising
+                } else {
+                    Direction::Falling
+                },
+                evaluations: refined.evaluations,
+            });
+        }
+        Ok(())
     }
 
     /// The first crossing at or after an instant within a window of days.

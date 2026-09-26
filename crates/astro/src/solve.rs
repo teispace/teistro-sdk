@@ -498,15 +498,55 @@ pub fn refine<E>(
             value: tolerance,
         });
     }
+    let f_lo = f(lo).map_err(SolveError::Evaluation)?;
+    let f_hi = f(hi).map_err(SolveError::Evaluation)?;
+    let narrowed = refine_known(f, (lo, f_lo), (hi, f_hi), tolerance, caps)?;
+    Ok(Crossing {
+        evaluations: narrowed.evaluations + 2,
+        ..narrowed
+    })
+}
+
+/// [`refine`] for a caller that already holds `f` at both ends of its
+/// bracket, as a scan does at the two samples that straddle a line: the
+/// narrowing is the same step for step, and the two evaluations of the
+/// ends are not paid again. `evaluations` counts the narrowing's alone.
+///
+/// ```
+/// use teistro_astro::solve::{refine, refine_known, Caps};
+///
+/// let curve = |t: f64| -> Result<f64, ()> { Ok(((t - 0.3) * 1.5).sin()) };
+/// let ends = ((0.0, curve(0.0).unwrap()), (1.0, curve(1.0).unwrap()));
+/// let known = refine_known(curve, ends.0, ends.1, 1e-9, Caps::DEFAULT).expect("bracketed");
+/// let asked = refine(curve, 0.0, 1.0, 1e-9, Caps::DEFAULT).expect("bracketed");
+/// assert_eq!(known.instant.to_bits(), asked.instant.to_bits());
+/// assert_eq!(known.evaluations + 2, asked.evaluations);
+/// ```
+///
+/// # Errors
+///
+/// As [`refine`].
+pub fn refine_known<E>(
+    mut f: impl FnMut(f64) -> Result<f64, E>,
+    (lo, f_lo): (f64, f64),
+    (hi, f_hi): (f64, f64),
+    tolerance: f64,
+    caps: Caps,
+) -> Result<Crossing, SolveError<E>> {
+    if !(tolerance.is_finite() && tolerance > 0.0) {
+        return Err(SolveError::Argument {
+            name: "tolerance",
+            value: tolerance,
+        });
+    }
+    if !(f_lo < 0.0 && f_hi >= 0.0) {
+        return Err(SolveError::NotBracketed { steps: 0, last: lo });
+    }
     let mut evaluations = 0u32;
     let mut evaluate = |t: f64| -> Result<f64, SolveError<E>> {
         evaluations += 1;
         f(t).map_err(SolveError::Evaluation)
     };
-    let (f_lo, f_hi) = (evaluate(lo)?, evaluate(hi)?);
-    if !(f_lo < 0.0 && f_hi >= 0.0) {
-        return Err(SolveError::NotBracketed { steps: 0, last: lo });
-    }
     let bracket = Bracket { lo, f_lo, hi, f_hi };
     let narrowed = narrow(&mut evaluate, bracket, tolerance, caps)?;
     Ok(crossing(narrowed, evaluations))

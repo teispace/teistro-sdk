@@ -731,14 +731,20 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 Error::invalid_arg(format!("{} has no transit to search", graha.key()))
                     .with_field("grahas")
             })?;
-            for (index, lattice) in lattices.iter().enumerate() {
-                let shifted = Lattice {
-                    origin_deg: lattice.origin_deg - turned,
-                    step_deg: lattice.step_deg,
-                };
-                for event in
-                    Search::new(&source, Quantity::Longitude(body), shifted).between(start, end)?
-                {
+            // One scan of the graha's longitude, tested against every
+            // lattice at each sample: the signs, the nakshatras and every
+            // natal point's aspects cost one walk over the window.
+            let mut shifted = lattices.iter().map(|lattice| Lattice {
+                origin_deg: lattice.origin_deg - turned,
+                step_deg: lattice.step_deg,
+            });
+            let crossings = match shifted.next() {
+                Some(first) => Search::each(&source, Quantity::Longitude(body), first, shifted)
+                    .between_each(start, end)?,
+                None => Vec::new(),
+            };
+            for (index, found) in crossings.into_iter().enumerate() {
+                for event in found {
                     events.push(TransitEvent {
                         graha: *graha,
                         instant: JulianDay::<Utc>::literal(event.instant.get()),

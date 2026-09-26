@@ -1,6 +1,6 @@
 # The transit hit list: every event of a window, against one chart
 
-Status: `draft`, 2026-09-27; §6 steps 1 and 2 **built** the same day. Written
+Status: `draft`, 2026-09-27; §6 steps 1 to 3 **built** the same day. Written
 before any code; the building is expected to correct it.
 
 Derives from `gochar.md` §6 step 4 and the research page's P0 row "transit
@@ -24,7 +24,7 @@ by the SDK's sample-and-bisect otherwise.
 | sign ingress | a body's longitude in the chart's zodiac | `SIGNS` | each crossing names the sign entered and the direction, so a retrograde re-entry is its own event |
 | nakshatra ingress | the same | `NAKSHATRAS` | |
 | station | a body's speed | zero | retrograde and direct, `events::stations` |
-| exact aspect to a natal point | the same longitude | origin the natal longitude, step 30° | one search catches every multiple of 30°, filtered to the angles asked for |
+| exact aspect to a natal point | the same longitude | origin the natal longitude, step the asked lines' common divisor | holds only the lines asked for: 180° for the conjunction and opposition (§6 step 3) |
 | orb entered and left | the same | the aspect's line ± the orb | the two edges of an aspect's window; asked for separately |
 
 Ketu is Rahu's opposite point in every chart, so its crossings are Rahu's
@@ -63,9 +63,10 @@ after stands in the sign the event says it left and entered.
   its exit. Pure data over the crossings; it depends on nothing new.
 - **The façade**: `sdk.chart().hits(&natal, &HitRequest)`, where the
   request names the window, the bodies, the natal points, the events and
-  the aspects and orb (C145, C146). One search per body and lattice, in
-  the chart's zodiac; events sorted by instant, ties by body then kind so
-  the order is total and the output reproducible.
+  the aspects and orb (C145, C146). **One scan per body**, every lattice
+  tested at each of its samples, in the chart's zodiac; events sorted by
+  instant, ties by body then kind so the order is total and the output
+  reproducible.
 - **A batch shape from the start**: the natal chart's points are read
   once, and a request over many natal charts founds nothing twice.
 
@@ -115,5 +116,42 @@ after stands in the sign the event says it left and entered.
    the one other point every chart has. Every exact hit of a year is
    exact in a chart founded at its instant, every edge stands the orb
    from it, and no window opens twice before it closes.
-3. The measured pass and its price; then the boundary and the bindings.
-4. Sade Sati's phases over the ingresses, once its source is in hand.
+3. The measured pass and its price: **done**
+   (`transit-hit-list-measured.md`, `check-hits`). The first price was
+   too high to pass: a year of one chart took 5.2 s, and 12.9 s with a
+   3° orb at three angles, and the fifty-five recorded births would have
+   taken minutes. Profiled, it was the search's own shape, three costs
+   deep:
+   - an aspect lattice held every multiple of 30° and the list threw away
+     all but the asked lines — ten refinements of every twelve for the
+     default pair — so a lattice now steps by the asked lines' common
+     divisor (`hits::aspect_step_deg`);
+   - every lattice was its own walk over the window, twelve to thirty-two
+     walks a graha, so `Search::each` tests every lattice against one
+     scan at the finest one's step, and each lattice's crossings are its
+     own search's at that step to the bit;
+   - the refinement asked again for the two samples it was handed, which
+     `solve::refine_known` takes as known, changing no bit anywhere.
+   A chart's year fell to 1.5 s (2.0 s with the orb). The batch is the
+   design §4 promised: `hits_many` scans once for many charts and refines
+   the sky's events once, handing each chart its list as `hits` gives it
+   alone, bit for bit; a topocentric frame searches once per place. What
+   remains is the refinement itself, the Moon's above all: at about 200
+   µs an evaluation and seven evaluations a crossing, the Moon's aspects
+   to fifty-five charts with an orb are two minutes, so the pass asks the
+   Moon's aspects of the first birth alone. A refinement seeded from the
+   samples' speeds (a cubic through both ends' values and rates) would
+   take about two evaluations; it moves every search's instants within
+   the tolerance, so it is its own measured change.
+
+   **Found building it:** the page's first run read every ingress back at
+   Greenwich and 678 of 683 failed. The conformance profile is
+   **topocentric**: the Moon's parallax is up to a degree and the
+   planets' a few arcseconds, which moves an ingress by minutes. A
+   read-back is founded at the chart's own place — which the unit test
+   had done by accident, its natal chart and read-back sharing
+   Kathmandu — and a polar place's winter has no sunrise for the
+   profile's day, so the read-back context reckons that day from civil
+   midnight, which is no part of a longitude.
+4. The boundary and the bindings.
+5. Sade Sati's phases over the ingresses, once its source is in hand.

@@ -296,3 +296,38 @@ fn an_aspect_or_an_orb_that_cannot_be_is_named() {
     assert_eq!(field(year().with_orb(20.0)).as_deref(), Some("orb_deg"));
     assert_eq!(field(year().with_points([])).as_deref(), Some("points"));
 }
+
+/// A batch searches the sky once and answers each chart what it would have
+/// been answered alone, to the bit: its ingresses and stations are the
+/// sky's, handed to every chart, and its aspects its own.
+#[test]
+fn many_charts_are_answered_what_each_is_answered_alone() {
+    let sdk = context(None);
+    let first = natal(&sdk);
+    let second = sdk
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(2_451_545.0),
+            &ChartRequest::at(place(), UtcOffset::UTC),
+        )
+        .unwrap()
+        .value;
+    let asked = year().with_aspects([0, 90, 180]).with_orb(2.0);
+    let many = sdk
+        .chart()
+        .hits_many([&first, &second], &asked)
+        .unwrap()
+        .value;
+    assert_eq!(many.len(), 2);
+    for (natal, batch) in [&first, &second].into_iter().zip(&many) {
+        let alone = sdk.chart().hits(natal, &asked).unwrap().value;
+        assert!(!alone.is_empty());
+        assert_eq!(batch, &alone);
+    }
+    assert_ne!(many[0], many[1], "two charts, two lists of aspects");
+    let none: [&Document; 0] = [];
+    assert_eq!(
+        sdk.chart().hits_many(none, &asked).unwrap_err().field(),
+        Some("natals")
+    );
+}

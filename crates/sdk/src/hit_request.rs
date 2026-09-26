@@ -1,11 +1,14 @@
 //! The transit hit list through the façade: every ingress and station of a
 //! window, against one chart (`03-design/transit-hit-list.md`).
 
+use teistro_astro::events::{Direction, Lattice, StationKind};
+use teistro_chart::foundation::{TransitEvent, TransitEventKind};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
-use teistro_core::quantity::{JulianDay, Utc};
+use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_gochar::GRAHAS;
-use teistro_gochar::hits::NatalPoint;
+use teistro_gochar::hits::{self, Edge, HitEvent, Motion, NatalPoint};
+use teistro_serial::Document;
 
 /// A kind of event a hit list reports.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -208,5 +211,131 @@ impl HitRequest {
             }
         }
         Ok(())
+    }
+}
+
+/// What a lattice's crossings mean, and for which chart: an ingress is
+/// every chart's, an aspect one chart's (by its index in the batch).
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum Meaning {
+    Sign,
+    Nakshatra,
+    Aspect(usize, NatalPoint, f64, Edge),
+}
+
+/// The charts searched together, each group with the place it is searched
+/// from: all of them at once, unless the sky depends on where it is seen
+/// from, when each place is its own group.
+pub(crate) fn groups(natals: &[&Document], topocentric: bool) -> Vec<(Place, Vec<usize>)> {
+    let mut groups: Vec<(Place, Vec<usize>)> = Vec::new();
+    for (index, natal) in natals.iter().enumerate() {
+        let place = natal.foundation.place;
+        match groups
+            .iter_mut()
+            .find(|(seen, _)| !topocentric || *seen == place)
+        {
+            Some((_, members)) => members.push(index),
+            None => groups.push((place, vec![index])),
+        }
+    }
+    groups
+}
+
+/// The lattices one group's scan tests, and what each one's crossings
+/// mean: the signs and the nakshatras once for the group, and each chart's
+/// aspect lines, exact and at the orb's two edges.
+///
+/// # Errors
+///
+/// A natal chart without a point asked for, named `points`.
+pub(crate) fn lattices_of(
+    request: &HitRequest,
+    natals: &[&Document],
+    members: &[usize],
+) -> Result<Vec<(Meaning, Lattice)>, Error> {
+    let mut meanings = Vec::new();
+    if request.asks(HitKind::SignIngress) {
+        meanings.push((Meaning::Sign, Lattice::SIGNS));
+    }
+    if request.asks(HitKind::NakshatraIngress) {
+        meanings.push((Meaning::Nakshatra, Lattice::NAKSHATRAS));
+    }
+    if !request.asks(HitKind::Aspect) {
+        return Ok(meanings);
+    }
+    let orb = request.orb_deg.unwrap_or(0.0);
+    let edges: &[(Edge, f64)] = if request.orb_deg.is_some() {
+        &[(Edge::Exact, 0.0), (Edge::Before, -orb), (Edge::Past, orb)]
+    } else {
+        &[(Edge::Exact, 0.0)]
+    };
+    let step_deg = hits::aspect_step_deg(&request.aspects);
+    for chart in members {
+        let foundation = &natals
+            .get(*chart)
+            .ok_or_else(|| Error::internal("a group names a chart it was not given"))?
+            .foundation;
+        for point in &request.points {
+            let natal_deg = match point {
+                NatalPoint::Graha { graha } => foundation.graha(*graha).map(|at| at.longitude_deg),
+                NatalPoint::Lagna => Some(foundation.lagna_deg),
+            }
+            .ok_or_else(|| {
+                Error::invalid_arg(format!("natal chart {chart} has no {point:?} to aspect"))
+                    .with_field("points")
+            })?;
+            for (edge, shift) in edges {
+                meanings.push((
+                    Meaning::Aspect(*chart, *point, natal_deg, *edge),
+                    Lattice {
+                        origin_deg: natal_deg + shift,
+                        step_deg,
+                    },
+                ));
+            }
+        }
+    }
+    Ok(meanings)
+}
+
+/// The hit a searched event is, and the one chart it belongs to when it is
+/// an aspect; `None` for a line no aspect asked for lies on.
+pub(crate) fn hit_of(
+    event: &TransitEvent,
+    meanings: &[(Meaning, Lattice)],
+    request: &HitRequest,
+) -> Option<(HitEvent, Option<usize>)> {
+    let motion = |direction: Direction| match direction {
+        Direction::Falling => Motion::Retrograde,
+        Direction::Rising => Motion::Direct,
+    };
+    match event.kind {
+        TransitEventKind::Crossing {
+            lattice,
+            boundary_deg,
+            direction,
+        } => match meanings.get(lattice)?.0 {
+            Meaning::Sign => Some((hits::sign_ingress(boundary_deg, motion(direction)), None)),
+            Meaning::Nakshatra => Some((
+                hits::nakshatra_ingress(boundary_deg, motion(direction)),
+                None,
+            )),
+            Meaning::Aspect(chart, point, natal_deg, edge) => hits::aspect_hit(
+                (point, natal_deg),
+                (boundary_deg, edge, request.orb_deg.unwrap_or(0.0)),
+                motion(direction),
+                &request.aspects,
+            )
+            .map(|aspect| (aspect, Some(chart))),
+        },
+        TransitEventKind::Station { kind, .. } => Some((
+            HitEvent::Station {
+                turns: match kind {
+                    StationKind::Retrograde => Motion::Retrograde,
+                    StationKind::Direct => Motion::Direct,
+                },
+            },
+            None,
+        )),
     }
 }

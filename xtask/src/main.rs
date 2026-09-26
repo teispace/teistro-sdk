@@ -107,6 +107,9 @@
 //! - `gochar` and `check-gochar`: the transits read from the natal Moon, how
 //!   the verdicts fall over the recorded births and who obstructs whom over
 //!   sixty years of sky.
+//! - `hits` and `check-hits`: the transit hit list over the recorded births
+//!   and a year, each ingress and exact aspect read back through a founded
+//!   chart, the stations tied to the crossings and the orbs' windows.
 //! - `kalachakra` and `check-kalachakra`: the Kalachakra dasha, measured
 //!   beside the readings the sources give at each of its forks.
 //! - `ashtakavarga` and `check-ashtakavarga`: the Ashtakavarga, the engine's
@@ -206,6 +209,7 @@ mod ffi;
 mod generated;
 mod gochar;
 mod hashes;
+mod hits;
 mod houses;
 mod interpret;
 mod interpretations;
@@ -279,6 +283,7 @@ const PASSES: &[Pass] = &[
     ),
     ("jaimini", jaimini::generate, jaimini::check_generated),
     ("gochar", gochar::generate, gochar::check_generated),
+    ("hits", hits::generate, hits::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),
     ("state", state::generate, state::check_generated),
