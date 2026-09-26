@@ -345,6 +345,13 @@ knob!(
         None = "NONE" }
 );
 knob!(
+    /// How many bindus in a graha's own Ashtakavarga make its transit good
+    /// (Phaladeepika ch. 23 v. 11; crux C141).
+    AshtakavargaGoodFrom { /// Five: the verse makes four a fear (भय).
+        Five = "FIVE", /// Four: much modern practice reads four as middling or good.
+        Four = "FOUR" }
+);
+knob!(
     /// Whether a graha's arudha moves as a bhava's does, when the count
     /// lands on the graha's own sign or the 7th from it (BPHS ch. 29 vv. 6
     /// and 7; crux C132).

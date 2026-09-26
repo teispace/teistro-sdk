@@ -186,3 +186,71 @@ fn every_transit_is_the_founded_chart_s_graha_to_the_bit() {
         }
     }
 }
+
+/// Asked for, each reading judges the seven by the natal Ashtakavarga: the
+/// bindus of the sign transited are the natal section's, and so is its
+/// sarvashtakavarga; not asked for, a reading carries none; and the
+/// settings' threshold is the one applied (`gochar-ashtakavarga.md`).
+#[test]
+fn the_ashtakavarga_reading_is_the_natal_bindus_of_the_sign_transited() {
+    use teistro::gochar::ashtakavarga::{Kakshya, SarvaStanding};
+
+    let sdk = context("{}");
+    let natal = sdk
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(BIRTH),
+            &ChartRequest::at(place(), UtcOffset::literal(5, 45, 0)).with_ashtakavarga(),
+        )
+        .unwrap()
+        .value;
+    let av = natal.ashtakavarga.as_ref().unwrap();
+    let instants =
+        (0_u32..24).map(|k| JulianDay::<Utc>::literal(2_460_676.5 + 30.0 * f64::from(k)));
+    let plain = GocharRequest::over(instants);
+    let asked = plain.clone().with_ashtakavarga();
+    assert!(
+        sdk.chart()
+            .gochar(&natal, &plain)
+            .unwrap()
+            .value
+            .iter()
+            .all(|reading| reading.ashtakavarga.is_none())
+    );
+    let four = context(r#"{"gochar": {"ashtakavarga_good_from": "FOUR"}}"#);
+    let by_four = four.chart().gochar(&natal, &asked).unwrap().value;
+    let mut fours = 0;
+    for (reading, other) in sdk
+        .chart()
+        .gochar(&natal, &asked)
+        .unwrap()
+        .value
+        .iter()
+        .zip(&by_four)
+    {
+        let seven = reading.ashtakavarga.unwrap();
+        for (read, (moving, four)) in seven
+            .iter()
+            .zip(reading.grahas.iter().zip(other.ashtakavarga.unwrap()))
+        {
+            let sign = moving.transit.sign as usize;
+            let own = av
+                .grahas
+                .iter()
+                .find(|row| row.graha == read.graha)
+                .unwrap();
+            assert_eq!(read.graha, moving.graha);
+            assert_eq!(read.bindus, own.bindus[sign], "{:?}", read.graha);
+            assert_eq!(read.sarva, av.sarva[sign]);
+            assert_eq!(read.sarva_standing, SarvaStanding::of(read.sarva));
+            assert_eq!(read.kakshya, Kakshya::at(moving.transit.degrees));
+            assert_eq!(read.good, read.bindus >= 5);
+            assert_eq!(four.good, read.bindus >= 4);
+            fours += usize::from(read.bindus == 4);
+        }
+    }
+    assert!(
+        fours > 0,
+        "no transit stood on four bindus, so the knob went untested"
+    );
+}

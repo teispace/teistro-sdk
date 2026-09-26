@@ -6,6 +6,7 @@ use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
+use teistro_gochar::ashtakavarga::{self, AshtakavargaRules, Prastara};
 use teistro_gochar::{GocharFrom, GocharReading, GocharRules, Reference, Transit, gochar};
 
 /// The instants to read the transits at, and what to count them from.
@@ -25,6 +26,7 @@ use teistro_gochar::{GocharFrom, GocharReading, GocharRules, Reference, Transit,
 pub struct GocharRequest {
     instants: Vec<JulianDay<Utc>>,
     from: GocharFrom,
+    ashtakavarga: bool,
 }
 
 impl GocharRequest {
@@ -42,6 +44,7 @@ impl GocharRequest {
         GocharRequest {
             instants: instants.into_iter().collect(),
             from: GocharFrom::Moon,
+            ashtakavarga: false,
         }
     }
 
@@ -50,6 +53,20 @@ impl GocharRequest {
     pub const fn counted_from(mut self, from: GocharFrom) -> GocharRequest {
         self.from = from;
         self
+    }
+
+    /// The same request, each reading also judging the seven's transits by
+    /// the natal Ashtakavarga (`03-design/gochar-ashtakavarga.md`).
+    #[must_use]
+    pub const fn with_ashtakavarga(mut self) -> GocharRequest {
+        self.ashtakavarga = true;
+        self
+    }
+
+    /// Whether the Ashtakavarga's reading was asked for.
+    #[must_use]
+    pub const fn ashtakavarga(&self) -> bool {
+        self.ashtakavarga
     }
 
     /// The instants asked for.
@@ -99,7 +116,12 @@ impl GocharRequest {
                     .map_err(|why| Error::from(why).with_field(format!("{GOCHAR}.instants[{at}]")))
             })
             .collect::<Result<Vec<_>, Error>>()?;
-        Ok(GocharRequest::over(instants).counted_from(asked.from))
+        let request = GocharRequest::over(instants).counted_from(asked.from);
+        Ok(if asked.ashtakavarga {
+            request.with_ashtakavarga()
+        } else {
+            request
+        })
     }
 }
 
@@ -112,6 +134,8 @@ struct Asked {
     instants: Vec<f64>,
     #[serde(default)]
     from: GocharFrom,
+    #[serde(default)]
+    ashtakavarga: bool,
 }
 
 /// A sign from a sidereal longitude.
@@ -133,11 +157,17 @@ pub(crate) fn reference(natal: &ChartFoundation, from: GocharFrom) -> Result<Ref
 }
 
 /// One instant's gochar from `reference`, over the grahas' places in the
-/// chart's zodiac, the Sun to Ketu.
+/// chart's zodiac, the Sun to Ketu; and, given the natal prastara, the
+/// seven's transits judged by it.
 pub(crate) fn reading(
     longitudes: &[f64; 9],
     reference: Reference,
     rules: GocharRules,
+    by_bindus: Option<(&Prastara, AshtakavargaRules)>,
 ) -> GocharReading {
-    gochar(reference, &longitudes.map(Transit::at_longitude), rules)
+    let transits = longitudes.map(Transit::at_longitude);
+    let mut read = gochar(reference, &transits, rules);
+    read.ashtakavarga =
+        by_bindus.map(|(prastara, rules)| ashtakavarga::transits(prastara, &transits, rules));
+    read
 }

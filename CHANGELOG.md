@@ -1178,6 +1178,23 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none. No caller asked the completion for the true basis,
   and the chart already took its day and zodiac from the SDK.
 
+- **Gochar by the Ashtakavarga** (`03-design/gochar-ashtakavarga.md`).
+  `GocharRequest::with_ashtakavarga()` judges each of the seven's
+  transits by the natal bindus of the sign it crosses, as Phaladeepika ch.
+  23 teaches it, read on the printed page: the bindus (v. 11, good from
+  five since four is a fear; `gochar.ashtakavarga_good_from = FOUR` for
+  the other reading, C141), the kakshya — the eighth of the sign and
+  whether its lord gave the bindu (vv. 16 to 19) — and the
+  sarvashtakavarga against 28, exactly 28 reported as `EVEN` (v. 20,
+  C142). `teistro-strength` gains `prastara`, which contributors gave each
+  bindu, and `bindus` is now its count. Measured against PyJHora over
+  3 000 drawn charts, the prastara agrees everywhere but three table
+  cells, read on the page: the SDK and Phaladeepika part on one, the
+  Moon's bindu from Jupiter (the 12th by BPHS, the 2nd by Phaladeepika;
+  C144), and PyJHora follows a reading of its own on two.
+
+  **Numbers:** none. `bindus` is unchanged, now counted from the prastara.
+
 - **Gochar crosses to every binding** (`03-design/gochar.md` §6 step 3). A
   chart request's `gochar: { instants, from }` answers each chart's
   transits: in Node, Python and Dart as `chart.gochar`, at the C boundary

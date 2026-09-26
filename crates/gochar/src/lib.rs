@@ -251,6 +251,10 @@ pub struct GocharReading {
     pub rules: GocharRules,
     /// Each graha's, the Sun to Ketu.
     pub grahas: [GrahaGochar; 9],
+    /// The seven's transits judged by the natal Ashtakavarga, Sun to Saturn
+    /// (`03-design/gochar-ashtakavarga.md`), when they were asked for.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ashtakavarga: Option<[ashtakavarga::AshtakavargaTransit; 7]>,
 }
 
 /// The Sun's good houses and their vedha houses (v. 3).
@@ -370,8 +374,11 @@ pub fn gochar(reference: Reference, transits: &[Transit; 9], rules: GocharRules)
         reference,
         rules,
         grahas,
+        ashtakavarga: None,
     }
 }
+
+pub mod ashtakavarga;
 
 #[cfg(test)]
 mod tests;

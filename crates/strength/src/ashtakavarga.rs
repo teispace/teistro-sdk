@@ -189,9 +189,27 @@ fn sign_index(sign: Rashi) -> usize {
     sign as usize % SIGNS
 }
 
-/// Each graha's bindus by sign.
+/// The contributors' bit for the lagna in a [`prastara`] cell: the seven
+/// grahas take bits 0 to 6 by their ids.
+pub const LAGNA_BIT: u8 = 1 << 7;
+
+/// The prastara: for each graha, Sun to Saturn, and each sign, Aries to
+/// Pisces, **which** contributors gave it a bindu — bit `n` the graha with
+/// id `n`, and [`LAGNA_BIT`] the lagna (Phaladeepika ch. 23 v. 17's table of
+/// 96 squares a graha). What times a bindu's fruit in transit reads, since
+/// each part of a sign belongs to one contributor (vv. 16 to 19).
+///
+/// ```
+/// use teistro_core::catalogue::Rashi;
+/// use teistro_strength::ashtakavarga::{AshtakavargaChart, bindus, prastara};
+///
+/// let chart = AshtakavargaChart { lagna: Rashi::Aries, signs: [Rashi::Leo; 7] };
+/// // Each cell's bindus are its contributors, counted.
+/// let counted = prastara(&chart).map(|row| row.map(|cell| cell.count_ones() as u8));
+/// assert_eq!(counted, bindus(&chart));
+/// ```
 #[must_use]
-pub fn bindus(chart: &AshtakavargaChart) -> [[u8; SIGNS]; 7] {
+pub fn prastara(chart: &AshtakavargaChart) -> [[u8; SIGNS]; 7] {
     let contributors: [Rashi; 8] = [
         chart.signs[0],
         chart.signs[1],
@@ -204,17 +222,27 @@ pub fn bindus(chart: &AshtakavargaChart) -> [[u8; SIGNS]; 7] {
     ];
     let mut out = [[0; SIGNS]; 7];
     for (row, places) in out.iter_mut().zip(PLACES) {
-        for (from, bits) in contributors.iter().zip(places) {
+        for (contributor, (from, bits)) in contributors.iter().zip(places).enumerate() {
             for (offset, slot) in (0..SIGNS).map(|k| (k, (sign_index(*from) + k) % SIGNS)) {
                 if bits & (1 << offset) != 0 {
                     if let Some(cell) = row.get_mut(slot) {
-                        *cell += 1;
+                        *cell |= 1 << contributor;
                     }
                 }
             }
         }
     }
     out
+}
+
+/// Each graha's bindus by sign: its [`prastara`]'s contributors, counted.
+#[must_use]
+pub fn bindus(chart: &AshtakavargaChart) -> [[u8; SIGNS]; 7] {
+    #[allow(
+        clippy::cast_possible_truncation,
+        reason = "eight contributors at most, so a count of set bits fits a byte"
+    )]
+    prastara(chart).map(|row| row.map(|cell| cell.count_ones() as u8))
 }
 
 /// The trine reduction: the least of each trine taken from all three.
