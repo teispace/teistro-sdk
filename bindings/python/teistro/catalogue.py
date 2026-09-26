@@ -3702,6 +3702,70 @@ class BrahmaOutcome(Member):
     """
 
 
+class GocharFrom(Member):
+    """What a gochar reading counted its houses from (crux C139)."""
+
+    MOON = 0
+    """The natal Moon's sign, Phaladeepika ch. 26 v. 1's."""
+
+    LAGNA = 1
+    """The natal lagna's sign."""
+
+
+class NodeVedha(Member):
+    """The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136)."""
+
+    LIKE_THE_SUN = 0
+    """The Sun's vedha pairs."""
+
+    NONE = 1
+    """None: nothing obstructs a node's transit."""
+
+
+class NodeObstruction(Member):
+    """Whom the nodes obstruct in transit, the settings' `gochar.node_obstruction`
+    (C137, C140).
+    """
+
+    NOT_EACH_OTHER = 0
+    """The seven, and not each other."""
+
+    EACH_OTHER_TOO = 1
+    """Every graha, each other too: the verses read literally."""
+
+    NONE = 2
+    """Nobody: only the seven obstruct."""
+
+
+class GocharVerdict(Member):
+    """What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8)."""
+
+    GOOD = 0
+    """In a good house, and nothing stands in its vedha house."""
+
+    OBSTRUCTED = 1
+    """In a good house, and another graha stands in its vedha house."""
+
+    NOT_GOOD = 2
+    """Not in a house v. 2 names good."""
+
+
+class Fruition(Member):
+    """Where in a sign a graha's transit bears fruit (v. 25)."""
+
+    FIRST = 0
+    """The first ten degrees: the Sun and Mars."""
+
+    MIDDLE = 1
+    """The middle ten: Jupiter and Venus."""
+
+    LAST = 2
+    """The last ten: the Moon and Saturn."""
+
+    THROUGHOUT = 3
+    """The whole sign: Mercury and the nodes."""
+
+
 class DashaPhase(Member):
     """Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4)."""
 
@@ -5621,6 +5685,30 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "NO_LORD_QUALIFIES",
         2: "NO_PLANET_IN_THE_SIXTH",
         3: "NO_PLANET_QUALIFIES",
+    },
+    "GocharFrom": {
+        0: "MOON",
+        1: "LAGNA",
+    },
+    "NodeVedha": {
+        0: "LIKE_THE_SUN",
+        1: "NONE",
+    },
+    "NodeObstruction": {
+        0: "NOT_EACH_OTHER",
+        1: "EACH_OTHER_TOO",
+        2: "NONE",
+    },
+    "GocharVerdict": {
+        0: "GOOD",
+        1: "OBSTRUCTED",
+        2: "NOT_GOOD",
+    },
+    "Fruition": {
+        0: "FIRST",
+        1: "MIDDLE",
+        2: "LAST",
+        3: "THROUGHOUT",
     },
     "DashaPhase": {
         0: "COMMENCEMENT",

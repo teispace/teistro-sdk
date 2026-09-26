@@ -62,9 +62,12 @@ from .catalogue import (
     Ephemeris,
     Equinox,
     Era,
+    Fruition,
     Gana,
     Gender,
     GhatiReckoning,
+    GocharFrom,
+    GocharVerdict,
     Graha,
     Guna,
     HarshaGrade,
@@ -85,6 +88,8 @@ from .catalogue import (
     Nadi,
     Nakshatra,
     Nature,
+    NodeObstruction,
+    NodeVedha,
     Paksha,
     Panchaka,
     Parity,
@@ -173,7 +178,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 144,
+    "ts_chart_request": 152,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -203,7 +208,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 96,
+    "ts_chart_request": 104,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -603,6 +608,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("rules_json", ctypes.c_char_p),
         ("interpret_json", ctypes.c_char_p),
         ("varsha_json", ctypes.c_char_p),
+        ("gochar_json", ctypes.c_char_p),
     ]
 
 
@@ -2227,6 +2233,18 @@ class ChartRequest:
     every binding calls `varsha`, as `varsha.through`. May be null.
     """
 
+    gochar_json: Optional[str] = None
+    """The transits to read against every chart in the batch, as a JSON
+    object: `instants`, UTC Julian days, at least one, and `from` —
+    `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`.
+    Each chart's readings come back in the `gochar` section, a row an
+    instant, and its grahas in `gochar_grahas`, under the settings'
+    `gochar` group. Null for none (`03-design/gochar.md`). Refusals are
+    named from the record every binding calls `gochar`, as
+    `gochar.instants`.
+    Example: {"instants":[2460676.5],"from":"MOON"}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2277,6 +2295,9 @@ class ChartRequest:
         _varsha_json = None if self.varsha_json is None else self.varsha_json.encode("utf-8")
         owned.append(_varsha_json)
         raw.varsha_json = _varsha_json
+        _gochar_json = None if self.gochar_json is None else self.gochar_json.encode("utf-8")
+        owned.append(_gochar_json)
+        raw.gochar_json = _gochar_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2317,6 +2338,7 @@ class ChartRequest:
             rules_json=_text(raw.rules_json),
             interpret_json=_text(raw.interpret_json),
             varsha_json=_text(raw.varsha_json),
+            gochar_json=_text(raw.gochar_json),
         )
 
 

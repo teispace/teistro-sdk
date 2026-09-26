@@ -142,7 +142,23 @@ that reads the reference once.
    placed, warm, under the gates' build profile. Assembling a document's
    sections was measured separately and costs nothing visible; the
    founding is the cost.
-3. The boundary and the bindings, after the pattern of the Jaimini reading.
+3. The boundary and the bindings: **done**. A request's `gochar_json`
+   (`{instants, from}`, read by `GocharRequest::from_json`, which refuses
+   no instant as `gochar.instants`) answers sections 53 and 54: `gochar`,
+   a row a chart an instant, and `gochar_grahas`, nine under each, with
+   `obstructed_by` a nine-graha bit set and the vedha house 0 for none.
+   **Fixed, not ragged**, since the request settles how many instants
+   every chart gets, so each binding checks the rows divide by the chart
+   count rather than trusting it. Node, Python and Dart read it as
+   `chart.gochar`, the parity gate compares every graha of two instants
+   across all four, and an ABI test holds every cell to the façade's own
+   reading. Crossing it found a reading saying its reference sign but not
+   **what** it was counted from: `Reference { from, sign }` now says both,
+   and `GocharFrom` moved into the crate. The node knobs cross by `of`,
+   which answers `None` for a member the boundary does not know rather
+   than guessing, and a test holds every member to its own code; the
+   Brahma rule's version of that test deduplicated without sorting, which
+   passes two equal codes that are not neighbours, and now sorts first.
 4. Sade Sati (its phases need a source: Phaladeepika v. 22 reads Saturn
    over the Janma rasi and does not name the seven and a half years), the
    hit list over the crossing search, and the Ashtakavarga's transit

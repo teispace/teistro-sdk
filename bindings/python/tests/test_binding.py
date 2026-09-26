@@ -1164,6 +1164,57 @@ class AnEngine(WithLibrary):
             self.assertAlmostEqual(six, g.virupas, places=9)
             self.assertEqual(g.strong, g.rupas >= g.required_rupas)
 
+    def test_a_chart_carries_its_transits_each_verdict_its_own_house_and_vedha(self) -> None:
+        """A chart's transits cross whole: a reading an instant in the order
+        asked, counted from what was asked, nine grahas each whose verdict
+        agrees with its own house, vedha and obstructors; the nodes always
+        opposite; empty unless asked; and no instant refused by the field."""
+        from teistro import Fruition, GocharFrom, GocharVerdict, NodeObstruction, NodeVedha
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        birth = 2447995.4895833335
+        self.assertEqual(self.ctx.chart.found(instant=birth, place=observer, utc_offset_seconds=20700).gochar, ())
+        instants = [2460676.5 + 30 * k for k in range(24)]
+        verdicts = set()
+        for from_ in (GocharFrom.MOON, GocharFrom.LAGNA):
+            readings = self.ctx.chart.found(
+                instant=birth,
+                place=observer,
+                utc_offset_seconds=20700,
+                gochar={"instants": instants, "from": "MOON" if from_ is GocharFrom.MOON else "LAGNA"},
+            ).gochar
+            self.assertEqual(len(readings), len(instants))
+            for reading, instant in zip(readings, instants):
+                self.assertEqual(reading.instant, instant)
+                self.assertIs(reading.reference.from_, from_)
+                self.assertIs(reading.rules.node_vedha, NodeVedha.LIKE_THE_SUN)
+                self.assertIs(reading.rules.node_obstruction, NodeObstruction.NOT_EACH_OTHER)
+                self.assertEqual(len(reading.grahas), 9)
+                for g in reading.grahas:
+                    self.assertTrue(1 <= g.house <= 12, g.house)
+                    self.assertTrue(0 <= g.transit.degrees < 30, g.transit.degrees)
+                    expected = (
+                        GocharVerdict.NOT_GOOD
+                        if not g.good_house
+                        else GocharVerdict.OBSTRUCTED
+                        if g.obstructed_by
+                        else GocharVerdict.GOOD
+                    )
+                    self.assertIs(g.verdict, expected, f"{g.graha} in {g.house}")
+                    self.assertIsInstance(g.fruition, Fruition)
+                    if not g.good_house:
+                        self.assertIsNone(g.vedha_house)
+                    verdicts.add(g.verdict)
+                rahu, ketu = reading.grahas[7], reading.grahas[8]
+                self.assertEqual((ketu.house - rahu.house) % 12, 6, "the nodes stand opposite")
+                self.assertNotIn(Graha.KETU, rahu.obstructed_by, "C140: the nodes spare each other")
+        self.assertEqual(verdicts, set(GocharVerdict))
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.chart.found(instant=birth, place=observer, utc_offset_seconds=20700, gochar={"instants": []})
+        self.assertEqual(refused.exception.field, "gochar.instants")
+
     def test_a_chart_carries_its_karakamsha_and_its_brahma_or_why_not(self) -> None:
         """A chart's Jaimini significators cross whole: the karakamsha with
         nine houses in each chart, the Atmakaraka's own navamsha the first

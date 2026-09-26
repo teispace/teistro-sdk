@@ -291,6 +291,132 @@ impl From<Option<teistro::dasha::jaimini::NoBrahma>> for TsBrahmaOutcome {
     }
 }
 
+/// What a gochar reading counted its houses from (crux C139).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsGocharFrom {
+    /// The natal Moon's sign, Phaladeepika ch. 26 v. 1's.
+    Moon = 0,
+    /// The natal lagna's sign.
+    Lagna = 1,
+}
+
+impl TsGocharFrom {
+    /// The code a reference crosses as; `None` for one this boundary
+    /// does not know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(from: teistro::GocharFrom) -> Option<TsGocharFrom> {
+        match from {
+            teistro::GocharFrom::Moon => Some(TsGocharFrom::Moon),
+            teistro::GocharFrom::Lagna => Some(TsGocharFrom::Lagna),
+            _ => None,
+        }
+    }
+}
+
+/// The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsNodeVedha {
+    /// The Sun's vedha pairs.
+    LikeTheSun = 0,
+    /// None: nothing obstructs a node's transit.
+    None = 1,
+}
+
+impl TsNodeVedha {
+    /// The code a reading crosses as; `None` for one this boundary does not
+    /// know yet.
+    #[must_use]
+    pub const fn of(vedha: teistro_core::settings::NodeVedha) -> Option<TsNodeVedha> {
+        use teistro_core::settings::NodeVedha;
+        match vedha {
+            NodeVedha::LikeTheSun => Some(TsNodeVedha::LikeTheSun),
+            NodeVedha::None => Some(TsNodeVedha::None),
+            _ => None,
+        }
+    }
+}
+
+/// Whom the nodes obstruct in transit, the settings' `gochar.node_obstruction`
+/// (C137, C140).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsNodeObstruction {
+    /// The seven, and not each other.
+    NotEachOther = 0,
+    /// Every graha, each other too: the verses read literally.
+    EachOtherToo = 1,
+    /// Nobody: only the seven obstruct.
+    None = 2,
+}
+
+impl TsNodeObstruction {
+    /// The code a reading crosses as; `None` for one this boundary does not
+    /// know yet.
+    #[must_use]
+    pub const fn of(
+        obstruction: teistro_core::settings::NodeObstruction,
+    ) -> Option<TsNodeObstruction> {
+        use teistro_core::settings::NodeObstruction;
+        match obstruction {
+            NodeObstruction::NotEachOther => Some(TsNodeObstruction::NotEachOther),
+            NodeObstruction::EachOtherToo => Some(TsNodeObstruction::EachOtherToo),
+            NodeObstruction::None => Some(TsNodeObstruction::None),
+            _ => None,
+        }
+    }
+}
+
+/// What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsGocharVerdict {
+    /// In a good house, and nothing stands in its vedha house.
+    Good = 0,
+    /// In a good house, and another graha stands in its vedha house.
+    Obstructed = 1,
+    /// Not in a house v. 2 names good.
+    NotGood = 2,
+}
+
+impl From<teistro::gochar::Verdict> for TsGocharVerdict {
+    fn from(verdict: teistro::gochar::Verdict) -> TsGocharVerdict {
+        use teistro::gochar::Verdict;
+        match verdict {
+            Verdict::Good => TsGocharVerdict::Good,
+            Verdict::Obstructed => TsGocharVerdict::Obstructed,
+            Verdict::NotGood => TsGocharVerdict::NotGood,
+        }
+    }
+}
+
+/// Where in a sign a graha's transit bears fruit (v. 25).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsFruition {
+    /// The first ten degrees: the Sun and Mars.
+    First = 0,
+    /// The middle ten: Jupiter and Venus.
+    Middle = 1,
+    /// The last ten: the Moon and Saturn.
+    Last = 2,
+    /// The whole sign: Mercury and the nodes.
+    Throughout = 3,
+}
+
+impl From<teistro::gochar::Fruition> for TsFruition {
+    fn from(fruition: teistro::gochar::Fruition) -> TsFruition {
+        use teistro::gochar::Fruition;
+        match fruition {
+            Fruition::First => TsFruition::First,
+            Fruition::Middle => TsFruition::Middle,
+            Fruition::Last => TsFruition::Last,
+            Fruition::Throughout => TsFruition::Throughout,
+        }
+    }
+}
+
 /// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -628,6 +754,16 @@ pub struct TsChartRequest {
     /// every binding calls `varsha`, as `varsha.through`.
     /// `api: nullable`
     pub varsha_json: *const c_char,
+    /// The transits to read against every chart in the batch, as a JSON
+    /// object: `instants`, UTC Julian days, at least one, and `from` —
+    /// `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`.
+    /// Each chart's readings come back in the `gochar` section, a row an
+    /// instant, and its grahas in `gochar_grahas`, under the settings'
+    /// `gochar` group. Null for none (`03-design/gochar.md`). Refusals are
+    /// named from the record every binding calls `gochar`, as
+    /// `gochar.instants`.
+    /// `api: nullable example={"instants":[2460676.5],"from":"MOON"}`
+    pub gochar_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -1548,6 +1684,113 @@ impl JaiminiColumns {
                 ColumnData::U8(&self.in_navamsha),
                 ColumnData::U16(&self.arudha),
                 ColumnData::U8(&self.arudha_present),
+            ],
+        )
+    }
+}
+
+/// Every chart's transits, a row a chart an instant, and under each the
+/// nine grahas, a row a graha; empty when none were asked for.
+#[derive(Default)]
+struct GocharColumns {
+    instant: Vec<f64>,
+    reference: Vec<u16>,
+    counted_from: Vec<u8>,
+    node_vedha: Vec<u8>,
+    node_obstruction: Vec<u8>,
+    /// The `gochar_grahas` section.
+    graha: Vec<u16>,
+    sign: Vec<u16>,
+    degrees: Vec<f64>,
+    house: Vec<u8>,
+    good_house: Vec<u8>,
+    vedha_house: Vec<u8>,
+    obstructed_by: Vec<u16>,
+    verdict: Vec<u8>,
+    fruition: Vec<u8>,
+    fruitful_now: Vec<u8>,
+}
+
+impl GocharColumns {
+    /// Each chart's readings, in the batch's order and each chart's in the
+    /// order its instants were asked in.
+    fn of(
+        readings: &[Vec<teistro::gochar::GocharReading>],
+        instants: &[JulianDay<Utc>],
+    ) -> Result<GocharColumns, Error> {
+        let mut columns = GocharColumns::default();
+        for chart in readings {
+            if chart.len() != instants.len() {
+                return Err(Error::internal(format!(
+                    "a chart answered {} transits for {} instants",
+                    chart.len(),
+                    instants.len()
+                )));
+            }
+            for (reading, at) in chart.iter().zip(instants) {
+                let rules = reading.rules;
+                let refused =
+                    |what: &str| Error::internal(format!("{what} has no code at the boundary yet"));
+                columns.instant.push(at.get());
+                columns.reference.push(reading.reference.sign.id());
+                columns.counted_from.push(
+                    TsGocharFrom::of(reading.reference.from)
+                        .ok_or_else(|| refused("the gochar reference"))? as u8,
+                );
+                columns.node_vedha.push(
+                    TsNodeVedha::of(rules.node_vedha)
+                        .ok_or_else(|| refused("`gochar.node_vedha`"))? as u8,
+                );
+                columns.node_obstruction.push(
+                    TsNodeObstruction::of(rules.node_obstruction)
+                        .ok_or_else(|| refused("`gochar.node_obstruction`"))?
+                        as u8,
+                );
+                for read in &reading.grahas {
+                    columns.graha.push(read.graha.id());
+                    columns.sign.push(read.transit.sign.id());
+                    columns.degrees.push(read.transit.degrees);
+                    columns.house.push(read.house);
+                    columns.good_house.push(u8::from(read.good_house));
+                    columns.vedha_house.push(read.vedha_house.unwrap_or(0));
+                    columns.obstructed_by.push(graha_mask(&read.obstructed_by));
+                    columns
+                        .verdict
+                        .push(TsGocharVerdict::from(read.verdict) as u8);
+                    columns.fruition.push(TsFruition::from(read.fruition) as u8);
+                    columns.fruitful_now.push(u8::from(read.fruitful_now));
+                }
+            }
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "gochar",
+            self.instant.len(),
+            &[
+                ColumnData::F64(&self.instant),
+                ColumnData::U16(&self.reference),
+                ColumnData::U8(&self.counted_from),
+                ColumnData::U8(&self.node_vedha),
+                ColumnData::U8(&self.node_obstruction),
+            ],
+        )?;
+        writer.columns(
+            "gochar_grahas",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::U16(&self.sign),
+                ColumnData::F64(&self.degrees),
+                ColumnData::U8(&self.house),
+                ColumnData::U8(&self.good_house),
+                ColumnData::U8(&self.vedha_house),
+                ColumnData::U16(&self.obstructed_by),
+                ColumnData::U8(&self.verdict),
+                ColumnData::U8(&self.fruition),
+                ColumnData::U8(&self.fruitful_now),
             ],
         )
     }
@@ -3012,6 +3255,12 @@ pub struct Composed<'a> {
     /// Every chart's annual charts and its own sahams, in the batch's
     /// order (`annual-chart.md`); empty when none were asked for.
     pub praveshas: &'a [teistro::Varsha],
+    /// Every chart's transits at the instants `gochar` asked for, in the
+    /// batch's order, and those instants (`gochar.md`); both empty when
+    /// none were asked for.
+    pub gochar: &'a [Vec<teistro::gochar::GocharReading>],
+    /// The instants every chart's transits were read at.
+    pub gochar_instants: &'a [JulianDay<Utc>],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -3049,6 +3298,8 @@ pub fn encode(
         rules,
         plans,
         praveshas,
+        gochar,
+        gochar_instants,
         hashes,
     } = composed;
     let hashes = crate::support::hashes_text(hashes, documents.len())?;
@@ -3064,6 +3315,7 @@ pub fn encode(
         charts.iter().map(|c| timing_values(&c.timing)).collect();
     let once = BatchOnce::of(charts.first().copied());
     let by = Sections::of(documents, graha_count, registered, praveshas)?;
+    let transits = GocharColumns::of(gochar, gochar_instants)?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -3126,6 +3378,7 @@ pub fn encode(
         by.dasha_phala.write(&mut writer)?;
         writer.bytes("content_hashes", hashes.as_bytes())?;
         by.jaimini.write(&mut writer)?;
+        transits.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -3776,6 +4029,22 @@ unsafe fn varsha_request_of(
         .transpose()
 }
 
+/// The transits a request's `gochar_json` asks for, none for null; the
+/// façade reads and checks the record ([`teistro::GocharRequest::from_json`]),
+/// naming a refusal from its root, `gochar.instants`.
+///
+/// # Safety
+///
+/// `gochar_json` null or a NUL-terminated string.
+unsafe fn gochar_request_of(
+    gochar_json: *const c_char,
+) -> Result<Option<teistro::GocharRequest>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(gochar_json, "gochar_json") }?
+        .map(teistro::GocharRequest::from_json)
+        .transpose()
+}
+
 impl GrahaColumns {
     /// The grahas, charts outermost, in the order `grahas` declares them.
     fn write(
@@ -3897,6 +4166,30 @@ fn praveshas_of(
         .map(|(at, document)| {
             sdk.chart()
                 .varsha(document, birth_clock, asked)
+                .map_err(|error| error.with_hint(format!("chart {at}")))
+        })
+        .collect()
+}
+
+/// Every chart's transits, empty when none were asked for: one batch per
+/// chart through the façade ([`teistro::ChartArea::gochar`]), which places
+/// the grahas at every instant in one request; a refusal says which chart
+/// of the batch it was refused for.
+fn gochar_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::GocharRequest>,
+) -> Result<Vec<Vec<teistro::gochar::GocharReading>>, Error> {
+    let Some(asked) = asked else {
+        return Ok(Vec::new());
+    };
+    documents
+        .iter()
+        .enumerate()
+        .map(|(at, document)| {
+            sdk.chart()
+                .gochar(document, asked)
+                .map(|read| read.value)
                 .map_err(|error| error.with_hint(format!("chart {at}")))
         })
         .collect()
@@ -4074,6 +4367,8 @@ pub unsafe extern "C" fn ts_chart_found(
         let plans = unsafe { plan_request_of(asked.interpret_json) }?;
         // SAFETY: the entry point's contract.
         let varsha = unsafe { varsha_request_of(asked.varsha_json) }?;
+        // SAFETY: the entry point's contract.
+        let gochar = unsafe { gochar_request_of(asked.gochar_json) }?;
         let ReadCharts {
             founded,
             hashes,
@@ -4085,6 +4380,7 @@ pub unsafe extern "C" fn ts_chart_found(
             None => String::new(),
         };
         let praveshas = praveshas_of(ctx.sdk(), &founded.value, request.offset(), varsha.as_ref())?;
+        let transits = gochar_of(ctx.sdk(), &founded.value, gochar.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -4095,6 +4391,10 @@ pub unsafe extern "C" fn ts_chart_found(
                 rules: &rules_json,
                 plans: &plans_json,
                 praveshas: &praveshas,
+                gochar: &transits,
+                gochar_instants: gochar
+                    .as_ref()
+                    .map_or(&[], teistro::GocharRequest::instants),
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),
@@ -4166,6 +4466,8 @@ mod tests {
     /// has no id.
     #[test]
     fn every_knob_member_crosses_to_an_id_of_its_own() {
+        use super::{TsGocharFrom, TsNodeObstruction, TsNodeVedha};
+
         let sunrises: Vec<u8> = Sunrise::ALL
             .iter()
             .map(|member| {
@@ -4195,6 +4497,36 @@ mod tests {
             })
             .collect();
         assert_eq!(horas, vec![0, 1]);
+
+        let vedhas: Vec<u8> = teistro_core::settings::NodeVedha::ALL
+            .iter()
+            .map(|member| {
+                TsNodeVedha::of(*member)
+                    .unwrap_or_else(|| panic!("`{member}` has no id at the boundary"))
+                    as u8
+            })
+            .collect();
+        assert_eq!(vedhas, vec![0, 1]);
+
+        let obstructions: Vec<u8> = teistro_core::settings::NodeObstruction::ALL
+            .iter()
+            .map(|member| {
+                TsNodeObstruction::of(*member)
+                    .unwrap_or_else(|| panic!("`{member}` has no id at the boundary"))
+                    as u8
+            })
+            .collect();
+        assert_eq!(obstructions, vec![0, 1, 2]);
+
+        let references: Vec<u8> = teistro::GocharFrom::ALL
+            .iter()
+            .map(|member| {
+                TsGocharFrom::of(*member)
+                    .unwrap_or_else(|| panic!("`{member:?}` has no id at the boundary"))
+                    as u8
+            })
+            .collect();
+        assert_eq!(references, vec![0, 1]);
     }
 
     /// Two charts founded over the analytic test provider, with the
@@ -4542,6 +4874,9 @@ mod tests {
             .iter()
             .map(|rule| TsBrahmaRule::from(*rule) as u8)
             .collect();
+        // Sorted first: `dedup` drops only neighbours, so an unsorted list
+        // would pass two members that share a code apart.
+        codes.sort_unstable();
         codes.dedup();
         assert_eq!(codes.len(), BrahmaRule::ALL.len(), "{codes:?}");
     }

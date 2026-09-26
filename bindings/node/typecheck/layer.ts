@@ -528,3 +528,33 @@ function theWordsAreKeys(): string {
 }
 
 void theWordsAreKeys;
+
+// The transits read all the way down, so a field the layer returns and the
+// declarations forget fails here rather than in a consumer's editor.
+function theTransits(ctx: Context): string {
+  const reading = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    gochar: { instants: [2460676.5], from: 'LAGNA' },
+  }).gochar[0]!;
+  const sun = reading.grahas[0]!;
+  const vedha: number | null = sun.vedhaHouse;
+  const by: readonly Graha[] = sun.obstructedBy;
+  const verdicts: Record<typeof sun.verdict, string> = {
+    GOOD: 'good',
+    OBSTRUCTED: 'obstructed',
+    NOT_GOOD: 'not good',
+    unknown: 'unknown',
+  };
+  // @ts-expect-error a reference is named by its key
+  const moon: typeof reading.reference.from = 'moon';
+  return (
+    `${reading.instant} ${reading.reference.from} ${reading.reference.sign} ` +
+    `${reading.rules.nodeVedha} ${reading.rules.nodeObstruction} ${sun.graha} ${sun.transit.sign} ` +
+    `${sun.transit.degrees} ${sun.house} ${sun.goodHouse} ${String(vedha)} ${by.join()} ` +
+    `${verdicts[sun.verdict]} ${sun.fruition} ${sun.fruitfulNow} ${String(moon)}`
+  );
+}
+
+void theTransits;

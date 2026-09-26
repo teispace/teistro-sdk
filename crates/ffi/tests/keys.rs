@@ -30,8 +30,9 @@ use teistro_core::settings;
 use teistro_ffi::calendar::TsResolution;
 use teistro_ffi::chart::{
     TsBalance, TsBrahmaOutcome, TsBrahmaRule, TsBurning, TsDashaPhase, TsDayPart, TsDayState,
-    TsEkadhipatya, TsGhatiReckoning, TsHarshaGrade, TsHoraReckoning, TsPolarDayPolicy, TsPolarKind,
-    TsQuadrant, TsReading, TsSaham, TsSahamStrong, TsSahamWeak, TsShodhana, TsStrength, TsSunrise,
+    TsEkadhipatya, TsFruition, TsGhatiReckoning, TsGocharFrom, TsGocharVerdict, TsHarshaGrade,
+    TsHoraReckoning, TsNodeObstruction, TsNodeVedha, TsPolarDayPolicy, TsPolarKind, TsQuadrant,
+    TsReading, TsSaham, TsSahamStrong, TsSahamWeak, TsShodhana, TsStrength, TsSunrise,
     TsTajikaDrishti, TsTajikaRelation, TsTajikaYoga, TsVarsheshaChosen, TsVimshopakaScoring,
     TsYearYoga,
 };
@@ -335,6 +336,21 @@ fn chart(api: &Api) -> Vec<&'static str> {
             id(TsBrahmaRule::from(*r) as u8)
         }),
         brahma_outcome(api),
+        unit(api, "TsGocharFrom", |f: &teistro::GocharFrom| {
+            TsGocharFrom::of(*f).and_then(|f| id(f as u8))
+        }),
+        unit(api, "TsNodeVedha", |v: &settings::NodeVedha| {
+            TsNodeVedha::of(*v).and_then(|v| id(v as u8))
+        }),
+        unit(api, "TsNodeObstruction", |o: &settings::NodeObstruction| {
+            TsNodeObstruction::of(*o).and_then(|o| id(o as u8))
+        }),
+        unit(api, "TsGocharVerdict", |v: &teistro::gochar::Verdict| {
+            id(TsGocharVerdict::from(*v) as u8)
+        }),
+        unit(api, "TsFruition", |f: &teistro::gochar::Fruition| {
+            id(TsFruition::from(*f) as u8)
+        }),
         unit(api, "TsDayPart", |p: &teistro_chart::day::DayPart| {
             id(TsDayPart::from(*p) as u8)
         }),

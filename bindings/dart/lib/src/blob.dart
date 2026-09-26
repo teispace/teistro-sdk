@@ -2197,6 +2197,92 @@ final class ChartsJaiminiGrahas {
   final int length;
 }
 
+/// The `gochar` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each chart's transits at the instants `gochar_json.instants` named, charts outermost and each chart's in the order asked: with `n` instants, row `i * n + k` is chart `i` at instant `k`. **Fixed, not ragged**: the request settles `n` for every chart, so `n` is this section's rows over `summary.chart_count`. Read under the settings' `gochar` group (Phaladeepika ch. 26). Empty when no transits were asked for.
+final class ChartsGochar {
+  const ChartsGochar({
+    required this.instant,
+    required this.reference,
+    required this.countedFrom,
+    required this.nodeVedha,
+    required this.nodeObstruction,
+    required this.length,
+  });
+
+  /// The instant the transits were read at, a UTC Julian day.
+  final Float64List instant;
+
+  /// The sign the houses are counted from: the natal Moon's by v. 1, or the lagna's when `counted_from` says so.
+  final Uint16List reference;
+
+  /// Which natal point `reference` is, `gochar_json.from` (C139).
+  final Uint8List countedFrom;
+
+  /// The nodes' vedha the transits were judged under, `gochar.node_vedha` (C136).
+  final Uint8List nodeVedha;
+
+  /// Whom the nodes obstruct, `gochar.node_obstruction` (C137, C140).
+  final Uint8List nodeObstruction;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `gochar_grahas` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`.
+final class ChartsGocharGrahas {
+  const ChartsGocharGrahas({
+    required this.graha,
+    required this.sign,
+    required this.degrees,
+    required this.house,
+    required this.goodHouse,
+    required this.vedhaHouse,
+    required this.obstructedBy,
+    required this.verdict,
+    required this.fruition,
+    required this.fruitfulNow,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// The sign it transits.
+  final Uint16List sign;
+
+  /// Its degrees within the sign, 0 to 30.
+  final Float64List degrees;
+
+  /// Its house from `gochar.reference`, 1 to 12.
+  final Uint8List house;
+
+  /// 1 when v. 2 makes a transit of this house good, else 0.
+  final Uint8List goodHouse;
+
+  /// The house whose occupant obstructs it (vv. 3 to 8), 1 to 12; 0 when the house is not good or, for a node under `node_vedha = NONE`, nothing obstructs it.
+  final Uint8List vedhaHouse;
+
+  /// The grahas standing in the vedha house that obstruct it, the verses' exemptions left out, a bit set: bit `n` is the graha with id `n`.
+  final Uint16List obstructedBy;
+
+  /// What the transit comes to.
+  final Uint8List verdict;
+
+  /// The decanate in which its transit bears fruit (v. 25).
+  final Uint8List fruition;
+
+  /// 1 when it stands in that decanate now, else 0.
+  final Uint8List fruitfulNow;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -2361,6 +2447,8 @@ final class Charts {
     required this.contentHashes,
     required this.jaimini,
     required this.jaiminiGrahas,
+    required this.gochar,
+    required this.gocharGrahas,
   });
 
   /// What kind of chart these are.
@@ -2563,6 +2651,12 @@ final class Charts {
   /// Each graha as Jaimini reads it, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. Its house from the karakamsha in the rasi chart and in the navamsha, since the schools part on which (C130), and its arudha (BPHS ch. 29 vv. 6 and 7).
   final ChartsJaiminiGrahas jaiminiGrahas;
 
+  /// Each chart's transits at the instants `gochar_json.instants` named, charts outermost and each chart's in the order asked: with `n` instants, row `i * n + k` is chart `i` at instant `k`. **Fixed, not ragged**: the request settles `n` for every chart, so `n` is this section's rows over `summary.chart_count`. Read under the settings' `gochar` group (Phaladeepika ch. 26). Empty when no transits were asked for.
+  final ChartsGochar gochar;
+
+  /// Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`.
+  final ChartsGocharGrahas gocharGrahas;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -2622,6 +2716,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atContentHashes = blob.section(50, 'content_hashes');
   final atJaimini = blob.section(51, 'jaimini');
   final atJaiminiGrahas = blob.section(52, 'jaimini_grahas');
+  final atGochar = blob.section(53, 'gochar');
+  final atGocharGrahas = blob.section(54, 'gochar_grahas');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -4531,6 +4627,87 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atJaiminiGrahas, 4) + atJaiminiGrahas.count * 1,
       ),
       length: atJaiminiGrahas.count,
+    ),
+    gochar: ChartsGochar(
+      instant: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGochar, 0),
+        blob.columnOffset(atGochar, 0) + atGochar.count * 8,
+      ),
+      reference: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGochar, 1),
+        blob.columnOffset(atGochar, 1) + atGochar.count * 2,
+      ),
+      countedFrom: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGochar, 2),
+        blob.columnOffset(atGochar, 2) + atGochar.count * 1,
+      ),
+      nodeVedha: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGochar, 3),
+        blob.columnOffset(atGochar, 3) + atGochar.count * 1,
+      ),
+      nodeObstruction: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGochar, 4),
+        blob.columnOffset(atGochar, 4) + atGochar.count * 1,
+      ),
+      length: atGochar.count,
+    ),
+    gocharGrahas: ChartsGocharGrahas(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharGrahas, 0),
+        blob.columnOffset(atGocharGrahas, 0) + atGocharGrahas.count * 2,
+      ),
+      sign: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharGrahas, 1),
+        blob.columnOffset(atGocharGrahas, 1) + atGocharGrahas.count * 2,
+      ),
+      degrees: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharGrahas, 2),
+        blob.columnOffset(atGocharGrahas, 2) + atGocharGrahas.count * 8,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharGrahas, 3),
+        blob.columnOffset(atGocharGrahas, 3) + atGocharGrahas.count * 1,
+      ),
+      goodHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharGrahas, 4),
+        blob.columnOffset(atGocharGrahas, 4) + atGocharGrahas.count * 1,
+      ),
+      vedhaHouse: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharGrahas, 5),
+        blob.columnOffset(atGocharGrahas, 5) + atGocharGrahas.count * 1,
+      ),
+      obstructedBy: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharGrahas, 6),
+        blob.columnOffset(atGocharGrahas, 6) + atGocharGrahas.count * 2,
+      ),
+      verdict: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharGrahas, 7),
+        blob.columnOffset(atGocharGrahas, 7) + atGocharGrahas.count * 1,
+      ),
+      fruition: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharGrahas, 8),
+        blob.columnOffset(atGocharGrahas, 8) + atGocharGrahas.count * 1,
+      ),
+      fruitfulNow: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharGrahas, 9),
+        blob.columnOffset(atGocharGrahas, 9) + atGocharGrahas.count * 1,
+      ),
+      length: atGocharGrahas.count,
     ),
   );
 }

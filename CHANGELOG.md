@@ -1178,6 +1178,19 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none. No caller asked the completion for the true basis,
   and the chart already took its day and zodiac from the SDK.
 
+- **Gochar crosses to every binding** (`03-design/gochar.md` §6 step 3). A
+  chart request's `gochar: { instants, from }` answers each chart's
+  transits: in Node, Python and Dart as `chart.gochar`, at the C boundary
+  as sections 53 (`gochar`, a row a chart an instant) and 54
+  (`gochar_grahas`), fixed rather than ragged since the request settles
+  the count. An empty `instants` is refused as `gochar.instants`.
+  **Breaking, unreleased:** a `GocharReading`'s `reference` is now a
+  `Reference { from, sign }`, so a reading says what it was counted from,
+  and `gochar()` takes one (`Reference::moon(sign)`); `GocharFrom` moved
+  into `teistro-gochar` and is still `teistro::GocharFrom`.
+
+  **Numbers:** none.
+
 - **Gochar, measured; its batch places the grahas without founding the
   charts** (`03-design/gochar-measured.md`, `cargo xtask gochar`). Over
   every day from 1960 to 2020 read from all twelve reference signs, each

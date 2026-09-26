@@ -1902,6 +1902,16 @@ pub struct ChartRequest {
     /// (`03-design/annual-chart.md`). Refusals are named from the record
     /// every binding calls `varsha`, as `varsha.through`. May be null.
     pub varsha_json: Option<String>,
+    /// The transits to read against every chart in the batch, as a JSON
+    /// object: `instants`, UTC Julian days, at least one, and `from` —
+    /// `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`.
+    /// Each chart's readings come back in the `gochar` section, a row an
+    /// instant, and its grahas in `gochar_grahas`, under the settings'
+    /// `gochar` group. Null for none (`03-design/gochar.md`). Refusals are
+    /// named from the record every binding calls `gochar`, as
+    /// `gochar.instants`.
+    /// Example: {"instants":[2460676.5],"from":"MOON"}. May be null.
+    pub gochar_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1921,6 +1931,7 @@ pub struct HeldChartRequest {
     rules_json: Option<std::ffi::CString>,
     interpret_json: Option<std::ffi::CString>,
     varsha_json: Option<std::ffi::CString>,
+    gochar_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -1953,6 +1964,10 @@ impl HeldChartRequest {
                 .map_or(ptr::null(), |s| s.as_ptr()),
             varsha_json: self
                 .varsha_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
+            gochar_json: self
+                .gochar_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
         }
@@ -1997,6 +2012,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            gochar_json: self
+                .gochar_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2034,6 +2054,7 @@ impl ChartRequest {
             rules_json: unsafe { lent_text(raw.rules_json) },
             interpret_json: unsafe { lent_text(raw.interpret_json) },
             varsha_json: unsafe { lent_text(raw.varsha_json) },
+            gochar_json: unsafe { lent_text(raw.gochar_json) },
         }
     }
 }

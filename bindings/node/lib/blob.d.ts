@@ -2021,6 +2021,96 @@ export interface ChartsJaiminiGrahas {
 }
 
 /**
+ * The `gochar` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each chart's transits at the instants `gochar_json.instants` named, charts outermost and each chart's in the order asked: with `n` instants, row `i * n + k` is chart `i` at instant `k`. **Fixed, not ragged**: the request settles `n` for every chart, so `n` is this section's rows over `summary.chart_count`. Read under the settings' `gochar` group (Phaladeepika ch. 26). Empty when no transits were asked for.
+ */
+export interface ChartsGochar {
+  /**
+   * The instant the transits were read at, a UTC Julian day.
+   */
+  readonly instant: Float64Array;
+  /**
+   * The sign the houses are counted from: the natal Moon's by v. 1, or the lagna's when `counted_from` says so.
+   * The values are `Rashi` ids.
+   */
+  readonly reference: Uint16Array;
+  /**
+   * Which natal point `reference` is, `gochar_json.from` (C139).
+   * The values are `GocharFrom` ids.
+   */
+  readonly countedFrom: Uint8Array;
+  /**
+   * The nodes' vedha the transits were judged under, `gochar.node_vedha` (C136).
+   * The values are `NodeVedha` ids.
+   */
+  readonly nodeVedha: Uint8Array;
+  /**
+   * Whom the nodes obstruct, `gochar.node_obstruction` (C137, C140).
+   * The values are `NodeObstruction` ids.
+   */
+  readonly nodeObstruction: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `gochar_grahas` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`.
+ */
+export interface ChartsGocharGrahas {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * The sign it transits.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /**
+   * Its degrees within the sign, 0 to 30.
+   */
+  readonly degrees: Float64Array;
+  /**
+   * Its house from `gochar.reference`, 1 to 12.
+   */
+  readonly house: Uint8Array;
+  /**
+   * 1 when v. 2 makes a transit of this house good, else 0.
+   */
+  readonly goodHouse: Uint8Array;
+  /**
+   * The house whose occupant obstructs it (vv. 3 to 8), 1 to 12; 0 when the house is not good or, for a node under `node_vedha = NONE`, nothing obstructs it.
+   */
+  readonly vedhaHouse: Uint8Array;
+  /**
+   * The grahas standing in the vedha house that obstruct it, the verses' exemptions left out, a bit set: bit `n` is the graha with id `n`.
+   */
+  readonly obstructedBy: Uint16Array;
+  /**
+   * What the transit comes to.
+   * The values are `GocharVerdict` ids.
+   */
+  readonly verdict: Uint8Array;
+  /**
+   * The decanate in which its transit bears fruit (v. 25).
+   * The values are `Fruition` ids.
+   */
+  readonly fruition: Uint8Array;
+  /**
+   * 1 when it stands in that decanate now, else 0.
+   */
+  readonly fruitfulNow: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -2396,6 +2486,14 @@ export interface Charts {
    * Each graha as Jaimini reads it, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. Its house from the karakamsha in the rasi chart and in the navamsha, since the schools part on which (C130), and its arudha (BPHS ch. 29 vv. 6 and 7).
    */
   readonly jaiminiGrahas: ChartsJaiminiGrahas;
+  /**
+   * Each chart's transits at the instants `gochar_json.instants` named, charts outermost and each chart's in the order asked: with `n` instants, row `i * n + k` is chart `i` at instant `k`. **Fixed, not ragged**: the request settles `n` for every chart, so `n` is this section's rows over `summary.chart_count`. Read under the settings' `gochar` group (Phaladeepika ch. 26). Empty when no transits were asked for.
+   */
+  readonly gochar: ChartsGochar;
+  /**
+   * Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`.
+   */
+  readonly gocharGrahas: ChartsGocharGrahas;
 }
 
 /**

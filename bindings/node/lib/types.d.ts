@@ -824,6 +824,19 @@ export interface ChartRequest {
    * @nullable
    */
   readonly varshaJson?: string;
+  /**
+   * The transits to read against every chart in the batch, as a JSON
+   * object: `instants`, UTC Julian days, at least one, and `from` —
+   * `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`.
+   * Each chart's readings come back in the `gochar` section, a row an
+   * instant, and its grahas in `gochar_grahas`, under the settings'
+   * `gochar` group. Null for none (`03-design/gochar.md`). Refusals are
+   * named from the record every binding calls `gochar`, as
+   * `gochar.instants`.
+   * @example {"instants":[2460676.5],"from":"MOON"}
+   * @nullable
+   */
+  readonly gocharJson?: string;
 }
 
 /**

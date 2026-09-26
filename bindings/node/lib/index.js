@@ -82,6 +82,11 @@ import {
   NatureById,
   BrahmaRuleById,
   BrahmaOutcomeById,
+  FruitionById,
+  GocharFromById,
+  GocharVerdictById,
+  NodeObstructionById,
+  NodeVedhaById,
   VimshopakaScoringById,
   DashaSystemById,
   VargaById,
@@ -896,6 +901,24 @@ export class Chart {
    */
   get jaimini() {
     return jaiminisOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * The transits read against this chart (`gochar: { instants, from }`), one
+   * reading an instant in the order asked; empty unless asked for
+   * (`03-design/gochar.md`).
+   *
+   * Each is `{ instant, reference: { from, sign }, rules: { nodeVedha,
+   * nodeObstruction }, grahas }`, the houses counted from the natal Moon's
+   * sign by Phaladeepika ch. 26 v. 1 unless `from: 'LAGNA'` asked
+   * otherwise. Each graha is `{ graha, transit: { sign, degrees }, house,
+   * goodHouse, vedhaHouse, obstructedBy, verdict, fruition, fruitfulNow }`:
+   * `vedhaHouse` is `null` where nothing can obstruct it, and
+   * `obstructedBy` names the grahas standing there, the verses' exemptions
+   * left out.
+   */
+  get gochar() {
+    return gocharsOf(this.#batch)[this.#index] ?? [];
   }
 
   /**
@@ -1955,6 +1978,7 @@ export class ChartArea extends Area {
         rulesJson: rulesJson(request.rules),
         interpretJson: interpretJson(request.interpret),
         varshaJson: varshaJson(request.varsha),
+        gocharJson: gocharJson(request.gochar),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -2201,6 +2225,68 @@ function jaiminisOf(batch) {
       });
     });
     JAIMINIS.set(batch, decoded);
+  }
+  return decoded;
+}
+
+/** Each batch's transits, decoded once however many charts read them. */
+const GOCHARS = new WeakMap();
+
+/**
+ * Every chart's transits in a batch: `gochar` holds a row a chart an
+ * instant, fixed rather than ragged since the request settles how many
+ * instants every chart gets, and `gochar_grahas` nine rows under each.
+ *
+ * @param {Charts} batch
+ * @returns {object[][]}
+ */
+function gocharsOf(batch) {
+  let decoded = GOCHARS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.gochar;
+    const g = batch.decoded.gocharGrahas;
+    const charts = batch.decoded.chartCount;
+    const perChart = charts === 0 ? 0 : c.instant.length / charts;
+    if (!Number.isInteger(perChart) || g.graha.length !== c.instant.length * 9) {
+      throw new Error(
+        `gochar has ${c.instant.length} rows and ${g.graha.length} grahas over ${charts} charts; ` +
+          'it is every chart at every instant, nine grahas each',
+      );
+    }
+    const graha = (id) => GrahaById.get(id) ?? 'unknown';
+    const sign = (id) => RashiById.get(id) ?? 'unknown';
+    const reading = (row) =>
+      Object.freeze({
+        instant: c.instant[row],
+        reference: Object.freeze({
+          from: GocharFromById.get(c.countedFrom[row]) ?? 'unknown',
+          sign: sign(c.reference[row]),
+        }),
+        rules: Object.freeze({
+          nodeVedha: NodeVedhaById.get(c.nodeVedha[row]) ?? 'unknown',
+          nodeObstruction: NodeObstructionById.get(c.nodeObstruction[row]) ?? 'unknown',
+        }),
+        grahas: Object.freeze(
+          Array.from({ length: 9 }, (_, k) => {
+            const at = row * 9 + k;
+            return Object.freeze({
+              graha: graha(g.graha[at]),
+              transit: Object.freeze({ sign: sign(g.sign[at]), degrees: g.degrees[at] }),
+              house: g.house[at],
+              goodHouse: g.goodHouse[at] !== 0,
+              vedhaHouse: g.vedhaHouse[at] === 0 ? null : g.vedhaHouse[at],
+              obstructedBy: Object.freeze(membersOf(g.obstructedBy[at], GrahaById)),
+              verdict: GocharVerdictById.get(g.verdict[at]) ?? 'unknown',
+              fruition: FruitionById.get(g.fruition[at]) ?? 'unknown',
+              fruitfulNow: g.fruitfulNow[at] !== 0,
+            });
+          }),
+        ),
+      });
+    decoded = Array.from({ length: charts }, (_, chart) =>
+      Object.freeze(Array.from({ length: perChart }, (_, k) => reading(chart * perChart + k))),
+    );
+    GOCHARS.set(batch, decoded);
   }
   return decoded;
 }
@@ -2460,6 +2546,27 @@ function varshaJson(varsha) {
     'varsha',
     'an annual-chart request record, e.g. { reading: "SIDEREAL", through: 40 }',
   );
+}
+
+/**
+ * The transits a request asks for, as the JSON the boundary reads
+ * (`03-design/gochar.md`): the instants checked here as every other list
+ * of Julian days is, and the rest — an empty list, an unknown `from` —
+ * refused by the SDK, naming the field from `gochar`.
+ *
+ * @param {object|undefined} gochar
+ * @returns {string|undefined}
+ */
+function gocharJson(gochar) {
+  const example = 'a transit request record, e.g. { instants: [2460676.5], from: "MOON" }';
+  if (gochar && typeof gochar === 'object' && !Array.isArray(gochar) && gochar.instants !== undefined) {
+    return recordJson(
+      { ...gochar, instants: instants(gochar.instants, 'gochar.instants', { allowEmpty: true }) },
+      'gochar',
+      example,
+    );
+  }
+  return recordJson(gochar, 'gochar', example);
 }
 
 /**

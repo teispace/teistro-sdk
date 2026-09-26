@@ -49,6 +49,11 @@ import type {
   Nature,
   BrahmaRule,
   BrahmaOutcome,
+  Fruition,
+  GocharFrom,
+  GocharVerdict,
+  NodeObstruction,
+  NodeVedha,
   Relationship,
   Scale,
   Status,
@@ -634,6 +639,65 @@ export interface JaiminiReading {
    * under `jaimini.node_co_lordship`.
    */
   readonly grahaArudhas: readonly (Rashi | 'unknown' | null)[];
+}
+
+/** What a gochar reading counted its houses from, and that point's sign. */
+export interface GocharReference {
+  /** The natal Moon (Phaladeepika ch. 26 v. 1) or, asked, the lagna (C139). */
+  readonly from: GocharFrom | 'unknown';
+  /** Its sign. */
+  readonly sign: Rashi | 'unknown';
+}
+
+/** One graha's transit, read from the reference sign. */
+export interface GrahaGochar {
+  readonly graha: Graha | 'unknown';
+  /** The sign it transits and its degrees within it, 0 to 30. */
+  readonly transit: { readonly sign: Rashi | 'unknown'; readonly degrees: number };
+  /** Its house from the reference sign, 1 to 12. */
+  readonly house: number;
+  /** Whether v. 2 makes a transit of this house good. */
+  readonly goodHouse: boolean;
+  /** The house whose occupant obstructs it (vv. 3 to 8); `null` where nothing can. */
+  readonly vedhaHouse: number | null;
+  /** The grahas standing in the vedha house that obstruct it, the verses' exemptions left out. */
+  readonly obstructedBy: readonly Graha[];
+  /** What the transit comes to. */
+  readonly verdict: GocharVerdict | 'unknown';
+  /** The decanate in which its transit bears fruit (v. 25). */
+  readonly fruition: Fruition | 'unknown';
+  /** Whether it stands in that decanate now. */
+  readonly fruitfulNow: boolean;
+}
+
+/**
+ * Every graha's transit at one instant, read from the natal chart
+ * (`03-design/gochar.md`).
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, gochar: { instants: [2460676.5] } });
+ * const good = chart.gochar[0].grahas.filter((g) => g.verdict === 'GOOD').map((g) => g.graha);
+ */
+export interface GocharReading {
+  /** The instant, a UTC Julian day. */
+  readonly instant: number;
+  /** What the houses are counted from. */
+  readonly reference: GocharReference;
+  /** The readings of the nodes the transits were judged under, the settings' `gochar` group. */
+  readonly rules: {
+    readonly nodeVedha: NodeVedha | 'unknown';
+    readonly nodeObstruction: NodeObstruction | 'unknown';
+  };
+  /** Each graha's, the Sun to Ketu. */
+  readonly grahas: readonly GrahaGochar[];
+}
+
+/** The transits to read against every chart of a request. */
+export interface GocharRequest {
+  /** The instants, UTC Julian days: at least one. */
+  readonly instants: ArrayLike<number>;
+  /** What to count the houses from: the natal Moon by default (v. 1). */
+  readonly from?: GocharFrom;
 }
 
 /**
@@ -1831,6 +1895,11 @@ export declare class Chart {
    */
   readonly praveshas: readonly Pravesha[];
   /**
+   * The transits read against this chart, one reading an instant in the
+   * order `gochar.instants` asked; empty unless asked for.
+   */
+  readonly gochar: readonly GocharReading[];
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -2182,6 +2251,12 @@ export interface ChartRequest {
    * at birth. None by default (`03-design/annual-chart.md`).
    */
   readonly varsha?: VarshaRequest;
+  /**
+   * The transits to read against every chart, read back as each chart's
+   * `gochar`: the grahas at each instant counted from the natal Moon, their
+   * vedha and verdict (`03-design/gochar.md`). None by default.
+   */
+  readonly gochar?: GocharRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

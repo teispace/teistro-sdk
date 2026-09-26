@@ -341,6 +341,7 @@ const charts = geo.chart.foundMany({
   vaiseshikamsa: true,
   dashaPhala: true,
   jaimini: true,
+  gochar: { instants: [2460676.5, 2460736.5] },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -492,6 +493,20 @@ for (const chart of charts) {
   const { karakamsha: k, brahma: b } = chart.jaimini;
   put(`chart-${i}-jaimini`, `${k.atmakaraka} ${k.sign} ${k.inRasi.join(',')} ${k.inNavamsha.join(',')}`);
   put(`chart-${i}-graha-arudhas`, chart.jaimini.grahaArudhas.map((sign) => sign ?? '-').join(','));
+  chart.gochar.forEach((reading, at) => {
+    const { reference: ref, rules } = reading;
+    put(
+      `chart-${i}-gochar-${at}`,
+      `${number(reading.instant)} ${ref.from} ${ref.sign} ${rules.nodeVedha} ${rules.nodeObstruction}`,
+    );
+    reading.grahas.forEach((g, k) => {
+      put(
+        `chart-${i}-gochar-${at}-${k}`,
+        `${g.graha} ${g.transit.sign} ${number(g.transit.degrees)} ${g.house} ${g.goodHouse} ` +
+          `${g.vedhaHouse ?? '-'} ${g.obstructedBy.join(',') || '-'} ${g.verdict} ${g.fruition} ${g.fruitfulNow}`,
+      );
+    });
+  });
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

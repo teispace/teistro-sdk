@@ -594,6 +594,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_annual_sections())
         .chain([chart_content_hashes_section(50)])
         .chain(chart_jaimini_sections(51))
+        .chain(chart_gochar_sections(53))
         .collect(),
     }
 }
@@ -626,6 +627,106 @@ fn chart_jaimini_sections(first: u32) -> [SectionSchema; 2] {
         chart_jaimini_section(first),
         chart_jaimini_grahas_section(first + 1),
     ]
+}
+
+/// The transits read against every chart, from `first`: the readings and
+/// their grahas (`03-design/gochar.md`).
+fn chart_gochar_sections(first: u32) -> [SectionSchema; 2] {
+    [
+        chart_gochar_section(first),
+        chart_gochar_grahas_section(first + 1),
+    ]
+}
+
+/// Every chart's transits, a row an instant.
+fn chart_gochar_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "gochar",
+        "Each chart's transits at the instants `gochar_json.instants` named, charts outermost and each chart's in the order asked: with `n` instants, row `i * n + k` is chart `i` at instant `k`. **Fixed, not ragged**: the request settles `n` for every chart, so `n` is this section's rows over `summary.chart_count`. Read under the settings' `gochar` group (Phaladeepika ch. 26). Empty when no transits were asked for.",
+        vec![
+            ColumnDef::new(
+                "instant",
+                Scalar::F64,
+                "The instant the transits were read at, a UTC Julian day.",
+            ),
+            ColumnDef::new(
+                "reference",
+                Scalar::U16,
+                "The sign the houses are counted from: the natal Moon's by v. 1, or the lagna's when `counted_from` says so.",
+            )
+            .of_enum("Rashi"),
+            ColumnDef::new(
+                "counted_from",
+                Scalar::U8,
+                "Which natal point `reference` is, `gochar_json.from` (C139).",
+            )
+            .of_enum("TsGocharFrom"),
+            ColumnDef::new(
+                "node_vedha",
+                Scalar::U8,
+                "The nodes' vedha the transits were judged under, `gochar.node_vedha` (C136).",
+            )
+            .of_enum("TsNodeVedha"),
+            ColumnDef::new(
+                "node_obstruction",
+                Scalar::U8,
+                "Whom the nodes obstruct, `gochar.node_obstruction` (C137, C140).",
+            )
+            .of_enum("TsNodeObstruction"),
+        ],
+    )
+}
+
+/// Every transit's grahas, a row a graha.
+fn chart_gochar_grahas_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "gochar_grahas",
+        "Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`.",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+            ColumnDef::new("sign", Scalar::U16, "The sign it transits.").of_enum("Rashi"),
+            ColumnDef::new(
+                "degrees",
+                Scalar::F64,
+                "Its degrees within the sign, 0 to 30.",
+            ),
+            ColumnDef::new(
+                "house",
+                Scalar::U8,
+                "Its house from `gochar.reference`, 1 to 12.",
+            ),
+            ColumnDef::new(
+                "good_house",
+                Scalar::U8,
+                "1 when v. 2 makes a transit of this house good, else 0.",
+            ),
+            ColumnDef::new(
+                "vedha_house",
+                Scalar::U8,
+                "The house whose occupant obstructs it (vv. 3 to 8), 1 to 12; 0 when the house is not good or, for a node under `node_vedha = NONE`, nothing obstructs it.",
+            ),
+            ColumnDef::new(
+                "obstructed_by",
+                Scalar::U16,
+                "The grahas standing in the vedha house that obstruct it, the verses' exemptions left out, a bit set: bit `n` is the graha with id `n`.",
+            ),
+            ColumnDef::new("verdict", Scalar::U8, "What the transit comes to.")
+                .of_enum("TsGocharVerdict"),
+            ColumnDef::new(
+                "fruition",
+                Scalar::U8,
+                "The decanate in which its transit bears fruit (v. 25).",
+            )
+            .of_enum("TsFruition"),
+            ColumnDef::new(
+                "fruitful_now",
+                Scalar::U8,
+                "1 when it stands in that decanate now, else 0.",
+            ),
+        ],
+    )
 }
 
 /// Every chart's Jaimini significators, a row a chart that asked for them
