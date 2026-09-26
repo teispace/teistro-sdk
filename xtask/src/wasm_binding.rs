@@ -556,10 +556,13 @@ fn size(root: &Path, staged: &Path) -> Result<(), ()> {
             );
             failed = true;
         } else {
+            // The exact figure on a pass too, so a budget can be re-measured
+            // from any run on the runner that enforces it.
             println!(
-                "ok    the module's {name} is {} of its {} budget",
+                "ok    the module's {name} is {} ({measured}) of its {} budget, {:.1}% left",
                 megabytes(measured),
-                megabytes(allowed)
+                megabytes(allowed),
+                (1.0 - ratio) * 100.0
             );
         }
     }
