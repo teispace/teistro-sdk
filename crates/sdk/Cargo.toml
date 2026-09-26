@@ -33,6 +33,7 @@ teistro-strength = { path = "../strength" }
 teistro-tajika = { path = "../tajika" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-serial = { path = "../serial" }
+teistro-siddhanta = { path = "../siddhanta" }
 teistro-geometry = { path = "../geometry" }
 teistro-render-svg = { path = "../render-svg" }
 teistro-state = { path = "../state" }

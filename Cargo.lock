@@ -1564,6 +1564,7 @@ dependencies = [
  "teistro-render-svg",
  "teistro-rules",
  "teistro-serial",
+ "teistro-siddhanta",
  "teistro-state",
  "teistro-strength",
  "teistro-tajika",

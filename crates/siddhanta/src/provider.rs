@@ -16,10 +16,10 @@ use teistro_astro::{DeltaTModel, ut1_from_tt};
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Latitude, Ut1};
 use teistro_port_ephemeris::{
-    Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates, Corrections, DiscPoint,
-    DistanceUnit, EphemerisKind, EphemerisProvider, Equinox, Frame, Horizon, HorizonEventKind,
-    HorizonRequest, Identity, Obliquity, Overrides, PositionColumns, PositionRequest,
-    ProviderError, Refraction, Source, SpeedModel, TimeScale, Zodiac, validate,
+    Angles, AnglesRequest, Astronomy, Body, Capabilities, Cell, CellStatus, Centre, Coordinates,
+    Corrections, DiscPoint, DistanceUnit, EphemerisKind, EphemerisProvider, Equinox, Frame,
+    Horizon, HorizonEventKind, HorizonRequest, Identity, Obliquity, Overrides, PositionColumns,
+    PositionRequest, ProviderError, Refraction, Source, SpeedModel, TimeScale, Zodiac, validate,
 };
 
 use crate::model::{SuryaSiddhanta, Trace};
@@ -194,7 +194,8 @@ impl EphemerisProvider for SiddhantaProvider {
             distance_unit: DistanceUnit::MeanDistances,
             overrides: Overrides::OBLIQUITY
                 .with(Overrides::AYANAMSHA)
-                .with(Overrides::RISE_SET),
+                .with(Overrides::RISE_SET)
+                .with(Overrides::ANGLES),
             ayanamshas: vec![Ayanamsha::Suryasiddhanta],
             deterministic: true,
             // A classical model has no engine of its own to describe.
@@ -256,6 +257,27 @@ impl EphemerisProvider for SiddhantaProvider {
         }
         let at = SiddhantaProvider::ut1_of(jd, scale)?;
         Ok(self.model.ayanamsha_deg(at))
+    }
+
+    fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
+        let at = SiddhantaProvider::ut1_of(request.jd, request.scale)?;
+        let lagna = self
+            .model
+            .lagna(at, request.place.latitude, request.place.longitude)
+            .map_err(|error| ProviderError::unsupported(error.to_string()))?;
+        // The text's answer is the sidereal Lagna and meridian point, taken
+        // back from its tropical walk with the ayanamsha at that day's
+        // sunrise. The port speaks tropical of the instant, and a chart
+        // measures it in the zodiac of the instant, so the sidereal points
+        // are carried by that ayanamsha: the chart's Lagna is then the
+        // text's to the last bit.
+        let ayanamsha = self.model.ayanamsha_deg(at);
+        let obliquity = self.obliquity(request.jd, request.scale)?;
+        Ok(Angles {
+            ascendant_deg: (lagna.sidereal_deg + ayanamsha).rem_euclid(360.0),
+            midheaven_deg: (lagna.meridian_sidereal_deg + ayanamsha).rem_euclid(360.0),
+            obliquity_deg: obliquity.true_deg,
+        })
     }
 
     fn horizon_event(

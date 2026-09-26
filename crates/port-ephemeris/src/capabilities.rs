@@ -59,8 +59,12 @@ impl Overrides {
     pub const STARS: Overrides = Overrides(1 << 10);
     /// UT1 less UTC (DUT1), from the provider's own IERS bulletins.
     pub const DUT1: Overrides = Overrides(1 << 11);
+    /// The ascendant and the midheaven, from the provider's own
+    /// reckoning ([`crate::angles`]). Not `HOUSES`, which is a native set
+    /// of cusps: a classical text defines two angles and no sphere.
+    pub const ANGLES: Overrides = Overrides(1 << 12);
 
-    const NAMES: [(Overrides, &'static str); 12] = [
+    const NAMES: [(Overrides, &'static str); 13] = [
         (Overrides::OBLIQUITY, "obliquity"),
         (Overrides::DELTA_T, "delta_t"),
         (Overrides::SIDEREAL_TIME, "sidereal_time"),
@@ -73,6 +77,7 @@ impl Overrides {
         (Overrides::ECLIPSES, "eclipses"),
         (Overrides::STARS, "stars"),
         (Overrides::DUT1, "dut1"),
+        (Overrides::ANGLES, "angles"),
     ];
 
     /// The union.
@@ -85,6 +90,12 @@ impl Overrides {
     #[must_use]
     pub const fn contains(self, other: Overrides) -> bool {
         self.0 & other.0 == other.0
+    }
+
+    /// The set without another's members.
+    #[must_use]
+    pub const fn without(self, other: Overrides) -> Overrides {
+        Overrides(self.0 & !other.0)
     }
 
     /// The raw bits for the C boundary.

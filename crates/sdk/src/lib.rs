@@ -80,7 +80,7 @@ pub use teistro_astro::DeltaTModel;
 pub use teistro_astro::delta_t::DeltaT;
 pub use teistro_calendar::{CalendarDate, FixedDay, Weekday};
 pub use teistro_chart::day::ChartDay;
-pub use teistro_chart::foundation::{ChartFoundation, GrahaPosition};
+pub use teistro_chart::foundation::{ChartAngles, ChartFoundation, GrahaPosition};
 pub use teistro_core::catalogue;
 // `canonical_json` and `content_hash` with them: a stored chart keeps
 // the bytes the provenance was hashed from, and without these a

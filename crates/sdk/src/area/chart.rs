@@ -7,7 +7,7 @@ use teistro_astro::events::FrameLongitudes;
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::day::DayPart;
-use teistro_chart::foundation::{ChartFoundation, Founder, angles_of};
+use teistro_chart::foundation::{ChartAngles, ChartFoundation, Founder, angles_of};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
     Ayanamsha, ChartKind, DashaSystem, Graha, Nakshatra, Rashi, Vara, Varga,
@@ -1433,16 +1433,61 @@ impl<'a> ChartArea<'a> {
         teistro_tajika::saham_point(&self.saham_sky_of(chart)?, formula, rules)
     }
 
+    /// A founded chart's angles — its ascendant, its midheaven and the
+    /// obliquity they were built on — in its own zodiac, as it was founded.
+    ///
+    /// By the sphere from its instant and place, which needs no
+    /// ephemeris; or, for a chart whose provider **defined** its angles (a
+    /// classical text, whose Lagna and meridian are its own reckoning,
+    /// `03-design/classical-chart.md` §5), from this context's provider,
+    /// which must be that one. A module whose source names its own
+    /// division reads the midheaven from here: the Tajika sahams read a
+    /// house's Sripati mid-point whatever chalit the profile gives.
+    ///
+    /// ```
+    /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Test]).build().unwrap();
+    /// let kathmandu = Place::new(
+    ///     Latitude::literal(27.7172),
+    ///     Longitude::literal(85.324),
+    ///     Altitude::literal(1400.0),
+    /// );
+    /// let request = ChartRequest::at(kathmandu, UtcOffset::literal(5, 45, 0));
+    /// let chart = sdk.chart().reading(JulianDay::<Utc>::literal(2_451_545.0), &request).unwrap().value;
+    /// let angles = sdk.chart().angles(&chart).unwrap();
+    /// assert!((angles.ascendant_deg - chart.foundation.lagna_deg).abs() < 1e-9);
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// An instant outside the Delta T model's range, a chart the polar
+    /// policy refuses, or — for a chart whose angles were its provider's —
+    /// a context with no ephemeris, or one whose provider does not define
+    /// them.
+    pub fn angles(self, chart: &Document) -> Result<ChartAngles, Error> {
+        let foundation = &chart.foundation;
+        if !foundation.angles_are_the_providers() {
+            return angles_of(
+                foundation,
+                self.context.delta_t(),
+                self.context.settings().houses.polar_policy,
+            );
+        }
+        // The angles read no clock, so the zone the founder is given is
+        // immaterial to them.
+        let angles = self.founding(UtcOffset::UTC, |founder| {
+            founder.providers_angles_at(foundation.instant, &foundation.place, &foundation.zodiac)
+        })?;
+        Ok(angles)
+    }
+
     /// What a saham is read from, off a founded chart: its midheaven
-    /// recomputed from its instant and place, which needs no ephemeris, and
-    /// its own chalit for a caller who asks for that.
+    /// ([`ChartArea::angles`]), and its own chalit for a caller who asks for
+    /// that.
     fn saham_sky_of(self, chart: &Document) -> Result<SahamSky, Error> {
         let foundation = &chart.foundation;
-        let angles = angles_of(
-            foundation,
-            self.context.delta_t(),
-            self.context.settings().houses.polar_policy,
-        )?;
+        let angles = self.angles(chart)?;
         let sky = SahamSky::new(
             Self::sky_of(chart)?,
             foundation.lagna_deg,

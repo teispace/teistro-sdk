@@ -246,6 +246,16 @@ struct Frame {
     sidereal_offset: f64,
 }
 
+/// The eastern ascendant, the midheaven and the zodiac offset, tropical
+/// degrees: what the nine systems built from the angles alone read, from
+/// the sphere's frame or from a provider that defines the angles.
+#[derive(Clone, Copy, Debug)]
+struct AngularFrame {
+    ascendant: f64,
+    midheaven: f64,
+    sidereal_offset: f64,
+}
+
 impl Frame {
     fn new(input: &Input) -> Frame {
         // The poles are singular; step just inside them.
@@ -278,6 +288,16 @@ impl Frame {
     }
 
     /// The ascendant turned to the east when the midheaven is below the horizon.
+    /// The two angles and the zodiac offset, which is all the systems
+    /// built from the angles alone read ([`FROM_ANGLES`]).
+    fn angular(&self) -> AngularFrame {
+        AngularFrame {
+            ascendant: self.eastern_ascendant(),
+            midheaven: self.midheaven,
+            sidereal_offset: self.sidereal_offset,
+        }
+    }
+
     fn eastern_ascendant(&self) -> f64 {
         if self.ascendant_is_descendant() {
             normalise_deg(self.ascendant + 180.0)
@@ -336,8 +356,8 @@ fn every_thirty_degrees(armc: f64, project: impl Fn(f64) -> f64) -> [f64; 12] {
 
 /// Porphyry's cusps: the quadrants between the eastern ascendant and the
 /// midheaven trisected.
-fn porphyry(frame: &Frame) -> [f64; 12] {
-    let ascendant = frame.eastern_ascendant();
+fn porphyry(frame: &AngularFrame) -> [f64; 12] {
+    let ascendant = frame.ascendant;
     let mc = frame.midheaven;
     let quadrant = normalise_deg(ascendant - mc);
     let mut cusps = [0.0; 12];
@@ -354,8 +374,8 @@ fn porphyry(frame: &Frame) -> [f64; 12] {
 /// Whole-sign houses from the eastern ascendant's sign, in the zodiac in
 /// use: the sidereal ascendant's sign boundary, returned as a tropical
 /// longitude.
-fn whole_sign(frame: &Frame) -> [f64; 12] {
-    let sidereal_ascendant = normalise_deg(frame.eastern_ascendant() - frame.sidereal_offset);
+fn whole_sign(frame: &AngularFrame) -> [f64; 12] {
+    let sidereal_ascendant = normalise_deg(frame.ascendant - frame.sidereal_offset);
     equal_from(sidereal_ascendant - sidereal_ascendant % 30.0 + frame.sidereal_offset)
 }
 
@@ -707,8 +727,8 @@ fn apc(frame: &Frame) -> [f64; 12] {
 /// Sripati: Porphyry's sectors with the cusps at the middle of each sector
 /// (the Porphyry cusps are the bhava madhyas, the reported cusps the
 /// sandhis).
-fn sripati(frame: &Frame) -> [f64; 12] {
-    let ascendant = frame.eastern_ascendant();
+fn sripati(frame: &AngularFrame) -> [f64; 12] {
+    let ascendant = frame.ascendant;
     let mc = frame.midheaven;
     let quadrant = normalise_deg(ascendant - mc);
     let s1 = (180.0 - quadrant) / 3.0;
@@ -727,8 +747,8 @@ fn sripati(frame: &Frame) -> [f64; 12] {
 /// Pullen's sinusoidal delta: house widths in a quadrant vary linearly
 /// about 30°, the quadrant's excess spread as 1 : 3 : 3 : 1 … in Pullen's
 /// delta form.
-fn pullen_sinusoidal_delta(frame: &Frame) -> [f64; 12] {
-    let ascendant = frame.eastern_ascendant();
+fn pullen_sinusoidal_delta(frame: &AngularFrame) -> [f64; 12] {
+    let ascendant = frame.ascendant;
     let mc = frame.midheaven;
     let quadrant = normalise_deg(ascendant - mc);
     let night = 180.0 - quadrant;
@@ -758,8 +778,8 @@ fn pullen_sinusoidal_delta(frame: &Frame) -> [f64; 12] {
 /// Pullen's sinusoidal ratio: house widths in a quadrant form a geometric
 /// progression x, xr, xr³, xr⁴ with the ratio from Pullen's closed form of
 /// the quartic.
-fn pullen_sinusoidal_ratio(frame: &Frame) -> [f64; 12] {
-    let ascendant = frame.eastern_ascendant();
+fn pullen_sinusoidal_ratio(frame: &AngularFrame) -> [f64; 12] {
+    let ascendant = frame.ascendant;
     let mc = frame.midheaven;
     let quadrant = normalise_deg(ascendant - mc);
     let q = if quadrant > 90.0 {
@@ -936,29 +956,103 @@ fn angles(frame: &Frame, system: HouseSystem) -> Angles {
     }
 }
 
-/// The cusps of a system at a frame, or `None` where the system is undefined.
-fn cusps_of(system: HouseSystem, frame: &Frame, sun_declination: Option<f64>) -> Option<[f64; 12]> {
+/// The house systems built from the **ascendant and the midheaven
+/// alone**, with the zodiac's offset for the one that counts signs.
+///
+/// Every other system needs the sidereal time, the latitude and the
+/// obliquity as a sphere; these nine do not, so a provider that defines
+/// the angles and not the sphere — a classical text, whose Lagna and
+/// meridian are its own reckoning (III.46 to 49) — can have them built
+/// from its angles ([`cusps_from_angles`]) and the rest refused
+/// (`03-design/classical-chart.md` §5).
+pub const FROM_ANGLES: [HouseSystem; 9] = [
+    HouseSystem::WholeSign,
+    HouseSystem::Equal,
+    HouseSystem::Vehlow,
+    HouseSystem::EqualMc,
+    HouseSystem::EqualAries,
+    HouseSystem::Porphyry,
+    HouseSystem::Sripati,
+    HouseSystem::PullenSd,
+    HouseSystem::PullenSr,
+];
+
+/// The cusps of one of the [`FROM_ANGLES`] systems, `None` for any other.
+fn cusps_from_angular(system: HouseSystem, frame: &AngularFrame) -> Option<[f64; 12]> {
     Some(match system {
         HouseSystem::WholeSign => whole_sign(frame),
+        HouseSystem::Equal => equal_from(frame.ascendant),
+        HouseSystem::Vehlow => equal_from(frame.ascendant - 15.0),
+        HouseSystem::EqualMc => equal_from(frame.midheaven + 90.0),
+        HouseSystem::EqualAries => equal_from(frame.sidereal_offset),
+        HouseSystem::Porphyry => porphyry(frame),
+        HouseSystem::Sripati => sripati(frame),
+        HouseSystem::PullenSd => pullen_sinusoidal_delta(frame),
+        HouseSystem::PullenSr => pullen_sinusoidal_ratio(frame),
+        _ => return None,
+    })
+}
+
+/// The cusps of a system built from given angles — the eastern
+/// ascendant and the midheaven, tropical degrees — and the zodiac's
+/// offset, where the angles are a provider's own rather than the
+/// sphere's.
+///
+/// ```
+/// use teistro_astro::houses::cusps_from_angles;
+/// use teistro_core::catalogue::HouseSystem;
+///
+/// let equal = cusps_from_angles(HouseSystem::Equal, 100.0, 10.0, 0.0).unwrap();
+/// assert_eq!(equal[0], 100.0);
+/// assert_eq!(equal[6], 280.0);
+/// let placidus = cusps_from_angles(HouseSystem::Placidus, 100.0, 10.0, 0.0).unwrap_err();
+/// assert!(placidus.message.contains("PLACIDUS"), "{placidus}");
+/// ```
+///
+/// # Errors
+///
+/// `UNSUPPORTED` for a system not in [`FROM_ANGLES`], naming it and the
+/// nine that are, on the `houses` field.
+pub fn cusps_from_angles(
+    system: HouseSystem,
+    ascendant_deg: f64,
+    midheaven_deg: f64,
+    sidereal_offset_deg: f64,
+) -> Result<[f64; 12], Error> {
+    let frame = AngularFrame {
+        ascendant: normalise_deg(ascendant_deg),
+        midheaven: normalise_deg(midheaven_deg),
+        sidereal_offset: sidereal_offset_deg,
+    };
+    cusps_from_angular(system, &frame).ok_or_else(|| {
+        let nine: Vec<&str> = FROM_ANGLES.iter().map(|system| system.key()).collect();
+        Error::unsupported(format!(
+            "the {} houses need the sphere's sidereal time, latitude and obliquity, and these \
+             angles came without them; the systems built from the angles alone are {}",
+            system.key(),
+            nine.join(", ")
+        ))
+        .with_field("houses")
+    })
+}
+
+/// The cusps of a system at a frame, or `None` where the system is undefined.
+fn cusps_of(system: HouseSystem, frame: &Frame, sun_declination: Option<f64>) -> Option<[f64; 12]> {
+    if FROM_ANGLES.contains(&system) {
+        return cusps_from_angular(system, &frame.angular());
+    }
+    Some(match system {
         HouseSystem::Placidus => placidus(frame)?,
         HouseSystem::Koch => koch(frame)?,
         HouseSystem::Regiomontanus => regiomontanus(frame),
         HouseSystem::Campanus => campanus(frame),
-        HouseSystem::Equal => equal_from(frame.eastern_ascendant()),
         HouseSystem::Meridian => meridian(frame),
         HouseSystem::Alcabitius => alcabitius(frame),
-        HouseSystem::Porphyry => porphyry(frame),
         HouseSystem::Topocentric => topocentric(frame),
         HouseSystem::Morinus => morinus(frame),
-        HouseSystem::Sripati => sripati(frame),
-        HouseSystem::EqualMc => equal_from(frame.midheaven + 90.0),
-        HouseSystem::EqualAries => equal_from(frame.sidereal_offset),
-        HouseSystem::Vehlow => equal_from(frame.eastern_ascendant() - 15.0),
         HouseSystem::Carter => carter(frame),
         HouseSystem::Horizon => horizon(frame),
         HouseSystem::Sunshine => sunshine(frame, sun_declination?)?,
-        HouseSystem::PullenSd => pullen_sinusoidal_delta(frame),
-        HouseSystem::PullenSr => pullen_sinusoidal_ratio(frame),
         HouseSystem::Krusinski => krusinski(frame),
         HouseSystem::Apc => apc(frame),
         // A system the catalogue adds before this crate learns it.
@@ -1062,7 +1156,8 @@ pub fn houses(system: HouseSystem, input: &Input, policy: PolarPolicy) -> Result
             } else {
                 HouseSystem::WholeSign
             };
-            let cusps = cusps_of(substitute, &frame, None).unwrap_or_else(|| porphyry(&frame));
+            let cusps =
+                cusps_of(substitute, &frame, None).unwrap_or_else(|| porphyry(&frame.angular()));
             Ok(Houses {
                 system: substitute,
                 cusps,

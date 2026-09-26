@@ -15,7 +15,7 @@ pub mod sankranti;
 mod siddhanta;
 
 use teistro_core::error::Error;
-use teistro_core::quantity::{JulianDay, Place, Utc};
+use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::SunriseConvention;
 use teistro_core::time::{LocalClock, LocalMeanTime};
 
@@ -92,6 +92,15 @@ pub trait SolarModel: Send + Sync {
     /// profile's for the drik model.
     fn convention(&self) -> SunriseConvention;
 
+    /// Whether the day's sunrise is a classical astronomy's own
+    /// **definition** rather than the sky's: the text's model itself, or
+    /// a model over a provider that defines it
+    /// (`03-design/classical-chart.md` §4). A chart stamps who gave its
+    /// day from this.
+    fn defines_sunrise(&self) -> bool {
+        false
+    }
+
     /// Sunrise and sunset of a civil day at a place, or `None` where the
     /// Sun neither rises nor sets that day.
     ///
@@ -119,6 +128,25 @@ pub fn mean_time_day(clock: &dyn LocalClock, place: &Place, civil: FixedDay) -> 
     };
     let noon = midnight.get() + 0.5 - clock.offset_at(midnight).days();
     FixedDay::from_local_jd(noon + LocalMeanTime::new(place.longitude).offset().days()).0
+}
+
+/// The instant a mean-time day begins at a place: its midnight in the
+/// local mean time of the longitude, **exactly**.
+///
+/// Not through [`LocalMeanTime`]'s offset, which a `UtcOffset` holds in
+/// whole seconds: a classical text reckons its day from the exact mean
+/// midnight (`SuryaSiddhanta::local_mean_midnight`), and a midnight
+/// rounded to the second put the text's own sunrise, counted by the
+/// solar model, up to half a second from the same sunrise counted by
+/// its provider (`03-design/classical-chart-measured.md`).
+///
+/// # Errors
+///
+/// A day outside the Julian day range.
+pub fn local_mean_midnight(day: FixedDay, place: &Place) -> Result<JulianDay<Ut1>, Error> {
+    Ok(JulianDay::try_new(
+        day.jd_at_midnight()?.get() - place.longitude.get() / 360.0,
+    )?)
 }
 
 /// Sunrise and sunset of a civil date under a clock, however far the clock
@@ -151,5 +179,9 @@ impl<M: SolarModel + ?Sized> SolarModel for &M {
 
     fn convention(&self) -> SunriseConvention {
         (**self).convention()
+    }
+
+    fn defines_sunrise(&self) -> bool {
+        (**self).defines_sunrise()
     }
 }

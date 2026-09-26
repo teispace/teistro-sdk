@@ -60,6 +60,7 @@ use std::sync::Mutex;
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Ut1};
 
+use crate::angles::{Angles, AnglesRequest};
 use crate::body::{Body, TimeScale};
 use crate::capabilities::{Capabilities, Obliquity};
 use crate::columns::{Cell, PositionColumns};
@@ -353,6 +354,10 @@ impl<P: EphemerisProvider> EphemerisProvider for CachingProvider<P> {
         request: &HorizonRequest,
     ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
         self.inner.horizon_event(request)
+    }
+
+    fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
+        self.inner.angles(request)
     }
 
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {

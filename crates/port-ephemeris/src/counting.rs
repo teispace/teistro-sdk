@@ -25,6 +25,7 @@ use std::sync::Mutex;
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Ut1};
 
+use crate::angles::{Angles, AnglesRequest};
 use crate::body::TimeScale;
 use crate::capabilities::{Capabilities, Obliquity};
 use crate::columns::PositionColumns;
@@ -60,6 +61,8 @@ pub struct ProviderCalls {
     pub horizon: u64,
     /// Calls to the crossing override.
     pub crossings: u64,
+    /// Calls to the angles override.
+    pub angles: u64,
     /// Distinct cells asked for — one instant, one body, one frame —
     /// counted only when [`CountingProvider::watching_repeats`] built the
     /// wrapper. `cells` less this is what a cache would have answered.
@@ -77,6 +80,7 @@ impl ProviderCalls {
             + self.dut1
             + self.horizon
             + self.crossings
+            + self.angles
     }
 
     /// The share of the cells that were asked for more than once, which
@@ -141,6 +145,7 @@ pub struct CountingProvider<P> {
     dut1: AtomicU64,
     horizon: AtomicU64,
     crossings: AtomicU64,
+    angles: AtomicU64,
     /// The cells seen, when repeats are watched. A set behind a lock,
     /// because this is a measurement and not a hot path; `new` leaves it
     /// empty and never touches it.
@@ -161,6 +166,7 @@ impl<P> CountingProvider<P> {
             dut1: AtomicU64::new(0),
             horizon: AtomicU64::new(0),
             crossings: AtomicU64::new(0),
+            angles: AtomicU64::new(0),
             seen: None,
         }
     }
@@ -195,6 +201,7 @@ impl<P> CountingProvider<P> {
             dut1: read(&self.dut1),
             horizon: read(&self.horizon),
             crossings: read(&self.crossings),
+            angles: read(&self.angles),
             distinct_cells: self
                 .seen
                 .as_ref()
@@ -220,6 +227,7 @@ impl<P> CountingProvider<P> {
             &self.dut1,
             &self.horizon,
             &self.crossings,
+            &self.angles,
         ] {
             counter.store(0, Ordering::Relaxed);
         }
@@ -280,6 +288,11 @@ impl<P: EphemerisProvider> EphemerisProvider for CountingProvider<P> {
     ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
         self.horizon.fetch_add(1, Ordering::Relaxed);
         self.inner.horizon_event(request)
+    }
+
+    fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
+        self.angles.fetch_add(1, Ordering::Relaxed);
+        self.inner.angles(request)
     }
 
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
