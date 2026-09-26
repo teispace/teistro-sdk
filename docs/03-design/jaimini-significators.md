@@ -1,6 +1,6 @@
 # Jaimini significators: the karakamsha, the Brahma graha and the Sthira dasa
 
-Status: `draft`, 2026-09-26; §5 steps 1 to 4 **built** the same day.
+Status: `draft`, 2026-09-26; §5 steps 1 to 4 and 6 **built** the same day; step 5 waits on a verse.
 Written from the texts and a measurement before any code; the building is
 expected to correct it.
 
@@ -196,9 +196,24 @@ about a third chart-query field for **periods**, and this is not one.
    gone. The coverage page now files it under the text, its hardest
    blocker; a Sree-lagna start and a fractional first period are the
    kernel's part, once a verse is in hand.
-6. **The reading at the boundary**: the karakamsha and Brahma as a
-   document section every binding reads, after the pattern of the
-   Vaiseshikamsa.
+6. **The reading at the boundary**: **done**. The document's `jaimini`
+   section (`ChartRequest::with_jaimini`, in `with_everything`), and
+   `sdk.chart().jaimini`, which answers a stored document with its own
+   section — the reading under the settings it was cast with — and
+   computes one otherwise, the states once for both the karakas and the
+   chart Brahma is read in. At the C boundary it is `TS_CHART_JAIMINI`
+   (bit 2048) and two sections: `jaimini`, a row a chart, and
+   `jaimini_houses`, a row a graha. `qualified` crosses as a nine-graha
+   bit set, lossless only because every rule lists it in the catalogue's
+   order and once each, which a test holds over every lagna, rule and
+   co-lordship; the Brahma graha and why there is none cross as one code,
+   `TsBrahmaOutcome`, `FOUND` or a reason, so a presence flag and a reason
+   cannot disagree; and `TsBrahmaRule` is held to cross every member of the
+   knob distinctly, since a knob's crossing needs a wildcard. Each binding
+   mirrors the Rust type — `karakamsha {atmakaraka, sign, inRasi,
+   inNavamsha}`, `brahma {rule, countedFrom, qualified, graha, passedFrom,
+   none}` — and the parity gate compares both across Rust, Node, Python and
+   Dart.
 
 ## 6. Not decided here
 

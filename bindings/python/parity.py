@@ -374,6 +374,7 @@ def main() -> None:
             vimshopaka=True,
             vaiseshikamsa=True,
             dasha_phala=True,
+            jaimini=True,
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -589,6 +590,24 @@ def main() -> None:
                     + f" {phala.nature.full_key} {phala.phase.key}"
                     + f" {str(phala.favourable).lower()} {str(phala.unfavourable).lower()}",
                 )
+            jr = chart.jaimini
+            assert jr is not None
+            karakamsha, brahma_graha = jr.karakamsha, jr.brahma
+            put(
+                f"chart-{i}-jaimini",
+                f"{karakamsha.atmakaraka.full_key} {karakamsha.sign.full_key} "
+                + ",".join(str(h) for h in karakamsha.in_rasi)
+                + " "
+                + ",".join(str(h) for h in karakamsha.in_navamsha),
+            )
+            put(
+                f"chart-{i}-brahma",
+                f"{brahma_graha.rule.key} {brahma_graha.counted_from.full_key} "
+                + (",".join(g.full_key for g in brahma_graha.qualified) or "-")
+                + f" {brahma_graha.graha.full_key if brahma_graha.graha else '-'}"
+                + f" {brahma_graha.passed_from.full_key if brahma_graha.passed_from else '-'}"
+                + f" {brahma_graha.none.key if brahma_graha.none else '-'}",
+            )
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

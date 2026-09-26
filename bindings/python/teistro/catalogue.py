@@ -3665,6 +3665,43 @@ class VimshopakaScoring(Member):
     """
 
 
+class BrahmaRule(Member):
+    """Which rule a chart's Brahma graha was sought under: the settings' own
+    `jaimini.brahma` (`03-design/jaimini-significators.md`).
+    """
+
+    VERSES = 0
+    """BPHS ch. 46 vv. 170 to 173 as the Sanskrit states them."""
+
+    TRANSLATORS_NOTE = 1
+    """The translator's note after v. 173."""
+
+
+class BrahmaOutcome(Member):
+    """Whether a chart's Brahma graha was found, and when not, why (C127,
+    C128). One code rather than a presence flag beside a reason, so the two
+    cannot disagree.
+    """
+
+    FOUND = 0
+    """Found: `brahma` names it."""
+
+    NO_LORD_QUALIFIES = 1
+    """Under the verses, no lord of the 6th, 8th or 12th stands in an odd
+    sign behind the sign counted from, and they give no fallback.
+    """
+
+    NO_PLANET_IN_THE_SIXTH = 2
+    """Saturn or a node qualified, and no planet stands in the 6th sign from
+    it to take its place.
+    """
+
+    NO_PLANET_QUALIFIES = 3
+    """Under the translator's note, no planet stands in the 8th and none in
+    an odd sign within the six signs behind.
+    """
+
+
 class DashaPhase(Member):
     """Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4)."""
 
@@ -5574,6 +5611,16 @@ _KEYS: dict[str, dict[int, str]] = {
     "VimshopakaScoring": {
         0: "BPHS",
         1: "SAPTAVARGAJA_VIRUPAS",
+    },
+    "BrahmaRule": {
+        0: "VERSES",
+        1: "TRANSLATORS_NOTE",
+    },
+    "BrahmaOutcome": {
+        0: "FOUND",
+        1: "NO_LORD_QUALIFIES",
+        2: "NO_PLANET_IN_THE_SIXTH",
+        3: "NO_PLANET_QUALIFIES",
     },
     "DashaPhase": {
         0: "COMMENCEMENT",

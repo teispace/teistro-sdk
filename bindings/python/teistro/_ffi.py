@@ -35,6 +35,8 @@ from .catalogue import (
     Balance,
     Body,
     BodyClass,
+    BrahmaOutcome,
+    BrahmaRule,
     Burning,
     Calendar,
     Centre,

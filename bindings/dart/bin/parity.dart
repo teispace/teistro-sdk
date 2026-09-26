@@ -387,6 +387,7 @@ void main() {
     vimshopaka: true,
     vaiseshikamsa: true,
     dashaPhala: true,
+    jaimini: true,
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -633,6 +634,19 @@ void main() {
         '${g.subhankas.map(number).join(',')} ${g.nature.fullKey} ${g.phase.key} ${g.favourable} ${g.unfavourable}',
       );
     }
+    final jr = chart.jaimini!;
+    final k = jr.karakamsha;
+    final b = jr.brahma;
+    put(
+      'chart-$i-jaimini',
+      '${k.atmakaraka.fullKey} ${k.sign.fullKey} ${k.inRasi.join(',')} ${k.inNavamsha.join(',')}',
+    );
+    final qualified = b.qualified.map((g) => g.fullKey).join(',');
+    put(
+      'chart-$i-brahma',
+      '${b.rule.key} ${b.countedFrom.fullKey} ${qualified.isEmpty ? '-' : qualified} '
+          '${b.graha?.fullKey ?? '-'} ${b.passedFrom?.fullKey ?? '-'} ${b.none?.key ?? '-'}',
+    );
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);
     for (final g in vs.grahas) {

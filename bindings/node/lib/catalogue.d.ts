@@ -6037,6 +6037,66 @@ export declare const VimshopakaScoring: {
 export declare const VimshopakaScoringById: ReadonlyMap<number, VimshopakaScoring>;
 
 /**
+ * Which rule a chart's Brahma graha was sought under: the settings' own
+ * `jaimini.brahma` (`03-design/jaimini-significators.md`).
+ */
+export type BrahmaRule = 'VERSES' | 'TRANSLATORS_NOTE';
+
+/** Every BrahmaRule by name; the values are the strings the union accepts. */
+export declare const BrahmaRule: {
+  /**
+   * BPHS ch. 46 vv. 170 to 173 as the Sanskrit states them.
+   */
+  readonly Verses: 'VERSES';
+  /**
+   * The translator's note after v. 173.
+   */
+  readonly TranslatorsNote: 'TRANSLATORS_NOTE';
+};
+
+/**
+ * Every BrahmaRule by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BrahmaRuleById: ReadonlyMap<number, BrahmaRule>;
+
+/**
+ * Whether a chart's Brahma graha was found, and when not, why (C127,
+ * C128). One code rather than a presence flag beside a reason, so the two
+ * cannot disagree.
+ */
+export type BrahmaOutcome = 'FOUND' | 'NO_LORD_QUALIFIES' | 'NO_PLANET_IN_THE_SIXTH' | 'NO_PLANET_QUALIFIES';
+
+/** Every BrahmaOutcome by name; the values are the strings the union accepts. */
+export declare const BrahmaOutcome: {
+  /**
+   * Found: `brahma` names it.
+   */
+  readonly Found: 'FOUND';
+  /**
+   * Under the verses, no lord of the 6th, 8th or 12th stands in an odd
+   * sign behind the sign counted from, and they give no fallback.
+   */
+  readonly NoLordQualifies: 'NO_LORD_QUALIFIES';
+  /**
+   * Saturn or a node qualified, and no planet stands in the 6th sign from
+   * it to take its place.
+   */
+  readonly NoPlanetInTheSixth: 'NO_PLANET_IN_THE_SIXTH';
+  /**
+   * Under the translator's note, no planet stands in the 8th and none in
+   * an odd sign within the six signs behind.
+   */
+  readonly NoPlanetQualifies: 'NO_PLANET_QUALIFIES';
+};
+
+/**
+ * Every BrahmaOutcome by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BrahmaOutcomeById: ReadonlyMap<number, BrahmaOutcome>;
+
+/**
  * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
  */
 export type DashaPhase = 'COMMENCEMENT' | 'MIDDLE' | 'END';

@@ -62,6 +62,8 @@ impl Sections {
     pub(crate) const VAISESHIKAMSA: Sections = Sections(1 << 9);
     /// What each graha's placement says of its dasha.
     pub(crate) const DASHA_PHALA: Sections = Sections(1 << 10);
+    /// Jaimini's significators.
+    pub(crate) const JAIMINI: Sections = Sections(1 << 11);
 
     /// The union.
     const fn with(self, other: Sections) -> Sections {
@@ -387,6 +389,26 @@ impl ChartRequest {
         self
     }
 
+    /// Jaimini's significators: the karakamsha, the Atmakaraka's navamsha
+    /// sign under `jaimini.chara_karakas`, with every graha's house from it
+    /// in the rasi chart and the navamsha; and the Brahma graha under
+    /// `jaimini.brahma` and `jaimini.node_co_lordship`, or why the rule
+    /// found none (BPHS ch. 33 v. 1, ch. 46 vv. 170 to 173).
+    ///
+    /// ```
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, UtcOffset};
+    ///
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_jaimini();
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn with_jaimini(mut self) -> ChartRequest {
+        self.sections = self.sections.with(Sections::JAIMINI);
+        self
+    }
+
     /// The charts to draw, each a layout and which chart to place in it,
     /// in the order given: `D1` for the founded chart, or a divisional one.
     ///
@@ -476,6 +498,7 @@ impl ChartRequest {
             .with_shadbala()
             .with_bhava_bala()
             .with_dasha_phala()
+            .with_jaimini()
     }
 
     /// The place the chart is cast for.

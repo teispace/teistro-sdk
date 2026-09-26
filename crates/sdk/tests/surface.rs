@@ -676,7 +676,7 @@ fn every_envelope_is_sealed_with_the_hash_of_its_own_value() {
 
 /// Every section a reading asked for everything carries, in the document's
 /// order.
-const EVERY_SECTION: [&str; 14] = [
+const EVERY_SECTION: [&str; 15] = [
     "foundation",
     "panchanga",
     "vargas",
@@ -690,6 +690,7 @@ const EVERY_SECTION: [&str; 14] = [
     "shadbala",
     "bhava_bala",
     "dasha_phala",
+    "jaimini",
     "dashas",
 ];
 

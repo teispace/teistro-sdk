@@ -311,7 +311,7 @@ time.
 ## Every section, and what says it
 
 A composer says a **section** or it says a placement, and the sections
-are what a chart request asks for by name. 9 of the 11 a document can
+are what a chart request asks for by name. 9 of the 12 a document can
 carry have a composer, with 4 of those unfinished, and the rest carrying
 the reason nobody says them — because "the silences left are all of
 one kind" is exactly the sentence this page had and exactly the sentence
@@ -321,13 +321,13 @@ four that reach it through a `Placement`, so the row read as answered.
 The list is read from the source that declares the sections, so a
 twelfth fails here rather than being forgotten, and a composer named
 must be a member of `PlanRequest`. The rows nothing says are **named**
-rather than described — `POINTS` and `VAISESHIKAMSA` — because the
-sentence that described them named `VIMSHOPAKA` as one of them for as
-long as it took to build it, which is the rot this page keeps catching
-in its own prose. 3 rows are short a **name** rather than a sentence,
-because being a catalogue member is not being named. The kinds those
-rows cite are on `intl`'s own list of members no strict locale names,
-checked here so a reason cannot outlive its blocker.
+rather than described — `POINTS`, `VAISESHIKAMSA` and `JAIMINI` —
+because the sentence that described them named `VIMSHOPAKA` as one of
+them for as long as it took to build it, which is the rot this page
+keeps catching in its own prose. 3 rows are short a **name** rather than
+a sentence, because being a catalogue member is not being named. The
+kinds those rows cite are on `intl`'s own list of members no strict
+locale names, checked here so a reason cannot outlive its blocker.
 
 | section | said by | what is left |
 |---|---|---|
@@ -342,10 +342,11 @@ checked here so a reason cannot outlive its blocker.
 | `BHAVA_BALA` | `bhavaBala` | — |
 | `VAISESHIKAMSA` | — | **no strict locale names its designations.** Kimshuka, Parijata, Gopura and the rest are catalogue members, and being a catalogue member is not being named: `vaiseshikamsa` is on the unnamed list with no vetted source, exactly as the special lagnas are, so a composer saying them would print nothing a locale carries. This row called it the cheapest of the six on the strength of *being catalogued*, which is the conflation this page had been making in prose. It also names a graha under four schemes at once, which is `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides whether the name it earned is auspicious |
 | `DASHA_PHALA` | `dashaPhala` | — |
+| `JAIMINI` | — | the karakamsha and the Brahma graha. Every word a sentence would put in is already named — the Atmakaraka and Brahma are grahas, the karakamsha a rashi — so what is missing is **the sentence**, in every locale, and it wants a vetted text rather than one drafted here. Two things shape it before the words do: a house from the karakamsha must say which chart it is counted in, since the schools part on it (C130) and the section carries both; and a chart with no Brahma is an answer rather than a gap, so its reason (`NoBrahma`) wants saying as much as a found one does, and a boundary code is not a key a message can match on until it is given one (Q38) |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every section a chart document can carry has a composer, or a reason here that it has none | **holds** | 0 of 11 disagree |
+| every section a chart document can carry has a composer, or a reason here that it has none | **holds** | 0 of 12 disagree |
 
 ## What the packs carry, and what reads it
 
@@ -384,11 +385,11 @@ whether it keys by the vocabulary the SDK computes.
 sentence here read "the silences that remain are all of that kind",
 which was a claim about a set the repository owns, written once and
 believed after. The sections with no composer are named in the table
-above with a reason each — `POINTS` and `VAISESHIKAMSA` — and they
-are not of one kind: a name, a decision about *which* number deserves a
-sentence, a knob, or nothing but the work. Naming them rather than
-counting them is the point, because the sentence that counted them said
-**six** for as long as it took to build four of them.
+above with a reason each — `POINTS`, `VAISESHIKAMSA` and `JAIMINI` —
+and they are not of one kind: a name, a decision about *which* number
+deserves a sentence, a knob, or nothing but the work. Naming them rather
+than counting them is the point, because the sentence that counted them
+said **six** for as long as it took to build four of them.
 
 ## What a native reviewer has to read
 

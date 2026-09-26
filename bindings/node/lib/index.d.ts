@@ -47,6 +47,8 @@ import type {
   VimshopakaScoring,
   DashaPhase,
   Nature,
+  BrahmaRule,
+  BrahmaOutcome,
   Relationship,
   Scale,
   Status,
@@ -583,6 +585,49 @@ export interface GrahaDashaPhala {
   readonly favourable: boolean;
   /** Whether its placement makes its dasha unfavourable; both can hold. */
   readonly unfavourable: boolean;
+}
+
+/** A chart's karakamsha: the Atmakaraka's navamsha sign (BPHS ch. 33 v. 1). */
+export interface Karakamsha {
+  /** The Atmakaraka, under `jaimini.chara_karakas`. */
+  readonly atmakaraka: Graha | 'unknown';
+  /** The karakamsha, the Atmakaraka's navamsha sign. */
+  readonly sign: Rashi | 'unknown';
+  /** Each graha's house from it in the rasi chart, 1 to 12, the Sun to Ketu. */
+  readonly inRasi: readonly number[];
+  /** Each graha's house from it in the navamsha, 1 to 12, the Sun to Ketu (C130). */
+  readonly inNavamsha: readonly number[];
+}
+
+/** A chart's Brahma graha, and how it was found (BPHS ch. 46 vv. 170 to 173). */
+export interface Brahma {
+  /** The rule it was sought under, `jaimini.brahma`. */
+  readonly rule: BrahmaRule | 'unknown';
+  /** The stronger of the lagna and the 7th, which the rule counts from. */
+  readonly countedFrom: Rashi | 'unknown';
+  /** The planets that met the rule's marks, in id order. */
+  readonly qualified: readonly Graha[];
+  /** The Brahma graha; `null` where the rule finds none. */
+  readonly graha: Graha | 'unknown' | null;
+  /** Saturn or the node that passed Brahma-hood to the planet in the 6th from it (C127). */
+  readonly passedFrom: Graha | 'unknown' | null;
+  /** Why there is none; `null` when there is one. */
+  readonly none: Exclude<BrahmaOutcome, 'FOUND'> | 'unknown' | null;
+}
+
+/**
+ * A chart's Jaimini significators, read under the settings' `jaimini` group.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, jaimini: true });
+ * const brahma = chart.jaimini?.brahma;
+ * if (brahma?.graha === null) console.log(`no Brahma: ${brahma.none}`);
+ */
+export interface JaiminiReading {
+  /** The karakamsha, with every graha's house from it in both charts. */
+  readonly karakamsha: Karakamsha;
+  /** The Brahma graha, or why there is none. */
+  readonly brahma: Brahma;
 }
 
 /**
@@ -1757,6 +1802,8 @@ export declare class Chart {
   readonly vaiseshikamsa: VaiseshikamsaReading | null;
   /** The dasha phala; `null` unless `dashaPhala` asked for it. */
   readonly dashaPhala: DashaPhalaReading | null;
+  /** Jaimini's significators; `null` unless `jaimini` asked for them. */
+  readonly jaimini: JaiminiReading | null;
   /** The Shadbala; `null` unless `shadbala` asked for it. */
   readonly shadbala: Shadbala | null;
   /** The Bhava bala; `null` unless `bhavaBala` asked for it. */
@@ -2143,6 +2190,8 @@ export interface ChartRequest {
   readonly vaiseshikamsa?: boolean;
   /** Whether to compute the dasha phala; false by default. */
   readonly dashaPhala?: boolean;
+  /** Whether to compute Jaimini's significators; false by default. */
+  readonly jaimini?: boolean;
   /** Whether to compute the Shadbala; false by default. */
   readonly shadbala?: boolean;
   /** Whether to compute the Bhava bala; false by default. */

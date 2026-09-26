@@ -2882,6 +2882,40 @@ export const VimshopakaScoringById = new Map([
   [1, 'SAPTAVARGAJA_VIRUPAS'],
 ]);
 
+/** Every BrahmaRule by name. */
+export const BrahmaRule = Object.freeze({
+  Verses: 'VERSES',
+  TranslatorsNote: 'TRANSLATORS_NOTE',
+});
+
+/**
+ * Every BrahmaRule by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BrahmaRuleById = new Map([
+  [0, 'VERSES'],
+  [1, 'TRANSLATORS_NOTE'],
+]);
+
+/** Every BrahmaOutcome by name. */
+export const BrahmaOutcome = Object.freeze({
+  Found: 'FOUND',
+  NoLordQualifies: 'NO_LORD_QUALIFIES',
+  NoPlanetInTheSixth: 'NO_PLANET_IN_THE_SIXTH',
+  NoPlanetQualifies: 'NO_PLANET_QUALIFIES',
+});
+
+/**
+ * Every BrahmaOutcome by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BrahmaOutcomeById = new Map([
+  [0, 'FOUND'],
+  [1, 'NO_LORD_QUALIFIES'],
+  [2, 'NO_PLANET_IN_THE_SIXTH'],
+  [3, 'NO_PLANET_QUALIFIES'],
+]);
+
 /** Every DashaPhase by name. */
 export const DashaPhase = Object.freeze({
   Commencement: 'COMMENCEMENT',

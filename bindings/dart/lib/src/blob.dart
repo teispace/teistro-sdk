@@ -2115,6 +2115,80 @@ final class ChartsYearDashaPeriods {
   final int length;
 }
 
+/// The `jaimini` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Jaimini's significators, a row a chart, charts outermost: the karakamsha and the Brahma graha under the settings' `jaimini` group (BPHS ch. 33 v. 1, ch. 46 vv. 170 to 173). Empty when they were not asked for.
+final class ChartsJaimini {
+  const ChartsJaimini({
+    required this.atmakaraka,
+    required this.karakamsha,
+    required this.brahmaRule,
+    required this.countedFrom,
+    required this.qualified,
+    required this.brahma,
+    required this.brahmaOutcome,
+    required this.passedFrom,
+    required this.passedFromPresent,
+    required this.length,
+  });
+
+  /// The Atmakaraka, under `jaimini.chara_karakas`.
+  final Uint16List atmakaraka;
+
+  /// The karakamsha: the Atmakaraka's navamsha sign.
+  final Uint16List karakamsha;
+
+  /// The rule the Brahma graha was sought under, `jaimini.brahma`.
+  final Uint8List brahmaRule;
+
+  /// The stronger of the lagna and the 7th, which the rule counts from.
+  final Uint16List countedFrom;
+
+  /// The planets that met the rule's marks, a bit set: bit `n` is the graha with id `n`.
+  final Uint16List qualified;
+
+  /// The Brahma graha; read only when `brahma_outcome` is `FOUND`.
+  final Uint16List brahma;
+
+  /// Whether the Brahma graha was found, and when not, why.
+  final Uint8List brahmaOutcome;
+
+  /// Saturn or the node that qualified and passed Brahma-hood to the planet in the 6th from it (C127); read only when `passed_from_present` is 1.
+  final Uint16List passedFrom;
+
+  /// 1 when Brahma-hood was passed on, else 0.
+  final Uint8List passedFromPresent;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `jaimini_houses` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.
+final class ChartsJaiminiHouses {
+  const ChartsJaiminiHouses({
+    required this.graha,
+    required this.inRasi,
+    required this.inNavamsha,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// Its house from the karakamsha in the rasi chart, 1 to 12.
+  final Uint8List inRasi;
+
+  /// Its house from the karakamsha in the navamsha, 1 to 12.
+  final Uint8List inNavamsha;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -2277,6 +2351,8 @@ final class Charts {
     required this.yearDashaShares,
     required this.yearDashaPeriods,
     required this.contentHashes,
+    required this.jaimini,
+    required this.jaiminiHouses,
   });
 
   /// What kind of chart these are.
@@ -2473,6 +2549,12 @@ final class Charts {
   /// UTF-8 text: each chart's own content hash — its document, with what it answers by rule where rules were asked, canonical — as sixty-four lowercase hex digits, a chart after the other in the batch's order with nothing between them, so chart `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a chart handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3).
   final String contentHashes;
 
+  /// Jaimini's significators, a row a chart, charts outermost: the karakamsha and the Brahma graha under the settings' `jaimini` group (BPHS ch. 33 v. 1, ch. 46 vv. 170 to 173). Empty when they were not asked for.
+  final ChartsJaimini jaimini;
+
+  /// Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.
+  final ChartsJaiminiHouses jaiminiHouses;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -2530,6 +2612,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atYearDashaShares = blob.section(48, 'year_dasha_shares');
   final atYearDashaPeriods = blob.section(49, 'year_dasha_periods');
   final atContentHashes = blob.section(50, 'content_hashes');
+  final atJaimini = blob.section(51, 'jaimini');
+  final atJaiminiHouses = blob.section(52, 'jaimini_houses');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -4364,6 +4448,72 @@ Charts decodeCharts(Uint8List bytes) {
       length: atYearDashaPeriods.count,
     ),
     contentHashes: blob.text(atContentHashes),
+    jaimini: ChartsJaimini(
+      atmakaraka: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaimini, 0),
+        blob.columnOffset(atJaimini, 0) + atJaimini.count * 2,
+      ),
+      karakamsha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaimini, 1),
+        blob.columnOffset(atJaimini, 1) + atJaimini.count * 2,
+      ),
+      brahmaRule: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaimini, 2),
+        blob.columnOffset(atJaimini, 2) + atJaimini.count * 1,
+      ),
+      countedFrom: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaimini, 3),
+        blob.columnOffset(atJaimini, 3) + atJaimini.count * 2,
+      ),
+      qualified: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaimini, 4),
+        blob.columnOffset(atJaimini, 4) + atJaimini.count * 2,
+      ),
+      brahma: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaimini, 5),
+        blob.columnOffset(atJaimini, 5) + atJaimini.count * 2,
+      ),
+      brahmaOutcome: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaimini, 6),
+        blob.columnOffset(atJaimini, 6) + atJaimini.count * 1,
+      ),
+      passedFrom: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaimini, 7),
+        blob.columnOffset(atJaimini, 7) + atJaimini.count * 2,
+      ),
+      passedFromPresent: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaimini, 8),
+        blob.columnOffset(atJaimini, 8) + atJaimini.count * 1,
+      ),
+      length: atJaimini.count,
+    ),
+    jaiminiHouses: ChartsJaiminiHouses(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiHouses, 0),
+        blob.columnOffset(atJaiminiHouses, 0) + atJaiminiHouses.count * 2,
+      ),
+      inRasi: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiHouses, 1),
+        blob.columnOffset(atJaiminiHouses, 1) + atJaiminiHouses.count * 1,
+      ),
+      inNavamsha: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atJaiminiHouses, 2),
+        blob.columnOffset(atJaiminiHouses, 2) + atJaiminiHouses.count * 1,
+      ),
+      length: atJaiminiHouses.count,
+    ),
   );
 }
 

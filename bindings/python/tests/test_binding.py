@@ -72,6 +72,8 @@ from teistro import (
 from teistro._ffi import Longitude
 from teistro.catalogue import (
     Ayanamsha,
+    BrahmaOutcome,
+    BrahmaRule,
     DayPart,
     Ephemeris,
     Era,
@@ -1161,6 +1163,36 @@ class AnEngine(WithLibrary):
             six = g.sthana.total + g.dig + g.kaala.total + g.cheshta + g.naisargika + g.drik
             self.assertAlmostEqual(six, g.virupas, places=9)
             self.assertEqual(g.strong, g.rupas >= g.required_rupas)
+
+    def test_a_chart_carries_its_karakamsha_and_its_brahma_or_why_not(self) -> None:
+        """A chart's Jaimini significators cross whole: the karakamsha with
+        nine houses in each chart, the Atmakaraka's own navamsha the first
+        from it, and the Brahma graha found or its absence named -- never
+        both, never neither; None unless asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        self.assertIsNone(self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700).jaimini)
+        outcomes = set()
+        for step in range(40):
+            chart = self.ctx.chart.found(
+                instant=2451545.0 + step * 0.37, place=observer, utc_offset_seconds=20700, jaimini=True
+            )
+            reading = chart.jaimini
+            assert reading is not None
+            k, b = reading.karakamsha, reading.brahma
+            for houses in (k.in_rasi, k.in_navamsha):
+                self.assertEqual(len(houses), 9)
+                self.assertTrue(all(1 <= house <= 12 for house in houses), houses)
+            self.assertEqual(k.in_navamsha[int(k.atmakaraka)], 1, "the Atmakaraka stands in the karakamsha")
+            self.assertIs(b.rule, BrahmaRule.VERSES)
+            self.assertEqual(b.graha is None, b.none is not None)
+            self.assertIsNot(b.none, BrahmaOutcome.FOUND)
+            if b.graha is not None:
+                self.assertIn(b.passed_from or b.graha, b.qualified)
+            outcomes.add(b.none or BrahmaOutcome.FOUND)
+        self.assertIn(BrahmaOutcome.FOUND, outcomes)
+        self.assertGreater(len(outcomes), 1, outcomes)
 
     def test_a_chart_carries_its_dasha_phala_and_the_shadbala_its_rays(self) -> None:
         """A chart's dasha phala crosses whole: the nine grahas' Subhankas within

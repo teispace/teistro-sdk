@@ -574,21 +574,10 @@ pub fn charts() -> BlobSchema {
             chart_points_section(17),
             chart_bhavas_section(18),
             chart_states_section(19),
-            SectionSchema::bytes(
-                20,
-                "combustion_orbs",
-                "UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.",
-            ),
-            SectionSchema::bytes(
-                21,
-                "drawings",
-                "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.",
-            ),
-            SectionSchema::bytes(
-                22,
-                "svgs",
-                "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.",
-            ),
+        ]
+        .into_iter()
+        .chain(chart_text_sections(20))
+        .chain([
             chart_dashas_section(23),
             chart_dasha_periods_section(24),
             chart_ashtakavarga_section(25),
@@ -601,12 +590,129 @@ pub fn charts() -> BlobSchema {
             chart_dasha_phala_section(32),
             chart_rules_section(33),
             chart_plans_section(34),
-        ]
-        .into_iter()
+        ])
         .chain(chart_annual_sections())
         .chain([chart_content_hashes_section(50)])
+        .chain(chart_jaimini_sections(51))
         .collect(),
     }
+}
+
+/// The three sections a chart carries as text rather than columns, from
+/// `first`: the combustion table, the drawings and their SVGs.
+fn chart_text_sections(first: u32) -> [SectionSchema; 3] {
+    [
+        SectionSchema::bytes(
+            first,
+            "combustion_orbs",
+            "UTF-8 text: the combustion table the settings named, which every `burning` above was judged against. Empty when the states were not asked for.",
+        ),
+        SectionSchema::bytes(
+            first + 1,
+            "drawings",
+            "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings in the order asked for, every drawing `{varga, placed}` exactly as the document schema describes `Drawing` (`03-design/chart-geometry.md`). Empty when no drawings were asked for.",
+        ),
+        SectionSchema::bytes(
+            first + 2,
+            "svgs",
+            "UTF-8 JSON, canonical: an array with one entry per chart, each the array of that chart's drawings written as SVG strings, in the order asked for, in the request's theme and the context's locale (`03-design/render-svg.md`). Empty when no theme was given.",
+        ),
+    ]
+}
+
+/// Jaimini's significators from `first`: a row a chart, and each chart's
+/// nine houses from its karakamsha.
+fn chart_jaimini_sections(first: u32) -> [SectionSchema; 2] {
+    [
+        chart_jaimini_section(first),
+        chart_jaimini_houses_section(first + 1),
+    ]
+}
+
+/// Every chart's Jaimini significators, a row a chart that asked for them
+/// (`03-design/jaimini-significators.md`).
+fn chart_jaimini_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "jaimini",
+        "Jaimini's significators, a row a chart, charts outermost: the karakamsha and the Brahma graha under the settings' `jaimini` group (BPHS ch. 33 v. 1, ch. 46 vv. 170 to 173). Empty when they were not asked for.",
+        vec![
+            ColumnDef::new(
+                "atmakaraka",
+                Scalar::U16,
+                "The Atmakaraka, under `jaimini.chara_karakas`.",
+            )
+            .of_enum("Graha"),
+            ColumnDef::new(
+                "karakamsha",
+                Scalar::U16,
+                "The karakamsha: the Atmakaraka's navamsha sign.",
+            )
+            .of_enum("Rashi"),
+            ColumnDef::new(
+                "brahma_rule",
+                Scalar::U8,
+                "The rule the Brahma graha was sought under, `jaimini.brahma`.",
+            )
+            .of_enum("TsBrahmaRule"),
+            ColumnDef::new(
+                "counted_from",
+                Scalar::U16,
+                "The stronger of the lagna and the 7th, which the rule counts from.",
+            )
+            .of_enum("Rashi"),
+            ColumnDef::new(
+                "qualified",
+                Scalar::U16,
+                "The planets that met the rule's marks, a bit set: bit `n` is the graha with id `n`.",
+            ),
+            ColumnDef::new(
+                "brahma",
+                Scalar::U16,
+                "The Brahma graha; read only when `brahma_outcome` is `FOUND`.",
+            )
+            .of_enum("Graha"),
+            ColumnDef::new(
+                "brahma_outcome",
+                Scalar::U8,
+                "Whether the Brahma graha was found, and when not, why.",
+            )
+            .of_enum("TsBrahmaOutcome"),
+            ColumnDef::new(
+                "passed_from",
+                Scalar::U16,
+                "Saturn or the node that qualified and passed Brahma-hood to the planet in the 6th from it (C127); read only when `passed_from_present` is 1.",
+            )
+            .of_enum("Graha"),
+            ColumnDef::new(
+                "passed_from_present",
+                Scalar::U8,
+                "1 when Brahma-hood was passed on, else 0.",
+            ),
+        ],
+    )
+}
+
+/// Every chart's houses from its karakamsha, a row a graha.
+fn chart_jaimini_houses_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "jaimini_houses",
+        "Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+            ColumnDef::new(
+                "in_rasi",
+                Scalar::U8,
+                "Its house from the karakamsha in the rasi chart, 1 to 12.",
+            ),
+            ColumnDef::new(
+                "in_navamsha",
+                Scalar::U8,
+                "Its house from the karakamsha in the navamsha, 1 to 12.",
+            ),
+        ],
+    )
 }
 
 /// Each chart's own content hash.

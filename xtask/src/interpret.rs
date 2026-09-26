@@ -995,7 +995,7 @@ const SECTIONS_SOURCE: &str = "crates/sdk/src/reading.rs";
 /// `nature` are both catalogued and neither is named anywhere. A kind that
 /// gains a vetted table now fails here, so the reason cannot outlive the
 /// blocker.
-const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 11] = [
+const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 12] = [
     (
         "PANCHANGA",
         &["panchanga", "phala"],
@@ -1105,6 +1105,23 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 11] = [
         &["vaiseshikamsa"],
     ),
     ("DASHA_PHALA", &["dashaPhala"], "", &[]),
+    (
+        "JAIMINI",
+        &[],
+        "\
+        the karakamsha and the Brahma graha. Every word a sentence would \
+        put in is already named — the Atmakaraka and Brahma are grahas, \
+        the karakamsha a rashi — so what is missing is **the sentence**, \
+        in every locale, and it wants a vetted text rather than one \
+        drafted here. Two things shape it before the words do: a house \
+        from the karakamsha must say which chart it is counted in, since \
+        the schools part on it (C130) and the section carries both; and \
+        a chart with no Brahma is an answer rather than a gap, so its \
+        reason (`NoBrahma`) wants saying as much as a found one does, \
+        and a boundary code is not a key a message can match on until it \
+        is given one (Q38)",
+        &[],
+    ),
 ];
 
 /// Every section the document declares, and what says it.

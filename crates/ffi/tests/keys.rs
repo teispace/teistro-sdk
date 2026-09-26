@@ -29,10 +29,11 @@ use teistro_core::envelope::CalendarResolution;
 use teistro_core::settings;
 use teistro_ffi::calendar::TsResolution;
 use teistro_ffi::chart::{
-    TsBalance, TsBurning, TsDashaPhase, TsDayPart, TsDayState, TsEkadhipatya, TsGhatiReckoning,
-    TsHarshaGrade, TsHoraReckoning, TsPolarDayPolicy, TsPolarKind, TsQuadrant, TsReading, TsSaham,
-    TsSahamStrong, TsSahamWeak, TsShodhana, TsStrength, TsSunrise, TsTajikaDrishti,
-    TsTajikaRelation, TsTajikaYoga, TsVarsheshaChosen, TsVimshopakaScoring, TsYearYoga,
+    TsBalance, TsBrahmaOutcome, TsBrahmaRule, TsBurning, TsDashaPhase, TsDayPart, TsDayState,
+    TsEkadhipatya, TsGhatiReckoning, TsHarshaGrade, TsHoraReckoning, TsPolarDayPolicy, TsPolarKind,
+    TsQuadrant, TsReading, TsSaham, TsSahamStrong, TsSahamWeak, TsShodhana, TsStrength, TsSunrise,
+    TsTajikaDrishti, TsTajikaRelation, TsTajikaYoga, TsVarsheshaChosen, TsVimshopakaScoring,
+    TsYearYoga,
 };
 use teistro_ffi::panchanga::{TsLunarMonth, TsMonthKind, TsYogaCause};
 use teistro_ffi::time::{TsChosen, TsDeltaTSource, TsDst, TsZoneEra, TsZoneSource, TsZoneWarning};
@@ -330,6 +331,10 @@ fn chart(api: &Api) -> Vec<&'static str> {
         unit(api, "TsDashaPhase", |p: &teistro::strength::DashaPhase| {
             id(TsDashaPhase::from(*p) as u8)
         }),
+        unit(api, "TsBrahmaRule", |r: &settings::BrahmaRule| {
+            id(TsBrahmaRule::from(*r) as u8)
+        }),
+        brahma_outcome(api),
         unit(api, "TsDayPart", |p: &teistro_chart::day::DayPart| {
             id(TsDayPart::from(*p) as u8)
         }),
@@ -378,6 +383,27 @@ fn chart(api: &Api) -> Vec<&'static str> {
             id(TsSahamWeak::from(*c) as u8)
         }),
     ]
+}
+
+/// Why a chart has no Brahma graha, and `FOUND` for one that has: the
+/// reasons are `NoBrahma`'s serde spellings, and `FOUND` is the absence of a
+/// reason, which no Rust type spells.
+fn brahma_outcome(api: &Api) -> &'static str {
+    let samples: Vec<teistro::dasha::jaimini::NoBrahma> = enum_def(api, "TsBrahmaOutcome")
+        .values
+        .iter()
+        .filter(|member| member.key != "FOUND")
+        .map(|member| serde_json::from_value(serde_json::Value::from(member.key.as_str())))
+        .collect::<Result<_, _>>()
+        .unwrap_or_else(|e| panic!("`TsBrahmaOutcome`'s reasons are `NoBrahma`'s: {e}"));
+    spelled_as(
+        api,
+        "TsBrahmaOutcome",
+        "",
+        &samples,
+        |none| Some(i64::from(TsBrahmaOutcome::from(Some(*none)) as u8)),
+        &["FOUND"],
+    )
 }
 
 /// The time, calendar and almanac enums.

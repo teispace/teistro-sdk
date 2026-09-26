@@ -1048,6 +1048,7 @@ fn the_chart_request(place: Place, offset: UtcOffset, geo: &Context) -> ChartReq
         .with_vimshopaka()
         .with_vaiseshikamsa()
         .with_dasha_phala()
+        .with_jaimini()
         .with_shadbala()
         .with_bhava_bala()
         .with_state()
@@ -1974,6 +1975,7 @@ fn the_strength(report: &mut Report, index: usize, document: &teistro::Document)
     the_vimshopaka(report, index, document);
     the_vaiseshikamsa(report, index, document);
     the_dasha_phala(report, index, document);
+    the_jaimini(report, index, document);
     the_shadbala(report, index, document);
     the_bhava_bala(report, index, document);
 }
@@ -2098,6 +2100,43 @@ fn the_dasha_phala(report: &mut Report, index: usize, document: &teistro::Docume
             ),
         );
     }
+}
+
+/// Jaimini's significators as the other three print them: the karakamsha
+/// with its houses in both charts, and the Brahma graha's rule, count, marks
+/// and answer, `-` for each that is absent.
+fn the_jaimini(report: &mut Report, index: usize, document: &teistro::Document) {
+    let Some(reading) = document.jaimini.as_ref() else {
+        return;
+    };
+    let (k, b) = (&reading.karakamsha, &reading.brahma);
+    let houses = |of: [u8; 9]| of.map(|house| house.to_string()).join(",");
+    put(
+        report,
+        &format!("chart-{index}-jaimini"),
+        format!(
+            "{} {} {} {}",
+            k.atmakaraka.full_key(),
+            k.sign.full_key(),
+            houses(k.in_rasi),
+            houses(k.in_navamsha)
+        ),
+    );
+    let or_dash = |key: Option<String>| key.unwrap_or_else(|| "-".to_owned());
+    let qualified: Vec<&str> = b.qualified.iter().map(|g| g.full_key()).collect();
+    put(
+        report,
+        &format!("chart-{index}-brahma"),
+        format!(
+            "{} {} {} {} {} {}",
+            wire_key(&b.rule),
+            b.counted_from.full_key(),
+            or_dash((!qualified.is_empty()).then(|| qualified.join(","))),
+            or_dash(b.graha.map(|g| g.full_key().to_owned())),
+            or_dash(b.passed_from.map(|g| g.full_key().to_owned())),
+            or_dash(b.none.as_ref().map(wire_key)),
+        ),
+    );
 }
 
 /// The Vimshopaka as the other three print it: the scoring, and each

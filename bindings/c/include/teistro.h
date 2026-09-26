@@ -4546,6 +4546,48 @@ typedef enum ts_vimshopaka_scoring {
 } ts_vimshopaka_scoring;
 
 /**
+ * Which rule a chart's Brahma graha was sought under: the settings' own
+ * `jaimini.brahma` (`03-design/jaimini-significators.md`).
+ */
+typedef enum ts_brahma_rule {
+    /**
+     * BPHS ch. 46 vv. 170 to 173 as the Sanskrit states them.
+     */
+    TS_BRAHMA_RULE_VERSES = 0,
+    /**
+     * The translator's note after v. 173.
+     */
+    TS_BRAHMA_RULE_TRANSLATORS_NOTE = 1,
+} ts_brahma_rule;
+
+/**
+ * Whether a chart's Brahma graha was found, and when not, why (C127,
+ * C128). One code rather than a presence flag beside a reason, so the two
+ * cannot disagree.
+ */
+typedef enum ts_brahma_outcome {
+    /**
+     * Found: `brahma` names it.
+     */
+    TS_BRAHMA_OUTCOME_FOUND = 0,
+    /**
+     * Under the verses, no lord of the 6th, 8th or 12th stands in an odd
+     * sign behind the sign counted from, and they give no fallback.
+     */
+    TS_BRAHMA_OUTCOME_NO_LORD_QUALIFIES = 1,
+    /**
+     * Saturn or a node qualified, and no planet stands in the 6th sign from
+     * it to take its place.
+     */
+    TS_BRAHMA_OUTCOME_NO_PLANET_IN_THE_SIXTH = 2,
+    /**
+     * Under the translator's note, no planet stands in the 8th and none in
+     * an odd sign within the six signs behind.
+     */
+    TS_BRAHMA_OUTCOME_NO_PLANET_QUALIFIES = 3,
+} ts_brahma_outcome;
+
+/**
  * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
  */
 typedef enum ts_dasha_phase {

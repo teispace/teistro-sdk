@@ -70,6 +70,50 @@ fn the_rule_the_settings_name_is_the_rule_that_answers() {
     }
 }
 
+/// The reading's `jaimini` section is the answer `sdk.chart().jaimini` gives
+/// the bare chart, under every rule and co-lordship; a stored document
+/// answers with its own section; and a request for everything carries it.
+#[test]
+fn the_section_is_the_answer_and_a_stored_chart_keeps_its_own() {
+    let place = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let request = ChartRequest::at(place, UtcOffset::literal(5, 45, 0));
+    for patch in [
+        "{}",
+        r#"{"jaimini": {"brahma": "TRANSLATORS_NOTE", "node_co_lordship": "BOTH"}}"#,
+    ] {
+        let sdk = context(patch);
+        for step in 0..12 {
+            let at = JulianDay::<Utc>::literal(BIRTH + f64::from(step) * 0.37);
+            let bare = sdk.chart().reading(at, &request).unwrap().value;
+            assert!(bare.jaimini.is_none());
+            let read = sdk
+                .chart()
+                .reading(at, &request.clone().with_jaimini())
+                .unwrap()
+                .value;
+            let section = read.jaimini.clone().unwrap();
+            assert_eq!(section, sdk.chart().jaimini(&bare).unwrap(), "{patch}");
+            assert!(read.sections().contains(&"jaimini"));
+            // Read back under other settings, a stored chart keeps the
+            // answer it was cast with.
+            let other =
+                context(r#"{"jaimini": {"chara_karakas": "EIGHT", "brahma": "TRANSLATORS_NOTE"}}"#);
+            assert_eq!(other.chart().jaimini(&read).unwrap(), section);
+        }
+    }
+    let sdk = context("{}");
+    let everything = sdk
+        .chart()
+        .reading(JulianDay::<Utc>::literal(BIRTH), &request.with_everything())
+        .unwrap()
+        .value;
+    assert!(everything.jaimini.is_some());
+}
+
 #[test]
 fn the_karakamsha_is_the_atmakarakas_navamsha_under_either_scheme() {
     for patch in [

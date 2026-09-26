@@ -861,6 +861,29 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** new. Every settings hash moved: the `dasha` group gained a
   knob.
 
+  Jaimini's significators followed, read from BPHS ch. 33 and ch. 46 vv.
+  158 to 174 in the Sanskrit beside the translation. `sdk.chart().jaimini`
+  and `ChartRequest::with_jaimini` give the karakamsha, the Atmakaraka's
+  navamsha sign with every graha's house from it in the rasi chart and the
+  navamsha (C130), and the Brahma graha under a new knob, `jaimini.brahma`:
+  `VERSES` by default, which finds none on about 45% of charts and says why
+  (`NoBrahma`, C128), or `TRANSLATORS_NOTE`. They cross as the document's
+  `jaimini` section, boundary sections 51 and 52 (`TS_CHART_JAIMINI`, bit
+  2048) and `chart.jaimini` in every binding. The Sthira dasa starts from
+  the Brahma graha's sign, forward with its antardashas (C129), and a chart
+  with no Brahma refuses it by name; the Yogardha dasa runs half the Chara
+  and Sthira years from the stronger of the lagna and the 7th (C131). Both
+  are new sign-based rows, and `RashiRow::years` answers `f64` for the
+  Yogardha's half-years. `ChartRequest::with_everything` asks for the
+  systems every chart gives (`dasha::systems_every_chart_gives`), so a
+  request for everything does not refuse a chart with no Brahma.
+
+  **Numbers:** new. Every settings hash moved: the `jaimini` group gained a
+  knob. A document read `with_everything` gains the `jaimini` section and
+  the Yogardha dasa, so its content hash moves; no value it already carried
+  moved. The coverage page's guessed Sthira row (from the lagna,
+  consecutive) is gone rather than corrected, because it was never computed.
+
   A consumer's own nakshatra-seeded dasha system now registers, the Phase 5
   exit's consumer-row clause. A `UduDefinition` goes on
   `ContextBuilder::dasha_system` or `TsContextOptions.dashas_json`, and
