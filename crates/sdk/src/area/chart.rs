@@ -983,13 +983,18 @@ impl<'a> ChartArea<'a> {
     ) -> Result<Envelope<Vec<teistro_gochar::GocharReading>>, Error> {
         let reference = crate::gochar_request::reference(&natal.foundation, request.from())?;
         let rules = teistro_gochar::GocharRules::of(self.context.settings());
-        let asked = ChartRequest::at(natal.foundation.place, UtcOffset::UTC);
-        let read = self.read(request.instants(), &asked)?;
+        // The grahas' places alone, every instant in one request: a
+        // reading reads nothing else of a transit chart, so founding one
+        // (its day, houses and lagna) would be work thrown away.
+        let place = natal.foundation.place;
+        let read = self.founding(UtcOffset::UTC, |founder| {
+            founder.longitudes(request.instants(), &place)
+        })?;
         let readings = read
             .value
             .iter()
-            .map(|transit| crate::gochar_request::reading(transit, reference, rules))
-            .collect::<Result<Vec<_>, Error>>()?;
+            .map(|longitudes| crate::gochar_request::reading(longitudes, reference, rules))
+            .collect();
         Ok(Envelope::sealing(readings, read.provenance))
     }
 

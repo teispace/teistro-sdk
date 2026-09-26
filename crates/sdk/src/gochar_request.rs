@@ -5,8 +5,7 @@ use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
-use teistro_gochar::{GRAHAS, GocharReading, GocharRules, Transit, gochar};
-use teistro_serial::Document;
+use teistro_gochar::{GocharReading, GocharRules, Transit, gochar};
 
 /// What gochar counts the transits from (crux C139).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -47,8 +46,9 @@ impl GocharRequest {
         GocharRequest::over([instant])
     }
 
-    /// The transits at each of many instants, in the order given: one
-    /// founding of the transit chart each, the natal reference read once.
+    /// The transits at each of many instants, in the order given: the
+    /// grahas placed at every instant in one request, without founding a
+    /// transit chart, and the natal reference read once.
     #[must_use]
     pub fn over(instants: impl IntoIterator<Item = JulianDay<Utc>>) -> GocharRequest {
         GocharRequest {
@@ -94,19 +94,12 @@ pub(crate) fn reference(natal: &ChartFoundation, from: GocharFrom) -> Result<Ras
     }
 }
 
-/// One transit chart's gochar from `reference`.
+/// One instant's gochar from `reference`, over the grahas' places in the
+/// chart's zodiac, the Sun to Ketu.
 pub(crate) fn reading(
-    transit: &Document,
+    longitudes: &[f64; 9],
     reference: Rashi,
     rules: GocharRules,
-) -> Result<GocharReading, Error> {
-    let mut transits = [Transit::new(reference, 0.0); 9];
-    for (slot, graha) in transits.iter_mut().zip(GRAHAS) {
-        let at = transit
-            .foundation
-            .graha(graha)
-            .ok_or_else(|| Error::internal(format!("a founded chart places {}", graha.key())))?;
-        *slot = Transit::at_longitude(at.longitude_deg);
-    }
-    Ok(gochar(reference, &transits, rules))
+) -> GocharReading {
+    gochar(reference, &longitudes.map(Transit::at_longitude), rules)
 }

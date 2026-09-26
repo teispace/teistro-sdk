@@ -104,6 +104,9 @@
 //!   beside the readings other schools give.
 //! - `arudhas` and `check-arudhas`: the twelve arudha padas, their lords and
 //!   their exception.
+//! - `gochar` and `check-gochar`: the transits read from the natal Moon, how
+//!   the verdicts fall over the recorded births and who obstructs whom over
+//!   sixty years of sky.
 //! - `kalachakra` and `check-kalachakra`: the Kalachakra dasha, measured
 //!   beside the readings the sources give at each of its forks.
 //! - `ashtakavarga` and `check-ashtakavarga`: the Ashtakavarga, the engine's
@@ -201,6 +204,7 @@ mod exercised;
 mod facade;
 mod ffi;
 mod generated;
+mod gochar;
 mod hashes;
 mod houses;
 mod interpret;
@@ -274,6 +278,7 @@ const PASSES: &[Pass] = &[
         classical_chart::check_generated,
     ),
     ("jaimini", jaimini::generate, jaimini::check_generated),
+    ("gochar", gochar::generate, gochar::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),
     ("state", state::generate, state::check_generated),

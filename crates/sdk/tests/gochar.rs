@@ -11,7 +11,7 @@
 )]
 
 use teistro::catalogue::{Graha, Rashi};
-use teistro::gochar::{GRAHAS, GocharRules};
+use teistro::gochar::{GRAHAS, GocharRules, Transit};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::settings::NodeObstruction;
 use teistro::{ChartRequest, Context, Document, Ephemeris, GocharFrom, GocharRequest, UtcOffset};
@@ -140,4 +140,48 @@ fn a_node_in_a_good_house_is_spared_the_other_node() {
         }
     }
     assert!(good > 0, "no node stood in a good house over three years");
+}
+
+/// The batch places the grahas without founding the transit charts, and
+/// each place must be the founded chart's to the bit: under the default,
+/// and under settings that move every step it shares — the conformance
+/// profile's topocentric centre and nutated ayanamsha, the true node.
+#[test]
+fn every_transit_is_the_founded_chart_s_graha_to_the_bit() {
+    let instants: Vec<_> = (0_u32..12)
+        .map(|month| JulianDay::<Utc>::literal(2_451_545.0 + 30.4375 * f64::from(month)))
+        .collect();
+    let conformance = Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    for sdk in [
+        context("{}"),
+        conformance,
+        context(r#"{"frame": {"node": "TRUE"}}"#),
+    ] {
+        let natal = natal(&sdk);
+        let read = sdk
+            .chart()
+            .gochar(&natal, &GocharRequest::over(instants.clone()))
+            .unwrap()
+            .value;
+        let founded = sdk
+            .chart()
+            .found_many(
+                &instants,
+                &natal.foundation.place,
+                UtcOffset::UTC,
+                teistro::catalogue::ChartKind::Natal,
+            )
+            .unwrap()
+            .value;
+        for (reading, chart) in read.iter().zip(&founded) {
+            for (graha, read) in GRAHAS.into_iter().zip(&reading.grahas) {
+                let place = chart.graha(graha).unwrap().longitude_deg;
+                assert_eq!(read.transit, Transit::at_longitude(place), "{graha:?}");
+            }
+        }
+    }
 }

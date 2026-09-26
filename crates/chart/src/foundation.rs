@@ -24,7 +24,7 @@ use teistro_calendar::CalendarSystem;
 use teistro_calendar::solar::SolarModel;
 use teistro_core::catalogue::{ChartKind, Graha, HouseSystem};
 use teistro_core::envelope::Version;
-use teistro_core::envelope::{Deviation, Envelope, Provenance, content_hash};
+use teistro_core::envelope::{Deviation, Envelope, Hash, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Tt, Ut1, Utc};
 use teistro_core::settings::{
@@ -33,7 +33,7 @@ use teistro_core::settings::{
 use teistro_core::time::LocalClock;
 use teistro_port_ephemeris::columns::CellStatus;
 use teistro_port_ephemeris::{
-    Angles, AnglesRequest, Astronomy, Body, EphemerisProvider, Overrides, PositionRequest,
+    Angles, AnglesRequest, Astronomy, Body, EphemerisProvider, Frame, Overrides, PositionRequest,
     ProviderError, TimeScale,
 };
 use teistro_time::ghati::{self, GhatiPala};
@@ -64,7 +64,7 @@ pub struct BirthTiming {
 
 use crate::bhava::{Bhavas, Chalit, Placement};
 use crate::day::{ChartDay, chart_day};
-use crate::zodiac::ChartZodiac;
+use crate::zodiac::{ChartZodiac, request_of};
 
 /// A chart's angles at an instant, in its own zodiac, with the obliquity of
 /// the date they were built on.
@@ -458,8 +458,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// so a foundation says which ephemeris placed its grahas, in which
     /// frame, and which steps the SDK completed itself.
     fn provenance(&self, chart: &ChartFoundation) -> Provenance {
-        let mut provenance = self.resolved.provenance(
-            Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
+        self.stamp(
             content_hash(&Input {
                 jd_utc: chart.instant.get(),
                 latitude_deg: chart.place.latitude.get(),
@@ -467,13 +466,21 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
                 altitude_m: chart.place.altitude.get(),
                 kind: chart.kind.key(),
             }),
+            chart.zodiac.request,
+            chart.steps.clone(),
+        )
+    }
+
+    /// The stamp over an input, the frame the provider was asked in and
+    /// the steps that answered: what a foundation and the grahas' places
+    /// alone ([`Founder::longitudes`]) both say of themselves.
+    fn stamp(&self, input_hash: Hash, frame: Frame, steps: Vec<String>) -> Provenance {
+        let mut provenance = self.resolved.provenance(
+            Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
+            input_hash,
         );
-        provenance.provider = self
-            .provider
-            .capabilities()
-            .identity
-            .stamp(chart.zodiac.request, chart.steps.clone());
-        provenance.deviation = self.deviation(chart);
+        provenance.deviation = self.deviation(&steps);
+        provenance.provider = self.provider.capabilities().identity.stamp(frame, steps);
         provenance.time.delta_t_model = self.delta_t.key().to_string();
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance
@@ -482,7 +489,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// What a classical astronomy defined of a chart, where it defined
     /// anything: the envelope's `deviation`, so a reader of a stored chart
     /// can tell the text's chart from a modern one without the provider.
-    fn deviation(&self, chart: &ChartFoundation) -> Option<Deviation> {
+    fn deviation(&self, steps: &[String]) -> Option<Deviation> {
         const PARTS: [(&str, &str); 4] = [
             ("zodiac", "the zodiac"),
             ("corrections", "the places"),
@@ -496,7 +503,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let native = Implementation::Native.key();
         let defined: Vec<&str> = PARTS
             .iter()
-            .filter(|(step, _)| chart.steps.contains(&format!("{step}:{native}")))
+            .filter(|(step, _)| steps.contains(&format!("{step}:{native}")))
             .map(|(_, part)| *part)
             .collect();
         (!defined.is_empty()).then(|| Deviation {
@@ -536,6 +543,102 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             kind: kind.key(),
         });
         Ok(Envelope::new(charts, provenance))
+    }
+
+    /// The nine grahas' places at many instants, **without founding the
+    /// charts**: each row their longitudes in the chart's zodiac, indexed
+    /// by the graha (the Sun at 0 to Ketu at 8), and each equal to the bit
+    /// to what a chart founded at that instant would place.
+    ///
+    /// What asks only where the grahas stand — gochar over a year of days,
+    /// a transit calendar — pays for no day, houses or lagna, and asks the
+    /// provider for every instant in one request rather than one each
+    /// (`03-design/gochar.md` §6). The stamp's steps say what was done, so
+    /// they name no day or angles.
+    ///
+    /// # Errors
+    ///
+    /// As [`Founder::found_one`]'s zodiac and places: an ayanamsha the
+    /// catalogue cannot evaluate at an instant, or a provider that cannot
+    /// place a graha.
+    pub fn longitudes(
+        &self,
+        instants: &[JulianDay<Utc>],
+        place: &Place,
+    ) -> Result<Envelope<Vec<[f64; 9]>>, Error> {
+        let completion = self.placing();
+        let mut jds = Vec::with_capacity(instants.len());
+        let mut zodiacs = Vec::with_capacity(instants.len());
+        let mut zodiac_from = Implementation::Sdk;
+        for instant in instants {
+            let ut1 = JulianDay::<Ut1>::literal(instant.get());
+            let (tt, _) = tt_of(ut1, self.delta_t)?;
+            let (zodiac, _, from) = self.zodiac(&completion, tt)?;
+            jds.push(ut1.get());
+            zodiacs.push(zodiac);
+            zodiac_from = from;
+        }
+        let input_hash = content_hash(&BatchInput {
+            jds_utc: instants.iter().map(|jd| jd.get()).collect(),
+            latitude_deg: place.latitude.get(),
+            longitude_deg: place.longitude.get(),
+            altitude_m: place.altitude.get(),
+            kind: "LONGITUDES",
+        });
+        let Some(first) = zodiacs.first() else {
+            return Ok(Envelope::new(
+                Vec::new(),
+                self.stamp(input_hash, request_of(self.settings()), Vec::new()),
+            ));
+        };
+        let bodies = bodies_of(self.settings());
+        let mut request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, first.request);
+        if first.needs_observer() {
+            request.observer = Some(*place);
+        }
+        let completed: Completed = completion.positions(&request)?;
+        let mut rows = Vec::with_capacity(zodiacs.len());
+        for (row, zodiac) in zodiacs.iter().enumerate() {
+            let mut places = [0.0; 9];
+            let mut rahu_tropical = None;
+            for (index, body) in bodies.iter().enumerate() {
+                let cell = completed.columns.at(row, index).ok_or_else(|| {
+                    Error::internal(format!("the grid has no cell for {}", body.key()))
+                })?;
+                if cell.status != CellStatus::Ok {
+                    return Err(Error::unsupported(format!(
+                        "the provider could not place {}: {:?}",
+                        body.key(),
+                        cell.status
+                    ))
+                    .with_field("bodies"));
+                }
+                let graha = body
+                    .graha()
+                    .ok_or_else(|| Error::internal(format!("{} is not a graha", body.key())))?;
+                // As `Founder::position` reduces it, so the places agree to
+                // the bit.
+                let tropical = cell.lon.rem_euclid(360.0);
+                if graha == Graha::Rahu {
+                    rahu_tropical = Some(tropical);
+                }
+                if let Some(slot) = places.get_mut(graha as usize) {
+                    *slot = zodiac.of_tropical(tropical);
+                }
+            }
+            // Ketu as `Founder::grahas` places it: Rahu's opposite point.
+            let rahu = rahu_tropical.ok_or_else(|| Error::internal("no node was placed"))?;
+            if let Some(slot) = places.get_mut(Graha::Ketu as usize) {
+                *slot = zodiac.of_tropical((rahu + 180.0).rem_euclid(360.0));
+            }
+            rows.push(places);
+        }
+        let mut steps = completed.step_keys();
+        steps.push(format!("zodiac:{}", zodiac_from.key()));
+        Ok(Envelope::new(
+            rows,
+            self.stamp(input_hash, first.request, steps),
+        ))
     }
 
     /// The stamp of a batch that founded nothing, which still says under
@@ -742,15 +845,23 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
     /// The completion every step of a founding asks the provider
     /// through, under the profile's override policy.
     fn completion(&self) -> Completion<'a, P> {
+        self.placing()
+            // A graha's speed is reported, so it is the derivative of its
+            // place rather than a rate carried through the steps.
+            .deriving_speeds()
+    }
+
+    /// The completion for places alone, whose speeds nobody reads: the
+    /// same places as [`Founder::completion`]'s, which completes them
+    /// first and then replaces only the speeds, without the second
+    /// request either side of each instant.
+    fn placing(&self) -> Completion<'a, P> {
         Completion::new(
             self.provider,
             self.settings().provider.overrides,
             self.delta_t,
         )
         .with_precession(self.precession)
-        // A graha's speed is reported, so it is the derivative of its
-        // place rather than a rate carried through the steps.
-        .deriving_speeds()
     }
 
     /// The chart's zodiac at an instant, its rate against the tropical
