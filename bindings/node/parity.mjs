@@ -259,8 +259,8 @@ placed.grahas.forEach((graha, j) => {
 // (docs/03-design/classical-chart.md), which every binding reaches through
 // the selector and must read back alike, deviation and all.
 const classical = new Context({
+  profile: 'surya-siddhanta',
   ephemeris: 'SURYA_SIDDHANTA',
-  settings: { frame: { ayanamsha: { kind: 'CATALOGUED', id: 'SURYASIDDHANTA' } } },
 });
 const text = classical.chart.found({ instant: 2447995.4895833335, place, utcOffsetSeconds: 20700 });
 put('classical-steps', text.batch.steps.join(','));

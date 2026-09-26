@@ -12,16 +12,16 @@ provider, which of its parts are the text's?
 
 Every recorded birth of the corpus (55 of them) was founded **through
 the SDK** over `Ephemeris::SuryaSiddhanta`, as a Rust consumer opens it,
-under the root profile with the text's own ayanamsha named
-(`SURYASIDDHANTA`); the root profile's sunrise is already the text's,
-the centre on the geometric horizon. Each chart was then held against
-what `crates/siddhanta` answers at the same instant and place: its Lagna
+under the `surya-siddhanta` profile: the text's astronomy and its own
+ayanamsha, with the centre of the Sun on the geometric horizon, which is
+the text's sunrise. Each chart was then held against what
+`crates/siddhanta` answers at the same instant and place: its Lagna
 (III.46 to 49), its ayanamsha, its nine grahas and its own day arc,
 through which the same hora reckoning was counted. The text refuses
 `c028-troms-1988-06-21` and `c029-troms-1988-12-21`, because on the day
 it has no sunrise to count the Lagna from; the SDK refuses
-`c028-troms-1988-06-21` and `c029-troms-1988-12-21` under the root
-profile's polar-day policy, which synthesises no day.
+`c028-troms-1988-06-21` and `c029-troms-1988-12-21` under the profile's
+polar-day policy, which synthesises no day.
 
 The steps the provenance stamps on each chart: `positions:NATIVE,
 corrections:NATIVE, ayanamsha:NATIVE, zodiac-shift:SDK, zodiac:NATIVE,

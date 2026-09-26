@@ -1435,7 +1435,8 @@ pub struct ContextOptions {
     /// Example: 0.
     pub flags: u32,
     /// The shipped profile's id (`parashari-classical`, `nepali-default`,
-    /// `kp-default`, `western-tropical-default`, `conformance-baseline`).
+    /// `surya-siddhanta`, `kp-default`, `western-tropical-default`,
+    /// `conformance-baseline`).
     /// Example: parashari-classical. May be null.
     pub profile: Option<String>,
     /// A JSON settings patch over the profile: an object whose groups and

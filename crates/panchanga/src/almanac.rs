@@ -20,9 +20,7 @@ use teistro_calendar::solar::SolarModel;
 use teistro_calendar::{CalendarDate, CalendarSystem};
 use teistro_chart::zodiac::ChartZodiac;
 use teistro_core::catalogue::{Direction, Rashi, Vara};
-use teistro_core::envelope::{
-    CALCULATION_VERSION, Envelope, Hash, Provenance, Version, content_hash,
-};
+use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
@@ -598,12 +596,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// list, so there is nothing here to vouch for. An empty list is the
     /// refusal; a plausible one would be a fabrication.
     fn provenance(&self, input: Hash, frame: Frame) -> Provenance {
-        let mut provenance = Provenance::new(
+        let mut provenance = self.resolved.provenance(
             Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
-            CALCULATION_VERSION,
-            teistro_core::catalogue::SCHEMA_VERSION,
-            self.resolved.profile.as_str(),
-            self.settings().hash(),
             input,
         );
         provenance.provider = self
