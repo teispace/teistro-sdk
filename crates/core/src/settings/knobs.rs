@@ -323,6 +323,23 @@ knob!(
         TranslatorsNote = "TRANSLATORS_NOTE" }
 );
 knob!(
+    /// The nodes' vedha in transit (Phaladeepika ch. 26 v. 2, which makes
+    /// them "like the Sun"; crux C136).
+    NodeVedha { /// The Sun's vedha pairs, the comparison read whole; not the Sun's
+        /// exemption of Saturn, which is father and son.
+        LikeTheSun = "LIKE_THE_SUN", /// None: v. 2 compares only the good houses, so nothing obstructs a
+        /// node's transit.
+        None = "NONE" }
+);
+knob!(
+    /// Whether the nodes obstruct another graha's transit from its vedha
+    /// house (Phaladeepika ch. 26 vv. 3 to 8; crux C137).
+    NodeObstruction { /// As any graha: the verses say "planets" and name their exceptions,
+        /// which are not the nodes.
+        Obstruct = "OBSTRUCT", /// Only the seven obstruct.
+        None = "NONE" }
+);
+knob!(
     /// Whether a graha's arudha moves as a bhava's does, when the count
     /// lands on the graha's own sign or the 7th from it (BPHS ch. 29 vv. 6
     /// and 7; crux C132).

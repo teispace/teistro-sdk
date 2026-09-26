@@ -1,0 +1,28 @@
+[package]
+name = "teistro-gochar"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's gochar: each transit read from the natal Moon, with its vedha"
+readme = "README.md"
+# Publishes at the first release, never on a phase boundary
+# (docs/06-cicd/03-release-process.md).
+publish = false
+
+[features]
+# Derives `schemars::JsonSchema` on the reading's types, so a later
+# document section can describe them (`docs/03-design/document-schema.md`).
+schema = ["dep:schemars", "teistro-core/schema"]
+
+[dependencies]
+teistro-core = { path = "../core" }
+serde = { version = "1", features = ["derive"] }
+schemars = { version = "1.2", optional = true }
+
+[dev-dependencies]
+serde_json = "1"
+
+[lints]
+workspace = true

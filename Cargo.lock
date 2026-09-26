@@ -1555,6 +1555,7 @@ dependencies = [
  "teistro-dasha",
  "teistro-ephemeris-builtin",
  "teistro-geometry",
+ "teistro-gochar",
  "teistro-houses",
  "teistro-interpret",
  "teistro-intl",
@@ -1717,6 +1718,16 @@ dependencies = [
  "teistro-chart",
  "teistro-core",
  "teistro-vargas",
+]
+
+[[package]]
+name = "teistro-gochar"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-core",
 ]
 
 [[package]]
