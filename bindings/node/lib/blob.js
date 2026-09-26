@@ -843,11 +843,13 @@ export function decodeCharts(bytes) {
     };
   }
   {
-    const at = section(blob, 52, 'jaimini_houses');
-    out.jaiminiHouses = {
+    const at = section(blob, 52, 'jaimini_grahas');
+    out.jaiminiGrahas = {
       graha: column(blob, at, 0, 'u16', at.count),
       inRasi: column(blob, at, 1, 'u8', at.count),
       inNavamsha: column(blob, at, 2, 'u8', at.count),
+      arudha: column(blob, at, 3, 'u16', at.count),
+      arudhaPresent: column(blob, at, 4, 'u8', at.count),
       length: at.count,
     };
   }

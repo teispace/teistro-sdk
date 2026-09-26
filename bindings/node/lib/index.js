@@ -2171,7 +2171,7 @@ function jaiminisOf(batch) {
   let decoded = JAIMINIS.get(batch);
   if (decoded === undefined) {
     const c = batch.decoded.jaimini;
-    const h = batch.decoded.jaiminiHouses;
+    const h = batch.decoded.jaiminiGrahas;
     const graha = (id) => GrahaById.get(id) ?? 'unknown';
     decoded = Array.from({ length: c.atmakaraka.length }, (_, chart) => {
       const houses = (column) =>
@@ -2192,6 +2192,12 @@ function jaiminisOf(batch) {
           passedFrom: c.passedFromPresent[chart] !== 0 ? graha(c.passedFrom[chart]) : null,
           none: outcome === 'FOUND' ? null : outcome,
         }),
+        grahaArudhas: Object.freeze(
+          Array.from({ length: 9 }, (_, g) => {
+            const row = chart * 9 + g;
+            return h.arudhaPresent[row] !== 0 ? (RashiById.get(h.arudha[row]) ?? 'unknown') : null;
+          }),
+        ),
       });
     });
     JAIMINIS.set(batch, decoded);

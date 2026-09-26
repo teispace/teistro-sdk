@@ -620,12 +620,11 @@ fn chart_text_sections(first: u32) -> [SectionSchema; 3] {
     ]
 }
 
-/// Jaimini's significators from `first`: a row a chart, and each chart's
-/// nine houses from its karakamsha.
+/// Jaimini's significators from `first`: a row a chart, and a row a graha.
 fn chart_jaimini_sections(first: u32) -> [SectionSchema; 2] {
     [
         chart_jaimini_section(first),
-        chart_jaimini_houses_section(first + 1),
+        chart_jaimini_grahas_section(first + 1),
     ]
 }
 
@@ -693,12 +692,13 @@ fn chart_jaimini_section(id: u32) -> SectionSchema {
     )
 }
 
-/// Every chart's houses from its karakamsha, a row a graha.
-fn chart_jaimini_houses_section(id: u32) -> SectionSchema {
+/// Every chart's grahas as Jaimini reads them, a row a graha: the house from
+/// the karakamsha in both charts, and the graha's arudha.
+fn chart_jaimini_grahas_section(id: u32) -> SectionSchema {
     SectionSchema::columns(
         id,
-        "jaimini_houses",
-        "Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.",
+        "jaimini_grahas",
+        "Each graha as Jaimini reads it, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. Its house from the karakamsha in the rasi chart and in the navamsha, since the schools part on which (C130), and its arudha (BPHS ch. 29 vv. 6 and 7).",
         vec![
             ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
             ColumnDef::new(
@@ -710,6 +710,17 @@ fn chart_jaimini_houses_section(id: u32) -> SectionSchema {
                 "in_navamsha",
                 Scalar::U8,
                 "Its house from the karakamsha in the navamsha, 1 to 12.",
+            ),
+            ColumnDef::new(
+                "arudha",
+                Scalar::U16,
+                "Its arudha under `jaimini.graha_arudha_exception`; read only when `arudha_present` is 1.",
+            )
+            .of_enum("Rashi"),
+            ColumnDef::new(
+                "arudha_present",
+                Scalar::U8,
+                "1 when it has an arudha; 0 for a node that owns no sign under `jaimini.node_co_lordship` (C133).",
             ),
         ],
     )

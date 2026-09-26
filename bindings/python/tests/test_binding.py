@@ -1191,6 +1191,10 @@ class AnEngine(WithLibrary):
             if b.graha is not None:
                 self.assertIn(b.passed_from or b.graha, b.qualified)
             outcomes.add(b.none or BrahmaOutcome.FOUND)
+            self.assertEqual(len(reading.graha_arudhas), 9)
+            self.assertTrue(all(isinstance(sign, Rashi) for sign in reading.graha_arudhas[:7]))
+            # The default co-lordship gives the nodes no own sign, so no arudha.
+            self.assertEqual(reading.graha_arudhas[7:], (None, None))
         self.assertIn(BrahmaOutcome.FOUND, outcomes)
         self.assertGreater(len(outcomes), 1, outcomes)
 

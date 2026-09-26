@@ -12,9 +12,9 @@ use super::knobs::{
     AfterCycle, AshtottariGrouping, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti,
     BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT,
     DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning,
-    HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
-    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents, Naisargika,
-    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
+    GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth,
+    KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents,
+    Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
     PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja,
     SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier,
     UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
@@ -183,6 +183,9 @@ pub fn root() -> Settings {
             // BPHS ch. 46 vv. 170 to 173 as read; the translator's note is
             // the knob's other value (`03-design/jaimini-significators.md`).
             brahma: BrahmaRule::Verses,
+            // BPHS ch. 29 vv. 6 and 7 state the count and no move
+            // (`03-design/graha-arudhas.md`).
+            graha_arudha_exception: GrahaArudhaException::None,
         },
         aspect: Aspect {
             node_aspects: NodeAspects::None,

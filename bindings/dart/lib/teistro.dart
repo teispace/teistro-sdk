@@ -2053,13 +2053,22 @@ final class Brahma {
 /// final why = brahma.graha == null ? brahma.none : null;
 /// ```
 final class JaiminiReading {
-  const JaiminiReading({required this.karakamsha, required this.brahma});
+  const JaiminiReading({
+    required this.karakamsha,
+    required this.brahma,
+    required this.grahaArudhas,
+  });
 
   /// The karakamsha, with every graha's house from it in both charts.
   final Karakamsha karakamsha;
 
   /// The Brahma graha, or why there is none.
   final Brahma brahma;
+
+  /// Each graha's arudha, the Sun to Ketu (BPHS ch. 29 vv. 6 and 7), under
+  /// `jaimini.graha_arudha_exception`; null for a node that owns no sign
+  /// under `jaimini.node_co_lordship`.
+  final List<Rashi?> grahaArudhas;
 }
 
 /// A chart's dasha phala, read under `dasha.shanta_sign`.
@@ -3651,7 +3660,7 @@ List<JaiminiReading> _jaiminisOf(Charts batch) =>
 
 List<JaiminiReading> _decodeJaiminis(Charts batch) {
   final c = batch.jaimini;
-  final h = batch.jaiminiHouses;
+  final h = batch.jaiminiGrahas;
   List<int> houses(List<int> column, int chart) =>
       List<int>.unmodifiable(column.sublist(chart * 9, chart * 9 + 9));
   return List<JaiminiReading>.generate(c.length, (chart) {
@@ -3675,6 +3684,10 @@ List<JaiminiReading> _decodeJaiminis(Charts batch) {
                 : null,
         none: found ? null : outcome,
       ),
+      grahaArudhas: List<Rashi?>.unmodifiable([
+        for (var row = chart * 9; row < chart * 9 + 9; row++)
+          h.arudhaPresent[row] == 1 ? Rashi.byId(h.arudha[row]) : null,
+      ]),
     );
   }, growable: false);
 }

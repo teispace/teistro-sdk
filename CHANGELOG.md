@@ -884,6 +884,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   moved. The coverage page's guessed Sthira row (from the lagna,
   consecutive) is gone rather than corrected, because it was never computed.
 
+  The grahas' arudhas followed, from BPHS ch. 29 vv. 6 and 7 read on the
+  printed page: `teistro_dasha::jaimini::graha_arudha` counts as many signs
+  on from a graha's own sign as that sign stands from the graha, the
+  stronger of two own signs by ch. 46's ladder and then the greater count
+  (C134). The nodes have arudhas only as co-lords under
+  `jaimini.node_co_lordship` (C133), and a new knob,
+  `jaimini.graha_arudha_exception`, carries the bhava arudhas' move the
+  verses do not state (C132). The Jaimini reading gains `graha_arudhas`,
+  and the boundary's per-graha section, renamed `jaimini_grahas` before any
+  release carried `jaimini_houses`, gains `arudha` and `arudha_present`.
+
+  **Numbers:** new. Every settings hash moved: the `jaimini` group gained a
+  knob.
+
   A consumer's own nakshatra-seeded dasha system now registers, the Phase 5
   exit's consumer-row clause. A `UduDefinition` goes on
   `ContextBuilder::dasha_system` or `TsContextOptions.dashas_json`, and

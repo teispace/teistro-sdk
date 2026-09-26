@@ -690,7 +690,12 @@ Chara, Narayana, Padanadhamsa, Trikona, Drig, Shoola, Niryana Shoola and
 Mandooka dashas are in `dasha`; and the Varnada and Sree lagnas are in
 `points`. What is left of it is the karakamsha and swamsa, the graha
 arudhas, the sthira karakas, Brahma, Rudra and Maheshwara, and the Jaimini
-yogas.
+yogas. **Since built** (2026-09-26): the karakamsha, read in both charts,
+which is the swamsa's question (C130); the Brahma graha, with the Sthira
+and Yogardha dashas it starts or times; and the graha arudhas
+(`jaimini-significators.md`, `graha-arudhas.md`), all four through every
+binding. Rudra, Maheshwara and the Sudasa wait on a verse: BPHS defines
+none of them, and the Jaimini sutras in hand are not legible for them.
 
 `jaimini`, `kp`, `tajika`, `gochar` with hit lists and Sade Sati, `muhurta`
 search with blackouts and event rules, festival rule-pack hooks.

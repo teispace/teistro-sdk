@@ -601,6 +601,10 @@ def main() -> None:
                 + ",".join(str(h) for h in karakamsha.in_navamsha),
             )
             put(
+                f"chart-{i}-graha-arudhas",
+                ",".join(sign.full_key if sign else "-" for sign in jr.graha_arudhas),
+            )
+            put(
                 f"chart-{i}-brahma",
                 f"{brahma_graha.rule.key} {brahma_graha.counted_from.full_key} "
                 + (",".join(g.full_key for g in brahma_graha.qualified) or "-")

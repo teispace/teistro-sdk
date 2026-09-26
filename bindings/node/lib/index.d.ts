@@ -628,6 +628,12 @@ export interface JaiminiReading {
   readonly karakamsha: Karakamsha;
   /** The Brahma graha, or why there is none. */
   readonly brahma: Brahma;
+  /**
+   * Each graha's arudha, the Sun to Ketu (BPHS ch. 29 vv. 6 and 7), under
+   * `jaimini.graha_arudha_exception`; `null` for a node that owns no sign
+   * under `jaimini.node_co_lordship`.
+   */
+  readonly grahaArudhas: readonly (Rashi | 'unknown' | null)[];
 }
 
 /**

@@ -22,7 +22,7 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::Balance;
 use teistro_core::settings::{AyanamshaChoice, CharaKarakas};
 use teistro_core::time::UtcOffset;
-use teistro_dasha::jaimini::{JaiminiReading, brahma, karakamsha};
+use teistro_dasha::jaimini::{JaiminiReading, brahma, graha_arudhas, karakamsha};
 use teistro_dasha::{
     Birth, Dasha, DashaCursor, DashaName, DashaReading, KalachakraDasha, KalachakraRules,
     RashiChart, RashiDasha, RashiRules, Rules as DashaRules, Wheel, YearDasha, YearRing,
@@ -878,6 +878,11 @@ impl<'a> ChartArea<'a> {
                 &degrees,
                 settings.jaimini.node_co_lordship,
                 settings.jaimini.brahma,
+            ),
+            graha_arudhas: graha_arudhas(
+                &rashi,
+                settings.jaimini.node_co_lordship,
+                settings.jaimini.graha_arudha_exception,
             ),
         })
     }

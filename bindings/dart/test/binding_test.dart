@@ -1262,6 +1262,10 @@ void _engineTests() {
         expect(b.qualified, contains(b.passedFrom ?? b.graha));
       }
       outcomes.add(b.none ?? BrahmaOutcome.found);
+      expect(reading.grahaArudhas, hasLength(9));
+      expect(reading.grahaArudhas.take(7), everyElement(isNotNull));
+      // The default co-lordship gives the nodes no own sign, so no arudha.
+      expect(reading.grahaArudhas.skip(7), everyElement(isNull));
     }
     expect(outcomes, contains(BrahmaOutcome.found));
     expect(outcomes.length, greaterThan(1));

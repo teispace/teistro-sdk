@@ -15971,8 +15971,8 @@
         },
         {
           "id": 52,
-          "name": "jaimini_houses",
-          "doc": "Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.",
+          "name": "jaimini_grahas",
+          "doc": "Each graha as Jaimini reads it, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. Its house from the karakamsha in the rasi chart and in the navamsha, since the schools part on which (C130), and its arudha (BPHS ch. 29 vv. 6 and 7).",
           "kind": "columns",
           "fields": [
             {
@@ -15990,6 +15990,17 @@
               "name": "in_navamsha",
               "scalar": "u8",
               "doc": "Its house from the karakamsha in the navamsha, 1 to 12."
+            },
+            {
+              "name": "arudha",
+              "scalar": "u16",
+              "doc": "Its arudha under `jaimini.graha_arudha_exception`; read only when `arudha_present` is 1.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "arudha_present",
+              "scalar": "u8",
+              "doc": "1 when it has an arudha; 0 for a node that owns no sign under `jaimini.node_co_lordship` (C133)."
             }
           ]
         }

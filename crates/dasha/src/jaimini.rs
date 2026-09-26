@@ -12,7 +12,7 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
-use teistro_core::settings::{BrahmaRule, DualLord, NodeCoLordship};
+use teistro_core::settings::{BrahmaRule, DualLord, GrahaArudhaException, NodeCoLordship};
 
 use crate::rashi::{RashiChart, first_lord, second_lord, stronger_lord, stronger_sign};
 
@@ -112,6 +112,10 @@ pub struct JaiminiReading {
     pub karakamsha: Karakamsha,
     /// The Brahma graha, or why there is none.
     pub brahma: Brahma,
+    /// Each graha's arudha, the Sun to Ketu, under `jaimini.graha_arudha_exception`
+    /// and `jaimini.node_co_lordship`: `None` for a node that owns no sign
+    /// (BPHS ch. 29 vv. 6 and 7; `03-design/graha-arudhas.md`).
+    pub graha_arudhas: [Option<Rashi>; 9],
 }
 
 /// Why a chart has no Brahma graha under the rule asked for.
@@ -313,6 +317,85 @@ pub fn brahma(
     }
 }
 
+/// The signs a graha lords under the co-lordship: its own signs, which its
+/// arudha counts to. A node owns Aquarius or Scorpio only as a co-lord, so
+/// under `NONE` it owns none (C133).
+fn own_signs(chart: &RashiChart, graha: Graha, co_lordship: NodeCoLordship) -> Vec<Rashi> {
+    Rashi::ALL
+        .into_iter()
+        .filter(|sign| lords(chart, *sign, co_lordship).contains(&graha))
+        .collect()
+}
+
+/// A graha's arudha (BPHS ch. 29 vv. 6 and 7, read in the Sanskrit;
+/// `03-design/graha-arudhas.md`): as many signs on from its own sign as its
+/// own sign stands from it. Of two own signs, the stronger by ch. 46's
+/// ladder, and on a tie the one the greater count reaches (C134). Under
+/// [`GrahaArudhaException::AsBhavas`], a count landing on the graha's sign or
+/// the 7th from it moves to the 10th from there (C132). `None` for a node
+/// that owns no sign under the co-lordship.
+///
+/// The translator's example: the Sun in Capricorn counts eight signs to
+/// Leo and eight more to Pisces.
+///
+/// ```
+/// use teistro_core::catalogue::{Dignity, Graha, Rashi};
+/// use teistro_core::settings::{GrahaArudhaException, NodeCoLordship};
+/// use teistro_dasha::jaimini::graha_arudha;
+/// use teistro_dasha::rashi::RashiChart;
+///
+/// let mut signs = [Rashi::Aries; 9];
+/// signs[0] = Rashi::Capricorn;
+/// let chart = RashiChart {
+///     lagna: Rashi::Aries,
+///     arudha_lagna: Rashi::Aries,
+///     navamsa_lagna: Rashi::Aries,
+///     signs,
+///     dignities: [Dignity::Neutral; 9],
+///     brahma: None,
+/// };
+/// let sun = graha_arudha(&chart, Graha::Sun, NodeCoLordship::None, GrahaArudhaException::None);
+/// assert_eq!(sun, Some(Rashi::Pisces));
+/// // A node owns no sign unless the settings make it a co-lord.
+/// let rahu = graha_arudha(&chart, Graha::Rahu, NodeCoLordship::None, GrahaArudhaException::None);
+/// assert_eq!(rahu, None);
+/// ```
+#[must_use]
+pub fn graha_arudha(
+    chart: &RashiChart,
+    graha: Graha,
+    co_lordship: NodeCoLordship,
+    exception: GrahaArudhaException,
+) -> Option<Rashi> {
+    let at = chart.sign_of(graha);
+    // The count to a sign, the graha's own being the twelfth: ch. 46 v. 163's
+    // "more years" when the ladder leaves two signs equal.
+    let count = |sign: Rashi| match steps(at, sign) {
+        0 => SIGNS,
+        n => n,
+    };
+    let own = own_signs(chart, graha, co_lordship)
+        .into_iter()
+        .reduce(|best, next| match stronger_sign(chart, best, next) {
+            Some(stronger) => stronger,
+            None if count(next) > count(best) => next,
+            None => best,
+        })?;
+    let counted = ahead(own, steps(at, own));
+    let moved = exception == GrahaArudhaException::AsBhavas && matches!(steps(at, counted), 0 | 6);
+    Some(if moved { ahead(counted, 9) } else { counted })
+}
+
+/// Every graha's arudha, the Sun to Ketu ([`graha_arudha`]).
+#[must_use]
+pub fn graha_arudhas(
+    chart: &RashiChart,
+    co_lordship: NodeCoLordship,
+    exception: GrahaArudhaException,
+) -> [Option<Rashi>; 9] {
+    GRAHAS.map(|graha| graha_arudha(chart, graha, co_lordship, exception))
+}
+
 #[cfg(test)]
 pub(crate) mod tests {
     #![allow(clippy::unwrap_used, clippy::indexing_slicing, reason = "tests")]
@@ -361,6 +444,112 @@ pub(crate) mod tests {
         assert!(
             seen > 0,
             "the spread must qualify someone to prove anything"
+        );
+    }
+
+    /// A chart with every graha in `rest` but those `placed` names.
+    fn placed(rest: Rashi, placed: &[(Graha, Rashi)]) -> RashiChart {
+        let mut signs = [rest; 9];
+        for (graha, sign) in placed {
+            signs[*graha as usize] = *sign;
+        }
+        RashiChart {
+            lagna: Rashi::Aries,
+            arudha_lagna: Rashi::Aries,
+            navamsa_lagna: Rashi::Aries,
+            signs,
+            dignities: [Dignity::Neutral; 9],
+            brahma: None,
+        }
+    }
+
+    const EXCEPTIONS: [GrahaArudhaException; 2] =
+        [GrahaArudhaException::None, GrahaArudhaException::AsBhavas];
+
+    /// The translator's example moves under neither reading: Pisces is the
+    /// third from Capricorn.
+    #[test]
+    fn the_sun_in_capricorn_has_its_arudha_in_pisces() {
+        let chart = placed(Rashi::Taurus, &[(Graha::Sun, Rashi::Capricorn)]);
+        for exception in EXCEPTIONS {
+            let sun = graha_arudha(&chart, Graha::Sun, NodeCoLordship::None, exception);
+            assert_eq!(sun, Some(Rashi::Pisces), "{exception:?}");
+        }
+    }
+
+    /// The Moon in Aries counts three to Cancer and three more to Libra, the
+    /// 7th from Aries; and in Cancer, its own sign, counts to Cancer. Each
+    /// moves to the 10th from where the count landed under `AS_BHAVAS` —
+    /// Libra's 10th is Cancer, Cancer's is Aries — and stays under `NONE`.
+    #[test]
+    fn a_count_on_the_grahas_sign_or_its_seventh_moves_only_as_a_bhavas() {
+        for (at, counted, moved) in [
+            (Rashi::Aries, Rashi::Libra, Rashi::Cancer),
+            (Rashi::Cancer, Rashi::Cancer, Rashi::Aries),
+        ] {
+            let chart = placed(Rashi::Taurus, &[(Graha::Moon, at)]);
+            let arudha =
+                |exception| graha_arudha(&chart, Graha::Moon, NodeCoLordship::None, exception);
+            assert_eq!(arudha(GrahaArudhaException::None), Some(counted), "{at:?}");
+            assert_eq!(
+                arudha(GrahaArudhaException::AsBhavas),
+                Some(moved),
+                "{at:?}"
+            );
+        }
+    }
+
+    /// A node owns a sign only as a co-lord: none under `NONE`, and Aquarius
+    /// or Scorpio once the settings make it one.
+    #[test]
+    fn a_node_has_an_arudha_only_as_a_co_lord() {
+        let chart = placed(
+            Rashi::Taurus,
+            &[
+                (Graha::Rahu, Rashi::Sagittarius),
+                (Graha::Ketu, Rashi::Gemini),
+            ],
+        );
+        let none = GrahaArudhaException::None;
+        assert_eq!(
+            graha_arudha(&chart, Graha::Rahu, NodeCoLordship::None, none),
+            None
+        );
+        assert_eq!(
+            graha_arudha(&chart, Graha::Ketu, NodeCoLordship::None, none),
+            None
+        );
+        // Sagittarius to Aquarius is two signs, two more is Aries; Gemini to
+        // Scorpio five, five more is Aries.
+        for graha in [Graha::Rahu, Graha::Ketu] {
+            let arudha = graha_arudha(&chart, graha, NodeCoLordship::Both, none);
+            assert_eq!(arudha, Some(Rashi::Aries), "{graha:?}");
+        }
+    }
+
+    /// Of a planet's two signs, the stronger by ch. 46's ladder: Mars in Leo
+    /// with Aries and Scorpio empty counts to fixed Scorpio over movable
+    /// Aries. Mercury's two are dual and equal, so the greater count decides:
+    /// from Aries, Virgo (five) over Gemini (two). Standing in one of its own
+    /// signs, the graha makes it the stronger.
+    #[test]
+    fn a_planet_with_two_signs_counts_to_the_stronger() {
+        let none = GrahaArudhaException::None;
+        let co = NodeCoLordship::None;
+        let mars = placed(Rashi::Taurus, &[(Graha::Mars, Rashi::Leo)]);
+        assert_eq!(
+            graha_arudha(&mars, Graha::Mars, co, none),
+            Some(Rashi::Aquarius)
+        );
+        let mercury = placed(Rashi::Taurus, &[(Graha::Mercury, Rashi::Aries)]);
+        assert_eq!(
+            graha_arudha(&mercury, Graha::Mercury, co, none),
+            Some(Rashi::Aquarius)
+        );
+        let at_home = placed(Rashi::Taurus, &[(Graha::Mercury, Rashi::Gemini)]);
+        assert_eq!(
+            graha_arudha(&at_home, Graha::Mercury, co, none),
+            Some(Rashi::Gemini)
         );
     }
 

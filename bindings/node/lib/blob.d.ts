@@ -1988,12 +1988,12 @@ export interface ChartsJaimini {
 }
 
 /**
- * The `jaimini_houses` section of a Charts blob: one typed array per column, each a
+ * The `jaimini_grahas` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.
+ * Each graha as Jaimini reads it, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. Its house from the karakamsha in the rasi chart and in the navamsha, since the schools part on which (C130), and its arudha (BPHS ch. 29 vv. 6 and 7).
  */
-export interface ChartsJaiminiHouses {
+export interface ChartsJaiminiGrahas {
   /**
    * Which graha.
    * The values are `Graha` ids.
@@ -2007,6 +2007,15 @@ export interface ChartsJaiminiHouses {
    * Its house from the karakamsha in the navamsha, 1 to 12.
    */
   readonly inNavamsha: Uint8Array;
+  /**
+   * Its arudha under `jaimini.graha_arudha_exception`; read only when `arudha_present` is 1.
+   * The values are `Rashi` ids.
+   */
+  readonly arudha: Uint16Array;
+  /**
+   * 1 when it has an arudha; 0 for a node that owns no sign under `jaimini.node_co_lordship` (C133).
+   */
+  readonly arudhaPresent: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2384,9 +2393,9 @@ export interface Charts {
    */
   readonly jaimini: ChartsJaimini;
   /**
-   * Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.
+   * Each graha as Jaimini reads it, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. Its house from the karakamsha in the rasi chart and in the navamsha, since the schools part on which (C130), and its arudha (BPHS ch. 29 vv. 6 and 7).
    */
-  readonly jaiminiHouses: ChartsJaiminiHouses;
+  readonly jaiminiGrahas: ChartsJaiminiGrahas;
 }
 
 /**
