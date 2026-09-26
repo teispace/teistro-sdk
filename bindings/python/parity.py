@@ -375,7 +375,7 @@ def main() -> None:
             vaiseshikamsa=True,
             dasha_phala=True,
             jaimini=True,
-            gochar={"instants": [2460676.5, 2460736.5]},
+            gochar={"instants": [2460676.5, 2460736.5], "ashtakavarga": True},
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -618,8 +618,15 @@ def main() -> None:
                 put(
                     f"chart-{i}-gochar-{slot}",
                     f"{number(transit.instant)} {ref.from_.key} {ref.sign.full_key}"
-                    + f" {rules.node_vedha.key} {rules.node_obstruction.key}",
+                    + f" {rules.node_vedha.key} {rules.node_obstruction.key} {rules.ashtakavarga_good_from.key}",
                 )
+                for k, judged in enumerate(transit.ashtakavarga or ()):
+                    put(
+                        f"chart-{i}-gochar-{slot}-av-{k}",
+                        f"{judged.graha.full_key} {judged.bindus} {str(judged.good).lower()} {judged.kakshya.index}"
+                        + f" {judged.kakshya.lord.key} {str(judged.kakshya_bindu).lower()} {judged.sarva}"
+                        + f" {judged.sarva_standing.key}",
+                    )
                 for k, moving in enumerate(transit.grahas):
                     put(
                         f"chart-{i}-gochar-{slot}-{k}",

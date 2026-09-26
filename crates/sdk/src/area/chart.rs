@@ -993,7 +993,6 @@ impl<'a> ChartArea<'a> {
                     .map(|chart| teistro_strength::ashtakavarga::prastara(&chart))
             })
             .transpose()?;
-        let by_bindus = teistro_gochar::ashtakavarga::AshtakavargaRules::of(settings);
         // The grahas' places alone, every instant in one request: a
         // reading reads nothing else of a transit chart, so founding one
         // (its day, houses and lagna) would be work thrown away.
@@ -1005,12 +1004,7 @@ impl<'a> ChartArea<'a> {
             .value
             .iter()
             .map(|longitudes| {
-                crate::gochar_request::reading(
-                    longitudes,
-                    reference,
-                    rules,
-                    prastara.as_ref().map(|prastara| (prastara, by_bindus)),
-                )
+                crate::gochar_request::reading(longitudes, reference, rules, prastara.as_ref())
             })
             .collect();
         Ok(Envelope::sealing(readings, read.provenance))

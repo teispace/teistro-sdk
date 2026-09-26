@@ -341,7 +341,7 @@ const charts = geo.chart.foundMany({
   vaiseshikamsa: true,
   dashaPhala: true,
   jaimini: true,
-  gochar: { instants: [2460676.5, 2460736.5] },
+  gochar: { instants: [2460676.5, 2460736.5], ashtakavarga: true },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -497,8 +497,14 @@ for (const chart of charts) {
     const { reference: ref, rules } = reading;
     put(
       `chart-${i}-gochar-${at}`,
-      `${number(reading.instant)} ${ref.from} ${ref.sign} ${rules.nodeVedha} ${rules.nodeObstruction}`,
+      `${number(reading.instant)} ${ref.from} ${ref.sign} ${rules.nodeVedha} ${rules.nodeObstruction} ${rules.ashtakavargaGoodFrom}`,
     );
+    reading.ashtakavarga.forEach((a, k) => {
+      put(
+        `chart-${i}-gochar-${at}-av-${k}`,
+        `${a.graha} ${a.bindus} ${a.good} ${a.kakshya.index} ${a.kakshya.lord} ${a.kakshyaBindu} ${a.sarva} ${a.sarvaStanding}`,
+      );
+    });
     reading.grahas.forEach((g, k) => {
       put(
         `chart-${i}-gochar-${at}-${k}`,

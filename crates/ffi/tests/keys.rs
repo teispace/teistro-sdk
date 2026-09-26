@@ -28,6 +28,7 @@ use teistro_core::catalogue::{Nakshatra, Tithi, Vara};
 use teistro_core::envelope::CalendarResolution;
 use teistro_core::settings;
 use teistro_ffi::calendar::TsResolution;
+use teistro_ffi::chart::{TsAshtakavargaGoodFrom, TsKakshyaLord, TsSarvaStanding};
 use teistro_ffi::chart::{
     TsBalance, TsBrahmaOutcome, TsBrahmaRule, TsBurning, TsDashaPhase, TsDayPart, TsDayState,
     TsEkadhipatya, TsFruition, TsGhatiReckoning, TsGocharFrom, TsGocharVerdict, TsHarshaGrade,
@@ -297,6 +298,45 @@ fn tagged(api: &Api) -> Vec<&'static str> {
     ]
 }
 
+/// The transits' enums: gochar's and its Ashtakavarga reading's.
+fn gochar(api: &Api) -> Vec<&'static str> {
+    let id = |value: u8| Some(i64::from(value));
+    vec![
+        unit(api, "TsGocharFrom", |f: &teistro::GocharFrom| {
+            TsGocharFrom::of(*f).and_then(|f| id(f as u8))
+        }),
+        unit(api, "TsNodeVedha", |v: &settings::NodeVedha| {
+            TsNodeVedha::of(*v).and_then(|v| id(v as u8))
+        }),
+        unit(api, "TsNodeObstruction", |o: &settings::NodeObstruction| {
+            TsNodeObstruction::of(*o).and_then(|o| id(o as u8))
+        }),
+        unit(api, "TsGocharVerdict", |v: &teistro::gochar::Verdict| {
+            id(TsGocharVerdict::from(*v) as u8)
+        }),
+        unit(api, "TsFruition", |f: &teistro::gochar::Fruition| {
+            id(TsFruition::from(*f) as u8)
+        }),
+        unit(
+            api,
+            "TsAshtakavargaGoodFrom",
+            |g: &settings::AshtakavargaGoodFrom| {
+                TsAshtakavargaGoodFrom::of(*g).and_then(|g| id(g as u8))
+            },
+        ),
+        unit(
+            api,
+            "TsKakshyaLord",
+            |l: &teistro::gochar::ashtakavarga::KakshyaLord| id(TsKakshyaLord::from(*l) as u8),
+        ),
+        unit(
+            api,
+            "TsSarvaStanding",
+            |s: &teistro::gochar::ashtakavarga::SarvaStanding| id(TsSarvaStanding::from(*s) as u8),
+        ),
+    ]
+}
+
 /// A chart's enums, the Tajika ones among them.
 fn chart(api: &Api) -> Vec<&'static str> {
     let id = |value: u8| Some(i64::from(value));
@@ -336,21 +376,6 @@ fn chart(api: &Api) -> Vec<&'static str> {
             id(TsBrahmaRule::from(*r) as u8)
         }),
         brahma_outcome(api),
-        unit(api, "TsGocharFrom", |f: &teistro::GocharFrom| {
-            TsGocharFrom::of(*f).and_then(|f| id(f as u8))
-        }),
-        unit(api, "TsNodeVedha", |v: &settings::NodeVedha| {
-            TsNodeVedha::of(*v).and_then(|v| id(v as u8))
-        }),
-        unit(api, "TsNodeObstruction", |o: &settings::NodeObstruction| {
-            TsNodeObstruction::of(*o).and_then(|o| id(o as u8))
-        }),
-        unit(api, "TsGocharVerdict", |v: &teistro::gochar::Verdict| {
-            id(TsGocharVerdict::from(*v) as u8)
-        }),
-        unit(api, "TsFruition", |f: &teistro::gochar::Fruition| {
-            id(TsFruition::from(*f) as u8)
-        }),
         unit(api, "TsDayPart", |p: &teistro_chart::day::DayPart| {
             id(TsDayPart::from(*p) as u8)
         }),
@@ -461,6 +486,7 @@ fn every_closed_enum_is_spelled_as_serde_spells_its_rust_type() {
         port(&api),
         tagged(&api),
         chart(&api),
+        gochar(&api),
         time_and_calendar(&api),
     ]
     .concat();

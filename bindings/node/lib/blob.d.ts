@@ -2051,6 +2051,11 @@ export interface ChartsGochar {
    * The values are `NodeObstruction` ids.
    */
   readonly nodeObstruction: Uint8Array;
+  /**
+   * How many bindus make a transit good in `gochar_ashtakavarga`, `gochar.ashtakavarga_good_from` (C141).
+   * The values are `AshtakavargaGoodFrom` ids.
+   */
+  readonly ashtakavargaGoodFrom: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2106,6 +2111,52 @@ export interface ChartsGocharGrahas {
    * 1 when it stands in that decanate now, else 0.
    */
   readonly fruitfulNow: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `gochar_ashtakavarga` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga.
+ */
+export interface ChartsGocharAshtakavarga {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * The bindus its own Ashtakavarga put in the sign it transits, 0 to 8, unreduced (v. 11; C143).
+   */
+  readonly bindus: Uint8Array;
+  /**
+   * 1 when they reach `gochar.ashtakavarga_good_from`, else 0 (C141).
+   */
+  readonly good: Uint8Array;
+  /**
+   * The eighth of the sign it stands in, 1 to 8, 3°45′ each (v. 16).
+   */
+  readonly kakshya: Uint8Array;
+  /**
+   * That eighth's lord, in the orbits' order from the sign's start (vv. 18 and 19).
+   * The values are `KakshyaLord` ids.
+   */
+  readonly kakshyaLord: Uint8Array;
+  /**
+   * 1 when that lord gave a bindu to the sign in this graha's Ashtakavarga, so that a bindu bears its fruit now; else 0.
+   */
+  readonly kakshyaBindu: Uint8Array;
+  /**
+   * The sign's sarvashtakavarga, the seven's bindus together.
+   */
+  readonly sarva: Uint16Array;
+  /**
+   * Where it stands against 28 (v. 20; C142).
+   * The values are `SarvaStanding` ids.
+   */
+  readonly sarvaStanding: Uint8Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2494,6 +2545,10 @@ export interface Charts {
    * Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`.
    */
   readonly gocharGrahas: ChartsGocharGrahas;
+  /**
+   * Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga.
+   */
+  readonly gocharAshtakavarga: ChartsGocharAshtakavarga;
 }
 
 /**

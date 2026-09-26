@@ -861,6 +861,7 @@ export function decodeCharts(bytes) {
       countedFrom: column(blob, at, 2, 'u8', at.count),
       nodeVedha: column(blob, at, 3, 'u8', at.count),
       nodeObstruction: column(blob, at, 4, 'u8', at.count),
+      ashtakavargaGoodFrom: column(blob, at, 5, 'u8', at.count),
       length: at.count,
     };
   }
@@ -877,6 +878,20 @@ export function decodeCharts(bytes) {
       verdict: column(blob, at, 7, 'u8', at.count),
       fruition: column(blob, at, 8, 'u8', at.count),
       fruitfulNow: column(blob, at, 9, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 55, 'gochar_ashtakavarga');
+    out.gocharAshtakavarga = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      bindus: column(blob, at, 1, 'u8', at.count),
+      good: column(blob, at, 2, 'u8', at.count),
+      kakshya: column(blob, at, 3, 'u8', at.count),
+      kakshyaLord: column(blob, at, 4, 'u8', at.count),
+      kakshyaBindu: column(blob, at, 5, 'u8', at.count),
+      sarva: column(blob, at, 6, 'u16', at.count),
+      sarvaStanding: column(blob, at, 7, 'u8', at.count),
       length: at.count,
     };
   }

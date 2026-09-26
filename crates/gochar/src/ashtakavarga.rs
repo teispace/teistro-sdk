@@ -17,14 +17,15 @@
 //! use teistro_core::catalogue::{Graha, Rashi};
 //! use teistro_gochar::Transit;
 //! use teistro_gochar::ashtakavarga::{
-//!     AshtakavargaRules, KakshyaLord, SarvaStanding, transits, LAGNA,
+//!     KakshyaLord, SarvaStanding, transits, LAGNA,
 //! };
+//! use teistro_gochar::GocharRules;
 //!
 //! // A prastara whose every cell holds Saturn's and the lagna's bindus.
 //! let prastara = [[(1 << Graha::Saturn as u8) | LAGNA; 12]; 7];
 //! let mut at = [Transit::new(Rashi::Aries, 1.0); 9];
 //! at[Graha::Sun as usize] = Transit::new(Rashi::Leo, 29.0);
-//! let read = transits(&prastara, &at, AshtakavargaRules::TEXT);
+//! let read = transits(&prastara, &at, GocharRules::TEXT);
 //! let sun = &read[0];
 //! assert_eq!(sun.bindus, 2);
 //! // Two bindus is expense by v. 11, not good.
@@ -36,11 +37,9 @@
 //! assert_eq!((sun.sarva, sun.sarva_standing), (14, SarvaStanding::Below));
 //! ```
 
+use crate::{GocharRules, Transit};
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::Graha;
-use teistro_core::settings::{AshtakavargaGoodFrom, Settings};
-
-use crate::Transit;
 
 /// The contributors' bit for the lagna in a prastara cell: the seven grahas
 /// take bits 0 to 6 by their ids.
@@ -54,39 +53,6 @@ pub type Prastara = [[u8; 12]; 7];
 /// The sarvashtakavarga v. 20 measures a sign against: more is auspicious,
 /// less distressing (अष्टाक्ष, eight and two read right to left).
 pub const SARVA_MEASURE: u16 = 28;
-
-/// The readings the text leaves open, from the settings' `gochar` group.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-pub struct AshtakavargaRules {
-    /// How many bindus make a transit good (crux C141).
-    pub good_from: AshtakavargaGoodFrom,
-}
-
-impl AshtakavargaRules {
-    /// The text's: good from five, since v. 11 makes four a fear.
-    pub const TEXT: AshtakavargaRules = AshtakavargaRules {
-        good_from: AshtakavargaGoodFrom::Five,
-    };
-
-    /// The readings the settings' `gochar` group gives.
-    #[must_use]
-    pub const fn of(settings: &Settings) -> AshtakavargaRules {
-        AshtakavargaRules {
-            good_from: settings.gochar.ashtakavarga_good_from,
-        }
-    }
-
-    /// The fewest bindus that make a transit good.
-    #[must_use]
-    pub const fn threshold(self) -> u8 {
-        match self.good_from {
-            AshtakavargaGoodFrom::Four => 4,
-            // `FIVE`, and a reading added later until it says otherwise.
-            _ => 5,
-        }
-    }
-}
 
 /// Who lords an eighth of a sign (vv. 18 and 19), in the orbits' order
 /// from the sign's start.
@@ -209,7 +175,7 @@ pub struct AshtakavargaTransit {
     /// The bindus its own Ashtakavarga put in the sign it transits, 0 to 8
     /// (v. 11), unreduced (crux C143).
     pub bindus: u8,
-    /// Whether they reach the settings' threshold (crux C141).
+    /// Whether they reach the threshold the rules name (crux C141).
     pub good: bool,
     /// The eighth of the sign it stands in (vv. 16 to 19).
     pub kakshya: Kakshya,
@@ -223,12 +189,13 @@ pub struct AshtakavargaTransit {
 }
 
 /// The seven grahas' transits, Sun to Saturn, judged by the natal
-/// `prastara`; the nodes, which have no Ashtakavarga, are not read.
+/// `prastara` under the rules' threshold; the nodes, which have no
+/// Ashtakavarga, are not read.
 #[must_use]
 pub fn transits(
     prastara: &Prastara,
     transits: &[Transit; 9],
-    rules: AshtakavargaRules,
+    rules: GocharRules,
 ) -> [AshtakavargaTransit; 7] {
     let sarva = |sign: usize| -> u16 {
         prastara
@@ -263,7 +230,7 @@ pub fn transits(
         AshtakavargaTransit {
             graha,
             bindus,
-            good: bindus >= rules.threshold(),
+            good: bindus >= rules.ashtakavarga_threshold(),
             kakshya,
             kakshya_bindu: cell & kakshya.lord.bit() != 0,
             sarva: total,
@@ -323,12 +290,13 @@ mod tests {
         for (count, sign) in (0..=8_u8).zip(Rashi::ALL) {
             let mut at = [Transit::new(Rashi::Aries, 0.0); 9];
             at[0] = Transit::new(sign, 0.0);
-            let text = transits(&prastara, &at, AshtakavargaRules::TEXT)[0];
+            let text = transits(&prastara, &at, GocharRules::TEXT)[0];
             let four = transits(
                 &prastara,
                 &at,
-                AshtakavargaRules {
-                    good_from: AshtakavargaGoodFrom::Four,
+                GocharRules {
+                    ashtakavarga_good_from: teistro_core::settings::AshtakavargaGoodFrom::Four,
+                    ..GocharRules::TEXT
                 },
             )[0];
             assert_eq!(text.bindus, count);
@@ -345,7 +313,7 @@ mod tests {
         // Four bindus in each of the seven rows is 28 exactly.
         let prastara = [[0b1111_u8; 12]; 7];
         let at = [Transit::new(Rashi::Gemini, 12.0); 9];
-        let read = transits(&prastara, &at, AshtakavargaRules::TEXT);
+        let read = transits(&prastara, &at, GocharRules::TEXT);
         assert!(
             read.iter()
                 .all(|one| (one.sarva, one.sarva_standing) == (28, SarvaStanding::Even))
@@ -359,7 +327,7 @@ mod tests {
             row[Rashi::Libra as usize] = u8::try_from((1_u16 << (graha + 1)) - 1).unwrap();
         }
         let at = [Transit::new(Rashi::Libra, 5.0); 9];
-        let read = transits(&prastara, &at, AshtakavargaRules::TEXT);
+        let read = transits(&prastara, &at, GocharRules::TEXT);
         assert_eq!(read.len(), 7);
         for (graha, one) in read.iter().enumerate() {
             assert_eq!(one.graha as usize, graha);

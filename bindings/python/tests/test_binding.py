@@ -1211,6 +1211,21 @@ class AnEngine(WithLibrary):
                 self.assertEqual((ketu.house - rahu.house) % 12, 6, "the nodes stand opposite")
                 self.assertNotIn(Graha.KETU, rahu.obstructed_by, "C140: the nodes spare each other")
         self.assertEqual(verdicts, set(GocharVerdict))
+        judged = self.ctx.chart.found(
+            instant=birth, place=observer, utc_offset_seconds=20700, gochar={"instants": instants, "ashtakavarga": True}
+        ).gochar
+        for reading in judged:
+            assert reading.ashtakavarga is not None
+            self.assertEqual(len(reading.ashtakavarga), 7)
+            for one, moving in zip(reading.ashtakavarga, reading.grahas):
+                self.assertIs(one.graha, moving.graha)
+                self.assertEqual(one.good, one.bindus >= 5)
+                self.assertEqual(one.kakshya.index, int(moving.transit.degrees // 3.75) + 1)
+        self.assertIsNone(
+            self.ctx.chart.found(
+                instant=birth, place=observer, utc_offset_seconds=20700, gochar={"instants": instants}
+            ).gochar[0].ashtakavarga
+        )
         with self.assertRaises(TeistroError) as refused:
             self.ctx.chart.found(instant=birth, place=observer, utc_offset_seconds=20700, gochar={"instants": []})
         self.assertEqual(refused.exception.field, "gochar.instants")

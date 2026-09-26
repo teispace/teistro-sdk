@@ -388,7 +388,10 @@ void main() {
     vaiseshikamsa: true,
     dashaPhala: true,
     jaimini: true,
-    gochar: const GocharRequest(instants: [2460676.5, 2460736.5]),
+    gochar: const GocharRequest(
+      instants: [2460676.5, 2460736.5],
+      ashtakavarga: true,
+    ),
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -657,8 +660,16 @@ void main() {
       put(
         'chart-$i-gochar-$at',
         '${number(reading.instant)} ${ref.from.key} ${ref.sign.fullKey} '
-            '${reading.rules.nodeVedha.key} ${reading.rules.nodeObstruction.key}',
+            '${reading.rules.nodeVedha.key} ${reading.rules.nodeObstruction.key} '
+            '${reading.rules.ashtakavargaGoodFrom.key}',
       );
+      for (final (k, a) in (reading.ashtakavarga ?? const []).indexed) {
+        put(
+          'chart-$i-gochar-$at-av-$k',
+          '${a.graha.fullKey} ${a.bindus} ${a.good} ${a.kakshya.index} '
+              '${a.kakshya.lord.key} ${a.kakshyaBindu} ${a.sarva} ${a.sarvaStanding.key}',
+        );
+      }
       for (final (k, g) in reading.grahas.indexed) {
         final by = g.obstructedBy.map((o) => o.fullKey).join(',');
         put(

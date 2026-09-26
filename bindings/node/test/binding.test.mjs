@@ -695,8 +695,10 @@ test('every catalogue enum has a complete id table', () => {
   // four; 1121 since `TsEphemeris` named the Surya Siddhanta; 1127 since
   // Jaimini's `TsBrahmaRule`, two, and `TsBrahmaOutcome`, four; 1141 since
   // gochar's `TsGocharFrom`, two, `TsNodeVedha`, two, `TsNodeObstruction`,
-  // three, `TsGocharVerdict`, three, and `TsFruition`, four.
-  assert.equal(entries, 1141, 'every member of every enum is in a table');
+  // three, `TsGocharVerdict`, three, and `TsFruition`, four; 1154 since the
+  // Ashtakavarga's `TsAshtakavargaGoodFrom`, two, `TsKakshyaLord`, eight,
+  // and `TsSarvaStanding`, three.
+  assert.equal(entries, 1154, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1818,7 +1820,11 @@ test('a chart carries its transits, each verdict its own house and vedha', () =>
       assert.equal(reading.instant, instants[k]);
       assert.equal(reading.reference.from, from);
       assert.match(reading.reference.sign, /^rashi\./);
-      assert.deepEqual(reading.rules, { nodeVedha: 'LIKE_THE_SUN', nodeObstruction: 'NOT_EACH_OTHER' });
+      assert.deepEqual(reading.rules, {
+        nodeVedha: 'LIKE_THE_SUN',
+        nodeObstruction: 'NOT_EACH_OTHER',
+        ashtakavargaGoodFrom: 'FIVE',
+      });
       assert.equal(reading.grahas.length, 9);
       for (const g of reading.grahas) {
         assert.ok(g.house >= 1 && g.house <= 12, `${g.house}`);
@@ -1834,6 +1840,21 @@ test('a chart carries its transits, each verdict its own house and vedha', () =>
     });
   }
   assert.deepEqual([...verdicts].sort(), ['GOOD', 'NOT_GOOD', 'OBSTRUCTED']);
+  // Asked for, the seven judged by the natal Ashtakavarga; not asked, null.
+  const lords = ['SATURN', 'JUPITER', 'MARS', 'SUN', 'VENUS', 'MERCURY', 'MOON', 'LAGNA'];
+  for (const reading of ctx.chart.found({ ...birth, gochar: { instants, ashtakavarga: true } }).gochar) {
+    assert.equal(reading.rules.ashtakavargaGoodFrom, 'FIVE');
+    assert.equal(reading.ashtakavarga.length, 7);
+    reading.ashtakavarga.forEach((one, k) => {
+      const moving = reading.grahas[k];
+      assert.equal(one.graha, moving.graha);
+      assert.equal(one.good, one.bindus >= 5);
+      assert.equal(one.kakshya.index, Math.floor(moving.transit.degrees / 3.75) + 1);
+      assert.equal(one.kakshya.lord, lords[one.kakshya.index - 1]);
+      assert.equal(one.sarvaStanding, one.sarva > 28 ? 'ABOVE' : one.sarva === 28 ? 'EVEN' : 'BELOW');
+    });
+  }
+  assert.equal(ctx.chart.found({ ...birth, gochar: { instants } }).gochar[0].ashtakavarga, null);
   assert.throws(
     () => ctx.chart.found({ ...birth, gochar: { instants: [] } }),
     (error) => error instanceof TeistroError && error.field === 'gochar.instants',

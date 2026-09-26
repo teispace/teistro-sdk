@@ -33,8 +33,8 @@ use teistro_ffi::calendar::{
     ts_calendar_to_fixed, ts_calendar_weekday,
 };
 use teistro_ffi::chart::{
-    TsChartRequest, TsSaham, TsSahamStrong, TsSahamWeak, TsVarsheshaChosen, TsYearYoga,
-    ts_chart_found, ts_chart_layout_row,
+    TsChartRequest, TsKakshyaLord, TsSaham, TsSahamStrong, TsSahamWeak, TsSarvaStanding,
+    TsVarsheshaChosen, TsYearYoga, ts_chart_found, ts_chart_layout_row,
 };
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_last_error,
@@ -1735,7 +1735,7 @@ fn a_chart_request_answers_the_transits() {
     )
     .unwrap();
     let births = [2_447_995.489_583_333_5, 2_451_545.0];
-    let text = r#"{"instants":[2460676.5,2460706.5,2460736.5],"from":"LAGNA"}"#;
+    let text = r#"{"instants":[2460676.5,2460706.5,2460736.5],"from":"LAGNA","ashtakavarga":true}"#;
     let gochar = CString::new(text).unwrap();
     let request = sized(
         TsChartRequest {
@@ -1857,6 +1857,42 @@ fn a_chart_request_answers_the_transits() {
             ];
             assert_eq!(fruition[usize::try_from(cell(8)).unwrap()], read.fruition);
             assert_eq!(cell(9), i64::from(read.fruitful_now));
+        }
+    }
+
+    // The seven under each row, judged by the natal Ashtakavarga.
+    let av = [
+        "graha",
+        "bindus",
+        "good",
+        "kakshya",
+        "kakshya_lord",
+        "kakshya_bindu",
+        "sarva",
+        "sarva_standing",
+    ]
+    .map(|name| column("gochar_ashtakavarga", name));
+    assert_eq!(av[0].len(), 6 * 7);
+    let good_from = column("gochar", "ashtakavarga_good_from");
+    for (row, reading) in expected.iter().enumerate() {
+        assert_eq!(good_from[row].as_i64(), 0, "FIVE");
+        for (g, read) in reading.ashtakavarga.unwrap().iter().enumerate() {
+            let at = row * 7 + g;
+            let cell = |c: usize| av[c][at].as_i64();
+            assert_eq!(cell(0), i64::from(read.graha.id()));
+            assert_eq!(cell(1), i64::from(read.bindus));
+            assert_eq!(cell(2), i64::from(read.good));
+            assert_eq!(cell(3), i64::from(read.kakshya.index));
+            assert_eq!(
+                cell(4),
+                i64::from(TsKakshyaLord::from(read.kakshya.lord) as u8)
+            );
+            assert_eq!(cell(5), i64::from(read.kakshya_bindu));
+            assert_eq!(cell(6), i64::from(read.sarva));
+            assert_eq!(
+                cell(7),
+                i64::from(TsSarvaStanding::from(read.sarva_standing) as u8)
+            );
         }
     }
 

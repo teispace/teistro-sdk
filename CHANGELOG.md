@@ -1178,6 +1178,16 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none. No caller asked the completion for the true basis,
   and the chart already took its day and zodiac from the SDK.
 
+- **Gochar by the Ashtakavarga crosses to every binding.** `gochar: {
+  instants, ashtakavarga: true }` answers each reading's seven in Node,
+  Python and Dart as `reading.ashtakavarga`, and at the C boundary in
+  section 55 (`gochar_ashtakavarga`); `rules.ashtakavargaGoodFrom` says
+  the threshold. **Breaking, unreleased:** the Rust crate's
+  `ashtakavarga::AshtakavargaRules` is folded into `GocharRules`
+  (`ashtakavarga_good_from`), which `transits` now takes.
+
+  **Numbers:** none.
+
 - **Gochar by the Ashtakavarga** (`03-design/gochar-ashtakavarga.md`).
   `GocharRequest::with_ashtakavarga()` judges each of the seven's
   transits by the natal bindus of the sign it crosses, as Phaladeepika ch.

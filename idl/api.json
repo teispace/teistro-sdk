@@ -6712,6 +6712,108 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsAshtakavargaGoodFrom",
+      "doc": "How many bindus make a transit good, the settings'\n`gochar.ashtakavarga_good_from` (C141).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Five",
+          "value": 0,
+          "doc": "Five: Phaladeepika ch. 23 v. 11 makes four a fear.",
+          "key": "FIVE"
+        },
+        {
+          "name": "Four",
+          "value": 1,
+          "doc": "Four.",
+          "key": "FOUR"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsKakshyaLord",
+      "doc": "Who lords an eighth of a sign (Phaladeepika ch. 23 vv. 18 and 19).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Saturn",
+          "value": 0,
+          "doc": "The first eighth.",
+          "key": "SATURN"
+        },
+        {
+          "name": "Jupiter",
+          "value": 1,
+          "doc": "The second.",
+          "key": "JUPITER"
+        },
+        {
+          "name": "Mars",
+          "value": 2,
+          "doc": "The third.",
+          "key": "MARS"
+        },
+        {
+          "name": "Sun",
+          "value": 3,
+          "doc": "The fourth.",
+          "key": "SUN"
+        },
+        {
+          "name": "Venus",
+          "value": 4,
+          "doc": "The fifth.",
+          "key": "VENUS"
+        },
+        {
+          "name": "Mercury",
+          "value": 5,
+          "doc": "The sixth.",
+          "key": "MERCURY"
+        },
+        {
+          "name": "Moon",
+          "value": 6,
+          "doc": "The seventh.",
+          "key": "MOON"
+        },
+        {
+          "name": "Lagna",
+          "value": 7,
+          "doc": "The last.",
+          "key": "LAGNA"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
+      "name": "TsSarvaStanding",
+      "doc": "Where a sign's sarvashtakavarga stands against v. 20's 28.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Above",
+          "value": 0,
+          "doc": "More than 28.",
+          "key": "ABOVE"
+        },
+        {
+          "name": "Even",
+          "value": 1,
+          "doc": "Exactly 28, which the verse does not judge (C142).",
+          "key": "EVEN"
+        },
+        {
+          "name": "Below",
+          "value": 2,
+          "doc": "Fewer than 28.",
+          "key": "BELOW"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsDashaPhase",
       "doc": "Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).",
       "repr": "u8",
@@ -10574,7 +10676,7 @@
             },
             "mutable": false
           },
-          "doc": "The transits to read against every chart in the batch, as a JSON\nobject: `instants`, UTC Julian days, at least one, and `from` —\n`\"MOON\"` (Phaladeepika ch. 26 v. 1's, the default) or `\"LAGNA\"`.\nEach chart's readings come back in the `gochar` section, a row an\ninstant, and its grahas in `gochar_grahas`, under the settings'\n`gochar` group. Null for none (`03-design/gochar.md`). Refusals are\nnamed from the record every binding calls `gochar`, as\n`gochar.instants`.",
+          "doc": "The transits to read against every chart in the batch, as a JSON\nobject: `instants`, UTC Julian days, at least one; `from` —\n`\"MOON\"` (Phaladeepika ch. 26 v. 1's, the default) or `\"LAGNA\"`; and\n`ashtakavarga`, true to judge the seven by the natal bindus too, in\nthe `gochar_ashtakavarga` section.\nEach chart's readings come back in the `gochar` section, a row an\ninstant, and its grahas in `gochar_grahas`, under the settings'\n`gochar` group. Null for none (`03-design/gochar.md`). Refusals are\nnamed from the record every binding calls `gochar`, as\n`gochar.instants`.",
           "meta": {
             "example": "{\"instants\":[2460676.5],\"from\":\"MOON\"}",
             "nullable": true
@@ -16177,6 +16279,12 @@
               "scalar": "u8",
               "doc": "Whom the nodes obstruct, `gochar.node_obstruction` (C137, C140).",
               "enum": "TsNodeObstruction"
+            },
+            {
+              "name": "ashtakavarga_good_from",
+              "scalar": "u8",
+              "doc": "How many bindus make a transit good in `gochar_ashtakavarga`, `gochar.ashtakavarga_good_from` (C141).",
+              "enum": "TsAshtakavargaGoodFrom"
             }
           ]
         },
@@ -16239,6 +16347,57 @@
               "name": "fruitful_now",
               "scalar": "u8",
               "doc": "1 when it stands in that decanate now, else 0."
+            }
+          ]
+        },
+        {
+          "id": 55,
+          "name": "gochar_ashtakavarga",
+          "doc": "Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "graha",
+              "scalar": "u16",
+              "doc": "Which graha.",
+              "enum": "Graha"
+            },
+            {
+              "name": "bindus",
+              "scalar": "u8",
+              "doc": "The bindus its own Ashtakavarga put in the sign it transits, 0 to 8, unreduced (v. 11; C143)."
+            },
+            {
+              "name": "good",
+              "scalar": "u8",
+              "doc": "1 when they reach `gochar.ashtakavarga_good_from`, else 0 (C141)."
+            },
+            {
+              "name": "kakshya",
+              "scalar": "u8",
+              "doc": "The eighth of the sign it stands in, 1 to 8, 3°45′ each (v. 16)."
+            },
+            {
+              "name": "kakshya_lord",
+              "scalar": "u8",
+              "doc": "That eighth's lord, in the orbits' order from the sign's start (vv. 18 and 19).",
+              "enum": "TsKakshyaLord"
+            },
+            {
+              "name": "kakshya_bindu",
+              "scalar": "u8",
+              "doc": "1 when that lord gave a bindu to the sign in this graha's Ashtakavarga, so that a bindu bears its fruit now; else 0."
+            },
+            {
+              "name": "sarva",
+              "scalar": "u16",
+              "doc": "The sign's sarvashtakavarga, the seven's bindus together."
+            },
+            {
+              "name": "sarva_standing",
+              "scalar": "u8",
+              "doc": "Where it stands against 28 (v. 20; C142).",
+              "enum": "TsSarvaStanding"
             }
           ]
         }

@@ -49,8 +49,11 @@ import type {
   Nature,
   BrahmaRule,
   BrahmaOutcome,
+  AshtakavargaGoodFrom,
   Fruition,
   GocharFrom,
+  KakshyaLord,
+  SarvaStanding,
   GocharVerdict,
   NodeObstruction,
   NodeVedha,
@@ -687,9 +690,32 @@ export interface GocharReading {
   readonly rules: {
     readonly nodeVedha: NodeVedha | 'unknown';
     readonly nodeObstruction: NodeObstruction | 'unknown';
+    readonly ashtakavargaGoodFrom: AshtakavargaGoodFrom | 'unknown';
   };
   /** Each graha's, the Sun to Ketu. */
   readonly grahas: readonly GrahaGochar[];
+  /** The seven judged by the natal Ashtakavarga, Sun to Saturn; `null` unless `ashtakavarga: true` asked. */
+  readonly ashtakavarga: readonly AshtakavargaTransit[] | null;
+}
+
+/**
+ * One graha's transit judged by the natal Ashtakavarga (Phaladeepika ch. 23;
+ * `03-design/gochar-ashtakavarga.md`).
+ */
+export interface AshtakavargaTransit {
+  readonly graha: Graha | 'unknown';
+  /** The bindus its own Ashtakavarga put in the sign it transits, 0 to 8 (v. 11). */
+  readonly bindus: number;
+  /** Whether they reach `gochar.ashtakavarga_good_from`. */
+  readonly good: boolean;
+  /** The eighth of the sign it stands in, 1 to 8, and its lord (vv. 16 to 19). */
+  readonly kakshya: { readonly index: number; readonly lord: KakshyaLord | 'unknown' };
+  /** Whether that lord gave a bindu there, so that a bindu bears its fruit now. */
+  readonly kakshyaBindu: boolean;
+  /** The sign's sarvashtakavarga. */
+  readonly sarva: number;
+  /** Where it stands against 28 (v. 20). */
+  readonly sarvaStanding: SarvaStanding | 'unknown';
 }
 
 /** The transits to read against every chart of a request. */
@@ -698,6 +724,8 @@ export interface GocharRequest {
   readonly instants: ArrayLike<number>;
   /** What to count the houses from: the natal Moon by default (v. 1). */
   readonly from?: GocharFrom;
+  /** Whether to judge the seven by the natal Ashtakavarga too; false by default. */
+  readonly ashtakavarga?: boolean;
 }
 
 /**

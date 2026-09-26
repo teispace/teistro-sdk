@@ -1699,7 +1699,8 @@ const GOCHAR_INSTANTS: [f64; 2] = [2_460_676.5, 2_460_736.5];
 fn the_gochar(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
     let asked = teistro::GocharRequest::over(
         GOCHAR_INSTANTS.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
-    );
+    )
+    .with_ashtakavarga();
     let readings = sdk
         .chart()
         .gochar(document, &asked)
@@ -1710,14 +1711,32 @@ fn the_gochar(report: &mut Report, sdk: &Context, index: usize, document: &teist
             report,
             &format!("chart-{index}-gochar-{at}"),
             format!(
-                "{} {} {} {} {}",
+                "{} {} {} {} {} {}",
                 number(instant),
                 wire_key(&reading.reference.from),
                 reading.reference.sign.full_key(),
                 wire_key(&reading.rules.node_vedha),
                 wire_key(&reading.rules.node_obstruction),
+                wire_key(&reading.rules.ashtakavarga_good_from),
             ),
         );
+        for (k, judged) in reading.ashtakavarga.iter().flatten().enumerate() {
+            put(
+                report,
+                &format!("chart-{index}-gochar-{at}-av-{k}"),
+                format!(
+                    "{} {} {} {} {} {} {} {}",
+                    judged.graha.full_key(),
+                    judged.bindus,
+                    judged.good,
+                    judged.kakshya.index,
+                    wire_key(&judged.kakshya.lord),
+                    judged.kakshya_bindu,
+                    judged.sarva,
+                    wire_key(&judged.sarva_standing),
+                ),
+            );
+        }
         for (g, read) in reading.grahas.iter().enumerate() {
             let by: Vec<&str> = read.obstructed_by.iter().map(|g| g.full_key()).collect();
             put(

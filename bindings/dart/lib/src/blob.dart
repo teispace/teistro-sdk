@@ -2208,6 +2208,7 @@ final class ChartsGochar {
     required this.countedFrom,
     required this.nodeVedha,
     required this.nodeObstruction,
+    required this.ashtakavargaGoodFrom,
     required this.length,
   });
 
@@ -2225,6 +2226,9 @@ final class ChartsGochar {
 
   /// Whom the nodes obstruct, `gochar.node_obstruction` (C137, C140).
   final Uint8List nodeObstruction;
+
+  /// How many bindus make a transit good in `gochar_ashtakavarga`, `gochar.ashtakavarga_good_from` (C141).
+  final Uint8List ashtakavargaGoodFrom;
 
   /// The number of rows every column holds.
   final int length;
@@ -2278,6 +2282,51 @@ final class ChartsGocharGrahas {
 
   /// 1 when it stands in that decanate now, else 0.
   final Uint8List fruitfulNow;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `gochar_ashtakavarga` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga.
+final class ChartsGocharAshtakavarga {
+  const ChartsGocharAshtakavarga({
+    required this.graha,
+    required this.bindus,
+    required this.good,
+    required this.kakshya,
+    required this.kakshyaLord,
+    required this.kakshyaBindu,
+    required this.sarva,
+    required this.sarvaStanding,
+    required this.length,
+  });
+
+  /// Which graha.
+  final Uint16List graha;
+
+  /// The bindus its own Ashtakavarga put in the sign it transits, 0 to 8, unreduced (v. 11; C143).
+  final Uint8List bindus;
+
+  /// 1 when they reach `gochar.ashtakavarga_good_from`, else 0 (C141).
+  final Uint8List good;
+
+  /// The eighth of the sign it stands in, 1 to 8, 3°45′ each (v. 16).
+  final Uint8List kakshya;
+
+  /// That eighth's lord, in the orbits' order from the sign's start (vv. 18 and 19).
+  final Uint8List kakshyaLord;
+
+  /// 1 when that lord gave a bindu to the sign in this graha's Ashtakavarga, so that a bindu bears its fruit now; else 0.
+  final Uint8List kakshyaBindu;
+
+  /// The sign's sarvashtakavarga, the seven's bindus together.
+  final Uint16List sarva;
+
+  /// Where it stands against 28 (v. 20; C142).
+  final Uint8List sarvaStanding;
 
   /// The number of rows every column holds.
   final int length;
@@ -2449,6 +2498,7 @@ final class Charts {
     required this.jaiminiGrahas,
     required this.gochar,
     required this.gocharGrahas,
+    required this.gocharAshtakavarga,
   });
 
   /// What kind of chart these are.
@@ -2657,6 +2707,9 @@ final class Charts {
   /// Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`.
   final ChartsGocharGrahas gocharGrahas;
 
+  /// Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga.
+  final ChartsGocharAshtakavarga gocharAshtakavarga;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -2718,6 +2771,7 @@ Charts decodeCharts(Uint8List bytes) {
   final atJaiminiGrahas = blob.section(52, 'jaimini_grahas');
   final atGochar = blob.section(53, 'gochar');
   final atGocharGrahas = blob.section(54, 'gochar_grahas');
+  final atGocharAshtakavarga = blob.section(55, 'gochar_ashtakavarga');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -4654,6 +4708,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atGochar, 4),
         blob.columnOffset(atGochar, 4) + atGochar.count * 1,
       ),
+      ashtakavargaGoodFrom: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGochar, 5),
+        blob.columnOffset(atGochar, 5) + atGochar.count * 1,
+      ),
       length: atGochar.count,
     ),
     gocharGrahas: ChartsGocharGrahas(
@@ -4708,6 +4767,49 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atGocharGrahas, 9) + atGocharGrahas.count * 1,
       ),
       length: atGocharGrahas.count,
+    ),
+    gocharAshtakavarga: ChartsGocharAshtakavarga(
+      graha: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharAshtakavarga, 0),
+        blob.columnOffset(atGocharAshtakavarga, 0) + atGocharAshtakavarga.count * 2,
+      ),
+      bindus: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharAshtakavarga, 1),
+        blob.columnOffset(atGocharAshtakavarga, 1) + atGocharAshtakavarga.count * 1,
+      ),
+      good: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharAshtakavarga, 2),
+        blob.columnOffset(atGocharAshtakavarga, 2) + atGocharAshtakavarga.count * 1,
+      ),
+      kakshya: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharAshtakavarga, 3),
+        blob.columnOffset(atGocharAshtakavarga, 3) + atGocharAshtakavarga.count * 1,
+      ),
+      kakshyaLord: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharAshtakavarga, 4),
+        blob.columnOffset(atGocharAshtakavarga, 4) + atGocharAshtakavarga.count * 1,
+      ),
+      kakshyaBindu: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharAshtakavarga, 5),
+        blob.columnOffset(atGocharAshtakavarga, 5) + atGocharAshtakavarga.count * 1,
+      ),
+      sarva: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharAshtakavarga, 6),
+        blob.columnOffset(atGocharAshtakavarga, 6) + atGocharAshtakavarga.count * 2,
+      ),
+      sarvaStanding: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atGocharAshtakavarga, 7),
+        blob.columnOffset(atGocharAshtakavarga, 7) + atGocharAshtakavarga.count * 1,
+      ),
+      length: atGocharAshtakavarga.count,
     ),
   );
 }

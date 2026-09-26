@@ -6,7 +6,7 @@ use teistro_chart::foundation::ChartFoundation;
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
-use teistro_gochar::ashtakavarga::{self, AshtakavargaRules, Prastara};
+use teistro_gochar::ashtakavarga::{self, Prastara};
 use teistro_gochar::{GocharFrom, GocharReading, GocharRules, Reference, Transit, gochar};
 
 /// The instants to read the transits at, and what to count them from.
@@ -163,11 +163,10 @@ pub(crate) fn reading(
     longitudes: &[f64; 9],
     reference: Reference,
     rules: GocharRules,
-    by_bindus: Option<(&Prastara, AshtakavargaRules)>,
+    prastara: Option<&Prastara>,
 ) -> GocharReading {
     let transits = longitudes.map(Transit::at_longitude);
     let mut read = gochar(reference, &transits, rules);
-    read.ashtakavarga =
-        by_bindus.map(|(prastara, rules)| ashtakavarga::transits(prastara, &transits, rules));
+    read.ashtakavarga = prastara.map(|prastara| ashtakavarga::transits(prastara, &transits, rules));
     read
 }

@@ -3766,6 +3766,59 @@ class Fruition(Member):
     """The whole sign: Mercury and the nodes."""
 
 
+class AshtakavargaGoodFrom(Member):
+    """How many bindus make a transit good, the settings'
+    `gochar.ashtakavarga_good_from` (C141).
+    """
+
+    FIVE = 0
+    """Five: Phaladeepika ch. 23 v. 11 makes four a fear."""
+
+    FOUR = 1
+    """Four."""
+
+
+class KakshyaLord(Member):
+    """Who lords an eighth of a sign (Phaladeepika ch. 23 vv. 18 and 19)."""
+
+    SATURN = 0
+    """The first eighth."""
+
+    JUPITER = 1
+    """The second."""
+
+    MARS = 2
+    """The third."""
+
+    SUN = 3
+    """The fourth."""
+
+    VENUS = 4
+    """The fifth."""
+
+    MERCURY = 5
+    """The sixth."""
+
+    MOON = 6
+    """The seventh."""
+
+    LAGNA = 7
+    """The last."""
+
+
+class SarvaStanding(Member):
+    """Where a sign's sarvashtakavarga stands against v. 20's 28."""
+
+    ABOVE = 0
+    """More than 28."""
+
+    EVEN = 1
+    """Exactly 28, which the verse does not judge (C142)."""
+
+    BELOW = 2
+    """Fewer than 28."""
+
+
 class DashaPhase(Member):
     """Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4)."""
 
@@ -5709,6 +5762,25 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "MIDDLE",
         2: "LAST",
         3: "THROUGHOUT",
+    },
+    "AshtakavargaGoodFrom": {
+        0: "FIVE",
+        1: "FOUR",
+    },
+    "KakshyaLord": {
+        0: "SATURN",
+        1: "JUPITER",
+        2: "MARS",
+        3: "SUN",
+        4: "VENUS",
+        5: "MERCURY",
+        6: "MOON",
+        7: "LAGNA",
+    },
+    "SarvaStanding": {
+        0: "ABOVE",
+        1: "EVEN",
+        2: "BELOW",
     },
     "DashaPhase": {
         0: "COMMENCEMENT",

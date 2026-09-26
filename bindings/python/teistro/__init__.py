@@ -127,6 +127,9 @@ from .catalogue import (
     NodeObstruction,
     GocharVerdict,
     Fruition,
+    AshtakavargaGoodFrom,
+    KakshyaLord,
+    SarvaStanding,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -371,6 +374,11 @@ __all__ = [
     "NodeObstruction",
     "GocharVerdict",
     "Fruition",
+    "AshtakavargaTransit",
+    "Kakshya",
+    "AshtakavargaGoodFrom",
+    "KakshyaLord",
+    "SarvaStanding",
     "Nature",
     # The Vaiseshikamsa: what a chart answers with, and its names.
     "GrahaVaiseshikamsa",
@@ -2182,13 +2190,14 @@ class GrahaDashaPhala:
 
 GocharRequest = TypedDict(
     "GocharRequest",
-    {"instants": Required[Sequence[float]], "from": Literal["MOON", "LAGNA"]},
+    {"instants": Required[Sequence[float]], "from": Literal["MOON", "LAGNA"], "ashtakavarga": bool},
     total=False,
 )
 GocharRequest.__doc__ = """The transits to read against every chart of a request
 (`03-design/gochar.md`): `instants`, UTC Julian days, at least one, and
 `from`, what to count the houses from — `"MOON"` (Phaladeepika ch. 26 v. 1's,
-the default) or `"LAGNA"`. A functional `TypedDict` because `from` is a
+the default) or `"LAGNA"` — and `ashtakavarga`, true to judge the seven by the
+natal bindus too (`03-design/gochar-ashtakavarga.md`). A functional `TypedDict` because `from` is a
 keyword, and the record is spelt as every binding spells it.
 
 >>> asked: GocharRequest = {"instants": [2460676.5], "from": "LAGNA"}
@@ -2217,6 +2226,44 @@ class GocharRules:
 
     node_obstruction: NodeObstruction
     """Whom the nodes obstruct (C137, C140)."""
+
+    ashtakavarga_good_from: AshtakavargaGoodFrom
+    """How many bindus make a transit good by the Ashtakavarga (C141)."""
+
+
+@dataclass(frozen=True)
+class Kakshya:
+    """The eighth of a sign a transit stands in, 3°45' each (Phaladeepika ch.
+    23 v. 16), and its lord in the orbits' order (vv. 18 and 19)."""
+
+    index: int
+    """Which eighth, 1 to 8."""
+
+    lord: KakshyaLord
+
+
+@dataclass(frozen=True)
+class AshtakavargaTransit:
+    """One graha's transit judged by the natal Ashtakavarga."""
+
+    graha: Graha
+    bindus: int
+    """The bindus its own Ashtakavarga put in the sign it transits, 0 to 8
+    (v. 11), unreduced."""
+
+    good: bool
+    """Whether they reach `gochar.ashtakavarga_good_from`."""
+
+    kakshya: Kakshya
+    kakshya_bindu: bool
+    """Whether that eighth's lord gave a bindu there, so that a bindu bears
+    its fruit now."""
+
+    sarva: int
+    """The sign's sarvashtakavarga."""
+
+    sarva_standing: SarvaStanding
+    """Where it stands against 28 (v. 20)."""
 
 
 @dataclass(frozen=True)
@@ -2271,6 +2318,10 @@ class GocharReading:
     rules: GocharRules
     grahas: Tuple[GrahaGochar, ...]
     """Each graha's, the Sun to Ketu."""
+
+    ashtakavarga: Optional[Tuple[AshtakavargaTransit, ...]]
+    """The seven judged by the natal Ashtakavarga, Sun to Saturn; `None`
+    unless `ashtakavarga` asked."""
 
 
 @dataclass(frozen=True)
@@ -5184,6 +5235,7 @@ class ChartBatch:
         chart count."""
         c = self.decoded.gochar
         g = self.decoded.gochar_grahas
+        a = self.decoded.gochar_ashtakavarga
         charts = self.decoded.chart_count
         per_chart, left = divmod(c.length, charts) if charts else (0, 0)
         if left or g.length != c.length * 9:
@@ -5191,6 +5243,27 @@ class ChartBatch:
                 Status.INTERNAL,
                 f"gochar has {c.length} rows and {g.length} grahas over {charts} charts;"
                 " it is every chart at every instant, nine grahas each",
+            )
+        judged = a.length > 0
+        if judged and a.length != c.length * 7:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"gochar_ashtakavarga has {a.length} rows under {c.length} transits;"
+                " it is seven under every one or none",
+            )
+
+        def by_bindus(row: int) -> Tuple[AshtakavargaTransit, ...]:
+            return tuple(
+                AshtakavargaTransit(
+                    graha=Graha(a.graha[at]),
+                    bindus=a.bindus[at],
+                    good=a.good[at] == 1,
+                    kakshya=Kakshya(index=a.kakshya[at], lord=KakshyaLord(a.kakshya_lord[at])),
+                    kakshya_bindu=a.kakshya_bindu[at] == 1,
+                    sarva=a.sarva[at],
+                    sarva_standing=SarvaStanding(a.sarva_standing[at]),
+                )
+                for at in range(row * 7, row * 7 + 7)
             )
 
         def graha(at: int) -> GrahaGochar:
@@ -5213,8 +5286,10 @@ class ChartBatch:
                 rules=GocharRules(
                     node_vedha=NodeVedha(c.node_vedha[row]),
                     node_obstruction=NodeObstruction(c.node_obstruction[row]),
+                    ashtakavarga_good_from=AshtakavargaGoodFrom(c.ashtakavarga_good_from[row]),
                 ),
                 grahas=tuple(graha(row * 9 + k) for k in range(9)),
+                ashtakavarga=by_bindus(row) if judged else None,
             )
 
         return [

@@ -82,8 +82,11 @@ import {
   NatureById,
   BrahmaRuleById,
   BrahmaOutcomeById,
+  AshtakavargaGoodFromById,
   FruitionById,
   GocharFromById,
+  KakshyaLordById,
+  SarvaStandingById,
   GocharVerdictById,
   NodeObstructionById,
   NodeVedhaById,
@@ -915,7 +918,9 @@ export class Chart {
    * goodHouse, vedhaHouse, obstructedBy, verdict, fruition, fruitfulNow }`:
    * `vedhaHouse` is `null` where nothing can obstruct it, and
    * `obstructedBy` names the grahas standing there, the verses' exemptions
-   * left out.
+   * left out. With `gochar: { ..., ashtakavarga: true }` each reading's
+   * `ashtakavarga` judges the seven by the natal bindus
+   * (`03-design/gochar-ashtakavarga.md`); `null` otherwise.
    */
   get gochar() {
     return gocharsOf(this.#batch)[this.#index] ?? [];
@@ -2245,6 +2250,7 @@ function gocharsOf(batch) {
   if (decoded === undefined) {
     const c = batch.decoded.gochar;
     const g = batch.decoded.gocharGrahas;
+    const a = batch.decoded.gocharAshtakavarga;
     const charts = batch.decoded.chartCount;
     const perChart = charts === 0 ? 0 : c.instant.length / charts;
     if (!Number.isInteger(perChart) || g.graha.length !== c.instant.length * 9) {
@@ -2253,6 +2259,31 @@ function gocharsOf(batch) {
           'it is every chart at every instant, nine grahas each',
       );
     }
+    const judged = a.graha.length > 0;
+    if (judged && a.graha.length !== c.instant.length * 7) {
+      throw new Error(
+        `gochar_ashtakavarga has ${a.graha.length} rows under ${c.instant.length} transits; ` +
+          'it is seven under every one or none',
+      );
+    }
+    const byBindus = (row) =>
+      Object.freeze(
+        Array.from({ length: 7 }, (_, k) => {
+          const at = row * 7 + k;
+          return Object.freeze({
+            graha: graha(a.graha[at]),
+            bindus: a.bindus[at],
+            good: a.good[at] !== 0,
+            kakshya: Object.freeze({
+              index: a.kakshya[at],
+              lord: KakshyaLordById.get(a.kakshyaLord[at]) ?? 'unknown',
+            }),
+            kakshyaBindu: a.kakshyaBindu[at] !== 0,
+            sarva: a.sarva[at],
+            sarvaStanding: SarvaStandingById.get(a.sarvaStanding[at]) ?? 'unknown',
+          });
+        }),
+      );
     const graha = (id) => GrahaById.get(id) ?? 'unknown';
     const sign = (id) => RashiById.get(id) ?? 'unknown';
     const reading = (row) =>
@@ -2265,6 +2296,7 @@ function gocharsOf(batch) {
         rules: Object.freeze({
           nodeVedha: NodeVedhaById.get(c.nodeVedha[row]) ?? 'unknown',
           nodeObstruction: NodeObstructionById.get(c.nodeObstruction[row]) ?? 'unknown',
+          ashtakavargaGoodFrom: AshtakavargaGoodFromById.get(c.ashtakavargaGoodFrom[row]) ?? 'unknown',
         }),
         grahas: Object.freeze(
           Array.from({ length: 9 }, (_, k) => {
@@ -2282,6 +2314,7 @@ function gocharsOf(batch) {
             });
           }),
         ),
+        ashtakavarga: judged ? byBindus(row) : null,
       });
     decoded = Array.from({ length: charts }, (_, chart) =>
       Object.freeze(Array.from({ length: perChart }, (_, k) => reading(chart * perChart + k))),

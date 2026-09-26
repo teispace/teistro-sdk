@@ -4675,6 +4675,77 @@ typedef enum ts_fruition {
 } ts_fruition;
 
 /**
+ * How many bindus make a transit good, the settings'
+ * `gochar.ashtakavarga_good_from` (C141).
+ */
+typedef enum ts_ashtakavarga_good_from {
+    /**
+     * Five: Phaladeepika ch. 23 v. 11 makes four a fear.
+     */
+    TS_ASHTAKAVARGA_GOOD_FROM_FIVE = 0,
+    /**
+     * Four.
+     */
+    TS_ASHTAKAVARGA_GOOD_FROM_FOUR = 1,
+} ts_ashtakavarga_good_from;
+
+/**
+ * Who lords an eighth of a sign (Phaladeepika ch. 23 vv. 18 and 19).
+ */
+typedef enum ts_kakshya_lord {
+    /**
+     * The first eighth.
+     */
+    TS_KAKSHYA_LORD_SATURN = 0,
+    /**
+     * The second.
+     */
+    TS_KAKSHYA_LORD_JUPITER = 1,
+    /**
+     * The third.
+     */
+    TS_KAKSHYA_LORD_MARS = 2,
+    /**
+     * The fourth.
+     */
+    TS_KAKSHYA_LORD_SUN = 3,
+    /**
+     * The fifth.
+     */
+    TS_KAKSHYA_LORD_VENUS = 4,
+    /**
+     * The sixth.
+     */
+    TS_KAKSHYA_LORD_MERCURY = 5,
+    /**
+     * The seventh.
+     */
+    TS_KAKSHYA_LORD_MOON = 6,
+    /**
+     * The last.
+     */
+    TS_KAKSHYA_LORD_LAGNA = 7,
+} ts_kakshya_lord;
+
+/**
+ * Where a sign's sarvashtakavarga stands against v. 20's 28.
+ */
+typedef enum ts_sarva_standing {
+    /**
+     * More than 28.
+     */
+    TS_SARVA_STANDING_ABOVE = 0,
+    /**
+     * Exactly 28, which the verse does not judge (C142).
+     */
+    TS_SARVA_STANDING_EVEN = 1,
+    /**
+     * Fewer than 28.
+     */
+    TS_SARVA_STANDING_BELOW = 2,
+} ts_sarva_standing;
+
+/**
  * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
  */
 typedef enum ts_dasha_phase {
@@ -6687,8 +6758,10 @@ struct ts_chart_request {
     const char * varsha_json;
     /**
      * The transits to read against every chart in the batch, as a JSON
-     * object: `instants`, UTC Julian days, at least one, and `from` —
-     * `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`.
+     * object: `instants`, UTC Julian days, at least one; `from` —
+     * `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`; and
+     * `ashtakavarga`, true to judge the seven by the natal bindus too, in
+     * the `gochar_ashtakavarga` section.
      * Each chart's readings come back in the `gochar` section, a row an
      * instant, and its grahas in `gochar_grahas`, under the settings'
      * `gochar` group. Null for none (`03-design/gochar.md`). Refusals are
