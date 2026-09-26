@@ -910,6 +910,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
         the_strength(report, index, document);
         the_dashas(report, &geo, index, document);
         the_praveshas(report, &geo, index, document);
+        the_gochar(report, &geo, index, document);
     }
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
@@ -1689,6 +1690,62 @@ fn the_harsha(
 /// A member as every binding keys it, which is serde's own spelling: a
 /// unit variant's string, or a tagged one's `kind` (`LEAP_SECONDS`,
 /// `TABULAR`).
+/// The instants every runner reads the transits at, counted from the Moon.
+const GOCHAR_INSTANTS: [f64; 2] = [2_460_676.5, 2_460_736.5];
+
+/// The transits as the other three print them: each reading's instant,
+/// reference and node readings, and each graha's transit, house, vedha,
+/// obstructors, verdict and fruition.
+fn the_gochar(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::GocharRequest::over(
+        GOCHAR_INSTANTS.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+    );
+    let readings = sdk
+        .chart()
+        .gochar(document, &asked)
+        .expect("the test provider")
+        .value;
+    for (at, (reading, instant)) in readings.iter().zip(GOCHAR_INSTANTS).enumerate() {
+        put(
+            report,
+            &format!("chart-{index}-gochar-{at}"),
+            format!(
+                "{} {} {} {} {}",
+                number(instant),
+                wire_key(&reading.reference.from),
+                reading.reference.sign.full_key(),
+                wire_key(&reading.rules.node_vedha),
+                wire_key(&reading.rules.node_obstruction),
+            ),
+        );
+        for (g, read) in reading.grahas.iter().enumerate() {
+            let by: Vec<&str> = read.obstructed_by.iter().map(|g| g.full_key()).collect();
+            put(
+                report,
+                &format!("chart-{index}-gochar-{at}-{g}"),
+                format!(
+                    "{} {} {} {} {} {} {} {} {} {}",
+                    read.graha.full_key(),
+                    read.transit.sign.full_key(),
+                    number(read.transit.degrees),
+                    read.house,
+                    read.good_house,
+                    read.vedha_house
+                        .map_or_else(|| "-".to_owned(), |h| h.to_string()),
+                    if by.is_empty() {
+                        "-".to_owned()
+                    } else {
+                        by.join(",")
+                    },
+                    wire_key(&read.verdict),
+                    wire_key(&read.fruition),
+                    read.fruitful_now,
+                ),
+            );
+        }
+    }
+}
+
 fn wire_key<T: serde::Serialize>(member: &T) -> String {
     serde_json::to_value(member)
         .ok()

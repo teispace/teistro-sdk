@@ -693,8 +693,10 @@ test('every catalogue enum has a complete id table', () => {
   // 1117 since their strength crossed: `TsSahamStrong`'s twelve clauses,
   // `TsSahamWeak`'s five, `TsHarshaGrade`'s five and `TsTajikaRelation`'s
   // four; 1121 since `TsEphemeris` named the Surya Siddhanta; 1127 since
-  // Jaimini's `TsBrahmaRule`, two, and `TsBrahmaOutcome`, four.
-  assert.equal(entries, 1127, 'every member of every enum is in a table');
+  // Jaimini's `TsBrahmaRule`, two, and `TsBrahmaOutcome`, four; 1141 since
+  // gochar's `TsGocharFrom`, two, `TsNodeVedha`, two, `TsNodeObstruction`,
+  // three, `TsGocharVerdict`, three, and `TsFruition`, four.
+  assert.equal(entries, 1141, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1793,6 +1795,49 @@ test('a chart carries its karakamsha and its Brahma graha, or why there is none'
     assert.deepEqual(arudhas.slice(7), [null, null]);
   }
   assert.ok(outcomes.has('FOUND') && outcomes.size > 1, [...outcomes].join());
+  ctx.dispose();
+});
+
+/**
+ * A chart's transits cross whole: a reading an instant in the order asked,
+ * counted from what was asked, nine grahas each whose verdict agrees with
+ * its own house, vedha and obstructors; the nodes always opposite; empty
+ * unless asked; and a request naming no instant refused by the field.
+ */
+test('a chart carries its transits, each verdict its own house and vedha', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const birth = { instant: 2447995.4895833335, place, utcOffsetSeconds: 20700 };
+  assert.deepEqual(ctx.chart.found(birth).gochar, []);
+  const instants = Array.from({ length: 24 }, (_, k) => 2460676.5 + 30 * k);
+  const verdicts = new Set();
+  for (const from of ['MOON', 'LAGNA']) {
+    const readings = ctx.chart.found({ ...birth, gochar: { instants, from } }).gochar;
+    assert.equal(readings.length, instants.length);
+    readings.forEach((reading, k) => {
+      assert.equal(reading.instant, instants[k]);
+      assert.equal(reading.reference.from, from);
+      assert.match(reading.reference.sign, /^rashi\./);
+      assert.deepEqual(reading.rules, { nodeVedha: 'LIKE_THE_SUN', nodeObstruction: 'NOT_EACH_OTHER' });
+      assert.equal(reading.grahas.length, 9);
+      for (const g of reading.grahas) {
+        assert.ok(g.house >= 1 && g.house <= 12, `${g.house}`);
+        assert.ok(g.transit.degrees >= 0 && g.transit.degrees < 30, `${g.transit.degrees}`);
+        const expected = !g.goodHouse ? 'NOT_GOOD' : g.obstructedBy.length > 0 ? 'OBSTRUCTED' : 'GOOD';
+        assert.equal(g.verdict, expected, `${g.graha} in ${g.house}`);
+        if (!g.goodHouse) assert.equal(g.vedhaHouse, null);
+        verdicts.add(g.verdict);
+      }
+      const [rahu, ketu] = [reading.grahas[7], reading.grahas[8]];
+      assert.equal((ketu.house - rahu.house + 12) % 12, 6, 'the nodes stand opposite');
+      assert.ok(!rahu.obstructedBy.includes('graha.KETU'), 'C140: the nodes spare each other');
+    });
+  }
+  assert.deepEqual([...verdicts].sort(), ['GOOD', 'NOT_GOOD', 'OBSTRUCTED']);
+  assert.throws(
+    () => ctx.chart.found({ ...birth, gochar: { instants: [] } }),
+    (error) => error instanceof TeistroError && error.field === 'gochar.instants',
+  );
   ctx.dispose();
 });
 

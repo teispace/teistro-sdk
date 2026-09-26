@@ -2916,6 +2916,89 @@ export const BrahmaOutcomeById = new Map([
   [3, 'NO_PLANET_QUALIFIES'],
 ]);
 
+/** Every GocharFrom by name. */
+export const GocharFrom = Object.freeze({
+  Moon: 'MOON',
+  Lagna: 'LAGNA',
+});
+
+/**
+ * Every GocharFrom by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const GocharFromById = new Map([
+  [0, 'MOON'],
+  [1, 'LAGNA'],
+]);
+
+/** Every NodeVedha by name. */
+export const NodeVedha = Object.freeze({
+  LikeTheSun: 'LIKE_THE_SUN',
+  None: 'NONE',
+});
+
+/**
+ * Every NodeVedha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const NodeVedhaById = new Map([
+  [0, 'LIKE_THE_SUN'],
+  [1, 'NONE'],
+]);
+
+/** Every NodeObstruction by name. */
+export const NodeObstruction = Object.freeze({
+  NotEachOther: 'NOT_EACH_OTHER',
+  EachOtherToo: 'EACH_OTHER_TOO',
+  None: 'NONE',
+});
+
+/**
+ * Every NodeObstruction by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const NodeObstructionById = new Map([
+  [0, 'NOT_EACH_OTHER'],
+  [1, 'EACH_OTHER_TOO'],
+  [2, 'NONE'],
+]);
+
+/** Every GocharVerdict by name. */
+export const GocharVerdict = Object.freeze({
+  Good: 'GOOD',
+  Obstructed: 'OBSTRUCTED',
+  NotGood: 'NOT_GOOD',
+});
+
+/**
+ * Every GocharVerdict by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const GocharVerdictById = new Map([
+  [0, 'GOOD'],
+  [1, 'OBSTRUCTED'],
+  [2, 'NOT_GOOD'],
+]);
+
+/** Every Fruition by name. */
+export const Fruition = Object.freeze({
+  First: 'FIRST',
+  Middle: 'MIDDLE',
+  Last: 'LAST',
+  Throughout: 'THROUGHOUT',
+});
+
+/**
+ * Every Fruition by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const FruitionById = new Map([
+  [0, 'FIRST'],
+  [1, 'MIDDLE'],
+  [2, 'LAST'],
+  [3, 'THROUGHOUT'],
+]);
+
 /** Every DashaPhase by name. */
 export const DashaPhase = Object.freeze({
   Commencement: 'COMMENCEMENT',

@@ -1764,6 +1764,75 @@ class ChartsJaiminiGrahas:
 
 
 @dataclass(frozen=True)
+class ChartsGochar:
+    """The `gochar` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each chart's transits at the instants `gochar_json.instants` named, charts outermost and each chart's in the order asked: with `n` instants, row `i * n + k` is chart `i` at instant `k`. **Fixed, not ragged**: the request settles `n` for every chart, so `n` is this section's rows over `summary.chart_count`. Read under the settings' `gochar` group (Phaladeepika ch. 26). Empty when no transits were asked for.
+    """
+
+    instant: memoryview[float]
+    """The instant the transits were read at, a UTC Julian day."""
+
+    reference: memoryview[int]
+    """The sign the houses are counted from: the natal Moon's by v. 1, or the lagna's when `counted_from` says so."""
+
+    counted_from: memoryview[int]
+    """Which natal point `reference` is, `gochar_json.from` (C139)."""
+
+    node_vedha: memoryview[int]
+    """The nodes' vedha the transits were judged under, `gochar.node_vedha` (C136)."""
+
+    node_obstruction: memoryview[int]
+    """Whom the nodes obstruct, `gochar.node_obstruction` (C137, C140)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsGocharGrahas:
+    """The `gochar_grahas` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`.
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    sign: memoryview[int]
+    """The sign it transits."""
+
+    degrees: memoryview[float]
+    """Its degrees within the sign, 0 to 30."""
+
+    house: memoryview[int]
+    """Its house from `gochar.reference`, 1 to 12."""
+
+    good_house: memoryview[int]
+    """1 when v. 2 makes a transit of this house good, else 0."""
+
+    vedha_house: memoryview[int]
+    """The house whose occupant obstructs it (vv. 3 to 8), 1 to 12; 0 when the house is not good or, for a node under `node_vedha = NONE`, nothing obstructs it."""
+
+    obstructed_by: memoryview[int]
+    """The grahas standing in the vedha house that obstruct it, the verses' exemptions left out, a bit set: bit `n` is the graha with id `n`."""
+
+    verdict: memoryview[int]
+    """What the transit comes to."""
+
+    fruition: memoryview[int]
+    """The decanate in which its transit bears fruit (v. 25)."""
+
+    fruitful_now: memoryview[int]
+    """1 when it stands in that decanate now, else 0."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -2043,6 +2112,12 @@ class Charts:
     jaimini_grahas: ChartsJaiminiGrahas
     """Each graha as Jaimini reads it, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. Its house from the karakamsha in the rasi chart and in the navamsha, since the schools part on which (C130), and its arudha (BPHS ch. 29 vv. 6 and 7)."""
 
+    gochar: ChartsGochar
+    """Each chart's transits at the instants `gochar_json.instants` named, charts outermost and each chart's in the order asked: with `n` instants, row `i * n + k` is chart `i` at instant `k`. **Fixed, not ragged**: the request settles `n` for every chart, so `n` is this section's rows over `summary.chart_count`. Read under the settings' `gochar` group (Phaladeepika ch. 26). Empty when no transits were asked for."""
+
+    gochar_grahas: ChartsGocharGrahas
+    """Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -2104,6 +2179,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_content_hashes = blob.section(50, "content_hashes")
     at_jaimini = blob.section(51, "jaimini")
     at_jaimini_grahas = blob.section(52, "jaimini_grahas")
+    at_gochar = blob.section(53, "gochar")
+    at_gochar_grahas = blob.section(54, "gochar_grahas")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -3117,6 +3194,51 @@ def decode_charts(raw: bytes) -> Charts:
                 at_jaimini_grahas, 4, 1, at_jaimini_grahas.count
             ).cast("B"),
             length=at_jaimini_grahas.count,
+        ),
+        gochar=ChartsGochar(
+            instant=blob.column(at_gochar, 0, 8, at_gochar.count).cast("d"),
+            reference=blob.column(at_gochar, 1, 2, at_gochar.count).cast("H"),
+            counted_from=blob.column(
+                at_gochar, 2, 1, at_gochar.count
+            ).cast("B"),
+            node_vedha=blob.column(at_gochar, 3, 1, at_gochar.count).cast("B"),
+            node_obstruction=blob.column(
+                at_gochar, 4, 1, at_gochar.count
+            ).cast("B"),
+            length=at_gochar.count,
+        ),
+        gochar_grahas=ChartsGocharGrahas(
+            graha=blob.column(
+                at_gochar_grahas, 0, 2, at_gochar_grahas.count
+            ).cast("H"),
+            sign=blob.column(
+                at_gochar_grahas, 1, 2, at_gochar_grahas.count
+            ).cast("H"),
+            degrees=blob.column(
+                at_gochar_grahas, 2, 8, at_gochar_grahas.count
+            ).cast("d"),
+            house=blob.column(
+                at_gochar_grahas, 3, 1, at_gochar_grahas.count
+            ).cast("B"),
+            good_house=blob.column(
+                at_gochar_grahas, 4, 1, at_gochar_grahas.count
+            ).cast("B"),
+            vedha_house=blob.column(
+                at_gochar_grahas, 5, 1, at_gochar_grahas.count
+            ).cast("B"),
+            obstructed_by=blob.column(
+                at_gochar_grahas, 6, 2, at_gochar_grahas.count
+            ).cast("H"),
+            verdict=blob.column(
+                at_gochar_grahas, 7, 1, at_gochar_grahas.count
+            ).cast("B"),
+            fruition=blob.column(
+                at_gochar_grahas, 8, 1, at_gochar_grahas.count
+            ).cast("B"),
+            fruitful_now=blob.column(
+                at_gochar_grahas, 9, 1, at_gochar_grahas.count
+            ).cast("B"),
+            length=at_gochar_grahas.count,
         ),
     )
 

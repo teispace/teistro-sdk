@@ -6097,6 +6097,138 @@ export declare const BrahmaOutcome: {
 export declare const BrahmaOutcomeById: ReadonlyMap<number, BrahmaOutcome>;
 
 /**
+ * What a gochar reading counted its houses from (crux C139).
+ */
+export type GocharFrom = 'MOON' | 'LAGNA';
+
+/** Every GocharFrom by name; the values are the strings the union accepts. */
+export declare const GocharFrom: {
+  /**
+   * The natal Moon's sign, Phaladeepika ch. 26 v. 1's.
+   */
+  readonly Moon: 'MOON';
+  /**
+   * The natal lagna's sign.
+   */
+  readonly Lagna: 'LAGNA';
+};
+
+/**
+ * Every GocharFrom by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const GocharFromById: ReadonlyMap<number, GocharFrom>;
+
+/**
+ * The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).
+ */
+export type NodeVedha = 'LIKE_THE_SUN' | 'NONE';
+
+/** Every NodeVedha by name; the values are the strings the union accepts. */
+export declare const NodeVedha: {
+  /**
+   * The Sun's vedha pairs.
+   */
+  readonly LikeTheSun: 'LIKE_THE_SUN';
+  /**
+   * None: nothing obstructs a node's transit.
+   */
+  readonly None: 'NONE';
+};
+
+/**
+ * Every NodeVedha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const NodeVedhaById: ReadonlyMap<number, NodeVedha>;
+
+/**
+ * Whom the nodes obstruct in transit, the settings' `gochar.node_obstruction`
+ * (C137, C140).
+ */
+export type NodeObstruction = 'NOT_EACH_OTHER' | 'EACH_OTHER_TOO' | 'NONE';
+
+/** Every NodeObstruction by name; the values are the strings the union accepts. */
+export declare const NodeObstruction: {
+  /**
+   * The seven, and not each other.
+   */
+  readonly NotEachOther: 'NOT_EACH_OTHER';
+  /**
+   * Every graha, each other too: the verses read literally.
+   */
+  readonly EachOtherToo: 'EACH_OTHER_TOO';
+  /**
+   * Nobody: only the seven obstruct.
+   */
+  readonly None: 'NONE';
+};
+
+/**
+ * Every NodeObstruction by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const NodeObstructionById: ReadonlyMap<number, NodeObstruction>;
+
+/**
+ * What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
+ */
+export type GocharVerdict = 'GOOD' | 'OBSTRUCTED' | 'NOT_GOOD';
+
+/** Every GocharVerdict by name; the values are the strings the union accepts. */
+export declare const GocharVerdict: {
+  /**
+   * In a good house, and nothing stands in its vedha house.
+   */
+  readonly Good: 'GOOD';
+  /**
+   * In a good house, and another graha stands in its vedha house.
+   */
+  readonly Obstructed: 'OBSTRUCTED';
+  /**
+   * Not in a house v. 2 names good.
+   */
+  readonly NotGood: 'NOT_GOOD';
+};
+
+/**
+ * Every GocharVerdict by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const GocharVerdictById: ReadonlyMap<number, GocharVerdict>;
+
+/**
+ * Where in a sign a graha's transit bears fruit (v. 25).
+ */
+export type Fruition = 'FIRST' | 'MIDDLE' | 'LAST' | 'THROUGHOUT';
+
+/** Every Fruition by name; the values are the strings the union accepts. */
+export declare const Fruition: {
+  /**
+   * The first ten degrees: the Sun and Mars.
+   */
+  readonly First: 'FIRST';
+  /**
+   * The middle ten: Jupiter and Venus.
+   */
+  readonly Middle: 'MIDDLE';
+  /**
+   * The last ten: the Moon and Saturn.
+   */
+  readonly Last: 'LAST';
+  /**
+   * The whole sign: Mercury and the nodes.
+   */
+  readonly Throughout: 'THROUGHOUT';
+};
+
+/**
+ * Every Fruition by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const FruitionById: ReadonlyMap<number, Fruition>;
+
+/**
  * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
  */
 export type DashaPhase = 'COMMENCEMENT' | 'MIDDLE' | 'END';

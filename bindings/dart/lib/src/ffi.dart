@@ -977,6 +977,17 @@ final class ChartRequestStruct extends ffi.Struct {
   /// every binding calls `varsha`, as `varsha.through`. May be null.
   external ffi.Pointer<ffi.Char> varshaJson;
 
+  /// The transits to read against every chart in the batch, as a JSON
+  /// object: `instants`, UTC Julian days, at least one, and `from` —
+  /// `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`.
+  /// Each chart's readings come back in the `gochar` section, a row an
+  /// instant, and its grahas in `gochar_grahas`, under the settings'
+  /// `gochar` group. Null for none (`03-design/gochar.md`). Refusals are
+  /// named from the record every binding calls `gochar`, as
+  /// `gochar.instants`.
+  /// Example: {"instants":[2460676.5],"from":"MOON"}. May be null.
+  external ffi.Pointer<ffi.Char> gocharJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2819,7 +2830,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -2942,6 +2953,17 @@ final class ChartRequest {
   /// every binding calls `varsha`, as `varsha.through`. May be null.
   final String? varshaJson;
 
+  /// The transits to read against every chart in the batch, as a JSON
+  /// object: `instants`, UTC Julian days, at least one, and `from` —
+  /// `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`.
+  /// Each chart's readings come back in the `gochar` section, a row an
+  /// instant, and its grahas in `gochar_grahas`, under the settings'
+  /// `gochar` group. Null for none (`03-design/gochar.md`). Refusals are
+  /// named from the record every binding calls `gochar`, as
+  /// `gochar.instants`.
+  /// Example: {"instants":[2460676.5],"from":"MOON"}. May be null.
+  final String? gocharJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -2993,6 +3015,9 @@ final class ChartRequest {
     raw.varshaJson = varshaJson == null
         ? ffi.nullptr
         : varshaJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.gocharJson = gocharJson == null
+        ? ffi.nullptr
+        : gocharJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3030,6 +3055,9 @@ final class ChartRequest {
         varshaJson: raw.varshaJson == ffi.nullptr
             ? null
             : raw.varshaJson.cast<pkg_ffi.Utf8>().toDartString(),
+        gocharJson: raw.gocharJson == ffi.nullptr
+            ? null
+            : raw.gocharJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

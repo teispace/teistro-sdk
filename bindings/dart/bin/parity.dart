@@ -388,6 +388,7 @@ void main() {
     vaiseshikamsa: true,
     dashaPhala: true,
     jaimini: true,
+    gochar: const GocharRequest(instants: [2460676.5, 2460736.5]),
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -651,6 +652,23 @@ void main() {
       '${b.rule.key} ${b.countedFrom.fullKey} ${qualified.isEmpty ? '-' : qualified} '
           '${b.graha?.fullKey ?? '-'} ${b.passedFrom?.fullKey ?? '-'} ${b.none?.key ?? '-'}',
     );
+    for (final (at, reading) in chart.gochar.indexed) {
+      final ref = reading.reference;
+      put(
+        'chart-$i-gochar-$at',
+        '${number(reading.instant)} ${ref.from.key} ${ref.sign.fullKey} '
+            '${reading.rules.nodeVedha.key} ${reading.rules.nodeObstruction.key}',
+      );
+      for (final (k, g) in reading.grahas.indexed) {
+        final by = g.obstructedBy.map((o) => o.fullKey).join(',');
+        put(
+          'chart-$i-gochar-$at-$k',
+          '${g.graha.fullKey} ${g.transit.sign.fullKey} ${number(g.transit.degrees)} '
+              '${g.house} ${g.goodHouse} ${g.vedhaHouse ?? '-'} ${by.isEmpty ? '-' : by} '
+              '${g.verdict.key} ${g.fruition.key} ${g.fruitfulNow}',
+        );
+      }
+    }
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);
     for (final g in vs.grahas) {

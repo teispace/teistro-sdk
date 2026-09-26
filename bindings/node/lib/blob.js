@@ -853,6 +853,33 @@ export function decodeCharts(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 53, 'gochar');
+    out.gochar = {
+      instant: column(blob, at, 0, 'f64', at.count),
+      reference: column(blob, at, 1, 'u16', at.count),
+      countedFrom: column(blob, at, 2, 'u8', at.count),
+      nodeVedha: column(blob, at, 3, 'u8', at.count),
+      nodeObstruction: column(blob, at, 4, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 54, 'gochar_grahas');
+    out.gocharGrahas = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      sign: column(blob, at, 1, 'u16', at.count),
+      degrees: column(blob, at, 2, 'f64', at.count),
+      house: column(blob, at, 3, 'u8', at.count),
+      goodHouse: column(blob, at, 4, 'u8', at.count),
+      vedhaHouse: column(blob, at, 5, 'u8', at.count),
+      obstructedBy: column(blob, at, 6, 'u16', at.count),
+      verdict: column(blob, at, 7, 'u8', at.count),
+      fruition: column(blob, at, 8, 'u8', at.count),
+      fruitfulNow: column(blob, at, 9, 'u8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

@@ -707,6 +707,7 @@ final class ChartArea extends _Area {
     RuleRequest? rules,
     PlanRequest? interpret,
     VarshaRequest? varsha,
+    GocharRequest? gochar,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -730,6 +731,7 @@ final class ChartArea extends _Area {
     rules: rules,
     interpret: interpret,
     varsha: varsha,
+    gochar: gochar,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -773,6 +775,7 @@ final class ChartArea extends _Area {
     RuleRequest? rules,
     PlanRequest? interpret,
     VarshaRequest? varsha,
+    GocharRequest? gochar,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -818,6 +821,7 @@ final class ChartArea extends _Area {
             rulesJson: rules?._json,
             interpretJson: interpret?._json,
             varshaJson: varsha?._json,
+            gocharJson: gochar?._json,
           ),
         ),
       ),
@@ -1987,6 +1991,106 @@ final class GrahaDashaPhala {
 
   /// Whether its placement makes its dasha unfavourable; both can hold.
   final bool unfavourable;
+}
+
+/// What a gochar reading counted its houses from, and that point's sign.
+final class GocharReference {
+  const GocharReference({required this.from, required this.sign});
+
+  /// The natal Moon (v. 1) or, asked, the lagna (C139).
+  final GocharFrom from;
+
+  /// Its sign.
+  final Rashi sign;
+}
+
+/// The readings of the nodes a transit was judged under, the settings'
+/// `gochar` group.
+final class GocharRules {
+  const GocharRules({required this.nodeVedha, required this.nodeObstruction});
+
+  /// The nodes' vedha (C136).
+  final NodeVedha nodeVedha;
+
+  /// Whom the nodes obstruct (C137, C140).
+  final NodeObstruction nodeObstruction;
+}
+
+/// A graha in transit: the sign it stands in and its degrees within it.
+final class Transit {
+  const Transit({required this.sign, required this.degrees});
+
+  /// The sign.
+  final Rashi sign;
+
+  /// Degrees within the sign, 0 to 30.
+  final double degrees;
+}
+
+/// One graha's transit, read from the reference sign.
+final class GrahaGochar {
+  const GrahaGochar({
+    required this.graha,
+    required this.transit,
+    required this.house,
+    required this.goodHouse,
+    required this.vedhaHouse,
+    required this.obstructedBy,
+    required this.verdict,
+    required this.fruition,
+    required this.fruitfulNow,
+  });
+
+  /// Which graha.
+  final Graha graha;
+
+  /// Where it stands.
+  final Transit transit;
+
+  /// Its house from the reference sign, 1 to 12.
+  final int house;
+
+  /// Whether v. 2 makes a transit of this house good.
+  final bool goodHouse;
+
+  /// The house whose occupant obstructs it (vv. 3 to 8); null where
+  /// nothing can.
+  final int? vedhaHouse;
+
+  /// The grahas standing in the vedha house that obstruct it, the verses'
+  /// exemptions left out, in id order.
+  final List<Graha> obstructedBy;
+
+  /// What the transit comes to.
+  final GocharVerdict verdict;
+
+  /// The decanate in which its transit bears fruit (v. 25).
+  final Fruition fruition;
+
+  /// Whether it stands in that decanate now.
+  final bool fruitfulNow;
+}
+
+/// Every graha's transit at one instant, read from the natal chart.
+final class GocharReading {
+  const GocharReading({
+    required this.instant,
+    required this.reference,
+    required this.rules,
+    required this.grahas,
+  });
+
+  /// The instant, a UTC Julian day.
+  final double instant;
+
+  /// What the houses are counted from.
+  final GocharReference reference;
+
+  /// The readings of the nodes it was judged under.
+  final GocharRules rules;
+
+  /// Each graha's, the Sun to Ketu.
+  final List<GrahaGochar> grahas;
 }
 
 /// A chart's karakamsha: the Atmakaraka's navamsha sign (BPHS ch. 33 v. 1).
@@ -3649,6 +3753,63 @@ List<DashaPhalaReading> _decodeDashaPhalas(Charts batch) {
   );
 }
 
+/// Each batch's transits, decoded once however many charts read them.
+final Expando<List<List<GocharReading>>> _gochars =
+    Expando<List<List<GocharReading>>>('gochars');
+
+List<List<GocharReading>> _gocharsOf(Charts batch) =>
+    _gochars[batch] ??= _decodeGochars(batch);
+
+/// Fixed rather than ragged: the request settles how many instants every
+/// chart gets, so each chart holds the section's rows over the chart count.
+List<List<GocharReading>> _decodeGochars(Charts batch) {
+  final c = batch.gochar;
+  final g = batch.gocharGrahas;
+  final charts = batch.chartCount;
+  final perChart = charts == 0 ? 0 : c.length ~/ charts;
+  if (perChart * charts != c.length || g.length != c.length * 9) {
+    throw StateError(
+      'gochar has ${c.length} rows and ${g.length} grahas over $charts '
+      'charts; it is every chart at every instant, nine grahas each',
+    );
+  }
+  GrahaGochar graha(int at) => GrahaGochar(
+    graha: Graha.byId(g.graha[at]),
+    transit: Transit(sign: Rashi.byId(g.sign[at]), degrees: g.degrees[at]),
+    house: g.house[at],
+    goodHouse: g.goodHouse[at] == 1,
+    vedhaHouse: g.vedhaHouse[at] == 0 ? null : g.vedhaHouse[at],
+    obstructedBy: List<Graha>.unmodifiable(_nine(g.obstructedBy[at])),
+    verdict: GocharVerdict.byId(g.verdict[at]),
+    fruition: Fruition.byId(g.fruition[at]),
+    fruitfulNow: g.fruitfulNow[at] == 1,
+  );
+  GocharReading reading(int row) => GocharReading(
+    instant: c.instant[row],
+    reference: GocharReference(
+      from: GocharFrom.byId(c.countedFrom[row]),
+      sign: Rashi.byId(c.reference[row]),
+    ),
+    rules: GocharRules(
+      nodeVedha: NodeVedha.byId(c.nodeVedha[row]),
+      nodeObstruction: NodeObstruction.byId(c.nodeObstruction[row]),
+    ),
+    grahas: List<GrahaGochar>.unmodifiable(
+      List<GrahaGochar>.generate(9, (k) => graha(row * 9 + k)),
+    ),
+  );
+  return List<List<GocharReading>>.generate(
+    charts,
+    (chart) => List<GocharReading>.unmodifiable(
+      List<GocharReading>.generate(
+        perChart,
+        (k) => reading(chart * perChart + k),
+      ),
+    ),
+    growable: false,
+  );
+}
+
 /// Each batch's Jaimini significators, decoded once however many charts read
 /// them.
 final Expando<List<JaiminiReading>> _jaiminis = Expando<List<JaiminiReading>>(
@@ -3994,6 +4155,32 @@ enum VarshaReading {
 
   /// The key the boundary reads.
   final String key;
+}
+
+/// The transits to read against every chart of a request
+/// (`03-design/gochar.md`): at least one instant, and what to count the
+/// houses from — the natal Moon by default (Phaladeepika ch. 26 v. 1).
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ gochar: const GocharRequest(instants: [2460676.5]),
+/// );
+/// final good = chart.gochar.first.grahas
+///     .where((g) => g.verdict == GocharVerdict.good)
+///     .map((g) => g.graha);
+/// ```
+final class GocharRequest {
+  const GocharRequest({required this.instants, this.from = GocharFrom.moon});
+
+  /// The instants, UTC Julian days: at least one, or the SDK refuses the
+  /// request by `gochar.instants`.
+  final List<double> instants;
+
+  /// What to count the houses from.
+  final GocharFrom from;
+
+  String get _json =>
+      jsonEncode(<String, Object?>{'instants': instants, 'from': from.key});
 }
 
 /// The annual charts a request asks for: how many years, and which
@@ -6278,6 +6465,13 @@ final class Chart {
   JaiminiReading? get jaimini {
     final all = _jaiminisOf(batch);
     return index < all.length ? all[index] : null;
+  }
+
+  /// The transits read against this chart, one reading an instant in the
+  /// order `gochar:` asked; empty unless asked for.
+  List<GocharReading> get gochar {
+    final all = _gocharsOf(batch);
+    return index < all.length ? all[index] : const <GocharReading>[];
   }
 
   /// The Vaiseshikamsa, when `vaiseshikamsa: true` asked for it.

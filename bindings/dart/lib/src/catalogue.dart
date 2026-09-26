@@ -5025,6 +5025,185 @@ enum BrahmaOutcome {
   }
 }
 
+/// What a gochar reading counted its houses from (crux C139).
+enum GocharFrom {
+  /// The natal Moon's sign, Phaladeepika ch. 26 v. 1's.
+  moon(0, 'MOON'),
+  /// The natal lagna's sign.
+  lagna(1, 'LAGNA');
+
+  const GocharFrom(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static GocharFrom byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a GocharFrom'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static GocharFrom? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).
+enum NodeVedha {
+  /// The Sun's vedha pairs.
+  likeTheSun(0, 'LIKE_THE_SUN'),
+  /// None: nothing obstructs a node's transit.
+  none(1, 'NONE');
+
+  const NodeVedha(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static NodeVedha byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a NodeVedha'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static NodeVedha? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Whom the nodes obstruct in transit, the settings' `gochar.node_obstruction`
+/// (C137, C140).
+enum NodeObstruction {
+  /// The seven, and not each other.
+  notEachOther(0, 'NOT_EACH_OTHER'),
+  /// Every graha, each other too: the verses read literally.
+  eachOtherToo(1, 'EACH_OTHER_TOO'),
+  /// Nobody: only the seven obstruct.
+  none(2, 'NONE');
+
+  const NodeObstruction(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static NodeObstruction byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a NodeObstruction'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static NodeObstruction? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What a graha's transit comes to (Phaladeepika ch. 26 vv. 2 to 8).
+enum GocharVerdict {
+  /// In a good house, and nothing stands in its vedha house.
+  good(0, 'GOOD'),
+  /// In a good house, and another graha stands in its vedha house.
+  obstructed(1, 'OBSTRUCTED'),
+  /// Not in a house v. 2 names good.
+  notGood(2, 'NOT_GOOD');
+
+  const GocharVerdict(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static GocharVerdict byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a GocharVerdict'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static GocharVerdict? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Where in a sign a graha's transit bears fruit (v. 25).
+enum Fruition {
+  /// The first ten degrees: the Sun and Mars.
+  first(0, 'FIRST'),
+  /// The middle ten: Jupiter and Venus.
+  middle(1, 'MIDDLE'),
+  /// The last ten: the Moon and Saturn.
+  last(2, 'LAST'),
+  /// The whole sign: Mercury and the nodes.
+  throughout(3, 'THROUGHOUT');
+
+  const Fruition(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Fruition byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Fruition'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Fruition? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
 enum DashaPhase {
   /// At its commencement.

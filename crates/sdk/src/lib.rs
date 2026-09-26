@@ -142,12 +142,13 @@ pub use crate::varsha::{
 };
 pub use teistro_dasha as dasha;
 // Gochar: the transits read from the natal Moon (`03-design/gochar.md`).
-pub use crate::gochar_request::{GocharFrom, GocharRequest};
+pub use crate::gochar_request::GocharRequest;
 pub use teistro_dasha::{
     DashaCursor, DashaDefinition, DashaReading, PeriodRow, RashiDefinition, Share, Timeline,
     UduDefinition, YearDasha, YearRing,
 };
 pub use teistro_gochar as gochar;
+pub use teistro_gochar::GocharFrom;
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
 pub use teistro_rules as rules;
