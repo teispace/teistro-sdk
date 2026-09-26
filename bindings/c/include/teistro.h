@@ -4364,6 +4364,13 @@ typedef enum ts_ephemeris {
      * shape rather than a sky.
      */
     TS_EPHEMERIS_TEST = 2,
+    /**
+     * The Surya Siddhanta, a **classical astronomy**: the text's own
+     * places, precession, sunrise and Lagna, so a chart founded over it
+     * is the text's chart throughout (`03-design/classical-chart.md`).
+     * Name its ayanamsha, `SURYASIDDHANTA`, for the text's zodiac.
+     */
+    TS_EPHEMERIS_SURYA_SIDDHANTA = 3,
 } ts_ephemeris;
 
 /**

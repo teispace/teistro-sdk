@@ -73,6 +73,7 @@ from teistro._ffi import Longitude
 from teistro.catalogue import (
     Ayanamsha,
     DayPart,
+    Ephemeris,
     Era,
     Graha,
     PolarDayPolicy,
@@ -716,6 +717,31 @@ class AnEngine(WithLibrary):
         self.assertEqual(stored, whole)
         with self.assertRaises(ValueError):
             decode_provenance({**json.loads(batch.provenance_json), "confidence": "MAYBE"})
+
+    def test_the_surya_siddhanta_opens_by_name_and_its_chart_says_so(self) -> None:
+        """A classical astronomy's chart is the text's throughout
+        (docs/03-design/classical-chart.md), and the envelope says which
+        parts; a modern chart's says nothing."""
+        place = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        at: dict[str, Any] = {
+            "instant": 2447995.4895833335,
+            "place": place,
+            "utc_offset_seconds": 20700,
+        }
+        with self.teistro.context(
+            ephemeris=Ephemeris.SURYA_SIDDHANTA,
+            settings={"frame": {"ayanamsha": {"kind": "CATALOGUED", "id": "SURYASIDDHANTA"}}},
+        ) as text:
+            deviation = text.chart.found(**at).provenance.deviation
+        assert deviation is not None
+        self.assertEqual(deviation.model, "SURYA_SIDDHANTA")
+        self.assertEqual(
+            deviation.detail,
+            "the zodiac, the places, the angles and the day are the provider's own",
+        )
+        self.assertIsNone(self.ctx.chart.found(**at).provenance.deviation)
 
     def test_a_charts_day_is_the_almanacs_and_its_date_converts(self) -> None:
         """A chart's day and an almanac's are one record, and its date is the

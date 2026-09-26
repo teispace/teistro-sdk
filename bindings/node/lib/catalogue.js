@@ -2719,6 +2719,7 @@ export const Ephemeris = Object.freeze({
   None: 'NONE',
   Builtin: 'BUILTIN',
   Test: 'TEST',
+  SuryaSiddhanta: 'SURYA_SIDDHANTA',
 });
 
 /**
@@ -2729,6 +2730,7 @@ export const EphemerisById = new Map([
   [0, 'NONE'],
   [1, 'BUILTIN'],
   [2, 'TEST'],
+  [3, 'SURYA_SIDDHANTA'],
 ]);
 
 /** Every Resolution by name. */

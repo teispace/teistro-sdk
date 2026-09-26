@@ -3519,6 +3519,13 @@ class Ephemeris(Member):
     shape rather than a sky.
     """
 
+    SURYA_SIDDHANTA = 3
+    """The Surya Siddhanta, a **classical astronomy**: the text's own
+    places, precession, sunrise and Lagna, so a chart founded over it
+    is the text's chart throughout (`03-design/classical-chart.md`).
+    Name its ayanamsha, `SURYASIDDHANTA`, for the text's zodiac.
+    """
+
 
 class Resolution(Member):
     """How a date was resolved (`docs/03-design/calendar-bikram-sambat.md`)."""
@@ -5523,6 +5530,7 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "NONE",
         1: "BUILTIN",
         2: "TEST",
+        3: "SURYA_SIDDHANTA",
     },
     "Resolution": {
         0: "DEFINED",

@@ -1,7 +1,6 @@
 # A chart founded on a classical astronomy
 
-Status: `draft`, 2026-09-26; §3 to §6 **built** the same day, §7 step 5
-half built. Written from
+Status: **built**, 2026-09-26: every step of §7 the same day. Written from
 `classical-chart-measured.md` before any code; the order of work (§7)
 re-aims that pass at the built thing, and the building has already
 corrected it four times (§3, the corrections; §4, the midnight; §5, no
@@ -201,10 +200,15 @@ read it, and so does the pass's midheaven row.
    holds `sdk-only`'s hybrid, the refused Placidus and a stored chart's
    angles refused without its provider.
 4. **The report** (§6): **done**.
-5. **Reaching it**: `Ephemeris::SuryaSiddhanta` in the Rust façade is
-   **done**; left is the C selector's key, so Node, Dart, Python and
-   wasm open a context on it by name, and the parity gate comparing a
-   classical chart across bindings.
+5. **Reaching it**: **done**. `Ephemeris::SuryaSiddhanta` in the Rust
+   façade and `TS_EPHEMERIS_SURYA_SIDDHANTA` (3) at the C selector, which
+   the generators carry to every binding as `'SURYA_SIDDHANTA'`,
+   `Ephemeris.SURYA_SIDDHANTA` and `Ephemeris.suryaSiddhanta`. Each
+   binding's suite opens it by name and reads the deviation back, and
+   the parity gate compares a classical chart — steps, Lagna, sunrise,
+   the nine grahas and the deviation — across Rust, Node, Python and
+   Dart. Node's error message listed the names by hand and now reads
+   them from the generated enum.
 6. **Re-aim the pass** at each step: the claims that read falsified
    today are written to fail both ways, so each step flips its rows and
    the page records it.

@@ -26,6 +26,7 @@ from teistro import (
     MessagePart,
     Body,
     Calendar,
+    Ephemeris,
     ChartLayout,
     ChartKind,
     DashaSystem,
@@ -291,6 +292,24 @@ def main() -> None:
         put(f"topocentric-graha-{j}-lon", graha.longitude_deg)
         put(f"topocentric-graha-{j}-lat", graha.latitude_deg)
         put(f"topocentric-graha-{j}-speed", graha.speed_deg_per_day)
+
+    # ── A chart founded on a classical astronomy ──────────────────────
+    # The Surya Siddhanta by name: the text's zodiac, places, Lagna and
+    # day (docs/03-design/classical-chart.md), which every binding reaches
+    # through the selector and must read back alike, deviation and all.
+    with teistro.context(
+        ephemeris=Ephemeris.SURYA_SIDDHANTA,
+        settings={"frame": {"ayanamsha": {"kind": "CATALOGUED", "id": "SURYASIDDHANTA"}}},
+    ) as classical:
+        text = classical.chart.found(instant=2447995.4895833335, place=place, utc_offset_seconds=20700)
+        put("classical-steps", ",".join(text.batch.steps_applied))
+        put("classical-lagna", text.lagna_deg)
+        put("classical-sunrise", text.day.sunrise)
+        deviation = text.provenance.deviation
+        assert deviation is not None
+        put("classical-deviation", f"{deviation.model}: {deviation.detail}")
+        for j, graha in enumerate(text.grahas):
+            put(f"classical-graha-{j}-lon", graha.longitude_deg)
 
     # ── A chart and an almanac, under a geocentric profile ────────────
     # Everything after this runs on the SDK's own default profile, which

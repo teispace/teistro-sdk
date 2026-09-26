@@ -1480,6 +1480,7 @@ A caller who passes a vtable has already answered the question, and this is igno
 | `TS_EPHEMERIS_NONE` | 0 | None. Positions are `CAPABILITY`, and so is anything built on them. The zero value, and what a caller who passes a vtable leaves this at. |
 | `TS_EPHEMERIS_BUILTIN` | 1 | The SDK's own built-in analytic ephemeris: no files, no network, no licence beyond the SDK's own (ADR-0008). `UNSUPPORTED` naming the feature if this library was built without it. |
 | `TS_EPHEMERIS_TEST` | 2 | The analytic test provider. For tests and examples only — its positions are **not astronomy**, and a chart cast from them is a shape rather than a sky. |
+| `TS_EPHEMERIS_SURYA_SIDDHANTA` | 3 | The Surya Siddhanta, a **classical astronomy**: the text's own places, precession, sunrise and Lagna, so a chart founded over it is the text's chart throughout (`03-design/classical-chart.md`). Name its ayanamsha, `SURYASIDDHANTA`, for the text's zodiac. |
 
 ## ts_resolution
 

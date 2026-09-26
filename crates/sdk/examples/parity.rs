@@ -753,6 +753,52 @@ fn the_constants(report: &mut Report) {
     );
 }
 
+/// A chart founded on a classical astronomy: the Surya Siddhanta by
+/// name, the text's zodiac, places, Lagna and day
+/// (`docs/03-design/classical-chart.md`), which every binding reaches
+/// through the selector and must read back alike, deviation and all.
+fn a_classical_chart(report: &mut Report, place: &Place, offset: UtcOffset) {
+    let classical = Context::builder()
+        .settings_json(
+            r#"{"frame": {"ayanamsha": {"kind": "CATALOGUED", "id": "SURYASIDDHANTA"}}}"#,
+        )
+        .ephemeris([Ephemeris::SuryaSiddhanta])
+        .build()
+        .expect("a context over the text");
+    let text = classical
+        .chart()
+        .found(
+            JulianDay::<Utc>::literal(2_447_995.489_583_333_5),
+            place,
+            offset,
+            ChartKind::Natal,
+        )
+        .expect("the text founds a chart at Kathmandu");
+    put(report, "classical-steps", text.value.steps.join(","));
+    put(report, "classical-lagna", number(text.value.lagna_deg));
+    put(
+        report,
+        "classical-sunrise",
+        number(text.value.day.day.sunrise.get()),
+    );
+    let deviation = text
+        .provenance
+        .deviation
+        .expect("a classical chart deviates");
+    put(
+        report,
+        "classical-deviation",
+        format!("{}: {}", deviation.model, deviation.detail),
+    );
+    for (at, graha) in text.value.grahas.iter().enumerate() {
+        put(
+            report,
+            &format!("classical-graha-{at}-lon"),
+            number(graha.longitude_deg),
+        );
+    }
+}
+
 /// The chart the **topocentric** profile founds, as the report prints
 /// it.
 ///
@@ -2689,6 +2735,7 @@ fn main() {
     );
     let offset = UtcOffset::try_from_seconds(20700).expect("+05:45");
     a_topocentric_chart(&mut report, &sdk, &place, offset);
+    a_classical_chart(&mut report, &place, offset);
     let (geo, place, offset) = charts(&mut report);
     an_almanac(&mut report, &geo, &place, offset);
 

@@ -509,6 +509,7 @@ pub fn ephemeris_from_str(value: &str) -> Result<u8> {
         "NONE" => Ok(0),
         "BUILTIN" => Ok(1),
         "TEST" => Ok(2),
+        "SURYA_SIDDHANTA" => Ok(3),
         other => Err(Error::from_reason(format!("`{other}` is not a Ephemeris"))),
     }
 }
@@ -520,6 +521,7 @@ pub fn ephemeris_to_str(value: u8) -> String {
         0 => "NONE",
         1 => "BUILTIN",
         2 => "TEST",
+        3 => "SURYA_SIDDHANTA",
         _ => "unknown",
     }
     .to_string()

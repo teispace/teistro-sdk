@@ -48,6 +48,11 @@ pub enum TsEphemeris {
     /// positions are **not astronomy**, and a chart cast from them is a
     /// shape rather than a sky.
     Test = 2,
+    /// The Surya Siddhanta, a **classical astronomy**: the text's own
+    /// places, precession, sunrise and Lagna, so a chart founded over it
+    /// is the text's chart throughout (`03-design/classical-chart.md`).
+    /// Name its ayanamsha, `SURYASIDDHANTA`, for the text's zodiac.
+    SuryaSiddhanta = 3,
 }
 
 impl TsEphemeris {
@@ -60,6 +65,7 @@ impl TsEphemeris {
             0 => Some(TsEphemeris::None),
             1 => Some(TsEphemeris::Builtin),
             2 => Some(TsEphemeris::Test),
+            3 => Some(TsEphemeris::SuryaSiddhanta),
             _ => None,
         }
     }
@@ -572,7 +578,8 @@ fn resolve(ephemeris: u8, flags: u32) -> Result<TsEphemeris, Error> {
     let Some(asked) = TsEphemeris::from_repr(ephemeris) else {
         return Err(Error::invalid_arg(format!(
             "options.ephemeris is {ephemeris}, which names no ephemeris; \
-             it is 0 for none, 1 for the built-in, 2 for the test provider"
+             it is 0 for none, 1 for the built-in, 2 for the test provider, \
+             3 for the Surya Siddhanta"
         ))
         .with_field("options.ephemeris"));
     };
@@ -648,6 +655,7 @@ fn own_ephemeris(ephemeris: u8, flags: u32) -> Result<teistro::Ephemeris, Error>
     Ok(match resolve(ephemeris, flags)? {
         TsEphemeris::None => teistro::Ephemeris::None,
         TsEphemeris::Test => teistro::Ephemeris::Test,
+        TsEphemeris::SuryaSiddhanta => teistro::Ephemeris::SuryaSiddhanta,
         TsEphemeris::Builtin => builtin()?,
     })
 }
