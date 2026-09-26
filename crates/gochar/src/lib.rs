@@ -95,10 +95,11 @@ pub struct GocharRules {
 
 impl GocharRules {
     /// The text read whole: the nodes "like the Sun", and every graha
-    /// obstructing but the verses' exceptions.
+    /// obstructing but the verses' exceptions and the nodes each other,
+    /// which would leave v. 2's good houses for them never good (C140).
     pub const TEXT: GocharRules = GocharRules {
         node_vedha: NodeVedha::LikeTheSun,
-        node_obstruction: NodeObstruction::Obstruct,
+        node_obstruction: NodeObstruction::NotEachOther,
     };
 
     /// The readings the settings' `gochar` group gives.
@@ -243,6 +244,20 @@ const fn is_node(graha: Graha) -> bool {
     matches!(graha, Graha::Rahu | Graha::Ketu)
 }
 
+/// Whether `other`, standing in `graha`'s vedha house, obstructs it: not
+/// itself, not the graha the verses exempt, and a node only as the rules
+/// read the nodes (C137, C140).
+fn obstructs(other: Graha, graha: Graha, rules: GocharRules) -> bool {
+    let as_a_node = match rules.node_obstruction {
+        NodeObstruction::NotEachOther => !(is_node(other) && is_node(graha)),
+        NodeObstruction::None => !is_node(other),
+        // `EACH_OTHER_TOO`: the verses read literally, every graha
+        // obstructing.
+        _ => true,
+    };
+    other != graha && exempt(graha) != Some(other) && as_a_node
+}
+
 /// A graha's good houses with their vedha houses; `None` in the vedha
 /// house of a node read as unobstructable.
 fn pairs(graha: Graha, rules: GocharRules) -> impl Iterator<Item = (u8, Option<u8>)> {
@@ -278,10 +293,7 @@ pub fn gochar(reference: Rashi, transits: &[Transit; 9], rules: GocharRules) -> 
             GRAHAS
                 .into_iter()
                 .filter(|other| {
-                    *other != graha
-                        && exempt(graha) != Some(*other)
-                        && !(is_node(*other) && rules.node_obstruction == NodeObstruction::None)
-                        && houses.get(*other as usize) == Some(&vedha)
+                    obstructs(*other, graha, rules) && houses.get(*other as usize) == Some(&vedha)
                 })
                 .collect()
         });
