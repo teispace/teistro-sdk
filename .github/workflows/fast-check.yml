@@ -101,6 +101,8 @@ jobs:
         run: cargo xtask check-classical-chart
       - name: Jaimini significators page (the Atmakaraka against the recording, the karakamsha's two charts, and how often each rule finds a Brahma)
         run: cargo xtask check-jaimini
+      - name: Gochar page (how the transits' verdicts fall over the recorded births, and who obstructs whom over sixty years of sky)
+        run: cargo xtask check-gochar
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)

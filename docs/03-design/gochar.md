@@ -58,10 +58,22 @@ vedha and the tara transits) are a second layer, after this one.
 
 No source to measure against: the corpus records no transit, and PyJHora
 4.8.7 has no gochar or vedha function (a signature search finds none). So
-the acceptance values are the table above, asserted cell by cell, and the
-pass that will hold the module measures it over the recorded births
-rather than against a recording, as the annual chart's did, saying so on
-its first line.
+the acceptance values are the table above, asserted cell by cell, and
+the pass (`gochar-measured.md`, `cargo xtask gochar`) measures what the
+table does over the real sky rather than against a recording:
+
+- **Who obstructs whom**, over every day from 1960 to 2020 read from all
+  twelve reference signs: each of the 72 ordered pairs obstructs every
+  time it stands in the other's vedha house, or is spared by exactly the
+  verses' exemptions and C140, or never stands there because Mercury and
+  Venus never stand opposite the Sun. Each list is written in the pass and
+  held both ways.
+- **The literal reading of the nodes**, measured: in 175 320 node readings
+  in a good house, the other node stood in the vedha house every time
+  (C140).
+- **The forks, over the recorded births**: counting from the lagna rather
+  than the Moon moves 53% of the verdicts (C139); the nodes' readings move
+  2% to 5%.
 
 ## 3. The forks (cruxes)
 
@@ -119,7 +131,17 @@ that reads the reference once.
    setting only a panchanga knob called itself empty; it now compares with
    the empty patch, which cannot miss a group, and a test sets each knob of
    every group alone.
-2. The measured pass over the recorded births, held by a gate.
+2. The measured pass, held by `check-gochar`: **done**, and §2 says what
+   it found. Pricing the batch first found the façade founding a whole
+   chart per instant — its day, houses and two lagnas — to read nine
+   longitudes: `Founder::longitudes` places the grahas at every instant in
+   one request, without the speeds' second request either side, each place
+   equal to the founded chart's to the bit (a façade test holds it under
+   the default, the topocentric conformance profile and the true node,
+   proved red by a 1e-9° nudge). 240 instants: 110 ms founded, 46 ms
+   placed, warm, under the gates' build profile. Assembling a document's
+   sections was measured separately and costs nothing visible; the
+   founding is the cost.
 3. The boundary and the bindings, after the pattern of the Jaimini reading.
 4. Sade Sati (its phases need a source: Phaladeepika v. 22 reads Saturn
    over the Janma rasi and does not name the seven and a half years), the

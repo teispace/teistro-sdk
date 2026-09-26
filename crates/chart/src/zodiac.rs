@@ -53,7 +53,7 @@ const fn centre_of(centre: Centre) -> FrameCentre {
 /// The frame a chart asks the provider for: the tropical zodiac of date,
 /// whatever the chart's own is, at the centre and with the corrections
 /// the settings name.
-fn request_of(settings: &Settings) -> Frame {
+pub(crate) fn request_of(settings: &Settings) -> Frame {
     let frame = &settings.frame;
     Frame {
         centre: centre_of(frame.centre),

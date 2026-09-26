@@ -1178,6 +1178,23 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none. No caller asked the completion for the true basis,
   and the chart already took its day and zodiac from the SDK.
 
+- **Gochar, measured; its batch places the grahas without founding the
+  charts** (`03-design/gochar-measured.md`, `cargo xtask gochar`). Over
+  every day from 1960 to 2020 read from all twelve reference signs, each
+  ordered pair of grahas obstructs every time it stands in the other's
+  vedha house, or is spared by exactly the verses' exemptions and C140, or
+  never stands there (Mercury and Venus never oppose the Sun); each list
+  is written in the pass and held both ways. Over the recorded births,
+  counting from the lagna rather than the Moon moves 53% of the verdicts.
+  `sdk.chart().gochar` founded a whole chart per instant — day, houses,
+  two lagnas — to read nine longitudes; the new `Founder::longitudes`
+  places them at every instant in one request, each equal to the founded
+  chart's to the bit, and the batch is 2.4× faster (240 instants, 110 ms to
+  46 ms). A gochar envelope's steps now say what was done: no day or
+  angles.
+
+  **Numbers:** none. Every place is the founded chart's to the bit.
+
 - **Gochar: the transits read from the natal Moon** (`03-design/gochar.md`).
   A new crate, `teistro-gochar`, reads each of the nine grahas in transit
   from the natal Moon's sign as Phaladeepika ch. 26 teaches it, read on the
