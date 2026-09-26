@@ -1,6 +1,6 @@
 # Jaimini significators: the karakamsha, the Brahma graha and the Sthira dasa
 
-Status: `draft`, 2026-09-26; §5 steps 1 to 3 **built** the same day.
+Status: `draft`, 2026-09-26; §5 steps 1 to 4 **built** the same day.
 Written from the texts and a measurement before any code; the building is
 expected to correct it.
 
@@ -31,9 +31,10 @@ signs"; the Sanskrit says nothing of order (C129).
 **The Brahma graha** (vv. 170 to 173), read in the Sanskrit. The text
 here is the archive.org OCR of the Sanskrit printed beside the
 translation, and where the OCR garbles a word the reading in brackets is
-this page's: v. 168's middle (the OCR's "स्थिरे sect gg qa", where the
-translation gives eight years for a fixed sign and nine for a dual) and
-v. 172's "अष्टमेशो" (the OCR's "अष्टसेशो"). Read against the printed
+this page's: v. 168's middle (the OCR's "स्थिरे sect gg qa", which the
+printed page reads स्थिरे चाऽष्टौ द्वन्द्वे नव, eight years for a fixed sign
+and nine for a dual, as the translation gives) and v. 172's "अष्टमेशो"
+(the OCR's "अष्टसेशो"), which is still to be read against the printed
 page before a crux is closed on it.
 
 - v. 171, षष्ठाष्टव्ययनाथेषु यो बली विषमर्क्षगः पृष्ठस्थितो भवेद्
@@ -98,6 +99,7 @@ not shipped: a black box cannot be cited.
 | C128 | what a chart with no qualifying lord has | no Brahma (the verses); or the translator's note's rule | no Brahma, **refused by name**, the note a knob | the verses are silent and a silent fallback is a guess; the note is cited and selectable |
 | C129 | the order of the Sthira dasa's signs | consecutive from Brahma's sign; or forward from odd and back from even (the translation) | consecutive | the Sanskrit states no order; PyJHora runs forward on every chart, and its antardashas forward from their own sign on 480 of 480 |
 | C130 | the chart the karakamsha's houses are counted in | the rasi chart, from the sign the Atmakaraka's navamsha names (the recording engine); or the navamsha chart itself | both, reported | the schools divide on it and a consumer reading one wants the other named |
+| C131 | the Yogardha dasa's order | by the start's parity (the translation, its worked example and PyJHora); or forward | by parity | v. 174 in Sanskrit states the span and the start and no order; PyJHora's antardashas, one fixed sequence for every mahadasha, are declined for the kernel's (C50) |
 
 v. 172's first half, the karaka's 8th lord in the 8th, is **not built**:
 the verse is not rendered in the translation and "karaka" is not said
@@ -159,11 +161,26 @@ about a third chart-query field for **periods**, and this is not one.
    systems whose start every chart gives (`Start::every_chart_gives`),
    and the Sthira dasa is asked for by name, where its refusal names the
    setting that supplies a Brahma.
-4. **Yogardha** (v. 174): half of the Chara and Sthira spans, from the
-   stronger of the lagna and the 7th, forward from an odd sign and back
-   from an even one — which v. 174 **does** state. It is a composition
-   of two kernels' spans, which the coverage page names as the blocker,
-   and is taken after the Sthira dasa exists.
+4. **Yogardha** (v. 174): **done**. Read on the printed page, the
+   Sanskrit states the span, half the sum of the Chara and Sthira years,
+   and the start, the stronger of the lagna and the 7th — and, as for
+   the Sthira dasa, **no order**: this page had said v. 174 "does" state
+   one, which was the translation's. The translation's order, forward
+   from an odd sign and back from an even one, is also its worked
+   example's and PyJHora's on 200 of 200 charts, so it is the default
+   (C131). It is **not** a composition over kernels, as the coverage page
+   supposed: it takes the Sthira dasa's years and not its start, so it
+   needs no Brahma, and it is one `Length`, `MeanOfCountAndModality`,
+   inside the sign-based kernel, whose `years` now answers half-years.
+   Its start is Mandooka's, `stronger_of: [1, 7]` under
+   `dasha.rashi_start`. **The printed table is reproduced but two named
+   cells**: Leo, where the book's 8 contradicts its own Chara table's 7
+   (7½ is computed), and Scorpio, where both of the book's tables count
+   to Mars against C51's modality step, which reopens C51. Its Capricorn
+   4½ counts two signs back to Saturn, as computed, where its Chara
+   table's 5 counts nowhere. PyJHora gives every mahadasha the same
+   antardashas, from the dasha's second sign, on 720 of 720; no text
+   states that, and the kernel's own (C50) stand.
 5. **Sudasa**, which the coverage page says waits on the karakamsha:
    confirm from the source which point it starts from before building,
    because the Sree lagna, which is built, is the other candidate.

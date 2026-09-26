@@ -10517,15 +10517,19 @@
           "aliases": [],
           "deprecated": false,
           "attributes": {
-            "family": "COMPOSITION"
+            "family": "RASHI"
           },
           "sources": [
             {
-              "text": "dasha-kernels",
-              "ref": "docs/03-design/dasha-kernels.md"
+              "text": "BPHS",
+              "ref": "ch. 46 v. 174: half the sum of the Chara and Sthira years, from the stronger of the lagna and the 7th"
+            },
+            {
+              "text": "jaimini-significators",
+              "ref": "docs/03-design/jaimini-significators.md"
             }
           ],
-          "mark": "S",
+          "mark": "T",
           "unverified": []
         },
         {

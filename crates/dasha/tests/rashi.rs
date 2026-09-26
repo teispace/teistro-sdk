@@ -155,7 +155,7 @@ fn every_sign_based_system_is_reproduced() {
         .collect();
     assert_eq!(
         unrecorded,
-        [DashaSystem::Sthira],
+        [DashaSystem::Sthira, DashaSystem::Yogardha],
         "the shipped rows the corpus does not record"
     );
     assert_eq!(

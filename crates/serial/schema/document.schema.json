@@ -3252,6 +3252,47 @@
             "BY_MODALITY"
           ],
           "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Half the sum of `Length::CountToLord`'s years and the modality's: the Yogardha's, \"half the sum of the two\" (BPHS ch. 46 v. 174), the Chara dasa's and the Sthira dasa's, so a sign's period may run a half-year.",
+          "properties": {
+            "MEAN_OF_COUNT_AND_MODALITY": {
+              "properties": {
+                "dual": {
+                  "description": "A dual sign's years before halving.",
+                  "format": "uint8",
+                  "maximum": 255,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "fixed": {
+                  "description": "A fixed sign's years before halving.",
+                  "format": "uint8",
+                  "maximum": 255,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "movable": {
+                  "description": "A movable sign's years before halving.",
+                  "format": "uint8",
+                  "maximum": 255,
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "movable",
+                "fixed",
+                "dual"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "MEAN_OF_COUNT_AND_MODALITY"
+          ],
+          "type": "object"
         }
       ]
     },
@@ -4811,7 +4852,7 @@
       "oneOf": [
         {
           "const": "STRONGER",
-          "description": "BPHS ch. 46 vv. 179 to 184: Mandooka from the stronger of the lagna and the seventh, Shoola of the second and the eighth, Trikona the strongest of the trines, by vv. 158 to 166's strength.",
+          "description": "BPHS ch. 46 vv. 179 to 184: Mandooka from the stronger of the lagna and the seventh, Shoola of the second and the eighth, Trikona the strongest of the trines, by vv. 158 to 166's strength; and v. 174, the Yogardha from the stronger of the lagna and the seventh.",
           "type": "string"
         },
         {
