@@ -1178,6 +1178,36 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none. No caller asked the completion for the true basis,
   and the chart already took its day and zodiac from the SDK.
 
+- **The hit list, measured, and searched once for many charts**
+  (`transit-hit-list.md` §6 step 3). `sdk.chart().hits_many(natals,
+  &request)` answers a list per chart from one scan of each graha: the
+  sky's ingresses and stations are refined once and handed to every
+  chart, and only each chart's aspects are its own; under a topocentric
+  frame the charts are searched once per place. Each chart's list is the
+  one `hits` gives it alone, to the bit. The crossing search gained
+  `Search::each` and `between_each`, several lattices tested against one
+  scan at the finest one's step, and `solve::refine_known`, which narrows
+  a bracket whose ends the caller already holds without asking for them
+  again. An aspect lattice now holds only the lines asked for
+  (`hits::aspect_step_deg`: 180° for the default pair, where it was 30°
+  and ten of each twelve refinements were thrown away). A year of one
+  chart's hits fell from 5.2 s to 1.5 s, and with a 3° orb at three
+  angles from 12.9 s to 2.0 s. `Hit` and `NatalPoint` are exported from
+  the crate root. The measured page (`transit-hit-list-measured.md`,
+  `check-hits`) reads every ingress and exact aspect of 2026 back
+  through charts founded at each birth's own place over the 55 recorded
+  births, ties every line's crossings to the stations between them, and
+  holds each orb's window to opening, exact and closing, in order.
+
+  **Numbers:** none. A single lattice's search asks for the same samples
+  and narrows the same brackets from the same values, so every existing
+  crossing is bit-identical; only the unreleased hit list's instants move,
+  within the search's tolerance. What moved is what the engine is asked:
+  an uncached almanac day now makes 345 provider calls where it made 395
+  (`batch-and-parallelism-measured.md`), the two ends of every bracket no
+  longer asked for twice; behind the memo the count is unchanged, since
+  those were the repeats it was already answering.
+
 - **The hit list's aspects to natal points** (`transit-hit-list.md` §6
   step 2). `HitKind::Aspect` reports a transit reaching an aspect's angle
   to a natal graha or the lagna — the conjunction and opposition by

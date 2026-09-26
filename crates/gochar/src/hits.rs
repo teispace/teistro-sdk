@@ -208,12 +208,43 @@ pub fn nakshatra_ingress(boundary_deg: f64, motion: Motion) -> HitEvent {
     }
 }
 
+/// The step of the lattice about a natal point that holds every line of the
+/// `angles` asked for, from either side, and as few others as it can: the
+/// greatest common divisor of 360 and each line, degrees.
+///
+/// A lattice at 30° holds every aspect at once, and a search over it
+/// refines every crossing of it; asked for the conjunction and the
+/// opposition alone, ten of each twelve refinements were thrown away by
+/// [`aspect_hit`]. At this step the lines the list keeps are all but every
+/// line (the one exception being a set like 90° alone, whose lattice at 90°
+/// also holds 0° and 180°, which the filter still drops).
+///
+/// ```
+/// use teistro_gochar::hits::aspect_step_deg;
+///
+/// assert_eq!(aspect_step_deg(&[0, 180]), 180.0);
+/// assert_eq!(aspect_step_deg(&[0]), 360.0);
+/// assert_eq!(aspect_step_deg(&[0, 60, 90, 120, 180]), 30.0);
+/// ```
+#[must_use]
+pub fn aspect_step_deg(angles: &[u16]) -> f64 {
+    const fn gcd(a: u16, b: u16) -> u16 {
+        if b == 0 { a } else { gcd(b, a % b) }
+    }
+    f64::from(
+        angles
+            .iter()
+            .flat_map(|angle| [*angle % 360, (360 - *angle % 360) % 360])
+            .fold(360, gcd),
+    )
+}
+
 /// The aspect a crossing names, if it is one asked for: the transit reached
 /// the line `boundary_deg` of the lattice of `edge` about a natal point at
 /// `natal_deg`, `orb_deg` either side of the exact line.
 ///
-/// Every multiple of 30° from the natal point is a line of the exact
-/// lattice; only the `angles` asked for, from either side, are aspects.
+/// A line of the lattice is a multiple of [`aspect_step_deg`] from the
+/// natal point; only the `angles` asked for, from either side, are aspects.
 /// Moving forward, the transit enters an orb at the edge before the line
 /// and leaves at the edge past it; moving back, the reverse.
 #[must_use]

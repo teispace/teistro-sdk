@@ -139,10 +139,10 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
         .between(from, to)
         .unwrap();
     assert!(!crossings.is_empty());
-    // The narrowing places an event in a handful of evaluations: two for
-    // the bracket's ends and at most seven steps (nine measured).
+    // The narrowing places an event in a handful of evaluations: at most
+    // seven steps, the bracket's ends being the scan's own samples.
     let most = crossings.iter().map(|e| e.evaluations).max().unwrap();
-    assert!(most <= 10, "{most}");
+    assert!(most <= 8, "{most}");
     let mut falling = 0;
     for event in &crossings {
         let lon = Looping::longitude(event.instant.get() - J2000);
@@ -504,4 +504,71 @@ fn a_window_reports_only_the_crossings_inside_it() {
     for (near, far) in events.iter().zip(inside) {
         assert_eq!(near.instant.get().to_bits(), far.instant.get().to_bits());
     }
+}
+
+/// Several lattices scanned once answer what each lattice's own search
+/// answers at the same step, to the bit, and the scan is asked for once:
+/// the hit list's signs, nakshatras and aspect lines cost one walk and not
+/// one each (`03-design/transit-hit-list.md`).
+#[test]
+fn several_lattices_scanned_once_answer_what_each_answers_alone() {
+    let provider = Looping;
+    let completion = Completion::new(
+        &provider,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+    let quantity = Quantity::Longitude(Body::Mars);
+    let (from, to) = (
+        JulianDay::<Ut1>::literal(J2000),
+        JulianDay::<Ut1>::literal(J2000 + 400.0),
+    );
+    let aspect = Lattice {
+        origin_deg: 101.25,
+        step_deg: 90.0,
+    };
+    let lattices = [Lattice::SIGNS, Lattice::NAKSHATRAS, aspect];
+
+    let counted = Counted::new(&longitudes);
+    let search = Search::each(
+        &counted,
+        quantity,
+        Lattice::SIGNS,
+        [Lattice::NAKSHATRAS, aspect],
+    );
+    let step = search.step_days();
+    let each = search.between_each(from, to).unwrap();
+    // The finest lattice sets the step for all of them.
+    assert_eq!(
+        step,
+        Search::new(&longitudes, quantity, Lattice::NAKSHATRAS).step_days()
+    );
+    assert_eq!(each.len(), lattices.len());
+    let mut refinements = 0;
+    for (lattice, found) in lattices.iter().zip(&each) {
+        let alone = Search::new(&longitudes, quantity, *lattice)
+            .with_step_days(step)
+            .between(from, to)
+            .unwrap();
+        assert!(!alone.is_empty(), "{lattice:?}");
+        assert_eq!(found.len(), alone.len(), "{lattice:?}");
+        for (a, b) in found.iter().zip(&alone) {
+            assert_eq!(a.instant.get().to_bits(), b.instant.get().to_bits());
+            assert_eq!((a.boundary_deg, a.direction), (b.boundary_deg, b.direction));
+        }
+        refinements += found.iter().map(|e| e.evaluations as usize).sum::<usize>();
+    }
+    // One grid for the scan, however many lattices it was tested against:
+    // four hundred days at the nakshatras' step is fewer instants than a
+    // grid holds, so the scan is one request and the rest refinements.
+    assert_eq!(counted.requests(), 1 + refinements);
+    // And `between` is every lattice's crossings in time order.
+    let merged = search.between(from, to).unwrap();
+    assert_eq!(merged.len(), each.iter().map(Vec::len).sum::<usize>());
+    assert!(
+        merged
+            .windows(2)
+            .all(|w| w[0].instant.get() <= w[1].instant.get())
+    );
 }

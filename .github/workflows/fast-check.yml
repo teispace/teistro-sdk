@@ -103,6 +103,8 @@ jobs:
         run: cargo xtask check-jaimini
       - name: Gochar page (how the transits' verdicts fall over the recorded births, and who obstructs whom over sixty years of sky)
         run: cargo xtask check-gochar
+      - name: Hit list page (each ingress and exact aspect of a year read back through a founded chart, over the recorded births)
+        run: cargo xtask check-hits
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)

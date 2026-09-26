@@ -1010,9 +1010,10 @@ impl<'a> ChartArea<'a> {
         Ok(Envelope::sealing(readings, read.provenance))
     }
 
-    /// Every ingress and station of a window, against a natal chart: the
-    /// transit hit list (`03-design/transit-hit-list.md`), sorted by
-    /// instant, then graha, then kind.
+    /// Every ingress, station and aspect to a natal point of a window,
+    /// against a natal chart: the transit hit list
+    /// (`03-design/transit-hit-list.md`), sorted by instant, then graha,
+    /// then kind.
     ///
     /// Each sign and nakshatra is the one a chart founded at that instant
     /// would give — the search reads the chart's own zodiac, not a frame's
@@ -1045,108 +1046,101 @@ impl<'a> ChartArea<'a> {
         natal: &Document,
         request: &crate::hit_request::HitRequest,
     ) -> Result<Envelope<Vec<teistro_gochar::hits::Hit>>, Error> {
-        use crate::hit_request::HitKind;
-        use teistro_astro::events::{Direction, Lattice, StationKind};
-        use teistro_chart::foundation::TransitEventKind;
-        use teistro_gochar::hits::{self, Edge, Hit, HitEvent, Motion, NatalPoint};
+        self.hits_many([natal], request).map(|found| {
+            let provenance = found.provenance.clone();
+            let one = found.value.into_iter().next().unwrap_or_default();
+            Envelope::sealing(one, provenance)
+        })
+    }
 
-        /// What a lattice's crossings mean.
-        #[derive(Clone, Copy)]
-        enum Meaning {
-            Sign,
-            Nakshatra,
-            Aspect(NatalPoint, f64, Edge),
-        }
+    /// [`Chart::hits`] for many natal charts over one window, **searching
+    /// the sky once**: each graha's longitude is scanned one time for every
+    /// chart, its ingresses and stations — which are the sky's and not a
+    /// chart's — are refined once and handed to each, and only the aspects
+    /// to each chart's own points are refined per chart. One list per
+    /// chart, in the order given.
+    ///
+    /// Under a topocentric frame the sky is the observer's, so the charts
+    /// are searched once per place instead; the envelope's provenance is
+    /// the first place's.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, Ephemeris, HitRequest};
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let family: Vec<Document> = todo!();
+    /// let year = HitRequest::between(JulianDay::<Utc>::literal(2_460_676.5), JulianDay::literal(2_461_041.5));
+    /// let lists = sdk.chart().hits_many(&family, &year)?.value;
+    /// assert_eq!(lists.len(), family.len());
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Chart::hits`]; no chart at all is `INVALID_ARG` naming `natals`.
+    pub fn hits_many<'d>(
+        self,
+        natals: impl IntoIterator<Item = &'d Document>,
+        request: &crate::hit_request::HitRequest,
+    ) -> Result<Envelope<Vec<Vec<teistro_gochar::hits::Hit>>>, Error> {
+        use crate::hit_request::{HitKind, groups, hit_of, lattices_of};
+        use teistro_core::settings::Centre;
+        use teistro_gochar::hits::{self, Hit};
 
         request.check()?;
-        let mut meanings: Vec<(Meaning, Lattice)> = Vec::new();
-        if request.asks(HitKind::SignIngress) {
-            meanings.push((Meaning::Sign, Lattice::SIGNS));
+        let natals: Vec<&Document> = natals.into_iter().collect();
+        if natals.is_empty() {
+            return Err(
+                Error::invalid_arg("no natal chart to search the transits against")
+                    .with_field("natals"),
+            );
         }
-        if request.asks(HitKind::NakshatraIngress) {
-            meanings.push((Meaning::Nakshatra, Lattice::NAKSHATRAS));
-        }
-        let orb = request.orb_deg().unwrap_or(0.0);
-        if request.asks(HitKind::Aspect) {
-            for point in request.points() {
-                let natal_deg = match point {
-                    NatalPoint::Graha { graha } => {
-                        natal.foundation.graha(*graha).map(|at| at.longitude_deg)
-                    }
-                    NatalPoint::Lagna => Some(natal.foundation.lagna_deg),
-                }
-                .ok_or_else(|| {
-                    Error::invalid_arg(format!("the natal chart has no {point:?} to aspect"))
-                        .with_field("points")
-                })?;
-                let edges: &[(Edge, f64)] = if request.orb_deg().is_some() {
-                    &[(Edge::Exact, 0.0), (Edge::Before, -orb), (Edge::Past, orb)]
-                } else {
-                    &[(Edge::Exact, 0.0)]
+        let topocentric = self.context.settings().frame.centre == Centre::Topocentric;
+        let mut lists: Vec<Vec<Hit>> = vec![Vec::new(); natals.len()];
+        let mut provenance = None;
+        for (place, members) in groups(&natals, topocentric) {
+            let meanings = lattices_of(request, &natals, &members)?;
+            let lattices: Vec<_> = meanings.iter().map(|(_, lattice)| *lattice).collect();
+            let found = self.founding(UtcOffset::UTC, |founder| {
+                founder.transit_events(
+                    &place,
+                    request.grahas(),
+                    &lattices,
+                    request.asks(HitKind::Station),
+                    (request.from(), request.to()),
+                )
+            })?;
+            for event in &found.value {
+                let Some((happened, only)) = hit_of(event, &meanings, request) else {
+                    continue;
                 };
-                for (edge, shift) in edges {
-                    meanings.push((
-                        Meaning::Aspect(*point, natal_deg, *edge),
-                        Lattice {
-                            origin_deg: natal_deg + shift,
-                            step_deg: 30.0,
-                        },
-                    ));
-                }
-            }
-        }
-        let lattices: Vec<Lattice> = meanings.iter().map(|(_, lattice)| *lattice).collect();
-        let place = natal.foundation.place;
-        let found = self.founding(UtcOffset::UTC, |founder| {
-            founder.transit_events(
-                &place,
-                request.grahas(),
-                &lattices,
-                request.asks(HitKind::Station),
-                (request.from(), request.to()),
-            )
-        })?;
-        let motion = |direction: Direction| match direction {
-            Direction::Falling => Motion::Retrograde,
-            Direction::Rising => Motion::Direct,
-        };
-        let mut out: Vec<Hit> = found
-            .value
-            .iter()
-            .filter_map(|event| {
-                let happened = match event.kind {
-                    TransitEventKind::Crossing {
-                        lattice,
-                        boundary_deg,
-                        direction,
-                    } => match meanings.get(lattice).map(|(meaning, _)| *meaning)? {
-                        Meaning::Sign => hits::sign_ingress(boundary_deg, motion(direction)),
-                        Meaning::Nakshatra => {
-                            hits::nakshatra_ingress(boundary_deg, motion(direction))
-                        }
-                        Meaning::Aspect(point, natal_deg, edge) => hits::aspect_hit(
-                            (point, natal_deg),
-                            (boundary_deg, edge, orb),
-                            motion(direction),
-                            request.aspects(),
-                        )?,
-                    },
-                    TransitEventKind::Station { kind, .. } => HitEvent::Station {
-                        turns: match kind {
-                            StationKind::Retrograde => Motion::Retrograde,
-                            StationKind::Direct => Motion::Direct,
-                        },
-                    },
-                };
-                Some(Hit {
+                let hit = Hit {
                     instant: event.instant,
                     graha: event.graha,
                     event: happened,
-                })
-            })
-            .collect();
-        hits::sort(&mut out);
-        Ok(Envelope::sealing(out, found.provenance))
+                };
+                // An event of the sky goes to every chart of the group; an
+                // aspect to its own chart alone.
+                let to: &[usize] = match &only {
+                    Some(chart) => std::slice::from_ref(chart),
+                    None => &members,
+                };
+                for chart in to {
+                    if let Some(list) = lists.get_mut(*chart) {
+                        list.push(hit);
+                    }
+                }
+            }
+            provenance.get_or_insert(found.provenance);
+        }
+        for list in &mut lists {
+            hits::sort(list);
+        }
+        let provenance = provenance
+            .ok_or_else(|| Error::internal("a batch of charts was searched in no group"))?;
+        Ok(Envelope::sealing(lists, provenance))
     }
 
     /// The annual charts' instants: the Sun's returns to where it stood at
