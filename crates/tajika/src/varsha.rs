@@ -162,13 +162,7 @@ pub fn praveshas<S: Longitudes + ?Sized>(
     if reading == Reading::Mean {
         return mean_praveshas(natal, through);
     }
-    let sidereal = Sidereal {
-        tropical,
-        ayanamsha: zodiac.ayanamsha,
-        basis: zodiac.basis,
-        precession: zodiac.precession,
-        delta_t: zodiac.delta_t,
-    };
+    let sidereal = Sidereal::over(tropical, zodiac);
     let lattice = Lattice {
         origin_deg: natal.target_deg(reading).rem_euclid(360.0),
         step_deg: 0.0,

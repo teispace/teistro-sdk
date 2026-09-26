@@ -53,6 +53,7 @@ pub use area::{
     IntlArea, KeysArea, Plans, TimeArea,
 };
 mod gochar_request;
+mod hit_request;
 mod plan_request;
 mod rule_request;
 mod rules_bridge;
@@ -143,6 +144,7 @@ pub use crate::varsha::{
 pub use teistro_dasha as dasha;
 // Gochar: the transits read from the natal Moon (`03-design/gochar.md`).
 pub use crate::gochar_request::GocharRequest;
+pub use crate::hit_request::{HitKind, HitRequest};
 pub use teistro_dasha::{
     DashaCursor, DashaDefinition, DashaReading, PeriodRow, RashiDefinition, Share, Timeline,
     UduDefinition, YearDasha, YearRing,

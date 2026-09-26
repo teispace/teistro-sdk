@@ -1178,6 +1178,24 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none. No caller asked the completion for the true basis,
   and the chart already took its day and zodiac from the SDK.
 
+- **The transit hit list: every ingress and station of a window**
+  (`03-design/transit-hit-list.md`). `sdk.chart().hits(&natal,
+  &HitRequest::between(from, to))` lists each graha's sign and nakshatra
+  ingresses and its stations, sorted by instant, then graha, then kind; a
+  retrograde re-entry is its own event, entering the sign before its line.
+  The search reads the chart's own zodiac, so a hit's sign is the founded
+  chart's: every ingress of a year reads back through charts founded a
+  second either side, under the default and the conformance profile.
+  `Sidereal::over` builds the chart-zodiac source the panchanga, Tajika
+  and the hit list share.
+
+  **Fixed:** a chart founded on a clock far behind the place's own time —
+  a UTC clock east of Greenwich — could not be founded between the
+  place's sunrise and the clock's midnight: the founder refused with an
+  `INTERNAL` error that the day chosen did not hold the instant. It now
+  takes the next day. **Numbers:** none that were answered before; the
+  instants refused are now founded.
+
 - **Gochar by the Ashtakavarga crosses to every binding.** `gochar: {
   instants, ashtakavarga: true }` answers each reading's seven in Node,
   Python and Dart as `reading.ashtakavarga`, and at the C boundary in

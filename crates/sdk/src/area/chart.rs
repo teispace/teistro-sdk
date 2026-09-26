@@ -1010,6 +1010,111 @@ impl<'a> ChartArea<'a> {
         Ok(Envelope::sealing(readings, read.provenance))
     }
 
+    /// Every ingress and station of a window, against a natal chart: the
+    /// transit hit list (`03-design/transit-hit-list.md`), sorted by
+    /// instant, then graha, then kind.
+    ///
+    /// Each sign and nakshatra is the one a chart founded at that instant
+    /// would give — the search reads the chart's own zodiac, not a frame's
+    /// mean-ayanamsha reading — and a retrograde re-entry is its own event,
+    /// entering the sign before the line it crossed.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, Ephemeris, HitRequest};
+    /// # use teistro::gochar::hits::HitEvent;
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let natal: Document = todo!();
+    /// let year = HitRequest::between(JulianDay::<Utc>::literal(2_460_676.5), JulianDay::literal(2_461_041.5));
+    /// for hit in sdk.chart().hits(&natal, &year)?.value {
+    ///     if let HitEvent::SignIngress { into, .. } = hit.event {
+    ///         println!("{:?} enters {into:?} at {}", hit.graha, hit.instant.get());
+    ///     }
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A request [`HitRequest::check`] refuses; whatever the search refuses,
+    /// such as a window the ephemeris does not cover.
+    pub fn hits(
+        self,
+        natal: &Document,
+        request: &crate::hit_request::HitRequest,
+    ) -> Result<Envelope<Vec<teistro_gochar::hits::Hit>>, Error> {
+        use crate::hit_request::HitKind;
+        use teistro_astro::events::{Direction, Lattice, StationKind};
+        use teistro_chart::foundation::TransitEventKind;
+        use teistro_gochar::hits::{self, Hit, HitEvent, Motion};
+
+        request.check()?;
+        let asked = [
+            (HitKind::SignIngress, Lattice::SIGNS),
+            (HitKind::NakshatraIngress, Lattice::NAKSHATRAS),
+        ];
+        let kinds: Vec<HitKind> = asked
+            .iter()
+            .filter(|(kind, _)| request.asks(*kind))
+            .map(|(kind, _)| *kind)
+            .collect();
+        let lattices: Vec<Lattice> = asked
+            .iter()
+            .filter(|(kind, _)| request.asks(*kind))
+            .map(|(_, lattice)| *lattice)
+            .collect();
+        let place = natal.foundation.place;
+        let found = self.founding(UtcOffset::UTC, |founder| {
+            founder.transit_events(
+                &place,
+                request.grahas(),
+                &lattices,
+                request.asks(HitKind::Station),
+                (request.from(), request.to()),
+            )
+        })?;
+        let motion = |direction: Direction| match direction {
+            Direction::Falling => Motion::Retrograde,
+            Direction::Rising => Motion::Direct,
+        };
+        let mut out: Vec<Hit> = found
+            .value
+            .iter()
+            .filter_map(|event| {
+                let happened = match event.kind {
+                    TransitEventKind::Crossing {
+                        lattice,
+                        boundary_deg,
+                        direction,
+                    } => match kinds.get(lattice) {
+                        Some(HitKind::SignIngress) => {
+                            hits::sign_ingress(boundary_deg, motion(direction))
+                        }
+                        Some(HitKind::NakshatraIngress) => {
+                            hits::nakshatra_ingress(boundary_deg, motion(direction))
+                        }
+                        _ => return None,
+                    },
+                    TransitEventKind::Station { kind, .. } => HitEvent::Station {
+                        turns: match kind {
+                            StationKind::Retrograde => Motion::Retrograde,
+                            StationKind::Direct => Motion::Direct,
+                        },
+                    },
+                };
+                Some(Hit {
+                    instant: event.instant,
+                    graha: event.graha,
+                    event: happened,
+                })
+            })
+            .collect();
+        hits::sort(&mut out);
+        Ok(Envelope::sealing(out, found.provenance))
+    }
+
     /// The annual charts' instants: the Sun's returns to where it stood at
     /// birth, `1` opening the first year of life
     /// (`03-design/annual-chart.md`).
