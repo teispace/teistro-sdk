@@ -47,7 +47,19 @@ pub struct Sidereal<'a, S: Longitudes + ?Sized> {
     pub delta_t: DeltaTModel,
 }
 
-impl<S: Longitudes + ?Sized> Sidereal<'_, S> {
+impl<'a, S: Longitudes + ?Sized> Sidereal<'a, S> {
+    /// A tropical source read in `zodiac`.
+    #[must_use]
+    pub const fn over(tropical: &'a S, zodiac: Zodiac) -> Sidereal<'a, S> {
+        Sidereal {
+            tropical,
+            ayanamsha: zodiac.ayanamsha,
+            basis: zodiac.basis,
+            precession: zodiac.precession,
+            delta_t: zodiac.delta_t,
+        }
+    }
+
     /// The ayanamsha at an instant, degrees, and its rate, degrees a day.
     fn offset(&self, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
         let Some(choice) = self.ayanamsha else {

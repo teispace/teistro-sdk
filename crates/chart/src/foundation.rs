@@ -17,9 +17,11 @@
 use serde::{Deserialize, Serialize};
 use teistro_astro::completion::{Completed, Completion, Implementation};
 use teistro_astro::delta_t::DeltaTModel;
+use teistro_astro::events::{Direction, Lattice, Quantity, Search, StationKind};
 use teistro_astro::houses::{ChartFrame, cusps_from_angles, houses_at};
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
+use teistro_astro::sidereal::{Sidereal, Zodiac as SiderealZodiac};
 use teistro_calendar::CalendarSystem;
 use teistro_calendar::solar::SolarModel;
 use teistro_core::catalogue::{ChartKind, Graha, HouseSystem};
@@ -239,6 +241,38 @@ struct BatchInput {
     longitude_deg: f64,
     altitude_m: f64,
     kind: &'static str,
+}
+
+/// One event of a transit search ([`Founder::transit_events`]).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct TransitEvent {
+    /// Whose.
+    pub graha: Graha,
+    /// When.
+    pub instant: JulianDay<Utc>,
+    /// What.
+    pub kind: TransitEventKind,
+}
+
+/// What a transit event was.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum TransitEventKind {
+    /// The graha's longitude reached a line of the `lattice`th lattice.
+    Crossing {
+        /// Which of the lattices asked for.
+        lattice: usize,
+        /// The line reached, degrees in the chart's zodiac.
+        boundary_deg: f64,
+        /// Which way it was passed: falling is a retrograde re-crossing.
+        direction: Direction,
+    },
+    /// The graha stood still in longitude.
+    Station {
+        /// Which way it turned.
+        kind: StationKind,
+        /// Where, degrees in the chart's zodiac.
+        longitude_deg: f64,
+    },
 }
 
 /// The bodies a chart asks the provider for, and the graha each answers
@@ -639,6 +673,106 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             rows,
             self.stamp(input_hash, first.request, steps),
         ))
+    }
+
+    /// Every crossing of the grahas' longitudes over `lattices`, and every
+    /// station when asked, between two instants: the events a transit hit
+    /// list reads (`03-design/transit-hit-list.md`), in time order and each
+    /// named by its graha and lattice.
+    ///
+    /// Read in the **chart's** zodiac — the settings' ayanamsha on its
+    /// basis, nutated under `TRUE` — so a crossing's sign is the one a
+    /// chart founded there would give, and not a frame's mean-ayanamsha
+    /// reading 18″ away. Ketu, always Rahu's opposite point, is Rahu's
+    /// search on its lattice turned half a circle, not a second one.
+    ///
+    /// # Errors
+    ///
+    /// The search's own: a window that does not run forward, or a provider
+    /// that cannot place a body inside it.
+    pub fn transit_events(
+        &self,
+        place: &Place,
+        grahas: &[Graha],
+        lattices: &[Lattice],
+        stations: bool,
+        (from, to): (JulianDay<Utc>, JulianDay<Utc>),
+    ) -> Result<Envelope<Vec<TransitEvent>>, Error> {
+        let settings = self.settings();
+        let frame = request_of(settings);
+        let completion = self.placing();
+        let mut tropical = completion.longitudes(frame);
+        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            tropical = tropical.with_observer(*place);
+        }
+        let source = Sidereal::over(
+            &tropical,
+            SiderealZodiac::of(
+                (settings.frame.zodiac != teistro_core::settings::Zodiac::Tropical)
+                    .then_some(settings.frame.ayanamsha),
+                settings.frame.ayanamsha_basis,
+                self.precession,
+                self.delta_t,
+            ),
+        );
+        let bodies = bodies_of(settings);
+        let (start, end) = (
+            JulianDay::<Ut1>::literal(from.get()),
+            JulianDay::<Ut1>::literal(to.get()),
+        );
+        let mut events = Vec::new();
+        for graha in grahas {
+            // Ketu is Rahu turned half a circle.
+            let (body, turned) = match graha {
+                Graha::Ketu => (bodies.get(7), 180.0),
+                other => (bodies.get(*other as usize), 0.0),
+            };
+            let body = *body.ok_or_else(|| {
+                Error::invalid_arg(format!("{} has no transit to search", graha.key()))
+                    .with_field("grahas")
+            })?;
+            for (index, lattice) in lattices.iter().enumerate() {
+                let shifted = Lattice {
+                    origin_deg: lattice.origin_deg - turned,
+                    step_deg: lattice.step_deg,
+                };
+                for event in
+                    Search::new(&source, Quantity::Longitude(body), shifted).between(start, end)?
+                {
+                    events.push(TransitEvent {
+                        graha: *graha,
+                        instant: JulianDay::<Utc>::literal(event.instant.get()),
+                        kind: TransitEventKind::Crossing {
+                            lattice: index,
+                            boundary_deg: (event.boundary_deg + turned).rem_euclid(360.0),
+                            direction: event.direction,
+                        },
+                    });
+                }
+            }
+            if stations {
+                for station in teistro_astro::events::stations(&source, body, start, end, 1e-6)? {
+                    events.push(TransitEvent {
+                        graha: *graha,
+                        instant: JulianDay::<Utc>::literal(station.instant.get()),
+                        kind: TransitEventKind::Station {
+                            kind: station.kind,
+                            longitude_deg: (station.longitude_deg + turned).rem_euclid(360.0),
+                        },
+                    });
+                }
+            }
+        }
+        events.sort_by(|a, b| a.instant.get().total_cmp(&b.instant.get()));
+        let input_hash = content_hash(&BatchInput {
+            jds_utc: vec![from.get(), to.get()],
+            latitude_deg: place.latitude.get(),
+            longitude_deg: place.longitude.get(),
+            altitude_m: place.altitude.get(),
+            kind: "TRANSIT_EVENTS",
+        });
+        let steps = vec![format!("crossings:{}", Implementation::Sdk.key())];
+        Ok(Envelope::new(events, self.stamp(input_hash, frame, steps)))
     }
 
     /// The stamp of a batch that founded nothing, which still says under

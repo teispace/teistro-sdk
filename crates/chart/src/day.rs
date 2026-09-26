@@ -125,10 +125,15 @@ pub fn chart_day(
     let today = local_day(model, calendar, clock, place, &date, policy)?;
 
     // Before this morning's sunrise the instant belongs to yesterday's
-    // day, whose night is still running.
+    // day, whose night is still running; after the next sunrise, to
+    // tomorrow's, which a clock far behind the place's own time reaches
+    // while its civil date is still today's.
     let day = if instant.get() < today.sunrise.get() {
         let yesterday_date = calendar.date_of(civil.plus_days(-1))?;
         local_day(model, calendar, clock, place, &yesterday_date, policy)?
+    } else if instant.get() >= today.next_sunrise.get() {
+        let tomorrow_date = calendar.date_of(civil.plus_days(1))?;
+        local_day(model, calendar, clock, place, &tomorrow_date, policy)?
     } else {
         today
     };
@@ -269,6 +274,38 @@ mod tests {
             "{}",
             small_hours.elapsed
         );
+    }
+
+    /// A clock far behind the place's own time names a civil date whose
+    /// day has already ended: at 22:00 on a clock ten hours behind UTC the
+    /// Sun rose over the place two hours ago, on the next civil date. The
+    /// instant belongs to that morning's day. Before this was handled the
+    /// founder refused with an `INTERNAL` error for every such instant —
+    /// found founding a Kathmandu chart on a UTC clock, where the half hour
+    /// from the local sunrise to midnight UTC could not be founded at all.
+    #[test]
+    fn an_instant_past_the_next_sunrise_belongs_to_the_next_day() {
+        let civil = 730_000_i64;
+        let behind = UtcOffset::try_from_seconds(-10 * 3600).unwrap();
+        // 08:00 UTC on the next fixed day is 22:00 on the clock's own date.
+        let late = at(civil + 1, 8.0);
+        let day = chart_day(
+            &SixToSix,
+            &Gregorian,
+            &behind,
+            &place(),
+            late,
+            PolarDayPolicy::Undefined,
+        )
+        .unwrap_or_else(|e| panic!("{e}"));
+        assert_eq!(day.part, DayPart::Daylight);
+        let expected = at(civil + 1, 6.0);
+        assert!(
+            (day.lagna_sunrise().get() - expected.get()).abs() < 1e-9,
+            "the anchor is the next morning's sunrise"
+        );
+        // Two hours into the twelve-hour daylight.
+        assert!((day.elapsed - 2.0 / 12.0).abs() < 1e-9, "{}", day.elapsed);
     }
 
     /// The Sun never sets before fixed day 730 020 and rises and sets like

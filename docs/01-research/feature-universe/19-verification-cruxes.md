@@ -156,6 +156,8 @@ or with the baseline engine's value as the documented default.
 | C142 | A sign whose sarvashtakavarga is exactly 28 | v. 20: more than 28 (अष्टाक्ष, read right to left) is auspicious, less is distress; 28 itself is not stated | a verse or commentary on 28 | rank 1 | **neither**: reported as `EVEN` beside `ABOVE` and `BELOW` |
 | C143 | Whether a transit reads the raw bindus or the reduced | v. 11 reads the prepared Ashtakavarga (कृत्वाष्टवर्गं); the trine and Ekadhipatya reductions serve the pindas (vv. 3 to 9) | a verse reading a transit against the reduced table | rank 1 | **raw** |
 | C144 | The Moon's bindu from Jupiter in the Moon's Ashtakavarga | BPHS ch. 66 and Varahamihira (Phaladeepika's own footnote): the 12th; Phaladeepika ch. 23 v. 4, katapayadi कौरवसज्जनस्य read on the printed page: the 2nd; measured over 3 000 drawn charts, PyJHora the 2nd, and it also differs from both texts on the Moon's 9th from the Moon and from Mars and on Venus's 5th from Mars (the footnote's rival 4th) | a table knob | rank 1 against rank 1 | **the 12th**, the table the corpus holds; `gochar-ashtakavarga.md` §2 |
+| C145 | Which aspects a transit hit list reports | a Vedic aspect is a sign's (graha drishti), not a degree's; the conjunction and opposition are counted by every tradition; the Western five and the rest of the multiples of 30° are practice (Kala, Solar Fire) | a source setting a degree-aspect set for gochar | none | **conjunction and opposition**; the request names others (`transit-hit-list.md`) |
+| C146 | The orb of a transit aspect's window | none read; the hit lists surveyed take it as a setting | a source | none | **exact only**; the request names an orb |
 
 ## How to use this page
 

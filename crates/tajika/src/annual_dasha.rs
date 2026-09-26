@@ -381,13 +381,7 @@ pub fn sun_knots<S: Longitudes + ?Sized>(
                 .with_field("sun_deg"),
         );
     }
-    let sun = Sidereal {
-        tropical,
-        ayanamsha: zodiac.ayanamsha,
-        basis: zodiac.basis,
-        precession: zodiac.precession,
-        delta_t: zodiac.delta_t,
-    };
+    let sun = Sidereal::over(tropical, zodiac);
     let arc = 360.0 / f64::from(divisions);
     let levels: Vec<f64> = (1..=divisions)
         .map(|division| arc * f64::from(division))
@@ -968,13 +962,7 @@ mod tests {
                     precession: PrecessionModel::default(),
                     delta_t: DeltaTModel::TableThenModel,
                 };
-                let sidereal = Sidereal {
-                    tropical,
-                    ayanamsha: zodiac.ayanamsha,
-                    basis: zodiac.basis,
-                    precession: zodiac.precession,
-                    delta_t: zodiac.delta_t,
-                };
+                let sidereal = Sidereal::over(tropical, zodiac);
                 for opens in [2_415_020.3, 2_451_545.0, 2_488_070.7] {
                     let (sun, _) = sidereal
                         .longitude_and_speed(Body::Sun, JulianDay::literal(opens))

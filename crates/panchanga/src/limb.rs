@@ -143,13 +143,7 @@ pub fn nakshatra_at<S: Longitudes + ?Sized>(
     at: JulianDay<Utc>,
     zodiac: Zodiac,
 ) -> Result<Span<Nakshatra>, Error> {
-    let source = Sidereal {
-        tropical,
-        ayanamsha: zodiac.ayanamsha,
-        basis: zodiac.basis,
-        precession: zodiac.precession,
-        delta_t: zodiac.delta_t,
-    };
+    let source = Sidereal::over(tropical, zodiac);
     let window = Interval::literal(at.get(), at.get());
     let found = crossings(&source, Limb::Nakshatra, window)?;
     spans(&source, Limb::Nakshatra, window, &found)?
@@ -183,13 +177,7 @@ pub fn moon_between<S: Longitudes + ?Sized>(
     zodiac: Zodiac,
     (from_deg, to_deg): (f64, f64),
 ) -> Result<Interval, Error> {
-    let source = Sidereal {
-        tropical,
-        ayanamsha: zodiac.ayanamsha,
-        basis: zodiac.basis,
-        precession: zodiac.precession,
-        delta_t: zodiac.delta_t,
-    };
+    let source = Sidereal::over(tropical, zodiac);
     let crossing = |bound_deg: f64, from: f64, to: f64| {
         let lattice = Lattice {
             origin_deg: bound_deg.rem_euclid(360.0),
@@ -237,13 +225,7 @@ pub fn limbs<S: Longitudes + ?Sized>(
     window: Interval,
     zodiac: Zodiac,
 ) -> Result<Limbs, Error> {
-    let source = Sidereal {
-        tropical,
-        ayanamsha: zodiac.ayanamsha,
-        basis: zodiac.basis,
-        precession: zodiac.precession,
-        delta_t: zodiac.delta_t,
-    };
+    let source = Sidereal::over(tropical, zodiac);
     // One search at six degrees of the elongation answers the tithis and
     // the karanas alike, a tithi being two karanas: its boundaries are
     // the karana boundaries that fall on a multiple of twelve degrees.
@@ -420,13 +402,7 @@ pub fn signs_within<S: Longitudes + ?Sized>(
     zodiac: Zodiac,
     reach_days: Option<f64>,
 ) -> Result<Vec<Span<Rashi>>, Error> {
-    let source = Sidereal {
-        tropical,
-        ayanamsha: zodiac.ayanamsha,
-        basis: zodiac.basis,
-        precession: zodiac.precession,
-        delta_t: zodiac.delta_t,
-    };
+    let source = Sidereal::over(tropical, zodiac);
     let quantity = Quantity::Longitude(body);
     let search = Search::new(&source, quantity, Lattice::SIGNS);
     let reach = match reach_days {
@@ -557,13 +533,7 @@ pub fn lunar_month_span<S: Longitudes + ?Sized>(
     window: Interval,
     zodiac: Zodiac,
 ) -> Result<Interval, Error> {
-    let source = Sidereal {
-        tropical,
-        ayanamsha: zodiac.ayanamsha,
-        basis: zodiac.basis,
-        precession: zodiac.precession,
-        delta_t: zodiac.delta_t,
-    };
+    let source = Sidereal::over(tropical, zodiac);
     let lattice = Lattice::single(0.0);
     let before = Search::new(&source, Quantity::ELONGATION, lattice).between(
         JulianDay::<Ut1>::literal(window.from.get() - SYNODIC_SEARCH_DAYS),
@@ -605,13 +575,7 @@ pub fn masa_at<S: Longitudes + ?Sized>(
     at: JulianDay<Utc>,
     zodiac: Zodiac,
 ) -> Result<Masa, Error> {
-    let source = Sidereal {
-        tropical,
-        ayanamsha: zodiac.ayanamsha,
-        basis: zodiac.basis,
-        precession: zodiac.precession,
-        delta_t: zodiac.delta_t,
-    };
+    let source = Sidereal::over(tropical, zodiac);
     let sun = teistro_astro::events::value_of(
         Quantity::Longitude(Body::Sun),
         &source,
