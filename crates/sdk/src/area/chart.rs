@@ -10,7 +10,7 @@ use teistro_chart::day::DayPart;
 use teistro_chart::foundation::{ChartAngles, ChartFoundation, Founder, angles_of};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
-    Ayanamsha, ChartKind, DashaSystem, Graha, Nakshatra, Rashi, Vara, Varga,
+    Ayanamsha, CharaKaraka, ChartKind, DashaSystem, Graha, Nakshatra, Rashi, Vara, Varga,
 };
 use teistro_core::envelope::{Envelope, Hash};
 use teistro_core::error::Error;
@@ -19,9 +19,10 @@ use teistro_core::interval::Interval;
 use teistro_core::key::KeyId;
 use teistro_core::quantity::Depth;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::settings::AyanamshaChoice;
 use teistro_core::settings::Balance;
+use teistro_core::settings::{AyanamshaChoice, CharaKarakas};
 use teistro_core::time::UtcOffset;
+use teistro_dasha::jaimini::{JaiminiReading, brahma, karakamsha};
 use teistro_dasha::{
     Birth, Dasha, DashaCursor, DashaName, DashaReading, KalachakraDasha, KalachakraRules,
     RashiChart, RashiDasha, RashiRules, Rules as DashaRules, Wheel, YearDasha, YearRing,
@@ -60,6 +61,20 @@ use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
 use crate::varsha::{AnnualChart, AnnualPlace, VARSHA, Varsha, VarshaRequest, VarshaYear};
 use teistro_rules::longevity::{AyurdayaRules, ThreePairsRules};
+
+/// The nine grahas a chart places, in the catalogue's order: the Sun to
+/// Ketu, without the outer planets the catalogue also names.
+const GRAHAS_IN_ORDER: [Graha; 9] = [
+    Graha::Sun,
+    Graha::Moon,
+    Graha::Mars,
+    Graha::Mercury,
+    Graha::Jupiter,
+    Graha::Venus,
+    Graha::Saturn,
+    Graha::Rahu,
+    Graha::Ketu,
+];
 
 /// `sdk.chart`: the foundation every reading is built on — the lagna,
 /// the day's lagna, the ayanamsha applied, the day part, the grahas
@@ -705,25 +720,13 @@ impl<'a> ChartArea<'a> {
     /// sign, the grahas' signs and dignities under the settings, the navamsa
     /// lagna and the arudha lagna — so it is assembled once here and the
     /// row is the only thing that differs.
-    fn rashi_dasha_of_row(
-        self,
-        foundation: &ChartFoundation,
-        row: &teistro_dasha::RashiRow,
-        rules: DashaRules,
-        rashi: RashiRules,
-    ) -> Result<RashiDasha, Error> {
+    /// What a sign dasha reads of a founded chart: the lagna's sign, the
+    /// grahas' signs and dignities under the settings, the navamsa lagna
+    /// and the arudha lagna. One assembly, for the dashas and for the
+    /// Jaimini significators they start from.
+    fn rashi_chart(self, foundation: &ChartFoundation) -> Result<RashiChart, Error> {
         let states = state(foundation, self.context.settings())?;
-        let grahas = [
-            Graha::Sun,
-            Graha::Moon,
-            Graha::Mars,
-            Graha::Mercury,
-            Graha::Jupiter,
-            Graha::Venus,
-            Graha::Saturn,
-            Graha::Rahu,
-            Graha::Ketu,
-        ];
+        let grahas = GRAHAS_IN_ORDER;
         let placed = |graha: Graha| {
             states
                 .iter()
@@ -747,13 +750,90 @@ impl<'a> ChartArea<'a> {
                 .and_then(|at| signs.get(at).copied())
                 .unwrap_or(lagna)
         };
-        let chart = RashiChart {
+        Ok(RashiChart {
             lagna,
             arudha_lagna: arudha(lagna, 1, sign_of).sign,
             navamsa_lagna: navamsa.lagna.sign,
             signs,
             dignities,
-        };
+        })
+    }
+
+    /// A founded chart's Jaimini significators: its **karakamsha**, the
+    /// Atmakaraka's navamsha sign with every graha's house from it in both
+    /// charts, and its **Brahma graha**, the planet the Sthira dasa starts
+    /// from, under the settings' `jaimini.brahma` rule and
+    /// `jaimini.node_co_lordship` (`03-design/jaimini-significators.md`).
+    ///
+    /// The Atmakaraka is the one the settings' `jaimini.chara_karakas`
+    /// scheme ranks first, seven karakas or eight.
+    ///
+    /// ```
+    /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Test]).build()?;
+    /// let kathmandu = Place::new(
+    ///     Latitude::literal(27.7172),
+    ///     Longitude::literal(85.324),
+    ///     Altitude::literal(1400.0),
+    /// );
+    /// let request = ChartRequest::at(kathmandu, UtcOffset::literal(5, 45, 0));
+    /// let chart = sdk.chart().reading(JulianDay::<Utc>::literal(2_451_545.0), &request)?.value;
+    /// let jaimini = sdk.chart().jaimini(&chart)?;
+    /// // Every graha has a house from the karakamsha in both charts.
+    /// assert!(jaimini.karakamsha.in_rasi.iter().all(|house| (1..=12).contains(house)));
+    /// // Brahma is either found, or its absence says why.
+    /// assert_eq!(jaimini.brahma.graha.is_none(), jaimini.brahma.none.is_some());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A chart whose states cannot be computed, or whose divisional charts
+    /// cannot be cast.
+    pub fn jaimini(
+        self,
+        chart: &Document,
+    ) -> Result<teistro_dasha::jaimini::JaiminiReading, Error> {
+        let foundation = &chart.foundation;
+        let settings = self.context.settings();
+        let states = state(foundation, settings)?;
+        let ruled = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
+        let placed = |graha: Graha| ruled.placement(teistro_rules::Body::Graha(graha));
+        let atmakaraka = GRAHAS_IN_ORDER
+            .into_iter()
+            .find(|graha| {
+                let at = placed(*graha);
+                let held = match settings.jaimini.chara_karakas {
+                    CharaKarakas::Eight => at.karaka8,
+                    _ => at.karaka7,
+                };
+                held == Some(CharaKaraka::Atmakaraka)
+            })
+            .ok_or_else(|| Error::internal("a chart ranks an Atmakaraka"))?;
+        let signs = GRAHAS_IN_ORDER.map(|graha| placed(graha).sign);
+        let navamshas = GRAHAS_IN_ORDER.map(|graha| placed(graha).navamsha);
+        let degrees = GRAHAS_IN_ORDER.map(|graha| placed(graha).longitude.rem_euclid(30.0));
+        let rashi = self.rashi_chart(foundation)?;
+        Ok(JaiminiReading {
+            karakamsha: karakamsha(atmakaraka, &signs, &navamshas),
+            brahma: brahma(
+                &rashi,
+                &degrees,
+                settings.jaimini.node_co_lordship,
+                settings.jaimini.brahma,
+            ),
+        })
+    }
+
+    fn rashi_dasha_of_row(
+        self,
+        foundation: &ChartFoundation,
+        row: &teistro_dasha::RashiRow,
+        rules: DashaRules,
+        rashi: RashiRules,
+    ) -> Result<RashiDasha, Error> {
+        let chart = self.rashi_chart(foundation)?;
         RashiDasha::new(
             row,
             &chart,

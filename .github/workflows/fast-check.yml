@@ -99,6 +99,8 @@ jobs:
         run: cargo xtask check-absence
       - name: Classical chart page (which parts of a chart founded over the Surya Siddhanta are the text's)
         run: cargo xtask check-classical-chart
+      - name: Jaimini significators page (the Atmakaraka against the recording, the karakamsha's two charts, and how often each rule finds a Brahma)
+        run: cargo xtask check-jaimini
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)

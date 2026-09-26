@@ -206,6 +206,7 @@ mod houses;
 mod interpret;
 mod interpretations;
 mod intl;
+mod jaimini;
 mod kalachakra;
 mod lints;
 mod lunisolar;
@@ -272,6 +273,7 @@ const PASSES: &[Pass] = &[
         classical_chart::generate,
         classical_chart::check_generated,
     ),
+    ("jaimini", jaimini::generate, jaimini::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),
     ("state", state::generate, state::check_generated),

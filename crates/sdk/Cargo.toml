@@ -118,6 +118,10 @@ name = "shadbala"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "jaimini"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "surface"
 required-features = ["builtin-ephemeris"]
 

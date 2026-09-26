@@ -10,14 +10,14 @@ use crate::catalogue::{
 
 use super::knobs::{
     AfterCycle, AshtottariGrouping, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti,
-    BhavaSpecialRules, BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras,
-    Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning, HoraReckoning,
-    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
-    LuminaryCheshta, LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
-    NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT,
+    DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning,
+    HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
+    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents, Naisargika,
+    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
+    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja,
+    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier,
+    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
@@ -180,6 +180,9 @@ pub fn root() -> Settings {
         jaimini: Jaimini {
             chara_karakas: CharaKarakas::Seven,
             node_co_lordship: NodeCoLordship::None,
+            // BPHS ch. 46 vv. 170 to 173 as read; the translator's note is
+            // the knob's other value (`03-design/jaimini-significators.md`).
+            brahma: BrahmaRule::Verses,
         },
         aspect: Aspect {
             node_aspects: NodeAspects::None,

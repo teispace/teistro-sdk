@@ -33,14 +33,14 @@ use crate::error::{Error, Status};
 use crate::quantity::Depth;
 pub use knobs::{
     AfterCycle, AshtottariGrouping, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti,
-    BhavaSpecialRules, BirthPeriod, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT, DigKendras,
-    Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning, HoraReckoning,
-    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
-    LuminaryCheshta, LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
-    NodeAspects, NodeCoLordship, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions,
-    PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes,
-    SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
-    Vimshopaka, YearLength, Yuddha, Zodiac,
+    BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT,
+    DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning,
+    HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
+    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents, Naisargika,
+    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
+    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja,
+    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier,
+    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -441,13 +441,14 @@ group!(
 group!(
     /// Jaimini conventions.
     Jaimini, JaiminiPatch {
-        /// Seven or eight chara karakas.
-        /// lint: knob-has-a-reader — `jaimini`, Phase 5. The corpus records both readings under
-        /// `houses.chara_karakas`, so this one has a target waiting.
+        /// Seven or eight chara karakas: which ranks the Atmakaraka the
+        /// karakamsha is read from.
         chara_karakas: CharaKarakas,
-        /// The nodes' co-lordship.
-        /// lint: knob-has-a-reader — `jaimini`, Phase 5.
+        /// The nodes' co-lordship of Scorpio and Aquarius: which lords of
+        /// the 6th, 8th and 12th the Brahma graha is chosen among (C126).
         node_co_lordship: NodeCoLordship,
+        /// Which rule finds the Brahma graha (crux C128).
+        brahma: BrahmaRule,
     }
 );
 

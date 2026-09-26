@@ -311,6 +311,17 @@ knob!(
         Eight = "EIGHT" }
 );
 knob!(
+    /// Which rule finds the Brahma graha, the planet the Sthira dasa starts
+    /// from (BPHS ch. 46 vv. 170 to 173; crux C128).
+    BrahmaRule { /// The verses: the lords of the 6th, 8th and 12th from the stronger
+        /// of the lagna and the 7th, in an odd sign behind it, the most degrees
+        /// among them; none where no lord qualifies.
+        Verses = "VERSES", /// The translator's note under them: the 8th lord in the 8th, else a
+        /// planet in the 8th, else a planet in an odd sign within six signs of
+        /// the lagna or the 7th.
+        TranslatorsNote = "TRANSLATORS_NOTE" }
+);
+knob!(
     /// The nodes' co-lordship of Aquarius and Scorpio.
     NodeCoLordship { /// None.
         None = "NONE", /// The stronger lord.

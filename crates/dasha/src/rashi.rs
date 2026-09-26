@@ -144,7 +144,7 @@ pub struct RashiChart {
 
 impl RashiChart {
     /// The sign a graha stands in.
-    fn sign_of(&self, graha: Graha) -> Rashi {
+    pub(crate) fn sign_of(&self, graha: Graha) -> Rashi {
         self.signs
             .get(graha as usize)
             .copied()
