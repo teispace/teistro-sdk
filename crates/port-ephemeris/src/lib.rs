@@ -38,6 +38,7 @@
 //! assert_eq!(columns.frame, Frame::CANONICAL);
 //! ```
 
+pub mod angles;
 pub mod body;
 pub mod caching;
 pub mod capabilities;
@@ -55,6 +56,7 @@ pub mod sefile;
 pub mod test_provider;
 pub mod vtable;
 
+pub use angles::{Angles, AnglesRequest};
 pub use body::{Body, TimeScale};
 pub use caching::{CacheStats, CachingProvider};
 pub use capabilities::{

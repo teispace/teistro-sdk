@@ -19,6 +19,7 @@ use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_core::settings::Atmosphere;
 
+use crate::angles::{Angles, AnglesRequest};
 use crate::body::{Body, TimeScale};
 use crate::capabilities::{
     Astronomy, Capabilities, DataHash, DistanceUnit, Identity, Obliquity, Overrides, SpeedModel,
@@ -791,6 +792,14 @@ unsafe fn capabilities_from_c(raw: &CapabilitiesC) -> Result<Capabilities, Provi
         .ok_or_else(|| ProviderError::invalid(format!("speed model id {}", raw.speed_model)))?;
     let astronomy = Astronomy::from_id(raw.astronomy)
         .ok_or_else(|| ProviderError::invalid(format!("astronomy id {}", raw.astronomy)))?;
+    let overrides = Overrides::from_bits(raw.overrides);
+    // The table has no slot for the angles, so a plugin declaring them
+    // would declare what nothing can ask it for.
+    if overrides.contains(Overrides::ANGLES) {
+        return Err(ProviderError::invalid(
+            "the angles override: the vtable has no angles slot, so a plugin cannot declare it",
+        ));
+    }
     Ok(Capabilities {
         identity: Identity {
             name: text(raw.name),
@@ -806,7 +815,7 @@ unsafe fn capabilities_from_c(raw: &CapabilitiesC) -> Result<Capabilities, Provi
         speeds: raw.speeds != 0,
         speed_model,
         distance_unit,
-        overrides: Overrides::from_bits(raw.overrides),
+        overrides,
         ayanamshas,
         deterministic: raw.deterministic != 0,
         native: raw.native != 0,
@@ -1236,7 +1245,9 @@ unsafe extern "C" fn capabilities_trampoline<P: EphemerisProvider>(
         bodies: this.bodies.as_ptr(),
         body_count: this.bodies.len(),
         native_frame_bits: caps.native_frame.to_bits(),
-        overrides: caps.overrides.bits(),
+        // The table has no angles slot, so what crosses cannot declare
+        // them; the chart builds the angles itself on the far side.
+        overrides: caps.overrides.without(Overrides::ANGLES).bits(),
         ayanamshas: this.ayanamshas.as_ptr(),
         ayanamsha_count: this.ayanamshas.len(),
         hashes: this.hashes.as_ptr(),
@@ -1670,6 +1681,10 @@ impl EphemerisProvider for ExportedVtable<'_> {
         request: &HorizonRequest,
     ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
         self.provider.horizon_event(request)
+    }
+
+    fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
+        self.provider.angles(request)
     }
 
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {

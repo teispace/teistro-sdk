@@ -5,6 +5,7 @@ use serde::Serialize;
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 
+use crate::angles::{Angles, AnglesRequest};
 use crate::body::{Body, TimeScale};
 use crate::capabilities::{Capabilities, Obliquity};
 use crate::columns::{CellStatus, PositionColumns};
@@ -178,6 +179,21 @@ pub trait EphemerisProvider: Send + Sync {
         Err(ProviderError::unsupported("rise_set"))
     }
 
+    /// The ascendant and the midheaven at an instant and a place from the
+    /// provider's own reckoning, tropical; an override
+    /// ([`Overrides::ANGLES`](crate::capabilities::Overrides::ANGLES)),
+    /// which the SDK's spherical astronomy stands in for otherwise.
+    ///
+    /// # Errors
+    ///
+    /// [`ProviderError::Unsupported`] unless declared, or at a place the
+    /// provider's reckoning has no answer for (a day with no sunrise, for
+    /// a text that counts the ascendant from one).
+    fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
+        let _ = request;
+        Err(ProviderError::unsupported("angles"))
+    }
+
     /// Every crossing of a quantity over a lattice inside a window from the
     /// provider's own search, in time order; an override
     /// ([`Overrides::CROSSINGS`](crate::capabilities::Overrides::CROSSINGS)),
@@ -278,6 +294,10 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for &P {
         (**self).horizon_event(request)
     }
 
+    fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
+        (**self).angles(request)
+    }
+
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {
         (**self).crossings(request)
     }
@@ -331,6 +351,10 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Box<P> {
         request: &HorizonRequest,
     ) -> Result<Option<JulianDay<Ut1>>, ProviderError> {
         (**self).horizon_event(request)
+    }
+
+    fn angles(&self, request: &AnglesRequest) -> Result<Angles, ProviderError> {
+        (**self).angles(request)
     }
 
     fn crossings(&self, request: &CrossingRequest) -> Result<Vec<Event>, ProviderError> {

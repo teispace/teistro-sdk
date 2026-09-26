@@ -6,19 +6,21 @@
 //! and the month-start rules run unchanged over either, and the source
 //! memo's comparison of the two comes from the SDK's own code.
 
+use core::sync::atomic::{AtomicBool, Ordering};
+
 use teistro_astro::rise_set::Solver;
 use teistro_astro::{Completion, DeltaTModel};
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Place, Ut1};
 use teistro_core::settings::{OverridePolicy, SunriseConvention};
-use teistro_core::time::LocalMeanTime;
 use teistro_port_ephemeris::{
-    Body, EphemerisProvider, Frame, Horizon, PositionRequest, TimeScale, Zodiac,
+    Body, EphemerisProvider, Frame, Horizon, HorizonEventKind, HorizonRequest, Overrides,
+    PositionRequest, ProviderError, TimeScale, Zodiac,
 };
 
 use crate::fixed::FixedDay;
-use crate::solar::{DayArc, DayLight, SolarModel};
+use crate::solar::{DayArc, DayLight, SolarModel, local_mean_midnight};
 
 /// The drik Sun over a provider: positions through the port, the zodiac
 /// by a catalogued ayanamsha (the provider's own value under the override
@@ -46,6 +48,10 @@ pub struct DrikSun<'p, P: EphemerisProvider + ?Sized> {
     convention: SunriseConvention,
     horizon: Horizon,
     delta_t: DeltaTModel,
+    /// Whether the provider refused this model's convention, so its days
+    /// fall back to the solver: the convention is fixed, so one refusal
+    /// is every day's, and the model stops claiming the provider's day.
+    refused: AtomicBool,
 }
 
 impl<P: EphemerisProvider + ?Sized> core::fmt::Debug for DrikSun<'_, P> {
@@ -69,6 +75,7 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
             convention,
             horizon: Horizon::from_convention(convention),
             delta_t,
+            refused: AtomicBool::new(false),
         }
     }
 
@@ -82,6 +89,62 @@ impl<'p, P: EphemerisProvider + ?Sized> DrikSun<'p, P> {
     #[must_use]
     pub const fn ayanamsha(&self) -> Ayanamsha {
         self.ayanamsha
+    }
+
+    /// Whether the provider **defines** the day's sunrise, which a
+    /// classical astronomy does (`Completion::defines`): the text's
+    /// sunrise is its own reckoning, with no SDK answer to agree with
+    /// (`03-design/classical-chart.md` §4).
+    fn provider_defines_sunrise(&self) -> Result<bool, Error> {
+        Ok(self.completion.defines(Overrides::RISE_SET, "rise_set")?)
+    }
+
+    /// The day's arc from the provider's own sunrise and sunset, where it
+    /// defines them and answers this convention; `None` where the SDK's
+    /// solver answers instead.
+    ///
+    /// A convention the provider refuses falls back to the solver under
+    /// `prefer-native`, as an ayanamsha it does not list does, and is
+    /// refused under `native-only`. A day with no sunrise falls back too,
+    /// so the solver says which polar state it is: the port answers an
+    /// event or its absence, not whether the Sun stayed up.
+    fn defined_day(
+        &self,
+        local_midnight: JulianDay<Ut1>,
+        place: &Place,
+    ) -> Result<Option<DayLight>, Error> {
+        if !self.provider_defines_sunrise()? {
+            return Ok(None);
+        }
+        let native_only = self.completion.policy() == OverridePolicy::NativeOnly;
+        let ask = |kind: HorizonEventKind, from: JulianDay<Ut1>| match self
+            .completion
+            .provider()
+            .horizon_event(&HorizonRequest {
+                body: Body::Sun,
+                kind,
+                place: *place,
+                from,
+                window_days: 1.0,
+                horizon: self.horizon,
+            }) {
+            Ok(found) => Ok(found),
+            Err(ProviderError::Unsupported { .. }) if !native_only => {
+                self.refused.store(true, Ordering::Relaxed);
+                Ok(None)
+            }
+            Err(error) => Err(Error::from(error)),
+        };
+        let Some(sunrise) = ask(HorizonEventKind::Rise, local_midnight)? else {
+            return Ok(None);
+        };
+        let Some(sunset) = ask(HorizonEventKind::Set, sunrise)? else {
+            return Ok(None);
+        };
+        Ok(Some(DayLight::Arc(DayArc {
+            sunrise: sunrise.relabel(),
+            sunset: sunset.relabel(),
+        })))
     }
 }
 
@@ -117,9 +180,10 @@ impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
     fn day_light(&self, day: FixedDay, place: &Place) -> Result<DayLight, Error> {
         // A civil day at a place is its local-mean-time day, as for the
         // classical model, so the two answer the same question.
-        let clock = LocalMeanTime::new(place.longitude);
-        let local_midnight: JulianDay<Ut1> =
-            JulianDay::try_new(day.jd_at_midnight()?.get() - clock.offset().days())?;
+        let local_midnight = local_mean_midnight(day, place)?;
+        if let Some(light) = self.defined_day(local_midnight, place)? {
+            return Ok(light);
+        }
         let solver = Solver::new(
             &self.completion,
             Body::Sun,
@@ -140,16 +204,27 @@ impl<P: EphemerisProvider + ?Sized> SolarModel for DrikSun<'_, P> {
 
     fn describe(&self) -> String {
         format!(
-            "drik: {} through the port ({} overrides), ayanamsha {}, sunrise {}",
+            "drik: {} through the port ({} overrides), ayanamsha {}, sunrise {}{}",
             self.completion.capabilities().identity,
             self.completion.policy().key(),
             self.ayanamsha.key(),
-            self.horizon
+            self.horizon,
+            if SolarModel::defines_sunrise(self) {
+                " by the provider"
+            } else {
+                ""
+            }
         )
     }
 
     fn convention(&self) -> SunriseConvention {
         self.convention
+    }
+
+    /// Whether the provider gives this model's days: it defines the
+    /// sunrise, and it has not refused this model's convention.
+    fn defines_sunrise(&self) -> bool {
+        !self.refused.load(Ordering::Relaxed) && self.provider_defines_sunrise().unwrap_or(false)
     }
 }
 
@@ -196,6 +271,55 @@ mod tests {
         ) -> Result<f64, ProviderError> {
             Ok(24.0)
         }
+    }
+
+    /// A classical provider **defines** the day's sunrise, so the drik
+    /// model over it is the text's day to the last bit under
+    /// `prefer-native`; `sdk-only` asks the SDK's solver instead; a
+    /// convention the text refuses falls back under `prefer-native` and
+    /// is refused under `native-only`.
+    #[test]
+    fn a_classical_provider_gives_the_day_its_own_sunrise() {
+        use teistro_siddhanta::{SiddhantaProvider, SuryaSiddhanta};
+
+        let provider = SiddhantaProvider::text();
+        let kathmandu = Place::new(
+            Latitude::literal(27.7172),
+            Longitude::literal(85.324),
+            Altitude::literal(1400.0),
+        );
+        let day = Gregorian.to_fixed_ymd(2024, 4, 13).unwrap();
+        let drik = |sunrise: Sunrise, policy: OverridePolicy| {
+            DrikSun::new(
+                &provider,
+                Ayanamsha::Suryasiddhanta,
+                sunrise.into(),
+                policy,
+                DeltaTModel::TableThenModel,
+            )
+        };
+        let text = SuryaSiddhanta::text().day_light(day, &kathmandu).unwrap();
+        let native = drik(Sunrise::CentreNoRefraction, OverridePolicy::PreferNative);
+        assert_eq!(native.day_light(day, &kathmandu).unwrap(), text);
+        assert!(native.describe().ends_with("by the provider"));
+
+        let sdk = drik(Sunrise::CentreNoRefraction, OverridePolicy::SdkOnly);
+        assert_ne!(sdk.day_light(day, &kathmandu).unwrap(), text);
+        assert!(!sdk.describe().ends_with("by the provider"));
+
+        let refracted = drik(Sunrise::UpperLimbRefraction, OverridePolicy::PreferNative);
+        let fallen_back = refracted.day_light(day, &kathmandu).unwrap();
+        assert!(fallen_back.arc().is_some());
+        assert_ne!(fallen_back, text);
+        assert!(
+            !refracted.defines_sunrise(),
+            "a refused convention is not the text's day"
+        );
+        assert!(native.defines_sunrise());
+        let refused = drik(Sunrise::UpperLimbRefraction, OverridePolicy::NativeOnly)
+            .day_light(day, &kathmandu)
+            .unwrap_err();
+        assert_eq!(refused.status, Status::Unsupported, "{refused}");
     }
 
     #[test]

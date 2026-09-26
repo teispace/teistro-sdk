@@ -399,6 +399,25 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
             && self.choose_ayanamsha(Some(member))? == Implementation::Native)
     }
 
+    /// Whether the provider **defines** a step it declares an override
+    /// for, rather than approximating the SDK's: a classical astronomy,
+    /// under a policy that lets it answer. The same rule as
+    /// [`Completion::defines_ayanamsha`], for a step with no member to
+    /// list — the sunrise (`RISE_SET`), the angles.
+    ///
+    /// # Errors
+    ///
+    /// `native-only` over a provider that does not declare the step,
+    /// naming it.
+    pub fn defines(
+        &self,
+        declared: Overrides,
+        step: &'static str,
+    ) -> Result<bool, CompletionError> {
+        Ok(self.capabilities.astronomy == Astronomy::Classical
+            && self.choose(declared, step)? == Implementation::Native)
+    }
+
     /// Who gives an ayanamsha's value: the provider when the policy lets
     /// it and it **lists that member**, the SDK's catalogue otherwise.
     ///

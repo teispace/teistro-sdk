@@ -17,22 +17,25 @@
 use serde::{Deserialize, Serialize};
 use teistro_astro::completion::{Completed, Completion, Implementation};
 use teistro_astro::delta_t::DeltaTModel;
-use teistro_astro::houses::{ChartFrame, houses_at};
+use teistro_astro::houses::{ChartFrame, cusps_from_angles, houses_at};
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
 use teistro_calendar::CalendarSystem;
 use teistro_calendar::solar::SolarModel;
 use teistro_core::catalogue::{ChartKind, Graha, HouseSystem};
 use teistro_core::envelope::Version;
-use teistro_core::envelope::{CALCULATION_VERSION, Envelope, Provenance, content_hash};
+use teistro_core::envelope::{CALCULATION_VERSION, Deviation, Envelope, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Tt, Ut1, Utc};
 use teistro_core::settings::{
-    GhatiReckoning, HoraReckoning, Node, PolarPolicy, Resolved, Settings,
+    GhatiReckoning, HoraReckoning, Node, OverridePolicy, PolarPolicy, Resolved, Settings,
 };
 use teistro_core::time::LocalClock;
 use teistro_port_ephemeris::columns::CellStatus;
-use teistro_port_ephemeris::{Body, EphemerisProvider, PositionRequest, TimeScale};
+use teistro_port_ephemeris::{
+    Angles, AnglesRequest, Astronomy, Body, EphemerisProvider, Overrides, PositionRequest,
+    ProviderError, TimeScale,
+};
 use teistro_time::ghati::{self, GhatiPala};
 use teistro_time::hora::{self, Hora};
 
@@ -73,6 +76,17 @@ pub struct ChartAngles {
     pub midheaven_deg: f64,
     /// The true obliquity of the ecliptic, degrees.
     pub obliquity_deg: f64,
+}
+
+impl ChartAngles {
+    /// A provider's tropical angles measured in a chart's zodiac.
+    fn in_zodiac(angles: &Angles, zodiac: &ChartZodiac) -> ChartAngles {
+        ChartAngles {
+            ascendant_deg: zodiac.of_tropical(angles.ascendant_deg),
+            midheaven_deg: zodiac.of_tropical(angles.midheaven_deg),
+            obliquity_deg: angles.obliquity_deg,
+        }
+    }
 }
 
 /// Where one graha is, in the chart's own zodiac.
@@ -161,7 +175,30 @@ pub struct ChartFoundation {
     pub steps: Vec<String>,
 }
 
+/// Parts in a sentence, with its verb: `the zodiac is`, `the zodiac and the
+/// day are`, `the zodiac, the places and the day are`.
+fn listed(parts: &[&str]) -> String {
+    match parts.split_last() {
+        None => String::new(),
+        Some((only, [])) => format!("{only} is"),
+        Some((last, rest)) => format!("{} and {last} are", rest.join(", ")),
+    }
+}
+
+/// The step a foundation stamps with who gave its angles.
+const ANGLES_STEP: &str = "angles";
+
 impl ChartFoundation {
+    /// Whether its angles are its provider's own reckoning rather than the
+    /// sphere's: a classical astronomy that defines them
+    /// (`03-design/classical-chart.md` §5), stamped `angles:NATIVE`. Such a
+    /// chart's angles cannot be recomputed without that provider.
+    #[must_use]
+    pub fn angles_are_the_providers(&self) -> bool {
+        let native = format!("{ANGLES_STEP}:{}", Implementation::Native.key());
+        self.steps.contains(&native)
+    }
+
     /// One graha, by name.
     #[must_use]
     pub fn graha(&self, graha: Graha) -> Option<&GrahaPosition> {
@@ -362,6 +399,18 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             &chalit,
         )?;
         steps.push(format!("zodiac:{}", zodiac_from.key()));
+        let angles_from = if self.defined_angles(ut1, place)?.is_some() {
+            Implementation::Native
+        } else {
+            Implementation::Sdk
+        };
+        steps.push(format!("{ANGLES_STEP}:{}", angles_from.key()));
+        let day_from = if self.model.defines_sunrise() {
+            Implementation::Native
+        } else {
+            Implementation::Sdk
+        };
+        steps.push(format!("day:{}", day_from.key()));
         Ok(ChartFoundation {
             instant,
             place: *place,
@@ -419,9 +468,36 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             .capabilities()
             .identity
             .stamp(chart.zodiac.request, chart.steps.clone());
+        provenance.deviation = self.deviation(chart);
         provenance.time.delta_t_model = self.delta_t.key().to_string();
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance
+    }
+
+    /// What a classical astronomy defined of a chart, where it defined
+    /// anything: the envelope's `deviation`, so a reader of a stored chart
+    /// can tell the text's chart from a modern one without the provider.
+    fn deviation(&self, chart: &ChartFoundation) -> Option<Deviation> {
+        const PARTS: [(&str, &str); 4] = [
+            ("zodiac", "the zodiac"),
+            ("corrections", "the places"),
+            (ANGLES_STEP, "the angles"),
+            ("day", "the day"),
+        ];
+        let capabilities = self.provider.capabilities();
+        if capabilities.astronomy != Astronomy::Classical {
+            return None;
+        }
+        let native = Implementation::Native.key();
+        let defined: Vec<&str> = PARTS
+            .iter()
+            .filter(|(step, _)| chart.steps.contains(&format!("{step}:{native}")))
+            .map(|(_, part)| *part)
+            .collect();
+        (!defined.is_empty()).then(|| Deviation {
+            model: capabilities.identity.name.to_uppercase().replace('-', "_"),
+            detail: format!("{} the provider's own", listed(&defined)),
+        })
     }
 
     /// Founds many charts at one place, sharing the settings and the
@@ -487,6 +563,15 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         place: &Place,
         zodiac: &ChartZodiac,
     ) -> Result<([f64; 12], HouseSystem), Error> {
+        if let Some(angles) = self.defined_angles(ut1, place)? {
+            let tropical = cusps_from_angles(
+                system,
+                angles.ascendant_deg,
+                angles.midheaven_deg,
+                zodiac.offset_deg,
+            )?;
+            return Ok((tropical.map(|cusp| zodiac.of_tropical(cusp)), system));
+        }
         let frame = ChartFrame {
             sidereal_offset_deg: zodiac.offset_deg,
             sun_declination_deg: None,
@@ -591,7 +676,67 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         place: &Place,
         zodiac: &ChartZodiac,
     ) -> Result<ChartAngles, Error> {
+        if let Some(angles) = self.defined_angles(ut1, place)? {
+            return Ok(ChartAngles::in_zodiac(&angles, zodiac));
+        }
         angles_in(ut1, tt, place, zodiac, self.settings().houses.polar_policy)
+    }
+
+    /// A chart's angles from this founder's provider **only**, for a
+    /// chart whose angles were its provider's own reckoning
+    /// ([`ChartFoundation::angles_are_the_providers`]): the sphere would
+    /// give such a chart a modern ascendant and midheaven beside the
+    /// text's grahas.
+    ///
+    /// # Errors
+    ///
+    /// `UNSUPPORTED` on the `ephemeris` field when this provider does not
+    /// define the angles, naming it; whatever the provider refuses.
+    pub fn providers_angles_at(
+        &self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        zodiac: &ChartZodiac,
+    ) -> Result<ChartAngles, Error> {
+        let ut1 = JulianDay::<Ut1>::literal(at.get());
+        self.defined_angles(ut1, place)?
+            .map(|angles| ChartAngles::in_zodiac(&angles, zodiac))
+            .ok_or_else(|| {
+                Error::unsupported(format!(
+                    "this chart's angles are its provider's own reckoning, and {} does not \
+                     define angles; open the context over the provider it was founded with",
+                    self.provider.capabilities().identity.name
+                ))
+                .with_field("ephemeris")
+            })
+    }
+
+    /// The provider's own angles at an instant, where it **defines**
+    /// them (a classical astronomy, `03-design/classical-chart.md` §5);
+    /// `None` where the SDK's sphere gives them.
+    ///
+    /// A place the provider's reckoning has no answer for — a day with
+    /// no sunrise, for a text that counts the Lagna from one — falls back
+    /// to the sphere under `prefer-native`, as a sunrise it refuses does,
+    /// and is refused under `native-only`.
+    fn defined_angles(&self, ut1: JulianDay<Ut1>, place: &Place) -> Result<Option<Angles>, Error> {
+        let completion = self.completion();
+        if !completion.defines(Overrides::ANGLES, "angles")? {
+            return Ok(None);
+        }
+        match self.provider.angles(&AnglesRequest {
+            jd: ut1.get(),
+            scale: TimeScale::Ut1,
+            place: *place,
+        }) {
+            Ok(angles) => Ok(Some(angles)),
+            Err(ProviderError::Unsupported { .. })
+                if completion.policy() != OverridePolicy::NativeOnly =>
+            {
+                Ok(None)
+            }
+            Err(error) => Err(error.into()),
+        }
     }
 
     /// The completion every step of a founding asks the provider
@@ -757,12 +902,21 @@ fn angles_in(
 /// # Errors
 ///
 /// An instant outside the Delta T model's range, or a chart the polar
-/// policy refuses.
+/// policy refuses; `UNSUPPORTED` for a chart whose angles were its
+/// provider's ([`ChartFoundation::angles_are_the_providers`]), which a
+/// stored chart cannot answer without that provider.
 pub fn angles_of(
     foundation: &ChartFoundation,
     delta_t: DeltaTModel,
     policy: PolarPolicy,
 ) -> Result<ChartAngles, Error> {
+    if foundation.angles_are_the_providers() {
+        return Err(Error::unsupported(
+            "this chart's angles are its provider's own reckoning, which the sphere does not \
+             reproduce; ask the provider it was founded over (`Founder::angles_at`)",
+        )
+        .with_field("chart"));
+    }
     let ut1 = JulianDay::<Ut1>::literal(foundation.instant.get());
     let (tt, _) = tt_of(ut1, delta_t)?;
     angles_in(ut1, tt, &foundation.place, &foundation.zodiac, policy)

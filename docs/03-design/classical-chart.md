@@ -1,9 +1,11 @@
 # A chart founded on a classical astronomy
 
-Status: `draft`, 2026-09-26; §3 **built** the same day. Written from
+Status: `draft`, 2026-09-26; §3 to §6 **built** the same day, §7 step 5
+half built. Written from
 `classical-chart-measured.md` before any code; the order of work (§7)
 re-aims that pass at the built thing, and the building has already
-corrected this page once (§3, the corrections).
+corrected it four times (§3, the corrections; §4, the midnight; §5, no
+vtable slot; §6, a call in place of a refusal).
 
 Derives from `siddhanta.md` §5, which built the Surya Siddhanta as a
 provider "so a classical chart runs through the same trait, completion
@@ -106,6 +108,22 @@ day-or-night, the ghatis and the Lagna the arudhas measure from.
 The text's own Sun, `sidereal_sun_deg`, is already the provider's
 positions in the zodiac of §3.
 
+Built as `DrikSun::defined_day`, over `Completion::defines(RISE_SET)`.
+A day with no sunrise falls back to the solver as well, because the
+port answers an event or its absence and not whether the Sun stayed up,
+and the solver says which polar state it is. The model's description
+says `by the provider` when the provider gave the day, which is what
+the local day stamps.
+
+**Building it found a half-second midnight.** With the day the
+provider's, the sunrise still stood up to 0.48 s from the text's as the
+classical solar model counts it. Both solar models found a civil day's
+local mean midnight through `LocalMeanTime`'s offset, which a
+`UtcOffset` holds in whole seconds, while the text's own search starts
+from the exact midnight. `solar::local_mean_midnight` is now the one
+exact midnight both models read; no calendar, lunisolar, panchanga or
+almanac page moved.
+
 ## 5. The angles
 
 **The port gains an `angles` method** under a new override,
@@ -127,10 +145,23 @@ define, and are **refused**, naming the system and the nine that are
 not: a Placidus chart over the text would be the hybrid again, one
 level down. The chalit follows the same rule.
 
-**At the C boundary** the vtable appends an `angles` slot, and its ABI
-version becomes 5; a plugin compiled against 4 has a `NULL` slot and
-does not declare the override. Appending is the path `struct_size`
-exists for, as in `horizon-atmosphere.md` §7.
+**Built without a vtable slot.** This page first said the C boundary
+would append an `angles` slot (ABI 5). Building it asked who would fill
+one: the text is a Rust provider inside the library, which every
+binding reaches through the ephemeris selector (§7 step 5), not
+through the vtable, and no foreign classical provider exists. So the
+vtable stays at ABI 4; a plugin that declares `ANGLES` is refused at
+load, because nothing could ask it for them, and a Rust provider handed
+out through the vtable crosses without the bit. A foreign classical
+astronomy is the consumer who would earn the slot.
+
+The text's answer is its sidereal Lagna and meridian point, carried by
+the ayanamsha **of the instant** rather than of the day's sunrise, which
+its own tropical walk takes them back with: the port speaks tropical of
+the instant and the chart measures in the zodiac of the instant, so the
+chart's Lagna is the text's to the last bit. A day with no sunrise, on
+which the text has no Lagna, falls back to the sphere under
+`prefer-native` and is refused under `native-only`, as the day does.
 
 ## 6. What is reported
 
@@ -141,24 +172,39 @@ identity and its `detail` the parts it defined. A reader of a stored
 chart can tell a classical chart from a modern one without the
 provider to hand.
 
-`angles_of`, which answers a stored chart's angles with no ephemeris,
-refuses a chart whose deviation says its angles were a classical
-provider's, naming the provider it needs: recomputing them by the
-sphere would give a stored classical chart a modern midheaven.
+Built: the steps gain `zodiac`, `angles` and `day`
+(`SolarModel::defines_sunrise`, which the drik model stops claiming once
+the provider refuses its convention), and `deviation` reads, over the
+text, `SURYA_SIDDHANTA`: "the zodiac, the places, the angles and the day
+are the provider's own".
+
+**A call in place of a refusal.** `angles_of`, which answers a stored
+chart's angles with no ephemeris, refuses a chart whose angles were its
+provider's (`ChartFoundation::angles_are_the_providers`): the sphere
+would give it a modern midheaven. But the Tajika sahams read the
+midheaven through `angles_of`, so refusing alone would have broken them
+over the text. The façade gains `sdk.chart().angles(&chart)`: the
+sphere's angles for a modern chart, the provider's for one whose angles
+were its provider's, and a refusal naming the ephemeris option when the
+context's provider does not define them — which the acceptance test
+found answering the sphere's before it was made to refuse. The sahams
+read it, and so does the pass's midheaven row.
 
 ## 7. The order of work
 
 1. **The zodiac and the places** (§3): **done**. The pass's zodiac and
    graha rows read zero, all nine grahas.
-2. **The day** (§4). Acceptance: the sunrise row reads zero and no hora
+2. **The day** (§4): **done**. The sunrise row reads zero and no hora
    differs.
-3. **The angles** (§5): the port method, the vtable slot, the nine
-   systems and the refusal of the rest, `angles_of`'s refusal.
-   Acceptance: the Lagna row reads zero and no sign differs.
-4. **The report** (§6).
-5. **Reaching it**: an ephemeris key for the text in the façade and the
-   C selector, so Node, Dart, Python and wasm open a context on it by
-   name; the parity gate compares a classical chart across bindings.
+3. **The angles** (§5): **done**. The Lagna and midheaven rows read
+   zero and no sign differs; `crates/sdk/tests/classical_chart.rs`
+   holds `sdk-only`'s hybrid, the refused Placidus and a stored chart's
+   angles refused without its provider.
+4. **The report** (§6): **done**.
+5. **Reaching it**: `Ephemeris::SuryaSiddhanta` in the Rust façade is
+   **done**; left is the C selector's key, so Node, Dart, Python and
+   wasm open a context on it by name, and the parity gate comparing a
+   classical chart across bindings.
 6. **Re-aim the pass** at each step: the claims that read falsified
    today are written to fail both ways, so each step flips its rows and
    the page records it.
@@ -171,9 +217,9 @@ sphere would give a stored classical chart a modern midheaven.
   and sunrise against the SDK's over the corpus before changing what a
   modern chart answers.
 - **The text's own Lagna for the day-lagna and the arudhas.** They read
-  the Lagna at the day's sunrise through the same `angles`, so they
-  follow §5 without a decision of their own; the pass should say so
-  once built.
+  the Lagna at the day's sunrise through the same founder `angles`, so
+  they follow §5 without a decision of their own; the pass does not yet
+  hold them to the text.
 - **A `surya-siddhanta` profile.** Whether the settings a classical
   chart wants (the text's ayanamsha, the geometric sunrise, the text's
   combustion orbs) are a profile of their own waits for §7 step 5,

@@ -4,6 +4,7 @@
 use teistro_core::Status;
 use teistro_core::error::Error;
 use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+use teistro_siddhanta::SiddhantaProvider;
 
 /// One entry of the chain: an ephemeris the SDK carries, or one a
 /// consumer brings.
@@ -23,6 +24,14 @@ pub enum Ephemeris {
     /// most cases a consumer belongs on a real engine.
     #[cfg(feature = "builtin-ephemeris")]
     Builtin,
+    /// The Surya Siddhanta: a **classical astronomy**, the text the
+    /// classical panchangas of Nepal and much of India compute from, in
+    /// Burgess's 1860 translation. Its places, its precession, its sunrise
+    /// and its Lagna are the text's own definitions, and a chart founded
+    /// over it is the text's chart throughout
+    /// (`03-design/classical-chart.md`); name its ayanamsha,
+    /// `SURYASIDDHANTA`, for the text's zodiac.
+    SuryaSiddhanta,
     /// The analytic test provider, whose positions are **not
     /// astronomy**: one periodic term per body. For a test that needs a
     /// number and not the sky.
@@ -84,6 +93,7 @@ impl Ephemeris {
             Ephemeris::None => String::from("NONE"),
             #[cfg(feature = "builtin-ephemeris")]
             Ephemeris::Builtin => String::from("BUILTIN"),
+            Ephemeris::SuryaSiddhanta => String::from("SURYA_SIDDHANTA"),
             Ephemeris::Test => String::from("TEST"),
             // The provider's own name, because a chain of two adapters
             // that both refused has to say which was which, and neither
@@ -147,6 +157,7 @@ impl Ephemeris {
             Ephemeris::Builtin => Ok(Some(Box::new(
                 teistro_ephemeris_builtin::provider::Builtin::new(),
             ))),
+            Ephemeris::SuryaSiddhanta => Ok(Some(Box::new(SiddhantaProvider::text()))),
             Ephemeris::Test => Ok(Some(Box::new(TestProvider::new()))),
             Ephemeris::Provider(provider) => Ok(Some(provider)),
             Ephemeris::Opening(opening) => (opening.open)().map(Some),

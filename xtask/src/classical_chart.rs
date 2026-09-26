@@ -32,7 +32,7 @@ use teistro_astro::scale::tt_of;
 use teistro_astro::sky;
 use teistro_calendar::gregorian::Gregorian;
 use teistro_chart::day::chart_day;
-use teistro_siddhanta::{SiddhantaProvider, SuryaSiddhanta};
+use teistro_siddhanta::SuryaSiddhanta;
 use teistro_time::hora::hora_at;
 
 use crate::births::CHARTS;
@@ -62,7 +62,8 @@ struct Reading {
 /// What the text itself answers at the birth.
 struct TextChart {
     lagna_sidereal_deg: f64,
-    lagna_tropical_deg: f64,
+    /// The text's point on the meridian (III.49), sidereal.
+    meridian_deg: f64,
     ayanamsha_deg: f64,
     /// The nine grahas the text places, sidereal in its own zodiac.
     grahas: Vec<(Graha, f64)>,
@@ -107,7 +108,7 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
 fn over_the_text() -> Result<Context, String> {
     Context::builder()
         .settings_json(SETTINGS)
-        .ephemeris([Ephemeris::Provider(Box::new(SiddhantaProvider::text()))])
+        .ephemeris([Ephemeris::SuryaSiddhanta])
         .build()
         .map_err(|why| format!("a context over the text: {why}"))
 }
@@ -200,7 +201,7 @@ fn text_chart(
     let obliquity = model.trig().arc(text_obliquity);
     Ok(Some(TextChart {
         lagna_sidereal_deg: lagna.sidereal_deg,
-        lagna_tropical_deg: lagna.tropical_deg,
+        meridian_deg: lagna.meridian_sidereal_deg,
         ayanamsha_deg,
         grahas: model
             .all(ut1)
@@ -390,17 +391,15 @@ fn page(root: &Path) -> Result<String, String> {
             sign_of(chart.foundation.lagna_deg) != sign_of(text.lagna_sidereal_deg)
         })
         .count();
-    let tropical: Vec<f64> = compared
+    let midheaven: Vec<f64> = compared
         .iter()
         .map(|(chart, text)| {
-            let founded = &chart.foundation;
-            apart(
-                founded.lagna_deg + founded.zodiac.offset_deg,
-                text.lagna_tropical_deg,
-            )
-            .abs()
+            sdk.chart()
+                .angles(chart)
+                .map(|angles| apart(angles.midheaven_deg, text.meridian_deg).abs())
+                .map_err(|why| format!("a founded chart's angles: {why}"))
         })
-        .collect();
+        .collect::<Result<_, _>>()?;
     let obliquity_only: Vec<f64> = compared
         .iter()
         .map(|(_, text)| {
@@ -462,10 +461,13 @@ fn page(root: &Path) -> Result<String, String> {
         )
         .noting(format!("{} in another sign", of(lagna_signs))),
         Part::of(
-            ("the angles", "the Lagna, tropical: the angles alone"),
-            "the ascendant and the midheaven are the SDK's, measured here with the zodiac taken out",
+            (
+                "the midheaven",
+                "the midheaven, as `sdk.chart().angles` answers it",
+            ),
+            "it is the SDK's spherical midheaven, recomputed from the chart's instant and place",
             "°",
-            &tropical,
+            &midheaven,
             SAME_DEG,
         ),
         Part::of(
@@ -494,8 +496,8 @@ fn page(root: &Path) -> Result<String, String> {
         out,
         "## 1. What was founded\n\n\
          Every recorded birth of the corpus ({} of them) was founded\n\
-         **through the SDK** over `SiddhantaProvider::text()`, as a Rust\n\
-         consumer would open it, under the root profile with the text's\n\
+         **through the SDK** over `Ephemeris::SuryaSiddhanta`, as a Rust\n\
+         consumer opens it, under the root profile with the text's\n\
          own ayanamsha named (`SURYASIDDHANTA`); the root profile's\n\
          sunrise is already the text's, the centre on the geometric\n\
          horizon. Each chart was then held against what `crates/siddhanta`\n\

@@ -2,14 +2,13 @@
 //! sunrise and sunset in local mean time at the place.
 
 use teistro_core::error::Error;
-use teistro_core::quantity::{JulianDay, Place};
+use teistro_core::quantity::Place;
 use teistro_core::settings::{Sunrise, SunriseConvention};
-use teistro_core::time::LocalMeanTime;
 use teistro_siddhanta::SuryaSiddhanta;
 
 use crate::fixed::FixedDay;
 use crate::lunisolar::LunarModel;
-use crate::solar::{DayArc, DayLight, SolarModel};
+use crate::solar::{DayArc, DayLight, SolarModel, local_mean_midnight};
 
 impl SolarModel for SuryaSiddhanta {
     fn sidereal_sun_deg(&self, jd_ut: f64) -> Result<f64, Error> {
@@ -17,11 +16,9 @@ impl SolarModel for SuryaSiddhanta {
     }
 
     fn day_light(&self, day: FixedDay, place: &Place) -> Result<DayLight, Error> {
-        // The text reckons the day in local mean time at the place: its
-        // midnight is the civil midnight less the longitude's offset.
-        let clock = LocalMeanTime::new(place.longitude);
-        let local_midnight =
-            JulianDay::try_new(day.jd_at_midnight()?.get() - clock.offset().days())?;
+        // The text reckons the day in local mean time at the place, from
+        // its exact midnight.
+        let local_midnight = local_mean_midnight(day, place)?;
         Ok(
             match SuryaSiddhanta::day_arc(self, local_midnight, place.latitude) {
                 Some(arc) => DayLight::Arc(DayArc {
@@ -42,6 +39,10 @@ impl SolarModel for SuryaSiddhanta {
         // The text's sunrise: the centre of the disc on the geometric
         // horizon, without refraction (III.42 to 43).
         Sunrise::CentreNoRefraction.into()
+    }
+
+    fn defines_sunrise(&self) -> bool {
+        true
     }
 }
 

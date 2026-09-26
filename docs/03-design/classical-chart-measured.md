@@ -11,8 +11,8 @@ provider, which of its parts are the text's?
 ## 1. What was founded
 
 Every recorded birth of the corpus (55 of them) was founded **through
-the SDK** over `SiddhantaProvider::text()`, as a Rust consumer would
-open it, under the root profile with the text's own ayanamsha named
+the SDK** over `Ephemeris::SuryaSiddhanta`, as a Rust consumer opens it,
+under the root profile with the text's own ayanamsha named
 (`SURYASIDDHANTA`); the root profile's sunrise is already the text's,
 the centre on the geometric horizon. Each chart was then held against
 what `crates/siddhanta` answers at the same instant and place: its Lagna
@@ -24,7 +24,8 @@ it has no sunrise to count the Lagna from; the SDK refuses
 profile's polar-day policy, which synthesises no day.
 
 The steps the provenance stamps on each chart: `positions:NATIVE,
-corrections:NATIVE, ayanamsha:NATIVE, zodiac-shift:SDK, zodiac:NATIVE`.
+corrections:NATIVE, ayanamsha:NATIVE, zodiac-shift:SDK, zodiac:NATIVE,
+angles:NATIVE, day:NATIVE`.
 
 ## 2. Measured: which parts are the text's
 
@@ -35,19 +36,9 @@ against the text's own, to within a rounding (1e-9° or 0.001 s):
 |---|---|---:|---:|---|
 | the zodiac: the chart's ayanamsha against the text's | yes | 0.000° | 0.000° |  |
 | the grahas, all nine, in the chart's zodiac | yes | 0.000° | 0.000° |  |
-| the Lagna, in the chart's zodiac | **no** | 1.563° | 8.116° | 5 of 53 in another sign |
-| the Lagna, tropical: the angles alone | **no** | 1.563° | 8.116° |  |
-| the day's sunrise | **no** | 356.326 s | 1446.101 s | 6 of 53 in another hora |
-
-**The Lagna** is not the text's: it is the SDK's spherical ascendant, on
-the IAU obliquity and modern sidereal time.
-
-**The angles** are not the text's: the ascendant and the midheaven are
-the SDK's, measured here with the zodiac taken out.
-
-**The sunrise** is not the text's: it is the SDK's rise and set solver
-run over the text's Sun, not the text's day arc, although the provider
-declares its sunrise as an override.
+| the Lagna, in the chart's zodiac | yes | 0.000° | 0.000° | 0 of 53 in another sign |
+| the midheaven, as `sdk.chart().angles` answers it | yes | 0.000° | 0.000° |  |
+| the day's sunrise | yes | 0.000 s | 0.000 s | 0 of 53 in another hora |
 
 **The obliquity is not the difference.** The spherical ascendant on the
 text's own 24° stands a median 1.547° and at worst 8.255° from the
@@ -63,16 +54,16 @@ time, so only the text reproduces it.
 |---|---|---|
 | the zodiac is the text's | **holds** | worst 0.000° |
 | the grahas are the text's | **holds** | worst 0.000° |
-| the Lagna is the text's | falsified | worst 8.116° |
-| the angles are the text's | falsified | worst 8.116° |
-| the sunrise is the text's | falsified | worst 1446.101 s |
-| the Lagna is in the text's sign | falsified | 5 of 53 disagree; worst 8.116° |
-| the hora is the text's | falsified | 6 of 53 disagree |
+| the Lagna is the text's | **holds** | worst 0.000° |
+| the midheaven is the text's | **holds** | worst 0.000° |
+| the sunrise is the text's | **holds** | worst 0.000 s |
+| the Lagna is in the text's sign | **holds** | 0 of 53 disagree; worst 0.000° |
+| the hora is the text's | **holds** | 0 of 53 disagree |
 | the text's obliquity alone would give the text's Lagna, in sign | falsified | 5 of 53 disagree; worst 8.255° |
 | the SDK founds every recorded birth over the text | falsified | 2 of 55 disagree |
 | the text answers a Lagna for every recorded birth | falsified | 2 of 55 disagree |
 
-Eight of the ten claims are falsified. The parts the text gives the
-chart: the zodiac; the grahas. The parts the chart still computes
-itself: the Lagna; the angles; the sunrise.
+Three of the ten claims are falsified. The parts the text gives the
+chart: the zodiac; the grahas; the Lagna; the midheaven; the sunrise.
+The parts the chart still computes itself: none.
 
