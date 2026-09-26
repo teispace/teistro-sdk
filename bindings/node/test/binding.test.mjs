@@ -1852,8 +1852,37 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   // A custom altitude is a number and no named convention.
   const custom = context({ settings: { day: { sunrise: { kind: 'CUSTOM', altitude_deg: -0.5 } } } });
   const own = custom.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).day;
-  assert.deepEqual([own.convention, own.customAltitudeDeg], [null, -0.5]);
+  assert.deepEqual([own.convention, own.customAltitudeDeg, own.air], [null, -0.5, null]);
   custom.dispose();
+
+  // An air named for a refracted convention: what was left out comes back
+  // resolved at the place, 856 hPa at 1400 m, and the thinner air lifts
+  // the Sun less, so it clears the horizon later than under the fixed 34′.
+  const refracted = (sunrise) => {
+    const each = context({ settings: { day: { sunrise } } });
+    const got = each.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).day;
+    each.dispose();
+    return got;
+  };
+  const almanac = refracted({ kind: 'NAMED', which: 'UPPER_LIMB_REFRACTION' });
+  const standard = refracted({ kind: 'ATMOSPHERIC', which: 'UPPER_LIMB_REFRACTION', air: {} });
+  assert.equal(almanac.air, null);
+  assert.equal(standard.convention, 'UPPER_LIMB_REFRACTION');
+  assert.ok(Math.abs(standard.air.pressureHpa - 855.99) < 0.01, `${standard.air.pressureHpa}`);
+  assert.equal(standard.air.temperatureC, 15);
+  const later = (standard.sunrise - almanac.sunrise) * 86400;
+  assert.ok(later > 20 && later < 35, `${later} s`);
+  const weather = refracted({
+    kind: 'ATMOSPHERIC',
+    which: 'LOWER_LIMB_REFRACTION',
+    air: { pressure_hpa: 870, temperature_c: -4.5 },
+  });
+  assert.deepEqual(weather.air, { pressureHpa: 870, temperatureC: -4.5 });
+  // An air for a convention that does not refract is refused, by name.
+  assert.throws(
+    () => refracted({ kind: 'ATMOSPHERIC', which: 'CENTRE_NO_REFRACTION', air: {} }),
+    /does not refract/,
+  );
 
   // Tromsø at midsummer: the Sun does not set. Civil midnight holds the
   // instant and says so; the nearest real sunrise is weeks away, and the

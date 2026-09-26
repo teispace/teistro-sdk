@@ -1364,7 +1364,66 @@ void _engineTests() {
             .day;
     expect(own.convention, isNull);
     expect(own.customAltitudeDeg, -0.5);
+    expect(own.air, isNull);
     custom.dispose();
+
+    // An air named for a refracted convention: what was left out comes
+    // back resolved at the place, 856 hPa at 1400 m, and the thinner air
+    // lifts the Sun less, so it clears the horizon later than under the
+    // fixed 34′.
+    LocalDay refracted(Map<String, Object?> sunrise) {
+      final each = context(
+        settings: {
+          'day': {'sunrise': sunrise},
+        },
+      );
+      try {
+        return each.chart
+            .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+            .day;
+      } finally {
+        each.dispose();
+      }
+    }
+
+    final almanac = refracted({
+      'kind': 'NAMED',
+      'which': 'UPPER_LIMB_REFRACTION',
+    });
+    final standard = refracted({
+      'kind': 'ATMOSPHERIC',
+      'which': 'UPPER_LIMB_REFRACTION',
+      'air': <String, Object?>{},
+    });
+    expect(almanac.air, isNull);
+    expect(standard.convention, Sunrise.upperLimbRefraction);
+    expect(standard.air!.pressureHpa, closeTo(855.99, 0.01));
+    expect(standard.air!.temperatureC, 15.0);
+    final later = (standard.sunrise - almanac.sunrise) * 86400.0;
+    expect(later > 20.0 && later < 35.0, isTrue, reason: '$later s');
+    final weather = refracted({
+      'kind': 'ATMOSPHERIC',
+      'which': 'LOWER_LIMB_REFRACTION',
+      'air': {'pressure_hpa': 870.0, 'temperature_c': -4.5},
+    });
+    expect(
+      [weather.air!.pressureHpa, weather.air!.temperatureC],
+      [870.0, -4.5],
+    );
+    expect(
+      () => refracted({
+        'kind': 'ATMOSPHERIC',
+        'which': 'CENTRE_NO_REFRACTION',
+        'air': <String, Object?>{},
+      }),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.message,
+          'message',
+          contains('does not refract'),
+        ),
+      ),
+    );
 
     // Tromsø at midsummer: civil midnight holds the instant and says so;
     // the nearest real sunrise is weeks away, and the refusal names the

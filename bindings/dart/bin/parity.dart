@@ -62,9 +62,12 @@ void putDay(String prefix, LocalDay day) {
     '$prefix-polar',
     polar == null ? 'none' : '${polar.kind.key}/${polar.policy.key}',
   );
+  final air = day.air;
   put(
     '$prefix-convention',
-    day.convention?.key ?? 'custom ${number(day.customAltitudeDeg ?? 0)}',
+    air != null
+        ? '${day.convention?.key} ${number(air.pressureHpa)} hPa ${number(air.temperatureC)} C'
+        : day.convention?.key ?? 'custom ${number(day.customAltitudeDeg ?? 0)}',
   );
 }
 

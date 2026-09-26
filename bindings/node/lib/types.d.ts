@@ -194,6 +194,23 @@ export interface HorizonRequest {
    * @example -0.8333
    */
   readonly altitudeDeg: number;
+  /**
+   * The air's pressure at the observer, hectopascals, resolved at the
+   * observer's height when the refraction is an atmosphere; else zero.
+   * Appended in ABI 4.
+   * @unit hPa
+   * @range [0,1100]
+   * @example 1013.25
+   */
+  readonly pressureHpa: number;
+  /**
+   * The air's temperature at the observer, degrees Celsius, resolved
+   * when the refraction is an atmosphere; else zero. Appended in ABI 4.
+   * @unit degC
+   * @range [-90,60]
+   * @example 15
+   */
+  readonly temperatureC: number;
 }
 
 /**

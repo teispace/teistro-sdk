@@ -299,6 +299,8 @@ export function decodeCharts(bytes) {
       statePolarPolicy: column(blob, at, 15, 'u8', at.count),
       conventionKind: column(blob, at, 16, 'u8', at.count),
       conventionValue: column(blob, at, 17, 'f64', at.count),
+      airPressureHpa: column(blob, at, 18, 'f64', at.count),
+      airTemperatureC: column(blob, at, 19, 'f64', at.count),
       length: at.count,
     };
   }
@@ -911,6 +913,8 @@ export function decodePanchanga(bytes) {
       statePolarPolicy: column(blob, at, 15, 'u8', at.count),
       conventionKind: column(blob, at, 16, 'u8', at.count),
       conventionValue: column(blob, at, 17, 'f64', at.count),
+      airPressureHpa: column(blob, at, 18, 'f64', at.count),
+      airTemperatureC: column(blob, at, 19, 'f64', at.count),
       length: at.count,
     };
   }

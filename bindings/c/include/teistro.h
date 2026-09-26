@@ -16,7 +16,7 @@ extern "C" {
 /**
  * The ABI version of the vtable layout.
  */
-#define TS_VTABLE_ABI_VERSION ((uint32_t)3)
+#define TS_VTABLE_ABI_VERSION ((uint32_t)4)
 
 /**
  * The ABI version `ts_abi_version` returns; a binding refuses to load a
@@ -5761,6 +5761,19 @@ struct ts_horizon_request {
      * Unit: deg. Range: [-90,90]. Example: -0.8333.
      */
     double altitude_deg;
+    /**
+     * The air's pressure at the observer, hectopascals, resolved at the
+     * observer's height when the refraction is an atmosphere; else zero.
+     * Appended in ABI 4.
+     * Unit: hPa. Range: [0,1100]. Example: 1013.25.
+     */
+    double pressure_hpa;
+    /**
+     * The air's temperature at the observer, degrees Celsius, resolved
+     * when the refraction is an atmosphere; else zero. Appended in ABI 4.
+     * Unit: degC. Range: [-90,60]. Example: 15.
+     */
+    double temperature_c;
 };
 
 /**
@@ -7406,7 +7419,7 @@ _Static_assert(sizeof(ts_observer) == 24, "ts_observer is 24 bytes on 64-bit tar
 _Static_assert(sizeof(ts_position_request) == 72, "ts_position_request is 72 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_position_columns) == 80, "ts_position_columns is 80 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_obliquity) == 32, "ts_obliquity is 32 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_horizon_request) == 64, "ts_horizon_request is 64 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_horizon_request) == 80, "ts_horizon_request is 80 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_crossing_request) == 96, "ts_crossing_request is 96 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_crossing_event) == 24, "ts_crossing_event is 24 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_data_hash) == 24, "ts_data_hash is 24 bytes on 64-bit targets");

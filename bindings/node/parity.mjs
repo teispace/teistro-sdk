@@ -61,7 +61,12 @@ const putDay = (prefix, day) => {
   put(`${prefix}-era-year`, day.date.eraYear);
   put(`${prefix}-resolution`, day.date.resolution);
   put(`${prefix}-polar`, day.polar === null ? 'none' : `${day.polar.kind}/${day.polar.policy}`);
-  put(`${prefix}-convention`, day.convention ?? `custom ${number(day.customAltitudeDeg)}`);
+  put(
+    `${prefix}-convention`,
+    day.air !== null
+      ? `${day.convention} ${number(day.air.pressureHpa)} hPa ${number(day.air.temperatureC)} C`
+      : (day.convention ?? `custom ${number(day.customAltitudeDeg)}`),
+  );
 };
 
 // ── The library itself ─────────────────────────────────────────────────

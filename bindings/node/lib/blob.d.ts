@@ -2009,7 +2009,7 @@ export interface Day {
    */
   readonly statePolarPolicy: Uint8Array;
   /**
-   * Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.
+   * Which sunrise convention the arc was reckoned by, or the one an atmospheric convention gave its air to; `0xFF` for a custom altitude.
    * The values are `Sunrise` ids.
    */
   readonly conventionKind: Uint8Array;
@@ -2017,6 +2017,14 @@ export interface Day {
    * The altitude in degrees when the convention is custom; zero otherwise.
    */
   readonly conventionValue: Float64Array;
+  /**
+   * The air's pressure the arc was refracted through, hectopascals, resolved at the place, when the convention is atmospheric; zero otherwise.
+   */
+  readonly airPressureHpa: Float64Array;
+  /**
+   * The air's temperature the arc was refracted through, degrees Celsius, when the convention is atmospheric; zero otherwise.
+   */
+  readonly airTemperatureC: Float64Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }

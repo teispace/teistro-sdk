@@ -5450,6 +5450,7 @@ final class LocalDay {
     required this.polar,
     required this.convention,
     required this.customAltitudeDeg,
+    required this.air,
   });
 
   /// One row of a `day` section -- a chart's or an almanac's, which share
@@ -5482,6 +5483,15 @@ final class LocalDay {
               : null,
       convention: custom ? null : Sunrise.byId(section.conventionKind[i]),
       customAltitudeDeg: custom ? section.conventionValue[i] : null,
+      // No air has a pressure of zero, so a zero says the convention named
+      // none.
+      air:
+          section.airPressureHpa[i] > 0
+              ? Air(
+                pressureHpa: section.airPressureHpa[i],
+                temperatureC: section.airTemperatureC[i],
+              )
+              : null,
     );
   }
 
@@ -5517,6 +5527,24 @@ final class LocalDay {
   /// The custom altitude of the Sun's centre, degrees, when [convention]
   /// is `null`; `null` otherwise.
   final double? customAltitudeDeg;
+
+  /// The air the horizon was refracted through, resolved at the place,
+  /// when the settings named one (`{'kind': 'ATMOSPHERIC', ...}`); `null`
+  /// for the almanac's fixed 34′ or no refraction.
+  final Air? air;
+}
+
+/// An air as it was applied: a part the settings left out is the engines'
+/// standard at the place, the ICAO atmosphere's pressure at its height and
+/// 15 °C. The same record in every binding.
+final class Air {
+  const Air({required this.pressureHpa, required this.temperatureC});
+
+  /// The pressure at the observer, hectopascals.
+  final double pressureHpa;
+
+  /// The temperature at the observer, degrees Celsius.
+  final double temperatureC;
 }
 
 /// Where in its day a chart's moment falls: the ishtakaal and the hora.

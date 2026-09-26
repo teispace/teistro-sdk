@@ -170,6 +170,6 @@ void main() {
   test('the constants come from the boundary, not from a literal', () {
     expect(generatedAbiVersion, 1);
     expect(contextTestProvider, 1);
-    expect(vtableAbiVersion, 3);
+    expect(vtableAbiVersion, 4);
   });
 }

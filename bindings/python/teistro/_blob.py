@@ -1754,10 +1754,16 @@ class Day:
     """Which policy synthesised its bounds, when it had none; zero otherwise."""
 
     convention_kind: memoryview[int]
-    """Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude."""
+    """Which sunrise convention the arc was reckoned by, or the one an atmospheric convention gave its air to; `0xFF` for a custom altitude."""
 
     convention_value: memoryview[float]
     """The altitude in degrees when the convention is custom; zero otherwise."""
+
+    air_pressure_hpa: memoryview[float]
+    """The air's pressure the arc was refracted through, hectopascals, resolved at the place, when the convention is atmospheric; zero otherwise."""
+
+    air_temperature_c: memoryview[float]
+    """The air's temperature the arc was refracted through, degrees Celsius, when the convention is atmospheric; zero otherwise."""
 
     length: int
     """The number of rows every column holds."""
@@ -2136,6 +2142,12 @@ def decode_charts(raw: bytes) -> Charts:
             convention_kind=blob.column(at_day, 16, 1, at_day.count).cast("B"),
             convention_value=blob.column(
                 at_day, 17, 8, at_day.count
+            ).cast("d"),
+            air_pressure_hpa=blob.column(
+                at_day, 18, 8, at_day.count
+            ).cast("d"),
+            air_temperature_c=blob.column(
+                at_day, 19, 8, at_day.count
             ).cast("d"),
             length=at_day.count,
         ),
@@ -3636,6 +3648,12 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             convention_kind=blob.column(at_day, 16, 1, at_day.count).cast("B"),
             convention_value=blob.column(
                 at_day, 17, 8, at_day.count
+            ).cast("d"),
+            air_pressure_hpa=blob.column(
+                at_day, 18, 8, at_day.count
+            ).cast("d"),
+            air_temperature_c=blob.column(
+                at_day, 19, 8, at_day.count
             ).cast("d"),
             length=at_day.count,
         ),

@@ -184,6 +184,29 @@
       ],
       "type": "object"
     },
+    "Atmosphere": {
+      "additionalProperties": false,
+      "description": "The air a refracted horizon is seen through, as a convention names it: each part given, or left to the engines' standard at the place (`03-design/horizon-atmosphere.md` §5).",
+      "properties": {
+        "pressure_hpa": {
+          "description": "The pressure at the observer, hectopascals (millibars); absent for the standard atmosphere's at the observer's height.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "temperature_c": {
+          "description": "The temperature at the observer, degrees Celsius; absent for 15 °C.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
     "AvasthaBaladi": {
       "description": "A key of the `avastha_baladi` catalogue.",
       "enum": [
@@ -5477,6 +5500,29 @@
           "required": [
             "kind",
             "altitude_deg"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "A named convention that refracts, refracted by the given air rather than by the almanac's 34 arcminutes (`03-design/horizon-atmosphere.md`).",
+          "properties": {
+            "air": {
+              "$ref": "#/$defs/Atmosphere",
+              "description": "The air."
+            },
+            "kind": {
+              "const": "ATMOSPHERIC",
+              "type": "string"
+            },
+            "which": {
+              "$ref": "#/$defs/Sunrise",
+              "description": "The convention, which must refract."
+            }
+          },
+          "required": [
+            "kind",
+            "which",
+            "air"
           ],
           "type": "object"
         }

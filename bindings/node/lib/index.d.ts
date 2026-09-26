@@ -1875,6 +1875,22 @@ export interface LocalDay {
   readonly convention: Sunrise | 'unknown' | null;
   /** The custom altitude of the Sun's centre, degrees, when `convention` is `null`; `null` otherwise. */
   readonly customAltitudeDeg: number | null;
+  /**
+   * The air the horizon was refracted through, resolved at the place, when the settings named one
+   * (`{ kind: 'ATMOSPHERIC', which, air }`); `null` for the almanac's fixed 34′ or no refraction.
+   */
+  readonly air: Air | null;
+}
+
+/**
+ * An air as it was applied: a part the settings left out is the engines' standard at the place,
+ * the ICAO atmosphere's pressure at its height and 15 °C.
+ */
+export interface Air {
+  /** The pressure at the observer, hectopascals. */
+  readonly pressureHpa: number;
+  /** The temperature at the observer, degrees Celsius. */
+  readonly temperatureC: number;
 }
 
 /** A day with no sunrise or no sunset: which, and what the policy did about it. */

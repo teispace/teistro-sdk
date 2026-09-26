@@ -29,7 +29,7 @@
       "name": "VTABLE_ABI_VERSION",
       "doc": "The ABI version of the vtable layout.",
       "ty": "u32",
-      "value": 3,
+      "value": 4,
       "source": "crates/port-ephemeris/src/vtable.rs"
     },
     {
@@ -8835,6 +8835,32 @@
             "range": "[-90,90]",
             "example": "-0.8333"
           }
+        },
+        {
+          "name": "pressure_hpa",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The air's pressure at the observer, hectopascals, resolved at the\nobserver's height when the refraction is an atmosphere; else zero.\nAppended in ABI 4.",
+          "meta": {
+            "unit": "hPa",
+            "range": "[0,1100]",
+            "example": "1013.25"
+          }
+        },
+        {
+          "name": "temperature_c",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "f64"
+          },
+          "doc": "The air's temperature at the observer, degrees Celsius, resolved\nwhen the refraction is an atmosphere; else zero. Appended in ABI 4.",
+          "meta": {
+            "unit": "degC",
+            "range": "[-90,60]",
+            "example": "15"
+          }
         }
       ],
       "source": "crates/port-ephemeris/src/vtable.rs"
@@ -13945,13 +13971,23 @@
             {
               "name": "convention_kind",
               "scalar": "u8",
-              "doc": "Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.",
+              "doc": "Which sunrise convention the arc was reckoned by, or the one an atmospheric convention gave its air to; `0xFF` for a custom altitude.",
               "enum": "TsSunrise"
             },
             {
               "name": "convention_value",
               "scalar": "f64",
               "doc": "The altitude in degrees when the convention is custom; zero otherwise."
+            },
+            {
+              "name": "air_pressure_hpa",
+              "scalar": "f64",
+              "doc": "The air's pressure the arc was refracted through, hectopascals, resolved at the place, when the convention is atmospheric; zero otherwise."
+            },
+            {
+              "name": "air_temperature_c",
+              "scalar": "f64",
+              "doc": "The air's temperature the arc was refracted through, degrees Celsius, when the convention is atmospheric; zero otherwise."
             }
           ],
           "shape": "day"
@@ -16146,13 +16182,23 @@
             {
               "name": "convention_kind",
               "scalar": "u8",
-              "doc": "Which sunrise convention the arc was reckoned by; `0xFF` for a custom altitude.",
+              "doc": "Which sunrise convention the arc was reckoned by, or the one an atmospheric convention gave its air to; `0xFF` for a custom altitude.",
               "enum": "TsSunrise"
             },
             {
               "name": "convention_value",
               "scalar": "f64",
               "doc": "The altitude in degrees when the convention is custom; zero otherwise."
+            },
+            {
+              "name": "air_pressure_hpa",
+              "scalar": "f64",
+              "doc": "The air's pressure the arc was refracted through, hectopascals, resolved at the place, when the convention is atmospheric; zero otherwise."
+            },
+            {
+              "name": "air_temperature_c",
+              "scalar": "f64",
+              "doc": "The air's temperature the arc was refracted through, degrees Celsius, when the convention is atmospheric; zero otherwise."
             }
           ],
           "shape": "day"

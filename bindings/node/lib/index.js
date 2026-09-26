@@ -481,6 +481,10 @@ function localDay(section, index) {
         : null,
     convention: custom ? null : (SunriseById.get(r.conventionKind) ?? 'unknown'),
     customAltitudeDeg: custom ? r.conventionValue : null,
+    // No air has a pressure of zero, so a zero says the convention named
+    // none.
+    air:
+      r.airPressureHpa > 0 ? { pressureHpa: r.airPressureHpa, temperatureC: r.airTemperatureC } : null,
   };
 }
 

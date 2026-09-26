@@ -23,8 +23,9 @@ use std::path::{Path, PathBuf};
 use std::sync::{Mutex, PoisonError};
 
 use teimeris::{
-    Body as TmBody, Columns, Context, CrossingOptions, CrossingQuantity, ErrorKind, EventKind,
-    EventOption, EventOptions, Flags, Observer as TmObserver, Profile, TimeScale as TmScale,
+    Atmosphere as TmAtmosphere, Body as TmBody, Columns, Context, CrossingOptions,
+    CrossingQuantity, ErrorKind, EventKind, EventOption, EventOptions, Flags,
+    Observer as TmObserver, Profile, TimeScale as TmScale,
 };
 use teistro_core::angle::normalise_deg;
 use teistro_core::catalogue::Ayanamsha;
@@ -438,10 +439,8 @@ impl EphemerisProvider for TeimerisProvider {
         let guard = self.context.lock().unwrap_or_else(PoisonError::into_inner);
         let answered = dispatch::call(guard.as_ptr(), function, arguments)?;
         drop(guard);
-        serde_json::to_string(&answered).map_err(|error| {
-            ProviderError::Refused {
-                detail: format!("the answer does not serialise: {error}"),
-            }
+        serde_json::to_string(&answered).map_err(|error| ProviderError::Refused {
+            detail: format!("the answer does not serialise: {error}"),
         })
     }
 
@@ -570,7 +569,7 @@ impl EphemerisProvider for TeimerisProvider {
             },
             options: EventOption(engine_horizon_options(request)?),
             flags: Flags::EPH_SWISS,
-            atmosphere: None,
+            atmosphere: engine_atmosphere(request),
             horizon_height: 0.0,
             jd_end: request.from.get() + request.window_days,
         };
@@ -708,6 +707,25 @@ fn engine_observer(place: Place) -> TmObserver {
 /// both engines share, carried by the catalogue.
 fn engine_mode(ayanamsha: Ayanamsha) -> i32 {
     i32::from(ayanamsha.attributes().swiss_mode)
+}
+
+/// The air a horizon names, as the engine takes it: resolved at the place
+/// exactly as the SDK's own solver resolves it, so the two are asked about
+/// the same air (`03-design/horizon-atmosphere.md` §5). `None` leaves the
+/// engine its own standard, which is what `STANDARD` means in a native
+/// search.
+fn engine_atmosphere(request: &HorizonRequest) -> Option<TmAtmosphere> {
+    let Refraction::Atmosphere(air) = request.horizon.refraction else {
+        return None;
+    };
+    let air = air.at(request.place.altitude);
+    Some(TmAtmosphere {
+        pressure: air.pressure_hpa,
+        temperature: air.temperature_c,
+        // The standard lapse rate, which the engine reads only for the dip
+        // of a raised horizon; the horizon here is the ideal one.
+        lapse_rate: TmAtmosphere::standard(request.place.altitude.get()).lapse_rate,
+    })
 }
 
 /// The engine's event options for a horizon convention: the disc point,

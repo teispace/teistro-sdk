@@ -6,7 +6,7 @@ use core::fmt;
 
 use serde::{Deserialize, Serialize};
 use teistro_core::quantity::{JulianDay, Place, Ut1};
-use teistro_core::settings::{Sunrise, SunriseConvention};
+use teistro_core::settings::{Atmosphere, Sunrise, SunriseConvention};
 
 use crate::body::Body;
 
@@ -114,8 +114,9 @@ impl DiscPoint {
     }
 }
 
-/// Whether atmospheric refraction lifts the body at the horizon.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+/// Whether atmospheric refraction lifts the body at the horizon, and by
+/// what.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Refraction {
@@ -126,34 +127,44 @@ pub enum Refraction {
     /// in the SDK's solver; an engine's own standard atmosphere in a
     /// native search).
     Standard,
+    /// The refraction through a named air, resolved at the observer's
+    /// height, which a native search is given too
+    /// (`03-design/horizon-atmosphere.md`).
+    Atmosphere(Atmosphere),
 }
 
 impl Refraction {
-    /// The stable id at the C boundary.
+    /// The stable id at the C boundary; an atmosphere's air crosses
+    /// beside it.
     #[must_use]
     pub const fn id(self) -> u8 {
         match self {
             Refraction::None => 0,
             Refraction::Standard => 1,
+            Refraction::Atmosphere(_) => 2,
         }
     }
 
-    /// The refraction with an id.
+    /// The refraction with an id, and the air an atmosphere is given
+    /// (read only for id 2).
     #[must_use]
-    pub const fn from_id(id: u8) -> Option<Refraction> {
+    pub const fn from_id(id: u8, air: Atmosphere) -> Option<Refraction> {
         match id {
             0 => Some(Refraction::None),
             1 => Some(Refraction::Standard),
+            2 => Some(Refraction::Atmosphere(air)),
             _ => None,
         }
     }
 
-    /// The key stamped in provenance.
+    /// The key stamped in provenance; an atmosphere's air is stamped by
+    /// [`Horizon::key`].
     #[must_use]
     pub const fn key(self) -> &'static str {
         match self {
             Refraction::None => "NO_REFRACTION",
             Refraction::Standard => "STANDARD_REFRACTION",
+            Refraction::Atmosphere(_) => "ATMOSPHERE",
         }
     }
 }
@@ -164,7 +175,7 @@ impl Refraction {
 /// custom depression).
 ///
 /// ```
-/// use teistro_core::settings::{Sunrise, SunriseConvention};
+/// use teistro_core::settings::{Atmosphere, Sunrise, SunriseConvention};
 /// use teistro_port_ephemeris::{DiscPoint, Horizon, Refraction};
 ///
 /// let horizon = Horizon::from_convention(Sunrise::UpperLimbRefraction.into());
@@ -208,22 +219,42 @@ impl Horizon {
         altitude_deg: 0.0,
     };
 
+    /// The horizon a named convention is.
+    const fn named(which: Sunrise) -> Horizon {
+        match which {
+            Sunrise::UpperLimbRefraction => Horizon::UPPER_LIMB_REFRACTION,
+            Sunrise::LowerLimbRefraction => Horizon::LOWER_LIMB_REFRACTION,
+            // The classical convention, and any named convention core
+            // adds before this crate learns it.
+            _ => Horizon::CENTRE_NO_REFRACTION,
+        }
+    }
+
     /// The horizon a settings convention names: a named convention as
-    /// above, or the disc's centre without refraction at a custom altitude.
+    /// above, the disc's centre without refraction at a custom altitude,
+    /// or a refracted named convention with its air.
+    ///
+    /// The settings refuse an air given to a convention that does not
+    /// refract; one that reaches here anyway keeps its named horizon,
+    /// which has no refraction for the air to replace.
     #[must_use]
     pub const fn from_convention(convention: SunriseConvention) -> Horizon {
         match convention {
-            SunriseConvention::Named { which } => match which {
-                Sunrise::UpperLimbRefraction => Horizon::UPPER_LIMB_REFRACTION,
-                Sunrise::LowerLimbRefraction => Horizon::LOWER_LIMB_REFRACTION,
-                // The classical convention, and any named convention core
-                // adds before this crate learns it.
-                _ => Horizon::CENTRE_NO_REFRACTION,
-            },
+            SunriseConvention::Named { which } => Horizon::named(which),
             SunriseConvention::Custom { altitude_deg } => Horizon {
                 altitude_deg,
                 ..Horizon::CENTRE_NO_REFRACTION
             },
+            SunriseConvention::Atmospheric { which, air } => {
+                let named = Horizon::named(which);
+                match named.refraction {
+                    Refraction::None => named,
+                    _ => Horizon {
+                        refraction: Refraction::Atmosphere(air),
+                        ..named
+                    },
+                }
+            }
         }
     }
 
@@ -242,20 +273,41 @@ impl Horizon {
             Some(SunriseConvention::Custom {
                 altitude_deg: self.altitude_deg,
             })
+        } else if let Refraction::Atmosphere(air) = self.refraction {
+            let standard = Horizon {
+                refraction: Refraction::Standard,
+                ..*self
+            };
+            standard.convention().and_then(|named| match named {
+                SunriseConvention::Named { which } => {
+                    Some(SunriseConvention::Atmospheric { which, air })
+                }
+                _ => None,
+            })
         } else {
             None
         }
     }
 
-    /// The key stamped in provenance: disc, refraction and altitude.
+    /// The key stamped in provenance: disc, refraction and altitude, and
+    /// an atmosphere's air as it was named (`STANDARD` for a part left to
+    /// the standard at the place).
     #[must_use]
     pub fn key(&self) -> String {
-        format!(
-            "{}/{}/{}",
-            self.disc.key(),
-            self.refraction.key(),
-            self.altitude_deg
-        )
+        let refraction = match self.refraction {
+            Refraction::Atmosphere(air) => {
+                let part = |value: Option<f64>, unit: &str| {
+                    value.map_or_else(|| String::from("STANDARD"), |v| format!("{v}{unit}"))
+                };
+                format!(
+                    "ATMOSPHERE[{},{}]",
+                    part(air.pressure_hpa, "hPa"),
+                    part(air.temperature_c, "C")
+                )
+            }
+            other => String::from(other.key()),
+        };
+        format!("{}/{}/{}", self.disc.key(), refraction, self.altitude_deg)
     }
 }
 
@@ -304,8 +356,44 @@ mod tests {
         ] {
             assert_eq!(DiscPoint::from_id(disc.id()), Some(disc));
         }
-        assert_eq!(Refraction::from_id(1), Some(Refraction::Standard));
-        assert_eq!(Refraction::from_id(9), None);
+        let air = Atmosphere::given(987.0, 4.5);
+        for refraction in [
+            Refraction::None,
+            Refraction::Standard,
+            Refraction::Atmosphere(air),
+        ] {
+            assert_eq!(Refraction::from_id(refraction.id(), air), Some(refraction));
+        }
+        assert_eq!(Refraction::from_id(9, air), None);
+        for which in [Sunrise::UpperLimbRefraction, Sunrise::LowerLimbRefraction] {
+            for air in [Atmosphere::STANDARD, air] {
+                let convention = SunriseConvention::Atmospheric { which, air };
+                let horizon = Horizon::from_convention(convention);
+                assert_eq!(horizon.refraction, Refraction::Atmosphere(air));
+                assert_eq!(horizon.convention(), Some(convention));
+            }
+        }
+        // The settings refuse an air for a convention that does not
+        // refract; reaching here, it keeps its geometric horizon.
+        let refused = SunriseConvention::Atmospheric {
+            which: Sunrise::CentreNoRefraction,
+            air,
+        };
+        assert_eq!(
+            Horizon::from_convention(refused),
+            Horizon::CENTRE_NO_REFRACTION
+        );
+        assert_eq!(
+            Horizon::from_convention(SunriseConvention::Atmospheric {
+                which: Sunrise::UpperLimbRefraction,
+                air: Atmosphere {
+                    pressure_hpa: Some(987.0),
+                    temperature_c: None,
+                },
+            })
+            .key(),
+            "UPPER_LIMB/ATMOSPHERE[987hPa,STANDARD]/0"
+        );
         for named in [
             Sunrise::CentreNoRefraction,
             Sunrise::UpperLimbRefraction,

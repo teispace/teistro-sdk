@@ -116,11 +116,15 @@ fn sky_at(
     sky: &dyn ApparentPositions,
     body: Body,
     horizon: &Horizon,
+    place: &Place,
     at: f64,
 ) -> Option<(f64, f64)> {
     let apparent = sky.apparent(body, JulianDay::<Ut1>::literal(at)).ok()?;
     let disc = Disc::of(body, apparent.distance_au);
-    Some((apparent.dec_deg, centre_altitude_deg(horizon, &disc)))
+    Some((
+        apparent.dec_deg,
+        centre_altitude_deg(horizon, &disc, place.altitude),
+    ))
 }
 
 /// Whether the body certainly reaches no crossing of the target inside
@@ -192,10 +196,10 @@ fn sweep() -> (Vec<Reading>, [f64; 2]) {
             .with_absence_check(false);
             for day in 0..DAYS {
                 let from = 2_451_545.0 + f64::from(day) * DAY_STEP;
-                let Some(start) = sky_at(&completion, body, &horizon, from) else {
+                let Some(start) = sky_at(&completion, body, &horizon, &place, from) else {
                     continue;
                 };
-                let Some(end) = sky_at(&completion, body, &horizon, from + 1.0) else {
+                let Some(end) = sky_at(&completion, body, &horizon, &place, from + 1.0) else {
                     continue;
                 };
                 // What a margin actually has to cover is **not** the
@@ -208,7 +212,8 @@ fn sweep() -> (Vec<Reading>, [f64; 2]) {
                 let mut deviation = 0.0f64;
                 for step in 1..8 {
                     let fraction = f64::from(step) / 8.0;
-                    let Some((dec, _)) = sky_at(&completion, body, &horizon, from + fraction)
+                    let Some((dec, _)) =
+                        sky_at(&completion, body, &horizon, &place, from + fraction)
                     else {
                         continue;
                     };
