@@ -1605,6 +1605,36 @@ What a gochar reading counted its houses from (crux C139).
 | `TS_GOCHAR_FROM_MOON` | 0 | The natal Moon's sign, Phaladeepika ch. 26 v. 1's. |
 | `TS_GOCHAR_FROM_LAGNA` | 1 | The natal lagna's sign. |
 
+## ts_hit_kind
+
+What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_HIT_KIND_SIGN_INGRESS` | 0 | The graha entered a sign. |
+| `TS_HIT_KIND_NAKSHATRA_INGRESS` | 1 | The graha entered a nakshatra. |
+| `TS_HIT_KIND_STATION` | 2 | The graha stood still in longitude. |
+| `TS_HIT_KIND_ASPECT` | 3 | The graha aspected a natal point, or came within or left its orb. |
+
+## ts_motion
+
+Which way a graha was moving, through a line or out of a station.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_MOTION_DIRECT` | 0 | Forward through the zodiac. |
+| `TS_MOTION_RETROGRADE` | 1 | Backward. |
+
+## ts_aspect_phase
+
+Where in an aspect's window a hit falls (C146).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_ASPECT_PHASE_ENTERING` | 0 | The transit came within the orb. |
+| `TS_ASPECT_PHASE_EXACT` | 1 | The aspect is exact. |
+| `TS_ASPECT_PHASE_LEAVING` | 2 | The transit passed out of the orb. |
+
 ## ts_node_vedha
 
 The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).

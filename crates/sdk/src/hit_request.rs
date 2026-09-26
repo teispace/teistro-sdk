@@ -1,6 +1,7 @@
 //! The transit hit list through the façade: every ingress and station of a
 //! window, against one chart (`03-design/transit-hit-list.md`).
 
+use serde::{Deserialize, Serialize};
 use teistro_astro::events::{Direction, Lattice, StationKind};
 use teistro_chart::foundation::{TransitEvent, TransitEventKind};
 use teistro_core::catalogue::Graha;
@@ -10,8 +11,9 @@ use teistro_gochar::GRAHAS;
 use teistro_gochar::hits::{self, Edge, HitEvent, Motion, NatalPoint};
 use teistro_serial::Document;
 
-/// A kind of event a hit list reports.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// A kind of event a hit list reports, spelled as the event's own `kind`.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum HitKind {
     /// A graha entering a sign.
@@ -167,9 +169,13 @@ impl HitRequest {
     /// The request checked before any search: a window that runs forward,
     /// and at least one graha and one kind; a refusal names the field.
     ///
+    /// A graha, a point or an angle named twice is refused rather than
+    /// answered twice.
+    ///
     /// # Errors
     ///
-    /// `INVALID_ARG` naming `to`, `grahas` or `kinds`.
+    /// `INVALID_ARG` naming `to`, `grahas`, `kinds`, `points`, `aspects`
+    /// or `orb_deg`.
     pub fn check(&self) -> Result<(), Error> {
         if self.to.get() <= self.from.get() {
             return Err(Error::invalid_arg(format!(
@@ -184,6 +190,8 @@ impl HitRequest {
                 Error::invalid_arg("no graha to search the transits of").with_field("grahas")
             );
         }
+        repeated(&self.grahas, "grahas")?;
+        nine(self.grahas.iter().copied(), "grahas")?;
         if self.kinds.is_empty() {
             return Err(Error::invalid_arg("no kind of event to report").with_field("kinds"));
         }
@@ -194,6 +202,15 @@ impl HitRequest {
             if self.aspects.is_empty() {
                 return Err(Error::invalid_arg("no aspect to report").with_field("aspects"));
             }
+            repeated(&self.points, "points")?;
+            nine(
+                self.points.iter().filter_map(|point| match point {
+                    NatalPoint::Graha { graha } => Some(*graha),
+                    NatalPoint::Lagna => None,
+                }),
+                "points",
+            )?;
+            repeated(&self.aspects, "aspects")?;
             if let Some(angle) = self.aspects.iter().find(|a| **a > 180 || **a % 30 != 0) {
                 return Err(Error::invalid_arg(format!(
                     "an aspect is a multiple of 30 degrees from 0 to 180, not {angle}"
@@ -212,6 +229,191 @@ impl HitRequest {
         }
         Ok(())
     }
+
+    /// The request a binding writes as `hits`, read and checked: the window
+    /// as UTC Julian days, and optionally the grahas, the kinds, the natal
+    /// points, the aspects' angles and an orb, each spelled as the answer
+    /// spells it — a graha by its key, a kind as an event's `kind`, a point
+    /// as an aspect's `to` or bare (`"LAGNA"`, `"MOON"`).
+    ///
+    /// ```
+    /// use teistro::{HitKind, HitRequest};
+    ///
+    /// let asked = HitRequest::from_json(
+    ///     r#"{"from": 2460676.5, "to": 2461041.5, "grahas": ["SATURN"],
+    ///         "kinds": ["ASPECT"], "points": ["MOON", {"point": "LAGNA"}], "orbDeg": 2}"#,
+    /// )?;
+    /// assert!(asked.asks(HitKind::Aspect) && !asked.asks(HitKind::Station));
+    /// assert_eq!(asked.points().len(), 2);
+    /// // A refusal names the field the caller wrote.
+    /// let late = HitRequest::from_json(r#"{"from": 2460676.5, "to": 2460000.5}"#).unwrap_err();
+    /// assert_eq!(late.field(), Some("hits.to"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on text that is not the record, a key it does not
+    /// read, an unknown graha, kind or point, and whatever
+    /// [`HitRequest::check`] refuses, each named under `hits`.
+    pub fn from_json(text: &str) -> Result<HitRequest, Error> {
+        let asked: Asked = teistro_core::strict::read(text, HITS)?;
+        let instant = |jd: f64, field: &str| {
+            JulianDay::<Utc>::try_new(jd)
+                .map_err(|why| Error::from(why).with_field(format!("{HITS}.{field}")))
+        };
+        let mut request =
+            HitRequest::between(instant(asked.from, "from")?, instant(asked.to, "to")?);
+        if let Some(grahas) = asked.grahas {
+            request = request.with_grahas(grahas.into_iter().map(|key| key.0));
+        }
+        if let Some(kinds) = asked.kinds {
+            request = request.with_kinds(kinds);
+        }
+        if let Some(points) = asked.points {
+            request = request.with_points(points.into_iter().map(NatalPoint::from));
+        }
+        if let Some(aspects) = asked.aspects {
+            request = request.with_aspects(aspects);
+        }
+        if let Some(orb_deg) = asked.orb_deg {
+            request = request.with_orb(orb_deg);
+        }
+        request.check().map_err(|why| {
+            // The builder's field is `orb_deg`; the record's is `orbDeg`.
+            let why = match why.field() {
+                Some("orb_deg") => why.with_field("orbDeg"),
+                _ => why,
+            };
+            why.under(HITS)
+        })?;
+        Ok(request)
+    }
+}
+
+/// The record every binding writes the request as.
+const HITS: &str = "hits";
+
+/// [`HitRequest`] as the bindings write it, camel-cased as every request
+/// record is; every field but the window is optional, and an absent one is
+/// the default.
+#[derive(Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct Asked {
+    from: f64,
+    to: f64,
+    #[serde(default)]
+    grahas: Option<Vec<GrahaKey>>,
+    #[serde(default)]
+    kinds: Option<Vec<HitKind>>,
+    #[serde(default)]
+    points: Option<Vec<PointAsked>>,
+    #[serde(default)]
+    aspects: Option<Vec<u16>>,
+    #[serde(default)]
+    orb_deg: Option<f64>,
+}
+
+/// A graha as a request may name it: bare (`"SUN"`), as the Rust key
+/// spells it, or full (`"graha.SUN"`), as every binding reads one back, so a
+/// caller can hand back what it was given.
+#[derive(Serialize)]
+#[serde(transparent)]
+struct GrahaKey(Graha);
+
+impl GrahaKey {
+    fn read(key: &str) -> Result<GrahaKey, String> {
+        let bare = key
+            .strip_prefix(Graha::KIND.name())
+            .and_then(|rest| rest.strip_prefix('.'))
+            .unwrap_or(key);
+        Graha::from_key(bare)
+            .map(GrahaKey)
+            .ok_or_else(|| teistro_core::catalogue::UnknownKey::in_kind::<Graha>(bare).to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for GrahaKey {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let key = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
+        GrahaKey::read(&key).map_err(serde::de::Error::custom)
+    }
+}
+
+/// A natal point as a request may name it: as an answer's `to` spells it
+/// (`{"point": "GRAHA", "graha": "graha.MOON"}`, `{"point": "LAGNA"}`), or
+/// bare, a graha's key or `"LAGNA"`.
+#[derive(Serialize)]
+#[serde(transparent)]
+struct PointAsked(NatalPoint);
+
+impl<'de> Deserialize<'de> for PointAsked {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::Error as _;
+        let value = serde_json::Value::deserialize(deserializer)?;
+        let graha = |key: &str| {
+            GrahaKey::read(key)
+                .map(|key| PointAsked(NatalPoint::Graha { graha: key.0 }))
+                .map_err(D::Error::custom)
+        };
+        let shapes = "a point is \"LAGNA\", a graha's key, or an aspect's `to`";
+        match &value {
+            serde_json::Value::String(key) if key == "LAGNA" => Ok(PointAsked(NatalPoint::Lagna)),
+            serde_json::Value::String(key) => {
+                graha(key).map_err(|why| D::Error::custom(format!("{why}; {shapes}")))
+            }
+            serde_json::Value::Object(fields) => {
+                let field = |name: &str| fields.get(name).and_then(serde_json::Value::as_str);
+                match (field("point"), field("graha"), fields.len()) {
+                    (Some("LAGNA"), None, 1) => Ok(PointAsked(NatalPoint::Lagna)),
+                    (Some("GRAHA"), Some(key), 2) => graha(key),
+                    _ => Err(D::Error::custom(format!(
+                        "{value} is not a natal point; {shapes}"
+                    ))),
+                }
+            }
+            _ => Err(D::Error::custom(format!(
+                "{value} is not a natal point; {shapes}"
+            ))),
+        }
+    }
+}
+
+impl From<PointAsked> for NatalPoint {
+    fn from(asked: PointAsked) -> NatalPoint {
+        asked.0
+    }
+}
+
+/// Refuses a graha outside the nine a chart places, by field: the
+/// catalogue names more (Uranus, Pluto), and neither a transit's search
+/// nor a natal chart has them.
+fn nine(grahas: impl IntoIterator<Item = Graha>, field: &str) -> Result<(), Error> {
+    match grahas.into_iter().find(|graha| !GRAHAS.contains(graha)) {
+        Some(graha) => Err(Error::invalid_arg(format!(
+            "{} is not one of the nine grahas a chart places",
+            graha.key()
+        ))
+        .with_field(field)
+        .with_hint("the nine are the Sun to Saturn, Rahu and Ketu")),
+        None => Ok(()),
+    }
+}
+
+/// Refuses a list that names one member twice, by field.
+fn repeated<T: PartialEq + std::fmt::Debug>(members: &[T], field: &str) -> Result<(), Error> {
+    for (at, member) in members.iter().enumerate() {
+        if members
+            .get(..at)
+            .is_some_and(|before| before.contains(member))
+        {
+            return Err(Error::invalid_arg(format!(
+                "{member:?} is named twice, which would report its events twice"
+            ))
+            .with_field(field));
+        }
+    }
+    Ok(())
 }
 
 /// What a lattice's crossings mean, and for which chart: an ingress is
@@ -337,5 +539,93 @@ pub(crate) fn hit_of(
             },
             None,
         )),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use super::*;
+
+    const WINDOW: &str = r#""from": 2460676.5, "to": 2461041.5"#;
+
+    fn refused(rest: &str) -> Error {
+        HitRequest::from_json(&format!("{{{WINDOW}{rest}}}")).unwrap_err()
+    }
+
+    #[test]
+    fn a_point_is_named_as_the_answer_names_it_or_bare() {
+        let asked = HitRequest::from_json(&format!(
+            r#"{{{WINDOW}, "points": ["LAGNA", "SUN", {{"point": "GRAHA", "graha": "MOON"}}, {{"point": "LAGNA"}}]}}"#
+        ));
+        // The lagna named twice, once bare and once tagged, is one point.
+        assert_eq!(asked.unwrap_err().field(), Some("hits.points"));
+        let asked = HitRequest::from_json(&format!(
+            r#"{{{WINDOW}, "points": ["LAGNA", "SUN", {{"point": "GRAHA", "graha": "MOON"}}]}}"#
+        ))
+        .unwrap();
+        assert_eq!(
+            asked.points(),
+            [
+                NatalPoint::Lagna,
+                NatalPoint::Graha { graha: Graha::Sun },
+                NatalPoint::Graha { graha: Graha::Moon }
+            ]
+        );
+    }
+
+    #[test]
+    fn a_graha_is_named_bare_or_full() {
+        let asked = HitRequest::from_json(&format!(
+            r#"{{{WINDOW}, "grahas": ["SUN", "graha.SATURN"], "points": ["graha.MOON", {{"point": "GRAHA", "graha": "graha.MARS"}}]}}"#
+        ))
+        .unwrap();
+        assert_eq!(asked.grahas(), [Graha::Sun, Graha::Saturn]);
+        assert_eq!(
+            asked.points(),
+            [
+                NatalPoint::Graha { graha: Graha::Moon },
+                NatalPoint::Graha { graha: Graha::Mars }
+            ]
+        );
+    }
+
+    #[test]
+    fn a_refusal_names_the_field_under_hits() {
+        for (rest, field) in [
+            (r#", "grahas": ["SUN", "SUN"]"#, "hits.grahas"),
+            (r#", "grahas": []"#, "hits.grahas"),
+            (r#", "aspects": [0, 0]"#, "hits.aspects"),
+            (r#", "aspects": [45]"#, "hits.aspects"),
+            (r#", "orbDeg": 20"#, "hits.orbDeg"),
+            (r#", "kinds": []"#, "hits.kinds"),
+        ] {
+            assert_eq!(refused(rest).field(), Some(field), "{rest}");
+        }
+        assert_eq!(
+            refused(r#", "grahas": ["PLUTO"]"#).field(),
+            Some("hits.grahas")
+        );
+        assert_eq!(
+            refused(r#", "points": ["URANUS"]"#).field(),
+            Some("hits.points")
+        );
+        for rest in [
+            r#", "kinds": ["ECLIPSE"]"#,
+            r#", "points": ["ASCENDANT"]"#,
+            r#", "points": [{"point": "LAGNA", "graha": "SUN"}]"#,
+            r#", "points": [7]"#,
+            r#", "extra": 1"#,
+        ] {
+            let why = refused(rest);
+            assert_eq!(
+                why.status,
+                teistro_core::error::Status::InvalidArg,
+                "{rest}"
+            );
+            // Each says what it wanted, never serde's "did not match".
+            assert!(!why.to_string().contains("did not match"), "{why}");
+        }
     }
 }

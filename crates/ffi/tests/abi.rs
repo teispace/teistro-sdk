@@ -1494,6 +1494,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             interpret_json: ptr::null(),
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
+            hits_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1629,6 +1630,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             interpret_json: ptr::null(),
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
+            hits_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1762,6 +1764,7 @@ fn a_chart_request_answers_the_transits() {
             interpret_json: ptr::null(),
             varsha_json: ptr::null(),
             gochar_json: gochar.as_ptr(),
+            hits_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1902,6 +1905,7 @@ fn a_chart_request_answers_the_transits() {
         let text = CString::new(json).unwrap();
         let asked = TsChartRequest {
             gochar_json: text.as_ptr(),
+            hits_json: ptr::null(),
             ..request
         };
         let mut out = TsBlob::empty();
@@ -1919,6 +1923,172 @@ fn a_chart_request_answers_the_transits() {
             .as_deref()
             .is_some_and(|f| f.starts_with("gochar")),
         "{unknown:?}"
+    );
+}
+
+/// The transit hit list crosses: a request's `hits_json` answers every
+/// chart's list in the `hits` section, ragged by `cast.hit_count`, each
+/// row the façade's own hit for that chart, and a refusal names the field
+/// the caller wrote (`03-design/transit-hit-list.md`).
+#[test]
+fn a_chart_request_answers_the_hit_list() {
+    use teistro::gochar::hits::HitEvent;
+    use teistro_ffi::chart::{TsAspectPhase, TsHitKind, TsMotion};
+    let ctx = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::Builtin,
+        Some("conformance-baseline"),
+        None,
+        None,
+    )
+    .unwrap();
+    let births = [2_447_995.489_583_333_5, 2_451_545.0];
+    let text = r#"{"from":2460676.5,"to":2460866.5,"grahas":["SUN","MERCURY","SATURN","KETU"],"aspects":[0,90,180],"orbDeg":2}"#;
+    let hits = CString::new(text).unwrap();
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: births.as_ptr(),
+            instant_count: births.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
+            hits_json: hits.as_ptr(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    let column = |name: &str| reader.column("hits", name).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 1400.0).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &births.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(
+                place,
+                teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+            ),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::HitRequest::from_json(text).unwrap();
+    let lists: Vec<Vec<teistro::Hit>> = natal
+        .iter()
+        .map(|document| sdk.chart().hits(document, &asked).unwrap().value)
+        .collect();
+
+    // Ragged: each chart's count is its own list's.
+    let counts = reader.column("cast", "hit_count").unwrap();
+    for (count, list) in counts.iter().zip(&lists) {
+        assert_eq!(count.as_i64(), i64::try_from(list.len()).unwrap());
+    }
+    assert_ne!(lists[0].len(), lists[1].len(), "two charts, two lists");
+    let columns = [
+        "instant", "graha", "kind", "into", "motion", "to_lagna", "to_graha", "angle", "phase",
+    ]
+    .map(column);
+    let expected: Vec<&teistro::Hit> = lists.iter().flatten().collect();
+    assert_eq!(columns[0].len(), expected.len());
+    let mut kinds = [0_usize; 4];
+    for (at, hit) in expected.iter().enumerate() {
+        let cell = |c: usize| columns[c][at].as_i64();
+        assert_eq!(columns[0][at].as_f64(), hit.instant.get());
+        assert_eq!(cell(1), i64::from(hit.graha.id()));
+        let kind = TsHitKind::from(&hit.event);
+        assert_eq!(cell(2), i64::from(kind as u8));
+        kinds[kind as usize] += 1;
+        match hit.event {
+            HitEvent::SignIngress { into, motion } => {
+                assert_eq!(cell(3), i64::from(into.id()));
+                assert_eq!(cell(4), i64::from(TsMotion::from(motion) as u8));
+            }
+            HitEvent::NakshatraIngress { into, motion } => {
+                assert_eq!(cell(3), i64::from(into.id()));
+                assert_eq!(cell(4), i64::from(TsMotion::from(motion) as u8));
+            }
+            HitEvent::Station { turns } => {
+                assert_eq!(cell(4), i64::from(TsMotion::from(turns) as u8));
+            }
+            HitEvent::Aspect {
+                to,
+                angle,
+                phase,
+                motion,
+            } => {
+                assert_eq!(cell(4), i64::from(TsMotion::from(motion) as u8));
+                match to {
+                    teistro::NatalPoint::Lagna => assert_eq!(cell(5), 1),
+                    teistro::NatalPoint::Graha { graha } => {
+                        assert_eq!((cell(5), cell(6)), (0, i64::from(graha.id())));
+                    }
+                }
+                assert_eq!(cell(7), i64::from(angle));
+                assert_eq!(cell(8), i64::from(TsAspectPhase::from(phase) as u8));
+            }
+        }
+    }
+    assert!(kinds.iter().all(|count| *count > 0), "{kinds:?}");
+
+    // A refusal names the field the caller wrote, under `hits`.
+    let refused = |json: &str| {
+        let text = CString::new(json).unwrap();
+        let asked = TsChartRequest {
+            hits_json: text.as_ptr(),
+            ..request
+        };
+        let mut out = TsBlob::empty();
+        // SAFETY: as above.
+        let status = unsafe { ts_chart_found(ctx.handle, &raw const asked, &raw mut out) };
+        assert_eq!(status, Status::InvalidArg, "{json}");
+        ctx.last_error().2
+    };
+    assert_eq!(
+        refused(r#"{"from":2460676.5,"to":2460600.5}"#).as_deref(),
+        Some("hits.to")
+    );
+    assert_eq!(
+        refused(r#"{"from":2460676.5,"to":2460866.5,"orbDeg":20}"#).as_deref(),
+        Some("hits.orbDeg")
+    );
+    assert_eq!(
+        refused(r#"{"from":2460676.5,"to":2460866.5,"grahas":["PLUTO"]}"#).as_deref(),
+        Some("hits.grahas")
     );
 }
 
@@ -1963,6 +2133,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             interpret_json: ptr::null(),
             varsha_json: varsha.as_ptr(),
             gochar_json: ptr::null(),
+            hits_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2084,6 +2255,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             interpret_json: ptr::null(),
             varsha_json: text.as_ptr(),
             gochar_json: ptr::null(),
+            hits_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2210,6 +2382,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             interpret_json: ptr::null(),
             varsha_json: varsha.as_ptr(),
             gochar_json: ptr::null(),
+            hits_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2955,6 +3128,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             interpret_json: ptr::null(),
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
+            hits_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3053,6 +3227,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             interpret_json: ptr::null(),
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
+            hits_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3216,6 +3391,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             interpret_json: plans.as_ptr(),
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
+            hits_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3472,6 +3648,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 interpret_json: plans.as_ptr(),
                 varsha_json: ptr::null(),
                 gochar_json: ptr::null(),
+                hits_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );

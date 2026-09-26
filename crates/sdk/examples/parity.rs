@@ -901,16 +901,7 @@ fn charts(report: &mut Report) -> (Context, Place, UtcOffset) {
     the_rules(report, &by_rule);
     the_plans(report, &geo, &read.value, &by_rule);
     for (index, document) in read.value.iter().enumerate() {
-        the_drawings(report, &geo, index, document);
-        one_varga_chart(report, index, document);
-        the_states(report, index, document);
-        the_bhavas(report, index, document);
-        the_points(report, index, document);
-        the_drishti(report, index, document);
-        the_strength(report, index, document);
-        the_dashas(report, &geo, index, document);
-        the_praveshas(report, &geo, index, document);
-        the_gochar(report, &geo, index, document);
+        one_document(report, &geo, index, document);
     }
     // **One call, as the other three make one.** The foundations are the
     // reading's own, and the provenance below is the reading's too --
@@ -1762,6 +1753,83 @@ fn the_gochar(report: &mut Report, sdk: &Context, index: usize, document: &teist
                 ),
             );
         }
+    }
+}
+
+/// Everything one chart of the batch prints, in the order the other three
+/// print it.
+fn one_document(report: &mut Report, geo: &Context, index: usize, document: &teistro::Document) {
+    the_drawings(report, geo, index, document);
+    one_varga_chart(report, index, document);
+    the_states(report, index, document);
+    the_bhavas(report, index, document);
+    the_points(report, index, document);
+    the_drishti(report, index, document);
+    the_strength(report, index, document);
+    the_dashas(report, geo, index, document);
+    the_praveshas(report, geo, index, document);
+    the_gochar(report, geo, index, document);
+    the_hits(report, geo, index, document);
+}
+
+/// The hit list every runner asks for: two months, three grahas, three
+/// aspects with an orb, so every kind of event and every phase appears.
+const HITS_JSON: &str = r#"{"from":2460676.5,"to":2460736.5,"grahas":["SUN","MERCURY","SATURN"],"aspects":[0,90,180],"orbDeg":2}"#;
+
+/// The hit list as the other three print it: each hit's instant, graha
+/// and kind, then the fields its kind carries, `-` for the rest.
+fn the_hits(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    use teistro::gochar::hits::HitEvent;
+    let asked = teistro::HitRequest::from_json(HITS_JSON).expect("a valid request");
+    let hits = sdk
+        .chart()
+        .hits(document, &asked)
+        .expect("the test provider")
+        .value;
+    for (k, hit) in hits.iter().enumerate() {
+        let dash = || "-".to_owned();
+        let (into, motion, to, angle, phase) = match hit.event {
+            HitEvent::SignIngress { into, motion } => (
+                into.full_key().to_owned(),
+                wire_key(&motion),
+                dash(),
+                dash(),
+                dash(),
+            ),
+            HitEvent::NakshatraIngress { into, motion } => (
+                into.full_key().to_owned(),
+                wire_key(&motion),
+                dash(),
+                dash(),
+                dash(),
+            ),
+            HitEvent::Station { turns } => (dash(), wire_key(&turns), dash(), dash(), dash()),
+            HitEvent::Aspect {
+                to,
+                angle,
+                phase,
+                motion,
+            } => (
+                dash(),
+                wire_key(&motion),
+                match to {
+                    teistro::NatalPoint::Lagna => "LAGNA".to_owned(),
+                    teistro::NatalPoint::Graha { graha } => graha.full_key().to_owned(),
+                },
+                angle.to_string(),
+                wire_key(&phase),
+            ),
+        };
+        put(
+            report,
+            &format!("chart-{index}-hit-{k}"),
+            format!(
+                "{} {} {} {into} {motion} {to} {angle} {phase}",
+                number(hit.instant.get()),
+                hit.graha.full_key(),
+                wire_key(&hit.event),
+            ),
+        );
     }
 }
 

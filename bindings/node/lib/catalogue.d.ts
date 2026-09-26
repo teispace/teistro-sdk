@@ -6120,6 +6120,87 @@ export declare const GocharFrom: {
 export declare const GocharFromById: ReadonlyMap<number, GocharFrom>;
 
 /**
+ * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
+ */
+export type HitKind = 'SIGN_INGRESS' | 'NAKSHATRA_INGRESS' | 'STATION' | 'ASPECT';
+
+/** Every HitKind by name; the values are the strings the union accepts. */
+export declare const HitKind: {
+  /**
+   * The graha entered a sign.
+   */
+  readonly SignIngress: 'SIGN_INGRESS';
+  /**
+   * The graha entered a nakshatra.
+   */
+  readonly NakshatraIngress: 'NAKSHATRA_INGRESS';
+  /**
+   * The graha stood still in longitude.
+   */
+  readonly Station: 'STATION';
+  /**
+   * The graha aspected a natal point, or came within or left its orb.
+   */
+  readonly Aspect: 'ASPECT';
+};
+
+/**
+ * Every HitKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const HitKindById: ReadonlyMap<number, HitKind>;
+
+/**
+ * Which way a graha was moving, through a line or out of a station.
+ */
+export type Motion = 'DIRECT' | 'RETROGRADE';
+
+/** Every Motion by name; the values are the strings the union accepts. */
+export declare const Motion: {
+  /**
+   * Forward through the zodiac.
+   */
+  readonly Direct: 'DIRECT';
+  /**
+   * Backward.
+   */
+  readonly Retrograde: 'RETROGRADE';
+};
+
+/**
+ * Every Motion by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const MotionById: ReadonlyMap<number, Motion>;
+
+/**
+ * Where in an aspect's window a hit falls (C146).
+ */
+export type AspectPhase = 'ENTERING' | 'EXACT' | 'LEAVING';
+
+/** Every AspectPhase by name; the values are the strings the union accepts. */
+export declare const AspectPhase: {
+  /**
+   * The transit came within the orb.
+   */
+  readonly Entering: 'ENTERING';
+  /**
+   * The aspect is exact.
+   */
+  readonly Exact: 'EXACT';
+  /**
+   * The transit passed out of the orb.
+   */
+  readonly Leaving: 'LEAVING';
+};
+
+/**
+ * Every AspectPhase by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AspectPhaseById: ReadonlyMap<number, AspectPhase>;
+
+/**
  * The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).
  */
 export type NodeVedha = 'LIKE_THE_SUN' | 'NONE';

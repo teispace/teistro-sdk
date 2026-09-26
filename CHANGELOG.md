@@ -1178,6 +1178,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none. No caller asked the completion for the true basis,
   and the chart already took its day and zodiac from the SDK.
 
+- **The hit list crosses to every binding** (`transit-hit-list.md` §6
+  step 4). `hits` on a chart request — `{ from, to, grahas, kinds,
+  points, aspects, orbDeg }`, all but the window optional — answers each
+  chart's `hits`: in Node, Python and Dart every hit is the Rust `Hit`,
+  its event tagged by `kind` with only that kind's fields, and the
+  boundary searches the sky once for the batch. The C ABI gains
+  `hits_json` on `ts_chart_request`, section 56 `hits` ragged by the new
+  `cast.hit_count`, and `TsHitKind`, `TsMotion` and `TsAspectPhase`.
+  `HitRequest::from_json` reads the record; a request names a graha bare
+  or full and a point as an aspect's `to` hands it back, and refuses a
+  graha outside the nine, or one named twice, by field.
+
+  **Numbers:** none.
+
 - **The hit list, measured, and searched once for many charts**
   (`transit-hit-list.md` §6 step 3). `sdk.chart().hits_many(natals,
   &request)` answers a list per chart from one scan of each graha: the

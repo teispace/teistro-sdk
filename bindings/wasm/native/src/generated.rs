@@ -1976,6 +1976,22 @@ pub struct ChartRequest {
     /// Example: {"instants":[2460676.5],"from":"MOON"}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub gochar_json: Option<String>,
+    /// The transit hit list to search against every chart in the batch,
+    /// as a JSON object: the window `from` and `to`, UTC Julian days, and
+    /// optionally `grahas` (keys, the nine by default), `kinds`
+    /// (`"SIGN_INGRESS"`, `"NAKSHATRA_INGRESS"`, `"STATION"`, `"ASPECT"`;
+    /// all by default), `points` (the natal points aspected: a graha's key
+    /// or `"LAGNA"`, or an answer's `to`; the nine and the lagna by
+    /// default), `aspects` (angles, multiples of 30 to 180; 0 and 180 by
+    /// default, C145) and `orbDeg` (more than 0 and under 15, for the
+    /// windows' edges; exact only by default, C146).
+    /// Each chart's hits come back in the `hits` section, `cast.hit_count`
+    /// rows a chart, the sky searched once for the batch. Null for none
+    /// (`03-design/transit-hit-list.md`). Refusals are named from the
+    /// record every binding calls `hits`, as `hits.to`.
+    /// Example: {"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hits_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -1996,6 +2012,7 @@ pub struct HeldChartRequest {
     interpret_json: Option<std::ffi::CString>,
     varsha_json: Option<std::ffi::CString>,
     gochar_json: Option<std::ffi::CString>,
+    hits_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2034,6 +2051,7 @@ impl HeldChartRequest {
                 .gochar_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
+            hits_json: self.hits_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -2081,6 +2099,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            hits_json: self
+                .hits_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2119,6 +2142,7 @@ impl ChartRequest {
             interpret_json: unsafe { lent_text(raw.interpret_json) },
             varsha_json: unsafe { lent_text(raw.varsha_json) },
             gochar_json: unsafe { lent_text(raw.gochar_json) },
+            hits_json: unsafe { lent_text(raw.hits_json) },
         }
     }
 }

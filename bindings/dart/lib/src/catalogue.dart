@@ -5059,6 +5059,114 @@ enum GocharFrom {
   }
 }
 
+/// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
+enum HitKind {
+  /// The graha entered a sign.
+  signIngress(0, 'SIGN_INGRESS'),
+  /// The graha entered a nakshatra.
+  nakshatraIngress(1, 'NAKSHATRA_INGRESS'),
+  /// The graha stood still in longitude.
+  station(2, 'STATION'),
+  /// The graha aspected a natal point, or came within or left its orb.
+  aspect(3, 'ASPECT');
+
+  const HitKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static HitKind byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a HitKind'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static HitKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Which way a graha was moving, through a line or out of a station.
+enum Motion {
+  /// Forward through the zodiac.
+  direct(0, 'DIRECT'),
+  /// Backward.
+  retrograde(1, 'RETROGRADE');
+
+  const Motion(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Motion byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Motion'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Motion? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Where in an aspect's window a hit falls (C146).
+enum AspectPhase {
+  /// The transit came within the orb.
+  entering(0, 'ENTERING'),
+  /// The aspect is exact.
+  exact(1, 'EXACT'),
+  /// The transit passed out of the orb.
+  leaving(2, 'LEAVING');
+
+  const AspectPhase(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static AspectPhase byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a AspectPhase'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static AspectPhase? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// The nodes' vedha in transit, the settings' `gochar.node_vedha` (C136).
 enum NodeVedha {
   /// The Sun's vedha pairs.

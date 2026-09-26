@@ -21,6 +21,7 @@ from typing import Any, Final, NamedTuple, Optional, Sequence
 from .catalogue import (
     Affliction,
     AshtakavargaGoodFrom,
+    AspectPhase,
     Astronomy,
     Auspiciousness,
     AvasthaBaladi,
@@ -72,6 +73,7 @@ from .catalogue import (
     Graha,
     Guna,
     HarshaGrade,
+    HitKind,
     HoraReckoning,
     HouseSystem,
     Kaala,
@@ -85,6 +87,7 @@ from .catalogue import (
     Modality,
     MonthKind,
     MoonEvent,
+    Motion,
     MuhurtaNature,
     MuhurtaYoga,
     Nadi,
@@ -181,7 +184,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 152,
+    "ts_chart_request": 160,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -612,6 +615,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("interpret_json", ctypes.c_char_p),
         ("varsha_json", ctypes.c_char_p),
         ("gochar_json", ctypes.c_char_p),
+        ("hits_json", ctypes.c_char_p),
     ]
 
 
@@ -2250,6 +2254,23 @@ class ChartRequest:
     Example: {"instants":[2460676.5],"from":"MOON"}. May be null.
     """
 
+    hits_json: Optional[str] = None
+    """The transit hit list to search against every chart in the batch,
+    as a JSON object: the window `from` and `to`, UTC Julian days, and
+    optionally `grahas` (keys, the nine by default), `kinds`
+    (`"SIGN_INGRESS"`, `"NAKSHATRA_INGRESS"`, `"STATION"`, `"ASPECT"`;
+    all by default), `points` (the natal points aspected: a graha's key
+    or `"LAGNA"`, or an answer's `to`; the nine and the lagna by
+    default), `aspects` (angles, multiples of 30 to 180; 0 and 180 by
+    default, C145) and `orbDeg` (more than 0 and under 15, for the
+    windows' edges; exact only by default, C146).
+    Each chart's hits come back in the `hits` section, `cast.hit_count`
+    rows a chart, the sky searched once for the batch. Null for none
+    (`03-design/transit-hit-list.md`). Refusals are named from the
+    record every binding calls `hits`, as `hits.to`.
+    Example: {"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2303,6 +2324,9 @@ class ChartRequest:
         _gochar_json = None if self.gochar_json is None else self.gochar_json.encode("utf-8")
         owned.append(_gochar_json)
         raw.gochar_json = _gochar_json
+        _hits_json = None if self.hits_json is None else self.hits_json.encode("utf-8")
+        owned.append(_hits_json)
+        raw.hits_json = _hits_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2344,6 +2368,7 @@ class ChartRequest:
             interpret_json=_text(raw.interpret_json),
             varsha_json=_text(raw.varsha_json),
             gochar_json=_text(raw.gochar_json),
+            hits_json=_text(raw.hits_json),
         )
 
 
