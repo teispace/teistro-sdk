@@ -6229,6 +6229,112 @@ export declare const Fruition: {
 export declare const FruitionById: ReadonlyMap<number, Fruition>;
 
 /**
+ * How many bindus make a transit good, the settings'
+ * `gochar.ashtakavarga_good_from` (C141).
+ */
+export type AshtakavargaGoodFrom = 'FIVE' | 'FOUR';
+
+/** Every AshtakavargaGoodFrom by name; the values are the strings the union accepts. */
+export declare const AshtakavargaGoodFrom: {
+  /**
+   * Five: Phaladeepika ch. 23 v. 11 makes four a fear.
+   */
+  readonly Five: 'FIVE';
+  /**
+   * Four.
+   */
+  readonly Four: 'FOUR';
+};
+
+/**
+ * Every AshtakavargaGoodFrom by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const AshtakavargaGoodFromById: ReadonlyMap<number, AshtakavargaGoodFrom>;
+
+/**
+ * Who lords an eighth of a sign (Phaladeepika ch. 23 vv. 18 and 19).
+ */
+export type KakshyaLord =
+  | 'SATURN'
+  | 'JUPITER'
+  | 'MARS'
+  | 'SUN'
+  | 'VENUS'
+  | 'MERCURY'
+  | 'MOON'
+  | 'LAGNA';
+
+/** Every KakshyaLord by name; the values are the strings the union accepts. */
+export declare const KakshyaLord: {
+  /**
+   * The first eighth.
+   */
+  readonly Saturn: 'SATURN';
+  /**
+   * The second.
+   */
+  readonly Jupiter: 'JUPITER';
+  /**
+   * The third.
+   */
+  readonly Mars: 'MARS';
+  /**
+   * The fourth.
+   */
+  readonly Sun: 'SUN';
+  /**
+   * The fifth.
+   */
+  readonly Venus: 'VENUS';
+  /**
+   * The sixth.
+   */
+  readonly Mercury: 'MERCURY';
+  /**
+   * The seventh.
+   */
+  readonly Moon: 'MOON';
+  /**
+   * The last.
+   */
+  readonly Lagna: 'LAGNA';
+};
+
+/**
+ * Every KakshyaLord by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const KakshyaLordById: ReadonlyMap<number, KakshyaLord>;
+
+/**
+ * Where a sign's sarvashtakavarga stands against v. 20's 28.
+ */
+export type SarvaStanding = 'ABOVE' | 'EVEN' | 'BELOW';
+
+/** Every SarvaStanding by name; the values are the strings the union accepts. */
+export declare const SarvaStanding: {
+  /**
+   * More than 28.
+   */
+  readonly Above: 'ABOVE';
+  /**
+   * Exactly 28, which the verse does not judge (C142).
+   */
+  readonly Even: 'EVEN';
+  /**
+   * Fewer than 28.
+   */
+  readonly Below: 'BELOW';
+};
+
+/**
+ * Every SarvaStanding by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const SarvaStandingById: ReadonlyMap<number, SarvaStanding>;
+
+/**
  * Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
  */
 export type DashaPhase = 'COMMENCEMENT' | 'MIDDLE' | 'END';

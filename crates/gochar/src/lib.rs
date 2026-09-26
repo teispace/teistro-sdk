@@ -31,7 +31,7 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
-use teistro_core::settings::{NodeObstruction, NodeVedha, Settings};
+use teistro_core::settings::{AshtakavargaGoodFrom, NodeObstruction, NodeVedha, Settings};
 
 /// The nine grahas, in the catalogue's order.
 pub const GRAHAS: [Graha; 9] = [
@@ -142,15 +142,20 @@ pub struct GocharRules {
     pub node_vedha: NodeVedha,
     /// Whether the nodes obstruct another graha's transit (crux C137).
     pub node_obstruction: NodeObstruction,
+    /// How many bindus make a transit good when it is judged by the natal
+    /// Ashtakavarga (crux C141; [`ashtakavarga`]).
+    pub ashtakavarga_good_from: AshtakavargaGoodFrom,
 }
 
 impl GocharRules {
-    /// The text read whole: the nodes "like the Sun", and every graha
+    /// The text read whole: the nodes "like the Sun", every graha
     /// obstructing but the verses' exceptions and the nodes each other,
-    /// which would leave v. 2's good houses for them never good (C140).
+    /// which would leave v. 2's good houses for them never good (C140), and
+    /// a transit good by the Ashtakavarga from five bindus.
     pub const TEXT: GocharRules = GocharRules {
         node_vedha: NodeVedha::LikeTheSun,
         node_obstruction: NodeObstruction::NotEachOther,
+        ashtakavarga_good_from: AshtakavargaGoodFrom::Five,
     };
 
     /// The readings the settings' `gochar` group gives.
@@ -159,6 +164,18 @@ impl GocharRules {
         GocharRules {
             node_vedha: settings.gochar.node_vedha,
             node_obstruction: settings.gochar.node_obstruction,
+            ashtakavarga_good_from: settings.gochar.ashtakavarga_good_from,
+        }
+    }
+
+    /// The fewest bindus that make a transit good: five by the text, since
+    /// Phaladeepika ch. 23 v. 11 makes four a fear.
+    #[must_use]
+    pub const fn ashtakavarga_threshold(self) -> u8 {
+        match self.ashtakavarga_good_from {
+            AshtakavargaGoodFrom::Four => 4,
+            // `FIVE`, and a reading added later until it says otherwise.
+            _ => 5,
         }
     }
 }

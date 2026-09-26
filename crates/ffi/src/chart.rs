@@ -417,6 +417,94 @@ impl From<teistro::gochar::Fruition> for TsFruition {
     }
 }
 
+/// How many bindus make a transit good, the settings'
+/// `gochar.ashtakavarga_good_from` (C141).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsAshtakavargaGoodFrom {
+    /// Five: Phaladeepika ch. 23 v. 11 makes four a fear.
+    Five = 0,
+    /// Four.
+    Four = 1,
+}
+
+impl TsAshtakavargaGoodFrom {
+    /// The code a reading crosses as; `None` for one this boundary does not
+    /// know yet.
+    #[must_use]
+    pub const fn of(
+        good_from: teistro_core::settings::AshtakavargaGoodFrom,
+    ) -> Option<TsAshtakavargaGoodFrom> {
+        use teistro_core::settings::AshtakavargaGoodFrom;
+        match good_from {
+            AshtakavargaGoodFrom::Five => Some(TsAshtakavargaGoodFrom::Five),
+            AshtakavargaGoodFrom::Four => Some(TsAshtakavargaGoodFrom::Four),
+            _ => None,
+        }
+    }
+}
+
+/// Who lords an eighth of a sign (Phaladeepika ch. 23 vv. 18 and 19).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsKakshyaLord {
+    /// The first eighth.
+    Saturn = 0,
+    /// The second.
+    Jupiter = 1,
+    /// The third.
+    Mars = 2,
+    /// The fourth.
+    Sun = 3,
+    /// The fifth.
+    Venus = 4,
+    /// The sixth.
+    Mercury = 5,
+    /// The seventh.
+    Moon = 6,
+    /// The last.
+    Lagna = 7,
+}
+
+impl From<teistro::gochar::ashtakavarga::KakshyaLord> for TsKakshyaLord {
+    fn from(lord: teistro::gochar::ashtakavarga::KakshyaLord) -> TsKakshyaLord {
+        use teistro::gochar::ashtakavarga::KakshyaLord;
+        match lord {
+            KakshyaLord::Saturn => TsKakshyaLord::Saturn,
+            KakshyaLord::Jupiter => TsKakshyaLord::Jupiter,
+            KakshyaLord::Mars => TsKakshyaLord::Mars,
+            KakshyaLord::Sun => TsKakshyaLord::Sun,
+            KakshyaLord::Venus => TsKakshyaLord::Venus,
+            KakshyaLord::Mercury => TsKakshyaLord::Mercury,
+            KakshyaLord::Moon => TsKakshyaLord::Moon,
+            KakshyaLord::Lagna => TsKakshyaLord::Lagna,
+        }
+    }
+}
+
+/// Where a sign's sarvashtakavarga stands against v. 20's 28.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsSarvaStanding {
+    /// More than 28.
+    Above = 0,
+    /// Exactly 28, which the verse does not judge (C142).
+    Even = 1,
+    /// Fewer than 28.
+    Below = 2,
+}
+
+impl From<teistro::gochar::ashtakavarga::SarvaStanding> for TsSarvaStanding {
+    fn from(standing: teistro::gochar::ashtakavarga::SarvaStanding) -> TsSarvaStanding {
+        use teistro::gochar::ashtakavarga::SarvaStanding;
+        match standing {
+            SarvaStanding::Above => TsSarvaStanding::Above,
+            SarvaStanding::Even => TsSarvaStanding::Even,
+            SarvaStanding::Below => TsSarvaStanding::Below,
+        }
+    }
+}
+
 /// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -755,8 +843,10 @@ pub struct TsChartRequest {
     /// `api: nullable`
     pub varsha_json: *const c_char,
     /// The transits to read against every chart in the batch, as a JSON
-    /// object: `instants`, UTC Julian days, at least one, and `from` —
-    /// `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`.
+    /// object: `instants`, UTC Julian days, at least one; `from` —
+    /// `"MOON"` (Phaladeepika ch. 26 v. 1's, the default) or `"LAGNA"`; and
+    /// `ashtakavarga`, true to judge the seven by the natal bindus too, in
+    /// the `gochar_ashtakavarga` section.
     /// Each chart's readings come back in the `gochar` section, a row an
     /// instant, and its grahas in `gochar_grahas`, under the settings'
     /// `gochar` group. Null for none (`03-design/gochar.md`). Refusals are
@@ -1698,6 +1788,7 @@ struct GocharColumns {
     counted_from: Vec<u8>,
     node_vedha: Vec<u8>,
     node_obstruction: Vec<u8>,
+    ashtakavarga_good_from: Vec<u8>,
     /// The `gochar_grahas` section.
     graha: Vec<u16>,
     sign: Vec<u16>,
@@ -1709,6 +1800,15 @@ struct GocharColumns {
     verdict: Vec<u8>,
     fruition: Vec<u8>,
     fruitful_now: Vec<u8>,
+    /// The `gochar_ashtakavarga` section.
+    av_graha: Vec<u16>,
+    av_bindus: Vec<u8>,
+    av_good: Vec<u8>,
+    av_kakshya: Vec<u8>,
+    av_kakshya_lord: Vec<u8>,
+    av_kakshya_bindu: Vec<u8>,
+    av_sarva: Vec<u16>,
+    av_sarva_standing: Vec<u8>,
 }
 
 impl GocharColumns {
@@ -1746,6 +1846,25 @@ impl GocharColumns {
                         .ok_or_else(|| refused("`gochar.node_obstruction`"))?
                         as u8,
                 );
+                columns.ashtakavarga_good_from.push(
+                    TsAshtakavargaGoodFrom::of(rules.ashtakavarga_good_from)
+                        .ok_or_else(|| refused("`gochar.ashtakavarga_good_from`"))?
+                        as u8,
+                );
+                for read in reading.ashtakavarga.iter().flatten() {
+                    columns.av_graha.push(read.graha.id());
+                    columns.av_bindus.push(read.bindus);
+                    columns.av_good.push(u8::from(read.good));
+                    columns.av_kakshya.push(read.kakshya.index);
+                    columns
+                        .av_kakshya_lord
+                        .push(TsKakshyaLord::from(read.kakshya.lord) as u8);
+                    columns.av_kakshya_bindu.push(u8::from(read.kakshya_bindu));
+                    columns.av_sarva.push(read.sarva);
+                    columns
+                        .av_sarva_standing
+                        .push(TsSarvaStanding::from(read.sarva_standing) as u8);
+                }
                 for read in &reading.grahas {
                     columns.graha.push(read.graha.id());
                     columns.sign.push(read.transit.sign.id());
@@ -1775,6 +1894,7 @@ impl GocharColumns {
                 ColumnData::U8(&self.counted_from),
                 ColumnData::U8(&self.node_vedha),
                 ColumnData::U8(&self.node_obstruction),
+                ColumnData::U8(&self.ashtakavarga_good_from),
             ],
         )?;
         writer.columns(
@@ -1791,6 +1911,20 @@ impl GocharColumns {
                 ColumnData::U8(&self.verdict),
                 ColumnData::U8(&self.fruition),
                 ColumnData::U8(&self.fruitful_now),
+            ],
+        )?;
+        writer.columns(
+            "gochar_ashtakavarga",
+            self.av_graha.len(),
+            &[
+                ColumnData::U16(&self.av_graha),
+                ColumnData::U8(&self.av_bindus),
+                ColumnData::U8(&self.av_good),
+                ColumnData::U8(&self.av_kakshya),
+                ColumnData::U8(&self.av_kakshya_lord),
+                ColumnData::U8(&self.av_kakshya_bindu),
+                ColumnData::U16(&self.av_sarva),
+                ColumnData::U8(&self.av_sarva_standing),
             ],
         )
     }
@@ -4466,7 +4600,7 @@ mod tests {
     /// has no id.
     #[test]
     fn every_knob_member_crosses_to_an_id_of_its_own() {
-        use super::{TsGocharFrom, TsNodeObstruction, TsNodeVedha};
+        use super::{TsAshtakavargaGoodFrom, TsGocharFrom, TsNodeObstruction, TsNodeVedha};
 
         let sunrises: Vec<u8> = Sunrise::ALL
             .iter()
@@ -4527,6 +4661,16 @@ mod tests {
             })
             .collect();
         assert_eq!(references, vec![0, 1]);
+
+        let thresholds: Vec<u8> = teistro_core::settings::AshtakavargaGoodFrom::ALL
+            .iter()
+            .map(|member| {
+                TsAshtakavargaGoodFrom::of(*member)
+                    .unwrap_or_else(|| panic!("`{member}` has no id at the boundary"))
+                    as u8
+            })
+            .collect();
+        assert_eq!(thresholds, vec![0, 1]);
     }
 
     /// Two charts founded over the analytic test provider, with the

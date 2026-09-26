@@ -5204,6 +5204,123 @@ enum Fruition {
   }
 }
 
+/// How many bindus make a transit good, the settings'
+/// `gochar.ashtakavarga_good_from` (C141).
+enum AshtakavargaGoodFrom {
+  /// Five: Phaladeepika ch. 23 v. 11 makes four a fear.
+  five(0, 'FIVE'),
+  /// Four.
+  four(1, 'FOUR');
+
+  const AshtakavargaGoodFrom(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static AshtakavargaGoodFrom byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a AshtakavargaGoodFrom'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static AshtakavargaGoodFrom? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Who lords an eighth of a sign (Phaladeepika ch. 23 vv. 18 and 19).
+enum KakshyaLord {
+  /// The first eighth.
+  saturn(0, 'SATURN'),
+  /// The second.
+  jupiter(1, 'JUPITER'),
+  /// The third.
+  mars(2, 'MARS'),
+  /// The fourth.
+  sun(3, 'SUN'),
+  /// The fifth.
+  venus(4, 'VENUS'),
+  /// The sixth.
+  mercury(5, 'MERCURY'),
+  /// The seventh.
+  moon(6, 'MOON'),
+  /// The last.
+  lagna(7, 'LAGNA');
+
+  const KakshyaLord(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static KakshyaLord byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a KakshyaLord'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static KakshyaLord? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Where a sign's sarvashtakavarga stands against v. 20's 28.
+enum SarvaStanding {
+  /// More than 28.
+  above(0, 'ABOVE'),
+  /// Exactly 28, which the verse does not judge (C142).
+  even(1, 'EVEN'),
+  /// Fewer than 28.
+  below(2, 'BELOW');
+
+  const SarvaStanding(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static SarvaStanding byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a SarvaStanding'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static SarvaStanding? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
 enum DashaPhase {
   /// At its commencement.

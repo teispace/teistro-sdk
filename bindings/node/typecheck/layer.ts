@@ -536,8 +536,11 @@ function theTransits(ctx: Context): string {
     instant: 2451545,
     place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
     utcOffsetSeconds: 20700,
-    gochar: { instants: [2460676.5], from: 'LAGNA' },
+    gochar: { instants: [2460676.5], from: 'LAGNA', ashtakavarga: true },
   }).gochar[0]!;
+  const judged = reading.ashtakavarga![0]!;
+  const lord: 'LAGNA' | typeof judged.kakshya.lord = judged.kakshya.lord;
+  const standing: string = `${judged.sarva} ${judged.sarvaStanding} ${reading.rules.ashtakavargaGoodFrom}`;
   const sun = reading.grahas[0]!;
   const vedha: number | null = sun.vedhaHouse;
   const by: readonly Graha[] = sun.obstructedBy;
@@ -553,7 +556,8 @@ function theTransits(ctx: Context): string {
     `${reading.instant} ${reading.reference.from} ${reading.reference.sign} ` +
     `${reading.rules.nodeVedha} ${reading.rules.nodeObstruction} ${sun.graha} ${sun.transit.sign} ` +
     `${sun.transit.degrees} ${sun.house} ${sun.goodHouse} ${String(vedha)} ${by.join()} ` +
-    `${verdicts[sun.verdict]} ${sun.fruition} ${sun.fruitfulNow} ${String(moon)}`
+    `${verdicts[sun.verdict]} ${sun.fruition} ${sun.fruitfulNow} ${String(moon)} ` +
+    `${judged.bindus} ${judged.good} ${judged.kakshya.index} ${lord} ${judged.kakshyaBindu} ${standing}`
   );
 }
 

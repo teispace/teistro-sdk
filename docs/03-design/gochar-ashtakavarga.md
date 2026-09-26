@@ -121,4 +121,11 @@ PyJHora follows a reading of its own on two.
    computed once for the batch and the transits placed once for both
    readings; the façade's Ashtakavarga shares the sign-gathering with it
    (`ashtakavarga_chart_of`) rather than keeping a second copy.
-3. The boundary and the bindings, after gochar's own.
+3. The boundary and the bindings: **done**. `gochar_json.ashtakavarga`
+   fills section 55, `gochar_ashtakavarga`, seven rows under each `gochar`
+   row or none, and each binding refuses any other count rather than
+   misreading it; `gochar` gains `ashtakavarga_good_from` beside the node
+   readings. Building it merged the threshold into `GocharRules`, so one
+   rules record mirrors the settings' `gochar` group and every reading
+   says all three of its readings, rather than a second record the
+   encoder could not see.

@@ -1284,6 +1284,27 @@ void _engineTests() {
         }
       }
       expect(verdicts, GocharVerdict.values.toSet());
+      final judged =
+          ctx.chart
+              .found(
+                instant: birth,
+                place: place,
+                utcOffsetSeconds: 20700,
+                gochar: GocharRequest(instants: instants, ashtakavarga: true),
+              )
+              .gochar;
+      for (final reading in judged) {
+        expect(reading.ashtakavarga, hasLength(7));
+        for (final (k, one) in reading.ashtakavarga!.indexed) {
+          final moving = reading.grahas[k];
+          expect(one.graha, moving.graha);
+          expect(one.good, one.bindus >= 5);
+          expect(
+            one.kakshya.index,
+            (moving.transit.degrees / 3.75).floor() + 1,
+          );
+        }
+      }
       expect(
         () => ctx.chart.found(
           instant: birth,

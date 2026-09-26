@@ -2007,13 +2007,68 @@ final class GocharReference {
 /// The readings of the nodes a transit was judged under, the settings'
 /// `gochar` group.
 final class GocharRules {
-  const GocharRules({required this.nodeVedha, required this.nodeObstruction});
+  const GocharRules({
+    required this.nodeVedha,
+    required this.nodeObstruction,
+    required this.ashtakavargaGoodFrom,
+  });
 
   /// The nodes' vedha (C136).
   final NodeVedha nodeVedha;
 
   /// Whom the nodes obstruct (C137, C140).
   final NodeObstruction nodeObstruction;
+
+  /// How many bindus make a transit good by the Ashtakavarga (C141).
+  final AshtakavargaGoodFrom ashtakavargaGoodFrom;
+}
+
+/// The eighth of a sign a transit stands in, 3°45′ each (Phaladeepika ch.
+/// 23 v. 16), and its lord in the orbits' order (vv. 18 and 19).
+final class Kakshya {
+  const Kakshya({required this.index, required this.lord});
+
+  /// Which eighth, 1 to 8.
+  final int index;
+
+  /// Its lord.
+  final KakshyaLord lord;
+}
+
+/// One graha's transit judged by the natal Ashtakavarga.
+final class AshtakavargaTransit {
+  const AshtakavargaTransit({
+    required this.graha,
+    required this.bindus,
+    required this.good,
+    required this.kakshya,
+    required this.kakshyaBindu,
+    required this.sarva,
+    required this.sarvaStanding,
+  });
+
+  /// Which graha, Sun to Saturn.
+  final Graha graha;
+
+  /// The bindus its own Ashtakavarga put in the sign it transits, 0 to 8
+  /// (v. 11), unreduced.
+  final int bindus;
+
+  /// Whether they reach `gochar.ashtakavarga_good_from`.
+  final bool good;
+
+  /// The eighth of the sign it stands in.
+  final Kakshya kakshya;
+
+  /// Whether that eighth's lord gave a bindu there, so that a bindu bears
+  /// its fruit now.
+  final bool kakshyaBindu;
+
+  /// The sign's sarvashtakavarga.
+  final int sarva;
+
+  /// Where it stands against 28 (v. 20).
+  final SarvaStanding sarvaStanding;
 }
 
 /// A graha in transit: the sign it stands in and its degrees within it.
@@ -2078,6 +2133,7 @@ final class GocharReading {
     required this.reference,
     required this.rules,
     required this.grahas,
+    required this.ashtakavarga,
   });
 
   /// The instant, a UTC Julian day.
@@ -2091,6 +2147,10 @@ final class GocharReading {
 
   /// Each graha's, the Sun to Ketu.
   final List<GrahaGochar> grahas;
+
+  /// The seven judged by the natal Ashtakavarga, Sun to Saturn; null unless
+  /// `ashtakavarga` asked.
+  final List<AshtakavargaTransit>? ashtakavarga;
 }
 
 /// A chart's karakamsha: the Atmakaraka's navamsha sign (BPHS ch. 33 v. 1).
@@ -3765,6 +3825,7 @@ List<List<GocharReading>> _gocharsOf(Charts batch) =>
 List<List<GocharReading>> _decodeGochars(Charts batch) {
   final c = batch.gochar;
   final g = batch.gocharGrahas;
+  final a = batch.gocharAshtakavarga;
   final charts = batch.chartCount;
   final perChart = charts == 0 ? 0 : c.length ~/ charts;
   if (perChart * charts != c.length || g.length != c.length * 9) {
@@ -3773,6 +3834,31 @@ List<List<GocharReading>> _decodeGochars(Charts batch) {
       'charts; it is every chart at every instant, nine grahas each',
     );
   }
+  final judged = a.length > 0;
+  if (judged && a.length != c.length * 7) {
+    throw StateError(
+      'gochar_ashtakavarga has ${a.length} rows under ${c.length} transits; '
+      'it is seven under every one or none',
+    );
+  }
+  List<AshtakavargaTransit> byBindus(int row) =>
+      List<AshtakavargaTransit>.unmodifiable(
+        List<AshtakavargaTransit>.generate(7, (k) {
+          final at = row * 7 + k;
+          return AshtakavargaTransit(
+            graha: Graha.byId(a.graha[at]),
+            bindus: a.bindus[at],
+            good: a.good[at] == 1,
+            kakshya: Kakshya(
+              index: a.kakshya[at],
+              lord: KakshyaLord.byId(a.kakshyaLord[at]),
+            ),
+            kakshyaBindu: a.kakshyaBindu[at] == 1,
+            sarva: a.sarva[at],
+            sarvaStanding: SarvaStanding.byId(a.sarvaStanding[at]),
+          );
+        }),
+      );
   GrahaGochar graha(int at) => GrahaGochar(
     graha: Graha.byId(g.graha[at]),
     transit: Transit(sign: Rashi.byId(g.sign[at]), degrees: g.degrees[at]),
@@ -3793,7 +3879,11 @@ List<List<GocharReading>> _decodeGochars(Charts batch) {
     rules: GocharRules(
       nodeVedha: NodeVedha.byId(c.nodeVedha[row]),
       nodeObstruction: NodeObstruction.byId(c.nodeObstruction[row]),
+      ashtakavargaGoodFrom: AshtakavargaGoodFrom.byId(
+        c.ashtakavargaGoodFrom[row],
+      ),
     ),
+    ashtakavarga: judged ? byBindus(row) : null,
     grahas: List<GrahaGochar>.unmodifiable(
       List<GrahaGochar>.generate(9, (k) => graha(row * 9 + k)),
     ),
@@ -4170,7 +4260,11 @@ enum VarshaReading {
 ///     .map((g) => g.graha);
 /// ```
 final class GocharRequest {
-  const GocharRequest({required this.instants, this.from = GocharFrom.moon});
+  const GocharRequest({
+    required this.instants,
+    this.from = GocharFrom.moon,
+    this.ashtakavarga = false,
+  });
 
   /// The instants, UTC Julian days: at least one, or the SDK refuses the
   /// request by `gochar.instants`.
@@ -4179,8 +4273,15 @@ final class GocharRequest {
   /// What to count the houses from.
   final GocharFrom from;
 
-  String get _json =>
-      jsonEncode(<String, Object?>{'instants': instants, 'from': from.key});
+  /// Whether to judge the seven by the natal Ashtakavarga too
+  /// (`03-design/gochar-ashtakavarga.md`).
+  final bool ashtakavarga;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'instants': instants,
+    'from': from.key,
+    'ashtakavarga': ashtakavarga,
+  });
 }
 
 /// The annual charts a request asks for: how many years, and which

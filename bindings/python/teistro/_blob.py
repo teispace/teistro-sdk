@@ -1786,6 +1786,9 @@ class ChartsGochar:
     node_obstruction: memoryview[int]
     """Whom the nodes obstruct, `gochar.node_obstruction` (C137, C140)."""
 
+    ashtakavarga_good_from: memoryview[int]
+    """How many bindus make a transit good in `gochar_ashtakavarga`, `gochar.ashtakavarga_good_from` (C141)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -1827,6 +1830,42 @@ class ChartsGocharGrahas:
 
     fruitful_now: memoryview[int]
     """1 when it stands in that decanate now, else 0."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsGocharAshtakavarga:
+    """The `gochar_ashtakavarga` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga.
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    bindus: memoryview[int]
+    """The bindus its own Ashtakavarga put in the sign it transits, 0 to 8, unreduced (v. 11; C143)."""
+
+    good: memoryview[int]
+    """1 when they reach `gochar.ashtakavarga_good_from`, else 0 (C141)."""
+
+    kakshya: memoryview[int]
+    """The eighth of the sign it stands in, 1 to 8, 3°45′ each (v. 16)."""
+
+    kakshya_lord: memoryview[int]
+    """That eighth's lord, in the orbits' order from the sign's start (vv. 18 and 19)."""
+
+    kakshya_bindu: memoryview[int]
+    """1 when that lord gave a bindu to the sign in this graha's Ashtakavarga, so that a bindu bears its fruit now; else 0."""
+
+    sarva: memoryview[int]
+    """The sign's sarvashtakavarga, the seven's bindus together."""
+
+    sarva_standing: memoryview[int]
+    """Where it stands against 28 (v. 20; C142)."""
 
     length: int
     """The number of rows every column holds."""
@@ -2118,6 +2157,9 @@ class Charts:
     gochar_grahas: ChartsGocharGrahas
     """Each transit's nine grahas, the Sun to Ketu: row `r * 9 + g` is row `r` of `gochar`, graha `g`."""
 
+    gochar_ashtakavarga: ChartsGocharAshtakavarga
+    """Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -2181,6 +2223,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_jaimini_grahas = blob.section(52, "jaimini_grahas")
     at_gochar = blob.section(53, "gochar")
     at_gochar_grahas = blob.section(54, "gochar_grahas")
+    at_gochar_ashtakavarga = blob.section(55, "gochar_ashtakavarga")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -3205,6 +3248,9 @@ def decode_charts(raw: bytes) -> Charts:
             node_obstruction=blob.column(
                 at_gochar, 4, 1, at_gochar.count
             ).cast("B"),
+            ashtakavarga_good_from=blob.column(
+                at_gochar, 5, 1, at_gochar.count
+            ).cast("B"),
             length=at_gochar.count,
         ),
         gochar_grahas=ChartsGocharGrahas(
@@ -3239,6 +3285,33 @@ def decode_charts(raw: bytes) -> Charts:
                 at_gochar_grahas, 9, 1, at_gochar_grahas.count
             ).cast("B"),
             length=at_gochar_grahas.count,
+        ),
+        gochar_ashtakavarga=ChartsGocharAshtakavarga(
+            graha=blob.column(
+                at_gochar_ashtakavarga, 0, 2, at_gochar_ashtakavarga.count
+            ).cast("H"),
+            bindus=blob.column(
+                at_gochar_ashtakavarga, 1, 1, at_gochar_ashtakavarga.count
+            ).cast("B"),
+            good=blob.column(
+                at_gochar_ashtakavarga, 2, 1, at_gochar_ashtakavarga.count
+            ).cast("B"),
+            kakshya=blob.column(
+                at_gochar_ashtakavarga, 3, 1, at_gochar_ashtakavarga.count
+            ).cast("B"),
+            kakshya_lord=blob.column(
+                at_gochar_ashtakavarga, 4, 1, at_gochar_ashtakavarga.count
+            ).cast("B"),
+            kakshya_bindu=blob.column(
+                at_gochar_ashtakavarga, 5, 1, at_gochar_ashtakavarga.count
+            ).cast("B"),
+            sarva=blob.column(
+                at_gochar_ashtakavarga, 6, 2, at_gochar_ashtakavarga.count
+            ).cast("H"),
+            sarva_standing=blob.column(
+                at_gochar_ashtakavarga, 7, 1, at_gochar_ashtakavarga.count
+            ).cast("B"),
+            length=at_gochar_ashtakavarga.count,
         ),
     )
 

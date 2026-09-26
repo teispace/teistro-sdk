@@ -2999,6 +2999,65 @@ export const FruitionById = new Map([
   [3, 'THROUGHOUT'],
 ]);
 
+/** Every AshtakavargaGoodFrom by name. */
+export const AshtakavargaGoodFrom = Object.freeze({
+  Five: 'FIVE',
+  Four: 'FOUR',
+});
+
+/**
+ * Every AshtakavargaGoodFrom by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const AshtakavargaGoodFromById = new Map([
+  [0, 'FIVE'],
+  [1, 'FOUR'],
+]);
+
+/** Every KakshyaLord by name. */
+export const KakshyaLord = Object.freeze({
+  Saturn: 'SATURN',
+  Jupiter: 'JUPITER',
+  Mars: 'MARS',
+  Sun: 'SUN',
+  Venus: 'VENUS',
+  Mercury: 'MERCURY',
+  Moon: 'MOON',
+  Lagna: 'LAGNA',
+});
+
+/**
+ * Every KakshyaLord by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const KakshyaLordById = new Map([
+  [0, 'SATURN'],
+  [1, 'JUPITER'],
+  [2, 'MARS'],
+  [3, 'SUN'],
+  [4, 'VENUS'],
+  [5, 'MERCURY'],
+  [6, 'MOON'],
+  [7, 'LAGNA'],
+]);
+
+/** Every SarvaStanding by name. */
+export const SarvaStanding = Object.freeze({
+  Above: 'ABOVE',
+  Even: 'EVEN',
+  Below: 'BELOW',
+});
+
+/**
+ * Every SarvaStanding by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const SarvaStandingById = new Map([
+  [0, 'ABOVE'],
+  [1, 'EVEN'],
+  [2, 'BELOW'],
+]);
+
 /** Every DashaPhase by name. */
 export const DashaPhase = Object.freeze({
   Commencement: 'COMMENCEMENT',

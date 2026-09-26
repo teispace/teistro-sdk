@@ -631,11 +631,61 @@ fn chart_jaimini_sections(first: u32) -> [SectionSchema; 2] {
 
 /// The transits read against every chart, from `first`: the readings and
 /// their grahas (`03-design/gochar.md`).
-fn chart_gochar_sections(first: u32) -> [SectionSchema; 2] {
+fn chart_gochar_sections(first: u32) -> [SectionSchema; 3] {
     [
         chart_gochar_section(first),
         chart_gochar_grahas_section(first + 1),
+        chart_gochar_ashtakavarga_section(first + 2),
     ]
+}
+
+/// Every transit's seven judged by the natal Ashtakavarga, a row a graha.
+fn chart_gochar_ashtakavarga_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "gochar_ashtakavarga",
+        "Each transit's seven, the Sun to Saturn, judged by the natal Ashtakavarga (Phaladeepika ch. 23; `03-design/gochar-ashtakavarga.md`): row `r * 7 + g` is row `r` of `gochar`, graha `g`. **Empty unless `gochar_json.ashtakavarga` asked**, and then every row of `gochar` has its seven; the nodes have no Ashtakavarga.",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "Which graha.").of_enum("Graha"),
+            ColumnDef::new(
+                "bindus",
+                Scalar::U8,
+                "The bindus its own Ashtakavarga put in the sign it transits, 0 to 8, unreduced (v. 11; C143).",
+            ),
+            ColumnDef::new(
+                "good",
+                Scalar::U8,
+                "1 when they reach `gochar.ashtakavarga_good_from`, else 0 (C141).",
+            ),
+            ColumnDef::new(
+                "kakshya",
+                Scalar::U8,
+                "The eighth of the sign it stands in, 1 to 8, 3°45′ each (v. 16).",
+            ),
+            ColumnDef::new(
+                "kakshya_lord",
+                Scalar::U8,
+                "That eighth's lord, in the orbits' order from the sign's start (vv. 18 and 19).",
+            )
+            .of_enum("TsKakshyaLord"),
+            ColumnDef::new(
+                "kakshya_bindu",
+                Scalar::U8,
+                "1 when that lord gave a bindu to the sign in this graha's Ashtakavarga, so that a bindu bears its fruit now; else 0.",
+            ),
+            ColumnDef::new(
+                "sarva",
+                Scalar::U16,
+                "The sign's sarvashtakavarga, the seven's bindus together.",
+            ),
+            ColumnDef::new(
+                "sarva_standing",
+                Scalar::U8,
+                "Where it stands against 28 (v. 20; C142).",
+            )
+            .of_enum("TsSarvaStanding"),
+        ],
+    )
 }
 
 /// Every chart's transits, a row an instant.
@@ -674,6 +724,12 @@ fn chart_gochar_section(id: u32) -> SectionSchema {
                 "Whom the nodes obstruct, `gochar.node_obstruction` (C137, C140).",
             )
             .of_enum("TsNodeObstruction"),
+            ColumnDef::new(
+                "ashtakavarga_good_from",
+                Scalar::U8,
+                "How many bindus make a transit good in `gochar_ashtakavarga`, `gochar.ashtakavarga_good_from` (C141).",
+            )
+            .of_enum("TsAshtakavargaGoodFrom"),
         ],
     )
 }
