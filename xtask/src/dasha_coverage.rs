@@ -200,10 +200,13 @@ const NOT_BUILT: [(&str, Blocker, &str); 16] = [
     ),
     (
         "SUDASA",
-        Blocker::Module,
-        "it starts from the karakamsha, which is the navamsha of the Atmakaraka \
-         and is not built — the Sree lagna beside it in the sources is. Karakamsha \
-         belongs to the Jaimini module and this follows it",
+        Blocker::Text,
+        "no verse is in hand. BPHS does not name it among its dasas (ch. 46 \
+         vv. 6 to 11), and neither Sanskrit edition of the Jaimini sutras read \
+         states it in plain words; PyJHora starts it from the Sree lagna with a \
+         first period set by its longitude, which the kernel has neither of. It \
+         was listed as waiting on the karakamsha, which is built and is not its \
+         start in any source read",
     ),
     (
         "VARSHA_NARAYANA",
