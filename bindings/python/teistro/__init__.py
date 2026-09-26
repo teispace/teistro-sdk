@@ -2216,6 +2216,11 @@ class JaiminiReading:
     brahma: Brahma
     """The Brahma graha, or why there is none."""
 
+    graha_arudhas: Tuple[Optional[Rashi], ...]
+    """Each graha's arudha, the Sun to Ketu (BPHS ch. 29 vv. 6 and 7), under
+    `jaimini.graha_arudha_exception`; `None` for a node that owns no sign
+    under `jaimini.node_co_lordship`."""
+
 
 @dataclass(frozen=True)
 class DashaPhalaReading:
@@ -5007,7 +5012,7 @@ class ChartBatch:
         """Every chart's Jaimini significators, decoded once; empty when none
         were asked for."""
         c = self.decoded.jaimini
-        h = self.decoded.jaimini_houses
+        h = self.decoded.jaimini_grahas
 
         def reading(chart: int) -> JaiminiReading:
             outcome = BrahmaOutcome(c.brahma_outcome[chart])
@@ -5028,6 +5033,10 @@ class ChartBatch:
                         Graha(c.passed_from[chart]) if c.passed_from_present[chart] == 1 else None
                     ),
                     none=None if found else outcome,
+                ),
+                graha_arudhas=tuple(
+                    Rashi(h.arudha[row]) if h.arudha_present[row] == 1 else None
+                    for row in range(chart * 9, chart * 9 + 9)
                 ),
             )
 

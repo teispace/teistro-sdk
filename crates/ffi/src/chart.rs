@@ -1458,10 +1458,12 @@ struct JaiminiColumns {
     brahma_outcome: Vec<u8>,
     passed_from: Vec<u16>,
     passed_from_present: Vec<u8>,
-    /// The `jaimini_houses` section.
+    /// The `jaimini_grahas` section.
     graha: Vec<u16>,
     in_rasi: Vec<u8>,
     in_navamsha: Vec<u8>,
+    arudha: Vec<u16>,
+    arudha_present: Vec<u8>,
 }
 
 impl JaiminiColumns {
@@ -1484,6 +1486,8 @@ impl JaiminiColumns {
             graha: Vec::with_capacity(rows),
             in_rasi: Vec::with_capacity(rows),
             in_navamsha: Vec::with_capacity(rows),
+            arudha: Vec::with_capacity(rows),
+            arudha_present: Vec::with_capacity(rows),
         };
         for reading in readings {
             let (karakamsha, brahma) = (&reading.karakamsha, &reading.brahma);
@@ -1502,14 +1506,18 @@ impl JaiminiColumns {
             let (passed_from, present) = graha_or_absent(brahma.passed_from);
             columns.passed_from.push(passed_from);
             columns.passed_from_present.push(present);
-            for ((graha, rasi), navamsha) in teistro::catalogue::Graha::ALL
+            for (((graha, rasi), navamsha), arudha) in teistro::catalogue::Graha::ALL
                 .iter()
                 .zip(karakamsha.in_rasi)
                 .zip(karakamsha.in_navamsha)
+                .zip(reading.graha_arudhas)
             {
                 columns.graha.push(graha.id());
                 columns.in_rasi.push(rasi);
                 columns.in_navamsha.push(navamsha);
+                let (sign, present) = arudha.map_or((0, 0), |sign| (sign.id(), 1));
+                columns.arudha.push(sign);
+                columns.arudha_present.push(present);
             }
         }
         columns
@@ -1532,12 +1540,14 @@ impl JaiminiColumns {
             ],
         )?;
         writer.columns(
-            "jaimini_houses",
+            "jaimini_grahas",
             self.graha.len(),
             &[
                 ColumnData::U16(&self.graha),
                 ColumnData::U8(&self.in_rasi),
                 ColumnData::U8(&self.in_navamsha),
+                ColumnData::U16(&self.arudha),
+                ColumnData::U8(&self.arudha_present),
             ],
         )
     }

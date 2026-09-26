@@ -2123,6 +2123,16 @@ fn the_jaimini(report: &mut Report, index: usize, document: &teistro::Document) 
         ),
     );
     let or_dash = |key: Option<String>| key.unwrap_or_else(|| "-".to_owned());
+    let arudhas: Vec<String> = reading
+        .graha_arudhas
+        .iter()
+        .map(|sign| or_dash(sign.map(|s| s.full_key().to_owned())))
+        .collect();
+    put(
+        report,
+        &format!("chart-{index}-graha-arudhas"),
+        arudhas.join(","),
+    );
     let qualified: Vec<&str> = b.qualified.iter().map(|g| g.full_key()).collect();
     put(
         report,

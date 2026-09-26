@@ -491,6 +491,7 @@ for (const chart of charts) {
   });
   const { karakamsha: k, brahma: b } = chart.jaimini;
   put(`chart-${i}-jaimini`, `${k.atmakaraka} ${k.sign} ${k.inRasi.join(',')} ${k.inNavamsha.join(',')}`);
+  put(`chart-${i}-graha-arudhas`, chart.jaimini.grahaArudhas.map((sign) => sign ?? '-').join(','));
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

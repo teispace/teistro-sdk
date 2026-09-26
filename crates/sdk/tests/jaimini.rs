@@ -97,6 +97,14 @@ fn the_section_is_the_answer_and_a_stored_chart_keeps_its_own() {
                 .value;
             let section = read.jaimini.clone().unwrap();
             assert_eq!(section, sdk.chart().jaimini(&bare).unwrap(), "{patch}");
+            // Every planet has an arudha; the nodes have one exactly when
+            // the settings make them co-lords (C133).
+            assert!(section.graha_arudhas[..7].iter().all(Option::is_some));
+            assert_eq!(
+                section.graha_arudhas[7..].iter().all(Option::is_some),
+                patch.contains("BOTH"),
+                "{patch}"
+            );
             assert!(read.sections().contains(&"jaimini"));
             // Read back under other settings, a stored chart keeps the
             // answer it was cast with.

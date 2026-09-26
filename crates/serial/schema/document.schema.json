@@ -2979,6 +2979,22 @@
           "$ref": "#/$defs/Brahma",
           "description": "The Brahma graha, or why there is none."
         },
+        "graha_arudhas": {
+          "description": "Each graha's arudha, the Sun to Ketu, under `jaimini.graha_arudha_exception` and `jaimini.node_co_lordship`: `None` for a node that owns no sign (BPHS ch. 29 vv. 6 and 7; `03-design/graha-arudhas.md`).",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Rashi"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxItems": 9,
+          "minItems": 9,
+          "type": "array"
+        },
         "karakamsha": {
           "$ref": "#/$defs/Karakamsha",
           "description": "The karakamsha, with every graha's house from it in both charts."
@@ -2986,7 +3002,8 @@
       },
       "required": [
         "karakamsha",
-        "brahma"
+        "brahma",
+        "graha_arudhas"
       ],
       "type": "object"
     },

@@ -641,6 +641,10 @@ void main() {
       'chart-$i-jaimini',
       '${k.atmakaraka.fullKey} ${k.sign.fullKey} ${k.inRasi.join(',')} ${k.inNavamsha.join(',')}',
     );
+    put(
+      'chart-$i-graha-arudhas',
+      jr.grahaArudhas.map((sign) => sign?.fullKey ?? '-').join(','),
+    );
     final qualified = b.qualified.map((g) => g.fullKey).join(',');
     put(
       'chart-$i-brahma',

@@ -1786,6 +1786,11 @@ test('a chart carries its karakamsha and its Brahma graha, or why there is none'
     assert.equal(b.graha === null, b.none !== null, `${b.graha} ${b.none}`);
     if (b.graha !== null) assert.ok(b.qualified.includes(b.passedFrom ?? b.graha), `${b.graha}`);
     outcomes.add(b.none ?? 'FOUND');
+    const arudhas = chart.jaimini.grahaArudhas;
+    assert.equal(arudhas.length, 9);
+    arudhas.slice(0, 7).forEach((sign) => assert.match(sign, /^rashi\./));
+    // The default co-lordship gives the nodes no own sign, so no arudha.
+    assert.deepEqual(arudhas.slice(7), [null, null]);
   }
   assert.ok(outcomes.has('FOUND') && outcomes.size > 1, [...outcomes].join());
   ctx.dispose();

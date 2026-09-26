@@ -35,9 +35,9 @@ pub use knobs::{
     AfterCycle, AshtottariGrouping, AyanamshaBasis, Balance, Benefics, BhavaDig, BhavaDrishti,
     BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta, DayBoundary, DeltaT,
     DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning,
-    HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance,
-    KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents, Naisargika,
-    NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
+    GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth,
+    KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents,
+    Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
     PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja,
     SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier,
     UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
@@ -449,6 +449,8 @@ group!(
         node_co_lordship: NodeCoLordship,
         /// Which rule finds the Brahma graha (crux C128).
         brahma: BrahmaRule,
+        /// Whether a graha's arudha moves as a bhava's does (crux C132).
+        graha_arudha_exception: GrahaArudhaException,
     }
 );
 

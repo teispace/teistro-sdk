@@ -76,6 +76,7 @@ every shipped profile. The v1 inventory:
 | jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |
 | jaimini | `brahma` | enum | `VERSES`, `TRANSLATORS_NOTE`: the rule the Brahma graha is found by (BPHS ch. 46 vv. 170 to 173, or the translator's note; C128) |
+| jaimini | `graha_arudha_exception` | enum | `NONE`, `AS_BHAVAS`: whether a graha's arudha moves as a bhava's does when the count lands on the graha's sign or the 7th from it (BPHS ch. 29 vv. 6 and 7 state no move; C132) |
 | aspect | `node_aspects` | enum | `NONE`, `FIVE_SEVEN_NINE`, `THREE_SEVEN_ELEVEN` |
 | aspect | `drishti_table` | key | the aspect model's tables |
 | state | `combustion_orbs` | key | the cited orb tables (`BPHS`, `SURYA_SIDDHANTA`) |

@@ -1737,11 +1737,11 @@ class ChartsJaimini:
 
 
 @dataclass(frozen=True)
-class ChartsJaiminiHouses:
-    """The `jaimini_houses` section of a Charts blob: one column per field, each a view
+class ChartsJaiminiGrahas:
+    """The `jaimini_grahas` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.
+    Each graha as Jaimini reads it, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. Its house from the karakamsha in the rasi chart and in the navamsha, since the schools part on which (C130), and its arudha (BPHS ch. 29 vv. 6 and 7).
     """
 
     graha: memoryview[int]
@@ -1752,6 +1752,12 @@ class ChartsJaiminiHouses:
 
     in_navamsha: memoryview[int]
     """Its house from the karakamsha in the navamsha, 1 to 12."""
+
+    arudha: memoryview[int]
+    """Its arudha under `jaimini.graha_arudha_exception`; read only when `arudha_present` is 1."""
+
+    arudha_present: memoryview[int]
+    """1 when it has an arudha; 0 for a node that owns no sign under `jaimini.node_co_lordship` (C133)."""
 
     length: int
     """The number of rows every column holds."""
@@ -2034,8 +2040,8 @@ class Charts:
     jaimini: ChartsJaimini
     """Jaimini's significators, a row a chart, charts outermost: the karakamsha and the Brahma graha under the settings' `jaimini` group (BPHS ch. 33 v. 1, ch. 46 vv. 170 to 173). Empty when they were not asked for."""
 
-    jaimini_houses: ChartsJaiminiHouses
-    """Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried."""
+    jaimini_grahas: ChartsJaiminiGrahas
+    """Each graha as Jaimini reads it, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. Its house from the karakamsha in the rasi chart and in the navamsha, since the schools part on which (C130), and its arudha (BPHS ch. 29 vv. 6 and 7)."""
 
 
 def decode_charts(raw: bytes) -> Charts:
@@ -2097,7 +2103,7 @@ def decode_charts(raw: bytes) -> Charts:
     at_year_dasha_periods = blob.section(49, "year_dasha_periods")
     at_content_hashes = blob.section(50, "content_hashes")
     at_jaimini = blob.section(51, "jaimini")
-    at_jaimini_houses = blob.section(52, "jaimini_houses")
+    at_jaimini_grahas = blob.section(52, "jaimini_grahas")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -3094,17 +3100,23 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("B"),
             length=at_jaimini.count,
         ),
-        jaimini_houses=ChartsJaiminiHouses(
+        jaimini_grahas=ChartsJaiminiGrahas(
             graha=blob.column(
-                at_jaimini_houses, 0, 2, at_jaimini_houses.count
+                at_jaimini_grahas, 0, 2, at_jaimini_grahas.count
             ).cast("H"),
             in_rasi=blob.column(
-                at_jaimini_houses, 1, 1, at_jaimini_houses.count
+                at_jaimini_grahas, 1, 1, at_jaimini_grahas.count
             ).cast("B"),
             in_navamsha=blob.column(
-                at_jaimini_houses, 2, 1, at_jaimini_houses.count
+                at_jaimini_grahas, 2, 1, at_jaimini_grahas.count
             ).cast("B"),
-            length=at_jaimini_houses.count,
+            arudha=blob.column(
+                at_jaimini_grahas, 3, 2, at_jaimini_grahas.count
+            ).cast("H"),
+            arudha_present=blob.column(
+                at_jaimini_grahas, 4, 1, at_jaimini_grahas.count
+            ).cast("B"),
+            length=at_jaimini_grahas.count,
         ),
     )
 

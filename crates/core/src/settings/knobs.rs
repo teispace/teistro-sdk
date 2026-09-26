@@ -323,6 +323,15 @@ knob!(
         TranslatorsNote = "TRANSLATORS_NOTE" }
 );
 knob!(
+    /// Whether a graha's arudha moves as a bhava's does, when the count
+    /// lands on the graha's own sign or the 7th from it (BPHS ch. 29 vv. 6
+    /// and 7; crux C132).
+    GrahaArudhaException { /// The verses: the count and no move, as the translator's note says.
+        None = "NONE", /// The bhava arudhas' move, to the 10th from where the count
+        /// landed, taken over for the grahas, which the verses do not state.
+        AsBhavas = "AS_BHAVAS" }
+);
+knob!(
     /// The nodes' co-lordship of Aquarius and Scorpio.
     NodeCoLordship { /// None.
         None = "NONE", /// The stronger lord.
