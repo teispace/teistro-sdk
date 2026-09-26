@@ -314,6 +314,17 @@ fn the_solver_and_the_native_search_reproduce_the_baselines_sunrise() {
     assert_eq!(almanac.day_early, vec!["c022", "c025", "c039"]);
     assert!(almanac.between.seconds < 30.0, "{}", almanac.between);
     assert!(almanac.sdk.seconds < 12.0, "{}", almanac.sdk);
+    // Why a chart over a modern engine keeps the SDK's day (QUESTIONS.md
+    // Q40): against the Swiss-based recording the solver is the closer of
+    // the two, 9.77 s at worst against the engine's own 32.39 s (measured
+    // 2026-09-26). Should the engine come to lead, the decision reopens.
+    assert!(
+        almanac.sdk.seconds < almanac.native.seconds,
+        "the engine's own sunrise now reproduces the recording better than the SDK's solver \
+         ({} against {}): reopen QUESTIONS.md Q40",
+        almanac.native,
+        almanac.sdk
+    );
 }
 
 /// At each chart's own height the engine's standard air thins and the

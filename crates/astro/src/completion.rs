@@ -429,13 +429,22 @@ impl<'p, P: EphemerisProvider + ?Sized> Completion<'p, P> {
     /// use the native value when there is one and the SDK's when there is
     /// not; the kit's `sdk-only` check found it over the Surya Siddhanta
     /// provider. `native-only` still refuses, naming the step.
+    ///
+    /// A modern provider answers on the **mean** basis alone, which is what
+    /// the port's `ayanamsha_deg` promises; asked for the true basis, its
+    /// value would be the nutation short, about 18 arcseconds, so the
+    /// catalogue answers as for a member it does not list (found deciding
+    /// `QUESTIONS.md` Q40). A classical astronomy's value is the text's
+    /// definition, which has no nutation to add, and answers on either.
     fn choose_ayanamsha(
         &self,
         member: Option<Ayanamsha>,
     ) -> Result<Implementation, CompletionError> {
         let chosen = self.choose(Overrides::AYANAMSHA, "ayanamsha")?;
         let listed = member.is_none_or(|member| self.capabilities.ayanamshas.contains(&member));
-        match (chosen, listed, self.policy) {
+        let on_its_basis = self.capabilities.astronomy == Astronomy::Classical
+            || self.ayanamsha_basis == Basis::Mean;
+        match (chosen, listed && on_its_basis, self.policy) {
             (Implementation::Native, false, OverridePolicy::NativeOnly) => {
                 Err(CompletionError::PolicyRefused {
                     step: "ayanamsha",
@@ -1925,6 +1934,88 @@ mod tests {
         let apparent = completion.apparent(Body::Sun, JulianDay::literal(outside[0]));
         assert!(apparent.is_err() && completion.positions(&out).is_ok());
     }
+
+    /// A modern provider declaring Lahiri, whose value is the port's mean
+    /// one: a round 24° so a test can tell it from the catalogue's.
+    #[derive(Debug)]
+    struct MeanLahiri;
+
+    impl EphemerisProvider for MeanLahiri {
+        fn capabilities(&self) -> Capabilities {
+            Capabilities {
+                overrides: Overrides::AYANAMSHA,
+                ayanamshas: vec![Ayanamsha::Lahiri],
+                ..TestProvider.capabilities()
+            }
+        }
+
+        fn positions(
+            &self,
+            request: &PositionRequest<'_>,
+        ) -> Result<PositionColumns, ProviderError> {
+            TestProvider.positions(request)
+        }
+
+        fn ayanamsha_deg(
+            &self,
+            _jd: f64,
+            _scale: TimeScale,
+            _ayanamsha: Ayanamsha,
+        ) -> Result<f64, ProviderError> {
+            Ok(24.0)
+        }
+    }
+
+    /// The port's `ayanamsha_deg` is the mean value, so a modern provider
+    /// answers the mean basis and the catalogue the true one, where its
+    /// value would be the nutation short (Q40); `native-only` refuses the
+    /// true basis rather than answering on the wrong one.
+    #[test]
+    fn a_modern_provider_answers_the_ayanamsha_on_its_own_basis_alone() {
+        static PROVIDER: MeanLahiri = MeanLahiri;
+        let jds = [2_460_000.5];
+        let bodies = [Body::Sun];
+        let sidereal = PositionRequest::new(
+            &jds,
+            TimeScale::Ut1,
+            &bodies,
+            Frame::CANONICAL.with_zodiac(Zodiac::sidereal(Ayanamsha::Lahiri)),
+        );
+        let on = |policy, basis| {
+            Completion::new(&PROVIDER, policy, DeltaTModel::TableThenModel)
+                .with_ayanamsha_basis(basis)
+                .positions(&sidereal)
+        };
+        let tropical = TestProvider
+            .positions(&sidereal.in_frame(Frame::CANONICAL))
+            .unwrap();
+        let shift = |done: &Completed| {
+            difference_deg(
+                tropical.at(0, 0).unwrap().lon,
+                done.columns.at(0, 0).unwrap().lon,
+            )
+        };
+        let mean = on(OverridePolicy::PreferNative, Basis::Mean).unwrap();
+        assert!(mean.step_keys().contains(&String::from("ayanamsha:NATIVE")));
+        assert!((shift(&mean) - 24.0).abs() < 1e-12);
+        let true_basis = on(OverridePolicy::PreferNative, Basis::True).unwrap();
+        assert!(
+            true_basis
+                .step_keys()
+                .contains(&String::from("ayanamsha:SDK")),
+            "{:?}",
+            true_basis.step_keys()
+        );
+        assert!((shift(&true_basis) - 24.0).abs() > 0.01);
+        assert!(matches!(
+            on(OverridePolicy::NativeOnly, Basis::True).unwrap_err(),
+            CompletionError::PolicyRefused {
+                step: "ayanamsha",
+                ..
+            }
+        ));
+    }
+
     /// The rate's rotation and the position's must be the same rotation.
     /// They are written in different terms — the position goes through
     /// the spherical formulae, the rate through a matrix — so nothing

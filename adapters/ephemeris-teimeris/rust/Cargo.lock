@@ -518,6 +518,7 @@ dependencies = [
  "teistro-core",
  "teistro-dasha",
  "teistro-geometry",
+ "teistro-gochar",
  "teistro-houses",
  "teistro-interpret",
  "teistro-intl",
@@ -527,6 +528,7 @@ dependencies = [
  "teistro-render-svg",
  "teistro-rules",
  "teistro-serial",
+ "teistro-siddhanta",
  "teistro-state",
  "teistro-strength",
  "teistro-tajika",
@@ -640,6 +642,14 @@ dependencies = [
  "teistro-chart",
  "teistro-core",
  "teistro-vargas",
+]
+
+[[package]]
+name = "teistro-gochar"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "teistro-core",
 ]
 
 [[package]]

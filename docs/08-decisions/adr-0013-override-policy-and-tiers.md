@@ -27,6 +27,19 @@ need defaults that decide charts.
 - Eclipses and the full fixed-star catalogue are v1.x; v1.0 carries the
   anchor stars and the nakshatra yogataras.
 
+## Amendment (2026-09-26, Q40)
+
+`prefer-native` governs the **completion's steps** — positions, frames,
+crossings, events asked for directly — and not a modern chart's
+conventions. A chart's day and zodiac are the SDK's over a modern engine,
+because measured against the Swiss-based recording they are the closer:
+the solver's sunrise 9.77 s at worst against the engine's own 32.39 s,
+and the catalogue's nutated ayanamsha within 0.0086″ where the port's
+mean value stands 18.46″ off. A **classical** astronomy still defines
+both, since its sunrise and zodiac are the text's definitions with no SDK
+answer to agree with (`03-design/classical-chart.md`). A modern provider's
+native ayanamsha answers the mean basis alone.
+
 ## Consequences
 
 - Two policies to test in the conformance harness for every override.
