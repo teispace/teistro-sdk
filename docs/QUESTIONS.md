@@ -113,7 +113,7 @@ generator lands early — because a generated surface grows itself as the
 SDK grows — with only the packaged, signed, install-checked server in
 Phase 9.
 
-## Q40. Whether a modern engine's overrides reach a chart's day and zodiac: `open`
+## Q40. Whether a modern engine's overrides reach a chart's day and zodiac: `decided`
 
 Raised 2026-09-26 by building the classical chart
 (`03-design/classical-chart.md` §8). ADR-0013 says `prefer-native` uses a
@@ -150,12 +150,43 @@ up to 7 s where the horizon is refracted.
   consumer who asks, and the choice declared rather than implicit, which
   is the no-dead-ends rule.
 
-*Recommendation: C.* The default keeps what a chart means independent of
-the engine it was cast on, which is the property the `sdk-only`
-byte-identity check guards; the knob gives the consumer who must match
-another tool to the second a way to, stamped in every result. It is a
-maintainer's decision because it amends ADR-0013 and moves no default
-today but names one.
+*Recommendation as raised: C.* The default keeps what a chart means
+independent of the engine it was cast on, which is the property the
+`sdk-only` byte-identity check guards; the knob gives the consumer who
+must match another tool to the second a way to, stamped in every result.
+
+**Decided 2026-09-26: B**, by the maintainer handing it over to be
+researched and settled. Measuring the premise of A and C — that the
+engine's own answer is the Swiss-exact one — refused it:
+
+- **The day.** Against the Swiss-based recording, under its own
+  convention (sea level, the upper limb refracted), over the 55 charts'
+  106 events: the SDK's solver 9.77 s at worst, Teimeris's own search
+  **32.39 s** (`adapters/ephemeris-teimeris/rust/tests/fixtures.rs`,
+  which now asserts the order and says to reopen this question if it
+  flips). The Swiss family disagrees with itself as much as with the SDK
+  (C34), and the port's `STANDARD_REFRACTION` already means each side's
+  own standard air.
+- **The zodiac.** The port's `ayanamsha_deg` is the **mean** value; the
+  recording applies the nutated one, which the catalogue reproduces
+  within 0.0086″ under the true basis while the mean stands 18.46″ off.
+  Taking the engine's value would have moved every chart over Teimeris
+  18″ *away* from the tools ADR-0013 wanted it to match.
+
+So A would have spent the chart's engine-independence to agree *less*
+with Swiss-compatible tools, and C's knob would exist to choose the
+worse answer; the consumer who wants the engine's own sunrise regardless
+reaches it through `sdk.engine`, and every chart already stamps
+`day:SDK` and `zodiac:SDK`. ADR-0013 is amended to say `prefer-native`
+governs the completion's steps, not a modern chart's conventions; a
+classical astronomy still defines both.
+
+Deciding it found a latent defect: the completion took a modern
+provider's native ayanamsha on **either** basis, so a caller asking for
+the true one would have been the nutation short. A modern provider now
+answers the mean basis alone; the catalogue answers the true one under
+`prefer-native`, and `native-only` refuses it by name. No caller asked
+for the true basis through the completion yet, so no number moved.
 
 ## Q38. Whether a computed value that is not a catalogue member should become one: `decided`
 

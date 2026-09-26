@@ -1164,6 +1164,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   answers exactly. Kemadruma is the fourth divergence (crux C94): read whole,
   the verse answers 1 of the 93 charts where the engine answers 57.
 
+- **A modern engine's chart keeps the SDK's day and zodiac** (QUESTIONS.md
+  Q40, decided; ADR-0013 amended). Measured against the Swiss-based
+  recording the SDK's sunrise (9.77 s at worst over 55 charts) and nutated
+  zodiac (0.0086″) are closer than Teimeris's own (32.39 s, and a mean
+  ayanamsha 18.46″ off), so `prefer-native` governs the completion's steps
+  and not a modern chart's conventions; the adapter's fixture test asserts
+  the order. A modern provider's native ayanamsha now answers the mean
+  basis alone, which is what the port promises: asked for the true basis
+  the completion took it anyway, the nutation short; the catalogue answers
+  it under `prefer-native` and `native-only` refuses it.
+
+  **Numbers:** none. No caller asked the completion for the true basis,
+  and the chart already took its day and zodiac from the SDK.
+
 - **Gochar: the transits read from the natal Moon** (`03-design/gochar.md`).
   A new crate, `teistro-gochar`, reads each of the nine grahas in transit
   from the natal Moon's sign as Phaladeepika ch. 26 teaches it, read on the
@@ -1233,7 +1247,7 @@ the astronomical numbers do not move. Nothing else computes yet.
   by up to 0.48 s. No modern chart, calendar, lunisolar, panchanga or
   almanac value moved, and no existing profile's settings changed. A
   modern engine's own overrides at the chart layer are
-  QUESTIONS.md Q40, awaiting the maintainer.
+  QUESTIONS.md Q40, since decided: the SDK's (see below).
 
 - **Breaking:** `Rule::outcome` and `RuleResult::outcome` become `outcomes`, a
   list, because a verse may say more than one thing — Saravali ch. 37's Pancha
