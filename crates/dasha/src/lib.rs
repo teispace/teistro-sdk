@@ -87,3 +87,17 @@ pub fn systems() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
             teistro_core::catalogue::DashaSystem::Kalachakra,
         ))
 }
+
+/// [`systems`] but those a chart may be refused: every system this build
+/// computes on **every** chart, which is what a request for everything
+/// asks for. A sign-based row whose start a chart may not give (the Sthira
+/// dasa, from a Brahma graha the verses often do not find) is left to be
+/// asked for by name, where its refusal says which setting supplies one.
+pub fn systems_every_chart_gives() -> impl Iterator<Item = teistro_core::catalogue::DashaSystem> {
+    systems().filter(|system| {
+        RASHI_ROWS
+            .iter()
+            .filter(|row| row.system.catalogued() == Some(*system))
+            .all(|row| row.start.every_chart_gives())
+    })
+}

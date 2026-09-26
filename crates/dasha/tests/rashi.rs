@@ -51,6 +51,7 @@ fn chart(inputs: &Value) -> RashiChart {
         dignities: GRAHAS.map(|graha| {
             Dignity::from_key(inputs["graha_dignity"][graha.key()].as_str().unwrap()).unwrap()
         }),
+        brahma: None,
     }
 }
 
@@ -143,10 +144,24 @@ fn every_sign_based_system_is_reproduced() {
     );
     assert_eq!(answers, 616);
     assert!(worst < BOUND_DAYS, "worst boundary {worst:e} days");
+    // The corpus records the eight sign-based systems its engine computes;
+    // the rows it does not record are listed, and the list is held both
+    // ways: a row the corpus gains leaves it, and a row the build gains
+    // unrecorded must be named here.
+    let unrecorded: Vec<DashaSystem> = DashaSystem::ALL
+        .into_iter()
+        .filter(|system| RASHI_ROWS.iter().any(|row| row.is(*system)))
+        .filter(|system| !seen.contains(system))
+        .collect();
     assert_eq!(
-        seen.len(),
+        unrecorded,
+        [DashaSystem::Sthira],
+        "the shipped rows the corpus does not record"
+    );
+    assert_eq!(
+        seen.len() + unrecorded.len(),
         RASHI_ROWS.len(),
-        "every row this build ships is measured"
+        "every row this build ships is measured or listed as unrecorded"
     );
 }
 

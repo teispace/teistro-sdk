@@ -244,6 +244,7 @@ fn in_sign(chart: &RashiChart, sign: Rashi) -> Vec<Graha> {
 ///         Rashi::Aquarius, Rashi::Scorpio, Rashi::Gemini, Rashi::Sagittarius,
 ///     ],
 ///     dignities: [Dignity::Neutral; 9],
+///     brahma: None,
 /// };
 /// let degrees = [29.6, 22.1, 0.9, 13.1, 13.7, 20.1, 13.4, 13.9, 13.9];
 /// let found = brahma(&chart, &degrees, NodeCoLordship::None, BrahmaRule::Verses);
@@ -339,6 +340,7 @@ mod tests {
                     Rashi::Sagittarius,
                 ],
                 dignities: [Dignity::Neutral; 9],
+                brahma: None,
             },
             [
                 29.0 + 36.0 / 60.0,
@@ -385,6 +387,7 @@ mod tests {
             navamsa_lagna: Rashi::Leo,
             signs,
             dignities: [Dignity::Neutral; 9],
+            brahma: None,
         };
         let found = brahma(&chart, &[10.0; 9], NodeCoLordship::None, BrahmaRule::Verses);
         assert_eq!(found.passed_from, Some(Graha::Saturn));
@@ -406,6 +409,7 @@ mod tests {
             navamsa_lagna: Rashi::Aries,
             signs: [Rashi::Taurus; 9],
             dignities: [Dignity::Neutral; 9],
+            brahma: None,
         };
         let degrees = [5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 3.0, 3.0];
         let verses = brahma(&chart, &degrees, NodeCoLordship::None, BrahmaRule::Verses);

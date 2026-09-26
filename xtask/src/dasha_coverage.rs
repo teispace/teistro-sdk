@@ -109,7 +109,7 @@ impl Blocker {
 /// quietly stop being exhaustive.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-const NOT_BUILT: [(&str, Blocker, &str); 18] = [
+const NOT_BUILT: [(&str, Blocker, &str); 17] = [
     (
         "SHODASHOTTARI",
         Blocker::Text,
@@ -158,13 +158,6 @@ const NOT_BUILT: [(&str, Blocker, &str); 18] = [
         Blocker::Text,
         "no attested shape at all. It is catalogued because a system by that name \
          is named, which is what a key space is for",
-    ),
-    (
-        "STHIRA",
-        Blocker::Text,
-        "the row is stated — from the lagna, consecutive, seven, eight or nine \
-         years by modality — and nothing here verifies it. It is one boolean from \
-         Mandooka's row, which is exactly why a guess would go unnoticed",
     ),
     (
         "VARNADA",
@@ -238,11 +231,13 @@ const NOT_BUILT: [(&str, Blocker, &str); 18] = [
 /// A system is registrable exactly when its row is one of those two shapes
 /// and the only thing missing is the numbers in it.
 ///
-/// **It was three until the sign-based half was built.** `STHIRA` and
-/// `VARNADA` are rows a source states and nothing here verifies, so a
-/// consumer holding that source was shut out as firmly as this build was —
-/// a dead end in the SDK rather than a gap in the sources, which is what
-/// this page found and what closing it looked like.
+/// **It was three until the sign-based half was built.** `VARNADA` is a row
+/// a source states and nothing here verifies, so a consumer holding that
+/// source was shut out as firmly as this build was — a dead end in the SDK
+/// rather than a gap in the sources, which is what this page found and what
+/// closing it looked like. `STHIRA` was listed here too, stated "from the
+/// lagna"; BPHS ch. 46 v. 169 starts it from the Brahma graha, which is how
+/// it came to be built (`jaimini-significators.md`).
 ///
 /// What is still unregistrable is unregistrable for a reason in its row and
 /// not for want of an arm: `SUDASA` starts from the karakamsha, which is a
@@ -250,10 +245,9 @@ const NOT_BUILT: [(&str, Blocker, &str); 18] = [
 /// reference that is not a nakshatra; `TARA`, `KARAKA` and `ASHTAKAVARGA`
 /// ask the chart for their periods; `YOGARDHA` and `SUDARSHANA_CHAKRA` are
 /// compositions of systems rather than systems.
-const REGISTRABLE: [(&str, Kernel); 4] = [
+const REGISTRABLE: [(&str, Kernel); 3] = [
     ("SHODASHOTTARI", Kernel::Udu),
     ("SHATTRIMSHA_SAMA", Kernel::Udu),
-    ("STHIRA", Kernel::Rashi),
     ("VARNADA", Kernel::Rashi),
 ];
 
@@ -276,11 +270,11 @@ impl Kernel {
 /// Whether the registry path actually works, proved by walking it once per
 /// kernel rather than by citing the API.
 ///
-/// The rows are the ones [`dasha-kernels.md`] states for Shodashottari and
-/// for Sthira, whose citations are exactly what is unconfirmed — so each is
-/// registered under a **demonstration key** the catalogue does not have.
-/// Nothing here ships as the system, and the numbers are the design page's,
-/// not this pass's invention.
+/// The nakshatra-seeded row is the one [`dasha-kernels.md`] states for
+/// Shodashottari, whose citations are exactly what is unconfirmed, and the
+/// sign-based one a plain row from the lagna — so each is registered under a
+/// **demonstration key** the catalogue does not have. Nothing here ships as
+/// a system.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
 fn a_consumer_supplies_one() -> Result<Vec<String>, String> {
@@ -326,11 +320,11 @@ fn a_consumer_supplies_one() -> Result<Vec<String>, String> {
         .register(RashiDefinition {
             sources: vec![String::from("03-design/dasha-kernels.md, K-rashi rows")],
             length: modality,
-            ..RashiDefinition::of("DEMO_STHIRA")
+            ..RashiDefinition::of("DEMO_RASHI")
         })
-        .map_err(|why| format!("registering the stated Sthira row: {why}"))?;
+        .map_err(|why| format!("registering a sign-based row: {why}"))?;
     walked.push(String::from(
-        "`DEMO_STHIRA`, every sign from the lagna for seven, eight or nine          years by modality, the sign-based kernel",
+        "`DEMO_RASHI`, every sign from the lagna for seven, eight or nine          years by modality, the sign-based kernel",
     ));
 
     Ok(walked)

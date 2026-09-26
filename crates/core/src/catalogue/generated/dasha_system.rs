@@ -555,7 +555,7 @@ impl DashaSystem {
             DashaSystem::Shoola => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
             DashaSystem::NiryanaShoola => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
             DashaSystem::Mandooka => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
-            DashaSystem::Sthira => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
+            DashaSystem::Sthira => &[Source { text: "BPHS", reference: "ch. 46 vv. 168 to 173: from the Brahma graha's sign, 7, 8 and 9 years by modality" }, Source { text: "jaimini-significators", reference: "docs/03-design/jaimini-significators.md" }],
             DashaSystem::Sudasa => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
             DashaSystem::Varnada => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],
             DashaSystem::Yogardha => &[Source { text: "dasha-kernels", reference: "docs/03-design/dasha-kernels.md" }],

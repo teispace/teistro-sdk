@@ -164,11 +164,11 @@ chart at all. It can now publish one and read it back.
 A schema's `enum` has to spell a member the way the document really
 writes it. Reading every `enum` and `const` in the document's own schema
 — a closed enum's members and a tagged union's tags, from whichever
-crate holds the value — 576 words are written:
+crate holds the value — 577 words are written:
 
 | spelt | words |
 |---|---|
-| as a key, `[A-Z][A-Z0-9_]*` | 576 |
+| as a key, `[A-Z][A-Z0-9_]*` | 577 |
 | otherwise | 0 |
 
 **Every one is a key**, so a consumer reading a document meets one

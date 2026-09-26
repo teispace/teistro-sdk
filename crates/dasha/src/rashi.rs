@@ -140,6 +140,10 @@ pub struct RashiChart {
     pub signs: [Rashi; 9],
     /// Each graha's dignity, Sun to Ketu.
     pub dignities: [Dignity; 9],
+    /// The sign the Brahma graha occupies, which the Sthira dasa starts
+    /// from; `None` where the chart's rule finds no Brahma
+    /// ([`crate::jaimini::brahma`]).
+    pub brahma: Option<Rashi>,
 }
 
 impl RashiChart {
@@ -237,6 +241,7 @@ const fn modality_rank(sign: Rashi) -> usize {
 ///     navamsa_lagna: Rashi::Aries,
 ///     signs,
 ///     dignities: [Dignity::Neutral; 9],
+///     brahma: None,
 /// };
 /// assert_eq!(stronger_sign(&chart, Rashi::Aries, Rashi::Leo), Some(Rashi::Leo));
 /// assert_eq!(stronger_sign(&chart, Rashi::Aries, Rashi::Libra), None);
@@ -352,6 +357,25 @@ pub enum Start {
     ArudhaLagna,
     /// The navamsa lagna.
     NavamsaLagna,
+    /// The sign the Brahma graha occupies (BPHS ch. 46 v. 169).
+    Brahma,
+}
+
+impl Start {
+    /// Whether every chart gives this start. The lagnas always stand; the
+    /// Brahma graha is one the verses find on about half of charts, and a
+    /// system starting from it is refused on the rest (C125).
+    ///
+    /// ```
+    /// use teistro_dasha::Start;
+    ///
+    /// assert!(Start::Lagna.every_chart_gives());
+    /// assert!(!Start::Brahma.every_chart_gives());
+    /// ```
+    #[must_use]
+    pub const fn every_chart_gives(self) -> bool {
+        !matches!(self, Start::Brahma)
+    }
 }
 
 /// The order a system visits the signs in.
@@ -372,6 +396,9 @@ pub enum Order {
     /// Back two signs at a time from the start, six times, then the same
     /// from the sign before the start.
     Leap,
+    /// Every sign in turn from the start, forward whatever the start's
+    /// parity: the Sthira dasa's order, the Sanskrit stating none (C129).
+    Forward,
 }
 
 /// How long a sign's period runs.
@@ -434,12 +461,17 @@ pub struct RashiRow {
 
 impl RashiRow {
     /// The sign the system starts from under `rules`.
-    #[must_use]
-    pub fn start_sign(&self, chart: &RashiChart, rules: RashiRules) -> Rashi {
+    ///
+    /// # Errors
+    ///
+    /// `UNSUPPORTED` for a system that starts from the Brahma graha over a
+    /// chart whose rule found none, naming the knob that supplies another
+    /// rule: a start from nowhere is refused, never taken from the lagna.
+    pub fn start_sign(&self, chart: &RashiChart, rules: RashiRules) -> Result<Rashi, Error> {
         if rules.start == RashiStart::Stronger && !self.stronger_of.is_empty() {
             // The strongest of the houses named, the earlier one on a tie.
             let house = |h: u8| step(chart.lagna, Direction::Forward, usize::from(h.max(1) - 1));
-            return self
+            return Ok(self
                 .stronger_of
                 .iter()
                 .map(|h| house(*h))
@@ -450,19 +482,33 @@ impl RashiRow {
                         best
                     }
                 })
-                .unwrap_or(chart.lagna);
+                .unwrap_or(chart.lagna));
         }
-        match self.start {
+        Ok(match self.start {
             Start::Lagna => chart.lagna,
             Start::ArudhaLagna => chart.arudha_lagna,
             Start::NavamsaLagna => chart.navamsa_lagna,
-        }
+            Start::Brahma => chart.brahma.ok_or_else(|| {
+                Error::unsupported(format!(
+                    "{} starts from the Brahma graha, and this chart has none under its rule",
+                    self.system
+                ))
+                .with_field("jaimini.brahma")
+                .with_hint(
+                    "the verses of BPHS ch. 46 find none on many charts and give no fallback; \
+                     TRANSLATORS_NOTE is the rule that supplies one",
+                )
+            })?,
+        })
     }
 
     /// The mahadasha signs for a chart, in order.
-    #[must_use]
-    pub fn sequence(&self, chart: &RashiChart, rules: RashiRules) -> [Rashi; SIGNS] {
-        let start = self.start_sign(chart, rules);
+    ///
+    /// # Errors
+    ///
+    /// As [`RashiRow::start_sign`].
+    pub fn sequence(&self, chart: &RashiChart, rules: RashiRules) -> Result<[Rashi; SIGNS], Error> {
+        let start = self.start_sign(chart, rules)?;
         let direction = Direction::of(Parity::of(start));
         let mut out = [start; SIGNS];
         let mut fill = |signs: &mut dyn Iterator<Item = Rashi>| {
@@ -505,8 +551,9 @@ impl RashiRow {
                 };
                 step(seed, Direction::Back, 2 * (k % 6))
             })),
+            Order::Forward => fill(&mut (0..SIGNS).map(|k| step(start, Direction::Forward, k))),
         }
-        out
+        Ok(out)
     }
 
     /// A sign's period in years for a chart.
@@ -757,8 +804,8 @@ pub const MANDOOKA: RashiRow = row(
 /// use teistro_core::catalogue::Rashi;
 /// use teistro_dasha::{Length, NamedLord, Order, RashiDefinition, Start};
 ///
-/// // Sthira as the sources state it: from the lagna, every sign in turn,
-/// // seven, eight or nine years by the sign's modality.
+/// // A Sthira reckoned from the lagna rather than the Brahma graha, every
+/// // sign in turn, seven, eight or nine years by the sign's modality.
 /// let sthira = RashiDefinition {
 ///     length: Length::ByModality { movable: 7, fixed: 8, dual: 9 },
 ///     ..RashiDefinition::of("ACME_STHIRA")
@@ -863,6 +910,25 @@ impl teistro_core::registry::Definition for RashiDefinition {
     }
 }
 
+/// Sthira: seven, eight or nine years by modality, from the sign the Brahma
+/// graha occupies, every sign in turn forward (BPHS ch. 46 vv. 168 to
+/// 173; `03-design/jaimini-significators.md`). The coverage page stated it
+/// from the lagna; the Sanskrit starts it from Brahma, and states no order,
+/// which the translation's "reverse from even signs" supplies and this
+/// does not (C129).
+pub const STHIRA: RashiRow = row(
+    DashaSystem::Sthira,
+    Start::Brahma,
+    Order::Forward,
+    Length::ByModality {
+        movable: 7,
+        fixed: 8,
+        dual: 9,
+    },
+    NamedLord::Stronger,
+    &[],
+);
+
 /// Every sign-based row this build implements.
 pub const RASHI_ROWS: &[RashiRow] = &[
     CHARA,
@@ -873,6 +939,7 @@ pub const RASHI_ROWS: &[RashiRow] = &[
     SHOOLA,
     NIRYANA_SHOOLA,
     MANDOOKA,
+    STHIRA,
 ];
 
 /// The sign-based row of a system, when this build implements one.
@@ -900,7 +967,8 @@ impl RashiDasha {
     ///
     /// # Errors
     ///
-    /// A year length of no days, named `year_length`.
+    /// A year length of no days, named `year_length`; a start the chart
+    /// cannot give ([`RashiRow::start_sign`]).
     pub fn new(
         row: &RashiRow,
         chart: &RashiChart,
@@ -913,7 +981,7 @@ impl RashiDasha {
         if year_days.is_nan() || year_days <= 0.0 {
             return Err(Error::invalid_arg("a year of no days").with_field("year_length"));
         }
-        let signs = row.sequence(chart, rules);
+        let signs = row.sequence(chart, rules)?;
         let mut lords = [Graha::Sun; SIGNS];
         let mut offsets = [0.0; SIGNS + 1];
         let mut total = 0.0;
@@ -1014,9 +1082,11 @@ impl Timeline for RashiDasha {
         self.mahadasha(cycle, index)
     }
 
-    /// Twelve equal antardashas from the period's own sign, forward from an
-    /// odd sign and back from an even one, each naming its sign's first lord
-    /// (crux C50 names the reading that begins from the next sign).
+    /// Twelve equal antardashas from the period's own sign, each naming its
+    /// sign's first lord (crux C50 names the reading that begins from the
+    /// next sign): forward under an [`Order::Forward`] row, as its periods
+    /// run (C129), and otherwise forward from an odd sign and back from an
+    /// even one.
     fn child(&self, parent: &Period, index: usize) -> Option<Period> {
         let sign = parent.sign?;
         if index >= SIGNS {
@@ -1024,7 +1094,11 @@ impl Timeline for RashiDasha {
         }
         let place = u8::try_from(index).ok()?;
         let path = parent.path.child(place)?;
-        let child = step(sign, Direction::of(Parity::of(sign)), index);
+        let direction = match self.row.order {
+            Order::Forward => Direction::Forward,
+            _ => Direction::of(Parity::of(sign)),
+        };
+        let child = step(sign, direction, index);
         let whole = parent.interval;
         let bound = |k: u8| match k {
             0 => whole.from.get(),
@@ -1067,6 +1141,7 @@ mod tests {
                 Rashi::Cancer,
             ],
             dignities: [Dignity::Neutral; 9],
+            brahma: Some(lagna),
         }
     }
 
@@ -1101,7 +1176,7 @@ mod tests {
                         navamsa_lagna: lagna,
                         ..chart(lagna)
                     };
-                    let mut sequence = row.sequence(&chart, rules);
+                    let mut sequence = row.sequence(&chart, rules).unwrap();
                     sequence.sort();
                     assert_eq!(sequence, Rashi::ALL, "{:?} from {lagna:?}", row.system);
                 }
@@ -1195,19 +1270,33 @@ mod tests {
         let c = chart(Rashi::Pisces);
         // Trikona: Pisces empty, Cancer holding Ketu, Scorpio the Moon; one
         // each, and the fixed Scorpio over the movable Cancer.
-        assert_eq!(TRIKONA.start_sign(&c, RashiRules::BPHS), Rashi::Scorpio);
         assert_eq!(
-            TRIKONA.start_sign(&c, RashiRules::RECORDING_ENGINE),
+            TRIKONA.start_sign(&c, RashiRules::BPHS).unwrap(),
+            Rashi::Scorpio
+        );
+        assert_eq!(
+            TRIKONA
+                .start_sign(&c, RashiRules::RECORDING_ENGINE)
+                .unwrap(),
             Rashi::Pisces
         );
         // Mandooka: Pisces and Virgo both empty and both dual, so the lagna;
         // the Sun in Virgo makes it the seventh.
-        assert_eq!(MANDOOKA.start_sign(&c, RashiRules::BPHS), Rashi::Pisces);
+        assert_eq!(
+            MANDOOKA.start_sign(&c, RashiRules::BPHS).unwrap(),
+            Rashi::Pisces
+        );
         let mut sun = c;
         sun.signs[0] = Rashi::Virgo;
-        assert_eq!(MANDOOKA.start_sign(&sun, RashiRules::BPHS), Rashi::Virgo);
+        assert_eq!(
+            MANDOOKA.start_sign(&sun, RashiRules::BPHS).unwrap(),
+            Rashi::Virgo
+        );
         // Chara names no stronger start, and keeps the lagna.
-        assert_eq!(CHARA.start_sign(&sun, RashiRules::BPHS), Rashi::Pisces);
+        assert_eq!(
+            CHARA.start_sign(&sun, RashiRules::BPHS).unwrap(),
+            Rashi::Pisces
+        );
     }
 
     #[test]
@@ -1243,5 +1332,32 @@ mod tests {
             dasha.mahadasha_at(dasha.cycle_end().get()).is_none(),
             "the cycle ends"
         );
+    }
+
+    /// The Sthira dasa's antardashas run forward like its periods, from an
+    /// even sign as from an odd one (C129), where the Chara's above run back.
+    #[test]
+    fn sthira_antardashas_run_forward_from_an_even_sign() {
+        let c = RashiChart {
+            brahma: Some(Rashi::Pisces),
+            ..chart(Rashi::Aries)
+        };
+        let dasha = RashiDasha::new(
+            &STHIRA,
+            &c,
+            JulianDay::literal(2_451_545.0),
+            YearLength::Julian36525,
+            AfterCycle::End,
+            RashiRules::BPHS,
+        )
+        .unwrap();
+        let first = dasha.mahadashas().next().unwrap();
+        assert_eq!(first.sign, Some(Rashi::Pisces));
+        let children: Vec<Option<Rashi>> = dasha.children(&first).map(|child| child.sign).collect();
+        let forward: Vec<Option<Rashi>> = (0..SIGNS)
+            .map(|k| Some(step(Rashi::Pisces, Direction::Forward, k)))
+            .collect();
+        assert_eq!(children, forward);
+        assert_eq!(children[1], Some(Rashi::Aries));
     }
 }

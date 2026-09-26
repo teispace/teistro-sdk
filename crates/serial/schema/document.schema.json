@@ -3849,6 +3849,11 @@
           "const": "LEAP",
           "description": "Back two signs at a time from the start, six times, then the same from the sign before the start.",
           "type": "string"
+        },
+        {
+          "const": "FORWARD",
+          "description": "Every sign in turn from the start, forward whatever the start's parity: the Sthira dasa's order, the Sanskrit stating none (C129).",
+          "type": "string"
         }
       ]
     },
@@ -5324,6 +5329,11 @@
         {
           "const": "NAVAMSA_LAGNA",
           "description": "The navamsa lagna.",
+          "type": "string"
+        },
+        {
+          "const": "BRAHMA",
+          "description": "The sign the Brahma graha occupies (BPHS ch. 46 v. 169).",
           "type": "string"
         }
       ]

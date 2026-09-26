@@ -249,8 +249,10 @@ members:
     doc: "Sthira"
     attributes: { family: RASHI }
     sources:
-      - text: "dasha-kernels"
-        ref: "docs/03-design/dasha-kernels.md"
+      - text: "BPHS"
+        ref: "ch. 46 vv. 168 to 173: from the Brahma graha's sign, 7, 8 and 9 years by modality"
+      - text: "jaimini-significators"
+        ref: "docs/03-design/jaimini-significators.md"
     mark: T
   - key: SUDASA
     id: 31

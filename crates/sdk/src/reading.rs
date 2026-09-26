@@ -454,14 +454,17 @@ impl ChartRequest {
     /// Every section, and every divisional chart.
     ///
     /// What a consumer storing a chart for later wants, and what the
-    /// parity runner asks for: the widest document the SDK can produce.
-    /// Every dasha system this build implements rows for. **No drawings**:
+    /// parity runner asks for: the widest document the SDK can produce for
+    /// any chart. Every dasha system this build computes on every chart
+    /// ([`teistro_dasha::systems_every_chart_gives`]): the Sthira dasa,
+    /// which a chart with no Brahma graha refuses, is asked for by name.
+    /// **No drawings**:
     /// those are named pairs, and every layout times every
     /// chart is a hundred and twenty-six placements nobody asked for.
     #[must_use]
     pub fn with_everything(self) -> ChartRequest {
         self.with_every_varga()
-            .with_dashas(teistro_dasha::systems())
+            .with_dashas(teistro_dasha::systems_every_chart_gives())
             .with_panchanga()
             .with_state()
             .with_aspects()
