@@ -52,7 +52,7 @@ reading of ch. 46 reproduces past 82%, as it chose the Brahma graha.
 | C132 | whether a graha's arudha takes the bhava arudhas' exception | none (the verses are silent, the translator says none); the exception from the graha's sign (PyJHora, 2 400 of 2 400) | **none**, a knob for the other | the verses state the count and no move; the move is the bhava arudhas' own verse |
 | C133 | whether the nodes have arudhas | through co-lordship, Rahu to Aquarius and Ketu to Scorpio (the translator, PyJHora); none (a node owns no sign) | **the existing `jaimini.node_co_lordship`**: `NONE` gives the nodes no own sign and so no arudha, the others give Rahu Aquarius and Ketu Scorpio | one knob already says whether a node lords a sign in this school; a second would let the two disagree |
 | C134 | the stronger of a planet's two signs | ch. 46 vv. 161 to 163 (occupancy, then modality, then the greater count, C51) and v. 164's exaltation; PyJHora's own | **`stronger_sign`, then the greater count**, the ladder C51 settled from the same chapter's verses | v. 7 names no ladder and ch. 46 is the text's only one |
-| C135 | a bhava pada of a two-lorded sign | the stronger lord (v. 7, द्विनाथ); the catalogue's lord (the recording engine, 0 of 852 disagree in `arudhas-measured.md`) | **unchanged**, the catalogue's lord, until built as a knob | the padas are shipped and measured; moving their default is its own change, and this page's is the grahas' |
+| C135 | a bhava pada of a two-lorded sign | the stronger lord (v. 7, द्विनाथ); the catalogue's lord (the recording engine, 0 of 852 disagree in `arudhas-measured.md`) | **the co-lordship decides**: the catalogue's lord under `NONE`, the default, and the stronger under the others | only a node's co-lordship makes a sign two-lorded, so the default is the verse's and the corpus's at once (§6 step 3) |
 
 ## 4. The design
 
@@ -96,6 +96,19 @@ and the dasha crate does not depend on it.
 1. The function and the knob, with the tests above: **done**.
 2. The reading and the boundary columns: **done**, with parity across the
    four languages.
-3. C135, the bhava padas' two-lorded signs, as its own change: a knob, the
-   arudhas page re-aimed to measure both readings, the default argued from
-   the text.
+3. C135, the bhava padas' two-lorded signs: **done**, and not as a knob.
+   Researching it found that v. 7's two-lorded sign exists only where a node
+   co-lords Scorpio or Aquarius, so under the default co-lordship the
+   shipped padas already agree with the verse, and the padas follow
+   `jaimini.node_co_lordship` rather than a second knob that could
+   contradict it. `points::arudha` gained `_by` forms taking the lord a sign
+   counts to; `dasha::jaimini::pada_lord` names it (the stronger by ch. 46's
+   ladder when there are two); the façade counts the arudha lagna for the
+   sign dashas and the Vaiseshikamsa through one `placed_chart`, and gives
+   the rules evaluator the twelve lords with `Evaluator::with_pada_lords`,
+   an extension point beside `with_points`, so neither `RuleChart` nor
+   `Readings` changed. The façade re-exports `teistro::points`, which had
+   left the padas' own functions unreachable to a Rust consumer. The
+   arudhas pass had its own copy of the count; it now calls the shipped
+   `arudha_by`, every existing row unchanged, and measures v. 7's reading:
+   46 of 852 recorded padas move under `BOTH`.

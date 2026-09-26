@@ -104,6 +104,10 @@ pub use teistro_panchanga::almanac::Panchanga;
 pub use teistro_aspect::{Aspects, Drishti};
 pub use teistro_houses::Houses;
 pub use teistro_points::Points;
+// The derived points' own functions — the padas and the arudha lagna among
+// them, which a consumer counting a pada to another lord needs
+// (`points::arudha::arudha_by`, crux C135).
+pub use teistro_points as points;
 pub use teistro_port_ephemeris::native::{NativeFunction, NativeManifest};
 pub use teistro_serial::{Document, Sealed};
 // The document's JSON Schema, for a consumer who stores one and wants to

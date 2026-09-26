@@ -22,7 +22,9 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::Balance;
 use teistro_core::settings::{AyanamshaChoice, CharaKarakas};
 use teistro_core::time::UtcOffset;
-use teistro_dasha::jaimini::{JaiminiReading, brahma, graha_arudhas, karakamsha};
+use teistro_dasha::jaimini::{
+    JaiminiReading, brahma, graha_arudhas, karakamsha, pada_lord, pada_lords,
+};
 use teistro_dasha::{
     Birth, Dasha, DashaCursor, DashaName, DashaReading, KalachakraDasha, KalachakraRules,
     RashiChart, RashiDasha, RashiRules, Rules as DashaRules, Wheel, YearDasha, YearRing,
@@ -31,7 +33,7 @@ use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
 use teistro_panchanga::limb::{Zodiac as LimbZodiac, moon_between, nakshatra_at};
 use teistro_points::Points;
-use teistro_points::arudha::arudha;
+use teistro_points::arudha::arudha_by;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_serial::Document;
 use teistro_state::{GrahaState, state};
@@ -61,6 +63,56 @@ use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
 use crate::varsha::{AnnualChart, AnnualPlace, VARSHA, Varsha, VarshaRequest, VarshaYear};
 use teistro_rules::longevity::{AyurdayaRules, ThreePairsRules};
+
+/// The grahas as ch. 46's ladder reads them, each one's sign and dignity, in
+/// a chart whose lagna is `lagna`, with its arudha lagna counted to each
+/// sign's pada lord under the co-lordship (crux C135): the one assembly the
+/// sign dashas, the Vaiseshikamsa and the rules' padas all read. The
+/// navamsa lagna and Brahma are the dasha reading's to fill.
+fn placed_chart(
+    lagna: Rashi,
+    states: &[GrahaState],
+    co_lordship: teistro_core::settings::NodeCoLordship,
+) -> Result<RashiChart, Error> {
+    let mut signs = [lagna; 9];
+    let mut dignities = [teistro_core::catalogue::Dignity::Neutral; 9];
+    for ((sign, dignity), graha) in signs
+        .iter_mut()
+        .zip(dignities.iter_mut())
+        .zip(GRAHAS_IN_ORDER)
+    {
+        let placed = states
+            .iter()
+            .find(|state| state.graha == graha)
+            .ok_or_else(|| Error::internal(format!("a founded chart places {}", graha.key())))?;
+        *sign = placed.sign;
+        *dignity = placed.dignity;
+    }
+    let mut chart = RashiChart {
+        lagna,
+        arudha_lagna: lagna,
+        navamsa_lagna: lagna,
+        signs,
+        dignities,
+        brahma: None,
+    };
+    let sign_of = |graha: Graha| {
+        GRAHAS_IN_ORDER
+            .iter()
+            .position(|each| *each == graha)
+            .and_then(|at| signs.get(at).copied())
+            .unwrap_or(lagna)
+    };
+    let arudha_lagna = arudha_by(
+        lagna,
+        1,
+        |sign| pada_lord(&chart, sign, co_lordship),
+        sign_of,
+    )
+    .sign;
+    chart.arudha_lagna = arudha_lagna;
+    Ok(chart)
+}
 
 /// Each graha's degrees within its sign, the Sun to Ketu: what the
 /// Brahma graha is weighed by (BPHS ch. 46 v. 173).
@@ -360,7 +412,11 @@ impl<'a> ChartArea<'a> {
         let mut answered = Vec::with_capacity(documents.len());
         for document in documents {
             let inputs = RuleInputs::of(&document)?;
-            let evaluator = inputs.evaluator(readings).with_rules(set.rules());
+            let lords = self.pada_lords_of(&document)?;
+            let evaluator = inputs
+                .evaluator(readings)
+                .with_rules(set.rules())
+                .with_pada_lords(&lords);
             let present = set
                 .rules()
                 .iter()
@@ -754,41 +810,13 @@ impl<'a> ChartArea<'a> {
         foundation: &ChartFoundation,
         states: &[GrahaState],
     ) -> Result<RashiChart, Error> {
-        let grahas = GRAHAS_IN_ORDER;
-        let placed = |graha: Graha| {
-            states
-                .iter()
-                .find(|state| state.graha == graha)
-                .ok_or_else(|| Error::internal(format!("a founded chart places {}", graha.key())))
-        };
-        let mut signs = [Rashi::Aries; 9];
-        let mut dignities = [teistro_core::catalogue::Dignity::Neutral; 9];
-        for ((sign, dignity), graha) in signs.iter_mut().zip(dignities.iter_mut()).zip(grahas) {
-            let state = placed(graha)?;
-            *sign = state.sign;
-            *dignity = state.dignity;
-        }
         let lagna = Rashi::from_id(u16::from(foundation.lagna_sign_index()))
             .ok_or_else(|| Error::internal("a lagna in no sign"))?;
-        let navamsa = varga_chart(foundation, Axis::of(Varga::D9))?;
-        let sign_of = |graha: Graha| {
-            grahas
-                .iter()
-                .position(|each| *each == graha)
-                .and_then(|at| signs.get(at).copied())
-                .unwrap_or(lagna)
-        };
-        let mut chart = RashiChart {
-            lagna,
-            arudha_lagna: arudha(lagna, 1, sign_of).sign,
-            navamsa_lagna: navamsa.lagna.sign,
-            signs,
-            dignities,
-            brahma: None,
-        };
+        let settings = self.context.settings();
+        let mut chart = placed_chart(lagna, states, settings.jaimini.node_co_lordship)?;
+        chart.navamsa_lagna = varga_chart(foundation, Axis::of(Varga::D9))?.lagna.sign;
         // Brahma is read from the chart it then starts a dasha in, so the
         // chart is assembled first and the sign filled in after.
-        let settings = self.context.settings();
         chart.brahma = brahma(
             &chart,
             &degrees_in_sign(foundation)?,
@@ -885,6 +913,20 @@ impl<'a> ChartArea<'a> {
                 settings.jaimini.graha_arudha_exception,
             ),
         })
+    }
+
+    /// Each sign's pada lord in a read document under the settings'
+    /// `jaimini.node_co_lordship` (crux C135), which the rules' padas count
+    /// to: the catalogue's lords under its default.
+    fn pada_lords_of(self, document: &Document) -> Result<[Graha; 12], Error> {
+        let co_lordship = self.context.settings().jaimini.node_co_lordship;
+        let lagna = Rashi::from_id(u16::from(document.foundation.lagna_sign_index()))
+            .ok_or_else(|| Error::internal("a lagna in no sign"))?;
+        // `RuleInputs::of` has refused a document without its states, so an
+        // error here is the assembly's own and is not papered over.
+        let states = document.state.as_deref().unwrap_or_default();
+        let chart = placed_chart(lagna, states, co_lordship)?;
+        Ok(pada_lords(&chart, co_lordship))
     }
 
     fn rashi_dasha_of_row(
@@ -2297,14 +2339,10 @@ impl<'a> ChartArea<'a> {
         settings: &teistro_core::settings::Settings,
     ) -> Result<VaiseshikamsaReading, Error> {
         let states = state(foundation, settings)?;
-        let sign_of = |graha: Graha| {
-            states
-                .iter()
-                .find(|state| state.graha == graha)
-                .map_or(Rashi::Aries, |state| state.sign)
-        };
         let lagna = Rashi::from_id(u16::from(foundation.lagna_sign_index()))
             .ok_or_else(|| Error::internal("a lagna in no sign"))?;
+        let arudha_lagna =
+            placed_chart(lagna, &states, settings.jaimini.node_co_lordship)?.arudha_lagna;
         let mut impaired = [false; 7];
         for (slot, graha) in impaired
             .iter_mut()
@@ -2323,7 +2361,7 @@ impl<'a> ChartArea<'a> {
                     teistro_strength::ashtakavarga::GRAHAS,
                 )?,
             },
-            arudha_lagna: arudha(lagna, 1, sign_of).sign,
+            arudha_lagna,
             impaired,
         };
         Ok(VaiseshikamsaReading::of(&chart))

@@ -898,6 +898,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** new. Every settings hash moved: the `jaimini` group gained a
   knob.
 
+  The arudha padas now follow `jaimini.node_co_lordship` (BPHS ch. 29 v. 7,
+  crux C135): with the nodes as co-lords, a Scorpio or Aquarius house counts
+  to the stronger of its two lords by ch. 46's ladder, for the arudha lagna
+  the sign dashas start from, the Vaiseshikamsa's and the rules' padas
+  alike. `points::arudha` gains `arudha_by`, `pada_by` and
+  `arudha_padas_by`, `dasha::jaimini` gains `pada_lord` and `pada_lords`,
+  the rules gain `Evaluator::with_pada_lords`, and the façade now re-exports
+  `teistro::points`.
+
+  **Numbers:** none under the default: `NONE` gives every sign one lord, the
+  catalogue's. Under `STRONGER_LORD` or `BOTH`, 46 of 852 recorded padas
+  move, and with them any arudha lagna, Padanadhamsa start or pada-reading
+  rule that read one.
+
   A consumer's own nakshatra-seeded dasha system now registers, the Phase 5
   exit's consumer-row clause. A `UduDefinition` goes on
   `ContextBuilder::dasha_system` or `TsContextOptions.dashas_json`, and

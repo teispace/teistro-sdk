@@ -176,6 +176,9 @@ pub struct Evaluator<'a> {
     points: &'a [PointAt],
     /// The rules a `{"type": "rule"}` condition can name.
     rules: &'a [Rule],
+    /// The lord each sign's pada counts to, Aries to Pisces, when the caller
+    /// names them; the catalogue's lords otherwise (crux C135).
+    pada_lords: Option<&'a [Graha; 12]>,
     /// The body a `for-any` bound, which `SELF` names.
     bound: Option<Body>,
     /// Each body's benefic nature under the readings, by index.
@@ -234,6 +237,7 @@ impl<'a> Evaluator<'a> {
             vargas: &[],
             points: &[],
             rules: &[],
+            pada_lords: None,
             bound: None,
             benefic,
             malefic,
@@ -296,6 +300,19 @@ impl<'a> Evaluator<'a> {
     #[must_use]
     pub const fn with_rules(self, rules: &'a [Rule]) -> Evaluator<'a> {
         Evaluator { rules, ..self }
+    }
+
+    /// The same evaluator, counting each sign's pada to the lord named here,
+    /// Aries to Pisces, rather than to the catalogue's: what a school that
+    /// makes the nodes co-lords counts a two-lorded sign to (BPHS ch. 29
+    /// v. 7; crux C135). The façade names them under the settings'
+    /// `jaimini.node_co_lordship`; under its default they are the catalogue's.
+    #[must_use]
+    pub const fn with_pada_lords(self, lords: &'a [Graha; 12]) -> Evaluator<'a> {
+        Evaluator {
+            pada_lords: Some(lords),
+            ..self
+        }
     }
 
     fn at(&self, body: Body) -> &Placement {
@@ -418,7 +435,20 @@ impl<'a> Evaluator<'a> {
 
     /// The pada of the house standing in `sign`.
     fn pada(&self, sign: Rashi) -> Rashi {
-        arudha::pada(sign, |graha| self.at(graha_body(graha)).sign)
+        let sign_of = |graha| self.at(graha_body(graha)).sign;
+        match self.pada_lords {
+            Some(lords) => arudha::pada_by(
+                sign,
+                |of| {
+                    lords
+                        .get(of as usize)
+                        .copied()
+                        .unwrap_or(of.attributes().lord)
+                },
+                sign_of,
+            ),
+            None => arudha::pada(sign, sign_of),
+        }
     }
 
     /// The house a spot is in: a body's own under the readings, a sign's by
@@ -2060,6 +2090,41 @@ mod tests {
             holds(&c, ENGINE, &upapada("TAURUS")),
             holds(&c, parity, &upapada("TAURUS"))
         );
+    }
+
+    #[test]
+    fn a_pada_counts_to_the_lord_the_caller_names() {
+        // A Scorpio lagna, every graha in Aries but Ketu in Gemini. Counted to
+        // the catalogue's Mars, five signs on and five more is Virgo; counted
+        // to Ketu, as a school that makes the nodes co-lords may (BPHS ch. 29
+        // v. 7; crux C135), seven on and seven more is Capricorn. Neither is
+        // the first or the seventh from Scorpio, so neither moves.
+        let mut c = chart();
+        place(&mut c, Body::Lagna, Rashi::Scorpio);
+        place(&mut c, Body::Graha(Graha::Ketu), Rashi::Gemini);
+        let arudha_lagna_in = |sign: &str| {
+            written(&format!(
+                r#"{{"type": "planet-in-sign", "planet": {{"arudha": 1}}, "signs": ["{sign}"]}}"#
+            ))
+        };
+        let in_sign = |evaluator: &Evaluator<'_>, sign: &str| {
+            evaluator.holds(&arudha_lagna_in(sign), &mut Participants::default())
+        };
+        let catalogue = Evaluator::new(&c, ENGINE);
+        assert!(in_sign(&catalogue, "VIRGO"));
+        let lords = Rashi::ALL.map(|sign| match sign {
+            Rashi::Scorpio => Graha::Ketu,
+            other => other.attributes().lord,
+        });
+        let named = Evaluator::new(&c, ENGINE).with_pada_lords(&lords);
+        assert!(in_sign(&named, "CAPRICORN"));
+        assert!(!in_sign(&named, "VIRGO"));
+        // Naming the catalogue's own lords changes nothing.
+        let same = Rashi::ALL.map(|sign| sign.attributes().lord);
+        assert!(in_sign(
+            &Evaluator::new(&c, ENGINE).with_pada_lords(&same),
+            "VIRGO"
+        ));
     }
 
     fn rule(conditions: Vec<Condition>, cancellations: Vec<Condition>) -> Rule {
