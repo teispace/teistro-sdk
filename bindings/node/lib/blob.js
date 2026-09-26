@@ -827,6 +827,30 @@ export function decodeCharts(bytes) {
     const at = section(blob, 50, 'content_hashes');
     out.contentHashes = text(blob, at);
   }
+  {
+    const at = section(blob, 51, 'jaimini');
+    out.jaimini = {
+      atmakaraka: column(blob, at, 0, 'u16', at.count),
+      karakamsha: column(blob, at, 1, 'u16', at.count),
+      brahmaRule: column(blob, at, 2, 'u8', at.count),
+      countedFrom: column(blob, at, 3, 'u16', at.count),
+      qualified: column(blob, at, 4, 'u16', at.count),
+      brahma: column(blob, at, 5, 'u16', at.count),
+      brahmaOutcome: column(blob, at, 6, 'u8', at.count),
+      passedFrom: column(blob, at, 7, 'u16', at.count),
+      passedFromPresent: column(blob, at, 8, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 52, 'jaimini_houses');
+    out.jaiminiHouses = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      inRasi: column(blob, at, 1, 'u8', at.count),
+      inNavamsha: column(blob, at, 2, 'u8', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

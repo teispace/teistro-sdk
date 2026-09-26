@@ -812,6 +812,80 @@
       ],
       "type": "object"
     },
+    "Brahma": {
+      "description": "The Brahma graha of a chart, and how it was found (BPHS ch. 46 vv. 170 to 173).",
+      "properties": {
+        "counted_from": {
+          "$ref": "#/$defs/Rashi",
+          "description": "The stronger of the lagna and the 7th, which the houses are counted from."
+        },
+        "graha": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Graha"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The Brahma graha, or `None` where the rule finds none."
+        },
+        "none": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NoBrahma"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Why there is none, when there is none."
+        },
+        "passed_from": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Graha"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Saturn or the node that qualified and passed Brahma-hood to the planet in the 6th from it (C127), when one did."
+        },
+        "qualified": {
+          "description": "The planets that met the rule's marks, in the catalogue's order: the field a reader checks a choice against.",
+          "items": {
+            "$ref": "#/$defs/Graha"
+          },
+          "type": "array"
+        },
+        "rule": {
+          "$ref": "#/$defs/BrahmaRule",
+          "description": "The rule it was found under."
+        }
+      },
+      "required": [
+        "rule",
+        "counted_from",
+        "qualified"
+      ],
+      "type": "object"
+    },
+    "BrahmaRule": {
+      "description": "Which rule finds the Brahma graha, the planet the Sthira dasa starts from (BPHS ch. 46 vv. 170 to 173; crux C128).",
+      "oneOf": [
+        {
+          "const": "VERSES",
+          "description": "The verses: the lords of the 6th, 8th and 12th from the stronger of the lagna and the 7th, in an odd sign behind it, the most degrees among them; none where no lord qualifies.",
+          "type": "string"
+        },
+        {
+          "const": "TRANSLATORS_NOTE",
+          "description": "The translator's note under them: the 8th lord in the 8th, else a planet in the 8th, else a planet in an odd sign within six signs of the lagna or the 7th.",
+          "type": "string"
+        }
+      ]
+    },
     "Burning": {
       "description": "How badly the Sun burns a body.",
       "oneOf": [
@@ -1825,6 +1899,17 @@
             }
           ],
           "description": "The twelve bhavas under both readings."
+        },
+        "jaimini": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JaiminiReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Jaimini's significators: the karakamsha and the Brahma graha, or why the rule found none (`03-design/jaimini-significators.md`)."
         },
         "panchanga": {
           "anyOf": [
@@ -2887,6 +2972,24 @@
         }
       ]
     },
+    "JaiminiReading": {
+      "description": "A chart's Jaimini significators: what `sdk.chart().jaimini` answers.",
+      "properties": {
+        "brahma": {
+          "$ref": "#/$defs/Brahma",
+          "description": "The Brahma graha, or why there is none."
+        },
+        "karakamsha": {
+          "$ref": "#/$defs/Karakamsha",
+          "description": "The karakamsha, with every graha's house from it in both charts."
+        }
+      },
+      "required": [
+        "karakamsha",
+        "brahma"
+      ],
+      "type": "object"
+    },
     "JulianDay": {
       "description": "A Julian day on one time scale.",
       "format": "double",
@@ -3077,6 +3180,50 @@
         "membership",
         "balance_of",
         "after_ninth"
+      ],
+      "type": "object"
+    },
+    "Karakamsha": {
+      "description": "The karakamsha: the navamsha sign the Atmakaraka occupies (BPHS ch. 33 v. 1), and every graha's house counted from it in **both** charts, since the schools read its houses in the rasi chart or in the navamsha itself (crux C130) and a consumer reading one wants the other named.",
+      "properties": {
+        "atmakaraka": {
+          "$ref": "#/$defs/Graha",
+          "description": "The Atmakaraka, under the profile's chara karaka scheme."
+        },
+        "in_navamsha": {
+          "description": "Each graha's house from the karakamsha, counted in the navamsha, the Sun to Ketu.",
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 9,
+          "minItems": 9,
+          "type": "array"
+        },
+        "in_rasi": {
+          "description": "Each graha's house from the karakamsha, counted in the rasi chart, the Sun to Ketu.",
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 9,
+          "minItems": 9,
+          "type": "array"
+        },
+        "sign": {
+          "$ref": "#/$defs/Rashi",
+          "description": "The karakamsha: the Atmakaraka's navamsha sign."
+        }
+      },
+      "required": [
+        "atmakaraka",
+        "sign",
+        "in_rasi",
+        "in_navamsha"
       ],
       "type": "object"
     },
@@ -3838,6 +3985,26 @@
       ],
       "type": "string",
       "x-teistro-kind": "nature"
+    },
+    "NoBrahma": {
+      "description": "Why a chart has no Brahma graha under the rule asked for.",
+      "oneOf": [
+        {
+          "const": "NO_LORD_QUALIFIES",
+          "description": "Under the verses, no lord of the 6th, 8th or 12th stands in an odd sign behind the sign counted from; they give no fallback (C128).",
+          "type": "string"
+        },
+        {
+          "const": "NO_PLANET_IN_THE_SIXTH",
+          "description": "Saturn or a node qualified, and no planet stands in the 6th sign from it to take its place (C127).",
+          "type": "string"
+        },
+        {
+          "const": "NO_PLANET_QUALIFIES",
+          "description": "Under the translator's note, no planet stands in the 8th and none in an odd sign within the six signs behind.",
+          "type": "string"
+        }
+      ]
     },
     "Omens": {
       "description": "What a day is said to be.",

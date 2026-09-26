@@ -1576,6 +1576,26 @@ How a Vimshopaka scored a graha in a varga: the settings' own `Vimshopaka`.
 | `TS_VIMSHOPAKA_SCORING_BPHS` | 0 | BPHS ch. 7: 20 in exaltation or the own sign, else by the compound relationship with the sign's lord. |
 | `TS_VIMSHOPAKA_SCORING_SAPTAVARGAJA_VIRUPAS` | 1 | The conformance corpus's engine: the Saptavargaja virupas over 45 by natural friendship, rounded to hundredths. |
 
+## ts_brahma_rule
+
+Which rule a chart's Brahma graha was sought under: the settings' own `jaimini.brahma` (`03-design/jaimini-significators.md`).
+
+| member | value | what it is |
+|---|---|---|
+| `TS_BRAHMA_RULE_VERSES` | 0 | BPHS ch. 46 vv. 170 to 173 as the Sanskrit states them. |
+| `TS_BRAHMA_RULE_TRANSLATORS_NOTE` | 1 | The translator's note after v. 173. |
+
+## ts_brahma_outcome
+
+Whether a chart's Brahma graha was found, and when not, why (C127, C128). One code rather than a presence flag beside a reason, so the two cannot disagree.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_BRAHMA_OUTCOME_FOUND` | 0 | Found: `brahma` names it. |
+| `TS_BRAHMA_OUTCOME_NO_LORD_QUALIFIES` | 1 | Under the verses, no lord of the 6th, 8th or 12th stands in an odd sign behind the sign counted from, and they give no fallback. |
+| `TS_BRAHMA_OUTCOME_NO_PLANET_IN_THE_SIXTH` | 2 | Saturn or a node qualified, and no planet stands in the 6th sign from it to take its place. |
+| `TS_BRAHMA_OUTCOME_NO_PLANET_QUALIFIES` | 3 | Under the translator's note, no planet stands in the 8th and none in an odd sign within the six signs behind. |
+
 ## ts_dasha_phase
 
 Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).

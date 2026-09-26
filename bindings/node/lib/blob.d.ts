@@ -1934,6 +1934,84 @@ export interface ChartsYearDashaPeriods {
 }
 
 /**
+ * The `jaimini` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Jaimini's significators, a row a chart, charts outermost: the karakamsha and the Brahma graha under the settings' `jaimini` group (BPHS ch. 33 v. 1, ch. 46 vv. 170 to 173). Empty when they were not asked for.
+ */
+export interface ChartsJaimini {
+  /**
+   * The Atmakaraka, under `jaimini.chara_karakas`.
+   * The values are `Graha` ids.
+   */
+  readonly atmakaraka: Uint16Array;
+  /**
+   * The karakamsha: the Atmakaraka's navamsha sign.
+   * The values are `Rashi` ids.
+   */
+  readonly karakamsha: Uint16Array;
+  /**
+   * The rule the Brahma graha was sought under, `jaimini.brahma`.
+   * The values are `BrahmaRule` ids.
+   */
+  readonly brahmaRule: Uint8Array;
+  /**
+   * The stronger of the lagna and the 7th, which the rule counts from.
+   * The values are `Rashi` ids.
+   */
+  readonly countedFrom: Uint16Array;
+  /**
+   * The planets that met the rule's marks, a bit set: bit `n` is the graha with id `n`.
+   */
+  readonly qualified: Uint16Array;
+  /**
+   * The Brahma graha; read only when `brahma_outcome` is `FOUND`.
+   * The values are `Graha` ids.
+   */
+  readonly brahma: Uint16Array;
+  /**
+   * Whether the Brahma graha was found, and when not, why.
+   * The values are `BrahmaOutcome` ids.
+   */
+  readonly brahmaOutcome: Uint8Array;
+  /**
+   * Saturn or the node that qualified and passed Brahma-hood to the planet in the 6th from it (C127); read only when `passed_from_present` is 1.
+   * The values are `Graha` ids.
+   */
+  readonly passedFrom: Uint16Array;
+  /**
+   * 1 when Brahma-hood was passed on, else 0.
+   */
+  readonly passedFromPresent: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `jaimini_houses` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.
+ */
+export interface ChartsJaiminiHouses {
+  /**
+   * Which graha.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * Its house from the karakamsha in the rasi chart, 1 to 12.
+   */
+  readonly inRasi: Uint8Array;
+  /**
+   * Its house from the karakamsha in the navamsha, 1 to 12.
+   */
+  readonly inNavamsha: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -2301,6 +2379,14 @@ export interface Charts {
    * UTF-8 text: each chart's own content hash — its document, with what it answers by rule where rules were asked, canonical — as sixty-four lowercase hex digits, a chart after the other in the batch's order with nothing between them, so chart `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a chart handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3).
    */
   readonly contentHashes: string;
+  /**
+   * Jaimini's significators, a row a chart, charts outermost: the karakamsha and the Brahma graha under the settings' `jaimini` group (BPHS ch. 33 v. 1, ch. 46 vv. 170 to 173). Empty when they were not asked for.
+   */
+  readonly jaimini: ChartsJaimini;
+  /**
+   * Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.
+   */
+  readonly jaiminiHouses: ChartsJaiminiHouses;
 }
 
 /**

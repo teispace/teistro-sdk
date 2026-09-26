@@ -4947,6 +4947,84 @@ enum VimshopakaScoring {
   }
 }
 
+/// Which rule a chart's Brahma graha was sought under: the settings' own
+/// `jaimini.brahma` (`03-design/jaimini-significators.md`).
+enum BrahmaRule {
+  /// BPHS ch. 46 vv. 170 to 173 as the Sanskrit states them.
+  verses(0, 'VERSES'),
+  /// The translator's note after v. 173.
+  translatorsNote(1, 'TRANSLATORS_NOTE');
+
+  const BrahmaRule(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static BrahmaRule byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a BrahmaRule'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static BrahmaRule? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Whether a chart's Brahma graha was found, and when not, why (C127,
+/// C128). One code rather than a presence flag beside a reason, so the two
+/// cannot disagree.
+enum BrahmaOutcome {
+  /// Found: `brahma` names it.
+  found(0, 'FOUND'),
+  /// Under the verses, no lord of the 6th, 8th or 12th stands in an odd
+  /// sign behind the sign counted from, and they give no fallback.
+  noLordQualifies(1, 'NO_LORD_QUALIFIES'),
+  /// Saturn or a node qualified, and no planet stands in the 6th sign from
+  /// it to take its place.
+  noPlanetInTheSixth(2, 'NO_PLANET_IN_THE_SIXTH'),
+  /// Under the translator's note, no planet stands in the 8th and none in
+  /// an odd sign within the six signs behind.
+  noPlanetQualifies(3, 'NO_PLANET_QUALIFIES');
+
+  const BrahmaOutcome(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static BrahmaOutcome byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a BrahmaOutcome'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static BrahmaOutcome? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
 enum DashaPhase {
   /// At its commencement.

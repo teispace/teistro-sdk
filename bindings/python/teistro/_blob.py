@@ -1698,6 +1698,66 @@ class ChartsYearDashaPeriods:
 
 
 @dataclass(frozen=True)
+class ChartsJaimini:
+    """The `jaimini` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Jaimini's significators, a row a chart, charts outermost: the karakamsha and the Brahma graha under the settings' `jaimini` group (BPHS ch. 33 v. 1, ch. 46 vv. 170 to 173). Empty when they were not asked for.
+    """
+
+    atmakaraka: memoryview[int]
+    """The Atmakaraka, under `jaimini.chara_karakas`."""
+
+    karakamsha: memoryview[int]
+    """The karakamsha: the Atmakaraka's navamsha sign."""
+
+    brahma_rule: memoryview[int]
+    """The rule the Brahma graha was sought under, `jaimini.brahma`."""
+
+    counted_from: memoryview[int]
+    """The stronger of the lagna and the 7th, which the rule counts from."""
+
+    qualified: memoryview[int]
+    """The planets that met the rule's marks, a bit set: bit `n` is the graha with id `n`."""
+
+    brahma: memoryview[int]
+    """The Brahma graha; read only when `brahma_outcome` is `FOUND`."""
+
+    brahma_outcome: memoryview[int]
+    """Whether the Brahma graha was found, and when not, why."""
+
+    passed_from: memoryview[int]
+    """Saturn or the node that qualified and passed Brahma-hood to the planet in the 6th from it (C127); read only when `passed_from_present` is 1."""
+
+    passed_from_present: memoryview[int]
+    """1 when Brahma-hood was passed on, else 0."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsJaiminiHouses:
+    """The `jaimini_houses` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried.
+    """
+
+    graha: memoryview[int]
+    """Which graha."""
+
+    in_rasi: memoryview[int]
+    """Its house from the karakamsha in the rasi chart, 1 to 12."""
+
+    in_navamsha: memoryview[int]
+    """Its house from the karakamsha in the navamsha, 1 to 12."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -1971,6 +2031,12 @@ class Charts:
     content_hashes: str
     """UTF-8 text: each chart's own content hash — its document, with what it answers by rule where rules were asked, canonical — as sixty-four lowercase hex digits, a chart after the other in the batch's order with nothing between them, so chart `i` is bytes `64 * i` to `64 * i + 64`. The provenance's `content_hash` is the list's; a chart handed out alone carries its own (`03-design/serial-and-the-envelope.md` §3)."""
 
+    jaimini: ChartsJaimini
+    """Jaimini's significators, a row a chart, charts outermost: the karakamsha and the Brahma graha under the settings' `jaimini` group (BPHS ch. 33 v. 1, ch. 46 vv. 170 to 173). Empty when they were not asked for."""
+
+    jaimini_houses: ChartsJaiminiHouses
+    """Each graha's house from the karakamsha, the Sun to Ketu, charts outermost: row `i * 9 + g` is the `i`th chart in `jaimini`, graha `g`. The schools count them in the rasi chart or in the navamsha (C130), so both are carried."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -2030,6 +2096,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_year_dasha_shares = blob.section(48, "year_dasha_shares")
     at_year_dasha_periods = blob.section(49, "year_dasha_periods")
     at_content_hashes = blob.section(50, "content_hashes")
+    at_jaimini = blob.section(51, "jaimini")
+    at_jaimini_houses = blob.section(52, "jaimini_houses")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -2998,6 +3066,46 @@ def decode_charts(raw: bytes) -> Charts:
             length=at_year_dasha_periods.count,
         ),
         content_hashes=blob.text(at_content_hashes),
+        jaimini=ChartsJaimini(
+            atmakaraka=blob.column(
+                at_jaimini, 0, 2, at_jaimini.count
+            ).cast("H"),
+            karakamsha=blob.column(
+                at_jaimini, 1, 2, at_jaimini.count
+            ).cast("H"),
+            brahma_rule=blob.column(
+                at_jaimini, 2, 1, at_jaimini.count
+            ).cast("B"),
+            counted_from=blob.column(
+                at_jaimini, 3, 2, at_jaimini.count
+            ).cast("H"),
+            qualified=blob.column(
+                at_jaimini, 4, 2, at_jaimini.count
+            ).cast("H"),
+            brahma=blob.column(at_jaimini, 5, 2, at_jaimini.count).cast("H"),
+            brahma_outcome=blob.column(
+                at_jaimini, 6, 1, at_jaimini.count
+            ).cast("B"),
+            passed_from=blob.column(
+                at_jaimini, 7, 2, at_jaimini.count
+            ).cast("H"),
+            passed_from_present=blob.column(
+                at_jaimini, 8, 1, at_jaimini.count
+            ).cast("B"),
+            length=at_jaimini.count,
+        ),
+        jaimini_houses=ChartsJaiminiHouses(
+            graha=blob.column(
+                at_jaimini_houses, 0, 2, at_jaimini_houses.count
+            ).cast("H"),
+            in_rasi=blob.column(
+                at_jaimini_houses, 1, 1, at_jaimini_houses.count
+            ).cast("B"),
+            in_navamsha=blob.column(
+                at_jaimini_houses, 2, 1, at_jaimini_houses.count
+            ).cast("B"),
+            length=at_jaimini_houses.count,
+        ),
     )
 
 

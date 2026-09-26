@@ -120,6 +120,8 @@ from .catalogue import (
     Vaiseshikamsa,
     DashaPhase,
     Nature,
+    BrahmaRule,
+    BrahmaOutcome,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -347,6 +349,11 @@ __all__ = [
     "DashaPhalaReading",
     "DashaPhase",
     "GrahaDashaPhala",
+    "Karakamsha",
+    "Brahma",
+    "BrahmaRule",
+    "BrahmaOutcome",
+    "JaiminiReading",
     "Nature",
     # The Vaiseshikamsa: what a chart answers with, and its names.
     "GrahaVaiseshikamsa",
@@ -1281,6 +1288,7 @@ class ChartArea(_Area):
         vimshopaka: bool = False,
         vaiseshikamsa: bool = False,
         dasha_phala: bool = False,
+        jaimini: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
         state: bool = False,
@@ -1317,6 +1325,7 @@ class ChartArea(_Area):
             vimshopaka=vimshopaka,
             vaiseshikamsa=vaiseshikamsa,
             dasha_phala=dasha_phala,
+            jaimini=jaimini,
             shadbala=shadbala,
             bhava_bala=bhava_bala,
             state=state,
@@ -1343,6 +1352,7 @@ class ChartArea(_Area):
         vimshopaka: bool = False,
         vaiseshikamsa: bool = False,
         dasha_phala: bool = False,
+        jaimini: bool = False,
         shadbala: bool = False,
         bhava_bala: bool = False,
         state: bool = False,
@@ -1382,6 +1392,7 @@ class ChartArea(_Area):
             | (_SECTION_VIMSHOPAKA if vimshopaka else 0)
             | (_SECTION_VAISESHIKAMSA if vaiseshikamsa else 0)
             | (_SECTION_DASHA_PHALA if dasha_phala else 0)
+            | (_SECTION_JAIMINI if jaimini else 0)
             | (_SECTION_SHADBALA if shadbala else 0)
             | (_SECTION_BHAVA_BALA if bhava_bala else 0)
             | (_SECTION_STATE if state else 0),
@@ -1703,6 +1714,8 @@ _SECTION_VIMSHOPAKA = 64
 _SECTION_VAISESHIKAMSA = 512
 #: `TS_CHART_DASHA_PHALA`, the dasha phala.
 _SECTION_DASHA_PHALA = 1024
+# `TS_CHART_JAIMINI`, Jaimini's significators.
+_SECTION_JAIMINI = 2048
 
 #: `TS_CHART_SHADBALA`, the Shadbala.
 _SECTION_SHADBALA = 128
@@ -2144,6 +2157,64 @@ class GrahaDashaPhala:
 
     unfavourable: bool
     """Whether its placement makes its dasha unfavourable; both can hold."""
+
+
+@dataclass(frozen=True)
+class Karakamsha:
+    """A chart's karakamsha: the Atmakaraka's navamsha sign (BPHS ch. 33 v. 1)."""
+
+    atmakaraka: Graha
+    """The Atmakaraka, under `jaimini.chara_karakas`."""
+
+    sign: Rashi
+    """The karakamsha, the Atmakaraka's navamsha sign."""
+
+    in_rasi: Tuple[int, ...]
+    """Each graha's house from it in the rasi chart, 1 to 12, the Sun to Ketu."""
+
+    in_navamsha: Tuple[int, ...]
+    """Each graha's house from it in the navamsha, 1 to 12, the Sun to Ketu
+    (C130)."""
+
+
+@dataclass(frozen=True)
+class Brahma:
+    """A chart's Brahma graha, and how it was found (BPHS ch. 46 vv. 170 to 173)."""
+
+    rule: BrahmaRule
+    """The rule it was sought under, `jaimini.brahma`."""
+
+    counted_from: Rashi
+    """The stronger of the lagna and the 7th, which the rule counts from."""
+
+    qualified: Tuple[Graha, ...]
+    """The planets that met the rule's marks, in id order."""
+
+    graha: Optional[Graha]
+    """The Brahma graha; `None` where the rule finds none."""
+
+    passed_from: Optional[Graha]
+    """Saturn or the node that passed Brahma-hood to the planet in the 6th
+    from it (C127)."""
+
+    none: Optional[BrahmaOutcome]
+    """Why there is none; `None` when there is one, and never `FOUND`."""
+
+
+@dataclass(frozen=True)
+class JaiminiReading:
+    """A chart's Jaimini significators, read under the settings' `jaimini` group.
+
+    >>> # chart = ctx.chart.found(..., jaimini=True)
+    >>> # brahma = chart.jaimini.brahma
+    >>> # reason = brahma.none if brahma.graha is None else None
+    """
+
+    karakamsha: Karakamsha
+    """The karakamsha, with every graha's house from it in both charts."""
+
+    brahma: Brahma
+    """The Brahma graha, or why there is none."""
 
 
 @dataclass(frozen=True)
@@ -3937,6 +4008,7 @@ def _annual_chart(decoded: Any, row: int, starts: _Starts) -> Optional[AnnualCha
 
 #: The seven the Tajika bit sets range over, Sun to Saturn: graha ids 0 to 6.
 _SEVEN = [Graha(n) for n in range(7)]
+_NINE = [Graha(n) for n in range(9)]
 
 
 def _bala(sub_sub: int) -> Bala:
@@ -4602,6 +4674,12 @@ class Chart:
         return parsed[self.index] if self.index < len(parsed) else None
 
     @property
+    def jaimini(self) -> Optional[JaiminiReading]:
+        """Jaimini's significators, when `jaimini=True` asked for them."""
+        parsed = self.batch._jaiminis
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def vaiseshikamsa(self) -> Optional[VaiseshikamsaReading]:
         """The Vaiseshikamsa, when `vaiseshikamsa=True` asked for it."""
         parsed = self.batch._vaiseshikamsas
@@ -4923,6 +5001,37 @@ class ChartBatch:
             )
             for chart in range(c.length // 9)
         ]
+
+    @cached_property
+    def _jaiminis(self) -> list[JaiminiReading]:
+        """Every chart's Jaimini significators, decoded once; empty when none
+        were asked for."""
+        c = self.decoded.jaimini
+        h = self.decoded.jaimini_houses
+
+        def reading(chart: int) -> JaiminiReading:
+            outcome = BrahmaOutcome(c.brahma_outcome[chart])
+            found = outcome is BrahmaOutcome.FOUND
+            return JaiminiReading(
+                karakamsha=Karakamsha(
+                    atmakaraka=Graha(c.atmakaraka[chart]),
+                    sign=Rashi(c.karakamsha[chart]),
+                    in_rasi=tuple(h.in_rasi[chart * 9 : chart * 9 + 9]),
+                    in_navamsha=tuple(h.in_navamsha[chart * 9 : chart * 9 + 9]),
+                ),
+                brahma=Brahma(
+                    rule=BrahmaRule(c.brahma_rule[chart]),
+                    counted_from=Rashi(c.counted_from[chart]),
+                    qualified=tuple(_members(c.qualified[chart], _NINE)),
+                    graha=Graha(c.brahma[chart]) if found else None,
+                    passed_from=(
+                        Graha(c.passed_from[chart]) if c.passed_from_present[chart] == 1 else None
+                    ),
+                    none=None if found else outcome,
+                ),
+            )
+
+        return [reading(chart) for chart in range(c.length)]
 
     @cached_property
     def _vaiseshikamsas(self) -> list[VaiseshikamsaReading]:

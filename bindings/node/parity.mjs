@@ -340,6 +340,7 @@ const charts = geo.chart.foundMany({
   vimshopaka: true,
   vaiseshikamsa: true,
   dashaPhala: true,
+  jaimini: true,
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -488,6 +489,12 @@ for (const chart of charts) {
       `${g.subhankas.map(number).join(',')} ${g.nature} ${g.phase} ${g.favourable} ${g.unfavourable}`,
     );
   });
+  const { karakamsha: k, brahma: b } = chart.jaimini;
+  put(`chart-${i}-jaimini`, `${k.atmakaraka} ${k.sign} ${k.inRasi.join(',')} ${k.inNavamsha.join(',')}`);
+  put(
+    `chart-${i}-brahma`,
+    `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,
+  );
   const vs = chart.vimshopaka;
   put(`chart-${i}-vimshopaka`, vs.scoring);
   vs.grahas.forEach((g) => {

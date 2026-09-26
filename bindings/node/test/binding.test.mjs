@@ -692,8 +692,9 @@ test('every catalogue enum has a complete id table', () => {
   // 1091 since the sahams crossed: `TsSaham`'s forty-one;
   // 1117 since their strength crossed: `TsSahamStrong`'s twelve clauses,
   // `TsSahamWeak`'s five, `TsHarshaGrade`'s five and `TsTajikaRelation`'s
-  // four; 1121 since `TsEphemeris` named the Surya Siddhanta.
-  assert.equal(entries, 1121, 'every member of every enum is in a table');
+  // four; 1121 since `TsEphemeris` named the Surya Siddhanta; 1127 since
+  // Jaimini's `TsBrahmaRule`, two, and `TsBrahmaOutcome`, four.
+  assert.equal(entries, 1127, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1759,6 +1760,37 @@ test("a year's chart answers the sahams asked for", () => {
  * each varga's share and complementary in total, a nature and a phase each;
  * `null` unless asked, and the Shadbala's rays beside the phalas.
  */
+/**
+ * A chart's Jaimini significators cross whole: the karakamsha with nine
+ * houses in each chart, the Atmakaraka's own navamsha the first from it, and
+ * the Brahma graha found or its absence named — never both, never neither;
+ * `null` unless asked.
+ */
+test('a chart carries its karakamsha and its Brahma graha, or why there is none', () => {
+  const ctx = context();
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  assert.equal(ctx.chart.found({ instant: 2451545, place, utcOffsetSeconds: 20700 }).jaimini, null);
+  const outcomes = new Set();
+  for (let step = 0; step < 40; step += 1) {
+    const chart = ctx.chart.found({ instant: 2451545 + step * 0.37, place, utcOffsetSeconds: 20700, jaimini: true });
+    const { karakamsha: k, brahma: b } = chart.jaimini;
+    assert.match(k.atmakaraka, /^graha\./);
+    assert.match(k.sign, /^rashi\./);
+    for (const houses of [k.inRasi, k.inNavamsha]) {
+      assert.equal(houses.length, 9);
+      houses.forEach((house) => assert.ok(house >= 1 && house <= 12, `${house}`));
+    }
+    const at = ['graha.SUN', 'graha.MOON', 'graha.MARS', 'graha.MERCURY', 'graha.JUPITER', 'graha.VENUS', 'graha.SATURN', 'graha.RAHU', 'graha.KETU'].indexOf(k.atmakaraka);
+    assert.equal(k.inNavamsha[at], 1, 'the Atmakaraka stands in the karakamsha');
+    assert.equal(b.rule, 'VERSES');
+    assert.equal(b.graha === null, b.none !== null, `${b.graha} ${b.none}`);
+    if (b.graha !== null) assert.ok(b.qualified.includes(b.passedFrom ?? b.graha), `${b.graha}`);
+    outcomes.add(b.none ?? 'FOUND');
+  }
+  assert.ok(outcomes.has('FOUND') && outcomes.size > 1, [...outcomes].join());
+  ctx.dispose();
+});
+
 test('a chart carries its dasha phala, and the Shadbala its rays', () => {
   const ctx = context();
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };

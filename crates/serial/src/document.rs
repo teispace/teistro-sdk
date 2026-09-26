@@ -15,6 +15,7 @@ use teistro_aspect::Aspects;
 use teistro_chart::foundation::ChartFoundation;
 use teistro_core::envelope::Provenance;
 use teistro_dasha::DashaReading;
+use teistro_dasha::jaimini::JaiminiReading;
 use teistro_geometry::Drawing;
 use teistro_houses::Houses;
 use teistro_panchanga::almanac::Panchanga;
@@ -77,6 +78,10 @@ pub struct Document {
     /// What each graha's placement says of its dasha (BPHS chs. 28 and 47).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub dasha_phala: Option<DashaPhalaReading>,
+    /// Jaimini's significators: the karakamsha and the Brahma graha, or why
+    /// the rule found none (`03-design/jaimini-significators.md`).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub jaimini: Option<JaiminiReading>,
     /// The charts drawn in the layouts asked for: which chart, placed in
     /// which layout (`03-design/chart-geometry.md`).
     ///
@@ -108,6 +113,7 @@ impl Document {
             vimshopaka: None,
             vaiseshikamsa: None,
             dasha_phala: None,
+            jaimini: None,
             shadbala: None,
             bhava_bala: None,
             drawings: Vec::new(),
@@ -175,6 +181,13 @@ impl Document {
     #[must_use]
     pub fn with_dasha_phala(mut self, dasha_phala: DashaPhalaReading) -> Document {
         self.dasha_phala = Some(dasha_phala);
+        self
+    }
+
+    /// With Jaimini's significators.
+    #[must_use]
+    pub fn with_jaimini(mut self, jaimini: JaiminiReading) -> Document {
+        self.jaimini = Some(jaimini);
         self
     }
 
@@ -253,6 +266,9 @@ impl Document {
         }
         if self.dasha_phala.is_some() {
             found.push("dasha_phala");
+        }
+        if self.jaimini.is_some() {
+            found.push("jaimini");
         }
         if !self.drawings.is_empty() {
             found.push("drawings");

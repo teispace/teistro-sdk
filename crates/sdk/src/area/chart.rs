@@ -34,7 +34,7 @@ use teistro_points::Points;
 use teistro_points::arudha::arudha;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_serial::Document;
-use teistro_state::state;
+use teistro_state::{GrahaState, state};
 use teistro_strength::shadbala::{SAPTAVARGAJA_VARGAS, ShadbalaGraha};
 use teistro_strength::{
     AshtakavargaChart, AshtakavargaReading, AshtakavargaRules, BhavaBalaChart, BhavaBalaReading,
@@ -536,6 +536,9 @@ impl<'a> ChartArea<'a> {
         if request.sections.has(Sections::DASHA_PHALA) {
             document = document.with_dasha_phala(Self::dasha_phala_of(foundation, settings)?);
         }
+        if request.sections.has(Sections::JAIMINI) {
+            document = document.with_jaimini(self.jaimini_of(foundation)?);
+        }
         if request.sections.has(Sections::POINTS) {
             document = document.with_points(Self::points_of(founder, foundation)?);
         }
@@ -742,7 +745,15 @@ impl<'a> ChartArea<'a> {
     /// and the arudha lagna. One assembly, for the dashas and for the
     /// Jaimini significators they start from.
     fn rashi_chart(self, foundation: &ChartFoundation) -> Result<RashiChart, Error> {
-        let states = state(foundation, self.context.settings())?;
+        self.rashi_chart_with(foundation, &state(foundation, self.context.settings())?)
+    }
+
+    /// [`rashi_chart`](Self::rashi_chart) over states already computed.
+    fn rashi_chart_with(
+        self,
+        foundation: &ChartFoundation,
+        states: &[GrahaState],
+    ) -> Result<RashiChart, Error> {
         let grahas = GRAHAS_IN_ORDER;
         let placed = |graha: Graha| {
             states
@@ -797,6 +808,10 @@ impl<'a> ChartArea<'a> {
     /// The Atmakaraka is the one the settings' `jaimini.chara_karakas`
     /// scheme ranks first, seven karakas or eight.
     ///
+    /// A document read with [`ChartRequest::with_jaimini`] answers with its
+    /// own `jaimini` section, the reading under the settings it was cast
+    /// with; any other is computed under this context's.
+    ///
     /// ```
     /// # use teistro::{ChartRequest, Context, Ephemeris, UtcOffset};
     /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
@@ -824,7 +839,19 @@ impl<'a> ChartArea<'a> {
         self,
         chart: &Document,
     ) -> Result<teistro_dasha::jaimini::JaiminiReading, Error> {
-        let foundation = &chart.foundation;
+        match &chart.jaimini {
+            Some(reading) => Ok(reading.clone()),
+            None => self.jaimini_of(&chart.foundation),
+        }
+    }
+
+    /// A founded chart's Jaimini significators, which a reading's `jaimini`
+    /// section and [`jaimini`](Self::jaimini) both answer: the states are
+    /// computed once, for the karakas and for the chart Brahma is read in.
+    fn jaimini_of(
+        self,
+        foundation: &ChartFoundation,
+    ) -> Result<teistro_dasha::jaimini::JaiminiReading, Error> {
         let settings = self.context.settings();
         let states = state(foundation, settings)?;
         let ruled = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
@@ -843,7 +870,7 @@ impl<'a> ChartArea<'a> {
         let signs = GRAHAS_IN_ORDER.map(|graha| placed(graha).sign);
         let navamshas = GRAHAS_IN_ORDER.map(|graha| placed(graha).navamsha);
         let degrees = degrees_in_sign(foundation)?;
-        let rashi = self.rashi_chart(foundation)?;
+        let rashi = self.rashi_chart_with(foundation, &states)?;
         Ok(JaiminiReading {
             karakamsha: karakamsha(atmakaraka, &signs, &navamshas),
             brahma: brahma(

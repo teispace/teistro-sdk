@@ -240,6 +240,57 @@ impl From<teistro_core::settings::Vimshopaka> for TsVimshopakaScoring {
     }
 }
 
+/// Which rule a chart's Brahma graha was sought under: the settings' own
+/// `jaimini.brahma` (`03-design/jaimini-significators.md`).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsBrahmaRule {
+    /// BPHS ch. 46 vv. 170 to 173 as the Sanskrit states them.
+    Verses = 0,
+    /// The translator's note after v. 173.
+    TranslatorsNote = 1,
+}
+
+impl From<teistro_core::settings::BrahmaRule> for TsBrahmaRule {
+    fn from(rule: teistro_core::settings::BrahmaRule) -> TsBrahmaRule {
+        match rule {
+            teistro_core::settings::BrahmaRule::TranslatorsNote => TsBrahmaRule::TranslatorsNote,
+            _ => TsBrahmaRule::Verses,
+        }
+    }
+}
+
+/// Whether a chart's Brahma graha was found, and when not, why (C127,
+/// C128). One code rather than a presence flag beside a reason, so the two
+/// cannot disagree.
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsBrahmaOutcome {
+    /// Found: `brahma` names it.
+    Found = 0,
+    /// Under the verses, no lord of the 6th, 8th or 12th stands in an odd
+    /// sign behind the sign counted from, and they give no fallback.
+    NoLordQualifies = 1,
+    /// Saturn or a node qualified, and no planet stands in the 6th sign from
+    /// it to take its place.
+    NoPlanetInTheSixth = 2,
+    /// Under the translator's note, no planet stands in the 8th and none in
+    /// an odd sign within the six signs behind.
+    NoPlanetQualifies = 3,
+}
+
+impl From<Option<teistro::dasha::jaimini::NoBrahma>> for TsBrahmaOutcome {
+    fn from(none: Option<teistro::dasha::jaimini::NoBrahma>) -> TsBrahmaOutcome {
+        use teistro::dasha::jaimini::NoBrahma;
+        match none {
+            None => TsBrahmaOutcome::Found,
+            Some(NoBrahma::NoLordQualifies) => TsBrahmaOutcome::NoLordQualifies,
+            Some(NoBrahma::NoPlanetInTheSixth) => TsBrahmaOutcome::NoPlanetInTheSixth,
+            Some(NoBrahma::NoPlanetQualifies) => TsBrahmaOutcome::NoPlanetQualifies,
+        }
+    }
+}
+
 /// Where in a dasha a graha's effects are felt (BPHS ch. 47 vv. 3 and 4).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -630,8 +681,10 @@ pub const TS_CHART_BHAVA_BALA: u32 = 256;
 pub const TS_CHART_VAISESHIKAMSA: u32 = 512;
 /// The dasha phala.
 pub const TS_CHART_DASHA_PHALA: u32 = 1024;
+/// Jaimini's significators, the karakamsha and the Brahma graha.
+pub const TS_CHART_JAIMINI: u32 = 2048;
 
-const SECTION_BITS: [SectionBit; 11] = [
+const SECTION_BITS: [SectionBit; 12] = [
     (TS_CHART_PANCHANGA, ChartRequest::with_panchanga),
     (TS_CHART_STATE, ChartRequest::with_state),
     (TS_CHART_ASPECTS, ChartRequest::with_aspects),
@@ -643,6 +696,7 @@ const SECTION_BITS: [SectionBit; 11] = [
     (TS_CHART_BHAVA_BALA, ChartRequest::with_bhava_bala),
     (TS_CHART_VAISESHIKAMSA, ChartRequest::with_vaiseshikamsa),
     (TS_CHART_DASHA_PHALA, ChartRequest::with_dasha_phala),
+    (TS_CHART_JAIMINI, ChartRequest::with_jaimini),
 ];
 
 /// The reading a bit set asks for, added to a request.
@@ -1392,6 +1446,103 @@ impl DashaPhalaColumns {
     }
 }
 
+/// Every chart's Jaimini significators, a row a chart that asked for them,
+/// and each chart's nine houses from the karakamsha, a row a graha.
+struct JaiminiColumns {
+    atmakaraka: Vec<u16>,
+    karakamsha: Vec<u16>,
+    brahma_rule: Vec<u8>,
+    counted_from: Vec<u16>,
+    qualified: Vec<u16>,
+    brahma: Vec<u16>,
+    brahma_outcome: Vec<u8>,
+    passed_from: Vec<u16>,
+    passed_from_present: Vec<u8>,
+    /// The `jaimini_houses` section.
+    graha: Vec<u16>,
+    in_rasi: Vec<u8>,
+    in_navamsha: Vec<u8>,
+}
+
+impl JaiminiColumns {
+    fn of(documents: &[Document]) -> JaiminiColumns {
+        let readings: Vec<_> = documents
+            .iter()
+            .filter_map(|d| d.jaimini.as_ref())
+            .collect();
+        let (charts, rows) = (readings.len(), readings.len() * 9);
+        let mut columns = JaiminiColumns {
+            atmakaraka: Vec::with_capacity(charts),
+            karakamsha: Vec::with_capacity(charts),
+            brahma_rule: Vec::with_capacity(charts),
+            counted_from: Vec::with_capacity(charts),
+            qualified: Vec::with_capacity(charts),
+            brahma: Vec::with_capacity(charts),
+            brahma_outcome: Vec::with_capacity(charts),
+            passed_from: Vec::with_capacity(charts),
+            passed_from_present: Vec::with_capacity(charts),
+            graha: Vec::with_capacity(rows),
+            in_rasi: Vec::with_capacity(rows),
+            in_navamsha: Vec::with_capacity(rows),
+        };
+        for reading in readings {
+            let (karakamsha, brahma) = (&reading.karakamsha, &reading.brahma);
+            debug_assert_eq!(brahma.graha.is_none(), brahma.none.is_some());
+            columns.atmakaraka.push(karakamsha.atmakaraka.id());
+            columns.karakamsha.push(karakamsha.sign.id());
+            columns
+                .brahma_rule
+                .push(TsBrahmaRule::from(brahma.rule) as u8);
+            columns.counted_from.push(brahma.counted_from.id());
+            columns.qualified.push(graha_mask(&brahma.qualified));
+            columns.brahma.push(graha_or_absent(brahma.graha).0);
+            columns
+                .brahma_outcome
+                .push(TsBrahmaOutcome::from(brahma.none) as u8);
+            let (passed_from, present) = graha_or_absent(brahma.passed_from);
+            columns.passed_from.push(passed_from);
+            columns.passed_from_present.push(present);
+            for ((graha, rasi), navamsha) in teistro::catalogue::Graha::ALL
+                .iter()
+                .zip(karakamsha.in_rasi)
+                .zip(karakamsha.in_navamsha)
+            {
+                columns.graha.push(graha.id());
+                columns.in_rasi.push(rasi);
+                columns.in_navamsha.push(navamsha);
+            }
+        }
+        columns
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "jaimini",
+            self.atmakaraka.len(),
+            &[
+                ColumnData::U16(&self.atmakaraka),
+                ColumnData::U16(&self.karakamsha),
+                ColumnData::U8(&self.brahma_rule),
+                ColumnData::U16(&self.counted_from),
+                ColumnData::U16(&self.qualified),
+                ColumnData::U16(&self.brahma),
+                ColumnData::U8(&self.brahma_outcome),
+                ColumnData::U16(&self.passed_from),
+                ColumnData::U8(&self.passed_from_present),
+            ],
+        )?;
+        writer.columns(
+            "jaimini_houses",
+            self.graha.len(),
+            &[
+                ColumnData::U16(&self.graha),
+                ColumnData::U8(&self.in_rasi),
+                ColumnData::U8(&self.in_navamsha),
+            ],
+        )
+    }
+}
+
 /// Every chart's Vaiseshikamsa, a row a graha, empty when it was not asked
 /// for.
 struct VaiseshikamsaColumns {
@@ -2062,12 +2213,17 @@ fn graha_or_absent(graha: Option<teistro::catalogue::Graha>) -> (u16, u8) {
     graha.map_or((0, 0), |graha| (graha.id(), 1))
 }
 
-/// Planets as a bit set: bit `n` is the graha with catalogue id `n`. Only
-/// the seven cross here, ids 0 to 6, which a byte holds.
-fn graha_bits(grahas: &[teistro::catalogue::Graha]) -> u8 {
+/// Grahas as a bit set: bit `n` is the graha with catalogue id `n`, the
+/// nine in sixteen bits.
+fn graha_mask(grahas: &[teistro::catalogue::Graha]) -> u16 {
     grahas.iter().fold(0, |bits, graha| {
-        bits | 1_u8.checked_shl(u32::from(graha.id())).unwrap_or(0)
+        bits | 1_u16.checked_shl(u32::from(graha.id())).unwrap_or(0)
     })
+}
+
+/// Planets as a bit set in a byte: only the seven cross here, ids 0 to 6.
+fn graha_bits(grahas: &[teistro::catalogue::Graha]) -> u8 {
+    u8::try_from(graha_mask(grahas) & 0x7F).unwrap_or(0)
 }
 
 impl MatterColumns {
@@ -2959,6 +3115,7 @@ pub fn encode(
         by.vaiseshikamsa.write(&mut writer)?;
         by.dasha_phala.write(&mut writer)?;
         writer.bytes("content_hashes", hashes.as_bytes())?;
+        by.jaimini.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -3659,6 +3816,7 @@ struct Sections {
     bhava_bala: BhavaBalaColumns,
     vaiseshikamsa: VaiseshikamsaColumns,
     dasha_phala: DashaPhalaColumns,
+    jaimini: JaiminiColumns,
     years: PraveshaColumns,
 }
 
@@ -3682,6 +3840,7 @@ impl Sections {
             bhava_bala: BhavaBalaColumns::of(documents),
             vaiseshikamsa: VaiseshikamsaColumns::of(documents),
             dasha_phala: DashaPhalaColumns::of(documents),
+            jaimini: JaiminiColumns::of(documents),
             years: PraveshaColumns::of(praveshas)?,
         })
     }
@@ -4361,5 +4520,31 @@ mod tests {
         assert_eq!(TsReading::from(Reading::Madhya) as u8, 1);
         assert_eq!(TsDayPart::from(DayPart::Daylight) as u8, 0);
         assert_eq!(TsDayPart::from(DayPart::Night) as u8, 1);
+    }
+
+    /// A knob is `non_exhaustive`, so its crossing needs a wildcard; this is
+    /// what stops a rule added to `jaimini.brahma` crossing as the verses.
+    #[test]
+    fn every_brahma_rule_crosses_as_its_own_code() {
+        use super::TsBrahmaRule;
+        use teistro_core::settings::BrahmaRule;
+        let mut codes: Vec<u8> = BrahmaRule::ALL
+            .iter()
+            .map(|rule| TsBrahmaRule::from(*rule) as u8)
+            .collect();
+        codes.dedup();
+        assert_eq!(codes.len(), BrahmaRule::ALL.len(), "{codes:?}");
+    }
+
+    /// The Brahma graha's two masks read back as the grahas they hold, the
+    /// nodes too, where the planets' byte holds only the seven.
+    #[test]
+    fn the_nine_grahas_mask_into_sixteen_bits() {
+        use super::{graha_bits, graha_mask};
+        use teistro::catalogue::Graha;
+        let nine = &Graha::ALL[..9];
+        assert_eq!(graha_mask(nine), 0x01FF);
+        assert_eq!(graha_mask(&[Graha::Ketu, Graha::Sun]), 0x0101);
+        assert_eq!(graha_bits(nine), 0x7F);
     }
 }

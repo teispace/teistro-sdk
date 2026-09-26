@@ -654,6 +654,9 @@ const int _sectionVaiseshikamsa = 512;
 /// `TS_CHART_DASHA_PHALA`, the dasha phala.
 const int _sectionDashaPhala = 1024;
 
+/// `TS_CHART_JAIMINI`, Jaimini's significators.
+const int _sectionJaimini = 2048;
+
 /// `TS_CHART_SHADBALA`, the Shadbala.
 const int _sectionShadbala = 128;
 
@@ -711,6 +714,7 @@ final class ChartArea extends _Area {
     bool vimshopaka = false,
     bool vaiseshikamsa = false,
     bool dashaPhala = false,
+    bool jaimini = false,
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
@@ -733,6 +737,7 @@ final class ChartArea extends _Area {
     vimshopaka: vimshopaka,
     vaiseshikamsa: vaiseshikamsa,
     dashaPhala: dashaPhala,
+    jaimini: jaimini,
     shadbala: shadbala,
     bhavaBala: bhavaBala,
     state: state,
@@ -775,6 +780,7 @@ final class ChartArea extends _Area {
     bool vimshopaka = false,
     bool vaiseshikamsa = false,
     bool dashaPhala = false,
+    bool jaimini = false,
     bool shadbala = false,
     bool bhavaBala = false,
     bool state = false,
@@ -801,6 +807,7 @@ final class ChartArea extends _Area {
                 (vimshopaka ? _sectionVimshopaka : 0) |
                 (vaiseshikamsa ? _sectionVaiseshikamsa : 0) |
                 (dashaPhala ? _sectionDashaPhala : 0) |
+                (jaimini ? _sectionJaimini : 0) |
                 (shadbala ? _sectionShadbala : 0) |
                 (bhavaBala ? _sectionBhavaBala : 0) |
                 (state ? _sectionState : 0),
@@ -1980,6 +1987,79 @@ final class GrahaDashaPhala {
 
   /// Whether its placement makes its dasha unfavourable; both can hold.
   final bool unfavourable;
+}
+
+/// A chart's karakamsha: the Atmakaraka's navamsha sign (BPHS ch. 33 v. 1).
+final class Karakamsha {
+  const Karakamsha({
+    required this.atmakaraka,
+    required this.sign,
+    required this.inRasi,
+    required this.inNavamsha,
+  });
+
+  /// The Atmakaraka, under `jaimini.chara_karakas`.
+  final Graha atmakaraka;
+
+  /// The karakamsha, the Atmakaraka's navamsha sign.
+  final Rashi sign;
+
+  /// Each graha's house from it in the rasi chart, 1 to 12, the Sun to Ketu.
+  final List<int> inRasi;
+
+  /// Each graha's house from it in the navamsha, 1 to 12, the Sun to Ketu
+  /// (C130).
+  final List<int> inNavamsha;
+}
+
+/// A chart's Brahma graha, and how it was found (BPHS ch. 46 vv. 170 to 173).
+final class Brahma {
+  const Brahma({
+    required this.rule,
+    required this.countedFrom,
+    required this.qualified,
+    required this.graha,
+    required this.passedFrom,
+    required this.none,
+  });
+
+  /// The rule it was sought under, `jaimini.brahma`.
+  final BrahmaRule rule;
+
+  /// The stronger of the lagna and the 7th, which the rule counts from.
+  final Rashi countedFrom;
+
+  /// The planets that met the rule's marks, in id order.
+  final List<Graha> qualified;
+
+  /// The Brahma graha; null where the rule finds none.
+  final Graha? graha;
+
+  /// Saturn or the node that passed Brahma-hood to the planet in the 6th
+  /// from it (C127).
+  final Graha? passedFrom;
+
+  /// Why there is none; null when there is one, and never
+  /// [BrahmaOutcome.found].
+  final BrahmaOutcome? none;
+}
+
+/// A chart's Jaimini significators, read under the settings' `jaimini`
+/// group.
+///
+/// ```dart
+/// final chart = ctx.chart.found(/* … */ jaimini: true);
+/// final brahma = chart.jaimini!.brahma;
+/// final why = brahma.graha == null ? brahma.none : null;
+/// ```
+final class JaiminiReading {
+  const JaiminiReading({required this.karakamsha, required this.brahma});
+
+  /// The karakamsha, with every graha's house from it in both charts.
+  final Karakamsha karakamsha;
+
+  /// The Brahma graha, or why there is none.
+  final Brahma brahma;
 }
 
 /// A chart's dasha phala, read under `dasha.shanta_sign`.
@@ -3560,6 +3640,45 @@ List<DashaPhalaReading> _decodeDashaPhalas(Charts batch) {
   );
 }
 
+/// Each batch's Jaimini significators, decoded once however many charts read
+/// them.
+final Expando<List<JaiminiReading>> _jaiminis = Expando<List<JaiminiReading>>(
+  'jaiminis',
+);
+
+List<JaiminiReading> _jaiminisOf(Charts batch) =>
+    _jaiminis[batch] ??= _decodeJaiminis(batch);
+
+List<JaiminiReading> _decodeJaiminis(Charts batch) {
+  final c = batch.jaimini;
+  final h = batch.jaiminiHouses;
+  List<int> houses(List<int> column, int chart) =>
+      List<int>.unmodifiable(column.sublist(chart * 9, chart * 9 + 9));
+  return List<JaiminiReading>.generate(c.length, (chart) {
+    final outcome = BrahmaOutcome.byId(c.brahmaOutcome[chart]);
+    final found = outcome == BrahmaOutcome.found;
+    return JaiminiReading(
+      karakamsha: Karakamsha(
+        atmakaraka: Graha.byId(c.atmakaraka[chart]),
+        sign: Rashi.byId(c.karakamsha[chart]),
+        inRasi: houses(h.inRasi, chart),
+        inNavamsha: houses(h.inNavamsha, chart),
+      ),
+      brahma: Brahma(
+        rule: BrahmaRule.byId(c.brahmaRule[chart]),
+        countedFrom: Rashi.byId(c.countedFrom[chart]),
+        qualified: List<Graha>.unmodifiable(_nine(c.qualified[chart])),
+        graha: found ? Graha.byId(c.brahma[chart]) : null,
+        passedFrom:
+            c.passedFromPresent[chart] == 1
+                ? Graha.byId(c.passedFrom[chart])
+                : null,
+        none: found ? null : outcome,
+      ),
+    );
+  }, growable: false);
+}
+
 /// Each batch's Vaiseshikamsas, decoded once however many charts read them.
 final Expando<List<VaiseshikamsaReading>> _vaiseshikamsas =
     Expando<List<VaiseshikamsaReading>>('vaiseshikamsas');
@@ -5127,6 +5246,12 @@ final List<Graha> _theSeven = List<Graha>.generate(7, Graha.byId);
 /// The seven a year's bit set names, in graha id order.
 List<Graha> _seven(int bits) => _members(bits, _theSeven, (g) => g.id);
 
+/// The nine a Jaimini bit set ranges over, Sun to Ketu: ids 0 to 8.
+final List<Graha> _theNine = List<Graha>.generate(9, Graha.byId);
+
+/// The nine a Jaimini bit set names, in graha id order.
+List<Graha> _nine(int bits) => _members(bits, _theNine, (g) => g.id);
+
 /// Where the Muntha stands inside the sign it has reached (crux C107).
 ///
 /// Both readings give the same sign at the return and part over the
@@ -6133,6 +6258,12 @@ final class Chart {
   /// The dasha phala, when `dashaPhala: true` asked for it.
   DashaPhalaReading? get dashaPhala {
     final all = _dashaPhalasOf(batch);
+    return index < all.length ? all[index] : null;
+  }
+
+  /// Jaimini's significators, when `jaimini: true` asked for them.
+  JaiminiReading? get jaimini {
+    final all = _jaiminisOf(batch);
     return index < all.length ? all[index] : null;
   }
 

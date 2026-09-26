@@ -1218,6 +1218,56 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  /// A chart's Jaimini significators cross whole: the karakamsha with nine
+  /// houses in each chart, the Atmakaraka's own navamsha the first from it,
+  /// and the Brahma graha found or its absence named -- never both, never
+  /// neither; null unless asked.
+  test('a chart carries its karakamsha and its Brahma graha, or why not', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    expect(
+      ctx.chart
+          .found(instant: 2451545.0, place: place, utcOffsetSeconds: 20700)
+          .jaimini,
+      isNull,
+    );
+    final outcomes = <BrahmaOutcome>{};
+    for (var step = 0; step < 40; step++) {
+      final reading =
+          ctx.chart
+              .found(
+                instant: 2451545.0 + step * 0.37,
+                place: place,
+                utcOffsetSeconds: 20700,
+                jaimini: true,
+              )
+              .jaimini!;
+      final k = reading.karakamsha;
+      final b = reading.brahma;
+      for (final houses in [k.inRasi, k.inNavamsha]) {
+        expect(houses, hasLength(9));
+        for (final house in houses) {
+          expect(house, inInclusiveRange(1, 12));
+        }
+      }
+      expect(k.inNavamsha[k.atmakaraka.id], 1);
+      expect(b.rule, BrahmaRule.verses);
+      expect(b.graha == null, b.none != null);
+      expect(b.none, isNot(BrahmaOutcome.found));
+      if (b.graha != null) {
+        expect(b.qualified, contains(b.passedFrom ?? b.graha));
+      }
+      outcomes.add(b.none ?? BrahmaOutcome.found);
+    }
+    expect(outcomes, contains(BrahmaOutcome.found));
+    expect(outcomes.length, greaterThan(1));
+    ctx.dispose();
+  });
+
   /// Every graha's state carries its Sayanadi: the nine grahas a state and a
   /// sub-state under each of the five ankas, the outer planets none.
   test(

@@ -321,6 +321,49 @@ pub(crate) mod tests {
 
     use super::*;
 
+    /// The boundary carries `qualified` as a bit set, which is lossless only
+    /// because every rule lists it in the catalogue's order and once each:
+    /// held over every lagna, a spread of placements, both rules and every
+    /// reading of the dual lords.
+    #[test]
+    fn qualified_is_strictly_in_catalogue_order_under_every_rule() {
+        use teistro_core::settings::{BrahmaRule, NodeCoLordship};
+        let (base, degrees) = example();
+        let mut seen = 0;
+        for lagna in Rashi::ALL {
+            for shift in 0..12_usize {
+                let mut signs = base.signs;
+                for (k, sign) in signs.iter_mut().enumerate() {
+                    *sign = Rashi::ALL[(*sign as usize + shift * (k + 1)) % 12];
+                }
+                let chart = RashiChart {
+                    lagna,
+                    signs,
+                    ..base
+                };
+                for rule in [BrahmaRule::Verses, BrahmaRule::TranslatorsNote] {
+                    for co in [
+                        NodeCoLordship::None,
+                        NodeCoLordship::StrongerLord,
+                        NodeCoLordship::Both,
+                    ] {
+                        let found = brahma(&chart, &degrees, co, rule);
+                        assert!(
+                            found.qualified.windows(2).all(|pair| pair[0] < pair[1]),
+                            "{:?}",
+                            found.qualified
+                        );
+                        seen += found.qualified.len();
+                    }
+                }
+            }
+        }
+        assert!(
+            seen > 0,
+            "the spread must qualify someone to prove anything"
+        );
+    }
+
     /// BPHS ch. 46's worked example after v. 173.
     pub(crate) fn example() -> (RashiChart, [f64; 9]) {
         (

@@ -80,6 +80,8 @@ import {
   VaiseshikamsaById,
   DashaPhaseById,
   NatureById,
+  BrahmaRuleById,
+  BrahmaOutcomeById,
   VimshopakaScoringById,
   DashaSystemById,
   VargaById,
@@ -884,6 +886,16 @@ export class Chart {
    */
   get dashaPhala() {
     return dashaPhalasOf(this.#batch)[this.#index] ?? null;
+  }
+
+  /**
+   * Jaimini's significators (`jaimini: true`): the karakamsha, with every
+   * graha's house from it in the rasi chart and the navamsha, and the Brahma
+   * graha under the settings' `jaimini` group, or why the rule found none;
+   * `null` unless asked for.
+   */
+  get jaimini() {
+    return jaiminisOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -1934,6 +1946,7 @@ export class ChartArea extends Area {
           (request.shadbala === true ? SECTION_SHADBALA : 0) |
           (request.bhavaBala === true ? SECTION_BHAVA_BALA : 0) |
           (request.dashaPhala === true ? SECTION_DASHA_PHALA : 0) |
+          (request.jaimini === true ? SECTION_JAIMINI : 0) |
           (request.state === true ? SECTION_STATE : 0),
         vargas: catalogueKeys(request.vargas, 'vargas', 'Varga'),
         dashas: dashaIds(request.dashas, this.#dashas),
@@ -2149,6 +2162,42 @@ function vaiseshikamsasOf(batch) {
 
 /** The seven vargas whose Subhanka columns the dasha phala carries, in order. */
 const SUBHANKA_VARGAS = ['D1', 'D2', 'D3', 'D7', 'D9', 'D12', 'D30'];
+
+/** Each batch's Jaimini significators, decoded once however many charts read them. */
+const JAIMINIS = new WeakMap();
+
+/** Every chart's Jaimini significators in a batch; empty when none were asked for. */
+function jaiminisOf(batch) {
+  let decoded = JAIMINIS.get(batch);
+  if (decoded === undefined) {
+    const c = batch.decoded.jaimini;
+    const h = batch.decoded.jaiminiHouses;
+    const graha = (id) => GrahaById.get(id) ?? 'unknown';
+    decoded = Array.from({ length: c.atmakaraka.length }, (_, chart) => {
+      const houses = (column) =>
+        Object.freeze(Array.from({ length: 9 }, (_, g) => column[chart * 9 + g]));
+      const outcome = BrahmaOutcomeById.get(c.brahmaOutcome[chart]) ?? 'unknown';
+      return Object.freeze({
+        karakamsha: Object.freeze({
+          atmakaraka: graha(c.atmakaraka[chart]),
+          sign: RashiById.get(c.karakamsha[chart]) ?? 'unknown',
+          inRasi: houses(h.inRasi),
+          inNavamsha: houses(h.inNavamsha),
+        }),
+        brahma: Object.freeze({
+          rule: BrahmaRuleById.get(c.brahmaRule[chart]) ?? 'unknown',
+          countedFrom: RashiById.get(c.countedFrom[chart]) ?? 'unknown',
+          qualified: Object.freeze(membersOf(c.qualified[chart], GrahaById)),
+          graha: outcome === 'FOUND' ? graha(c.brahma[chart]) : null,
+          passedFrom: c.passedFromPresent[chart] !== 0 ? graha(c.passedFrom[chart]) : null,
+          none: outcome === 'FOUND' ? null : outcome,
+        }),
+      });
+    });
+    JAIMINIS.set(batch, decoded);
+  }
+  return decoded;
+}
 
 /** Each batch's dasha phalas, decoded once however many charts read them. */
 const DASHA_PHALAS = new WeakMap();
@@ -2981,6 +3030,8 @@ const SECTION_VIMSHOPAKA = 64;
 const SECTION_VAISESHIKAMSA = 512;
 /** `TS_CHART_DASHA_PHALA`, the dasha phala. */
 const SECTION_DASHA_PHALA = 1024;
+/** `TS_CHART_JAIMINI`, Jaimini's significators. */
+const SECTION_JAIMINI = 2048;
 
 /** `TS_CHART_SHADBALA`, the Shadbala. */
 const SECTION_SHADBALA = 128;
