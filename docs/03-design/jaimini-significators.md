@@ -176,7 +176,11 @@ about a third chart-query field for **periods**, and this is not one.
    `dasha.rashi_start`. **The printed table is reproduced but two named
    cells**: Leo, where the book's 8 contradicts its own Chara table's 7
    (7½ is computed), and Scorpio, where both of the book's tables count
-   to Mars against C51's modality step, which reopens C51. Its Capricorn
+   to Mars against C51's modality step. That reopened C51 until the
+   Sanskrit of vv. 161 to 163, read on the printed page, settled it: it
+   ranks the signs by occupancy, then by modality, and only then by the
+   greater count, so the verses take Ketu and the example contradicts
+   them. Its Capricorn
    4½ counts two signs back to Saturn, as computed, where its Chara
    table's 5 counts nowhere. PyJHora gives every mahadasha the same
    antardashas, from the dasha's second sign, on 720 of 720; no text
