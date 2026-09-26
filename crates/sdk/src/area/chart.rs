@@ -947,6 +947,52 @@ impl<'a> ChartArea<'a> {
         )
     }
 
+    /// Gochar: the grahas in transit at each instant asked for, each read
+    /// from the natal chart's reference sign — its Moon's by Phaladeepika
+    /// ch. 26 v. 1 — with its good houses, its vedha and who obstructs it,
+    /// under the settings' `gochar` group (`03-design/gochar.md`).
+    ///
+    /// The transit charts are founded at the natal place in one batch, so a
+    /// year of daily snapshots is one founder's work; a transit's sign and
+    /// degrees do not depend on a clock, so none is asked for.
+    ///
+    /// ```no_run
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// # use teistro::{ChartRequest, Context, Ephemeris, GocharRequest, UtcOffset};
+    /// # use teistro::gochar::Verdict;
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let natal = sdk
+    ///     .chart()
+    ///     .reading(JulianDay::literal(2_447_995.489_583_333_5), &ChartRequest::at(place, UtcOffset::literal(5, 45, 0)))?
+    ///     .value;
+    /// let today = sdk.chart().gochar(&natal, &GocharRequest::at(JulianDay::<Utc>::literal(2_461_000.5)))?;
+    /// let good = today.value[0].grahas.iter().filter(|g| g.verdict == Verdict::Good).count();
+    /// # let _ = good;
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Whatever founding a transit chart refuses, such as an instant the
+    /// ephemeris does not cover.
+    pub fn gochar(
+        self,
+        natal: &Document,
+        request: &crate::gochar_request::GocharRequest,
+    ) -> Result<Envelope<Vec<teistro_gochar::GocharReading>>, Error> {
+        let reference = crate::gochar_request::reference(&natal.foundation, request.from())?;
+        let rules = teistro_gochar::GocharRules::of(self.context.settings());
+        let asked = ChartRequest::at(natal.foundation.place, UtcOffset::UTC);
+        let read = self.read(request.instants(), &asked)?;
+        let readings = read
+            .value
+            .iter()
+            .map(|transit| crate::gochar_request::reading(transit, reference, rules))
+            .collect::<Result<Vec<_>, Error>>()?;
+        Ok(Envelope::sealing(readings, read.provenance))
+    }
+
     /// The annual charts' instants: the Sun's returns to where it stood at
     /// birth, `1` opening the first year of life
     /// (`03-design/annual-chart.md`).

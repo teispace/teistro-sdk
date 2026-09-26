@@ -76,6 +76,8 @@ every shipped profile. The v1 inventory:
 | jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |
 | jaimini | `brahma` | enum | `VERSES`, `TRANSLATORS_NOTE`: the rule the Brahma graha is found by (BPHS ch. 46 vv. 170 to 173, or the translator's note; C128) |
+| gochar | `node_vedha` | enum | `LIKE_THE_SUN`, `NONE`: whether the nodes take the Sun's vedha pairs in transit (Phaladeepika ch. 26 v. 2 makes them "like the Sun"; C136) |
+| gochar | `node_obstruction` | enum | `OBSTRUCT`, `NONE`: whether the nodes obstruct another graha's transit from its vedha house (vv. 3 to 8 say "planets"; C137) |
 | jaimini | `graha_arudha_exception` | enum | `NONE`, `AS_BHAVAS`: whether a graha's arudha moves as a bhava's does when the count lands on the graha's sign or the 7th from it (BPHS ch. 29 vv. 6 and 7 state no move; C132) |
 | aspect | `node_aspects` | enum | `NONE`, `FIVE_SEVEN_NINE`, `THREE_SEVEN_ELEVEN` |
 | aspect | `drishti_table` | key | the aspect model's tables |

@@ -1164,6 +1164,25 @@ the astronomical numbers do not move. Nothing else computes yet.
   answers exactly. Kemadruma is the fourth divergence (crux C94): read whole,
   the verse answers 1 of the 93 charts where the engine answers 57.
 
+- **Gochar: the transits read from the natal Moon** (`03-design/gochar.md`).
+  A new crate, `teistro-gochar`, reads each of the nine grahas in transit
+  from the natal Moon's sign as Phaladeepika ch. 26 teaches it, read on the
+  printed page: whether its house is good (v. 2), its vedha house and
+  **which grahas obstruct it** after the verses' exemptions — the Sun and
+  Saturn, the Moon and Mercury, each mutual (vv. 3 to 8) — the verdict, and
+  whether it stands in the decanate where its transit bears fruit (v. 25).
+  `sdk.chart().gochar(&natal, &GocharRequest::over(instants))` founds the
+  transit charts at the natal place in one batch; `counted_from` takes the
+  lagna instead of the Moon. A new `gochar` settings group carries the two
+  places the text is silent: the nodes' vedha (`node_vedha`, C136) and
+  whether they obstruct (`node_obstruction`, C137).
+  `SettingsPatch::is_empty` had left the `panchanga` group out of its
+  check, so a patch setting only a panchanga knob called itself empty; it
+  now compares with the empty patch.
+
+  **Numbers:** new. Every settings hash moved: the settings gained the
+  `gochar` group.
+
 - **A chart over the Surya Siddhanta is the text's, not a hybrid.** A
   chart founded over the text's provider took its planets' positions from
   the text and everything else from the SDK. A new pass, `cargo xtask

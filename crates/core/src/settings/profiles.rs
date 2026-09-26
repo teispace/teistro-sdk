@@ -14,13 +14,13 @@ use super::knobs::{
     DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning,
     GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth,
     KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents,
-    Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
-    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja,
-    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier,
-    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction,
+    NodeVedha, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
+    RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
+    SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
-    Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Houses, Jaimini, Output,
+    Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Output,
     Panchanga, Precision, Provider, Resolved, SCHEMA, Settings, SettingsPatch, Siddhanta, State,
     Strength, Time, Vargas,
 };
@@ -186,6 +186,12 @@ pub fn root() -> Settings {
             // BPHS ch. 29 vv. 6 and 7 state the count and no move
             // (`03-design/graha-arudhas.md`).
             graha_arudha_exception: GrahaArudhaException::None,
+        },
+        // Phaladeepika ch. 26 read whole: the nodes "like the Sun", and
+        // "planets" obstructing (`03-design/gochar.md`, C136 and C137).
+        gochar: Gochar {
+            node_vedha: NodeVedha::LikeTheSun,
+            node_obstruction: NodeObstruction::Obstruct,
         },
         aspect: Aspect {
             node_aspects: NodeAspects::None,

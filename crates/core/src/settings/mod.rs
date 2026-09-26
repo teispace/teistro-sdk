@@ -37,10 +37,10 @@ pub use knobs::{
     DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord, Ekadhipatya, GhatiReckoning,
     GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords, KalachakraAfterNinth,
     KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta, LunarMonth, MoonEvents,
-    Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, OverridePolicy,
-    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja,
-    SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier,
-    UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction,
+    NodeVedha, OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
+    RequiredRupas, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow, ShantaSign, Shodhana,
+    SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -455,6 +455,17 @@ group!(
 );
 
 group!(
+    /// Transits read from the natal Moon (Phaladeepika ch. 26;
+    /// `03-design/gochar.md`).
+    Gochar, GocharPatch {
+        /// The nodes' vedha (crux C136).
+        node_vedha: NodeVedha,
+        /// Whether the nodes obstruct another graha's transit (crux C137).
+        node_obstruction: NodeObstruction,
+    }
+);
+
+group!(
     /// Aspects.
     Aspect, AspectPatch {
         /// The nodes' aspects.
@@ -612,6 +623,8 @@ pub struct Settings {
     pub dasha: Dasha,
     /// Jaimini.
     pub jaimini: Jaimini,
+    /// Transits.
+    pub gochar: Gochar,
     /// Aspects.
     pub aspect: Aspect,
     /// State.
@@ -641,7 +654,7 @@ impl Settings {
     /// fails rather than going unwatched.
     #[must_use]
     pub fn knob_paths() -> Vec<(&'static str, &'static str)> {
-        let groups: [(&str, &[&str]); 14] = [
+        let groups: [(&str, &[&str]); 15] = [
             ("frame", Frame::KNOBS),
             ("houses", Houses::KNOBS),
             ("day", Day::KNOBS),
@@ -649,6 +662,7 @@ impl Settings {
             ("time", Time::KNOBS),
             ("dasha", Dasha::KNOBS),
             ("jaimini", Jaimini::KNOBS),
+            ("gochar", Gochar::KNOBS),
             ("aspect", Aspect::KNOBS),
             ("state", State::KNOBS),
             ("strength", Strength::KNOBS),
@@ -683,6 +697,8 @@ pub struct SettingsPatch {
     pub dasha: DashaPatch,
     /// Jaimini.
     pub jaimini: JaiminiPatch,
+    /// Transits.
+    pub gochar: GocharPatch,
     /// Aspects.
     pub aspect: AspectPatch,
     /// State.
@@ -701,21 +717,14 @@ pub struct SettingsPatch {
 
 impl SettingsPatch {
     /// Whether the patch sets nothing.
+    ///
+    /// Compared with the empty patch rather than group by group: the list
+    /// it replaced had left out `panchanga`, so a patch setting only a
+    /// panchanga knob called itself empty, and a comparison cannot miss a
+    /// group added later.
     #[must_use]
     pub fn is_empty(&self) -> bool {
-        self.frame.is_empty()
-            && self.houses.is_empty()
-            && self.day.is_empty()
-            && self.time.is_empty()
-            && self.dasha.is_empty()
-            && self.jaimini.is_empty()
-            && self.aspect.is_empty()
-            && self.state.is_empty()
-            && self.strength.is_empty()
-            && self.vargas.is_empty()
-            && self.calendars.is_empty()
-            && self.provider.is_empty()
-            && self.output.is_empty()
+        *self == SettingsPatch::default()
     }
 }
 
@@ -730,6 +739,7 @@ impl Settings {
         self.time.apply(&patch.time);
         self.dasha.apply(&patch.dasha);
         self.jaimini.apply(&patch.jaimini);
+        self.gochar.apply(&patch.gochar);
         self.aspect.apply(&patch.aspect);
         self.state.apply(&patch.state);
         self.strength.apply(&patch.strength);
@@ -1265,6 +1275,20 @@ mod tests {
         assert_eq!(again, patched.settings);
         assert!(SettingsPatch::default().is_empty());
         assert!(!patch.is_empty());
+    }
+
+    /// A patch that sets one knob of any one group is not empty. The
+    /// group-by-group check this replaced had left out `panchanga`.
+    #[test]
+    fn a_patch_setting_any_one_group_is_not_empty() {
+        let root = serde_json::to_value(root()).expect("a settings document");
+        for (group, knob) in Settings::knob_paths() {
+            let value = root[group][knob].clone();
+            let patch: SettingsPatch =
+                serde_json::from_value(serde_json::json!({ group: { knob: value } }))
+                    .unwrap_or_else(|e| panic!("{group}.{knob}: {e}"));
+            assert!(!patch.is_empty(), "{group}.{knob}");
+        }
     }
 
     #[test]
