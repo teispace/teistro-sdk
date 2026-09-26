@@ -5,10 +5,14 @@
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
-    reason = "tests fail by panicking"
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "tests fail by panicking and index what they found"
 )]
 
-use teistro::catalogue::Graha;
+use teistro::catalogue::{DashaSystem, Graha, Rashi};
 use teistro::dasha::jaimini::NoBrahma;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::settings::BrahmaRule;
@@ -107,4 +111,81 @@ fn every_reading_of_the_dual_lords_answers() {
             );
         }
     }
+}
+
+/// The Sthira dasa starts from the Brahma graha's sign and runs forward,
+/// seven, eight or nine years a sign by modality; over a chart the verses
+/// find no Brahma for, asking for it is refused on the knob that supplies
+/// one (BPHS ch. 46 vv. 168 to 173).
+#[test]
+fn the_sthira_dasa_starts_from_brahma_or_refuses_by_name() {
+    let sdk = context("{}");
+    let place = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let request = ChartRequest::at(place, UtcOffset::literal(5, 45, 0));
+    let (mut found, mut refused) = (false, false);
+    for step in 0..200 {
+        let at = JulianDay::<Utc>::literal(BIRTH + f64::from(step) * 0.37);
+        let plain = sdk.chart().reading(at, &request).unwrap().value;
+        let brahma = sdk.chart().jaimini(&plain).unwrap().brahma;
+        let with_sthira = sdk
+            .chart()
+            .reading(at, &request.clone().with_dashas([DashaSystem::Sthira]));
+        if let Some(graha) = brahma.graha {
+            found = true;
+            let document = with_sthira.unwrap().value;
+            let sthira = document.dashas.first().unwrap();
+            let mahadashas: Vec<_> = sthira
+                .periods
+                .iter()
+                .filter(|row| !row.path.contains('/'))
+                .collect();
+            let signs: Vec<Rashi> = mahadashas.iter().filter_map(|row| row.sign).collect();
+            let start = plain.foundation.graha(graha).unwrap().longitude_deg;
+            let expected_start = Rashi::ALL[(start / 30.0) as usize % 12];
+            assert_eq!(signs.first().copied(), Some(expected_start));
+            for pair in signs.windows(2) {
+                assert_eq!(
+                    (pair[1] as usize + 12 - pair[0] as usize) % 12,
+                    1,
+                    "{signs:?}"
+                );
+            }
+            // Seven, eight and nine by modality: the spans' ratios.
+            let days = |row: &&teistro::PeriodRow| row.interval.to.get() - row.interval.from.get();
+            let years = |sign: Rashi| f64::from([7, 8, 9][sign as usize % 3]);
+            let unit = days(&mahadashas[0]) / years(signs[0]);
+            for (row, sign) in mahadashas.iter().zip(&signs) {
+                assert!((days(row) / years(*sign) - unit).abs() < 1e-6, "{sign:?}");
+            }
+        } else {
+            refused = true;
+            let why = with_sthira.unwrap_err();
+            assert!(why.to_string().contains("Brahma"), "{why}");
+            assert!(why.to_string().contains("TRANSLATORS_NOTE"), "{why}");
+            // A request for everything still answers such a chart: it asks
+            // for every system but those a chart may refuse.
+            let everything = sdk
+                .chart()
+                .reading(at, &request.clone().with_everything())
+                .unwrap()
+                .value;
+            let asked: Vec<DashaSystem> = everything
+                .dashas
+                .iter()
+                .filter_map(|dasha| dasha.system.catalogued())
+                .collect();
+            let every: Vec<DashaSystem> = teistro::dasha::systems()
+                .filter(|system| *system != DashaSystem::Sthira)
+                .collect();
+            assert_eq!(asked, every);
+        }
+        if found && refused {
+            return;
+        }
+    }
+    panic!("200 charts gave found={found} refused={refused}; the test needs both");
 }

@@ -103,6 +103,8 @@ fn a_sign_based_dasha_allocates_nothing_to_make_or_to_read() {
             Rashi::Cancer,
         ],
         dignities: [Dignity::Neutral; 9],
+        // Every row, Sthira's included, needs a start to read.
+        brahma: Some(Rashi::Gemini),
     };
     let birth = JulianDay::literal(2_447_995.489_583_333_5);
     let deepest = Depth::try_new(6).unwrap();

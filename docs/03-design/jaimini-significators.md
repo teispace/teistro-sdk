@@ -1,7 +1,8 @@
 # Jaimini significators: the karakamsha, the Brahma graha and the Sthira dasa
 
-Status: `draft`, 2026-09-26. Written from the texts and a measurement
-before any code; the building is expected to correct it.
+Status: `draft`, 2026-09-26; §5 steps 1 to 3 **built** the same day.
+Written from the texts and a measurement before any code; the building is
+expected to correct it.
 
 Derives from `dasha-coverage-measured.md`, which lists `STHIRA` under
 "the text is not settled" with a stated row — "from the lagna,
@@ -95,7 +96,7 @@ not shipped: a black box cannot be cited.
 | C126 | whether Scorpio's and Aquarius's second lords are lords here | the Jaimini co-lords count; or the one lord | the co-lords count | the chapter's own lordship (vv. 158 to 166, `stronger_lord`) |
 | C127 | what Saturn or the node qualifying means | Brahma passes to the planet in the 6th from it (the Sanskrit); or it is Brahma (the translation) | the Sanskrit | the verse; the translation contradicts its own text |
 | C128 | what a chart with no qualifying lord has | no Brahma (the verses); or the translator's note's rule | no Brahma, **refused by name**, the note a knob | the verses are silent and a silent fallback is a guess; the note is cited and selectable |
-| C129 | the order of the Sthira dasa's signs | consecutive from Brahma's sign; or forward from odd and back from even (the translation) | consecutive | the Sanskrit states no order; PyJHora runs forward on every chart |
+| C129 | the order of the Sthira dasa's signs | consecutive from Brahma's sign; or forward from odd and back from even (the translation) | consecutive | the Sanskrit states no order; PyJHora runs forward on every chart, and its antardashas forward from their own sign on 480 of 480 |
 | C130 | the chart the karakamsha's houses are counted in | the rasi chart, from the sign the Atmakaraka's navamsha names (the recording engine); or the navamsha chart itself | both, reported | the schools divide on it and a consumer reading one wants the other named |
 
 v. 172's first half, the karaka's 8th lord in the 8th, is **not built**:
@@ -133,11 +134,31 @@ about a third chart-query field for **periods**, and this is not one.
 
 ## 5. The order of work
 
-1. **The karakamsha**, with both readings of its houses, in the chart
-   and every binding.
-2. **The Brahma graha** under both rules, measured over the corpus's
-   births (how many have none under the verses) in a generated page.
-3. **The Sthira dasa**, its row corrected on the coverage page.
+1. **The karakamsha** (`dasha::jaimini::karakamsha`): **done**, both
+   readings of its houses, through `sdk.chart().jaimini`. At the
+   boundary it waits on step 6.
+2. **The Brahma graha** under both rules: **done**, measured over the
+   corpus's births in `jaimini-measured.md` (the verses find none on 32
+   of 55).
+3. **The Sthira dasa**: **done**. `Start::Brahma` and `Order::Forward`
+   in the sign-based kernel; `start_sign` is fallible, so a Sthira dasa
+   over a chart with no Brahma is refused on `jaimini.brahma` with the
+   note's rule named, never started from the lagna. The coverage page's
+   stated row, and its registrable entry, are gone; this build computes
+   23 of the catalogue's 40. The corpus does not record Sthira, and the
+   dasha tests list it as the one shipped row unrecorded, both ways.
+   Its antardashas follow the row's order: forward from their own sign,
+   equal, as the mahadashas are, where every other sign-based row runs
+   them by the sign's parity. The verses are as silent on the sub-periods
+   as on the periods, and PyJHora runs them forward from their own sign
+   on 480 of 480 (240 from an even sign), so C129's reading holds at
+   both levels. **Building it found a request for everything refused**
+   on nearly half of charts: `with_everything` asked for every computed
+   system, and a Sthira over a chart with no Brahma refuses the whole
+   reading. It now asks for `dasha::systems_every_chart_gives()`, the
+   systems whose start every chart gives (`Start::every_chart_gives`),
+   and the Sthira dasa is asked for by name, where its refusal names the
+   setting that supplies a Brahma.
 4. **Yogardha** (v. 174): half of the Chara and Sthira spans, from the
    stronger of the lagna and the 7th, forward from an odd sign and back
    from an even one — which v. 174 **does** state. It is a composition
@@ -146,6 +167,9 @@ about a third chart-query field for **periods**, and this is not one.
 5. **Sudasa**, which the coverage page says waits on the karakamsha:
    confirm from the source which point it starts from before building,
    because the Sree lagna, which is built, is the other candidate.
+6. **The reading at the boundary**: the karakamsha and Brahma as a
+   document section every binding reads, after the pattern of the
+   Vaiseshikamsa.
 
 ## 6. Not decided here
 

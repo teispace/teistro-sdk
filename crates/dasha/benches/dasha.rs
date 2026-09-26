@@ -60,6 +60,7 @@ fn chart() -> RashiChart {
             Rashi::Cancer,
         ],
         dignities: [Dignity::Neutral; 9],
+        brahma: None,
     }
 }
 

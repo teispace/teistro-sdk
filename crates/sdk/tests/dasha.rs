@@ -220,6 +220,11 @@ fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
     }
 }
 
+/// The sign-based rows the corpus does not record: the Sthira dasa (C129),
+/// which a chart with no Brahma graha refuses. Named so a recording of it,
+/// or another unrecorded row, fails.
+const UNRECORDED: [DashaSystem; 1] = [DashaSystem::Sthira];
+
 /// Every sign-based system on the corpus's first chart, founded here with the
 /// built-in ephemeris: the arudha and navamsa lagnas and the dignities the
 /// façade computes must be the ones the corpus recorded for the mahadashas'
@@ -231,6 +236,12 @@ fn a_reading_carries_every_sign_based_system_and_each_agrees_with_the_corpus() {
     let systems: Vec<DashaSystem> = teistro::dasha::RASHI_ROWS
         .iter()
         .filter_map(|row| row.system.catalogued())
+        .filter(|system| {
+            let key = system.key().to_ascii_lowercase();
+            let is_recorded = recorded["systems"].get(&key).is_some();
+            assert_eq!(!is_recorded, UNRECORDED.contains(system), "{key}");
+            is_recorded
+        })
         .collect();
     let (sdk, document) = reading("{}", &systems);
     for dasha in &document.dashas {

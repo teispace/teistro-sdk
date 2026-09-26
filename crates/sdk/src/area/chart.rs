@@ -62,6 +62,23 @@ use crate::rules_bridge::RuleInputs;
 use crate::varsha::{AnnualChart, AnnualPlace, VARSHA, Varsha, VarshaRequest, VarshaYear};
 use teistro_rules::longevity::{AyurdayaRules, ThreePairsRules};
 
+/// Each graha's degrees within its sign, the Sun to Ketu: what the
+/// Brahma graha is weighed by (BPHS ch. 46 v. 173).
+///
+/// # Errors
+///
+/// A founded chart that does not place one of the nine, named.
+fn degrees_in_sign(foundation: &ChartFoundation) -> Result<[f64; 9], Error> {
+    let mut out = [0.0; 9];
+    for (slot, graha) in out.iter_mut().zip(GRAHAS_IN_ORDER) {
+        *slot = foundation
+            .graha(graha)
+            .map(|at| at.longitude_deg.rem_euclid(30.0))
+            .ok_or_else(|| Error::internal(format!("a founded chart places {}", graha.key())))?;
+    }
+    Ok(out)
+}
+
 /// The nine grahas a chart places, in the catalogue's order: the Sun to
 /// Ketu, without the outer planets the catalogue also names.
 const GRAHAS_IN_ORDER: [Graha; 9] = [
@@ -750,13 +767,25 @@ impl<'a> ChartArea<'a> {
                 .and_then(|at| signs.get(at).copied())
                 .unwrap_or(lagna)
         };
-        Ok(RashiChart {
+        let mut chart = RashiChart {
             lagna,
             arudha_lagna: arudha(lagna, 1, sign_of).sign,
             navamsa_lagna: navamsa.lagna.sign,
             signs,
             dignities,
-        })
+            brahma: None,
+        };
+        // Brahma is read from the chart it then starts a dasha in, so the
+        // chart is assembled first and the sign filled in after.
+        let settings = self.context.settings();
+        chart.brahma = brahma(
+            &chart,
+            &degrees_in_sign(foundation)?,
+            settings.jaimini.node_co_lordship,
+            settings.jaimini.brahma,
+        )
+        .sign(&chart);
+        Ok(chart)
     }
 
     /// A founded chart's Jaimini significators: its **karakamsha**, the
@@ -813,7 +842,7 @@ impl<'a> ChartArea<'a> {
             .ok_or_else(|| Error::internal("a chart ranks an Atmakaraka"))?;
         let signs = GRAHAS_IN_ORDER.map(|graha| placed(graha).sign);
         let navamshas = GRAHAS_IN_ORDER.map(|graha| placed(graha).navamsha);
-        let degrees = GRAHAS_IN_ORDER.map(|graha| placed(graha).longitude.rem_euclid(30.0));
+        let degrees = degrees_in_sign(foundation)?;
         let rashi = self.rashi_chart(foundation)?;
         Ok(JaiminiReading {
             karakamsha: karakamsha(atmakaraka, &signs, &navamshas),

@@ -624,6 +624,7 @@ fn dashas() -> Section {
             Rashi::Cancer,
         ],
         dignities: [Dignity::Neutral; 9],
+        brahma: None,
     };
     for row in RASHI_ROWS {
         let made = RashiDasha::new(
