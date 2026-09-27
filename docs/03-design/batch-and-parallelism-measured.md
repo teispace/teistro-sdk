@@ -104,24 +104,26 @@ answers are identical cell for cell.
 
 | days | calls | cells | calls, cached | cells, cached | answered from memory |
 |---:|---:|---:|---:|---:|---:|
-| 1 | 241 | 848 | 226 | 739 | 12.9% |
-| 2 | 485 | 1678 | 364 | 1163 | 30.7% |
-| 10 | 2441 | 8419 | 1508 | 4708 | 44.1% |
-| 50 | 12 078 | 41 787 | 7100 | 22 095 | 47.1% |
+| 1 | 241 | 848 | 146 | 516 | 17.4% |
+| 2 | 485 | 1678 | 201 | 725 | 41.5% |
+| 10 | 2441 | 8419 | 679 | 2509 | 59.7% |
+| 50 | 12 078 | 41 787 | 2941 | 11 117 | 63.9% |
 
-The share answered from memory **rises with the batch** — 12.9% for a
-single day, 47.1% across 50 — which is the same finding as §4 read
+The share answered from memory **rises with the batch** — 17.4% for a
+single day, 63.9% across 50 — which is the same finding as §4 read
 from the other side, and the reason the memo is worth more than a cache
-of one call's own repeats. A range of 50 days asks the ephemeris for 22
-095 cells instead of 41 787, in 7100 calls instead of 12 078.
+of one call's own repeats. A range of 50 days asks the ephemeris for 11
+117 cells instead of 41 787, in 2941 calls instead of 12 078.
 
 Of the 22 139 cells the 50-day range asks for again, the memo answers 19
-692. The other 2447 are **refusals asked again**: the completion asks a
-provider for the frame it wants before completing that frame from the
-native one, the provider measured here produces its canonical frame
-alone, and a refusal is not an answer, so the memo keeps none (10 981
-cells were missed in refused requests). This pass refuses a page on
-which the refusals cannot account for every repeat the memo left.
+692 with a cell. The other 2447 are **refusals it remembers**: the
+completion asks a provider for the frame it wants before completing that
+frame from the native one, the provider measured here produces its
+canonical frame alone, and a refusal as unsupported is a property of the
+request's shape, so the memo keeps it by everything but the instants and
+refuses again without asking (10 978 cells refused from memory). This
+pass refuses a page on which the remembered refusals cannot account for
+every repeat the memo left.
 
 ## 6. What is reachable at all
 
@@ -158,7 +160,7 @@ might wrap.
 | a batch of almanac is one call whatever its size | falsified | 12 078 calls for 50, 242 per item |
 | the calls a batch makes are grids rather than cells | falsified | a chart's calls are 1.10 cells wide on average and an almanac day's 3.46; the widest either makes is 8 and 67 |
 | a batch asks for each cell once | falsified | 64.7% of a batch of 50 charts and 53.0% of 50 almanac days are cells already fetched |
-| a memo answers a repeated cell without touching the engine | **holds** | 19 692 of the 22 139 cells a range of 50 days asks for again are answered from memory, and the other 2447 are refusals asked again; 47.1% of all its cells: 22 095 asked of the engine instead of 41 787 |
+| a memo answers a repeated cell without touching the engine | **holds** | 19 692 of the 22 139 cells a range of 50 days asks for again are answered from memory, and the other 2447 are refusals it remembers; 63.9% of all its cells: 11 117 asked of the engine instead of 41 787 |
 | a consumer can reach what their engine offers beyond the port | **holds** | the port names 8 and an engine's own manifest is read through it; the provider measured here declares 2 beyond them |
 
 four of the seven claims are falsified, and they are falsified in an

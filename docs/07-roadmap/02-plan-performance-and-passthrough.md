@@ -317,8 +317,21 @@ answered from memory, and the other 2 447 are **refusals asked again**.
 The completion asks a provider for the frame it wants before completing
 it from the native frame, and asks again every time; the test provider
 refuses every frame but its canonical one, and a memo keeps no refusal.
-**Next (A1f):** the completion remembers a frame its provider has
-refused, which the port's contract makes a property of the frame.
+
+**A1f. The memo remembers a refused shape — built 2026-09-27.** A
+`Completion` is built per almanac day and per chart, so a memory there
+would forget between the items where the repeats are; the memo is the
+batch-long object, already gated on the provider's declared determinism
+and on by default in every context (`provider.cache_cells`). The port
+defines `Unsupported` as a frame or option the provider cannot produce,
+so `CachingProvider` keeps that refusal by everything of the request but
+its instants (frame, scale, bodies, speeds, observer) and gives it back
+without asking; any other error is a property of the instants or the
+machine and is asked again. Over a 50-day range behind the memo the
+engine is now asked **2 941 calls for 11 117 cells, where it was asked
+7 100 for 22 095**; `CacheStats::remembered` counts the cells refused
+from memory, and the batching page refuses itself if they cannot account
+for every repeat the memo did not answer with a cell.
 
 ### A2. A memo across a batch, gated on the provider's own declaration
 
