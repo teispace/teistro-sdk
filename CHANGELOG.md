@@ -1164,6 +1164,23 @@ the astronomical numbers do not move. Nothing else computes yet.
   answers exactly. Kemadruma is the fourth divergence (crux C94): read whole,
   the verse answers 1 of the 93 charts where the engine answers 57.
 
+- **The memo remembers a request its provider refused as unsupported**
+  (`02-plan-performance-and-passthrough.md` A1f). The completion asks a
+  provider for the frame it wants before completing that frame from the
+  native one, so a provider that produces its native frame alone refused
+  every such request, once per request. `CachingProvider` now keeps a
+  `ProviderError::Unsupported` by the request's shape (frame, time scale,
+  bodies, speeds, observer; not its instants) and returns the provider's
+  own refusal without asking; any other error is asked again, and `clear`
+  forgets refusals too. `CacheStats::remembered` counts the cells refused
+  from memory. Behind the memo a range of 50 almanac days on the test
+  provider asks the engine 2 941 times for 11 117 cells, where it asked
+  7 100 times for 22 095.
+
+  **Numbers:** none. A refusal from memory is the refusal the provider
+  gave, and the completion answers the frame from the native one exactly
+  as it did after the provider's own refusal.
+
 - **A crossing is refined with the rates its samples carry**
   (`astro-events-and-crossings.md` §4). `solve::refine_with_rates` narrows
   a bracket whose ends carry the quantity's rate as well as its value: the

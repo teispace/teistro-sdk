@@ -107,8 +107,9 @@ struct Memo {
     hit_share: f64,
     /// Cells answered from memory.
     hits: u64,
-    /// Cells missed in requests the provider refused, which no memo keeps.
-    failed: u64,
+    /// Cells refused from memory: a shape the provider refused as
+    /// unsupported, refused again without asking.
+    remembered: u64,
 }
 
 impl Memo {
@@ -117,10 +118,9 @@ impl Memo {
         self.cells.saturating_sub(self.distinct)
     }
 
-    /// The repeats the memo left to the provider. Each is a refusal
-    /// asked again, which a memo does not keep, or the memo is wrong:
-    /// `measurements` refuses a page where the refusals cannot account
-    /// for them.
+    /// The repeats the memo did not answer with a cell. Each is a
+    /// refusal it remembers, or the memo is wrong: `measurements` refuses
+    /// a page where the remembered refusals cannot account for them.
     fn unanswered(&self) -> u64 {
         self.repeats().saturating_sub(self.hits)
     }
@@ -179,7 +179,7 @@ fn measurements(root: &Path) -> Result<(Vec<Measured>, Vec<Memo>, Value), String
                 memo.cached_cells = asked;
                 memo.hit_share = row["hit_share"].as_f64().unwrap_or(0.0);
                 memo.hits = row["hits"].as_u64().unwrap_or(0);
-                memo.failed = row["failed"].as_u64().unwrap_or(0);
+                memo.remembered = row["remembered"].as_u64().unwrap_or(0);
             }
         } else {
             memos.push(Memo {
@@ -191,17 +191,20 @@ fn measurements(root: &Path) -> Result<(Vec<Measured>, Vec<Memo>, Value), String
                 cached_cells: 0,
                 hit_share: 0.0,
                 hits: 0,
-                failed: 0,
+                remembered: 0,
             });
         }
     }
-    if let Some(memo) = memos.iter().find(|memo| memo.unanswered() > memo.failed) {
+    if let Some(memo) = memos
+        .iter()
+        .find(|memo| memo.unanswered() > memo.remembered)
+    {
         return Err(format!(
-            "the memo left {} of a {}-day range's repeated cells to the provider and only {} \
-             were refusals, which is a memo that misses what it holds",
+            "the memo left {} of a {}-day range's repeated cells to the provider and \
+             remembered only {} refused ones, which is a memo that misses what it holds",
             memo.unanswered(),
             memo.size,
-            memo.failed
+            memo.remembered
         ));
     }
     Ok((rows, memos, value["reach"].clone()))
@@ -297,7 +300,7 @@ fn page(root: &Path) -> Result<String, String> {
             ),
             format!(
                 "{} of the {} cells a range of {} days asks for again are answered from \
-                 memory, and the other {} are refusals asked again; {} of all its cells: \
+                 memory, and the other {} are refusals it remembers; {} of all its cells: \
                  {} asked of the engine instead of {}",
                 count(usize::try_from(largest.hits).unwrap_or_default()),
                 count(usize::try_from(largest.repeats()).unwrap_or_default()),
@@ -536,19 +539,20 @@ fn text(
         let _ = writeln!(
             out,
             "Of the {} cells the {}-day range asks for again, the memo\n\
-             answers {}. The other {} are **refusals asked again**: the\n\
-             completion asks a provider for the frame it wants before\n\
-             completing that frame from the native one, the provider\n\
-             measured here produces its canonical frame alone, and a\n\
-             refusal is not an answer, so the memo keeps none ({} cells\n\
-             were missed in refused requests). This pass refuses a page on\n\
-             which the refusals cannot account for every repeat the memo\n\
-             left.\n",
+             answers {} with a cell. The other {} are **refusals it\n\
+             remembers**: the completion asks a provider for the frame it\n\
+             wants before completing that frame from the native one, the\n\
+             provider measured here produces its canonical frame alone,\n\
+             and a refusal as unsupported is a property of the request's\n\
+             shape, so the memo keeps it by everything but the instants\n\
+             and refuses again without asking ({} cells refused from\n\
+             memory). This pass refuses a page on which the remembered\n\
+             refusals cannot account for every repeat the memo left.\n",
             count(usize::try_from(last.repeats()).unwrap_or_default()),
             count(usize::try_from(last.size).unwrap_or_default()),
             count(usize::try_from(last.hits).unwrap_or_default()),
             count(usize::try_from(last.unanswered()).unwrap_or_default()),
-            count(usize::try_from(last.failed).unwrap_or_default())
+            count(usize::try_from(last.remembered).unwrap_or_default())
         );
     }
 

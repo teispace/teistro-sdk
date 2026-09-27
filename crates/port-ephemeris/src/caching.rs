@@ -2,10 +2,10 @@
 //! the ephemeris for each cell once.
 //!
 //! Measured rather than assumed (`03-design/batch-and-parallelism-measured.md`,
-//! gated by `cargo xtask check-batching`): a range of fifty almanac days
-//! asks for 53 935 cells of which 21 446 are distinct, so three cells in
-//! five are already known when they are asked for. The share **rises
-//! with the batch**, which can only come from sharing between its items:
+//! gated by `cargo xtask check-batching`, which holds the numbers): a range
+//! of almanac days asks for a large share of its cells more than once, and
+//! the share **rises with the batch**, which can only come from sharing
+//! between its items:
 //! consecutive days scan overlapping windows for the same crossings, and
 //! since the scan's samples are aligned to one epoch
 //! (`astro::events::SCAN_ANCHOR_JD`) they are the *same instants* rather
@@ -20,6 +20,19 @@
 //! a provider that does not declare determinism is **not cached**, and
 //! [`CachingProvider::caching`] says which happened rather than leaving a
 //! caller to assume.
+//!
+//! # What it remembers besides answers
+//!
+//! A refusal of the shape of a request: the provider's
+//! [`ProviderError::Unsupported`], which the port defines as a frame (or an
+//! option) the provider cannot produce. The SDK's completion asks a
+//! provider for the frame it wants before completing that frame from the
+//! native one, so a provider that produces its native frame alone is asked,
+//! and refuses, once for every request in any other frame. The memo keeps
+//! the refusal by everything but the instants — the frame, the time scale,
+//! the bodies, the speeds, the observer — and gives it back without asking
+//! again. No other error is kept: an instant out of range or a missing
+//! file is a property of the instants or of the machine, not of the shape.
 //!
 //! # What it does not change
 //!
@@ -119,10 +132,14 @@ pub struct CacheStats {
     pub misses: u64,
     /// Cells the cache could not admit because it was full.
     pub refused: u64,
-    /// Cells missed in requests the provider refused (a frame it cannot
-    /// produce, asked first under `prefer-native`): nothing is kept, since
-    /// a refusal is not an answer, so each asking reaches the provider.
+    /// Cells missed in requests the provider refused. Nothing of them is
+    /// kept as an answer; a refusal as unsupported is kept as a refusal
+    /// of the request's shape (see `remembered`).
     pub failed: u64,
+    /// Cells of requests refused from memory, without asking: a shape the
+    /// provider refused as unsupported before (a frame it cannot produce,
+    /// asked first under `prefer-native`).
+    pub remembered: u64,
     /// Cells held.
     pub stored: u64,
 }
@@ -155,12 +172,15 @@ impl CacheStats {
 pub struct CachingProvider<P> {
     inner: P,
     cells: Mutex<BTreeMap<CellKey, Stored>>,
+    /// The shapes the provider refused as unsupported, with what it said.
+    shapes: Mutex<BTreeMap<ShapeKey, String>>,
     capacity: usize,
     caching: bool,
     hits: AtomicU64,
     misses: AtomicU64,
     refused: AtomicU64,
     failed: AtomicU64,
+    remembered: AtomicU64,
 }
 
 impl<P: EphemerisProvider> CachingProvider<P> {
@@ -183,12 +203,14 @@ impl<P: EphemerisProvider> CachingProvider<P> {
         CachingProvider {
             inner,
             cells: Mutex::new(BTreeMap::new()),
+            shapes: Mutex::new(BTreeMap::new()),
             capacity,
             caching,
             hits: AtomicU64::new(0),
             misses: AtomicU64::new(0),
             refused: AtomicU64::new(0),
             failed: AtomicU64::new(0),
+            remembered: AtomicU64::new(0),
         }
     }
 
@@ -212,6 +234,7 @@ impl<P: EphemerisProvider> CachingProvider<P> {
             misses: self.misses.load(Ordering::Relaxed),
             refused: self.refused.load(Ordering::Relaxed),
             failed: self.failed.load(Ordering::Relaxed),
+            remembered: self.remembered.load(Ordering::Relaxed),
             stored: self
                 .cells
                 .lock()
@@ -224,11 +247,47 @@ impl<P: EphemerisProvider> CachingProvider<P> {
         if let Ok(mut cells) = self.cells.lock() {
             cells.clear();
         }
+        if let Ok(mut shapes) = self.shapes.lock() {
+            shapes.clear();
+        }
         self.hits.store(0, Ordering::Relaxed);
         self.misses.store(0, Ordering::Relaxed);
         self.refused.store(0, Ordering::Relaxed);
         self.failed.store(0, Ordering::Relaxed);
+        self.remembered.store(0, Ordering::Relaxed);
     }
+}
+
+/// Everything of a request but its instants: what a refusal as
+/// unsupported is a property of.
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
+struct ShapeKey {
+    scale: u32,
+    frame: u32,
+    speeds: bool,
+    observer: Option<[u64; 3]>,
+    bodies: Vec<u16>,
+}
+
+impl ShapeKey {
+    fn of(request: &PositionRequest<'_>) -> ShapeKey {
+        ShapeKey {
+            scale: request.scale.id(),
+            frame: request.frame.to_bits(),
+            speeds: request.speeds,
+            observer: request.observer.map(place_bits),
+            bodies: request.bodies.iter().map(|body| body.id()).collect(),
+        }
+    }
+}
+
+/// A place to the bit, for a key.
+fn place_bits(place: teistro_core::quantity::Place) -> [u64; 3] {
+    [
+        place.latitude.get().to_bits(),
+        place.longitude.get().to_bits(),
+        place.altitude.get().to_bits(),
+    ]
 }
 
 impl CellKey {
@@ -240,18 +299,29 @@ impl CellKey {
             body: body.id(),
             frame: request.frame.to_bits(),
             speeds: request.speeds,
-            observer: request.observer.map(|place| {
-                [
-                    place.latitude.get().to_bits(),
-                    place.longitude.get().to_bits(),
-                    place.altitude.get().to_bits(),
-                ]
-            }),
+            observer: request.observer.map(place_bits),
         }
     }
 }
 
 impl<P: EphemerisProvider> CachingProvider<P> {
+    /// What the provider said when it refused this request's shape as
+    /// unsupported, if it has.
+    fn refused_before(&self, request: &PositionRequest<'_>) -> Option<String> {
+        let shapes = self.shapes.lock().ok()?;
+        shapes.get(&ShapeKey::of(request)).cloned()
+    }
+
+    /// Keeps a refusal as unsupported against the request's shape, within
+    /// the same bound as the cells.
+    fn remember_refusal(&self, request: &PositionRequest<'_>, what: &str) {
+        if let Ok(mut shapes) = self.shapes.lock() {
+            if shapes.len() < self.capacity {
+                shapes.insert(ShapeKey::of(request), what.to_owned());
+            }
+        }
+    }
+
     /// The cached answer, or `None` when any cell of the request is
     /// missing, along with what was found.
     fn gather(&self, request: &PositionRequest<'_>) -> Vec<Option<Stored>> {
@@ -280,6 +350,13 @@ impl<P: EphemerisProvider> EphemerisProvider for CachingProvider<P> {
         if !self.caching || request.jds.is_empty() || request.bodies.is_empty() {
             return self.inner.positions(request);
         }
+        if let Some(what) = self.refused_before(request) {
+            self.remembered.fetch_add(
+                u64::try_from(request.cell_count()).unwrap_or(0),
+                Ordering::Relaxed,
+            );
+            return Err(ProviderError::Unsupported { what });
+        }
         let found = self.gather(request);
         let hits = found.iter().filter(|slot| slot.is_some()).count();
         let misses = found.len() - hits;
@@ -303,9 +380,12 @@ impl<P: EphemerisProvider> EphemerisProvider for CachingProvider<P> {
             bodies: &wanted_bodies,
             ..*request
         };
-        let answered = self.inner.positions(&sub).inspect_err(|_| {
+        let answered = self.inner.positions(&sub).inspect_err(|error| {
             self.failed
                 .fetch_add(u64::try_from(misses).unwrap_or(0), Ordering::Relaxed);
+            if let ProviderError::Unsupported { what } = error {
+                self.remember_refusal(&sub, what);
+            }
         })?;
 
         let mut where_jd: BTreeMap<u64, usize> = BTreeMap::new();
@@ -521,30 +601,88 @@ mod tests {
         assert!((stats.hit_share() - 0.5).abs() < 1e-12);
     }
 
+    /// A deterministic provider whose data is missing at every instant.
+    #[derive(Debug)]
+    struct Missing;
+
+    impl EphemerisProvider for Missing {
+        fn capabilities(&self) -> Capabilities {
+            TestProvider::new().capabilities()
+        }
+        fn positions(&self, _: &PositionRequest<'_>) -> Result<PositionColumns, ProviderError> {
+            Err(ProviderError::DataMissing {
+                detail: "no file".to_owned(),
+            })
+        }
+    }
+
+    fn sidereal() -> Frame {
+        Frame::CANONICAL.with_zodiac(crate::frame::Zodiac::sidereal(
+            teistro_core::catalogue::Ayanamsha::Lahiri,
+        ))
+    }
+
     #[test]
-    fn a_refused_request_is_kept_nowhere_and_counted_as_failed() {
+    fn a_shape_refused_as_unsupported_is_refused_again_from_memory() {
         // The test provider produces its canonical frame alone, so a
-        // sidereal request is refused, and every asking reaches it again.
+        // sidereal request is refused, and the refusal is the shape's:
+        // other instants of the same shape are refused without asking.
         let inner = CountingProvider::new(TestProvider::new()).watching_repeats();
         let cached = CachingProvider::new(inner);
-        let jds = grid(&[2_451_545.0, 2_451_546.0]);
-        let sidereal = Frame::CANONICAL.with_zodiac(crate::frame::Zodiac::sidereal(
-            teistro_core::catalogue::Ayanamsha::Lahiri,
+        let (first, later) = (grid(&[2_451_545.0, 2_451_546.0]), grid(&[2_451_600.0]));
+        let asked = |jds: &[f64]| {
+            cached.positions(&PositionRequest::new(
+                jds,
+                TimeScale::Ut1,
+                &BODIES,
+                sidereal(),
+            ))
+        };
+        let refusal = asked(&first).unwrap_err();
+        assert!(matches!(refusal, ProviderError::Unsupported { .. }));
+        assert_eq!(
+            asked(&first).unwrap_err(),
+            refusal,
+            "the provider's own words"
+        );
+        assert_eq!(asked(&later).unwrap_err(), refusal);
+        let stats = cached.stats();
+        assert_eq!((stats.misses, stats.failed, stats.remembered), (4, 4, 6));
+        assert_eq!(stats.stored, 0, "a refusal is not an answer");
+        assert_eq!(cached.inner().calls().positions, 1);
+        // Another shape is its own question: the same frame with one body
+        // is asked, and the canonical frame is answered.
+        let one = cached.positions(&PositionRequest::new(
+            &first,
+            TimeScale::Ut1,
+            &[Body::Sun],
+            sidereal(),
         ));
-        let request = PositionRequest::new(&jds, TimeScale::Ut1, &BODIES, sidereal);
+        assert!(matches!(one, Err(ProviderError::Unsupported { .. })));
+        assert_eq!(cached.inner().calls().positions, 2);
+        let canonical = PositionRequest::new(&first, TimeScale::Ut1, &BODIES, Frame::CANONICAL);
+        assert!(cached.positions(&canonical).is_ok());
+        // Forgetting forgets the refusals too.
+        cached.clear();
+        assert!(asked(&first).is_err());
+        assert_eq!(cached.inner().calls().positions, 4);
+    }
+
+    #[test]
+    fn an_error_other_than_unsupported_is_asked_again() {
+        // Data missing is a property of the machine, not of the shape.
+        let cached = CachingProvider::new(CountingProvider::new(Missing));
+        let jds = grid(&[2_451_545.0]);
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &BODIES, Frame::CANONICAL);
         for _ in 0..2 {
             assert!(matches!(
                 cached.positions(&request),
-                Err(ProviderError::Unsupported { .. })
+                Err(ProviderError::DataMissing { .. })
             ));
         }
         let stats = cached.stats();
-        assert_eq!((stats.misses, stats.failed, stats.stored), (8, 8, 0));
+        assert_eq!((stats.failed, stats.remembered), (4, 0));
         assert_eq!(cached.inner().calls().positions, 2);
-        // The counter calls it four cells asked twice: the key is the
-        // memo's, and the four the memo did not answer are the failed.
-        let calls = cached.inner().calls();
-        assert_eq!((calls.cells, calls.distinct_cells), (8, 4));
     }
 
     #[test]
