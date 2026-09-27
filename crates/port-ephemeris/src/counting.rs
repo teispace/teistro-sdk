@@ -27,6 +27,7 @@ use teistro_core::quantity::{JulianDay, Ut1};
 
 use crate::angles::{Angles, AnglesRequest};
 use crate::body::TimeScale;
+use crate::caching::CellKey;
 use crate::capabilities::{Capabilities, Obliquity};
 use crate::columns::PositionColumns;
 use crate::crossing::{CrossingRequest, Event};
@@ -63,9 +64,11 @@ pub struct ProviderCalls {
     pub crossings: u64,
     /// Calls to the angles override.
     pub angles: u64,
-    /// Distinct cells asked for — one instant, one body, one frame —
-    /// counted only when [`CountingProvider::watching_repeats`] built the
-    /// wrapper. `cells` less this is what a cache would have answered.
+    /// Distinct cells asked for — one instant, one body, in one frame,
+    /// time scale, observer and with or without speeds, the key
+    /// [`crate::caching::CachingProvider`] answers by — counted only when
+    /// [`CountingProvider::watching_repeats`] built the wrapper. `cells`
+    /// less this is what a cache would have answered.
     pub distinct_cells: u64,
 }
 
@@ -146,10 +149,10 @@ pub struct CountingProvider<P> {
     horizon: AtomicU64,
     crossings: AtomicU64,
     angles: AtomicU64,
-    /// The cells seen, when repeats are watched. A set behind a lock,
-    /// because this is a measurement and not a hot path; `new` leaves it
-    /// empty and never touches it.
-    seen: Option<Mutex<BTreeSet<(u64, u16, u32)>>>,
+    /// The cells seen, when repeats are watched, by the key the memo
+    /// answers by. A set behind a lock, because this is a measurement and
+    /// not a hot path; `new` leaves it empty and never touches it.
+    seen: Option<Mutex<BTreeSet<CellKey>>>,
 }
 
 impl<P> CountingProvider<P> {
@@ -246,10 +249,9 @@ impl<P: EphemerisProvider> EphemerisProvider for CountingProvider<P> {
         self.widest.fetch_max(cells, Ordering::Relaxed);
         if let Some(seen) = self.seen.as_ref() {
             if let Ok(mut seen) = seen.lock() {
-                let frame = request.frame.to_bits();
                 for jd in request.jds {
                     for body in request.bodies {
-                        seen.insert((jd.to_bits(), body.id(), frame));
+                        seen.insert(CellKey::of(request, *jd, *body));
                     }
                 }
             }

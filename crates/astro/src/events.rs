@@ -38,7 +38,7 @@ use teistro_port_ephemeris::{
 };
 
 use crate::completion::{Completed, Completion, CompletionError, Implementation};
-use crate::solve::{Caps, SolveError, first_zero, refine_known};
+use crate::solve::{Caps, SolveError, first_zero, refine_known, refine_with_rates};
 
 /// The tolerance a crossing is found to, days: a hundredth of a second,
 /// a hundredth of the target the kernel is held to against the engines.
@@ -348,10 +348,9 @@ pub fn value_of<S: Longitudes + ?Sized>(
     source: &S,
     ut1: JulianDay<Ut1>,
 ) -> Result<f64, Error> {
-    evaluate(quantity, source, ut1)
+    Ok(evaluate(quantity, source, ut1)?.0)
 }
 
-/// The quantity at an instant, as the search reads it.
 /// The index of the last anchored sample at or before an instant.
 ///
 /// `floor` rather than `round`, so the window's first bracket always
@@ -378,7 +377,7 @@ fn evaluate_many<S: Longitudes + ?Sized>(
     quantity: Quantity,
     source: &S,
     ut1: &[JulianDay<Ut1>],
-    out: &mut Vec<f64>,
+    out: &mut Vec<(f64, f64)>,
     singles: &mut Vec<(f64, f64)>,
     pairs: &mut Vec<[(f64, f64); 2]>,
 ) -> Result<(), Error> {
@@ -387,11 +386,11 @@ fn evaluate_many<S: Longitudes + ?Sized>(
     match quantity {
         Quantity::Longitude(body) => {
             source.longitudes_and_speeds(body, ut1, singles)?;
-            out.extend(singles.iter().map(|(longitude, _)| *longitude));
+            out.extend_from_slice(singles);
         }
         Quantity::Speed(body) => {
             source.longitudes_and_speeds(body, ut1, singles)?;
-            out.extend(singles.iter().map(|(_, speed)| *speed));
+            out.extend(singles.iter().map(|(_, speed)| (*speed, NO_RATE)));
         }
         Quantity::Composite {
             a,
@@ -400,11 +399,7 @@ fn evaluate_many<S: Longitudes + ?Sized>(
             second,
         } => {
             source.longitudes_and_speeds_pair([first, second], ut1, pairs)?;
-            out.extend(
-                pairs
-                    .iter()
-                    .map(|[(x, _), (y, _)]| normalise_deg(a * x + b * y)),
-            );
+            out.extend(pairs.iter().map(|&[x, y]| composite(a, x, b, y)));
         }
     }
     if out.len() != ut1.len() {
@@ -420,22 +415,33 @@ fn evaluate_many<S: Longitudes + ?Sized>(
     Ok(())
 }
 
+/// The rate a quantity reads with when its source gives none: a speed's
+/// own rate is an acceleration, which no source answers.
+const NO_RATE: f64 = f64::NAN;
+
+/// A composite angle and its rate from its two bodies' readings.
+fn composite(a: f64, (x, dx): (f64, f64), b: f64, (y, dy): (f64, f64)) -> (f64, f64) {
+    (normalise_deg(a * x + b * y), a * dx + b * dy)
+}
+
+/// The quantity at an instant, as the search reads it, with its rate in
+/// degrees a day ([`NO_RATE`] for a speed).
 fn evaluate<S: Longitudes + ?Sized>(
     quantity: Quantity,
     source: &S,
     ut1: JulianDay<Ut1>,
-) -> Result<f64, Error> {
+) -> Result<(f64, f64), Error> {
     Ok(match quantity {
-        Quantity::Longitude(body) => source.longitude_and_speed(body, ut1)?.0,
-        Quantity::Speed(body) => source.longitude_and_speed(body, ut1)?.1,
+        Quantity::Longitude(body) => source.longitude_and_speed(body, ut1)?,
+        Quantity::Speed(body) => (source.longitude_and_speed(body, ut1)?.1, NO_RATE),
         Quantity::Composite {
             a,
             first,
             b,
             second,
         } => {
-            let [(x, _), (y, _)] = source.longitude_and_speed_pair([first, second], ut1)?;
-            normalise_deg(a * x + b * y)
+            let [x, y] = source.longitude_and_speed_pair([first, second], ut1)?;
+            composite(a, x, b, y)
         }
     })
 }
@@ -884,12 +890,12 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
         // the walk asked for, and the values it reads are the values the
         // walk read.
         let mut instants: Vec<JulianDay<Ut1>> = Vec::with_capacity(self.chunk);
-        let mut values: Vec<f64> = Vec::with_capacity(self.chunk);
+        let mut values: Vec<(f64, f64)> = Vec::with_capacity(self.chunk);
         let (mut singles, mut pairs) = (Vec::new(), Vec::new());
 
         // The quantity unwrapped along the samples, so a lattice line is a
-        // level on a continuous curve.
-        let mut previous: Option<(f64, f64, f64)> = None;
+        // level on a continuous curve, with its rate.
+        let mut previous: Option<(f64, f64, f64, f64)> = None;
         // The samples are the anchored lattice's, from the last one at or
         // before the window to the first one at or after it, so that every
         // bracket is a whole step and two windows that both hold a
@@ -929,9 +935,9 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                 &mut singles,
                 &mut pairs,
             )?;
-            for (at, raw_hi) in instants.iter().zip(values.iter().copied()) {
-                let Some((t_lo, raw_lo, unwrapped_lo)) = previous else {
-                    previous = Some((at.get(), raw_hi, raw_hi));
+            for (at, (raw_hi, rate_hi)) in instants.iter().zip(values.iter().copied()) {
+                let Some((t_lo, raw_lo, unwrapped_lo, rate_lo)) = previous else {
+                    previous = Some((at.get(), raw_hi, raw_hi, rate_hi));
                     continue;
                 };
                 let t_hi = at.get();
@@ -945,13 +951,13 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                     for (lattice, found) in self.lattices.iter().zip(events.iter_mut()) {
                         self.cross(
                             lattice,
-                            (t_lo, raw_lo, unwrapped_lo),
-                            (t_hi, unwrapped_hi),
+                            (t_lo, raw_lo, unwrapped_lo, rate_lo),
+                            (t_hi, unwrapped_hi, rate_hi),
                             found,
                         )?;
                     }
                 }
-                previous = Some((t_hi, raw_hi, unwrapped_hi));
+                previous = Some((t_hi, raw_hi, unwrapped_hi, rate_hi));
             }
             if done {
                 break;
@@ -971,13 +977,13 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
 
     /// Every line of one lattice the curve passed between two samples,
     /// refined and pushed onto `found`: `lo` is the earlier sample's
-    /// instant, raw value and unwrapped value, `hi` the later's instant and
-    /// unwrapped value.
+    /// instant, raw value, unwrapped value and rate, `hi` the later's
+    /// instant, unwrapped value and rate.
     fn cross(
         &self,
         lattice: &Lattice,
-        (t_lo, raw_lo, unwrapped_lo): (f64, f64, f64),
-        (t_hi, unwrapped_hi): (f64, f64),
+        (t_lo, raw_lo, unwrapped_lo, rate_lo): (f64, f64, f64, f64),
+        (t_hi, unwrapped_hi, rate_hi): (f64, f64, f64),
         found: &mut Vec<Event>,
     ) -> Result<(), Error> {
         let wraps = self.quantity.wraps();
@@ -987,28 +993,36 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
             let line = line_deg(lattice, k);
             // The signed distance to the line along the unwrapped curve,
             // negative before it, so the bracket has the shape the solver
-            // expects. The curve is unwrapped exactly as the samples were,
-            // so the bracket's ends carry the values the lattice test saw
-            // and a line met at a sample still brackets.
-            let gap = |t: f64| -> Result<f64, Error> {
-                let value = evaluate(self.quantity, self.source, JulianDay::literal(t))?;
+            // expects, and its rate signed the same way. The curve is
+            // unwrapped exactly as the samples were, so the bracket's ends
+            // carry the values the lattice test saw and a line met at a
+            // sample still brackets.
+            let gap = |t: f64| -> Result<(f64, f64), Error> {
+                let (value, rate) = evaluate(self.quantity, self.source, JulianDay::literal(t))?;
                 let advance = if wraps {
                     difference_deg(value, raw_lo)
                 } else {
                     value - raw_lo
                 };
-                Ok(signed(unwrapped_lo + advance - line))
+                Ok((signed(unwrapped_lo + advance - line), signed(rate)))
             };
-            // The ends are the two samples, whose distances the scan
-            // already holds: the refinement is the same step for step
-            // without asking for them again.
-            let refined = refine_known(
-                gap,
-                (t_lo, signed(unwrapped_lo - line)),
-                (t_hi, signed(unwrapped_hi - line)),
-                self.tolerance_days,
-                self.caps,
-            )
+            // The ends are the two samples, whose distances and rates the
+            // scan already holds, so neither is asked for again. A speed
+            // comes with no rate of its own, so its line is narrowed
+            // without one.
+            let lo = (t_lo, signed(unwrapped_lo - line), signed(rate_lo));
+            let hi = (t_hi, signed(unwrapped_hi - line), signed(rate_hi));
+            let refined = if matches!(self.quantity, Quantity::Speed(_)) {
+                refine_known(
+                    |t| gap(t).map(|(value, _)| value),
+                    (lo.0, lo.1),
+                    (hi.0, hi.1),
+                    self.tolerance_days,
+                    self.caps,
+                )
+            } else {
+                refine_with_rates(gap, lo, hi, self.tolerance_days, self.caps)
+            }
             .map_err(solve_error)?;
             found.push(Event {
                 instant: JulianDay::literal(refined.instant),
@@ -1253,7 +1267,7 @@ mod tests {
             .unwrap();
         assert!((29..=31).contains(&tithis.len()), "{}", tithis.len());
         for event in &tithis {
-            let elongation = evaluate(Quantity::ELONGATION, &longitudes, event.instant).unwrap();
+            let elongation = value_of(Quantity::ELONGATION, &longitudes, event.instant).unwrap();
             assert!(difference_deg(elongation, event.boundary_deg).abs() < 1e-6);
         }
         // The first one within a window is the first of the list.

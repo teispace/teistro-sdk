@@ -84,8 +84,12 @@ pub const DEFAULT_CAPACITY: usize = teistro_core::settings::DEFAULT_CACHE_CELLS 
 /// everything a cell computed without them does: a provider is free to
 /// take a different path when speeds are not wanted, and a memo that
 /// assumed otherwise would be wrong on a provider that did.
+///
+/// [`crate::counting::CountingProvider`] counts distinct cells by the same
+/// key, so a cell it calls asked for twice is exactly one a memo could
+/// have answered.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
-struct CellKey {
+pub(crate) struct CellKey {
     jd: u64,
     scale: u32,
     body: u16,
@@ -115,6 +119,10 @@ pub struct CacheStats {
     pub misses: u64,
     /// Cells the cache could not admit because it was full.
     pub refused: u64,
+    /// Cells missed in requests the provider refused (a frame it cannot
+    /// produce, asked first under `prefer-native`): nothing is kept, since
+    /// a refusal is not an answer, so each asking reaches the provider.
+    pub failed: u64,
     /// Cells held.
     pub stored: u64,
 }
@@ -152,6 +160,7 @@ pub struct CachingProvider<P> {
     hits: AtomicU64,
     misses: AtomicU64,
     refused: AtomicU64,
+    failed: AtomicU64,
 }
 
 impl<P: EphemerisProvider> CachingProvider<P> {
@@ -179,6 +188,7 @@ impl<P: EphemerisProvider> CachingProvider<P> {
             hits: AtomicU64::new(0),
             misses: AtomicU64::new(0),
             refused: AtomicU64::new(0),
+            failed: AtomicU64::new(0),
         }
     }
 
@@ -201,6 +211,7 @@ impl<P: EphemerisProvider> CachingProvider<P> {
             hits: self.hits.load(Ordering::Relaxed),
             misses: self.misses.load(Ordering::Relaxed),
             refused: self.refused.load(Ordering::Relaxed),
+            failed: self.failed.load(Ordering::Relaxed),
             stored: self
                 .cells
                 .lock()
@@ -216,10 +227,13 @@ impl<P: EphemerisProvider> CachingProvider<P> {
         self.hits.store(0, Ordering::Relaxed);
         self.misses.store(0, Ordering::Relaxed);
         self.refused.store(0, Ordering::Relaxed);
+        self.failed.store(0, Ordering::Relaxed);
     }
+}
 
+impl CellKey {
     /// The key of one cell of a request.
-    fn key(request: &PositionRequest<'_>, jd: f64, body: Body) -> CellKey {
+    pub(crate) fn of(request: &PositionRequest<'_>, jd: f64, body: Body) -> CellKey {
         CellKey {
             jd: jd.to_bits(),
             scale: request.scale.id(),
@@ -247,7 +261,7 @@ impl<P: EphemerisProvider> CachingProvider<P> {
         };
         for jd in request.jds {
             for body in request.bodies {
-                found.push(cells.get(&Self::key(request, *jd, *body)).copied());
+                found.push(cells.get(&CellKey::of(request, *jd, *body)).copied());
             }
         }
         found
@@ -289,7 +303,10 @@ impl<P: EphemerisProvider> EphemerisProvider for CachingProvider<P> {
             bodies: &wanted_bodies,
             ..*request
         };
-        let answered = self.inner.positions(&sub)?;
+        let answered = self.inner.positions(&sub).inspect_err(|_| {
+            self.failed
+                .fetch_add(u64::try_from(misses).unwrap_or(0), Ordering::Relaxed);
+        })?;
 
         let mut where_jd: BTreeMap<u64, usize> = BTreeMap::new();
         for (row, jd) in wanted_jds.iter().enumerate() {
@@ -308,7 +325,7 @@ impl<P: EphemerisProvider> EphemerisProvider for CachingProvider<P> {
                         continue;
                     }
                     cells.insert(
-                        Self::key(request, *jd, *body),
+                        CellKey::of(request, *jd, *body),
                         Stored {
                             cell,
                             frame: answered.frame,
@@ -502,6 +519,47 @@ mod tests {
         assert_eq!(stats.stored, 6);
         assert_eq!(stats.refused, 0);
         assert!((stats.hit_share() - 0.5).abs() < 1e-12);
+    }
+
+    #[test]
+    fn a_refused_request_is_kept_nowhere_and_counted_as_failed() {
+        // The test provider produces its canonical frame alone, so a
+        // sidereal request is refused, and every asking reaches it again.
+        let inner = CountingProvider::new(TestProvider::new()).watching_repeats();
+        let cached = CachingProvider::new(inner);
+        let jds = grid(&[2_451_545.0, 2_451_546.0]);
+        let sidereal = Frame::CANONICAL.with_zodiac(crate::frame::Zodiac::sidereal(
+            teistro_core::catalogue::Ayanamsha::Lahiri,
+        ));
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &BODIES, sidereal);
+        for _ in 0..2 {
+            assert!(matches!(
+                cached.positions(&request),
+                Err(ProviderError::Unsupported { .. })
+            ));
+        }
+        let stats = cached.stats();
+        assert_eq!((stats.misses, stats.failed, stats.stored), (8, 8, 0));
+        assert_eq!(cached.inner().calls().positions, 2);
+        // The counter calls it four cells asked twice: the key is the
+        // memo's, and the four the memo did not answer are the failed.
+        let calls = cached.inner().calls();
+        assert_eq!((calls.cells, calls.distinct_cells), (8, 4));
+    }
+
+    #[test]
+    fn the_counter_tells_cells_apart_as_the_memo_does() {
+        // One instant and body with and without speeds are two questions
+        // to a memo, so they are two distinct cells to the counter.
+        let counter = CountingProvider::new(TestProvider::new()).watching_repeats();
+        let jds = grid(&[2_451_545.0]);
+        let mut request = PositionRequest::new(&jds, TimeScale::Ut1, &BODIES, Frame::CANONICAL);
+        counter.positions(&request).unwrap();
+        request.speeds = !request.speeds;
+        counter.positions(&request).unwrap();
+        counter.positions(&request).unwrap();
+        let calls = counter.calls();
+        assert_eq!((calls.cells, calls.distinct_cells), (6, 4));
     }
 
     #[test]

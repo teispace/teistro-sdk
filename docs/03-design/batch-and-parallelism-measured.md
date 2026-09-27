@@ -33,10 +33,10 @@ its own cost.
 | charts | 2 | 146 | 160 | 88 | 8 | 1.10 | 73.0 |
 | charts | 10 | 730 | 800 | 296 | 8 | 1.10 | 73.0 |
 | charts | 50 | 3434 | 3784 | 1336 | 8 | 1.10 | 68.7 |
-| almanac | 1 | 345 | 1012 | 890 | 67 | 2.93 | 345.0 |
-| almanac | 2 | 697 | 2015 | 1293 | 67 | 2.89 | 348.5 |
-| almanac | 10 | 3553 | 10 204 | 4735 | 67 | 2.87 | 355.3 |
-| almanac | 50 | 17 166 | 49 953 | 21 446 | 67 | 2.91 | 343.3 |
+| almanac | 1 | 241 | 848 | 724 | 67 | 3.52 | 241.0 |
+| almanac | 2 | 485 | 1678 | 1098 | 67 | 3.46 | 242.5 |
+| almanac | 10 | 2441 | 8419 | 4256 | 67 | 3.45 | 244.1 |
+| almanac | 50 | 12 078 | 41 787 | 19 648 | 67 | 3.46 | 241.6 |
 | sunrise | 1 | 18 | 18 | 18 | 1 | 1.00 | 18.0 |
 
 Read the first row and the last of each operation together. A
@@ -44,7 +44,7 @@ grid of positions is **one call** whether it holds one instant or
 50: that is what the port was shaped for, and it is the control
 everything else is compared with. A batch of 50 charts is 3434 calls
 — 69 per chart, the same as one chart costs on its own — and a
-range of 50 almanac days is 17 166, or 343 a day. Neither is a batch
+range of 50 almanac days is 12 078, or 242 a day. Neither is a batch
 in any sense the ephemeris can see. They are loops that share a
 provenance stamp.
 
@@ -53,14 +53,14 @@ provenance stamp.
 The widest call a batch of charts makes is 8 cells — the grahas of one
 chart, asked for once — and the widest an almanac makes is 67.
 Everything else is one instant and one or two bodies. The mean width is
-1.10 for charts and 2.91 for an almanac: the SDK asks its ephemeris for
+1.10 for charts and 3.46 for an almanac: the SDK asks its ephemeris for
 **one cell at a time**, tens of thousands of times, through a port whose
 one required operation takes a grid.
 
 One sunrise is worth naming on its own: 18 calls, every one of them a
 single cell, none of them a repeat. Meeus's iteration answers it, and it
 is serial by construction — each instant is computed from the sample
-before it, so there is no grid to ask for. A day's 343 calls are **not**
+before it, so there is no grid to ask for. A day's 242 calls are **not**
 made of searches like it: an attribution of every one of them to its
 caller (recorded in
 [`../07-roadmap/02-plan-performance-and-passthrough.md`](../07-roadmap/02-plan-performance-and-passthrough.md),
@@ -78,7 +78,7 @@ the engine.
 | operation | 1 item | largest batch |
 |---|---:|---:|
 | charts | 22.5% | 64.7% of 50 items |
-| almanac | 12.1% | 57.1% of 50 items |
+| almanac | 14.6% | 53.0% of 50 items |
 
 The share **rises with the batch**, which is the finding. Within one
 chart 22.5% of the cells are asked for more than once; across 50 charts
@@ -104,16 +104,24 @@ answers are identical cell for cell.
 
 | days | calls | cells | calls, cached | cells, cached | answered from memory |
 |---:|---:|---:|---:|---:|---:|
-| 1 | 345 | 1012 | 333 | 906 | 10.5% |
-| 2 | 697 | 2015 | 487 | 1359 | 32.6% |
-| 10 | 3553 | 10 204 | 1801 | 5189 | 49.1% |
-| 50 | 17 166 | 49 953 | 8184 | 23 896 | 52.2% |
+| 1 | 241 | 848 | 226 | 739 | 12.9% |
+| 2 | 485 | 1678 | 364 | 1163 | 30.7% |
+| 10 | 2441 | 8419 | 1508 | 4708 | 44.1% |
+| 50 | 12 078 | 41 787 | 7100 | 22 095 | 47.1% |
 
-The share answered from memory **rises with the batch** — 10.5% for a
-single day, 52.2% across 50 — which is the same finding as §4 read
+The share answered from memory **rises with the batch** — 12.9% for a
+single day, 47.1% across 50 — which is the same finding as §4 read
 from the other side, and the reason the memo is worth more than a cache
-of one call's own repeats. A range of 50 days asks the ephemeris for 23
-896 cells instead of 49 953, in 8184 calls instead of 17 166.
+of one call's own repeats. A range of 50 days asks the ephemeris for 22
+095 cells instead of 41 787, in 7100 calls instead of 12 078.
+
+Of the 22 139 cells the 50-day range asks for again, the memo answers 19
+692. The other 2447 are **refusals asked again**: the completion asks a
+provider for the frame it wants before completing that frame from the
+native one, the provider measured here produces its canonical frame
+alone, and a refusal is not an answer, so the memo keeps none (10 981
+cells were missed in refused requests). This pass refuses a page on
+which the refusals cannot account for every repeat the memo left.
 
 ## 6. What is reachable at all
 
@@ -147,10 +155,10 @@ might wrap.
 |---|---|---|
 | a batch of positions is one call whatever its size | **holds** | 1 call for 50 instants, 150 cells wide |
 | a batch of charts is one call whatever its size | falsified | 3434 calls for 50, 69 per item |
-| a batch of almanac is one call whatever its size | falsified | 17 166 calls for 50, 343 per item |
-| the calls a batch makes are grids rather than cells | falsified | a chart's calls are 1.10 cells wide on average and an almanac day's 2.91; the widest either makes is 8 and 67 |
-| a batch asks for each cell once | falsified | 64.7% of a batch of 50 charts and 57.1% of 50 almanac days are cells already fetched |
-| a memo answers a repeated cell without touching the engine | **holds** | 52.2% of a range of 50 days is answered from memory: 23 896 cells instead of 49 953 |
+| a batch of almanac is one call whatever its size | falsified | 12 078 calls for 50, 242 per item |
+| the calls a batch makes are grids rather than cells | falsified | a chart's calls are 1.10 cells wide on average and an almanac day's 3.46; the widest either makes is 8 and 67 |
+| a batch asks for each cell once | falsified | 64.7% of a batch of 50 charts and 53.0% of 50 almanac days are cells already fetched |
+| a memo answers a repeated cell without touching the engine | **holds** | 19 692 of the 22 139 cells a range of 50 days asks for again are answered from memory, and the other 2447 are refusals asked again; 47.1% of all its cells: 22 095 asked of the engine instead of 41 787 |
 | a consumer can reach what their engine offers beyond the port | **holds** | the port names 8 and an engine's own manifest is read through it; the provider measured here declares 2 beyond them |
 
 four of the seven claims are falsified, and they are falsified in an

@@ -252,6 +252,8 @@ fn memo(measurements: &mut Vec<serde_json::Value>) {
                 "memo": memo,
                 "caching": provider.caching(),
                 "hit_share": stats.hit_share(),
+                "hits": stats.hits,
+                "failed": stats.failed,
                 "calls": tally(reached(&provider)),
             }));
         }

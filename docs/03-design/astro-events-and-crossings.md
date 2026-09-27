@@ -3,7 +3,9 @@
 Status: `draft`, written 2026-09-05 when the ephemeris port was promoted
 and the rise and set solver built; revised the same day when the
 crossings and stations kernel was built over the boundary solver and the
-solver's refinement moved from bisection to the ITP method. Derives from
+solver's refinement moved from bisection to the ITP method; revised
+2026-09-27 when a crossing's refinement began reading the samples'
+rates (`refine_with_rates`, §4). Derives from
 `01-research/platform/13-astronomy-layer.md` (the solver rows and the
 conformance targets), `02-architecture/02-ephemeris-port.md` (the rise
 and set override), ADR-0013 (the override policy) and ADR-0021 (the
@@ -211,6 +213,38 @@ code serves a tabular classical model and a modern ephemeris, and the
 found instant is the middle of a bracket no wider than the tolerance, as
 it was under bisection.
 
+`refine_with_rates` is the narrowing for a quantity whose **rate comes
+with its value**, as an ephemeris gives a longitude's speed with the
+longitude, and it is what a crossing uses. Its first estimate is the
+root of the cubic through both ends' values and rates (the cubic
+Hermite interpolant), found on the polynomial alone; each estimate after
+it is a Newton step, confined to the bracket and replaced by a bisection
+when it would leave it or fail to halve the step before (Numerical
+Recipes' `rtsafe`). A Newton step shorter than half the tolerance places
+the next evaluation a quarter of the tolerance past its point, which
+closes the bracket when the step was right; a probe that fails to close
+it is followed by a bisection. So the search still ends on a bracket at
+most the tolerance wide, **both ends evaluated**, and a rate that is
+wrong, of the wrong sign, zero or absent costs steps and never the
+answer: at worst two evaluations a halving and the probe. The instant is
+the Newton step from the end nearer the line, inside that bracket, and
+lies on the line to the instant's last bits where the bracket's middle
+could be half the tolerance from it. Two things were found building it:
+a converged step at a Julian day's magnitude is shorter than the
+instant's last bit (an ulp of a Julian day near 2.46 million is 4.7e-10
+days) and lands on the end it started from, so convergence is asked
+before the step is checked against the bracket; and a true rate costs
+no more than the narrowing without one on 20 000 random curves
+(`solve::tests`). Measured over 2026 on the built-in ephemeris (2 630
+crossings: the Moon's nakshatras and signs, the tithis, the yogas, the
+Sun, Mercury, Mars and the node), a crossing took **6.4 evaluations
+geocentrically and 6.3 topocentrically under ITP, and 3.0 and 3.7 with
+the rates**; the topocentric Moon costs more because the observer's
+daily circle bends the curve inside a step. Every instant moved by at
+most 4.3 ms, inside the half tolerance (4.32 ms) the ITP midpoint was
+allowed. A speed crossing a lattice has no rate of its own (its rate is
+an acceleration, which no source answers), so it keeps `refine_known`.
+
 **Crossings** (`events::Search`). A bracketing scan then the shared
 narrowing. The quantity is sampled from the window's start at a step of
 half the lattice spacing over the quantity's greatest rate, capped at a
@@ -228,9 +262,11 @@ spacing of a whole circle and the daily cap. The samples are unwrapped
 into a continuous curve (each step adds the wrapped difference), the
 lattice lines strictly above the earlier sample and up to the later one
 are listed (the far sample owns a line met exactly), and each is
-narrowed by `refine` over the signed distance to the line along the
-same unwrapped curve, so the bracket's ends carry the very values the
-lattice test saw and a line met at a sample still brackets. The
+narrowed by `refine_with_rates` over the signed distance to the line
+along the same unwrapped curve and its rate, so the bracket's ends carry
+the very values the lattice test saw and a line met at a sample still
+brackets; the ends are the scan's own samples, rates included, so
+neither is asked for again. The
 tolerance is 1e-7 days (under a hundredth of a second); the steps are
 capped at two million samples (five and a half thousand years at a
 day's step), beyond which the search is `NOT_CONVERGED` naming the cap.
