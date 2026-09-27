@@ -552,6 +552,178 @@ pub fn refine_known<E>(
     Ok(crossing(narrowed, evaluations))
 }
 
+/// One end of a bracket with the quantity's rate there: the instant, the
+/// signed value and its derivative in the same unit per unit of time.
+pub type Sloped = (f64, f64, f64);
+
+/// How many polynomial steps the seed may take: a cubic on the unit
+/// interval halves at worst, and fifty-two halvings exhaust `f64`.
+const SEED_STEPS: u32 = 60;
+
+/// The root of the cubic that has the bracket's two values and two rates
+/// at its ends (the cubic Hermite interpolant), as a fraction of the way
+/// from `lo` to `hi`: where the curve would cross if it bent no more than
+/// its ends say. Found on the polynomial alone, with no evaluation of the
+/// quantity, by Newton's method kept inside a bracket that bisects when a
+/// step would leave it. The secant's root when a rate is not finite.
+fn hermite_root((lo, f_lo, d_lo): Sloped, (hi, f_hi, d_hi): Sloped) -> f64 {
+    let secant = f_lo / (f_lo - f_hi);
+    let width = hi - lo;
+    let (m_lo, m_hi) = (d_lo * width, d_hi * width);
+    if !(m_lo.is_finite() && m_hi.is_finite()) {
+        return secant;
+    }
+    // p(s) = f_lo + m_lo·s + c2·s² + c3·s³ with p(1) = f_hi, p'(1) = m_hi.
+    let c2 = 3.0 * (f_hi - f_lo) - 2.0 * m_lo - m_hi;
+    let c3 = 2.0 * (f_lo - f_hi) + m_lo + m_hi;
+    let value = |s: f64| ((c3 * s + c2) * s + m_lo) * s + f_lo;
+    let slope = |s: f64| (3.0 * c3 * s + 2.0 * c2) * s + m_lo;
+    let (mut below, mut above) = (0.0f64, 1.0f64);
+    let mut fraction = secant;
+    for _ in 0..SEED_STEPS {
+        if value(fraction) < 0.0 {
+            below = fraction;
+        } else {
+            above = fraction;
+        }
+        let newton = fraction - value(fraction) / slope(fraction);
+        let next = if newton > below && newton < above {
+            newton
+        } else {
+            below + (above - below) * 0.5
+        };
+        if (next - fraction).abs() <= f64::EPSILON || above - below <= f64::EPSILON {
+            return next;
+        }
+        fraction = next;
+    }
+    fraction
+}
+
+/// [`refine_known`] for a quantity whose **rate** comes with its value,
+/// as an ephemeris gives a longitude's speed with the longitude: `f`
+/// answers `(value, rate)`, and each end carries its rate as well.
+///
+/// The first estimate is the root of the cubic through both ends' values
+/// and rates, which for a body's longitude over a scan's step is already
+/// within a few tenths of a second of the crossing; each estimate after it
+/// is a Newton step from the last, confined to the bracket, and a step
+/// that would leave the bracket or fail to halve the one before it is a
+/// bisection instead (the safeguard of Numerical Recipes' `rtsafe`). The
+/// search ends as [`refine_known`]'s does, on a bracket at most the
+/// tolerance wide whose ends were **evaluated** on either side of the
+/// line, so a rate that is wrong, or absent (not finite), costs steps and
+/// never the answer: once a Newton step is shorter than half the
+/// tolerance, the next evaluation is placed a quarter of the tolerance
+/// past it, where it closes the bracket if the step was right. The
+/// instant reported is the Newton step from the nearer end, inside that
+/// bracket.
+///
+/// ```
+/// use teistro_astro::solve::{refine_known, refine_with_rates, Caps};
+///
+/// let curve = |t: f64| -> Result<(f64, f64), ()> { Ok((((t - 0.3) * 1.5).sin(), 1.5 * ((t - 0.3) * 1.5).cos())) };
+/// let (lo, hi) = (curve(0.0).unwrap(), curve(1.0).unwrap());
+/// let seeded = refine_with_rates(curve, (0.0, lo.0, lo.1), (1.0, hi.0, hi.1), 1e-9, Caps::DEFAULT).expect("bracketed");
+/// let known = refine_known(|t| curve(t).map(|(v, _)| v), (0.0, lo.0), (1.0, hi.0), 1e-9, Caps::DEFAULT).expect("bracketed");
+/// assert!((seeded.instant - 0.3).abs() < 1e-9 && seeded.width <= 1e-9);
+/// assert!(seeded.evaluations < known.evaluations);
+/// ```
+///
+/// # Errors
+///
+/// As [`refine`].
+pub fn refine_with_rates<E>(
+    mut f: impl FnMut(f64) -> Result<(f64, f64), E>,
+    lo: Sloped,
+    hi: Sloped,
+    tolerance: f64,
+    caps: Caps,
+) -> Result<Crossing, SolveError<E>> {
+    if !(tolerance.is_finite() && tolerance > 0.0) {
+        return Err(SolveError::Argument {
+            name: "tolerance",
+            value: tolerance,
+        });
+    }
+    if !(lo.1 < 0.0 && hi.1 >= 0.0) {
+        return Err(SolveError::NotBracketed {
+            steps: 0,
+            last: lo.0,
+        });
+    }
+    let (mut lo, mut hi) = (lo, hi);
+    let least = tolerance * 0.25;
+    let mut estimate = lo.0 + (hi.0 - lo.0) * hermite_root(lo, hi);
+    // The step before last, for the safeguard: a Newton step must at
+    // least halve it or give way to a bisection.
+    let mut before = hi.0 - lo.0;
+    // Whether the last evaluation was a probe placed to close the
+    // bracket: one that failed to means the rate misled the step, so the
+    // next is a bisection, and a wrong rate costs at most every other
+    // step's halving rather than creeping by a quarter tolerance at a
+    // time.
+    let mut probed = false;
+    let mut evaluations = 0u32;
+    while hi.0 - lo.0 > tolerance {
+        if evaluations >= caps.refinements {
+            return Err(SolveError::NotConverged {
+                steps: evaluations,
+                width: hi.0 - lo.0,
+            });
+        }
+        let at = estimate.max(lo.0 + least).min(hi.0 - least);
+        if at <= lo.0 || at >= hi.0 {
+            break; // `f64` cannot split the bracket further.
+        }
+        evaluations += 1;
+        let (value, rate) = f(at).map_err(SolveError::Evaluation)?;
+        let end = (at, value, rate);
+        if value < 0.0 {
+            lo = end;
+        } else {
+            hi = end;
+        }
+        let step = -value / rate;
+        let newton = at + step;
+        // Converged by the step: the next evaluation closes the bracket a
+        // quarter of the tolerance past the Newton point, on the far side
+        // of the line from this one. Asked before the Newton point is
+        // checked against the bracket, because a step shorter than the
+        // instant's last bit lands on the end it started from.
+        let converged = step.abs() < tolerance * 0.5;
+        let trusted = !probed && step.abs() <= before * 0.5;
+        probed = trusted && converged;
+        estimate = if probed {
+            newton + if value < 0.0 { least } else { -least }
+        } else if trusted && newton > lo.0 && newton < hi.0 {
+            before = step.abs();
+            newton
+        } else {
+            before = (hi.0 - lo.0) * 0.5;
+            lo.0 + before
+        };
+    }
+    Ok(Crossing {
+        instant: nearer_newton(lo, hi),
+        width: hi.0 - lo.0,
+        evaluations,
+    })
+}
+
+/// The Newton step from whichever end of a narrowed bracket is nearer the
+/// line by value, kept inside the bracket; its middle when that end's rate
+/// is of no use.
+fn nearer_newton(lo: Sloped, hi: Sloped) -> f64 {
+    let (t, value, rate) = if -lo.1 < hi.1 { lo } else { hi };
+    let newton = t - value / rate;
+    if newton.is_finite() && newton >= lo.0 && newton <= hi.0 {
+        newton
+    } else {
+        lo.0 + (hi.0 - lo.0) * 0.5
+    }
+}
+
 /// The first instant at or after `from` at which `angle` (degrees, wrapping
 /// at 360, advancing on average at `rate_deg_per_day`) reaches `target`
 /// going forward, to within `tolerance_days`.
@@ -729,7 +901,122 @@ mod tests {
         );
     }
 
+    #[test]
+    fn the_seed_is_exact_on_a_cubic() {
+        // A cubic is its own Hermite interpolant: the seed lands on its
+        // root before the quantity is asked anything.
+        let cubic = |t: f64| (t - 0.3) * (1.0 + t * t);
+        let rate = |t: f64| 1.0 + t * t + (t - 0.3) * 2.0 * t;
+        let seed = hermite_root((0.0, cubic(0.0), rate(0.0)), (1.0, cubic(1.0), rate(1.0)));
+        assert!((seed - 0.3).abs() < 1e-15, "{seed}");
+        // With no rate the seed is the secant's root.
+        let secant = hermite_root((0.0, -1.0, f64::NAN), (1.0, 3.0, 1.0));
+        assert!((secant - 0.25).abs() < 1e-15, "{secant}");
+    }
+
+    #[test]
+    fn a_rate_ends_the_search_on_a_bracket_evaluated_on_both_sides() {
+        // The Moon over a scan's step at a Julian day's magnitude, where
+        // a converged Newton step is shorter than the instant's last bit.
+        let origin = 2_461_041.5;
+        let moon = move |t: f64| -> Result<(f64, f64), ()> {
+            let u = t - origin;
+            Ok((
+                13.2 * (u - 0.2371) + 0.4 * math::sin(u * 2.0),
+                13.2 + 0.8 * math::cos(u * 2.0),
+            ))
+        };
+        let end = |t: f64| {
+            let (value, rate) = moon(t).unwrap();
+            (t, value, rate)
+        };
+        let (lo, hi) = (end(origin), end(origin + 0.5));
+        let seeded = refine_with_rates(moon, lo, hi, 1e-7, Caps::DEFAULT).unwrap();
+        let known = refine_known(
+            |t| moon(t).map(|(value, _)| value),
+            (lo.0, lo.1),
+            (hi.0, hi.1),
+            1e-7,
+            Caps::DEFAULT,
+        )
+        .unwrap();
+        assert!(seeded.width <= 1e-7, "{seeded:?}");
+        assert!(seeded.evaluations <= 3, "{seeded:?}");
+        assert!(
+            seeded.evaluations * 2 <= known.evaluations,
+            "{seeded:?} {known:?}"
+        );
+        // The Newton point from the nearer end sits on the line, where a
+        // bracket's middle may be half the tolerance from it.
+        assert!(
+            moon(seeded.instant).unwrap().0.abs() < 1e-9 * 13.2,
+            "{seeded:?}"
+        );
+        // A bracket without the sign change, and a bad tolerance, are
+        // refused as `refine_known` refuses them.
+        assert!(matches!(
+            refine_with_rates(moon, hi, lo, 1e-7, Caps::DEFAULT),
+            Err(SolveError::NotBracketed { steps: 0, .. })
+        ));
+        assert!(matches!(
+            refine_with_rates(moon, lo, hi, 0.0, Caps::DEFAULT),
+            Err(SolveError::Argument {
+                name: "tolerance",
+                ..
+            })
+        ));
+    }
+
     proptest! {
+        /// A rate that is wrong, of the wrong sign, zero, absent or
+        /// absurd costs steps and never the answer: the search still ends
+        /// on a bracket at most the tolerance wide with the line inside,
+        /// within the cap, at a Julian day's magnitude.
+        #[test]
+        fn a_misleading_rate_costs_steps_not_the_answer(
+            rate in 0.05f64..15.0,
+            root in 0.01f64..0.99,
+            amplitude in 0.0f64..0.9,
+            frequency in 0.1f64..6.0,
+            phase in 0.0f64..core::f64::consts::TAU,
+            factor in prop::sample::select(vec![1.0, 0.5, 3.0, -1.0, 0.0, f64::NAN, f64::INFINITY, 1e6, 1e-6]),
+        ) {
+            let origin = 2_451_545.0;
+            // Monotonic: the oscillation's rate stays under the drift's.
+            let wobble = amplitude * rate / frequency;
+            let curve = move |t: f64| -> Result<(f64, f64), ()> {
+                let u = t - origin;
+                let value = rate * (u - root)
+                    + wobble * (math::sin(u * frequency + phase) - math::sin(root * frequency + phase));
+                let slope = rate + wobble * frequency * math::cos(u * frequency + phase);
+                Ok((value, slope * factor))
+            };
+            let end = |t: f64| {
+                let (value, rate) = curve(t).unwrap();
+                (t, value, rate)
+            };
+            let c = refine_with_rates(curve, end(origin), end(origin + 1.0), 1e-7, Caps::DEFAULT).unwrap();
+            prop_assert!(c.width <= 1e-7, "{c:?}");
+            prop_assert!(curve(c.instant - 1e-7).unwrap().0 < 0.0, "{c:?}");
+            prop_assert!(curve(c.instant + 1e-7).unwrap().0 >= 0.0, "{c:?}");
+            // A misled step is followed by a bisection, so the worst is
+            // two evaluations a halving and the closing probe.
+            let halvings = u32::try_from(halvings(1.0, 1e-7)).unwrap();
+            prop_assert!(c.evaluations <= 2 * halvings + 2, "{c:?}");
+            // A true rate never costs more than narrowing without one.
+            if factor.to_bits() == 1f64.to_bits() {
+                let known = refine_known(
+                    |t| curve(t).map(|(value, _)| value),
+                    (origin, curve(origin).unwrap().0),
+                    (origin + 1.0, curve(origin + 1.0).unwrap().0),
+                    1e-7,
+                    Caps::DEFAULT,
+                )
+                .unwrap();
+                prop_assert!(c.evaluations <= known.evaluations, "{c:?} {known:?}");
+            }
+        }
+
         /// A perturbed motion (the mean rate plus a slow oscillation of
         /// up to a twentieth of it) is bracketed and refined so that the
         /// gap changes sign inside the tolerance around the answer.

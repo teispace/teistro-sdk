@@ -1164,6 +1164,30 @@ the astronomical numbers do not move. Nothing else computes yet.
   answers exactly. Kemadruma is the fourth divergence (crux C94): read whole,
   the verse answers 1 of the 93 charts where the engine answers 57.
 
+- **A crossing is refined with the rates its samples carry**
+  (`astro-events-and-crossings.md` §4). `solve::refine_with_rates` narrows
+  a bracket whose ends carry the quantity's rate as well as its value: the
+  root of the cubic through both ends' values and rates first, then Newton
+  steps kept inside the bracket, a bisection wherever a step would leave it
+  or fail to halve the last, and one evaluation a quarter of the tolerance
+  past a converged step to close the bracket. It still ends on a bracket at
+  most the tolerance wide with both ends evaluated, so a wrong or missing
+  rate costs steps and never the answer. Every lattice crossing of a
+  longitude or a composite angle uses it; a speed has no rate of its own and
+  keeps `refine_known`. Over 2026's 2 630 crossings on the built-in
+  ephemeris a crossing took 3.0 evaluations geocentrically and 3.7
+  topocentrically, where it took 6.4 and 6.3. The ephemeris-call counter now
+  tells cells apart by the memo's own key, and `CacheStats::failed` counts
+  the cells of requests the provider refused, which a memo does not keep.
+
+  **Numbers:** every crossing instant moves, by at most 4.3 ms, inside the
+  half tolerance (4.32 ms) the old answer, a bracket's middle, was allowed:
+  the new instant is the Newton point, on the line to the instant's last
+  bits. Tithi, nakshatra, yoga and karana ends, sign ingresses, the transit
+  hit list and the solar return move by that much; sankrantis, lunar months
+  and stations do not, being other searches. An uncached almanac day makes
+  241 provider calls where it made 345.
+
 - **A modern engine's chart keeps the SDK's day and zodiac** (QUESTIONS.md
   Q40, decided; ADR-0013 amended). Measured against the Swiss-based
   recording the SDK's sunrise (9.77 s at worst over 55 charts) and nutated

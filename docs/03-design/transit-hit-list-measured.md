@@ -50,7 +50,7 @@ graha turning inside the orb and going back the way it came.
 | Ketu's every ingress is Rahu's at the same instant, six signs on | **holds** | 0 of 1 disagree |
 
 None of the five claims is falsified. The worst exact aspect stood
-0.0030″ from its angle. The parity reads every line the list crosses
+0.0000″ from its angle. The parity reads every line the list crosses
 — the sign and nakshatra boundaries and each birth's conjunction and
 opposition lines — so a station missing from the list, or one reported
 where the graha did not turn, breaks it at the next crossing.

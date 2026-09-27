@@ -295,6 +295,31 @@ digest unchanged and moves this one.
 each part lands; and a test that the sign spans a day reports are the
 same spans, to the tolerance, at either reach.
 
+**A1e. Refine with the rates the samples carry — built 2026-09-27.**
+Once A1b gridded the scan, what stayed serial was the refinement, about
+seven evaluations a crossing, each chosen from the last. Every sample
+already carried the quantity's rate (a longitude comes with its speed),
+and the refinement threw it away. `solve::refine_with_rates` seeds from
+the cubic through both ends' values and rates and takes Newton steps
+inside the bracket, safeguarded by bisection, and still ends on an
+evaluated bracket no wider than the tolerance
+(`../03-design/astro-events-and-crossings.md` §4). A crossing fell from
+6.4 evaluations to 3.0 geocentrically and from 6.3 to 3.7 topocentrically;
+an uncached almanac day from 345 provider calls to **241**. It moved every
+crossing instant by at most 4.3 ms, inside the half tolerance the old
+bracket's middle was allowed.
+
+*Found by it:* fewer refinements meant fewer repeats for the memo, and
+the batching page's memo claim, judged by the share of *all* cells
+answered from memory, read as falsified at 47.1%. The claim is about
+repeats, so it is now judged on them: 19 692 of 22 139 repeated cells are
+answered from memory, and the other 2 447 are **refusals asked again**.
+The completion asks a provider for the frame it wants before completing
+it from the native frame, and asks again every time; the test provider
+refuses every frame but its canonical one, and a memo keeps no refusal.
+**Next (A1f):** the completion remembers a frame its provider has
+refused, which the port's contract makes a property of the frame.
+
 ### A2. A memo across a batch, gated on the provider's own declaration
 
 *Built as the mechanism; the settings knob follows.*

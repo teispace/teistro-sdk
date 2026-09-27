@@ -139,15 +139,20 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
         .between(from, to)
         .unwrap();
     assert!(!crossings.is_empty());
-    // The narrowing places an event in a handful of evaluations: at most
-    // seven steps, the bracket's ends being the scan's own samples.
+    // The narrowing places an event in a handful of evaluations, the
+    // bracket's ends being the scan's own samples with their speeds: the
+    // cubic through them, a Newton step, and one evaluation closing the
+    // bracket past it; a line crossed while the planet turns takes more.
     let most = crossings.iter().map(|e| e.evaluations).max().unwrap();
-    assert!(most <= 8, "{most}");
+    assert!(most <= 4, "{most}");
     let mut falling = 0;
     for event in &crossings {
         let lon = Looping::longitude(event.instant.get() - J2000);
         assert!(
-            difference_deg(lon, event.boundary_deg).abs() < 1e-5,
+            // The Newton point from the nearer end, to the instant's last
+            // bits (an ulp of a Julian day is 5e-10 days), where a
+            // bracket's middle could be half the tolerance away.
+            difference_deg(lon, event.boundary_deg).abs() < 1e-9,
             "{lon} {}",
             event.boundary_deg
         );

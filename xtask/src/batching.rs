@@ -94,18 +94,39 @@ pub(crate) fn check_generated(root: &Path) -> i32 {
     }
 }
 
-/// Runs the example and reads what it measured.
 /// One almanac range measured with the memo off and on.
 #[derive(Clone, Copy, Debug)]
 struct Memo {
     size: u64,
     calls: u64,
     cells: u64,
+    /// The distinct cells of the range, by the memo's own key.
+    distinct: u64,
     cached_calls: u64,
     cached_cells: u64,
     hit_share: f64,
+    /// Cells answered from memory.
+    hits: u64,
+    /// Cells missed in requests the provider refused, which no memo keeps.
+    failed: u64,
 }
 
+impl Memo {
+    /// The cells the range asked for again, by the memo's key.
+    fn repeats(&self) -> u64 {
+        self.cells.saturating_sub(self.distinct)
+    }
+
+    /// The repeats the memo left to the provider. Each is a refusal
+    /// asked again, which a memo does not keep, or the memo is wrong:
+    /// `measurements` refuses a page where the refusals cannot account
+    /// for them.
+    fn unanswered(&self) -> u64 {
+        self.repeats().saturating_sub(self.hits)
+    }
+}
+
+/// Runs the example and reads what it measured.
 fn measurements(root: &Path) -> Result<(Vec<Measured>, Vec<Memo>, Value), String> {
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| String::from("cargo"));
     let output = Command::new(cargo)
@@ -157,17 +178,31 @@ fn measurements(root: &Path) -> Result<(Vec<Measured>, Vec<Memo>, Value), String
                 memo.cached_calls = made;
                 memo.cached_cells = asked;
                 memo.hit_share = row["hit_share"].as_f64().unwrap_or(0.0);
+                memo.hits = row["hits"].as_u64().unwrap_or(0);
+                memo.failed = row["failed"].as_u64().unwrap_or(0);
             }
         } else {
             memos.push(Memo {
                 size,
                 calls: made,
                 cells: asked,
+                distinct: row["calls"]["distinct_cells"].as_u64().unwrap_or(0),
                 cached_calls: 0,
                 cached_cells: 0,
                 hit_share: 0.0,
+                hits: 0,
+                failed: 0,
             });
         }
+    }
+    if let Some(memo) = memos.iter().find(|memo| memo.unanswered() > memo.failed) {
+        return Err(format!(
+            "the memo left {} of a {}-day range's repeated cells to the provider and only {} \
+             were refusals, which is a memo that misses what it holds",
+            memo.unanswered(),
+            memo.size,
+            memo.failed
+        ));
     }
     Ok((rows, memos, value["reach"].clone()))
 }
@@ -257,11 +292,18 @@ fn page(root: &Path) -> Result<String, String> {
     if let Some(largest) = memos.last() {
         claims.push(Claim::stated(
             "a memo answers a repeated cell without touching the engine",
-            verdict_of(largest.hit_share > 0.5 && largest.cached_cells < largest.cells),
+            verdict_of(
+                largest.hits * 2 > largest.repeats() && largest.cached_cells < largest.cells,
+            ),
             format!(
-                "{} of a range of {} days is answered from memory: {} cells instead of {}",
-                share(largest.hit_share),
+                "{} of the {} cells a range of {} days asks for again are answered from \
+                 memory, and the other {} are refusals asked again; {} of all its cells: \
+                 {} asked of the engine instead of {}",
+                count(usize::try_from(largest.hits).unwrap_or_default()),
+                count(usize::try_from(largest.repeats()).unwrap_or_default()),
                 count(usize::try_from(largest.size).unwrap_or_default()),
+                count(usize::try_from(largest.unanswered()).unwrap_or_default()),
+                share(largest.hit_share),
                 count(usize::try_from(largest.cached_cells).unwrap_or_default()),
                 count(usize::try_from(largest.cells).unwrap_or_default())
             ),
@@ -490,6 +532,23 @@ fn text(
             count(usize::try_from(last.cells).unwrap_or_default()),
             count(usize::try_from(last.cached_calls).unwrap_or_default()),
             count(usize::try_from(last.calls).unwrap_or_default())
+        );
+        let _ = writeln!(
+            out,
+            "Of the {} cells the {}-day range asks for again, the memo\n\
+             answers {}. The other {} are **refusals asked again**: the\n\
+             completion asks a provider for the frame it wants before\n\
+             completing that frame from the native one, the provider\n\
+             measured here produces its canonical frame alone, and a\n\
+             refusal is not an answer, so the memo keeps none ({} cells\n\
+             were missed in refused requests). This pass refuses a page on\n\
+             which the refusals cannot account for every repeat the memo\n\
+             left.\n",
+            count(usize::try_from(last.repeats()).unwrap_or_default()),
+            count(usize::try_from(last.size).unwrap_or_default()),
+            count(usize::try_from(last.hits).unwrap_or_default()),
+            count(usize::try_from(last.unanswered()).unwrap_or_default()),
+            count(usize::try_from(last.failed).unwrap_or_default())
         );
     }
 

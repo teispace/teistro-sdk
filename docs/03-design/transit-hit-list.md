@@ -137,13 +137,16 @@ after stands in the sign the event says it left and entered.
    design §4 promised: `hits_many` scans once for many charts and refines
    the sky's events once, handing each chart its list as `hits` gives it
    alone, bit for bit; a topocentric frame searches once per place. What
-   remains is the refinement itself, the Moon's above all: at about 200
-   µs an evaluation and seven evaluations a crossing, the Moon's aspects
-   to fifty-five charts with an orb are two minutes, so the pass asks the
-   Moon's aspects of the first birth alone. A refinement seeded from the
-   samples' speeds (a cubic through both ends' values and rates) would
-   take about two evaluations; it moves every search's instants within
-   the tolerance, so it is its own measured change.
+   remained was the refinement itself, the Moon's above all: at about
+   200 µs an evaluation and seven evaluations a crossing, the Moon's
+   aspects to fifty-five charts with an orb are two minutes, so the pass
+   asks the Moon's aspects of the first birth alone. The refinement now
+   reads the samples' rates (`solve::refine_with_rates`, a cubic through
+   both ends' values and rates, then Newton steps inside the bracket;
+   `astro-events-and-crossings.md` §4), which took a crossing from 6.3
+   evaluations to 3.7 in this profile's topocentric frame and to 3.0 in
+   a geocentric one, and moved every instant by at most 4.3 ms, inside
+   the tolerance's half.
 
    **Found building it:** the page's first run read every ingress back at
    Greenwich and 678 of 683 failed. The conformance profile is
