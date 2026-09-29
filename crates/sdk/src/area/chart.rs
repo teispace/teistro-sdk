@@ -1143,6 +1143,142 @@ impl<'a> ChartArea<'a> {
         Ok(Envelope::sealing(lists, provenance))
     }
 
+    /// Saturn's **Sade Sati** and smaller spells from the natal Moon over a
+    /// window (`03-design/sade-sati.md`): every period reaching into it,
+    /// **whole** — its first entry and last exit, however far outside the
+    /// window — with each phase and every retrograde re-entry as a visit
+    /// of its own.
+    ///
+    /// No classical verse names the seven and a half years, so this is
+    /// practice's definition (C147): Saturn in the 12th, 1st and 2nd signs
+    /// from the natal Moon, the phases rising, peak and setting; the
+    /// request reckons by the Moon's degree instead, counts from the lagna,
+    /// or names other smaller spells than the 4th and 8th.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, Ephemeris, SadeSatiRequest};
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let natal: Document = todo!();
+    /// let now = JulianDay::<Utc>::literal(2_461_000.5);
+    /// let report = sdk.chart().sade_sati(&natal, &SadeSatiRequest::at(now))?.value;
+    /// if let Some(phase) = report.phase_at(now) {
+    ///     let whole = &report.sade_sati[0];
+    ///     println!("{phase:?}, from {:?} to {:?}", whole.begins(), whole.ends());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A request [`SadeSatiRequest::check`] refuses; whatever the search
+    /// refuses, such as a window the ephemeris does not cover.
+    pub fn sade_sati(
+        self,
+        natal: &Document,
+        request: &crate::sade_sati_request::SadeSatiRequest,
+    ) -> Result<Envelope<teistro_gochar::sade_sati::Report>, Error> {
+        let found = self.sade_sati_many([natal], request)?;
+        let provenance = found.provenance.clone();
+        let one = found
+            .value
+            .into_iter()
+            .next()
+            .ok_or_else(|| Error::internal("one chart was asked about and none answered"))?;
+        Ok(Envelope::sealing(one, provenance))
+    }
+
+    /// [`ChartArea::sade_sati`] for many natal charts over one window,
+    /// scanning Saturn **once** for all of them: under whole signs every
+    /// chart reads the same crossings, and under the degree reckoning
+    /// each chart's own lattice is tested in the same scan. One report per
+    /// chart, in the order given; a topocentric frame searches once per
+    /// place.
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::sade_sati`]; no chart at all is `INVALID_ARG`
+    /// naming `natals`.
+    pub fn sade_sati_many<'d>(
+        self,
+        natals: impl IntoIterator<Item = &'d Document>,
+        request: &crate::sade_sati_request::SadeSatiRequest,
+    ) -> Result<Envelope<Vec<teistro_gochar::sade_sati::Report>>, Error> {
+        use crate::hit_request::groups;
+        use crate::sade_sati_request::{Widening, crossings_of, lattices_of};
+        use teistro_core::settings::Centre;
+        use teistro_gochar::sade_sati::{self, Outcome, Report, Searched};
+
+        request.check()?;
+        let natals: Vec<&Document> = natals.into_iter().collect();
+        if natals.is_empty() {
+            return Err(
+                Error::invalid_arg("no natal chart to read Saturn's spells against")
+                    .with_field("natals"),
+            );
+        }
+        let coverage = self
+            .context
+            .ephemeris()
+            .ok_or_else(no_ephemeris)?
+            .capabilities()
+            .jd_range;
+        let topocentric = self.context.settings().frame.centre == Centre::Topocentric;
+        let mut reports: Vec<Option<Report>> = vec![None; natals.len()];
+        let mut provenance = None;
+        for (place, members) in groups(&natals, topocentric) {
+            let (lattices, charts) = lattices_of(request, &natals, &members)?;
+            let mut widening = Widening::new((request.start(), request.end()), coverage);
+            let (found, periods) = loop {
+                let (start, end) = widening.window();
+                let found = self.founding(UtcOffset::UTC, |founder| {
+                    founder.transit_events(&place, &[Graha::Saturn], &lattices, false, (start, end))
+                })?;
+                let crossings = crossings_of(&found.value, lattices.len());
+                let (before, after) = widening.at_coverage();
+                let mut periods = Vec::with_capacity(charts.len());
+                let (mut wider_before, mut wider_after) = (false, false);
+                for chart in &charts {
+                    let searched = Searched::new(
+                        crossings.get(chart.lattice).map_or(&[][..], Vec::as_slice),
+                        chart.origin_deg,
+                    )
+                    .at_coverage(before, after);
+                    match sade_sati::periods(
+                        &searched,
+                        (request.start(), request.end()),
+                        request.spells(),
+                    )? {
+                        Outcome::Found(found) => periods.push(found),
+                        Outcome::Widen { before, after } => {
+                            wider_before |= before;
+                            wider_after |= after;
+                        }
+                    }
+                }
+                if !(wider_before || wider_after) {
+                    break (found, periods);
+                }
+                widening.widen(wider_before, wider_after)?;
+            };
+            for (chart, periods) in charts.iter().zip(periods) {
+                if let Some(slot) = reports.get_mut(chart.index) {
+                    *slot = Some(Report::new(chart.reference, request.reckoning(), periods));
+                }
+            }
+            provenance.get_or_insert(found.provenance);
+        }
+        let reports = reports
+            .into_iter()
+            .map(|report| report.ok_or_else(|| Error::internal("a chart was searched in no group")))
+            .collect::<Result<Vec<_>, Error>>()?;
+        let provenance = provenance
+            .ok_or_else(|| Error::internal("a batch of charts was searched in no group"))?;
+        Ok(Envelope::sealing(reports, provenance))
+    }
+
     /// The annual charts' instants: the Sun's returns to where it stood at
     /// birth, `1` opening the first year of life
     /// (`03-design/annual-chart.md`).

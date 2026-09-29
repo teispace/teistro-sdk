@@ -57,6 +57,7 @@ mod hit_request;
 mod plan_request;
 mod rule_request;
 mod rules_bridge;
+mod sade_sati_request;
 mod varsha;
 
 pub use context::{Context, ContextBuilder};
@@ -145,6 +146,7 @@ pub use teistro_dasha as dasha;
 // Gochar: the transits read from the natal Moon (`03-design/gochar.md`).
 pub use crate::gochar_request::GocharRequest;
 pub use crate::hit_request::{HitKind, HitRequest};
+pub use crate::sade_sati_request::SadeSatiRequest;
 pub use teistro_dasha::{
     DashaCursor, DashaDefinition, DashaReading, PeriodRow, RashiDefinition, Share, Timeline,
     UduDefinition, YearDasha, YearRing,
@@ -154,6 +156,8 @@ pub use teistro_gochar::GocharFrom;
 // A hit list answers `Hit`s and is asked about `NatalPoint`s, so a consumer
 // names both without reaching into the module.
 pub use teistro_gochar::hits::{Hit, NatalPoint};
+// Sade Sati answers in its own module's types (`03-design/sade-sati.md`).
+pub use teistro_gochar::sade_sati;
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
 pub use teistro_rules as rules;

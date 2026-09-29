@@ -1164,6 +1164,36 @@ the astronomical numbers do not move. Nothing else computes yet.
   answers exactly. Kemadruma is the fourth divergence (crux C94): read whole,
   the verse answers 1 of the 93 charts where the engine answers 57.
 
+- **Sade Sati and Saturn's smaller spells** (`sade-sati.md`).
+  `sdk.chart().sade_sati(&natal, &SadeSatiRequest)` answers every Sade Sati
+  and smaller spell reaching into a window, **whole**: its first entry and
+  last exit however far outside the window, each phase (rising, peak,
+  setting) a spell of its own, and every retrograde re-entry a visit. No
+  classical text names the seven and a half years, so the definition is
+  practice's and every choice in it a knob: whole signs from the natal
+  Moon, or 30° arcs centred on its degree (`Reckoning::Degree`, the 45°
+  reading; C147); from the Moon or the lagna (C139); the 4th and 8th as
+  the smaller spells, or any house 3 to 11 (C149). A re-entry is kept in
+  its period by **which circuit of the zodiac** it belongs to (C148), not
+  by the baseline engine's 270-day gap; the search widens until no wider
+  one could change a bound, and stops at the ephemeris's coverage with
+  the bound absent rather than guessed. `sade_sati_many` scans Saturn
+  once for many charts. `teistro_gochar::sade_sati` holds the model;
+  `cargo xtask sade-sati` measures a century over the recorded births
+  (every one of 16 428 bounds read back through the gochar).
+
+  **Numbers:** new.
+
+- **A crossing is the same bits in every window that holds it**
+  (`astro-events-and-crossings.md` §4). The search unwrapped its curve by
+  a sum carried from the window's first sample, which rounds differently
+  for every start, so one crossing refined to different bits in two
+  windows; each bracket is now unwrapped from its own sample.
+
+  **Numbers:** a crossing instant may move in its last bits (40 µs was the
+  largest seen), well inside the search's tolerance; which instants move
+  depends on where each window began.
+
 - **The memo remembers a request its provider refused as unsupported**
   (`02-plan-performance-and-passthrough.md` A1f). The completion asks a
   provider for the frame it wants before completing that frame from the

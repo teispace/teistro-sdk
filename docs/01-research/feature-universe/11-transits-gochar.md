@@ -30,4 +30,5 @@ Fire's dynamic reports and TimeMap.
   search of the ephemeris port (with the SDK sample-and-bisect fallback).
 - Vedha table with citations; confirm the exemptions.
 - Sade Sati phase boundaries by sign entry (default) versus by degree from
-  the Moon (45° windows); offer both.
+  the Moon (45° windows); offer both. **Done** (`03-design/sade-sati.md`,
+  `Reckoning`).

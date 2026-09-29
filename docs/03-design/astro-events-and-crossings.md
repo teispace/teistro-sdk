@@ -258,15 +258,22 @@ quantity moves less than half a spacing, so it passes each lattice line
 at most once and no boundary can be crossed and recrossed unseen:
 Mercury's retrograde arc, which a forty-day step swallowed in an engine's
 record, lasts three weeks against a step of a day; a single target is a
-spacing of a whole circle and the daily cap. The samples are unwrapped
-into a continuous curve (each step adds the wrapped difference), the
+spacing of a whole circle and the daily cap. Each bracket is unwrapped
+from its own earlier sample (the later one is its raw value, a whole
+circle on when the step passed 360°), the
 lattice lines strictly above the earlier sample and up to the later one
 are listed (the far sample owns a line met exactly), and each is
 narrowed by `refine_with_rates` over the signed distance to the line
 along the same unwrapped curve and its rate, so the bracket's ends carry
 the very values the lattice test saw and a line met at a sample still
 brackets; the ends are the scan's own samples, rates included, so
-neither is asked for again. The
+neither is asked for again. The samples are the anchored grid's, and
+with the bracket unwrapped from its own sample a crossing is **the same
+bits in every window that holds it**. It was not until 2026-09-29: the
+curve was unwrapped by a sum carried from the window's first sample,
+which rounds differently for every start, and Sade Sati's search, which
+widens its window until a period is settled, found one bound moving by
+40 µs when the window opened earlier (`sade-sati.md`). The
 tolerance is 1e-7 days (under a hundredth of a second); the steps are
 capped at two million samples (five and a half thousand years at a
 day's step), beyond which the search is `NOT_CONVERGED` naming the cap.

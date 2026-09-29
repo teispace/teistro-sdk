@@ -163,7 +163,7 @@ struct Vocabulary {
     category: &'static str,
     /// The SDK value that would answer it.
     sdk: &'static str,
-    /// How many members that value has. Five of these are **counted**
+    /// How many members that value has. Six of these are **counted**
     /// from the type itself ([`counted`]); the rest are stated, and are
     /// zero where the SDK has no vocabulary at all rather than a small
     /// one.
@@ -196,10 +196,9 @@ const fn vocabulary(
 /// Every unmapped category whose subject the SDK **computes**, against
 /// the vocabulary it computes it in.
 ///
-/// The two Phase 7 categories are not here: `muhurta-factor` and
-/// `sade-sati-phala` describe something the SDK does not compute at all,
-/// so there is no vocabulary to compare.
-const VOCABULARIES: [Vocabulary; 10] = [
+/// `muhurta-factor` is not here: it describes something the SDK does not
+/// compute at all, so there is no vocabulary to compare.
+const VOCABULARIES: [Vocabulary; 11] = [
     vocabulary(
         "auspicious-kaal",
         "`panchanga::Muhurtas`' two named muhurtas",
@@ -264,6 +263,13 @@ const VOCABULARIES: [Vocabulary; 10] = [
         "three severity bands and six conditions the SDK does not grade",
     ),
     vocabulary(
+        "sade-sati-phala",
+        "`sade_sati::Phase`'s three and the default smaller spells, the 4th and the 8th",
+        5,
+        0,
+        "the phases' names in lower case and the spells by house (`dhaiyya_4th` is house 4): a spelling, not a classification",
+    ),
+    vocabulary(
         "shadbala-strength",
         "`GrahaShadbala::strong`, a verdict against the required rupas",
         2,
@@ -301,6 +307,10 @@ fn counted(root: &Path) -> Result<BTreeMap<&'static str, usize>, String> {
             teistro_rules::longevity::Reason::ALL.len(),
         ),
         ("ayurdaya-harana", haranas),
+        (
+            "sade-sati-phala",
+            teistro::sade_sati::Phase::ALL.len() + teistro::sade_sati::DEFAULT_SPELLS.len(),
+        ),
         ("ayurdaya-classical-rule", balarishta),
     ]
     .into_iter()
@@ -379,8 +389,8 @@ fn what_each_one_wants(
         out,
         "**{} of the members column is counted from the type**, not \
          written here: `Method::ALL`, `LifeClass::ALL`, `Reason::ALL`, a \
-         default `Reductions` serialised, and the shipped balarishta \
-         pack. The row that made it necessary is `ayurdaya-maraka` — \
+         default `Reductions` serialised, the shipped balarishta pack, \
+         and Sade Sati's `Phase::ALL` with its `DEFAULT_SPELLS`. The row that made it necessary is `ayurdaya-maraka` — \
          §8 of the design page said *fifteen* maraka reasons where the \
          type has twenty, which is the same count-in-prose that has \
          rotted four times in this repository. **The keys-it-spells \

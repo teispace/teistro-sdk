@@ -397,6 +397,7 @@ pub fn gochar(reference: Reference, transits: &[Transit; 9], rules: GocharRules)
 
 pub mod ashtakavarga;
 pub mod hits;
+pub mod sade_sati;
 
 #[cfg(test)]
 mod tests;

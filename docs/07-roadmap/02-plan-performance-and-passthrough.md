@@ -333,6 +333,21 @@ engine is now asked **2 941 calls for 11 117 cells, where it was asked
 from memory, and the batching page refuses itself if they cannot account
 for every repeat the memo did not answer with a cell.
 
+**A1g. A slow body's search, sized by its stations — proposed
+2026-09-29.** Sade Sati's pass profiled at about half its time sampling
+Saturn at the scan's daily cap and half refining; an instant's question
+("is it Sade Sati now?") scans some fifteen years of Saturn, 5 500
+samples. The cap exists because a line met near a station is crossed
+and recrossed within days, and a coarser step would see neither. The
+stations bound that risk exactly: between two consecutive stations a
+body is monotone, so with the stations as sample points a step of half
+a lattice spacing over its greatest rate cannot miss a crossing, and
+Saturn's step on a 30° lattice would be about a hundred days. The
+stations' own scan is the same daily walk today, and a body's shortest
+retrograde (Saturn's is over four months) bounds a coarser one. To be
+measured against the hit list and Sade Sati pages, which must not move
+a bit beyond the refinement's own tolerance.
+
 ### A2. A memo across a batch, gated on the provider's own declaration
 
 *Built as the mechanism; the settings knob follows.*

@@ -175,4 +175,6 @@ after stands in the sign the event says it left and entered.
    search refused later as `INTERNAL`-looking; `check` now refuses any
    graha outside the nine by field, and a graha, point or angle named
    twice rather than answering it twice.
-5. Sade Sati's phases over the ingresses, once its source is in hand.
+5. Sade Sati's phases over the ingresses: **done** in its own page,
+   `sade-sati.md`, over a lattice of its own rather than the hit list's
+   signs, since the degree reading needs one centred on the Moon.

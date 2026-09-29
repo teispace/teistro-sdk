@@ -160,6 +160,7 @@ that reads the reference once.
    Brahma rule's version of that test deduplicated without sorting, which
    passes two equal codes that are not neighbours, and now sorts first.
 4. Sade Sati (its phases need a source: Phaladeepika v. 22 reads Saturn
-   over the Janma rasi and does not name the seven and a half years), the
+   over the Janma rasi and does not name the seven and a half years;
+   **built** at rank 4 as practice defines it, `sade-sati.md`), the
    hit list over the crossing search, and the Ashtakavarga's transit
    scoring.

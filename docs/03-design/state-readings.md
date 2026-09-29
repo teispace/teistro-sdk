@@ -362,9 +362,12 @@ before — *every shipped rule carries a reading* — becomes one it can.
   reads its sources, which is the one that can choose between the verse's
   name and the class's.
 
-  **Fifty-two describe something the SDK does not compute yet**:
-  `muhurta-factor` (47) and `sade-sati-phala` (5), both Phase 7's, and
-  both composite keys like `graha-bhava` when their modules arrive.
+  **Forty-seven describe something the SDK does not compute yet**:
+  `muhurta-factor`, Phase 7's, a composite key like `graha-bhava` when its
+  module arrives. `sade-sati-phala` (5) was its sibling until Sade Sati was
+  built (`sade-sati.md`); its keys are the phases and the 4th and 8th
+  spells, the SDK's own vocabulary spelled otherwise, so it joined the
+  vocabulary table.
 
   `inauspicious-kaal` is the one that went the other way, and it is worth
   keeping beside these as the test: `kaala` **is** a kind, the SDK computes
