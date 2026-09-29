@@ -328,25 +328,54 @@ so `CachingProvider` keeps that refusal by everything of the request but
 its instants (frame, scale, bodies, speeds, observer) and gives it back
 without asking; any other error is a property of the instants or the
 machine and is asked again. Over a 50-day range behind the memo the
-engine is now asked **2 941 calls for 11 117 cells, where it was asked
+engine was then asked **2 941 calls for 11 117 cells, where it was asked
 7 100 for 22 095**; `CacheStats::remembered` counts the cells refused
 from memory, and the batching page refuses itself if they cannot account
 for every repeat the memo did not answer with a cell.
 
-**A1g. A slow body's search, sized by its stations — proposed
+**A1g. A slow body's search, sized by its stations — built
 2026-09-29.** Sade Sati's pass profiled at about half its time sampling
 Saturn at the scan's daily cap and half refining; an instant's question
 ("is it Sade Sati now?") scans some fifteen years of Saturn, 5 500
 samples. The cap exists because a line met near a station is crossed
 and recrossed within days, and a coarser step would see neither. The
 stations bound that risk exactly: between two consecutive stations a
-body is monotone, so with the stations as sample points a step of half
-a lattice spacing over its greatest rate cannot miss a crossing, and
-Saturn's step on a 30° lattice would be about a hundred days. The
-stations' own scan is the same daily walk today, and a body's shortest
-retrograde (Saturn's is over four months) bounds a coarser one. To be
-measured against the hit list and Sade Sati pages, which must not move
-a bit beyond the refinement's own tolerance.
+body is monotone. The proposal was to sample at the stations; what was
+built keeps the fine grid as the refinement's and **scans it every
+stride steps**, the stride three quarters of the body's shortest run
+between stations, so that a bracket holds one station at most, and
+reads the grid only inside a bracket a line or a station is in
+(`../03-design/astro-events-and-crossings.md` §4, "a slow body's
+scan"). The runs are a table, `events::shortest_run_days`, held to the
+built-in ephemeris over its whole coverage by
+`../03-design/station-runs-measured.md`, which also compares every
+crossing with the fine scan's to the bit. No answer moved a bit — the
+bar was the refinement's tolerance, and the design made it identity —
+and Sade Sati's pass fell from 39.6 s to 15.5 s.
+
+*Found by it:* counting **requests** made the strided scan look dearer
+(2 270 against 392 for one Saturn window), because a fine scan asks for
+a whole window as one grid and a probe is a request of its own. What a
+scan costs an ephemeris is the **instants**: over signs, nakshatras and a
+point together they fell to 10–16% of the fine scan's for Jupiter to
+Pluto and 3.7% for the mean node, and to 98% for the Moon, whose stride
+is 2; a first draft bisecting one probe at a time was replaced by rounds
+that ask for every line's next cell as one grid. The almanac gains
+little: its searches are short windows over the Sun and the Moon, and a
+day asks for 7% fewer cells uncached (848 to 789) in 4% more calls (241
+to 251), the rounds being calls of their own; behind the memo a 50-day
+range is 2 974 calls for 11 127 cells against 2 941 for 11 117
+(`../03-design/batch-and-parallelism-measured.md`, whose every verdict
+stood).
+
+*Found by it, too:* erasing the source's type so that the scan is
+compiled once (it had grown the wasm module by 17.6 KB gzipped, and now
+costs 4.8 KB) sent every scan through `impl Longitudes for &S`, which
+forwarded the one-instant methods and not the grids, so a search over a
+reference asked for its window an instant at a time: 421 requests where
+21 would do. It forwards all four now, and the grid tests hold it. The stations search (`events::stations`) still walks daily from
+the window's start and could take the same scan; it is not on any
+measured page's path.
 
 ### A2. A memo across a batch, gated on the provider's own declaration
 

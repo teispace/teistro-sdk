@@ -1199,6 +1199,32 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** new.
 
+- **A slow body's crossing search reads the sky where something
+  happens** (`astro-events-and-crossings.md` §4, "a slow body's scan";
+  plan A1g). A longitude search samples its fine grid every *stride*
+  steps, the stride three quarters of the body's shortest run between
+  stations (`events::shortest_run_days`), and reads the grid only
+  inside a bracket a line or a station is in, refining the same cells
+  from the same samples. Over Jupiter to Pluto it asks the ephemeris for
+  10% to 16% of the instants it did; Sade Sati's measured pass fell from
+  39.6 s to 15.5 s. `Search::scan_step_days` says the stride chosen. The
+  true node turns within a day and keeps the fine scan, as does a search
+  given its own step. `cargo xtask stations` holds the table to the
+  built-in ephemeris's whole coverage and every crossing to the fine
+  scan's, geocentric and topocentric.
+
+  **Numbers:** none; every crossing is the fine scan's to the bit, and
+  every measured answer is the same bytes. What moved is how the
+  ephemeris is asked: an almanac day asks for 789 cells in 251 calls
+  where it asked for 848 in 241.
+
+- **A search over a reference to a source asks for its grids as grids.**
+  `impl Longitudes for &S` forwarded the one-instant methods and not the
+  grid ones, so a search handed `&source` asked for its window an
+  instant at a time.
+
+  **Numbers:** none.
+
 - **A batch of no charts asking for the hit list is an empty answer**,
   as a batch of none is everywhere else at the boundary. It was refused
   by `natals`, a field no caller of the boundary writes, because the

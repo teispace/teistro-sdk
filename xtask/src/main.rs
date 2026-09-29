@@ -114,6 +114,10 @@
 //!   spells over the recorded births and a century, every bound read back
 //!   through the gochar, the two reckonings against each other, and the
 //!   baseline engine's merge rule against the circuit.
+//! - `stations` and `check-stations`: every body's stations over the
+//!   built-in ephemeris's coverage, the shortest runs that bound a slow
+//!   body's scan, and every crossing the strided scan finds held to the
+//!   fine scan's, to the bit.
 //! - `kalachakra` and `check-kalachakra`: the Kalachakra dasha, measured
 //!   beside the readings the sources give at each of its forks.
 //! - `ashtakavarga` and `check-ashtakavarga`: the Ashtakavarga, the engine's
@@ -247,6 +251,7 @@ mod shadbala;
 mod site;
 mod state;
 mod state_readings;
+mod stations;
 mod surface;
 mod time;
 mod topocentric;
@@ -290,6 +295,7 @@ const PASSES: &[Pass] = &[
     ("gochar", gochar::generate, gochar::check_generated),
     ("hits", hits::generate, hits::check_generated),
     ("sade-sati", sade_sati::generate, sade_sati::check_generated),
+    ("stations", stations::generate, stations::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),
     ("state", state::generate, state::check_generated),

@@ -111,6 +111,25 @@ jobs:
       - name: The wasm package passes the Node suite unchanged, and in a browser as in Node
         run: cargo xtask check-wasm
 
+  # A slow body's crossing search strides by the shortest run between its
+  # stations, a table; this holds the table to every body's stations over
+  # the built-in ephemeris's whole coverage, sampled daily, and every
+  # crossing to the fine scan's (03-design/station-runs-measured.md).
+  # Here and not in fast-check: it is minutes of ephemeris on four cores,
+  # and a branch that touches the search or the ephemeris dispatches this
+  # workflow before it merges.
+  stations:
+    name: station runs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Every body's shortest run bounds its scan, and the scan is the fine one's to the bit
+        run: cargo xtask check-stations
+
   # Phase 3's exit asks for the conformance kit against **every tier**,
   # and a tier is a cargo feature, so the kit is whichever one is
   # compiled: running it three times is running it three times. Without

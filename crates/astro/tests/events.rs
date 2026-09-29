@@ -28,41 +28,60 @@ use teistro_port_ephemeris::{
 
 const J2000: f64 = 2_451_545.0;
 
+/// A body on an epicycle: `rate` degrees a day forward, carried round an
+/// `amplitude`-degree circle every `period` days, so its speed swings by
+/// `amplitude × 2π / period` either side of the mean and it turns back
+/// when that exceeds the mean.
+#[derive(Clone, Copy)]
+struct Epicycle {
+    body: Body,
+    start: f64,
+    rate: f64,
+    amplitude: f64,
+    period: f64,
+}
+
+impl Epicycle {
+    fn longitude(&self, t: f64) -> f64 {
+        let phase = core::f64::consts::TAU * t / self.period;
+        normalise_deg(self.start + self.rate * t + self.amplitude * phase.sin())
+    }
+
+    fn speed(&self, t: f64) -> f64 {
+        let phase = core::f64::consts::TAU * t / self.period;
+        self.rate + self.amplitude * core::f64::consts::TAU / self.period * phase.cos()
+    }
+}
+
 /// A planet that loops: 0.5° a day forward with a 12° epicycle of 100 days,
 /// so its speed swings between +1.25 and −0.25 degrees a day and it runs
 /// back over a 4.4° arc once a loop. From 5° the first and the fourth of
 /// those arcs straddle a sign boundary (27.8°–32.2° and 177.8°–182.2°).
-struct Looping;
+///
+/// It turns every few weeks, faster than any planet does, so it answers as
+/// the **true node**, the body whose turns `events::shortest_run_days`
+/// does not bound: every search over it scans the fine grid, which is what
+/// the tests below hold. A planet's name would promise a run it breaks.
+const LOOPING: Epicycle = Epicycle {
+    body: Body::TrueNode,
+    start: 5.0,
+    rate: 0.5,
+    amplitude: 12.0,
+    period: 100.0,
+};
 
-impl Looping {
-    const START: f64 = 5.0;
-    const RATE: f64 = 0.5;
-    const AMPLITUDE: f64 = 12.0;
-    const PERIOD: f64 = 100.0;
-
-    fn longitude(t: f64) -> f64 {
-        let phase = core::f64::consts::TAU * t / Self::PERIOD;
-        normalise_deg(Self::START + Self::RATE * t + Self::AMPLITUDE * phase.sin())
-    }
-
-    fn speed(t: f64) -> f64 {
-        let phase = core::f64::consts::TAU * t / Self::PERIOD;
-        Self::RATE + Self::AMPLITUDE * core::f64::consts::TAU / Self::PERIOD * phase.cos()
-    }
-}
-
-impl EphemerisProvider for Looping {
+impl EphemerisProvider for Epicycle {
     fn capabilities(&self) -> Capabilities {
         Capabilities {
             identity: Identity {
-                name: "looping".to_owned(),
+                name: "epicycle".to_owned(),
                 version: "1".to_owned(),
                 data_version: String::new(),
                 tier: None,
                 data_hashes: Vec::new(),
             },
             jd_range: (0.0, 1e7),
-            bodies: vec![Body::Mars],
+            bodies: vec![self.body],
             native_frame: Frame::CANONICAL,
             astronomy: Astronomy::Modern,
             speeds: true,
@@ -86,10 +105,10 @@ impl EphemerisProvider for Looping {
                     jd_index,
                     body_index,
                     Cell {
-                        lon: Looping::longitude(t),
+                        lon: self.longitude(t),
                         lat: 0.0,
                         dist: 1.5,
-                        lon_speed: Looping::speed(t),
+                        lon_speed: self.speed(t),
                         lat_speed: 0.0,
                         dist_speed: 0.0,
                         status: CellStatus::Ok,
@@ -104,7 +123,7 @@ impl EphemerisProvider for Looping {
 
 #[test]
 fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop() {
-    let provider = Looping;
+    let provider = LOOPING;
     let completion = Completion::new(
         &provider,
         OverridePolicy::SdkOnly,
@@ -115,17 +134,17 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
     let to = JulianDay::<Ut1>::literal(J2000 + 400.0);
 
     // Stations: two per 100-day loop, alternating, at zero speed.
-    let found = stations(&longitudes, Body::Mars, from, to, 1e-7).unwrap();
+    let found = stations(&longitudes, LOOPING.body, from, to, 1e-7).unwrap();
     assert_eq!(found.len(), 8, "{found:?}");
     for pair in found.windows(2) {
         assert!(pair[1].instant.get() > pair[0].instant.get());
         assert_ne!(pair[0].kind, pair[1].kind);
     }
     for station in &found {
-        let speed = Looping::speed(station.instant.get() - J2000);
+        let speed = LOOPING.speed(station.instant.get() - J2000);
         assert!(speed.abs() < 1e-5, "{speed}");
         let (lon, _) = longitudes
-            .longitude_and_speed(Body::Mars, station.instant)
+            .longitude_and_speed(LOOPING.body, station.instant)
             .unwrap();
         assert_eq!(lon, station.longitude_deg);
     }
@@ -135,9 +154,13 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
     // Sign ingresses: every crossing sits on a 30° line, the falling ones are
     // the retrograde re-entries, and each rising-falling-rising triple spans
     // one loop.
-    let crossings = Search::new(&longitudes, Quantity::Longitude(Body::Mars), Lattice::SIGNS)
-        .between(from, to)
-        .unwrap();
+    let crossings = Search::new(
+        &longitudes,
+        Quantity::Longitude(LOOPING.body),
+        Lattice::SIGNS,
+    )
+    .between(from, to)
+    .unwrap();
     assert!(!crossings.is_empty());
     // The narrowing places an event in a handful of evaluations, the
     // bracket's ends being the scan's own samples with their speeds: the
@@ -147,7 +170,7 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
     assert!(most <= 4, "{most}");
     let mut falling = 0;
     for event in &crossings {
-        let lon = Looping::longitude(event.instant.get() - J2000);
+        let lon = LOOPING.longitude(event.instant.get() - J2000);
         assert!(
             // The Newton point from the nearer end, to the instant's last
             // bits (an ulp of a Julian day is 5e-10 days), where a
@@ -188,7 +211,7 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
     // A single target is one line of the lattice: the same instants.
     let single = Search::new(
         &longitudes,
-        Quantity::Longitude(Body::Mars),
+        Quantity::Longitude(LOOPING.body),
         Lattice::single(60.0),
     )
     .between(from, to)
@@ -209,6 +232,9 @@ fn a_looping_planet_crosses_a_boundary_three_times_and_stations_bracket_the_loop
 struct Counted<'a, S: Longitudes + ?Sized> {
     inner: &'a S,
     requests: std::sync::atomic::AtomicUsize,
+    /// The instants asked for, over every request: what a scan costs an
+    /// ephemeris, where a request is what it costs a boundary.
+    instants: std::sync::atomic::AtomicUsize,
 }
 
 impl<'a, S: Longitudes + ?Sized> Counted<'a, S> {
@@ -216,18 +242,29 @@ impl<'a, S: Longitudes + ?Sized> Counted<'a, S> {
         Counted {
             inner,
             requests: std::sync::atomic::AtomicUsize::new(0),
+            instants: std::sync::atomic::AtomicUsize::new(0),
         }
     }
 
     fn requests(&self) -> usize {
         self.requests.load(std::sync::atomic::Ordering::Relaxed)
     }
+
+    fn instants(&self) -> usize {
+        self.instants.load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    fn count(&self, instants: usize) {
+        self.requests
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.instants
+            .fetch_add(instants, std::sync::atomic::Ordering::Relaxed);
+    }
 }
 
 impl<S: Longitudes + ?Sized> Longitudes for Counted<'_, S> {
     fn longitude_and_speed(&self, body: Body, ut1: JulianDay<Ut1>) -> Result<(f64, f64), Error> {
-        self.requests
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.count(1);
         self.inner.longitude_and_speed(body, ut1)
     }
 
@@ -236,8 +273,7 @@ impl<S: Longitudes + ?Sized> Longitudes for Counted<'_, S> {
         bodies: [Body; 2],
         ut1: JulianDay<Ut1>,
     ) -> Result<[(f64, f64); 2], Error> {
-        self.requests
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.count(1);
         self.inner.longitude_and_speed_pair(bodies, ut1)
     }
 
@@ -247,8 +283,7 @@ impl<S: Longitudes + ?Sized> Longitudes for Counted<'_, S> {
         ut1: &[JulianDay<Ut1>],
         out: &mut Vec<(f64, f64)>,
     ) -> Result<(), Error> {
-        self.requests
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.count(ut1.len());
         self.inner.longitudes_and_speeds(body, ut1, out)
     }
 
@@ -258,8 +293,7 @@ impl<S: Longitudes + ?Sized> Longitudes for Counted<'_, S> {
         ut1: &[JulianDay<Ut1>],
         out: &mut Vec<[(f64, f64); 2]>,
     ) -> Result<(), Error> {
-        self.requests
-            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        self.count(ut1.len());
         self.inner.longitudes_and_speeds_pair(bodies, ut1, out)
     }
 
@@ -283,7 +317,7 @@ impl<S: Longitudes + ?Sized> Longitudes for Counted<'_, S> {
 /// brackets and lines met more than once.
 #[test]
 fn a_scan_that_asks_for_a_grid_answers_what_the_walk_answered_to_the_bit() {
-    let provider = Looping;
+    let provider = LOOPING;
     let completion = Completion::new(
         &provider,
         OverridePolicy::SdkOnly,
@@ -294,17 +328,17 @@ fn a_scan_that_asks_for_a_grid_answers_what_the_walk_answered_to_the_bit() {
     let to = JulianDay::<Ut1>::literal(J2000 + 400.0);
 
     for quantity in [
-        Quantity::Longitude(Body::Mars),
-        Quantity::Speed(Body::Mars),
+        Quantity::Longitude(LOOPING.body),
+        Quantity::Speed(LOOPING.body),
         // A composite, which reads a pair at each instant. The looping
         // provider answers for one body, so the pair is that body twice
         // and the combination is its own longitude — which is the point:
         // it is the *pair* path being exercised, not the arithmetic.
         Quantity::Composite {
             a: 2.0,
-            first: Body::Mars,
+            first: LOOPING.body,
             b: -1.0,
-            second: Body::Mars,
+            second: LOOPING.body,
         },
     ] {
         for lattice in [Lattice::SIGNS, Lattice::single(60.0)] {
@@ -355,7 +389,7 @@ fn a_scan_that_asks_for_a_grid_answers_what_the_walk_answered_to_the_bit() {
 /// is chosen from the answer to the last — are what remains.
 #[test]
 fn the_grid_turns_a_scans_round_trips_into_one() {
-    let provider = Looping;
+    let provider = LOOPING;
     let completion = Completion::new(
         &provider,
         OverridePolicy::SdkOnly,
@@ -364,7 +398,7 @@ fn the_grid_turns_a_scans_round_trips_into_one() {
     let longitudes = completion.longitudes(Frame::CANONICAL);
     let from = JulianDay::<Ut1>::literal(J2000);
     let to = JulianDay::<Ut1>::literal(J2000 + 400.0);
-    let quantity = Quantity::Longitude(Body::Mars);
+    let quantity = Quantity::Longitude(LOOPING.body);
 
     let walked = Counted::new(&longitudes);
     let walk = Search::new(&walked, quantity, Lattice::SIGNS)
@@ -400,7 +434,7 @@ fn the_grid_turns_a_scans_round_trips_into_one() {
 /// day without the slices disagreeing with the searches they replace.
 #[test]
 fn the_same_crossing_answers_the_same_from_any_window() {
-    let provider = Looping;
+    let provider = LOOPING;
     let completion = Completion::new(
         &provider,
         OverridePolicy::SdkOnly,
@@ -409,12 +443,12 @@ fn the_same_crossing_answers_the_same_from_any_window() {
     let longitudes = completion.longitudes(Frame::CANONICAL);
 
     for quantity in [
-        Quantity::Longitude(Body::Mars),
+        Quantity::Longitude(LOOPING.body),
         Quantity::Composite {
             a: 2.0,
-            first: Body::Mars,
+            first: LOOPING.body,
             b: -1.0,
-            second: Body::Mars,
+            second: LOOPING.body,
         },
     ] {
         let wide = Search::new(&longitudes, quantity, Lattice::SIGNS)
@@ -467,14 +501,14 @@ fn the_same_crossing_answers_the_same_from_any_window() {
 /// may hold a crossing that is real but not this window's.
 #[test]
 fn a_window_reports_only_the_crossings_inside_it() {
-    let provider = Looping;
+    let provider = LOOPING;
     let completion = Completion::new(
         &provider,
         OverridePolicy::SdkOnly,
         DeltaTModel::TableThenModel,
     );
     let longitudes = completion.longitudes(Frame::CANONICAL);
-    let quantity = Quantity::Longitude(Body::Mars);
+    let quantity = Quantity::Longitude(LOOPING.body);
 
     // A window that begins and ends between samples, so both end brackets
     // reach outside it.
@@ -517,14 +551,14 @@ fn a_window_reports_only_the_crossings_inside_it() {
 /// one each (`03-design/transit-hit-list.md`).
 #[test]
 fn several_lattices_scanned_once_answer_what_each_answers_alone() {
-    let provider = Looping;
+    let provider = LOOPING;
     let completion = Completion::new(
         &provider,
         OverridePolicy::SdkOnly,
         DeltaTModel::TableThenModel,
     );
     let longitudes = completion.longitudes(Frame::CANONICAL);
-    let quantity = Quantity::Longitude(Body::Mars);
+    let quantity = Quantity::Longitude(LOOPING.body);
     let (from, to) = (
         JulianDay::<Ut1>::literal(J2000),
         JulianDay::<Ut1>::literal(J2000 + 400.0),
@@ -576,4 +610,163 @@ fn several_lattices_scanned_once_answer_what_each_answers_alone() {
             .windows(2)
             .all(|w| w[0].instant.get() <= w[1].instant.get())
     );
+}
+
+/// A slow planet's scan strides and still answers what the fine scan
+/// answers, to the bit (`astro-events-and-crossings.md` §4, plan A1g).
+///
+/// Each body keeps the promise its row of `shortest_run_days` makes, since
+/// the stride rests on it: a Saturn that retrogrades for some 148 days and
+/// runs forward for 230 (the table says no run is under 133.5), a Sun
+/// whose speed wavers but never turns, and a node running steadily
+/// backwards across 0°. Each is searched over signs, nakshatras and a
+/// point's aspects at once, and alone over each, from windows opening at
+/// awkward places, and every crossing is held to the fine scan's own:
+/// the instant's bits, the line, the direction and the evaluations the
+/// refinement took. The stride is only worth having if it saves, so the
+/// requests are counted too.
+#[test]
+fn a_strided_scan_answers_what_the_fine_scan_answers_to_the_bit() {
+    use teistro_astro::events::shortest_run_days;
+
+    let bodies = [
+        Epicycle {
+            body: Body::Saturn,
+            start: 25.0,
+            rate: 0.0335,
+            amplitude: 6.0,
+            period: 378.0,
+        },
+        Epicycle {
+            body: Body::Sun,
+            start: 280.0,
+            rate: 0.9856,
+            amplitude: 1.5,
+            period: 365.25,
+        },
+        Epicycle {
+            body: Body::MeanNode,
+            start: 10.0,
+            rate: -0.053,
+            amplitude: 0.0,
+            period: 1.0,
+        },
+    ];
+    let point = Lattice {
+        origin_deg: 101.25,
+        step_deg: 90.0,
+    };
+    for body in bodies {
+        let completion =
+            Completion::new(&body, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+        let longitudes = completion.longitudes(Frame::CANONICAL);
+        let quantity = Quantity::Longitude(body.body);
+        let run = shortest_run_days(body.body).unwrap();
+        let mut compared = 0usize;
+        for lattices in [
+            vec![Lattice::SIGNS, Lattice::NAKSHATRAS, point],
+            vec![Lattice::SIGNS],
+            vec![Lattice::single(0.0)],
+        ] {
+            for (from, days) in [(0.0, 21_915.0), (123.456, 4_000.0), (7_000.999, 2_555.5)] {
+                let (from, to) = (
+                    JulianDay::<Ut1>::literal(J2000 + from),
+                    JulianDay::<Ut1>::literal(J2000 + from + days),
+                );
+                let rest = lattices[1..].iter().copied();
+                let strided = Counted::new(&longitudes);
+                let search = Search::each(&strided, quantity, lattices[0], rest.clone());
+                let fine = search.step_days();
+                assert!(
+                    search.scan_step_days() > fine && search.scan_step_days() <= run * 0.75,
+                    "{:?}: scans every {} days on a {fine}-day grid",
+                    body.body,
+                    search.scan_step_days()
+                );
+                let found = search.between_each(from, to).unwrap();
+                let walked = Counted::new(&longitudes);
+                let expected = Search::each(&walked, quantity, lattices[0], rest)
+                    .with_step_days(fine)
+                    .between_each(from, to)
+                    .unwrap();
+                assert_eq!(found.len(), expected.len());
+                for (found, expected) in found.iter().zip(&expected) {
+                    assert_eq!(
+                        found.len(),
+                        expected.len(),
+                        "{:?} {lattices:?} from {}",
+                        body.body,
+                        from.get()
+                    );
+                    for (a, b) in found.iter().zip(expected) {
+                        assert_eq!(a.instant.get().to_bits(), b.instant.get().to_bits());
+                        assert_eq!(
+                            (a.boundary_deg, a.direction, a.evaluations),
+                            (b.boundary_deg, b.direction, b.evaluations)
+                        );
+                        compared += 1;
+                    }
+                }
+                assert!(
+                    strided.instants() * 2 < walked.instants(),
+                    "{:?}: {} instants against the fine scan's {}",
+                    body.body,
+                    strided.instants(),
+                    walked.instants()
+                );
+            }
+        }
+        assert!(compared > 200, "{:?}: only {compared} compared", body.body);
+    }
+}
+
+/// The Saturn above does turn: the strided scan's crossings of one line
+/// alternate in direction exactly where the fine scan's do, which is the
+/// loop the stride must not step over.
+#[test]
+fn a_strided_scan_keeps_every_retrograde_recrossing() {
+    let saturn = Epicycle {
+        body: Body::Saturn,
+        start: 25.0,
+        rate: 0.0335,
+        amplitude: 6.0,
+        period: 378.0,
+    };
+    let completion = Completion::new(
+        &saturn,
+        OverridePolicy::SdkOnly,
+        DeltaTModel::TableThenModel,
+    );
+    let longitudes = completion.longitudes(Frame::CANONICAL);
+    let crossings = Search::new(
+        &longitudes,
+        Quantity::Longitude(Body::Saturn),
+        Lattice::SIGNS,
+    )
+    .between(
+        JulianDay::<Ut1>::literal(J2000),
+        JulianDay::<Ut1>::literal(J2000 + 21_915.0),
+    )
+    .unwrap();
+    let falling = crossings
+        .iter()
+        .filter(|event| event.direction == Direction::Falling)
+        .count();
+    // Sixty years carry it round twice, and each loop that straddles a
+    // line crosses it three times: the net is the lines between the ends.
+    let (start, end) = (saturn.start, saturn.start + saturn.rate * 21_915.0);
+    let end = end + saturn.amplitude * (core::f64::consts::TAU * 21_915.0 / saturn.period).sin();
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "a few dozen lines, forward"
+    )]
+    let net = ((end / 30.0).floor() - (start / 30.0).floor()) as usize;
+    let rising = crossings.len() - falling;
+    assert_eq!(rising - falling, net, "{crossings:?}");
+    assert!(falling >= 10, "only {falling} retrograde crossings");
+    for event in &crossings {
+        let lon = saturn.longitude(event.instant.get() - J2000);
+        assert!(difference_deg(lon, event.boundary_deg).abs() < 1e-9);
+    }
 }
