@@ -33,7 +33,7 @@ use teistro_dasha::{
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
-use teistro_kp::{KpChart, Position};
+use teistro_kp::{KpChart, Position, Significators};
 use teistro_panchanga::limb::{Zodiac as LimbZodiac, moon_between, nakshatra_at};
 use teistro_points::Points;
 use teistro_points::arudha::arudha_by;
@@ -1245,6 +1245,33 @@ impl<'a> ChartArea<'a> {
             })
             .collect::<Result<Vec<_>, Error>>()?;
         Ok(KpChart::new(built, longitudes, planets))
+    }
+
+    /// A KP chart's **significators** (`03-design/kp.md` §1): each house's
+    /// four levels in the Reader's order, the planets conjoined with or
+    /// aspected by them, its intercepted signs, and whose results each node
+    /// gives, a node's own aspects read from `aspect.node_aspects`.
+    ///
+    /// Needs nothing but the chart, from [`ChartArea::kp`].
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Ephemeris, KpRequest, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).profile("kp-default").build()?;
+    /// let place = Place::new(Latitude::try_new(13.08)?, Longitude::try_new(80.27)?, Altitude::try_new(6.0)?);
+    /// let chart = sdk
+    ///     .chart()
+    ///     .reading(JulianDay::<Utc>::literal(2_451_545.0), &ChartRequest::at(place, UtcOffset::literal(5, 30, 0)))?
+    ///     .value;
+    /// let kp = sdk.chart().kp(&chart, &KpRequest::new())?;
+    /// let significators = sdk.chart().kp_significators(&kp);
+    /// // The 7th house's significators, strongest first.
+    /// println!("{:?}", significators.house(7).map(|house| house.in_order()));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn kp_significators(self, kp: &KpChart) -> Significators {
+        Significators::of(kp, self.context.settings().aspect.node_aspects)
     }
 
     /// Saturn's **Sade Sati** and smaller spells from the natal Moon over a

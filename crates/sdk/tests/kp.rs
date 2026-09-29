@@ -122,3 +122,44 @@ fn the_settings_choose_the_system_and_the_polar_policy_what_stands_in() {
     let kp = placidus.chart().kp(&polar, &KpRequest::new()).unwrap();
     assert_eq!(kp.system, HouseSystem::Porphyry);
 }
+
+/// Through the façade the significators are the crate's, with the node
+/// aspects the settings give, and every house has a lord from the chart's
+/// own cusp.
+#[test]
+fn the_significators_are_read_with_the_settings_node_aspects() {
+    let sdk = context("kp-default", "{}");
+    let chart = chart_at(&sdk, 27.7172);
+    let kp = sdk.chart().kp(&chart, &KpRequest::new()).unwrap();
+    let significators = sdk.chart().kp_significators(&kp);
+    assert_eq!(
+        significators,
+        teistro::kp::Significators::of(&kp, teistro::settings::NodeAspects::None)
+    );
+    for (house, cusp) in significators.houses.iter().zip(&kp.cusps) {
+        assert_eq!(house.lord, cusp.lords.sign);
+        // Every planet is an occupant of exactly one house.
+        assert!(
+            house
+                .occupants
+                .iter()
+                .all(|graha| kp.planet(*graha).unwrap().house == house.house)
+        );
+    }
+    let occupied: usize = significators
+        .houses
+        .iter()
+        .map(|house| house.occupants.len())
+        .sum();
+    assert_eq!(occupied, kp.planets.len());
+    assert_eq!(significators.nodes.len(), 2);
+
+    let nodes = context(
+        "kp-default",
+        r#"{"aspect": {"node_aspects": "FIVE_SEVEN_NINE"}}"#,
+    );
+    assert_eq!(
+        nodes.chart().kp_significators(&kp),
+        teistro::kp::Significators::of(&kp, teistro::settings::NodeAspects::FiveSevenNine)
+    );
+}

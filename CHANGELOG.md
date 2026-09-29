@@ -1296,6 +1296,20 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none; the founder's cusps are the same function moved.
 
+- **The KP significators** (`kp.md` §6 step 3).
+  `sdk.chart().kp_significators(&kp)` and
+  `teistro_kp::Significators::of` read, per house, KP Reader VI's four
+  levels in order — the planets in the occupants' stars, the occupants,
+  the planets in the lord's star, the lord — then the planets conjoined
+  with them and the planets they aspect, and the signs intercepted in the
+  house; per node, whose results it gives in the Reader's order
+  (conjoined, star lord, aspecting, sign lord; C155 settled by the
+  Reader's own passage); per planet, the houses it signifies at each
+  level. A conjunction is the same sign and an aspect a graha's drishti,
+  the aspect crate's table with a node's read from `aspect.node_aspects`.
+
+  **Numbers:** none; nothing existing reads it.
+
 - **A search over a reference to a source asks for its grids as grids.**
   `impl Longitudes for &S` forwarded the one-instant methods and not the
   grid ones, so a search handed `&source` asked for its window an
