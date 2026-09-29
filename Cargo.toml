@@ -22,6 +22,7 @@ members = [
     "crates/houses",
     "crates/geometry",
     "crates/gochar",
+    "crates/kp",
     "crates/dasha",
     "crates/rules",
     "crates/interpret",

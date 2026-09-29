@@ -71,7 +71,7 @@ pub use reading::{DashaCursor, DashaReading, PeriodRow};
 pub use registry::DashaSystems;
 pub use row::{
     ASHTOTTARI_BPHS, Count, DashaName, Lord, ROWS, SHASHTIHAYANI, Scale, Seat, UduDefinition,
-    UduRow, VIMSHOTTARI, row,
+    UduRow, VIMSHOTTARI, VIMSHOTTARI_LORDS, VIMSHOTTARI_YEARS, row,
 };
 pub use tree::{Birth, Chain, Dasha, MAX_DEPTH, Path, Period, Rules, Timeline};
 pub use wheel::{Segment, Wheel};

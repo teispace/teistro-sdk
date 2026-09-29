@@ -1794,6 +1794,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-kp"
+version = "0.0.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "teistro-core",
+ "teistro-dasha",
+]
+
+[[package]]
 name = "teistro-node"
 version = "0.0.0"
 dependencies = [

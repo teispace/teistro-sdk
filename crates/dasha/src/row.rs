@@ -416,22 +416,31 @@ const fn lord(graha: Graha, years: u8) -> Lord {
     Lord { graha, years }
 }
 
+/// Vimshottari's nine lords and their years, from Ketu, Ashwini's lord.
+///
+/// The one list: [`VIMSHOTTARI`] borrows it, and KP divides every
+/// nakshatra in the same proportions (`03-design/kp.md`).
+pub const VIMSHOTTARI_LORDS: [Lord; 9] = [
+    lord(Graha::Ketu, 7),
+    lord(Graha::Venus, 20),
+    lord(Graha::Sun, 6),
+    lord(Graha::Moon, 10),
+    lord(Graha::Mars, 7),
+    lord(Graha::Rahu, 18),
+    lord(Graha::Jupiter, 16),
+    lord(Graha::Saturn, 19),
+    lord(Graha::Mercury, 17),
+];
+
+/// Vimshottari's whole cycle in years, the sum of [`VIMSHOTTARI_LORDS`].
+pub const VIMSHOTTARI_YEARS: u8 = 120;
+
 /// Vimshottari: nine lords over 120 years, counted from Ashwini, one
 /// nakshatra each. Measured over the whole corpus
 /// (`03-design/dasha-measured.md`).
 pub const VIMSHOTTARI: UduRow = UduRow {
     system: DashaName::Catalogued(DashaSystem::Vimshottari),
-    lords: Cow::Borrowed(&[
-        lord(Graha::Ketu, 7),
-        lord(Graha::Venus, 20),
-        lord(Graha::Sun, 6),
-        lord(Graha::Moon, 10),
-        lord(Graha::Mars, 7),
-        lord(Graha::Rahu, 18),
-        lord(Graha::Jupiter, 16),
-        lord(Graha::Saturn, 19),
-        lord(Graha::Mercury, 17),
-    ]),
+    lords: Cow::Borrowed(&VIMSHOTTARI_LORDS),
     reference: 0,
     count: Count::FromReference,
     span: 1,
@@ -859,6 +868,7 @@ mod tests {
         }
         let totals: Vec<u32> = ROWS.iter().map(UduRow::total_years).collect();
         assert_eq!(totals, [120, 108, 112, 105, 100, 84, 72, 36, 120, 60]);
+        assert_eq!(VIMSHOTTARI.total_years(), u32::from(VIMSHOTTARI_YEARS));
         ASHTOTTARI_BPHS.validate().unwrap();
         assert_eq!(ASHTOTTARI_BPHS.total_years(), 108);
         assert_eq!(TRIBHAGI.mahadashas(), 18);
