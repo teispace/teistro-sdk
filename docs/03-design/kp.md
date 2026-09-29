@@ -1,6 +1,6 @@
 # KP: Krishnamurti Paddhati
 
-Status: `draft`, 2026-09-29; §6 steps 1 to 4 **built** by 2026-09-30. Written
+Status: `draft`, 2026-09-29; §6 steps 1 to 5 **built** by 2026-09-30. Written
 from the Readers before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/06-kp.md` (P0: the 249
@@ -140,7 +140,27 @@ Jupiter's, the only subs a sign's end falls inside.
   rejections of C153 with the retrograde planet that caused each.
 - **Horary** (step 5): `KpNumber` and a moment and place to a chart
   whose lagna is the number's start (C156).
-- **The boundary** (step 6): one chart section, the bindings, parity.
+- **The boundary** (step 6). A chart request gains `kp_json`, null for
+  no KP, else `{"number": 74, "clock": 19800, "anyAyanamsha": true}`
+  with every member optional: `number` makes every chart a horary chart
+  for it, `clock` (seconds east of UT) is the civil day lord's clock, and
+  `anyAyanamsha` lifts C157. Every chart then answers a **`KpReading`**
+  — `{chart, significators, ruling}` — which is also one façade call in
+  Rust, `sdk.chart().kp_reading(&chart, &request)`. The ruling planets
+  are always the moment's, its own lagna and Moon, since the Reader
+  takes them "at the moment of judgment"; only the cusps take the
+  number.
+
+  The reading crosses as **one canonical-JSON section**, `kp`, an array
+  with one reading a chart, empty when none was asked for: the shape of
+  `plans` and `rules`, not of columns. A reading is nested and variable
+  — a house's significators are lists of any length, a ruler carries
+  every reason it rules — and columns would flatten it into ragged
+  counts each binding reassembles, three times over, for a section read
+  once a chart. The JSON is serde's own, so the spelling every binding
+  reads is the one `crates/ffi/tests/keys.rs` holds to the Rust types.
+  Each binding types it (`KpReading` in Node's declarations, Python's
+  `TypedDict`s, Dart's classes) and parity compares the four on it.
 
 ## 6. Order of work
 
@@ -181,7 +201,17 @@ Jupiter's, the only subs a sign's end falls inside.
    `conformance-baseline` profile does not take the baseline engine's
    readings: the corpus records no KP to hold them to, and a profile
    version is spent on a measured change.
-5. Horary from a number.
+5. **Built**: horary from a number. `sdk.chart().kp_horary(&moment,
+   KpNumber, &KpRequest)` keeps the moment's planets and gives the
+   chart the number's start as its lagna exactly, with the other cusps
+   those that ascendant has at the place: the meridian that raises it is
+   found by bisection at the moment's obliquity and ayanamsha
+   (`teistro_chart::foundation::cusps_raising`), which is what reading
+   Raphael's tables at the latitude does. The acceptance reads it back
+   through founded charts: for numbers 1, 48, 74, 229 and 249 the moment
+   that day when the lagna itself reaches the number's start, found by
+   founding charts, has the same twelve cusps to under 0.1″. A latitude
+   where no meridian raises the start is refused on `place.latitude`.
 6. The boundary and the bindings.
 7. The measured pass: over the recorded births, each sub lord's margin
    in minutes of birth time (how many charts a minute's error changes),

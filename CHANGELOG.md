@@ -1326,6 +1326,18 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none; the settings document gains the `kp` group, and a
   settings hash with it.
 
+- **KP horary from a number** (`kp.md` §6 step 5, crux C156).
+  `sdk.chart().kp_horary(&moment, KpNumber::new(74)?, &KpRequest::new())`
+  answers the KP chart of the moment of judgement with the lagna at the
+  start of the querent's number and the other cusps those that ascendant
+  has at the place. `teistro_chart::foundation::cusps_raising` finds the
+  meridian that raises a given ascendant at a chart's moment and place,
+  and refuses a latitude where none does. Read back through founded
+  charts: the moment that day when the lagna reaches the number's start
+  has the same cusps to under 0.1″.
+
+  **Numbers:** none; nothing existing reads it.
+
 - **A search over a reference to a source asks for its grids as grids.**
   `impl Longitudes for &S` forwarded the one-instant methods and not the
   grid ones, so a search handed `&source` asked for its window an
