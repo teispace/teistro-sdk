@@ -6120,6 +6120,29 @@ export declare const GocharFrom: {
 export declare const GocharFromById: ReadonlyMap<number, GocharFrom>;
 
 /**
+ * What Sade Sati's houses are reckoned in (C147, `03-design/sade-sati.md`).
+ */
+export type Reckoning = 'SIGN' | 'DEGREE';
+
+/** Every Reckoning by name; the values are the strings the union accepts. */
+export declare const Reckoning: {
+  /**
+   * Whole signs from the reference's sign.
+   */
+  readonly Sign: 'SIGN';
+  /**
+   * 30° houses with the reference's degree in the middle of the first.
+   */
+  readonly Degree: 'DEGREE';
+};
+
+/**
+ * Every Reckoning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ReckoningById: ReadonlyMap<number, Reckoning>;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 export type HitKind = 'SIGN_INGRESS' | 'NAKSHATRA_INGRESS' | 'STATION' | 'ASPECT';

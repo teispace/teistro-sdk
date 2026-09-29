@@ -452,6 +452,11 @@ fn chart_cast_section(id: u32) -> SectionSchema {
                 Scalar::U32,
                 "How many rows of the `hits` section belong to this chart. Zero when no hit list was asked for.\n\nRagged because a chart's aspects are its own: the sky's ingresses and stations are every chart's alike, but how often a transit crosses a natal point depends on where the point stands.",
             ),
+            ColumnDef::new(
+                "sade_sati_visit_count",
+                Scalar::U32,
+                "How many rows of the `sade_sati_visits` section belong to this chart. Zero when no Sade Sati was asked for.\n\nRagged because a chart's periods are its own: where Saturn crosses into them depends on where the natal Moon stands, and how often it steps back out depends on where its stations fall.",
+            ),
         ],
     )
 }
@@ -601,6 +606,7 @@ pub fn charts() -> BlobSchema {
         .chain(chart_jaimini_sections(51))
         .chain(chart_gochar_sections(53))
         .chain([chart_hits_section(56)])
+        .chain(chart_sade_sati_sections(57))
         .collect(),
     }
 }
@@ -642,6 +648,65 @@ fn chart_gochar_sections(first: u32) -> [SectionSchema; 3] {
         chart_gochar_section(first),
         chart_gochar_grahas_section(first + 1),
         chart_gochar_ashtakavarga_section(first + 2),
+    ]
+}
+
+/// Every chart's Sade Sati, from `first`: a row a chart, and a row a visit
+/// (`03-design/sade-sati.md`).
+fn chart_sade_sati_sections(first: u32) -> [SectionSchema; 2] {
+    [
+        SectionSchema::columns(
+            first,
+            "sade_sati",
+            "What every chart's Sade Sati was reckoned from, a row a chart in the `cast` section's order. Empty when `sade_sati_json` asked for none, and then `sade_sati_visits` is too.",
+            vec![
+                ColumnDef::new(
+                    "reference",
+                    Scalar::U16,
+                    "The sign the houses are counted from: the natal Moon's, or the lagna's when `counted_from` says so.",
+                )
+                .of_enum("Rashi"),
+                ColumnDef::new(
+                    "counted_from",
+                    Scalar::U8,
+                    "Which natal point `reference` is, `sade_sati_json.countedFrom` (C139).",
+                )
+                .of_enum("TsGocharFrom"),
+                ColumnDef::new(
+                    "reckoning",
+                    Scalar::U8,
+                    "What the houses were reckoned in, `sade_sati_json.reckoning` (C147).",
+                )
+                .of_enum("TsReckoning"),
+            ],
+        ),
+        SectionSchema::columns(
+            first + 1,
+            "sade_sati_visits",
+            "Every stay of Saturn's in a house of a period reaching into the window, concatenated in the `cast` section's order and **ragged** by its `sade_sati_visit_count`. A chart's rows are its periods in turn, numbered by `period`: its Sade Satis first (houses 12, 1 and 2), then its smaller spells (C149), each group in time order; within a Sade Sati its phases' rows in the order 12, 1, 2; and each house's visits in time order, a retrograde re-entry a visit of its own (C148). A period is **whole**, however far its bounds fall outside the window. The sky is searched **once for the batch**.",
+            vec![
+                ColumnDef::new(
+                    "period",
+                    Scalar::U16,
+                    "Which of the chart's periods the visit belongs to, counted from 0: the rows of one Sade Sati, or of one smaller spell, share it.",
+                ),
+                ColumnDef::new(
+                    "house",
+                    Scalar::U8,
+                    "The house Saturn stays in, 1 to 12 from `sade_sati.reference`: 12, 1 or 2 in a Sade Sati (rising, peak and setting), otherwise a smaller spell's.",
+                ),
+                ColumnDef::new(
+                    "from",
+                    Scalar::F64,
+                    "When Saturn entered the house, a UTC Julian day; NaN when that is before the ephemeris's coverage.",
+                ),
+                ColumnDef::new(
+                    "to",
+                    Scalar::F64,
+                    "When Saturn left it, a UTC Julian day, the visit half-open; NaN when that is after the ephemeris's coverage.",
+                ),
+            ],
+        ),
     ]
 }
 

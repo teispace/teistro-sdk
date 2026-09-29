@@ -350,6 +350,12 @@ class ChartsCast:
     Ragged because a chart's aspects are its own: the sky's ingresses and stations are every chart's alike, but how often a transit crosses a natal point depends on where the point stands.
     """
 
+    sade_sati_visit_count: memoryview[int]
+    """How many rows of the `sade_sati_visits` section belong to this chart. Zero when no Sade Sati was asked for.
+
+    Ragged because a chart's periods are its own: where Saturn crosses into them depends on where the natal Moon stands, and how often it steps back out depends on where its stations fall.
+    """
+
     length: int
     """The number of rows every column holds."""
 
@@ -1917,6 +1923,51 @@ class ChartsHits:
 
 
 @dataclass(frozen=True)
+class ChartsSadeSati:
+    """The `sade_sati` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    What every chart's Sade Sati was reckoned from, a row a chart in the `cast` section's order. Empty when `sade_sati_json` asked for none, and then `sade_sati_visits` is too.
+    """
+
+    reference: memoryview[int]
+    """The sign the houses are counted from: the natal Moon's, or the lagna's when `counted_from` says so."""
+
+    counted_from: memoryview[int]
+    """Which natal point `reference` is, `sade_sati_json.countedFrom` (C139)."""
+
+    reckoning: memoryview[int]
+    """What the houses were reckoned in, `sade_sati_json.reckoning` (C147)."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsSadeSatiVisits:
+    """The `sade_sati_visits` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every stay of Saturn's in a house of a period reaching into the window, concatenated in the `cast` section's order and **ragged** by its `sade_sati_visit_count`. A chart's rows are its periods in turn, numbered by `period`: its Sade Satis first (houses 12, 1 and 2), then its smaller spells (C149), each group in time order; within a Sade Sati its phases' rows in the order 12, 1, 2; and each house's visits in time order, a retrograde re-entry a visit of its own (C148). A period is **whole**, however far its bounds fall outside the window. The sky is searched **once for the batch**.
+    """
+
+    period: memoryview[int]
+    """Which of the chart's periods the visit belongs to, counted from 0: the rows of one Sade Sati, or of one smaller spell, share it."""
+
+    house: memoryview[int]
+    """The house Saturn stays in, 1 to 12 from `sade_sati.reference`: 12, 1 or 2 in a Sade Sati (rising, peak and setting), otherwise a smaller spell's."""
+
+    from_: memoryview[float]
+    """When Saturn entered the house, a UTC Julian day; NaN when that is before the ephemeris's coverage."""
+
+    to: memoryview[float]
+    """When Saturn left it, a UTC Julian day, the visit half-open; NaN when that is after the ephemeris's coverage."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -2208,6 +2259,12 @@ class Charts:
     hits: ChartsHits
     """Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none."""
 
+    sade_sati: ChartsSadeSati
+    """What every chart's Sade Sati was reckoned from, a row a chart in the `cast` section's order. Empty when `sade_sati_json` asked for none, and then `sade_sati_visits` is too."""
+
+    sade_sati_visits: ChartsSadeSatiVisits
+    """Every stay of Saturn's in a house of a period reaching into the window, concatenated in the `cast` section's order and **ragged** by its `sade_sati_visit_count`. A chart's rows are its periods in turn, numbered by `period`: its Sade Satis first (houses 12, 1 and 2), then its smaller spells (C149), each group in time order; within a Sade Sati its phases' rows in the order 12, 1, 2; and each house's visits in time order, a retrograde re-entry a visit of its own (C148). A period is **whole**, however far its bounds fall outside the window. The sky is searched **once for the batch**."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -2273,6 +2330,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_gochar_grahas = blob.section(54, "gochar_grahas")
     at_gochar_ashtakavarga = blob.section(55, "gochar_ashtakavarga")
     at_hits = blob.section(56, "hits")
+    at_sade_sati = blob.section(57, "sade_sati")
+    at_sade_sati_visits = blob.section(58, "sade_sati_visits")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -2298,6 +2357,9 @@ def decode_charts(raw: bytes) -> Charts:
                 at_cast, 9, 4, at_cast.count
             ).cast("I"),
             hit_count=blob.column(at_cast, 10, 4, at_cast.count).cast("I"),
+            sade_sati_visit_count=blob.column(
+                at_cast, 11, 4, at_cast.count
+            ).cast("I"),
             length=at_cast.count,
         ),
         grahas=ChartsGrahas(
@@ -3374,6 +3436,33 @@ def decode_charts(raw: bytes) -> Charts:
             angle=blob.column(at_hits, 7, 2, at_hits.count).cast("H"),
             phase=blob.column(at_hits, 8, 1, at_hits.count).cast("B"),
             length=at_hits.count,
+        ),
+        sade_sati=ChartsSadeSati(
+            reference=blob.column(
+                at_sade_sati, 0, 2, at_sade_sati.count
+            ).cast("H"),
+            counted_from=blob.column(
+                at_sade_sati, 1, 1, at_sade_sati.count
+            ).cast("B"),
+            reckoning=blob.column(
+                at_sade_sati, 2, 1, at_sade_sati.count
+            ).cast("B"),
+            length=at_sade_sati.count,
+        ),
+        sade_sati_visits=ChartsSadeSatiVisits(
+            period=blob.column(
+                at_sade_sati_visits, 0, 2, at_sade_sati_visits.count
+            ).cast("H"),
+            house=blob.column(
+                at_sade_sati_visits, 1, 1, at_sade_sati_visits.count
+            ).cast("B"),
+            from_=blob.column(
+                at_sade_sati_visits, 2, 8, at_sade_sati_visits.count
+            ).cast("d"),
+            to=blob.column(
+                at_sade_sati_visits, 3, 8, at_sade_sati_visits.count
+            ).cast("d"),
+            length=at_sade_sati_visits.count,
         ),
     )
 

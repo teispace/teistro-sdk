@@ -1223,6 +1223,60 @@ class AnEngine(WithLibrary):
                     ctx.chart.found(instant=2451545, place=observer, utc_offset_seconds=20700, hits=bad)
                 self.assertEqual(refused.exception.field, field)
 
+    def test_a_chart_carries_its_sade_sati_each_period_whole(self) -> None:
+        """Sade Sati crosses whole: `None` unless asked; each Sade Sati its
+        three phases in order; a period asked about at one instant inside it
+        the one a decade's window finds; a batch each chart alone; what a
+        report names taken back by a request; and a bad request refused by
+        the field the caller wrote."""
+        from teistro import GocharFrom, Reckoning, SadeSatiRequest
+
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        births = [2447995.4895833335, 2451545.2]
+        at: dict[str, Any] = {"place": observer, "utc_offset_seconds": 20700}
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            self.assertIsNone(ctx.chart.found(instant=births[0], **at).sade_sati)
+            for reckoning in Reckoning:
+                asked: SadeSatiRequest = {"from": 2460676.5, "to": 2464329.0, "reckoning": reckoning, "spells": (4, 7, 8)}
+                batch = ctx.chart.found_many(instants=births, sade_sati=asked, **at)
+                for k, instant in enumerate(births):
+                    report = batch.at(k).sade_sati
+                    assert report is not None
+                    self.assertEqual(report, ctx.chart.found(instant=instant, sade_sati=asked, **at).sade_sati)
+                    self.assertIs(report.reckoning, reckoning)
+                    self.assertIs(report.reference.from_, GocharFrom.MOON)
+                    self.assertTrue(report.sade_sati or report.spells, "a decade holds a period")
+                    for one in report.sade_sati:
+                        self.assertEqual([spell.house for spell in one.phases], [12, 1, 2])
+                        visits = sorted((v for spell in one.phases for v in spell.visits), key=lambda v: v.from_ or 0)
+                        for before, after in zip(visits, visits[1:]):
+                            assert before.to is not None and after.from_ is not None
+                            self.assertLessEqual(before.to, after.from_)
+                        peak = one.phases[1].visits[0]
+                        assert peak.from_ is not None and peak.to is not None
+                        # Asked at one instant inside its peak, from what the
+                        # report named: the same Sade Sati, whole.
+                        now: SadeSatiRequest = {
+                            "from": (peak.from_ + peak.to) / 2,
+                            "countedFrom": report.reference.from_,
+                            "reckoning": report.reckoning,
+                        }
+                        found = ctx.chart.found(instant=instant, sade_sati=now, **at).sade_sati
+                        assert found is not None
+                        self.assertEqual(found.sade_sati, (one,))
+                    for spell in report.spells:
+                        self.assertIn(spell.house, (4, 7, 8))
+            refusals: list[tuple[SadeSatiRequest, str]] = [
+                ({"from": 2460676.5, "to": 2460600.5}, "sadeSati.to"),
+                ({"from": 2460676.5, "spells": [2]}, "sadeSati.spells"),
+            ]
+            for bad, field in refusals:
+                with self.assertRaises(TeistroError) as refused:
+                    ctx.chart.found(instant=births[0], sade_sati=bad, **at)
+                self.assertEqual(refused.exception.field, field)
+
     def test_a_chart_carries_its_transits_each_verdict_its_own_house_and_vedha(self) -> None:
         """A chart's transits cross whole: a reading an instant in the order
         asked, counted from what was asked, nine grahas each whose verdict

@@ -387,6 +387,7 @@ def main() -> None:
                 "aspects": [0, 90, 180],
                 "orbDeg": 2,
             },
+            sade_sati={"from": 2460676.5, "to": 2464329.0, "reckoning": "DEGREE", "spells": [4, 7, 8]},
             shadbala=True,
             bhava_bala=True,
             state=True,
@@ -659,6 +660,22 @@ def main() -> None:
                     f"chart-{i}-hit-{k}",
                     f"{number(hit.instant)} {hit.graha.full_key} {e.kind.key} {into} {motion} {to} {angle} {phase}",
                 )
+            ss = chart.sade_sati
+            assert ss is not None
+            put(f"chart-{i}-sade-sati", f"{ss.reference.from_.key} {ss.reference.sign.full_key} {ss.reckoning.key}")
+
+            def bound(jd: float | None) -> str:
+                return "-" if jd is None else number(jd)
+
+            periods = [one.phases for one in ss.sade_sati] + [(spell,) for spell in ss.spells]
+            lines = [
+                f"{period} {spell.house} {bound(v.from_)} {bound(v.to)}"
+                for period, spells in enumerate(periods)
+                for spell in spells
+                for v in spell.visits
+            ]
+            for k, line in enumerate(lines):
+                put(f"chart-{i}-sade-sati-{k}", line)
             vs = chart.vimshopaka
             assert vs is not None
             put(f"chart-{i}-vimshopaka", vs.scoring.key)

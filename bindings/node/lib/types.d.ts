@@ -857,6 +857,21 @@ export interface ChartRequest {
    * @nullable
    */
   readonly hitsJson?: string;
+  /**
+   * Sade Sati and the smaller spells of Saturn to find for every chart
+   * in the batch, as a JSON object: `from`, a UTC Julian day, and
+   * optionally `to` (the window's end, `from` by default), `countedFrom`
+   * (`"MOON"`, the default, or `"LAGNA"`; C139), `reckoning` (`"SIGN"`,
+   * the default, or `"DEGREE"`; C147) and `spells` (houses 3 to 11, the
+   * 4th and the 8th by default; C149). Every period reaching into the
+   * window comes back whole in the `sade_sati` and `sade_sati_visits`
+   * sections, the sky searched once for the batch. Null for none
+   * (`03-design/sade-sati.md`). Refusals are named from the record every
+   * binding calls `sadeSati`, as `sadeSati.to`.
+   * @example {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}
+   * @nullable
+   */
+  readonly sadeSatiJson?: string;
 }
 
 /**

@@ -380,6 +380,7 @@ final class ChartsCast {
     required this.praveshaCount,
     required this.natalSahamCount,
     required this.hitCount,
+    required this.sadeSatiVisitCount,
     required this.length,
   });
 
@@ -423,6 +424,11 @@ final class ChartsCast {
   ///
   /// Ragged because a chart's aspects are its own: the sky's ingresses and stations are every chart's alike, but how often a transit crosses a natal point depends on where the point stands.
   final Uint32List hitCount;
+
+  /// How many rows of the `sade_sati_visits` section belong to this chart. Zero when no Sade Sati was asked for.
+  ///
+  /// Ragged because a chart's periods are its own: where Saturn crosses into them depends on where the natal Moon stands, and how often it steps back out depends on where its stations fall.
+  final Uint32List sadeSatiVisitCount;
 
   /// The number of rows every column holds.
   final int length;
@@ -2387,6 +2393,60 @@ final class ChartsHits {
   final int length;
 }
 
+/// The `sade_sati` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// What every chart's Sade Sati was reckoned from, a row a chart in the `cast` section's order. Empty when `sade_sati_json` asked for none, and then `sade_sati_visits` is too.
+final class ChartsSadeSati {
+  const ChartsSadeSati({
+    required this.reference,
+    required this.countedFrom,
+    required this.reckoning,
+    required this.length,
+  });
+
+  /// The sign the houses are counted from: the natal Moon's, or the lagna's when `counted_from` says so.
+  final Uint16List reference;
+
+  /// Which natal point `reference` is, `sade_sati_json.countedFrom` (C139).
+  final Uint8List countedFrom;
+
+  /// What the houses were reckoned in, `sade_sati_json.reckoning` (C147).
+  final Uint8List reckoning;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `sade_sati_visits` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every stay of Saturn's in a house of a period reaching into the window, concatenated in the `cast` section's order and **ragged** by its `sade_sati_visit_count`. A chart's rows are its periods in turn, numbered by `period`: its Sade Satis first (houses 12, 1 and 2), then its smaller spells (C149), each group in time order; within a Sade Sati its phases' rows in the order 12, 1, 2; and each house's visits in time order, a retrograde re-entry a visit of its own (C148). A period is **whole**, however far its bounds fall outside the window. The sky is searched **once for the batch**.
+final class ChartsSadeSatiVisits {
+  const ChartsSadeSatiVisits({
+    required this.period,
+    required this.house,
+    required this.from,
+    required this.to,
+    required this.length,
+  });
+
+  /// Which of the chart's periods the visit belongs to, counted from 0: the rows of one Sade Sati, or of one smaller spell, share it.
+  final Uint16List period;
+
+  /// The house Saturn stays in, 1 to 12 from `sade_sati.reference`: 12, 1 or 2 in a Sade Sati (rising, peak and setting), otherwise a smaller spell's.
+  final Uint8List house;
+
+  /// When Saturn entered the house, a UTC Julian day; NaN when that is before the ephemeris's coverage.
+  final Float64List from;
+
+  /// When Saturn left it, a UTC Julian day, the visit half-open; NaN when that is after the ephemeris's coverage.
+  final Float64List to;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -2555,6 +2615,8 @@ final class Charts {
     required this.gocharGrahas,
     required this.gocharAshtakavarga,
     required this.hits,
+    required this.sadeSati,
+    required this.sadeSatiVisits,
   });
 
   /// What kind of chart these are.
@@ -2769,6 +2831,12 @@ final class Charts {
   /// Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none.
   final ChartsHits hits;
 
+  /// What every chart's Sade Sati was reckoned from, a row a chart in the `cast` section's order. Empty when `sade_sati_json` asked for none, and then `sade_sati_visits` is too.
+  final ChartsSadeSati sadeSati;
+
+  /// Every stay of Saturn's in a house of a period reaching into the window, concatenated in the `cast` section's order and **ragged** by its `sade_sati_visit_count`. A chart's rows are its periods in turn, numbered by `period`: its Sade Satis first (houses 12, 1 and 2), then its smaller spells (C149), each group in time order; within a Sade Sati its phases' rows in the order 12, 1, 2; and each house's visits in time order, a retrograde re-entry a visit of its own (C148). A period is **whole**, however far its bounds fall outside the window. The sky is searched **once for the batch**.
+  final ChartsSadeSatiVisits sadeSatiVisits;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -2832,6 +2900,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atGocharGrahas = blob.section(54, 'gochar_grahas');
   final atGocharAshtakavarga = blob.section(55, 'gochar_ashtakavarga');
   final atHits = blob.section(56, 'hits');
+  final atSadeSati = blob.section(57, 'sade_sati');
+  final atSadeSatiVisits = blob.section(58, 'sade_sati_visits');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -2896,6 +2966,11 @@ Charts decodeCharts(Uint8List bytes) {
         blob.bytes,
         blob.columnOffset(atCast, 10),
         blob.columnOffset(atCast, 10) + atCast.count * 4,
+      ),
+      sadeSatiVisitCount: Uint32List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atCast, 11),
+        blob.columnOffset(atCast, 11) + atCast.count * 4,
       ),
       length: atCast.count,
     ),
@@ -4923,6 +4998,47 @@ Charts decodeCharts(Uint8List bytes) {
         blob.columnOffset(atHits, 8) + atHits.count * 1,
       ),
       length: atHits.count,
+    ),
+    sadeSati: ChartsSadeSati(
+      reference: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSadeSati, 0),
+        blob.columnOffset(atSadeSati, 0) + atSadeSati.count * 2,
+      ),
+      countedFrom: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSadeSati, 1),
+        blob.columnOffset(atSadeSati, 1) + atSadeSati.count * 1,
+      ),
+      reckoning: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSadeSati, 2),
+        blob.columnOffset(atSadeSati, 2) + atSadeSati.count * 1,
+      ),
+      length: atSadeSati.count,
+    ),
+    sadeSatiVisits: ChartsSadeSatiVisits(
+      period: Uint16List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSadeSatiVisits, 0),
+        blob.columnOffset(atSadeSatiVisits, 0) + atSadeSatiVisits.count * 2,
+      ),
+      house: Uint8List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSadeSatiVisits, 1),
+        blob.columnOffset(atSadeSatiVisits, 1) + atSadeSatiVisits.count * 1,
+      ),
+      from: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSadeSatiVisits, 2),
+        blob.columnOffset(atSadeSatiVisits, 2) + atSadeSatiVisits.count * 8,
+      ),
+      to: Float64List.sublistView(
+        blob.bytes,
+        blob.columnOffset(atSadeSatiVisits, 3),
+        blob.columnOffset(atSadeSatiVisits, 3) + atSadeSatiVisits.count * 8,
+      ),
+      length: atSadeSatiVisits.count,
     ),
   );
 }

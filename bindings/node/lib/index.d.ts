@@ -55,6 +55,7 @@ import type {
   KakshyaLord,
   SarvaStanding,
   HitKind,
+  Reckoning,
   Motion,
   AspectPhase,
   GocharVerdict,
@@ -802,6 +803,62 @@ export interface HitRequest {
   readonly aspects?: readonly number[];
   /** An orb in degrees, more than 0 and under 15, for each window's opening and closing; exact only by default (C146). */
   readonly orbDeg?: number;
+}
+
+/**
+ * Sade Sati and Saturn's smaller spells to find for every chart of a request
+ * (`03-design/sade-sati.md`); every field but `from` is optional, and an
+ * absent one is the default.
+ */
+export interface SadeSatiRequest {
+  /** The window's start, a UTC Julian day. */
+  readonly from: number;
+  /** The window's end, not before the start; `from` by default, one instant. */
+  readonly to?: number;
+  /** The natal point the houses are counted from: the Moon by default, or the lagna (C139). */
+  readonly countedFrom?: GocharFrom;
+  /** Whole signs from the reference's sign by default, or 30° houses centred on its degree (C147). */
+  readonly reckoning?: Reckoning;
+  /** The smaller spells, houses 3 to 11 each named once; the 4th and the 8th by default (C149). */
+  readonly spells?: readonly number[];
+}
+
+/** One stay of Saturn's in a house, half-open. */
+export interface SadeSatiVisit {
+  /** When Saturn entered, a UTC Julian day; `null` before the ephemeris's coverage. */
+  readonly from: number | null;
+  /** When it left; `null` after the ephemeris's coverage. */
+  readonly to: number | null;
+}
+
+/** Every stay of Saturn's in one house of one period, a retrograde re-entry a visit of its own (C148). */
+export interface SadeSatiSpell {
+  /** The house from the reference, 1 to 12. */
+  readonly house: number;
+  readonly visits: readonly SadeSatiVisit[];
+}
+
+/** One Sade Sati: the rising (12th), peak (1st) and setting (2nd) spells, in order. */
+export interface SadeSati {
+  readonly phases: readonly SadeSatiSpell[];
+}
+
+/**
+ * A chart's Sade Satis and smaller spells, each period whole however far
+ * its bounds fall outside the window asked about.
+ *
+ * @example
+ * const chart = ctx.chart.found({ instant, place, utcOffsetSeconds, sadeSati: { from: 2460676.5, to: 2464329 } });
+ * const peak = chart.sadeSati?.sadeSati[0]?.phases[1]?.visits[0];
+ */
+export interface SadeSatiReport {
+  /** What the houses were counted from, and that point's sign. */
+  readonly reference: GocharReference;
+  readonly reckoning: Reckoning | 'unknown';
+  /** Every Sade Sati reaching into the window, in time order. */
+  readonly sadeSati: readonly SadeSati[];
+  /** The smaller spells asked for, in time order. */
+  readonly spells: readonly SadeSatiSpell[];
 }
 
 /** The transits to read against every chart of a request. */
@@ -2019,6 +2076,12 @@ export declare class Chart {
    */
   readonly hits: readonly Hit[];
   /**
+   * Sade Sati and the smaller spells, every period reaching into the
+   * window whole; `null` unless `sadeSati` asked. Saturn is searched once
+   * for the whole batch.
+   */
+  readonly sadeSati: SadeSatiReport | null;
+  /**
    * The birth chart's own sahams with their strength, in the order
    * `varsha.sahams` named them; empty unless it asked. Needs no place.
    */
@@ -2382,6 +2445,12 @@ export interface ChartRequest {
    * window (`03-design/transit-hit-list.md`). None by default.
    */
   readonly hits?: HitRequest;
+  /**
+   * Sade Sati and Saturn's smaller spells to find for every chart, read
+   * back as each chart's `sadeSati` (`03-design/sade-sati.md`). None by
+   * default.
+   */
+  readonly sadeSati?: SadeSatiRequest;
   /** Whether to compute the drishti; false by default. */
   readonly aspects?: boolean;
   /** Whether to compute the upagrahas and special lagnas; false by default. */

@@ -1184,6 +1184,28 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** new.
 
+- **Sade Sati crosses to every binding** (`sade-sati.md` §7 step 4).
+  `sadeSati` on a chart request — `{ from, to, countedFrom, reckoning,
+  spells }`, all but `from` optional — answers each chart's `sadeSati`:
+  in Node, Python and Dart the Rust `Report`, its reference and
+  reckoning, each Sade Sati's three phases and each smaller spell with
+  every visit, a bound past the ephemeris `null`. The boundary searches
+  Saturn once for the batch. The C ABI gains `sade_sati_json` on
+  `ts_chart_request`, section 57 `sade_sati` (a row a chart) and section
+  58 `sade_sati_visits` (a row a visit, ragged by the new
+  `cast.sade_sati_visit_count`, numbered by `period`), and `TsReckoning`.
+  A request takes back what a report names: its `reference.from` and
+  `reckoning`.
+
+  **Numbers:** new.
+
+- **A batch of no charts asking for the hit list is an empty answer**,
+  as a batch of none is everywhere else at the boundary. It was refused
+  by `natals`, a field no caller of the boundary writes, because the
+  boundary handed the façade's `hits_many` an empty list.
+
+  **Numbers:** none.
+
 - **A crossing is the same bits in every window that holds it**
   (`astro-events-and-crossings.md` §4). The search unwrapped its curve by
   a sum carried from the window's first sample, which rounds differently

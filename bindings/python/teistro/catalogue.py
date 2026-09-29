@@ -3712,6 +3712,16 @@ class GocharFrom(Member):
     """The natal lagna's sign."""
 
 
+class Reckoning(Member):
+    """What Sade Sati's houses are reckoned in (C147, `03-design/sade-sati.md`)."""
+
+    SIGN = 0
+    """Whole signs from the reference's sign."""
+
+    DEGREE = 1
+    """30° houses with the reference's degree in the middle of the first."""
+
+
 class HitKind(Member):
     """What a hit of the transit hit list was (`03-design/transit-hit-list.md`)."""
 
@@ -5781,6 +5791,10 @@ _KEYS: dict[str, dict[int, str]] = {
     "GocharFrom": {
         0: "MOON",
         1: "LAGNA",
+    },
+    "Reckoning": {
+        0: "SIGN",
+        1: "DEGREE",
     },
     "HitKind": {
         0: "SIGN_INGRESS",

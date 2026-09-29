@@ -1006,6 +1006,19 @@ final class ChartRequestStruct extends ffi.Struct {
   /// Example: {"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}. May be null.
   external ffi.Pointer<ffi.Char> hitsJson;
 
+  /// Sade Sati and the smaller spells of Saturn to find for every chart
+  /// in the batch, as a JSON object: `from`, a UTC Julian day, and
+  /// optionally `to` (the window's end, `from` by default), `countedFrom`
+  /// (`"MOON"`, the default, or `"LAGNA"`; C139), `reckoning` (`"SIGN"`,
+  /// the default, or `"DEGREE"`; C147) and `spells` (houses 3 to 11, the
+  /// 4th and the 8th by default; C149). Every period reaching into the
+  /// window comes back whole in the `sade_sati` and `sade_sati_visits`
+  /// sections, the sky searched once for the batch. Null for none
+  /// (`03-design/sade-sati.md`). Refusals are named from the record every
+  /// binding calls `sadeSati`, as `sadeSati.to`.
+  /// Example: {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}. May be null.
+  external ffi.Pointer<ffi.Char> sadeSatiJson;
+
 }
 
 /// A time of day, or none when the birth time is unknown.
@@ -2848,7 +2861,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson});
+  const ChartRequest({required this.kind, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -3000,6 +3013,19 @@ final class ChartRequest {
   /// Example: {"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}. May be null.
   final String? hitsJson;
 
+  /// Sade Sati and the smaller spells of Saturn to find for every chart
+  /// in the batch, as a JSON object: `from`, a UTC Julian day, and
+  /// optionally `to` (the window's end, `from` by default), `countedFrom`
+  /// (`"MOON"`, the default, or `"LAGNA"`; C139), `reckoning` (`"SIGN"`,
+  /// the default, or `"DEGREE"`; C147) and `spells` (houses 3 to 11, the
+  /// 4th and the 8th by default; C149). Every period reaching into the
+  /// window comes back whole in the `sade_sati` and `sade_sati_visits`
+  /// sections, the sky searched once for the batch. Null for none
+  /// (`03-design/sade-sati.md`). Refusals are named from the record every
+  /// binding calls `sadeSati`, as `sadeSati.to`.
+  /// Example: {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}. May be null.
+  final String? sadeSatiJson;
+
   /// Writes this value into a C struct the call takes by pointer.
   /// Whatever the struct points at is allocated in `arena`, which frees it
   /// when the call returns.
@@ -3057,6 +3083,9 @@ final class ChartRequest {
     raw.hitsJson = hitsJson == null
         ? ffi.nullptr
         : hitsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.sadeSatiJson = sadeSatiJson == null
+        ? ffi.nullptr
+        : sadeSatiJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -3100,6 +3129,9 @@ final class ChartRequest {
         hitsJson: raw.hitsJson == ffi.nullptr
             ? null
             : raw.hitsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        sadeSatiJson: raw.sadeSatiJson == ffi.nullptr
+            ? null
+            : raw.sadeSatiJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 

@@ -1992,6 +1992,19 @@ pub struct ChartRequest {
     /// Example: {"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}. May be null.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hits_json: Option<String>,
+    /// Sade Sati and the smaller spells of Saturn to find for every chart
+    /// in the batch, as a JSON object: `from`, a UTC Julian day, and
+    /// optionally `to` (the window's end, `from` by default), `countedFrom`
+    /// (`"MOON"`, the default, or `"LAGNA"`; C139), `reckoning` (`"SIGN"`,
+    /// the default, or `"DEGREE"`; C147) and `spells` (houses 3 to 11, the
+    /// 4th and the 8th by default; C149). Every period reaching into the
+    /// window comes back whole in the `sade_sati` and `sade_sati_visits`
+    /// sections, the sky searched once for the batch. Null for none
+    /// (`03-design/sade-sati.md`). Refusals are named from the record every
+    /// binding calls `sadeSati`, as `sadeSati.to`.
+    /// Example: {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}. May be null.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sade_sati_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2013,6 +2026,7 @@ pub struct HeldChartRequest {
     varsha_json: Option<std::ffi::CString>,
     gochar_json: Option<std::ffi::CString>,
     hits_json: Option<std::ffi::CString>,
+    sade_sati_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2052,6 +2066,10 @@ impl HeldChartRequest {
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
             hits_json: self.hits_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
+            sade_sati_json: self
+                .sade_sati_json
+                .as_ref()
+                .map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -2104,6 +2122,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            sade_sati_json: self
+                .sade_sati_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2143,6 +2166,7 @@ impl ChartRequest {
             varsha_json: unsafe { lent_text(raw.varsha_json) },
             gochar_json: unsafe { lent_text(raw.gochar_json) },
             hits_json: unsafe { lent_text(raw.hits_json) },
+            sade_sati_json: unsafe { lent_text(raw.sade_sati_json) },
         }
     }
 }

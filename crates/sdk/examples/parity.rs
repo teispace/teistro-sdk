@@ -1770,6 +1770,7 @@ fn one_document(report: &mut Report, geo: &Context, index: usize, document: &tei
     the_praveshas(report, geo, index, document);
     the_gochar(report, geo, index, document);
     the_hits(report, geo, index, document);
+    the_sade_sati(report, geo, index, document);
 }
 
 /// The hit list every runner asks for: two months, three grahas, three
@@ -1830,6 +1831,58 @@ fn the_hits(report: &mut Report, sdk: &Context, index: usize, document: &teistro
                 wire_key(&hit.event),
             ),
         );
+    }
+}
+
+/// The Sade Sati every runner asks for: ten years under the degree
+/// reckoning, with the 7th beside the default smaller spells.
+const SADE_SATI_JSON: &str =
+    r#"{"from":2460676.5,"to":2464329.0,"reckoning":"DEGREE","spells":[4,7,8]}"#;
+
+/// Sade Sati as the other three print it: what it was counted from, then
+/// each visit with its period's ordinal (the Sade Satis, then the smaller
+/// spells) and its house, `-` for a bound past the ephemeris.
+fn the_sade_sati(report: &mut Report, sdk: &Context, index: usize, document: &teistro::Document) {
+    let asked = teistro::SadeSatiRequest::from_json(SADE_SATI_JSON).expect("a valid request");
+    let found = sdk
+        .chart()
+        .sade_sati(document, &asked)
+        .expect("the test provider")
+        .value;
+    put(
+        report,
+        &format!("chart-{index}-sade-sati"),
+        format!(
+            "{} {} {}",
+            wire_key(&found.reference.from),
+            found.reference.sign.full_key(),
+            wire_key(&found.reckoning),
+        ),
+    );
+    let periods = found
+        .sade_sati
+        .iter()
+        .map(|one| one.phases.as_slice())
+        .chain(found.spells.iter().map(std::slice::from_ref));
+    let bound =
+        |at: Option<JulianDay<Utc>>| at.map_or_else(|| "-".to_owned(), |at| number(at.get()));
+    let mut k = 0;
+    for (period, spells) in periods.enumerate() {
+        for spell in spells {
+            for visit in &spell.visits {
+                put(
+                    report,
+                    &format!("chart-{index}-sade-sati-{k}"),
+                    format!(
+                        "{period} {} {} {}",
+                        spell.house,
+                        bound(visit.from),
+                        bound(visit.to)
+                    ),
+                );
+                k += 1;
+            }
+        }
     }
 }
 

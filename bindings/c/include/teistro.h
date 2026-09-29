@@ -4602,6 +4602,20 @@ typedef enum ts_gochar_from {
 } ts_gochar_from;
 
 /**
+ * What Sade Sati's houses are reckoned in (C147, `03-design/sade-sati.md`).
+ */
+typedef enum ts_reckoning {
+    /**
+     * Whole signs from the reference's sign.
+     */
+    TS_RECKONING_SIGN = 0,
+    /**
+     * 30° houses with the reference's degree in the middle of the first.
+     */
+    TS_RECKONING_DEGREE = 1,
+} ts_reckoning;
+
+/**
  * What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
  */
 typedef enum ts_hit_kind {
@@ -6841,6 +6855,20 @@ struct ts_chart_request {
      * Example: {"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}. May be null.
      */
     const char * hits_json;
+    /**
+     * Sade Sati and the smaller spells of Saturn to find for every chart
+     * in the batch, as a JSON object: `from`, a UTC Julian day, and
+     * optionally `to` (the window's end, `from` by default), `countedFrom`
+     * (`"MOON"`, the default, or `"LAGNA"`; C139), `reckoning` (`"SIGN"`,
+     * the default, or `"DEGREE"`; C147) and `spells` (houses 3 to 11, the
+     * 4th and the 8th by default; C149). Every period reaching into the
+     * window comes back whole in the `sade_sati` and `sade_sati_visits`
+     * sections, the sky searched once for the batch. Null for none
+     * (`03-design/sade-sati.md`). Refusals are named from the record every
+     * binding calls `sadeSati`, as `sadeSati.to`.
+     * Example: {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}. May be null.
+     */
+    const char * sade_sati_json;
 };
 
 /**
@@ -7726,7 +7754,7 @@ _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 160, "ts_chart_request is 160 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 168, "ts_chart_request is 168 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

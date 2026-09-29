@@ -343,6 +343,7 @@ const charts = geo.chart.foundMany({
   jaimini: true,
   gochar: { instants: [2460676.5, 2460736.5], ashtakavarga: true },
   hits: { from: 2460676.5, to: 2460736.5, grahas: ['SUN', 'MERCURY', 'SATURN'], aspects: [0, 90, 180], orbDeg: 2 },
+  sadeSati: { from: 2460676.5, to: 2464329, reckoning: 'DEGREE', spells: [4, 7, 8] },
   shadbala: true,
   bhavaBala: true,
   state: true,
@@ -523,6 +524,12 @@ for (const chart of charts) {
         `${e.angle ?? '-'} ${e.phase ?? '-'}`,
     );
   });
+  const ss = chart.sadeSati;
+  put(`chart-${i}-sade-sati`, `${ss.reference.from} ${ss.reference.sign} ${ss.reckoning}`);
+  const bound = (jd) => (jd === null ? '-' : number(jd));
+  [...ss.sadeSati.map((one) => one.phases), ...ss.spells.map((spell) => [spell])]
+    .flatMap((spells, period) => spells.flatMap((spell) => spell.visits.map((v) => `${period} ${spell.house} ${bound(v.from)} ${bound(v.to)}`)))
+    .forEach((line, k) => put(`chart-${i}-sade-sati-${k}`, line));
   put(
     `chart-${i}-brahma`,
     `${b.rule} ${b.countedFrom} ${b.qualified.join(',') || '-'} ${b.graha ?? '-'} ${b.passedFrom ?? '-'} ${b.none ?? '-'}`,

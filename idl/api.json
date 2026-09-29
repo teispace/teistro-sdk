@@ -6608,6 +6608,26 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "TsReckoning",
+      "doc": "What Sade Sati's houses are reckoned in (C147, `03-design/sade-sati.md`).",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Sign",
+          "value": 0,
+          "doc": "Whole signs from the reference's sign.",
+          "key": "SIGN"
+        },
+        {
+          "name": "Degree",
+          "value": 1,
+          "doc": "30° houses with the reference's degree in the middle of the first.",
+          "key": "DEGREE"
+        }
+      ],
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "TsHitKind",
       "doc": "What a hit of the transit hit list was (`03-design/transit-hit-list.md`).",
       "repr": "u8",
@@ -10774,6 +10794,21 @@
             "example": "{\"from\":2460676.5,\"to\":2461041.5,\"grahas\":[\"SATURN\"]}",
             "nullable": true
           }
+        },
+        {
+          "name": "sade_sati_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "Sade Sati and the smaller spells of Saturn to find for every chart\nin the batch, as a JSON object: `from`, a UTC Julian day, and\noptionally `to` (the window's end, `from` by default), `countedFrom`\n(`\"MOON\"`, the default, or `\"LAGNA\"`; C139), `reckoning` (`\"SIGN\"`,\nthe default, or `\"DEGREE\"`; C147) and `spells` (houses 3 to 11, the\n4th and the 8th by default; C149). Every period reaching into the\nwindow comes back whole in the `sade_sati` and `sade_sati_visits`\nsections, the sky searched once for the batch. Null for none\n(`03-design/sade-sati.md`). Refusals are named from the record every\nbinding calls `sadeSati`, as `sadeSati.to`.",
+          "meta": {
+            "example": "{\"from\":2460676.5,\"to\":2464329.0,\"reckoning\":\"SIGN\"}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/chart.rs"
@@ -14084,6 +14119,11 @@
               "name": "hit_count",
               "scalar": "u32",
               "doc": "How many rows of the `hits` section belong to this chart. Zero when no hit list was asked for.\n\nRagged because a chart's aspects are its own: the sky's ingresses and stations are every chart's alike, but how often a transit crosses a natal point depends on where the point stands."
+            },
+            {
+              "name": "sade_sati_visit_count",
+              "scalar": "u32",
+              "doc": "How many rows of the `sade_sati_visits` section belong to this chart. Zero when no Sade Sati was asked for.\n\nRagged because a chart's periods are its own: where Saturn crosses into them depends on where the natal Moon stands, and how often it steps back out depends on where its stations fall."
             }
           ]
         },
@@ -16553,6 +16593,60 @@
               "scalar": "u8",
               "doc": "For an aspect, where in its window: entering or leaving the orb, or exact (C146); read only when `kind` is an aspect.",
               "enum": "TsAspectPhase"
+            }
+          ]
+        },
+        {
+          "id": 57,
+          "name": "sade_sati",
+          "doc": "What every chart's Sade Sati was reckoned from, a row a chart in the `cast` section's order. Empty when `sade_sati_json` asked for none, and then `sade_sati_visits` is too.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "reference",
+              "scalar": "u16",
+              "doc": "The sign the houses are counted from: the natal Moon's, or the lagna's when `counted_from` says so.",
+              "enum": "Rashi"
+            },
+            {
+              "name": "counted_from",
+              "scalar": "u8",
+              "doc": "Which natal point `reference` is, `sade_sati_json.countedFrom` (C139).",
+              "enum": "TsGocharFrom"
+            },
+            {
+              "name": "reckoning",
+              "scalar": "u8",
+              "doc": "What the houses were reckoned in, `sade_sati_json.reckoning` (C147).",
+              "enum": "TsReckoning"
+            }
+          ]
+        },
+        {
+          "id": 58,
+          "name": "sade_sati_visits",
+          "doc": "Every stay of Saturn's in a house of a period reaching into the window, concatenated in the `cast` section's order and **ragged** by its `sade_sati_visit_count`. A chart's rows are its periods in turn, numbered by `period`: its Sade Satis first (houses 12, 1 and 2), then its smaller spells (C149), each group in time order; within a Sade Sati its phases' rows in the order 12, 1, 2; and each house's visits in time order, a retrograde re-entry a visit of its own (C148). A period is **whole**, however far its bounds fall outside the window. The sky is searched **once for the batch**.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "period",
+              "scalar": "u16",
+              "doc": "Which of the chart's periods the visit belongs to, counted from 0: the rows of one Sade Sati, or of one smaller spell, share it."
+            },
+            {
+              "name": "house",
+              "scalar": "u8",
+              "doc": "The house Saturn stays in, 1 to 12 from `sade_sati.reference`: 12, 1 or 2 in a Sade Sati (rising, peak and setting), otherwise a smaller spell's."
+            },
+            {
+              "name": "from",
+              "scalar": "f64",
+              "doc": "When Saturn entered the house, a UTC Julian day; NaN when that is before the ephemeris's coverage."
+            },
+            {
+              "name": "to",
+              "scalar": "f64",
+              "doc": "When Saturn left it, a UTC Julian day, the visit half-open; NaN when that is after the ephemeris's coverage."
             }
           ]
         }

@@ -134,6 +134,7 @@ from .catalogue import (
     HitKind,
     Motion,
     AspectPhase,
+    Reckoning,
     VarsheshaChosen,
     VimshopakaScoring,
     Body,
@@ -377,6 +378,13 @@ __all__ = [
     "HitKind",
     "Motion",
     "AspectPhase",
+    # Sade Sati: Saturn's spells from the natal Moon, and its names.
+    "SadeSatiRequest",
+    "SadeSatiReport",
+    "SadeSati",
+    "SadeSatiSpell",
+    "SadeSatiVisit",
+    "Reckoning",
     # Gochar: the transits read against a chart, and their names.
     "GocharRequest",
     "GocharReading",
@@ -1323,6 +1331,7 @@ class ChartArea(_Area):
         varsha: Optional[VarshaRequest] = None,
         gochar: Optional[GocharRequest] = None,
         hits: Optional[HitRequest] = None,
+        sade_sati: Optional[SadeSatiRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1362,6 +1371,7 @@ class ChartArea(_Area):
             varsha=varsha,
             gochar=gochar,
             hits=hits,
+            sade_sati=sade_sati,
             aspects=aspects,
             points=points,
             houses=houses,
@@ -1391,6 +1401,7 @@ class ChartArea(_Area):
         varsha: Optional[VarshaRequest] = None,
         gochar: Optional[GocharRequest] = None,
         hits: Optional[HitRequest] = None,
+        sade_sati: Optional[SadeSatiRequest] = None,
         aspects: bool = False,
         points: bool = False,
         houses: bool = False,
@@ -1451,6 +1462,7 @@ class ChartArea(_Area):
             varsha_json=_varsha_json(varsha),
             gochar_json=_gochar_json(gochar),
             hits_json=_hits_json(hits),
+            sade_sati_json=_sade_sati_json(sade_sati),
         )
         return ChartBatch(
             decode_charts(self._context._through_provider(lambda: self._context.inner.chart_found(request))),
@@ -2304,6 +2316,83 @@ class Hit:
     """The transiting graha."""
 
     event: Union[SignIngress, NakshatraIngress, Station, AspectHit]
+
+
+SadeSatiRequest = TypedDict(
+    "SadeSatiRequest",
+    {
+        "from": Required[float],
+        "to": float,
+        "countedFrom": Union[GocharFrom, Literal["MOON", "LAGNA"]],
+        "reckoning": Union[Reckoning, Literal["SIGN", "DEGREE"]],
+        "spells": Sequence[int],
+    },
+    total=False,
+)
+SadeSatiRequest.__doc__ = """Sade Sati and Saturn's smaller spells to find for
+every chart of a request (`03-design/sade-sati.md`): the window's start `from`
+and optionally its end `to` (`from` by default, one instant), UTC Julian days;
+`countedFrom`, the natal point the houses are counted from (the Moon by
+default, or the lagna; C139); `reckoning`, whole signs by default or 30°
+houses centred on the point's degree (C147); and `spells`, the smaller spells,
+houses 3 to 11 (the 4th and the 8th by default; C149). Members are written as
+their keys, so a report's `reference.from_` and `reckoning` can be handed
+back. A functional `TypedDict` because `from` is a keyword, and the record is
+spelt as every binding spells it.
+
+>>> asked: SadeSatiRequest = {"from": 2460676.5, "to": 2464329.0, "reckoning": "DEGREE"}
+"""
+
+
+@dataclass(frozen=True)
+class SadeSatiVisit:
+    """One stay of Saturn's in a house, half-open."""
+
+    from_: Optional[float]
+    """When Saturn entered, a UTC Julian day; `None` before the ephemeris's
+    coverage. `from_` because `from` is a keyword."""
+
+    to: Optional[float]
+    """When it left; `None` after the ephemeris's coverage."""
+
+
+@dataclass(frozen=True)
+class SadeSatiSpell:
+    """Every stay of Saturn's in one house of one period, a retrograde
+    re-entry a visit of its own (C148)."""
+
+    house: int
+    """The house from the reference, 1 to 12."""
+
+    visits: Tuple[SadeSatiVisit, ...]
+
+
+@dataclass(frozen=True)
+class SadeSati:
+    """One Sade Sati: the rising (12th), peak (1st) and setting (2nd) spells,
+    in order."""
+
+    phases: Tuple[SadeSatiSpell, ...]
+
+
+@dataclass(frozen=True)
+class SadeSatiReport:
+    """A chart's Sade Satis and smaller spells, each period **whole** however
+    far its bounds fall outside the window asked about.
+
+    >>> # chart = ctx.chart.found(..., sade_sati={"from": 2460676.5, "to": 2464329.0})
+    >>> # peak = chart.sade_sati.sade_sati[0].phases[1].visits[0]
+    """
+
+    reference: "GocharReference"
+    """What the houses were counted from, and that point's sign."""
+
+    reckoning: Reckoning
+    sade_sati: Tuple[SadeSati, ...]
+    """Every Sade Sati reaching into the window, in time order."""
+
+    spells: Tuple[SadeSatiSpell, ...]
+    """The smaller spells asked for, in time order."""
 
 
 GocharRequest = TypedDict(
@@ -3996,6 +4085,24 @@ def _hit_at(columns: Any, row: int) -> Hit:
     return Hit(instant=columns.instant[row], graha=Graha(columns.graha[row]), event=event)
 
 
+def _sade_sati_json(sade_sati: Optional[SadeSatiRequest]) -> Optional[str]:
+    """Sade Sati as the JSON the boundary reads, or nothing for none; a
+    member is written as its key and a sequence as a list, and the rest is
+    refused by the SDK, naming the field from `sadeSati`."""
+    example = "{'from': 2460676.5, 'to': 2464329.0, 'reckoning': 'SIGN'}"
+    if not isinstance(sade_sati, Mapping):
+        return _record_json(sade_sati, "sadeSati", example)
+    written: Dict[str, Any] = {}
+    for name, value in sade_sati.items():
+        if isinstance(value, Member):
+            written[name] = value.key
+        elif isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+            written[name] = list(value)
+        else:
+            written[name] = value
+    return _record_json(written, "sadeSati", example)
+
+
 def _hits_json(hits: Optional[HitRequest]) -> Optional[str]:
     """The hit list as the JSON the boundary reads, or nothing for none.
     Catalogue members are written as their keys and a `NatalPoint` as the
@@ -5040,6 +5147,15 @@ class Chart:
         return [_hit_at(columns, i) for i in range(start, start + counts[self.index])]
 
     @property
+    def sade_sati(self) -> Optional[SadeSatiReport]:
+        """Sade Sati and Saturn's smaller spells, every period reaching into
+        the window **whole**; `None` unless `sade_sati=` asked for it
+        (`03-design/sade-sati.md`). Saturn is searched once for the whole
+        batch."""
+        parsed = self.batch._sade_satis
+        return parsed[self.index] if self.index < len(parsed) else None
+
+    @property
     def gochar(self) -> Tuple[GocharReading, ...]:
         """The transits read against this chart, one reading an instant in the
         order `gochar["instants"]` asked; empty unless asked for."""
@@ -5409,6 +5525,61 @@ class ChartBatch:
             )
 
         return [reading(chart) for chart in range(c.length)]
+
+    @cached_property
+    def _sade_satis(self) -> list[SadeSatiReport]:
+        """Every chart's Sade Sati report, decoded once; empty when none was
+        asked for. `sade_sati` holds a row a chart and `sade_sati_visits`
+        each chart's visits, ragged by `cast.sade_sati_visit_count` and
+        numbered by `period`: its Sade Satis first (houses 12, 1 and 2), then
+        its smaller spells."""
+        c = self.decoded.sade_sati
+        v = self.decoded.sade_sati_visits
+        counts = self.decoded.cast.sade_sati_visit_count
+        if c.length == 0:
+            return []
+        if c.length != len(counts) or sum(counts) != v.length:
+            raise TeistroError(
+                Status.INTERNAL,
+                f"sade_sati has {c.length} rows and sade_sati_visits {v.length} over {len(counts)} charts"
+                f" whose counts sum to {sum(counts)}; it is a row a chart and every chart's visits",
+            )
+
+        def bound(jd: float) -> Optional[float]:
+            return None if math.isnan(jd) else jd
+
+        def report(chart: int, start: int) -> SadeSatiReport:
+            # A period's rows are adjacent and share `period`; a spell's are
+            # the run of one house inside it.
+            periods: List[List[Tuple[int, List[SadeSatiVisit]]]] = []
+            for row in range(start, start + counts[chart]):
+                if v.period[row] == len(periods):
+                    periods.append([])
+                spells = periods[v.period[row]]
+                if not spells or spells[-1][0] != v.house[row]:
+                    spells.append((v.house[row], []))
+                spells[-1][1].append(SadeSatiVisit(from_=bound(v.from_[row]), to=bound(v.to[row])))
+
+            def spell(house: int, visits: List[SadeSatiVisit]) -> SadeSatiSpell:
+                return SadeSatiSpell(house=house, visits=tuple(visits))
+
+            # The Sade Sati's houses are 12, 1 and 2; a smaller spell is 3 to 11.
+            def is_sade_sati(spells: List[Tuple[int, List[SadeSatiVisit]]]) -> bool:
+                return spells[0][0] == 12 or spells[0][0] <= 2
+
+            return SadeSatiReport(
+                reference=GocharReference(from_=GocharFrom(c.counted_from[chart]), sign=Rashi(c.reference[chart])),
+                reckoning=Reckoning(c.reckoning[chart]),
+                sade_sati=tuple(
+                    SadeSati(phases=tuple(spell(*one) for one in spells)) for spells in periods if is_sade_sati(spells)
+                ),
+                spells=tuple(spell(*spells[0]) for spells in periods if not is_sade_sati(spells)),
+            )
+
+        starts = [0]
+        for count in counts:
+            starts.append(starts[-1] + count)
+        return [report(chart, starts[chart]) for chart in range(c.length)]
 
     @cached_property
     def _gochars(self) -> list[Tuple[GocharReading, ...]]:

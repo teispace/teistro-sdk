@@ -399,6 +399,12 @@ void main() {
       aspects: [0, 90, 180],
       orbDeg: 2,
     ),
+    sadeSati: const SadeSatiRequest(
+      from: 2460676.5,
+      to: 2464329,
+      reckoning: Reckoning.degree,
+      spells: [4, 7, 8],
+    ),
     shadbala: true,
     bhavaBala: true,
     state: true,
@@ -720,6 +726,25 @@ void main() {
         'chart-$i-hit-$k',
         '${number(hit.instant)} ${hit.graha.fullKey} ${e.kind.key} $into $motion $to $angle $phase',
       );
+    }
+    final ss = chart.sadeSati!;
+    put(
+      'chart-$i-sade-sati',
+      '${ss.reference.from.key} ${ss.reference.sign.fullKey} ${ss.reckoning.key}',
+    );
+    String bound(double? jd) => jd == null ? '-' : number(jd);
+    final periods = [
+      for (final one in ss.sadeSati) one.phases,
+      for (final spell in ss.spells) [spell],
+    ];
+    final lines = [
+      for (final (period, spells) in periods.indexed)
+        for (final spell in spells)
+          for (final v in spell.visits)
+            '$period ${spell.house} ${bound(v.from)} ${bound(v.to)}',
+    ];
+    for (final (k, line) in lines.indexed) {
+      put('chart-$i-sade-sati-$k', line);
     }
     final vs = chart.vimshopaka!;
     put('chart-$i-vimshopaka', vs.scoring.key);

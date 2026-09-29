@@ -18,6 +18,7 @@ import type {
   DashaPeriod,
   EphemerisProvider,
   HitRequest,
+  SadeSatiRequest,
   LayoutHolds,
   LayoutKey,
   LayoutRow,
@@ -604,3 +605,23 @@ function theHitList(ctx: Context): string {
 }
 
 void theHitList;
+
+// Sade Sati read all the way down, and a request in every field.
+function theSadeSati(ctx: Context): string {
+  const report = ctx.chart.found({
+    instant: 2451545,
+    place: { latitude: 27.7, longitude: 85.3, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    sadeSati: { from: 2460676.5, to: 2464329, countedFrom: 'LAGNA', reckoning: 'DEGREE', spells: [4, 8] },
+  }).sadeSati;
+  if (report === null) return 'none';
+  const phases = report.sadeSati.flatMap((one) =>
+    one.phases.map((spell) => `${spell.house} ${spell.visits.map((v) => `${v.from ?? '-'}..${v.to ?? '-'}`).join()}`),
+  );
+  const spells = report.spells.map((spell) => `${spell.house} ${spell.visits.length}`);
+  // @ts-expect-error a reckoning is spelt as the report reads it back
+  const arc: SadeSatiRequest = { from: 0, reckoning: 'ARC' };
+  return `${report.reference.from} ${report.reference.sign} ${report.reckoning} ${phases.join()} ${spells.join()} ${String(arc)}`;
+}
+
+void theSadeSati;
