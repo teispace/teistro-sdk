@@ -54,6 +54,7 @@ pub use area::{
 };
 mod gochar_request;
 mod hit_request;
+mod kp_request;
 mod plan_request;
 mod rule_request;
 mod rules_bridge;
@@ -98,6 +99,9 @@ pub use teistro_core::error::{Error, Status};
 pub use teistro_core::house::House;
 pub use teistro_core::interval::Interval;
 pub use teistro_core::key::KeyId;
+// A KP chart's longitudes and spans are exact angles, which a consumer
+// reads and compares without converting (`03-design/kp.md`).
+pub use teistro_core::angle::Nas;
 pub use teistro_core::quantity;
 pub use teistro_core::settings;
 pub use teistro_panchanga::almanac::Panchanga;
@@ -158,8 +162,12 @@ pub use teistro_gochar::GocharFrom;
 pub use teistro_gochar::hits::{Hit, NatalPoint};
 // Sade Sati answers in its own module's types (`03-design/sade-sati.md`).
 pub use teistro_gochar::sade_sati;
+// KP: a chart as the KP Readers read it (`03-design/kp.md`).
+pub use crate::kp_request::{KP_AYANAMSHAS, KpRequest};
 pub use teistro_interpret as interpret;
 pub use teistro_interpret::{Item, Plan};
+pub use teistro_kp as kp;
+pub use teistro_kp::{KpChart, KpNumber};
 pub use teistro_rules as rules;
 pub use teistro_rules::{HouseReading, RuleChart, RuleResult, Strengths};
 pub use teistro_tajika as tajika;

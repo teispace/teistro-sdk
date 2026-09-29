@@ -1,6 +1,6 @@
 # KP: Krishnamurti Paddhati
 
-Status: `draft`, 2026-09-29; §6 step 1 **built** the same day. Written
+Status: `draft`, 2026-09-29; §6 steps 1 and 2 **built** the same day. Written
 from the Readers before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/06-kp.md` (P0: the 249
@@ -143,7 +143,16 @@ Jupiter's, the only subs a sign's end falls inside.
 1. **Built**: the exact lords at any depth and the 249 numbers
    (`crates/kp`), held to the printed rows; the Vimshottari lords made
    one list.
-2. The KP chart, over the founded chart, with C157.
+2. **Built**: the KP chart. `sdk.chart().kp(&chart, &KpRequest)` reads
+   a founded chart's cusps under the system `houses.module_overrides.kp`
+   names (Placidus when none is), rebuilt from its instant, place and
+   zodiac by `teistro_chart::foundation::cusps_of`, so a stored chart
+   answers it without an ephemeris; each cusp and graha with its lords
+   and each graha in the house whose cusp it follows (`KpChart`). C157 is
+   the request's: a chart outside `KP_AYANAMSHAS` is refused on
+   `frame.ayanamsha` unless `under_any_ayanamsha()` is asked. Acceptance
+   is a read-back through the chart: the 1st cusp is its lagna and the
+   10th its midheaven, to the nanoarcsecond.
 3. Significators.
 4. Ruling planets, over the panchanga's vara for C151.
 5. Horary from a number.

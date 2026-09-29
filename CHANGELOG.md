@@ -1281,6 +1281,21 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none; nothing existing reads the new crate, and the
   Vimshottari row is the same nine lords.
 
+- **A chart read as KP** (`kp.md` §6 step 2). `sdk.chart().kp(&chart,
+  &KpRequest::new())` answers a `KpChart`: the twelve cusps under the
+  house system `houses.module_overrides.kp` names, Placidus's when none
+  is, and every graha the chart carries, each with its sign, star, sub
+  and sub-sub lords and each graha in the house whose cusp it follows.
+  It needs no ephemeris: `teistro_chart::foundation::cusps_of` rebuilds
+  any system's cusps from a chart's instant, place and zodiac, the
+  founder's own cusps now going through the same function. A chart
+  founded outside `KP_AYANAMSHAS` (Krishnamurti and VP291) is refused on
+  `frame.ayanamsha` unless the request says `under_any_ayanamsha()`
+  (C157). `teistro::Nas` is exported, since a KP chart's longitudes are
+  exact angles.
+
+  **Numbers:** none; the founder's cusps are the same function moved.
+
 - **A search over a reference to a source asks for its grids as grids.**
   `impl Longitudes for &S` forwarded the one-instant methods and not the
   grid ones, so a search handed `&source` asked for its window an

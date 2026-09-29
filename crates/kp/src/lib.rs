@@ -35,10 +35,16 @@
 
 #![doc(html_no_source)]
 
+/// The module name KP's house system is overridden under,
+/// `houses.module_overrides.kp`: `PLACIDUS` in the `kp-default` profile.
+pub const MODULE: &str = "kp";
+
 mod chain;
+mod chart;
 mod number;
 
 pub use chain::{Chain, Level, Lords, MAX_LEVELS, Span, chain, lords};
+pub use chart::{Cusp, KpChart, Planet, Position, house_of};
 pub use number::KpNumber;
 
 #[cfg(test)]
