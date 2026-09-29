@@ -74,7 +74,7 @@ PyJHora follows a reading of its own on two.
 |---|---|---|---|---|
 | C141 | how many bindus make a transit good | five (v. 11: four is भय, fear); four (much modern practice reads four as middling or good) | **five**, `gochar.ashtakavarga_good_from = FOUR` for the other | the verse names four a fear |
 | C142 | a sign whose sarvashtakavarga is exactly 28 | good; bad; neither | **neither**, reported as `EVEN` | v. 20 says more than 28 and less than it, and nothing of 28; a third state says so rather than choosing |
-| C144 | the Moon's bindu from Jupiter | the 12th (BPHS ch. 66, Varahamihira; the corpus's engine); the 2nd (Phaladeepika ch. 23 v. 4) | **the 12th**, the table the natal Ashtakavarga already answers with and the corpus holds | one chart has one Ashtakavarga; a reading of the text's own table is a knob to add, not a second table beside the first |
+| C144 | the Moon's bindu from Jupiter | the 12th (BPHS ch. 66, Varahamihira; the corpus's engine); the 2nd (Phaladeepika ch. 23 v. 4) | **the 12th**, `strength.moon_bindu_from_jupiter = SECOND` for the other | one chart has one Ashtakavarga, so the knob sits with the Ashtakavarga's others and a transit reads the table the chart was counted under; it names the cell and not the text, because only the three cells that part from PyJHora were read on Phaladeepika's page, and either way Jupiter gives seven, so the Moon keeps 49 and the chart 337 |
 | C143 | raw bindus or reduced | the prepared Ashtakavarga (v. 11's कृत्वाष्टवर्गं); after the trine and Ekadhipatya reductions | **raw** | v. 11 reads the prepared table; the reductions are for the pindas (ch. 23 vv. 3 to 9) |
 
 ## 4. The design

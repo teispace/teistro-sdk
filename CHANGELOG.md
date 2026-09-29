@@ -1199,6 +1199,20 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** new.
 
+- **Where Jupiter gives the Moon a bindu is a setting**
+  (`strength.moon_bindu_from_jupiter`, crux C144;
+  `gochar-ashtakavarga.md`). BPHS ch. 66 and Varahamihira put it in the
+  12th from Jupiter, Phaladeepika ch. 23 v. 4 in the 2nd: `TWELFTH`, the
+  default, or `SECOND`. It is the Ashtakavarga's, so a chart's table, its
+  reductions and pindas and its transits' bindus are all counted under
+  the one reading, and `AshtakavargaRules` reports it. Either way Jupiter
+  gives seven, so the Moon keeps 49 and a chart 337.
+  `teistro_strength::ashtakavarga::{prastara, bindus}` take the reading,
+  and `AshtakavargaRules::of` reads all three knobs from the settings.
+
+  **Numbers:** none under the default; under `SECOND` the Moon's row
+  moves one bindu from the 12th from Jupiter to the 2nd.
+
 - **A slow body's crossing search reads the sky where something
   happens** (`astro-events-and-crossings.md` §4, "a slow body's scan";
   plan A1g). A longitude search samples its fine grid every *stride*

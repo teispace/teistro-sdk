@@ -19,7 +19,7 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Graha, Rashi};
-use teistro_core::settings::{Ekadhipatya, Shodhana};
+use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Settings, Shodhana};
 
 /// The signs.
 const SIGNS: usize = 12;
@@ -34,18 +34,35 @@ pub const GRAHAS: [Graha; 7] = [
     Graha::Saturn,
 ];
 
+/// Places 1 to 12 as a bit set, bit `n - 1` for the `n`th.
+const fn set(mut places: &[u8]) -> u16 {
+    let mut bits = 0;
+    while let [place, rest @ ..] = places {
+        bits |= 1 << (*place - 1);
+        places = rest;
+    }
+    bits
+}
+
+/// The Moon's row and Jupiter's column of [`PLACES`]: the one cell the
+/// tables part on (crux C144).
+const MOON_FROM_JUPITER: (usize, usize) = (1, 4);
+
+/// Where Jupiter gives the Moon a bindu under each reading.
+const fn moon_from_jupiter(reading: MoonBinduFromJupiter) -> u16 {
+    match reading {
+        MoonBinduFromJupiter::Second => set(&[1, 2, 4, 7, 8, 10, 11]),
+        // The default, BPHS's; the knob is closed, and a later reading is
+        // its own arm.
+        _ => set(&[1, 4, 7, 8, 10, 11, 12]),
+    }
+}
+
 /// Where each graha gains a bindu, counted from each contributor — the seven
 /// grahas in order, then the lagna — as bit sets of the places 1 to 12
-/// (bit `n - 1`), from BPHS ch. 66.
+/// (bit `n - 1`), from BPHS ch. 66; the Moon's from Jupiter is
+/// [`moon_from_jupiter`]'s.
 const PLACES: [[u16; 8]; 7] = {
-    const fn set(mut places: &[u8]) -> u16 {
-        let mut bits = 0;
-        while let [place, rest @ ..] = places {
-            bits |= 1 << (*place - 1);
-            places = rest;
-        }
-        bits
-    }
     [
         [
             set(&[1, 2, 4, 7, 8, 9, 10, 11]),
@@ -62,7 +79,7 @@ const PLACES: [[u16; 8]; 7] = {
             set(&[1, 3, 6, 7, 10, 11]),
             set(&[2, 3, 5, 6, 9, 10, 11]),
             set(&[1, 3, 4, 5, 7, 8, 10, 11]),
-            set(&[1, 4, 7, 8, 10, 11, 12]),
+            moon_from_jupiter(MoonBinduFromJupiter::Twelfth),
             set(&[3, 4, 5, 7, 9, 10, 11]),
             set(&[3, 5, 6, 11]),
             set(&[3, 6, 10, 11]),
@@ -147,6 +164,29 @@ pub struct AshtakavargaRules {
     pub shodhana: Shodhana,
     /// How a co-ruled sign beside an occupied one is reduced.
     pub ekadhipatya: Ekadhipatya,
+    /// Where Jupiter gives the Moon a bindu, which the bindus themselves
+    /// are counted under. A document written before this was a setting
+    /// has none, and was counted under the 12th.
+    #[serde(default = "counted_before_the_knob")]
+    pub moon_bindu_from_jupiter: MoonBinduFromJupiter,
+}
+
+/// The one table there was before the Moon's bindu from Jupiter was a
+/// setting, BPHS's, for reading a document written then.
+const fn counted_before_the_knob() -> MoonBinduFromJupiter {
+    MoonBinduFromJupiter::Twelfth
+}
+
+impl AshtakavargaRules {
+    /// The rules the settings choose, from their `strength` group.
+    #[must_use]
+    pub const fn of(settings: &Settings) -> AshtakavargaRules {
+        AshtakavargaRules {
+            shodhana: settings.strength.shodhana,
+            ekadhipatya: settings.strength.ekadhipatya,
+            moon_bindu_from_jupiter: settings.strength.moon_bindu_from_jupiter,
+        }
+    }
 }
 
 /// One graha's Ashtakavarga.
@@ -201,15 +241,24 @@ pub const LAGNA_BIT: u8 = 1 << 7;
 ///
 /// ```
 /// use teistro_core::catalogue::Rashi;
+/// use teistro_core::settings::MoonBinduFromJupiter;
 /// use teistro_strength::ashtakavarga::{AshtakavargaChart, bindus, prastara};
 ///
 /// let chart = AshtakavargaChart { lagna: Rashi::Aries, signs: [Rashi::Leo; 7] };
+/// let reading = MoonBinduFromJupiter::Twelfth;
 /// // Each cell's bindus are its contributors, counted.
-/// let counted = prastara(&chart).map(|row| row.map(|cell| cell.count_ones() as u8));
-/// assert_eq!(counted, bindus(&chart));
+/// let counted = prastara(&chart, reading).map(|row| row.map(|cell| cell.count_ones() as u8));
+/// assert_eq!(counted, bindus(&chart, reading));
 /// ```
 #[must_use]
-pub fn prastara(chart: &AshtakavargaChart) -> [[u8; SIGNS]; 7] {
+pub fn prastara(chart: &AshtakavargaChart, reading: MoonBinduFromJupiter) -> [[u8; SIGNS]; 7] {
+    let mut table = PLACES;
+    if let Some(cell) = table
+        .get_mut(MOON_FROM_JUPITER.0)
+        .and_then(|row| row.get_mut(MOON_FROM_JUPITER.1))
+    {
+        *cell = moon_from_jupiter(reading);
+    }
     let contributors: [Rashi; 8] = [
         chart.signs[0],
         chart.signs[1],
@@ -221,7 +270,7 @@ pub fn prastara(chart: &AshtakavargaChart) -> [[u8; SIGNS]; 7] {
         chart.lagna,
     ];
     let mut out = [[0; SIGNS]; 7];
-    for (row, places) in out.iter_mut().zip(PLACES) {
+    for (row, places) in out.iter_mut().zip(table) {
         for (contributor, (from, bits)) in contributors.iter().zip(places).enumerate() {
             for (offset, slot) in (0..SIGNS).map(|k| (k, (sign_index(*from) + k) % SIGNS)) {
                 if bits & (1 << offset) != 0 {
@@ -237,12 +286,12 @@ pub fn prastara(chart: &AshtakavargaChart) -> [[u8; SIGNS]; 7] {
 
 /// Each graha's bindus by sign: its [`prastara`]'s contributors, counted.
 #[must_use]
-pub fn bindus(chart: &AshtakavargaChart) -> [[u8; SIGNS]; 7] {
+pub fn bindus(chart: &AshtakavargaChart, reading: MoonBinduFromJupiter) -> [[u8; SIGNS]; 7] {
     #[allow(
         clippy::cast_possible_truncation,
         reason = "eight contributors at most, so a count of set bits fits a byte"
     )]
-    prastara(chart).map(|row| row.map(|cell| cell.count_ones() as u8))
+    prastara(chart, reading).map(|row| row.map(|cell| cell.count_ones() as u8))
 }
 
 /// The trine reduction: the least of each trine taken from all three.
@@ -317,7 +366,7 @@ impl AshtakavargaReading {
     /// A chart's Ashtakavarga, reduced under `rules`.
     #[must_use]
     pub fn of(chart: &AshtakavargaChart, rules: AshtakavargaRules) -> AshtakavargaReading {
-        let bindus = bindus(chart);
+        let bindus = bindus(chart, rules.moon_bindu_from_jupiter);
         let mut occupied = [false; SIGNS];
         for sign in chart.signs {
             if let Some(cell) = occupied.get_mut(sign_index(sign)) {
@@ -436,14 +485,70 @@ mod tests {
     }
 
     #[test]
-    fn every_chart_holds_the_classical_totals() {
-        for lagna in Rashi::ALL {
-            let rows = bindus(&AshtakavargaChart { lagna, ..chart() });
-            let totals: Vec<u32> = rows
-                .iter()
-                .map(|r| r.iter().map(|b| u32::from(*b)).sum())
-                .collect();
-            assert_eq!(totals, [48, 49, 39, 54, 56, 52, 39]);
+    fn every_chart_holds_the_classical_totals_under_either_reading() {
+        for reading in MoonBinduFromJupiter::ALL.iter().copied() {
+            for lagna in Rashi::ALL {
+                let rows = bindus(&AshtakavargaChart { lagna, ..chart() }, reading);
+                let totals: Vec<u32> = rows
+                    .iter()
+                    .map(|r| r.iter().map(|b| u32::from(*b)).sum())
+                    .collect();
+                assert_eq!(totals, [48, 49, 39, 54, 56, 52, 39], "{reading:?}");
+            }
+        }
+    }
+
+    /// A document written before the knob carries rules without it, and
+    /// was counted under the 12th, so that is how it reads back.
+    #[test]
+    fn rules_written_before_the_knob_read_as_the_twelfth() {
+        let rules: AshtakavargaRules =
+            serde_json::from_str(r#"{"shodhana": "EACH_GRAHA", "ekadhipatya": "BPHS"}"#).unwrap();
+        assert_eq!(rules.moon_bindu_from_jupiter, MoonBinduFromJupiter::Twelfth);
+        let written = serde_json::to_value(AshtakavargaRules {
+            moon_bindu_from_jupiter: MoonBinduFromJupiter::Second,
+            ..rules
+        })
+        .unwrap();
+        assert_eq!(written["moon_bindu_from_jupiter"], "SECOND");
+    }
+
+    /// The readings part on one cell and nowhere else: Jupiter's bindu in
+    /// the Moon's row moves from the 12th from Jupiter to the 2nd, for
+    /// Jupiter in every sign.
+    #[test]
+    fn the_readings_move_only_jupiters_bindu_for_the_moon() {
+        let jupiter_bit = 1_u8 << 4;
+        for sign in Rashi::ALL {
+            let mut signs = chart().signs;
+            signs[4] = sign;
+            let at = AshtakavargaChart {
+                lagna: Rashi::Aries,
+                signs,
+            };
+            let twelfth = prastara(&at, MoonBinduFromJupiter::Twelfth);
+            let second = prastara(&at, MoonBinduFromJupiter::Second);
+            for (row, (a, b)) in twelfth.iter().zip(&second).enumerate() {
+                for (slot, (x, y)) in a.iter().zip(b).enumerate() {
+                    let from_jupiter = (slot + SIGNS - sign_index(sign)) % SIGNS + 1;
+                    let (x, y) = (x & jupiter_bit != 0, y & jupiter_bit != 0);
+                    let expected = match (row, from_jupiter) {
+                        (1, 12) => (true, false),
+                        (1, 2) => (false, true),
+                        _ => (x, x),
+                    };
+                    assert_eq!(
+                        (x, y),
+                        expected,
+                        "row {row}, the {from_jupiter}th from Jupiter"
+                    );
+                    assert_eq!(
+                        a[slot] & !jupiter_bit,
+                        b[slot] & !jupiter_bit,
+                        "another contributor moved"
+                    );
+                }
+            }
         }
     }
 
@@ -481,6 +586,7 @@ mod tests {
             AshtakavargaRules {
                 shodhana: Shodhana::EachGraha,
                 ekadhipatya: Ekadhipatya::Bphs,
+                moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
             },
         );
         assert_eq!(each.sarva.iter().map(|v| u32::from(*v)).sum::<u32>(), 337);
@@ -499,6 +605,7 @@ mod tests {
             AshtakavargaRules {
                 shodhana: Shodhana::Sarva,
                 ekadhipatya: Ekadhipatya::EmptyToZero,
+                moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
             },
         );
         assert_eq!(

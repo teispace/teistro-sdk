@@ -16,7 +16,7 @@ use std::path::Path;
 
 use serde_json::Value;
 use teistro_core::catalogue::{Graha, Rashi};
-use teistro_core::settings::{Ekadhipatya, Shodhana, Vimshopaka};
+use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Shodhana, Vimshopaka};
 use teistro_strength::ashtakavarga::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
 use teistro_strength::bhava_bala::{
     BhavaBalaChart, BhavaBalaReading, BhavaBalaRules, BhavaGraha, NINE,
@@ -67,6 +67,7 @@ fn every_recorded_ashtakavarga_is_reproduced_under_the_engine_s_reading() {
     let rules = AshtakavargaRules {
         shodhana: Shodhana::Sarva,
         ekadhipatya: Ekadhipatya::EmptyToZero,
+        moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
     };
     let files = files("ashtakavarga");
     for (name, file) in &files {

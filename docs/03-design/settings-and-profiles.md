@@ -88,6 +88,7 @@ every shipped profile. The v1 inventory:
 | strength | `bala_scheme` | `BalaSchemeKey` | `PARASHARA`, `PARASHARA_EXTENDED` |
 | strength | `ekadhipatya` | enum | `BPHS` (the default, ch. 68), `EMPTY_TO_ZERO` (the corpus's engine; crux C60) |
 | strength | `shodhana` | enum | `EACH_GRAHA` (the default, chs. 67 to 69), `SARVA` (the corpus's engine; crux C59) |
+| strength | `moon_bindu_from_jupiter` | enum | `TWELFTH` (the default, BPHS ch. 66 and Varahamihira, the corpus's engine), `SECOND` (Phaladeepika ch. 23 v. 4): where Jupiter gives the Moon a bindu in the Ashtakavarga, and so in its transits (crux C144) |
 | strength | `vimshopaka` | enum | `BPHS` (the default, ch. 7's points by compound relationship), `SAPTAVARGAJA_VIRUPAS` (the corpus's engine; crux C63) |
 | strength | `saptavargaja` | enum | `COMPOUND` (the default, Raman's figures by the compound relationship), `NATURAL` (the corpus's engine; crux C64) |
 | strength | `nathonnatha` | enum | `MIDNIGHT` (the default, ch. 27 vv. 8 and 9), `ARC` (the corpus's engine; crux C65) |

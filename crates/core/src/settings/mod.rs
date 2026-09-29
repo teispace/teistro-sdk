@@ -37,9 +37,9 @@ pub use knobs::{
     Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord,
     Ekadhipatya, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
-    NodeCoLordship, NodeObstruction, NodeVedha, OverridePolicy, PolarDayPolicy, PolarPolicy,
-    Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis,
+    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
+    NodeAspects, NodeCoLordship, NodeObstruction, NodeVedha, OverridePolicy, PolarDayPolicy,
+    PolarPolicy, Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis,
     SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
     UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
@@ -501,6 +501,9 @@ group!(
         ekadhipatya: Ekadhipatya,
         /// Where the Ashtakavarga's reductions and pindas are made (crux C59).
         shodhana: Shodhana,
+        /// Where Jupiter gives the Moon a bindu in the Ashtakavarga (crux
+        /// C144; `03-design/gochar-ashtakavarga.md`).
+        moon_bindu_from_jupiter: MoonBinduFromJupiter,
         /// How the Vimshopaka scores a graha in a varga (crux C63).
         vimshopaka: Vimshopaka,
         /// How the Shadbala's Saptavargaja scores a varga (crux C64).
