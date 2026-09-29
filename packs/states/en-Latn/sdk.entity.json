@@ -1710,5 +1710,27 @@
       "phala": "Tiger (Vyaghra) yoni denotes courage, ferocity and independence.",
       "phalaProse": "The Tiger (Vyaghra) yoni comprises the nakshatras Chitra and Vishakha. A person of this yoni is courageous, fierce, independent, powerful and proud; fearless, fond of their own authority, capable of acting alone and quick to anger. In practical life they are natural leaders, competitive, intolerant of injustice, and inclined to walk their own path. In Yoni koota — worth 4 of the 8 ashtakoota points, gauging biological compatibility and instinctive temperament — a same-yoni match scores the full 4 and is best; the Cow, however, is the Tiger’s direct enemy yoni, scoring lowest and giving the poorest match."
     }
+  },
+  "gochar_bhava": {
+    "SATURN_IN_4": {
+      "sadeSati": "Kantaka Shani (Saturn in the 4th from the Moon) signals obstacles to home, mother and peace of mind.",
+      "sadeSatiProse": "In the Dhaiyya (the lesser Saturn period), when Saturn transits the 4th from the natal Moon it is known as Kantaka Shani (two-and-a-half years). The window brings obstacles to domestic comfort, concern for the mother’s health, unrest of mind, distress over immovable property, and hindrance in the field of work. There is discontent of mind; yet it is borne well with patience and service to the mother. A strong 4th lord and a benefic aspect lessen the difficulty."
+    },
+    "SATURN_IN_8": {
+      "sadeSati": "Ashtama Shani (Saturn in the 8th from the Moon) signals a heavy burden of longevity worry, hidden illness and sudden hindrance.",
+      "sadeSatiProse": "In the Dhaiyya, when Saturn transits the 8th from the natal Moon it is known as Ashtama Shani (two-and-a-half years), as heavy as the Sade Sati itself. The window brings worry over longevity, hidden chronic ailments, sudden obstacles, depression, financial loss, and fear of hidden enemies — though it also suits the pursuit of the occult sciences and spiritual discipline. It is borne well with patience, Saturn propitiation, and service, charity and dharma."
+    },
+    "SATURN_IN_1": {
+      "sadeSati": "Peak Sade Sati (Saturn over the Moon) marks the heaviest test of mind and work.",
+      "sadeSatiProse": "In the middle phase of Sade Sati, Saturn transits over the natal Moon itself (Janma Shani, the middle two-and-a-half years). This is the heaviest part of the cycle — mental melancholy, loss of position, a testing of the field of work, separation from kin, and erosion of health. Mental strength and one’s work are put to the proof. Yet labour met with patience, diligence and service yields lasting results; this is the time of maturation."
+    },
+    "SATURN_IN_12": {
+      "sadeSati": "Rising Sade Sati (Saturn in the 12th from the Moon) marks the onset of expense, toil and worry.",
+      "sadeSatiProse": "In the first phase of Sade Sati, Saturn transits the 12th from the natal Moon (the first two-and-a-half years). The window begins to bring rising expenditure, broken sleep, anxiety over hidden adversaries, a possibility of travel abroad, and causeless fear; in health, disorders of wind, and a heaviness of mind. Yet this is a time of inner cleansing and the sowing of detachment — borne well with patience and restraint in spending."
+    },
+    "SATURN_IN_2": {
+      "sadeSati": "Setting Sade Sati (Saturn in the 2nd from the Moon) marks the gradual easing, with strain on wealth and family.",
+      "sadeSatiProse": "In the final phase of Sade Sati, Saturn transits the 2nd from the natal Moon (the last two-and-a-half years). The window brings strain on savings, family discord, the need for restraint in speech, and a gradual improvement in health. The intensity of the earlier phases eases by degrees; the fruit of one’s labour appears and stability returns. This is a time of completion and rebuilding."
+    }
   }
 }

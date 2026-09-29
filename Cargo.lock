@@ -1763,6 +1763,7 @@ dependencies = [
  "teistro-aspect",
  "teistro-chart",
  "teistro-core",
+ "teistro-gochar",
  "teistro-houses",
  "teistro-intl",
  "teistro-rules",

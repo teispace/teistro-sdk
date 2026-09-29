@@ -18,5 +18,6 @@
   "avasthaDeeptadi": "{$avastha :entity kind=avastha_deeptadi form=phala}",
   "avasthaLajjitadi": "{$avastha :entity kind=avastha_lajjitadi form=phala}",
   "dignity": "{$dignity :entity kind=dignity form=phala}",
-  "state": "{$state :entity kind=state form=phala}"
+  "state": "{$state :entity kind=state form=phala}",
+  "sadeSati": ".input {$house :integer} {{{$phala :entity kind=gochar_bhava form=sadeSati}}}"
 }

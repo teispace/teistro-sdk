@@ -4,8 +4,8 @@ use teistro_core::error::Error;
 use teistro_interpret::{
     Plan, ashtakavarga as say_ashtakavarga, aspects, bhava_bala as say_bhava_bala,
     chalit as say_chalit, conditions, dasha_phala, houses, karakas, panchanga as say_panchanga,
-    phala, placements, positions, readings, states as say_states, strength,
-    vimshopaka as say_vimshopaka,
+    phala, placements, positions, readings, sade_sati as say_sade_sati, states as say_states,
+    strength, vimshopaka as say_vimshopaka,
 };
 use teistro_serial::document::Document;
 
@@ -152,6 +152,36 @@ impl<'a> InterpretArea<'a> {
         }
         let engine = self.context.locale_engine();
         Ok(phala(&inputs.chart, &*engine))
+    }
+
+    /// What a loaded corpus says of Saturn's periods from the natal Moon:
+    /// the reading of each Sade Sati phase and each smaller spell `report`
+    /// holds, each house once, in the order Saturn first reaches it.
+    ///
+    /// It takes the report [`ChartArea::sade_sati`](crate::ChartArea::sade_sati)
+    /// gives rather than a document, as [`InterpretArea::readings`] takes
+    /// a reading, because the periods are what a search found and not a
+    /// section of the chart. Like [`InterpretArea::phala`] it says nothing
+    /// until a pack of state readings is loaded, and a report counted from
+    /// the lagna says nothing either: the readings are of Saturn's house
+    /// from the Moon (`03-design/state-readings.md` §8).
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Document, Ephemeris, SadeSatiRequest};
+    /// # use teistro::quantity::{JulianDay, Utc};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let natal: Document = todo!();
+    /// let now = JulianDay::<Utc>::literal(2_461_000.5);
+    /// let report = sdk.chart().sade_sati(&natal, &SadeSatiRequest::at(now))?.value;
+    /// let plan = sdk.interpret().sade_sati(&report);
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[must_use]
+    pub fn sade_sati(self, report: &teistro_gochar::sade_sati::Report) -> Plan {
+        let engine = self.context.locale_engine();
+        say_sade_sati(report, &*engine)
     }
 
     /// Each bhava's strength in virupas, the first house first.

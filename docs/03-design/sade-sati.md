@@ -212,3 +212,17 @@ longitudes, and reckons the houses itself rather than through the SDK's
    which refuses one by `natals`, a field no caller of the boundary wrote.
    Both searches now ask the façade nothing for an empty batch; a test
    asks for both over no charts and was red first.
+5. The readings: **done**. The baseline corpus's five `sade-sati-phala`
+   records are Saturn's house from the Moon, so they land on the open
+   kind `gochar_bhava` (`SATURN_IN_12`, `SATURN_IN_1`, `SATURN_IN_2`,
+   `SATURN_IN_4`, `SATURN_IN_8`) under the form `sadeSati`, the shape
+   `graha_bhava` has for the natal chart. `sdk.interpret().sade_sati`
+   says each house a report holds once, in the order Saturn first
+   reaches it, and says nothing of a report counted from the lagna. A
+   test holds the migration's names to `Phase::house` and
+   `DEFAULT_SPELLS`, so a phase that moved house on one side fails.
+
+   **Found building it:** the first rendering left out the frame's
+   house, and every one of the ten fell back with a warning; the
+   state-readings pass wrote *falsified* onto its page and passed. It
+   refuses a claim that does not hold now, and was red first.

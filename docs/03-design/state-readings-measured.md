@@ -8,7 +8,7 @@ difference. The design it measures is
 
 ## Where the corpus landed
 
-26 of the engine's 38 state categories map onto a subject this SDK has, and they become 350 records under 21 kinds. The mapping is a written table and not a resemblance: a category with no subject here is skipped and named below rather than guessed at.
+27 of the engine's 38 state categories map onto a subject this SDK has, and they become 355 records under 22 kinds. The mapping is a written table and not a resemblance: a category with no subject here is skipped and named below rather than guessed at.
 
 | category | kinds | form | records |
 |---|---|---|---:|
@@ -31,6 +31,7 @@ difference. The design it measures is
 | `nakshatra-phala` | `nakshatra` | `phala` | 27 |
 | `namakarana-nakshatra` | `nakshatra` | `namakarana` | 27 |
 | `planet-condition` | `dignity`, `state` | `phala` | 7 |
+| `sade-sati-phala` | `gochar_bhava` | `sadeSati` | 5 |
 | `special-lagna` | `point` | `phala` | 5 |
 | `tatwa` | `tatwa` | `phala` | 5 |
 | `tithi-phala` | `tithi` | `phala` | 30 |
@@ -41,7 +42,7 @@ difference. The design it measures is
 
 ## What it did not map
 
-12 categories, 126 records. The list is exhaustive rather than counted, because a category that gains a subject and a corpus that gains a category both have to change this page. Each is a decision rather than a task, and `state-readings.md` §8 says which kind of one.
+11 categories, 121 records. The list is exhaustive rather than counted, because a category that gains a subject and a corpus that gains a category both have to change this page. Each is a decision rather than a task, and `state-readings.md` §8 says which kind of one.
 
 | category | records |
 |---|---:|
@@ -55,7 +56,6 @@ difference. The design it measures is
 | `ayurdaya-tier` | 4 |
 | `ayurdaya-vulnerability` | 9 |
 | `muhurta-factor` | 47 |
-| `sade-sati-phala` | 5 |
 | `shadbala-strength` | 28 |
 
 ## What each unmapped category actually wants
@@ -68,7 +68,7 @@ rests on a claim nobody had measured: that the corpus keys by the
 vocabulary the SDK computes, which was read off `ayurdaya-method`'s
 three and generalised.
 
-Measured over the 79 records of the 11 categories whose subject the SDK
+Measured over the 74 records of the 10 categories whose subject the SDK
 computes, **6 of the keys are the SDK's own spelling**. The rest are not
 a spelling difference. They are a different **classification** — nine
 maraka classes against the verses' twenty reasons, five verse citations
@@ -86,24 +86,23 @@ grades nothing — and a kind supplies a key space, never a vocabulary.
 | `ayurdaya-method` | 3 | `longevity::Method` | 3 | 3 of 3 | nothing: every key is the SDK's own spelling |
 | `ayurdaya-tier` | 4 | `LifeClass` | 7 | 1 of 4 | three Sanskrit names, which map one to one onto `short`, `medium` and `long` |
 | `ayurdaya-vulnerability` | 9 | `longevity::Vulnerability`, a struct with no members to name | 0 | 0 of 9 | three severity bands and six conditions the SDK does not grade |
-| `sade-sati-phala` | 5 | `sade_sati::Phase`'s three and the default smaller spells, the 4th and the 8th | 5 | 0 of 5 | the phases' names in lower case and the spells by house (`dhaiyya_4th` is house 4): a spelling, not a classification |
 | `shadbala-strength` | 28 | `GrahaShadbala::strong`, a verdict against the required rupas | 2 | 0 of 28 | four bands the corpus does not record, and a composite graha key |
 
-**6 of the members column is counted from the type**, not written here:
+**5 of the members column is counted from the type**, not written here:
 `Method::ALL`, `LifeClass::ALL`, `Reason::ALL`, a default `Reductions`
-serialised, the shipped balarishta pack, and Sade Sati's `Phase::ALL`
-with its `DEFAULT_SPELLS`. The row that made it necessary is
-`ayurdaya-maraka` — §8 of the design page said *fifteen* maraka
-reasons where the type has twenty, which is the same count-in-prose that
-has rotted four times in this repository. **The keys-it-spells column is
-recorded, not gated**, and says so: this repository carries the migrated
-packs and not the exporter's document, so there is nothing here to count
-it from. It was measured on 2026-09-22 against the corpus itself.
+serialised and the shipped balarishta pack. The row that made it
+necessary is `ayurdaya-maraka` — §8 of the design page said *fifteen*
+maraka reasons where the type has twenty, which is the same
+count-in-prose that has rotted four times in this repository. **The
+keys-it-spells column is recorded, not gated**, and says so: this
+repository carries the migrated packs and not the exporter's document,
+so there is nothing here to count it from. It was measured on 2026-09-22
+against the corpus itself.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every category with a vocabulary row is one the migration does not map | **holds** | 0 of 11 disagree |
-| every vocabulary size the type can be asked for is the size stated | **holds** | 0 of 6 disagree |
+| every category with a vocabulary row is one the migration does not map | **holds** | 0 of 10 disagree |
+| every vocabulary size the type can be asked for is the size stated | **holds** | 0 of 5 disagree |
 
 ## Where two corpora meet
 
@@ -154,7 +153,7 @@ timing, `dasha_phala` for a graha as a dasha lord, `states` for each
 avastha a graha is in, `conditions` for a dignity and a condition — is
 rendered here through that message, in each strict locale, and must
 answer from the locale's own record without a fallback and without a
-warning: 756 renderings.
+warning: 766 renderings.
 
 **47 readings have no composer that says them yet**, by the category
 they came from. They are not errors — the records load and a consumer
@@ -172,7 +171,7 @@ reached a reader, so the list is here rather than in a sentence.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every reading a composer says renders from the locale's own record, with no fallback and no warning | **holds** | 0 of 756 disagree |
+| every reading a composer says renders from the locale's own record, with no fallback and no warning | **holds** | 0 of 766 disagree |
 
 ## What it leaves open
 
@@ -188,7 +187,7 @@ one that names none and is not here fails.
 | `inauspicious-kaal` | `varjyam` | the SDK computes no varjyam window, and no kind names one |
 | `planet-condition` | `COMBUST_CANCELLED` | the SDK computes combustion but not its cancellation, and no `state` member names one |
 
-**26 readings land on a record the base locale does not name.** The
+**31 readings land on a record the base locale does not name.** The
 reading is there and answers; the subject's own name is not, because
 `03-design/entity-names.md` §4 refuses a translated stub and these
 kinds have no vetted table. A renderer asking for the name gets nothing,
@@ -196,6 +195,7 @@ so the count is here.
 
 | kind | records with a reading and no name |
 |---|---:|
+| `gochar_bhava` | 5 |
 | `point` | 5 |
 | `rule` | 18 |
 | `state` | 3 |
@@ -203,7 +203,7 @@ so the count is here.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every refused key is absent from the packs | **holds** | 0 of 3 disagree |
-| every record carried is one the base locale can resolve or an open kind's own | **holds** | 0 of 1750 disagree |
+| every record carried is one the base locale can resolve or an open kind's own | **holds** | 0 of 1775 disagree |
 
 ## What the state readings cost
 
@@ -215,25 +215,25 @@ it. A consumer loads one pack a locale from each root it wants.
 
 | locale | source | pack |
 |---|---:|---:|
-| `en-Latn` | 203 KB | 197 KB |
-| `hi-Deva-IN` | 387 KB | 381 KB |
-| `ne-Deva-NP` | 365 KB | 359 KB |
-| `sa-Deva` | 357 KB | 351 KB |
-| `sa-Latn` | 198 KB | 191 KB |
-| **all** | **1513 KB** | **1481 KB** |
+| `en-Latn` | 206 KB | 200 KB |
+| `hi-Deva-IN` | 394 KB | 387 KB |
+| `ne-Deva-NP` | 371 KB | 364 KB |
+| `sa-Deva` | 362 KB | 356 KB |
+| `sa-Latn` | 200 KB | 194 KB |
+| **all** | **1536 KB** | **1503 KB** |
 
 Beside the rule readings' 2920 KB, which is the other pack a consumer
-that wants both would load: 4401 KB in all for every language, and 1096
+that wants both would load: 4423 KB in all for every language, and 1101
 KB for one.
 
 ## What the packs decide
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every record names a catalogue member, or a well-formed key of an open kind | **holds** | 0 of 350 disagree |
-| every locale carries every record the base locale carries | **holds** | 0 of 1750 disagree |
-| every record carries a form to be read by | **holds** | 0 of 1750 disagree |
+| every record names a catalogue member, or a well-formed key of an open kind | **holds** | 0 of 355 disagree |
+| every locale carries every record the base locale carries | **holds** | 0 of 1775 disagree |
+| every record carries a form to be read by | **holds** | 0 of 1775 disagree |
 | every locale's state readings build into a pack an engine can load | **holds** | 0 of 5 disagree |
-| every form answers from the loaded packs, with no source tree behind them | **holds** | 0 of 4850 disagree |
+| every form answers from the loaded packs, with no source tree behind them | **holds** | 0 of 4900 disagree |
 | a rule's reading still answers after the state readings are loaded over it | **holds** | 0 of 660 disagree |
 

@@ -15,6 +15,7 @@ publish = false
 teistro-aspect = { path = "../aspect" }
 teistro-chart = { path = "../chart" }
 teistro-core = { path = "../core" }
+teistro-gochar = { path = "../gochar" }
 teistro-houses = { path = "../houses" }
 teistro-intl = { path = "../intl", default-features = false }
 teistro-rules = { path = "../rules" }
