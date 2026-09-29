@@ -698,8 +698,9 @@ test('every catalogue enum has a complete id table', () => {
   // three, `TsGocharVerdict`, three, and `TsFruition`, four; 1154 since the
   // Ashtakavarga's `TsAshtakavargaGoodFrom`, two, `TsKakshyaLord`, eight,
   // and `TsSarvaStanding`, three; 1163 since the hit list's `TsHitKind`,
-  // four, `TsMotion`, two, and `TsAspectPhase`, three.
-  assert.equal(entries, 1163, 'every member of every enum is in a table');
+  // four, `TsMotion`, two, and `TsAspectPhase`, three; 1165 since Sade
+  // Sati's `TsReckoning`, two.
+  assert.equal(entries, 1165, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -1918,6 +1919,63 @@ test('a chart carries its hit list, the sky once for the batch', () => {
       field,
     );
   }
+  ctx.dispose();
+});
+
+/**
+ * Sade Sati crosses whole: `null` unless asked; each Sade Sati its three
+ * phases in order; a period asked about at one instant inside it the one a
+ * decade's window finds, bound for bound; a batch each chart alone; and a
+ * bad request refused by the field the caller wrote.
+ */
+test('a chart carries its Sade Sati, each period whole', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const at = { place, utcOffsetSeconds: 20700 };
+  const births = [2447995.4895833335, 2451545.2];
+  assert.equal(ctx.chart.found({ instant: births[0], ...at }).sadeSati, null);
+  const sadeSati = { from: 2460676.5, to: 2464329, spells: [4, 7, 8] };
+  for (const reckoning of ['SIGN', 'DEGREE']) {
+    const asked = { ...sadeSati, reckoning };
+    const batch = ctx.chart.foundMany({ instants: births, ...at, sadeSati: asked });
+    births.forEach((instant, k) => {
+      const report = batch.at(k).sadeSati;
+      assert.deepEqual(report, ctx.chart.found({ instant, ...at, sadeSati: asked }).sadeSati, 'a batch is each chart alone');
+      assert.equal(report.reckoning, reckoning);
+      assert.equal(report.reference.from, 'MOON');
+      assert.match(report.reference.sign, /^rashi\./);
+      assert.ok(report.sadeSati.length + report.spells.length > 0, 'a decade holds a period');
+      for (const one of report.sadeSati) {
+        assert.deepEqual(one.phases.map((spell) => spell.house), [12, 1, 2]);
+        const visits = one.phases.flatMap((spell) => spell.visits).sort((a, b) => a.from - b.from);
+        visits.forEach((visit, v) => {
+          assert.ok(visit.from < visit.to, 'a visit is forward in time');
+          if (v > 0) assert.ok(visits[v - 1].to <= visit.from, 'visits never overlap');
+        });
+        // Asked at one instant inside its peak, the same Sade Sati, whole.
+        const peak = one.phases[1].visits[0];
+        const now = ctx.chart.found({
+          instant,
+          ...at,
+          sadeSati: { from: (peak.from + peak.to) / 2, reckoning },
+        }).sadeSati;
+        assert.deepEqual(now.sadeSati, [one], `${reckoning}: whole however the window is drawn`);
+      }
+      for (const spell of report.spells) assert.ok([4, 7, 8].includes(spell.house), `${spell.house}`);
+    });
+  }
+  for (const [asked, field] of [
+    [{ from: 2460676.5, to: 2460600.5 }, 'sadeSati.to'],
+    [{ from: 2460676.5, spells: [2] }, 'sadeSati.spells'],
+    [{ from: 2460676.5, reckoning: 'ARC' }, 'sadeSati.reckoning'],
+  ]) {
+    assert.throws(
+      () => ctx.chart.found({ instant: births[0], ...at, sadeSati: asked }),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  assert.throws(() => ctx.chart.found({ instant: births[0], ...at, sadeSati: 2460676.5 }), TypeError);
   ctx.dispose();
 });
 

@@ -106,6 +106,7 @@ from .catalogue import (
     Quadrant,
     Rashi,
     Reading,
+    Reckoning,
     Relationship,
     Resolution,
     Rising,
@@ -184,7 +185,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_error": 56,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 160,
+    "ts_chart_request": 168,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -214,7 +215,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_error": 36,
     "ts_frame": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 104,
+    "ts_chart_request": 112,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -616,6 +617,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("varsha_json", ctypes.c_char_p),
         ("gochar_json", ctypes.c_char_p),
         ("hits_json", ctypes.c_char_p),
+        ("sade_sati_json", ctypes.c_char_p),
     ]
 
 
@@ -2271,6 +2273,20 @@ class ChartRequest:
     Example: {"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}. May be null.
     """
 
+    sade_sati_json: Optional[str] = None
+    """Sade Sati and the smaller spells of Saturn to find for every chart
+    in the batch, as a JSON object: `from`, a UTC Julian day, and
+    optionally `to` (the window's end, `from` by default), `countedFrom`
+    (`"MOON"`, the default, or `"LAGNA"`; C139), `reckoning` (`"SIGN"`,
+    the default, or `"DEGREE"`; C147) and `spells` (houses 3 to 11, the
+    4th and the 8th by default; C149). Every period reaching into the
+    window comes back whole in the `sade_sati` and `sade_sati_visits`
+    sections, the sky searched once for the batch. Null for none
+    (`03-design/sade-sati.md`). Refusals are named from the record every
+    binding calls `sadeSati`, as `sadeSati.to`.
+    Example: {"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -2327,6 +2343,9 @@ class ChartRequest:
         _hits_json = None if self.hits_json is None else self.hits_json.encode("utf-8")
         owned.append(_hits_json)
         raw.hits_json = _hits_json
+        _sade_sati_json = None if self.sade_sati_json is None else self.sade_sati_json.encode("utf-8")
+        owned.append(_sade_sati_json)
+        raw.sade_sati_json = _sade_sati_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -2369,6 +2388,7 @@ class ChartRequest:
             varsha_json=_text(raw.varsha_json),
             gochar_json=_text(raw.gochar_json),
             hits_json=_text(raw.hits_json),
+            sade_sati_json=_text(raw.sade_sati_json),
         )
 
 

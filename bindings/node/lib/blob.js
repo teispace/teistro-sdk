@@ -225,6 +225,7 @@ export function decodeCharts(bytes) {
       praveshaCount: column(blob, at, 8, 'u32', at.count),
       natalSahamCount: column(blob, at, 9, 'u32', at.count),
       hitCount: column(blob, at, 10, 'u32', at.count),
+      sadeSatiVisitCount: column(blob, at, 11, 'u32', at.count),
       length: at.count,
     };
   }
@@ -908,6 +909,25 @@ export function decodeCharts(bytes) {
       toGraha: column(blob, at, 6, 'u16', at.count),
       angle: column(blob, at, 7, 'u16', at.count),
       phase: column(blob, at, 8, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 57, 'sade_sati');
+    out.sadeSati = {
+      reference: column(blob, at, 0, 'u16', at.count),
+      countedFrom: column(blob, at, 1, 'u8', at.count),
+      reckoning: column(blob, at, 2, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 58, 'sade_sati_visits');
+    out.sadeSatiVisits = {
+      period: column(blob, at, 0, 'u16', at.count),
+      house: column(blob, at, 1, 'u8', at.count),
+      from: column(blob, at, 2, 'f64', at.count),
+      to: column(blob, at, 3, 'f64', at.count),
       length: at.count,
     };
   }

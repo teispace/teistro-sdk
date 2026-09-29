@@ -5059,6 +5059,40 @@ enum GocharFrom {
   }
 }
 
+/// What Sade Sati's houses are reckoned in (C147, `03-design/sade-sati.md`).
+enum Reckoning {
+  /// Whole signs from the reference's sign.
+  sign(0, 'SIGN'),
+  /// 30° houses with the reference's degree in the middle of the first.
+  degree(1, 'DEGREE');
+
+  const Reckoning(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Reckoning byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Reckoning'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Reckoning? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 enum HitKind {
   /// The graha entered a sign.

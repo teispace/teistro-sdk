@@ -86,6 +86,7 @@ import {
   FruitionById,
   GocharFromById,
   HitKindById,
+  ReckoningById,
   MotionById,
   AspectPhaseById,
   KakshyaLordById,
@@ -955,6 +956,24 @@ export class Chart {
     }
     const from = starts[this.#index];
     return Array.from({ length: counts[this.#index] ?? 0 }, (_, k) => hitOf(d.hits, from + k));
+  }
+
+  /**
+   * Sade Sati and Saturn's smaller spells (`sadeSati: { from, to,
+   * countedFrom, reckoning, spells }`): every period reaching into the
+   * window, **whole**, however far its bounds fall outside it; `null`
+   * unless asked for (`03-design/sade-sati.md`). Saturn is searched once
+   * for the whole batch.
+   *
+   * It is `{ reference: { from, sign }, reckoning, sadeSati, spells }`:
+   * each Sade Sati is `{ phases }`, the rising (12th), peak (1st) and
+   * setting (2nd) spells in order, and each spell `{ house, visits }`, a
+   * visit `{ from, to }` in UTC Julian days, half-open, a retrograde
+   * re-entry a visit of its own (C148). A bound past the ephemeris's
+   * coverage is `null`.
+   */
+  get sadeSati() {
+    return sadeSatisOf(this.#batch)[this.#index] ?? null;
   }
 
   /**
@@ -2020,6 +2039,11 @@ export class ChartArea extends Area {
           'hits',
           'a hit list request record, e.g. { from: 2460676.5, to: 2461041.5, grahas: ["SATURN"] }',
         ),
+        sadeSatiJson: recordJson(
+          request.sadeSati,
+          'sadeSati',
+          'a Sade Sati request record, e.g. { from: 2460676.5, to: 2464329, reckoning: "SIGN" }',
+        ),
       }),
     );
     return new Charts(bytes, this.#dashaNames);
@@ -2357,6 +2381,75 @@ function gocharsOf(batch) {
     );
     GOCHARS.set(batch, decoded);
   }
+  return decoded;
+}
+
+/** Each batch's Sade Sati reports, decoded once however many charts read them. */
+const SADE_SATIS = new WeakMap();
+
+/**
+ * Every chart's Sade Sati report in a batch: `sade_sati` holds a row a
+ * chart, or none when none was asked, and `sade_sati_visits` each chart's
+ * visits, ragged by `cast.sade_sati_visit_count` and numbered by `period`
+ * — its Sade Satis first (houses 12, 1 and 2), then its smaller spells
+ * (`03-design/sade-sati.md`).
+ *
+ * @param {Charts} batch
+ * @returns {readonly (object|null)[]}
+ */
+function sadeSatisOf(batch) {
+  let decoded = SADE_SATIS.get(batch);
+  if (decoded !== undefined) return decoded;
+  const d = batch.decoded;
+  const charts = d.cast.sadeSatiVisitCount;
+  const c = d.sadeSati;
+  const v = d.sadeSatiVisits;
+  if (c.reference.length === 0) {
+    decoded = Object.freeze(Array.from({ length: charts.length }, () => null));
+  } else {
+    if (c.reference.length !== charts.length) {
+      throw new Error(`sade_sati has ${c.reference.length} rows for ${charts.length} charts; it is one a chart or none`);
+    }
+    const starts = startsOf(charts);
+    if (starts[charts.length] !== v.house.length) {
+      throw new Error(
+        `sade_sati_visits has ${v.house.length} rows and cast.sade_sati_visit_count sums to ${starts[charts.length]}; ` +
+          "it is every chart's visits, concatenated",
+      );
+    }
+    const bound = (jd) => (Number.isNaN(jd) ? null : jd);
+    decoded = Object.freeze(
+      Array.from({ length: charts.length }, (_, chart) => {
+        // A period's rows are adjacent and share `period`; a spell's are
+        // the run of one house inside it.
+        const periods = [];
+        for (let row = starts[chart]; row < starts[chart + 1]; row += 1) {
+          const period = v.period[row];
+          if (periods.length === period) periods.push([]);
+          const spells = periods[period];
+          if (spells === undefined) throw new Error(`sade_sati_visits row ${row} skips to period ${period}`);
+          const house = v.house[row];
+          if (spells.length === 0 || spells[spells.length - 1].house !== house) spells.push({ house, visits: [] });
+          spells[spells.length - 1].visits.push(Object.freeze({ from: bound(v.from[row]), to: bound(v.to[row]) }));
+        }
+        const spell = ({ house, visits }) => Object.freeze({ house, visits: Object.freeze(visits) });
+        // The Sade Sati's houses are 12, 1 and 2; a smaller spell is 3 to 11.
+        const isSadeSati = (spells) => spells[0].house === 12 || spells[0].house <= 2;
+        return Object.freeze({
+          reference: Object.freeze({
+            from: GocharFromById.get(c.countedFrom[chart]) ?? 'unknown',
+            sign: RashiById.get(c.reference[chart]) ?? 'unknown',
+          }),
+          reckoning: ReckoningById.get(c.reckoning[chart]) ?? 'unknown',
+          sadeSati: Object.freeze(
+            periods.filter(isSadeSati).map((spells) => Object.freeze({ phases: Object.freeze(spells.map(spell)) })),
+          ),
+          spells: Object.freeze(periods.filter((spells) => !isSadeSati(spells)).map((spells) => spell(spells[0]))),
+        });
+      }),
+    );
+  }
+  SADE_SATIS.set(batch, decoded);
   return decoded;
 }
 

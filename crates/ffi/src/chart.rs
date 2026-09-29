@@ -314,6 +314,29 @@ impl TsGocharFrom {
     }
 }
 
+/// What Sade Sati's houses are reckoned in (C147, `03-design/sade-sati.md`).
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsReckoning {
+    /// Whole signs from the reference's sign.
+    Sign = 0,
+    /// 30° houses with the reference's degree in the middle of the first.
+    Degree = 1,
+}
+
+impl TsReckoning {
+    /// The code a reckoning crosses as; `None` for one this boundary does
+    /// not know yet, which the encoder refuses rather than guessing.
+    #[must_use]
+    pub const fn of(reckoning: teistro::sade_sati::Reckoning) -> Option<TsReckoning> {
+        match reckoning {
+            teistro::sade_sati::Reckoning::Sign => Some(TsReckoning::Sign),
+            teistro::sade_sati::Reckoning::Degree => Some(TsReckoning::Degree),
+            _ => None,
+        }
+    }
+}
+
 /// What a hit of the transit hit list was (`03-design/transit-hit-list.md`).
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -938,6 +961,18 @@ pub struct TsChartRequest {
     /// record every binding calls `hits`, as `hits.to`.
     /// `api: nullable example={"from":2460676.5,"to":2461041.5,"grahas":["SATURN"]}`
     pub hits_json: *const c_char,
+    /// Sade Sati and the smaller spells of Saturn to find for every chart
+    /// in the batch, as a JSON object: `from`, a UTC Julian day, and
+    /// optionally `to` (the window's end, `from` by default), `countedFrom`
+    /// (`"MOON"`, the default, or `"LAGNA"`; C139), `reckoning` (`"SIGN"`,
+    /// the default, or `"DEGREE"`; C147) and `spells` (houses 3 to 11, the
+    /// 4th and the 8th by default; C149). Every period reaching into the
+    /// window comes back whole in the `sade_sati` and `sade_sati_visits`
+    /// sections, the sky searched once for the batch. Null for none
+    /// (`03-design/sade-sati.md`). Refusals are named from the record every
+    /// binding calls `sadeSati`, as `sadeSati.to`.
+    /// `api: nullable example={"from":2460676.5,"to":2464329.0,"reckoning":"SIGN"}`
+    pub sade_sati_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -2101,6 +2136,126 @@ impl HitColumns {
     }
 }
 
+/// What the searches over a window found for every chart: the transit hit
+/// list and Sade Sati, the two sections a chart's own count makes ragged.
+struct Searches {
+    hits: HitColumns,
+    sade_sati: SadeSatiColumns,
+}
+
+impl Searches {
+    fn of(
+        hits: &[Vec<teistro::Hit>],
+        sade_sati: &[teistro::sade_sati::Report],
+        charts: usize,
+    ) -> Result<Searches, Error> {
+        Ok(Searches {
+            hits: HitColumns::of(hits, charts)?,
+            sade_sati: SadeSatiColumns::of(sade_sati, charts)?,
+        })
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        self.hits.write(writer)?;
+        self.sade_sati.write(writer)
+    }
+}
+
+/// Every chart's Sade Sati report: a row a chart in `sade_sati`, and a row
+/// a visit in `sade_sati_visits`, **ragged** by `cast.sade_sati_visit_count`;
+/// both empty when none was asked for.
+#[derive(Default)]
+struct SadeSatiColumns {
+    /// Each chart's visit rows, in the batch's order: zeroes when none asked.
+    counts: Vec<u32>,
+    reference: Vec<u16>,
+    counted_from: Vec<u8>,
+    reckoning: Vec<u8>,
+    /// The `sade_sati_visits` section.
+    period: Vec<u16>,
+    house: Vec<u8>,
+    from: Vec<f64>,
+    to: Vec<f64>,
+}
+
+impl SadeSatiColumns {
+    /// Each chart's periods, its Sade Satis first and then its smaller
+    /// spells, each in time order; a period's phases in the order they
+    /// come, and each phase's visits in theirs.
+    fn of(reports: &[teistro::sade_sati::Report], charts: usize) -> Result<SadeSatiColumns, Error> {
+        let mut columns = SadeSatiColumns {
+            counts: vec![0; charts],
+            ..SadeSatiColumns::default()
+        };
+        if reports.is_empty() {
+            return Ok(columns);
+        }
+        if reports.len() != charts {
+            return Err(Error::internal(format!(
+                "{} Sade Sati reports for {charts} charts",
+                reports.len()
+            )));
+        }
+        let refused =
+            |what: &str| Error::internal(format!("{what} has no code at the boundary yet"));
+        let bound = |at: Option<JulianDay<Utc>>| at.map_or(f64::NAN, JulianDay::get);
+        for (count, report) in columns.counts.iter_mut().zip(reports) {
+            columns.reference.push(report.reference.sign.id());
+            columns.counted_from.push(
+                TsGocharFrom::of(report.reference.from)
+                    .ok_or_else(|| refused("the Sade Sati reference"))? as u8,
+            );
+            columns.reckoning.push(
+                TsReckoning::of(report.reckoning)
+                    .ok_or_else(|| refused("the Sade Sati reckoning"))? as u8,
+            );
+            let periods = report
+                .sade_sati
+                .iter()
+                .map(|one| one.phases.as_slice())
+                .chain(report.spells.iter().map(std::slice::from_ref));
+            let before = columns.house.len();
+            for (ordinal, spells) in periods.enumerate() {
+                let ordinal = u16::try_from(ordinal)
+                    .map_err(|_| Error::internal("more Sade Sati periods than a row can number"))?;
+                for spell in spells {
+                    for visit in &spell.visits {
+                        columns.period.push(ordinal);
+                        columns.house.push(spell.house);
+                        columns.from.push(bound(visit.from));
+                        columns.to.push(bound(visit.to));
+                    }
+                }
+            }
+            *count = u32::try_from(columns.house.len() - before)
+                .map_err(|_| Error::internal("more Sade Sati visits than a section can count"))?;
+        }
+        Ok(columns)
+    }
+
+    fn write(&self, writer: &mut Writer<'_>) -> Result<(), teistro_idl::blob::BlobError> {
+        writer.columns(
+            "sade_sati",
+            self.reference.len(),
+            &[
+                ColumnData::U16(&self.reference),
+                ColumnData::U8(&self.counted_from),
+                ColumnData::U8(&self.reckoning),
+            ],
+        )?;
+        writer.columns(
+            "sade_sati_visits",
+            self.house.len(),
+            &[
+                ColumnData::U16(&self.period),
+                ColumnData::U8(&self.house),
+                ColumnData::F64(&self.from),
+                ColumnData::F64(&self.to),
+            ],
+        )
+    }
+}
+
 /// Every chart's Vaiseshikamsa, a row a graha, empty when it was not asked
 /// for.
 struct VaiseshikamsaColumns {
@@ -3099,6 +3254,7 @@ fn chart_rows(
     pravesha_counts: &[u32],
     natal_saham_counts: &[u32],
     hit_counts: &[u32],
+    sade_sati_counts: &[u32],
 ) -> Vec<Vec<FixedValue>> {
     charts
         .iter()
@@ -3116,6 +3272,7 @@ fn chart_rows(
                 u64::from(pravesha_counts.get(at).copied().unwrap_or(0)).into(),
                 u64::from(natal_saham_counts.get(at).copied().unwrap_or(0)).into(),
                 u64::from(hit_counts.get(at).copied().unwrap_or(0)).into(),
+                u64::from(sade_sati_counts.get(at).copied().unwrap_or(0)).into(),
             ]
         })
         .collect()
@@ -3571,6 +3728,9 @@ pub struct Composed<'a> {
     /// Every chart's transit hit list, in the batch's order
     /// (`transit-hit-list.md`); empty when none was asked for.
     pub hits: &'a [Vec<teistro::Hit>],
+    /// Every chart's Sade Sati report, in the batch's order
+    /// (`sade-sati.md`); empty when none was asked for.
+    pub sade_sati: &'a [teistro::sade_sati::Report],
     /// Every chart's own content hash, in the batch's order: what a chart
     /// handed out alone is stamped with, where the provenance hashes the
     /// list.
@@ -3611,6 +3771,7 @@ pub fn encode(
         gochar,
         gochar_instants,
         hits,
+        sade_sati,
         hashes,
     } = composed;
     let hashes = crate::support::hashes_text(hashes, documents.len())?;
@@ -3627,7 +3788,7 @@ pub fn encode(
     let once = BatchOnce::of(charts.first().copied());
     let by = Sections::of(documents, graha_count, registered, praveshas)?;
     let transits = GocharColumns::of(gochar, gochar_instants)?;
-    let hit_columns = HitColumns::of(hits, charts.len())?;
+    let searches = Searches::of(hits, sade_sati, charts.len())?;
 
     let write = || -> Result<Vec<u8>, teistro_idl::blob::BlobError> {
         writer.fixed(
@@ -3649,7 +3810,8 @@ pub fn encode(
                 &by.aspects.counts,
                 &by.years.counts,
                 &by.years.natal_counts,
-                &hit_columns.counts,
+                &searches.hits.counts,
+                &searches.sade_sati.counts,
             ),
         )?;
         columns.write(&mut writer, charts.len() * graha_count)?;
@@ -3692,7 +3854,7 @@ pub fn encode(
         writer.bytes("content_hashes", hashes.as_bytes())?;
         by.jaimini.write(&mut writer)?;
         transits.write(&mut writer)?;
-        hit_columns.write(&mut writer)?;
+        searches.write(&mut writer)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -4375,18 +4537,55 @@ unsafe fn hit_request_of(hits_json: *const c_char) -> Result<Option<teistro::Hit
 
 /// Every chart's hit list, empty when none was asked for: **one batch**
 /// through the façade ([`teistro::ChartArea::hits_many`]), which scans the
-/// sky once for every chart of the request.
+/// sky once for every chart of the request. A batch of none asks the
+/// façade nothing, which would refuse it by `natals`: the boundary answers
+/// an empty batch with an empty blob.
 fn hits_of(
     sdk: &teistro::Context,
     documents: &[Document],
     asked: Option<&teistro::HitRequest>,
 ) -> Result<Vec<Vec<teistro::Hit>>, Error> {
     match asked {
-        Some(asked) => sdk
+        Some(asked) if !documents.is_empty() => sdk
             .chart()
             .hits_many(documents, asked)
             .map(|found| found.value),
-        None => Ok(Vec::new()),
+        _ => Ok(Vec::new()),
+    }
+}
+
+/// The Sade Sati a request's `sade_sati_json` asks for, none for null; the
+/// façade reads and checks the record
+/// ([`teistro::SadeSatiRequest::from_json`]), naming a refusal from its
+/// root, `sadeSati.to`.
+///
+/// # Safety
+///
+/// `sade_sati_json` null or a NUL-terminated string.
+unsafe fn sade_sati_request_of(
+    sade_sati_json: *const c_char,
+) -> Result<Option<teistro::SadeSatiRequest>, Error> {
+    // SAFETY: the caller's contract.
+    unsafe { optional_text(sade_sati_json, "sade_sati_json") }?
+        .map(teistro::SadeSatiRequest::from_json)
+        .transpose()
+}
+
+/// Every chart's Sade Sati report, empty when none was asked for: **one
+/// batch** through the façade ([`teistro::ChartArea::sade_sati_many`]),
+/// which scans Saturn once for every chart of the request, and none for a
+/// batch of none, as [`hits_of`].
+fn sade_sati_of(
+    sdk: &teistro::Context,
+    documents: &[Document],
+    asked: Option<&teistro::SadeSatiRequest>,
+) -> Result<Vec<teistro::sade_sati::Report>, Error> {
+    match asked {
+        Some(asked) if !documents.is_empty() => sdk
+            .chart()
+            .sade_sati_many(documents, asked)
+            .map(|found| found.value),
+        _ => Ok(Vec::new()),
     }
 }
 
@@ -4716,6 +4915,8 @@ pub unsafe extern "C" fn ts_chart_found(
         let gochar = unsafe { gochar_request_of(asked.gochar_json) }?;
         // SAFETY: the entry point's contract.
         let hit_request = unsafe { hit_request_of(asked.hits_json) }?;
+        // SAFETY: the entry point's contract.
+        let sade_sati_request = unsafe { sade_sati_request_of(asked.sade_sati_json) }?;
         let ReadCharts {
             founded,
             hashes,
@@ -4729,6 +4930,7 @@ pub unsafe extern "C" fn ts_chart_found(
         let praveshas = praveshas_of(ctx.sdk(), &founded.value, request.offset(), varsha.as_ref())?;
         let transits = gochar_of(ctx.sdk(), &founded.value, gochar.as_ref())?;
         let hits = hits_of(ctx.sdk(), &founded.value, hit_request.as_ref())?;
+        let sade_sati = sade_sati_of(ctx.sdk(), &founded.value, sade_sati_request.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,
@@ -4744,6 +4946,7 @@ pub unsafe extern "C" fn ts_chart_found(
                     .as_ref()
                     .map_or(&[], teistro::GocharRequest::instants),
                 hits: &hits,
+                sade_sati: &sade_sati,
                 hashes: &hashes,
             },
             ctx.sdk().dashas(),

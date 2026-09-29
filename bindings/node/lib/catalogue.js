@@ -2931,6 +2931,21 @@ export const GocharFromById = new Map([
   [1, 'LAGNA'],
 ]);
 
+/** Every Reckoning by name. */
+export const Reckoning = Object.freeze({
+  Sign: 'SIGN',
+  Degree: 'DEGREE',
+});
+
+/**
+ * Every Reckoning by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ReckoningById = new Map([
+  [0, 'SIGN'],
+  [1, 'DEGREE'],
+]);
+
 /** Every HitKind by name. */
 export const HitKind = Object.freeze({
   SignIngress: 'SIGN_INGRESS',

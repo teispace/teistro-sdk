@@ -298,12 +298,16 @@ fn tagged(api: &Api) -> Vec<&'static str> {
     ]
 }
 
-/// The transits' enums: gochar's and its Ashtakavarga reading's.
+/// The transits' enums: gochar's, its Ashtakavarga reading's and Sade
+/// Sati's reckoning.
 fn gochar(api: &Api) -> Vec<&'static str> {
     let id = |value: u8| Some(i64::from(value));
     vec![
         unit(api, "TsGocharFrom", |f: &teistro::GocharFrom| {
             TsGocharFrom::of(*f).and_then(|f| id(f as u8))
+        }),
+        unit(api, "TsReckoning", |r: &teistro::sade_sati::Reckoning| {
+            teistro_ffi::chart::TsReckoning::of(*r).and_then(|r| id(r as u8))
         }),
         unit(api, "TsNodeVedha", |v: &settings::NodeVedha| {
             TsNodeVedha::of(*v).and_then(|v| id(v as u8))

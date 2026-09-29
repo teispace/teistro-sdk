@@ -1495,6 +1495,7 @@ fn a_consumer_s_layout_is_registered_from_json_found_by_key_and_drawn() {
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
             hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1631,6 +1632,7 @@ fn a_consumer_dasha_system_registers_and_crosses_by_its_id() {
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
             hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1765,6 +1767,7 @@ fn a_chart_request_answers_the_transits() {
             varsha_json: ptr::null(),
             gochar_json: gochar.as_ptr(),
             hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -1971,6 +1974,7 @@ fn a_chart_request_answers_the_hit_list() {
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
             hits_json: hits.as_ptr(),
+            sade_sati_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2092,6 +2096,245 @@ fn a_chart_request_answers_the_hit_list() {
     );
 }
 
+/// Sade Sati crosses: a request's `sade_sati_json` answers every chart's
+/// report in the `sade_sati` section, a row a chart, and its visits in
+/// `sade_sati_visits`, ragged by `cast.sade_sati_visit_count`, each row the
+/// façade's own visit in the order the section declares; and a refusal
+/// names the field the caller wrote (`03-design/sade-sati.md`).
+#[test]
+fn a_chart_request_answers_sade_sati() {
+    use teistro_ffi::chart::{TsGocharFrom, TsReckoning};
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let births = [2_447_995.489_583_333_5, 2_451_545.0];
+    let text = r#"{"from":2460676.5,"to":2464329.0,"reckoning":"DEGREE","spells":[4,7,8]}"#;
+    let json = CString::new(text).unwrap();
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: births.as_ptr(),
+            instant_count: births.len(),
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
+            hits_json: ptr::null(),
+            sade_sati_json: json.as_ptr(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let place = teistro::quantity::Place::try_from_degrees(27.7172, 85.324, 1400.0).unwrap();
+    let natal = sdk
+        .chart()
+        .readings(
+            &births.map(teistro::quantity::JulianDay::<teistro::quantity::Utc>::literal),
+            &teistro::ChartRequest::at(
+                place,
+                teistro::UtcOffset::try_from_seconds(20_700).unwrap(),
+            ),
+        )
+        .unwrap()
+        .value;
+    let asked = teistro::SadeSatiRequest::from_json(text).unwrap();
+    let reports: Vec<teistro::sade_sati::Report> = natal
+        .iter()
+        .map(|document| sdk.chart().sade_sati(document, &asked).unwrap().value)
+        .collect();
+
+    // A row a chart: what its houses were counted from and in.
+    let charted = |name: &str| reader.column("sade_sati", name).unwrap();
+    let (reference, from, reckoning) = (
+        charted("reference"),
+        charted("counted_from"),
+        charted("reckoning"),
+    );
+    assert_eq!(reference.len(), reports.len());
+    for (at, report) in reports.iter().enumerate() {
+        assert_eq!(
+            reference[at].as_i64(),
+            i64::from(report.reference.sign.id())
+        );
+        assert_eq!(from[at].as_i64(), i64::from(TsGocharFrom::Moon as u8));
+        assert_eq!(reckoning[at].as_i64(), i64::from(TsReckoning::Degree as u8));
+    }
+
+    // A row a visit, ragged, in the section's order: Sade Satis, then the
+    // smaller spells, each period's houses in turn and their visits in time.
+    let mut expected = Vec::new();
+    for report in &reports {
+        let periods = report
+            .sade_sati
+            .iter()
+            .map(|one| one.phases.as_slice())
+            .chain(report.spells.iter().map(std::slice::from_ref));
+        let mut rows = Vec::new();
+        for (period, spells) in periods.enumerate() {
+            for spell in spells {
+                for visit in &spell.visits {
+                    rows.push((period, spell.house, visit.from.unwrap(), visit.to.unwrap()));
+                }
+            }
+        }
+        expected.push(rows);
+    }
+    let counts = reader.column("cast", "sade_sati_visit_count").unwrap();
+    for (count, rows) in counts.iter().zip(&expected) {
+        assert_eq!(count.as_i64(), i64::try_from(rows.len()).unwrap());
+    }
+    assert!(
+        reports
+            .iter()
+            .all(|r| !r.sade_sati.is_empty() || !r.spells.is_empty()),
+        "ten years hold a period for each chart"
+    );
+    let visit = |name: &str| reader.column("sade_sati_visits", name).unwrap();
+    let columns = ["period", "house", "from", "to"].map(visit);
+    let expected: Vec<_> = expected.into_iter().flatten().collect();
+    assert_eq!(columns[0].len(), expected.len());
+    for (at, (period, house, from, to)) in expected.iter().enumerate() {
+        assert_eq!(columns[0][at].as_i64(), i64::try_from(*period).unwrap());
+        assert_eq!(columns[1][at].as_i64(), i64::from(*house));
+        assert_eq!(columns[2][at].as_f64().to_bits(), from.get().to_bits());
+        assert_eq!(columns[3][at].as_f64().to_bits(), to.get().to_bits());
+    }
+
+    // A refusal names the field the caller wrote, under `sadeSati`.
+    let refused = |json: &str| {
+        let text = CString::new(json).unwrap();
+        let asked = TsChartRequest {
+            sade_sati_json: text.as_ptr(),
+            ..request
+        };
+        let mut out = TsBlob::empty();
+        // SAFETY: as above.
+        let status = unsafe { ts_chart_found(ctx.handle, &raw const asked, &raw mut out) };
+        assert_eq!(status, Status::InvalidArg, "{json}");
+        ctx.last_error().2
+    };
+    assert_eq!(
+        refused(r#"{"from":2460676.5,"to":2460600.5}"#).as_deref(),
+        Some("sadeSati.to")
+    );
+    assert_eq!(
+        refused(r#"{"from":2460676.5,"spells":[12]}"#).as_deref(),
+        Some("sadeSati.spells")
+    );
+    assert_eq!(
+        refused(r#"{"from":2460676.5,"reckoning":"ARC"}"#).as_deref(),
+        Some("sadeSati.reckoning")
+    );
+}
+
+/// A batch of none asking for the window searches is an empty blob, as a
+/// batch of none is everywhere else: the façade refuses no charts by
+/// `natals`, a name no caller of the boundary wrote, so the boundary asks
+/// it nothing. The record is still read, so a bad one is still refused.
+#[test]
+fn a_batch_of_none_asking_for_the_searches_is_empty() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let hits = CString::new(r#"{"from":2460676.5,"to":2460866.5}"#).unwrap();
+    let sade_sati = CString::new(r#"{"from":2460676.5}"#).unwrap();
+    let request = sized(
+        TsChartRequest {
+            struct_size: 0,
+            kind: 0,
+            reserved: 0,
+            instants: ptr::null(),
+            instant_count: 0,
+            latitude_deg: 27.7172,
+            longitude_deg: 85.324,
+            altitude_m: 1400.0,
+            utc_offset_seconds: 20_700,
+            reserved_tail: 0,
+            sections: 0,
+            reserved_sections: 0,
+            vargas: ptr::null(),
+            varga_count: 0,
+            drawings: ptr::null(),
+            drawing_count: 0,
+            dashas: ptr::null(),
+            dasha_count: 0,
+            theme_json: ptr::null(),
+            rules_json: ptr::null(),
+            interpret_json: ptr::null(),
+            varsha_json: ptr::null(),
+            gochar_json: ptr::null(),
+            hits_json: hits.as_ptr(),
+            sade_sati_json: sade_sati.as_ptr(),
+        },
+        |r, s| r.struct_size = s,
+    );
+    let mut blob = TsBlob::empty();
+    // SAFETY: a live context, a valid request and a valid slot.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const request, &raw mut blob) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let bytes = unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut blob) };
+    let schema = schemas::charts();
+    let reader = Reader::parse(&bytes, &schema).unwrap();
+    for (section, column) in [
+        ("hits", "instant"),
+        ("sade_sati", "reference"),
+        ("sade_sati_visits", "house"),
+    ] {
+        assert!(
+            reader.column(section, column).unwrap().is_empty(),
+            "{section}"
+        );
+    }
+
+    let bad = CString::new(r#"{"from":2460676.5,"spells":[1]}"#).unwrap();
+    let asked = TsChartRequest {
+        sade_sati_json: bad.as_ptr(),
+        ..request
+    };
+    let mut out = TsBlob::empty();
+    // SAFETY: as above.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const asked, &raw mut out) };
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("sadeSati.spells"));
+}
+
 /// The annual charts cross: a request's `varsha_json` answers every chart's
 /// returns in the `praveshas` section, ragged by `cast.pravesha_count`, and
 /// the Sun at a return stands where it stood at birth
@@ -2134,6 +2377,7 @@ fn a_chart_request_answers_the_annual_charts_instants() {
             varsha_json: varsha.as_ptr(),
             gochar_json: ptr::null(),
             hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2256,6 +2500,7 @@ fn annual_blob(ctx: &Ctx, varsha: &str) -> Result<Vec<u8>, Record> {
             varsha_json: text.as_ptr(),
             gochar_json: ptr::null(),
             hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -2383,6 +2628,7 @@ fn a_years_chart_carries_the_lord_of_that_year() {
             varsha_json: varsha.as_ptr(),
             gochar_json: ptr::null(),
             hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3129,6 +3375,7 @@ fn a_consumer_sign_based_system_registers_and_crosses_by_its_id() {
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
             hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3228,6 +3475,7 @@ fn a_chart_request_answers_rules_in_the_same_crossing() {
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
             hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3392,6 +3640,7 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
             varsha_json: ptr::null(),
             gochar_json: ptr::null(),
             hits_json: ptr::null(),
+            sade_sati_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -3649,6 +3898,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 varsha_json: ptr::null(),
                 gochar_json: ptr::null(),
                 hits_json: ptr::null(),
+                sade_sati_json: ptr::null(),
             },
             |r, s| r.struct_size = s,
         );

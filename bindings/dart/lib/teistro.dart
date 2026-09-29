@@ -709,6 +709,7 @@ final class ChartArea extends _Area {
     VarshaRequest? varsha,
     GocharRequest? gochar,
     HitRequest? hits,
+    SadeSatiRequest? sadeSati,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -734,6 +735,7 @@ final class ChartArea extends _Area {
     varsha: varsha,
     gochar: gochar,
     hits: hits,
+    sadeSati: sadeSati,
     aspects: aspects,
     points: points,
     houses: houses,
@@ -779,6 +781,7 @@ final class ChartArea extends _Area {
     VarshaRequest? varsha,
     GocharRequest? gochar,
     HitRequest? hits,
+    SadeSatiRequest? sadeSati,
     bool aspects = false,
     bool points = false,
     bool houses = false,
@@ -826,6 +829,7 @@ final class ChartArea extends _Area {
             varshaJson: varsha?._json,
             gocharJson: gochar?._json,
             hitsJson: hits?._json,
+            sadeSatiJson: sadeSati?._json,
           ),
         ),
       ),
@@ -3848,6 +3852,78 @@ Hit _hitAt(ChartsHits h, int row) {
   );
 }
 
+final Expando<List<SadeSatiReport>> _sadeSatis = Expando<List<SadeSatiReport>>(
+  'sadeSatis',
+);
+
+List<SadeSatiReport> _sadeSatisOf(Charts batch) =>
+    _sadeSatis[batch] ??= _decodeSadeSatis(batch);
+
+/// `sade_sati` holds a row a chart, or none when none was asked, and
+/// `sade_sati_visits` each chart's visits, ragged by
+/// `cast.sade_sati_visit_count` and numbered by `period`: its Sade Satis
+/// first (houses 12, 1 and 2), then its smaller spells.
+List<SadeSatiReport> _decodeSadeSatis(Charts batch) {
+  final c = batch.sadeSati;
+  final v = batch.sadeSatiVisits;
+  final counts = batch.cast.sadeSatiVisitCount;
+  if (c.length == 0) return const <SadeSatiReport>[];
+  final total = counts.fold<int>(0, (sum, count) => sum + count);
+  if (c.length != counts.length || total != v.length) {
+    throw StateError(
+      'sade_sati has ${c.length} rows and sade_sati_visits ${v.length} over '
+      '${counts.length} charts whose counts sum to $total; it is a row a '
+      "chart and every chart's visits",
+    );
+  }
+  double? bound(double jd) => jd.isNaN ? null : jd;
+  // The Sade Sati's houses are 12, 1 and 2; a smaller spell is 3 to 11.
+  bool isSadeSati(List<SadeSatiSpell> spells) =>
+      spells.first.house == 12 || spells.first.house <= 2;
+  var start = 0;
+  return List<SadeSatiReport>.generate(c.length, (chart) {
+    // A period's rows are adjacent and share `period`; a spell's are the
+    // run of one house inside it.
+    final periods = <List<(int, List<SadeSatiVisit>)>>[];
+    for (var row = start; row < start + counts[chart]; row += 1) {
+      if (v.period[row] == periods.length) periods.add([]);
+      final spells = periods[v.period[row]];
+      if (spells.isEmpty || spells.last.$1 != v.house[row]) {
+        spells.add((v.house[row], <SadeSatiVisit>[]));
+      }
+      spells.last.$2.add(
+        SadeSatiVisit(from: bound(v.from[row]), to: bound(v.to[row])),
+      );
+    }
+    start += counts[chart];
+    final built = [
+      for (final spells in periods)
+        List<SadeSatiSpell>.unmodifiable([
+          for (final (house, visits) in spells)
+            SadeSatiSpell(
+              house: house,
+              visits: List<SadeSatiVisit>.unmodifiable(visits),
+            ),
+        ]),
+    ];
+    return SadeSatiReport(
+      reference: GocharReference(
+        from: GocharFrom.byId(c.countedFrom[chart]),
+        sign: Rashi.byId(c.reference[chart]),
+      ),
+      reckoning: Reckoning.byId(c.reckoning[chart]),
+      sadeSati: List<SadeSati>.unmodifiable([
+        for (final spells in built)
+          if (isSadeSati(spells)) SadeSati(phases: spells),
+      ]),
+      spells: List<SadeSatiSpell>.unmodifiable([
+        for (final spells in built)
+          if (!isSadeSati(spells)) spells.first,
+      ]),
+    );
+  });
+}
+
 final Expando<List<List<GocharReading>>> _gochars =
     Expando<List<List<GocharReading>>>('gochars');
 
@@ -4279,6 +4355,157 @@ enum VarshaReading {
 
   /// The key the boundary reads.
   final String key;
+}
+
+/// Sade Sati and Saturn's smaller spells to find for every chart of a
+/// request (`03-design/sade-sati.md`): the window, and optionally what the
+/// houses are counted from (the natal Moon by default; C139), what they are
+/// reckoned in (whole signs by default; C147) and the smaller spells (the
+/// 4th and the 8th by default; C149). Every period reaching into the window
+/// comes back whole; Saturn is searched once for the whole batch.
+///
+/// ```dart
+/// final chart = ctx.chart.found(
+///   /* … */ sadeSati: const SadeSatiRequest(from: 2460676.5, to: 2464329),
+/// );
+/// final peak = chart.sadeSati?.sadeSati.firstOrNull?.phases[1];
+/// ```
+final class SadeSatiRequest {
+  const SadeSatiRequest({
+    required this.from,
+    this.to,
+    this.countedFrom = GocharFrom.moon,
+    this.reckoning = Reckoning.sign,
+    this.spells,
+  });
+
+  /// The window's start, a UTC Julian day.
+  final double from;
+
+  /// The window's end, not before the start, or the SDK refuses it by
+  /// `sadeSati.to`; [from] when absent, one instant.
+  final double? to;
+
+  /// The natal point the houses are counted from.
+  final GocharFrom countedFrom;
+
+  /// What the houses are reckoned in.
+  final Reckoning reckoning;
+
+  /// The smaller spells, houses 3 to 11 each named once; the 4th and the
+  /// 8th when absent.
+  final List<int>? spells;
+
+  String get _json => jsonEncode(<String, Object?>{
+    'from': from,
+    if (to case final to?) 'to': to,
+    'countedFrom': countedFrom.key,
+    'reckoning': reckoning.key,
+    if (spells case final spells?) 'spells': spells,
+  });
+}
+
+/// One stay of Saturn's in a house, half-open.
+final class SadeSatiVisit {
+  const SadeSatiVisit({required this.from, required this.to});
+
+  /// When Saturn entered, a UTC Julian day; null before the ephemeris's
+  /// coverage.
+  final double? from;
+
+  /// When it left; null after the ephemeris's coverage.
+  final double? to;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SadeSatiVisit && other.from == from && other.to == to;
+
+  @override
+  int get hashCode => Object.hash(from, to);
+}
+
+/// Every stay of Saturn's in one house of one period, a retrograde re-entry
+/// a visit of its own (C148).
+final class SadeSatiSpell {
+  const SadeSatiSpell({required this.house, required this.visits});
+
+  /// The house from the reference, 1 to 12.
+  final int house;
+
+  final List<SadeSatiVisit> visits;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SadeSatiSpell &&
+      other.house == house &&
+      _sameList(other.visits, visits);
+
+  @override
+  int get hashCode => Object.hash(house, Object.hashAll(visits));
+}
+
+/// One Sade Sati: the rising (12th), peak (1st) and setting (2nd) spells, in
+/// order.
+final class SadeSati {
+  const SadeSati({required this.phases});
+
+  final List<SadeSatiSpell> phases;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SadeSati && _sameList(other.phases, phases);
+
+  @override
+  int get hashCode => Object.hashAll(phases);
+}
+
+/// A chart's Sade Satis and smaller spells, each period **whole** however far
+/// its bounds fall outside the window asked about.
+final class SadeSatiReport {
+  const SadeSatiReport({
+    required this.reference,
+    required this.reckoning,
+    required this.sadeSati,
+    required this.spells,
+  });
+
+  /// What the houses were counted from, and that point's sign.
+  final GocharReference reference;
+
+  final Reckoning reckoning;
+
+  /// Every Sade Sati reaching into the window, in time order.
+  final List<SadeSati> sadeSati;
+
+  /// The smaller spells asked for, in time order.
+  final List<SadeSatiSpell> spells;
+
+  @override
+  bool operator ==(Object other) =>
+      other is SadeSatiReport &&
+      other.reference.from == reference.from &&
+      other.reference.sign == reference.sign &&
+      other.reckoning == reckoning &&
+      _sameList(other.sadeSati, sadeSati) &&
+      _sameList(other.spells, spells);
+
+  @override
+  int get hashCode => Object.hash(
+    reference.from,
+    reference.sign,
+    reckoning,
+    Object.hashAll(sadeSati),
+    Object.hashAll(spells),
+  );
+}
+
+/// Whether two lists hold equal members in the same order.
+bool _sameList<T>(List<T> a, List<T> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i += 1) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
 
 /// The transit hit list to search against every chart of a request
@@ -6821,6 +7048,15 @@ final class Chart {
       from += counts[i];
     }
     return List<Hit>.generate(counts[index], (k) => _hitAt(h, from + k));
+  }
+
+  /// Sade Sati and Saturn's smaller spells, every period reaching into the
+  /// window **whole**; null unless `sadeSati` asked for it
+  /// (`03-design/sade-sati.md`). Saturn is searched once for the whole
+  /// batch.
+  SadeSatiReport? get sadeSati {
+    final all = _sadeSatisOf(batch);
+    return index < all.length ? all[index] : null;
   }
 
   /// The Vaiseshikamsa, when `vaiseshikamsa: true` asked for it.

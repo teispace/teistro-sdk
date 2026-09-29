@@ -231,6 +231,12 @@ export interface ChartsCast {
    * Ragged because a chart's aspects are its own: the sky's ingresses and stations are every chart's alike, but how often a transit crosses a natal point depends on where the point stands.
    */
   readonly hitCount: Uint32Array;
+  /**
+   * How many rows of the `sade_sati_visits` section belong to this chart. Zero when no Sade Sati was asked for.
+   *
+   * Ragged because a chart's periods are its own: where Saturn crosses into them depends on where the natal Moon stands, and how often it steps back out depends on where its stations fall.
+   */
+  readonly sadeSatiVisitCount: Uint32Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -2219,6 +2225,59 @@ export interface ChartsHits {
 }
 
 /**
+ * The `sade_sati` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * What every chart's Sade Sati was reckoned from, a row a chart in the `cast` section's order. Empty when `sade_sati_json` asked for none, and then `sade_sati_visits` is too.
+ */
+export interface ChartsSadeSati {
+  /**
+   * The sign the houses are counted from: the natal Moon's, or the lagna's when `counted_from` says so.
+   * The values are `Rashi` ids.
+   */
+  readonly reference: Uint16Array;
+  /**
+   * Which natal point `reference` is, `sade_sati_json.countedFrom` (C139).
+   * The values are `GocharFrom` ids.
+   */
+  readonly countedFrom: Uint8Array;
+  /**
+   * What the houses were reckoned in, `sade_sati_json.reckoning` (C147).
+   * The values are `Reckoning` ids.
+   */
+  readonly reckoning: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `sade_sati_visits` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every stay of Saturn's in a house of a period reaching into the window, concatenated in the `cast` section's order and **ragged** by its `sade_sati_visit_count`. A chart's rows are its periods in turn, numbered by `period`: its Sade Satis first (houses 12, 1 and 2), then its smaller spells (C149), each group in time order; within a Sade Sati its phases' rows in the order 12, 1, 2; and each house's visits in time order, a retrograde re-entry a visit of its own (C148). A period is **whole**, however far its bounds fall outside the window. The sky is searched **once for the batch**.
+ */
+export interface ChartsSadeSatiVisits {
+  /**
+   * Which of the chart's periods the visit belongs to, counted from 0: the rows of one Sade Sati, or of one smaller spell, share it.
+   */
+  readonly period: Uint16Array;
+  /**
+   * The house Saturn stays in, 1 to 12 from `sade_sati.reference`: 12, 1 or 2 in a Sade Sati (rising, peak and setting), otherwise a smaller spell's.
+   */
+  readonly house: Uint8Array;
+  /**
+   * When Saturn entered the house, a UTC Julian day; NaN when that is before the ephemeris's coverage.
+   */
+  readonly from: Float64Array;
+  /**
+   * When Saturn left it, a UTC Julian day, the visit half-open; NaN when that is after the ephemeris's coverage.
+   */
+  readonly to: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -2610,6 +2669,14 @@ export interface Charts {
    * Every chart's transit hit list, concatenated in the `cast` section's order and **ragged** by its `hit_count`, each chart's sorted by instant, then graha, then kind (`03-design/transit-hit-list.md`). Each sign and nakshatra is the one a chart founded at that instant gives. The sky is searched **once for the batch**: a chart's ingresses and stations are every chart's, and only its aspects are its own. Empty when `hits_json` asked for none.
    */
   readonly hits: ChartsHits;
+  /**
+   * What every chart's Sade Sati was reckoned from, a row a chart in the `cast` section's order. Empty when `sade_sati_json` asked for none, and then `sade_sati_visits` is too.
+   */
+  readonly sadeSati: ChartsSadeSati;
+  /**
+   * Every stay of Saturn's in a house of a period reaching into the window, concatenated in the `cast` section's order and **ragged** by its `sade_sati_visit_count`. A chart's rows are its periods in turn, numbered by `period`: its Sade Satis first (houses 12, 1 and 2), then its smaller spells (C149), each group in time order; within a Sade Sati its phases' rows in the order 12, 1, 2; and each house's visits in time order, a retrograde re-entry a visit of its own (C148). A period is **whole**, however far its bounds fall outside the window. The sky is searched **once for the batch**.
+   */
+  readonly sadeSatiVisits: ChartsSadeSatiVisits;
 }
 
 /**

@@ -1315,6 +1315,84 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries its Sade Sati, each period whole', () {
+    final ctx = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const births = [2447995.4895833335, 2451545.2];
+    SadeSatiReport? found(double instant, SadeSatiRequest? asked) =>
+        ctx.chart
+            .found(
+              instant: instant,
+              place: place,
+              utcOffsetSeconds: 20700,
+              sadeSati: asked,
+            )
+            .sadeSati;
+    expect(found(births[0], null), isNull);
+    for (final reckoning in Reckoning.values) {
+      final asked = SadeSatiRequest(
+        from: 2460676.5,
+        to: 2464329,
+        reckoning: reckoning,
+        spells: const [4, 7, 8],
+      );
+      final batch = ctx.chart.foundMany(
+        instants: births,
+        place: place,
+        utcOffsetSeconds: 20700,
+        sadeSati: asked,
+      );
+      for (final (k, instant) in births.indexed) {
+        final report = batch.at(k).sadeSati!;
+        expect(report, found(instant, asked), reason: 'a batch is each alone');
+        expect(report.reckoning, reckoning);
+        expect(report.reference.from, GocharFrom.moon);
+        expect(report.sadeSati.length + report.spells.length, greaterThan(0));
+        for (final one in report.sadeSati) {
+          expect([for (final spell in one.phases) spell.house], [12, 1, 2]);
+          final visits = [for (final spell in one.phases) ...spell.visits]
+            ..sort((a, b) => a.from!.compareTo(b.from!));
+          for (var i = 1; i < visits.length; i += 1) {
+            expect(visits[i - 1].to!, lessThanOrEqualTo(visits[i].from!));
+          }
+          // Asked at one instant inside its peak, from what the report
+          // named: the same Sade Sati, whole.
+          final peak = one.phases[1].visits.first;
+          final now =
+              found(
+                instant,
+                SadeSatiRequest(
+                  from: (peak.from! + peak.to!) / 2,
+                  countedFrom: report.reference.from,
+                  reckoning: report.reckoning,
+                ),
+              )!;
+          expect(now.sadeSati, [one], reason: '$reckoning');
+        }
+        for (final spell in report.spells) {
+          expect([4, 7, 8], contains(spell.house));
+        }
+      }
+    }
+    for (final (bad, field) in [
+      (const SadeSatiRequest(from: 2460676.5, to: 2460600.5), 'sadeSati.to'),
+      (const SadeSatiRequest(from: 2460676.5, spells: [2]), 'sadeSati.spells'),
+    ]) {
+      expect(
+        () => found(births[0], bad),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+    ctx.dispose();
+  });
+
   test(
     'a chart carries its transits, each verdict its own house and vedha',
     () {

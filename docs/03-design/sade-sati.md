@@ -1,6 +1,6 @@
 # Sade Sati: Saturn's spells from the natal Moon
 
-Status: `draft`, 2026-09-29; §7 steps 1 to 3 **built** the same day.
+Status: `draft`, 2026-09-29; §7 steps 1 to 4 **built** the same day.
 Written before any code; the building corrected it (§7).
 
 Derives from `transit-hit-list.md` §6 step 5 and the research page's P0 row
@@ -191,4 +191,24 @@ longitudes, and reckons the houses itself rather than through the SDK's
    turns two claims red (4 096 of 16 372 bounds, 8 of 203 starts). The
    pass costs about 40 s, half of it sampling Saturn at the scan's daily
    cap; plan A1g proposes sizing a slow body's step by its stations.
-4. The boundary and the bindings.
+4. The boundary and the bindings: **done**. `sade_sati_json` on the chart
+   request, read by `SadeSatiRequest::from_json` and answered by one
+   `sade_sati_many` over the request's charts. The report is nested (a
+   Sade Sati holds phases, a phase holds visits), so it crosses as two
+   sections, the hit list's pattern: `sade_sati`, a row a chart with the
+   reference and reckoning, and `sade_sati_visits`, a row a visit, ragged
+   by `cast.sade_sati_visit_count`. A visit's `period` numbers the chart's
+   periods, its Sade Satis first and then its smaller spells, which is
+   all a binding needs to rebuild the Rust `Report`, since a Sade Sati's
+   houses (12, 1, 2) and a smaller spell's (3 to 11) never overlap. An
+   absent bound is NaN, as the balance's span is. Node, Python and Dart
+   rebuild `{ reference, reckoning, sadeSati: [{ phases }], spells }`,
+   Dart with value equality so a period found twice compares equal;
+   parity agrees on every visit of ten years in five runners, and the ABI
+   test holds each cell to the façade's own report, to the bit.
+
+   **Found building it:** the boundary answers a batch of no charts with
+   an empty blob, but it handed the hit list's `hits_many` an empty list,
+   which refuses one by `natals`, a field no caller of the boundary wrote.
+   Both searches now ask the façade nothing for an empty batch; a test
+   asks for both over no charts and was red first.
