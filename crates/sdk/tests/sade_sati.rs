@@ -56,6 +56,16 @@ fn life() -> SadeSatiRequest {
     )
 }
 
+/// Thirty years from 2000, a circuit of Saturn's: every reckoning and
+/// reference finds one Sade Sati in it and each smaller spell, at a
+/// third of a lifetime's price.
+fn circuit() -> SadeSatiRequest {
+    SadeSatiRequest::between(
+        JulianDay::<Utc>::literal(2_451_545.0),
+        JulianDay::<Utc>::literal(2_462_502.5),
+    )
+}
+
 fn spells_of(report: &Report) -> Vec<&Spell> {
     report
         .sade_sati
@@ -87,12 +97,12 @@ fn every_bound_is_where_a_founded_chart_moves_saturn() {
             (GocharFrom::Moon, Reckoning::Degree),
             (GocharFrom::Lagna, Reckoning::Sign),
         ] {
-            let asked = life().counted_from(from).reckoned(reckoning);
+            let asked = circuit().counted_from(from).reckoned(reckoning);
             let report = sdk.chart().sade_sati(&natal, &asked).unwrap().value;
             assert_eq!((report.reference.from, report.reckoning), (from, reckoning));
             assert!(
-                report.sade_sati.len() >= 2,
-                "two or three Sade Satis in eighty years: {report:?}"
+                !report.sade_sati.is_empty() && report.spells.len() >= 2,
+                "a Sade Sati and the 4th and 8th in a circuit: {report:?}"
             );
             let reference_deg = match from {
                 GocharFrom::Lagna => natal.foundation.lagna_deg,
@@ -164,14 +174,14 @@ fn a_sade_sati_is_three_phases_and_the_next_is_a_circuit_away() {
 }
 
 /// The window chooses which periods are reported, never their bounds: asked
-/// at one instant inside a phase, the period comes back as the lifetime's
+/// at one instant inside a phase, the period comes back as the circuit's
 /// search found it — which is what the widening search promises.
 #[test]
 fn a_period_is_whole_however_the_window_is_drawn() {
     let sdk = context(None);
     let natal = natal(&sdk);
     for reckoning in Reckoning::ALL {
-        let asked = life().reckoned(*reckoning);
+        let asked = circuit().reckoned(*reckoning);
         let whole = sdk.chart().sade_sati(&natal, &asked).unwrap().value;
         for one in &whole.sade_sati {
             for phase in Phase::ALL {
