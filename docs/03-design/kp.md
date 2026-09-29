@@ -1,6 +1,6 @@
 # KP: Krishnamurti Paddhati
 
-Status: `draft`, 2026-09-29; §6 steps 1 to 3 **built** by 2026-09-30. Written
+Status: `draft`, 2026-09-29; §6 steps 1 to 4 **built** by 2026-09-30. Written
 from the Readers before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/06-kp.md` (P0: the 249
@@ -78,10 +78,10 @@ the question.
 
 | # | fork | default | the other reading |
 |---|---|---|---|
-| C150 | how many ruling planets | the Readers' **five** | `kp.ruling_planets = WITH_SUBS`, the baseline's seven |
-| C151 | the day lord's day | **sunrise to sunrise**, the panchanga's vara | `CIVIL`, the weekday of the clock |
-| C152 | a node among the rulers | **in a ruler's sign, or in the same sign as one** (the worked example's conjunction) | the sign only |
-| C153 | which retrograde rulers are rejected | **in a retrograde planet's star**, the rule as stated; the sub reported beside it | `STAR_OR_SUB`, the later procedure |
+| C150 | how many ruling planets | the Readers' **five** | `kp.ruling_count = WITH_SUBS`, the baseline's seven |
+| C151 | the day lord's day | **sunrise to sunrise**, the chart's own vara | `kp.day_lord_day = CIVIL`, the weekday on the clock the request names |
+| C152 | a node among the rulers | **in a ruler's sign, or in the same sign as one** (the worked example's conjunction) | `kp.node_rulers = SIGN` |
+| C153 | which retrograde rulers are rejected | **in a retrograde planet's star**, the rule as stated; the sub reported beside it | `kp.retrograde_rejection = STAR_OR_SUB`, the later procedure |
 | C154 | a house's significators | **(a) to (d) as levels**, (e) and (f) reported apart | the baseline's intercepted lord as a fifth level |
 | C155 | a node as a significator | **the Reader's order**: conjoined, star lord, aspecting, sign lord | — |
 | C156 | the horary chart | **the number's start as the lagna**, Placidus cusps from it at the place, planets at the moment | — |
@@ -167,7 +167,20 @@ Jupiter's, the only subs a sign's end falls inside.
    is the aspect crate's own table under `aspect.node_aspects`, not a
    second copy. Worked by hand on a chart that fills every level, and a
    node knob shown to move (f).
-4. Ruling planets, over the panchanga's vara for C151.
+4. **Built**: the ruling planets. `RulingPlanets::of(&KpChart, day_lord,
+   RulingRules)` and `sdk.chart().kp_ruling(&chart, &KpRequest)`, under
+   a new `kp` settings group whose four knobs are C150 to C153. Each
+   ruler is listed once with every reason it rules (`Reason`), a node's
+   as the agent of which ruler and how; a rejection names the retrograde
+   planet, and the sub reading's rejection is reported under either
+   setting. Two readings the Reader leaves implicit are written down: a
+   node's own backward motion rejects nobody, and a ruler's own
+   retrogression is delay, not rejection. The acceptance is the Reader's
+   worked horary (Sunday, Moon in Venus's star in Sagittarius, Libra
+   rising): Sun, Jupiter, Venus, Rahu and Ketu, reproduced. The
+   `conformance-baseline` profile does not take the baseline engine's
+   readings: the corpus records no KP to hold them to, and a profile
+   version is spent on a measured change.
 5. Horary from a number.
 6. The boundary and the bindings.
 7. The measured pass: over the recorded births, each sub lord's margin

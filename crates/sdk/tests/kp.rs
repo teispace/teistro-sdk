@@ -163,3 +163,74 @@ fn the_significators_are_read_with_the_settings_node_aspects() {
         teistro::kp::Significators::of(&kp, teistro::settings::NodeAspects::FiveSevenNine)
     );
 }
+
+/// 04:00 in Kathmandu on Saturday 14 April 1990 (`BIRTH` is 05:30 there):
+/// before sunrise, so the
+/// chart's own day (C151's default) is still Friday's, Venus's, while the
+/// civil weekday is Saturday, Saturn's.
+const BEFORE_DAWN: f64 = BIRTH - 1.5 / 24.0;
+
+fn before_dawn(sdk: &Context) -> Document {
+    let place = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    sdk.chart()
+        .reading(
+            JulianDay::<Utc>::literal(BEFORE_DAWN),
+            &ChartRequest::at(place, UtcOffset::literal(5, 45, 0)),
+        )
+        .unwrap()
+        .value
+}
+
+/// The ruling planets are the crate's, with the chart's own day lord and
+/// the settings' rules; the civil reading takes its weekday from the clock
+/// the request names, and without one says so.
+#[test]
+fn the_ruling_planets_take_the_day_from_sunrise_or_from_the_named_clock() {
+    use teistro::catalogue::Graha;
+    use teistro::kp::{Reason, RulingPlanets, RulingRules};
+
+    let sdk = context("kp-default", "{}");
+    let chart = before_dawn(&sdk);
+    let kp = sdk.chart().kp(&chart, &KpRequest::new()).unwrap();
+    let ruling = sdk.chart().kp_ruling(&chart, &KpRequest::new()).unwrap();
+    assert_eq!(
+        ruling,
+        RulingPlanets::of(&kp, Graha::Venus, RulingRules::READER)
+    );
+    let day_lord = |ruling: &RulingPlanets| {
+        ruling
+            .rulers
+            .iter()
+            .find(|ruler| ruler.reasons.contains(&Reason::DayLord))
+            .map(|ruler| ruler.graha)
+    };
+    assert_eq!(day_lord(&ruling), Some(Graha::Venus));
+
+    let civil = context("kp-default", r#"{"kp": {"day_lord_day": "CIVIL"}}"#);
+    let refused = civil
+        .chart()
+        .kp_ruling(&chart, &KpRequest::new())
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("kp.day_lord_day"));
+    let on_clock = KpRequest::new().on_clock(UtcOffset::literal(5, 45, 0));
+    let ruling = civil.chart().kp_ruling(&chart, &on_clock).unwrap();
+    assert_eq!(day_lord(&ruling), Some(Graha::Saturn));
+    // The same moment on a clock behind UT is still Friday.
+    let behind = KpRequest::new().on_clock(UtcOffset::literal(-5, 0, 0));
+    let ruling = civil.chart().kp_ruling(&chart, &behind).unwrap();
+    assert_eq!(day_lord(&ruling), Some(Graha::Venus));
+
+    // The settings' other readings reach the reading.
+    let seven = context("kp-default", r#"{"kp": {"ruling_count": "WITH_SUBS"}}"#);
+    let ruling = seven.chart().kp_ruling(&chart, &KpRequest::new()).unwrap();
+    assert!(
+        ruling
+            .rulers
+            .iter()
+            .any(|ruler| ruler.reasons.contains(&Reason::LagnaSub))
+    );
+}

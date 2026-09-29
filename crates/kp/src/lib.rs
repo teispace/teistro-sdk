@@ -42,11 +42,13 @@ pub const MODULE: &str = "kp";
 mod chain;
 mod chart;
 mod number;
+mod ruling;
 mod significators;
 
 pub use chain::{Chain, Level, Lords, MAX_LEVELS, Span, chain, lords};
 pub use chart::{Cusp, KpChart, Planet, Position, house_of};
 pub use number::KpNumber;
+pub use ruling::{Agency, Reason, Rejection, Ruler, RulingPlanets, RulingRules};
 pub use significators::{HouseSignificators, NodeAgency, Significators, Signified};
 
 #[cfg(test)]

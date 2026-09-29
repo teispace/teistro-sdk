@@ -150,6 +150,11 @@ pub fn house_of(cusps: &[Nas; 12], at: Nas) -> u8 {
     house_number(index)
 }
 
+/// Whether a graha is Rahu or Ketu.
+pub(crate) const fn is_node(graha: Graha) -> bool {
+    matches!(graha, Graha::Rahu | Graha::Ketu)
+}
+
 /// House `index + 1`.
 #[allow(clippy::cast_possible_truncation, reason = "an index below twelve")]
 const fn house_number(index: usize) -> u8 {

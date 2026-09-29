@@ -11,19 +11,20 @@ use crate::catalogue::{
 use super::knobs::{
     AfterCycle, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance, Benefics,
     BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas,
-    Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord,
-    Ekadhipatya, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
-    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
-    NodeAspects, NodeCoLordship, NodeObstruction, NodeVedha, OverridePolicy, PolarDayPolicy,
-    PolarPolicy, Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis,
-    SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
-    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    Cheshta, DayBoundary, DayLordDay, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap,
+    DualLord, Ekadhipatya, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta,
+    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
+    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
+    OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
+    RequiredRupas, RetrogradeRejection, RulingCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
+    Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
-    Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Output,
-    Panchanga, Precision, Provider, Resolved, SCHEMA, Settings, SettingsPatch, Siddhanta, State,
-    Strength, Time, Vargas,
+    Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
+    Output, Panchanga, Precision, Provider, Resolved, SCHEMA, Settings, SettingsPatch, Siddhanta,
+    State, Strength, Time, Vargas,
 };
 use crate::quantity::Depth;
 
@@ -102,6 +103,17 @@ fn depth_all(depth: u8) -> BTreeMap<DashaSystem, Depth> {
         .iter()
         .map(|d| (*d, Depth::try_new(depth).unwrap_or(Depth::MIN)))
         .collect()
+}
+
+/// KP Reader VI's readings of the four forks the baseline engine takes
+/// otherwise (cruxes C150 to C153; `03-design/kp.md`).
+fn kp_readers() -> Kp {
+    Kp {
+        ruling_count: RulingCount::Five,
+        day_lord_day: DayLordDay::Sunrise,
+        node_rulers: NodeRulers::SignOrConjoined,
+        retrograde_rejection: RetrogradeRejection::Star,
+    }
 }
 
 /// The root: every knob set and cited; never selected directly.
@@ -195,6 +207,7 @@ pub fn root() -> Settings {
             node_obstruction: NodeObstruction::NotEachOther,
             ashtakavarga_good_from: AshtakavargaGoodFrom::Five,
         },
+        kp: kp_readers(),
         aspect: Aspect {
             node_aspects: NodeAspects::None,
             drishti_table: String::from("PARASHARA"),

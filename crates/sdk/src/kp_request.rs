@@ -5,6 +5,7 @@ use teistro_chart::ChartZodiac;
 use teistro_core::catalogue::Ayanamsha;
 use teistro_core::error::Error;
 use teistro_core::settings::AyanamshaChoice;
+use teistro_core::time::UtcOffset;
 
 /// The ayanamshas a KP reading takes without being told otherwise:
 /// Krishnamurti's own, and the VP291 variant of it.
@@ -26,6 +27,7 @@ pub const KP_AYANAMSHAS: [Ayanamsha; 2] = [Ayanamsha::Krishnamurti, Ayanamsha::K
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct KpRequest {
     any_ayanamsha: bool,
+    clock: Option<UtcOffset>,
 }
 
 impl KpRequest {
@@ -34,6 +36,7 @@ impl KpRequest {
     pub const fn new() -> KpRequest {
         KpRequest {
             any_ayanamsha: false,
+            clock: None,
         }
     }
 
@@ -42,6 +45,20 @@ impl KpRequest {
     pub const fn under_any_ayanamsha(mut self) -> KpRequest {
         self.any_ayanamsha = true;
         self
+    }
+
+    /// The same reading, with the clock the moment was judged on: what a
+    /// civil day lord (`kp.day_lord_day = CIVIL`) takes its weekday from.
+    #[must_use]
+    pub const fn on_clock(mut self, clock: UtcOffset) -> KpRequest {
+        self.clock = Some(clock);
+        self
+    }
+
+    /// The clock the moment was judged on, when named.
+    #[must_use]
+    pub const fn clock(&self) -> Option<UtcOffset> {
+        self.clock
     }
 
     /// Whether a chart under any zodiac is read.
