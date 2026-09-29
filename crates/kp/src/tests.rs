@@ -334,3 +334,144 @@ fn a_planet_is_in_the_house_whose_cusp_it_follows() {
     }
     assert!(chart.cusp(0).is_none() && chart.cusp(13).is_none());
 }
+
+/// Equal cusps from 0° Aries, so each house is its sign, and eight planets
+/// placed so every level of the 1st house has something in it.
+fn worked(node_aspects: teistro_core::settings::NodeAspects) -> Significators {
+    let cusps =
+        std::array::from_fn(|house| Nas::new(30 * i64::try_from(house).unwrap() * Nas::PER_DEGREE));
+    let at = |degrees: i64| Nas::new(degrees * Nas::PER_DEGREE);
+    let chart = KpChart::new(
+        teistro_core::catalogue::HouseSystem::Placidus,
+        cusps,
+        [
+            // Aries 10°, Ashwini (Ketu's star): the 1st.
+            Position::new(Sun, at(10)),
+            Position::new(Rahu, at(10)).retrograde(true),
+            // Libra 10°, Swati (Rahu's): the 7th.
+            Position::new(Ketu, at(190)).retrograde(true),
+            // Taurus 20°, Rohini (the Moon's own): the 2nd.
+            Position::new(Moon, at(50)),
+            // Cancer 5°, Pushya (Saturn's): the 4th, the 1st's lord.
+            Position::new(Mars, at(95)),
+            // Sagittarius 5°, Mula (Ketu's): the 9th.
+            Position::new(Jupiter, at(245)),
+            // Libra 20°, Vishakha (Jupiter's): the 7th.
+            Position::new(Saturn, at(200)),
+            // Capricorn 15°, Shravana (the Moon's): the 10th.
+            Position::new(Venus, at(285)),
+        ],
+    );
+    Significators::of(&chart, node_aspects)
+}
+
+/// The Reader's four levels and the two beyond them, worked by hand.
+#[test]
+fn a_house_is_signified_level_by_level_as_the_reader_orders_it() {
+    use teistro_core::settings::NodeAspects;
+    let significators = worked(NodeAspects::None);
+    let first = significators.house(1).unwrap();
+    // (b) the Sun and Rahu stand in it; (a) Ketu is in Swati, Rahu's star.
+    assert_eq!(first.occupants, [Sun, Rahu]);
+    assert_eq!(first.in_occupants_stars, [Ketu]);
+    // (d) Mars owns Aries; (c) nothing stands in Mars's stars.
+    assert_eq!(first.lord, Mars);
+    assert!(first.in_lords_star.is_empty());
+    assert_eq!(first.in_order(), [Ketu, Sun, Rahu, Mars]);
+    // (e) Saturn shares Libra with Ketu; (f) Mars's 7th reaches Venus in
+    // Capricorn, and Saturn, already conjoined, is not counted twice.
+    assert_eq!(first.conjoined, [Saturn]);
+    assert_eq!(first.aspected, [Venus]);
+    // Jupiter is aspected only by Saturn, who is (e) and not a level.
+    assert!(!first.aspected.contains(&Jupiter));
+
+    // The inverse: the Sun is in Ketu's star, Ketu is in the 7th, and the
+    // Sun owns Leo, the 5th.
+    let sun = significators.signified_by(Sun);
+    assert_eq!(
+        (sun.by_star, sun.occupies, sun.by_lords_star, sun.owns),
+        (vec![7], vec![1], vec![], vec![5])
+    );
+    // Mars owns the 1st and the 8th, and the Sun's and Rahu's stars are
+    // not Mars's, so nothing reaches him through (c) of another house.
+    assert_eq!(significators.signified_by(Mars).owns, [1, 8]);
+    assert!(significators.signified_by(Rahu).by_lords_star.is_empty());
+}
+
+/// Reader VI: a node gives the results of the planets it is conjoined
+/// with, then of its star's lord, then of the planets aspecting it, and
+/// last of its sign's lord.
+#[test]
+fn a_node_gives_results_in_the_reader_s_order() {
+    use teistro_core::settings::NodeAspects;
+    let significators = worked(NodeAspects::None);
+    let rahu = significators.node(Rahu).unwrap();
+    assert_eq!(rahu.conjoined, [Sun]);
+    assert_eq!(rahu.star_lord, Ketu);
+    // Jupiter's 5th and Saturn's 7th reach Aries; Ketu opposite is not an
+    // agency.
+    assert_eq!(rahu.aspecting, [Jupiter, Saturn]);
+    assert_eq!(rahu.sign_lord, Mars);
+    assert_eq!(rahu.in_order(), [Sun, Ketu, Jupiter, Saturn, Mars]);
+    let ketu = significators.node(Ketu).unwrap();
+    // Saturn shares Libra; Swati is Rahu's; the Sun's 7th and Mars's 4th
+    // reach Libra; Venus owns it.
+    assert_eq!(ketu.in_order(), [Saturn, Rahu, Sun, Mars, Venus]);
+    assert!(significators.node(Sun).is_none());
+}
+
+/// A node's own aspects are the settings': under `FIVE_SEVEN_NINE` Rahu in
+/// Aries reaches Jupiter in Sagittarius, the 9th, and Jupiter joins the
+/// 1st's (f).
+#[test]
+fn a_node_s_aspects_follow_the_settings() {
+    use teistro_core::settings::NodeAspects;
+    assert!(
+        !worked(NodeAspects::None)
+            .house(1)
+            .unwrap()
+            .aspected
+            .contains(&Jupiter)
+    );
+    assert!(
+        worked(NodeAspects::FiveSevenNine)
+            .house(1)
+            .unwrap()
+            .aspected
+            .contains(&Jupiter)
+    );
+}
+
+/// Reader III: a sign between two cusps touching neither is intercepted,
+/// reported with its house and never a level.
+#[test]
+fn a_sign_touching_no_cusp_is_intercepted_in_the_house_holding_it() {
+    use teistro_core::catalogue::Rashi;
+    use teistro_core::settings::NodeAspects;
+    let degrees = [0, 25, 70, 100, 130, 160, 180, 205, 250, 280, 310, 340];
+    let cusps = degrees.map(|deg| Nas::new(deg * Nas::PER_DEGREE));
+    let chart = KpChart::new(teistro_core::catalogue::HouseSystem::Placidus, cusps, []);
+    let significators = Significators::of(&chart, NodeAspects::None);
+    let intercepted: Vec<(u8, Vec<Rashi>, Vec<Graha>)> = significators
+        .houses
+        .iter()
+        .filter(|house| !house.intercepted.is_empty())
+        .map(|house| {
+            (
+                house.house,
+                house.intercepted.clone(),
+                house.intercepted_lords(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        intercepted,
+        [
+            (2, vec![Rashi::Taurus], vec![Venus]),
+            (8, vec![Rashi::Scorpio], vec![Mars]),
+        ]
+    );
+    // Two cusps in one sign do not make its neighbour intercepted twice,
+    // and the lord of a house is its cusp's: the 8th opens in Libra.
+    assert_eq!(significators.house(8).unwrap().lord, Venus);
+}

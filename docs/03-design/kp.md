@@ -1,6 +1,6 @@
 # KP: Krishnamurti Paddhati
 
-Status: `draft`, 2026-09-29; §6 steps 1 and 2 **built** the same day. Written
+Status: `draft`, 2026-09-29; §6 steps 1 to 3 **built** by 2026-09-30. Written
 from the Readers before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/06-kp.md` (P0: the 249
@@ -47,8 +47,12 @@ their facts and quotes a few words, never a table or a passage.
   planets in the stars of its occupants, (b) the occupants, (c) planets
   in the stars of its lord, (d) the lord; then (e) planets conjoined with
   those and (f) planets aspecting them.
-- **A node as a significator** (Reader VI, worked cases): it acts as the
-  agent of the planets it is conjoined with, and of its sign's lord.
+- **A node as a significator** (Reader VI, in one passage): a node gives
+  "first" the results of the planets it is conjoined with, "then" of the
+  planet in whose star it stands, "then" of the planets aspecting it,
+  "and lastly" of its sign's lord. The same example reads a conjunction
+  as the same sign and an aspect as a graha's drishti ("by its 7th
+  aspect").
 - **Interception** (Reader III): a sign lying between two cusps
   "without touching either".
 
@@ -79,7 +83,7 @@ the question.
 | C152 | a node among the rulers | **in a ruler's sign, or in the same sign as one** (the worked example's conjunction) | the sign only |
 | C153 | which retrograde rulers are rejected | **in a retrograde planet's star**, the rule as stated; the sub reported beside it | `STAR_OR_SUB`, the later procedure |
 | C154 | a house's significators | **(a) to (d) as levels**, (e) and (f) reported apart | the baseline's intercepted lord as a fifth level |
-| C155 | a node as a significator | **the agent** of the planets it conjoins and of its sign's lord, reported as whose | the node alone |
+| C155 | a node as a significator | **the Reader's order**: conjoined, star lord, aspecting, sign lord | — |
 | C156 | the horary chart | **the number's start as the lagna**, Placidus cusps from it at the place, planets at the moment | — |
 | C157 | the ayanamsha a KP reading takes | **Krishnamurti** (the profile's), refused under any other unless the request says so | `KRISHNAMURTI_VP291`, or any, named |
 
@@ -153,7 +157,16 @@ Jupiter's, the only subs a sign's end falls inside.
    `frame.ayanamsha` unless `under_any_ayanamsha()` is asked. Acceptance
    is a read-back through the chart: the 1st cusp is its lagna and the
    10th its midheaven, to the nanoarcsecond.
-3. Significators.
+3. **Built**: the significators. `Significators::of(&KpChart,
+   NodeAspects)` and `sdk.chart().kp_significators(&kp)`: per house the
+   four levels in order (`in_order` flattens them strongest first), (e)
+   the planets sharing a sign with any of them and (f) the planets they
+   aspect by drishti, each planet counted at its strongest place, and the
+   signs intercepted in it; per node its `NodeAgency` in the Reader's
+   order; per planet the houses it signifies at each level. The drishti
+   is the aspect crate's own table under `aspect.node_aspects`, not a
+   second copy. Worked by hand on a chart that fills every level, and a
+   node knob shown to move (f).
 4. Ruling planets, over the panchanga's vara for C151.
 5. Horary from a number.
 6. The boundary and the bindings.
