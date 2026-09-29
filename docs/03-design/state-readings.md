@@ -356,18 +356,24 @@ before — *every shipped rule carries a reading* — becomes one it can.
   verse citations against eleven shipped rules, severity bands against a
   struct that grades nothing — and a kind supplies a key space and never
   a vocabulary. The table is on
-  [`state-readings-measured.md`](state-readings-measured.md), with five
-  of its six vocabulary sizes **counted from the type** so the sentence
-  above cannot go stale again. Each family now waits for the phase that
+  [`state-readings-measured.md`](state-readings-measured.md), with every
+  vocabulary size that has a type to count **counted from the type** so
+  the sentence above cannot go stale again. Each family now waits for the phase that
   reads its sources, which is the one that can choose between the verse's
   name and the class's.
 
   **Forty-seven describe something the SDK does not compute yet**:
   `muhurta-factor`, Phase 7's, a composite key like `graha-bhava` when its
   module arrives. `sade-sati-phala` (5) was its sibling until Sade Sati was
-  built (`sade-sati.md`); its keys are the phases and the 4th and 8th
-  spells, the SDK's own vocabulary spelled otherwise, so it joined the
-  vocabulary table.
+  built (`sade-sati.md`), and it is now **said**: its five records are
+  Saturn's house from the Moon, the key space `graha_bhava` already has
+  for the natal chart, so they landed on an open kind `gochar_bhava`
+  (`SATURN_IN_12` for the rising phase, `SATURN_IN_4` for the small
+  Panoti) under the form `sadeSati`, and `sdk.interpret().sade_sati(&report)`
+  says each house a report holds once. A kind was spent here and not for
+  the families above because a consumer must name these — the report
+  already carries the house — and the reading needs no vocabulary the SDK
+  does not have ([Q38](../QUESTIONS.md)).
 
   `inauspicious-kaal` is the one that went the other way, and it is worth
   keeping beside these as the test: `kaala` **is** a kind, the SDK computes

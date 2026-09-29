@@ -1237,6 +1237,17 @@ fn the_founded_plan(sdk: &teistro::Context) -> Result<Plan, String> {
         plan.items.extend(said.map_err(|why| why.to_string())?);
     }
     plan.items.extend(interpret().chalit(document));
+    // Saturn's periods over a century, which reaches every phase and both
+    // smaller spells whatever sign the Moon is in.
+    let century = teistro::SadeSatiRequest::between(
+        teistro::quantity::JulianDay::try_new(2_451_544.5).map_err(|why| why.to_string())?,
+        teistro::quantity::JulianDay::try_new(2_488_069.5).map_err(|why| why.to_string())?,
+    );
+    let report = sdk
+        .chart()
+        .sade_sati(document, &century)
+        .map_err(|why| format!("searching Saturn's periods: {why}"))?;
+    plan.items.extend(interpret().sade_sati(&report.value));
     let set = teistro::RuleRequest::shipped([])
         .with_rules(every.clone())
         .rule_set()

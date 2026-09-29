@@ -1795,6 +1795,8 @@ final class MessagesSdkPhala {
       _r.render('sdk.phala.nakshatra', {'nakshatra': {r'$entity': nakshatra.key}});
   String namakarana({required NakshatraKey nakshatra}) =>
       _r.render('sdk.phala.namakarana', {'nakshatra': {r'$entity': nakshatra.key}});
+  String sadeSati({required int house, required String phala}) =>
+      _r.render('sdk.phala.sadeSati', {'house': house, 'phala': {r'$entity': phala}});
   String state({required StateKey state}) =>
       _r.render('sdk.phala.state', {'state': {r'$entity': state.key}});
   String tatwa({required TatwaKey tatwa}) =>

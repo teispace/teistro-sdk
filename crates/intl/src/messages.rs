@@ -1448,6 +1448,25 @@ pub mod sdk {
             }
         }
 
+        /// The message `sdk.phala.sadeSati`.
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct SadeSati {
+            /// The `house` parameter.
+            pub house: i64,
+            /// The `phala` parameter.
+            pub phala: String,
+        }
+
+        impl crate::TypedMessage for SadeSati {
+            const KEY: &'static str = "sdk.phala.sadeSati";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("house", crate::Value::Int(self.house)),
+                    ("phala", crate::Value::entity(&self.phala)),
+                ])
+            }
+        }
+
         /// The message `sdk.phala.state`.
         #[derive(Clone, Debug, PartialEq)]
         pub struct State {

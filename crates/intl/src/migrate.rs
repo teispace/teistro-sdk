@@ -18,7 +18,8 @@ use serde_json::{Map, Value as Json};
 use teistro_core::key::resolve;
 
 use crate::source::{
-    BASE_LOCALE, ENTITY_NAMESPACE, Entity, Entry, GRAHA_BHAVA_KIND, IN_BHAVA, META_FILE, Tree,
+    BASE_LOCALE, ENTITY_NAMESPACE, Entity, Entry, GOCHAR_BHAVA_KIND, GRAHA_BHAVA_KIND,
+    GRAHA_IN_HOUSE_KINDS, IN_BHAVA, META_FILE, Tree, graha_in_house_member,
 };
 
 /// The exporter's document.
@@ -864,10 +865,10 @@ const fn state(
 /// Every state category this migration maps, with the kind and the form.
 ///
 /// Nothing here is inferred from resemblance: a category the SDK has no
-/// subject for is reported and skipped rather than guessed at, and the
-/// fourteen that are missing from this list are named in
-/// `03-design/state-readings.md` §8.
-pub const STATE_CATEGORIES: [StateCategory; 26] = [
+/// subject for is reported and skipped rather than guessed at, and those
+/// missing from this list are named, with what each waits on, in
+/// `03-design/state-readings-measured.md`.
+pub const STATE_CATEGORIES: [StateCategory; 27] = [
     state("avastha-baladi", &["avastha_baladi"], "phala"),
     state("avastha-deeptadi", &["avastha_deeptadi"], "phala"),
     state("avastha-jagradadi", &["avastha_jagradadi"], "phala"),
@@ -887,6 +888,7 @@ pub const STATE_CATEGORIES: [StateCategory; 26] = [
     state("nakshatra-phala", &["nakshatra"], "phala"),
     state("namakarana-nakshatra", &["nakshatra"], "namakarana"),
     state("planet-condition", &["dignity", "state"], "phala"),
+    state("sade-sati-phala", &[GOCHAR_BHAVA_KIND], "sadeSati"),
     state("special-lagna", &["point"], "phala"),
     state("tatwa", &["tatwa"], "phala"),
     state("tithi-phala", &["tithi"], "phala"),
@@ -919,7 +921,11 @@ pub const GRAHA_ABBREVIATIONS: [(&str, &str); 9] = [
 /// `03-design/interpretation-records.md` §4 forbids and the reason this is
 /// a list. It is keyed by category as well as key, because two categories
 /// may spell the same word for different subjects.
-pub const STATE_KEY_ALIASES: [(&str, &str, &str); 15] = [
+///
+/// `sade-sati-phala` keys Saturn's spells by name, and each is Saturn in a
+/// house counted from the Moon: the phases the 12th, the 1st and the 2nd
+/// (`sade_sati::Phase::house`), and the smaller spells the house they name.
+pub const STATE_KEY_ALIASES: [(&str, &str, &str); 20] = [
     ("inauspicious-kaal", "gulika", "GULIKA_KAALA"),
     ("inauspicious-kaal", "rahu-kaal", "RAHU_KAALA"),
     ("inauspicious-kaal", "yamaganda", "YAMAGHANDA"),
@@ -935,6 +941,11 @@ pub const STATE_KEY_ALIASES: [(&str, &str, &str); 15] = [
     ("lagna-rashi", "LAGNA_SCORPIO", "SCORPIO"),
     ("lagna-rashi", "LAGNA_TAURUS", "TAURUS"),
     ("lagna-rashi", "LAGNA_VIRGO", "VIRGO"),
+    ("sade-sati-phala", "dhaiyya_4th", "SATURN_IN_4"),
+    ("sade-sati-phala", "dhaiyya_8th", "SATURN_IN_8"),
+    ("sade-sati-phala", "peak", "SATURN_IN_1"),
+    ("sade-sati-phala", "rising", "SATURN_IN_12"),
+    ("sade-sati-phala", "setting", "SATURN_IN_2"),
 ];
 
 /// The state readings exporter's document.
@@ -983,6 +994,9 @@ pub struct StateRow {
 /// // One of two candidate kinds answers; the other does not.
 /// assert_eq!(state_key("planet-condition", &["dignity", "state"], "COMBUST")?, "state.COMBUST");
 /// assert!(state_key("planet-condition", &["dignity", "state"], "COMBUST_CANCELLED").is_err());
+/// // A Sade Sati phase is Saturn in a house counted from the Moon.
+/// assert_eq!(state_key("sade-sati-phala", &["gochar_bhava"], "rising")?, "gochar_bhava.SATURN_IN_12");
+/// assert!(state_key("sade-sati-phala", &["gochar_bhava"], "SATURN_IN_13").is_err());
 /// # Ok::<(), String>(())
 /// ```
 ///
@@ -1019,7 +1033,14 @@ pub fn state_key(category: &str, kinds: &[&str], key: &str) -> Result<String, St
     let mut found: Vec<String> = Vec::new();
     for kind in kinds {
         let full = format!("{kind}.{key}");
-        if crate::source::is_open_kind_key(&full) {
+        if GRAHA_IN_HOUSE_KINDS.contains(kind) {
+            // An open kind has no table to resolve against; a graha and a
+            // house from 1 to 12 is its grammar, and a key outside it names
+            // nothing.
+            if graha_in_house_member(key).is_some() {
+                found.push(full);
+            }
+        } else if crate::source::is_open_kind_key(&full) {
             found.push(full);
         } else if let Ok(id) = resolve(&full) {
             found.push(id.to_string());

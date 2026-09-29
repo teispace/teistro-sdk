@@ -569,7 +569,61 @@ pub const IN_BHAVA: &str = "_IN_";
 /// ```
 #[must_use]
 pub fn graha_bhava_key(graha: &str, bhava: u8) -> String {
-    format!("{GRAHA_BHAVA_KIND}.{graha}{IN_BHAVA}{bhava}")
+    graha_in_house(GRAHA_BHAVA_KIND, graha, bhava)
+}
+
+/// The catalogue's third **open** kind: a graha in transit through a house
+/// counted from the natal Moon.
+///
+/// Open for `graha_bhava`'s reason, and a kind of its own rather than
+/// `graha_bhava` because a house counted from the Moon while a graha
+/// transits it is not the natal bhava it stood in, and a reading of the one
+/// is no reading of the other. Sade Sati's phases and smaller spells are
+/// Saturn's members of it (`03-design/sade-sati.md`).
+pub const GOCHAR_BHAVA_KIND: &str = "gochar_bhava";
+
+/// The `gochar_bhava` key for a graha's own key and a house from 1 to 12,
+/// counted from the natal Moon.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_intl::source::gochar_bhava_key;
+///
+/// assert_eq!(gochar_bhava_key(Graha::Saturn.key(), 12), "gochar_bhava.SATURN_IN_12");
+/// ```
+#[must_use]
+pub fn gochar_bhava_key(graha: &str, house: u8) -> String {
+    graha_in_house(GOCHAR_BHAVA_KIND, graha, house)
+}
+
+/// The kinds whose members are a graha and a house, spelled
+/// `<GRAHA>_IN_<house>`.
+pub const GRAHA_IN_HOUSE_KINDS: [&str; 2] = [GRAHA_BHAVA_KIND, GOCHAR_BHAVA_KIND];
+
+/// One spelling for every graha-and-house key, so the kinds cannot drift
+/// apart.
+fn graha_in_house(kind: &str, graha: &str, house: u8) -> String {
+    format!("{kind}.{graha}{IN_BHAVA}{house}")
+}
+
+/// The graha and the house a graha-and-house member names, if it names
+/// one: a graha of the catalogue's and a house from 1 to 12. An open kind
+/// has no table to resolve against, so this grammar is its check.
+///
+/// ```
+/// use teistro_core::catalogue::Graha;
+/// use teistro_intl::source::graha_in_house_member;
+///
+/// assert_eq!(graha_in_house_member("SATURN_IN_12"), Some((Graha::Saturn, 12)));
+/// assert_eq!(graha_in_house_member("SATURN_IN_13"), None);
+/// assert_eq!(graha_in_house_member("SAT_IN_12"), None);
+/// ```
+#[must_use]
+pub fn graha_in_house_member(member: &str) -> Option<(teistro_core::catalogue::Graha, u8)> {
+    let (graha, house) = member.split_once(IN_BHAVA)?;
+    let graha = teistro_core::catalogue::Graha::from_key(graha)?;
+    let house: u8 = house.parse().ok()?;
+    (1..=12).contains(&house).then_some((graha, house))
 }
 
 /// The one word a form may not be called.

@@ -1231,6 +1231,13 @@ class MessagesSdkPhala:
             {"nakshatra": {"$entity": nakshatra.value}},
         )
 
+    def sade_sati(self, *, house: int, phala: str) -> str:
+        """`sdk.phala.sadeSati`"""
+        return self._r.render(
+            "sdk.phala.sadeSati",
+            {"house": house, "phala": {"$entity": phala}},
+        )
+
     def state(self, *, state: StateKey) -> str:
         """`sdk.phala.state`"""
         return self._r.render(

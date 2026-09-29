@@ -25,7 +25,7 @@ use teistro_intl::source::{BASE_LOCALE, Completeness, ENTITY_NAMESPACE, Entry, T
 use teistro_rules::Rule;
 
 use crate::generated::{Output, check, write};
-use crate::measure::{Claim, count, fill, plural, table};
+use crate::measure::{Claim, Verdict, count, fill, plural, table};
 use crate::rules_corpus::read_json;
 
 const PAGE: &str = "docs/03-design/state-readings-measured.md";
@@ -198,7 +198,7 @@ const fn vocabulary(
 ///
 /// `muhurta-factor` is not here: it describes something the SDK does not
 /// compute at all, so there is no vocabulary to compare.
-const VOCABULARIES: [Vocabulary; 11] = [
+const VOCABULARIES: [Vocabulary; 10] = [
     vocabulary(
         "auspicious-kaal",
         "`panchanga::Muhurtas`' two named muhurtas",
@@ -263,13 +263,6 @@ const VOCABULARIES: [Vocabulary; 11] = [
         "three severity bands and six conditions the SDK does not grade",
     ),
     vocabulary(
-        "sade-sati-phala",
-        "`sade_sati::Phase`'s three and the default smaller spells, the 4th and the 8th",
-        5,
-        0,
-        "the phases' names in lower case and the spells by house (`dhaiyya_4th` is house 4): a spelling, not a classification",
-    ),
-    vocabulary(
         "shadbala-strength",
         "`GrahaShadbala::strong`, a verdict against the required rupas",
         2,
@@ -277,6 +270,26 @@ const VOCABULARIES: [Vocabulary; 11] = [
         "four bands the corpus does not record, and a composite graha key",
     ),
 ];
+
+/// The claims as a table, refused unless every one holds.
+///
+/// Every claim on this page is one the corpus must keep — a record that
+/// resolves, a reading that renders — and not a proposal a measurement
+/// may falsify, so a falsified row is a broken corpus and not a finding.
+/// Writing it onto the page instead of failing is how `sdk.phala.sadeSati`
+/// first rendered without its house and the check still passed.
+fn held(claims: &[Claim]) -> Result<String, String> {
+    let broken: Vec<String> = claims
+        .iter()
+        .filter(|claim| claim.verdict != Verdict::Holds)
+        .map(|claim| format!("{} ({})", claim.rule, claim.measured))
+        .collect();
+    if broken.is_empty() {
+        Ok(table(claims))
+    } else {
+        Err(format!("the corpus breaks: {}", broken.join("; ")))
+    }
+}
 
 /// The sizes this repository can **count**, read from the type rather
 /// than written down.
@@ -307,10 +320,6 @@ fn counted(root: &Path) -> Result<BTreeMap<&'static str, usize>, String> {
             teistro_rules::longevity::Reason::ALL.len(),
         ),
         ("ayurdaya-harana", haranas),
-        (
-            "sade-sati-phala",
-            teistro::sade_sati::Phase::ALL.len() + teistro::sade_sati::DEFAULT_SPELLS.len(),
-        ),
         ("ayurdaya-classical-rule", balarishta),
     ]
     .into_iter()
@@ -389,8 +398,8 @@ fn what_each_one_wants(
         out,
         "**{} of the members column is counted from the type**, not \
          written here: `Method::ALL`, `LifeClass::ALL`, `Reason::ALL`, a \
-         default `Reductions` serialised, the shipped balarishta pack, \
-         and Sade Sati's `Phase::ALL` with its `DEFAULT_SPELLS`. The row that made it necessary is `ayurdaya-maraka` — \
+         default `Reductions` serialised and the shipped balarishta \
+         pack. The row that made it necessary is `ayurdaya-maraka` — \
          §8 of the design page said *fifteen* maraka reasons where the \
          type has twenty, which is the same count-in-prose that has \
          rotted four times in this repository. **The keys-it-spells \
@@ -400,7 +409,7 @@ fn what_each_one_wants(
          2026-09-22 against the corpus itself.\n\n",
         count(counted.len()),
     );
-    out.push_str(&table(&[
+    out.push_str(&held(&[
         Claim::counted(
             "every category with a vocabulary row is one the migration does not map",
             0,
@@ -411,7 +420,7 @@ fn what_each_one_wants(
             0,
             counted.len(),
         ),
-    ]));
+    ])?);
     out.push('\n');
     Ok(())
 }
@@ -725,7 +734,7 @@ fn what_the_packs_decide(
         shared,
     ));
     out.push_str("## What the packs decide\n\n");
-    out.push_str(&table(&claims));
+    out.push_str(&held(&claims)?);
     out.push('\n');
     Ok(())
 }
@@ -733,9 +742,13 @@ fn what_the_packs_decide(
 /// The form a record's summary is carried under.
 const NAME_FORM: &str = "name";
 
-/// The message that says a graha in a bhava, which is the one of the six
-/// that takes more than the subject's own key.
+/// The message that says a graha in a bhava, which takes the graha and
+/// the bhava beside the subject's own key.
 const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
+
+/// The message that says a Sade Sati phase or a smaller spell, which takes
+/// the house beside the record.
+const SADE_SATI: &str = "sdk.phala.sadeSati";
 
 /// The message a composer says a subject with, and the slot the record's
 /// key fills, by the kind the key names and the form the reading is under.
@@ -746,7 +759,8 @@ const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
 /// beside the rule it belongs to, `dasha_phala` says what a corpus
 /// carries of a graha as a dasha lord, `states` says what it carries of
 /// each avastha a graha is in, `conditions` says what it carries of a
-/// dignity or a condition a graha is in, and this asks whether the
+/// dignity or a condition a graha is in, `sade_sati` says what it carries
+/// of each house Saturn's periods stand in from the Moon, and this asks whether the
 /// corpus's every such record can be **said**. A subject no
 /// composer has a message for is not in this list and is counted apart,
 /// because a reading nothing can say is work that does not reach a reader
@@ -755,8 +769,9 @@ const GRAHA_IN_BHAVA: &str = "sdk.phala.grahaInBhava";
 /// A row whose message no composer emits is caught by
 /// [`every_message_is_a_composer_key`], so this list cannot name a message
 /// that has been renamed or withdrawn.
-const SAID_BY: [(&str, &str, &str, &str); 21] = [
+const SAID_BY: [(&str, &str, &str, &str); 22] = [
     ("graha_bhava", NAME_FORM, GRAHA_IN_BHAVA, "phala"),
+    ("gochar_bhava", "sadeSati", SADE_SATI, "phala"),
     ("rashi", "lagnaPhala", "sdk.phala.lagnaRashi", "rashi"),
     ("tithi", "phala", "sdk.phala.tithi", "tithi"),
     ("vara", "phala", "sdk.phala.vara", "vara"),
@@ -830,7 +845,7 @@ fn what_it_leaves_open(
     intl: &teistro_intl::Intl,
     base: &Records,
     packs: &BTreeMap<String, Records>,
-) {
+) -> Result<(), String> {
     out.push_str("## What it leaves open\n\n");
     let _ = write!(
         out,
@@ -880,7 +895,7 @@ fn what_it_leaves_open(
         out.push('\n');
     }
     let carried: usize = packs.values().map(BTreeMap::len).sum();
-    out.push_str(&table(&[
+    out.push_str(&held(&[
         Claim::counted(
             "every refused key is absent from the packs",
             still_absent,
@@ -896,8 +911,9 @@ fn what_it_leaves_open(
                 .count(),
             carried,
         ),
-    ]));
+    ])?);
     out.push('\n');
+    Ok(())
 }
 
 /// An engine carrying every locale of `i18n/` with both corpora loaded
@@ -932,6 +948,15 @@ fn slots_for(message: &str, slot: &str, key: &str) -> teistro_intl::Params {
             teistro_intl::Value::Entity(String::from("graha.SUN")),
         );
         slots.insert(String::from("bhava"), teistro_intl::Value::Int(1));
+    }
+    if message == SADE_SATI {
+        // The house the composer says beside the record, read off the key
+        // itself so the two cannot disagree.
+        let house = key
+            .split_once('.')
+            .and_then(|(_, member)| teistro_intl::source::graha_in_house_member(member))
+            .map_or(0, |(_, house)| i64::from(house));
+        slots.insert(String::from("house"), teistro_intl::Value::Int(house));
     }
     if message == TIMING {
         // The rule key the composer attaches to every item, which the base
@@ -1047,12 +1072,12 @@ fn what_a_composer_can_say(
         }
         out.push('\n');
     }
-    out.push_str(&table(&[Claim::counted(
+    out.push_str(&held(&[Claim::counted(
         "every reading a composer says renders from the locale's own record, with no fallback and \
          no warning",
         wrong,
         said,
-    )]));
+    )])?);
     out.push('\n');
     Ok(())
 }
@@ -1098,7 +1123,7 @@ fn mapped_and_unmapped(base: &Records) -> (BTreeMap<String, usize>, BTreeMap<Str
 /// held to the migration's own table by a claim below — every category
 /// named here must be one `STATE_CATEGORIES` does not map — so it cannot
 /// quietly disagree with the code (`03-design/state-readings.md` §8).
-const UNMAPPED: [(&str, usize); 12] = [
+const UNMAPPED: [(&str, usize); 11] = [
     ("auspicious-kaal", 5),
     ("ayurdaya-balarishta", 4),
     ("ayurdaya-classical-rule", 5),
@@ -1109,7 +1134,6 @@ const UNMAPPED: [(&str, usize); 12] = [
     ("ayurdaya-tier", 4),
     ("ayurdaya-vulnerability", 9),
     ("muhurta-factor", 47),
-    ("sade-sati-phala", 5),
     ("shadbala-strength", 28),
 ];
 
@@ -1146,7 +1170,7 @@ fn main_page(root: &Path) -> Result<String, String> {
     what_it_adds_to_the_readings(&mut out, &rules, base_readings, base);
     let (mut intl, strict) = engine_with_both(root)?;
     what_a_composer_can_say(&mut out, &mut intl, &strict, &per_locale, base)?;
-    what_it_leaves_open(&mut out, &intl, base, &per_locale);
+    what_it_leaves_open(&mut out, &intl, base, &per_locale)?;
     let built = what_it_costs(&mut out, root, &tree, &readings_tree)?;
     what_the_packs_decide(&mut out, &per_locale, base, base_readings, &built)?;
     Ok(fill(&out))

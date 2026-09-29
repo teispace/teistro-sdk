@@ -620,6 +620,7 @@ export function messages(r) {
         nadi: (p) => r.render('sdk.phala.nadi', { nadi: { '$entity': p.nadi } }),
         nakshatra: (p) => r.render('sdk.phala.nakshatra', { nakshatra: { '$entity': p.nakshatra } }),
         namakarana: (p) => r.render('sdk.phala.namakarana', { nakshatra: { '$entity': p.nakshatra } }),
+        sadeSati: (p) => r.render('sdk.phala.sadeSati', { house: p.house, phala: { '$entity': p.phala } }),
         state: (p) => r.render('sdk.phala.state', { state: { '$entity': p.state } }),
         tatwa: (p) => r.render('sdk.phala.tatwa', { tatwa: { '$entity': p.tatwa } }),
         tithi: (p) => r.render('sdk.phala.tithi', { tithi: { '$entity': p.tithi } }),

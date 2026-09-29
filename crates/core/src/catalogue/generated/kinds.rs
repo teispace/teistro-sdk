@@ -136,9 +136,11 @@ pub enum Kind {
     AvasthaCheshta = 64,
     /// A graha and a bhava together, as `JUPITER_IN_1`; the readings that name one arrive in a loaded pack.
     GrahaBhava = 65,
+    /// A graha in transit through a house counted from the natal Moon, as `SATURN_IN_12`; the readings that name one arrive in a loaded pack.
+    GocharBhava = 66,
 }
 
-const BY_NAME: [(&str, Kind); 64] = [
+const BY_NAME: [(&str, Kind); 65] = [
     ("auspiciousness", Kind::Auspiciousness),
     ("avastha_baladi", Kind::AvasthaBaladi),
     ("avastha_cheshta", Kind::AvasthaCheshta),
@@ -165,6 +167,7 @@ const BY_NAME: [(&str, Kind); 64] = [
     ("era", Kind::Era),
     ("gana", Kind::Gana),
     ("gender", Kind::Gender),
+    ("gochar_bhava", Kind::GocharBhava),
     ("graha", Kind::Graha),
     ("graha_bhava", Kind::GrahaBhava),
     ("guna", Kind::Guna),
@@ -207,7 +210,7 @@ const BY_NAME: [(&str, Kind); 64] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 64] = [
+    pub const ALL: [Kind; 65] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -272,6 +275,7 @@ impl Kind {
         Kind::Vaiseshikamsa,
         Kind::AvasthaCheshta,
         Kind::GrahaBhava,
+        Kind::GocharBhava,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -342,6 +346,7 @@ impl Kind {
             Kind::Vaiseshikamsa => "vaiseshikamsa",
             Kind::AvasthaCheshta => "avastha_cheshta",
             Kind::GrahaBhava => "graha_bhava",
+            Kind::GocharBhava => "gochar_bhava",
         }
     }
 
@@ -419,6 +424,7 @@ impl Kind {
             Kind::Vaiseshikamsa => 30,
             Kind::AvasthaCheshta => 3,
             Kind::GrahaBhava => 0,
+            Kind::GocharBhava => 0,
         }
     }
 
@@ -496,6 +502,7 @@ impl Kind {
             63 => Some(Kind::Vaiseshikamsa),
             64 => Some(Kind::AvasthaCheshta),
             65 => Some(Kind::GrahaBhava),
+            66 => Some(Kind::GocharBhava),
             _ => None,
         }
     }

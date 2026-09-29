@@ -255,3 +255,69 @@ fn a_bad_request_is_refused_by_the_field_it_names() {
         Some("natals")
     );
 }
+
+/// What a loaded corpus says of the periods, through the façade: nothing
+/// before the states pack is loaded, then each house the report holds
+/// once, rendering the pack's own words with the house beside them; and
+/// nothing for a report counted from the lagna, whose houses are not the
+/// corpus's subject.
+#[test]
+fn a_report_is_said_in_the_corpus_words_once_a_pack_is_loaded() {
+    let sdk = context(None);
+    let natal = natal(&sdk);
+    let report = sdk.chart().sade_sati(&natal, &life()).unwrap().value;
+    assert!(sdk.interpret().sade_sati(&report).is_empty());
+
+    let states = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/states");
+    let tree = teistro::Tree::load(&states).unwrap();
+    let bytes = teistro::pack::build(&tree.locales["en-Latn"], "sdk.entity").unwrap();
+    sdk.intl().load_pack(&bytes).unwrap();
+
+    let plan = sdk.interpret().sade_sati(&report);
+    let mut houses: Vec<u8> = Vec::new();
+    for spell in spells_of(&report) {
+        if !houses.contains(&spell.house) {
+            houses.push(spell.house);
+        }
+    }
+    assert_eq!(plan.len(), houses.len(), "each house once: {houses:?}");
+    for item in &plan.items {
+        let rendered = sdk.intl().render(&item.key, &item.params);
+        assert!(
+            !rendered.is_fallback && rendered.warnings.is_empty() && !rendered.text.is_empty(),
+            "{item:?} rendered {rendered:?}"
+        );
+    }
+    let first: Vec<i64> = plan
+        .items
+        .iter()
+        .map(|item| match item.params.get("house") {
+            Some(teistro::Value::Int(house)) => *house,
+            other => panic!("a house slot, not {other:?}"),
+        })
+        .collect();
+    // The houses in the order Saturn first reached them over the life.
+    let mut by_entry: Vec<&Spell> = spells_of(&report);
+    by_entry.sort_by(|a, b| {
+        let at = |spell: &Spell| spell.begins().map_or(f64::NEG_INFINITY, JulianDay::get);
+        at(a).total_cmp(&at(b))
+    });
+    let mut expected: Vec<i64> = Vec::new();
+    for spell in by_entry {
+        if !expected.contains(&i64::from(spell.house)) {
+            expected.push(i64::from(spell.house));
+        }
+    }
+    assert_eq!(first, expected);
+    assert!(
+        [12, 1, 2, 4, 8].iter().all(|house| first.contains(house)),
+        "eighty years reach every phase and both smaller spells: {first:?}"
+    );
+
+    let from_lagna = sdk
+        .chart()
+        .sade_sati(&natal, &circuit().counted_from(GocharFrom::Lagna))
+        .unwrap()
+        .value;
+    assert!(sdk.interpret().sade_sati(&from_lagna).is_empty());
+}

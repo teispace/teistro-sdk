@@ -1213,6 +1213,23 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none under the default; under `SECOND` the Moon's row
   moves one bindu from the 12th from Jupiter to the 2nd.
 
+- **What the baseline corpus says of Sade Sati reaches a reader**
+  (`state-readings.md` §8). The five `sade-sati-phala` records land on a
+  new open catalogue kind, `gochar_bhava` (number 66): a graha in transit
+  through a house from the natal Moon, as `SATURN_IN_12` for the rising
+  phase and `SATURN_IN_4` for the small Panoti, under the form
+  `sadeSati`. `sdk.interpret().sade_sati(&report)` says the reading of
+  each house a report holds, once, in the order Saturn first reaches
+  it, through `sdk.phala.sadeSati`, a frame with no words of its own; a
+  report counted from the lagna says nothing, since the readings are of
+  Saturn's house from the Moon. `teistro_intl::source` gains
+  `gochar_bhava_key` and `graha_in_house_member`. `check-state-readings`
+  now fails on any of its claims that does not hold, where it wrote a
+  falsified one onto its page and passed.
+
+  **Numbers:** none; 27 of the corpus's 38 state categories are mapped
+  where 26 were.
+
 - **A slow body's crossing search reads the sky where something
   happens** (`astro-events-and-crossings.md` §4, "a slow body's scan";
   plan A1g). A longitude search samples its fine grid every *stride*

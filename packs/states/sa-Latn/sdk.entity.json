@@ -1710,5 +1710,27 @@
       "phala": "Vyāghrayoniḥ sāhasaṃ tejaḥ svātantryaṃ ca sūcayati.",
       "phalaProse": "Vyāghrayonau citrā-viśākhe nakṣatre antarbhavataḥ. Vyāghrayonijātaḥ sāhasī, tejasvī, svatantraḥ prabalaḥ ātmābhimānī ca; nirbhīkaḥ, svādhikārapriyaḥ, ekākikāryakṣamaḥ śīghrakopī ca. Vyavahāre netṛtvaśīlaḥ, pratispardhī, anyāyāsahiṣṇuḥ, svamārgānugāmī ca bhavati. Yonikūṭe (aṣṭakūṭamadhye caturaṅkāḥ, yat jaivikamaitrīṃ svābhāvikavṛttiṃ ca parīkṣate) samayonau pūrṇāścatvāraḥ aṅkāḥ śreṣṭhāḥ; goyonistu vyāghrasya sākṣāt śatruyoniḥ, yatra aṅkaḥ alpatamaḥ melanaṃ ca nikṛṣṭam."
     }
+  },
+  "gochar_bhava": {
+    "SATURN_IN_4": {
+      "sadeSati": "Kaṇṭakaśaniḥ (candrāt caturthe śaniḥ) gṛhamātṛsukhacittaśāntibādhāṃ sūcayati.",
+      "sadeSatiProse": "Ḍhaiyyā (laghuśaniḥ) yadā śaniḥ janmarāśitaḥ caturthe sañcarati tadā kaṇṭakaśaniriti prasiddhaḥ (sārdhadvayavarṣam). Asmin kāle gṛhasukhabādhā, mātṛārogyacintā, cittāśāntiḥ, sthāvarasampattikleśaḥ, karmakṣetravighnaśca. Manasi asantoṣaḥ; tathāpi dhairyeṇa mātṛsevayā ca susahyaḥ. Caturtheśabale śubhadṛṣṭyā ca nyūnabādhā."
+    },
+    "SATURN_IN_8": {
+      "sadeSati": "Aṣṭamaśaniḥ (candrāt aṣṭame śaniḥ) āyuguhyarogākasmikavighnabhāraṃ sūcayati.",
+      "sadeSatiProse": "Ḍhaiyyā yadā śaniḥ janmarāśitaḥ aṣṭame sañcarati tadā aṣṭamaśaniriti prasiddhaḥ (sārdhadvayavarṣam), sāḍhesātītulyaguruḥ. Asmin kāle āyucintā, guhyadīrgharogaḥ, ākasmikavighnaḥ, mānasikāvasādaḥ, arthahāniḥ, guptaśatrubhayaśca. Tathāpi gūḍhavidyādhyātmasādhanārthamapi kalpate. Dhairyeṇa śaniśāntyā sevādānadharmaiśca susahyaḥ."
+    },
+    "SATURN_IN_1": {
+      "sadeSati": "Śikharasāḍhesātī (candropari śaniḥ) mānasabhārakarmaparīkṣāṃ sūcayati.",
+      "sadeSatiProse": "Sāḍhesātīmadhyacaraṇe śaniḥ janmarāśimupari sañcarati (janmaśaniḥ, madhyasārdhadvayavarṣam). Ayaṃ kāla sāḍhesātyāḥ gurutamaḥ — mānasaviṣādaḥ, sthānabhraṃśaḥ, karmakṣetraparīkṣā, svajanaviyogaḥ, ārogyakṣayaśca. Manobalaṃ karma ca parīkṣyete. Tathāpi dhairyeṇa karmaṇā sevayā ca kṛtaḥ śramaḥ sthāyiphalāya kalpate; ayaṃ paripakvatāyāḥ kālaḥ."
+    },
+    "SATURN_IN_12": {
+      "sadeSati": "Ārohaṇasāḍhesātī (candrāt dvādaśe śaniḥ) vyayaśramacintārambhaṃ sūcayati.",
+      "sadeSatiProse": "Sāḍhesātīprathamacaraṇe śaniḥ janmarāśitaḥ dvādaśe sañcarati (ādyasārdhadvayavarṣam). Asmin kāle vyayavṛddhiḥ, nidrābhaṅgaḥ, guptaśatrucintā, videśagamanayogaḥ, akāraṇabhayaṃ ca prārabhate. Ārogye vātapīḍā, manasi ca bhāraḥ. Tathāpi ayaṃ kālaḥ āntarikaśodhanasya vairāgyabījavapanasya ca; dhairyeṇa vyayasaṃyamena ca susahyaḥ."
+    },
+    "SATURN_IN_2": {
+      "sadeSati": "Avarohaṇasāḍhesātī (candrāt dvitīye śaniḥ) dhanakuṭumbabhārakramaśamanaṃ sūcayati.",
+      "sadeSatiProse": "Sāḍhesātīantimacaraṇe śaniḥ janmarāśitaḥ dvitīye sañcarati (antyasārdhadvayavarṣam). Asmin kāle dhanasañcayabhāraḥ, kuṭumbakleśaḥ, vāksaṃyamāvaśyakatā, ārogyakramasudhāraśca. Pūrvacaraṇayoḥ apekṣayā tīvratā krameṇa śāmyati; śramaphalaṃ prakaṭībhavati, sthairyaṃ ca āgacchati. Ayaṃ samāpanasya punarnirmāṇasya ca kālaḥ."
+    }
   }
 }
