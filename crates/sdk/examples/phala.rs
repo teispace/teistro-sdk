@@ -18,6 +18,10 @@
 //! 3. **A composer says nothing it has no words for.** `phala` asks the
 //!    base locale for each subject and is silent where the answer is no, so
 //!    a chart composes exactly as it did before until a pack is loaded.
+//! 4. **A search is said from what it found.** `sadeSati` says the report
+//!    a Sade Sati window beside it finds, in the same call: Saturn is
+//!    scanned once, the report stays on the chart, and the plan says each
+//!    house it holds once, in the corpus's words.
 //!
 //! The packs are the files `teistro-intl build` writes, one a locale, which
 //! `cargo xtask check-parity` builds before it runs any example:
@@ -33,7 +37,10 @@
 use std::path::{Path, PathBuf};
 
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
-use teistro::{ChartRequest, Context, Ephemeris, Error, PlanRequest, UtcOffset};
+use teistro::{
+    ChartRequest, Context, Ephemeris, Error, PlanInputs, PlanRequest, SadeSatiRequest, UtcOffset,
+    Value,
+};
 
 /// The two corpora, each built from its source under `packs/` into packs of
 /// its own (`packs/README.md`).
@@ -127,6 +134,47 @@ fn main() -> Result<(), Error> {
             let mark = if said.is_fallback { "  (fallback)" } else { "" };
             println!("  {}{mark}", shortened(&said.text));
         }
+    }
+
+    // ── Saturn's periods, said ─────────────────────────────────────────
+    // `sadeSati` says the report a Sade Sati window found, which the same
+    // call searches — once, for every chart asked — and leaves on the
+    // chart beside the plan. Thirty years from 2000 hold a whole Sade Sati
+    // and both smaller spells, and each house is said once, in the order
+    // Saturn first reaches it.
+    let window = SadeSatiRequest::between(
+        JulianDay::literal(2_451_545.0),
+        JulianDay::literal(2_462_502.5),
+    );
+    let chart = sdk
+        .chart()
+        .interpreted(
+            &[JulianDay::literal(2_447_995.489_583_333_5)],
+            &request,
+            PlanInputs::none().with_sade_sati(&window),
+            PlanRequest::default().with_sade_sati(),
+        )?
+        .value
+        .into_iter()
+        .next()
+        .ok_or_else(|| Error::internal("one chart asked for its Sade Sati"))?;
+    let periods = chart
+        .sade_sati
+        .as_ref()
+        .map_or(0, |report| report.sade_sati.len() + report.spells.len());
+    let plan = chart
+        .plans
+        .sade_sati
+        .ok_or_else(|| Error::internal("the Sade Sati plan was asked for"))?;
+    sdk.intl().set_locale("en-Latn")?;
+    println!("\nSade Sati: {periods} periods, {} items", plan.len());
+    for item in &plan {
+        let house = match item.params.get("house") {
+            Some(Value::Int(house)) => *house,
+            _ => 0,
+        };
+        let said = sdk.intl().render(&item.key, &item.params);
+        println!("  {house:>2}  {}", shortened(&said.text));
     }
 
     // ── The record that two corpora describe ───────────────────────────

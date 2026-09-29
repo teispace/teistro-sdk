@@ -6092,6 +6092,7 @@ final class PlanRequest {
     this.states = false,
     this.dashaPhala = false,
     this.ashtakavarga = false,
+    this.sadeSati = false,
   });
 
   /// Where each of the nine grahas stands and who shares a sign.
@@ -6162,6 +6163,14 @@ final class PlanRequest {
   /// computed for you when asked.
   final bool ashtakavarga;
 
+  /// What a loaded corpus says of Saturn's periods from the natal Moon: the
+  /// reading of each Sade Sati phase and smaller spell the chart's report
+  /// holds, each house once, in the order Saturn first reaches it. It says
+  /// the report the request's `sadeSati` window finds, so it needs that
+  /// window beside it, and like `phala` it says nothing until a pack of
+  /// state readings is loaded.
+  final bool sadeSati;
+
   String get _json => jsonEncode(<String, Object?>{
     'placements': placements,
     'readings': readings,
@@ -6179,6 +6188,7 @@ final class PlanRequest {
     'states': states,
     'dashaPhala': dashaPhala,
     'ashtakavarga': ashtakavarga,
+    'sadeSati': sadeSati,
   });
 }
 

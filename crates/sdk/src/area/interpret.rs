@@ -397,9 +397,10 @@ impl<'a> InterpretArea<'a> {
     /// say is present and empty, which is an answer
     /// (`03-design/plans-at-the-boundary.md` §4).
     ///
-    /// `reading` is what the same chart's rules answered, which
-    /// `readings` says and never evaluates again; without one, `readings`
-    /// is an empty plan. [`ChartArea::interpreted`](crate::ChartArea::interpreted)
+    /// `answers` is what the requests beside the chart answered for it:
+    /// the rules, which `readings` says and never evaluates again, and the
+    /// Sade Sati report, which `sadeSati` says and never searches again;
+    /// without one, its plan is empty. [`ChartArea::interpreted`](crate::ChartArea::interpreted)
     /// founds the charts, computes the sections these composers read and
     /// calls this, which is the one call a consumer usually wants.
     ///
@@ -410,7 +411,7 @@ impl<'a> InterpretArea<'a> {
     pub fn plans(
         self,
         document: &Document,
-        reading: Option<&RulesReading<'_>>,
+        answers: Answers<'_, '_>,
         asked: PlanRequest,
     ) -> Result<Plans, Error> {
         Ok(Plans {
@@ -418,9 +419,11 @@ impl<'a> InterpretArea<'a> {
                 .placements
                 .then(|| self.placements(document))
                 .transpose()?,
-            readings: asked
-                .readings
-                .then(|| reading.map_or_else(Plan::default, |reading| self.readings(reading))),
+            readings: asked.readings.then(|| {
+                answers
+                    .reading
+                    .map_or_else(Plan::default, |reading| self.readings(reading))
+            }),
             strength: asked
                 .strength
                 .then(|| self.strength(document))
@@ -459,6 +462,11 @@ impl<'a> InterpretArea<'a> {
                 .ashtakavarga
                 .then(|| self.ashtakavarga(document))
                 .transpose()?,
+            sade_sati: asked.sade_sati.then(|| {
+                answers
+                    .sade_sati
+                    .map_or_else(Plan::default, |report| self.sade_sati(report))
+            }),
         })
     }
 }
@@ -519,4 +527,47 @@ pub struct Plans {
     /// The ashtakavarga's bindus.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ashtakavarga: Option<Plan>,
+    /// What a corpus says of Saturn's periods from the Moon.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "sadeSati")]
+    pub sade_sati: Option<Plan>,
+}
+
+/// What the requests beside one chart answered for it, which the plans
+/// that say them are composed from ([`InterpretArea::plans`]).
+#[derive(Clone, Copy, Debug, Default)]
+#[non_exhaustive]
+pub struct Answers<'a, 'r> {
+    /// What the chart answered by rule.
+    pub reading: Option<&'a RulesReading<'r>>,
+    /// Saturn's periods from the chart's Moon over the window asked.
+    pub sade_sati: Option<&'a teistro_gochar::sade_sati::Report>,
+}
+
+impl<'a, 'r> Answers<'a, 'r> {
+    /// Nothing answered beside the chart.
+    #[must_use]
+    pub const fn none() -> Answers<'a, 'r> {
+        Answers {
+            reading: None,
+            sade_sati: None,
+        }
+    }
+
+    /// What the chart answered by rule.
+    #[must_use]
+    pub const fn with_reading(mut self, reading: &'a RulesReading<'r>) -> Answers<'a, 'r> {
+        self.reading = Some(reading);
+        self
+    }
+
+    /// The chart's Sade Sati report.
+    #[must_use]
+    pub const fn with_sade_sati(
+        mut self,
+        report: &'a teistro_gochar::sade_sati::Report,
+    ) -> Answers<'a, 'r> {
+        self.sade_sati = Some(report);
+        self
+    }
 }

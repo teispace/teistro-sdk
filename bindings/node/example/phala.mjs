@@ -18,6 +18,10 @@
 // 3. **A composer says nothing it has no words for.** `phala` asks the
 //    base locale for each subject and is silent where the answer is no, so
 //    a chart composes exactly as it did before until a pack is loaded.
+// 4. **A search is said from what it found.** `sadeSati` says the report
+//    a Sade Sati window beside it finds, in the same call: Saturn is
+//    scanned once, the report stays on the chart, and the plan says each
+//    house it holds once, in the corpus's words.
 //
 // The packs are the files `teistro-intl build` writes, one a locale, which
 // `cargo xtask check-parity` builds before it runs any example:
@@ -90,6 +94,27 @@ for (const locale of ['en-Latn', 'ne-Deva-NP']) {
     const said = ctx.intl.render(item.key, item.params);
     console.log(`  ${shortened(said.text)}${said.isFallback ? '  (fallback)' : ''}`);
   }
+}
+
+// ── Saturn's periods, said ───────────────────────────────────────────────
+// `sadeSati` says the report a Sade Sati window found, which the same call
+// searches — once, for every chart asked — and leaves on the chart beside
+// the plan. Thirty years from 2000 hold a whole Sade Sati and both smaller
+// spells, and each house is said once, in the order Saturn first reaches it.
+const periodsChart = ctx.chart.found({
+  instant: 2447995.4895833335,
+  place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+  utcOffsetSeconds: 20700,
+  sadeSati: { from: 2451545, to: 2462502.5 },
+  interpret: { sadeSati: true },
+});
+const periods = periodsChart.sadeSati.sadeSati.length + periodsChart.sadeSati.spells.length;
+const periodsPlan = periodsChart.plans.sadeSati;
+ctx.intl.locale = 'en-Latn';
+console.log(`\nSade Sati: ${periods} periods, ${periodsPlan.length} items`);
+for (const item of periodsPlan) {
+  const said = ctx.intl.render(item.key, item.params);
+  console.log(`  ${String(item.params.house).padStart(2)}  ${shortened(said.text)}`);
 }
 
 // ── The record that two corpora describe ─────────────────────────────────

@@ -19,7 +19,8 @@ mod common;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rules::{Readings, shipped};
 use teistro::{
-    ChartRequest, Context, Ephemeris, PlanRequest, RuleInputs, RuleRequest, ShippedRules, UtcOffset,
+    ChartRequest, Context, Ephemeris, PlanInputs, PlanRequest, RuleInputs, RuleRequest,
+    ShippedRules, UtcOffset,
 };
 
 /// The façade composes what the kernel composes. A reading's `present` list
@@ -96,8 +97,9 @@ fn a_plan_through_the_facade_is_the_plan_the_composers_write() {
 #[test]
 fn a_reading_without_rules_is_refused_and_so_is_a_composer_that_is_not_one() {
     let request = PlanRequest::from_json(r#"{"placements": true, "readings": true}"#).unwrap();
-    assert!(request.check(true).is_ok());
-    let refused = request.check(false).unwrap_err();
+    let set = RuleRequest::shipped([]).rule_set().unwrap();
+    assert!(request.check(&PlanInputs::none().with_rules(&set)).is_ok());
+    let refused = request.check(&PlanInputs::none()).unwrap_err();
     assert_eq!(refused.field(), Some("readings"));
 
     let wrong = PlanRequest::from_json(r#"{"readigns": true}"#).unwrap_err();

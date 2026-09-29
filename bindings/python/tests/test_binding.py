@@ -1102,6 +1102,22 @@ class AnEngine(WithLibrary):
         with self.assertRaises(TeistroError) as alone:
             found({"readings": True})
         self.assertEqual(alone.exception.field, "interpret.readings")
+        # The Sade Sati plan says what a window found, so it needs one beside
+        # it; with one and no pack loaded it is present and empty, which is
+        # an answer.
+        with self.assertRaises(TeistroError) as unsearched:
+            found({"sadeSati": True})
+        self.assertEqual(unsearched.exception.field, "interpret.sadeSati")
+        periods = self.ctx.chart.found(
+            instant=2451545.0,
+            place=observer,
+            utc_offset_seconds=20700,
+            sade_sati={"from": 2451545.0, "to": 2462502.5},
+            interpret={"sadeSati": True},
+        )
+        assert periods.plans is not None and periods.sade_sati is not None
+        self.assertEqual(periods.plans["sadeSati"], [], "no pack, no words")
+        self.assertTrue(periods.sade_sati.sade_sati, "the report is on the chart beside the plan")
         # And a composer that is not one is refused beside the ones that are.
         with self.assertRaises(TeistroError) as typo:
             found({"readigns": True})  # type: ignore[arg-type]

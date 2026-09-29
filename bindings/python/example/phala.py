@@ -18,6 +18,10 @@ What it teaches:
 3. **A composer says nothing it has no words for.** `phala` asks the base
    locale for each subject and is silent where the answer is no, so a chart
    composes exactly as it did before until a pack is loaded.
+4. **A search is said from what it found.** `sadeSati` says the report a
+   Sade Sati window beside it finds, in the same call: Saturn is scanned
+   once, the report stays on the chart, and the plan says each house it
+   holds once, in the corpus's words.
 
 The packs are the files `teistro-intl build` writes, one a locale, which
 `cargo xtask check-parity` builds before it runs any example:
@@ -94,6 +98,32 @@ def main() -> None:
                 said = ctx.intl.render(item["key"], item["params"])
                 fallback = "  (fallback)" if said.is_fallback else ""
                 print(f"  {shortened(said.text)}{fallback}")
+
+        # ── Saturn's periods, said ───────────────────────────────────
+        # `sadeSati` says the report a Sade Sati window found, which the
+        # same call searches — once, for every chart asked — and leaves on
+        # the chart beside the plan. Thirty years from 2000 hold a whole
+        # Sade Sati and both smaller spells, and each house is said once,
+        # in the order Saturn first reaches it.
+        chart = ctx.chart.found(
+            instant=2447995.4895833335,
+            place=Observer(
+                latitude_deg=Latitude(27.7172),
+                longitude_deg=Longitude(85.324),
+                altitude_m=Altitude(1400),
+            ),
+            utc_offset_seconds=20700,
+            sade_sati={"from": 2451545.0, "to": 2462502.5},
+            interpret={"sadeSati": True},
+        )
+        assert chart.plans is not None and chart.sade_sati is not None
+        periods = len(chart.sade_sati.sade_sati) + len(chart.sade_sati.spells)
+        plan = chart.plans["sadeSati"]
+        ctx.intl.locale = "en-Latn"
+        print(f"\nSade Sati: {periods} periods, {len(plan)} items")
+        for item in plan:
+            said = ctx.intl.render(item["key"], item["params"])
+            print(f"  {item['params']['house']:>2}  {shortened(said.text)}")
 
         # ── The record that two corpora describe ─────────────────────
         # `nakshatra-phala` says what the nakshatra portends and

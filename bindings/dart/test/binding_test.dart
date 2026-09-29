@@ -974,6 +974,36 @@ void _engineTests() {
         ),
       ),
     );
+    // The Sade Sati plan says what a window found, so it needs one beside
+    // it; with one and no pack loaded it is present and empty, which is an
+    // answer.
+    expect(
+      () => found(const PlanRequest(sadeSati: true)),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'interpret.sadeSati',
+        ),
+      ),
+    );
+    final periods = ctx.chart.found(
+      instant: 2451545.0,
+      place: Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1400),
+      ),
+      utcOffsetSeconds: 20700,
+      sadeSati: const SadeSatiRequest(from: 2451545, to: 2462502.5),
+      interpret: const PlanRequest(sadeSati: true),
+    );
+    expect(periods.plans!['sadeSati'], isEmpty, reason: 'no pack, no words');
+    expect(
+      periods.sadeSati!.sadeSati,
+      isNotEmpty,
+      reason: 'the report is on the chart beside the plan',
+    );
     ctx.dispose();
   });
 

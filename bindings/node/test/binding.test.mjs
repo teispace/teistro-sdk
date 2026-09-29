@@ -1101,6 +1101,19 @@ test('plans compose in the same crossing, and render with nothing in between', (
     () => ctx.chart.found({ ...request, interpret: { readings: true } }),
     (error) => error instanceof TeistroError && error.field === 'interpret.readings',
   );
+  // The Sade Sati plan says what a window found, so it needs one beside it;
+  // with one and no pack loaded it is present and empty, which is an answer.
+  assert.throws(
+    () => ctx.chart.found({ ...request, interpret: { sadeSati: true } }),
+    (error) => error instanceof TeistroError && error.field === 'interpret.sadeSati',
+  );
+  const periods = ctx.chart.found({
+    ...request,
+    sadeSati: { from: 2451545, to: 2462502.5 },
+    interpret: { sadeSati: true },
+  });
+  assert.deepEqual(periods.plans.sadeSati, [], 'no pack, no words');
+  assert.ok(periods.sadeSati.sadeSati.length > 0, 'the report is on the chart beside the plan');
   // And a composer that is not one is refused beside the ones that are.
   assert.throws(
     () => ctx.chart.found({ ...request, interpret: { readigns: true } }),

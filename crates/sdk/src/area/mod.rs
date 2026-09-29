@@ -49,7 +49,7 @@ pub use calendar::CalendarArea;
 pub use chart::{ChartArea, Interpreted};
 pub use engine::EngineArea;
 pub use frame::FrameArea;
-pub use interpret::{InterpretArea, Plans};
+pub use interpret::{Answers, InterpretArea, Plans};
 pub use intl::IntlArea;
 pub use keys::KeysArea;
 pub use time::TimeArea;

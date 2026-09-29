@@ -11,6 +11,8 @@ use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 
 use crate::reading::ChartRequest;
+use crate::rule_request::RuleSet;
+use crate::sade_sati_request::SadeSatiRequest;
 
 /// Which narrative plans a chart reading is asked for.
 ///
@@ -113,6 +115,14 @@ pub struct PlanRequest {
     /// **costs that section**: ask for it with
     /// [`ChartRequest::with_dasha_phala`](crate::ChartRequest::with_dasha_phala).
     pub dasha_phala: bool,
+    /// What a loaded corpus says of Saturn's periods from the natal Moon:
+    /// the reading of each Sade Sati phase and smaller spell the chart's
+    /// report holds, each house once. It reads no section: it says the
+    /// report a Sade Sati request beside this one found, so it **needs
+    /// that request** ([`PlanInputs::with_sade_sati`]), and like `phala`
+    /// it says nothing until a pack of state readings is loaded
+    /// (`03-design/sade-sati.md` §7).
+    pub sade_sati: bool,
 }
 
 impl PlanRequest {
@@ -122,7 +132,7 @@ impl PlanRequest {
     /// holds the list against the record's own serialisation, both ways, so
     /// a composer added without a name here fails rather than going
     /// unmentioned in the refusal a typo earns.
-    pub const MEMBERS: [&'static str; 16] = [
+    pub const MEMBERS: [&'static str; 17] = [
         "placements",
         "readings",
         "strength",
@@ -139,6 +149,7 @@ impl PlanRequest {
         "states",
         "dashaPhala",
         "ashtakavarga",
+        "sadeSati",
     ];
 
     /// A request for each bhava's strength.
@@ -181,6 +192,14 @@ impl PlanRequest {
     #[must_use]
     pub const fn with_dasha_phala(mut self) -> PlanRequest {
         self.dasha_phala = true;
+        self
+    }
+
+    /// A request for what a corpus says of Saturn's periods. It needs a
+    /// Sade Sati request beside it.
+    #[must_use]
+    pub const fn with_sade_sati(mut self) -> PlanRequest {
+        self.sade_sati = true;
         self
     }
 
@@ -274,6 +293,7 @@ impl PlanRequest {
             || self.panchanga
             || self.states
             || self.dasha_phala
+            || self.sade_sati
     }
 
     /// A request read from JSON.
@@ -295,22 +315,47 @@ impl PlanRequest {
 
     /// The request checked against what else was asked for.
     ///
-    /// `readings` composes what rules answered, so without a rule request
-    /// there is nothing for it to say — and an empty plan would tell the
-    /// consumer nothing about why. A set of rules none of which hold is not
-    /// this case: that composes to a plan with no items, which is an answer.
+    /// Two composers say what a request **beside** this one answered rather
+    /// than a section of the chart: `readings` composes what rules
+    /// answered, and `sadeSati` what a Sade Sati search found. Without
+    /// that request there is nothing for either to say, and an empty plan
+    /// would tell the consumer nothing about why. A set of rules none of
+    /// which hold, or a window Saturn spends outside every period, is not
+    /// this case: that composes to a plan with no items, which is an
+    /// answer.
+    ///
+    /// ```
+    /// use teistro::quantity::{JulianDay, Utc};
+    /// use teistro::{PlanInputs, PlanRequest, SadeSatiRequest};
+    ///
+    /// let asked = PlanRequest::default().with_sade_sati();
+    /// let refused = asked.check(&PlanInputs::none()).unwrap_err();
+    /// assert_eq!(refused.field(), Some("sadeSati"));
+    ///
+    /// let window = SadeSatiRequest::at(JulianDay::<Utc>::literal(2_461_000.5));
+    /// assert!(asked.check(&PlanInputs::none().with_sade_sati(&window)).is_ok());
+    /// ```
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` on `readings` where it is asked for without rules.
-    pub fn check(self, has_rules: bool) -> Result<(), Error> {
-        if self.readings && !has_rules {
+    /// `INVALID_ARG` on `readings` where it is asked for without rules,
+    /// and on `sadeSati` where it is asked for without a Sade Sati request.
+    pub fn check(self, inputs: &PlanInputs<'_>) -> Result<(), Error> {
+        if self.readings && inputs.rules.is_none() {
             return Err(Error::invalid_arg(
                 "`readings` says what the rules a chart held answer, so it needs rules to \
                  answer",
             )
             .with_field("readings")
             .with_hint("name the rules in the rule request beside this one"));
+        }
+        if self.sade_sati && inputs.sade_sati.is_none() {
+            return Err(Error::invalid_arg(
+                "`sadeSati` says the periods a Sade Sati search found, so it needs a window \
+                 to search",
+            )
+            .with_field("sadeSati")
+            .with_hint("ask for Saturn's periods with a Sade Sati request beside this one"));
         }
         Ok(())
     }
@@ -387,6 +432,75 @@ impl PlanRequest {
         } else {
             request
         }
+    }
+}
+
+/// What a chart reading is asked for **beside** its charts, which some
+/// composers say: the rules a `readings` plan composes the answers of, and
+/// the Sade Sati window a `sadeSati` plan says the periods of.
+///
+/// Each is searched or evaluated **once for the batch**, and what it
+/// answers is handed back beside each chart as well as said, so a consumer
+/// that wants both the data and the words pays once.
+///
+/// A rule set converts into one, so a call that names only rules reads as
+/// it always has.
+///
+/// ```
+/// use teistro::quantity::{JulianDay, Utc};
+/// use teistro::{PlanInputs, SadeSatiRequest};
+///
+/// let window = SadeSatiRequest::at(JulianDay::<Utc>::literal(2_461_000.5));
+/// let inputs = PlanInputs::none().with_sade_sati(&window);
+/// assert!(inputs.rules.is_none());
+/// assert!(inputs.sade_sati.is_some());
+/// ```
+#[derive(Clone, Copy, Debug, Default)]
+#[non_exhaustive]
+pub struct PlanInputs<'r> {
+    /// The rules each chart is read by.
+    pub rules: Option<&'r RuleSet>,
+    /// The window Saturn's periods are searched over for each chart.
+    pub sade_sati: Option<&'r SadeSatiRequest>,
+}
+
+impl<'r> PlanInputs<'r> {
+    /// Nothing beside the charts.
+    #[must_use]
+    pub const fn none() -> PlanInputs<'r> {
+        PlanInputs {
+            rules: None,
+            sade_sati: None,
+        }
+    }
+
+    /// These rules beside them.
+    #[must_use]
+    pub const fn with_rules(mut self, rules: &'r RuleSet) -> PlanInputs<'r> {
+        self.rules = Some(rules);
+        self
+    }
+
+    /// This Sade Sati window beside them.
+    #[must_use]
+    pub const fn with_sade_sati(mut self, window: &'r SadeSatiRequest) -> PlanInputs<'r> {
+        self.sade_sati = Some(window);
+        self
+    }
+}
+
+impl<'r> From<Option<&'r RuleSet>> for PlanInputs<'r> {
+    fn from(rules: Option<&'r RuleSet>) -> PlanInputs<'r> {
+        PlanInputs {
+            rules,
+            sade_sati: None,
+        }
+    }
+}
+
+impl<'r> From<&'r RuleSet> for PlanInputs<'r> {
+    fn from(rules: &'r RuleSet) -> PlanInputs<'r> {
+        PlanInputs::none().with_rules(rules)
     }
 }
 

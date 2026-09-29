@@ -221,6 +221,16 @@ longitudes, and reckons the houses itself rather than through the SDK's
    reaches it, and says nothing of a report counted from the lagna. A
    test holds the migration's names to `Phase::house` and
    `DEFAULT_SPELLS`, so a phase that moved house on one side fails.
+6. The plan in every binding: **done**. `interpret: { sadeSati: true }`
+   beside the chart request's `sadeSati` window answers each chart's
+   `plans.sadeSati`, and is refused on `interpret.sadeSati` without one.
+   The window is searched once, inside the façade's `interpreted`, which
+   now takes `PlanInputs` (the rules and the window) and leaves each
+   chart's report on it; the boundary encodes those reports rather than
+   searching again, so the data and the words come from one scan. The
+   shared `phala` example says a thirty-year window's five houses in all
+   four languages, and each binding's test holds the refusal and the empty
+   plan without a pack.
 
    **Found building it:** the first rendering left out the frame's
    house, and every one of the ten fell back with a warning; the

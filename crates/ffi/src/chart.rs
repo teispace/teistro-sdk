@@ -30,7 +30,7 @@ use core::ffi::c_char;
 
 use teistro::dasha::DashaName;
 use teistro::render_svg::Theme;
-use teistro::{ChartRequest, PlanRequest, RuleRequest, RuleSet};
+use teistro::{ChartRequest, PlanInputs, PlanRequest, RuleRequest, RuleSet};
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::day::DayPart;
@@ -4571,24 +4571,6 @@ unsafe fn sade_sati_request_of(
         .transpose()
 }
 
-/// Every chart's Sade Sati report, empty when none was asked for: **one
-/// batch** through the façade ([`teistro::ChartArea::sade_sati_many`]),
-/// which scans Saturn once for every chart of the request, and none for a
-/// batch of none, as [`hits_of`].
-fn sade_sati_of(
-    sdk: &teistro::Context,
-    documents: &[Document],
-    asked: Option<&teistro::SadeSatiRequest>,
-) -> Result<Vec<teistro::sade_sati::Report>, Error> {
-    match asked {
-        Some(asked) if !documents.is_empty() => sdk
-            .chart()
-            .sade_sati_many(documents, asked)
-            .map(|found| found.value),
-        _ => Ok(Vec::new()),
-    }
-}
-
 impl GrahaColumns {
     /// The grahas, charts outermost, in the order `grahas` declares them.
     fn write(
@@ -4753,6 +4735,18 @@ unsafe fn rule_set_of(rules_json: *const c_char) -> Result<Option<RuleSet>, Erro
         .map_err(|error| error.under(RULES))
 }
 
+/// What a chart request asks for beside its charts, as the façade takes it.
+fn plan_inputs<'r>(
+    rules: Option<&'r RuleSet>,
+    sade_sati: Option<&'r teistro::SadeSatiRequest>,
+) -> PlanInputs<'r> {
+    let inputs = PlanInputs::from(rules);
+    match sade_sati {
+        Some(window) => inputs.with_sade_sati(window),
+        None => inputs,
+    }
+}
+
 /// What [`read_charts`] answers, ready to encode.
 struct ReadCharts {
     /// The documents, the batch's provenance sealed over the list.
@@ -4763,24 +4757,29 @@ struct ReadCharts {
     rules: String,
     /// What every chart has to say, canonical JSON; empty for none.
     plans: String,
+    /// Every chart's Sade Sati report, empty when no window was asked for.
+    sade_sati: Vec<teistro::sade_sati::Report>,
 }
 
 /// The charts a request asks for, each chart's own content hash, the
-/// canonical JSON of what they answer by rule, and the canonical JSON of the
-/// plans they were asked to say — the last two empty when the request asked
-/// for none.
+/// canonical JSON of what they answer by rule and of the plans they were
+/// asked to say — each empty when the request asked for none — and each
+/// chart's Sade Sati report.
 ///
-/// The reading and the composing are the façade's
+/// The reading, the searching and the composing are the façade's
 /// ([`teistro::ChartArea::interpreted`]), so a plan is composed in one place
-/// for Rust and every binding; this only encodes what it answered.
+/// for Rust and every binding, and Saturn is scanned once for the reports
+/// the blob carries and the plan that says them; this only encodes what it
+/// answered.
 fn read_charts(
     sdk: &teistro::Context,
     instants: &[JulianDay<Utc>],
     request: &ChartRequest,
-    rules: Option<&RuleSet>,
+    inputs: PlanInputs<'_>,
     asked: PlanRequest,
 ) -> Result<ReadCharts, Error> {
-    let read = sdk.chart().interpreted(instants, request, rules, asked)?;
+    let rules = inputs.rules;
+    let read = sdk.chart().interpreted(instants, request, inputs, asked)?;
     let hashes = read.value.iter().map(|chart| chart.content_hash).collect();
     let rules_json = if rules.is_some() {
         let readings: Vec<_> = read
@@ -4798,12 +4797,18 @@ fn read_charts(
     } else {
         String::new()
     };
-    let documents = read.value.into_iter().map(|chart| chart.document).collect();
+    let mut documents = Vec::with_capacity(read.value.len());
+    let mut sade_sati = Vec::new();
+    for chart in read.value {
+        documents.push(chart.document);
+        sade_sati.extend(chart.sade_sati);
+    }
     Ok(ReadCharts {
         founded: Envelope::new(documents, read.provenance),
         hashes,
         rules: rules_json,
         plans: plans_json,
+        sade_sati,
     })
 }
 
@@ -4922,7 +4927,14 @@ pub unsafe extern "C" fn ts_chart_found(
             hashes,
             rules: rules_json,
             plans: plans_json,
-        } = read_charts(ctx.sdk(), &instants, &request, rules.as_ref(), plans)?;
+            sade_sati,
+        } = read_charts(
+            ctx.sdk(),
+            &instants,
+            &request,
+            plan_inputs(rules.as_ref(), sade_sati_request.as_ref()),
+            plans,
+        )?;
         let svgs = match &theme {
             Some(theme) => svgs_json(ctx.sdk(), &founded.value, theme)?,
             None => String::new(),
@@ -4930,7 +4942,6 @@ pub unsafe extern "C" fn ts_chart_found(
         let praveshas = praveshas_of(ctx.sdk(), &founded.value, request.offset(), varsha.as_ref())?;
         let transits = gochar_of(ctx.sdk(), &founded.value, gochar.as_ref())?;
         let hits = hits_of(ctx.sdk(), &founded.value, hit_request.as_ref())?;
-        let sade_sati = sade_sati_of(ctx.sdk(), &founded.value, sade_sati_request.as_ref())?;
         let encoded = encode(
             &founded.value,
             &place,

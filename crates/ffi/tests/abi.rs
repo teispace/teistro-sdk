@@ -2257,6 +2257,48 @@ fn a_chart_request_answers_sade_sati() {
         refused(r#"{"from":2460676.5,"reckoning":"ARC"}"#).as_deref(),
         Some("sadeSati.reckoning")
     );
+
+    // The plan that says the periods crosses beside them, a chart's entry
+    // each, from the same search: the reports are the same rows, and with
+    // no pack loaded each plan is present and empty, which is an answer.
+    let interpret = CString::new(r#"{"sadeSati":true}"#).unwrap();
+    let said = TsChartRequest {
+        interpret_json: interpret.as_ptr(),
+        ..request
+    };
+    let mut out = TsBlob::empty();
+    // SAFETY: as above.
+    assert_eq!(
+        unsafe { ts_chart_found(ctx.handle, &raw const said, &raw mut out) },
+        Status::Ok,
+        "{:?}",
+        ctx.last_error()
+    );
+    // SAFETY: the library wrote `len` bytes.
+    let with_plans = unsafe { core::slice::from_raw_parts(out.data, out.len) }.to_vec();
+    // SAFETY: a descriptor the library wrote.
+    unsafe { ts_blob_free(&raw mut out) };
+    let reader = Reader::parse(&with_plans, &schema).unwrap();
+    let plans: serde_json::Value = serde_json::from_slice(reader.bytes("plans").unwrap()).unwrap();
+    assert_eq!(
+        plans,
+        serde_json::json!([{ "sadeSati": [] }, { "sadeSati": [] }])
+    );
+    assert_eq!(
+        reader.column("sade_sati_visits", "house").unwrap().len(),
+        columns[1].len(),
+        "one search answers the report and the plan"
+    );
+
+    // And without a window to search it is refused by the member asked.
+    let unsearched = TsChartRequest {
+        sade_sati_json: ptr::null(),
+        ..said
+    };
+    // SAFETY: as above.
+    let status = unsafe { ts_chart_found(ctx.handle, &raw const unsearched, &raw mut out) };
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("interpret.sadeSati"));
 }
 
 /// A batch of none asking for the window searches is an empty blob, as a
@@ -3843,18 +3885,25 @@ fn a_chart_request_composes_plans_in_the_same_crossing_and_renders_them() {
 /// different questions — *can it be asked for* and *does it ever say
 /// anything* — and both are needed.
 ///
-/// The two that are legitimately empty carry their reason, and the list
+/// The ones that are legitimately empty carry their reason, and the list
 /// fails both ways: a member that says nothing and is not here fails, and
 /// one here that says something fails too.
 #[test]
 fn every_composer_asked_for_alone_answers_or_says_why_not() {
     /// A composer that answers nothing for this chart, and why.
-    const SILENT: [(&str, &str); 1] = [(
-        "phala",
-        "it says what a loaded corpus carries and this context has loaded none, which is the \
-         composer working rather than failing: a chart composes to the same plan it did before \
-         until a consumer asks for the words",
-    )];
+    const SILENT: [(&str, &str); 2] = [
+        (
+            "phala",
+            "it says what a loaded corpus carries and this context has loaded none, which is the \
+             composer working rather than failing: a chart composes to the same plan it did \
+             before until a consumer asks for the words",
+        ),
+        (
+            "sadeSati",
+            "it says what a loaded corpus carries of Saturn's periods, and this context has \
+             loaded none, as `phala`",
+        ),
+    ];
 
     let ctx = Ctx::with_ephemeris(
         0,
@@ -3866,6 +3915,9 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
     .unwrap();
     let instants = [2_447_995.489_583_333_5];
     let rules = CString::new(r#"{"shipped": ["NABHASAS"]}"#).unwrap();
+    // Beside the rules `readings` says, the window `sadeSati` says: one
+    // instant, since what is under test is that it can be asked for.
+    let window = CString::new(r#"{"from": 2460676.5}"#).unwrap();
     let silent: std::collections::BTreeMap<&str, &str> = SILENT.iter().copied().collect();
 
     for member in teistro::PlanRequest::MEMBERS {
@@ -3898,7 +3950,7 @@ fn every_composer_asked_for_alone_answers_or_says_why_not() {
                 varsha_json: ptr::null(),
                 gochar_json: ptr::null(),
                 hits_json: ptr::null(),
-                sade_sati_json: ptr::null(),
+                sade_sati_json: window.as_ptr(),
             },
             |r, s| r.struct_size = s,
         );

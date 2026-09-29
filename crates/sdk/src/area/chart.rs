@@ -53,11 +53,11 @@ use teistro_tajika::{
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
-use crate::area::Plans;
 use crate::area::system_of;
+use crate::area::{Answers, Plans};
 use crate::context::Context;
 use crate::ephemeris::no_ephemeris;
-use crate::plan_request::PlanRequest;
+use crate::plan_request::{PlanInputs, PlanRequest};
 use crate::reading::{ChartRequest, Sections};
 use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
@@ -447,8 +447,15 @@ impl<'a> ChartArea<'a> {
     }
 
     /// Charts founded, read and **said**, in one call: each chart's
-    /// document, what it answers by rule when `rules` names some, and the
-    /// plans `asked` names (`03-design/plans-at-the-boundary.md`).
+    /// document, what it answers by rule when `inputs` names rules, its
+    /// Sade Sati report when `inputs` names a window, and the plans
+    /// `asked` names (`03-design/plans-at-the-boundary.md`).
+    ///
+    /// `inputs` is what is asked beside the charts; a rule set, or
+    /// `Option<&RuleSet>`, converts into one. Each is answered **once for
+    /// the batch** — the rules evaluated over every chart, Saturn scanned
+    /// once for every chart's periods — and what it answered is on each
+    /// chart as well as said by the plans that say it.
     ///
     /// The sections the composers read are computed whether or not the
     /// request named them ([`PlanRequest::sections`]), because a consumer
@@ -458,19 +465,22 @@ impl<'a> ChartArea<'a> {
     ///
     /// # Errors
     ///
-    /// `readings` asked for without rules ([`PlanRequest::check`]), and as
-    /// [`ChartArea::readings`] and [`ChartArea::readings_with_rules`].
+    /// `readings` asked for without rules and `sadeSati` without a window
+    /// ([`PlanRequest::check`]); as [`ChartArea::readings`],
+    /// [`ChartArea::readings_with_rules`] and [`ChartArea::sade_sati_many`].
     pub fn interpreted<'r>(
         self,
         instants: &[JulianDay<Utc>],
         request: &ChartRequest,
-        rules: Option<&'r RuleSet>,
+        inputs: impl Into<PlanInputs<'r>>,
         asked: PlanRequest,
     ) -> Result<Envelope<Vec<Interpreted<'r>>>, Error> {
+        let inputs = inputs.into();
+        let rules = inputs.rules;
         // Named from the record every binding calls `interpret`, so a
         // refusal reads the same in Rust as in the language that wrote it.
         asked
-            .check(rules.is_some())
+            .check(&inputs)
             .map_err(|error| error.under("interpret"))?;
         let wanted = asked.sections(request.clone());
         // Sealed once, over what the batch publishes — the documents, and
@@ -505,13 +515,34 @@ impl<'a> ChartArea<'a> {
                 )
             }
         };
+        // One scan of Saturn for every chart, and none for a batch of none,
+        // which `sade_sati_many` would refuse by a field this call has not.
+        let mut periods = match inputs.sade_sati {
+            Some(window) if !read.is_empty() => self
+                .sade_sati_many(read.iter().map(|(document, _, _)| document), window)?
+                .value
+                .into_iter()
+                .map(Some)
+                .collect(),
+            _ => Vec::new(),
+        }
+        .into_iter();
         let interpret = self.context.interpret();
         let mut charts = Vec::with_capacity(read.len());
         for (document, reading, content_hash) in read {
-            let plans = interpret.plans(&document, reading.as_ref(), asked)?;
+            let sade_sati = periods.next().flatten();
+            let mut answers = Answers::none();
+            if let Some(reading) = reading.as_ref() {
+                answers = answers.with_reading(reading);
+            }
+            if let Some(report) = sade_sati.as_ref() {
+                answers = answers.with_sade_sati(report);
+            }
+            let plans = interpret.plans(&document, answers, asked)?;
             charts.push(Interpreted {
                 document,
                 reading,
+                sade_sati,
                 plans,
                 content_hash,
             });
@@ -2887,6 +2918,10 @@ pub struct Interpreted<'r> {
     /// What the chart answers by rule; `None` when no rules were asked
     /// for.
     pub reading: Option<RulesReading<'r>>,
+    /// Saturn's periods from the chart's Moon over the window asked;
+    /// `None` when no Sade Sati window was asked for. It is not part of
+    /// [`Interpreted::content_hash`], which seals the chart's own value.
+    pub sade_sati: Option<teistro_gochar::sade_sati::Report>,
     /// The plans asked for, each `None` where it was not.
     pub plans: Plans,
     /// The hash of this chart's own value — its document, with what it

@@ -139,6 +139,14 @@ that were asked for.
   `interpret.readings`, saying that a reading composes what rules
   answered and naming `rules_json`. A set that names rules none of which hold
   is not this case: it answers `[]`.
+- **`sadeSati` without `sade_sati_json` is refused** the same way, on
+  `interpret.sadeSati`: it says the periods a window found, and there is no
+  window. With one, the search runs **once** inside the façade's
+  `interpreted` — which takes `PlanInputs`, the rules and the window, a
+  rule set converting into one — and each chart carries the report the
+  blob encodes beside the plan that says it, so a consumer asking for both
+  pays for one scan of Saturn. A window Saturn spends outside every period
+  answers `[]`.
 - A chart that cannot be read for a plan's inputs is not refused for the plan
   alone, as §5 of the rules page already settles for rules: the entry carries
   the same `unreadable` list, and a composer says what it can.
