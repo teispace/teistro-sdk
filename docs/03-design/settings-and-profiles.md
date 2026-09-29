@@ -79,6 +79,10 @@ every shipped profile. The v1 inventory:
 | gochar | `node_vedha` | enum | `LIKE_THE_SUN`, `NONE`: whether the nodes take the Sun's vedha pairs in transit (Phaladeepika ch. 26 v. 2 makes them "like the Sun"; C136) |
 | gochar | `ashtakavarga_good_from` | enum | `FIVE`, `FOUR`: how many bindus in a graha's own Ashtakavarga make its transit good (Phaladeepika ch. 23 v. 11 makes four a fear; C141) |
 | gochar | `node_obstruction` | enum | `NOT_EACH_OTHER`, `EACH_OTHER_TOO`, `NONE`: whether the nodes obstruct another graha's transit from its vedha house (vv. 3 to 8 say "planets"; C137), and each other's, which would leave them never good since they stand opposite (C140) |
+| kp | `ruling_count` | enum | `FIVE`, `WITH_SUBS`: how many ruling planets KP counts, KP Reader VI's five or the baseline engine's seven with the lagna's and the Moon's sub lords (C150) |
+| kp | `day_lord_day` | enum | `SUNRISE`, `CIVIL`: the day the ruling day lord belongs to, the chart's own from sunrise as Reader VI says or the civil weekday on a clock the request names (C151) |
+| kp | `node_rulers` | enum | `SIGN_OR_CONJOINED`, `SIGN`: when a node joins the ruling planets as a ruler's agent, in its sign or beside it as the Reader's worked example takes Ketu, or in its sign alone (C152) |
+| kp | `retrograde_rejection` | enum | `STAR`, `STAR_OR_SUB`: which rulers a retrograde planet rejects, those in its star as the rule is stated or in its star or sub as a later procedure checks; the other's reach is reported either way (C153) |
 | jaimini | `graha_arudha_exception` | enum | `NONE`, `AS_BHAVAS`: whether a graha's arudha moves as a bhava's does when the count lands on the graha's sign or the 7th from it (BPHS ch. 29 vv. 6 and 7 state no move; C132) |
 | aspect | `node_aspects` | enum | `NONE`, `FIVE_SEVEN_NINE`, `THREE_SEVEN_ELEVEN` |
 | aspect | `drishti_table` | key | the aspect model's tables |

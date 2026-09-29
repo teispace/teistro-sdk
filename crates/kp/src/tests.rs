@@ -475,3 +475,141 @@ fn a_sign_touching_no_cusp_is_intercepted_in_the_house_holding_it() {
     // and the lord of a house is its cusp's: the 8th opens in Libra.
     assert_eq!(significators.house(8).unwrap().lord, Venus);
 }
+
+/// KP Reader VI's worked horary (the third child's house): a Sunday, the
+/// Moon in Sagittarius in Venus's star, the lagna in Libra, Jupiter and
+/// Ketu together in the 12th in the Sun's stars, and Rahu in Pisces in
+/// Jupiter's. The Reader's text leaves the lagna's star unnamed; it is
+/// Jupiter's Vishakha, the one reading under which Rahu joins as an agent
+/// rather than as a ruler outright.
+fn readers_horary(retrograde: &[Graha]) -> KpChart {
+    let cusps = std::array::from_fn(|house| {
+        Nas::new((205 + 30 * i64::try_from(house).unwrap()) * Nas::PER_DEGREE)
+    });
+    let at = |degrees: i64| Nas::new(degrees * Nas::PER_DEGREE);
+    let planets = [
+        (Sun, 10),
+        (Moon, 260),
+        (Mars, 60),
+        (Mercury, 200),
+        (Jupiter, 155),
+        (Venus, 230),
+        (Saturn, 100),
+        (Rahu, 331),
+        (Ketu, 151),
+    ]
+    .map(|(graha, degrees)| {
+        Position::new(graha, at(degrees)).retrograde(retrograde.contains(&graha))
+    });
+    KpChart::new(
+        teistro_core::catalogue::HouseSystem::Placidus,
+        cusps,
+        planets,
+    )
+}
+
+#[test]
+fn the_reader_s_ruling_planets_are_reproduced() {
+    use teistro_core::settings::NodeRulers;
+    let chart = readers_horary(&[]);
+    let ruling = RulingPlanets::of(&chart, Sun, RulingRules::READER);
+    assert_eq!(ruling.accepted(), [Jupiter, Venus, Sun, Rahu, Ketu]);
+    assert_eq!(
+        ruling.ruler(Jupiter).unwrap().reasons,
+        [Reason::LagnaStar, Reason::MoonSign]
+    );
+    assert_eq!(
+        ruling.ruler(Rahu).unwrap().reasons,
+        [Reason::Agent {
+            of: Jupiter,
+            by: Agency::InItsSign
+        }]
+    );
+    assert_eq!(
+        ruling.ruler(Ketu).unwrap().reasons,
+        [Reason::Agent {
+            of: Jupiter,
+            by: Agency::Conjoined
+        }]
+    );
+    // Under the sign alone Ketu, in Mercury's Virgo, is no agent.
+    let sign = RulingRules {
+        node_rulers: NodeRulers::Sign,
+        ..RulingRules::READER
+    };
+    assert_eq!(
+        RulingPlanets::of(&chart, Sun, sign).accepted(),
+        [Jupiter, Venus, Sun, Rahu]
+    );
+}
+
+/// Seven under the baseline engine's count: the lagna's sub at Libra 25°
+/// is Mercury's and the Moon's at Sagittarius 20° Rahu's, so Rahu rules
+/// outright and only Ketu is an agent.
+#[test]
+fn with_subs_the_lagna_s_and_the_moon_s_sub_lords_rule_too() {
+    use teistro_core::settings::RulingCount;
+    let rules = RulingRules {
+        count: RulingCount::WithSubs,
+        ..RulingRules::READER
+    };
+    let ruling = RulingPlanets::of(&readers_horary(&[]), Sun, rules);
+    assert_eq!(
+        ruling.accepted(),
+        [Jupiter, Venus, Mercury, Rahu, Sun, Ketu]
+    );
+    assert_eq!(ruling.ruler(Mercury).unwrap().reasons, [Reason::LagnaSub]);
+    assert_eq!(ruling.ruler(Rahu).unwrap().reasons, [Reason::MoonSub]);
+}
+
+/// A ruler in a retrograde planet's star is rejected; one in a retrograde
+/// planet's sub only under `STAR_OR_SUB`, and that reach is reported
+/// either way. A ruler's own retrogression is delay, not rejection, and a
+/// node's motion rejects nobody.
+#[test]
+fn a_retrograde_planet_rejects_by_its_star_and_under_the_other_reading_its_sub() {
+    use teistro_core::settings::RetrogradeRejection;
+    // Venus at Scorpio 20° is in Jyeshtha, Mercury's; the Sun at Aries 10°
+    // is in Ketu's Ashwini and Saturn's sub.
+    let chart = readers_horary(&[Mercury, Saturn, Venus, Rahu, Ketu]);
+    let ruling = RulingPlanets::of(&chart, Sun, RulingRules::READER);
+    let venus = ruling.ruler(Venus).unwrap();
+    assert_eq!(
+        venus.rejected_by,
+        Some(Rejection {
+            retrograde: Mercury,
+            by_star: true
+        })
+    );
+    assert!(venus.retrograde);
+    let sun = ruling.ruler(Sun).unwrap();
+    assert_eq!(sun.rejected_by, None);
+    assert_eq!(
+        sun.rejected_by_sub,
+        Some(Rejection {
+            retrograde: Saturn,
+            by_star: false
+        })
+    );
+    // Jupiter stands in the Sun's star and Rahu in Jupiter's: neither is
+    // rejected, and a node is never retrograde as a ruler.
+    assert_eq!(ruling.accepted(), [Jupiter, Sun, Rahu, Ketu]);
+    assert!(!ruling.ruler(Rahu).unwrap().retrograde);
+
+    let star_or_sub = RulingRules {
+        retrograde_rejection: RetrogradeRejection::StarOrSub,
+        ..RulingRules::READER
+    };
+    // Jupiter at Virgo 5° is in Saturn's sub too (153° to 155°06′40″), so
+    // the sub reading rejects it with the Sun.
+    let ruling = RulingPlanets::of(&chart, Sun, star_or_sub);
+    assert_eq!(ruling.accepted(), [Rahu, Ketu]);
+    assert_eq!(
+        ruling
+            .ruler(Jupiter)
+            .unwrap()
+            .rejected_by
+            .map(|r| r.retrograde),
+        Some(Saturn)
+    );
+}

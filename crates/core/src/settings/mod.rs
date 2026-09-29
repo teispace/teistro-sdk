@@ -34,14 +34,15 @@ use crate::quantity::Depth;
 pub use knobs::{
     AfterCycle, AshtakavargaGoodFrom, AshtottariGrouping, AyanamshaBasis, Balance, Benefics,
     BhavaDig, BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas,
-    Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord,
-    Ekadhipatya, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
-    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
-    NodeAspects, NodeCoLordship, NodeObstruction, NodeVedha, OverridePolicy, PolarDayPolicy,
-    PolarPolicy, Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis,
-    SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
-    UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
+    Cheshta, DayBoundary, DayLordDay, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap,
+    DualLord, Ekadhipatya, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta,
+    KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    LuminaryCheshta, LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme,
+    Nathonnatha, Node, NodeAspects, NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha,
+    OverridePolicy, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, RashiStart,
+    RequiredRupas, RetrogradeRejection, RulingCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn, UnknownTime,
+    Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -470,6 +471,20 @@ group!(
 );
 
 group!(
+    /// Krishnamurti Paddhati (`03-design/kp.md`).
+    Kp, KpPatch {
+        /// How many ruling planets are counted (crux C150).
+        ruling_count: RulingCount,
+        /// The day the ruling day lord belongs to (crux C151).
+        day_lord_day: DayLordDay,
+        /// When a node joins the ruling planets as an agent (crux C152).
+        node_rulers: NodeRulers,
+        /// Which ruling planets a retrograde planet rejects (crux C153).
+        retrograde_rejection: RetrogradeRejection,
+    }
+);
+
+group!(
     /// Aspects.
     Aspect, AspectPatch {
         /// The nodes' aspects.
@@ -632,6 +647,8 @@ pub struct Settings {
     pub jaimini: Jaimini,
     /// Transits.
     pub gochar: Gochar,
+    /// Krishnamurti Paddhati.
+    pub kp: Kp,
     /// Aspects.
     pub aspect: Aspect,
     /// State.
@@ -661,7 +678,7 @@ impl Settings {
     /// fails rather than going unwatched.
     #[must_use]
     pub fn knob_paths() -> Vec<(&'static str, &'static str)> {
-        let groups: [(&str, &[&str]); 15] = [
+        let groups: [(&str, &[&str]); 16] = [
             ("frame", Frame::KNOBS),
             ("houses", Houses::KNOBS),
             ("day", Day::KNOBS),
@@ -670,6 +687,7 @@ impl Settings {
             ("dasha", Dasha::KNOBS),
             ("jaimini", Jaimini::KNOBS),
             ("gochar", Gochar::KNOBS),
+            ("kp", Kp::KNOBS),
             ("aspect", Aspect::KNOBS),
             ("state", State::KNOBS),
             ("strength", Strength::KNOBS),
@@ -706,6 +724,8 @@ pub struct SettingsPatch {
     pub jaimini: JaiminiPatch,
     /// Transits.
     pub gochar: GocharPatch,
+    /// Krishnamurti Paddhati.
+    pub kp: KpPatch,
     /// Aspects.
     pub aspect: AspectPatch,
     /// State.
@@ -747,6 +767,7 @@ impl Settings {
         self.dasha.apply(&patch.dasha);
         self.jaimini.apply(&patch.jaimini);
         self.gochar.apply(&patch.gochar);
+        self.kp.apply(&patch.kp);
         self.aspect.apply(&patch.aspect);
         self.state.apply(&patch.state);
         self.strength.apply(&patch.strength);

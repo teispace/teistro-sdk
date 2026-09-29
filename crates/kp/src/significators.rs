@@ -21,7 +21,7 @@ use teistro_core::Nas;
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::settings::NodeAspects;
 
-use crate::chart::{KpChart, Planet, house_of};
+use crate::chart::{KpChart, Planet, house_of, is_node};
 
 /// The planets signifying one house, level by level.
 ///
@@ -283,11 +283,6 @@ impl Significators {
             owns: houses(|house| std::slice::from_ref(&house.lord)),
         }
     }
-}
-
-/// Whether a graha is Rahu or Ketu.
-fn is_node(graha: Graha) -> bool {
-    matches!(graha, Graha::Rahu | Graha::Ketu)
 }
 
 /// The sign a planet stands in, 0 for Aries.

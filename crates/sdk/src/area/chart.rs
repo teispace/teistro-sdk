@@ -21,7 +21,7 @@ use teistro_core::key::KeyId;
 use teistro_core::quantity::Depth;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::Balance;
-use teistro_core::settings::{AyanamshaChoice, CharaKarakas};
+use teistro_core::settings::{AyanamshaChoice, CharaKarakas, DayLordDay};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
     JaiminiReading, brahma, graha_arudhas, karakamsha, pada_lord, pada_lords,
@@ -33,7 +33,7 @@ use teistro_dasha::{
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
-use teistro_kp::{KpChart, Position, Significators};
+use teistro_kp::{KpChart, Position, RulingPlanets, RulingRules, Significators};
 use teistro_panchanga::limb::{Zodiac as LimbZodiac, moon_between, nakshatra_at};
 use teistro_points::Points;
 use teistro_points::arudha::arudha_by;
@@ -1272,6 +1272,56 @@ impl<'a> ChartArea<'a> {
     #[must_use]
     pub fn kp_significators(self, kp: &KpChart) -> Significators {
         Significators::of(kp, self.context.settings().aspect.node_aspects)
+    }
+
+    /// The KP **ruling planets** at the moment a chart was cast for, the
+    /// moment of judgement (KP Reader VI): the lagna's and the Moon's star
+    /// and sign lords and the day's lord, the nodes standing for them, and
+    /// the rulers a retrograde planet rejects, under the settings' `kp`
+    /// group (cruxes C150 to C153).
+    ///
+    /// The day is the chart's own, sunrise to sunrise, unless
+    /// `kp.day_lord_day` is `CIVIL`, which takes the weekday of the civil
+    /// date on the clock the request names ([`KpRequest::on_clock`]).
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Ephemeris, KpRequest, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).profile("kp-default").build()?;
+    /// let place = Place::new(Latitude::try_new(13.08)?, Longitude::try_new(80.27)?, Altitude::try_new(6.0)?);
+    /// let now = sdk
+    ///     .chart()
+    ///     .reading(JulianDay::<Utc>::literal(2_461_000.25), &ChartRequest::at(place, UtcOffset::literal(5, 30, 0)))?
+    ///     .value;
+    /// let ruling = sdk.chart().kp_ruling(&now, &KpRequest::new())?;
+    /// println!("ruling planets {:?}", ruling.accepted());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::kp`]; and under `CIVIL` a request without a clock,
+    /// named `kp.day_lord_day`.
+    pub fn kp_ruling(self, chart: &Document, request: &KpRequest) -> Result<RulingPlanets, Error> {
+        let kp = self.kp(chart, request)?;
+        let settings = self.context.settings();
+        let foundation = &chart.foundation;
+        let day_lord = match settings.kp.day_lord_day {
+            DayLordDay::Civil => {
+                let clock = request.clock().ok_or_else(|| {
+                    Error::invalid_arg(
+                        "the civil day lord is the weekday on a clock, and the request names none",
+                    )
+                    .with_field("kp.day_lord_day")
+                    .with_hint(
+                        "ask KpRequest::new().on_clock(offset), or read the day from sunrise",
+                    )
+                })?;
+                weekday_lord(foundation.instant.get() + clock.days())?
+            }
+            DayLordDay::Sunrise | _ => foundation.day.day.vara.attributes().lord,
+        };
+        Ok(RulingPlanets::of(&kp, day_lord, RulingRules::of(settings)))
     }
 
     /// Saturn's **Sade Sati** and smaller spells from the natal Moon over a
@@ -2960,18 +3010,7 @@ impl<'a> ChartArea<'a> {
         if next.instant.get() <= at.get() {
             found = next;
         }
-        // Julian day 0.5 began a Monday; counted from Sunday it is day 1.
-        #[allow(
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss,
-            reason = "rem_euclid of 7 is 0 to 6"
-        )]
-        let weekday = ((found.instant.get() + 1.5).floor().rem_euclid(7.0)) as u8;
-        Vara::ALL
-            .into_iter()
-            .find(|vara| vara.attributes().weekday == weekday)
-            .map(|vara| vara.attributes().lord)
-            .ok_or_else(|| Error::internal("a weekday past Saturday"))
+        weekday_lord(found.instant.get())
     }
 
     /// The derived points, which are the one section that needs more
@@ -3025,4 +3064,21 @@ pub struct Interpreted<'r> {
     /// provenance, hashing the list, does not carry: what a caller holding
     /// this chart alone stamps it with.
     pub content_hash: Hash,
+}
+
+/// The lord of the weekday a Julian day falls on, the day read on
+/// whichever clock the day number is already shifted to.
+fn weekday_lord(jd: f64) -> Result<Graha, Error> {
+    // Julian day 0.5 began a Monday; counted from Sunday it is day 1.
+    #[allow(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "rem_euclid of 7 is 0 to 6"
+    )]
+    let weekday = ((jd + 1.5).floor().rem_euclid(7.0)) as u8;
+    Vara::ALL
+        .into_iter()
+        .find(|vara| vara.attributes().weekday == weekday)
+        .map(|vara| vara.attributes().lord)
+        .ok_or_else(|| Error::internal("a weekday past Saturday"))
 }

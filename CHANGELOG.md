@@ -1310,6 +1310,22 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none; nothing existing reads it.
 
+- **The KP ruling planets** (`kp.md` §6 step 4).
+  `sdk.chart().kp_ruling(&chart, &KpRequest)` and
+  `teistro_kp::RulingPlanets::of` read the ruling planets at the moment a
+  chart was cast for: the lagna's and the Moon's star and sign lords and
+  the day's lord, each listed once with every reason it rules, the nodes
+  that stand for them, and the rulers a retrograde planet rejects, with
+  the planet named. A new `kp` settings group carries KP Reader VI's
+  readings against the baseline engine's: `ruling_count` (five or seven,
+  C150), `day_lord_day` (sunrise or civil, C151, the civil clock named by
+  `KpRequest::on_clock`), `node_rulers` (C152) and `retrograde_rejection`
+  (C153). Held to the Reader's worked horary: Sun, Jupiter, Venus, Rahu
+  and Ketu.
+
+  **Numbers:** none; the settings document gains the `kp` group, and a
+  settings hash with it.
+
 - **A search over a reference to a source asks for its grids as grids.**
   `impl Longitudes for &S` forwarded the one-instant methods and not the
   grid ones, so a search handed `&source` asked for its window an

@@ -594,6 +594,38 @@ knob!(
         Second = "SECOND" }
 );
 knob!(
+    /// How many ruling planets KP counts (crux C150).
+    RulingCount { /// KP Reader VI's five: the day lord, and the lagna's and the Moon's
+        /// star and sign lords.
+        Five = "FIVE", /// Seven, the lagna's and the Moon's sub lords too: the baseline
+        /// engine's.
+        WithSubs = "WITH_SUBS" }
+);
+knob!(
+    /// The day a KP ruling day lord belongs to (crux C151).
+    DayLordDay { /// Sunrise to the next sunrise, as KP Reader VI says: the chart's
+        /// own vara.
+        Sunrise = "SUNRISE", /// The weekday of the civil date at the moment: the baseline
+        /// engine's.
+        Civil = "CIVIL" }
+);
+knob!(
+    /// When a node joins KP's ruling planets as a ruler's agent (crux
+    /// C152).
+    NodeRulers { /// In a ruler's sign, or in the same sign as a ruler: KP Reader VI's
+        /// rule and its worked example together.
+        SignOrConjoined = "SIGN_OR_CONJOINED", /// In a ruler's sign alone.
+        Sign = "SIGN" }
+);
+knob!(
+    /// Which KP ruling planets a retrograde planet rejects (crux C153).
+    RetrogradeRejection { /// A ruler in a retrograde planet's star, the rule as KP Reader VI
+        /// states it.
+        Star = "STAR", /// A ruler in a retrograde planet's star or sub, the Reader's later
+        /// procedure.
+        StarOrSub = "STAR_OR_SUB" }
+);
+knob!(
     /// The convention for a divisional chart no text attests.
     UnattestedDn { /// Cyclic (parivritti).
         Cyclic = "CYCLIC" }
