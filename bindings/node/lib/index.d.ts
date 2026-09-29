@@ -1723,6 +1723,15 @@ export interface PlanRequest {
    * computed for you when asked.
    */
   readonly ashtakavarga?: boolean;
+  /**
+   * What a loaded corpus says of Saturn's periods from the natal Moon: the
+   * reading of each Sade Sati phase and smaller spell the chart's report
+   * holds, each house once, in the order Saturn first reaches it. It says
+   * the report `sadeSati` on the chart request finds, so it needs that
+   * window beside it, and like `phala` it says nothing until a pack of
+   * state readings is loaded.
+   */
+  readonly sadeSati?: boolean;
 }
 
 /**
@@ -1771,6 +1780,8 @@ export interface Plans {
   readonly dashaPhala?: readonly PlanItem[];
   /** What the Ashtakavarga says; absent unless `ashtakavarga` asked for it. */
   readonly ashtakavarga?: readonly PlanItem[];
+  /** What a corpus says of Saturn's periods; absent unless `sadeSati` asked. */
+  readonly sadeSati?: readonly PlanItem[];
 }
 
 /** A theme the SDK ships, by its key: dark ink on white, or light on dark. */

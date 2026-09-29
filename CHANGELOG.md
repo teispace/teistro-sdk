@@ -1213,6 +1213,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   **Numbers:** none under the default; under `SECOND` the Moon's row
   moves one bindu from the 12th from Jupiter to the 2nd.
 
+- **The Sade Sati plan in every binding.** `interpret: { sadeSati: true }`
+  beside a chart request's `sadeSati` window answers each chart's
+  `plans.sadeSati` in Node, Python and Dart, refused on
+  `interpret.sadeSati` without a window. `ChartArea::interpreted` takes
+  `impl Into<PlanInputs>` — the rules and the Sade Sati window, a rule
+  set or `Option<&RuleSet>` converting into one, so existing calls read
+  as before — searches Saturn once for the batch and leaves each chart's
+  report on `Interpreted::sade_sati`; the C boundary encodes those
+  reports instead of searching a second time. `InterpretArea::plans`
+  takes `Answers` (the chart's rule reading and its report) where it took
+  the reading, and `PlanRequest::check` takes the `PlanInputs`.
+
+  **Numbers:** none.
+
 - **What the baseline corpus says of Sade Sati reaches a reader**
   (`state-readings.md` §8). The five `sade-sati-phala` records land on a
   new open catalogue kind, `gochar_bhava` (number 66): a graha in transit

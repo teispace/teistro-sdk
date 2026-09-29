@@ -321,3 +321,80 @@ fn a_report_is_said_in_the_corpus_words_once_a_pack_is_loaded() {
         .value;
     assert!(sdk.interpret().sade_sati(&from_lagna).is_empty());
 }
+
+/// The plan asked for beside the charts: `interpreted` searches once for
+/// the batch, gives each chart the report the search alone gives, and says
+/// it as the composer does — the plans are what `InterpretArea::plans`
+/// composes from the same answers, rules and all; it is refused without a
+/// window, and a batch of none is an empty answer rather than the
+/// search's refusal of no charts.
+#[test]
+fn a_reading_asked_to_say_its_periods_searches_once_and_says_them() {
+    use teistro::{Answers, PlanInputs, PlanRequest, RuleRequest};
+
+    let sdk = context(None);
+    let states = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../packs/states");
+    let tree = teistro::Tree::load(&states).unwrap();
+    let bytes = teistro::pack::build(&tree.locales["en-Latn"], "sdk.entity").unwrap();
+    sdk.intl().load_pack(&bytes).unwrap();
+
+    let window = circuit();
+    let births = [2_447_995.489_583_333_5, 2_451_545.0].map(JulianDay::<Utc>::literal);
+    let request = ChartRequest::at(place(), UtcOffset::literal(5, 45, 0));
+    let rules = RuleRequest::shipped([]).rule_set().unwrap();
+    let asked = PlanRequest::default().with_sade_sati().with_readings();
+    let read = sdk
+        .chart()
+        .interpreted(
+            &births,
+            &request,
+            PlanInputs::none()
+                .with_rules(&rules)
+                .with_sade_sati(&window),
+            asked,
+        )
+        .unwrap()
+        .value;
+    assert_eq!(read.len(), births.len());
+    for chart in &read {
+        let (Some(report), Some(plan), Some(reading)) = (
+            chart.sade_sati.as_ref(),
+            chart.plans.sade_sati.as_ref(),
+            chart.reading.as_ref(),
+        ) else {
+            panic!("a window, a plan and rules were asked for");
+        };
+        let alone = sdk
+            .chart()
+            .sade_sati(&chart.document, &window)
+            .unwrap()
+            .value;
+        assert_eq!(report, &alone, "the batch's report is the chart's own");
+        assert_eq!(plan, &sdk.interpret().sade_sati(report));
+        assert!(!plan.is_empty(), "thirty years hold a period");
+        let answers = Answers::none().with_reading(reading).with_sade_sati(report);
+        assert_eq!(
+            sdk.interpret()
+                .plans(&chart.document, answers, asked)
+                .unwrap(),
+            chart.plans
+        );
+    }
+
+    let refused = sdk
+        .chart()
+        .interpreted(&births, &request, &rules, asked)
+        .unwrap_err();
+    assert_eq!(refused.field(), Some("interpret.sadeSati"));
+
+    let none = sdk
+        .chart()
+        .interpreted(
+            &[],
+            &request,
+            PlanInputs::from(&rules).with_sade_sati(&window),
+            asked,
+        )
+        .unwrap();
+    assert!(none.value.is_empty());
+}

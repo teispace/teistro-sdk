@@ -49,8 +49,8 @@ mod render;
 mod scale;
 
 pub use area::{
-    AlmanacArea, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea, Interpreted,
-    IntlArea, KeysArea, Plans, TimeArea,
+    AlmanacArea, Answers, CalendarArea, ChartArea, EngineArea, FrameArea, InterpretArea,
+    Interpreted, IntlArea, KeysArea, Plans, TimeArea,
 };
 mod gochar_request;
 mod hit_request;
@@ -129,7 +129,7 @@ pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
 pub use teistro_render_svg as render_svg;
 // Dashas: a system as a row, the balance at birth, and the period tree read
 // without building it (`03-design/dasha-kernels.md`).
-pub use crate::plan_request::PlanRequest;
+pub use crate::plan_request::{PlanInputs, PlanRequest};
 // The annual charts a birth is asked for, in one call
 // (`03-design/annual-chart.md`).
 pub use crate::rule_request::{
