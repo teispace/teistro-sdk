@@ -500,6 +500,14 @@ pub(crate) fn lattices_of(
     Ok(meanings)
 }
 
+/// The motion a crossing's direction is: a falling longitude is retrograde.
+pub(crate) const fn motion(direction: Direction) -> Motion {
+    match direction {
+        Direction::Falling => Motion::Retrograde,
+        Direction::Rising => Motion::Direct,
+    }
+}
+
 /// The hit a searched event is, and the one chart it belongs to when it is
 /// an aspect; `None` for a line no aspect asked for lies on.
 pub(crate) fn hit_of(
@@ -507,10 +515,6 @@ pub(crate) fn hit_of(
     meanings: &[(Meaning, Lattice)],
     request: &HitRequest,
 ) -> Option<(HitEvent, Option<usize>)> {
-    let motion = |direction: Direction| match direction {
-        Direction::Falling => Motion::Retrograde,
-        Direction::Rising => Motion::Direct,
-    };
     match event.kind {
         TransitEventKind::Crossing {
             lattice,

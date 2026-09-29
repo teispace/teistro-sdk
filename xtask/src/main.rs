@@ -110,6 +110,10 @@
 //! - `hits` and `check-hits`: the transit hit list over the recorded births
 //!   and a year, each ingress and exact aspect read back through a founded
 //!   chart, the stations tied to the crossings and the orbs' windows.
+//! - `sade-sati` and `check-sade-sati`: Saturn's Sade Sati and smaller
+//!   spells over the recorded births and a century, every bound read back
+//!   through the gochar, the two reckonings against each other, and the
+//!   baseline engine's merge rule against the circuit.
 //! - `kalachakra` and `check-kalachakra`: the Kalachakra dasha, measured
 //!   beside the readings the sources give at each of its forks.
 //! - `ashtakavarga` and `check-ashtakavarga`: the Ashtakavarga, the engine's
@@ -236,6 +240,7 @@ mod rule_doc;
 mod rules_corpus;
 mod rust_binding;
 mod rust_surface;
+mod sade_sati;
 mod schema;
 mod serial;
 mod shadbala;
@@ -284,6 +289,7 @@ const PASSES: &[Pass] = &[
     ("jaimini", jaimini::generate, jaimini::check_generated),
     ("gochar", gochar::generate, gochar::check_generated),
     ("hits", hits::generate, hits::check_generated),
+    ("sade-sati", sade_sati::generate, sade_sati::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),
     ("state", state::generate, state::check_generated),

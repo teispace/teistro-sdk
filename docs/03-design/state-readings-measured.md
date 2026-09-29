@@ -68,7 +68,7 @@ rests on a claim nobody had measured: that the corpus keys by the
 vocabulary the SDK computes, which was read off `ayurdaya-method`'s
 three and generalised.
 
-Measured over the 74 records of the 10 categories whose subject the SDK
+Measured over the 79 records of the 11 categories whose subject the SDK
 computes, **6 of the keys are the SDK's own spelling**. The rest are not
 a spelling difference. They are a different **classification** — nine
 maraka classes against the verses' twenty reasons, five verse citations
@@ -86,23 +86,24 @@ grades nothing — and a kind supplies a key space, never a vocabulary.
 | `ayurdaya-method` | 3 | `longevity::Method` | 3 | 3 of 3 | nothing: every key is the SDK's own spelling |
 | `ayurdaya-tier` | 4 | `LifeClass` | 7 | 1 of 4 | three Sanskrit names, which map one to one onto `short`, `medium` and `long` |
 | `ayurdaya-vulnerability` | 9 | `longevity::Vulnerability`, a struct with no members to name | 0 | 0 of 9 | three severity bands and six conditions the SDK does not grade |
+| `sade-sati-phala` | 5 | `sade_sati::Phase`'s three and the default smaller spells, the 4th and the 8th | 5 | 0 of 5 | the phases' names in lower case and the spells by house (`dhaiyya_4th` is house 4): a spelling, not a classification |
 | `shadbala-strength` | 28 | `GrahaShadbala::strong`, a verdict against the required rupas | 2 | 0 of 28 | four bands the corpus does not record, and a composite graha key |
 
-**5 of the members column is counted from the type**, not written here:
+**6 of the members column is counted from the type**, not written here:
 `Method::ALL`, `LifeClass::ALL`, `Reason::ALL`, a default `Reductions`
-serialised, and the shipped balarishta pack. The row that made it
-necessary is `ayurdaya-maraka` — §8 of the design page said *fifteen*
-maraka reasons where the type has twenty, which is the same
-count-in-prose that has rotted four times in this repository. **The
-keys-it-spells column is recorded, not gated**, and says so: this
-repository carries the migrated packs and not the exporter's document,
-so there is nothing here to count it from. It was measured on 2026-09-22
-against the corpus itself.
+serialised, the shipped balarishta pack, and Sade Sati's `Phase::ALL`
+with its `DEFAULT_SPELLS`. The row that made it necessary is
+`ayurdaya-maraka` — §8 of the design page said *fifteen* maraka
+reasons where the type has twenty, which is the same count-in-prose that
+has rotted four times in this repository. **The keys-it-spells column is
+recorded, not gated**, and says so: this repository carries the migrated
+packs and not the exporter's document, so there is nothing here to count
+it from. It was measured on 2026-09-22 against the corpus itself.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every category with a vocabulary row is one the migration does not map | **holds** | 0 of 10 disagree |
-| every vocabulary size the type can be asked for is the size stated | **holds** | 0 of 5 disagree |
+| every category with a vocabulary row is one the migration does not map | **holds** | 0 of 11 disagree |
+| every vocabulary size the type can be asked for is the size stated | **holds** | 0 of 6 disagree |
 
 ## Where two corpora meet
 

@@ -893,9 +893,8 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
         let mut values: Vec<(f64, f64)> = Vec::with_capacity(self.chunk);
         let (mut singles, mut pairs) = (Vec::new(), Vec::new());
 
-        // The quantity unwrapped along the samples, so a lattice line is a
-        // level on a continuous curve, with its rate.
-        let mut previous: Option<(f64, f64, f64, f64)> = None;
+        // The previous sample's instant, raw value and rate.
+        let mut previous: Option<(f64, f64, f64)> = None;
         // The samples are the anchored lattice's, from the last one at or
         // before the window to the first one at or after it, so that every
         // bracket is a whole step and two windows that both hold a
@@ -936,18 +935,20 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                 &mut pairs,
             )?;
             for (at, (raw_hi, rate_hi)) in instants.iter().zip(values.iter().copied()) {
-                let Some((t_lo, raw_lo, unwrapped_lo, rate_lo)) = previous else {
-                    previous = Some((at.get(), raw_hi, raw_hi, rate_hi));
+                let Some((t_lo, raw_lo, rate_lo)) = previous else {
+                    previous = Some((at.get(), raw_hi, rate_hi));
                     continue;
                 };
                 let t_hi = at.get();
-                let delta = if wraps {
-                    difference_deg(raw_hi, raw_lo)
-                } else {
-                    raw_hi - raw_lo
-                };
-                let unwrapped_hi = unwrapped_lo + delta;
-                if delta != 0.0 {
+                // The curve unwrapped across this bracket alone, from its own
+                // earlier sample: the later one is its raw value, a whole
+                // circle on when the step passed 360°. A sum carried from the
+                // window's first sample would round differently for every
+                // start, and the same bracket would refine to different bits
+                // in two windows that both hold it.
+                let (unwrapped_lo, unwrapped_hi) =
+                    (raw_lo, raw_hi + turn_deg(raw_hi - raw_lo, wraps));
+                if unwrapped_hi - unwrapped_lo != 0.0 {
                     for (lattice, found) in self.lattices.iter().zip(events.iter_mut()) {
                         self.cross(
                             lattice,
@@ -957,7 +958,7 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                         )?;
                     }
                 }
-                previous = Some((t_hi, raw_hi, unwrapped_hi, rate_hi));
+                previous = Some((t_hi, raw_hi, rate_hi));
             }
             if done {
                 break;
@@ -1056,6 +1057,21 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
         }
         let to = from.plus_days(window_days)?;
         Ok(self.between(from, to)?.into_iter().next())
+    }
+}
+
+/// The whole circle to add to a later sample so it follows an earlier one
+/// `step_deg` behind it (raw later less raw earlier) by less than half a
+/// circle: none for a quantity that does not wrap.
+fn turn_deg(step_deg: f64, wraps: bool) -> f64 {
+    if !wraps {
+        0.0
+    } else if step_deg > 180.0 {
+        -360.0
+    } else if step_deg <= -180.0 {
+        360.0
+    } else {
+        0.0
     }
 }
 
@@ -1227,6 +1243,43 @@ mod tests {
         );
         assert_eq!(single.step_days(), STEP_CAP_DAYS);
         assert!((quantity_rate_deg_per_day(Quantity::MOON_PLUS_SUN) - 16.53).abs() < 1e-9);
+    }
+
+    /// A crossing is the same bits in every window that holds it, however
+    /// far before it the window opens: the samples are the anchored grid's,
+    /// and each bracket is unwrapped from its own sample rather than by a
+    /// sum carried from the window's first.
+    #[test]
+    fn a_crossing_is_the_same_bits_in_every_window_that_holds_it() {
+        let provider = TestProvider::new();
+        let completion = Completion::new(
+            &provider,
+            OverridePolicy::SdkOnly,
+            DeltaTModel::TableThenModel,
+        );
+        let longitudes = completion.longitudes(Frame::CANONICAL);
+        let end = J2000.plus_days(400.0).unwrap();
+        let moon = Search::new(
+            &longitudes,
+            Quantity::Longitude(Body::Moon),
+            Lattice::NAKSHATRAS,
+        );
+        let reference = moon.between(J2000, end).unwrap();
+        for earlier in [1.0, 37.5, 1_000.25, 12_345.0] {
+            let wider = moon
+                .between(J2000.plus_days(-earlier).unwrap(), end)
+                .unwrap();
+            let held: Vec<_> = wider
+                .iter()
+                .filter(|event| event.instant.get() >= J2000.get())
+                .map(|event| (event.instant.get().to_bits(), event.boundary_deg.to_bits()))
+                .collect();
+            let alone: Vec<_> = reference
+                .iter()
+                .map(|event| (event.instant.get().to_bits(), event.boundary_deg.to_bits()))
+                .collect();
+            assert_eq!(held, alone, "a window opening {earlier} days earlier");
+        }
     }
 
     #[test]

@@ -131,6 +131,10 @@ name = "hits"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "sade_sati"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "surface"
 required-features = ["builtin-ephemeris"]
 
