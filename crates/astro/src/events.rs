@@ -164,6 +164,26 @@ impl<S: Longitudes + ?Sized> Longitudes for &S {
         (**self).longitude_and_speed_pair(bodies, ut1)
     }
 
+    // The grids too: a provided method not forwarded here answers a
+    // reference's grid an instant at a time, whatever the source can do.
+    fn longitudes_and_speeds(
+        &self,
+        body: Body,
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<(f64, f64)>,
+    ) -> Result<(), Error> {
+        (**self).longitudes_and_speeds(body, ut1, out)
+    }
+
+    fn longitudes_and_speeds_pair(
+        &self,
+        bodies: [Body; 2],
+        ut1: &[JulianDay<Ut1>],
+        out: &mut Vec<[(f64, f64); 2]>,
+    ) -> Result<(), Error> {
+        (**self).longitudes_and_speeds_pair(bodies, ut1, out)
+    }
+
     fn describe(&self) -> String {
         (**self).describe()
     }
@@ -355,15 +375,355 @@ pub fn value_of<S: Longitudes + ?Sized>(
 ///
 /// `floor` rather than `round`, so the window's first bracket always
 /// contains its start.
-fn grid_index(at: f64, step: f64) -> f64 {
-    ((at - SCAN_ANCHOR_JD) / step).floor()
+fn grid_index(at: f64, step: f64) -> i64 {
+    // An index is a window's days over a step of a few minutes at least,
+    // well inside an `i64`, and a whole number after `floor`.
+    #[allow(
+        clippy::cast_possible_truncation,
+        reason = "a grid index is a whole number far inside the range"
+    )]
+    let index = ((at - SCAN_ANCHOR_JD) / step).floor() as i64;
+    index
 }
 
 /// The anchored sample at an index: `anchor + k × step`, by
 /// multiplication, so the same index is the same instant to the last bit
 /// whatever window reached it.
-fn grid_instant(index: f64, step: f64) -> f64 {
+fn grid_instant(index: i64, step: f64) -> f64 {
+    // Exact: a grid index is far below 2^53.
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "a grid index is far below 2^53 and converts exactly"
+    )]
+    let index = index as f64;
     step.mul_add(index, SCAN_ANCHOR_JD)
+}
+
+/// The index of the first grid sample at or after `to`, and not before
+/// `first`: where a scan that began at `first` stops.
+fn end_index(to: f64, step: f64, first: i64) -> i64 {
+    let mut index = grid_index(to, step).max(first);
+    // `floor` and `mul_add` round apart by a bit now and then, so the
+    // index is settled against the instants it names.
+    while grid_instant(index, step) < to {
+        index += 1;
+    }
+    while index > first && grid_instant(index - 1, step) >= to {
+        index -= 1;
+    }
+    index
+}
+
+/// The share of a body's shortest run between stations a scan may stride
+/// across: under a whole run, so no two stations share a bracket, with a
+/// quarter to spare for the frames and the eras the measurement did not
+/// span (`station-runs-measured.md`).
+const RUN_SHARE: f64 = 0.75;
+
+/// The most a scan's bracket may carry a quantity, degrees, so a bracket
+/// unwrapped from its own earlier sample can never be half a circle out.
+const QUARTER_CIRCLE_DEG: f64 = 90.0;
+
+/// The shortest a body's longitude runs one way between two stations,
+/// days, at or under the least measured over the built-in ephemeris's six
+/// centuries (`03-design/station-runs-measured.md`, which holds these
+/// against it both ways): Mercury's retrogression at its shortest,
+/// Venus's, and so on out to Pluto's.
+///
+/// Infinite for a body that never turns ([`least_rate`] bounds it), and
+/// `None` for one that turns within days or that the table does not
+/// know: the true node and the osculating apogee swing back and forth in
+/// hours, so their scan keeps the fine step.
+#[must_use]
+pub fn shortest_run_days(body: Body) -> Option<f64> {
+    if least_rate(body).is_some() {
+        return Some(f64::INFINITY);
+    }
+    match body {
+        Body::Mercury => Some(19.5),
+        Body::Venus => Some(40.5),
+        Body::Mars => Some(59.5),
+        Body::Jupiter => Some(117.0),
+        Body::Saturn => Some(133.5),
+        Body::Uranus => Some(148.5),
+        Body::Neptune | Body::Pluto => Some(156.0),
+        _ => None,
+    }
+}
+
+/// One sample of a scan: its index on the fine grid, the quantity's raw
+/// value there and its rate.
+#[derive(Clone, Copy, Debug)]
+struct Sample {
+    index: i64,
+    raw: f64,
+    rate: f64,
+}
+
+/// How near a line must pass a bracket's end, degrees, to count as inside
+/// it when the scan decides where to look: a bracket's arithmetic and a
+/// cell's round apart in the last bits, so a line met on a sample is
+/// looked for on both sides of it rather than on neither.
+const NEAR_LINE_DEG: f64 = 1e-6;
+
+/// A scan in progress: the search, its fine grid, the last cell whose
+/// crossings were found, and each lattice's events so far.
+struct Scan<'a, 's, S: Longitudes + ?Sized> {
+    search: &'a Search<'s, S>,
+    step: f64,
+    /// The lower index of the last cell refined; cells are refined once,
+    /// in time order.
+    done: i64,
+    /// Scratch for a grid's instants and answers, reused.
+    instants: Vec<JulianDay<Ut1>>,
+    values: Vec<(f64, f64)>,
+    singles: Vec<(f64, f64)>,
+    pairs: Vec<[(f64, f64); 2]>,
+    events: Vec<Vec<Event>>,
+}
+
+impl<S: Longitudes + ?Sized> Scan<'_, '_, S> {
+    /// The quantity at several samples of the fine grid, as one grid.
+    fn read(&mut self, indices: impl Iterator<Item = i64>) -> Result<Vec<Sample>, Error> {
+        let indices: Vec<i64> = indices.collect();
+        self.instants.clear();
+        self.instants.extend(
+            indices
+                .iter()
+                .map(|index| JulianDay::literal(grid_instant(*index, self.step))),
+        );
+        if self.instants.is_empty() {
+            return Ok(Vec::new());
+        }
+        evaluate_many(
+            self.search.quantity,
+            self.search.source,
+            &self.instants,
+            &mut self.values,
+            &mut self.singles,
+            &mut self.pairs,
+        )?;
+        Ok(indices
+            .iter()
+            .zip(&self.values)
+            .map(|(&index, &(raw, rate))| Sample { index, raw, rate })
+            .collect())
+    }
+
+    /// Whether a crossing or a station may lie between two samples: the
+    /// rate changes sign, or a line of some lattice lies between the two
+    /// values (within [`NEAR_LINE_DEG`] of either). Between samples closer
+    /// than the body's shortest run there is at most one station, so the
+    /// same sign at both ends means none, and the curve runs one way.
+    fn busy(&self, lo: Sample, hi: Sample) -> bool {
+        if (lo.rate > 0.0) != (hi.rate > 0.0) {
+            return true;
+        }
+        let (from_deg, to_deg) = (
+            lo.raw,
+            hi.raw + turn_deg(hi.raw - lo.raw, self.search.quantity.wraps()),
+        );
+        let (below, above) = if to_deg >= from_deg {
+            (from_deg - NEAR_LINE_DEG, to_deg + NEAR_LINE_DEG)
+        } else {
+            (to_deg - NEAR_LINE_DEG, from_deg + NEAR_LINE_DEG)
+        };
+        self.search
+            .lattices
+            .iter()
+            .any(|lattice| !lines_between(lattice, below, above).is_empty())
+    }
+
+    /// Every crossing between two samples of the scan, in time order.
+    ///
+    /// A cell of the fine grid is refined as a fine scan refines it. A
+    /// wider bracket costs its two ends unless [`Scan::busy`]; a busy one
+    /// the curve runs through one way is [narrowed](Scan::narrow) onto
+    /// each line it passes, and one that holds a station is read at every
+    /// `√n`th sample as one grid and each part looked into the same way.
+    /// Every cell a fine scan would find a crossing in is refined, by the
+    /// same arithmetic from the same two samples, so the answers are the
+    /// fine scan's to the bit.
+    fn bracket(&mut self, lo: Sample, hi: Sample) -> Result<(), Error> {
+        let span = hi.index - lo.index;
+        if span == 1 {
+            return self.cell(lo, hi);
+        }
+        if !self.busy(lo, hi) {
+            return Ok(());
+        }
+        if (lo.rate > 0.0) == (hi.rate > 0.0) && self.unwrapped(lo, hi) - lo.raw != 0.0 {
+            return self.narrow(lo, hi);
+        }
+        // The square root of a small whole number, to the nearest.
+        #[allow(
+            clippy::cast_possible_truncation,
+            clippy::cast_precision_loss,
+            reason = "a span is a small whole number of steps"
+        )]
+        let every = ((span as f64).sqrt().round() as i64).max(1);
+        let mut coarse = vec![lo];
+        coarse.extend(
+            self.read(
+                (1..)
+                    .map(|k| lo.index + k * every)
+                    .take_while(|i| *i < hi.index),
+            )?,
+        );
+        coarse.push(hi);
+        for pair in coarse.windows(2) {
+            if let (Some(&a), Some(&b)) = (pair.first(), pair.get(1)) {
+                self.bracket(a, b)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// A sample's value unwrapped onto `from`'s turn: a bracket is shorter
+    /// than a quarter circle's motion, so the nearest turn is the one.
+    fn unwrapped(&self, from: Sample, sample: Sample) -> f64 {
+        sample.raw + turn_deg(sample.raw - from.raw, self.search.quantity.wraps())
+    }
+
+    /// Every crossing of a bracket the curve runs through one way.
+    ///
+    /// Each line the bracket passes is narrowed onto: the samples known
+    /// strictly below it and strictly above it (by [`NEAR_LINE_DEG`], in
+    /// the direction of travel) close in, a round at a time, on a guess
+    /// from the values either side — the secant's, or the midpoint's when
+    /// the last round did not halve the gap — with the four samples round
+    /// the guess read as one grid for every line at once. A line is placed
+    /// when every sample between its two is known; the curve being
+    /// monotone, no cell outside them can pass it. Then every cell between
+    /// a placed line's samples is refined, in time order.
+    fn narrow(&mut self, lo: Sample, hi: Sample) -> Result<(), Error> {
+        let sense = if self.unwrapped(lo, hi) > lo.raw {
+            1.0
+        } else {
+            -1.0
+        };
+        let key = |scan: &Self, sample: Sample| sense * scan.unwrapped(lo, sample);
+        let (below, above) = (
+            lo.raw.min(self.unwrapped(lo, hi)) - NEAR_LINE_DEG,
+            lo.raw.max(self.unwrapped(lo, hi)) + NEAR_LINE_DEG,
+        );
+        let mut lines: Vec<f64> = Vec::new();
+        for lattice in &self.search.lattices {
+            lines.extend(
+                lines_between(lattice, below, above)
+                    .into_iter()
+                    .map(|index| sense * line_deg(lattice, index)),
+            );
+        }
+        let mut known = vec![lo, hi];
+        // The gap each line was narrowed from, twice the first so that the
+        // first round guesses by the secant.
+        let mut widths = vec![2 * (hi.index - lo.index); lines.len()];
+        let mut placed: Vec<(i64, i64)> = Vec::new();
+        while !lines.is_empty() {
+            let mut wanted: Vec<i64> = Vec::new();
+            let (mut open, mut open_widths) = (Vec::new(), Vec::new());
+            for (&line, &width) in lines.iter().zip(&widths) {
+                let a = known
+                    .iter()
+                    .rposition(|sample| key(self, *sample) < line - NEAR_LINE_DEG)
+                    .unwrap_or(0);
+                let b = known
+                    .iter()
+                    .skip(a + 1)
+                    .position(|sample| key(self, *sample) > line + NEAR_LINE_DEG)
+                    .map_or(known.len() - 1, |offset| a + 1 + offset);
+                let (Some(&first), Some(&last)) = (known.get(a), known.get(b)) else {
+                    continue;
+                };
+                if b - a == usize::try_from(last.index - first.index).unwrap_or(usize::MAX) {
+                    placed.push((first.index, last.index));
+                    continue;
+                }
+                let gap = last.index - first.index;
+                let halved = gap * 2 <= width;
+                let guess = if halved {
+                    let (from, to) = (key(self, first), key(self, last));
+                    // A share of a gap of a few hundred steps.
+                    #[allow(
+                        clippy::cast_possible_truncation,
+                        clippy::cast_precision_loss,
+                        reason = "a gap is a small whole number of steps"
+                    )]
+                    let ahead = (((line - from) / (to - from)) * gap as f64).floor() as i64;
+                    first.index + ahead
+                } else {
+                    first.index + gap / 2
+                };
+                let inside = |index: &i64| *index > first.index && *index < last.index;
+                let unknown = |index: &i64| known.iter().all(|sample| sample.index != *index);
+                let mut round: Vec<i64> = (guess..=guess + 1)
+                    .filter(|index| inside(index) && unknown(index))
+                    .collect();
+                if round.is_empty() {
+                    round = (first.index + 1..last.index)
+                        .filter(|index| unknown(index))
+                        .collect();
+                }
+                for index in round {
+                    if let Err(at) = wanted.binary_search(&index) {
+                        wanted.insert(at, index);
+                    }
+                }
+                open.push(line);
+                open_widths.push(gap);
+            }
+            for sample in self.read(wanted.into_iter())? {
+                let at = known.partition_point(|earlier| earlier.index < sample.index);
+                known.insert(at, sample);
+            }
+            (lines, widths) = (open, open_widths);
+        }
+        for pair in known.windows(2) {
+            if let (Some(&a), Some(&b)) = (pair.first(), pair.get(1))
+                && b.index - a.index == 1
+                && placed
+                    .iter()
+                    .any(|(from, to)| a.index >= *from && b.index <= *to)
+            {
+                self.cell(a, b)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// One cell of the fine grid, exactly as a fine scan refines it: the
+    /// curve unwrapped across the cell alone, from its own earlier sample,
+    /// and every line of every lattice it passes refined. A sum carried
+    /// from the window's first sample would round differently for every
+    /// start, and the same cell would refine to different bits in two
+    /// windows that both hold it.
+    fn cell(&mut self, lo: Sample, hi: Sample) -> Result<(), Error> {
+        if lo.index <= self.done {
+            return Ok(());
+        }
+        self.done = lo.index;
+        let search = self.search;
+        let (t_lo, t_hi) = (
+            grid_instant(lo.index, self.step),
+            grid_instant(hi.index, self.step),
+        );
+        let (unwrapped_lo, unwrapped_hi) = (
+            lo.raw,
+            hi.raw + turn_deg(hi.raw - lo.raw, search.quantity.wraps()),
+        );
+        if unwrapped_hi - unwrapped_lo != 0.0 {
+            for (lattice, found) in search.lattices.iter().zip(self.events.iter_mut()) {
+                search.cross(
+                    lattice,
+                    (t_lo, lo.raw, unwrapped_lo, lo.rate),
+                    (t_hi, unwrapped_hi, hi.rate),
+                    found,
+                )?;
+            }
+        }
+        Ok(())
+    }
 }
 
 /// The quantity at every instant, in the order asked: [`evaluate`] over
@@ -876,41 +1236,73 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
     ) -> Result<Vec<Vec<Event>>, Error> {
         self.check()?;
         check_window("search", from, to)?;
-        let step = self.step_days();
-        let wraps = self.quantity.wraps();
-        let mut events: Vec<Vec<Event>> = vec![Vec::new(); self.lattices.len()];
+        // The scan is compiled once, over any source, rather than once for
+        // every source type a caller searches: it is the bulk of this
+        // module and a wasm module pays for each copy, while the one
+        // indirect call it adds is per request and not per instant.
+        let source: &dyn Longitudes = &self.source;
+        Search {
+            source,
+            quantity: self.quantity,
+            lattices: self.lattices.clone(),
+            tolerance_days: self.tolerance_days,
+            step_days: self.step_days,
+            caps: self.caps,
+            chunk: self.chunk,
+        }
+        .scan(from, to)
+    }
+}
 
-        // The scan visits every instant between the ends, and knows all
-        // of them before it asks for the first, so it asks for them a
-        // grid at a time. Only the refinement below stays serial: each
-        // of its steps is chosen from the answer to the last, so there
-        // is nothing to ask for in advance. The instants are produced by
-        // the walk's own recurrence — each from the one before it, and
-        // the last clamped to the end — so a grid asks for exactly what
-        // the walk asked for, and the values it reads are the values the
-        // walk read.
+impl Search<'_, dyn Longitudes + '_> {
+    /// [`Search::between_each`] over a checked window.
+    fn scan(&self, from: JulianDay<Ut1>, to: JulianDay<Ut1>) -> Result<Vec<Vec<Event>>, Error> {
+        let step = self.step_days();
+        let stride = self.stride();
+        // The samples are the anchored grid's, from the last one at or
+        // before the window to the first one at or after it, so that every
+        // cell is a whole step and two windows that both hold a crossing
+        // hand the refinement the same one. Each instant is computed from
+        // its own index rather than by adding a step to the last, because
+        // an accumulated sum depends on where it started and a product
+        // does not. A slow body is scanned every `stride` samples of that
+        // grid and the grid is read only where a crossing or a station is
+        // (§4, "a slow body's scan"); the window's two ends stay the fine
+        // grid's, so the scan asks for nothing further outside the window
+        // than a fine scan would.
+        let first = grid_index(from.get(), step);
+        let last = end_index(to.get(), step, first);
+        let mut scan = Scan {
+            search: self,
+            step,
+            done: first - 1,
+            instants: Vec::new(),
+            values: Vec::new(),
+            singles: Vec::new(),
+            pairs: Vec::new(),
+            events: vec![Vec::new(); self.lattices.len()],
+        };
+
+        // The scan visits every sample between the ends, and knows all of
+        // them before it asks for the first, so it asks for them a grid at
+        // a time. Only the refinement below stays serial: each of its
+        // steps is chosen from the answer to the last, so there is nothing
+        // to ask for in advance.
+        let mut indices: Vec<i64> = Vec::with_capacity(self.chunk);
         let mut instants: Vec<JulianDay<Ut1>> = Vec::with_capacity(self.chunk);
         let mut values: Vec<(f64, f64)> = Vec::with_capacity(self.chunk);
         let (mut singles, mut pairs) = (Vec::new(), Vec::new());
-
-        // The previous sample's instant, raw value and rate.
-        let mut previous: Option<(f64, f64, f64)> = None;
-        // The samples are the anchored lattice's, from the last one at or
-        // before the window to the first one at or after it, so that every
-        // bracket is a whole step and two windows that both hold a
-        // crossing hand the refinement the same one. Each is computed from
-        // its own index rather than by adding a step to the last, because
-        // an accumulated sum depends on where it started and a product
-        // does not.
-        let mut index = grid_index(from.get(), step);
+        let mut previous: Option<Sample> = None;
+        let mut index = first;
         let mut samples = 0u32;
         let mut done = false;
-        loop {
+        while !done {
+            indices.clear();
             instants.clear();
-            while instants.len() < self.chunk {
-                let at = grid_instant(index, step);
-                instants.push(JulianDay::literal(at));
-                if at >= to.get() {
+            while indices.len() < self.chunk {
+                indices.push(index);
+                instants.push(JulianDay::literal(grid_instant(index, step)));
+                if index >= last {
                     done = true;
                     break;
                 }
@@ -921,10 +1313,7 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                     ));
                 }
                 samples += 1;
-                index += 1.0;
-            }
-            if instants.is_empty() {
-                break;
+                index = ((index.div_euclid(stride) + 1) * stride).min(last);
             }
             evaluate_many(
                 self.quantity,
@@ -934,39 +1323,18 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
                 &mut singles,
                 &mut pairs,
             )?;
-            for (at, (raw_hi, rate_hi)) in instants.iter().zip(values.iter().copied()) {
-                let Some((t_lo, raw_lo, rate_lo)) = previous else {
-                    previous = Some((at.get(), raw_hi, rate_hi));
-                    continue;
-                };
-                let t_hi = at.get();
-                // The curve unwrapped across this bracket alone, from its own
-                // earlier sample: the later one is its raw value, a whole
-                // circle on when the step passed 360°. A sum carried from the
-                // window's first sample would round differently for every
-                // start, and the same bracket would refine to different bits
-                // in two windows that both hold it.
-                let (unwrapped_lo, unwrapped_hi) =
-                    (raw_lo, raw_hi + turn_deg(raw_hi - raw_lo, wraps));
-                if unwrapped_hi - unwrapped_lo != 0.0 {
-                    for (lattice, found) in self.lattices.iter().zip(events.iter_mut()) {
-                        self.cross(
-                            lattice,
-                            (t_lo, raw_lo, unwrapped_lo, rate_lo),
-                            (t_hi, unwrapped_hi, rate_hi),
-                            found,
-                        )?;
-                    }
+            for (&index, (raw, rate)) in indices.iter().zip(values.iter().copied()) {
+                let sample = Sample { index, raw, rate };
+                if let Some(earlier) = previous {
+                    scan.bracket(earlier, sample)?;
                 }
-                previous = Some((t_hi, raw_hi, rate_hi));
-            }
-            if done {
-                break;
+                previous = Some(sample);
             }
         }
-        // A bracket may reach outside the window at either end, since the
-        // ends are lattice points rather than the caller's own instants.
-        // A crossing found out there is a real crossing and not this
+        let mut events = scan.events;
+        // A cell may reach outside the window at either end, since the
+        // ends are grid points rather than the caller's own instants. A
+        // crossing found out there is a real crossing and not this
         // window's, so it is dropped rather than reported.
         for found in &mut events {
             found.retain(|event| {
@@ -974,6 +1342,58 @@ impl<'s, S: Longitudes + ?Sized> Search<'s, S> {
             });
         }
         Ok(events)
+    }
+}
+
+impl<S: Longitudes + ?Sized> Search<'_, S> {
+    /// How many steps of the fine grid the scan strides between samples:
+    /// one, unless the quantity is a body's longitude whose shortest run
+    /// between stations is known, and no step was chosen by hand.
+    ///
+    /// Between two samples less than the body's shortest run apart there
+    /// is at most one station, so the rates at the two ends say whether
+    /// there is one; and away from a station the longitude is monotone,
+    /// so the lines between the ends are every line crossed, once each.
+    /// The stride is held under three quarters of the shortest run, and
+    /// under the finest lattice's spacing (or a quarter circle) at the
+    /// greatest rate, so a bracket passes a line or so and never half a
+    /// circle.
+    fn stride(&self) -> i64 {
+        let Quantity::Longitude(body) = self.quantity else {
+            return 1;
+        };
+        let (None, Some(run)) = (self.step_days, shortest_run_days(body)) else {
+            return 1;
+        };
+        let finest = self
+            .lattices
+            .iter()
+            .map(spacing_deg)
+            .fold(QUARTER_CIRCLE_DEG, f64::min);
+        let coarse = (run * RUN_SHARE).min(finest / greatest_rate(body));
+        let steps = (coarse / self.step_days()).floor();
+        // A stride is a small whole number of steps: a body's run over a
+        // fraction of a day at most, or a quarter circle at its rate.
+        #[allow(
+            clippy::cast_possible_truncation,
+            reason = "a stride is a small whole number of steps"
+        )]
+        let steps = steps as i64;
+        steps.max(1)
+    }
+
+    /// The step the scan samples at, days: [`Search::step_days`] times
+    /// the stride a slow body's shortest run allows. A crossing is still
+    /// refined on the fine step's grid, which is why the two are apart.
+    #[must_use]
+    pub fn scan_step_days(&self) -> f64 {
+        // A stride is a small whole number.
+        #[allow(
+            clippy::cast_precision_loss,
+            reason = "a stride is a small whole number of steps"
+        )]
+        let stride = self.stride() as f64;
+        self.step_days() * stride
     }
 
     /// Every line of one lattice the curve passed between two samples,

@@ -283,6 +283,40 @@ answers as one position request, so the instant's obliquity, nutation and
 precession are computed once for both; a source that cannot batch reads
 them one by one (the trait's provided method).
 
+**A slow body's scan** (plan A1g). The step above keeps two samples
+closer than any recrossing, which for Saturn on a 30° lattice is a day
+where a hundred would do: a line is recrossed only across a station,
+and between two stations a body runs one way. So a longitude search
+with no step of its own samples the same anchored grid every *stride*
+steps, the stride being the lesser of three quarters of the body's
+shortest run between stations (`events::shortest_run_days`, a table
+measured in `station-runs-measured.md`) and the finest spacing, or a
+quarter circle, over its greatest rate. The window's two ends stay on
+the fine grid. Between two consecutive samples there is then at most
+one station, so a bracket is **quiet** when the rate keeps its sign and
+no line lies between its values (within 1e-6°, since a bracket's
+arithmetic and a cell's round apart in the last bits), and a quiet
+bracket costs its two ends. A busy bracket the body runs through one
+way is narrowed onto each line it passes: the samples known strictly
+either side of the line close in, a round at a time, on the secant's
+guess from their values (the midpoint's when the last round did not
+halve the gap), the guessed cell's two samples read as one grid for
+every line at once, until every sample between the two sides is known.
+A bracket holding a station is read every `√n`th sample as one grid
+and each part looked into the same way. Every cell a fine scan would
+find a crossing in is then refined by the same arithmetic from the same
+two samples, so **the answers are the fine scan's to the bit**, which
+the stations page checks over the whole coverage and the unit tests
+check against an epicycle that turns. The true node turns within a day
+and has no table entry, so it keeps the fine scan; so does a search
+given its own step, and any quantity other than one body's longitude.
+Sade Sati's pass fell from 39.6 s to 15.5 s, the hit list's from 30.1 s
+to 20.9 s and the annual chart's from 30.5 s to 21.9 s, every answer the
+same bytes. The scan is compiled once, over `&dyn Longitudes`, rather
+than once for every source type a caller searches: it is the bulk of
+this module, a wasm module pays for each copy, and the indirect call it
+adds is per request and not per instant.
+
 **Stations** (`events::stations`). The speed's sign changes inside the
 window, found by `first_zero` at a step of a day in both directions
 (downward: `Retrograde`, the body about to run back; upward: `Direct`),
