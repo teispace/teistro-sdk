@@ -289,3 +289,48 @@ fn a_chain_serialises_as_its_levels_and_lords_by_name() {
         46 * Nas::PER_ARCMINUTE + 40 * Nas::PER_ARCSECOND
     );
 }
+
+/// A planet is in the house whose cusp it follows, whatever sign the cusp
+/// is in, and on a cusp it is in that cusp's house.
+#[test]
+fn a_planet_is_in_the_house_whose_cusp_it_follows() {
+    // Unequal cusps, as Placidus's are, the 1st at 25° Pisces.
+    let degrees = [355, 20, 48, 80, 110, 140, 175, 200, 228, 260, 290, 320];
+    let cusps = degrees.map(|deg| Nas::new(deg * Nas::PER_DEGREE));
+    for (at, house) in [
+        (355, 1),
+        (0, 1),
+        (19, 1),
+        (20, 2),
+        (47, 2),
+        (330, 12),
+        (354, 12),
+    ] {
+        assert_eq!(
+            house_of(&cusps, Nas::new(at * Nas::PER_DEGREE)),
+            house,
+            "{at}°"
+        );
+    }
+    assert_eq!(house_of(&cusps, cusps[1] - ONE), 1);
+    let chart = KpChart::new(
+        teistro_core::catalogue::HouseSystem::Placidus,
+        cusps,
+        [
+            Position::new(Saturn, Nas::new(100 * Nas::PER_DEGREE)).retrograde(true),
+            Position::new(Moon, cusps[6]),
+        ],
+    );
+    let saturn = chart.planet(Saturn).unwrap();
+    assert_eq!((saturn.house, saturn.retrograde), (4, true));
+    assert_eq!(saturn.lords, lords(saturn.longitude));
+    assert_eq!(chart.planet(Moon).unwrap().house, 7);
+    assert!(chart.planet(Sun).is_none());
+    // Every cusp numbered and read.
+    for house in 1..=12 {
+        let cusp = chart.cusp(house).unwrap();
+        assert_eq!(cusp.house, house);
+        assert_eq!(cusp.lords, lords(cusp.longitude));
+    }
+    assert!(chart.cusp(0).is_none() && chart.cusp(13).is_none());
+}

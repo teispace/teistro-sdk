@@ -1559,6 +1559,7 @@ dependencies = [
  "teistro-houses",
  "teistro-interpret",
  "teistro-intl",
+ "teistro-kp",
  "teistro-panchanga",
  "teistro-points",
  "teistro-port-ephemeris",

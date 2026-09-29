@@ -816,23 +816,14 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             )?;
             return Ok((tropical.map(|cusp| zodiac.of_tropical(cusp)), system));
         }
-        let frame = ChartFrame {
-            sidereal_offset_deg: zodiac.offset_deg,
-            sun_declination_deg: None,
-        };
-        let built = houses_at(
+        cusps_in(
             system,
             ut1,
             tt,
             place,
-            &frame,
+            zodiac,
             self.settings().houses.polar_policy,
-        )?;
-        let mut cusps = [0.0_f64; 12];
-        for (out, cusp) in cusps.iter_mut().zip(built.cusps.iter()) {
-            *out = zodiac.of_tropical(*cusp);
-        }
-        Ok((cusps, built.system))
+        )
     }
 
     /// The ascendant at an instant, in the zodiac of a chart founded
@@ -1138,6 +1129,71 @@ fn angles_in(
     })
 }
 
+/// A house system's cusps on the sphere, in the chart's zodiac, and the
+/// system that produced them under the polar policy.
+fn cusps_in(
+    system: HouseSystem,
+    ut1: JulianDay<Ut1>,
+    tt: JulianDay<Tt>,
+    place: &Place,
+    zodiac: &ChartZodiac,
+    policy: PolarPolicy,
+) -> Result<([f64; 12], HouseSystem), Error> {
+    let frame = ChartFrame {
+        sidereal_offset_deg: zodiac.offset_deg,
+        sun_declination_deg: None,
+    };
+    let built = houses_at(system, ut1, tt, place, &frame, policy)?;
+    Ok((
+        built.cusps.map(|cusp| zodiac.of_tropical(cusp)),
+        built.system,
+    ))
+}
+
+/// A founded chart's cusps under any house system, in its own zodiac, and
+/// the system that actually produced them — which inside the polar circle
+/// may be the substitute `policy` names.
+///
+/// For a module whose source names its own division whatever the chart
+/// was founded with: KP reads Placidus's cusps (`03-design/kp.md`). Like
+/// [`angles_of`] it needs **no ephemeris**, so a stored chart answers it.
+///
+/// # Errors
+///
+/// As [`angles_of`], and a system the polar policy refuses at the
+/// chart's latitude, named `houses.polar_policy`.
+pub fn cusps_of(
+    foundation: &ChartFoundation,
+    system: HouseSystem,
+    delta_t: DeltaTModel,
+    policy: PolarPolicy,
+) -> Result<([f64; 12], HouseSystem), Error> {
+    refuse_providers_angles(foundation)?;
+    let ut1 = JulianDay::<Ut1>::literal(foundation.instant.get());
+    let (tt, _) = tt_of(ut1, delta_t)?;
+    cusps_in(
+        system,
+        ut1,
+        tt,
+        &foundation.place,
+        &foundation.zodiac,
+        policy,
+    )
+}
+
+/// Refuses a chart whose angles were its provider's own reckoning, which
+/// the sphere does not reproduce.
+fn refuse_providers_angles(foundation: &ChartFoundation) -> Result<(), Error> {
+    if foundation.angles_are_the_providers() {
+        return Err(Error::unsupported(
+            "this chart's angles are its provider's own reckoning, which the sphere does not \
+             reproduce; ask the provider it was founded over (`Founder::angles_at`)",
+        )
+        .with_field("chart"));
+    }
+    Ok(())
+}
+
 /// A founded chart's own angles — its ascendant and **midheaven** — with
 /// the obliquity they were built on, in its own zodiac.
 ///
@@ -1161,13 +1217,7 @@ pub fn angles_of(
     delta_t: DeltaTModel,
     policy: PolarPolicy,
 ) -> Result<ChartAngles, Error> {
-    if foundation.angles_are_the_providers() {
-        return Err(Error::unsupported(
-            "this chart's angles are its provider's own reckoning, which the sphere does not \
-             reproduce; ask the provider it was founded over (`Founder::angles_at`)",
-        )
-        .with_field("chart"));
-    }
+    refuse_providers_angles(foundation)?;
     let ut1 = JulianDay::<Ut1>::literal(foundation.instant.get());
     let (tt, _) = tt_of(ut1, delta_t)?;
     angles_in(ut1, tt, &foundation.place, &foundation.zodiac, policy)

@@ -32,6 +32,7 @@ teistro-rules = { path = "../rules" }
 teistro-strength = { path = "../strength" }
 teistro-tajika = { path = "../tajika" }
 teistro-gochar = { path = "../gochar" }
+teistro-kp = { path = "../kp" }
 teistro-port-ephemeris = { path = "../port-ephemeris" }
 teistro-serial = { path = "../serial" }
 teistro-siddhanta = { path = "../siddhanta" }
@@ -132,6 +133,10 @@ required-features = ["builtin-ephemeris"]
 
 [[test]]
 name = "sade_sati"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "kp"
 required-features = ["builtin-ephemeris"]
 
 [[test]]

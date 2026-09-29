@@ -7,10 +7,11 @@ use teistro_astro::events::FrameLongitudes;
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::day::DayPart;
-use teistro_chart::foundation::{ChartAngles, ChartFoundation, Founder, angles_of};
+use teistro_chart::foundation::{ChartAngles, ChartFoundation, Founder, angles_of, cusps_of};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
-    Ayanamsha, CharaKaraka, ChartKind, DashaSystem, Graha, Nakshatra, Rashi, Vara, Varga,
+    Ayanamsha, CharaKaraka, ChartKind, DashaSystem, Graha, HouseSystem, Nakshatra, Rashi, Vara,
+    Varga,
 };
 use teistro_core::envelope::{Envelope, Hash};
 use teistro_core::error::Error;
@@ -31,6 +32,8 @@ use teistro_dasha::{
 };
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
+use teistro_houses::system::override_of;
+use teistro_kp::{KpChart, Position};
 use teistro_panchanga::limb::{Zodiac as LimbZodiac, moon_between, nakshatra_at};
 use teistro_points::Points;
 use teistro_points::arudha::arudha_by;
@@ -57,6 +60,7 @@ use crate::area::system_of;
 use crate::area::{Answers, Plans};
 use crate::context::Context;
 use crate::ephemeris::no_ephemeris;
+use crate::kp_request::KpRequest;
 use crate::plan_request::{PlanInputs, PlanRequest};
 use crate::reading::{ChartRequest, Sections};
 use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
@@ -1176,6 +1180,71 @@ impl<'a> ChartArea<'a> {
         let provenance = provenance
             .ok_or_else(|| Error::internal("a batch of charts was searched in no group"))?;
         Ok(Envelope::sealing(lists, provenance))
+    }
+
+    /// A chart read as KP (`03-design/kp.md`): every cusp and every graha
+    /// the chart carries with its sign, star, sub and sub-sub lords, and
+    /// each graha in the house whose cusp it follows.
+    ///
+    /// The cusps are the house system `houses.module_overrides.kp` names,
+    /// Placidus's under `kp-default` and when nothing is named, as the
+    /// Readers take them; inside the polar circle the polar policy decides,
+    /// and [`KpChart::system`] says which system built them. It needs **no
+    /// ephemeris**: the cusps are rebuilt from the chart's instant, place
+    /// and zodiac, so a stored chart answers it.
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Ephemeris, KpRequest, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// # use teistro::catalogue::HouseSystem;
+    /// let sdk = Context::builder()
+    ///     .ephemeris([Ephemeris::Builtin])
+    ///     .profile("kp-default")
+    ///     .build()?;
+    /// let chennai = Place::new(Latitude::try_new(13.08)?, Longitude::try_new(80.27)?, Altitude::try_new(6.0)?);
+    /// let chart = sdk
+    ///     .chart()
+    ///     .reading(JulianDay::<Utc>::literal(2_451_545.0), &ChartRequest::at(chennai, UtcOffset::literal(5, 30, 0)))?
+    ///     .value;
+    /// let kp = sdk.chart().kp(&chart, &KpRequest::new())?;
+    /// assert_eq!(kp.system, HouseSystem::Placidus);
+    /// let lagna = kp.cusp(1).expect("twelve cusps");
+    /// println!("lagna sub lord {:?}", lagna.lords.sub.lord);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A chart founded under an ayanamsha [`KpRequest`] does not take,
+    /// named `frame.ayanamsha` (C157); a chart whose angles were its
+    /// provider's; and a house system the polar policy refuses at the
+    /// chart's latitude.
+    pub fn kp(self, chart: &Document, request: &KpRequest) -> Result<KpChart, Error> {
+        let foundation = &chart.foundation;
+        request.check(&foundation.zodiac)?;
+        let settings = self.context.settings();
+        let system = override_of(settings, teistro_kp::MODULE).unwrap_or(HouseSystem::Placidus);
+        let (cusps, built) = cusps_of(
+            foundation,
+            system,
+            self.context.delta_t(),
+            settings.houses.polar_policy,
+        )?;
+        let mut longitudes = [Nas::ZERO; 12];
+        for (longitude, cusp) in longitudes.iter_mut().zip(cusps) {
+            *longitude = Nas::try_from_degrees(cusp)?;
+        }
+        let planets = foundation
+            .grahas
+            .iter()
+            .map(|graha| {
+                Ok(
+                    Position::new(graha.graha, Nas::try_from_degrees(graha.longitude_deg)?)
+                        .retrograde(graha.is_retrograde()),
+                )
+            })
+            .collect::<Result<Vec<_>, Error>>()?;
+        Ok(KpChart::new(built, longitudes, planets))
     }
 
     /// Saturn's **Sade Sati** and smaller spells from the natal Moon over a
