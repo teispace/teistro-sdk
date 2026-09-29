@@ -7,7 +7,9 @@ use teistro_astro::events::FrameLongitudes;
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_chart::day::DayPart;
-use teistro_chart::foundation::{ChartAngles, ChartFoundation, Founder, angles_of, cusps_of};
+use teistro_chart::foundation::{
+    ChartAngles, ChartFoundation, Founder, angles_of, cusps_of, cusps_raising,
+};
 use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
     Ayanamsha, CharaKaraka, ChartKind, DashaSystem, Graha, HouseSystem, Nakshatra, Rashi, Vara,
@@ -33,7 +35,7 @@ use teistro_dasha::{
 use teistro_geometry::{Layout, draw};
 use teistro_houses::Houses;
 use teistro_houses::system::override_of;
-use teistro_kp::{KpChart, Position, RulingPlanets, RulingRules, Significators};
+use teistro_kp::{KpChart, KpNumber, Position, RulingPlanets, RulingRules, Significators};
 use teistro_panchanga::limb::{Zodiac as LimbZodiac, moon_between, nakshatra_at};
 use teistro_points::Points;
 use teistro_points::arudha::arudha_by;
@@ -1220,19 +1222,37 @@ impl<'a> ChartArea<'a> {
     /// provider's; and a house system the polar policy refuses at the
     /// chart's latitude.
     pub fn kp(self, chart: &Document, request: &KpRequest) -> Result<KpChart, Error> {
+        self.kp_cusps(chart, request, None)
+    }
+
+    /// A KP chart with the chart's own cusps, or those raising a horary
+    /// number's start.
+    fn kp_cusps(
+        self,
+        chart: &Document,
+        request: &KpRequest,
+        number: Option<KpNumber>,
+    ) -> Result<KpChart, Error> {
         let foundation = &chart.foundation;
         request.check(&foundation.zodiac)?;
         let settings = self.context.settings();
         let system = override_of(settings, teistro_kp::MODULE).unwrap_or(HouseSystem::Placidus);
-        let (cusps, built) = cusps_of(
-            foundation,
-            system,
-            self.context.delta_t(),
-            settings.houses.polar_policy,
-        )?;
+        let (delta_t, policy) = (self.context.delta_t(), settings.houses.polar_policy);
+        let (cusps, built) = match number {
+            None => cusps_of(foundation, system, delta_t, policy)?,
+            Some(number) => {
+                let lagna = number.start().to_degrees();
+                cusps_raising(foundation, system, lagna, delta_t, policy)?
+            }
+        };
         let mut longitudes = [Nas::ZERO; 12];
         for (longitude, cusp) in longitudes.iter_mut().zip(cusps) {
             *longitude = Nas::try_from_degrees(cusp)?;
+        }
+        // The number's start is the lagna exactly, not the search's
+        // nanodegree from it.
+        if let (Some(number), Some(lagna)) = (number, longitudes.first_mut()) {
+            *lagna = number.start();
         }
         let planets = foundation
             .grahas
@@ -1245,6 +1265,44 @@ impl<'a> ChartArea<'a> {
             })
             .collect::<Result<Vec<_>, Error>>()?;
         Ok(KpChart::new(built, longitudes, planets))
+    }
+
+    /// A **KP horary** chart from the querent's number (KP Reader I; crux
+    /// C156): the lagna at the start of the number's arc, the other cusps
+    /// those that ascendant has at the place, from the meridian that raises
+    /// it at the moment's obliquity and ayanamsha, and the planets where
+    /// `moment` placed them — the chart founded for the moment of judgement
+    /// at the place the question is judged.
+    ///
+    /// The cusps are the system [`ChartArea::kp`] reads; the ayanamsha is
+    /// checked as there.
+    ///
+    /// ```no_run
+    /// # use teistro::{ChartRequest, Context, Ephemeris, KpNumber, KpRequest, UtcOffset};
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).profile("kp-default").build()?;
+    /// let place = Place::new(Latitude::try_new(13.08)?, Longitude::try_new(80.27)?, Altitude::try_new(6.0)?);
+    /// let now = sdk
+    ///     .chart()
+    ///     .reading(JulianDay::<Utc>::literal(2_461_000.25), &ChartRequest::at(place, UtcOffset::literal(5, 30, 0)))?
+    ///     .value;
+    /// // The querent says 74: the lagna is Cancer 14°53′20″.
+    /// let horary = sdk.chart().kp_horary(&now, KpNumber::new(74)?, &KpRequest::new())?;
+    /// assert_eq!(horary.cusp(1).map(|cusp| cusp.longitude), Some(KpNumber::new(74)?.start()));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::kp`]; and a latitude where no meridian raises the
+    /// number's start, named `place.latitude`.
+    pub fn kp_horary(
+        self,
+        moment: &Document,
+        number: KpNumber,
+        request: &KpRequest,
+    ) -> Result<KpChart, Error> {
+        self.kp_cusps(moment, request, Some(number))
     }
 
     /// A KP chart's **significators** (`03-design/kp.md` §1): each house's

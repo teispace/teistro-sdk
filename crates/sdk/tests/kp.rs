@@ -234,3 +234,84 @@ fn the_ruling_planets_take_the_day_from_sunrise_or_from_the_named_clock() {
             .any(|ruler| ruler.reasons.contains(&Reason::LagnaSub))
     );
 }
+
+/// Read back through a founded chart: the horary chart for a number is
+/// the chart of the moment that day when the lagna itself reaches the
+/// number's start, found here by founding charts, to within the drift of
+/// the obliquity, nutation and ayanamsha over the hours between, which
+/// measured under 0.1″ on every cusp of these five numbers; and its
+/// planets are the moment of judgement's.
+#[test]
+fn a_horary_chart_is_the_moment_the_lagna_reaches_the_number() {
+    use teistro::KpNumber;
+    let sdk = context("kp-default", "{}");
+    let moment = chart_at(&sdk, 27.7172);
+    let now = sdk.chart().kp(&moment, &KpRequest::new()).unwrap();
+    let place = moment.foundation.place;
+    let lagna_at = |jd: f64| -> Document {
+        sdk.chart()
+            .reading(
+                JulianDay::<Utc>::literal(jd),
+                &ChartRequest::at(place, UtcOffset::literal(5, 45, 0)),
+            )
+            .unwrap()
+            .value
+    };
+    let forward = |from: Nas, to: Nas| from.arc_to(to).get();
+    for number in [1, 48, 74, 229, 249] {
+        let number = KpNumber::new(number).unwrap();
+        let horary = sdk
+            .chart()
+            .kp_horary(&moment, number, &KpRequest::new())
+            .unwrap();
+        assert_eq!(horary.cusp(1).unwrap().longitude, number.start());
+        // The moment's planets, housed by the horary cusps.
+        let placed = |chart: &teistro::KpChart| -> Vec<_> {
+            chart
+                .planets
+                .iter()
+                .map(|planet| {
+                    (
+                        planet.graha,
+                        planet.longitude,
+                        planet.retrograde,
+                        planet.lords,
+                    )
+                })
+                .collect()
+        };
+        assert_eq!(placed(&horary), placed(&now), "{number}");
+        let cusps = horary.cusps.map(|cusp| cusp.longitude);
+        assert!(
+            horary
+                .planets
+                .iter()
+                .all(|planet| planet.house == teistro::kp::house_of(&cusps, planet.longitude))
+        );
+        assert_eq!(horary.system, now.system);
+
+        // The lagna goes round once a sidereal day: bisect the day after
+        // the moment for when it reaches the number's start.
+        let rising = nas(moment.foundation.lagna_deg);
+        let wanted = forward(rising, number.start());
+        let (mut low, mut high) = (BIRTH, BIRTH + 0.997_27);
+        for _ in 0..40 {
+            let middle = f64::midpoint(low, high);
+            if forward(rising, nas(lagna_at(middle).foundation.lagna_deg)) < wanted {
+                low = middle;
+            } else {
+                high = middle;
+            }
+        }
+        let then = lagna_at(f64::midpoint(low, high));
+        let founded = sdk.chart().kp(&then, &KpRequest::new()).unwrap();
+        for (a, b) in horary.cusps.iter().zip(&founded.cusps) {
+            let apart = a.longitude.signed_difference(b.longitude).abs();
+            assert!(
+                apart < Nas::PER_ARCSECOND / 10,
+                "{number}: cusp {} is {apart} nas from the founded chart's",
+                a.house
+            );
+        }
+    }
+}

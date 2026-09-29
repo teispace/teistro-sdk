@@ -18,7 +18,9 @@ use serde::{Deserialize, Serialize};
 use teistro_astro::completion::{Completed, Completion, Implementation};
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::events::{Direction, Lattice, Quantity, Search, StationKind};
-use teistro_astro::houses::{ChartFrame, cusps_from_angles, houses_at};
+use teistro_astro::houses::{
+    ChartFrame, Input as HouseInput, cusps_from_angles, houses, houses_at,
+};
 use teistro_astro::precession::PrecessionModel;
 use teistro_astro::scale::tt_of;
 use teistro_astro::sidereal::{Sidereal, Zodiac as SiderealZodiac};
@@ -1179,6 +1181,78 @@ pub fn cusps_of(
         &foundation.zodiac,
         policy,
     )
+}
+
+/// A house system's cusps at a chart's place and moment with the meridian
+/// turned until the ascendant stands at `ascendant_deg` in the chart's
+/// zodiac, and the system that produced them.
+///
+/// What KP horary needs (`03-design/kp.md`, crux C156): the querent's
+/// number fixes the lagna, and the other cusps are read from a table of
+/// houses for the place's latitude at that ascendant — the sidereal time
+/// that raises it, at the moment's obliquity and ayanamsha. The ascendant
+/// goes once round the circle as the meridian does, so the meridian is
+/// found by bisection over the forward arc from the chart's own; the
+/// answer is checked, and a latitude where the ascendant does not come
+/// back to the target is refused rather than guessed.
+///
+/// # Errors
+///
+/// As [`cusps_of`]; `UNSUPPORTED` on `place.latitude` where no meridian
+/// raises the ascendant to within a nanodegree.
+pub fn cusps_raising(
+    foundation: &ChartFoundation,
+    system: HouseSystem,
+    ascendant_deg: f64,
+    delta_t: DeltaTModel,
+    policy: PolarPolicy,
+) -> Result<([f64; 12], HouseSystem), Error> {
+    refuse_providers_angles(foundation)?;
+    let ut1 = JulianDay::<Ut1>::literal(foundation.instant.get());
+    let (tt, _) = tt_of(ut1, delta_t)?;
+    let zodiac = &foundation.zodiac;
+    let input = |armc_deg: f64| HouseInput {
+        armc_deg: armc_deg.rem_euclid(360.0),
+        latitude_deg: foundation.place.latitude.get(),
+        obliquity_deg: teistro_astro::sky::obliquity(tt).true_deg,
+        sun_declination_deg: None,
+        sidereal_offset_deg: zodiac.offset_deg,
+    };
+    // The angles do not depend on the division, so the search builds the
+    // cheapest one.
+    let ascendant = |armc_deg: f64| -> Result<f64, Error> {
+        let built = houses(HouseSystem::WholeSign, &input(armc_deg), policy)?;
+        Ok(zodiac.of_tropical(built.angles.ascendant_deg))
+    };
+    let forward = |from: f64, to: f64| (to - from).rem_euclid(360.0);
+    let start = teistro_astro::sky::sidereal_time_deg(ut1, tt, foundation.place.longitude);
+    let rising = ascendant(start)?;
+    let wanted = forward(rising, ascendant_deg);
+    let (mut low, mut high) = (0.0_f64, 360.0_f64);
+    for _ in 0..64 {
+        let middle = f64::midpoint(low, high);
+        if forward(rising, ascendant(start + middle)?) < wanted {
+            low = middle;
+        } else {
+            high = middle;
+        }
+    }
+    let armc_deg = start + f64::midpoint(low, high);
+    let reached = ascendant(armc_deg)?;
+    let miss = forward(ascendant_deg, reached).min(forward(reached, ascendant_deg));
+    if miss > 1e-9 {
+        return Err(Error::unsupported(format!(
+            "no meridian at latitude {}° raises the ascendant to {ascendant_deg}°: the nearest \
+             reaches {reached}°",
+            foundation.place.latitude.get()
+        ))
+        .with_field("place.latitude"));
+    }
+    let built = houses(system, &input(armc_deg), policy)?;
+    Ok((
+        built.cusps.map(|cusp| zodiac.of_tropical(cusp)),
+        built.system,
+    ))
 }
 
 /// Refuses a chart whose angles were its provider's own reckoning, which
