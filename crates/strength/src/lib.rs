@@ -19,14 +19,18 @@
 //!
 //! ```
 //! use teistro_core::catalogue::Rashi;
-//! use teistro_core::settings::{Ekadhipatya, Shodhana};
+//! use teistro_core::settings::{Ekadhipatya, MoonBinduFromJupiter, Shodhana};
 //! use teistro_strength::ashtakavarga::{AshtakavargaChart, AshtakavargaReading, AshtakavargaRules};
 //!
 //! let chart = AshtakavargaChart {
 //!     lagna: Rashi::Pisces,
 //!     signs: [Rashi::Aries, Rashi::Scorpio, Rashi::Aquarius, Rashi::Aries, Rashi::Gemini, Rashi::Aquarius, Rashi::Capricorn],
 //! };
-//! let rules = AshtakavargaRules { shodhana: Shodhana::EachGraha, ekadhipatya: Ekadhipatya::Bphs };
+//! let rules = AshtakavargaRules {
+//!     shodhana: Shodhana::EachGraha,
+//!     ekadhipatya: Ekadhipatya::Bphs,
+//!     moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
+//! };
 //! let reading = AshtakavargaReading::of(&chart, rules);
 //! // Every chart holds the classical 337 bindus.
 //! assert_eq!(reading.sarva.iter().map(|b| u32::from(*b)).sum::<u32>(), 337);

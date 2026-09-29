@@ -583,6 +583,17 @@ knob!(
         Sarva = "SARVA" }
 );
 knob!(
+    /// Where Jupiter gives the Moon a bindu in the Ashtakavarga: the one
+    /// place the tables of BPHS ch. 66 and Phaladeepika ch. 23 v. 4 part
+    /// (crux C144). Either way Jupiter gives seven, so every chart still
+    /// holds 49 in the Moon's and 337 in all.
+    MoonBinduFromJupiter { /// The 12th: BPHS and Varahamihira, as the conformance corpus's
+        /// recording engine reads it.
+        Twelfth = "TWELFTH", /// The 2nd: Phaladeepika (कौरवसज्जनस्य, 1, 2, 4, 7, 8, 10, 11), whose
+        /// footnote gives Varahamihira's 12th.
+        Second = "SECOND" }
+);
+knob!(
     /// The convention for a divisional chart no text attests.
     UnattestedDn { /// Cyclic (parivritti).
         Cyclic = "CYCLIC" }

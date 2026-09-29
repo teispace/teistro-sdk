@@ -254,3 +254,75 @@ fn the_ashtakavarga_reading_is_the_natal_bindus_of_the_sign_transited() {
         "no transit stood on four bindus, so the knob went untested"
     );
 }
+
+/// Where Jupiter gives the Moon a bindu is one knob for the chart and its
+/// transits (C144): under the 2nd, the natal Moon's row loses the bindu
+/// the 12th from Jupiter held and gains one in the 2nd, two signs on,
+/// nothing else in any row moves, the reading says which it was counted
+/// under, and a transit reads the same row the chart does.
+#[test]
+fn where_jupiter_gives_the_moon_a_bindu_is_one_knob_for_the_chart_and_its_transits() {
+    use teistro::settings::MoonBinduFromJupiter;
+
+    let request = ChartRequest::at(place(), UtcOffset::literal(5, 45, 0)).with_ashtakavarga();
+    let natal = |sdk: &Context| {
+        sdk.chart()
+            .reading(JulianDay::<Utc>::literal(BIRTH), &request)
+            .unwrap()
+            .value
+    };
+    let (bphs, phaladeepika) = (
+        context("{}"),
+        context(r#"{"strength": {"moon_bindu_from_jupiter": "SECOND"}}"#),
+    );
+    let (twelfth, second) = (natal(&bphs), natal(&phaladeepika));
+    let (a, b) = (
+        twelfth.ashtakavarga.as_ref().unwrap(),
+        second.ashtakavarga.as_ref().unwrap(),
+    );
+    assert_eq!(
+        (
+            a.rules.moon_bindu_from_jupiter,
+            b.rules.moon_bindu_from_jupiter
+        ),
+        (MoonBinduFromJupiter::Twelfth, MoonBinduFromJupiter::Second)
+    );
+    assert_eq!(a.sarva.iter().sum::<u16>(), b.sarva.iter().sum::<u16>());
+    for (x, y) in a.grahas.iter().zip(&b.grahas) {
+        let moved: Vec<usize> = (0..12).filter(|s| x.bindus[*s] != y.bindus[*s]).collect();
+        if x.graha != Graha::Moon {
+            assert!(moved.is_empty(), "{:?} moved", x.graha);
+            continue;
+        }
+        assert_eq!(moved.len(), 2, "the Moon's row moved at {moved:?}");
+        let (lost, gained) = (moved[0], moved[1]);
+        let (lost, gained) = if x.bindus[lost] > y.bindus[lost] {
+            (lost, gained)
+        } else {
+            (gained, lost)
+        };
+        assert_eq!(x.bindus[lost], y.bindus[lost] + 1);
+        assert_eq!(y.bindus[gained], x.bindus[gained] + 1);
+        assert_eq!(
+            (gained + 12 - lost) % 12,
+            2,
+            "the 12th and the 2nd from one sign"
+        );
+    }
+    let asked = GocharRequest::over([JulianDay::<Utc>::literal(2_460_676.5)]).with_ashtakavarga();
+    let moon_row = b
+        .grahas
+        .iter()
+        .find(|row| row.graha == Graha::Moon)
+        .unwrap();
+    for reading in phaladeepika.chart().gochar(&second, &asked).unwrap().value {
+        let (read, moving) = reading
+            .ashtakavarga
+            .unwrap()
+            .into_iter()
+            .zip(&reading.grahas)
+            .find(|(read, _)| read.graha == Graha::Moon)
+            .unwrap();
+        assert_eq!(read.bindus, moon_row.bindus[moving.transit.sign as usize]);
+    }
+}

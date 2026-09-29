@@ -109,6 +109,11 @@
           "$ref": "#/$defs/Ekadhipatya",
           "description": "How a co-ruled sign beside an occupied one is reduced."
         },
+        "moon_bindu_from_jupiter": {
+          "$ref": "#/$defs/MoonBinduFromJupiter",
+          "default": "TWELFTH",
+          "description": "Where Jupiter gives the Moon a bindu, which the bindus themselves are counted under. A document written before this was a setting has none, and was counted under the 12th."
+        },
         "shodhana": {
           "$ref": "#/$defs/Shodhana",
           "description": "Where the reductions and pindas are made."
@@ -3768,6 +3773,21 @@
         {
           "const": "KSHAYA",
           "description": "Two: the second name is skipped this year.",
+          "type": "string"
+        }
+      ]
+    },
+    "MoonBinduFromJupiter": {
+      "description": "Where Jupiter gives the Moon a bindu in the Ashtakavarga: the one place the tables of BPHS ch. 66 and Phaladeepika ch. 23 v. 4 part (crux C144). Either way Jupiter gives seven, so every chart still holds 49 in the Moon's and 337 in all.",
+      "oneOf": [
+        {
+          "const": "TWELFTH",
+          "description": "The 12th: BPHS and Varahamihira, as the conformance corpus's recording engine reads it.",
+          "type": "string"
+        },
+        {
+          "const": "SECOND",
+          "description": "The 2nd: Phaladeepika (कौरवसज्जनस्य, 1, 2, 4, 7, 8, 10, 11), whose footnote gives Varahamihira's 12th.",
           "type": "string"
         }
       ]

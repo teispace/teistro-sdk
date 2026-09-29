@@ -989,8 +989,12 @@ impl<'a> ChartArea<'a> {
         let prastara = request
             .ashtakavarga()
             .then(|| {
-                Self::ashtakavarga_chart_of(&natal.foundation)
-                    .map(|chart| teistro_strength::ashtakavarga::prastara(&chart))
+                Self::ashtakavarga_chart_of(&natal.foundation).map(|chart| {
+                    teistro_strength::ashtakavarga::prastara(
+                        &chart,
+                        settings.strength.moon_bindu_from_jupiter,
+                    )
+                })
             })
             .transpose()?;
         // The grahas' places alone, every instant in one request: a
@@ -2565,10 +2569,7 @@ impl<'a> ChartArea<'a> {
     ) -> Result<AshtakavargaReading, Error> {
         Ok(AshtakavargaReading::of(
             &Self::ashtakavarga_chart_of(foundation)?,
-            AshtakavargaRules {
-                shodhana: settings.strength.shodhana,
-                ekadhipatya: settings.strength.ekadhipatya,
-            },
+            AshtakavargaRules::of(settings),
         ))
     }
 

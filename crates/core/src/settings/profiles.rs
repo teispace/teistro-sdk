@@ -14,9 +14,9 @@ use super::knobs::{
     Cheshta, DayBoundary, DeltaT, DigKendras, Drekkana, Drik, DstGap, DstOverlap, DualLord,
     Ekadhipatya, GhatiReckoning, GrahaArudhaException, HoraReckoning, IshtaKashta, KaalaLords,
     KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node, NodeAspects,
-    NodeCoLordship, NodeObstruction, NodeVedha, OverridePolicy, PolarDayPolicy, PolarPolicy,
-    Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis,
+    LunarMonth, MoonBinduFromJupiter, MoonEvents, Naisargika, NakshatraScheme, Nathonnatha, Node,
+    NodeAspects, NodeCoLordship, NodeObstruction, NodeVedha, OverridePolicy, PolarDayPolicy,
+    PolarPolicy, Positions, PreDawnNight, RashiStart, RequiredRupas, Saptavargaja, SayanadiGhatis,
     SayanadiNodes, SeedOverflow, ShantaSign, Shodhana, SunAyana, Sunrise, Tier, UnattestedDn,
     UnknownTime, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
@@ -238,6 +238,9 @@ fn strength() -> Strength {
         // corpus's engine reads otherwise (`03-design/ashtakavarga-measured.md`).
         ekadhipatya: Ekadhipatya::Bphs,
         shodhana: Shodhana::EachGraha,
+        // BPHS ch. 66 and Varahamihira, and the corpus's engine; Phaladeepika
+        // alone reads the 2nd (C144).
+        moon_bindu_from_jupiter: MoonBinduFromJupiter::Twelfth,
         vimshopaka: Vimshopaka::Bphs,
         // BPHS ch. 27 wherever it decides (`03-design/shadbala-measured.md`).
         saptavargaja: Saptavargaja::Compound,
