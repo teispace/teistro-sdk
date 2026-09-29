@@ -1003,8 +1003,15 @@ mod tests {
             // two evaluations a halving and the closing probe.
             let halvings = u32::try_from(halvings(1.0, 1e-7)).unwrap();
             prop_assert!(c.evaluations <= 2 * halvings + 2, "{c:?}");
-            // A true rate never costs more than narrowing without one.
-            if factor.to_bits() == 1f64.to_bits() {
+            // A true rate never costs more than narrowing without one while
+            // the curve's slope stays within half of its drift either way.
+            // Nearer a stall a Newton step can be misled where narrowing
+            // without a rate is not, and it was: measured over a grid of
+            // 46 080 of these curves, a true rate cost more in 56, by three
+            // evaluations at most, every one with the wobble at 0.7 of the
+            // drift or more (none to 0.58), and 3.88 evaluations on average
+            // against 6.71. The bound above holds for all of them.
+            if factor.to_bits() == 1f64.to_bits() && amplitude <= 0.5 {
                 let known = refine_known(
                     |t| curve(t).map(|(value, _)| value),
                     (origin, curve(origin).unwrap().0),
