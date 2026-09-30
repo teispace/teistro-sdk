@@ -288,6 +288,7 @@ fn nepali_default() -> Profile {
     patch.houses.chalit_system = Some(HouseSystem::Vehlow);
     patch.day.polar_day_policy = Some(PolarDayPolicy::NearestEvent);
     patch.calendars.civil_calendar = Some(Calendar::BikramSambat);
+    patch.calendars.lunar_month = Some(LunarMonth::Purnimanta);
     patch.calendars.eras = Some(
         [Era::Vikrama, Era::Shaka, Era::Kali, Era::NepalSambat]
             .into_iter()
@@ -295,7 +296,8 @@ fn nepali_default() -> Profile {
     );
     Profile {
         id: ProfileId::new("nepali-default"),
-        version: 1,
+        // 2: the lunar month leads purnimanta, as Nepal names it.
+        version: 2,
         base: None,
         patch,
         sources: vec![
@@ -315,6 +317,13 @@ fn nepali_default() -> Profile {
                 ),
             ),
             Citation::new("calendars.civil_calendar", BASELINE),
+            Citation::new(
+                "calendars.lunar_month",
+                Source::new(
+                    "Nepal Panchanga Nirnayak Vikas Samiti",
+                    "a month from full moon to full moon: Gai Jatra, the day after Shravana's full moon, is Bhadra Krishna Pratipada; docs/03-design/nepal-month-measured.md",
+                ),
+            ),
         ],
         mark: Mark::Traditional,
     }

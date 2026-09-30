@@ -707,9 +707,10 @@ measured against Nepal before it is called done:
 
 1. Malmas: hold the computed adhika months to the committee's announced
    spans, and name it the Nepali way (C177). **Measured 2026-09-30**
-   (`malmas-measured.md`: both shipped readings mark the five announced
+   (`nepal-month-measured.md`: both shipped readings mark the five announced
    spans exactly, and the purnimanta name of an adhika dark fortnight
-   was corrected). Left: the name, since no locale names a month kind
+   was corrected; and Nepal's months measured purnimanta, C183, which
+   `nepali-default` now leads with). Left: the name, since no locale names a month kind
    or a muhurta blackout yet, which wants the catalogue decision Q38
    describes before any message is written.
 2. The year limbs nothing computes: samvatsara and ritu (C178, C180),

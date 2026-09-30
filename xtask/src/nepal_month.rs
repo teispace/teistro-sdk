@@ -1,23 +1,27 @@
-//! The measurement pass over **malmas**, Nepal's adhika month
-//! (`03-design/calendar-indian-lunisolar.md` §9, crux C177).
+//! The measurement pass over **Nepal's lunar month**
+//! (`03-design/calendar-indian-lunisolar.md` §9, cruxes C177 and C183).
 //!
-//! The Nepal Panchanga Nirnayak Vikas Samiti announces each adhika
-//! month's span, and the press prints it in Bikram Sambat days. This
-//! founds the almanac at Kathmandu on Nepal's clock under three readings
-//! and holds the days it marks `ADHIKA` to every announcement:
+//! Two things the patro does that the almanac must do the same way:
 //!
-//! - the shipped `nepali-default` profile over the built-in ephemeris;
-//! - the `surya-siddhanta` profile over the text's own sky and zodiac;
-//! - the `nepali-default` profile over the text's sky, a rival kept to
-//!   show that the zodiac is the text's or the month moves.
+//! - **Malmas**, the adhika month. The Nepal Panchanga Nirnayak Vikas
+//!   Samiti announces each one's span, and the press prints it in Bikram
+//!   Sambat days. This founds the almanac at Kathmandu on Nepal's clock
+//!   under three readings and holds the days it marks `ADHIKA` to every
+//!   announcement: the shipped `nepali-default` profile over the built-in
+//!   ephemeris; the `surya-siddhanta` profile over the text's own sky and
+//!   zodiac; and the `nepali-default` profile over the text's sky, a rival
+//!   kept to show that the zodiac is the text's or the month moves. One
+//!   announcement gives instants rather than days, and those are set
+//!   beside each sky's new moons.
+//! - **The month's name.** Nepal names a lunar month from full moon to
+//!   full moon: Gai Jatra, the day after Shravana's full moon, is *Bhadra*
+//!   Krishna Pratipada. Festival days the press dated and designated are
+//!   held to the month `nepali-default` leads with, and every adhika day's
+//!   purnimanta month to its amanta one, since a purnimanta almanac keeps
+//!   an adhika month's name through its dark fortnight.
 //!
-//! One announcement gives instants rather than days, and those are set
-//! beside each sky's new moons. And every adhika day's purnimanta month
-//! is held to its amanta one, which a purnimanta almanac keeps through
-//! the adhika month's dark fortnight.
-//!
-//! `cargo xtask malmas` writes the page; `check-malmas` regenerates it in
-//! memory and fails on any difference.
+//! `cargo xtask nepal-month` writes the page; `check-nepal-month`
+//! regenerates it in memory and fails on any difference.
 
 use std::fmt::Write as _;
 use std::path::Path;
@@ -26,12 +30,12 @@ use teistro::Panchanga;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{CalendarDate, Context, Ephemeris, UtcOffset, jd_of_fixed};
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_core::catalogue::{Calendar, Tithi};
+use teistro_core::catalogue::{Calendar, Masa, Tithi};
 
 use crate::generated::{Output, check, write};
 use crate::measure::{Claim, table};
 
-const PAGE: &str = "docs/03-design/malmas-measured.md";
+const PAGE: &str = "docs/03-design/nepal-month-measured.md";
 
 /// Kathmandu, where the committee sits, and Nepal's clock.
 const LATITUDE: f64 = 27.7172;
@@ -93,6 +97,58 @@ const RECORD: [Announced; 5] = [
     },
 ];
 
+/// A festival day as the press dated it, and the lunar month its
+/// designation names.
+struct Designated {
+    /// The day, in the calendar the source dates it by.
+    date: (Calendar, i32, u8, u8),
+    /// The festival and its designation, as the source spells it.
+    what: &'static str,
+    month: Masa,
+    source: &'static str,
+}
+
+/// Designated days, each in a month the conventions name apart unless
+/// said otherwise.
+const DESIGNATED: [Designated; 6] = [
+    Designated {
+        date: (Calendar::BikramSambat, 2072, 2, 26),
+        what: "a day's own designation, शुद्ध आषाढ कृष्ण सप्तमी; the solar month is Jestha",
+        month: Masa::Ashadha,
+        source: "Nepali Wikipedia, अधिकमास, its worked example",
+    },
+    Designated {
+        date: (Calendar::Gregorian, 2023, 9, 14),
+        what: "Kushe Aunsi, भाद्र कृष्ण औंसी",
+        month: Masa::Bhadrapada,
+        source: "Purbasandesh, 14 September 2023",
+    },
+    Designated {
+        date: (Calendar::Gregorian, 2026, 2, 15),
+        what: "Mahashivaratri, फाल्गुन कृष्ण चतुर्दशी, the committee's rule",
+        month: Masa::Phalguna,
+        source: "Nepal Press, 15 February 2026",
+    },
+    Designated {
+        date: (Calendar::Gregorian, 2026, 8, 28),
+        what: "Janai Purnima, श्रावण शुक्ल पूर्णिमा, where the conventions agree",
+        month: Masa::Shravana,
+        source: "the day before Gai Jatra",
+    },
+    Designated {
+        date: (Calendar::Gregorian, 2026, 8, 29),
+        what: "Gai Jatra, भाद्र कृष्ण प्रतिपदा",
+        month: Masa::Bhadrapada,
+        source: "Prasashan, 29 August 2026",
+    },
+    Designated {
+        date: (Calendar::Gregorian, 2026, 9, 11),
+        what: "Kushe Aunsi, भाद्र कृष्ण औंसी",
+        month: Masa::Bhadrapada,
+        source: "Arthikpati, 11 September 2026",
+    },
+];
+
 /// The days founded either side of an announcement, wide enough to catch
 /// a reading that puts the adhika month one month away.
 const MARGIN_DAYS: i64 = 40;
@@ -139,7 +195,9 @@ pub(crate) fn generate(root: &Path) -> i32 {
 
 pub(crate) fn check_generated(root: &Path) -> i32 {
     match page() {
-        Ok(text) => i32::from(check(root, &[Output::new(PAGE, text)], "cargo xtask malmas") != 0),
+        Ok(text) => {
+            i32::from(check(root, &[Output::new(PAGE, text)], "cargo xtask nepal-month") != 0)
+        }
         Err(err) => {
             println!("FAIL  {err}");
             1
@@ -156,6 +214,40 @@ struct Found {
     new_moons: Option<(f64, f64)>,
     /// Adhika days whose purnimanta month is not their amanta one.
     renamed: usize,
+}
+
+fn kathmandu() -> Place {
+    Place::new(
+        Latitude::literal(LATITUDE),
+        Longitude::literal(LONGITUDE),
+        Altitude::literal(ALTITUDE),
+    )
+}
+
+/// The month each designated day's almanac names under the shipped
+/// profile, in `DESIGNATED`'s order: the one it leads with, and its amanta
+/// month.
+fn designated() -> Result<Vec<(Masa, Masa)>, String> {
+    let context = Context::builder()
+        .profile("nepali-default")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .map_err(|e| e.to_string())?;
+    DESIGNATED
+        .iter()
+        .map(|designated| {
+            let (calendar, year, month, day) = designated.date;
+            let date = CalendarDate::defined(calendar, year, month, day);
+            let days = context
+                .almanac()
+                .of(&date, &date, &kathmandu(), UtcOffset::literal(5, 45, 0))
+                .map_err(|e| format!("{}: {e}", designated.what))?;
+            days.value
+                .first()
+                .map(|found| (found.month.month, found.month.amanta))
+                .ok_or_else(|| format!("{}: no day", designated.what))
+        })
+        .collect()
 }
 
 fn bs(year: i32, (month, day): MonthDay) -> CalendarDate {
@@ -234,17 +326,12 @@ fn founded(context: &Context, announced: &Announced) -> Result<Vec<Panchanga>, S
             .date_of(Calendar::BikramSambat, fixed.plus_days(by))
             .map_err(|e| e.to_string())
     };
-    let place = Place::new(
-        Latitude::literal(LATITUDE),
-        Longitude::literal(LONGITUDE),
-        Altitude::literal(ALTITUDE),
-    );
     context
         .almanac()
         .of(
             &edge(from, -MARGIN_DAYS)?,
             &edge(to, MARGIN_DAYS)?,
-            &place,
+            &kathmandu(),
             UtcOffset::literal(5, 45, 0),
         )
         .map(|days| days.value)
@@ -386,7 +473,12 @@ fn header(out: &mut String, first: &str, columns: usize) {
 
 /// §1: a claim a reading, and the purnimanta name, with a problem for
 /// every verdict the page does not expect.
-fn claims(out: &mut String, answers: &[Answers], problems: &mut Vec<String>) {
+fn claims(
+    out: &mut String,
+    answers: &[Answers],
+    names: &[(Masa, Masa)],
+    problems: &mut Vec<String>,
+) {
     let mut claims = Vec::new();
     for (reading, answers) in READINGS.iter().zip(answers) {
         let wrong = answers
@@ -428,8 +520,64 @@ fn claims(out: &mut String, answers: &[Answers], problems: &mut Vec<String>) {
             "{renamed} adhika days name the next month under purnimanta"
         ));
     }
+    let misnamed = |pick: fn(&(Masa, Masa)) -> Masa| {
+        DESIGNATED
+            .iter()
+            .zip(names)
+            .filter(|(designated, found)| pick(found) != designated.month)
+            .count()
+    };
+    let (led, amanta) = (misnamed(|found| found.0), misnamed(|found| found.1));
+    claims.push(Claim::counted(
+        "`nepali-default` leads with the month a Nepali designation names",
+        led,
+        DESIGNATED.len(),
+    ));
+    claims.push(
+        Claim::counted(
+            "the amanta month is the one a Nepali designation names",
+            amanta,
+            DESIGNATED.len(),
+        )
+        .with_note("a rival: the root profile's lead"),
+    );
+    if led != 0 || amanta == 0 {
+        problems.push(format!(
+            "`nepali-default` misnames {led} designated days and the amanta month {amanta}; the page expects none and some"
+        ));
+    }
     out.push_str("## 1. The claims\n\n");
     out.push_str(&table(&claims));
+}
+
+/// §4: each designated day beside the month the shipped profile leads
+/// with.
+fn designations(out: &mut String, names: &[(Masa, Masa)]) {
+    out.push_str(
+        "\n## 4. The month a Nepali designation names\n\n\
+         Nepal names a lunar month from full moon to full moon, so a dark\n\
+         fortnight carries the next amanta month's name. Each day is founded\n\
+         at Kathmandu under `nepali-default` over the built-in ephemeris.\n\n\
+         | day | designation | source | designated | `nepali-default` leads with | amanta |\n\
+         |---|---|---|---|---|---|\n",
+    );
+    for (designated, (led, amanta)) in DESIGNATED.iter().zip(names) {
+        let (calendar, year, month, day) = designated.date;
+        let _ = writeln!(
+            out,
+            "| {} {year}/{month:02}/{day:02} | {} | {} | {} | {} | {} |",
+            if calendar == Calendar::BikramSambat {
+                "BS"
+            } else {
+                "AD"
+            },
+            designated.what,
+            designated.source,
+            designated.month.key(),
+            led.key(),
+            amanta.key()
+        );
+    }
 }
 
 /// §2: each announcement beside what each reading found.
@@ -517,19 +665,22 @@ fn page() -> Result<String, String> {
         .map_err(|e| e.to_string())?;
 
     let mut out = String::new();
-    out.push_str("# Malmas, measured\n\n");
+    let names = designated()?;
+    out.push_str("# Nepal's lunar month, measured\n\n");
     out.push_str(
-        "Status: `generated` by `cargo xtask malmas`. Do not edit:\n\
-         `check-malmas` regenerates this page and fails on any difference.\n\n\
-         It measures `calendar-indian-lunisolar.md` §9: the days the almanac\n\
-         marks `ADHIKA` at Kathmandu on Nepal's clock, against the adhika\n\
-         months the Nepal Panchanga Nirnayak Vikas Samiti announced, which\n\
-         Nepal calls *malmas* (C177).\n\n",
+        "Status: `generated` by `cargo xtask nepal-month`. Do not edit:\n\
+         `check-nepal-month` regenerates this page and fails on any difference.\n\n\
+         It measures `calendar-indian-lunisolar.md` §9 at Kathmandu on Nepal's\n\
+         clock: the days the almanac marks `ADHIKA` against the adhika months\n\
+         the Nepal Panchanga Nirnayak Vikas Samiti announced, which Nepal\n\
+         calls *malmas* (C177), and the month it names against the month a\n\
+         Nepali designation names (C183).\n\n",
     );
     let mut problems = Vec::new();
-    claims(&mut out, &answers, &mut problems);
+    claims(&mut out, &answers, &names, &mut problems);
     announcements(&mut out, &answers);
     instants(&mut out, &answers, &context)?;
+    designations(&mut out, &names);
     if problems.is_empty() {
         Ok(out)
     } else {
