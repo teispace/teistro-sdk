@@ -11,6 +11,7 @@ use teistro_core::catalogue::{Karana, Nakshatra, Rashi, Tithi, Vara, Yoga};
 use teistro_panchanga::{Panchanga, Span};
 
 use crate::clause::{Clause, ClauseKind};
+use crate::grade::{Grade, Graded};
 use crate::tara::{ChandraBala, chandra_house, tara};
 
 /// The native a day is read against.
@@ -24,24 +25,24 @@ pub struct Native {
     pub moon_sign: Rashi,
 }
 
-/// Which limbs a day's rules reject, and whose Chandrabala table they
-/// read.
+/// How a day's rules grade its limbs and vara, and whose Chandrabala
+/// table they read.
 ///
 /// Data rather than code, so a caller's own tradition is a value and not
 /// a fork: [`DayRules::raman`] is one such value.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct DayRules {
-    /// Tithis rejected.
-    pub tithis: Vec<Tithi>,
-    /// Nakshatras rejected.
-    pub nakshatras: Vec<Nakshatra>,
-    /// Yogas rejected.
-    pub yogas: Vec<Yoga>,
-    /// Karanas rejected.
-    pub karanas: Vec<Karana>,
-    /// Varas rejected.
-    pub varas: Vec<Vara>,
+    /// The tithis.
+    pub tithis: Graded<Tithi>,
+    /// The nakshatras.
+    pub nakshatras: Graded<Nakshatra>,
+    /// The yogas.
+    pub yogas: Graded<Yoga>,
+    /// The karanas.
+    pub karanas: Graded<Karana>,
+    /// The varas.
+    pub varas: Graded<Vara>,
     /// The Chandrabala table.
     pub chandrabala: ChandraBala,
 }
@@ -68,17 +69,17 @@ impl DayRules {
             .filter_map(Tithi::from_id)
             .collect();
         DayRules {
-            tithis,
-            nakshatras: vec![Nakshatra::Bharani, Nakshatra::Krittika],
-            yogas: vec![
+            tithis: Graded::rejecting(tithis),
+            nakshatras: Graded::rejecting(vec![Nakshatra::Bharani, Nakshatra::Krittika]),
+            yogas: Graded::rejecting(vec![
                 Yoga::Atiganda,
                 Yoga::Shoola,
                 Yoga::Ganda,
                 Yoga::Vyatipata,
                 Yoga::Vaidhriti,
-            ],
-            karanas: vec![Karana::Vishti],
-            varas: vec![Vara::Mangalavara, Vara::Shanivara],
+            ]),
+            karanas: Graded::rejecting(vec![Karana::Vishti]),
+            varas: Graded::rejecting(vec![Vara::Mangalavara, Vara::Shanivara]),
             chandrabala: ChandraBala::raman(),
         }
     }
@@ -92,24 +93,31 @@ impl DayRules {
 #[must_use]
 pub fn clauses(day: &Panchanga, native: Option<&Native>, rules: &DayRules) -> Vec<Clause> {
     let mut found = Vec::new();
-    rejected(&mut found, &day.limbs.tithi, &rules.tithis, |tithi| {
-        ClauseKind::Tithi { tithi }
-    });
-    rejected(
+    graded(
+        &mut found,
+        &day.limbs.tithi,
+        &rules.tithis,
+        |tithi, grade| ClauseKind::Tithi { tithi, grade },
+    );
+    graded(
         &mut found,
         &day.limbs.nakshatra,
         &rules.nakshatras,
-        |nakshatra| ClauseKind::Nakshatra { nakshatra },
+        |nakshatra, grade| ClauseKind::Nakshatra { nakshatra, grade },
     );
-    rejected(&mut found, &day.limbs.yoga, &rules.yogas, |yoga| {
-        ClauseKind::Yoga { yoga }
+    graded(&mut found, &day.limbs.yoga, &rules.yogas, |yoga, grade| {
+        ClauseKind::Yoga { yoga, grade }
     });
-    rejected(&mut found, &day.limbs.karana, &rules.karanas, |karana| {
-        ClauseKind::Karana { karana }
-    });
-    if rules.varas.contains(&day.day.vara) {
+    graded(
+        &mut found,
+        &day.limbs.karana,
+        &rules.karanas,
+        |karana, grade| ClauseKind::Karana { karana, grade },
+    );
+    let vara = day.day.vara;
+    if let Some(grade) = reported(rules.varas.grade(&vara)) {
         found.push(Clause {
-            kind: ClauseKind::Vara { vara: day.day.vara },
+            kind: ClauseKind::Vara { vara, grade },
             at: day.window,
         });
     }
@@ -138,22 +146,28 @@ pub fn clauses(day: &Panchanga, native: Option<&Native>, rules: &DayRules) -> Ve
     found
 }
 
-/// A clause for each span whose member the rules reject.
-fn rejected<T: Copy + PartialEq>(
+/// A clause for each span whose member the rules grade best or reject.
+fn graded<T: Copy + PartialEq>(
     found: &mut Vec<Clause>,
     spans: &[Span<T>],
-    rejected: &[T],
-    kind: impl Fn(T) -> ClauseKind,
+    rule: &Graded<T>,
+    kind: impl Fn(T, Grade) -> ClauseKind,
 ) {
-    found.extend(
-        spans
-            .iter()
-            .filter(|span| rejected.contains(&span.member))
-            .map(|span| Clause {
-                kind: kind(span.member),
-                at: span.inside,
-            }),
-    );
+    found.extend(spans.iter().filter_map(|span| {
+        reported(rule.grade(&span.member)).map(|grade| Clause {
+            kind: kind(span.member, grade),
+            at: span.inside,
+        })
+    }));
+}
+
+/// The grades a clause is reported for: the best and the rejected. A
+/// middling member neither helps nor harms, so nothing says it.
+pub(crate) const fn reported(grade: Grade) -> Option<Grade> {
+    match grade {
+        Grade::Middling => None,
+        other => Some(other),
+    }
 }
 
 #[cfg(test)]
@@ -164,12 +178,12 @@ mod tests {
     #[test]
     fn ramans_tithis_are_twelve_of_thirty() {
         let rules = DayRules::raman();
-        let numbers: Vec<u16> = rules.tithis.iter().map(|t| t.id() + 1).collect();
+        let numbers: Vec<u16> = rules.tithis.rejected.iter().map(|t| t.id() + 1).collect();
         let mut sorted = numbers.clone();
         sorted.sort_unstable();
         // 4, 6, 8, 12, 14 of each paksha, the 15th (Purnima) and the 30th.
         assert_eq!(sorted, [4, 6, 8, 12, 14, 15, 19, 21, 23, 27, 29, 30]);
-        assert!(rules.tithis.contains(&Tithi::Amavasya));
-        assert!(rules.varas.contains(&Vara::Mangalavara));
+        assert!(rules.tithis.rejected.contains(&Tithi::Amavasya));
+        assert!(rules.varas.rejected.contains(&Vara::Mangalavara));
     }
 }

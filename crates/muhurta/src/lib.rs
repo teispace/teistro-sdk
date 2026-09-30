@@ -25,14 +25,18 @@
 
 #![doc(html_no_source)]
 
+pub mod activity;
 pub mod clause;
 pub mod day;
+pub mod grade;
 pub mod instant;
 pub mod season;
 pub mod tara;
 pub mod window;
 
-pub use clause::{Clause, ClauseKind};
+pub use activity::{ActivityRules, MonthRule};
+pub use clause::{Clause, ClauseKey, ClauseKind};
 pub use day::{DayRules, Native, clauses};
+pub use grade::{Grade, Graded};
 pub use instant::Sky;
 pub use tara::{ChandraBala, Tara, TaraReading};

@@ -78,15 +78,20 @@ impl Sky {
         sign_of(self.lagna_deg * 9.0)
     }
 
+    /// A graha's longitude, degrees.
+    #[must_use]
+    pub fn longitude(&self, graha: Graha) -> f64 {
+        self.grahas
+            .get(usize::from(graha.id()))
+            .copied()
+            .unwrap_or(self.lagna_deg)
+    }
+
     /// The house a graha stands in, counted by sign from the lagna's, 1
     /// to 12.
     #[must_use]
     pub fn house_of(&self, graha: Graha) -> u8 {
-        let at = self
-            .grahas
-            .get(usize::from(graha.id()))
-            .copied()
-            .unwrap_or(self.lagna_deg);
+        let at = self.longitude(graha);
         let steps = (sign_of(at).id() + 12 - self.lagna().id()) % 12;
         u8::try_from(steps + 1).unwrap_or(1)
     }

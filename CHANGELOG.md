@@ -1377,6 +1377,20 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **An activity's rules** (`muhurta.md` §6 step 5, its first half).
+  `Graded<T>` rates a member best, middling or rejected, with what an
+  unlisted one is, and `Graded::over` lays a rite's chapter over the
+  general shuddhi. `DayRules` now grades its limbs and vara, and a limb
+  clause carries its `grade`; the best are reported for the time and the
+  rejected against it. `ActivityRules` adds the month rule (lunar or
+  solar, crux C161), the lagnas, the rejected padas, the blackouts heeded,
+  the clauses that bar the rite (`ClauseKey`, spelled as each clause's
+  own tag), Abhijit, and what is not judged. `ActivityRules::raman_marriage`
+  is Raman's chapter IX over his shuddhi, heeding Muhurta Chintamani's
+  asta and adhika. New clauses: `MONTH`, `SOLAR_MONTH`, `LAGNA`, `PADA`.
+
+  **Numbers:** none; nothing existing reads it.
+
 - **The season** (`muhurta.md` §6 step 4). `season::blackouts(source,
   zodiac, range)` gives the stretches no rite is held in, as instants:
   the adhika month, Chaturmas from the bright eleventh of the nija

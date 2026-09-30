@@ -18,5 +18,8 @@ kaalas, the choghadiya, the horas and the muhurtas — and the lagna
 tyajya is judged on the signs that rise whole. The season gives the
 stretches no rite is held in — the adhika month, Chaturmas, Pitru
 paksha, Kharmas, the sankrantis, and Guru and Shukra asta from the
-heliacal events — as instants. The activities' rules and the search
-follow (`muhurta.md` §6).
+heliacal events — as instants. An activity's rules are data: the day
+graded best, middling or rejected with the rite's chapter over the
+general shuddhi, the months, lagnas and padas, the blackouts heeded, the
+clauses that bar it, and what is not yet judged, said. Raman's marriage
+is the first; the search and its rankings follow (`muhurta.md` §6).
