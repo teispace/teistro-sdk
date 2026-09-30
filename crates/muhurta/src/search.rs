@@ -11,8 +11,9 @@
 //!    vara, month, periods, and against a native its taras) and ordered.
 //! 3. **The windows** of the best `days_with_windows` of them: each day cut
 //!    wherever any clause changes — the day's own spans, the lagna's
-//!    navamsa, the grahas' ingresses, a blackout's edge — and each piece
-//!    judged once, at its middle, for all of it.
+//!    navamsa, the grahas' ingresses, a blackout's edge, every held
+//!    clause's own edges — and each piece judged once, at its middle, for
+//!    all of it.
 //!
 //! What the search reads it asks of a [`Sources`], so the orchestration is
 //! the same over any sky; [`crate::sources::ProviderSources`] answers it
@@ -256,11 +257,19 @@ fn cut_day<S: Sources + ?Sized>(
         span.to.plus_days(LAGNA_MARGIN_DAYS)?,
     )?;
     let lagna = lagna_cuts(followed, |at| sources.lagna_at(at))?;
+    let tyajya = tyajya(&lagna, span);
     let mut cuts = day_cuts(day);
     cuts.extend(lagna.iter().map(|c| c.at));
     cuts.extend(sources.ingresses(span)?);
     cuts.extend(season.iter().flat_map(|b| [b.at.from, b.at.to]));
-    let tyajya = tyajya(&lagna, span);
+    // And at every held clause's own edges, so a clause that overlaps a
+    // window holds over all of it whatever its interval was built from:
+    // a lagna tyajya's half ghati ends inside a navamsa.
+    cuts.extend(
+        held.iter()
+            .chain(&tyajya)
+            .flat_map(|c| [c.at.from, c.at.to]),
+    );
 
     let mut judged = Vec::new();
     let mut blacked_out = 0;

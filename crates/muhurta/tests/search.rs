@@ -146,6 +146,15 @@ fn holds_its_promises(sources: &dyn Sources, rules: &ActivityRules, answer: &Ans
     let second = 1.0 / 86_400.0;
     for w in &answer.windows {
         assert!(!season.iter().any(|b| b.at.overlaps(w.at)), "{w:?}");
+        // A window was cut at every clause's edge, so each clause it holds
+        // holds over all of it.
+        for c in &w.clauses {
+            assert!(
+                c.at.from.get() <= w.at.from.get() && c.at.to.get() >= w.at.to.get(),
+                "{c:?} holds over part of {:?}",
+                w.at
+            );
+        }
         // What the cuts promise: no graha changes sign and neither the
         // lagna nor the Moon changes navamsa inside a window. Every
         // instant clause is a function of these, so they hold still too.
