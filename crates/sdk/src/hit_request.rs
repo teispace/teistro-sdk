@@ -4,7 +4,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_astro::events::{Direction, Lattice, StationKind};
 use teistro_chart::foundation::{TransitEvent, TransitEventKind};
-use teistro_core::catalogue::Graha;
+use teistro_core::catalogue::{Catalogued as _, Graha};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_gochar::GRAHAS;
@@ -265,7 +265,7 @@ impl HitRequest {
         let mut request =
             HitRequest::between(instant(asked.from, "from")?, instant(asked.to, "to")?);
         if let Some(grahas) = asked.grahas {
-            request = request.with_grahas(grahas.into_iter().map(|key| key.0));
+            request = request.with_grahas(grahas);
         }
         if let Some(kinds) = asked.kinds {
             request = request.with_kinds(kinds);
@@ -303,7 +303,7 @@ struct Asked {
     from: f64,
     to: f64,
     #[serde(default)]
-    grahas: Option<Vec<GrahaKey>>,
+    grahas: Option<Vec<Graha>>,
     #[serde(default)]
     kinds: Option<Vec<HitKind>>,
     #[serde(default)]
@@ -312,32 +312,6 @@ struct Asked {
     aspects: Option<Vec<u16>>,
     #[serde(default)]
     orb_deg: Option<f64>,
-}
-
-/// A graha as a request may name it: bare (`"SUN"`), as the Rust key
-/// spells it, or full (`"graha.SUN"`), as every binding reads one back, so a
-/// caller can hand back what it was given.
-#[derive(Serialize)]
-#[serde(transparent)]
-struct GrahaKey(Graha);
-
-impl GrahaKey {
-    fn read(key: &str) -> Result<GrahaKey, String> {
-        let bare = key
-            .strip_prefix(Graha::KIND.name())
-            .and_then(|rest| rest.strip_prefix('.'))
-            .unwrap_or(key);
-        Graha::from_key(bare)
-            .map(GrahaKey)
-            .ok_or_else(|| teistro_core::catalogue::UnknownKey::in_kind::<Graha>(bare).to_string())
-    }
-}
-
-impl<'de> Deserialize<'de> for GrahaKey {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let key = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
-        GrahaKey::read(&key).map_err(serde::de::Error::custom)
-    }
 }
 
 /// A natal point as a request may name it: as an answer's `to` spells it
@@ -352,8 +326,8 @@ impl<'de> Deserialize<'de> for PointAsked {
         use serde::de::Error as _;
         let value = serde_json::Value::deserialize(deserializer)?;
         let graha = |key: &str| {
-            GrahaKey::read(key)
-                .map(|key| PointAsked(NatalPoint::Graha { graha: key.0 }))
+            Graha::from_either_key(key)
+                .map(|graha| PointAsked(NatalPoint::Graha { graha }))
                 .map_err(D::Error::custom)
         };
         let shapes = "a point is \"LAGNA\", a graha's key, or an aspect's `to`";

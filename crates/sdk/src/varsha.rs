@@ -13,7 +13,7 @@
 //! [`ChartArea::varsha`]: crate::ChartArea::varsha
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::DashaSystem;
+use teistro_core::catalogue::{Catalogued as _, DashaSystem};
 use teistro_core::error::Error;
 use teistro_core::house::House;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
@@ -373,13 +373,7 @@ impl Askable for DashaSystem {
     const NOUN: &'static str = "dasha ";
 
     fn read(key: String) -> Result<Self, String> {
-        let bare = key
-            .strip_prefix(Self::KIND.name())
-            .and_then(|rest| rest.strip_prefix('.'))
-            .unwrap_or(&key);
-        let system = Self::from_key(bare).ok_or_else(|| {
-            teistro_core::catalogue::UnknownKey::in_kind::<Self>(bare).to_string()
-        })?;
+        let system = Self::from_either_key(&key).map_err(|why| why.to_string())?;
         if teistro_tajika::ANNUAL_DASHAS.contains(&system) {
             Ok(system)
         } else {

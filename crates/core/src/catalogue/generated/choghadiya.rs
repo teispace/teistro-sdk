@@ -267,7 +267,7 @@ impl core::str::FromStr for Choghadiya {
     type Err = UnknownKey;
 
     fn from_str(key: &str) -> Result<Self, UnknownKey> {
-        Self::from_key(key).ok_or_else(|| UnknownKey::in_kind::<Choghadiya>(key))
+        <Self as Catalogued>::from_either_key(key)
     }
 }
 
@@ -297,7 +297,7 @@ impl serde::Serialize for Choghadiya {
 impl<'de> serde::Deserialize<'de> for Choghadiya {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let key = <std::borrow::Cow<'_, str>>::deserialize(deserializer)?;
-        Self::from_key(&key).ok_or_else(|| serde::de::Error::custom(UnknownKey::in_kind::<Choghadiya>(&key)))
+        <Self as Catalogued>::from_either_key(&key).map_err(serde::de::Error::custom)
     }
 }
 
