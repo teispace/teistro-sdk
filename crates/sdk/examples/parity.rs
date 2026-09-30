@@ -3218,10 +3218,10 @@ fn a_muhurta(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
 
 /// A unit enum's key, as serde writes it and every binding reads it.
 fn tag<T: serde::Serialize>(value: &T) -> String {
-    match serde_json::to_value(value) {
-        Ok(serde_json::Value::String(key)) => key,
-        other => panic!("a unit enum writes a string, not {other:?}"),
-    }
+    serde_json::to_value(value)
+        .ok()
+        .and_then(|written| written.as_str().map(str::to_owned))
+        .expect("a unit enum writes a string")
 }
 
 /// The items joined by spaces, or `none`.
