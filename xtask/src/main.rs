@@ -114,6 +114,10 @@
 //!   spells over the recorded births and a century, every bound read back
 //!   through the gochar, the two reckonings against each other, and the
 //!   baseline engine's merge rule against the circuit.
+//! - `kp` and `check-kp`: how far a KP reading holds over the recorded
+//!   births — each sub lord's margin in minutes of birth time, read back
+//!   through the founder, the lords Krishnamurti's and VP291's ayanamshas
+//!   part on, and the horary numbers each place can raise.
 //! - `stations` and `check-stations`: every body's stations over the
 //!   built-in ephemeris's coverage, the shortest runs that bound a slow
 //!   body's scan, and every crossing the strided scan finds held to the
@@ -224,6 +228,7 @@ mod interpretations;
 mod intl;
 mod jaimini;
 mod kalachakra;
+mod kp;
 mod lints;
 mod lunisolar;
 mod measure;
@@ -295,6 +300,7 @@ const PASSES: &[Pass] = &[
     ("gochar", gochar::generate, gochar::check_generated),
     ("hits", hits::generate, hits::check_generated),
     ("sade-sati", sade_sati::generate, sade_sati::check_generated),
+    ("kp", kp::generate, kp::check_generated),
     ("stations", stations::generate, stations::check_generated),
     ("panchanga", panchanga::generate, panchanga::check_generated),
     ("vargas", vargas::generate, vargas::check_generated),

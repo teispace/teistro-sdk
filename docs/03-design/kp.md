@@ -1,6 +1,6 @@
 # KP: Krishnamurti Paddhati
 
-Status: `draft`, 2026-09-29; §6 steps 1 to 6 **built** by 2026-09-30. Written
+Status: `draft`, 2026-09-29; §6 steps 1 to 7 **built** by 2026-09-30. Written
 from the Readers before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/06-kp.md` (P0: the 249
@@ -226,9 +226,27 @@ Jupiter's, the only subs a sign's end falls inside.
    that day when the lagna itself reaches the number's start, found by
    founding charts, has the same twelve cusps to under 0.1″. A latitude
    where no meridian raises the start is refused on `place.latitude`.
+
+   The measured pass corrected the search. The ascendant goes once round
+   the circle as the meridian does only where every ecliptic point
+   rises, under 90° less the obliquity. Beyond it the ascendant jumps
+   across the arcs that never rise or never set, and one bisection over
+   the day bracketed the jump. At Tromsø that refused 165 of the 249
+   numbers where the sky refuses 81. There the turn is now scanned in
+   quarter-degree steps and the first true crossing bisected, and the
+   temperate search is unchanged to the bit. A test at 69.65° raises a
+   rising number and reads it back through founded charts, and refuses
+   two that never rise.
 6. **Built**: the boundary and the bindings, as §5 says, with
    `sdk.chart().kp_reading` the one façade call, `KpRequest::from_json`
    the record every binding writes, and section 59 `kp`.
-7. The measured pass: over the recorded births, each sub lord's margin
-   in minutes of birth time (how many charts a minute's error changes),
-   and how many sub lords the Krishnamurti and VP291 ayanamshas part on.
+7. **Built**: the measured pass (`kp-measured.md`, `cargo xtask kp`,
+   gated by `check-kp`). Over the recorded births:
+   - The lagna's sub lord holds a median of under two minutes of birth
+     time, and the sub-sub lord seconds. The margins are read back
+     through the founder.
+   - VP291 stands about 72″ from Krishnamurti's ayanamsha, and parts
+     from it on a handful of sub lords and many sub-sub lords.
+   - Each place refuses exactly the numbers whose start's declination
+     keeps it off the horizon, number by number. That claim found the
+     polar defect in step 5.

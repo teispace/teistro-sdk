@@ -5,7 +5,8 @@
 #![allow(
     clippy::unwrap_used,
     clippy::indexing_slicing,
-    reason = "tests fail by panicking and index what they found"
+    clippy::cast_precision_loss,
+    reason = "tests fail by panicking, index what they found and measure arcs below 2^53"
 )]
 
 use teistro::catalogue::{Ayanamsha, HouseSystem};
@@ -313,6 +314,103 @@ fn a_horary_chart_is_the_moment_the_lagna_reaches_the_number() {
                 a.house
             );
         }
+    }
+}
+
+/// Beyond the polar circle a number is raised where its start crosses the
+/// horizon and refused where it never does. At 69.65° north (Tromsø) the
+/// colatitude is 20.35°, so a start whose declination passes it circles
+/// without rising or setting: about 37° to 95° and 217° to 275° of
+/// Krishnamurti's zodiac. The ascendant jumps across those arcs as the
+/// meridian turns, which a single bisection over the day mistakes for a
+/// crossing, so the read-back scans the day too: the founded chart whose
+/// own lagna reaches the start has the horary chart's cusps.
+#[test]
+fn a_polar_place_raises_what_rises_and_refuses_what_never_does() {
+    use teistro::KpNumber;
+    let sdk = context("kp-default", "{}");
+    let moment = chart_at(&sdk, 69.65);
+    let number = |degrees: f64| KpNumber::of(nas(degrees));
+    for degrees in [66.0, 246.0] {
+        let refused = sdk
+            .chart()
+            .kp_horary(&moment, number(degrees), &KpRequest::new())
+            .unwrap_err();
+        assert_eq!(refused.field(), Some("place.latitude"), "{degrees}°");
+    }
+    for degrees in [0.5, 150.0] {
+        let horary = sdk
+            .chart()
+            .kp_horary(&moment, number(degrees), &KpRequest::new())
+            .unwrap();
+        assert_eq!(
+            horary.cusps[0].longitude,
+            number(degrees).start(),
+            "{degrees}°"
+        );
+    }
+
+    // The founded chart that day whose lagna reaches Virgo's number: its
+    // lagna less the start, scanned every four minutes for a crossing that
+    // is not the jump across a circumpolar arc, then bisected.
+    let target = number(150.0);
+    let horary = sdk
+        .chart()
+        .kp_horary(&moment, target, &KpRequest::new())
+        .unwrap();
+    let place = moment.foundation.place;
+    let short = |jd: f64| -> f64 {
+        let founded = sdk
+            .chart()
+            .reading(
+                JulianDay::<Utc>::literal(jd),
+                &ChartRequest::at(place, UtcOffset::literal(5, 45, 0)),
+            )
+            .unwrap()
+            .value;
+        target
+            .start()
+            .signed_difference(nas(founded.foundation.lagna_deg)) as f64
+    };
+    let step = 4.0 / 1440.0;
+    let mut before = short(BIRTH);
+    let crossing = (1..=360)
+        .map(|k| BIRTH + step * f64::from(k))
+        .find(|jd| {
+            let now = short(*jd);
+            let crosses = (before < 0.0) != (now < 0.0)
+                && (now - before).abs() < 90.0 * Nas::PER_DEGREE as f64;
+            before = now;
+            crosses
+        })
+        .unwrap(); // Virgo rises at Tromsø that day.
+    let (mut low, mut high) = (crossing - step, crossing);
+    let rising = short(low) < 0.0;
+    for _ in 0..40 {
+        let middle = f64::midpoint(low, high);
+        if (short(middle) < 0.0) == rising {
+            low = middle;
+        } else {
+            high = middle;
+        }
+    }
+    let then = sdk
+        .chart()
+        .reading(
+            JulianDay::<Utc>::literal(f64::midpoint(low, high)),
+            &ChartRequest::at(place, UtcOffset::literal(5, 45, 0)),
+        )
+        .unwrap()
+        .value;
+    let founded = sdk.chart().kp(&then, &KpRequest::new()).unwrap();
+    assert_eq!(founded.system, horary.system);
+    for (a, b) in horary.cusps.iter().zip(&founded.cusps) {
+        let apart = a.longitude.signed_difference(b.longitude).abs();
+        assert!(
+            apart < Nas::PER_ARCSECOND / 10,
+            "cusp {} is {apart} nas from the founded chart's",
+            a.house
+        );
     }
 }
 

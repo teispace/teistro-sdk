@@ -1356,6 +1356,27 @@ the astronomical numbers do not move. Nothing else computes yet.
 
   **Numbers:** none; nothing existing reads it.
 
+- **How far a KP reading holds, measured** (`kp-measured.md`, `kp.md` §6
+  step 7). `cargo xtask kp`, gated by `check-kp`, measures over the
+  recorded births:
+  - each cusp's and the Moon's sub-lord margin in minutes of birth time,
+    read back through the founder at 0.9 and 1.1 of the way to the edge;
+  - the lords Krishnamurti's and VP291's ayanamshas part on;
+  - the horary numbers each place can raise, held number by number to
+    the start's declination.
+
+  **Fixed:** KP horary beyond the polar circle refused numbers that rise.
+  `cusps_raising` bisected the whole day as though the ascendant swept
+  once round, which it does only where every ecliptic point rises. At
+  Tromsø the jump across a circumpolar arc was bracketed for a crossing,
+  and 165 of the 249 numbers were refused where the sky refuses 81.
+  There the meridian's turn is now scanned in quarter-degree steps, and
+  the first true crossing is bisected.
+
+  **Numbers:** a horary chart beyond the polar circle that was refused
+  may now answer. Under the polar circle nothing moves; the search there
+  is unchanged.
+
 - **A search over a reference to a source asks for its grids as grids.**
   `impl Longitudes for &S` forwarded the one-instant methods and not the
   grid ones, so a search handed `&source` asked for its window an

@@ -1190,11 +1190,18 @@ pub fn cusps_of(
 /// What KP horary needs (`03-design/kp.md`, crux C156): the querent's
 /// number fixes the lagna, and the other cusps are read from a table of
 /// houses for the place's latitude at that ascendant — the sidereal time
-/// that raises it, at the moment's obliquity and ayanamsha. The ascendant
-/// goes once round the circle as the meridian does, so the meridian is
-/// found by bisection over the forward arc from the chart's own; the
-/// answer is checked, and a latitude where the ascendant does not come
-/// back to the target is refused rather than guessed.
+/// that raises it, at the moment's obliquity and ayanamsha. The meridian
+/// is the first, turning forward from the chart's own, that raises it.
+///
+/// Where every point of the ecliptic rises — a latitude under 90° less the
+/// obliquity — the ascendant goes once round the circle as the meridian
+/// does, so the meridian is found by bisection over the whole turn.
+/// Beyond it the ascendant jumps across the arcs that never rise or never
+/// set, a turn is no longer one sweep, and one bisection brackets the jump
+/// rather than the crossing: there the turn is scanned in quarter-degree
+/// steps and the first step that crosses the target, rather than jumping
+/// over it, is bisected. Either way the answer is checked, and an
+/// ascendant no meridian gives is refused rather than guessed.
 ///
 /// # Errors
 ///
@@ -1211,10 +1218,12 @@ pub fn cusps_raising(
     let ut1 = JulianDay::<Ut1>::literal(foundation.instant.get());
     let (tt, _) = tt_of(ut1, delta_t)?;
     let zodiac = &foundation.zodiac;
+    let latitude_deg = foundation.place.latitude.get();
+    let obliquity_deg = teistro_astro::sky::obliquity(tt).true_deg;
     let input = |armc_deg: f64| HouseInput {
         armc_deg: armc_deg.rem_euclid(360.0),
-        latitude_deg: foundation.place.latitude.get(),
-        obliquity_deg: teistro_astro::sky::obliquity(tt).true_deg,
+        latitude_deg,
+        obliquity_deg,
         sun_declination_deg: None,
         sidereal_offset_deg: zodiac.offset_deg,
     };
@@ -1226,18 +1235,21 @@ pub fn cusps_raising(
     };
     let forward = |from: f64, to: f64| (to - from).rem_euclid(360.0);
     let start = teistro_astro::sky::sidereal_time_deg(ut1, tt, foundation.place.longitude);
-    let rising = ascendant(start)?;
-    let wanted = forward(rising, ascendant_deg);
-    let (mut low, mut high) = (0.0_f64, 360.0_f64);
-    for _ in 0..64 {
-        let middle = f64::midpoint(low, high);
-        if forward(rising, ascendant(start + middle)?) < wanted {
-            low = middle;
-        } else {
-            high = middle;
-        }
-    }
-    let armc_deg = start + f64::midpoint(low, high);
+    let turned = if latitude_deg.abs() < 90.0 - obliquity_deg {
+        let rising = ascendant(start)?;
+        let wanted = forward(rising, ascendant_deg);
+        bisect(0.0, 360.0, |turn| {
+            Ok(forward(rising, ascendant(start + turn)?) < wanted)
+        })?
+    } else {
+        // The ascendant less the target, in (−180°, 180°].
+        let short = |turn: f64| -> Result<f64, Error> {
+            let apart = forward(ascendant_deg, ascendant(start + turn)?);
+            Ok(if apart > 180.0 { apart - 360.0 } else { apart })
+        };
+        polar_turn(short)?.unwrap_or(0.0)
+    };
+    let armc_deg = start + turned;
     let reached = ascendant(armc_deg)?;
     let miss = forward(ascendant_deg, reached).min(forward(reached, ascendant_deg));
     if miss > 1e-9 {
@@ -1253,6 +1265,49 @@ pub fn cusps_raising(
         built.cusps.map(|cusp| zodiac.of_tropical(cusp)),
         built.system,
     ))
+}
+
+/// The steps a polar search divides the meridian's turn into: a quarter of a
+/// degree each.
+const POLAR_STEPS: u32 = 1440;
+
+/// The point of `[low, high]` where `below` turns from true to false, to
+/// the last bit a double halves to in 64 steps.
+fn bisect(
+    mut low: f64,
+    mut high: f64,
+    below: impl Fn(f64) -> Result<bool, Error>,
+) -> Result<f64, Error> {
+    for _ in 0..64 {
+        let middle = f64::midpoint(low, high);
+        if below(middle)? {
+            low = middle;
+        } else {
+            high = middle;
+        }
+    }
+    Ok(f64::midpoint(low, high))
+}
+
+/// The first turn of the meridian, forward, at which `short` — the
+/// ascendant less its target, in `(−180°, 180°]` — crosses zero, or none.
+///
+/// A step whose two ends lie either side of the target is a crossing only
+/// when they are near it: across the arcs that never rise or never set the
+/// ascendant jumps by about a half-circle, which also changes the sign.
+fn polar_turn(short: impl Fn(f64) -> Result<f64, Error>) -> Result<Option<f64>, Error> {
+    let step = 360.0 / f64::from(POLAR_STEPS);
+    let mut before = short(0.0)?;
+    for k in 1..=POLAR_STEPS {
+        let (from, to) = (step * f64::from(k - 1), step * f64::from(k));
+        let now = short(to)?;
+        if (before < 0.0) != (now < 0.0) && (now - before).abs() < 90.0 {
+            let rising = before < 0.0;
+            return bisect(from, to, |turn| Ok((short(turn)? < 0.0) == rising)).map(Some);
+        }
+        before = now;
+    }
+    Ok(None)
 }
 
 /// Refuses a chart whose angles were its provider's own reckoning, which
