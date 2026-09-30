@@ -1377,6 +1377,21 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **Muhurta begins: a day's clauses** (`muhurta.md` §6 step 2). A new
+  crate, `teistro-muhurta`, reports a day as **clauses** — one named
+  condition from a source and the interval it held over — rather than a
+  score, because Raman holds that no moment is free of every defect.
+  `clauses(&Panchanga, Option<&Native>, &DayRules)` gives the limbs the
+  rules reject (tithi, nakshatra, yoga, karana), a rejected vara, the
+  special yogas the almanac found, and, against a native, **Tarabala**
+  (the nine taras, with the ghatis an unfavourable one spoils) and
+  **Chandrabala** under a table the caller names (Raman's, or the
+  baseline engine's; crux C160). `DayRules::raman()` is his panchanga
+  shuddhi, taken by name where his numbering slips (he calls Atiganda
+  "the 16th"). Tested on his worked examples and over assembled days.
+
+  **Numbers:** none; nothing existing reads it.
+
 - **Panchaka begins where the texts begin it** (`muhurta.md` §6 step 1,
   cruxes C158 and C159). Muhurta Chintamani (*Nakshatra Prakarana* v. 48)
   and Raman's *Muhurtha* both begin panchaka with the Moon in Aquarius,

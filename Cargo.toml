@@ -23,6 +23,7 @@ members = [
     "crates/geometry",
     "crates/gochar",
     "crates/kp",
+    "crates/muhurta",
     "crates/dasha",
     "crates/rules",
     "crates/interpret",

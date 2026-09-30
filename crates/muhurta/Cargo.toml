@@ -1,0 +1,32 @@
+[package]
+name = "teistro-muhurta"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+description = "The Teistro SDK's muhurta: an elected time judged clause by clause, as the texts judge it"
+readme = "README.md"
+# Publishes at the first release, never on a phase boundary
+# (docs/06-cicd/03-release-process.md).
+publish = false
+
+[features]
+# Derives `schemars::JsonSchema` on the judgement's types, so a later
+# document section can describe them (`docs/03-design/document-schema.md`).
+schema = ["dep:schemars", "teistro-core/schema", "teistro-panchanga/schema"]
+
+[dependencies]
+teistro-core = { path = "../core" }
+teistro-panchanga = { path = "../panchanga" }
+serde = { version = "1", features = ["derive"] }
+schemars = { version = "1.2", optional = true }
+
+[dev-dependencies]
+serde_json = "1"
+teistro-astro = { path = "../astro" }
+teistro-calendar = { path = "../calendar" }
+teistro-port-ephemeris = { path = "../port-ephemeris" }
+
+[lints]
+workspace = true
