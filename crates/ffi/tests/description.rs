@@ -149,7 +149,22 @@ fn the_versions_the_status_and_the_entry_points_are_described() {
             "VTABLE_ABI_VERSION",
             "TS_ABI_VERSION",
             "TS_CONTEXT_TEST_PROVIDER",
-            "TS_ERROR_OWNED"
+            "TS_ERROR_OWNED",
+            // The request bits, which the header names so a C caller
+            // writes a name and every binding generates it.
+            "TS_CHART_PANCHANGA",
+            "TS_CHART_STATE",
+            "TS_CHART_ASPECTS",
+            "TS_CHART_POINTS",
+            "TS_CHART_HOUSES",
+            "TS_CHART_ASHTAKAVARGA",
+            "TS_CHART_VIMSHOPAKA",
+            "TS_CHART_SHADBALA",
+            "TS_CHART_BHAVA_BALA",
+            "TS_CHART_VAISESHIKAMSA",
+            "TS_CHART_DASHA_PHALA",
+            "TS_CHART_JAIMINI",
+            "TS_PANCHANGA_YEARS",
         ]
     );
 }
