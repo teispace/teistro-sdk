@@ -17,6 +17,7 @@ use teistro_core::interval::Interval;
 use teistro_panchanga::omen::panchaka_remainder;
 
 use crate::clause::{Clause, ClauseKind};
+use crate::window::navamsa_of;
 
 /// The nine grahas, in the catalogue's order, which is the order of
 /// [`Sky::grahas`].
@@ -223,18 +224,10 @@ fn exalted(sky: &Sky, graha: Graha) -> bool {
     }
 }
 
-/// The sign a longitude falls in.
+/// The sign a longitude falls in, read off its navamsa so a window's
+/// cut and the judgement inside it agree on the boundary to the bit.
 fn sign_of(deg: f64) -> Rashi {
-    let index = deg.rem_euclid(360.0) / 30.0;
-    // The floor of a value in [0, 12) is a sign index; the cast cannot
-    // truncate anything the floor has not.
-    #[allow(
-        clippy::cast_possible_truncation,
-        clippy::cast_sign_loss,
-        reason = "a floor in 0..12"
-    )]
-    let id = index.floor() as u16;
-    Rashi::from_id(id.min(11)).unwrap_or(Rashi::Aries)
+    Rashi::from_id(u16::from(navamsa_of(deg) / 9)).unwrap_or(Rashi::Aries)
 }
 
 #[cfg(test)]

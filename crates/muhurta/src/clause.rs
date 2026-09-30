@@ -100,6 +100,12 @@ pub enum ClauseKind {
         /// Which.
         panchaka: Panchaka,
     },
+    /// The part of a sign's rising the lagna tyajya rejects (Raman, ch.
+    /// II; rasi visha ghatika, Mahadosha 13).
+    LagnaTyajya {
+        /// The sign rising.
+        sign: Rashi,
+    },
     /// A graha in the 7th from the lagna, which a marriage wants empty.
     SeventhOccupied {
         /// Who.
