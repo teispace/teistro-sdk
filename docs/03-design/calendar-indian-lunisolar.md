@@ -112,7 +112,7 @@ Ekadashi (12 August, adhika Shravana's dark 11th) "Shravana, Krishna"
 and Aja Ekadashi a month later, a nija dark 11th, "Bhadrapada, Krishna";
 the code had named the first Bhadrapada. Nepal writes the same whole
 month: its committee announces malmas from one new moon to the next
-(§9). `malmas-measured.md` counts every adhika day's purnimanta month
+(§9). `nepal-month-measured.md` counts every adhika day's purnimanta month
 against its amanta one, and was red before the rule.
 
 ## 5. The API
@@ -242,7 +242,7 @@ can be made on it.
 Nepal calls the adhika month *malmas* (मलमास), where north Indian usage
 often gives that word to Kharmas, the Sun in Sagittarius or Pisces
 (C177). The Nepal Panchanga Nirnayak Vikas Samiti announces each one's
-span, and [`malmas-measured.md`](malmas-measured.md) holds the almanac
+span, and [`nepal-month-measured.md`](nepal-month-measured.md) holds the almanac
 at Kathmandu to five announcements, BS 2072 to 2083, one of them given
 as instants.
 
@@ -263,7 +263,18 @@ a misprint or a different event. So the instants are set beside the new
 moons on the page, in minutes, and decide nothing.
 
 The day rule the announcements follow is the almanac's own: an adhika
-day is one whose sunrise falls inside the adhika month. Naming it in
+day is one whose sunrise falls inside the adhika month.
+
+**Nepal names its months purnimanta** (C183). The committee rules that
+Mahashivaratri is फाल्गुन कृष्ण चतुर्दशी, where an amanta almanac and
+*Dharmasindhu* say Magha; Gai Jatra, the day after श्रावण शुक्ल
+पूर्णिमा, is भाद्र कृष्ण प्रतिपदा, so the name turns at the full moon.
+The page's §4 holds six dated designations to the month the profile
+leads with, and one of them, a worked example written against the solar
+month, rules out reading the names as Bikram Sambat months. So
+`nepali-default` leads with the purnimanta month from its version 2.
+Only the lead moves: every rule that decides a festival or a muhurta
+reads the amanta month by name, and both are carried on every day. Naming it in
 Nepali is a separate step: no locale names a month kind or a muhurta
 blackout yet (roadmap, Nepali particulars).
 

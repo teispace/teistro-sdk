@@ -1472,8 +1472,8 @@ the astronomical numbers do not move. Nothing else computes yet.
   before the range rather than one, so its `festival.days` convention
   and hash change; no observance's day moves.
 
-- **Malmas, measured against Nepal** (`calendar-indian-lunisolar.md` §9,
-  C177). `cargo xtask malmas` (gated in fast-check) founds the almanac at
+- **Nepal's lunar month, measured** (`calendar-indian-lunisolar.md` §9,
+  C177). `cargo xtask nepal-month` (gated in fast-check) founds the almanac at
   Kathmandu and holds the days it marks `ADHIKA` to the five adhika
   months Nepal's panchanga committee announced, BS 2072 to 2083. The
   `nepali-default` profile over the built-in ephemeris and the
@@ -1487,6 +1487,14 @@ the astronomical numbers do not move. Nothing else computes yet.
   fortnight, so Parama Ekadashi, adhika Shravana's dark 11th in 2023,
   read Bhadrapada where purnimanta almanacs print Shravana. About half
   of every adhika month's days change; no other day does.
+
+  **Numbers:** `nepali-default` (version 2) leads its lunar month with
+  purnimanta, the month Nepal names (C183): Gai Jatra, the day after
+  Shravana's full moon, is Bhadra Krishna Pratipada, and the committee
+  rules Mahashivaratri Phalguna Krishna Chaturdashi. Every dark-fortnight
+  day's `month` under that profile moves to the next month's name;
+  `amanta` and `purnimanta` are unchanged, and no festival, fast or
+  muhurta moves, since each reads the amanta month by name.
 
 - **Neutralisation 11 can hold** (crux C167). Raman's eleventh
   neutralisation asks for Jupiter or Venus in a kendra with the malefics
