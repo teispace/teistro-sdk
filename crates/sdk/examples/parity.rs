@@ -3112,9 +3112,10 @@ const OWN_RULE: &str = r#"{"key":"LAKSHMI_PUJA","source":"the tithi at sunrise",
 /// The festivals a panchanga request carries, the shipped pack and the
 /// pack amended by a rule of the consumer's own, as the report prints them.
 ///
-/// 2024-10-10..11-03 at the test provider holds Vijaya Dashami and
-/// Lakshmi puja, so an observance's case, guard and dates cross every
-/// layer, and the amended pack proves a rule is replaced by its key.
+/// 2024-10-10..11-03 at the test provider holds Vijaya Dashami, Lakshmi
+/// puja and two Ekadashis, so an observance's case, guard and dates and a
+/// fast's vedha and excess cross every layer, and the amended pack proves
+/// a rule is replaced by its key.
 fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
     let from = CalendarDate::defined(Calendar::Gregorian, 2024, 10, 10);
     let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 3);
@@ -3162,6 +3163,26 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
                     number(observance.tithi.from.get()),
                     number(earlier.held),
                     number(later.held),
+                ),
+            );
+        }
+        for (k, fast) in answer.ekadashis.iter().enumerate() {
+            put(
+                report,
+                &key(&format!("-ekadashi-{k}")),
+                format!(
+                    "{} {} {} {} {}-{} {} {} {} {} {}",
+                    fast.rule,
+                    fast.tithi.full_key(),
+                    fast.month.full_key(),
+                    fast.adhika,
+                    fast.day.month,
+                    fast.day.day,
+                    fast.pierced_at.as_ref().map_or_else(|| "-".to_owned(), tag),
+                    fast.pierced,
+                    tag(&fast.excess),
+                    tag(&fast.choice),
+                    number(fast.tithis[1].from.get()),
                 ),
             );
         }

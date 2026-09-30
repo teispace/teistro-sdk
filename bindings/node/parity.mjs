@@ -940,6 +940,23 @@ for (const [name, rules] of [
       ].join(' '),
     );
   });
+  festivals.ekadashis.forEach((fast, k) => {
+    put(
+      key(`-ekadashi-${k}`),
+      [
+        fast.rule,
+        fast.tithi,
+        fast.month,
+        fast.adhika,
+        `${fast.day.month}-${fast.day.day}`,
+        fast.piercedAt ?? '-',
+        fast.pierced,
+        fast.excess,
+        fast.choice,
+        number(fast.tithis[1].from),
+      ].join(' '),
+    );
+  });
 }
 geo.dispose();
 

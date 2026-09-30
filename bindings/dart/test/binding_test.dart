@@ -1583,6 +1583,21 @@ void _engineTests() {
     expect(dashami.extents.$1.day.calendar, Calendar.gregorian);
     expect(['GUARD', 'OTHERWISE'], contains(dashami.decidedBy.by));
     expect(answer.unjudged, isEmpty);
+    // Two Ekadashis in the range, each under the pack's three observers.
+    const observers = [
+      'EKADASHI_VAISHNAVA',
+      'EKADASHI_SMARTA',
+      'EKADASHI_SMARTA_RENUNCIANT',
+    ];
+    expect(
+      [for (final fast in answer.ekadashis) fast.rule],
+      [...observers, ...observers],
+    );
+    final fast = answer.ekadashis.first;
+    expect((fast.tithi, fast.month), (Tithi.shuklaEkadashi, Masa.ashwina));
+    expect(fast.days.$1.calendar, Calendar.gregorian);
+    expect(fast.day.calendar, Calendar.gregorian);
+    expect(['EARLIER', 'LATER'], contains(fast.choice));
     for (var k = 0; k < plain.length; k += 1) {
       expect(
         almanac.at(k).provenance.contentHash,
@@ -1644,6 +1659,20 @@ void _engineTests() {
           ],
         ),
         'festivals.rules[0].at.window',
+      ),
+      (
+        const FestivalRequest(
+          rules: [
+            FestivalPack.dharmasindhu,
+            {
+              'key': 'MINE',
+              'source': '',
+              'vedha': 'DUSK',
+              'table': <String, Object?>{},
+            },
+          ],
+        ),
+        'festivals.rules[1].vedha',
       ),
       (const FestivalRequest(rules: [1]), 'festivals.rules[0]'),
     ]) {

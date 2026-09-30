@@ -80,13 +80,28 @@ fn a_year_holds_each_shipped_rule_once_in_its_season() {
             days[0].day
         );
     }
+    // Two Ekadashis a lunar month, so 24 to 26 a year, the same number
+    // under each observer.
+    for rule in [
+        "EKADASHI_VAISHNAVA",
+        "EKADASHI_SMARTA",
+        "EKADASHI_SMARTA_RENUNCIANT",
+    ] {
+        let fasts = found
+            .value
+            .ekadashis
+            .iter()
+            .filter(|fast| fast.rule == rule)
+            .count();
+        assert!((24..=26).contains(&fasts), "{rule}: {fasts}");
+    }
     let widened = found
         .provenance
         .applied_conventions
         .iter()
         .find(|convention| convention.knob == "festival.days")
         .unwrap();
-    assert_eq!(widened.value, "GREGORIAN 2025-12-31..GREGORIAN 2027-01-02");
+    assert_eq!(widened.value, "GREGORIAN 2025-12-30..GREGORIAN 2027-01-02");
 }
 
 #[test]
@@ -199,4 +214,44 @@ fn muhurta_and_festivals_asked_together_answer_as_each_alone_over_one_run_of_day
         (neither.days, neither.muhurta, neither.festivals),
         (days, None, None)
     );
+}
+
+#[test]
+fn a_kshaya_eleventh_pierced_at_sunrise_splits_the_three_observers() {
+    // 2023's bright 11th of Bhadrapada at Delhi began after the 25th's
+    // sunrise and ended before the 26th's: pierced at sunrise, holding no
+    // sunrise of its own. The published almanac gives the Smarta fast the
+    // 25th and the renunciant's and the Vaishnava's the 26th, as the text's
+    // S8 does.
+    let (from, to) = (
+        CalendarDate::defined(Calendar::Gregorian, 2023, 9, 20),
+        CalendarDate::defined(Calendar::Gregorian, 2023, 9, 30),
+    );
+    let found = context()
+        .almanac()
+        .festivals(
+            &from,
+            &to,
+            &delhi(),
+            UtcOffset::literal(5, 30, 0),
+            &FestivalRequest::from(FestivalPack::Dharmasindhu),
+        )
+        .unwrap()
+        .value;
+    let days: Vec<(&str, u8)> = found
+        .ekadashis
+        .iter()
+        .map(|fast| (fast.rule.as_str(), fast.day.day))
+        .collect();
+    assert_eq!(
+        days,
+        [
+            ("EKADASHI_VAISHNAVA", 26),
+            ("EKADASHI_SMARTA", 25),
+            ("EKADASHI_SMARTA_RENUNCIANT", 26),
+        ]
+    );
+    let fast = &found.ekadashis[0];
+    assert_eq!(fast.pierced_at, Some(teistro::festival::Vedha::Sunrise));
+    assert_eq!(fast.days.each_ref().map(|day| day.day), [25, 26]);
 }

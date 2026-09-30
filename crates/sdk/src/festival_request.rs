@@ -9,13 +9,14 @@
 use serde::Serialize;
 use serde_json::Value;
 use teistro_core::error::Error;
-use teistro_panchanga::festival::FestivalRule;
+use teistro_panchanga::festival::{EkadashiRule, FestivalRule};
 
 /// A pack of rules the SDK ships, which a request may name rather than
 /// spell out.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum FestivalPack {
-    /// *Dharmasindhu*'s rules ([`FestivalRule::dharmasindhu`]).
+    /// *Dharmasindhu*'s rules ([`FestivalRule::dharmasindhu`]) and its
+    /// three Ekadashi observers ([`EkadashiRule::dharmasindhu`]).
     Dharmasindhu,
 }
 
@@ -31,16 +32,25 @@ impl FestivalPack {
         }
     }
 
-    /// Its rules.
+    /// Its karmakala rules.
     #[must_use]
     pub fn rules(self) -> Vec<FestivalRule> {
         match self {
             FestivalPack::Dharmasindhu => FestivalRule::dharmasindhu(),
         }
     }
+
+    /// Its Ekadashi rules.
+    #[must_use]
+    pub fn ekadashis(self) -> Vec<EkadashiRule> {
+        match self {
+            FestivalPack::Dharmasindhu => EkadashiRule::dharmasindhu(),
+        }
+    }
 }
 
-/// What a festival reckoning is asked: rules, each key once.
+/// What a festival reckoning is asked: karmakala rules and Ekadashi
+/// rules, each key once across both, because an answer is named by it.
 ///
 /// ```
 /// use teistro::{FestivalPack, FestivalRequest};
@@ -53,6 +63,7 @@ impl FestivalPack {
 /// let asked = FestivalRequest::from(FestivalPack::Dharmasindhu).with_rule(earlier.clone());
 /// assert_eq!(asked.rules().len(), 4);
 /// assert_eq!(asked.rules()[3], earlier);
+/// assert_eq!(asked.ekadashis().len(), 3);
 ///
 /// // The same, as a binding writes it.
 /// let text = format!(r#"{{"rules": ["DHARMASINDHU", {}]}}"#, serde_json::to_string(&earlier)?);
@@ -65,11 +76,12 @@ impl FestivalPack {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub struct FestivalRequest {
     rules: Vec<FestivalRule>,
+    ekadashis: Vec<EkadashiRule>,
 }
 
 impl From<FestivalPack> for FestivalRequest {
     fn from(pack: FestivalPack) -> FestivalRequest {
-        FestivalRequest::new(pack.rules())
+        FestivalRequest::new(pack.rules()).with_ekadashis(pack.ekadashis())
     }
 }
 
@@ -78,13 +90,17 @@ impl FestivalRequest {
     /// refuses a key given twice.
     #[must_use]
     pub fn new(rules: Vec<FestivalRule>) -> FestivalRequest {
-        FestivalRequest { rules }
+        FestivalRequest {
+            rules,
+            ekadashis: Vec::new(),
+        }
     }
 
     /// The same request with a rule added, or put in place of the one
-    /// with its key.
+    /// with its key; an Ekadashi rule with that key goes.
     #[must_use]
     pub fn with_rule(mut self, rule: FestivalRule) -> FestivalRequest {
+        self.ekadashis.retain(|held| held.key != rule.key);
         match self.rules.iter_mut().find(|held| held.key == rule.key) {
             Some(held) => *held = rule,
             None => self.rules.push(rule),
@@ -92,35 +108,63 @@ impl FestivalRequest {
         self
     }
 
-    /// The rules, in order.
+    /// The same request with an Ekadashi rule added, or put in place of
+    /// the one with its key; a karmakala rule with that key goes.
+    #[must_use]
+    pub fn with_ekadashi(mut self, rule: EkadashiRule) -> FestivalRequest {
+        self.rules.retain(|held| held.key != rule.key);
+        match self.ekadashis.iter_mut().find(|held| held.key == rule.key) {
+            Some(held) => *held = rule,
+            None => self.ekadashis.push(rule),
+        }
+        self
+    }
+
+    /// The same request with each of these Ekadashi rules, as
+    /// [`FestivalRequest::with_ekadashi`].
+    #[must_use]
+    pub fn with_ekadashis(self, rules: impl IntoIterator<Item = EkadashiRule>) -> FestivalRequest {
+        rules.into_iter().fold(self, FestivalRequest::with_ekadashi)
+    }
+
+    /// The karmakala rules, in order.
     #[must_use]
     pub fn rules(&self) -> &[FestivalRule] {
         &self.rules
     }
 
+    /// The Ekadashi rules, in order.
+    #[must_use]
+    pub fn ekadashis(&self) -> &[EkadashiRule] {
+        &self.ekadashis
+    }
+
     /// Refuses what no reckoning could answer, naming the field under
-    /// `rules`: a rule [`FestivalRule::check`] refuses, or a key given
-    /// twice, which would answer two observances a reader cannot tell
-    /// apart.
+    /// `rules` or `ekadashis`: a rule its own `check` refuses, or a key
+    /// given twice across both, which would answer two observances a
+    /// reader cannot tell apart.
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` on `rules[i]` and the rule's own field.
+    /// `INVALID_ARG` on `rules[i]` or `ekadashis[i]` and the rule's own
+    /// field.
     pub fn check(&self) -> Result<(), Error> {
-        for (index, rule) in self.rules.iter().enumerate() {
-            let at = format!("rules[{index}]");
-            rule.check().map_err(|why| why.under(&at))?;
-            if self
-                .rules
-                .iter()
-                .take(index)
-                .any(|held| held.key == rule.key)
-            {
-                return Err(Error::invalid_arg(format!(
-                    "the key `{}` is given twice; an observance is named by its rule's key, so a pack holds each once",
-                    rule.key
-                ))
-                .with_field(format!("{at}.key")));
+        let rules = self.rules.iter().map(|rule| (&rule.key, rule.check()));
+        let ekadashis = self.ekadashis.iter().map(|rule| (&rule.key, rule.check()));
+        let mut seen = std::collections::BTreeSet::new();
+        for (list, items) in [
+            ("rules", rules.collect::<Vec<_>>()),
+            ("ekadashis", ekadashis.collect()),
+        ] {
+            for (index, (key, checked)) in items.into_iter().enumerate() {
+                let at = format!("{list}[{index}]");
+                checked.map_err(|why| why.under(&at))?;
+                if !seen.insert(key) {
+                    return Err(Error::invalid_arg(format!(
+                        "the key `{key}` is given twice; an observance is named by its rule's key, so a pack holds each once"
+                    ))
+                    .with_field(format!("{at}.key")));
+                }
             }
         }
         Ok(())
@@ -129,8 +173,9 @@ impl FestivalRequest {
     /// The request a binding writes as `festivals`, read and checked.
     ///
     /// `rules` names a [`FestivalPack`] (`"DHARMASINDHU"`), or is a list
-    /// whose items each name a pack or spell a [`FestivalRule`] out, in
-    /// order; a later rule replaces an earlier one with its key. A
+    /// whose items each name a pack or spell a rule out, in order: an
+    /// [`EkadashiRule`] when it has a `vedha`, else a [`FestivalRule`]. A
+    /// later rule replaces an earlier one with its key. A
     /// catalogue member anywhere in it may be written bare or in full
     /// (`masa.ASHWINA`), as every binding reads one back.
     ///
@@ -154,9 +199,17 @@ impl FestivalRequest {
             };
             match item {
                 Value::String(name) => {
-                    for rule in pack(name, &field)?.rules() {
-                        request = request.with_rule(rule);
-                    }
+                    let pack = pack(name, &field)?;
+                    request = pack
+                        .rules()
+                        .into_iter()
+                        .fold(request, FestivalRequest::with_rule)
+                        .with_ekadashis(pack.ekadashis());
+                }
+                Value::Object(spelt) if listed && spelt.contains_key("vedha") => {
+                    let rule: EkadashiRule = teistro_core::strict::read_value(item, &field)?;
+                    rule.check().map_err(|why| why.under(&field))?;
+                    request = request.with_ekadashi(rule);
                 }
                 other if listed => {
                     let rule: FestivalRule = teistro_core::strict::read_value(other, &field)?;
@@ -292,6 +345,41 @@ mod tests {
             refused(&format!(r#"{{"rules": [{unknown}]}}"#)).as_deref(),
             Some("festivals.rules[0].colour")
         );
+    }
+
+    #[test]
+    fn an_ekadashi_rule_is_read_by_its_vedha_and_replaces_by_key() {
+        let mut madhava = EkadashiRule::dharmasindhu().remove(1);
+        madhava.table.pure.twelfth = teistro_panchanga::festival::Which::Earlier;
+        let rule = serde_json::to_string(&madhava).unwrap();
+        let asked =
+            FestivalRequest::from_json(&format!(r#"{{"rules": ["DHARMASINDHU", {rule}]}}"#))
+                .unwrap();
+        assert_eq!(asked.ekadashis().len(), 3);
+        assert_eq!(asked.ekadashis()[1], madhava);
+        assert_eq!(asked.rules().len(), 4);
+        // A field the Ekadashi rule does not have is refused by its path.
+        let wrong = rule.replacen('{', r#"{"month": "KARTIKA", "#, 1);
+        assert_eq!(
+            refused(&format!(r#"{{"rules": [{wrong}]}}"#)).as_deref(),
+            Some("festivals.rules[0].month")
+        );
+    }
+
+    #[test]
+    fn a_key_is_one_rule_s_across_both_kinds() {
+        let mut ekadashi = EkadashiRule::dharmasindhu().remove(0);
+        ekadashi.key = "JANMASHTAMI".to_owned();
+        let asked = FestivalRequest::from(FestivalPack::Dharmasindhu).with_ekadashi(ekadashi);
+        assert!(asked.rules().iter().all(|rule| rule.key != "JANMASHTAMI"));
+        let twice = FestivalRequest::new(FestivalRule::dharmasindhu()).with_ekadashis([]);
+        let mut clash = EkadashiRule::dharmasindhu().remove(0);
+        clash.key = "RAMA_NAVAMI".to_owned();
+        let twice = FestivalRequest {
+            ekadashis: vec![clash],
+            ..twice
+        };
+        assert_eq!(twice.check().unwrap_err().field(), Some("ekadashis[0].key"));
     }
 
     #[test]

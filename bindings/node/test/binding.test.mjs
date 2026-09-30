@@ -2157,6 +2157,19 @@ test('an almanac carries the festivals it was asked for', () => {
   assert.equal(dashami.extents[0].day.calendar, 'calendar.GREGORIAN');
   assert.ok(['GUARD', 'OTHERWISE'].includes(dashami.decidedBy.by));
   assert.deepEqual(answer.unjudged, []);
+  // Two Ekadashis in the range, each under the pack's three observers.
+  const observers = ['EKADASHI_VAISHNAVA', 'EKADASHI_SMARTA', 'EKADASHI_SMARTA_RENUNCIANT'];
+  assert.deepEqual(
+    answer.ekadashis.map((fast) => fast.rule),
+    [...observers, ...observers],
+  );
+  const [fast] = answer.ekadashis;
+  assert.equal(fast.tithi, 'tithi.SHUKLA_EKADASHI');
+  assert.equal(fast.month, 'masa.ASHWINA');
+  assert.equal(fast.days[0].calendar, 'calendar.GREGORIAN');
+  assert.equal(fast.day.calendar, 'calendar.GREGORIAN');
+  assert.ok(['EARLIER', 'LATER'].includes(fast.choice));
+  assert.ok(Object.isFrozen(fast.days[1]), 'frozen to its leaves');
   for (let k = 0; k < plain.length; k += 1) {
     assert.equal(almanac.at(k).provenance.contentHash, plain.at(k).provenance.contentHash);
   }
@@ -2183,6 +2196,7 @@ test('an almanac carries the festivals it was asked for', () => {
     [{ rules: 'DHARMA' }, 'festivals.rules'],
     [{ rules: ['DHARMASINDHU', { ...sunrise, key: '' }] }, 'festivals.rules[1].key'],
     [{ rules: [{ ...sunrise, at: { window: 'DUSK' } }] }, 'festivals.rules[0].at.window'],
+    [{ rules: ['DHARMASINDHU', { key: 'MINE', source: '', vedha: 'DUSK', table: {} }] }, 'festivals.rules[1].vedha'],
   ]) {
     assert.throws(
       () => ctx.almanac.of({ ...days, festivals }),

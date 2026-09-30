@@ -2560,10 +2560,11 @@ export interface AlmanacRequest {
 export interface FestivalRequest {
   /**
    * A pack the SDK ships, by name; or a list whose items each name a pack
-   * or spell a rule out, in order, a later rule replacing an earlier one
-   * with its key.
+   * or spell a rule out, in order: an Ekadashi rule when it has a `vedha`,
+   * else a festival rule. A later rule replaces an earlier one with its
+   * key.
    */
-  readonly rules: FestivalPack | readonly (FestivalPack | FestivalRule)[];
+  readonly rules: FestivalPack | readonly (FestivalPack | FestivalRule | EkadashiRule)[];
 }
 
 /** A pack of festival rules the SDK ships. */
@@ -2623,6 +2624,57 @@ export interface FestivalRule {
   readonly otherwise: FestivalChoice;
 }
 
+/** Where the 10th pierces the 11th's day: four ghatis before sunrise (the Vaishnavas'), or at sunrise (the Smartas'). */
+export type EkadashiVedha = 'ARUNODAYA' | 'SUNRISE';
+
+/** Which of the 11th and the 12th hold the sunrise after their own day. */
+export type EkadashiExcess = 'ELEVENTH' | 'TWELFTH' | 'BOTH' | 'NEITHER';
+
+/** The day each of the four kinds takes: the 11th's own, or the day after. */
+export interface EkadashiKinds {
+  readonly eleventh: FestivalWhich;
+  readonly twelfth: FestivalWhich;
+  readonly both: FestivalWhich;
+  readonly neither: FestivalWhich;
+}
+
+/** Whose Ekadashi fast, and by what (`03-design/festival-rules.md` §8.3). */
+export interface EkadashiRule {
+  /** Its key in its pack, `'EKADASHI_SMARTA'`; a fast is named by it. */
+  readonly key: string;
+  /** Where the rule is stated. */
+  readonly source: string;
+  /** Where the 10th pierces. */
+  readonly vedha: EkadashiVedha;
+  /** The day each kind takes, the 11th pure and pierced. */
+  readonly table: { readonly pure: EkadashiKinds; readonly pierced: EkadashiKinds };
+}
+
+/** An Ekadashi's fast under one rule: the day, and the facts that gave it. */
+export interface EkadashiFast {
+  /** The rule's key. */
+  readonly rule: string;
+  /** The bright or the dark 11th. */
+  readonly tithi: Tithi;
+  /** Its amanta month. */
+  readonly month: Masa;
+  /** Whether that month is adhika. */
+  readonly adhika: boolean;
+  /** The 10th, the 11th and the 12th, whole. */
+  readonly tithis: readonly [Interval, Interval, Interval];
+  /** The 11th's own day and the day after (C181). */
+  readonly days: readonly [CalendarDate, CalendarDate];
+  /** Where the 10th pierces the 11th's day, whatever the rule reckons, or `null`. */
+  readonly piercedAt: EkadashiVedha | null;
+  /** Whether that pierces by the rule's vedha. */
+  readonly pierced: boolean;
+  readonly excess: EkadashiExcess;
+  /** The table's day, which `day` resolves. */
+  readonly choice: FestivalWhich;
+  /** The fast. */
+  readonly day: CalendarDate;
+}
+
 /** A day's window for the rite, and the fraction of it the tithi held. */
 export interface FestivalExtent {
   readonly day: CalendarDate;
@@ -2653,6 +2705,8 @@ export interface FestivalObservance {
 export interface FestivalAnswer {
   /** Each rule's days, in the order of the tithis. */
   readonly observances: readonly FestivalObservance[];
+  /** Each Ekadashi rule's fasts, in the order of the tithis. */
+  readonly ekadashis: readonly EkadashiFast[];
   /** The occurrences no day could be given to, and why. */
   readonly unjudged: readonly { readonly rule: string; readonly tithi: Interval; readonly why: string }[];
   /** What computed it: the widened days among the applied conventions as `festival.days`, and the hash of this value. */

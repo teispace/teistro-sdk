@@ -2850,6 +2850,11 @@ function festivalsFrom(json) {
       day: dateFrom(observance.day),
       extents: observance.extents.map((extent) => ({ ...extent, day: dateFrom(extent.day) })),
     })),
+    ekadashis: value.ekadashis.map((fast) => ({
+      ...fast,
+      days: fast.days.map(dateFrom),
+      day: dateFrom(fast.day),
+    })),
     unjudged: value.unjudged,
     provenance: decodeProvenance(provenance),
   });

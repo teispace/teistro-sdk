@@ -15,72 +15,20 @@
     reason = "tests fail by panicking and index fixed lists"
 )]
 
+use teistro_calendar::EraNumber;
 use teistro_calendar::lunisolar::MonthKind;
-use teistro_calendar::{CalendarDate, EraNumber};
-use teistro_core::catalogue::{Calendar, Era, Masa, Nakshatra, Tithi};
+use teistro_core::catalogue::{Era, Masa, Nakshatra, Tithi};
 use teistro_core::interval::Interval;
-use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
-    Case, Choice, DayPart, Decided, Edge, FestivalDay, FestivalRule, Guard, Observances, Predicate,
-    Unjudged, Which, Window, observances, yugma,
+    Case, Choice, DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, Guard,
+    Observances, Predicate, Unjudged, Which, Window, ekadashis, observances, yugma,
 };
 use teistro_panchanga::month;
-use teistro_panchanga::span::Span;
 
-const DAYS: usize = 5;
+mod common;
 
-fn ghati(day: usize, ghatis: f64) -> f64 {
-    #[allow(clippy::cast_precision_loss, reason = "a handful of days")]
-    let day = day as f64;
-    day + ghatis / 60.0
-}
-
-/// Five synthetic days over a run of tithis, each `(tithi, ends)` ending
-/// at a Julian day, in a month named `amanta`, of `kind`.
-fn days_of(
-    tithis: &[(Tithi, f64)],
-    nakshatras: &[(Nakshatra, f64)],
-    amanta: Masa,
-    kind: MonthKind,
-) -> Vec<FestivalDay> {
-    fn spans<T: Copy>(runs: &[(T, f64)], window: Interval) -> Vec<Span<T>> {
-        let mut from = 0.0;
-        let mut out = Vec::new();
-        for &(member, to) in runs {
-            if let Some(span) = Span::new(member, Interval::literal(from, to), window) {
-                out.push(span);
-            }
-            from = to;
-        }
-        out
-    }
-    (0..DAYS)
-        .map(|k| {
-            let rise = ghati(k, 0.0);
-            let window = Interval::literal(rise, rise + 1.0);
-            let tithi = spans(tithis, window);
-            let at_sunrise = tithi
-                .first()
-                .map_or(Tithi::ShuklaPratipada, |span| span.member);
-            FestivalDay {
-                date: CalendarDate::defined(
-                    Calendar::Gregorian,
-                    2024,
-                    1,
-                    u8::try_from(k + 1).unwrap(),
-                ),
-                sunrise: JulianDay::literal(rise),
-                sunset: JulianDay::literal(rise + 0.5),
-                next_sunrise: JulianDay::literal(rise + 1.0),
-                normal: true,
-                month: month::of(amanta, at_sunrise, Convention::Amanta, kind),
-                tithi,
-                nakshatra: spans(nakshatras, window),
-            }
-        })
-        .collect()
-}
+use common::{days_of, days_over, ghati};
 
 fn janmashtami() -> FestivalRule {
     FestivalRule::dharmasindhu()
@@ -537,13 +485,19 @@ fn string_paths(
 #[test]
 fn an_answer_names_its_catalogue_members_where_its_table_says() {
     // Every string an answer holds that is not a catalogue member.
-    const NOT_MEMBERS: [&str; 8] = [
+    const NOT_MEMBERS: [&str; 14] = [
         "observances.rule",
         "observances.day.resolution.kind",
         "observances.extents.day.resolution.kind",
         "observances.case",
         "observances.decidedBy.by",
         "observances.choice",
+        "ekadashis.rule",
+        "ekadashis.days.resolution.kind",
+        "ekadashis.day.resolution.kind",
+        "ekadashis.piercedAt",
+        "ekadashis.excess",
+        "ekadashis.choice",
         "unjudged.rule",
         "unjudged.why",
     ];
@@ -569,6 +523,22 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
         tithi: Interval::literal(0.0, 1.0),
         why: "a reason".to_owned(),
     });
+    // An 11th pierced at arunodaya, so every field of a fast is written.
+    let eleventh = [
+        (Tithi::KrishnaNavami, ghati(0, 50.0)),
+        (Tithi::KrishnaDashami, ghati(1, 58.0)),
+        (Tithi::KrishnaEkadashi, ghati(3, 1.0)),
+        (Tithi::KrishnaDwadashi, ghati(3, 58.0)),
+        (Tithi::KrishnaTrayodashi, ghati(5, 40.0)),
+    ];
+    let days = days_over(6, &eleventh, &[], Masa::Kartika, MonthKind::Nija);
+    let mut answer = answer.merged(ekadashis(&EkadashiRule::dharmasindhu()[..1], &days).unwrap());
+    let fast = &mut answer.ekadashis[0];
+    assert!(fast.pierced_at.is_some());
+    fast.day.era = era;
+    for day in &mut fast.days {
+        day.era = era;
+    }
     let mut found = std::collections::BTreeSet::new();
     string_paths(&serde_json::to_value(&answer).unwrap(), "", &mut found);
     let members: std::collections::BTreeSet<String> = Observances::MEMBERS

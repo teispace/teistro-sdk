@@ -1,6 +1,6 @@
 # Festival rules: deciding the day of an observance
 
-Status: `building`, 2026-09-30: §6 steps 1 to 3 built. Written from the source
+Status: `building`, 2026-09-30: §6 steps 1 to 5 built, Ekadashi's (§8) held to the text's twelve examples and to four years of a published almanac. Written from the source
 before any code; §4 is as built, and says where the building corrected
 it.
 
@@ -263,7 +263,7 @@ reports that it did.
    and the synthetic-day tests (§5.1), proved red by breaking a rule
    and the verse.
 2. **Built**: `sdk.almanac().festivals(from, to, place, clock, &request)`
-   over days founded once, widened by one day before and two after, so
+   over days founded once, widened by two days before and two after, so
    that a whole year can be asked for. A rule is refused by its place in
    the request (`rules[2].decide.when.ghatis`). Over 2026 at Delhi each
    shipped rule falls once, in its season, with nothing unjudged. The
@@ -281,7 +281,12 @@ reports that it did.
    `sdk.almanac().asked` founds the days once when muhurta and festivals
    are asked together. The parity runners ask the shipped pack and the
    pack amended by a rule of the runner's own, and all five agree.
-5. Ekadashi, both schools, held to pp. 11–12's examples.
+5. **Built**: Ekadashi (§8), both schools, held to pp. 11–12's twelve
+   examples and to a published almanac's Smarta, Gauna and Vaishnava
+   dates (`festival-measured.md` §3). The `DHARMASINDHU` pack carries
+   the three Ekadashi rules beside the karmakala ones, an item with a
+   `vedha` is read as one, and every binding reads `ekadashis` back; the
+   parity runners print each fast, and all five agree.
 
 ## 7. At the boundary
 
@@ -354,3 +359,153 @@ is. The provenance carries `festival.days`, the widened range.
 | Malformed `festivals_json`, an unknown pack or field | `INVALID_ARG` naming the key under `festivals` |
 | A rule `check` refuses, or a key given twice | `INVALID_ARG` on `festivals.rules[i].<field>` |
 | The range | the almanac's own refusal, which comes first |
+
+## 8. Ekadashi
+
+Derived from pp. 11–12, read off the page images (PDF pp. 34–35), before
+any code; §6 step 5.
+
+### 8.1 What the text says
+
+**Two vedhas** (p. 11). *Arunodaya* is four ghatis before sunrise. The
+10th entering "even a pala" past 56 ghatis pierces at arunodaya, which is
+the Vaishnavas' concern. The 10th standing a pala past "the sixty-ghati
+sunrise" pierces at sunrise, which is the Smartas'. Both counts run
+from the 10th's own sunrise. A pierced (*viddha*) 11th is left, and for
+Vaishnavas the 12th is fasted.
+
+**Excess** (*adhikya*) is "standing past sunrise". The 11th is in excess
+when it holds the next day's sunrise, and the 12th when it holds the
+sunrise after that. That makes four kinds: the 11th alone, the 12th
+alone, both, or neither. With the two vedhas there are eight.
+
+**The notation.** Each example lists almanac lines, the ghati at which
+a tithi ends past a sunrise. `60 । 1` is two lines: a tithi that fills
+a day and ends a ghati past the next sunrise. *kshaya* marks one that
+holds no sunrise at all.
+
+| | 10th | 11th | 12th | vedha | excess | text |
+|---|---:|---:|---:|---|---|---|
+| V1 | 55 | 60 । 1 | kshaya 58 | none | 11th | Vaishnava later; Smarta householder earlier |
+| V2 | 55 | 58 | 60 । 1 | none | 12th | Vaishnava the 12th's day; Smarta earlier |
+| V3 | 55 | 60 । 1 | 5 | none | both | all later |
+| V4 | 55 | 57 | 58 | none | neither | all earlier |
+| S1 | 58 | 60 । 1 | kshaya 58 | arunodaya | 11th | householder earlier; renunciant, Vaishnava later |
+| S2 | 4 | 2 | kshaya 58 | sunrise | 11th | as S1 |
+| S3 | 58 | 60 । 1 | 4 | arunodaya | both | all later |
+| S4 | 2 | 3 | 4 | sunrise | both | all later |
+| S5 | 58 | 59 | 60 । 1 | arunodaya | 12th | Madhava: Smarta earlier; Hemadri: all later |
+| S6 | 1 | kshaya 58 | 60 । 1 | sunrise | 12th | Smarta later "because pierced"; Vaishnava later |
+| S7 | 57 | 58 | 59 | arunodaya | neither | Smarta earlier; Vaishnava later (57 > 56) |
+| S8 | 2 | kshaya 56 | 59 | sunrise | neither | Smarta earlier; renunciant, Vaishnava later |
+
+The text sums it up in its own words. With both in excess, or the 12th
+alone, a Smarta leaves a pierced 11th, "and not otherwise". A Vaishnava
+leaves every pierced kind that has an excess, and S7 and S8 show a
+pierced one with neither is left too. The renunciant list covers yatis,
+the desireless householder, the forest-dweller, widows and those
+seeking release. They take the later day in S1, S2 and S8. Those
+"desiring Vishnu's favour" fast both days, "some say".
+
+**The closing** (p. 12). "Today" the learned set aside Hemadri's view
+and the distinction of desire, and give every Smarta decision by
+Madhava. "न तु क्वचिदुपवासद्वयं ... एकं परोपवासं वा": they give
+*neither* two fasts *nor* one later fast for all in S5. The first
+draft of this page dropped the "वा" and read it the other way. That
+contradicted V2 and was refused by the published almanac (§8.4), which
+is what sent the clause back to the page image (C182).
+
+### 8.2 Which day is the 11th's (C181)
+
+**D1 is the day in whose daylight the 11th begins; one beginning at
+night belongs to the next day.** Equivalently, it is the first day
+whose sunset follows the 11th's start. D2 is the day after. A kshaya
+11th is at least 47 ghatis long and ends before a sunrise, so it
+always begins in daylight. That means it needs no case of its own:
+D1 is the day it runs in (S6, S8).
+
+The first draft chose another rule that fits all twelve rows: "the day
+after the 10th's own sunrise day", which makes S2's and S4's pierced D1
+a vriddhi 10th's second sunrise. It rejected the rule above as moving
+the fast off the sunrise-tithi day, "which no almanac does". Measured,
+the almanac does. In 2024 (Papankusha) and 2025 (Devutthana) the 10th
+ended about three hours after sunrise and the 11th held the next
+sunrise for minutes. The almanac gives the Smarta the day the 11th
+began in, and the renunciant and the Vaishnava the next, S2's pattern,
+with no vriddhi 10th. The draft's rule parted on both.
+
+### 8.3 The design
+
+An Ekadashi rule is not a `FestivalRule`. Its two days are D1 and D2,
+not the pair a karmakala rule uses. Its facts are a vedha and a kind,
+not one of the six cases. What decides is a table:
+
+```rust
+pub struct EkadashiRule {
+    pub key: String,          // "EKADASHI_SMARTA"
+    pub source: String,
+    pub vedha: Vedha,         // Arunodaya | Sunrise
+    pub table: EkadashiTable, // pure: [Fast; 4], pierced: [Fast; 4]
+}
+pub enum Fast { Ekadashi, Dvadashi } // D1, D2
+```
+
+The kinds are ordered 11th alone, 12th alone, both, neither. The pack
+ships the text's columns, each citing its rows:
+
+| key | vedha | pure | pierced |
+|---|---|---|---|
+| `EKADASHI_VAISHNAVA` | arunodaya | D2 D2 D2 D1 | D2 D2 D2 D2 |
+| `EKADASHI_SMARTA` | sunrise | D1 D1 D2 D1 | D1 D2 D2 D1 |
+| `EKADASHI_SMARTA_RENUNCIANT` | sunrise | D2 D1 D2 D1 | D2 D2 D2 D2 |
+
+In S5, `EKADASHI_SMARTA` takes Madhava's D1, which the closing says
+present practice follows (C182). Hemadri's D2 for all is one cell a
+consumer changes. The renunciant's D2 in S5 is only what "some say"
+(केचित्), so the shipped column takes the householder's day. The
+renunciants are not named in S7 either, so they keep the Smarta D1
+there. The two-fast view is not shipped: the closing refuses it, and
+a rule answers one day.
+
+The answer is an `Ekadashi` observance beside the others: the rule, the
+tithi (bright or dark 11th) and the lunar month, D1 and D2, the vedha
+found (the 10th's end against D1's arunodaya and sunrise), the kind, the
+cell that decided, and the day.
+
+**As built** (`teistro_panchanga::festival::ekadashi`), three things moved:
+
+- A cell is the shared `Which`, `EARLIER` for D1 and `LATER` for D2, not
+  a `Fast` of its own, because a consumer who writes a karmakala rule
+  already spells a day that way. The four kinds are named fields of an
+  `EkadashiKinds` (`eleventh`, `twelfth`, `both`, `neither`), not an
+  array, so a rule in JSON names each cell it changes.
+- The answer is an `EkadashiFast` in its own list, `Observances.ekadashis`,
+  beside the karmakala observances: its facts are a vedha and an excess,
+  not a case and two extents. `piercedAt` is where the 10th reached,
+  whatever the rule's vedha, and `pierced` whether that counts under it,
+  so a fast read under one school says what another would see.
+- The façade founds two days before a range, not one, since a fast whose
+  day is the range's first may have its 10th two sunrises back (§8.4).
+
+### 8.4 What is measured
+
+- **The twelve rows** as synthetic sixty-ghati days, each under each
+  shipped rule, asserting the text's day.
+- **Drik Panchang's New Delhi lists** for 2023 to 2026: its Ekadashi
+  list (the Smarta day, and a Gauna day where the renunciant's
+  differs), and its ISKCON list for the Vaishnava. These are held
+  against `EKADASHI_SMARTA`, `_RENUNCIANT` and `_VAISHNAVA` in
+  `festival-measured.md` §3. The Smarta and renunciant rules fall on
+  every published day. The Vaishnava rule parts on three, each a
+  fortnight whose new moon holds two sunrises (ISKCON's *Paksha
+  Vardhini Mahadvadashi*, a rule *Dharmasindhu* does not state), and
+  the pass founds each fortnight to check that it is so.
+
+**What the measuring corrected.** The first draft parted from the
+record on 13 days and was wrong twice. It had read the closing as
+"one later fast for all", against its "वा" (C182). And it had chosen
+the D1 rule that the almanac refutes (C181). Both were corrected
+from the page image and the record together; neither was absorbed.
+The façade now founds two days before a range, not one: an 11th
+beginning the day before is judged at an arunodaya in the night
+before that.

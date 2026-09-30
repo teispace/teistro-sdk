@@ -142,8 +142,8 @@ def put_muhurta(prefix: str, answer: MuhurtaAnswer) -> None:
 
 
 def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
-    """A festival answer's counts, hash and every observance, as every
-    runner prints them."""
+    """A festival answer's counts, hash, every observance and every
+    Ekadashi fast, as every runner prints them."""
     put(f"{prefix}-counts", f"{len(answer.observances)} {len(answer.unjudged)}")
     put(f"{prefix}-hash", answer.provenance.content_hash)
     for k, observance in enumerate(answer.observances):
@@ -162,6 +162,24 @@ def put_festivals(prefix: str, answer: FestivalAnswer) -> None:
                     number(observance.tithi.from_jd),
                     number(earlier.held),
                     number(later.held),
+                )
+            ),
+        )
+    for k, fast in enumerate(answer.ekadashis):
+        put(
+            f"{prefix}-ekadashi-{k}",
+            " ".join(
+                (
+                    fast.rule,
+                    fast.tithi.full_key,
+                    fast.month.full_key,
+                    str(fast.adhika).lower(),
+                    f"{fast.day.month}-{fast.day.day}",
+                    fast.pierced_at or "-",
+                    str(fast.pierced).lower(),
+                    fast.excess,
+                    fast.choice,
+                    number(fast.tithis[1].from_jd),
                 )
             ),
         )

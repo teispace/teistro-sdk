@@ -407,6 +407,7 @@ __all__ = [
     "FestivalExtent",
     "FestivalDecided",
     "FestivalUnjudged",
+    "EkadashiFast",
     "TaraReading",
     "ClosedDay",
     "TithiClause",
@@ -3092,8 +3093,8 @@ class FestivalRequest(TypedDict):
     """Festival rules to reckon over an almanac's days
     (`03-design/festival-rules.md` §7): `rules`, `"DHARMASINDHU"`, a pack the
     SDK ships, or a list whose items each name a pack or spell a rule out as
-    a mapping in its record's spelling, a later rule replacing an earlier
-    one with its key. A catalogue member may be a member, a full key or a
+    a mapping in its record's spelling (an Ekadashi rule when it has a
+    `vedha`), a later rule replacing an earlier one with its key. A catalogue member may be a member, a full key or a
     bare one.
 
     >>> asked: FestivalRequest = {"rules": ["DHARMASINDHU"]}
@@ -3147,6 +3148,45 @@ class FestivalObservance:
 
 
 @dataclass(frozen=True)
+class EkadashiFast:
+    """An Ekadashi's fast under one rule: the day, and the facts that gave
+    it (`03-design/festival-rules.md` §8)."""
+
+    rule: str
+    """The rule's key."""
+
+    tithi: Tithi
+    """The bright or the dark 11th."""
+
+    month: Masa
+    """Its amanta month."""
+
+    adhika: bool
+    """Whether that month is adhika."""
+
+    tithis: Tuple[Interval, Interval, Interval]
+    """The 10th, the 11th and the 12th, whole."""
+
+    days: Tuple[CalendarDate, CalendarDate]
+    """The 11th's own day and the day after (C181)."""
+
+    pierced_at: Optional[Literal["ARUNODAYA", "SUNRISE"]]
+    """Where the 10th pierces the 11th's day, whatever the rule reckons."""
+
+    pierced: bool
+    """Whether that pierces by the rule's vedha."""
+
+    excess: Literal["ELEVENTH", "TWELFTH", "BOTH", "NEITHER"]
+    """Which of the 11th and the 12th hold the sunrise after their own."""
+
+    choice: Literal["EARLIER", "LATER"]
+    """The table's day, which `day` resolves."""
+
+    day: CalendarDate
+    """The fast."""
+
+
+@dataclass(frozen=True)
 class FestivalUnjudged:
     """An occurrence no day could be given to, and why."""
 
@@ -3165,6 +3205,9 @@ class FestivalAnswer:
     """
 
     observances: Tuple[FestivalObservance, ...]
+    ekadashis: Tuple[EkadashiFast, ...]
+    """Each Ekadashi rule's fasts, in the order of the tithis."""
+
     unjudged: Tuple[FestivalUnjudged, ...]
     provenance: Provenance
     """What computed it: the widened days among the applied conventions as
@@ -5140,8 +5183,26 @@ def _festivals_answer(text: str) -> FestivalAnswer:
             choice=raw["choice"],
         )
 
+    def fast(raw: Mapping[str, Any]) -> EkadashiFast:
+        tenth, eleventh, twelfth = raw["tithis"]
+        first, second = raw["days"]
+        return EkadashiFast(
+            rule=raw["rule"],
+            tithi=_member(Tithi, raw["tithi"]),
+            month=_member(Masa, raw["month"]),
+            adhika=raw["adhika"],
+            tithis=(_interval(tenth), _interval(eleventh), _interval(twelfth)),
+            days=(_serde_date(first), _serde_date(second)),
+            pierced_at=raw["piercedAt"],
+            pierced=raw["pierced"],
+            excess=raw["excess"],
+            choice=raw["choice"],
+            day=_serde_date(raw["day"]),
+        )
+
     return FestivalAnswer(
         observances=tuple(observance(o) for o in value["observances"]),
+        ekadashis=tuple(fast(f) for f in value["ekadashis"]),
         unjudged=tuple(
             FestivalUnjudged(rule=u["rule"], tithi=_interval(u["tithi"]), why=u["why"]) for u in value["unjudged"]
         ),
