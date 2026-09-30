@@ -23,6 +23,9 @@ pub struct Native {
     pub star: Nakshatra,
     /// The birth Moon sign.
     pub moon_sign: Rashi,
+    /// The birth lagna, when the birth time is known: the ashtama lagna
+    /// counts from it.
+    pub lagna: Option<Rashi>,
 }
 
 /// How a day's rules grade its limbs and vara, and whose Chandrabala
@@ -120,6 +123,22 @@ pub fn clauses(day: &Panchanga, native: Option<&Native>, rules: &DayRules) -> Ve
             kind: ClauseKind::Vara { vara, grade },
             at: day.window,
         });
+    }
+    found.extend(day.kaalas.iter().map(|k| Clause {
+        kind: ClauseKind::Kaala { kaala: k.kaala },
+        at: k.at,
+    }));
+    found.extend(day.choghadiya.iter().map(|part| Clause {
+        kind: ClauseKind::Choghadiya {
+            choghadiya: part.choghadiya,
+        },
+        at: part.at,
+    }));
+    if day.muhurtas.abhijit_effective {
+        found.extend(day.muhurtas.abhijit.map(|at| Clause {
+            kind: ClauseKind::Abhijit {},
+            at,
+        }));
     }
     found.extend(day.omens.yogas.iter().map(|yoga| Clause {
         kind: ClauseKind::MuhurtaYoga { yoga: yoga.yoga },

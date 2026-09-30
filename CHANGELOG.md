@@ -1377,6 +1377,26 @@ the astronomical numbers do not move. Nothing else computes yet.
   may now answer. Under the polar circle nothing moves; the search there
   is unchanged.
 
+- **The search** (`muhurta.md` §6 step 5, its second half).
+  `search(&sources, &Request)` gives an activity's windows over a range
+  of dates, in three passes whose work tracks the answer rather than the
+  range: the season once, closing each day the heeded blackouts cover
+  whole and naming what closed it (`Answer::closed`); the remaining days
+  judged by their day and month clauses and ordered; and the best
+  `days_with_windows` of them cut wherever a clause can change and each
+  window judged once. A `Judgement` holds every clause over a window and
+  the rules' bars among them; `Ranking::Texts` orders open windows
+  first, then fewer clauses against, more for, earliest, and is named on
+  the answer. Windows a partial blackout touches are counted
+  (`windows_blacked_out`) and left out. `ProviderSources` answers the
+  search's `Sources` over an ephemeris provider. A day now also reports
+  its kaalas, choghadiyas and an effective Abhijit as clauses (`KAALA`,
+  `CHOGHADIYA`, `ABHIJIT`), so a tradition refusing Rahu kaala or
+  Abhijit lists the key among its bars; the rules' `abhijit` flag is
+  gone.
+
+  **Numbers:** none; nothing existing reads it.
+
 - **An activity's rules** (`muhurta.md` §6 step 5, its first half).
   `Graded<T>` rates a member best, middling or rejected, with what an
   unlisted one is, and `Graded::over` lays a rite's chapter over the
@@ -1385,7 +1405,7 @@ the astronomical numbers do not move. Nothing else computes yet.
   rejected against it. `ActivityRules` adds the month rule (lunar or
   solar, crux C161), the lagnas, the rejected padas, the blackouts heeded,
   the clauses that bar the rite (`ClauseKey`, spelled as each clause's
-  own tag), Abhijit, and what is not judged. `ActivityRules::raman_marriage`
+  own tag), and what is not judged. `ActivityRules::raman_marriage`
   is Raman's chapter IX over his shuddhi, heeding Muhurta Chintamani's
   asta and adhika. New clauses: `MONTH`, `SOLAR_MONTH`, `LAGNA`, `PADA`.
 

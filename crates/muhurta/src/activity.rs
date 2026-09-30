@@ -96,11 +96,9 @@ pub struct ActivityRules {
     pub padas: Vec<Pada>,
     /// The season's blackouts the rite is not held in.
     pub heeds: Vec<BlackoutKind>,
-    /// The instant clauses that bar the rite outright rather than weigh
-    /// against it.
+    /// The clauses that bar the rite outright rather than weigh against
+    /// it.
     pub bars: Vec<ClauseKey>,
-    /// Whether Abhijit may be elected for it.
-    pub abhijit: bool,
     /// What the source asks that is not judged, said rather than dropped.
     pub unjudged: Vec<Unjudged>,
 }
@@ -178,7 +176,6 @@ impl ActivityRules {
                 ClauseKey::MaleficInLagna,
                 ClauseKey::MoonJoined,
             ],
-            abhijit: true,
             unjudged: vec![
                 Unjudged {
                     what: "the Mrityu yoga".into(),

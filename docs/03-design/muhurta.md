@@ -1,6 +1,6 @@
 # Muhurta: electing a time
 
-Status: `draft`, 2026-09-30; §6 steps 1 to 4 and the rules of step 5 **built** 2026-09-30. Written from
+Status: `draft`, 2026-09-30; §6 steps 1 to 5 **built** 2026-09-30. Written from
 the sources before any code; the building is expected to correct it.
 
 Derives from `01-research/feature-universe/08-panchanga-calendar-muhurta.md`
@@ -278,9 +278,31 @@ side of an asta; the kshaya month) rather than a silence. The
 baseline engine's marriage rules come with the regression (step 6),
 where they are measured.
 
-`Ranking` is a trait with two shipped values (C162). A judgement is
-never collapsed into a number the SDK invents; the ranking a request
-used is reported with the answer.
+`Ranking` is an enum rather than a trait, so a request and its answer
+stay data (C162). A judgement is never collapsed into a number the SDK
+invents; the ranking a request used is reported with the answer.
+`Ranking::Texts` is Raman's excess of good and deficiency of evil: open
+windows first, then the fewest clauses against, the most for, the
+earliest. `BASELINE` joins it with the regression (step 6).
+
+Built (`search.rs`, `judge.rs`, `sources.rs`): the three passes, over a
+`Sources` trait so the orchestration is the same over any sky, and
+`ProviderSources` answering it over a provider. The kaalas are not a
+request field: a day reports them as clauses, and a tradition that
+refuses Rahu kaala lists `KAALA` among its bars. A window is cut, beyond
+the day's own spans and the lagna's navamsa (§4.3), at every slow
+graha's sign ingress and the Moon's navamsa, because the instant clauses
+read a graha's house and the rejected padas the Moon's quarter; and at a
+blackout's edge, so a window a partial blackout touches lies inside it
+whole and is **counted** and left out (`windows_blacked_out`). One chart
+zodiac serves the search, taken at the instant the caller names: the
+ayanamsha moves 0.14″ a day, 13″ over three months, about a second of a
+window's edge. Over the built-in ephemeris at Kathmandu the baseline's
+six heeds close 1 September to 19 November 2026 through the search
+itself, every day by Chaturmas, and judge the eleven from Devuthani on
+(`tests/search.rs`, which also holds, on every window of the days cut,
+that the grahas' signs and the lagna's and the Moon's navamsas read the
+same a second inside either end — red with the ingress cuts removed).
 
 ## 5. What is measured
 
