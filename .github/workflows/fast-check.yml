@@ -115,6 +115,8 @@ jobs:
         run: cargo xtask check-festival
       - name: Nepal lunar month page (the adhika days at Kathmandu against the committee's announced malmas, and the month a Nepali designation names)
         run: cargo xtask check-nepal-month
+      - name: Samvatsara page (the text's worked example, the years Nepal's committee named against the shipped count and its rivals, and six centuries at Kathmandu)
+        run: cargo xtask check-samvatsara
       - name: Binding surface page (the roles, the reserved words, the sizes and the units a binding is generated from)
         run: cargo xtask check-surface
       - name: Provider agreement page (where the built-in ephemeris and the reference engine disagree, body by body)

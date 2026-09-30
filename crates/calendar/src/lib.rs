@@ -22,6 +22,7 @@ pub mod iso_week;
 pub mod julian;
 pub mod lunisolar;
 pub mod mixed;
+pub mod samvatsara;
 pub mod solar;
 
 pub use bikram_sambat::BikramSambat;

@@ -15,6 +15,7 @@ use teistro_muhurta::sources::Over;
 use teistro_muhurta::{Answer, ProviderSources, search};
 use teistro_panchanga::almanac::{Almanac, Panchanga};
 use teistro_panchanga::festival::{FestivalDay, Observances, ekadashis, observances};
+use teistro_panchanga::year::LunarYear;
 
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
 use teistro_time::local_day::local_midnight;
@@ -471,13 +472,54 @@ impl<'a> AlmanacArea<'a> {
             .as_ref()
             .map(|asked| self.reckoning(from, to, place, offset, asked, &days))
             .transpose()?;
+        let years = request
+            .years
+            .then(|| self.years(from, to, place, offset))
+            .transpose()?;
         let (days, day_hashes) = Envelope::sealing_each(days.value, days.provenance);
         Ok(AlmanacAnswer {
             days,
             day_hashes,
             muhurta,
             festivals,
+            years,
         })
+    }
+
+    /// The lunar years a range's days fall in, each with the name the
+    /// sixty-year cycle gives it under `calendars.samvatsara` and the
+    /// Jovian years that ran in it (`03-design/samvatsara-measured.md`).
+    ///
+    /// A year runs from the sunrise opening Chaitra Shukla Pratipada to
+    /// the next year's, so a day's year is the one holding its sunrise.
+    ///
+    /// ```no_run
+    /// use teistro::{CalendarDate, Context, UtcOffset};
+    /// use teistro::catalogue::{Calendar, Samvatsara};
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    ///
+    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
+    /// let day = CalendarDate::defined(Calendar::Gregorian, 2021, 6, 1);
+    /// let years = sdk.almanac().years(&day, &day, &kathmandu, UtcOffset::literal(5, 45, 0))?;
+    /// // Ananda began and ended inside VS 2077, so 2078 is Rakshasa.
+    /// assert_eq!(years.value[0].samvatsara, Samvatsara::Rakshasa);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::of`], and a place whose sunrise the polar policy
+    /// leaves undefined on a pratipada.
+    pub fn years(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<Envelope<Vec<LunarYear>>, Error> {
+        let years = self.with_almanac(from, offset, |almanac| almanac.years(from, to, place))?;
+        Ok(Envelope::sealing(years.value, years.provenance))
     }
 
     /// One day: the run of one, unwrapped.
@@ -521,6 +563,7 @@ impl<'a> AlmanacArea<'a> {
 pub struct AlmanacRequest {
     muhurta: Option<MuhurtaRequest>,
     festivals: Option<FestivalRequest>,
+    years: bool,
 }
 
 impl AlmanacRequest {
@@ -544,6 +587,13 @@ impl AlmanacRequest {
         self
     }
 
+    /// With the lunar years the days fall in ([`AlmanacArea::years`]).
+    #[must_use]
+    pub fn with_years(mut self) -> AlmanacRequest {
+        self.years = true;
+        self
+    }
+
     /// The muhurta search asked, if any.
     #[must_use]
     pub fn muhurta(&self) -> Option<&MuhurtaRequest> {
@@ -554,6 +604,12 @@ impl AlmanacRequest {
     #[must_use]
     pub fn festivals(&self) -> Option<&FestivalRequest> {
         self.festivals.as_ref()
+    }
+
+    /// Whether the lunar years were asked.
+    #[must_use]
+    pub fn years(&self) -> bool {
+        self.years
     }
 }
 
@@ -569,6 +625,8 @@ pub struct AlmanacAnswer {
     pub muhurta: Option<Envelope<Answer>>,
     /// The observances, when festivals were asked.
     pub festivals: Option<Envelope<Observances>>,
+    /// The lunar years the days fall in, when they were asked.
+    pub years: Option<Envelope<Vec<LunarYear>>>,
 }
 
 /// A festival reckoning's answer beside the range's days: what

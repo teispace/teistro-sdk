@@ -36,6 +36,8 @@ use crate::omen::{self, Omens};
 use crate::period::{self, Kaalas, Muhurtas, Part};
 use crate::sky::{self, MoonDay, SunDay};
 use crate::span::{self, Span};
+use crate::year::{LunarYear, name_counts};
+use teistro_calendar::samvatsara::JovianYear;
 
 /// The almanac of one day at one place.
 ///
@@ -346,6 +348,141 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Ok(Envelope::new(values, provenance))
     }
 
+    /// The lunar years the days of a range fall in, each named by the
+    /// sixty-year cycle under `calendars.samvatsara`
+    /// (`03-design/samvatsara-measured.md`).
+    ///
+    /// A year runs from the sunrise opening Chaitra Shukla Pratipada to
+    /// the next year's, so a day's year is the one holding its sunrise;
+    /// the first year is the one holding the range's first day, and the
+    /// list runs until a year holds its last. The openings are found in
+    /// this almanac's sky, the one that named the days' months.
+    ///
+    /// # Errors
+    ///
+    /// As [`Almanac::between`], and a place whose sunrise the polar
+    /// policy leaves undefined on a pratipada.
+    pub fn years(
+        &self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+    ) -> Result<Envelope<Vec<LunarYear>>, Error> {
+        let (first, last) = (self.calendar.fixed_of(from)?, self.calendar.fixed_of(to)?);
+        days_in(first, last, from, to)?;
+        let start = local_midnight(self.clock, first)?;
+        let end = local_midnight(self.clock, last.plus_days(1))?;
+        let completion = Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        );
+        let count = self.settings().calendars.samvatsara;
+        // The opening at or before the range's first instant, then the
+        // one before it too when the range starts ahead of that year's
+        // first sunrise.
+        let mut opened = self.opening(&completion, place, start)?;
+        let mut began = self.pratipada(place, opened)?;
+        if began.get() > start.get() {
+            opened = self.opening(&completion, place, next_by(opened, -1.0))?;
+            began = self.pratipada(place, opened)?;
+        }
+        // Each year's opening and first sunrise, and the next year's
+        // after the last: a year's name can wait on the next one's.
+        let mut run = vec![(opened, began)];
+        while let Some(&(last, first_sunrise)) = run.last() {
+            if first_sunrise.get() >= end.get() && run.len() > 1 {
+                break;
+            }
+            // A lunar year is at most 385 days, so the opening before
+            // 390 days on is the next one.
+            let next = self.opening(&completion, place, next_by(last, 390.0))?;
+            run.push((next, self.pratipada(place, next)?));
+        }
+        let text = &teistro_calendar::samvatsara::Parameters::TEXT;
+        let mut running = run
+            .iter()
+            .map(|&(_, sunrise)| JovianYear::at(text, sunrise).map(|year| year.count))
+            .collect::<Result<Vec<i64>, Error>>()?;
+        // The years before the first, as many as the naming reads.
+        let mut earliest = opened;
+        let mut before = 0;
+        while (before..running.len()).any(|index| name_counts(&running, index, count).is_none()) {
+            if before == MOST_YEARS_BACK {
+                return Err(Error::new(
+                    Status::NotConverged,
+                    format!(
+                        "the samvatsara at {began} was not settled by {MOST_YEARS_BACK} years before it"
+                    ),
+                ));
+            }
+            earliest = self.opening(&completion, place, next_by(earliest, -1.0))?;
+            let sunrise = self.pratipada(place, earliest)?;
+            running.insert(0, JovianYear::at(text, sunrise)?.count);
+            before += 1;
+        }
+        let named = |index: usize| {
+            name_counts(&running, before + index, count).ok_or_else(|| {
+                Error::internal("a lunar year's name was checked settled and is not")
+            })
+        };
+        let mut years = Vec::with_capacity(run.len().saturating_sub(1));
+        for (index, pair) in run.windows(2).enumerate() {
+            let &[(opened, began), (_, ended)] = pair else {
+                continue;
+            };
+            years.push(LunarYear::of(
+                count,
+                opened,
+                began,
+                ended,
+                (named(index)?, named(index + 1)?),
+            )?);
+        }
+        let frame = self.at_instant(opened)?.0;
+        let provenance = self.provenance(
+            content_hash(&RangeInput {
+                from: from.to_string(),
+                to: to.to_string(),
+                latitude_deg: place.latitude.get(),
+                longitude_deg: place.longitude.get(),
+                altitude_m: place.altitude.get(),
+            }),
+            frame,
+        );
+        Ok(Envelope::new(years, provenance))
+    }
+
+    /// The new moon that opened the first Chaitra at or before an
+    /// instant, in this almanac's sky.
+    fn opening(
+        &self,
+        completion: &Completion<'_, P>,
+        place: &Place,
+        at: JulianDay<Utc>,
+    ) -> Result<JulianDay<Utc>, Error> {
+        let (frame, zodiac) = self.at_instant(at)?;
+        let mut longitudes = completion.longitudes(frame);
+        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            longitudes = longitudes.with_observer(*place);
+        }
+        crate::year::chaitra_opening(&longitudes, zodiac, at)
+    }
+
+    /// The sunrise that opens the day after a new moon's: the first
+    /// sunrise after it, whichever civil date it falls on.
+    fn pratipada(&self, place: &Place, new_moon: JulianDay<Utc>) -> Result<JulianDay<Utc>, Error> {
+        let day = teistro_chart::day::chart_day(
+            self.model,
+            self.calendar,
+            self.clock,
+            place,
+            new_moon,
+            self.settings().day.polar_day_policy,
+        )?;
+        Ok(day.day.next_sunrise)
+    }
+
     /// One day's value, unstamped, **and the frame it asked the provider
     /// for** — which the stamp needs and which this is the only place
     /// that computes.
@@ -632,6 +769,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         provenance
     }
 }
+
+/// The most lunar years before a range the samvatsara's naming may read:
+/// measured, it reads three at most.
+const MOST_YEARS_BACK: usize = 12;
 
 /// Every event of a kind inside a window, in order.
 ///

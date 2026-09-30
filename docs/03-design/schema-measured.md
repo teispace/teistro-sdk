@@ -132,13 +132,13 @@ later. Counting the derives over the layer's own source:
 |---|---|---|
 | `serial` | 2 | 2 |
 | `chart` | 12 | 10 |
-| `panchanga` | 34 | 34 |
+| `panchanga` | 35 | 35 |
 | `vargas` | 11 | 8 |
 | `state` | 12 | 12 |
 | `aspect` | 8 | 8 |
 | `points` | 4 | 4 |
 | `houses` | 5 | 5 |
-| **total** | **88** | **83** |
+| **total** | **89** | **84** |
 
 The five that do not derive it are the five that **cannot**, and they
 are all one shape: a value whose identity is a shipped constant, holding
@@ -234,7 +234,7 @@ for, and that is where a fixed count of decimals ran out.
 |---|---|---|
 | the schema can be derived from the documents | falsified | 44 of 162 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
-| the layer's types read back, so a round trip can gate the schema | **holds** | 83 types derive `Deserialize` |
+| the layer's types read back, so a round trip can gate the schema | **holds** | 84 types derive `Deserialize` |
 | every word a document writes is spelt as a key | **holds** | 0 of the schema's words are not |
 | every number the form writes reads back as the same double | **holds** | 0 of 5474 move under a correct parser |
 | this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5474 |

@@ -46,6 +46,7 @@ pub mod omen;
 pub mod period;
 pub mod sky;
 pub mod span;
+pub mod year;
 
 pub use almanac::{Almanac, Panchanga};
 pub use limb::{Limbs, karana_of};
@@ -55,3 +56,4 @@ pub use period::{Kaalas, Muhurtas, Part};
 pub use sky::{MoonDay, SunDay};
 pub use span::Span;
 pub use teistro_time::local_day::LocalDay;
+pub use year::LunarYear;

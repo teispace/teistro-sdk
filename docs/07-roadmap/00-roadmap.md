@@ -718,7 +718,14 @@ measured against Nepal before it is called done:
    blackouts it adds.
 2. The year limbs nothing computes: samvatsara and ritu (C178, C180),
    answered per day in every binding. Beside them, tithi vriddhi and
-   kshaya as flags, and ghati-pala from sunrise.
+   kshaya as flags, and ghati-pala from sunrise. **Samvatsara measured
+   2026-10-01** (`samvatsara-measured.md`: the text's Jovian count read
+   at Chaitra Shukla Pratipada names all seven years the committee named,
+   with a name never naming two years, C184). It is answered as the
+   lunar years beside the days rather than on every day, since a day's
+   year is the one holding its sunrise and a field would cost every day
+   a few searches (`calendar-indian-lunisolar.md` §10). Left: the
+   boundary and the bindings, then ritu, the flags and ghati-pala.
 3. Kshaya masa in the muhurta season (C179), and Holashtaka and eclipses
    as blackouts.
 4. A Nepal festival pack, measured against the Government of Nepal's
