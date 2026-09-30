@@ -1806,6 +1806,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "teistro-muhurta"
+version = "0.0.0"
+dependencies = [
+ "schemars",
+ "serde",
+ "serde_json",
+ "teistro-astro",
+ "teistro-calendar",
+ "teistro-core",
+ "teistro-panchanga",
+ "teistro-port-ephemeris",
+]
+
+[[package]]
 name = "teistro-node"
 version = "0.0.0"
 dependencies = [
