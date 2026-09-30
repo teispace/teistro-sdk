@@ -1,6 +1,6 @@
 # Festival rules: deciding the day of an observance
 
-Status: `building`, 2026-09-30: §6 steps 1 and 2 built. Written from the source
+Status: `building`, 2026-09-30: §6 steps 1 to 3 built. Written from the source
 before any code; §4 is as built, and says where the building corrected
 it.
 
@@ -99,12 +99,20 @@ later. With neither, all fast the earlier.
   neither: later, because the 9th pierced by the 8th is forbidden, "even
   one pervading only part of madhyahna". Some would take the pierced one
   when the later day's 9th lasts less than three muhurtas.
-- **Vijaya Dashami** (p. 72): aparahna. Later only: later. Both: earlier,
-  whether or not Shravana joins. Where one day has Shravana at aparahna,
-  that day. And the earlier day with aparahna only yields to a later day
-  on which the 10th lasts three muhurtas and has Shravana.
+- **Vijaya Dashami** (p. 71): aparahna. Later only: later. Both, or
+  neither: earlier, when Shravana joins the 10th on both days or on
+  neither. When it joins on one day only, that day. The earlier day with
+  aparahna alone yields to a later day on which the 10th lasts three
+  muhurtas and Shravana joins it *there only*. The Nirnaya-sindhu adds
+  that Shravana must stand in that day's aparahna, and the text endorses
+  it. In the author's own view, the later day with aparahna alone yields
+  to the earlier when Shravana joins the 10th only on the earlier
+  evening.
 - **Lakshmi puja** (p. 77): the new moon at pradosha. Later only or both:
   later. Earlier only: earlier. Neither: the text records two opinions.
+  And when the new moon holds the later day's sunrise and lasts more than
+  a ghati past its sunset, the text says there is no doubt: the later
+  day.
 
 ## 2. What the baseline engine does
 
@@ -126,6 +134,8 @@ calendar and the computed rules is what §5 measures.
 | C171 | the month of an observance | **the nija month**: an adhika month holds no festival unless the rule says so | the rule names an adhika month as well |
 | C172 | the two days | **the sunrise day the tithi begins in and the next**; when the tithi holds two sunrises, the two days it holds them on | — ; stated so that case 4, where neither window meets the tithi, still has an earlier and a later day, and checked against p. 49, whose "later only" example begins after the earlier day's niśītha |
 | C173 | Lakshmi puja when neither day holds pradosha | **the earlier**, as when the earlier alone holds it (p. 77's "evam … abhave 'pi") | the *Purusharthachintamani*'s reading the same page records, which moves it to the later day when the new moon there lasts past three yamas |
+| C175 | Janmashtami for the Vaishnava schools | **not shipped**: *Dharmasindhu* gives the Smarta rule, and the government's compulsory holiday is the Vaishnava day, the later one in each year the two part (`festival-measured.md` §1) | a Vaishnava rule taken from a Vaishnava text, which has not been read |
+| C176 | a ghati inside a window | **a thirtieth** of the daylight after sunrise or of the night after sunset, as C168 takes a muhurta | 24 minutes whatever the season; the difference moves Lakshmi puja only when the new moon ends within minutes of a ghati past sunset |
 | C174 | the yugma verse and the dark fortnight's 14th and 1st | **unpaired**: the verse joins the 14th to the full moon and the new moon to the 1st, which are the bright 14th and the bright 1st | pairing the dark 14th with the new moon and the dark 1st with the full moon, which the verse does not say |
 
 The five-part day (p. 6) is the default of every day window. Aparahna in a
@@ -152,7 +162,8 @@ pub struct FestivalRule {
 pub enum Predicate {
     Case { case: Case },                                       // the six of §1
     Joined { day: Which, nakshatra: Nakshatra, at: Option<Window> },
-    Lasts { day: Which, muhurtas: u8 },                        // after that day's sunrise
+    Stands { day: Which, nakshatra: Nakshatra, at: Window },   // whatever the tithi
+    Lasts { day: Which, from: Edge, ghatis: u8 },              // past its sunrise or sunset
 }
 ```
 
@@ -160,8 +171,8 @@ pub enum Predicate {
 shipped are each a table of the six cases, plus a nakshatra joined and
 a minimum length. `FestivalRule::check` refuses what could not be
 judged, naming the field: the yugma verse asked of a tithi it pairs
-with nothing (C174), a muhurta count outside a day's fifteen, or an
-empty key.
+with nothing (C174), a ghati count outside a daylight's or a night's
+thirty, or an empty key.
 
 **What the building corrected.** The draft carried two more
 predicates, *pierced* and *outlasts*, so that Ekadashi could be a guard
@@ -174,6 +185,18 @@ its own twelve examples. The draft's *greater extent* choice asked
 whether the tithi is "enough for the rite", and that asks for a rite's
 duration, which the text does not give. No shipped rule needs it, so it
 is not offered.
+
+The measured pass corrected two rules and one predicate. Lakshmi puja
+shipped as "later unless the earlier alone, or neither, holds
+pradosha", so a new moon that touched the later day's pradosha for
+minutes took the later day. p. 77's "a ghati past sunset" is the
+condition that decides it. `Lasts`, which counted muhurtas from sunrise,
+now counts ghatis from sunrise or sunset (C176). Vijaya Dashami's
+exception read Shravana joined on the later day where the text says
+joined *there only*, and it lacked the Nirnaya-sindhu's condition,
+which needs the nakshatra in a window after the tithi has ended. That
+condition is `Stands`. Both were found against the published days, and
+both are held by synthetic-day tests.
 
 ### 4.2 What is answered
 
@@ -222,12 +245,14 @@ reports that it did.
    sixty ghatis (`crates/panchanga/tests/festival.rs`). The expected
    answer is the book's, not a reading of its prose.
 2. **Every rule, every year, over a real sky.** A pass evaluates the
-   shipped pack at Kathmandu and Delhi for a span of years. It counts
+   shipped pack at Delhi, the place of the list it is held to, for a
+   decade. It counts
    each case that occurred and each guard that decided. A guard no year
    reaches is listed with its reason, as the muhurta ABI test does for
    clause kinds.
 3. **Against the published calendars.** The observed dates the
-   governments of India and Nepal publish as holidays are facts. The
+   Government of India publishes as holidays are facts. Nepal's list is
+   not yet read. The
    pass compares each shipped rule's day with them. Every disagreement
    is named with its cause: another school, another window, a published
    day decided by administration. It is never absorbed as a tolerance.
@@ -244,6 +269,12 @@ reports that it did.
    the same refusal (`almanac::days_in`). A rule is refused by its place in the
    request (`rules[2].decide.when.muhurtas`). Over 2026 at Delhi each
    shipped rule falls once, in its season, with nothing unjudged.
-3. The measured pass (§5.2, §5.3) and its page.
+3. **Built**: the measured pass (`cargo xtask festival`, gated in
+   fast-check) and `festival-measured.md`. It corrected two rules
+   (§4.1). What remains apart from the published days is the Vaishnava
+   Janmashtami (C175) and the 2024 Lakshmi puja. For that one the text
+   gives the later day beyond doubt, and the list takes the earlier.
+   The two guards no year of the decade reached each cite the crate test
+   that reaches them, and the pass checks that the test exists.
 4. The boundary and the bindings, as muhurta step 7 did.
 5. Ekadashi, both schools, held to pp. 11–12's examples.

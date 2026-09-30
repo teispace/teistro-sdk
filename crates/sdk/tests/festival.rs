@@ -10,7 +10,7 @@
 )]
 
 use teistro::catalogue::Calendar;
-use teistro::festival::{FestivalRule, Guard, Predicate, Which};
+use teistro::festival::{Edge, FestivalRule, Guard, Predicate, Which};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{CalendarDate, Context, Ephemeris, UtcOffset};
 
@@ -92,7 +92,8 @@ fn a_rule_is_refused_by_its_place_in_the_request() {
     rules[2].decide.push(Guard::new(
         [Predicate::Lasts {
             day: Which::Later,
-            muhurtas: 0,
+            from: Edge::Sunset,
+            ghatis: 0,
         }],
         teistro::festival::Choice::Later,
     ));
@@ -100,5 +101,5 @@ fn a_rule_is_refused_by_its_place_in_the_request() {
         .almanac()
         .festivals(&from, &to, &delhi(), UtcOffset::literal(5, 30, 0), &rules)
         .unwrap_err();
-    assert_eq!(error.field(), Some("rules[2].decide.when.muhurtas"));
+    assert_eq!(error.field(), Some("rules[2].decide.when.ghatis"));
 }

@@ -133,14 +133,41 @@ pub enum Predicate {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         at: Option<Window>,
     },
-    /// The tithi stands at least this many muhurtas, fifteenths of the
-    /// daylight, after the day's sunrise.
+    /// The nakshatra stands in a window of a day, whatever the tithi: the
+    /// Nirnaya-sindhu's condition that *Dharmasindhu* p. 71 endorses,
+    /// Shravana in the later day's aparahna after the dashami has ended.
+    Stands {
+        /// Which day.
+        day: Which,
+        /// The nakshatra.
+        nakshatra: Nakshatra,
+        /// The window it must stand in, for some time or at its instant.
+        at: Window,
+    },
+    /// The tithi stands at an edge of the day and lasts at least this many
+    /// ghatis past it, a ghati being a thirtieth of the daylight after
+    /// sunrise or of the night after sunset: three muhurtas after sunrise
+    /// are six ghatis (p. 71), and the new moon a ghati into the night
+    /// settles Lakshmi puja (p. 77).
     Lasts {
         /// Which day.
         day: Which,
-        /// How many muhurtas, 1 to 15.
-        muhurtas: u8,
+        /// The edge counted from.
+        from: Edge,
+        /// How many ghatis, 1 to 30.
+        ghatis: u8,
     },
+}
+
+/// The edge of a day a [`Predicate::Lasts`] counts from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum Edge {
+    /// Sunrise, counting in thirtieths of the daylight.
+    Sunrise,
+    /// Sunset, counting in thirtieths of the night.
+    Sunset,
 }
 
 /// What a guard, or a rule's `otherwise`, decides.
@@ -264,13 +291,13 @@ impl FestivalRule {
         }
         for guard in &self.decide {
             for predicate in &guard.when {
-                if let Predicate::Lasts { muhurtas, .. } = predicate {
-                    if !(1..=15).contains(muhurtas) {
+                if let Predicate::Lasts { ghatis, .. } = predicate {
+                    if !(1..=30).contains(ghatis) {
                         return Err(Error::invalid_arg(format!(
-                            "{}: a day has fifteen muhurtas, not {muhurtas}",
+                            "{}: a daylight or a night has thirty ghatis, not {ghatis}",
                             self.key
                         ))
-                        .with_field("decide.when.muhurtas"));
+                        .with_field("decide.when.ghatis"));
                     }
                 }
             }
@@ -619,29 +646,41 @@ impl Facts<'_> {
                 day.nakshatra
                     .iter()
                     .filter(|held| held.member == nakshatra)
-                    .any(|held| meet(self.tithi, held.whole, span))
+                    .any(|held| meet(&[self.tithi, held.whole], span))
             }
-            Predicate::Lasts { day, muhurtas } => {
+            Predicate::Stands { day, nakshatra, at } => {
                 let day = self.day(day);
-                let until = day.daylight().at_fraction(f64::from(muhurtas) / 15.0)?;
-                self.tithi.contains(day.sunrise) && self.tithi.to.get() >= until.get()
+                let window = day.window(at)?;
+                day.nakshatra
+                    .iter()
+                    .filter(|held| held.member == nakshatra)
+                    .any(|held| meet(&[held.whole], window))
+            }
+            Predicate::Lasts { day, from, ghatis } => {
+                let day = self.day(day);
+                let (edge, span) = match from {
+                    Edge::Sunrise => (day.sunrise, day.daylight()),
+                    Edge::Sunset => (day.sunset, day.night()),
+                };
+                let until = span.at_fraction(f64::from(ghatis) / 30.0)?;
+                self.tithi.contains(edge) && self.tithi.to.get() >= until.get()
             }
         })
     }
 }
 
-/// Whether the tithi and a nakshatra stand together in a window: at its
-/// instant, as `contains` reads it, or for some time inside it.
-fn meet(tithi: Interval, nakshatra: Interval, window: Interval) -> bool {
+/// Whether every span stands in a window together: at its instant, as
+/// `contains` reads it, or for some time inside it.
+fn meet(spans: &[Interval], window: Interval) -> bool {
     if window.days() <= 0.0 {
-        return tithi.contains(window.from) && nakshatra.contains(window.from);
+        return spans.iter().all(|span| span.contains(window.from));
     }
-    let from = tithi
-        .from
-        .get()
-        .max(nakshatra.from.get())
-        .max(window.from.get());
-    let to = tithi.to.get().min(nakshatra.to.get()).min(window.to.get());
+    let from = spans
+        .iter()
+        .fold(window.from.get(), |from, span| from.max(span.from.get()));
+    let to = spans
+        .iter()
+        .fold(window.to.get(), |to, span| to.min(span.to.get()));
     from < to
 }
 
@@ -660,6 +699,7 @@ impl FestivalRule {
         let aparahna = Window::Part {
             part: DayPart::Aparahna,
         };
+        let shravana = |day| joined(day, Nakshatra::Shravana, None);
         vec![
             FestivalRule {
                 key: "RAMA_NAVAMI".to_owned(),
@@ -689,50 +729,56 @@ impl FestivalRule {
             },
             FestivalRule {
                 key: "VIJAYA_DASHAMI".to_owned(),
-                source: "Dharmasindhu p. 72: aparahna; both days, the earlier; Shravana on one day only, that day".to_owned(),
+                source: "Dharmasindhu p. 71: aparahna; both days or neither, the earlier, unless Shravana joins one day only; the earlier day alone holding it yields to a later day the dashami holds three muhurtas and Shravana joins alone, standing in its aparahna (the Nirnaya-sindhu's condition, endorsed); the later alone yields to Shravana joined only on the earlier (the author's own view)".to_owned(),
                 month: Masa::Ashwina,
                 convention: Convention::Amanta,
                 tithi: Tithi::ShuklaDashami,
                 in_adhika: false,
                 at: aparahna,
                 decide: vec![
+                    Guard::new([case(Case::LaterOnly), shravana(L)], Later),
+                    Guard::new([case(Case::LaterOnly), shravana(E)], Earlier),
                     Guard::new([case(Case::LaterOnly)], Later),
+                    Guard::new([shravana(E), shravana(L)], Earlier),
                     Guard::new(
                         [
                             case(Case::EarlierOnly),
                             Predicate::Lasts {
                                 day: L,
-                                muhurtas: 3,
+                                from: Edge::Sunrise,
+                                ghatis: 6,
                             },
-                            joined(L, Nakshatra::Shravana, None),
+                            shravana(L),
+                            Predicate::Stands {
+                                day: L,
+                                nakshatra: Nakshatra::Shravana,
+                                at: aparahna,
+                            },
                         ],
                         Later,
                     ),
                     Guard::new([case(Case::EarlierOnly)], Earlier),
-                    Guard::new(
-                        [
-                            joined(E, Nakshatra::Shravana, None),
-                            joined(L, Nakshatra::Shravana, None),
-                        ],
-                        Earlier,
-                    ),
-                    Guard::new([joined(L, Nakshatra::Shravana, None)], Later),
+                    Guard::new([shravana(L)], Later),
                 ],
                 otherwise: Earlier,
             },
             FestivalRule {
                 key: "LAKSHMI_PUJA".to_owned(),
-                source: "Dharmasindhu p. 77: the new moon at pradosha; the later day if it holds it, else the earlier, and so when neither does".to_owned(),
+                source: "Dharmasindhu p. 77: the new moon at pradosha; the later day when it lasts more than a ghati into that night, which puts the matter beyond doubt, else the earlier, and so when neither day holds it".to_owned(),
                 month: Masa::Ashwina,
                 convention: Convention::Amanta,
                 tithi: Tithi::Amavasya,
                 in_adhika: false,
                 at: Window::Pradosha,
-                decide: vec![
-                    Guard::new([case(Case::EarlierOnly)], Earlier),
-                    Guard::new([case(Case::Neither)], Earlier),
-                ],
-                otherwise: Later,
+                decide: vec![Guard::new(
+                    [Predicate::Lasts {
+                        day: L,
+                        from: Edge::Sunset,
+                        ghatis: 1,
+                    }],
+                    Later,
+                )],
+                otherwise: Earlier,
             },
         ]
     }

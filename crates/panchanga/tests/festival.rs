@@ -22,8 +22,8 @@ use teistro_core::interval::Interval;
 use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
-    Case, Choice, DayPart, Decided, FestivalDay, FestivalRule, Guard, Predicate, Which, Window,
-    observances, yugma,
+    Case, Choice, DayPart, Decided, Edge, FestivalDay, FestivalRule, Guard, Predicate, Which,
+    Window, observances, yugma,
 };
 use teistro_panchanga::month;
 use teistro_panchanga::span::Span;
@@ -182,20 +182,21 @@ fn a_rule_that_cannot_be_judged_is_refused_by_the_field_that_is_wrong() {
         yugma_of_the_tenth.check().unwrap_err().field(),
         Some("decide")
     );
-    let sixteen = a_rule(
+    let thirty_one = a_rule(
         Tithi::ShuklaDvitiya,
         vec![Guard::new(
             [Predicate::Lasts {
                 day: Which::Later,
-                muhurtas: 16,
+                from: Edge::Sunrise,
+                ghatis: 31,
             }],
             Choice::Later,
         )],
         Choice::Earlier,
     );
     assert_eq!(
-        sixteen.check().unwrap_err().field(),
-        Some("decide.when.muhurtas")
+        thirty_one.check().unwrap_err().field(),
+        Some("decide.when.ghatis")
     );
     let mut keyless = a_rule(Tithi::ShuklaDvitiya, vec![], Choice::ByYugma);
     keyless.key = " ".to_owned();
@@ -294,58 +295,176 @@ fn a_rule_holds_in_its_own_nija_month_only_unless_it_asks_for_the_adhika() {
     );
 }
 
-/// Vijaya Dashami (p. 72): the earlier day holds aparahna alone, but the
-/// later day's 10th lasts three muhurtas and has Shravana, so the later.
-#[test]
-fn vijaya_dashami_yields_to_a_later_day_with_three_muhurtas_and_shravana() {
-    let rule = FestivalRule::dharmasindhu()
+fn shipped(key: &str) -> FestivalRule {
+    FestivalRule::dharmasindhu()
         .into_iter()
-        .find(|rule| rule.key == "VIJAYA_DASHAMI")
-        .unwrap();
+        .find(|rule| rule.key == key)
+        .unwrap()
+}
+
+/// The case, the day (1-based, as the book counts) and the deciding guard.
+fn decided(rule: &FestivalRule, days: &[FestivalDay]) -> (Case, u8, Decided) {
+    let observance = &observances(std::slice::from_ref(rule), days)
+        .unwrap()
+        .observances[0];
+    (
+        observance.case,
+        observance.day.day - 1,
+        observance.decided_by,
+    )
+}
+
+/// Vijaya Dashami (p. 71): the earlier day holds aparahna alone, but the
+/// later day's 10th lasts three muhurtas and Shravana joins it there alone,
+/// standing in its aparahna, so the later.
+#[test]
+fn vijaya_dashami_yields_to_a_later_day_with_three_muhurtas_and_shravana_alone() {
+    let rule = shipped("VIJAYA_DASHAMI");
     // Aparahna is the fourth fifth of the daylight: ghatis 18 to 24.
     // The 10th from ghati 10 of day 1 to ghati 7 of day 2; a daylight
     // muhurta is two ghatis, so three of them end at ghati 6.
+    let tenth_until = |ends| {
+        [
+            (Tithi::ShuklaNavami, ghati(1, 10.0)),
+            (Tithi::ShuklaDashami, ends),
+            (Tithi::ShuklaDwadashi, ghati(5, 0.0)),
+        ]
+    };
+    let shravana = |from, to| [(Nakshatra::UttaraAshadha, from), (Nakshatra::Shravana, to)];
+    let ashwina = |tithis: &[(Tithi, f64)], nakshatras: &[(Nakshatra, f64)]| {
+        days_of(tithis, nakshatras, Masa::Ashwina, MonthKind::Nija)
+    };
+    let later_alone = shravana(ghati(2, 1.0), ghati(3, 0.0));
+    let days = ashwina(&tenth_until(ghati(2, 7.0)), &later_alone);
+    assert_eq!(
+        decided(&rule, &days),
+        (Case::EarlierOnly, 2, Decided::Guard { index: 4 })
+    );
+    // Ending at ghati 5, short of three muhurtas: the earlier.
+    let days = ashwina(&tenth_until(ghati(2, 5.0)), &later_alone);
+    assert_eq!(
+        decided(&rule, &days),
+        (Case::EarlierOnly, 1, Decided::Guard { index: 5 })
+    );
+    // Shravana joining the 10th on the earlier day too: "on the later day
+    // only" fails, and both days joined take the earlier.
+    let both = shravana(ghati(1, 50.0), ghati(3, 0.0));
+    let days = ashwina(&tenth_until(ghati(2, 7.0)), &both);
+    assert_eq!(
+        decided(&rule, &days),
+        (Case::EarlierOnly, 1, Decided::Guard { index: 3 })
+    );
+    // Shravana over before the later day's aparahna: the Nirnaya-sindhu's
+    // condition fails, so the earlier.
+    let before_aparahna = [
+        (Nakshatra::UttaraAshadha, ghati(2, 1.0)),
+        (Nakshatra::Shravana, ghati(2, 15.0)),
+        (Nakshatra::Dhanishtha, ghati(4, 0.0)),
+    ];
+    let days = ashwina(&tenth_until(ghati(2, 7.0)), &before_aparahna);
+    assert_eq!(
+        decided(&rule, &days),
+        (Case::EarlierOnly, 1, Decided::Guard { index: 5 })
+    );
+}
+
+/// Vijaya Dashami (p. 71), the author's own view: the later day alone
+/// holds aparahna, but Shravana joins the 10th only on the earlier day,
+/// in its evening, so the earlier.
+#[test]
+fn vijaya_dashami_held_later_alone_yields_to_shravana_on_the_earlier_evening() {
+    let rule = shipped("VIJAYA_DASHAMI");
+    // The 10th from ghati 26 of day 1, after its aparahna, to ghati 40 of
+    // day 2.
     let tithis = [
-        (Tithi::ShuklaNavami, ghati(1, 10.0)),
-        (Tithi::ShuklaDashami, ghati(2, 7.0)),
+        (Tithi::ShuklaNavami, ghati(1, 26.0)),
+        (Tithi::ShuklaDashami, ghati(2, 40.0)),
         (Tithi::ShuklaDwadashi, ghati(5, 0.0)),
     ];
-    let shravana_later = [
+    let evening = [
+        (Nakshatra::UttaraAshadha, ghati(1, 20.0)),
+        (Nakshatra::Shravana, ghati(1, 50.0)),
+        (Nakshatra::Dhanishtha, ghati(4, 0.0)),
+    ];
+    let days = days_of(&tithis, &evening, Masa::Ashwina, MonthKind::Nija);
+    assert_eq!(
+        decided(&rule, &days),
+        (Case::LaterOnly, 1, Decided::Guard { index: 1 })
+    );
+    let days = days_of(&tithis, &[], Masa::Ashwina, MonthKind::Nija);
+    assert_eq!(
+        decided(&rule, &days),
+        (Case::LaterOnly, 2, Decided::Guard { index: 2 })
+    );
+}
+
+/// Vijaya Dashami (p. 71): both days holding aparahna, or neither, take
+/// the earlier unless Shravana joins the 10th on one day only, and then
+/// that day.
+#[test]
+fn vijaya_dashami_held_on_both_days_or_neither_goes_to_shravana_alone() {
+    let rule = shipped("VIJAYA_DASHAMI");
+    let tenth = |from, to| {
+        [
+            (Tithi::ShuklaNavami, from),
+            (Tithi::ShuklaDashami, to),
+            (Tithi::ShuklaDwadashi, ghati(5, 0.0)),
+        ]
+    };
+    let later_alone = [
         (Nakshatra::UttaraAshadha, ghati(2, 1.0)),
         (Nakshatra::Shravana, ghati(3, 0.0)),
     ];
-    let days = days_of(&tithis, &shravana_later, Masa::Ashwina, MonthKind::Nija);
-    let observance = &observances(std::slice::from_ref(&rule), &days)
-        .unwrap()
-        .observances[0];
+    // Aparahna is ghatis 18 to 24: from ghati 15 of day 1 to ghati 25 of
+    // day 2 holds both, from 25 to 17 neither.
+    for (tithis, case) in [
+        (tenth(ghati(1, 15.0), ghati(2, 25.0)), Case::Both),
+        (tenth(ghati(1, 25.0), ghati(2, 17.0)), Case::Neither),
+    ] {
+        let days = days_of(&tithis, &later_alone, Masa::Ashwina, MonthKind::Nija);
+        assert_eq!(
+            decided(&rule, &days),
+            (case, 2, Decided::Guard { index: 6 })
+        );
+        let days = days_of(&tithis, &[], Masa::Ashwina, MonthKind::Nija);
+        assert_eq!(decided(&rule, &days), (case, 1, Decided::Otherwise));
+    }
+}
+
+/// Lakshmi puja (p. 77): the new moon reaching the later day's pradosha in
+/// part takes the later day only when it lasts more than a ghati into the
+/// night. The synthetic night is thirty ghatis, so a night's ghati is one.
+#[test]
+fn lakshmi_puja_takes_the_later_day_only_a_ghati_into_its_night() {
+    let rule = shipped("LAKSHMI_PUJA");
+    // The new moon from ghati 32 of day 1, inside its pradosha (30 to 36).
+    let new_moon_until = |ends| {
+        [
+            (Tithi::KrishnaChaturdashi, ghati(1, 32.0)),
+            (Tithi::Amavasya, ends),
+            (Tithi::ShuklaDvitiya, ghati(5, 0.0)),
+        ]
+    };
+    let ashwina = |tithis: &[(Tithi, f64)]| days_of(tithis, &[], Masa::Ashwina, MonthKind::Nija);
+    let days = ashwina(&new_moon_until(ghati(2, 32.0)));
     assert_eq!(
-        (observance.case, observance.day.day - 1),
-        (Case::EarlierOnly, 2)
+        decided(&rule, &days),
+        (Case::UnequalParts, 2, Decided::Guard { index: 0 })
     );
-    assert_eq!(observance.decided_by, Decided::Guard { index: 1 });
-    // Ending at ghati 5, short of three muhurtas: the earlier.
-    let short = [
-        (Tithi::ShuklaNavami, ghati(1, 10.0)),
-        (Tithi::ShuklaDashami, ghati(2, 5.0)),
-        (Tithi::ShuklaDwadashi, ghati(5, 0.0)),
-    ];
-    let days = days_of(&short, &shravana_later, Masa::Ashwina, MonthKind::Nija);
-    let observance = &observances(&[rule], &days).unwrap().observances[0];
+    // Half a ghati past sunset: the later day holds more of pradosha's
+    // span than none, but not a ghati, so the earlier.
+    let days = ashwina(&new_moon_until(ghati(2, 30.5)));
     assert_eq!(
-        (observance.case, observance.day.day - 1),
-        (Case::EarlierOnly, 1)
+        decided(&rule, &days),
+        (Case::UnequalParts, 1, Decided::Otherwise)
     );
-    assert_eq!(observance.decided_by, Decided::Guard { index: 2 });
 }
 
 /// The new moon ends its month, so its month is read at a sunrise inside
 /// it even when the next sunrise is already in the next month.
 #[test]
 fn a_new_moon_is_read_in_the_month_it_ends() {
-    let rule = FestivalRule::dharmasindhu()
-        .into_iter()
-        .find(|rule| rule.key == "LAKSHMI_PUJA")
-        .unwrap();
+    let rule = shipped("LAKSHMI_PUJA");
     // The 14th until ghati 5 of day 2, the new moon until ghati 55 of
     // day 2: kshaya, holding no sunrise. Day 2's sunrise is in the 14th,
     // of Ashwina; day 3's in the next month.
